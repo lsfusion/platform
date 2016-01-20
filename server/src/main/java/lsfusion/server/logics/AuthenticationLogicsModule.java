@@ -76,37 +76,37 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
 
         super.initProperties();
 
-        currentUserName = findProperty("currentUserName");
+        currentUserName = findProperty("currentUserName[]");
 
         // Компьютер
-        hostnameComputer = findProperty("hostnameComputer");
-        scannerComPortComputer = findProperty("scannerComPortComputer");
-        scannerSingleReadComputer = findProperty("scannerSingleReadComputer");
-        useDiscountCardReaderComputer = findProperty("useDiscountCardReaderComputer");
+        hostnameComputer = findProperty("hostname[Computer]");
+        scannerComPortComputer = findProperty("scannerComPort[Computer]");
+        scannerSingleReadComputer = findProperty("scannerSingleRead[Computer]");
+        useDiscountCardReaderComputer = findProperty("useDiscountCardReader[Computer]");
 
-        hostnameCurrentComputer = findProperty("hostnameCurrentComputer");
+        hostnameCurrentComputer = findProperty("hostnameCurrentComputer[]");
 
-        isLockedCustomUser = findProperty("isLockedCustomUser");
+        isLockedCustomUser = findProperty("isLocked[CustomUser]");
 
-        loginCustomUser = findProperty("loginCustomUser");
-        customUserLogin = findProperty("customUserLogin");
-        customUserUpcaseLogin = findProperty("customUserUpcaseLogin");
+        loginCustomUser = findProperty("login[CustomUser]");
+        customUserLogin = findProperty("customUser[STRING[30]]");
+        customUserUpcaseLogin = findProperty("customUserUpcase[?]");
 
-        sha256PasswordCustomUser = findProperty("sha256PasswordCustomUser");
+        sha256PasswordCustomUser = findProperty("sha256Password[CustomUser]");
         sha256PasswordCustomUser.setEchoSymbols(true);
 
-        calculatedHash = findProperty("calculatedHash");
+        calculatedHash = findProperty("calculatedHash[]");
 
-        lastActivityCustomUser = findProperty("lastActivityCustomUser");
-        ignorePrintTypeCustomUser = findProperty("ignorePrintTypeCustomUser");
+        lastActivityCustomUser = findProperty("lastActivity[CustomUser]");
+        ignorePrintTypeCustomUser = findProperty("ignorePrintTypeCustom[User]");
 
-        useLDAP = findProperty("useLDAP");
-        serverLDAP = findProperty("serverLDAP");
-        portLDAP =  findProperty("portLDAP");
-        baseDNLDAP =  findProperty("baseDNLDAP");
-        userDNSuffixLDAP =  findProperty("userDNSuffixLDAP");
+        useLDAP = findProperty("useLDAP[]");
+        serverLDAP = findProperty("serverLDAP[]");
+        portLDAP =  findProperty("portLDAP[]");
+        baseDNLDAP =  findProperty("baseDNLDAP[]");
+        userDNSuffixLDAP =  findProperty("userDNSuffixLDAP[]");
 
-        generateLoginPassword = findAction("generateLoginPassword");
+        generateLoginPassword = findAction("generateLoginPassword[CustomUser]");
 
 
     }

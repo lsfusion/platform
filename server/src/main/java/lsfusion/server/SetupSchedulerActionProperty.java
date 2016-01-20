@@ -30,7 +30,7 @@ public class SetupSchedulerActionProperty extends ScriptingActionProperty {
             } else {
                 context.delayUserInteraction(new MessageClientAction("Scheduler disabled, change serverComputer() to enable", "Scheduler disabled"));
             }
-            findProperty("isStartedScheduler").change(isServer ? true : null, context);
+            findProperty("isStartedScheduler[]").change(isServer ? true : null, context);
         } catch (ScriptingErrorLog.SemanticErrorException e) {
             throw Throwables.propagate(e);
         }

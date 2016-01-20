@@ -618,7 +618,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         // потом надо сделать соответствующий механизм для Formula
         ScriptingLogicsModule module = businessLogics.getModule("Country");
         if(module != null) {
-            LCP<?> lp = module.findProperty("isDayOffCountryDate");
+            LCP<?> lp = module.findProperty("isDayOff[Country,DATE]");
 
             Properties props = new Properties();
             props.put("dayoff.tablename", lp.property.mapTable.table.getName(sql.syntax));
@@ -656,6 +656,9 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             NewDBStructure newDBStructure = new NewDBStructure(newDBVersion);
 
             if(newDBStructure.version >= 22 && oldDBStructure.version < 22) { // временно, для явной типизации
+                if(SystemProperties.isDebug) {
+                    throw new RuntimeException("YOU HAVE TO START SERVER WITH ISDEBUG : FALSE");
+                }
                 Settings.get().setStartServerAnyWay(true);
                 explicitMigrate = true;
             }
@@ -930,7 +933,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
 
             initSystemUser();
 
-            String oldHashModules = (String) businessLogics.LM.findProperty("hashModules").read(session);
+            String oldHashModules = (String) businessLogics.LM.findProperty("hashModules[]").read(session);
             hashModules = calculateHashModules();
             return checkHashModulesChanged(oldHashModules, hashModules);
         }
@@ -971,7 +974,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         try {
             serviceLogger.info("Writing hashModules " + hashModules);
             DataSession session = createSession();
-            businessLogics.LM.findProperty("hashModules").change(hashModules, session);
+            businessLogics.LM.findProperty("hashModules[]").change(hashModules, session);
             session.apply(businessLogics);
             serviceLogger.info("Writing hashModules finished successfully");
         } catch (Exception e) {
@@ -2029,7 +2032,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
     private class NewDBStructure extends DBStructure<Field> {
 
         public <P extends PropertyInterface> NewDBStructure(DBVersion dbVersion) {
-            version = 21;
+            version = 22;
             this.dbVersion = dbVersion;
 
             for (Table table : LM.tableFactory.getImplementTablesMap().valueIt()) {

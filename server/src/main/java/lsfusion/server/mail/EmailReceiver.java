@@ -59,7 +59,7 @@ public class EmailReceiver {
         importEmails(context, data.get(0));
         importAttachments(context, data.get(1));
 
-        LM.findAction("formRefresh").execute(context);
+        LM.findAction("formRefresh[]").execute(context);
     }
 
     public void importEmails(ExecutionContext context, List<List<Object>> data) throws ScriptingErrorLog.SemanticErrorException, SQLException, SQLHandledException {
@@ -68,40 +68,40 @@ public class EmailReceiver {
         List<ImportField> fields = new ArrayList<>();
         List<ImportKey<?>> keys = new ArrayList<>();
 
-        ImportField idEmailField = new ImportField(LM.findProperty("idEmail"));
+        ImportField idEmailField = new ImportField(LM.findProperty("id[Email]"));
         ImportKey<?> emailKey = new ImportKey((ConcreteCustomClass) LM.findClass("Email"),
-                LM.findProperty("emailId").getMapping(idEmailField));
+                LM.findProperty("emailId[VARSTRING[100]]").getMapping(idEmailField));
         keys.add(emailKey);
-        props.add(new ImportProperty(idEmailField, LM.findProperty("idEmail").getMapping(emailKey)));
-        props.add(new ImportProperty(accountObject, LM.findProperty("accountEmail").getMapping(emailKey)));
+        props.add(new ImportProperty(idEmailField, LM.findProperty("id[Email]").getMapping(emailKey)));
+        props.add(new ImportProperty(accountObject, LM.findProperty("account[Email]").getMapping(emailKey)));
         fields.add(idEmailField);
 
-        ImportField dateTimeSentEmailField = new ImportField(LM.findProperty("dateTimeSentEmail"));
-        props.add(new ImportProperty(dateTimeSentEmailField, LM.findProperty("dateTimeSentEmail").getMapping(emailKey), true));
+        ImportField dateTimeSentEmailField = new ImportField(LM.findProperty("dateTimeSent[Email]"));
+        props.add(new ImportProperty(dateTimeSentEmailField, LM.findProperty("dateTimeSent[Email]").getMapping(emailKey), true));
         fields.add(dateTimeSentEmailField);
 
-        ImportField dateTimeReceivedEmailField = new ImportField(LM.findProperty("dateTimeReceivedEmail"));
-        props.add(new ImportProperty(dateTimeReceivedEmailField, LM.findProperty("dateTimeReceivedEmail").getMapping(emailKey), true));
+        ImportField dateTimeReceivedEmailField = new ImportField(LM.findProperty("dateTimeReceived[Email]"));
+        props.add(new ImportProperty(dateTimeReceivedEmailField, LM.findProperty("dateTimeReceived[Email]").getMapping(emailKey), true));
         fields.add(dateTimeReceivedEmailField);
 
-        ImportField fromAddressEmailField = new ImportField(LM.findProperty("fromAddressEmail"));
-        props.add(new ImportProperty(fromAddressEmailField, LM.findProperty("fromAddressEmail").getMapping(emailKey), true));
+        ImportField fromAddressEmailField = new ImportField(LM.findProperty("fromAddress[Email]"));
+        props.add(new ImportProperty(fromAddressEmailField, LM.findProperty("fromAddress[Email]").getMapping(emailKey), true));
         fields.add(fromAddressEmailField);
 
-        ImportField toAddressEmailField = new ImportField(LM.findProperty("toAddressEmail"));
-        props.add(new ImportProperty(toAddressEmailField, LM.findProperty("toAddressEmail").getMapping(emailKey), true));
+        ImportField toAddressEmailField = new ImportField(LM.findProperty("toAddress[Email]"));
+        props.add(new ImportProperty(toAddressEmailField, LM.findProperty("toAddress[Email]").getMapping(emailKey), true));
         fields.add(toAddressEmailField);
 
-        ImportField subjectEmailField = new ImportField(LM.findProperty("subjectEmail"));
-        props.add(new ImportProperty(subjectEmailField, LM.findProperty("subjectEmail").getMapping(emailKey), true));
+        ImportField subjectEmailField = new ImportField(LM.findProperty("subject[Email]"));
+        props.add(new ImportProperty(subjectEmailField, LM.findProperty("subject[Email]").getMapping(emailKey), true));
         fields.add(subjectEmailField);
 
-        ImportField messageEmailField = new ImportField(LM.findProperty("messageEmail"));
-        props.add(new ImportProperty(messageEmailField, LM.findProperty("messageEmail").getMapping(emailKey), true));
+        ImportField messageEmailField = new ImportField(LM.findProperty("message[Email]"));
+        props.add(new ImportProperty(messageEmailField, LM.findProperty("message[Email]").getMapping(emailKey), true));
         fields.add(messageEmailField);
         
-        ImportField emlFileEmailField = new ImportField(LM.findProperty("emlFileEmail"));
-        props.add(new ImportProperty(emlFileEmailField, LM.findProperty("emlFileEmail").getMapping(emailKey), true));
+        ImportField emlFileEmailField = new ImportField(LM.findProperty("emlFile[Email]"));
+        props.add(new ImportProperty(emlFileEmailField, LM.findProperty("emlFile[Email]").getMapping(emailKey), true));
         fields.add(emlFileEmailField);
         
         ImportTable table = new ImportTable(fields, data);
@@ -121,28 +121,28 @@ public class EmailReceiver {
         List<ImportField> fields = new ArrayList<>();
         List<ImportKey<?>> keys = new ArrayList<>();
 
-        ImportField idEmailField = new ImportField(LM.findProperty("idEmail"));
+        ImportField idEmailField = new ImportField(LM.findProperty("id[Email]"));
         ImportKey<?> emailKey = new ImportKey((ConcreteCustomClass) LM.findClass("Email"),
-                LM.findProperty("emailId").getMapping(idEmailField));
+                LM.findProperty("emailId[VARSTRING[100]]").getMapping(idEmailField));
         emailKey.skipKey = true;
         keys.add(emailKey);
         fields.add(idEmailField);
 
-        ImportField idAttachmentEmailField = new ImportField(LM.findProperty("idAttachmentEmail"));
+        ImportField idAttachmentEmailField = new ImportField(LM.findProperty("id[AttachmentEmail]"));
         ImportKey<?> attachmentEmailKey = new ImportKey((ConcreteCustomClass) LM.findClass("AttachmentEmail"),
-                LM.findProperty("attachmentEmailIdEmail").getMapping(idAttachmentEmailField, idEmailField));
+                LM.findProperty("attachmentEmail[VARSTRING[100],VARSTRING[100]]").getMapping(idAttachmentEmailField, idEmailField));
         keys.add(attachmentEmailKey);
-        props.add(new ImportProperty(idAttachmentEmailField, LM.findProperty("idAttachmentEmail").getMapping(attachmentEmailKey)));
-        props.add(new ImportProperty(idEmailField, LM.findProperty("emailAttachmentEmail").getMapping(attachmentEmailKey),
+        props.add(new ImportProperty(idAttachmentEmailField, LM.findProperty("id[AttachmentEmail]").getMapping(attachmentEmailKey)));
+        props.add(new ImportProperty(idEmailField, LM.findProperty("email[AttachmentEmail]").getMapping(attachmentEmailKey),
                 LM.object(LM.findClass("Email")).getMapping(emailKey)));
         fields.add(idAttachmentEmailField);
 
-        ImportField nameAttachmentEmailField = new ImportField(LM.findProperty("nameAttachmentEmail"));
-        props.add(new ImportProperty(nameAttachmentEmailField, LM.findProperty("nameAttachmentEmail").getMapping(attachmentEmailKey)));
+        ImportField nameAttachmentEmailField = new ImportField(LM.findProperty("name[AttachmentEmail]"));
+        props.add(new ImportProperty(nameAttachmentEmailField, LM.findProperty("name[AttachmentEmail]").getMapping(attachmentEmailKey)));
         fields.add(nameAttachmentEmailField);
 
-        ImportField fileAttachmentEmailField = new ImportField(LM.findProperty("fileAttachmentEmail"));
-        props.add(new ImportProperty(fileAttachmentEmailField, LM.findProperty("fileAttachmentEmail").getMapping(attachmentEmailKey)));
+        ImportField fileAttachmentEmailField = new ImportField(LM.findProperty("file[AttachmentEmail]"));
+        props.add(new ImportProperty(fileAttachmentEmailField, LM.findProperty("file[AttachmentEmail]").getMapping(attachmentEmailKey)));
         fields.add(fileAttachmentEmailField);
 
         ImportTable table = new ImportTable(fields, data);

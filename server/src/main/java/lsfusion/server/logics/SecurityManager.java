@@ -540,7 +540,7 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
             ObjectValue defaultForms = securityLM.defaultFormsUser.readClasses(session, user);
             if (defaultForms instanceof NullValue) return DefaultFormsType.NONE;
             else {
-                String name = (String) LM.findProperty("staticName").read(session, defaultForms);
+                String name = (String) LM.findProperty("staticName[Object]").read(session, defaultForms);
                 if (name.contains("default"))
                     return DefaultFormsType.DEFAULT;
                 else if (name.contains("restore"))
@@ -557,10 +557,10 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
             KeyExpr navigatorElementExpr = new KeyExpr("navigatorElement");
             ImRevMap<Object, KeyExpr> keys = MapFact.singletonRev((Object) "navigatorElement", navigatorElementExpr);
             QueryBuilder<Object, Object> query = new QueryBuilder<>(keys);
-            query.addProperty("canonicalNameNavigatorElement", securityLM.findProperty("canonicalNameNavigatorElement").getExpr(navigatorElementExpr));
-            query.addProperty("overDefaultNumberUserNavigatorElement", securityLM.findProperty("overDefaultNumberUserNavigatorElement").getExpr(user.getExpr(), navigatorElementExpr));
-            query.and(securityLM.findProperty("overDefaultNumberUserNavigatorElement").getExpr(user.getExpr(), navigatorElementExpr).getWhere());
-            query.and(securityLM.findProperty("canonicalNameNavigatorElement").getExpr(navigatorElementExpr).getWhere());
+            query.addProperty("canonicalNameNavigatorElement", securityLM.findProperty("canonicalName[NavigatorElement]").getExpr(navigatorElementExpr));
+            query.addProperty("overDefaultNumberUserNavigatorElement", securityLM.findProperty("overDefaultNumber[User,NavigatorElement]").getExpr(user.getExpr(), navigatorElementExpr));
+            query.and(securityLM.findProperty("overDefaultNumber[User,NavigatorElement]").getExpr(user.getExpr(), navigatorElementExpr).getWhere());
+            query.and(securityLM.findProperty("canonicalName[NavigatorElement]").getExpr(navigatorElementExpr).getWhere());
 
             Map<String, Integer> defaultFormsMap = new HashMap<>();
             ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> result = query.execute(session);

@@ -37,8 +37,8 @@ public class SaveReflectionPropertyActionProperty extends ScriptingActionPropert
 
             DataObject reflectionPropertyObject = context.getDataKeyValue(reflectionPropertyInterface);
 
-            String nameReflectionProperty = trimToNull((String) findProperty("nameReflectionProperty").read(context, reflectionPropertyObject));
-            String valueReflectionProperty = trimToNull((String) findProperty("valueReflectionProperty").read(context, reflectionPropertyObject));
+            String nameReflectionProperty = trimToNull((String) findProperty("name[ReflectionProperty]").read(context, reflectionPropertyObject));
+            String valueReflectionProperty = trimToNull((String) findProperty("value[ReflectionProperty]").read(context, reflectionPropertyObject));
 
             if(nameReflectionProperty != null && valueReflectionProperty != null) {
                 

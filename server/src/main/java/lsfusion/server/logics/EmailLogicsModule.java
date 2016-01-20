@@ -79,38 +79,38 @@ public class EmailLogicsModule extends ScriptingLogicsModule{
         // ------- Управление почтой ------ //
 
         // Настройки почтового сервера
-        defaultInboxAccount = findProperty("defaultInboxAccount");
+        defaultInboxAccount = findProperty("defaultInboxAccount[]");
         
-        nameEncryptedConnectionTypeAccount = findProperty("nameEncryptedConnectionTypeAccount");
+        nameEncryptedConnectionTypeAccount = findProperty("nameEncryptedConnectionType[Account]");
 
-        smtpHostAccount = findProperty("smtpHostAccount");
-        smtpPortAccount = findProperty("smtpPortAccount");
-        receiveHostAccount = findProperty("receiveHostAccount");
-        receivePortAccount = findProperty("receivePortAccount");
+        smtpHostAccount = findProperty("smtpHost[Account]");
+        smtpPortAccount = findProperty("smtpPort[Account]");
+        receiveHostAccount = findProperty("receiveHost[Account]");
+        receivePortAccount = findProperty("receivePort[Account]");
 
-        nameAccount = findProperty("nameAccount");
-        passwordAccount = findProperty("passwordAccount");
-        nameReceiveAccountTypeAccount = findProperty("nameReceiveAccountTypeAccount");
-        deleteMessagesAccount = findProperty("deleteMessagesAccount");
-        lastDaysAccount = findProperty("lastDaysAccount");
-        blindCarbonCopyAccount = findProperty("blindCarbonCopyAccount");
+        nameAccount = findProperty("name[Account]");
+        passwordAccount = findProperty("password[Account]");
+        nameReceiveAccountTypeAccount = findProperty("nameReceiveAccountType[Account]");
+        deleteMessagesAccount = findProperty("deleteMessages[Account]");
+        lastDaysAccount = findProperty("lastDays[Account]");
+        blindCarbonCopyAccount = findProperty("blindCarbonCopy[Account]");
 
-        disableAccount = findProperty("disableAccount");
-        enableAccount = findProperty("enableAccount");
+        disableAccount = findProperty("disable[Account]");
+        enableAccount = findProperty("enable[Account]");
 
-        emailUserPassUser = findAction("emailUserPassUser");      
+        emailUserPassUser = findAction("emailUserPass[Contact]");
         
         // Уведомления
-        isEventNotification = findProperty("isEventNotification");
-        emailFromNotification = findProperty("emailFromNotification");
-        emailToNotification = findProperty("emailToNotification");
-        emailToCCNotification = findProperty("emailToCCNotification");
-        emailToBCNotification = findProperty("emailToBCNotification");
-        textNotification = findProperty("textNotification");
-        subjectNotification = findProperty("subjectNotification");
-        inNotificationProperty = findProperty("inNotificationProperty");
+        isEventNotification = findProperty("isEvent[Notification]");
+        emailFromNotification = findProperty("emailFrom[Notification]");
+        emailToNotification = findProperty("emailTo[Notification]");
+        emailToCCNotification = findProperty("emailToCC[Notification]");
+        emailToBCNotification = findProperty("emailToBC[Notification]");
+        textNotification = findProperty("text[Notification]");
+        subjectNotification = findProperty("subject[Notification]");
+        inNotificationProperty = findProperty("in[Notification,Property]");
 
-        fromAddressAccount = findProperty("fromAddressAccount");
+        fromAddressAccount = findProperty("fromAddress[Account]");
     }
 
     public LAP addEAProp(ValueClass... params) throws ScriptingErrorLog.SemanticErrorException {
@@ -122,7 +122,7 @@ public class EmailLogicsModule extends ScriptingLogicsModule{
     }
 
     public LAP addEAProp(String subject, ValueClass... params) throws ScriptingErrorLog.SemanticErrorException {
-        return addEAProp(subject, findProperty("fromAddressAccount"), blindCarbonCopyAccount, params);
+        return addEAProp(subject, findProperty("fromAddress[Account]"), blindCarbonCopyAccount, params);
     }
 
     public LAP addEAProp(LCP fromAddressAccount, LCP blindCarbonCopyAccount, ValueClass... params) {

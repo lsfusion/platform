@@ -239,7 +239,7 @@ public class EmailSender {
         } finally {
             try {
                 if (context != null) {
-                    LCP emailSent = context.getBL().emailLM.findProperty("emailSent");
+                    LCP emailSent = context.getBL().emailLM.findProperty("emailSent[]");
                     if(emailSent != null)
                         emailSent.change(send ? true : null, context.getSession());
                 }
@@ -269,7 +269,7 @@ public class EmailSender {
     }
 
     private void sendMail(final ExecutionContext context, final SMTPMessage message, final String subject) throws ScriptingErrorLog.SemanticErrorException {
-        final LCP emailSent = context == null ? null : context.getBL().emailLM.findProperty("emailSent");
+        final LCP emailSent = context == null ? null : context.getBL().emailLM.findProperty("emailSent[]");
 
         new Thread() {
             public void run() {

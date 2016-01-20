@@ -13,13 +13,13 @@ currentHour = NATIVE INTEGER ();
 currentEpoch = NATIVE LONG ();
 
 currentDate 'Тек. дата' = DATA DATE ();
-dateDiffersCurrent(date) = date IS DATE AND date != currentDate();
+dateDiffersCurrent(DATE date) = date IS DATE AND date != currentDate();
 
 currentYear 'Тек. год' = extractYear (currentDate());
 
-toDate(dateTime) = DATE(dateTime AS DATETIME);
-toTime(dateTime) = TIME(dateTime AS DATETIME);
-toDateTime(date) = DATETIME(date AS DATE);
+toDate(DATETIME dateTime) = DATE(dateTime AS DATETIME);
+toTime(DATETIME dateTime) = TIME(dateTime AS DATETIME);
+toDateTime(DATE date) = DATETIME(date AS DATE);
 
 toDateFormat = FORMULA DATE 'to_date($1,$2)';
 
@@ -28,35 +28,35 @@ toDateDDMMYYYY = FORMULA VARSTRING[10] 'to_char(($1),\'DD.MM.YYYY\')';
 
 currentTime 'Тек. время' = toTime(currentDateTime());
 
-sumDate(date, days) = [= FORMULA DATE PG '(($1)+($2))', MS 'DATEADD(dd, $2, $1)'](date AS DATE, days AS LONG);
-sumDateMonth (date, months) = FORMULA DATE PG '(CAST(($1) AS date) + ($2)*(interval \'1 month\'))', MS 'DATEADD(mm, $2, $1)';
-sumDateYear (date, months) = FORMULA DATE PG '(CAST(($1) AS date) + ($2)*(interval \'1 year\'))', MS 'DATEADD(yy, $2, $1)';
+sum(DATE date, LONG days) = [= FORMULA DATE PG '(($1)+($2))', MS 'DATEADD(dd, $2, $1)'](date AS DATE, days AS LONG);
+sumMonth (date, months) = FORMULA DATE PG '(CAST(($1) AS date) + ($2)*(interval \'1 month\'))', MS 'DATEADD(mm, $2, $1)';
+sumYear (date, months) = FORMULA DATE PG '(CAST(($1) AS date) + ($2)*(interval \'1 year\'))', MS 'DATEADD(yy, $2, $1)';
 
-iterateDate(dt, from, to) = RECURSION dt==from AND from IS DATE AND to IS DATE STEP dt==sumDate($dt, 1) AND dt<=to CYCLES IMPOSSIBLE;
+iterate(DATE dt, DATE from, DATE to) = RECURSION dt==from AND from IS DATE AND to IS DATE STEP dt==sum($dt, 1) AND dt<=to CYCLES IMPOSSIBLE;
 
-firstDayOfMonth (date) = [= FORMULA DATE PG '(date_trunc(\'MONTH\', $1)::date)', MS 'DATEADD(month, DATEDIFF(month, 0, $1), 0)'](date AS DATE);
-lastDayOfMonth (date) = [= FORMULA DATE PG '((date_trunc(\'MONTH\', $1) + INTERVAL \'1 MONTH - 1 day\')::date)', MS 'DATEADD(s,-1,DATEADD(mm, DATEDIFF(m,0,$1)+1,0))'](date AS DATE);
+firstDayOfMonth (DATE date) = [= FORMULA DATE PG '(date_trunc(\'MONTH\', $1)::date)', MS 'DATEADD(month, DATEDIFF(month, 0, $1), 0)'](date AS DATE);
+lastDayOfMonth (DATE date) = [= FORMULA DATE PG '((date_trunc(\'MONTH\', $1) + INTERVAL \'1 MONTH - 1 day\')::date)', MS 'DATEADD(s,-1,DATEADD(mm, DATEDIFF(m,0,$1)+1,0))'](date AS DATE);
 
-subtractDate(date, days) = [= FORMULA DATE PG '(($1)-($2))', MS 'DATEADD(dd, -($2), $1)'](date AS DATE, days AS LONG);
+subtract(DATE date, LONG days) = [= FORMULA DATE PG '(($1)-($2))', MS 'DATEADD(dd, -($2), $1)'](date AS DATE, days AS LONG);
 
-sumTimeSeconds(time, secs) = [= FORMULA TIME PG '(($1)+($2)*CAST(\'1 seconds\' AS INTERVAL))', MS 'DATEADD(ss, $2, $1)'](time AS TIME, secs AS LONG);
-sumTimeMinutes(time, mins) = [= FORMULA TIME PG '(($1)+($2)*CAST(\'1 minutes\' AS INTERVAL))', MS 'DATEADD(mm, $2, $1)'](time AS TIME, mins AS LONG);
+sumSeconds(TIME time, LONG secs) = [= FORMULA TIME PG '(($1)+($2)*CAST(\'1 seconds\' AS INTERVAL))', MS 'DATEADD(ss, $2, $1)'](time AS TIME, secs AS LONG);
+sumMinutes(TIME time, LONG mins) = [= FORMULA TIME PG '(($1)+($2)*CAST(\'1 minutes\' AS INTERVAL))', MS 'DATEADD(mm, $2, $1)'](time AS TIME, mins AS LONG);
 
-sumDateTimeDay(dateTime, days) = [= FORMULA DATETIME PG '(($1)+($2)*CAST(\'1 days\' AS INTERVAL))', MS 'DATEADD(dd, $2, $1)'](dateTime AS DATETIME, days AS LONG);
-sumDateTimeMinutes(dateTime, mins) = [= FORMULA DATETIME PG '(($1)+($2)*CAST(\'1 minutes\' AS INTERVAL))', MS 'DATEADD(mm, $2, $1)'](dateTime AS DATETIME, mins AS LONG);
-sumDateTimeSeconds(dateTime, secs) = [= FORMULA DATETIME PG '(($1)+($2)*CAST(\'1 seconds\' AS INTERVAL))', MS 'DATEADD(ss, $2, $1)'](dateTime AS DATETIME, secs AS LONG);
+sumDay(DATETIME dateTime, LONG days) = [= FORMULA DATETIME PG '(($1)+($2)*CAST(\'1 days\' AS INTERVAL))', MS 'DATEADD(dd, $2, $1)'](dateTime AS DATETIME, days AS LONG);
+sumMinutes(DATETIME dateTime, LONG mins) = [= FORMULA DATETIME PG '(($1)+($2)*CAST(\'1 minutes\' AS INTERVAL))', MS 'DATEADD(mm, $2, $1)'](dateTime AS DATETIME, mins AS LONG);
+sumSeconds(DATETIME dateTime, LONG secs) = [= FORMULA DATETIME PG '(($1)+($2)*CAST(\'1 seconds\' AS INTERVAL))', MS 'DATEADD(ss, $2, $1)'](dateTime AS DATETIME, secs AS LONG);
 
-subtractDateTimeSeconds(dateTime, secs) = [= FORMULA DATETIME PG '(($1)-($2)*CAST(\'1 seconds\' AS INTERVAL))', MS 'DATEADD(ss, -($2), $1)'](dateTime AS DATETIME, secs AS LONG);
+subtractSeconds(DATETIME dateTime, LONG secs) = [= FORMULA DATETIME PG '(($1)-($2)*CAST(\'1 seconds\' AS INTERVAL))', MS 'DATEADD(ss, -($2), $1)'](dateTime AS DATETIME, secs AS LONG);
 
-subtractDateTimeDay(dateTime, days) = [= FORMULA DATETIME PG '(($1)-($2)*CAST(\'1 days\' AS INTERVAL))', MS 'DATEADD(dd, -($2), $1)'](dateTime AS DATETIME, days AS LONG);
+subtractDay(DATETIME dateTime, LONG days) = [= FORMULA DATETIME PG '(($1)-($2)*CAST(\'1 days\' AS INTERVAL))', MS 'DATEADD(dd, -($2), $1)'](dateTime AS DATETIME, days AS LONG);
 
 dateTimeToDateTime = FORMULA DATETIME PG 'to_timestamp(CAST($1 as char(10)) || CAST($2 as char(12)), \'YYYY-MM-DDHH24:MI:SS.MS\')',
                                       MS 'CAST($1 AS DATETIME) + CAST($2 AS DATETIME)';
 
-daysInclBetweenDates (date1, date2) = subtractInteger(date2, date1) + 1;
+daysInclBetweenDates (DATE date1, DATE date2) = subtractInteger(date2, date1) + 1;
 
-sumDateWeekFrom (date, int) = sumDate(date, int * 7) IF date IS DATE AND int IS INTEGER;
-sumDateWeekTo (date, int) = sumDate(date, int * 7 + 6) IF date IS DATE AND int IS INTEGER;
+sumWeekFrom (DATE date, INTEGER int) = sum(date, int * 7) IF date IS DATE AND int IS INTEGER;
+sumWeekTo (DATE date, INTEGER int) = sum(date, int * 7 + 6) IF date IS DATE AND int IS INTEGER;
 
 // --------------------------------- Месяца ------------------------ //
 
@@ -77,34 +77,34 @@ CLASS Month 'Месяц' {
 
 TABLE month (Month);
 
-numberMonth 'Номер месяца' = DATA INTEGER (Month);
+number 'Номер месяца' = DATA INTEGER (Month);
 onStarted() += ACTION (){
-    numberMonth(d) <- 1 WHERE d == Month.january; 
-    numberMonth(d) <- 2 WHERE d == Month.february; 
-    numberMonth(d) <- 3 WHERE d == Month.march; 
-    numberMonth(d) <- 4 WHERE d == Month.april; 
-    numberMonth(d) <- 5 WHERE d == Month.may; 
-    numberMonth(d) <- 6 WHERE d == Month.june; 
-    numberMonth(d) <- 7 WHERE d == Month.july; 
-    numberMonth(d) <- 8 WHERE d == Month.august; 
-    numberMonth(d) <- 9 WHERE d == Month.september; 
-    numberMonth(d) <- 10 WHERE d == Month.october; 
-    numberMonth(d) <- 11 WHERE d == Month.november; 
-    numberMonth(d) <- 12 WHERE d == Month.december; 
+    number(Month d) <- 1 WHERE d == Month.january; 
+    number(Month d) <- 2 WHERE d == Month.february; 
+    number(Month d) <- 3 WHERE d == Month.march; 
+    number(Month d) <- 4 WHERE d == Month.april; 
+    number(Month d) <- 5 WHERE d == Month.may; 
+    number(Month d) <- 6 WHERE d == Month.june; 
+    number(Month d) <- 7 WHERE d == Month.july; 
+    number(Month d) <- 8 WHERE d == Month.august; 
+    number(Month d) <- 9 WHERE d == Month.september; 
+    number(Month d) <- 10 WHERE d == Month.october; 
+    number(Month d) <- 11 WHERE d == Month.november; 
+    number(Month d) <- 12 WHERE d == Month.december; 
 }
 
-monthNumber 'Месяц (ИД)' (number) = GROUP AGGR month BY numberMonth(month);
+month 'Месяц (ИД)' (number) = GROUP AGGR Month month BY number(month);
 
-extractMonthNumber = [= FORMULA INTEGER PG '(extract(month from ($1)))', MS 'DATEPART(mm, $1)'](date AS DATE);
-extractMonth 'Месяц (ИД)' (date) = monthNumber(extractMonthNumber(date));
-extractMonthName 'Месяц' (date) = staticCaption(extractMonth(date));
+extractMonthNumber = [= FORMULA INTEGER PG '(extract(month from ($1)))', MS 'DATEPART(mm, $1)'](DATE date AS DATE);
+extractMonth 'Месяц (ИД)' (DATE date) = month(extractMonthNumber(date));
+extractMonthName 'Месяц' (DATE date) = staticCaption(extractMonth(date));
 
 currentMonth 'Тек. месяц' = extractMonthNumber (currentDate());
 
 FORM months 'Месяца'
     OBJECTS m = Month
-    PROPERTIES(m) staticCaption, numberMonth
-    ORDER BY numberMonth(m)
+    PROPERTIES(m) staticCaption, number
+    ORDER BY number(m)
     DIALOG Month OBJECT m
 ;
 
@@ -121,28 +121,28 @@ CLASS DOW 'День недели' {
 }
 TABLE dow (DOW);
 
-numberDOW 'Номер дня недели' = DATA INTEGER (DOW);
+number 'Номер дня недели' = DATA INTEGER (DOW);
 onStarted() += ACTION (){
-    numberDOW(d) <- 0 WHERE d == DOW.sunday; 
-    numberDOW(d) <- 1 WHERE d == DOW.monday; 
-    numberDOW(d) <- 2 WHERE d == DOW.tuesday; 
-    numberDOW(d) <- 3 WHERE d == DOW.wednesday; 
-    numberDOW(d) <- 4 WHERE d == DOW.thursday; 
-    numberDOW(d) <- 5 WHERE d == DOW.friday; 
-    numberDOW(d) <- 6 WHERE d == DOW.saturday; 
+    number(DOW d) <- 0 WHERE d == DOW.sunday; 
+    number(DOW d) <- 1 WHERE d == DOW.monday; 
+    number(DOW d) <- 2 WHERE d == DOW.tuesday; 
+    number(DOW d) <- 3 WHERE d == DOW.wednesday; 
+    number(DOW d) <- 4 WHERE d == DOW.thursday; 
+    number(DOW d) <- 5 WHERE d == DOW.friday; 
+    number(DOW d) <- 6 WHERE d == DOW.saturday; 
 }
 
 FORM DOWs 'Дни недели'
     OBJECTS d = DOW
-    PROPERTIES(d) READONLY staticCaption, numberDOW
-    ORDER BY numberDOW(d)
+    PROPERTIES(d) READONLY staticCaption, number
+    ORDER BY number(d)
     DIALOG DOW OBJECT d
 ;
 
-DOWNumber 'День недели (ИД)' (number) = GROUP AGGR dow BY numberDOW(dow);
+DOW 'День недели (ИД)' (number) = GROUP AGGR DOW dow BY number(dow);
 
-extractDOWNumber = [= FORMULA INTEGER PG '(extract(dow from ($1)))', MS '(DATEPART(dw, $1)-1)'](date AS DATE);
-extractDOW 'День недели (ИД)' (date) = DOWNumber(extractDOWNumber(date));
-extractDOWName 'День недели' (date) = staticCaption(extractDOW(date));
+extractDOWNumber = [= FORMULA INTEGER PG '(extract(dow from ($1)))', MS '(DATEPART(dw, $1)-1)'](DATE date AS DATE);
+extractDOW 'День недели (ИД)' (DATE date) = DOW(extractDOWNumber(date));
+extractDOWName 'День недели' (DATE date) = staticCaption(extractDOW(date));
 
-distanceDOWDOW (d1, d2) = (numberDOW(d2) - numberDOW(d1)) (+) (7 IF numberDOW(d2) < numberDOW(d1));     
+distanceDOWDOW (DOW d1, DOW d2) = (number(d2) - number(d1)) (+) (7 IF number(d2) < number(d1));     

@@ -15,13 +15,13 @@ javaActionBodyExecution 'Выполнить Java-код' () = ACTION EVAL CONCAT
 CLASS Script 'Скрипт';
 TABLE script(Script);
 
-nameScript 'Наименование' = DATA VARSTRING[100] (Script);
-textScript 'Текст' = DATA TEXT (Script);
-countTextScript() = GROUP MAX script IF textScript(script) == scriptStorage(); 
-dateTimeScript 'Дата запуска' = DATA DATETIME (Script);
+name 'Наименование' = DATA VARSTRING[100] (Script);
+text 'Текст' = DATA TEXT (Script);
+countTextScript() = GROUP MAX Script script IF text(script) == scriptStorage(); 
+dateTime 'Дата запуска' = DATA DATETIME (Script);
 
-updateScriptStorage(script) = ACTION {
-    scriptStorage() <- textScript(script);
+updateStorage(Script script) = ACTION {
+    scriptStorage() <- text(script);
 }
 
 FORM chooseScriptName 'Сохранить как'
@@ -45,53 +45,53 @@ saveAsScriptAction 'Сохранить как' = ACTION () {
     FORM chooseScriptName MODAL;
     IF formResult() == FormResult.ok THEN {
         FOR ADDOBJ s = Script DO {
-        nameScript(s) <- chosenString('name');
-        textScript(s) <- scriptStorage();
-        dateTimeScript(s) <- currentDateTime();
+        name(s) <- chosenString('name');
+        text(s) <- scriptStorage();
+        dateTime(s) <- currentDateTime();
         }
     }
 }
 
-saveScriptAction 'Сохранить' = ACTION (script) {
-    textScript(script) <- scriptStorage();
-    dateTimeScript(script) <- currentDateTime();
+saveAction 'Сохранить' = ACTION (Script script) {
+    text(script) <- scriptStorage();
+    dateTime(script) <- currentDateTime();
 }
 
 // Универсальная таблица для последующего импорта
 CLASS Row 'Ряд';
 TABLE row(Row);
 
-string1Row 'Строка 1' = DATA VARSTRING[1000] (Row) MINCHARWIDTH 10 PREFCHARWIDTH 20;
-string2Row 'Строка 2' = DATA VARSTRING[1000] (Row) MINCHARWIDTH 10 PREFCHARWIDTH 20;
-string3Row 'Строка 3' = DATA VARSTRING[1000] (Row) MINCHARWIDTH 10 PREFCHARWIDTH 20;
-string4Row 'Строка 4' = DATA VARSTRING[1000] (Row) MINCHARWIDTH 10 PREFCHARWIDTH 20;
-string5Row 'Строка 5' = DATA VARSTRING[1000] (Row) MINCHARWIDTH 10 PREFCHARWIDTH 20;
-string6Row 'Строка 6' = DATA VARSTRING[1000] (Row) MINCHARWIDTH 10 PREFCHARWIDTH 20;
-string7Row 'Строка 7' = DATA VARSTRING[1000] (Row) MINCHARWIDTH 10 PREFCHARWIDTH 20;
-string8Row 'Строка 8' = DATA VARSTRING[1000] (Row) MINCHARWIDTH 10 PREFCHARWIDTH 20;
-string9Row 'Строка 9' = DATA VARSTRING[1000] (Row) MINCHARWIDTH 10 PREFCHARWIDTH 20;
-string10Row 'Строка 10' = DATA VARSTRING[1000] (Row) MINCHARWIDTH 10 PREFCHARWIDTH 20;
+string1 'Строка 1' = DATA VARSTRING[1000] (Row) MINCHARWIDTH 10 PREFCHARWIDTH 20;
+string2 'Строка 2' = DATA VARSTRING[1000] (Row) MINCHARWIDTH 10 PREFCHARWIDTH 20;
+string3 'Строка 3' = DATA VARSTRING[1000] (Row) MINCHARWIDTH 10 PREFCHARWIDTH 20;
+string4 'Строка 4' = DATA VARSTRING[1000] (Row) MINCHARWIDTH 10 PREFCHARWIDTH 20;
+string5 'Строка 5' = DATA VARSTRING[1000] (Row) MINCHARWIDTH 10 PREFCHARWIDTH 20;
+string6 'Строка 6' = DATA VARSTRING[1000] (Row) MINCHARWIDTH 10 PREFCHARWIDTH 20;
+string7 'Строка 7' = DATA VARSTRING[1000] (Row) MINCHARWIDTH 10 PREFCHARWIDTH 20;
+string8 'Строка 8' = DATA VARSTRING[1000] (Row) MINCHARWIDTH 10 PREFCHARWIDTH 20;
+string9 'Строка 9' = DATA VARSTRING[1000] (Row) MINCHARWIDTH 10 PREFCHARWIDTH 20;
+string10 'Строка 10' = DATA VARSTRING[1000] (Row) MINCHARWIDTH 10 PREFCHARWIDTH 20;
 
-numeric1Row 'Число 1' = DATA NUMERIC[20,7] (Row);
-numeric2Row 'Число 2' = DATA NUMERIC[20,7] (Row);
-numeric3Row 'Число 3' = DATA NUMERIC[20,7] (Row);
-numeric4Row 'Число 4' = DATA NUMERIC[20,7] (Row);
-numeric5Row 'Число 5' = DATA NUMERIC[20,7] (Row);
+numeric1 'Число 1' = DATA NUMERIC[20,7] (Row);
+numeric2 'Число 2' = DATA NUMERIC[20,7] (Row);
+numeric3 'Число 3' = DATA NUMERIC[20,7] (Row);
+numeric4 'Число 4' = DATA NUMERIC[20,7] (Row);
+numeric5 'Число 5' = DATA NUMERIC[20,7] (Row);
 
-date1Row 'Дата 1' = DATA DATE (Row);
-date2Row 'Дата 2' = DATA DATE (Row);
-date3Row 'Дата 3' = DATA DATE (Row);
+date1 'Дата 1' = DATA DATE (Row);
+date2 'Дата 2' = DATA DATE (Row);
+date3 'Дата 3' = DATA DATE (Row);
 
 FORM script 'Скрипт'
     OBJECTS s = Script FIXED PANEL
-    PROPERTIES(s) nameScript SELECTOR EVENTS ON CHANGE s updateScriptStorage(s) 
+    PROPERTIES(s) name SELECTOR EVENTS ON CHANGE s updateStorage(s) 
     PROPERTIES() scriptStorage,
                  scriptExecution, actionBodyExecution, formExecution, javaActionBodyExecution, saveAsScriptAction
-    PROPERTIES(s) saveScriptAction
+    PROPERTIES(s) saveAction
                  
     OBJECTS r = Row FIXED GRID
-    PROPERTIES(r) string1Row, string2Row, string3Row, string4Row, string5Row, string6Row, string7Row, string8Row, string9Row, string10Row 
-    PROPERTIES(r) numeric1Row, numeric2Row, numeric3Row, numeric4Row, numeric5Row, date1Row, date2Row, date3Row
+    PROPERTIES(r) string1, string2, string3, string4, string5, string6, string7, string8, string9, string10 
+    PROPERTIES(r) numeric1, numeric2, numeric3, numeric4, numeric5, date1, date2, date3
     PROPERTIES(r) ADDOBJ, DELETESESSION
 ;
 
@@ -105,8 +105,8 @@ DESIGN script {
             NEW script {
                 caption = 'Сохранённые скрипты';
                 type = CONTAINERH;
-                MOVE PROPERTY(nameScript(s)) { font = 'bold 24'; alignment = STRETCH; }
-                MOVE PROPERTY(saveScriptAction(s)) { font = 'bold 24'; alignment = STRETCH; }
+                MOVE PROPERTY(name(s)) { font = 'bold 24'; alignment = STRETCH; }
+                MOVE PROPERTY(saveAction(s)) { font = 'bold 24'; alignment = STRETCH; }
                 MOVE PROPERTY(saveAsScriptAction()) { font = 'bold 24'; alignment = STRETCH; }
             }
             MOVE PROPERTY(scriptStorage()) {
@@ -131,7 +131,7 @@ DESIGN script {
 
 FORM scriptLog 'Скрипт'
     OBJECTS s = Script FIXED PANEL
-    PROPERTIES(s) nameScript, textScript, dateTimeScript
+    PROPERTIES(s) name, text, dateTime
 
     EDIT Script OBJECT s
 ;
@@ -139,11 +139,11 @@ FORM scriptLog 'Скрипт'
 FORM scriptsLog 'Скрипты'
     
     OBJECTS s=Script
-    PROPERTIES(s) nameScript, textScript READONLY, dateTimeScript READONLY 
+    PROPERTIES(s) name, text READONLY, dateTime READONLY 
     PROPERTIES(s) DELETE FORCE PANEL TOOLBAR
-    ORDER BY dateTimeScript(s) DESC
+    ORDER BY dateTime(s) DESC
 
-    FILTERGROUP user FILTER 'Только пользовательские' nameScript(s) 'F9'
+    FILTERGROUP user FILTER 'Только пользовательские' name(s) 'F9'
 
     DIALOG Script OBJECT s
 ;

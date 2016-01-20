@@ -7,32 +7,32 @@ REQUIRE System, Contact;
 CLASS Computer 'Рабочее место';
 TABLE computer (Computer);
 
-hostnameComputer 'Имя хоста' = DATA VARISTRING[100] (Computer) IN recognize;
+hostname 'Имя хоста' = DATA VARISTRING[100] (Computer) IN recognize;
 
 // Сканер
-scannerComPortComputer 'Com-port' = DATA INTEGER (Computer);
-scannerSingleReadComputer 'Одно событие на весь штрих-код' = DATA BOOLEAN (Computer);
+scannerComPort 'Com-port' = DATA INTEGER (Computer);
+scannerSingleRead 'Одно событие на весь штрих-код' = DATA BOOLEAN (Computer);
 
 //Считыватель дисконтных карт
-useDiscountCardReaderComputer 'Включить считыватель дисконтных карт' = DATA BOOLEAN (Computer);
+useDiscountCardReader 'Включить считыватель дисконтных карт' = DATA BOOLEAN (Computer);
 
 FORM computer 'Рабочее место'
     OBJECTS c = Computer FIXED PANEL
-    PROPERTIES(c) hostnameComputer, scannerComPortComputer, scannerSingleReadComputer, useDiscountCardReaderComputer
+    PROPERTIES(c) hostname, scannerComPort, scannerSingleRead, useDiscountCardReader
     
     EDIT Computer OBJECT c
 ;
 
 FORM computers 'Рабочие места'
     OBJECTS c = Computer
-    PROPERTIES(c) READONLY hostnameComputer, scannerComPortComputer, scannerSingleReadComputer, useDiscountCardReaderComputer
+    PROPERTIES(c) READONLY hostname, scannerComPort, scannerSingleRead, useDiscountCardReader
     PROPERTIES(c) ADDFORM, EDITFORM, DELETE
 ;
 
 FORM computersDialog 'Рабочие места'
     OBJECTS c = Computer
     
-    PROPERTIES(c) READONLY hostnameComputer, scannerComPortComputer, scannerSingleReadComputer, useDiscountCardReaderComputer
+    PROPERTIES(c) READONLY hostname, scannerComPort, scannerSingleRead, useDiscountCardReader
     PROPERTIES(c) ADDFORM, EDITFORM, DELETE FORCE PANEL TOOLBAR
     
     DIALOG Computer OBJECT c     
@@ -50,38 +50,38 @@ TABLE customUser (CustomUser);
 TABLE loginSID (STRING[30], STRING[30]);
 
 currentUser = NATIVE User ();
-currentUserName 'Имя Тек. Польз.' () = nameContact(currentUser());
+currentUserName 'Имя Тек. Польз.' () = name[Contact](currentUser());
 
-nameUser 'Имя пользователя' (User user) = IF user IS SystemUser 
+name 'Имя пользователя' (User user) = IF user IS SystemUser 
                         THEN 'Системный пользователь'
-                        ELSE nameContact(user);
-nameCustomUser (user) = nameUser(user AS CustomUser);
+                        ELSE name[Contact](user);
+name (CustomUser user) = name[User](user AS CustomUser);
 
 currentComputer = NATIVE Computer ();
-hostnameCurrentComputer 'Текущий компьютер' () = hostnameComputer(currentComputer());
+hostnameCurrentComputer 'Текущий компьютер' () = hostname(currentComputer());
 
-isLockedCustomUser 'Заблокирован' = DATA BOOLEAN (CustomUser);
-loginCustomUser 'Логин' = DATA STRING[30] (CustomUser);
-customUserLogin 'Обычный пользователь' (login) = GROUP AGGR customUser BY loginCustomUser(customUser) WHERE customUser IS CustomUser;
-upcaseLoginCustomUser 'Логин в верхнем регистре' (customUser) = upper(loginCustomUser(customUser));
-customUserUpcaseLogin 'Обычный пользователь' (login) = GROUP MAX customUser BY upcaseLoginCustomUser(customUser);
-sha256PasswordCustomUser 'Пароль' = DATA VARSTRING[100] (CustomUser) ECHO;
+isLocked 'Заблокирован' = DATA BOOLEAN (CustomUser);
+login 'Логин' = DATA STRING[30] (CustomUser);
+customUser 'Обычный пользователь' (login) = GROUP AGGR CustomUser customUser BY login(customUser) WHERE customUser IS CustomUser;
+upcaseLogin 'Логин в верхнем регистре' (CustomUser customUser) = upper(login(customUser));
+customUserUpcase 'Обычный пользователь' (login) = GROUP MAX CustomUser customUser BY upcaseLogin(customUser);
+sha256Password 'Пароль' = DATA VARSTRING[100] (CustomUser) ECHO;
 calculatedHash 'Значение хэш' = DATA LOCAL VARSTRING[100] ();
-forbidChangePasswordCustomUser 'Запретить пользователю изменять пароль' = DATA BOOLEAN (CustomUser);
-forbidEditProfileCustomUser 'Запретить пользователю редактировать профиль' = DATA BOOLEAN (CustomUser);
+forbidChangePassword 'Запретить пользователю изменять пароль' = DATA BOOLEAN (CustomUser);
+forbidEditProfile 'Запретить пользователю редактировать профиль' = DATA BOOLEAN (CustomUser);
 
-lastActivityCustomUser 'Последняя активность' = DATA DATETIME (CustomUser);
-ignorePrintTypeCustomUser 'Открывать печатные формы в интерактивном режиме' = DATA BOOLEAN (User);
-ignorePrintType() += ignorePrintTypeCustomUser(currentUser());
+lastActivity 'Последняя активность' = DATA DATETIME (CustomUser);
+ignorePrintTypeCustom 'Открывать печатные формы в интерактивном режиме' = DATA BOOLEAN (User);
+ignorePrintType() += ignorePrintTypeCustom(currentUser());
 
 calculateBase64Hash 'Вычислить Base64 хэш' = ACTION CUSTOM 'lsfusion.server.logics.authentication.CalculateBase64HashActionProperty' (STRING[10], STRING[30]);
 logOut 'Выйти' = ACTION CUSTOM 'lsfusion.server.logics.authentication.LogOutActionProperty' ();
-reloginUser 'Сменить пользователя' = ACTION CUSTOM 'lsfusion.server.logics.authentication.ReloginUserActionProperty' (CustomUser);
+relogin 'Сменить пользователя' = ACTION CUSTOM 'lsfusion.server.logics.authentication.ReloginUserActionProperty' (CustomUser);
 
 generateLoginPassword 'Сгенерировать логин и пароль' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.GenerateLoginPasswordActionProperty' (CustomUser);
 
-restartCustomUser 'Переподключить' = ACTION CUSTOM 'lsfusion.server.logics.authentication.RestartCustomUserActionProperty' (CustomUser) CONFIRM;
-shutdownCustomUser 'Отключить' = ACTION CUSTOM 'lsfusion.server.logics.authentication.ShutdownCustomUserActionProperty' (CustomUser) CONFIRM;
+restart 'Переподключить' = ACTION CUSTOM 'lsfusion.server.logics.authentication.RestartCustomUserActionProperty' (CustomUser) CONFIRM;
+shutdown 'Отключить' = ACTION CUSTOM 'lsfusion.server.logics.authentication.ShutdownCustomUserActionProperty' (CustomUser) CONFIRM;
 
 useLDAP 'Использовать LDAP аутентификацию' = DATA BOOLEAN ();
 serverLDAP 'Сервер' = DATA VARSTRING[100] ();
@@ -92,7 +92,7 @@ userDNSuffixLDAP 'Суффикс для User DN' = DATA VARSTRING[100] ();
 locked = DATA User (Object);
 lockResult = DATA LOCAL NESTED BOOLEAN ();
 
-lock(object) = ACTION NEWSESSION {    
+lock(Object object) = ACTION NEWSESSION {    
     lockResult() <- NULL;
     APPLY SERIALIZABLE {
         IF NOT object THEN
@@ -106,21 +106,21 @@ lock(object) = ACTION NEWSESSION {
     }
 }
 
-unlock(object) = ACTION NEWSESSION { 
+unlock(Object object) = ACTION NEWSESSION { 
     APPLY locked(object) <- NULL;
 }
 
-changeSHA256PasswordCustomUser = ACTION(customUser) {
+changeSHA256Password = ACTION(CustomUser customUser) {
     REQUEST STRING[30] INPUT;
     EXEC calculateBase64Hash('SHA-256', requestedString());
-    ASSIGN sha256PasswordCustomUser(customUser) <- calculatedHash();
+    ASSIGN sha256Password(customUser) <- calculatedHash();
 }
 
 FORM customUser 'Пользователь'
     OBJECTS u=CustomUser FIXED PANEL
-    PROPERTIES(u) firstNameContact, lastNameContact, loginCustomUser,
-    sha256PasswordCustomUser ON CHANGE changeSHA256PasswordCustomUser(u), emailContact,
-    forbidChangePasswordCustomUser, forbidEditProfileCustomUser, isLockedCustomUser, lastActivityCustomUser, ignorePrintTypeCustomUser
+    PROPERTIES(u) firstName, lastName, login,
+    sha256Password ON CHANGE changeSHA256Password(u), email,
+    forbidChangePassword, forbidEditProfile, isLocked, lastActivity, ignorePrintTypeCustom
 
     EDIT CustomUser OBJECT u
 ;
@@ -141,9 +141,9 @@ DESIGN customUser {
 
 FORM customUsers 'Пользователи'
     OBJECTS u=CustomUser
-    PROPERTIES(u) READONLY nameContact, loginCustomUser, emailContact
-    PROPERTIES(u) forbidChangePasswordCustomUser, forbidEditProfileCustomUser, isLockedCustomUser READONLY,
-                  lastActivityCustomUser, restartCustomUser, shutdownCustomUser, ADDFORM, EDITFORM FORCE PANEL, DELETE FORCE PANEL TOOLBAR
+    PROPERTIES(u) READONLY name[Contact], login, email
+    PROPERTIES(u) forbidChangePassword, forbidEditProfile, isLocked READONLY,
+                  lastActivity, restart, shutdown, ADDFORM, EDITFORM FORCE PANEL, DELETE FORCE PANEL TOOLBAR
 
     PROPERTIES() useLDAP, serverLDAP, portLDAP, baseDNLDAP, userDNSuffixLDAP
 ;
@@ -151,7 +151,7 @@ FORM customUsers 'Пользователи'
 FORM customUsersDialog 'Пользователи'
     OBJECTS u=CustomUser
     
-    PROPERTIES(u) READONLY nameContact, loginCustomUser, emailContact
+    PROPERTIES(u) READONLY name[Contact], login, email
     PROPERTIES(u) ADDFORM, EDITFORM FORCE PANEL, DELETE FORCE PANEL TOOLBAR
 
     DIALOG CustomUser OBJECT u
@@ -161,8 +161,8 @@ DESIGN customUsersDialog { main{ preferredSize = (1024, 768); }}
 
 FORM editProfile 'Редактировать профиль' IMAGE '/images/editReport.png'
     OBJECTS u=CustomUser FIXED PANEL
-    PROPERTIES(u) loginCustomUser READONLY
-    PROPERTIES(u) READONLYIF forbidEditProfileCustomUser(u) firstNameContact, lastNameContact, emailContact
+    PROPERTIES(u) login READONLY
+    PROPERTIES(u) READONLYIF forbidEditProfile(u) firstName, lastName, email
 
     FILTERS u==currentUser()
 ;
@@ -206,14 +206,14 @@ reloginLoginUser = ACTION () {
     FORM reloginLoginUser MODAL;
     IF formResult() == FormResult.ok THEN {
         LOCAL user = CustomUser();
-        ASSIGN user() <- customUserLogin(chosenString('login'));
+        ASSIGN user() <- customUser(chosenString('login'));
         IF user() THEN {
-            IF isLockedCustomUser(user()) THEN {
+            IF isLocked(user()) THEN {
                 MESSAGE 'Данный пользователь заблокирован';
             } ELSE {
                 EXEC calculateBase64Hash('SHA-256', chosenString('password'));
-                IF sha256PasswordCustomUser(user()) == calculatedHash() THEN {
-                    EXEC reloginUser(user());
+                IF sha256Password(user()) == calculatedHash() THEN {
+                    EXEC relogin(user());
                     IF userChanged() THEN {
                         MESSAGE 'Пользователь изменён';
                     }
@@ -247,15 +247,15 @@ DESIGN reloginPasswordUser {
     }
 }
 
-reloginPasswordUser = ACTION (customUser) {
+reloginPassword = ACTION (CustomUser customUser) {
     FORM reloginPasswordUser MODAL;
     IF formResult() == FormResult.ok THEN {
-        IF isLockedCustomUser(customUser) THEN {
+        IF isLocked(customUser) THEN {
             MESSAGE 'Данный пользователь заблокирован';
         }  ELSE {
                 EXEC calculateBase64Hash('SHA-256', chosenString('password'));
-                IF sha256PasswordCustomUser(customUser)==calculatedHash() THEN {
-                    EXEC reloginUser(customUser);
+                IF sha256Password(customUser)==calculatedHash() THEN {
+                    EXEC relogin(customUser);
                     IF userChanged() THEN {
                         MESSAGE 'Пользователь изменён';
                     }
@@ -270,7 +270,7 @@ reloginPasswordUser = ACTION (customUser) {
 
 FORM changePasswordUser 'Сменить пароль'
     OBJECTS u=CustomUser FIXED PANEL
-    PROPERTIES(u) READONLY loginCustomUser
+    PROPERTIES(u) READONLY login
 
     OBJECTS passwords = (old = STRING[30], new1 = STRING[30], new2 = STRING[30]) FIXED PANEL
     PROPERTIES valueOld = OBJVALUE(old), valueNew1 = OBJVALUE(new1), valueNew2 = OBJVALUE(new2)
@@ -281,7 +281,7 @@ FORM changePasswordUser 'Сменить пароль'
 DESIGN changePasswordUser {
     main{
         passwords.box {
-            MOVE PROPERTY(loginCustomUser(u)) FIRST {
+            MOVE PROPERTY(login(u)) FIRST {
                font = 'Tahoma 36';
             };
             PROPERTY(valueOld){
@@ -305,11 +305,11 @@ DESIGN changePasswordUser {
     }
 }
 
-changePasswordUser = ACTION (customUser) {
+changePassword = ACTION (CustomUser customUser) {
     FORM changePasswordUser MODAL;
     IF formResult() == FormResult.ok THEN {
             EXEC calculateBase64Hash('SHA-256', chosenString('old'));
-            IF  calculatedHash() != sha256PasswordCustomUser(customUser) THEN {
+            IF  calculatedHash() != sha256Password(customUser) THEN {
                 MESSAGE 'Неверный старый пароль (хэш)';
                 BREAK;
             }
@@ -320,17 +320,17 @@ changePasswordUser = ACTION (customUser) {
         }
         //ASSIGN passwordCustomUser(customUser) <- chosenString('new1');
         EXEC calculateBase64Hash('SHA-256', chosenString('new1'));
-        ASSIGN sha256PasswordCustomUser(customUser) <- calculatedHash();
+        ASSIGN sha256Password(customUser) <- calculatedHash();
         MESSAGE 'Пароль изменён';
         }
 }
 
 changePassword = ACTION () {
-      IF forbidChangePasswordCustomUser(currentUser()) THEN {
+      IF forbidChangePassword(currentUser()) THEN {
         MESSAGE 'Вы не можете изменить свой пароль';
       }
       ELSE {
-            EXEC changePasswordUser(currentUser());
+            EXEC changePassword(currentUser());
       }
 }
 
@@ -342,9 +342,9 @@ NAVIGATOR {
         }
     }
     NEW account 'Учётная запись' WINDOW toolbar IMAGE '/images/lock.png' {
-        NEW reloginLoginUserAction 'Сменить пользователя' ACTION reloginLoginUser IMAGE '/images/relogin.png';
+        NEW reloginLoginUserAction 'Сменить пользователя' ACTION reloginLoginUser[] IMAGE '/images/relogin.png';
         ADD editProfile;
-        NEW changePasswordAction 'Сменить пароль' ACTION changePassword IMAGE '/images/change_password.png';
-        NEW logOutAction 'Выйти' ACTION logOut IMAGE '/images/logout.png';
+        NEW changePasswordAction 'Сменить пароль' ACTION changePassword[] IMAGE '/images/change_password.png';
+        NEW logOutAction 'Выйти' ACTION logOut[] IMAGE '/images/logout.png';
     }
 }

@@ -56,15 +56,15 @@ public class ReadReflectionPropertiesActionProperty extends ScriptingActionPrope
             List<ImportField> fields = new ArrayList<>();
             List<ImportKey<?>> keys = new ArrayList<>();
 
-            ImportField nameReflectionPropertyField = new ImportField(findProperty("nameReflectionProperty"));
+            ImportField nameReflectionPropertyField = new ImportField(findProperty("name[ReflectionProperty]"));
             ImportKey<?> reflectionPropertyKey = new ImportKey((CustomClass) findClass("ReflectionProperty"),
-                    findProperty("reflectionPropertyName").getMapping(nameReflectionPropertyField));
+                    findProperty("reflectionProperty[VARSTRING[100]]").getMapping(nameReflectionPropertyField));
             keys.add(reflectionPropertyKey);
-            props.add(new ImportProperty(nameReflectionPropertyField, findProperty("nameReflectionProperty").getMapping(reflectionPropertyKey)));
+            props.add(new ImportProperty(nameReflectionPropertyField, findProperty("name[ReflectionProperty]").getMapping(reflectionPropertyKey)));
             fields.add(nameReflectionPropertyField);
 
-            ImportField defaultValueReflectionPropertyField = new ImportField(findProperty("defaultValueReflectionProperty"));
-            props.add(new ImportProperty(defaultValueReflectionPropertyField, findProperty("defaultValueReflectionProperty").getMapping(reflectionPropertyKey)));
+            ImportField defaultValueReflectionPropertyField = new ImportField(findProperty("defaultValue[ReflectionProperty]"));
+            props.add(new ImportProperty(defaultValueReflectionPropertyField, findProperty("defaultValue[ReflectionProperty]").getMapping(reflectionPropertyKey)));
             fields.add(defaultValueReflectionPropertyField);
 
             ImportTable table = new ImportTable(fields, data);
@@ -87,10 +87,10 @@ public class ReadReflectionPropertiesActionProperty extends ScriptingActionPrope
         ImRevMap<Object, KeyExpr> reflectionPropertyKeys = MapFact.singletonRev((Object) "reflectionProperty", reflectionPropertyExpr);
 
         QueryBuilder<Object, Object> reflectionPropertyQuery = new QueryBuilder<Object, Object>(reflectionPropertyKeys);
-        reflectionPropertyQuery.addProperty("nameReflectionProperty", findProperty("nameReflectionProperty").getExpr(reflectionPropertyExpr));
-        reflectionPropertyQuery.addProperty("baseValueReflectionProperty", findProperty("baseValueReflectionProperty").getExpr(reflectionPropertyExpr));
-        reflectionPropertyQuery.and(findProperty("nameReflectionProperty").getExpr(reflectionPropertyExpr).getWhere());
-        reflectionPropertyQuery.and(findProperty("baseValueReflectionProperty").getExpr(reflectionPropertyExpr).getWhere());
+        reflectionPropertyQuery.addProperty("nameReflectionProperty", findProperty("name[ReflectionProperty]").getExpr(reflectionPropertyExpr));
+        reflectionPropertyQuery.addProperty("baseValueReflectionProperty", findProperty("baseValue[ReflectionProperty]").getExpr(reflectionPropertyExpr));
+        reflectionPropertyQuery.and(findProperty("name[ReflectionProperty]").getExpr(reflectionPropertyExpr).getWhere());
+        reflectionPropertyQuery.and(findProperty("baseValue[ReflectionProperty]").getExpr(reflectionPropertyExpr).getWhere());
 
         Map<String, String> reflectionPropertiesMap = new HashMap<>();
         ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> receiptDetailResult = reflectionPropertyQuery.execute(context);

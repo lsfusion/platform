@@ -10,168 +10,168 @@ TABLE userRolePropertyGroup (UserRole, PropertyGroup);
 TABLE userProperty (User, Property);
 TABLE userRoleNavigatorElement (UserRole, NavigatorElement);
 
-nameUserRole 'Наименование' = DATA VARISTRING[100](UserRole);
+name 'Наименование' = DATA VARISTRING[100](UserRole);
 
-sidUserRole 'Идентификатор' = DATA VARSTRING[30] (UserRole);
-userRoleSID (sid) = GROUP AGGR userRole BY sidUserRole (userRole) WHERE userRole IS UserRole;
+sid 'Идентификатор' = DATA VARSTRING[30] (UserRole);
+userRoleSID (sid) = GROUP AGGR UserRole userRole BY sid (userRole) WHERE userRole IS UserRole;
 
-mainRoleUser = DATA UserRole (User);
-mainRoleCustomUser (user) = mainRoleUser (user) IF user IS CustomUser;
-sidMainRoleCustomUser 'Идентификатор главной роли' (user) = sidUserRole (mainRoleCustomUser(user));
-nameMainRoleUser 'Главная роль' (user) = nameUserRole (mainRoleUser(user));
+mainRole = DATA UserRole (User);
+mainRole (CustomUser user) = mainRole[User] (user) IF user IS CustomUser;
+sidMainRole 'Идентификатор главной роли' (CustomUser user) = sid (mainRole(user));
+nameMainRole 'Главная роль' (User user) = name (mainRole(user));
 
 defaultMainRole 'Роль по умолчанию' = DATA UserRole ();
-nameDefaultMainRole 'Роль по умолчанию' = nameUserRole(defaultMainRole());
+nameDefaultMainRole 'Роль по умолчанию' = name(defaultMainRole());
 EXTEND FORM customUsers
     PROPERTIES() nameDefaultMainRole
 ;
-mainRoleUser(u) <- defaultMainRole() WHEN SET(u IS CustomUser);
+mainRole[User](CustomUser u) <- defaultMainRole() WHEN SET(u IS CustomUser);
 
-inUserRole 'Вкл.' = DATA BOOLEAN (CustomUser, UserRole);
-overInUserRole 'Вкл.' (user, role) = mainRoleUser(user) == role OR inUserRole(user, role);
-hasUserRoleCustomUser(user) = GROUP MAX overInUserRole(user, role) BY user;
+in 'Вкл.' = DATA BOOLEAN (CustomUser, UserRole);
+overIn 'Вкл.' (User user, UserRole role) = mainRole(user) == role OR in(user, role);
+hasUserRoleCustom(user) = GROUP MAX overIn(User user, UserRole role) BY user;
 
-inMainRoleCustomUser(customUser, userRole) = mainRoleCustomUser(customUser) == userRole OR inUserRole(customUser, userRole);
+inMainRole(CustomUser customUser, UserRole userRole) = mainRole(customUser) == userRole OR in(customUser, userRole);
 
-forbidDuplicateFormsUserRole 'Запретить открытие второй формы' = DATA BOOLEAN (UserRole);
-forbidDuplicateFormsCurrentUser 'Запретить открытие второй формы' () = forbidDuplicateFormsUserRole (mainRoleUser(currentUser()));
+forbidDuplicateForms 'Запретить открытие второй формы' = DATA BOOLEAN (UserRole);
+forbidDuplicateFormsCurrentUser 'Запретить открытие второй формы' () = forbidDuplicateForms (mainRole(currentUser()));
 
-permitViewAllPropertyUserRole 'Разрешить просмотр всех свойств' = DATA BOOLEAN (UserRole);
-permitViewAllPropertyUser 'Разрешить просмотр всех свойств' (user) = permitViewAllPropertyUserRole (mainRoleUser(user));
-forbidViewAllPropertyUserRole 'Запретить просмотр всех свойств' = DATA BOOLEAN (UserRole);
-forbidViewAllPropertyUser 'Запретить просмотр всех свойств' (user) = forbidViewAllPropertyUserRole (mainRoleUser(user));
+permitViewAllProperty 'Разрешить просмотр всех свойств' = DATA BOOLEAN (UserRole);
+permitViewAllProperty 'Разрешить просмотр всех свойств' (User user) = permitViewAllProperty (mainRole(user));
+forbidViewAllProperty 'Запретить просмотр всех свойств' = DATA BOOLEAN (UserRole);
+forbidViewAllProperty 'Запретить просмотр всех свойств' (User user) = forbidViewAllProperty (mainRole(user));
 
-transactTimeoutUserRole 'Таймаут для транз. (сек.)' = DATA INTEGER (UserRole);
-transactTimeoutUser 'Таймаут для транз. (сек.)' (user) = transactTimeoutUserRole (mainRoleUser(user));
+transactTimeout 'Таймаут для транз. (сек.)' = DATA INTEGER (UserRole);
+transactTimeout 'Таймаут для транз. (сек.)' (User user) = transactTimeout (mainRole(user));
 
-permitChangeAllPropertyUserRole 'Разрешить изменение всех свойств' = DATA BOOLEAN (UserRole);
-permitChangeAllPropertyUser 'Разрешить изменение всех свойств' (user) = permitChangeAllPropertyUserRole(mainRoleUser(user));
-forbidChangeAllPropertyUserRole 'Запретить изменение всех свойств' = DATA BOOLEAN (UserRole);
-forbidChangeAllPropertyRole 'Запретить изменение всех свойств' (user) = forbidChangeAllPropertyUserRole(mainRoleUser(user));
+permitChangeAllProperty 'Разрешить изменение всех свойств' = DATA BOOLEAN (UserRole);
+permitChangeAllProperty 'Разрешить изменение всех свойств' (User user) = permitChangeAllProperty(mainRole(user));
+forbidChangeAllProperty 'Запретить изменение всех свойств' = DATA BOOLEAN (UserRole);
+forbidChangeAllPropertyRole 'Запретить изменение всех свойств' (User user) = forbidChangeAllProperty(mainRole(user));
 
-dataPermitViewPropertyGroup 'Разрешить просмотр группы свойств' = DATA BOOLEAN (PropertyGroup);
+dataPermitView 'Разрешить просмотр группы свойств' = DATA BOOLEAN (PropertyGroup);
 
-levelPermitViewParentPropertyGroup (propertyGroup) =
-    GROUP MIN levelPropertyGroupPropertyGroup(propertyGroup, parent) IF dataPermitViewPropertyGroup(parent)
+levelPermitViewParent (propertyGroup) =
+    GROUP MIN level(PropertyGroup propertyGroup, PropertyGroup parent) IF dataPermitView(parent)
           BY propertyGroup PERSISTENT;
 
-levelPermitViewPropertyGroup = TRUE IF levelPermitViewParentPropertyGroup (propertyGroup);
-permitViewPropertyGroup 'Разрешить просмотр группы свойств' (propertyGroup) = OVERRIDE levelPermitViewPropertyGroup (propertyGroup), dataPermitViewPropertyGroup (propertyGroup);
+levelPermitView = TRUE IF levelPermitViewParent (PropertyGroup propertyGroup);
+permitView 'Разрешить просмотр группы свойств' (PropertyGroup propertyGroup) = OVERRIDE levelPermitView (propertyGroup), dataPermitView (propertyGroup);
 
-dataPermitViewProperty 'Разрешить просмотр свойства' = DATA BOOLEAN (Property);
-permitViewProperty 'Разрешить просмотр свойства' (property) = OVERRIDE levelPermitViewPropertyGroup (parentProperty(property)), dataPermitViewProperty (property) PERSISTENT;
+dataPermitView 'Разрешить просмотр свойства' = DATA BOOLEAN (Property);
+permitView 'Разрешить просмотр свойства' (Property property) = OVERRIDE levelPermitView (parent(property)), dataPermitView (property) PERSISTENT;
 
-dataForbidViewPropertyGroup 'Запретить просмотр группы свойств' = DATA BOOLEAN (PropertyGroup);
+dataForbidView 'Запретить просмотр группы свойств' = DATA BOOLEAN (PropertyGroup);
 
-levelForbidViewParentPropertyGroup (propertyGroup) =
-    GROUP MIN levelPropertyGroupPropertyGroup(propertyGroup, parent) IF dataForbidViewPropertyGroup(parent)
+levelForbidViewParent (propertyGroup) =
+    GROUP MIN level(PropertyGroup propertyGroup, PropertyGroup parent) IF dataForbidView(parent)
           BY propertyGroup PERSISTENT;
 
-levelForbidViewPropertyGroup = TRUE IF levelForbidViewParentPropertyGroup (propertyGroup);
-forbidViewPropertyGroup 'Запретить просмотр группы свойств' (propertyGroup) = OVERRIDE levelForbidViewPropertyGroup (propertyGroup), dataForbidViewPropertyGroup (propertyGroup);
+levelForbidView = TRUE IF levelForbidViewParent (PropertyGroup propertyGroup);
+forbidView 'Запретить просмотр группы свойств' (PropertyGroup propertyGroup) = OVERRIDE levelForbidView (propertyGroup), dataForbidView (propertyGroup);
 
-dataForbidViewProperty 'Запретить просмотр свойства' = DATA BOOLEAN (Property);
-forbidViewProperty 'Запретить просмотр свойства' (property) = OVERRIDE levelForbidViewPropertyGroup (parentProperty(property)), dataForbidViewProperty (property) PERSISTENT;
+dataForbidView 'Запретить просмотр свойства' = DATA BOOLEAN (Property);
+forbidView 'Запретить просмотр свойства' (Property property) = OVERRIDE levelForbidView (parent(property)), dataForbidView (property) PERSISTENT;
 
-dataPermitChangePropertyGroup 'Разрешить изменение группы свойств' = DATA BOOLEAN (PropertyGroup);
+dataPermitChange 'Разрешить изменение группы свойств' = DATA BOOLEAN (PropertyGroup);
 
-levelPermitChangeParentPropertyGroup (propertyGroup) =
-    GROUP MIN levelPropertyGroupPropertyGroup(propertyGroup, parent) IF dataPermitChangePropertyGroup(parent)
+levelPermitChangeParent (propertyGroup) =
+    GROUP MIN level(PropertyGroup propertyGroup, PropertyGroup parent) IF dataPermitChange(parent)
           BY propertyGroup PERSISTENT;
 
-levelPermitChangePropertyGroup = TRUE IF levelPermitChangeParentPropertyGroup (propertyGroup);
-permitChangePropertyGroup 'Разрешить изменение группы свойств' (propertyGroup) = OVERRIDE levelPermitChangePropertyGroup (propertyGroup), dataPermitChangePropertyGroup (propertyGroup);
+levelPermitChange = TRUE IF levelPermitChangeParent (PropertyGroup propertyGroup);
+permitChange 'Разрешить изменение группы свойств' (PropertyGroup propertyGroup) = OVERRIDE levelPermitChange (propertyGroup), dataPermitChange (propertyGroup);
 
-dataPermitChangeProperty 'Разрешить изменение свойства' = DATA BOOLEAN (Property);
-permitChangeProperty 'Разрешить изменение свойства' (property) = OVERRIDE levelPermitChangePropertyGroup (parentProperty(property)), dataPermitChangeProperty (property) PERSISTENT;
+dataPermitChange 'Разрешить изменение свойства' = DATA BOOLEAN (Property);
+permitChange 'Разрешить изменение свойства' (Property property) = OVERRIDE levelPermitChange (parent(property)), dataPermitChange (property) PERSISTENT;
 
-dataForbidChangePropertyGroup 'Запретить изменение группы свойств' = DATA BOOLEAN (PropertyGroup);
+dataForbidChange 'Запретить изменение группы свойств' = DATA BOOLEAN (PropertyGroup);
 
-levelForbidChangeParentPropertyGroup (propertyGroup) =
-    GROUP MIN levelPropertyGroupPropertyGroup(propertyGroup, parent) IF dataForbidChangePropertyGroup(parent)
+levelForbidChangeParent (propertyGroup) =
+    GROUP MIN level(PropertyGroup propertyGroup, PropertyGroup parent) IF dataForbidChange(parent)
           BY propertyGroup PERSISTENT;
 
-levelForbidChangePropertyGroup = TRUE IF levelForbidChangeParentPropertyGroup (propertyGroup);
-forbidChangePropertyGroup 'Запретить изменение группы свойств' (propertyGroup) = OVERRIDE levelForbidChangePropertyGroup (propertyGroup), dataForbidChangePropertyGroup (propertyGroup);
+levelForbidChange = TRUE IF levelForbidChangeParent (PropertyGroup propertyGroup);
+forbidChange 'Запретить изменение группы свойств' (PropertyGroup propertyGroup) = OVERRIDE levelForbidChange (propertyGroup), dataForbidChange (propertyGroup);
 
-dataForbidChangeProperty 'Запретить изменение свойства' = DATA BOOLEAN (Property);
-forbidChangeProperty 'Запретить изменение свойства' (property) = OVERRIDE levelForbidChangePropertyGroup (parentProperty(property)), dataForbidChangeProperty (property) PERSISTENT;
+dataForbidChange 'Запретить изменение свойства' = DATA BOOLEAN (Property);
+forbidChange 'Запретить изменение свойства' (Property property) = OVERRIDE levelForbidChange (parent(property)), dataForbidChange (property) PERSISTENT;
 
-notNullPermissionProperty (property) = OVERRIDE permitViewProperty(property), forbidViewProperty(property), permitChangeProperty(property), forbidChangeProperty(property) PERSISTENT INDEXED;
+notNullPermission (Property property) = OVERRIDE permitView(property), forbidView(property), permitChange(property), forbidChange(property) PERSISTENT INDEXED;
 
-dataPermitViewUserRolePropertyGroup 'Разрешить просмотр группы свойств' = DATA BOOLEAN (UserRole, PropertyGroup);
+dataPermitView 'Разрешить просмотр группы свойств' = DATA BOOLEAN (UserRole, PropertyGroup);
 
-levelPermitViewParentUserRolePropertyGroup (userRole, propertyGroup) =
-    GROUP MIN levelPropertyGroupPropertyGroup(propertyGroup, parent) IF dataPermitViewUserRolePropertyGroup(userRole, parent)
+levelPermitViewParent (userRole, propertyGroup) =
+    GROUP MIN level(PropertyGroup propertyGroup, PropertyGroup parent) IF dataPermitView(UserRole userRole, parent)
           BY userRole, propertyGroup PERSISTENT;
 
-levelPermitViewUserRolePropertyGroup = TRUE IF levelPermitViewParentUserRolePropertyGroup (userRole, propertyGroup);
-permitViewUserRolePropertyGroup 'Разрешить просмотр группы свойств' (userRole, propertyGroup) = OVERRIDE levelPermitViewUserRolePropertyGroup (userRole, propertyGroup), dataPermitViewUserRolePropertyGroup (userRole, propertyGroup) PERSISTENT;
+levelPermitView = TRUE IF levelPermitViewParent (UserRole userRole, PropertyGroup propertyGroup);
+permitView 'Разрешить просмотр группы свойств' (UserRole userRole, PropertyGroup propertyGroup) = OVERRIDE levelPermitView (userRole, propertyGroup), dataPermitView (userRole, propertyGroup) PERSISTENT;
 
-dataPermitViewUserRoleProperty 'Разрешить просмотр свойства' = DATA BOOLEAN (UserRole, Property);
-permitViewUserRoleProperty 'Разрешить просмотр свойства' (userRole, property) = OVERRIDE levelPermitViewUserRolePropertyGroup (userRole, parentProperty(property)), dataPermitViewUserRoleProperty (userRole, property) PERSISTENT;
-permitViewUserProperty 'Разрешить просмотр свойства' (user, property) = permitViewUserRoleProperty(mainRoleUser(user), property) PERSISTENT;
-overPermitViewUserProperty 'Разрешить просмотр свойства' (user, property) = 
-    GROUP MAX permitViewUserRoleProperty(userRole, property) IF overInUserRole(user, userRole) BY user, property;
+dataPermitView 'Разрешить просмотр свойства' = DATA BOOLEAN (UserRole, Property);
+permitView 'Разрешить просмотр свойства' (UserRole userRole, Property property) = OVERRIDE levelPermitView (userRole, parent(property)), dataPermitView (userRole, property) PERSISTENT;
+permitView 'Разрешить просмотр свойства' (User user, Property property) = permitView(mainRole(user), property) PERSISTENT;
+overPermitView 'Разрешить просмотр свойства' (user, property) = 
+    GROUP MAX permitView(UserRole userRole, Property property) IF overIn(User user, userRole) BY user, property;
 
-dataForbidViewUserRolePropertyGroup 'Запретить просмотр группы свойств' = DATA BOOLEAN (UserRole, PropertyGroup);
+dataForbidView 'Запретить просмотр группы свойств' = DATA BOOLEAN (UserRole, PropertyGroup);
 
-levelForbidViewParentUserRolePropertyGroup (userRole, propertyGroup) =
-    GROUP MIN levelPropertyGroupPropertyGroup(propertyGroup, parent) IF dataForbidViewUserRolePropertyGroup(userRole, parent)
+levelForbidViewParent (userRole, propertyGroup) =
+    GROUP MIN level(PropertyGroup propertyGroup, PropertyGroup parent) IF dataForbidView(UserRole userRole, parent)
           BY userRole, propertyGroup PERSISTENT;
 
-levelForbidViewUserRolePropertyGroup = TRUE IF levelForbidViewParentUserRolePropertyGroup (userRole, propertyGroup);
-forbidViewUserRolePropertyGroup 'Запретить просмотр группы свойств' (userRole, propertyGroup) = OVERRIDE levelForbidViewUserRolePropertyGroup (userRole, propertyGroup), dataForbidViewUserRolePropertyGroup (userRole, propertyGroup) PERSISTENT;
+levelForbidView = TRUE IF levelForbidViewParent (UserRole userRole, PropertyGroup propertyGroup);
+forbidView 'Запретить просмотр группы свойств' (UserRole userRole, PropertyGroup propertyGroup) = OVERRIDE levelForbidView (userRole, propertyGroup), dataForbidView (userRole, propertyGroup) PERSISTENT;
 
-dataForbidViewUserRoleProperty 'Запретить просмотр свойства' = DATA BOOLEAN (UserRole, Property);
-forbidViewUserRoleProperty 'Запретить просмотр свойства' (userRole, property) = OVERRIDE levelForbidViewUserRolePropertyGroup (userRole, parentProperty(property)), dataForbidViewUserRoleProperty (userRole, property) PERSISTENT;
-forbidViewUserProperty 'Запретить просмотр свойства' (user, property) = forbidViewUserRoleProperty(mainRoleUser(user), property) PERSISTENT;
+dataForbidView 'Запретить просмотр свойства' = DATA BOOLEAN (UserRole, Property);
+forbidView 'Запретить просмотр свойства' (UserRole userRole, Property property) = OVERRIDE levelForbidView (userRole, parent(property)), dataForbidView (userRole, property) PERSISTENT;
+forbidView 'Запретить просмотр свойства' (User user, Property property) = forbidView(mainRole(user), property) PERSISTENT;
 
-fullForbidViewUserRoleProperty (userRole, property) = (OVERRIDE 
-    forbidViewProperty(property) AND NOT permitViewProperty(property),
-    forbidViewUserRoleProperty(userRole, property)) AND NOT permitViewUserRoleProperty(userRole, property);
+fullForbidView (UserRole userRole, Property property) = (OVERRIDE 
+    forbidView(property) AND NOT permitView(property),
+    forbidView(userRole, property)) AND NOT permitView(userRole, property);
 
-fullForbidViewUserProperty (user, property) = 
-    IF hasUserRoleCustomUser(user)
-       THEN TRUE IF NOT [=GROUP SUM 1 IF NOT fullForbidViewUserRoleProperty(userRole, property) AND overInUserRole(user, userRole) BY user, property] (user, property)
-       ELSE forbidViewProperty(property) AND NOT permitViewProperty(property);
+fullForbidView (User user, Property property) = 
+    IF hasUserRoleCustom(user)
+       THEN TRUE IF NOT [=GROUP SUM 1 IF NOT fullForbidView(UserRole userRole, property) AND overIn(User user, userRole) BY user, property] (user, property)
+       ELSE forbidView(property) AND NOT permitView(property);
          
-dataPermitChangeUserRolePropertyGroup 'Разрешить изменение группы свойств' = DATA BOOLEAN (UserRole, PropertyGroup);
+dataPermitChange 'Разрешить изменение группы свойств' = DATA BOOLEAN (UserRole, PropertyGroup);
 
-levelPermitChangeParentUserRolePropertyGroup (userRole, propertyGroup) =
-    GROUP MIN levelPropertyGroupPropertyGroup(propertyGroup, parent) IF dataPermitChangeUserRolePropertyGroup(userRole, parent)
+levelPermitChangeParent (userRole, propertyGroup) =
+    GROUP MIN level(PropertyGroup propertyGroup, PropertyGroup parent) IF dataPermitChange(UserRole userRole, parent)
           BY userRole, propertyGroup PERSISTENT;
 
-levelPermitChangeUserRolePropertyGroup = TRUE IF levelPermitChangeParentUserRolePropertyGroup (userRole, propertyGroup);
-permitChangeUserRolePropertyGroup 'Разрешить изменение группы свойств' (userRole, propertyGroup) = OVERRIDE levelPermitChangeUserRolePropertyGroup (userRole, propertyGroup), dataPermitChangeUserRolePropertyGroup (userRole, propertyGroup) PERSISTENT;
+levelPermitChange = TRUE IF levelPermitChangeParent (UserRole userRole, PropertyGroup propertyGroup);
+permitChange 'Разрешить изменение группы свойств' (UserRole userRole, PropertyGroup propertyGroup) = OVERRIDE levelPermitChange (userRole, propertyGroup), dataPermitChange (userRole, propertyGroup) PERSISTENT;
 
-dataPermitChangeUserRoleProperty 'Разрешить изменение свойства' = DATA BOOLEAN (UserRole, Property);
-permitChangeUserRoleProperty 'Разрешить изменение свойства' (userRole, property) = OVERRIDE levelPermitChangeUserRolePropertyGroup (userRole, parentProperty(property)), dataPermitChangeUserRoleProperty (userRole, property) PERSISTENT;
-permitChangeUserProperty 'Разрешить изменение свойства' (user, property) = permitChangeUserRoleProperty (mainRoleUser(user), property) PERSISTENT;
-overPermitChangeUserProperty 'Разрешить изменение свойства' (user, property) = 
-    GROUP MAX permitChangeUserRoleProperty(userRole, property) IF overInUserRole(user, userRole) BY user, property;
+dataPermitChange 'Разрешить изменение свойства' = DATA BOOLEAN (UserRole, Property);
+permitChange 'Разрешить изменение свойства' (UserRole userRole, Property property) = OVERRIDE levelPermitChange (userRole, parent(property)), dataPermitChange (userRole, property) PERSISTENT;
+permitChange 'Разрешить изменение свойства' (User user, Property property) = permitChange (mainRole(user), property) PERSISTENT;
+overPermitChange 'Разрешить изменение свойства' (user, property) = 
+    GROUP MAX permitChange(UserRole userRole, Property property) IF overIn(User user, userRole) BY user, property;
     
-dataForbidChangeUserRolePropertyGroup 'Запретить изменение группы свойств' = DATA BOOLEAN (UserRole, PropertyGroup);
+dataForbidChange 'Запретить изменение группы свойств' = DATA BOOLEAN (UserRole, PropertyGroup);
 
-levelForbidChangeParentUserRolePropertyGroup (userRole, propertyGroup) =
-    GROUP MIN levelPropertyGroupPropertyGroup(propertyGroup, parent) IF dataForbidChangeUserRolePropertyGroup(userRole, parent)
+levelForbidChangeParent (userRole, propertyGroup) =
+    GROUP MIN level(PropertyGroup propertyGroup, PropertyGroup parent) IF dataForbidChange(UserRole userRole, parent)
           BY userRole, propertyGroup PERSISTENT;
 
-levelForbidChangeUserRolePropertyGroup = TRUE IF levelForbidChangeParentUserRolePropertyGroup (userRole, propertyGroup);
-forbidChangeUserRolePropertyGroup 'Запретить изменение группы свойств' (userRole, propertyGroup) = OVERRIDE levelForbidChangeUserRolePropertyGroup (userRole, propertyGroup), dataForbidChangeUserRolePropertyGroup (userRole, propertyGroup) PERSISTENT;
+levelForbidChange = TRUE IF levelForbidChangeParent (UserRole userRole, PropertyGroup propertyGroup);
+forbidChange 'Запретить изменение группы свойств' (UserRole userRole, PropertyGroup propertyGroup) = OVERRIDE levelForbidChange (userRole, propertyGroup), dataForbidChange (userRole, propertyGroup) PERSISTENT;
 
-dataForbidChangeUserRoleProperty 'Запретить изменение свойства' = DATA BOOLEAN (UserRole, Property);
-forbidChangeUserRoleProperty 'Запретить изменение свойства' (userRole, property) = OVERRIDE levelForbidChangeUserRolePropertyGroup (userRole, parentProperty(property)), dataForbidChangeUserRoleProperty (userRole, property) PERSISTENT;
-forbidChangeUserProperty 'Запретить изменение свойства' (user, property) = forbidChangeUserRoleProperty (mainRoleUser(user), property) PERSISTENT;
+dataForbidChange 'Запретить изменение свойства' = DATA BOOLEAN (UserRole, Property);
+forbidChange 'Запретить изменение свойства' (UserRole userRole, Property property) = OVERRIDE levelForbidChange (userRole, parent(property)), dataForbidChange (userRole, property) PERSISTENT;
+forbidChange 'Запретить изменение свойства' (User user, Property property) = forbidChange (mainRole(user), property) PERSISTENT;
 
-fullForbidChangeUserRoleProperty (userRole, property) = (OVERRIDE 
-    forbidChangeProperty(property) AND NOT permitChangeProperty(property),
-    forbidChangeUserRoleProperty(userRole, property)) AND NOT permitChangeUserRoleProperty(userRole, property);
+fullForbidChange (UserRole userRole, Property property) = (OVERRIDE 
+    forbidChange(property) AND NOT permitChange(property),
+    forbidChange(userRole, property)) AND NOT permitChange(userRole, property);
 
-fullForbidChangeUserProperty (user, property) = 
-    IF hasUserRoleCustomUser(user)
-       THEN TRUE IF NOT [=GROUP SUM 1 IF NOT fullForbidChangeUserRoleProperty(userRole, property) AND overInUserRole(user, userRole) BY user, property] (user, property)
-       ELSE forbidChangeProperty(property) AND NOT permitChangeProperty(property);
+fullForbidChange (User user, Property property) = 
+    IF hasUserRoleCustom(user)
+       THEN TRUE IF NOT [=GROUP SUM 1 IF NOT fullForbidChange(UserRole userRole, property) AND overIn(User user, userRole) BY user, property] (user, property)
+       ELSE forbidChange(property) AND NOT permitChange(property);
     
 CLASS DefaultForms 'Отображение форм при запуске' {
     none 'Не восстанавливать формы',
@@ -184,61 +184,61 @@ FORM defaultForms 'Отображение форм при запуске'
     DIALOG DefaultForms OBJECT df
 ;
 
-defaultFormsUserRole 'Отображение форм при запуске' = DATA DefaultForms (UserRole);
-nameDefaultFormsUserRole 'Отображение форм при запуске' (userRole) = staticCaption(defaultFormsUserRole(userRole));
-defaultFormsUser 'Отображение форм при запуске' (user) = defaultFormsUserRole(mainRoleUser(user));
+defaultForms 'Отображение форм при запуске' = DATA DefaultForms (UserRole);
+nameDefaultForms 'Отображение форм при запуске' (UserRole userRole) = staticCaption(defaultForms(userRole));
+defaultForms 'Отображение форм при запуске' (User user) = defaultForms(mainRole(user));
 
-defaultNumberUserRoleNavigatorElement 'Номер по умолчанию' = DATA INTEGER (UserRole, NavigatorElement);
-defaultNumberUserNavigatorElement 'Номер по умолчанию' (user, navigatorElement) = defaultNumberUserRoleNavigatorElement(mainRoleUser(user), navigatorElement);
+defaultNumber 'Номер по умолчанию' = DATA INTEGER (UserRole, NavigatorElement);
+defaultNumber 'Номер по умолчанию' (User user, NavigatorElement navigatorElement) = defaultNumber(mainRole(user), navigatorElement);
 
-permitNavigatorElement 'Разрешить форму' = DATA BOOLEAN (NavigatorElement);
-forbidNavigatorElement 'Запретить форму' = DATA BOOLEAN (NavigatorElement);
-permitExportNavigatorElement 'Разрешить экспорт формы' = DATA BOOLEAN (NavigatorElement);
+permit 'Разрешить форму' = DATA BOOLEAN (NavigatorElement);
+forbid 'Запретить форму' = DATA BOOLEAN (NavigatorElement);
+permitExport 'Разрешить экспорт формы' = DATA BOOLEAN (NavigatorElement);
 
-permitAllFormsUserRole 'Разрешить отображение всех форм' = DATA BOOLEAN (UserRole);
-permitAllFormsUser 'Разрешить отображение всех форм' (user) = permitAllFormsUserRole(mainRoleUser(user));
-forbidAllFormsUserRole 'Запретить отображение всех форм' = DATA BOOLEAN (UserRole);
-forbidAllFormsUser 'Запретить отображение всех форм' (user) = forbidAllFormsUserRole(mainRoleUser(user));
+permitAllForms 'Разрешить отображение всех форм' = DATA BOOLEAN (UserRole);
+permitAllForms 'Разрешить отображение всех форм' (User user) = permitAllForms(mainRole(user));
+forbidAllForms 'Запретить отображение всех форм' = DATA BOOLEAN (UserRole);
+forbidAllForms 'Запретить отображение всех форм' (User user) = forbidAllForms(mainRole(user));
 
-permitUserRoleNavigatorElement 'Разрешить форму' = DATA BOOLEAN (UserRole, NavigatorElement);
-permitUserNavigatorElement 'Разрешить форму' = permitUserRoleNavigatorElement(mainRoleUser(user), navigatorElement);
-forbidUserRoleNavigatorElement 'Запретить форму' = DATA BOOLEAN (UserRole, NavigatorElement);
-forbidUserNavigatorElement 'Запретить форму' = forbidUserRoleNavigatorElement(mainRoleUser(user), navigatorElement);
+permit 'Разрешить форму' = DATA BOOLEAN (UserRole, NavigatorElement);
+permit 'Разрешить форму' = permit(mainRole(User user), NavigatorElement navigatorElement);
+forbid 'Запретить форму' = DATA BOOLEAN (UserRole, NavigatorElement);
+forbid 'Запретить форму' = forbid(mainRole(User user), NavigatorElement navigatorElement);
 
-overDefaultNumberUserNavigatorElement 'Номер по умолчанию' (user, navigatorElement) = 
-    GROUP MIN defaultNumberUserRoleNavigatorElement(userRole, navigatorElement) IF overInUserRole(user, userRole) AND permitUserRoleNavigatorElement(userRole, navigatorElement) BY user, navigatorElement;
-overPermitUserNavigatorElement 'Разрешить форму' (user, navigatorElement) = 
-    GROUP MAX permitUserRoleNavigatorElement(userRole, navigatorElement) IF overInUserRole(user, userRole) BY user, navigatorElement;
-overForbidUserNavigatorElement 'Запретить форму' (user, navigatorElement) = 
-    TRUE IF hasUserRoleCustomUser(user) AND NOT [=GROUP SUM 1 IF NOT forbidUserRoleNavigatorElement(userRole, navigatorElement) AND overInUserRole(user, userRole) BY user, navigatorElement] (user, navigatorElement);
+overDefaultNumber 'Номер по умолчанию' (user, navigatorElement) = 
+    GROUP MIN defaultNumber(UserRole userRole, NavigatorElement navigatorElement) IF overIn(User user, userRole) AND permit(userRole, navigatorElement) BY user, navigatorElement;
+overPermit 'Разрешить форму' (user, navigatorElement) = 
+    GROUP MAX permit(UserRole userRole, NavigatorElement navigatorElement) IF overIn(User user, userRole) BY user, navigatorElement;
+overForbid 'Запретить форму' (User user, navigatorElement) = 
+    TRUE IF hasUserRoleCustom(user) AND NOT [=GROUP SUM 1 IF NOT forbid(UserRole userRole, navigatorElement) AND overIn(User user, userRole) BY user, navigatorElement] (user, navigatorElement);
 
-levelNavigatorElementNavigatorElement 'Уровень' (child, parent) = RECURSION 1l IF child IS NavigatorElement AND parent == child
-                                                              STEP 2l IF parent == parentNavigatorElement($parent) PERSISTENT;
+level 'Уровень' (NavigatorElement child, NavigatorElement parent) = RECURSION 1l IF child IS NavigatorElement AND parent == child
+                                                              STEP 2l IF parent == parent($parent) PERSISTENT;
 
-isParentNavigatorElementNavigatorElement 'Является потомком' (child, parent) = TRUE IF levelNavigatorElementNavigatorElement(child, parent);
+isParent 'Является потомком' (NavigatorElement child, NavigatorElement parent) = TRUE IF level(child, parent);
 
-hasChildrenPermitUserRoleNavigatorElement = GROUP SUM 1 IF isParentNavigatorElementNavigatorElement(child, parent) AND permitUserRoleNavigatorElement(role, child) BY role, parent;  
-hasChildrenForbidUserRoleNavigatorElement = GROUP SUM 1 IF isParentNavigatorElementNavigatorElement(child, parent) AND forbidUserRoleNavigatorElement(role, child) BY role, parent;  
-backgroundPermitUserRoleNavigatorElement (role, element)= RGB(203,203,203) IF hasChildrenPermitUserRoleNavigatorElement(role, element) AND NOT permitUserRoleNavigatorElement(role, element);
-backgroundForbidUserRoleNavigatorElement (role, element) = RGB(203,203,203) IF hasChildrenForbidUserRoleNavigatorElement(role, element) AND NOT forbidUserRoleNavigatorElement(role, element);
+hasChildrenPermit = GROUP SUM 1 IF isParent(NavigatorElement child, NavigatorElement parent) AND permit(UserRole role, child) BY role, parent;  
+hasChildrenForbid = GROUP SUM 1 IF isParent(NavigatorElement child, NavigatorElement parent) AND forbid(UserRole role, child) BY role, parent;  
+backgroundPermit (UserRole role, NavigatorElement element)= RGB(203,203,203) IF hasChildrenPermit(role, element) AND NOT permit(role, element);
+backgroundForbid (UserRole role, NavigatorElement element) = RGB(203,203,203) IF hasChildrenForbid(role, element) AND NOT forbid(role, element);
 
 CLASS Policy 'Политика безопасности';
 TABLE policy (Policy);
 TABLE userRolePolicy (UserRole, Policy);
 
-namePolicy 'Наименование' = DATA VARISTRING[100](Policy);
+name 'Наименование' = DATA VARISTRING[100](Policy);
 
-policyName 'Политика' (name) = GROUP AGGR policy BY namePolicy(policy) WHERE policy IS Policy;
-descriptionPolicy 'Описание' = DATA VARSTRING[100] (Policy);
-orderUserRolePolicy 'Порядок политики' = DATA INTEGER (UserRole, Policy);
-orderUserPolicy 'Порядок политики' (user, policy) = orderUserRolePolicy (mainRoleUser(user), policy);
+policy 'Политика' (name) = GROUP AGGR Policy policy BY name(policy) WHERE policy IS Policy;
+description 'Описание' = DATA VARSTRING[100] (Policy);
+order 'Порядок политики' = DATA INTEGER (UserRole, Policy);
+order 'Порядок политики' (User user, Policy policy) = order (mainRole(user), policy);
 
 EXTEND FORM customUser
-    PROPERTIES(u) nameMainRoleUser BEFORE emailContact(u)
+    PROPERTIES(u) nameMainRole BEFORE email(u)
 
     OBJECTS ur=UserRole
-    PROPERTIES(ur) READONLY nameUserRole, sidUserRole
-    PROPERTIES(u,ur) inUserRole
+    PROPERTIES(ur) READONLY name, sid
+    PROPERTIES(u,ur) in
 ;
 
 DESIGN customUser {
@@ -250,50 +250,50 @@ DESIGN customUser {
 }
 
 EXTEND FORM customUsers
-    PROPERTIES(u) READONLY nameMainRoleUser BEFORE nameContact(u)
+    PROPERTIES(u) READONLY nameMainRole BEFORE name(u)
 ;
 
 FORM userRole 'Роль'
     OBJECTS ur = UserRole FIXED PANEL
-    PROPERTIES(ur) nameUserRole, sidUserRole
+    PROPERTIES(ur) name, sid
     EDIT UserRole OBJECT ur
 ;
 
 // ---------------------------------------- Копирование роли ----------------------- //
-overCopyUserRole = ABSTRACT ACTION LIST (UserRole, UserRole);
+overCopy = ABSTRACT ACTION LIST (UserRole, UserRole);
 
-copyDataUserRole = ACTION (userRole, ur) {
-    ASSIGN nameUserRole(ur) <- nameUserRole(userRole);
-    ASSIGN permitViewAllPropertyUserRole(ur) <- permitViewAllPropertyUserRole(userRole);
-    ASSIGN forbidViewAllPropertyUserRole(ur) <- forbidViewAllPropertyUserRole(userRole);
-    ASSIGN permitChangeAllPropertyUserRole(ur) <- permitChangeAllPropertyUserRole(userRole);
-    ASSIGN forbidChangeAllPropertyUserRole(ur) <- forbidChangeAllPropertyUserRole(userRole);
-    ASSIGN defaultFormsUserRole(ur) <- defaultFormsUserRole(userRole);
-    ASSIGN permitAllFormsUserRole(ur) <- permitAllFormsUserRole(userRole);
-    ASSIGN forbidAllFormsUserRole(ur) <- forbidAllFormsUserRole(userRole);
+copyData = ACTION (UserRole userRole, UserRole ur) {
+    ASSIGN name(ur) <- name(userRole);
+    ASSIGN permitViewAllProperty(ur) <- permitViewAllProperty(userRole);
+    ASSIGN forbidViewAllProperty(ur) <- forbidViewAllProperty(userRole);
+    ASSIGN permitChangeAllProperty(ur) <- permitChangeAllProperty(userRole);
+    ASSIGN forbidChangeAllProperty(ur) <- forbidChangeAllProperty(userRole);
+    ASSIGN defaultForms(ur) <- defaultForms(userRole);
+    ASSIGN permitAllForms(ur) <- permitAllForms(userRole);
+    ASSIGN forbidAllForms(ur) <- forbidAllForms(userRole);
 
-    ASSIGN dataPermitViewUserRoleProperty(ur, property) <- dataPermitViewUserRoleProperty(userRole, property);
-    ASSIGN dataForbidViewUserRoleProperty(ur, property) <- dataForbidViewUserRoleProperty(userRole, property);
-    ASSIGN dataPermitChangeUserRoleProperty(ur, property) <- dataPermitChangeUserRoleProperty(userRole, property);
-    ASSIGN dataForbidChangeUserRoleProperty(ur, property) <- dataForbidChangeUserRoleProperty(userRole, property);
+    ASSIGN dataPermitView(ur, Property property) <- dataPermitView(userRole, property);
+    ASSIGN dataForbidView(ur, Property property) <- dataForbidView(userRole, property);
+    ASSIGN dataPermitChange(ur, Property property) <- dataPermitChange(userRole, property);
+    ASSIGN dataForbidChange(ur, Property property) <- dataForbidChange(userRole, property);
     
-    ASSIGN dataPermitViewUserRolePropertyGroup(ur, propertyGroup) <- dataPermitViewUserRolePropertyGroup(userRole, propertyGroup);
-    ASSIGN dataForbidViewUserRolePropertyGroup(ur, propertyGroup) <- dataForbidViewUserRolePropertyGroup(userRole, propertyGroup);
-    ASSIGN dataPermitChangeUserRolePropertyGroup(ur, propertyGroup) <- dataPermitChangeUserRolePropertyGroup(userRole, propertyGroup);
-    ASSIGN dataForbidChangeUserRolePropertyGroup(ur, propertyGroup) <- dataForbidChangeUserRolePropertyGroup(userRole, propertyGroup);
+    ASSIGN dataPermitView(ur, PropertyGroup propertyGroup) <- dataPermitView(userRole, propertyGroup);
+    ASSIGN dataForbidView(ur, PropertyGroup propertyGroup) <- dataForbidView(userRole, propertyGroup);
+    ASSIGN dataPermitChange(ur, PropertyGroup propertyGroup) <- dataPermitChange(userRole, propertyGroup);
+    ASSIGN dataForbidChange(ur, PropertyGroup propertyGroup) <- dataForbidChange(userRole, propertyGroup);
     
-    ASSIGN defaultNumberUserRoleNavigatorElement(ur, navigatorElement) <- defaultNumberUserRoleNavigatorElement(userRole, navigatorElement);
-    ASSIGN permitUserRoleNavigatorElement(ur, navigatorElement) <- permitUserRoleNavigatorElement(userRole, navigatorElement);
-    ASSIGN forbidUserRoleNavigatorElement(ur, navigatorElement) <- forbidUserRoleNavigatorElement(userRole, navigatorElement);
+    ASSIGN defaultNumber(ur, NavigatorElement navigatorElement) <- defaultNumber(userRole, navigatorElement);
+    ASSIGN permit(ur, NavigatorElement navigatorElement) <- permit(userRole, navigatorElement);
+    ASSIGN forbid(ur, NavigatorElement navigatorElement) <- forbid(userRole, navigatorElement);
     
-    ASSIGN orderUserRolePolicy(ur, userPolicy) <- orderUserRolePolicy(userRole, userPolicy);
+    ASSIGN order(ur, Policy userPolicy) <- order(userRole, userPolicy);
             
-    EXEC overCopyUserRole(userRole, ur);
+    EXEC overCopy(userRole, ur);
 }
 
-copyUserRole 'Копировать' = ACTION (userRole) NEWSESSION {
+copy 'Копировать' = ACTION (UserRole userRole) NEWSESSION {
     FOR ADDOBJ ur = UserRole DO {
-        EXEC copyDataUserRole(userRole, ur);
+        EXEC copyData(userRole, ur);
         FORM userRole OBJECTS ur = ur MANAGESESSION DOCKEDMODAL;
     }
 } TOOLBAR;
@@ -301,60 +301,60 @@ copyUserRole 'Копировать' = ACTION (userRole) NEWSESSION {
 FORM securityPolicy 'Политика безопасности'
 
     OBJECTS ur=UserRole
-    PROPERTIES(ur) READONLY nameUserRole, sidUserRole
-    PROPERTIES(ur) transactTimeoutUserRole, forbidDuplicateFormsUserRole, permitViewAllPropertyUserRole, forbidViewAllPropertyUserRole, permitChangeAllPropertyUserRole,
-                   forbidChangeAllPropertyUserRole, nameDefaultFormsUserRole, permitAllFormsUserRole, forbidAllFormsUserRole
+    PROPERTIES(ur) READONLY name, sid
+    PROPERTIES(ur) transactTimeout, forbidDuplicateForms, permitViewAllProperty, forbidViewAllProperty, permitChangeAllProperty,
+                   forbidChangeAllProperty, nameDefaultForms, permitAllForms, forbidAllForms
 
     OBJECTS p=Policy
-    PROPERTIES(p)  namePolicy, descriptionPolicy
+    PROPERTIES(p)  name, description
 
     OBJECTS f=NavigatorElement
-    PROPERTIES(f) READONLY captionNavigatorElement, canonicalNameNavigatorElement
-    PROPERTIES(f) numberNavigatorElement
-    PROPERTIES(ur, f) permitUserRoleNavigatorElement, forbidUserRoleNavigatorElement, defaultNumberUserRoleNavigatorElement
+    PROPERTIES(f) READONLY caption, canonicalName
+    PROPERTIES(f) number
+    PROPERTIES(ur, f) permit, forbid, defaultNumber
 
     OBJECTS pr=Property
-    PROPERTIES(pr) captionProperty, canonicalNameProperty
-    PROPERTIES(ur, pr) permitViewUserRoleProperty, forbidViewUserRoleProperty, permitChangeUserRoleProperty, forbidChangeUserRoleProperty
-    ORDER BY canonicalNameProperty(pr)
+    PROPERTIES(pr) caption, canonicalName
+    PROPERTIES(ur, pr) permitView, forbidView, permitChange, forbidChange
+    ORDER BY canonicalName(pr)
 
     OBJECTS df=NavigatorElement
-    PROPERTIES(df) READONLY captionNavigatorElement, canonicalNameNavigatorElement
-    PROPERTIES(df) numberNavigatorElement, permitNavigatorElement, forbidNavigatorElement, permitExportNavigatorElement
-    ORDER BY canonicalNameProperty(pr)
+    PROPERTIES(df) READONLY caption, canonicalName
+    PROPERTIES(df) number, permit, forbid, permitExport
+    ORDER BY canonicalName(pr)
 
     OBJECTS dpr=Property
-    PROPERTIES(dpr) captionProperty, canonicalNameProperty, permitViewProperty, forbidViewProperty, permitChangeProperty, forbidChangeProperty
+    PROPERTIES(dpr) caption, canonicalName, permitView, forbidView, permitChange, forbidChange
 
-    TREE treeFormObject tf = NavigatorElement PARENT parentNavigatorElement
-    PROPERTIES(tf) READONLY captionNavigatorElement, canonicalNameNavigatorElement
-    PROPERTIES(tf) numberNavigatorElement
-    PROPERTIES(ur, tf) permitUserRoleNavigatorElement BACKGROUND backgroundPermitUserRoleNavigatorElement(ur, tf), forbidUserRoleNavigatorElement BACKGROUND backgroundForbidUserRoleNavigatorElement(ur, tf), defaultNumberUserRoleNavigatorElement
-    ORDER BY numberNavigatorElement(tf)
+    TREE treeFormObject tf = NavigatorElement PARENT parent
+    PROPERTIES(tf) READONLY caption, canonicalName
+    PROPERTIES(tf) number
+    PROPERTIES(ur, tf) permit BACKGROUND backgroundPermit(ur, tf), forbid BACKGROUND backgroundForbid(ur, tf), defaultNumber
+    ORDER BY number(tf)
 
-    TREE treePropertyObject tprs = PropertyGroup PARENT parentPropertyGroup, prs = Property
-    PROPERTIES(tprs) captionPropertyGroup, SIDPropertyGroup, numberPropertyGroup
-    ORDER BY numberPropertyGroup(tprs)
-    PROPERTIES(prs) captionProperty, canonicalNameProperty, numberProperty
-    PROPERTIES(ur, prs) permitViewUserRoleProperty, forbidViewUserRoleProperty, permitChangeUserRoleProperty, forbidChangeUserRoleProperty
-    PROPERTIES(ur, tprs) permitViewUserRolePropertyGroup, forbidViewUserRolePropertyGroup, permitChangeUserRolePropertyGroup, forbidChangeUserRolePropertyGroup
-    ORDER BY numberProperty(prs)
+    TREE treePropertyObject tprs = PropertyGroup PARENT parent, prs = Property
+    PROPERTIES(tprs) caption, SID, number
+    ORDER BY number(tprs)
+    PROPERTIES(prs) caption, canonicalName, number
+    PROPERTIES(ur, prs) permitView, forbidView, permitChange, forbidChange
+    PROPERTIES(ur, tprs) permitView, forbidView, permitChange, forbidChange
+    ORDER BY number(prs)
 
-    TREE treeDefaultForm tdf = NavigatorElement PARENT parentNavigatorElement
-    PROPERTIES(tdf) READONLY captionNavigatorElement, canonicalNameNavigatorElement
-    PROPERTIES(tdf) numberNavigatorElement, permitNavigatorElement, forbidNavigatorElement, permitExportNavigatorElement
-    ORDER BY numberNavigatorElement(tdf)
+    TREE treeDefaultForm tdf = NavigatorElement PARENT parent
+    PROPERTIES(tdf) READONLY caption, canonicalName
+    PROPERTIES(tdf) number, permit, forbid, permitExport
+    ORDER BY number(tdf)
 
-    TREE treeDefaultProperty tdprs = PropertyGroup PARENT parentPropertyGroup, dprs = Property
-    PROPERTIES (tdprs) captionPropertyGroup, SIDPropertyGroup, numberPropertyGroup, permitViewPropertyGroup, forbidViewPropertyGroup, permitChangePropertyGroup, forbidChangePropertyGroup
-    ORDER BY numberPropertyGroup(tdprs)
+    TREE treeDefaultProperty tdprs = PropertyGroup PARENT parent, dprs = Property
+    PROPERTIES (tdprs) caption, SID, number, permitView, forbidView, permitChange, forbidChange
+    ORDER BY number(tdprs)
 
-    PROPERTIES (dprs)  captionProperty, canonicalNameProperty,      numberProperty,      permitViewProperty,          forbidViewProperty,          permitChangeProperty,          forbidChangeProperty
-    ORDER BY numberProperty(dprs)
+    PROPERTIES (dprs)  caption, canonicalName,      number,      permitView,          forbidView,          permitChange,          forbidChange
+    ORDER BY number(dprs)
 
-    PROPERTIES(ur, p) orderUserRolePolicy COLUMNS (ur) HEADER sidUserRole(ur)
+    PROPERTIES(ur, p) order COLUMNS (ur) HEADER sid(ur)
 
-    FILTERS parentProperty(prs)==tprs, parentProperty(dprs)==tdprs
+    FILTERS parent(prs)==tprs, parent(dprs)==tdprs
 ;
 
 DESIGN securityPolicy {
@@ -424,36 +424,36 @@ DESIGN securityPolicy {
 
 FORM userRoles 'Роли'
     OBJECTS ur=UserRole
-    PROPERTIES(ur) READONLY nameUserRole, sidUserRole
-    PROPERTIES(ur) copyUserRole FORCE PANEL
+    PROPERTIES(ur) READONLY name, sid
+    PROPERTIES(ur) copy FORCE PANEL
     PROPERTIES(ur) ADDFORM, EDITFORM, DELETE
     DIALOG UserRole OBJECT ur
 ;
 
 FORM propertyPolicy 'Политика безопасности для свойства'
     OBJECTS p=Property FIXED PANEL, ur=UserRole
-    PROPERTIES(p) READONLY captionProperty, canonicalNameProperty
-    PROPERTIES(ur) READONLY nameUserRole, sidUserRole
-    PROPERTIES(p) permitViewProperty, forbidViewProperty, permitChangeProperty, forbidChangeProperty, userLoggableProperty, isSetNotNullProperty
-    PROPERTIES(ur, p) permitViewUserRoleProperty, forbidViewUserRoleProperty, permitChangeUserRoleProperty, forbidChangeUserRoleProperty
+    PROPERTIES(p) READONLY caption, canonicalName
+    PROPERTIES(ur) READONLY name, sid
+    PROPERTIES(p) permitView, forbidView, permitChange, forbidChange, userLoggable, isSetNotNull
+    PROPERTIES(ur, p) permitView, forbidView, permitChange, forbidChange
 ;
 
 DESIGN propertyPolicy {
     NEW property {
         type = CONTAINERH;
         caption = 'Свойства';
-        MOVE PROPERTY(captionProperty(p));
-        MOVE PROPERTY(canonicalNameProperty(p));
+        MOVE PROPERTY(caption(p));
+        MOVE PROPERTY(canonicalName(p));
     }
     NEW permission {
         type = CONTAINERH;
         caption = 'Доступ';
-        MOVE PROPERTY(permitViewProperty(p));
-        MOVE PROPERTY(forbidViewProperty(p));
-        MOVE PROPERTY(permitChangeProperty(p));
-        MOVE PROPERTY(forbidChangeProperty(p));
-        MOVE PROPERTY(userLoggableProperty(p));
-        MOVE PROPERTY(isSetNotNullProperty(p));
+        MOVE PROPERTY(permitView(p));
+        MOVE PROPERTY(forbidView(p));
+        MOVE PROPERTY(permitChange(p));
+        MOVE PROPERTY(forbidChange(p));
+        MOVE PROPERTY(userLoggable(p));
+        MOVE PROPERTY(isSetNotNull(p));
     }
     MOVE ur.box;
     MOVE functions.box;

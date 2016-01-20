@@ -61,12 +61,12 @@ public class EvalActionProperty<P extends PropertyInterface> extends SystemExpli
             String runName = module.getName() + ".run";
             LAP<?> runAction = module.findAction(runName);
             if (runAction != null) {
-                String textScript = (String) evalLM.findProperty("scriptStorage").read(context);
-                if (evalLM.findProperty("countTextScript").read(context) == null) {
+                String textScript = (String) evalLM.findProperty("scriptStorage[]").read(context);
+                if (evalLM.findProperty("countTextScript[]").read(context) == null) {
                     try (DataSession session = context.createSession()) {
                         DataObject scriptObject = session.addObject((ConcreteCustomClass) evalLM.findClass("Script"));
-                        evalLM.findProperty("textScript").change(textScript, session, scriptObject);
-                        evalLM.findProperty("dateTimeScript").change(new Timestamp(Calendar.getInstance().getTime().getTime()), session, scriptObject);
+                        evalLM.findProperty("text[Script]").change(textScript, session, scriptObject);
+                        evalLM.findProperty("dateTime[Script]").change(new Timestamp(Calendar.getInstance().getTime().getTime()), session, scriptObject);
                         session.apply(context);
                     }
                 }

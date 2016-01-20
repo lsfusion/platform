@@ -14,7 +14,7 @@ objectClass = NATIVE CustomObjectClass (Object);
 random = NATIVE DOUBLE ();
 //watch = ACTION NATIVE (); 
 
-statCustomObjectClass 'Статистика' = DATA INTEGER (CustomObjectClass);
+stat 'Статистика' = DATA INTEGER (CustomObjectClass);
 
 GROUP root 'Корневая группа';
 GROUP public 'Пользовательские свойства' : root;
@@ -36,8 +36,8 @@ substring = FORMULA PG 'substr($1, 1, $2)', MS 'SUBSTRING($1, 1, $2)';
 position = FORMULA PG 'strpos($1, $2)', MS 'CHARINDEX($2, $1)';
 leftTo = FORMULA PG 'left($1, strpos($1, $2) - 1)', MS 'LEFT($1, CHARINDEX($2, $1) - 1)';
 
-subtractInteger(dateFrom, dateTo) = [= FORMULA INTEGER PG '(($1)-($2))', MS 'DATEDIFF(dd, $2, $1)'](dateFrom AS DATE, dateTo AS DATE);
-subtractSeconds(dateTimeFrom, dateTimeTo) = [= FORMULA INTEGER PG 'extract (\'epoch\' from (($1)-($2)))', MS 'DATEDIFF(s, $2, $1)'](dateTimeTo AS DATETIME, dateTimeFrom AS DATETIME);
+subtractInteger(DATE dateFrom, DATE dateTo) = [= FORMULA INTEGER PG '(($1)-($2))', MS 'DATEDIFF(dd, $2, $1)'](dateFrom AS DATE, dateTo AS DATE);
+subtractSeconds(DATETIME dateTimeFrom, DATETIME dateTimeTo) = [= FORMULA INTEGER PG 'extract (\'epoch\' from (($1)-($2)))', MS 'DATEDIFF(s, $2, $1)'](dateTimeTo AS DATETIME, dateTimeFrom AS DATETIME);
 
 formApply 'Сохранить' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.form.FormApplyActionProperty' ();
 formCancel 'Отменить' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.form.FormCancelActionProperty' ();
@@ -72,11 +72,11 @@ check() = ACTION {
 executeLocalEvents = ACTION CUSTOM 'lsfusion.server.logics.property.actions.ExecuteLocalEventsActionProperty' ();
 
 staticName 'Статическое имя' = DATA STRING[250] (Object);
-nameStatic (name) = GROUP MAX object BY staticName(object);
+nameStatic (name) = GROUP MAX Object object BY staticName(object);
 
 staticCaption 'Статический заголовок' = DATA ISTRING[100] (Object);
 
-objectClassName 'Класс объекта' (o) = staticCaption(objectClass(o));;
+objectClassName 'Класс объекта' (Object o) = staticCaption(objectClass(o));;
 
 defaultBackgroundColor 'Цвет фона по умолчанию при выделении' = DATA COLOR ();
 defaultOverrideBackgroundColor 'Цвет фона по умолчанию при выделении' = OVERRIDE RGB(255, 255, 0), defaultBackgroundColor() PERSISTENT;
@@ -186,7 +186,7 @@ NAVIGATOR {
 
 // Tests
 
-randInt(max) = INTEGER(random() * ((max AS INTEGER) - 1)) + 1;  
+randInt(INTEGER max) = INTEGER(random() * ((max AS INTEGER) - 1)) + 1;  
 
 META defineRandom1(cls, name, fnc)
      randNumber###name###cls (prm1) = PARTITION SUM 1 IF fnc(prm1) ORDER prm1;
@@ -196,8 +196,8 @@ META defineRandom1(cls, name, fnc)
 END;
 
 META defineRandom2(cls1, cls2, name, fnc)
-     randNumber###name###cls1###cls2 (prm1, prm2) = PARTITION SUM 1 IF fnc(prm1, prm2) BY prm2 ORDER prm1;
-     cls1###name###fromRandNumber###cls2 (number, prm2) = GROUP NAGGR (prm1) BY randNumber###name###cls1###cls2(prm1, prm2), prm2;
-     maxRand###name###cls1###cls2 = GROUP SUM 1 IF fnc(prm1, prm2) BY prm2;
-     random###name###cls1###cls2(max, prm2) = cls1###name###fromRandNumber###cls2((MIN maxRand###name###cls1###cls2(prm2), max AS INTEGER), prm2);     
+     randNumber (###cls1 prm1, ###cls2 prm2) = PARTITION SUM 1 IF prevCurrentBalance(prm1, prm2) BY prm2 ORDER prm1;
+     cls1##FromRand (number, prm2) = GROUP NAGGR (###cls1 prm1) BY randNumber(prm1, ###cls2 prm2), prm2;
+     maxRand###cls1 = GROUP SUM 1 IF prevCurrentBalance(###cls1 prm1, ###cls2 prm2) BY prm2;
+     random###cls1(INTEGER max, ###cls2 prm2) = cls1##FromRand((MIN maxRand###cls1(prm2), max AS INTEGER), prm2);     
 END;

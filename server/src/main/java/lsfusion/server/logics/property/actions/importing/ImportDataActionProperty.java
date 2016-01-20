@@ -89,7 +89,7 @@ public abstract class ImportDataActionProperty extends ScriptingActionProperty {
         Object file = value.object;
         if (file instanceof byte[]) {
             try {
-                Integer prevImported = (Integer) findProperty("prevImported").read(context);
+                Integer prevImported = (Integer) findProperty("prevImported[]").read(context);
                 if (value.getType() instanceof DynamicFormatFileClass) {
                     file = BaseUtils.getFile((byte[]) file);
                 }
@@ -125,7 +125,7 @@ public abstract class ImportDataActionProperty extends ScriptingActionProperty {
                             return NullValue.instance;
                         }}));
                 }
-                findProperty("prevImported").change(i, context);
+                findProperty("prevImported[]").change(i, context);
                 if(prevImported != null) {
                     while (i < prevImported) {
                         DataObject rowKey = new DataObject(i++, IntegerClass.instance);

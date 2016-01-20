@@ -117,61 +117,61 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
         super.initProperties();
 
         // Подключения к серверу
-        computerConnection = findProperty("computerConnection");
-        remoteAddressConnection = findProperty("remoteAddressConnection");
-        userConnection = findProperty("userConnection");
-        userLoginConnection = findProperty("userLoginConnection");
-        osVersionConnection = findProperty("osVersionConnection");
-        processorConnection = findProperty("processorConnection");
-        architectureConnection = findProperty("architectureConnection");
-        coresConnection = findProperty("coresConnection");
-        physicalMemoryConnection = findProperty("physicalMemoryConnection");
-        totalMemoryConnection = findProperty("totalMemoryConnection");
-        maximumMemoryConnection = findProperty("maximumMemoryConnection");
-        freeMemoryConnection = findProperty("freeMemoryConnection");
-        javaVersionConnection = findProperty("javaVersionConnection");
-        screenSizeConnection = findProperty("screenSizeConnection");
-        connectionStatusConnection = (LCP<PropertyInterface>) findProperty("connectionStatusConnection");
+        computerConnection = findProperty("computer[Connection]");
+        remoteAddressConnection = findProperty("remoteAddress[Connection]");
+        userConnection = findProperty("user[Connection]");
+        userLoginConnection = findProperty("userLogin[Connection]");
+        osVersionConnection = findProperty("osVersion[Connection]");
+        processorConnection = findProperty("processor[Connection]");
+        architectureConnection = findProperty("architecture[Connection]");
+        coresConnection = findProperty("cores[Connection]");
+        physicalMemoryConnection = findProperty("physicalMemory[Connection]");
+        totalMemoryConnection = findProperty("totalMemory[Connection]");
+        maximumMemoryConnection = findProperty("maximumMemory[Connection]");
+        freeMemoryConnection = findProperty("freeMemory[Connection]");
+        javaVersionConnection = findProperty("javaVersion[Connection]");
+        screenSizeConnection = findProperty("screenSize[Connection]");
+        connectionStatusConnection = (LCP<PropertyInterface>) findProperty("connectionStatus[Connection]");
 
-        connectTimeConnection = findProperty("connectTimeConnection");
-        disconnectConnection = findAction("disconnectConnection");
+        connectTimeConnection = findProperty("connectTime[Connection]");
+        disconnectConnection = findAction("disconnect[Connection]");
         //addIfAProp(baseGroup, "Отключить", true, findProperty("disconnectTimeConnection"), 1, disconnectConnection, 1);
 
         // Логирование старта сервера
-        computerLaunch = findProperty("computerLaunch");
-        timeLaunch = findProperty("timeLaunch");
-        revisionLaunch = findProperty("revisionLaunch");
+        computerLaunch = findProperty("computer[Launch]");
+        timeLaunch = findProperty("time[Launch]");
+        revisionLaunch = findProperty("revision[Launch]");
 
         // Ошибки выполнения
-        messageException = findProperty("messageException");
-        dateException = findProperty("dateException");
-        erTraceException = findProperty("erTraceException");
-        lsfTraceException = findProperty("lsfStackTraceException");
-        typeException =  findProperty("typeException");
-        clientClientException = findProperty("clientClientException");
-        loginClientException = findProperty("loginClientException");
-        reqIdHandledException = findProperty("reqIdHandledException");
-        countNonFatalHandledException = findProperty("countNonFatalHandledException");
-        abandonedNonFatalHandledException = findProperty("abandonedNonFatalHandledException");
+        messageException = findProperty("message[Exception]");
+        dateException = findProperty("date[Exception]");
+        erTraceException = findProperty("erTrace[Exception]");
+        lsfTraceException = findProperty("lsfStackTrace[Exception]");
+        typeException =  findProperty("type[Exception]");
+        clientClientException = findProperty("client[ClientException]");
+        loginClientException = findProperty("login[ClientException]");
+        reqIdHandledException = findProperty("reqId[HandledException]");
+        countNonFatalHandledException = findProperty("count[NonFatalHandledException]");
+        abandonedNonFatalHandledException = findProperty("abandoned[NonFatalHandledException]");
 
         // Открытые формы во время подключения
-        connectionFormCount = findProperty("connectionFormCount");
+        connectionFormCount = findProperty("connectionFormCount[Connection,NavigatorElement]");
 
         // Сессия
-        currentSession = findProperty("currentSession");
-        connectionSession = findProperty("connectionSession");
-        navigatorElementSession = findProperty("navigatorElementSession");
-        quantityAddedClassesSession = findProperty("quantityAddedClassesSession");
-        quantityRemovedClassesSession = findProperty("quantityRemovedClassesSession");
-        quantityChangedClassesSession = findProperty("quantityChangedClassesSession");
-        changesSession = findProperty("changesSession");
+        currentSession = findProperty("currentSession[]");
+        connectionSession = findProperty("connection[Session]");
+        navigatorElementSession = findProperty("navigatorElement[Session]");
+        quantityAddedClassesSession = findProperty("quantityAddedClasses[Session]");
+        quantityRemovedClassesSession = findProperty("quantityRemovedClasses[Session]");
+        quantityChangedClassesSession = findProperty("quantityChangedClasses[Session]");
+        changesSession = findProperty("changes[Session]");
 //        baseLM.objectClassName.makeLoggable(this, true);
 
-        pingComputerDateTimeFromDateTimeTo = findProperty("pingComputerDateTimeFromDateTimeTo");
-        minTotalMemoryComputerDateTimeFromDateTimeTo = findProperty("minTotalMemoryComputerDateTimeFromDateTimeTo");
-        maxTotalMemoryComputerDateTimeFromDateTimeTo = findProperty("maxTotalMemoryComputerDateTimeFromDateTimeTo");
-        minUsedMemoryComputerDateTimeFromDateTimeTo = findProperty("minUsedMemoryComputerDateTimeFromDateTimeTo");
-        maxUsedMemoryComputerDateTimeFromDateTimeTo = findProperty("maxUsedMemoryComputerDateTimeFromDateTimeTo");
+        pingComputerDateTimeFromDateTimeTo = findProperty("pingFromTo[Computer,DATETIME,DATETIME]");
+        minTotalMemoryComputerDateTimeFromDateTimeTo = findProperty("minTotalMemoryFromTo[Computer,DATETIME,DATETIME]");
+        maxTotalMemoryComputerDateTimeFromDateTimeTo = findProperty("maxTotalMemoryFromTo[Computer,DATETIME,DATETIME]");
+        minUsedMemoryComputerDateTimeFromDateTimeTo = findProperty("minUsedMemoryFromTo[Computer,DATETIME,DATETIME]");
+        maxUsedMemoryComputerDateTimeFromDateTimeTo = findProperty("maxUsedMemoryFromTo[Computer,DATETIME,DATETIME]");
     }
 
     public void logException(BusinessLogics bl, Throwable t, DataObject user, String clientName, boolean client) throws SQLException, SQLHandledException {

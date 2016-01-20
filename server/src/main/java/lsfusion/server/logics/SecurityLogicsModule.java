@@ -74,66 +74,66 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
     public void initProperties() throws RecognitionException {
         super.initProperties();
         // ---- Роли
-        sidUserRole = findProperty("sidUserRole");
-        nameUserRole = findProperty("nameUserRole");
-        userRoleSID = findProperty("userRoleSID");
-        sidMainRoleCustomUser = findProperty("sidMainRoleCustomUser");
-        nameMainRoleUser = findProperty("nameMainRoleUser");
+        sidUserRole = findProperty("sid[UserRole]");
+        nameUserRole = findProperty("name[UserRole]");
+        userRoleSID = findProperty("userRoleSID[VARSTRING[30]]");
+        sidMainRoleCustomUser = findProperty("sidMainRole[CustomUser]");
+        nameMainRoleUser = findProperty("nameMainRole[User]");
 
         // Список ролей для пользователей
-        mainRoleCustomUser = findProperty("mainRoleCustomUser");
-        inMainRoleCustomUser = findProperty("inMainRoleCustomUser");
+        mainRoleCustomUser = findProperty("mainRole[CustomUser]");
+        inMainRoleCustomUser = findProperty("inMainRole[CustomUser,UserRole]");
 
         // ------------------------ Политика безопасности ------------------ //
-        namePolicy = findProperty("namePolicy");
-        policyName = findProperty("policyName");
-        descriptionPolicy = findProperty("descriptionPolicy");
-        orderUserPolicy = findProperty("orderUserPolicy");
+        namePolicy = findProperty("name[Policy]");
+        policyName = findProperty("policy[VARISTRING[100]]");
+        descriptionPolicy = findProperty("description[Policy]");
+        orderUserPolicy = findProperty("order[User,Policy]");
 
         // ---- Политики для доменной логики
 
         // -- Глобальные разрешения для всех ролей
-        permitViewProperty = findProperty("permitViewProperty");
-        forbidViewProperty = findProperty("forbidViewProperty");
-        permitChangeProperty = findProperty("permitChangeProperty");
-        forbidChangeProperty = findProperty("forbidChangeProperty");
-        notNullPermissionProperty = findProperty("notNullPermissionProperty");
+        permitViewProperty = findProperty("permitView[Property]");
+        forbidViewProperty = findProperty("forbidView[Property]");
+        permitChangeProperty = findProperty("permitChange[Property]");
+        forbidChangeProperty = findProperty("forbidChange[Property]");
+        notNullPermissionProperty = findProperty("notNullPermission[Property]");
 
         // -- Разрешения для каждой роли
 
         // Разрешения для всех свойств
-        forbidDuplicateFormsCurrentUser = findProperty("forbidDuplicateFormsCurrentUser");
-        permitViewAllPropertyUser = findProperty("permitViewAllPropertyUser");
-        forbidViewAllPropertyUser = findProperty("forbidViewAllPropertyUser");
-        permitChangeAllPropertyUser = findProperty("permitChangeAllPropertyUser");
-        forbidChangeAllPropertyRole = findProperty("forbidChangeAllPropertyRole");
+        forbidDuplicateFormsCurrentUser = findProperty("forbidDuplicateFormsCurrentUser[]");
+        permitViewAllPropertyUser = findProperty("permitViewAllProperty[User]");
+        forbidViewAllPropertyUser = findProperty("forbidViewAllProperty[User]");
+        permitChangeAllPropertyUser = findProperty("permitChangeAllProperty[User]");
+        forbidChangeAllPropertyRole = findProperty("forbidChangeAllPropertyRole[User]");
 
         // Разрешения для каждого свойства
-        fullForbidViewUserProperty = findProperty("fullForbidViewUserProperty");
-        fullForbidChangeUserProperty = findProperty("fullForbidChangeUserProperty");
+        fullForbidViewUserProperty = findProperty("fullForbidView[User,Property]");
+        fullForbidChangeUserProperty = findProperty("fullForbidChange[User,Property]");
 
         // ---- Политики для логики представлений
 
         // Открытие форм по умолчанию
-        defaultNumberUserNavigatorElement = findProperty("defaultNumberUserNavigatorElement");
-        defaultFormsUser = findProperty("defaultFormsUser");
+        defaultNumberUserNavigatorElement = findProperty("defaultNumber[User,NavigatorElement]");
+        defaultFormsUser = findProperty("defaultForms[User]");
 
         // -- Глобальные разрешения для всех ролей
-        permitNavigatorElement = findProperty("permitNavigatorElement");
-        forbidNavigatorElement = findProperty("forbidNavigatorElement");
-        permitExportNavigatorElement = findProperty("permitExportNavigatorElement");
+        permitNavigatorElement = findProperty("permit[NavigatorElement]");
+        forbidNavigatorElement = findProperty("forbid[NavigatorElement]");
+        permitExportNavigatorElement = findProperty("permitExport[NavigatorElement]");
         
         // -- Разрешения для каждой роли
 
         // Разрешения для всех элементов
-        permitAllFormsUser = findProperty("permitAllFormsUser");
-        forbidAllFormsUser = findProperty("forbidAllFormsUser");
+        permitAllFormsUser = findProperty("permitAllForms[User]");
+        forbidAllFormsUser = findProperty("forbidAllForms[User]");
         
         // Разрешения для каждого элемента
-        overPermitUserNavigatorElement = findProperty("overPermitUserNavigatorElement");
-        overForbidUserNavigatorElement = findProperty("overForbidUserNavigatorElement");
+        overPermitUserNavigatorElement = findProperty("overPermit[User,NavigatorElement]");
+        overForbidUserNavigatorElement = findProperty("overForbid[User,?]");
 
-        transactTimeoutUser = findProperty("transactTimeoutUser");
+        transactTimeoutUser = findProperty("transactTimeout[User]");
 
         propertyPolicyForm = (FormEntity) findNavigatorElement("propertyPolicy");
     }

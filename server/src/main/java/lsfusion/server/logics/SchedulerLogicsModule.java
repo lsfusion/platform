@@ -64,36 +64,36 @@ public class SchedulerLogicsModule extends ScriptingLogicsModule {
     public void initProperties() throws RecognitionException {
         super.initProperties();
 
-        nameScheduledTask = findProperty("nameScheduledTask");
-        runAtStartScheduledTask = findProperty("runAtStartScheduledTask");
-        startDateScheduledTask = findProperty("startDateScheduledTask");
-        timeFromScheduledTask = findProperty("timeFromScheduledTask");
-        timeToScheduledTask = findProperty("timeToScheduledTask");
-        periodScheduledTask = findProperty("periodScheduledTask");
-        schedulerStartTypeScheduledTask = findProperty("schedulerStartTypeScheduledTask");
-        activeScheduledTask = findProperty("activeScheduledTask");
-        daysOfWeekScheduledTask = findProperty("daysOfWeekScheduledTask");
-        daysOfMonthScheduledTask = findProperty("daysOfMonthScheduledTask");
-        ignoreExceptionsScheduledTaskDetail = findProperty("ignoreExceptionsScheduledTaskDetail");
-        activeScheduledTaskDetail = findProperty("activeScheduledTaskDetail");
-        orderScheduledTaskDetail = findProperty("orderScheduledTaskDetail");
-        scriptScheduledTaskDetail = findProperty("scriptScheduledTaskDetail");
-        timeoutScheduledTaskDetail = findProperty("timeoutScheduledTaskDetail");
-        parameterScheduledTaskDetail = findProperty("parameterScheduledTaskDetail");
-        scheduledTaskScheduledTaskDetail = findProperty("scheduledTaskScheduledTaskDetail");
+        nameScheduledTask = findProperty("name[ScheduledTask]");
+        runAtStartScheduledTask = findProperty("runAtStart[ScheduledTask]");
+        startDateScheduledTask = findProperty("startDate[ScheduledTask]");
+        timeFromScheduledTask = findProperty("timeFrom[ScheduledTask]");
+        timeToScheduledTask = findProperty("timeTo[ScheduledTask]");
+        periodScheduledTask = findProperty("period[ScheduledTask]");
+        schedulerStartTypeScheduledTask = findProperty("schedulerStartType[ScheduledTask]");
+        activeScheduledTask = findProperty("active[ScheduledTask]");
+        daysOfWeekScheduledTask = findProperty("daysOfWeek[ScheduledTask]");
+        daysOfMonthScheduledTask = findProperty("daysOfMonth[ScheduledTask]");
+        ignoreExceptionsScheduledTaskDetail = findProperty("ignoreExceptions[ScheduledTaskDetail]");
+        activeScheduledTaskDetail = findProperty("active[ScheduledTaskDetail]");
+        orderScheduledTaskDetail = findProperty("order[ScheduledTaskDetail]");
+        scriptScheduledTaskDetail = findProperty("script[ScheduledTaskDetail]");
+        timeoutScheduledTaskDetail = findProperty("timeout[ScheduledTaskDetail]");
+        parameterScheduledTaskDetail = findProperty("parameter[ScheduledTaskDetail]");
+        scheduledTaskScheduledTaskDetail = findProperty("scheduledTask[ScheduledTaskDetail]");
 
-        canonicalNamePropertyScheduledTaskDetail = findProperty("canonicalNamePropertyScheduledTaskDetail");
+        canonicalNamePropertyScheduledTaskDetail = findProperty("canonicalNameProperty[ScheduledTaskDetail]");
 
-        resultScheduledTaskLog = findProperty("resultScheduledTaskLog");
-        exceptionOccurredScheduledTaskLog = findProperty("exceptionOccurredScheduledTaskLog");
-        propertyScheduledTaskLog = findProperty("propertyScheduledTaskLog");
-        dateScheduledTaskLog = findProperty("dateScheduledTaskLog");
-        scheduledTaskScheduledTaskLog = findProperty("scheduledTaskScheduledTaskLog");
-        scheduledTaskLogScheduledClientTaskLog = findProperty("scheduledTaskLogScheduledClientTaskLog");
-        messageScheduledClientTaskLog = findProperty("messageScheduledClientTaskLog");
-        dateScheduledClientTaskLog = findProperty("dateScheduledClientTaskLog");
+        resultScheduledTaskLog = findProperty("result[ScheduledTaskLog]");
+        exceptionOccurredScheduledTaskLog = findProperty("exceptionOccurred[ScheduledTaskLog]");
+        propertyScheduledTaskLog = findProperty("property[ScheduledTaskLog]");
+        dateScheduledTaskLog = findProperty("date[ScheduledTaskLog]");
+        scheduledTaskScheduledTaskLog = findProperty("scheduledTask[ScheduledTaskLog]");
+        scheduledTaskLogScheduledClientTaskLog = findProperty("scheduledTaskLog[ScheduledClientTaskLog]");
+        messageScheduledClientTaskLog = findProperty("message[ScheduledClientTaskLog]");
+        dateScheduledClientTaskLog = findProperty("date[ScheduledClientTaskLog]");
 
-        scriptText = findProperty("scriptText");
-        evalScript = findAction("evalScript");
+        scriptText = findProperty("scriptText[]");
+        evalScript = findAction("evalScript[]");
     }
 }

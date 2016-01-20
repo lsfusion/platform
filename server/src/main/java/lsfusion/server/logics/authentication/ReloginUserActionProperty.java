@@ -28,7 +28,7 @@ public class ReloginUserActionProperty extends ScriptingActionProperty {
             context.delayUserInterfaction(new UserChangedClientAction());
             ScriptingLogicsModule authenticationLM = context.getBL().getModule("Authentication");
             try {
-                authenticationLM.findProperty("userChanged").change(true, context);
+                authenticationLM.findProperty("userChanged[]").change(true, context);
             } catch (ScriptingErrorLog.SemanticErrorException e) {
                 throw ExceptionUtils.propagate(e, SQLException.class);
             }

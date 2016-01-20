@@ -28,12 +28,12 @@ public class UploadToDBActionProperty extends ScriptingActionProperty {
     public void executeCustom(final ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
 
         try {
-            String type = (String) findProperty("uploadStaticNameType").read(context);
-            String host = (String) findProperty("uploadHost").read(context);
-            String user = (String) findProperty("uploadUser").read(context);
-            String password = (String) findProperty("uploadPassword").read(context);
-            String db = (String) findProperty("uploadDB").read(context);
-            String instance = (String) findProperty("uploadInstance").read(context);
+            String type = (String) findProperty("uploadStaticNameType[]").read(context);
+            String host = (String) findProperty("uploadHost[]").read(context);
+            String user = (String) findProperty("uploadUser[]").read(context);
+            String password = (String) findProperty("uploadPassword[]").read(context);
+            String db = (String) findProperty("uploadDB[]").read(context);
+            String instance = (String) findProperty("uploadInstance[]").read(context);
     
             final DataAdapter adapter;
             try {

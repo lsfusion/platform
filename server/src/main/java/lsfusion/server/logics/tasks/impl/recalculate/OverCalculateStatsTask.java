@@ -51,7 +51,7 @@ public class OverCalculateStatsTask extends GroupPropertiesSingleTask {
     protected List getElements() {
         initContext();
         try (DataSession session = getDbManager().createSession()) {
-            Integer maxQuantity = (Integer) getBL().serviceLM.findProperty("maxQuantityOverCalculate").read(session);
+            Integer maxQuantity = (Integer) getBL().serviceLM.findProperty("maxQuantityOverCalculate[]").read(session);
             propertiesSet = getBL().getOverCalculatePropertiesSet(session, maxQuantity);
         } catch (Exception e) {
             propertiesSet = SetFact.mSet();

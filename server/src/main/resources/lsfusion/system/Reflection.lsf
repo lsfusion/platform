@@ -6,14 +6,14 @@ CLASS PropertyGroup 'Родит. группа';
 TABLE propertyGroup (PropertyGroup);
 
 TABLE propertyGroupPropertyGroup (PropertyGroup, PropertyGroup);
-parentPropertyGroup 'Родит. группа' = DATA PropertyGroup (PropertyGroup);
-levelPropertyGroupPropertyGroup 'Уровень' (child, parent) = RECURSION 1l IF child IS PropertyGroup AND parent == child
-                                                                      STEP 2l IF parent == parentPropertyGroup($parent) PERSISTENT;
+parent 'Родит. группа' = DATA PropertyGroup (PropertyGroup);
+level 'Уровень' (PropertyGroup child, PropertyGroup parent) = RECURSION 1l IF child IS PropertyGroup AND parent == child
+                                                                      STEP 2l IF parent == parent($parent) PERSISTENT;
 
-captionPropertyGroup 'Имя' = DATA VARSTRING[250] (PropertyGroup);
-numberPropertyGroup 'Номер' = DATA INTEGER (PropertyGroup);
-SIDPropertyGroup 'Код свойства' = DATA VARSTRING[100] (PropertyGroup);
-propertyGroupSID 'Свойство' (sID) = GROUP AGGR propertyGroup BY SIDPropertyGroup(propertyGroup) WHERE propertyGroup IS PropertyGroup;
+caption 'Имя' = DATA VARSTRING[250] (PropertyGroup);
+number 'Номер' = DATA INTEGER (PropertyGroup);
+SID 'Код свойства' = DATA VARSTRING[100] (PropertyGroup);
+propertyGroup 'Свойство' (sID) = GROUP AGGR PropertyGroup propertyGroup BY SID(propertyGroup) WHERE propertyGroup IS PropertyGroup;
 
 CLASS NavigatorElement 'Элемент навигатора';
 CLASS NavigatorAction 'Действие' : NavigatorElement;
@@ -21,50 +21,50 @@ CLASS Form 'Форма' : NavigatorElement;
 TABLE navigatorElement (NavigatorElement);
 TABLE navigatorElementNavigatorElement(NavigatorElement, NavigatorElement);
 
-captionNavigatorElement 'Название формы' = DATA VARSTRING[250] (NavigatorElement);
-sidNavigatorElement 'Код формы' = DATA VARSTRING[50] (NavigatorElement);
-canonicalNameNavigatorElement 'Каноническое имя формы' = DATA VARSTRING[100] (NavigatorElement);
-numberNavigatorElement 'Номер' = DATA INTEGER (NavigatorElement);
-navigatorElementSID 'Форма' (sID) = GROUP AGGR navigatorElement BY sidNavigatorElement(navigatorElement) WHERE navigatorElement IS NavigatorElement;
-navigatorElementCanonicalName 'Форма' (sid) = GROUP AGGR navigatorElement BY canonicalNameNavigatorElement(navigatorElement) WHERE navigatorElement IS NavigatorElement;
-parentNavigatorElement 'Родит. форма' = DATA NavigatorElement (NavigatorElement);
-isNavigatorElement (navigatorElement) = navigatorElement IS NavigatorElement AND NOT navigatorElement IS Form AND NOT navigatorElement IS NavigatorAction;
-isForm (form) = form IS Form;
-isNavigatorAction (navigatorAction) = navigatorAction IS NavigatorAction;
+caption 'Название формы' = DATA VARSTRING[250] (NavigatorElement);
+sid 'Код формы' = DATA VARSTRING[50] (NavigatorElement);
+canonicalName 'Каноническое имя формы' = DATA VARSTRING[100] (NavigatorElement);
+number 'Номер' = DATA INTEGER (NavigatorElement);
+navigatorElement 'Форма' (sID) = GROUP AGGR NavigatorElement navigatorElement BY sid(navigatorElement) WHERE navigatorElement IS NavigatorElement;
+navigatorElementCanonicalName 'Форма' (sid) = GROUP AGGR NavigatorElement navigatorElement BY canonicalName(navigatorElement) WHERE navigatorElement IS NavigatorElement;
+parent 'Родит. форма' = DATA NavigatorElement (NavigatorElement);
+is (NavigatorElement navigatorElement) = navigatorElement IS NavigatorElement AND NOT navigatorElement IS Form AND NOT navigatorElement IS NavigatorAction;
+is (Form form) = form IS Form;
+is (NavigatorAction navigatorAction) = navigatorAction IS NavigatorAction;
 
 CLASS Property 'Свойство';
 TABLE property (Property);
 
-parentProperty 'Родит. группа' = DATA PropertyGroup (Property);
-numberProperty 'Номер' = DATA INTEGER (Property);
-dbNameProperty 'Код свойства' = DATA VARSTRING[100] (Property) IN base;
-canonicalNameProperty 'Имя свойства' = DATA VARSTRING[512] (Property) IN recognize;
-shortNameProperty 'Имя свойства' (Property p) = leftTo(canonicalNameProperty(p), '[');
-loggableProperty 'Логируется' = DATA BOOLEAN (Property);
-userLoggableProperty 'Логируется пользователем' = DATA BOOLEAN (Property);
-storedProperty 'Постоянно хранимое' = DATA BOOLEAN (Property);
-isSetNotNullProperty 'Не может быть null' = DATA BOOLEAN (Property);
-returnProperty 'Возвращаемый класс' = DATA VARSTRING[100] (Property);
-classProperty 'Класс свойства' = DATA VARSTRING[100] (Property);
-complexityProperty 'Сложность свойства' = DATA LONG (Property);
-captionProperty 'Заголовок' = DATA VARSTRING[250] (Property) IN base;
-tableSIDProperty 'Таблица' = DATA VARSTRING[100] (Property);
+parent 'Родит. группа' = DATA PropertyGroup (Property);
+number 'Номер' = DATA INTEGER (Property);
+dbName 'Код свойства' = DATA VARSTRING[100] (Property) IN base;
+canonicalName 'Имя свойства' = DATA VARSTRING[512] (Property) IN recognize;
+shortName 'Имя свойства' (Property p) = leftTo(canonicalName(p), '[');
+loggable 'Логируется' = DATA BOOLEAN (Property);
+userLoggable 'Логируется пользователем' = DATA BOOLEAN (Property);
+stored 'Постоянно хранимое' = DATA BOOLEAN (Property);
+isSetNotNull 'Не может быть null' = DATA BOOLEAN (Property);
+return 'Возвращаемый класс' = DATA VARSTRING[100] (Property);
+class 'Класс свойства' = DATA VARSTRING[100] (Property);
+complexity 'Сложность свойства' = DATA LONG (Property);
+caption 'Заголовок' = DATA VARSTRING[250] (Property) IN base;
+tableSID 'Таблица' = DATA VARSTRING[100] (Property);
 
-statsProperty 'Кол-во записей' = DATA INTEGER (Property);
+stats 'Кол-во записей' = DATA INTEGER (Property);
 maxStatsProperty 'Максимальное кол-во записей для логируемого свойства' = DATA INTEGER ();
-CONSTRAINT SET (userLoggableProperty(p)) AND maxStatsProperty() AND statsProperty(p) > maxStatsProperty() 
+CONSTRAINT SET (userLoggable(Property p)) AND maxStatsProperty() AND stats(p) > maxStatsProperty() 
            MESSAGE 'Количество записей логируемого свойства не может превышать ' + maxStatsProperty();
 
 EXTEND FORM options PROPERTIES maxStatsProperty();
 DESIGN options { commons { MOVE PROPERTY(maxStatsProperty()); } }
 
-propertySID 'Свойство' (sID) = GROUP NAGGR property BY dbNameProperty(property) WHERE property IS Property; // todo [dale]: временно, нужно для миграции на 15 версию БД
-propertyCanonicalName 'Свойство' (cn) = GROUP AGGR property BY canonicalNameProperty(property) WHERE property IS Property;
-propertyTableSID 'Свойство' (string, sID) = GROUP AGGR property BY tableSIDProperty(property), dbNameProperty(property) WHERE storedProperty(property);
+property 'Свойство' (sID) = GROUP NAGGR Property property BY dbName(property) WHERE property IS Property; // todo [dale]: временно, нужно для миграции на 15 версию БД
+propertyCanonicalName 'Свойство' (cn) = GROUP AGGR Property property BY canonicalName(property) WHERE property IS Property;
+propertyTable 'Свойство' (string, sID) = GROUP AGGR Property property BY tableSID(property), dbName(property) WHERE stored(property);
 
-quantityProperty 'Количество разновидностей' = DATA INTEGER (Property);
-notNullQuantityProperty 'Количество не null значений' = DATA INTEGER (Property);
-overStatsProperty 'Кол-во записей' (property) = OVERRIDE statsProperty(property), notNullQuantityProperty(property);
+quantity 'Количество разновидностей' = DATA INTEGER (Property);
+notNullQuantity 'Количество не null значений' = DATA INTEGER (Property);
+overStats 'Кол-во записей' (Property property) = OVERRIDE stats(property), notNullQuantity(property);
 
 CLASS PropertyDraw 'Свойство на форме';
 
@@ -82,172 +82,172 @@ TABLE formPropertyDraw (Form, PropertyDraw);
 TABLE propertyDraw (PropertyDraw);
 TABLE propertyDrawCustomUser (PropertyDraw, CustomUser);
 
-sidPropertyDraw 'Код свойства на форме' = DATA VARSTRING[100] (PropertyDraw) IN recognize;
-captionPropertyDraw 'Название свойства на форме' = DATA VARSTRING[250] (PropertyDraw);
-formPropertyDraw 'Форма' = DATA Form (PropertyDraw) INDEXED;
-nameFormPropertyDraw 'Форма' (pd) = sidNavigatorElement(formPropertyDraw(pd)) IN recognize;
-groupObjectPropertyDraw 'Группа объектов' = DATA GroupObject (PropertyDraw);
-propertyDrawFormSID 'Свойство на форме' (form, sID) = GROUP AGGR propertyDraw BY formPropertyDraw (propertyDraw), sidPropertyDraw (propertyDraw) WHERE propertyDraw IS PropertyDraw;
-propertyDrawSIDNavigatorElementNamePropertyDraw 'Код формы' (str1, str2) = propertyDrawFormSID (navigatorElementCanonicalName(str1), str2);
+sid 'Код свойства на форме' = DATA VARSTRING[100] (PropertyDraw) IN recognize;
+caption 'Название свойства на форме' = DATA VARSTRING[250] (PropertyDraw);
+form 'Форма' = DATA Form (PropertyDraw) INDEXED;
+nameForm 'Форма' (PropertyDraw pd) = sid(form(pd)) IN recognize;
+groupObject 'Группа объектов' = DATA GroupObject (PropertyDraw);
+propertyDraw 'Свойство на форме' (form, sID) = GROUP AGGR PropertyDraw propertyDraw BY form (propertyDraw), sid (propertyDraw) WHERE propertyDraw IS PropertyDraw;
+propertyDrawSIDNavigatorElementNamePropertyDraw 'Код формы' (VARSTRING[100] str1, VARSTRING[100] str2) = propertyDraw (navigatorElementCanonicalName(str1), str2);
 
-showPropertyDraw 'Показ свойства' = DATA PropertyDrawShowStatus (PropertyDraw);
-showPropertyDrawCustomUser 'Показ свойства для пользователя' = DATA PropertyDrawShowStatus (PropertyDraw, CustomUser);
+show 'Показ свойства' = DATA PropertyDrawShowStatus (PropertyDraw);
+show 'Показ свойства для пользователя' = DATA PropertyDrawShowStatus (PropertyDraw, CustomUser);
 
-nameShowPropertyDraw 'Показ свойства' (propertyDraw) = staticName(showPropertyDraw (propertyDraw)) PREFCHARWIDTH 50;
-nameShowPropertyDrawCustomUser 'Показ свойства для пользователя' (propertyDraw, customUser) = staticName(showPropertyDrawCustomUser(propertyDraw, customUser)) PREFCHARWIDTH 50;
+nameShow 'Показ свойства' (PropertyDraw propertyDraw) = staticName(show (propertyDraw)) PREFCHARWIDTH 50;
+nameShow 'Показ свойства для пользователя' (PropertyDraw propertyDraw, CustomUser customUser) = staticName(show(propertyDraw, customUser)) PREFCHARWIDTH 50;
 
-captionShowPropertyDraw 'Показ свойства' (propertyDraw) = staticCaption(showPropertyDraw (propertyDraw)) PREFCHARWIDTH 20;
-captionShowPropertyDrawCustomUser 'Показ свойства для пользователя' (propertyDraw, customUser) = staticCaption(showPropertyDrawCustomUser(propertyDraw, customUser)) PREFCHARWIDTH 20;
+captionShow 'Показ свойства' (PropertyDraw propertyDraw) = staticCaption(show (propertyDraw)) PREFCHARWIDTH 20;
+captionShow 'Показ свойства для пользователя' (PropertyDraw propertyDraw, CustomUser customUser) = staticCaption(show(propertyDraw, customUser)) PREFCHARWIDTH 20;
 
-columnCaptionPropertyDrawCustomUser 'Заголовок свойства для пользователя' = DATA VARSTRING[100] (PropertyDraw, CustomUser);
-columnCaptionPropertyDraw 'Заголовок свойства' = DATA VARSTRING[100] (PropertyDraw);
+columnCaption 'Заголовок свойства для пользователя' = DATA VARSTRING[100] (PropertyDraw, CustomUser);
+columnCaption 'Заголовок свойства' = DATA VARSTRING[100] (PropertyDraw);
 
-columnWidthPropertyDrawCustomUser 'Ширина для пользователя' = DATA INTEGER (PropertyDraw, CustomUser);
-columnWidthPropertyDraw 'Ширина' = DATA INTEGER (PropertyDraw);
+columnWidth 'Ширина для пользователя' = DATA INTEGER (PropertyDraw, CustomUser);
+columnWidth 'Ширина' = DATA INTEGER (PropertyDraw);
 
-columnOrderPropertyDrawCustomUser 'Порядок для пользователя' = DATA INTEGER (PropertyDraw, CustomUser);
-columnOrderPropertyDraw 'Порядок' = DATA INTEGER (PropertyDraw);
+columnOrder 'Порядок для пользователя' = DATA INTEGER (PropertyDraw, CustomUser);
+columnOrder 'Порядок' = DATA INTEGER (PropertyDraw);
 
-columnSortPropertyDrawCustomUser 'Сортировка для пользователя' = DATA INTEGER (PropertyDraw, CustomUser);
-columnSortPropertyDraw 'Сортировка' = DATA INTEGER (PropertyDraw);
+columnSort 'Сортировка для пользователя' = DATA INTEGER (PropertyDraw, CustomUser);
+columnSort 'Сортировка' = DATA INTEGER (PropertyDraw);
 
-columnAscendingSortPropertyDrawCustomUser 'Восходящая сортировка для пользователя' = DATA BOOLEAN (PropertyDraw, CustomUser);
-columnAscendingSortPropertyDraw 'Восходящая сортировка' = DATA BOOLEAN (PropertyDraw);
+columnAscendingSort 'Восходящая сортировка для пользователя' = DATA BOOLEAN (PropertyDraw, CustomUser);
+columnAscendingSort 'Восходящая сортировка' = DATA BOOLEAN (PropertyDraw);
 
-hasUserPreferencesGroupObjectCustomUser 'Настройки сохранены для пользователя'= DATA BOOLEAN (GroupObject, CustomUser);
-countShowPropertyDrawGroupObjectCustomUser(g, u) = GROUP SUM 1 IF showPropertyDrawCustomUser(property, user) == PropertyDrawShowStatus.Show BY groupObjectPropertyDraw(property), user;
-CONSTRAINT hasUserPreferencesGroupObjectCustomUser(g, u) AND NOT countShowPropertyDrawGroupObjectCustomUser(g, u) MESSAGE 'Настройки не сохранены: спрятаны все колонки';
-hasUserPreferencesGroupObject 'Настройки сохранены' = DATA BOOLEAN (GroupObject);
-countShowPropertyDrawGroupObject(g) = GROUP SUM 1 IF showPropertyDraw(property) == PropertyDrawShowStatus.Show BY groupObjectPropertyDraw(property);
-CONSTRAINT hasUserPreferencesGroupObject(g) AND NOT countShowPropertyDrawGroupObject(g) MESSAGE 'Настройки не сохранены: спрятаны все колонки';
-hasUserPreferencesOverrideGroupObjectCustomUser 'Настройки сохранены' (groupObject, customUser) = OVERRIDE hasUserPreferencesGroupObject(groupObject) IF customUser IS CustomUser, hasUserPreferencesGroupObjectCustomUser(groupObject, customUser);
+hasUserPreferences 'Настройки сохранены для пользователя'= DATA BOOLEAN (GroupObject, CustomUser);
+countShowPropertyDraw(g, u) = GROUP SUM 1 IF show(PropertyDraw property, CustomUser user) == PropertyDrawShowStatus.Show BY groupObject(property), user;
+CONSTRAINT hasUserPreferences(GroupObject g, CustomUser u) AND NOT countShowPropertyDraw(g, u) MESSAGE 'Настройки не сохранены: спрятаны все колонки';
+hasUserPreferences 'Настройки сохранены' = DATA BOOLEAN (GroupObject);
+countShowPropertyDraw(g) = GROUP SUM 1 IF show(PropertyDraw property) == PropertyDrawShowStatus.Show BY groupObject(property);
+CONSTRAINT hasUserPreferences(GroupObject g) AND NOT countShowPropertyDraw(g) MESSAGE 'Настройки не сохранены: спрятаны все колонки';
+hasUserPreferencesOverride 'Настройки сохранены' (GroupObject groupObject, CustomUser customUser) = OVERRIDE hasUserPreferences(groupObject) IF customUser IS CustomUser, hasUserPreferences(groupObject, customUser);
 
-fontSizeGroupObjectCustomUser 'Размер шрифта для пользователя'= DATA INTEGER (GroupObject, CustomUser);
-fontSizeGroupObject 'Размер шрифта' = DATA INTEGER (GroupObject);
+fontSize 'Размер шрифта для пользователя'= DATA INTEGER (GroupObject, CustomUser);
+fontSize 'Размер шрифта' = DATA INTEGER (GroupObject);
 
-isFontBoldGroupObjectCustomUser 'Полужирный шрифт для пользователя'= DATA BOOLEAN (GroupObject, CustomUser);
-isFontBoldGroupObject 'Полужирный шрифт' = DATA BOOLEAN (GroupObject);
+isFontBold 'Полужирный шрифт для пользователя'= DATA BOOLEAN (GroupObject, CustomUser);
+isFontBold 'Полужирный шрифт' = DATA BOOLEAN (GroupObject);
 
-isFontItalicGroupObjectCustomUser 'Курсивный шрифт для пользователя'= DATA BOOLEAN (GroupObject, CustomUser);
-isFontItalicGroupObject 'Курсивный шрифт' = DATA BOOLEAN (GroupObject);
+isFontItalic 'Курсивный шрифт для пользователя'= DATA BOOLEAN (GroupObject, CustomUser);
+isFontItalic 'Курсивный шрифт' = DATA BOOLEAN (GroupObject);
 
-pageSizeGroupObjectCustomUser 'Размер страницы для пользователя'= DATA INTEGER (GroupObject, CustomUser);
-pageSizeGroupObject 'Размер шрифта' = DATA INTEGER (GroupObject);
+pageSize 'Размер страницы для пользователя'= DATA INTEGER (GroupObject, CustomUser);
+pageSize 'Размер шрифта' = DATA INTEGER (GroupObject);
 
 CLASS Table 'Таблица';
 TABLE tables (Table);
 
-sidTable 'Имя таблицы' = DATA VARISTRING[100] (Table);
-tableSID 'Имя таблицы' (sID) = GROUP AGGR table BY sidTable (table) WHERE table IS Table;
-rowsTable 'Количество записей' = DATA INTEGER (Table);
-tableTableKey 'Таблица' = DATA Table (TableKey);
+sid 'Имя таблицы' = DATA VARISTRING[100] (Table);
+table 'Имя таблицы' (sID) = GROUP AGGR Table table BY sid (table) WHERE table IS Table;
+rows 'Количество записей' = DATA INTEGER (Table);
+table 'Таблица' = DATA Table (TableKey);
 
 CLASS TableKey 'Ключ';
 TABLE tableKey (TableKey);
 
-sidTableKey 'Код ключа' = DATA VARISTRING[100] (TableKey);
-tableKeySID 'Ключ' (sID) = GROUP AGGR tableKey BY sidTableKey (tableKey) WHERE tableKey IS TableKey;
-classTableKey 'Класс ключа' = DATA VARISTRING[40] (TableKey);
-classSIDTableKey 'SID класса ключа' = DATA VARSTRING[100] (TableKey);
-nameTableKey 'Имя ключа' = DATA VARISTRING[20] (TableKey);
-quantityTableKey 'Количество разновидностей' = DATA INTEGER (TableKey);
+sid 'Код ключа' = DATA VARISTRING[100] (TableKey);
+tableKey 'Ключ' (sID) = GROUP AGGR TableKey tableKey BY sid (tableKey) WHERE tableKey IS TableKey;
+class 'Класс ключа' = DATA VARISTRING[40] (TableKey);
+classSID 'SID класса ключа' = DATA VARSTRING[100] (TableKey);
+name 'Имя ключа' = DATA VARISTRING[20] (TableKey);
+quantity 'Количество разновидностей' = DATA INTEGER (TableKey);
 
 CLASS TableColumn 'Колонка';
 TABLE tableColumn (TableColumn);
 
-tableTableColumn 'Таблица' = DATA Table(TableColumn);
-sidTableColumn 'Имя колонки' = DATA VARISTRING[100] (TableColumn);
+table 'Таблица' = DATA Table(TableColumn);
+sid 'Имя колонки' = DATA VARISTRING[100] (TableColumn);
 
-longSIDTableColumn(tableColumn) = sidTable(tableTableColumn(tableColumn)) + '.' + sidTableColumn(tableColumn);
-tableColumnLongSID 'Колонка' (sID) = GROUP AGGR tableColumn BY longSIDTableColumn(tableColumn) WHERE tableColumn IS TableColumn; 
-tableColumnSID (sid) = GROUP MAX tableColumn BY sidTableColumn(tableColumn);
-propertyTableColumn 'Свойство' (tableColumn) = propertyTableSID(sidTable(tableTableColumn(tableColumn)), sidTableColumn(tableColumn));
-captionTableColumn 'Заголовок свойства' (tableColumn) = captionProperty(propertyTableColumn(tableColumn));
-canonicalNameTableColumn 'Каноническое имя свойства' (tableColumn) = canonicalNameProperty(propertyTableColumn(tableColumn));
-quantityTableColumn 'Количество разновидностей' (tableColumn) = quantityProperty(propertyTableColumn(tableColumn));
-notNullQuantityTableColumn 'Количество не null значений' (tableColumn) = notNullQuantityProperty(propertyTableColumn(tableColumn));
-tableColumnProperty(property) = tableColumnLongSID(tableSIDProperty(property) + '.' + dbNameProperty(property));
+longSID(TableColumn tableColumn) = sid(table(tableColumn)) + '.' + sid(tableColumn);
+tableColumnLong 'Колонка' (sID) = GROUP AGGR TableColumn tableColumn BY longSID(tableColumn) WHERE tableColumn IS TableColumn; 
+tableColumnSID (sid) = GROUP MAX TableColumn tableColumn BY sid(tableColumn);
+property 'Свойство' (TableColumn tableColumn) = propertyTable(sid(table(tableColumn)), sid(tableColumn));
+caption 'Заголовок свойства' (TableColumn tableColumn) = caption(property(tableColumn));
+canonicalName 'Каноническое имя свойства' (TableColumn tableColumn) = canonicalName(property(tableColumn));
+quantity 'Количество разновидностей' (TableColumn tableColumn) = quantity(property(tableColumn));
+notNullQuantity 'Количество не null значений' (TableColumn tableColumn) = notNullQuantity(property(tableColumn));
+tableColumn(Property property) = tableColumnLong(tableSID(property) + '.' + dbName(property));
 
 toNumeric15p2(w) = NUMERIC[15,2](w);
 
-percentNotNullTableColumn 'Не null, %' (tableColumn) = IF rowsTable (tableTableColumn(tableColumn)) == 0
+percentNotNull 'Не null, %' (TableColumn tableColumn) = IF rows (table(tableColumn)) == 0
                                                           THEN 100.00
-                                                          ELSE toNumeric15p2(notNullQuantityTableColumn(tableColumn)) / rowsTable (tableTableColumn(tableColumn)) * 100;
-sparseColumnsTable 'Количество разреженных колонок' (table) = GROUP SUM 1 BY tableTableColumn(tableColumn) IF percentNotNullTableColumn(tableColumn) < 50;
+                                                          ELSE toNumeric15p2(notNullQuantity(tableColumn)) / rows (table(tableColumn)) * 100;
+sparseColumns 'Количество разреженных колонок' (table) = GROUP SUM 1 BY table(TableColumn tableColumn) IF percentNotNull(tableColumn) < 50;
 
-notRecalculateTableColumn 'Не пересчитывать аггрегации' = DATA BOOLEAN (TableColumn);
+notRecalculate 'Не пересчитывать аггрегации' = DATA BOOLEAN (TableColumn);
 
-recalculateAggregationTableColumn 'Пересчитать агрегации' = ACTION CUSTOM 'lsfusion.server.logics.reflection.RecalculateTableColumnActionProperty' (TableColumn);
-recalculateAggregationWithDependenciesTableColumn 'Пересчитать агрегации (+зависимости)' = ACTION CUSTOM 'lsfusion.server.logics.reflection.RecalculateTableColumnWithDependenciesActionProperty' (TableColumn);
-recalculateAggregationWithDependentsTableColumn 'Пересчитать агрегации (+зависимые)' = ACTION CUSTOM 'lsfusion.server.logics.reflection.RecalculateTableColumnWithDependentsActionProperty' (TableColumn);
-checkAggregationTableColumn 'Проверить агрегации' = ACTION CUSTOM 'lsfusion.server.logics.reflection.CheckTableColumnActionProperty' (TableColumn);
-checkAggregationString(string) = ACTION checkAggregationTableColumn(tableColumnSID(string));
-dropDropColumn 'Окончательно удалить колонку' = ACTION CUSTOM 'lsfusion.server.logics.reflection.DropColumnActionProperty' (DropColumn);
+recalculateAggregation 'Пересчитать агрегации' = ACTION CUSTOM 'lsfusion.server.logics.reflection.RecalculateTableColumnActionProperty' (TableColumn);
+recalculateAggregationWithDependencies 'Пересчитать агрегации (+зависимости)' = ACTION CUSTOM 'lsfusion.server.logics.reflection.RecalculateTableColumnWithDependenciesActionProperty' (TableColumn);
+recalculateAggregationWithDependents 'Пересчитать агрегации (+зависимые)' = ACTION CUSTOM 'lsfusion.server.logics.reflection.RecalculateTableColumnWithDependentsActionProperty' (TableColumn);
+checkAggregation 'Проверить агрегации' = ACTION CUSTOM 'lsfusion.server.logics.reflection.CheckTableColumnActionProperty' (TableColumn);
+checkAggregation(VARISTRING[100] string) = ACTION checkAggregation(tableColumnSID(string));
+drop 'Окончательно удалить колонку' = ACTION CUSTOM 'lsfusion.server.logics.reflection.DropColumnActionProperty' (DropColumn);
 
-recalculateColumnsAggregationsTable 'Пересчитать агрегации колонок' (table) = ACTION {
-    FOR table == tableTableColumn(tableColumn) AND tableColumn IS TableColumn DO {
-        recalculateAggregationTableColumn(tableColumn);    
+recalculateColumnsAggregations 'Пересчитать агрегации колонок' (Table table) = ACTION {
+    FOR table == table(TableColumn tableColumn) AND tableColumn IS TableColumn DO {
+        recalculateAggregation(tableColumn);    
     }
 }
-checkClassesTable 'Проверить классы таблицы' = ACTION CUSTOM 'lsfusion.server.logics.reflection.CheckTableClassesActionProperty' (Table);
-checkClassesString(string) = ACTION checkClassesTable(tableSID(string));
-recalculateClassesTable 'Пересчитать классы таблицы' = ACTION CUSTOM 'lsfusion.server.logics.reflection.RecalculateTableClassesActionProperty' (Table);
-recalculateStatsTable 'Пересчитать статистику таблицы' = ACTION CUSTOM 'lsfusion.server.logics.reflection.RecalculateTableStatsActionProperty' (Table);
+checkClasses 'Проверить классы таблицы' = ACTION CUSTOM 'lsfusion.server.logics.reflection.CheckTableClassesActionProperty' (Table);
+checkClasses(VARISTRING[100] string) = ACTION checkClasses(table(string));
+recalculateClasses 'Пересчитать классы таблицы' = ACTION CUSTOM 'lsfusion.server.logics.reflection.RecalculateTableClassesActionProperty' (Table);
+recalculateStats 'Пересчитать статистику таблицы' = ACTION CUSTOM 'lsfusion.server.logics.reflection.RecalculateTableStatsActionProperty' (Table);
 
 CLASS DropColumn 'Удалённая колонка';
 TABLE dropColumn (DropColumn);
 
-sidDropColumn 'Имя колонки' = DATA VARSTRING[100] (DropColumn);
-dropColumnSID 'Удалённая колонка' (sID) = GROUP NAGGR dropColumn BY sidDropColumn (dropColumn) WHERE dropColumn IS DropColumn;
-sidTableDropColumn 'Имя таблицы' = DATA VARSTRING[100] (DropColumn);
-timeDropColumn 'Время удаления' = DATA DATETIME (DropColumn);
-revisionDropColumn 'Версия' = DATA VARSTRING[10] (DropColumn);
+sid 'Имя колонки' = DATA VARSTRING[100] (DropColumn);
+dropColumn 'Удалённая колонка' (sID) = GROUP NAGGR DropColumn dropColumn BY sid (dropColumn) WHERE dropColumn IS DropColumn;
+sidTable 'Имя таблицы' = DATA VARSTRING[100] (DropColumn);
+time 'Время удаления' = DATA DATETIME (DropColumn);
+revision 'Версия' = DATA VARSTRING[10] (DropColumn);
 
 CLASS GroupObject 'Группа объектов';
 TABLE groupObjectCustomUser (GroupObject, CustomUser);
 TABLE groupObject (GroupObject);
 
-sidGroupObject 'Код группы объектов' = DATA VARSTRING[100] (GroupObject) IN recognize;
-navigatorElementGroupObject 'Элемент навигатора' = DATA NavigatorElement (GroupObject);
-canonicalNameNavigatorElementGroupObject (groupObject) = canonicalNameNavigatorElement (navigatorElementGroupObject(groupObject)) IN recognize;
-captionNavigatorElementGroupObject (groupObject) = captionNavigatorElement (navigatorElementGroupObject(groupObject)) IN recognize; 
-groupObjectSIDNavigatorElementNameGroupObject 'Группа объектов' (sidGroupObject, canonicalNameNavigatorElement) = GROUP AGGR groupObject BY sidGroupObject (groupObject), canonicalNameNavigatorElementGroupObject (groupObject) WHERE groupObject IS GroupObject;
+sid 'Код группы объектов' = DATA VARSTRING[100] (GroupObject) IN recognize;
+navigatorElement 'Элемент навигатора' = DATA NavigatorElement (GroupObject);
+canonicalNameNavigatorElement (GroupObject groupObject) = canonicalName (navigatorElement(groupObject)) IN recognize;
+captionNavigatorElement (GroupObject groupObject) = caption (navigatorElement(groupObject)) IN recognize; 
+groupSIDNavigatorElementGroupObject 'Группа объектов' (sidGroupObject, canonicalNameNavigatorElement) = GROUP AGGR GroupObject groupObject BY sid (groupObject), canonicalNameNavigatorElement (groupObject) WHERE groupObject IS GroupObject;
 
 CLASS FormGrouping 'Группировка';
 TABLE formGrouping (FormGrouping); 
 
-nameFormGrouping 'Имя группировки' = DATA VARSTRING[100] (FormGrouping);
-groupObjectFormGrouping = DATA GroupObject (FormGrouping);
-itemQuantityFormGrouping 'Количество записей' = DATA BOOLEAN (FormGrouping);
-formGroupingNameFormGroupingGroupObject 'Группировка' (nameFormGrouping, groupObject) = GROUP AGGR formGrouping BY nameFormGrouping(formGrouping), groupObjectFormGrouping(formGrouping) WHERE formGrouping IS FormGrouping;
+name 'Имя группировки' = DATA VARSTRING[100] (FormGrouping);
+groupObject = DATA GroupObject (FormGrouping);
+itemQuantity 'Количество записей' = DATA BOOLEAN (FormGrouping);
+formGrouping 'Группировка' (nameFormGrouping, groupObject) = GROUP AGGR FormGrouping formGrouping BY name(formGrouping), groupObject(formGrouping) WHERE formGrouping IS FormGrouping;
 
 TABLE formGroupingPropertyDraw (FormGrouping, PropertyDraw);
-groupOrderFormGroupingPropertyDraw 'Порядок группировки' = DATA INTEGER (FormGrouping, PropertyDraw);
-sumFormGroupingPropertyDraw 'Суммировать' = DATA BOOLEAN (FormGrouping, PropertyDraw);
-maxFormGroupingPropertyDraw 'Максимум' = DATA BOOLEAN (FormGrouping, PropertyDraw);
-pivotFormGroupingPropertyDraw 'Pivot' = DATA BOOLEAN (FormGrouping, PropertyDraw);
+groupOrder 'Порядок группировки' = DATA INTEGER (FormGrouping, PropertyDraw);
+sum 'Суммировать' = DATA BOOLEAN (FormGrouping, PropertyDraw);
+max 'Максимум' = DATA BOOLEAN (FormGrouping, PropertyDraw);
+pivot 'Pivot' = DATA BOOLEAN (FormGrouping, PropertyDraw);
 
 FORM physicalModel 'Таблицы'
     OBJECTS t=Table
-    PROPERTIES(t) READONLY sidTable, rowsTable, sparseColumnsTable
-    PROPERTIES(t) recalculateColumnsAggregationsTable, checkClassesTable, recalculateClassesTable, recalculateStatsTable
+    PROPERTIES(t) READONLY sid, rows, sparseColumns
+    PROPERTIES(t) recalculateColumnsAggregations, checkClasses, recalculateClasses, recalculateStats
 
     OBJECTS tk=TableKey
-    PROPERTIES(tk) READONLY classTableKey, classSIDTableKey, nameTableKey, quantityTableKey
+    PROPERTIES(tk) READONLY class, classSID, name, quantity
 
     OBJECTS tc=TableColumn
-    PROPERTIES(tc) READONLY sidTableColumn, captionTableColumn, canonicalNameTableColumn, propertyTableColumn, quantityTableColumn, notNullQuantityTableColumn,
-                   percentNotNullTableColumn
-    PROPERTIES(tc) notRecalculateTableColumn, recalculateAggregationTableColumn, recalculateAggregationWithDependenciesTableColumn, 
-            recalculateAggregationWithDependentsTableColumn, checkAggregationTableColumn
+    PROPERTIES(tc) READONLY sid, caption, canonicalName, property, quantity, notNullQuantity,
+                   percentNotNull
+    PROPERTIES(tc) notRecalculate, recalculateAggregation, recalculateAggregationWithDependencies, 
+            recalculateAggregationWithDependents, checkAggregation
 
     OBJECTS dc=DropColumn
-    PROPERTIES(dc) READONLY sidTableDropColumn, sidDropColumn, timeDropColumn, revisionDropColumn
-    PROPERTIES(dc) dropDropColumn
+    PROPERTIES(dc) READONLY sidTable, sid, time, revision
+    PROPERTIES(dc) drop
 
     FILTERS
-        tableTableKey(tk)==t,
-        tableTableColumn(tc)==t
+        table(tk)==t,
+        table(tc)==t
 ;
 
 DESIGN physicalModel {
@@ -280,43 +280,43 @@ DESIGN physicalModel {
 
 FORM forms 'Формы'
 
-    TREE treeFormObject tf=NavigatorElement PARENT parentNavigatorElement
-    PROPERTIES(tf) READONLY canonicalNameNavigatorElement, captionNavigatorElement
+    TREE treeFormObject tf=NavigatorElement PARENT parent
+    PROPERTIES(tf) READONLY canonicalName, caption
 
     OBJECTS u=CustomUser FIXED PANEL
-    PROPERTIES(u) SELECTOR firstNameContact, lastNameContact, loginCustomUser
+    PROPERTIES(u) SELECTOR firstName, lastName, login
 
     OBJECTS g=GroupObject
-    PROPERTIES(g) sidGroupObject READONLY, fontSizeGroupObject, isFontBoldGroupObject, isFontItalicGroupObject, pageSizeGroupObject, hasUserPreferencesGroupObject
-    PROPERTIES(g,u) fontSizeGroupObjectCustomUser, isFontBoldGroupObjectCustomUser, isFontItalicGroupObjectCustomUser, pageSizeGroupObjectCustomUser, hasUserPreferencesGroupObjectCustomUser
+    PROPERTIES(g) sid READONLY, fontSize, isFontBold, isFontItalic, pageSize, hasUserPreferences
+    PROPERTIES(g,u) fontSize, isFontBold, isFontItalic, pageSize, hasUserPreferences
     
     OBJECTS fg=FormGrouping
-    PROPERTIES(fg) nameFormGrouping, itemQuantityFormGrouping
+    PROPERTIES(fg) name, itemQuantity
 
     OBJECTS p=PropertyDraw
-    PROPERTIES(p) READONLY sidPropertyDraw, captionPropertyDraw
+    PROPERTIES(p) READONLY sid, caption
 
-    PROPERTIES(p) captionShowPropertyDraw
-    PROPERTIES(p,u) captionShowPropertyDrawCustomUser
-    PROPERTIES(p) columnCaptionPropertyDraw
-    PROPERTIES(p,u) columnCaptionPropertyDrawCustomUser
-    PROPERTIES(p) columnWidthPropertyDraw
-    PROPERTIES(p,u) columnWidthPropertyDrawCustomUser
-    PROPERTIES(p) columnOrderPropertyDraw
-    PROPERTIES(p,u) columnOrderPropertyDrawCustomUser
-    PROPERTIES(p) columnSortPropertyDraw
-    PROPERTIES(p) columnAscendingSortPropertyDraw
-    PROPERTIES(p,u) columnSortPropertyDrawCustomUser
-    PROPERTIES(p,u) columnAscendingSortPropertyDrawCustomUser
-    PROPERTIES(fg,p) groupOrderFormGroupingPropertyDraw, sumFormGroupingPropertyDraw, maxFormGroupingPropertyDraw, pivotFormGroupingPropertyDraw 
+    PROPERTIES(p) captionShow
+    PROPERTIES(p,u) captionShow
+    PROPERTIES(p) columnCaption
+    PROPERTIES(p,u) columnCaption
+    PROPERTIES(p) columnWidth
+    PROPERTIES(p,u) columnWidth
+    PROPERTIES(p) columnOrder
+    PROPERTIES(p,u) columnOrder
+    PROPERTIES(p) columnSort
+    PROPERTIES(p) columnAscendingSort
+    PROPERTIES(p,u) columnSort
+    PROPERTIES(p,u) columnAscendingSort
+    PROPERTIES(fg,p) groupOrder, sum, max, pivot 
 
     FILTERS
-        navigatorElementGroupObject(g)==tf,
-        formPropertyDraw(p)==tf,
-        groupObjectFormGrouping(fg)==g 
+        navigatorElement(g)==tf,
+        form(p)==tf,
+        groupObject(fg)==g 
 
     FILTERGROUP filtersForm
-        FILTER 'Свойства только текущей группы объектов' groupObjectPropertyDraw(p)==g 'F8'
+        FILTER 'Свойства только текущей группы объектов' groupObject(p)==g 'F8'
 ;
 
 DESIGN forms {
@@ -334,21 +334,21 @@ DESIGN forms {
     }
 }
 
-dumbPropertyGroup (pg) = ' ' IF pg IS PropertyGroup;
+dumb (PropertyGroup pg) = ' ' IF pg IS PropertyGroup;
 
 FORM properties 'Свойства'
     OBJECTS p=Property
-    PROPERTIES(p) READONLY captionProperty, canonicalNameProperty, dbNameProperty, tableSIDProperty, returnProperty, classProperty, complexityProperty, parentProperty, numberProperty, quantityProperty, notNullQuantityProperty, userLoggableProperty EDITABLE, loggableProperty, storedProperty EDITABLE, isSetNotNullProperty EDITABLE
+    PROPERTIES(p) READONLY caption, canonicalName, dbName, tableSID, return, class, complexity, parent, number, quantity, notNullQuantity, userLoggable EDITABLE, loggable, stored EDITABLE, isSetNotNull EDITABLE
 
-    TREE treePropertiesObject tps=PropertyGroup PARENT parentPropertyGroup, ps=Property
-    PROPERTIES(tps) READONLY captionPropertyGroup, SIDPropertyGroup, dumbPropertyGroup, dumbPropertyGroup, dumbPropertyGroup, dumbPropertyGroup, dumbPropertyGroup, parentPropertyGroup, numberPropertyGroup, dumbPropertyGroup, dumbPropertyGroup, dumbPropertyGroup, dumbPropertyGroup
-    PROPERTIES(ps) READONLY captionProperty, canonicalNameProperty, dbNameProperty, returnProperty, classProperty, complexityProperty, parentProperty, numberProperty, quantityProperty, notNullQuantityProperty, userLoggableProperty EDITABLE, loggableProperty, storedProperty EDITABLE, isSetNotNullProperty EDITABLE
+    TREE treePropertiesObject tps=PropertyGroup PARENT parent, ps=Property
+    PROPERTIES(tps) READONLY caption, SID, dumb, dumb, dumb, dumb, dumb, parent, number, dumb, dumb, dumb, dumb
+    PROPERTIES(ps) READONLY caption, canonicalName, dbName, return, class, complexity, parent, number, quantity, notNullQuantity, userLoggable EDITABLE, loggable, stored EDITABLE, isSetNotNull EDITABLE
 
-    ORDER BY numberProperty(p)
-    ORDER BY numberPropertyGroup(tps)
+    ORDER BY number(p)
+    ORDER BY number(tps)
 
     FILTERS
-        parentProperty(ps)==tps
+        parent(ps)==tps
 ;
 
 DESIGN properties {

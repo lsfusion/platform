@@ -187,159 +187,159 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
         // ------- Доменная логика --------- //
 
         // Группы свойства
-        captionPropertyGroup = findProperty("captionPropertyGroup");
-        captionNavigatorElement = findProperty("captionNavigatorElement");
-        parentPropertyGroup = findProperty("parentPropertyGroup");
-        numberPropertyGroup = findProperty("numberPropertyGroup");
-        SIDPropertyGroup = findProperty("SIDPropertyGroup");
-        propertyGroupSID = findProperty("propertyGroupSID");
+        captionPropertyGroup = findProperty("caption[PropertyGroup]");
+        captionNavigatorElement = findProperty("caption[NavigatorElement]");
+        parentPropertyGroup = findProperty("parent[PropertyGroup]");
+        numberPropertyGroup = findProperty("number[PropertyGroup]");
+        SIDPropertyGroup = findProperty("SID[PropertyGroup]");
+        propertyGroupSID = findProperty("propertyGroup[VARSTRING[100]]");
 
         // Свойства
-        parentProperty = findProperty("parentProperty");
-        tableSIDProperty = findProperty("tableSIDProperty");
-        statsProperty = findProperty("statsProperty");
-        overStatsProperty = findProperty("overStatsProperty");
-        maxStatsProperty = findProperty("maxStatsProperty");
-        numberProperty = findProperty("numberProperty");
-        dbNameProperty = findProperty("dbNameProperty");
-        canonicalNameProperty = findProperty("canonicalNameProperty");
-        shortNameProperty = findProperty("shortNameProperty");
-        loggableProperty = findProperty("loggableProperty");
-        userLoggableProperty = findProperty("userLoggableProperty");
-        storedProperty = findProperty("storedProperty");
-        isSetNotNullProperty = findProperty("isSetNotNullProperty");
-        returnProperty = findProperty("returnProperty");
-        classProperty = findProperty("classProperty");
-        complexityProperty = findProperty("complexityProperty");
-        captionProperty = findProperty("captionProperty");
-        propertySID = findProperty("propertySID");
-        propertyCanonicalName = findProperty("propertyCanonicalName");
-        propertyTableSID = findProperty("propertyTableSID");
-        quantityProperty = findProperty("quantityProperty");
-        notNullQuantityProperty = findProperty("notNullQuantityProperty");
+        parentProperty = findProperty("parent[Property]");
+        tableSIDProperty = findProperty("tableSID[Property]");
+        statsProperty = findProperty("stats[Property]");
+        overStatsProperty = findProperty("overStats[Property]");
+        maxStatsProperty = findProperty("maxStatsProperty[]");
+        numberProperty = findProperty("number[Property]");
+        dbNameProperty = findProperty("dbName[Property]");
+        canonicalNameProperty = findProperty("canonicalName[Property]");
+        shortNameProperty = findProperty("shortName[Property]");
+        loggableProperty = findProperty("loggable[Property]");
+        userLoggableProperty = findProperty("userLoggable[Property]");
+        storedProperty = findProperty("stored[Property]");
+        isSetNotNullProperty = findProperty("isSetNotNull[Property]");
+        returnProperty = findProperty("return[Property]");
+        classProperty = findProperty("class[Property]");
+        complexityProperty = findProperty("complexity[Property]");
+        captionProperty = findProperty("caption[Property]");
+        propertySID = findProperty("property[VARSTRING[100]]");
+        propertyCanonicalName = findProperty("propertyCanonicalName[VARSTRING[512]]");
+        propertyTableSID = findProperty("propertyTable[VARSTRING[100],VARSTRING[100]]");
+        quantityProperty = findProperty("quantity[Property]");
+        notNullQuantityProperty = findProperty("notNullQuantity[Property]");
 
         // ------- Логика представлений --------- //
 
         // Навигатор
-        sidNavigatorElement = findProperty("sidNavigatorElement");
-        navigatorElementSID = findProperty("navigatorElementSID");
+        sidNavigatorElement = findProperty("sid[NavigatorElement]");
+        navigatorElementSID = findProperty("navigatorElement[VARSTRING[50]]");
         
-        numberNavigatorElement = findProperty("numberNavigatorElement");
-        navigatorElementCanonicalName = findProperty("navigatorElementCanonicalName");
-        canonicalNameNavigatorElement = findProperty("canonicalNameNavigatorElement");
-        parentNavigatorElement = findProperty("parentNavigatorElement");
-        isNavigatorElement = findProperty("isNavigatorElement");
-        isForm = findProperty("isForm");
-        isNavigatorAction = findProperty("isNavigatorAction");
+        numberNavigatorElement = findProperty("number[NavigatorElement]");
+        navigatorElementCanonicalName = findProperty("navigatorElementCanonicalName[VARSTRING[100]]");
+        canonicalNameNavigatorElement = findProperty("canonicalName[NavigatorElement]");
+        parentNavigatorElement = findProperty("parent[NavigatorElement]");
+        isNavigatorElement = findProperty("is[NavigatorElement]");
+        isForm = findProperty("is[Form]");
+        isNavigatorAction = findProperty("is[NavigatorAction]");
 
         // ----- Формы ---- //
 
         // Группа объектов
-        sidGroupObject = findProperty("sidGroupObject");
-        navigatorElementGroupObject = findProperty("navigatorElementGroupObject");
-        groupObjectSIDNavigatorElementNameGroupObject = findProperty("groupObjectSIDNavigatorElementNameGroupObject");
+        sidGroupObject = findProperty("sid[GroupObject]");
+        navigatorElementGroupObject = findProperty("navigatorElement[GroupObject]");
+        groupObjectSIDNavigatorElementNameGroupObject = findProperty("groupSIDNavigatorElementGroupObject[VARSTRING[100],VARSTRING[100]]");
 
 
         // PropertyDraw
-        sidPropertyDraw = findProperty("sidPropertyDraw");
-        captionPropertyDraw = findProperty("captionPropertyDraw");
-        formPropertyDraw = findProperty("formPropertyDraw");
-        groupObjectPropertyDraw = findProperty("groupObjectPropertyDraw");
+        sidPropertyDraw = findProperty("sid[PropertyDraw]");
+        captionPropertyDraw = findProperty("caption[PropertyDraw]");
+        formPropertyDraw = findProperty("form[PropertyDraw]");
+        groupObjectPropertyDraw = findProperty("groupObject[PropertyDraw]");
         // todo : это свойство должно быть для форм, а не навигаторов
-        propertyDrawSIDNavigatorElementNamePropertyDraw = findProperty("propertyDrawSIDNavigatorElementNamePropertyDraw");
+        propertyDrawSIDNavigatorElementNamePropertyDraw = findProperty("propertyDrawSIDNavigatorElementNamePropertyDraw[VARSTRING[100],VARSTRING[100]]");
 
         // UserPreferences
-        showPropertyDraw = findProperty("showPropertyDraw");
-        showPropertyDrawCustomUser = findProperty("showPropertyDrawCustomUser");
+        showPropertyDraw = findProperty("show[PropertyDraw]");
+        showPropertyDrawCustomUser = findProperty("show[PropertyDraw,CustomUser]");
 
-        nameShowPropertyDraw = findProperty("nameShowPropertyDraw");
-        nameShowPropertyDrawCustomUser = findProperty("nameShowPropertyDrawCustomUser");
+        nameShowPropertyDraw = findProperty("nameShow[PropertyDraw]");
+        nameShowPropertyDrawCustomUser = findProperty("nameShow[PropertyDraw,CustomUser]");
 
-        columnCaptionPropertyDrawCustomUser = findProperty("columnCaptionPropertyDrawCustomUser");
-        columnCaptionPropertyDraw = findProperty("columnCaptionPropertyDraw");
+        columnCaptionPropertyDrawCustomUser = findProperty("columnCaption[PropertyDraw,CustomUser]");
+        columnCaptionPropertyDraw = findProperty("columnCaption[PropertyDraw]");
         
-        columnWidthPropertyDrawCustomUser = findProperty("columnWidthPropertyDrawCustomUser");
-        columnWidthPropertyDraw = findProperty("columnWidthPropertyDraw");
+        columnWidthPropertyDrawCustomUser = findProperty("columnWidth[PropertyDraw,CustomUser]");
+        columnWidthPropertyDraw = findProperty("columnWidth[PropertyDraw]");
 
-        columnOrderPropertyDrawCustomUser = findProperty("columnOrderPropertyDrawCustomUser");
-        columnOrderPropertyDraw = findProperty("columnOrderPropertyDraw");
+        columnOrderPropertyDrawCustomUser = findProperty("columnOrder[PropertyDraw,CustomUser]");
+        columnOrderPropertyDraw = findProperty("columnOrder[PropertyDraw]");
 
-        columnSortPropertyDrawCustomUser = findProperty("columnSortPropertyDrawCustomUser");
-        columnSortPropertyDraw = findProperty("columnSortPropertyDraw");
+        columnSortPropertyDrawCustomUser = findProperty("columnSort[PropertyDraw,CustomUser]");
+        columnSortPropertyDraw = findProperty("columnSort[PropertyDraw]");
 
-        columnAscendingSortPropertyDrawCustomUser = findProperty("columnAscendingSortPropertyDrawCustomUser");
-        columnAscendingSortPropertyDraw = findProperty("columnAscendingSortPropertyDraw");
+        columnAscendingSortPropertyDrawCustomUser = findProperty("columnAscendingSort[PropertyDraw,CustomUser]");
+        columnAscendingSortPropertyDraw = findProperty("columnAscendingSort[PropertyDraw]");
 
-        hasUserPreferencesGroupObjectCustomUser = findProperty("hasUserPreferencesGroupObjectCustomUser");
-        hasUserPreferencesGroupObject = findProperty("hasUserPreferencesGroupObject");
-        hasUserPreferencesOverrideGroupObjectCustomUser = findProperty("hasUserPreferencesOverrideGroupObjectCustomUser");
+        hasUserPreferencesGroupObjectCustomUser = findProperty("hasUserPreferences[GroupObject,CustomUser]");
+        hasUserPreferencesGroupObject = findProperty("hasUserPreferences[GroupObject]");
+        hasUserPreferencesOverrideGroupObjectCustomUser = findProperty("hasUserPreferencesOverride[GroupObject,CustomUser]");
 
-        fontSizeGroupObjectCustomUser = findProperty("fontSizeGroupObjectCustomUser");
-        fontSizeGroupObject = findProperty("fontSizeGroupObject");
+        fontSizeGroupObjectCustomUser = findProperty("fontSize[GroupObject,CustomUser]");
+        fontSizeGroupObject = findProperty("fontSize[GroupObject]");
 
-        isFontBoldGroupObjectCustomUser = findProperty("isFontBoldGroupObjectCustomUser");
-        isFontBoldGroupObject = findProperty("isFontBoldGroupObject");
+        isFontBoldGroupObjectCustomUser = findProperty("isFontBold[GroupObject,CustomUser]");
+        isFontBoldGroupObject = findProperty("isFontBold[GroupObject]");
 
-        isFontItalicGroupObjectCustomUser = findProperty("isFontItalicGroupObjectCustomUser");
-        isFontItalicGroupObject = findProperty("isFontItalicGroupObject");
+        isFontItalicGroupObjectCustomUser = findProperty("isFontItalic[GroupObject,CustomUser]");
+        isFontItalicGroupObject = findProperty("isFontItalic[GroupObject]");
 
-        pageSizeGroupObjectCustomUser = findProperty("pageSizeGroupObjectCustomUser");
-        pageSizeGroupObject = findProperty("pageSizeGroupObject");
+        pageSizeGroupObjectCustomUser = findProperty("pageSize[GroupObject,CustomUser]");
+        pageSizeGroupObject = findProperty("pageSize[GroupObject]");
 
         // группировки
-        nameFormGrouping = findProperty("nameFormGrouping");
-        itemQuantityFormGrouping = findProperty("itemQuantityFormGrouping");
-        groupObjectFormGrouping = findProperty("groupObjectFormGrouping");
-        formGroupingNameFormGroupingGroupObject = findProperty("formGroupingNameFormGroupingGroupObject");
-        groupOrderFormGroupingPropertyDraw = findProperty("groupOrderFormGroupingPropertyDraw");
-        sumFormGroupingPropertyDraw = findProperty("sumFormGroupingPropertyDraw");
-        maxFormGroupingPropertyDraw = findProperty("maxFormGroupingPropertyDraw");
-        pivotFormGroupingPropertyDraw = findProperty("pivotFormGroupingPropertyDraw");
+        nameFormGrouping = findProperty("name[FormGrouping]");
+        itemQuantityFormGrouping = findProperty("itemQuantity[FormGrouping]");
+        groupObjectFormGrouping = findProperty("groupObject[FormGrouping]");
+        formGroupingNameFormGroupingGroupObject = findProperty("formGrouping[VARSTRING[100],GroupObject]");
+        groupOrderFormGroupingPropertyDraw = findProperty("groupOrder[FormGrouping,PropertyDraw]");
+        sumFormGroupingPropertyDraw = findProperty("sum[FormGrouping,PropertyDraw]");
+        maxFormGroupingPropertyDraw = findProperty("max[FormGrouping,PropertyDraw]");
+        pivotFormGroupingPropertyDraw = findProperty("pivot[FormGrouping,PropertyDraw]");
         // ------------------------------------------------- Физическая модель ------------------------------------ //
 
         // Таблицы
-        sidTable = findProperty("sidTable");
-        tableSID = findProperty("tableSID");
+        sidTable = findProperty("sid[Table]");
+        tableSID = findProperty("table[VARISTRING[100]]");
 
-        rowsTable = findProperty("rowsTable");
+        rowsTable = findProperty("rows[Table]");
 
         // Ключи таблиц
-        tableTableKey = findProperty("tableTableKey");
+        tableTableKey = findProperty("table[TableKey]");
 
-        sidTableKey = findProperty("sidTableKey");
-        tableKeySID = findProperty("tableKeySID");
+        sidTableKey = findProperty("sid[TableKey]");
+        tableKeySID = findProperty("tableKey[VARISTRING[100]]");
 
-        classTableKey = findProperty("classTableKey");
-        classSIDTableKey = findProperty("classSIDTableKey");
-        nameTableKey = findProperty("nameTableKey");
+        classTableKey = findProperty("class[TableKey]");
+        classSIDTableKey = findProperty("classSID[TableKey]");
+        nameTableKey = findProperty("name[TableKey]");
 
-        quantityTableKey = findProperty("quantityTableKey");
+        quantityTableKey = findProperty("quantity[TableKey]");
 
         // Колонки таблиц
-        tableTableColumn = findProperty("tableTableColumn");
-        propertyTableColumn = findProperty("propertyTableColumn");
+        tableTableColumn = findProperty("table[TableColumn]");
+        propertyTableColumn = findProperty("property[TableColumn]");
 
-        sidTableColumn = findProperty("sidTableColumn");
-        longSIDTableColumn = findProperty("longSIDTableColumn");
-        tableColumnLongSID = findProperty("tableColumnLongSID");
-        tableColumnSID = findProperty("tableColumnSID");
+        sidTableColumn = findProperty("sid[TableColumn]");
+        longSIDTableColumn = findProperty("longSID[TableColumn]");
+        tableColumnLongSID = findProperty("tableColumnLong[VARISTRING[100]]");
+        tableColumnSID = findProperty("tableColumnSID[VARISTRING[100]]");
 
-        quantityTableColumn = findProperty("quantityTableColumn");
-        notNullQuantityTableColumn = findProperty("notNullQuantityTableColumn");
+        quantityTableColumn = findProperty("quantity[TableColumn]");
+        notNullQuantityTableColumn = findProperty("notNullQuantity[TableColumn]");
 
-        notRecalculateTableColumn = findProperty("notRecalculateTableColumn");
-        recalculateAggregationTableColumn = findAction("recalculateAggregationTableColumn");
+        notRecalculateTableColumn = findProperty("notRecalculate[TableColumn]");
+        recalculateAggregationTableColumn = findAction("recalculateAggregation[TableColumn]");
 
         // Удаленные колонки
-        sidTableDropColumn = findProperty("sidTableDropColumn");
+        sidTableDropColumn = findProperty("sidTable[DropColumn]");
 
-        sidDropColumn = findProperty("sidDropColumn");
-        dropColumnSID = findProperty("dropColumnSID");
+        sidDropColumn = findProperty("sid[DropColumn]");
+        dropColumnSID = findProperty("dropColumn[VARSTRING[100]]");
 
-        timeDropColumn = findProperty("timeDropColumn");
-        revisionDropColumn = findProperty("revisionDropColumn");
+        timeDropColumn = findProperty("time[DropColumn]");
+        revisionDropColumn = findProperty("revision[DropColumn]");
 
-        dropDropColumn = findAction("dropDropColumn");
+        dropDropColumn = findAction("drop[DropColumn]");
         //dropDropColumn.setEventAction(this, IncrementType.DROP, false, is(dropColumn), 1); // event, который при удалении колонки из системы удаляет ее из базы
     }
 }

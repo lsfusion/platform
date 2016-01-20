@@ -13,23 +13,23 @@ CLASS NonFatalHandledException 'Временное исключение связ
 CLASS ServerException 'Исключение на сервере' : Exception;
 TABLE exception (Exception);
 
-messageException 'Сообщение исключения' = DATA VARSTRING[250] (Exception);
-dateException 'Время возникновения' = DATA DATETIME (Exception);
-fromDateException 'Дата возникновения' (d)= DATE(dateException(d));
-erTraceException 'След исключения'= DATA TEXT (Exception) PREFCHARWIDTH 500;
-lsfStackTraceException 'LSF след исключения'= DATA TEXT (Exception) PREFCHARWIDTH 500;
-typeException 'Тип исключения' = DATA VARSTRING[250] (Exception);
+message 'Сообщение исключения' = DATA VARSTRING[250] (Exception);
+date 'Время возникновения' = DATA DATETIME (Exception);
+fromDate 'Дата возникновения' (Exception d)= DATE(date(d));
+erTrace 'След исключения'= DATA TEXT (Exception) PREFCHARWIDTH 500;
+lsfStackTrace 'LSF след исключения'= DATA TEXT (Exception) PREFCHARWIDTH 500;
+type 'Тип исключения' = DATA VARSTRING[250] (Exception);
 
-clientClientException 'Клиент' = DATA VARSTRING[100] (ClientException);
-loginClientException 'Логин' = DATA VARSTRING[100] (ClientException);
+client 'Клиент' = DATA VARSTRING[100] (ClientException);
+login 'Логин' = DATA VARSTRING[100] (ClientException);
 
-reqIdHandledException 'ИД запроса' = DATA LONG (HandledException);
-countNonFatalHandledException 'Кол-во запросов' = DATA INTEGER (NonFatalHandledException);
-abandonedNonFatalHandledException 'Перест.' = DATA BOOLEAN (NonFatalHandledException);
+reqId 'ИД запроса' = DATA LONG (HandledException);
+count 'Кол-во запросов' = DATA INTEGER (NonFatalHandledException);
+abandoned 'Перест.' = DATA BOOLEAN (NonFatalHandledException);
 
-foregroundNonFatalException(e) = IF e IS NonFatalHandledException AND NOT abandonedNonFatalHandledException(e) THEN RGB(192,192,192);
+foregroundNonFatal(NonFatalHandledException e) = IF e IS NonFatalHandledException AND NOT abandoned(e) THEN RGB(192,192,192);
 
-backgroundNonFatalException(e) = CASE 
+backgroundNonFatal(ClientException e) = CASE 
             WHEN e IS RemoteClientException THEN RGB(240, 255, 255)
             WHEN e IS RemoteServerException THEN RGB(255, 240, 255)
             WHEN e IS ClientException THEN RGB(255, 255, 240);            
@@ -39,11 +39,11 @@ backgroundNonFatalException(e) = CASE
 CLASS Launch 'Запуск';
 TABLE launch (Launch);
 
-computerLaunch 'Компьютер' = DATA Computer (Launch);
-hostnameLaunch 'Имя компьютера' (launch) = hostnameComputer(computerLaunch(launch));
-timeLaunch 'Время запуска'= DATA DATETIME (Launch);
-dateLaunch 'Дата' (l) = DATE(timeLaunch(l));
-revisionLaunch 'Версия'= DATA VARSTRING[10] (Launch);
+computer 'Компьютер' = DATA Computer (Launch);
+hostname 'Имя компьютера' (Launch launch) = hostname(computer(launch));
+time 'Время запуска'= DATA DATETIME (Launch);
+date 'Дата' (Launch l) = DATE(time(l));
+revision 'Версия'= DATA VARSTRING[10] (Launch);
 
 @defineLog (Launch, 'запусков', log, date);
 
@@ -62,46 +62,46 @@ FORM connectionStatuses
 TABLE connection (Connection);
 TABLE connectionNavigatorElement (Connection, NavigatorElement);
 
-computerConnection 'Компьютер' = DATA Computer (Connection);
-hostnameComputerConnection 'Имя компьютера'(connection) = hostnameComputer(computerConnection(connection));
+computer 'Компьютер' = DATA Computer (Connection);
+hostnameComputer 'Имя компьютера'(Connection connection) = hostname(computer(connection));
 
-remoteAddressConnection 'IP пользователя' = DATA VARSTRING[40] (Connection);
+remoteAddress 'IP пользователя' = DATA VARSTRING[40] (Connection);
 
-userConnection 'Пользователь' = DATA CustomUser (Connection);
-userLoginConnection 'Логин пользователя' (connection) = loginCustomUser(userConnection(connection));
+user 'Пользователь' = DATA CustomUser (Connection);
+userLogin 'Логин пользователя' (Connection connection) = login(user(connection));
 
-osVersionConnection 'Операционная система' = DATA VARSTRING[100] (Connection);
-processorConnection 'Процессор' = DATA VARSTRING[100] (Connection);
-architectureConnection 'Архитектура' = DATA VARSTRING[10] (Connection);
-coresConnection 'Количество ядер' = DATA INTEGER (Connection);
-physicalMemoryConnection 'Физическая память, МБ' = DATA INTEGER (Connection);
-totalMemoryConnection 'Всего память для JVM, МБ' = DATA INTEGER (Connection);
-maximumMemoryConnection 'Максимально доступная память для JVM, МБ' = DATA INTEGER (Connection);
-freeMemoryConnection 'Свободная память для JVM, МБ' = DATA INTEGER (Connection);
-javaVersionConnection 'Версия java' = DATA VARSTRING[100] (Connection);
-screenSizeConnection 'Разрешение экрана' = DATA VARSTRING[20] (Connection);
+osVersion 'Операционная система' = DATA VARSTRING[100] (Connection);
+processor 'Процессор' = DATA VARSTRING[100] (Connection);
+architecture 'Архитектура' = DATA VARSTRING[10] (Connection);
+cores 'Количество ядер' = DATA INTEGER (Connection);
+physicalMemory 'Физическая память, МБ' = DATA INTEGER (Connection);
+totalMemory 'Всего память для JVM, МБ' = DATA INTEGER (Connection);
+maximumMemory 'Максимально доступная память для JVM, МБ' = DATA INTEGER (Connection);
+freeMemory 'Свободная память для JVM, МБ' = DATA INTEGER (Connection);
+javaVersion 'Версия java' = DATA VARSTRING[100] (Connection);
+screenSize 'Разрешение экрана' = DATA VARSTRING[20] (Connection);
 
-countConnectionUser 'Кол-во подключений' = GROUP SUM 1 BY userConnection(connection) PERSISTENT; 
-CONSTRAINT DROPPED(u IS CustomUser) AND PREV(countConnectionUser(u))
+countConnection 'Кол-во подключений' = GROUP SUM 1 BY user(Connection connection) PERSISTENT; 
+CONSTRAINT DROPPED(CustomUser u IS CustomUser) AND PREV(countConnection(u))
     MESSAGE 'Запрещено удалять пользователей, которые подключались к системе';
 
-connectionStatusConnection 'Статус подключения' =  DATA ConnectionStatus (Connection);
-nameConnectionStatusConnection 'Статус подключения' (connection) = staticCaption(connectionStatusConnection(connection));
+connectionStatus 'Статус подключения' =  DATA ConnectionStatus (Connection);
+nameConnectionStatus 'Статус подключения' (Connection connection) = staticCaption(connectionStatus(connection));
 
-connectTimeConnection 'Время подключения' = DATA DATETIME (Connection);
-connectDateConnection 'Дата подключения' (c) = DATE(connectTimeConnection(c));
-disconnectTimeConnection 'Время отключения' = DATA DATETIME (Connection);
-disconnectTimeConnection (connection) <- currentDateTime() WHEN SET(connectionStatusConnection(connection) == ConnectionStatus.disconnectedConnection);
+connectTime 'Время подключения' = DATA DATETIME (Connection);
+connectDate 'Дата подключения' (Connection c) = DATE(connectTime(c));
+disconnectTime 'Время отключения' = DATA DATETIME (Connection);
+disconnectTime (Connection connection) <- currentDateTime() WHEN SET(connectionStatus(connection) == ConnectionStatus.disconnectedConnection);
 
-disconnectConnection 'Отключить' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.DisconnectActionProperty' (Connection); 
+disconnect 'Отключить' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.DisconnectActionProperty' (Connection); 
 
 @defineLog (Connection, 'подключений', log, connectDate);
 
 //заменили user на customUser
-userSession 'Пользователь сессии' = DATA User (Session);
-nameUserSession 'Пользователь сессии' (session) = nameUser(userSession(session));
-nameContactSession 'Пользователь сессии' (session) = nameContact(userSession(session));
-userSession (session) <- currentUser() WHEN SET(session IS Session);
+user 'Пользователь сессии' = DATA User (Session);
+nameUser 'Пользователь сессии' (Session session) = name(user(session));
+nameContact 'Пользователь сессии' (Session session) = name[Contact](user(session));
+user (Session session) <- currentUser() WHEN SET(session IS Session);
 
 connectionFormCount 'Количество открытых форм' = DATA INTEGER (Connection, NavigatorElement);
 
@@ -111,42 +111,42 @@ TABLE sessionObject(Session, Object);
 
 currentSession = DATA LOCAL Session();
 
-quantityAddedClassesSession 'Количество добавленных классов' = DATA INTEGER (Session);
-quantityRemovedClassesSession 'Количество удалённых классов' = DATA INTEGER (Session);
-quantityChangedClassesSession 'Количество изменённых классов' = DATA INTEGER (Session);
-changesSession 'Изменения' = DATA TEXT (Session);
+quantityAddedClasses 'Количество добавленных классов' = DATA INTEGER (Session);
+quantityRemovedClasses 'Количество удалённых классов' = DATA INTEGER (Session);
+quantityChangedClasses 'Количество изменённых классов' = DATA INTEGER (Session);
+changes 'Изменения' = DATA TEXT (Session);
 
-dateTimeSession 'Время' = DATA DATETIME (Session) IN recognize;
-dateSession 'Дата' (s) = DATE(dateTimeSession(s));
-dateTimeSession(session) <- currentDateTime() WHEN SET (session IS Session);
+dateTime 'Время' = DATA DATETIME (Session) IN recognize;
+date 'Дата' (Session s) = DATE(dateTime(s));
+dateTime(Session session) <- currentDateTime() WHEN SET (session IS Session);
 
-navigatorElementSession 'Элемент навигатора сессии' = DATA NavigatorElement (Session);
-captionNavigatorElementSession 'Название формы' (session) = captionNavigatorElement(navigatorElementSession(session));
+navigatorElement 'Элемент навигатора сессии' = DATA NavigatorElement (Session);
+captionNavigatorElement 'Название формы' (Session session) = caption(navigatorElement(session));
 
-connectionSession 'Подключение сессии' = DATA Connection(Session) INDEXED;
-hostnameComputerConnectionSession 'Имя компьютера' = hostnameComputerConnection(connectionSession(session))IN recognize;
-userLoginConnectionSession 'Логин пользователя' = userLoginConnection(connectionSession(session)) IN recognize;
+connection 'Подключение сессии' = DATA Connection(Session) INDEXED;
+hostnameComputerConnection 'Имя компьютера' = hostnameComputer(connection(Session session))IN recognize;
+userLoginConnection 'Логин пользователя' = userLogin(connection(Session session)) IN recognize;
 
 @defineLog (Session, 'изменений', log, date);
 
 TABLE pingTable(Computer, DATETIME, DATETIME);
-pingComputerDateTimeFromDateTimeTo 'Пинг (мс)' = DATA INTEGER (Computer, DATETIME, DATETIME);
-minTotalMemoryComputerDateTimeFromDateTimeTo 'Минимум памяти' = DATA INTEGER (Computer, DATETIME, DATETIME);
-maxTotalMemoryComputerDateTimeFromDateTimeTo 'Максимум памяти' = DATA INTEGER (Computer, DATETIME, DATETIME);
-minUsedMemoryComputerDateTimeFromDateTimeTo 'Минимум использованной памяти' = DATA INTEGER (Computer, DATETIME, DATETIME);
-maxUsedMemoryComputerDateTimeFromDateTimeTo 'Максимум использованной памяти' = DATA INTEGER (Computer, DATETIME, DATETIME);
+pingFromTo 'Пинг (мс)' = DATA INTEGER (Computer, DATETIME, DATETIME);
+minTotalMemoryFromTo 'Минимум памяти' = DATA INTEGER (Computer, DATETIME, DATETIME);
+maxTotalMemoryFromTo 'Максимум памяти' = DATA INTEGER (Computer, DATETIME, DATETIME);
+minUsedMemoryFromTo 'Минимум использованной памяти' = DATA INTEGER (Computer, DATETIME, DATETIME);
+maxUsedMemoryFromTo 'Максимум использованной памяти' = DATA INTEGER (Computer, DATETIME, DATETIME);
 
-lastConnectionComputer(computer) = GROUP LAST connection BY computerConnection(connection);
-remoteAddressComputer 'IP пользователя' (computer) = remoteAddressConnection(lastConnectionComputer(computer));
-osVersionComputer 'Операционная система' (computer) = osVersionConnection(lastConnectionComputer(computer));
-processorComputer 'Процессор' (computer) = processorConnection(lastConnectionComputer(computer));
-architectureComputer 'Архитектура' (computer) = architectureConnection(lastConnectionComputer(computer));
-coresComputer 'Количество ядер' (computer) = coresConnection(lastConnectionComputer(computer));
-physicalMemoryComputer 'Физическая память, МБ' (computer) = physicalMemoryConnection(lastConnectionComputer(computer));
-totalMemoryComputer 'Всего память для JVM, МБ' (computer) = totalMemoryConnection(lastConnectionComputer(computer));
-maximumMemoryComputer 'Максимально доступная память для JVM, МБ' (computer) = maximumMemoryConnection(lastConnectionComputer(computer));
-freeMemoryComputer 'Свободная память для JVM, МБ' (computer) = freeMemoryConnection(lastConnectionComputer(computer));
-javaVersionComputer 'Версия java' (computer) = javaVersionConnection(lastConnectionComputer(computer));
+lastConnection(computer) = GROUP LAST Connection connection BY computer(connection);
+remoteAddress 'IP пользователя' (Computer computer) = remoteAddress(lastConnection(computer));
+osVersion 'Операционная система' (Computer computer) = osVersion(lastConnection(computer));
+processor 'Процессор' (Computer computer) = processor(lastConnection(computer));
+architecture 'Архитектура' (Computer computer) = architecture(lastConnection(computer));
+cores 'Количество ядер' (Computer computer) = cores(lastConnection(computer));
+physicalMemory 'Физическая память, МБ' (Computer computer) = physicalMemory(lastConnection(computer));
+totalMemory 'Всего память для JVM, МБ' (Computer computer) = totalMemory(lastConnection(computer));
+maximumMemory 'Максимально доступная память для JVM, МБ' (Computer computer) = maximumMemory(lastConnection(computer));
+freeMemory 'Свободная память для JVM, МБ' (Computer computer) = freeMemory(lastConnection(computer));
+javaVersion 'Версия java' (Computer computer) = javaVersion(lastConnection(computer));
 
 countDaysClearPings 'За сколько дней хранить статистику пингов и памяти' = DATA INTEGER (); 
     
@@ -155,11 +155,11 @@ DESIGN options { log { MOVE PROPERTY(countDaysClearPings());} }
     
 clearApplicationLog () += ACTION () NEWSESSION {
     IF countDaysClearPings() THEN {
-        pingComputerDateTimeFromDateTimeTo(c, dFrom, dTo) <- NULL WHERE dTo <= subtractDateTimeDay(currentDateTime(), countDaysClearPings());
-        minTotalMemoryComputerDateTimeFromDateTimeTo(c, dFrom, dTo) <- NULL WHERE dTo <= subtractDateTimeDay(currentDateTime(), countDaysClearPings());
-        maxTotalMemoryComputerDateTimeFromDateTimeTo(c, dFrom, dTo) <- NULL WHERE dTo <= subtractDateTimeDay(currentDateTime(), countDaysClearPings());
-        minUsedMemoryComputerDateTimeFromDateTimeTo(c, dFrom, dTo) <- NULL WHERE dTo <= subtractDateTimeDay(currentDateTime(), countDaysClearPings());
-        maxUsedMemoryComputerDateTimeFromDateTimeTo(c, dFrom, dTo) <- NULL WHERE dTo <= subtractDateTimeDay(currentDateTime(), countDaysClearPings());
+        pingFromTo(Computer c, DATETIME dFrom, DATETIME dTo) <- NULL WHERE dTo <= subtractDay(currentDateTime(), countDaysClearPings());
+        minTotalMemoryFromTo(Computer c, DATETIME dFrom, DATETIME dTo) <- NULL WHERE dTo <= subtractDay(currentDateTime(), countDaysClearPings());
+        maxTotalMemoryFromTo(Computer c, DATETIME dFrom, DATETIME dTo) <- NULL WHERE dTo <= subtractDay(currentDateTime(), countDaysClearPings());
+        minUsedMemoryFromTo(Computer c, DATETIME dFrom, DATETIME dTo) <- NULL WHERE dTo <= subtractDay(currentDateTime(), countDaysClearPings());
+        maxUsedMemoryFromTo(Computer c, DATETIME dFrom, DATETIME dTo) <- NULL WHERE dTo <= subtractDay(currentDateTime(), countDaysClearPings());
     }
     apply();
 }   
@@ -167,25 +167,25 @@ clearApplicationLog () += ACTION () NEWSESSION {
 FORM connections 'Журнал подключений'
 
     OBJECTS c=Connection
-    PROPERTIES (c) READONLY hostnameComputerConnection, remoteAddressConnection, userLoginConnection, remoteAddressConnection, osVersionConnection,
-                            javaVersionConnection, screenSizeConnection, processorConnection, architectureConnection, coresConnection, physicalMemoryConnection,
-                            totalMemoryConnection, maximumMemoryConnection, freeMemoryConnection, nameConnectionStatusConnection, connectTimeConnection,
-                            disconnectTimeConnection
+    PROPERTIES (c) READONLY hostnameComputer, remoteAddress, userLogin, remoteAddress, osVersion,
+                            javaVersion, screenSize, processor, architecture, cores, physicalMemory,
+                            totalMemory, maximumMemory, freeMemory, nameConnectionStatus, connectTime,
+                            disconnectTime
 
     OBJECTS n=NavigatorElement
-    PROPERTIES (n) READONLY captionNavigatorElement, canonicalNameNavigatorElement
+    PROPERTIES (n) READONLY caption, canonicalName
 
     PROPERTIES (c, n) READONLY connectionFormCount
 
     OBJECTS s=Session
-    PROPERTIES (s) READONLY captionNavigatorElementSession, nameUserSession, dateTimeSession
+    PROPERTIES (s) READONLY captionNavigatorElement, nameUser, dateTime
 
     FILTERS connectionFormCount(c, n)>0
-    FILTERS connectionSession(s)==c
+    FILTERS connection(s)==c
     FILTERGROUP filtersConnection
-                FILTER 'Активные подключения' connectionStatusConnection(c) == ConnectionStatus.connectedConnection 'F8'
+                FILTER 'Активные подключения' connectionStatus(c) == ConnectionStatus.connectedConnection 'F8'
     FILTERGROUP filtersNavigatorElement
-                FILTER 'Только выбранной формы' navigatorElementSession(s)==n 'F9'
+                FILTER 'Только выбранной формы' navigatorElement(s)==n 'F9'
 ;
 
 DESIGN connections{
@@ -201,8 +201,8 @@ DESIGN connections{
 FORM  exceptions 'Журнал ошибок'
 
     OBJECTS e=Exception LAST
-    PROPERTIES(e) FOREGROUND foregroundNonFatalException(e) BACKGROUND backgroundNonFatalException(e) READONLY messageException, clientClientException FORCE GRID, loginClientException FORCE GRID, typeException, dateException, reqIdHandledException, countNonFatalHandledException, abandonedNonFatalHandledException
-    PROPERTIES(e) READONLY FORCE PANEL erTraceException, lsfStackTraceException
+    PROPERTIES(e) FOREGROUND foregroundNonFatal(e) BACKGROUND backgroundNonFatal(e) READONLY message, client FORCE GRID, login FORCE GRID, type, date, reqId, count, abandoned
+    PROPERTIES(e) READONLY FORCE PANEL erTrace, lsfStackTrace
 ;
 
 DESIGN exceptions {
@@ -214,12 +214,12 @@ DESIGN exceptions {
                 type = CONTAINERH;
                 fill = 1;
 
-                MOVE PROPERTY(erTraceException(e)) {
+                MOVE PROPERTY(erTrace(e)) {
                     fill = 0.5;
                     preferredSize = ( -1, 200);
                     panelCaptionAbove = TRUE;
                 }
-                MOVE PROPERTY(lsfStackTraceException(e)) {
+                MOVE PROPERTY(lsfStackTrace(e)) {
                     fill = 0.5;
                     preferredSize = ( -1, 200);
                     panelCaptionAbove = TRUE;
@@ -233,17 +233,17 @@ DESIGN exceptions {
 FORM launches 'Журнал запусков'
 
    OBJECTS l=Launch
-   PROPERTIES(l) READONLY hostnameLaunch, timeLaunch, revisionLaunch
+   PROPERTIES(l) READONLY hostname, time, revision
 ;
 
 FORM changes 'Журнал изменений'
 
     OBJECTS s=Session
-    PROPERTIES (s) READONLY captionNavigatorElementSession, hostnameComputerConnectionSession,
-                            userLoginConnectionSession, quantityAddedClassesSession, quantityRemovedClassesSession,
-                            quantityChangedClassesSession, gChanges = changesSession, dateTimeSession, pChanges = changesSession FORCE PANEL
+    PROPERTIES (s) READONLY captionNavigatorElement, hostnameComputerConnection,
+                            userLoginConnection, quantityAddedClasses, quantityRemovedClasses,
+                            quantityChangedClasses, gChanges = changes, dateTime, pChanges = changes FORCE PANEL
     FILTERGROUP filtersChange
-                    FILTER 'Только изменения пользователей' userLoginConnectionSession(s) 'F8' DEFAULT
+                    FILTER 'Только изменения пользователей' userLoginConnection(s) 'F8' DEFAULT
 ;
 
 DESIGN changes {
@@ -267,48 +267,48 @@ DESIGN changes {
 }
 
 limitPing 'Пороговый пинг (мс)' = DATA INTEGER ();
-limitPingTimeSum 'Суммарное время выше порога, секунд' (computer, limitDFrom, limitDTo) = GROUP SUM subtractSeconds(dFrom, dTo) BY computer, limitDFrom, limitDTo
-    IF pingComputerDateTimeFromDateTimeTo(computer, dFrom, dTo) > limitPing() AND limitDFrom < dFrom AND limitDTo > dTo;
-averagePingComputerDateFromDateTo 'Средний пинг (мс)' (computer, limitDFrom, limitDTo) = 
-    [=GROUP SUM pingComputerDateTimeFromDateTimeTo(computer, dFrom, dTo) * subtractSeconds(dFrom, dTo) BY computer, limitDFrom, limitDTo IF limitDFrom < dFrom AND limitDTo > dTo] (computer, limitDFrom, limitDTo) / 
-    [=GROUP SUM subtractSeconds(dFrom, dTo) BY computer, limitDFrom, limitDTo IF pingComputerDateTimeFromDateTimeTo(computer, dFrom, dTo) AND limitDFrom < dFrom AND limitDTo > dTo] (computer, limitDFrom, limitDTo);
+limitPingSum 'Суммарное время выше порога, секунд' (computer, limitDFrom, limitDTo) = GROUP SUM subtractSeconds(DATETIME dFrom, DATETIME dTo) BY Computer computer, DATETIME limitDFrom, DATETIME limitDTo
+    IF pingFromTo(computer, dFrom, dTo) > limitPing() AND limitDFrom < dFrom AND limitDTo > dTo;
+averagePingDateFrom 'Средний пинг (мс)' (Computer computer, DATETIME limitDFrom, DATETIME limitDTo) = 
+    [=GROUP SUM pingFromTo(Computer computer, DATETIME dFrom, DATETIME dTo) * subtractSeconds(dFrom, dTo) BY computer, DATETIME limitDFrom, DATETIME limitDTo IF limitDFrom < dFrom AND limitDTo > dTo] (computer, limitDFrom, limitDTo) / 
+    [=GROUP SUM subtractSeconds(DATETIME dFrom, DATETIME dTo) BY Computer computer, DATETIME limitDFrom, DATETIME limitDTo IF pingFromTo(computer, dFrom, dTo) AND limitDFrom < dFrom AND limitDTo > dTo] (computer, limitDFrom, limitDTo);
     
 limitMaxTotalMemory 'Пороговая память' = DATA INTEGER();
-limitMaxTotalMemoryTimeSum 'Суммарное время выше порога памяти, секунд' (computer, limitDFrom, limitDTo) = GROUP SUM subtractSeconds(dFrom, dTo) BY computer, limitDFrom, limitDTo
-    IF maxTotalMemoryComputerDateTimeFromDateTimeTo(computer, dFrom, dTo) > limitMaxTotalMemory() AND limitDFrom < dFrom AND limitDTo > dTo;
-averageMaxTotalMemoryComputerDateFromDateTo 'Средняя память, МБ' (computer, limitDFrom, limitDTo) = 
-    [=GROUP SUM maxTotalMemoryComputerDateTimeFromDateTimeTo(computer, dFrom, dTo) * subtractSeconds(dFrom, dTo) BY computer, limitDFrom, limitDTo IF limitDFrom < dFrom AND limitDTo > dTo] (computer, limitDFrom, limitDTo) / 
-    [=GROUP SUM subtractSeconds(dFrom, dTo) BY computer, limitDFrom, limitDTo IF maxTotalMemoryComputerDateTimeFromDateTimeTo(computer, dFrom, dTo) AND limitDFrom < dFrom AND limitDTo > dTo] (computer, limitDFrom, limitDTo);        
+limitMaxTotalMemorySum 'Суммарное время выше порога памяти, секунд' (computer, limitDFrom, limitDTo) = GROUP SUM subtractSeconds(DATETIME dFrom, DATETIME dTo) BY Computer computer, DATETIME limitDFrom, DATETIME limitDTo
+    IF maxTotalMemoryFromTo(computer, dFrom, dTo) > limitMaxTotalMemory() AND limitDFrom < dFrom AND limitDTo > dTo;
+averageMaxTotalMemoryDateFrom 'Средняя память, МБ' (Computer computer, DATETIME limitDFrom, DATETIME limitDTo) = 
+    [=GROUP SUM maxTotalMemoryFromTo(Computer computer, DATETIME dFrom, DATETIME dTo) * subtractSeconds(dFrom, dTo) BY computer, DATETIME limitDFrom, DATETIME limitDTo IF limitDFrom < dFrom AND limitDTo > dTo] (computer, limitDFrom, limitDTo) / 
+    [=GROUP SUM subtractSeconds(DATETIME dFrom, DATETIME dTo) BY Computer computer, DATETIME limitDFrom, DATETIME limitDTo IF maxTotalMemoryFromTo(computer, dFrom, dTo) AND limitDFrom < dFrom AND limitDTo > dTo] (computer, limitDFrom, limitDTo);        
 
 limitMaxUsedMemory 'Пороговая использованная память' = DATA INTEGER();   
-limitMaxUsedMemoryTimeSum 'Суммарное время выше порога использованной памяти, секунд' (computer, limitDFrom, limitDTo) = GROUP SUM subtractSeconds(dFrom, dTo) BY computer, limitDFrom, limitDTo
-    IF maxUsedMemoryComputerDateTimeFromDateTimeTo(computer, dFrom, dTo) > limitMaxUsedMemory() AND limitDFrom < dFrom AND limitDTo > dTo;
-averageMaxUsedMemoryComputerDateFromDateTo 'Средняя использованная память, МБ' (computer, limitDFrom, limitDTo) = 
-    [=GROUP SUM maxUsedMemoryComputerDateTimeFromDateTimeTo(computer, dFrom, dTo) * subtractSeconds(dFrom, dTo) BY computer, limitDFrom, limitDTo IF limitDFrom < dFrom AND limitDTo > dTo] (computer, limitDFrom, limitDTo) / 
-    [=GROUP SUM subtractSeconds(dFrom, dTo) BY computer, limitDFrom, limitDTo IF maxUsedMemoryComputerDateTimeFromDateTimeTo(computer, dFrom, dTo) AND limitDFrom < dFrom AND limitDTo > dTo] (computer, limitDFrom, limitDTo);        
+limitMaxUsedMemorySum 'Суммарное время выше порога использованной памяти, секунд' (computer, limitDFrom, limitDTo) = GROUP SUM subtractSeconds(DATETIME dFrom, DATETIME dTo) BY Computer computer, DATETIME limitDFrom, DATETIME limitDTo
+    IF maxUsedMemoryFromTo(computer, dFrom, dTo) > limitMaxUsedMemory() AND limitDFrom < dFrom AND limitDTo > dTo;
+averageMaxUsedMemoryDateFrom 'Средняя использованная память, МБ' (Computer computer, DATETIME limitDFrom, DATETIME limitDTo) = 
+    [=GROUP SUM maxUsedMemoryFromTo(Computer computer, DATETIME dFrom, DATETIME dTo) * subtractSeconds(dFrom, dTo) BY computer, DATETIME limitDFrom, DATETIME limitDTo IF limitDFrom < dFrom AND limitDTo > dTo] (computer, limitDFrom, limitDTo) / 
+    [=GROUP SUM subtractSeconds(DATETIME dFrom, DATETIME dTo) BY Computer computer, DATETIME limitDFrom, DATETIME limitDTo IF maxUsedMemoryFromTo(computer, dFrom, dTo) AND limitDFrom < dFrom AND limitDTo > dTo] (computer, limitDFrom, limitDTo);        
 
 FORM pings 'Журнал клиентских приложений'
     OBJECTS limits = (limitDFrom = DATETIME, limitDTo = DATETIME) FIXED PANEL, c = Computer, dates = (dFrom = DATETIME, dTo = DATETIME)
-    PROPERTIES(c) READONLY hostnameComputer, remoteAddressComputer, osVersionComputer, processorComputer, architectureComputer, coresComputer, 
-                           physicalMemoryComputer, totalMemoryComputer, maximumMemoryComputer, freeMemoryComputer,
-                           javaVersionComputer                                       
+    PROPERTIES(c) READONLY hostname, remoteAddress, osVersion, processor, architecture, cores, 
+                           physicalMemory, totalMemory, maximumMemory, freeMemory,
+                           javaVersion                                       
     PROPERTIES dFromObj = OBJVALUE(dFrom), dToObj = OBJVALUE(dTo), limitDFromObj = OBJVALUE(limitDFrom), limitDToObj = OBJVALUE(limitDTo),
                limitPing() TODRAW limits, limitMaxTotalMemory() TODRAW limits, limitMaxUsedMemory() TODRAW limits, subtractSeconds(dFrom, dTo)
-    PROPERTIES(c, limitDFrom, limitDTo) TODRAW c averagePingComputerDateFromDateTo, averageMaxTotalMemoryComputerDateFromDateTo, averageMaxUsedMemoryComputerDateFromDateTo, 
-                                                 limitPingTimeSum, limitMaxTotalMemoryTimeSum, limitMaxUsedMemoryTimeSum
-    PROPERTIES(c,dFrom,dTo) READONLY pingComputerDateTimeFromDateTimeTo, 
-                            minTotalMemoryComputerDateTimeFromDateTimeTo, maxTotalMemoryComputerDateTimeFromDateTimeTo,
-                            minUsedMemoryComputerDateTimeFromDateTimeTo, maxUsedMemoryComputerDateTimeFromDateTimeTo
-    FILTERS pingComputerDateTimeFromDateTimeTo(c,dFrom,dTo)
+    PROPERTIES(c, limitDFrom, limitDTo) TODRAW c averagePingDateFrom, averageMaxTotalMemoryDateFrom, averageMaxUsedMemoryDateFrom, 
+                                                 limitPingSum, limitMaxTotalMemorySum, limitMaxUsedMemorySum
+    PROPERTIES(c,dFrom,dTo) READONLY pingFromTo, 
+                            minTotalMemoryFromTo, maxTotalMemoryFromTo,
+                            minUsedMemoryFromTo, maxUsedMemoryFromTo
+    FILTERS pingFromTo(c,dFrom,dTo)
     
     OBJECTS cn = Connection
-    PROPERTIES (cn) READONLY hostnameComputerConnection, remoteAddressConnection, userLoginConnection, remoteAddressConnection, osVersionConnection,
-                             javaVersionConnection, screenSizeConnection, processorConnection, architectureConnection, coresConnection, physicalMemoryConnection,
-                             totalMemoryConnection, maximumMemoryConnection, freeMemoryConnection, nameConnectionStatusConnection, connectTimeConnection,
-                             disconnectTimeConnection
-    FILTERS computerConnection(cn) == c
+    PROPERTIES (cn) READONLY hostnameComputer, remoteAddress, userLogin, remoteAddress, osVersion,
+                             javaVersion, screenSize, processor, architecture, cores, physicalMemory,
+                             totalMemory, maximumMemory, freeMemory, nameConnectionStatus, connectTime,
+                             disconnectTime
+    FILTERS computer(cn) == c
     FILTERGROUP filtersConnection
-                    FILTER 'Активные подключения' connectionStatusConnection(cn) == ConnectionStatus.connectedConnection 'F8'
+                    FILTER 'Активные подключения' connectionStatus(cn) == ConnectionStatus.connectedConnection 'F8'
 ;
 
 DESIGN pings {

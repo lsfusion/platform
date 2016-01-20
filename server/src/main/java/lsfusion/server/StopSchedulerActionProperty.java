@@ -22,7 +22,7 @@ public class StopSchedulerActionProperty extends ScriptingActionProperty {
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         context.getLogicsInstance().getCustomObject(Scheduler.class).stopScheduledTasks();
         try {
-            findProperty("isStartedScheduler").change((Object) null, context);
+            findProperty("isStartedScheduler[]").change((Object) null, context);
         } catch (ScriptingErrorLog.SemanticErrorException e) {
             throw Throwables.propagate(e);
         }

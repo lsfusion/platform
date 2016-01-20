@@ -42,13 +42,13 @@ public class ServiceLogicsModule extends ScriptingLogicsModule {
         makePropertyPublic(isServerRestarting, "isServerRestarting", new ArrayList<ResolveClassSet>());
         super.initProperties();
         // Управление сервером базы данных
-        checkAggregationsAction = findAction("checkAggregationsAction");
-        recalculateAction = findAction("recalculateAction");
-        recalculateFollowsAction = findAction("recalculateFollowsAction");
-        analyzeDBAction = findAction("analyzeDBAction");
-        packAction = findAction("packAction");
-        serviceDBAction = findAction("serviceDBAction");
-        singleTransaction = findProperty("singleTransaction");
+        checkAggregationsAction = findAction("checkAggregationsAction[]");
+        recalculateAction = findAction("recalculateAction[]");
+        recalculateFollowsAction = findAction("recalculateFollowsAction[]");
+        analyzeDBAction = findAction("analyzeDBAction[]");
+        packAction = findAction("packAction[]");
+        serviceDBAction = findAction("serviceDBAction[]");
+        singleTransaction = findProperty("singleTransaction[]");
 
         recalculateMultiThreadAction = findAction("recalculateMultiThreadAction[]");
         recalculateClassesMultiThreadAction = findAction("recalculateClassesMultiThreadAction[]");

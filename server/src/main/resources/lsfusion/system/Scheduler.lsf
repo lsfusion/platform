@@ -25,61 +25,61 @@ DESIGN schedulerStartTypes {
 CLASS ScheduledTask 'Задание планировщика';
 TABLE scheduledTask (ScheduledTask);
 
-nameScheduledTask 'Имя' = DATA VARSTRING[100] (ScheduledTask);
-scheduledTaskName (name) = GROUP AGGR task BY nameScheduledTask(task) WHERE task IS ScheduledTask;
+name 'Имя' = DATA VARSTRING[100] (ScheduledTask);
+scheduledTask (name) = GROUP AGGR ScheduledTask task BY name(task) WHERE task IS ScheduledTask;
 
-runAtStartScheduledTask 'Выполнить при старте' = DATA BOOLEAN (ScheduledTask);
-timeFromScheduledTask 'Время с' = DATA TIME (ScheduledTask);
-timeToScheduledTask 'Время по' = DATA TIME (ScheduledTask);
-startDateScheduledTask 'Дата начала' = DATA DATETIME (ScheduledTask);
-periodScheduledTask 'Повторять каждые (секунд)' = DATA INTEGER (ScheduledTask);
-schedulerStartTypeScheduledTask 'Отсчёт времени' = DATA SchedulerStartType (ScheduledTask);
-nameSchedulerStartTypeScheduledTask 'Отсчёт времени' = staticCaption(schedulerStartTypeScheduledTask(ScheduledTask));
-activeScheduledTask 'Активно' = DATA BOOLEAN (ScheduledTask);
-daysOfMonthScheduledTask 'Выполнять по дням (через запятую)' = DATA VARSTRING[255] (ScheduledTask);
+runAtStart 'Выполнить при старте' = DATA BOOLEAN (ScheduledTask);
+timeFrom 'Время с' = DATA TIME (ScheduledTask);
+timeTo 'Время по' = DATA TIME (ScheduledTask);
+startDate 'Дата начала' = DATA DATETIME (ScheduledTask);
+period 'Повторять каждые (секунд)' = DATA INTEGER (ScheduledTask);
+schedulerStartType 'Отсчёт времени' = DATA SchedulerStartType (ScheduledTask);
+nameSchedulerStartType 'Отсчёт времени' = staticCaption(schedulerStartType(ScheduledTask ScheduledTask));
+active 'Активно' = DATA BOOLEAN (ScheduledTask);
+daysOfMonth 'Выполнять по дням (через запятую)' = DATA VARSTRING[255] (ScheduledTask);
 
 TABLE DOWScheduledTask(DOW, ScheduledTask);
-inDOWScheduledTask 'Вкл' = DATA BOOLEAN (DOW, ScheduledTask); 
-daysOfWeekScheduledTask (t)= GROUP CONCAT VARSTRING[3](numberDOW(d)) IF inDOWScheduledTask (d,t), ', ' BY t ORDER d;   
+in 'Вкл' = DATA BOOLEAN (DOW, ScheduledTask); 
+daysOfWeek (t)= GROUP CONCAT VARSTRING[3](number(DOW d)) IF in (d,ScheduledTask t), ', ' BY t ORDER d;   
 
 CLASS ScheduledTaskDetail 'Строка задания планировщика';
 TABLE scheduledTaskDetail (ScheduledTaskDetail);
 
-activeScheduledTaskDetail 'Активно' = DATA BOOLEAN (ScheduledTaskDetail);
-orderScheduledTaskDetail 'Порядок' = DATA INTEGER (ScheduledTaskDetail);
-scriptScheduledTaskDetail 'Скрипт' = DATA TEXT (ScheduledTaskDetail);
+active 'Активно' = DATA BOOLEAN (ScheduledTaskDetail);
+order 'Порядок' = DATA INTEGER (ScheduledTaskDetail);
+script 'Скрипт' = DATA TEXT (ScheduledTaskDetail);
 
-scheduledTaskScheduledTaskDetail = DATA ScheduledTask (ScheduledTaskDetail) NOT NULL DELETE;
-propertyScheduledTaskDetail = DATA Property (ScheduledTaskDetail);
-captionPropertyScheduledTaskDetail 'Свойство' (scheduledTaskDetail) = captionProperty(propertyScheduledTaskDetail(scheduledTaskDetail));
-canonicalNamePropertyScheduledTaskDetail 'Код свойства' (scheduledTaskDetail) = canonicalNameProperty(propertyScheduledTaskDetail(scheduledTaskDetail));
-parameterScheduledTaskDetail 'Параметр свойства' = DATA TEXT (ScheduledTaskDetail);
-classPropertyScheduledTaskDetail 'Класс свойства' (scheduledTaskDetail) = classProperty(propertyScheduledTaskDetail(scheduledTaskDetail));
-returnPropertyScheduledTaskDetail 'Возвращаемый класс' (scheduledTaskDetail) = returnProperty(propertyScheduledTaskDetail(scheduledTaskDetail));
-timeoutScheduledTaskDetail 'Выполнять не дольше (секунд)' = DATA INTEGER (ScheduledTaskDetail);
-ignoreExceptionsScheduledTaskDetail 'Игнорировать ошибки' = DATA BOOLEAN (ScheduledTaskDetail);
+scheduledTask = DATA ScheduledTask (ScheduledTaskDetail) NOT NULL DELETE;
+property = DATA Property (ScheduledTaskDetail);
+captionProperty 'Свойство' (ScheduledTaskDetail scheduledTaskDetail) = caption(property(scheduledTaskDetail));
+canonicalNameProperty 'Код свойства' (ScheduledTaskDetail scheduledTaskDetail) = canonicalName(property(scheduledTaskDetail));
+parameter 'Параметр свойства' = DATA TEXT (ScheduledTaskDetail);
+classProperty 'Класс свойства' (ScheduledTaskDetail scheduledTaskDetail) = class(property(scheduledTaskDetail));
+returnProperty 'Возвращаемый класс' (ScheduledTaskDetail scheduledTaskDetail) = return(property(scheduledTaskDetail));
+timeout 'Выполнять не дольше (секунд)' = DATA INTEGER (ScheduledTaskDetail);
+ignoreExceptions 'Игнорировать ошибки' = DATA BOOLEAN (ScheduledTaskDetail);
 
 CLASS ScheduledTaskLog 'Лог планировщика';
 TABLE scheduledTaskLog (ScheduledTaskLog);
 TABLE scheduledTaskScheduledTaskLog (ScheduledTask, ScheduledTaskLog);
 
-resultScheduledTaskLog 'Результат' = DATA VARSTRING[200] (ScheduledTaskLog);
-exceptionOccurredScheduledTaskLog 'Ошибка' = DATA BOOLEAN (ScheduledTaskLog);
-propertyScheduledTaskLog 'Свойство' = DATA VARSTRING[200] (ScheduledTaskLog);
-dateScheduledTaskLog 'Время' = DATA DATETIME (ScheduledTaskLog);
-toDateScheduledTaskLog 'Дата' (d) = DATE(dateScheduledTaskLog(d));
-scheduledTaskScheduledTaskLog 'Задание планировщика' = DATA ScheduledTask (ScheduledTaskLog);
+result 'Результат' = DATA VARSTRING[200] (ScheduledTaskLog);
+exceptionOccurred 'Ошибка' = DATA BOOLEAN (ScheduledTaskLog);
+property 'Свойство' = DATA VARSTRING[200] (ScheduledTaskLog);
+date 'Время' = DATA DATETIME (ScheduledTaskLog);
+toDate 'Дата' (ScheduledTaskLog d) = DATE(date(d));
+scheduledTask 'Задание планировщика' = DATA ScheduledTask (ScheduledTaskLog);
 
 @defineLog (ScheduledTaskLog, 'планировщика', log, toDate);
 
 CLASS ScheduledClientTaskLog 'Сообщения клиента';
 TABLE scheduledClientTaskLog (ScheduledClientTaskLog);
 
-scheduledTaskLogScheduledClientTaskLog 'Лог планировщика'= DATA ScheduledTaskLog (ScheduledClientTaskLog) NOT NULL DELETE;
-messageScheduledClientTaskLog 'Сообщение'= DATA TEXT (ScheduledClientTaskLog);
-dateScheduledClientTaskLog 'Время'= DATA DATETIME (ScheduledClientTaskLog);
+scheduledTaskLog 'Лог планировщика'= DATA ScheduledTaskLog (ScheduledClientTaskLog) NOT NULL DELETE;
+message 'Сообщение'= DATA TEXT (ScheduledClientTaskLog);
+date 'Время'= DATA DATETIME (ScheduledClientTaskLog);
 
-isMessagesScheduledTaskLog 'Сообщения' (stl)= TRUE IF [=GROUP SUM 1 IF messageScheduledClientTaskLog(stcl) BY scheduledTaskLogScheduledClientTaskLog(stcl)](stl) AND NOT exceptionOccurredScheduledTaskLog(stl);
+isMessages 'Сообщения' (ScheduledTaskLog stl)= TRUE IF [=GROUP SUM 1 IF message(ScheduledClientTaskLog stcl) BY scheduledTaskLog(stcl)](stl) AND NOT exceptionOccurred(stl);
 
 stopScheduler 'Остановить планировщик' = ACTION CUSTOM 'lsfusion.server.StopSchedulerActionProperty' ();
 stopSchedulerApply 'Остановить планировщик' = ACTION {
@@ -99,55 +99,55 @@ onStarted() += ACTION runSetupScheduler();
 scriptText 'Скрипт' () = DATA LOCAL TEXT ();
 evalScript 'Выполнить скрипт' () = ACTION EVAL scriptText();
 
-changedScheduler () = GROUP SUM 1 IF (((CHANGED (runAtStartScheduledTask(t)) OR CHANGED (startDateScheduledTask(t)) OR CHANGED (timeFromScheduledTask(t)) 
-                                         OR CHANGED (timeToScheduledTask(t)) OR CHANGED (periodScheduledTask(t)) OR CHANGED (daysOfMonthScheduledTask(t))
-                                         OR CHANGED (schedulerStartTypeScheduledTask(t)) OR CHANGED (schedulerStartTypeScheduledTask(t))) AND activeScheduledTask(t)
-                                         OR CHANGED (activeScheduledTask(t))) OR
-                                                ((CHANGED (activeScheduledTaskDetail(td)) OR CHANGED (orderScheduledTaskDetail(td)) OR CHANGED(scriptScheduledTaskDetail(td)) 
-                                         OR CHANGED (scheduledTaskScheduledTaskDetail(td)) OR CHANGED (propertyScheduledTaskDetail(td)) 
-                                         OR CHANGED (ignoreExceptionsScheduledTaskDetail(td)) OR CHANGED (timeoutScheduledTaskDetail(td)) OR CHANGED (parameterScheduledTaskDetail(td)))
-                                         AND activeScheduledTask(scheduledTaskScheduledTaskDetail(td))) OR 
-                                                CHANGED(inDOWScheduledTask(dow, t))) AND isStartedScheduler() AND t IS ScheduledTask AND td IS ScheduledTaskDetail AND dow IS DOW;
+changedScheduler () = GROUP SUM 1 IF (((CHANGED (runAtStart(ScheduledTask t)) OR CHANGED (startDate(t)) OR CHANGED (timeFrom(t)) 
+                                         OR CHANGED (timeTo(t)) OR CHANGED (period(t)) OR CHANGED (daysOfMonth(t))
+                                         OR CHANGED (schedulerStartType(t)) OR CHANGED (schedulerStartType(t))) AND active(t)
+                                         OR CHANGED (active(t))) OR
+                                                ((CHANGED (active(ScheduledTaskDetail td)) OR CHANGED (order(td)) OR CHANGED(script(td)) 
+                                         OR CHANGED (scheduledTask(td)) OR CHANGED (property(td)) 
+                                         OR CHANGED (ignoreExceptions(td)) OR CHANGED (timeout(td)) OR CHANGED (parameter(td)))
+                                         AND active(scheduledTask(td))) OR 
+                                                CHANGED(in(DOW dow, t))) AND isStartedScheduler() AND t IS ScheduledTask AND td IS ScheduledTaskDetail AND dow IS DOW;
                                          ;
 WHEN changedScheduler() DO EXEC runSetupScheduler();
-WHEN DROPPED (td IS ScheduledTaskDetail) IF PREV(activeScheduledTaskDetail(td)) AND isStartedScheduler() DO EXEC runSetupScheduler();
+WHEN DROPPED (ScheduledTaskDetail td IS ScheduledTaskDetail) IF PREV(active(td)) AND isStartedScheduler() DO EXEC runSetupScheduler();
            
 FORM scheduledTask 'Планировщик'
 
     OBJECTS t=ScheduledTask
-    PROPERTIES (t) activeScheduledTask, nameScheduledTask, timeFromScheduledTask, timeToScheduledTask, startDateScheduledTask, periodScheduledTask,
-                    nameSchedulerStartTypeScheduledTask, runAtStartScheduledTask, daysOfMonthScheduledTask FORCE PANEL
+    PROPERTIES (t) active, name, timeFrom, timeTo, startDate, period,
+                    nameSchedulerStartType, runAtStart, daysOfMonth FORCE PANEL
     PROPERTIES (t) ADDOBJ, DELETESESSION
          
     OBJECTS td=ScheduledTaskDetail
-    PROPERTIES (td) activeScheduledTaskDetail, ignoreExceptionsScheduledTaskDetail, orderScheduledTaskDetail, captionPropertyScheduledTaskDetail, 
-                    canonicalNamePropertyScheduledTaskDetail, parameterScheduledTaskDetail, classPropertyScheduledTaskDetail, 
-                    returnPropertyScheduledTaskDetail, timeoutScheduledTaskDetail, scriptScheduledTaskDetail FORCE PANEL
+    PROPERTIES (td) active, ignoreExceptions, order, captionProperty, 
+                    canonicalNameProperty, parameter, classProperty, 
+                    returnProperty, timeout, script FORCE PANEL
     PROPERTIES (td) ADDOBJ, DELETESESSION
     
     OBJECTS tl=ScheduledTaskLog
-    PROPERTIES (tl) READONLY propertyScheduledTaskLog, resultScheduledTaskLog, exceptionOccurredScheduledTaskLog, isMessagesScheduledTaskLog, dateScheduledTaskLog
+    PROPERTIES (tl) READONLY property, result, exceptionOccurred, isMessages, date
     
     FILTERGROUP stlFilters 
-        FILTER 'Ошибка или сообщение' exceptionOccurredScheduledTaskLog(tl) OR isMessagesScheduledTaskLog(tl)
+        FILTER 'Ошибка или сообщение' exceptionOccurred(tl) OR isMessages(tl)
 
     OBJECTS ctl=ScheduledClientTaskLog
-    PROPERTIES (ctl) READONLY messageScheduledClientTaskLog, dateScheduledClientTaskLog
+    PROPERTIES (ctl) READONLY message, date
     
     OBJECTS dow=DOW
-    PROPERTIES (dow) numberDOW, staticCaption 
-    PROPERTIES (dow, t) inDOWScheduledTask 
+    PROPERTIES (dow) number, staticCaption 
+    PROPERTIES (dow, t) in 
     
     PROPERTIES () stopSchedulerApply SHOWIF isStartedScheduler() TOOLBAR, runSetupSchedulerApply SHOWIF isStoppedScheduler() TOOLBAR
     
-    ORDER BY numberDOW(dow)
+    ORDER BY number(dow)
     
-    FILTERS scheduledTaskScheduledTaskDetail(td)==t,
-            scheduledTaskScheduledTaskLog(tl) == t,
-            scheduledTaskLogScheduledClientTaskLog(ctl) == tl
+    FILTERS scheduledTask(td)==t,
+            scheduledTask(tl) == t,
+            scheduledTaskLog(ctl) == tl
 
     FILTERGROUP filtersScheduler
-            FILTER 'Только активные' activeScheduledTaskDetail(td) 'F9'
+            FILTER 'Только активные' active(td) 'F9'
 ;
 
 DESIGN scheduledTask {
@@ -160,11 +160,11 @@ DESIGN scheduledTask {
             type = TABBED;
             MOVE td.box {
                 caption = 'Свойства';
-                MOVE PROPERTY(scriptScheduledTaskDetail(td)) {
+                MOVE PROPERTY(script(td)) {
                     panelCaptionAbove = TRUE;
                     fill = 0.5;
                 }
-                PROPERTY(parameterScheduledTaskDetail(td)) {
+                PROPERTY(parameter(td)) {
                     preferredSize = (-1, 18);
                     minimumSize = (-1, 18);
                 }
@@ -178,10 +178,10 @@ DESIGN scheduledTask {
             NEW dowContainer {
                 caption = 'Фильтр по дням';
                 MOVE dow.box;
-                PROPERTY(numberDOW(dow)) {
+                PROPERTY(number(dow)) {
                     hide = TRUE;
                 }
-                MOVE PROPERTY(daysOfMonthScheduledTask(t));
+                MOVE PROPERTY(daysOfMonth(t));
             }        
         }
     }
@@ -196,8 +196,8 @@ DESIGN scheduledTask {
 
 FORM scheduledTaskProperties 'Свойства'
     OBJECTS p = Property
-    PROPERTIES(p) READONLY captionProperty, canonicalNameProperty, classProperty, returnProperty
-    FILTERS returnProperty(p) == 'ActionClass'
+    PROPERTIES(p) READONLY caption, canonicalName, class, return
+    FILTERS return(p) == 'ActionClass'
 ;
 
 NAVIGATOR {

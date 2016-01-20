@@ -184,7 +184,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     @IdentityLazy
     public LAP getFormPrint() {
         try {
-            return formPrint = findAction("formPrint");
+            return formPrint = findAction("formPrint[]");
         } catch (ScriptingErrorLog.SemanticErrorException e) {
             Throwables.propagate(e);
         }
@@ -194,7 +194,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     @IdentityLazy
     public LAP getFormEdit() {
         try {
-            return formEdit = findAction("formEdit");
+            return formEdit = findAction("formEdit[]");
         } catch (ScriptingErrorLog.SemanticErrorException e) {
             Throwables.propagate(e);
         }
@@ -204,7 +204,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     @IdentityLazy
     public LAP getFormXls() {
         try {
-            return formXls = findAction("formXls");
+            return formXls = findAction("formXls[]");
         } catch (ScriptingErrorLog.SemanticErrorException e) {
             Throwables.propagate(e);
         }
@@ -214,7 +214,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     @IdentityLazy
     public LAP getFormDrop() {
         try {
-            return formDrop = findAction("formDrop");
+            return formDrop = findAction("formDrop[]");
         } catch (ScriptingErrorLog.SemanticErrorException e) {
             Throwables.propagate(e);
         }
@@ -224,7 +224,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     @IdentityLazy
     public LAP getFormRefresh() {
         try {
-            return formRefresh = findAction("formRefresh");
+            return formRefresh = findAction("formRefresh[]");
         } catch (ScriptingErrorLog.SemanticErrorException e) {
             Throwables.propagate(e);
         }
@@ -234,7 +234,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     @IdentityLazy
     public LAP getFormApply() {
         try {
-            return formApply = findAction("formApply");
+            return formApply = findAction("formApply[]");
         } catch (ScriptingErrorLog.SemanticErrorException e) {
             Throwables.propagate(e);
         }
@@ -244,7 +244,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     @IdentityLazy
     public LAP getFormCancel() {
         try {
-            return formCancel = findAction("formCancel");
+            return formCancel = findAction("formCancel[]");
         } catch (ScriptingErrorLog.SemanticErrorException e) {
             Throwables.propagate(e);
         }
@@ -254,7 +254,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     @IdentityLazy
     public LAP getFormOk() {
         try {
-            return formOk = findAction("formOk");
+            return formOk = findAction("formOk[]");
         } catch (ScriptingErrorLog.SemanticErrorException e) {
             Throwables.propagate(e);
         }
@@ -264,7 +264,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     @IdentityLazy
     public LAP getFormClose() {
         try {
-            return formClose = findAction("formClose");
+            return formClose = findAction("formClose[]");
         } catch (ScriptingErrorLog.SemanticErrorException e) {
             Throwables.propagate(e);
         }
@@ -379,65 +379,65 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
 
         // через JOIN (не операторы)
 
-        canceled = findProperty("canceled");
+        canceled = findProperty("canceled[]");
 
         apply = findAction("apply");
-        cancel = findAction("cancel");
+        cancel = findAction("cancel[]");
 
-        onStarted = findAction("onStarted");
+        onStarted = findAction("onStarted[]");
 
 
         // Обработка строк
-        upper = findProperty("upper");
+        upper = findProperty("upper[?]");
 
         // Операции с целыми числами
-        subtractInteger = findProperty("subtractInteger");
+        subtractInteger = findProperty("subtractInteger[DATE,DATE]");
 
-        seek = findAction("seek");
+        seek = findAction("seek[Object]");
         
-        addedObject = findProperty("addedObject");
-        confirmed = findProperty("confirmed");
-        requestCanceled = findProperty("requestCanceled");
-        formResultProp = findProperty("formResult");
-        formPageCount = findProperty("formPageCount");
-        formExportFile = findProperty("formExportFile");
-        ignorePrintType = findProperty("ignorePrintType");
+        addedObject = findProperty("addedObject[]");
+        confirmed = findProperty("confirmed[]");
+        requestCanceled = findProperty("requestCanceled[]");
+        formResultProp = findProperty("formResult[]");
+        formPageCount = findProperty("formPageCount[]");
+        formExportFile = findProperty("formExportFile[]");
+        ignorePrintType = findProperty("ignorePrintType[]");
 
-        imported = findProperty("imported");
-        importedString = findProperty("importedString");
+        imported = findProperty("imported[INTEGER]");
+        importedString = findProperty("importedString[VARSTRING[10]]");
 
-        sleep = findAction("sleep");
-        applyOnlyWithoutRecalc = findAction("applyOnlyWithoutRecalc");
-        applyAll = findAction("applyAll");
+        sleep = findAction("sleep[LONG]");
+        applyOnlyWithoutRecalc = findAction("applyOnlyWithoutRecalc[]");
+        applyAll = findAction("applyAll[]");
 
-        staticName = findProperty("staticName");
-        staticCaption = findProperty("staticCaption");
+        staticName = findProperty("staticName[Object]");
+        staticCaption = findProperty("staticCaption[Object]");
         ((CalcProperty)staticCaption.property).aggProp = true;
 
-        objectClassName = findProperty("objectClassName");
-        statCustomObjectClass = findProperty("statCustomObjectClass");
+        objectClassName = findProperty("objectClassName[Object]");
+        statCustomObjectClass = findProperty("stat[CustomObjectClass]");
         
         // Настройка отчетов
-        reportRowHeight = findProperty("reportRowHeight");
-        reportCharWidth = findProperty("reportCharWidth");
-        reportToStretch = findProperty("reportToStretch");
+        reportRowHeight = findProperty("reportRowHeight[]");
+        reportCharWidth = findProperty("reportCharWidth[]");
+        reportToStretch = findProperty("reportToStretch[]");
         
         // Настройка форм
-        defaultBackgroundColor = findProperty("defaultBackgroundColor");
-        defaultOverrideBackgroundColor = findProperty("defaultOverrideBackgroundColor");
-        defaultForegroundColor = findProperty("defaultForegroundColor");
-        defaultOverrideForegroundColor = findProperty("defaultOverrideForegroundColor");
+        defaultBackgroundColor = findProperty("defaultBackgroundColor[]");
+        defaultOverrideBackgroundColor = findProperty("defaultOverrideBackgroundColor[]");
+        defaultForegroundColor = findProperty("defaultForegroundColor[]");
+        defaultOverrideForegroundColor = findProperty("defaultOverrideForegroundColor[]");
 
-        selectedRowBackgroundColor = findProperty("selectedRowBackgroundColor");
-        overrideSelectedRowBackgroundColor = findProperty("overrideSelectedRowBackgroundColor");
-        selectedRowBorderColor = findProperty("selectedRowBorderColor");
-        overrideSelectedRowBorderColor = findProperty("overrideSelectedRowBorderColor");
-        selectedCellBackgroundColor = findProperty("selectedCellBackgroundColor");
-        overrideSelectedCellBackgroundColor = findProperty("overrideSelectedCellBackgroundColor");
-        focusedCellBackgroundColor = findProperty("focusedCellBackgroundColor");
-        overrideFocusedCellBackgroundColor = findProperty("overrideFocusedCellBackgroundColor");
-        focusedCellBorderColor = findProperty("focusedCellBorderColor");
-        overrideFocusedCellBorderColor = findProperty("overrideFocusedCellBorderColor");
+        selectedRowBackgroundColor = findProperty("selectedRowBackgroundColor[]");
+        overrideSelectedRowBackgroundColor = findProperty("overrideSelectedRowBackgroundColor[]");
+        selectedRowBorderColor = findProperty("selectedRowBorderColor[]");
+        overrideSelectedRowBorderColor = findProperty("overrideSelectedRowBorderColor[]");
+        selectedCellBackgroundColor = findProperty("selectedCellBackgroundColor[]");
+        overrideSelectedCellBackgroundColor = findProperty("overrideSelectedCellBackgroundColor[]");
+        focusedCellBackgroundColor = findProperty("focusedCellBackgroundColor[]");
+        overrideFocusedCellBackgroundColor = findProperty("overrideFocusedCellBackgroundColor[]");
+        focusedCellBorderColor = findProperty("focusedCellBorderColor[]");
+        overrideFocusedCellBorderColor = findProperty("overrideFocusedCellBorderColor[]");
         initNavigators();
     }
 

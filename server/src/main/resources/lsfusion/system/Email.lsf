@@ -29,79 +29,79 @@ CLASS Notification 'Уведомление';
 TABLE notification (Notification);
 TABLE notificationProperty (Notification, Property);
 
-isEventNotification 'При любом изменении' = DATA BOOLEAN (Notification);
-emailFromNotification 'Адрес отправителя' = DATA VARSTRING[50] (Notification);
-emailToNotification 'Адрес получателя' = DATA VARSTRING[50] (Notification);
-emailToCCNotification 'Копия' = DATA VARSTRING[50] (Notification);
-emailToBCNotification 'Скрытая копия' = DATA VARSTRING[50] (Notification);
-textNotification 'Текст письма' = DATA TEXT (Notification);
-subjectNotification 'Тема письма'= DATA VARSTRING[100] (Notification);
-inNotificationProperty 'Вкл.' = DATA BOOLEAN (Notification, Property);
+isEvent 'При любом изменении' = DATA BOOLEAN (Notification);
+emailFrom 'Адрес отправителя' = DATA VARSTRING[50] (Notification);
+emailTo 'Адрес получателя' = DATA VARSTRING[50] (Notification);
+emailToCC 'Копия' = DATA VARSTRING[50] (Notification);
+emailToBC 'Скрытая копия' = DATA VARSTRING[50] (Notification);
+text 'Текст письма' = DATA TEXT (Notification);
+subject 'Тема письма'= DATA VARSTRING[100] (Notification);
+in 'Вкл.' = DATA BOOLEAN (Notification, Property);
 
 CLASS Account 'E-mail аккаунт';
 TABLE account (Account);
 
-nameAccount 'Имя аккаунта' = DATA VARSTRING[50](Account);
-passwordAccount 'Пароль' = DATA VARSTRING[50](Account) ECHO;
-fromAddressAccount 'Адрес отправителя' = DATA VARSTRING[50] (Account);
+name 'Имя аккаунта' = DATA VARSTRING[50](Account);
+password 'Пароль' = DATA VARSTRING[50](Account) ECHO;
+fromAddress 'Адрес отправителя' = DATA VARSTRING[50] (Account);
 
-isDefaultNotificationAccount 'Использовать для отправки уведомлений' = DATA BOOLEAN (Account);
-defaultNotificationAccount 'E-mail аккаунт для отправки уведомлений' = GROUP MAX account IF isDefaultNotificationAccount(account);
-fromAddressDefaultNotificationAccount 'Адрес для отправки уведомлений по умолчанию' () = fromAddressAccount(defaultNotificationAccount());
+isDefaultNotification 'Использовать для отправки уведомлений' = DATA BOOLEAN (Account);
+defaultNotificationAccount 'E-mail аккаунт для отправки уведомлений' = GROUP MAX Account account IF isDefaultNotification(account);
+fromAddressDefaultNotificationAccount 'Адрес для отправки уведомлений по умолчанию' () = fromAddress(defaultNotificationAccount());
 
-isDefaultInboxAccount 'Использовать для отправки/получения сообщений' = DATA BOOLEAN (Account);
-defaultInboxAccount 'E-mail аккаунт для отправки/получения сообщений' = GROUP MAX account IF isDefaultInboxAccount(account);
+isDefaultInbox 'Использовать для отправки/получения сообщений' = DATA BOOLEAN (Account);
+defaultInboxAccount 'E-mail аккаунт для отправки/получения сообщений' = GROUP MAX Account account IF isDefaultInbox(account);
 
-smtpHostAccount 'SMTP хост' = DATA VARSTRING[50](Account);
-smtpPortAccount 'SMTP порт' = DATA VARSTRING[10](Account);
-receiveHostAccount 'Хост входящей почты' = DATA VARSTRING[50](Account);
-receivePortAccount 'Порт входящей почты' = DATA INTEGER(Account);
-receiveAccountTypeAccount 'Тип учётной записи' = DATA ReceiveAccountType(Account);
-nameReceiveAccountTypeAccount 'Тип учётной записи' (account) = staticCaption(receiveAccountTypeAccount(account));
-blindCarbonCopyAccount 'Копия (BCC)'= DATA VARSTRING[50](Account);
-deleteMessagesAccount 'Удалять сообщения с сервера' = DATA BOOLEAN(Account);
-lastDaysAccount 'Загружать письма не старше (дней)' = DATA INTEGER(Account);
-disableAccount 'Отключить отсылку и получение почты' = DATA BOOLEAN(Account);
-enableAccount 'Включить отсылку и получение почты' (account) = NOT disableAccount(account) AND account IS Account;
+smtpHost 'SMTP хост' = DATA VARSTRING[50](Account);
+smtpPort 'SMTP порт' = DATA VARSTRING[10](Account);
+receiveHost 'Хост входящей почты' = DATA VARSTRING[50](Account);
+receivePort 'Порт входящей почты' = DATA INTEGER(Account);
+receiveAccountType 'Тип учётной записи' = DATA ReceiveAccountType(Account);
+nameReceiveAccountType 'Тип учётной записи' (Account account) = staticCaption(receiveAccountType(account));
+blindCarbonCopy 'Копия (BCC)'= DATA VARSTRING[50](Account);
+deleteMessages 'Удалять сообщения с сервера' = DATA BOOLEAN(Account);
+lastDays 'Загружать письма не старше (дней)' = DATA INTEGER(Account);
+disable 'Отключить отсылку и получение почты' = DATA BOOLEAN(Account);
+enable 'Включить отсылку и получение почты' (Account account) = NOT disable(account) AND account IS Account;
 
-encryptedConnectionTypeAccount 'Тип шифрованного подключения' = DATA EncryptedConnectionTypeStatus(Account);
-nameEncryptedConnectionTypeAccount 'Тип шифрованного подключения' (account) = staticCaption(encryptedConnectionTypeAccount(account)) PREFCHARWIDTH 3;
+encryptedConnectionType 'Тип шифрованного подключения' = DATA EncryptedConnectionTypeStatus(Account);
+nameEncryptedConnectionType 'Тип шифрованного подключения' (Account account) = staticCaption(encryptedConnectionType(account)) PREFCHARWIDTH 3;
 
 CLASS Email 'Письмо';
 TABLE email(Email);
 
-idEmail = DATA VARSTRING[100] (Email);  
-emailId = GROUP AGGR email BY idEmail (email) WHERE email IS Email; 
-accountEmail = DATA Account (Email);
+id = DATA VARSTRING[100] (Email);  
+emailId = GROUP AGGR Email email BY id (email) WHERE email IS Email; 
+account = DATA Account (Email);
 
-subjectEmail 'Тема' = DATA VARSTRING[100] (Email);
-fromAddressEmail 'От' = DATA VARSTRING[100] (Email);
-toAddressEmail 'Кому' = DATA VARSTRING[100] (Email);
-dateTimeSentEmail 'Дата отправки' = DATA DATETIME (Email);
-dateTimeReceivedEmail 'Дата получения' = DATA DATETIME (Email);
-messageEmail 'Сообщение' = DATA RICHTEXT (Email);
-emlFileEmail 'Файл EML' = DATA CUSTOMFILE (Email);
-openEMLFileEmail 'Открыть файл EML' (email) = ACTION OPENFILE emlFileEmail (email);
+subject 'Тема' = DATA VARSTRING[100] (Email);
+fromAddress 'От' = DATA VARSTRING[100] (Email);
+toAddress 'Кому' = DATA VARSTRING[100] (Email);
+dateTimeSent 'Дата отправки' = DATA DATETIME (Email);
+dateTimeReceived 'Дата получения' = DATA DATETIME (Email);
+message 'Сообщение' = DATA RICHTEXT (Email);
+emlFile 'Файл EML' = DATA CUSTOMFILE (Email);
+openEMLFile 'Открыть файл EML' (Email email) = ACTION OPENFILE emlFile (email);
 
 receiveEmailAction 'Получить всю почту' = ACTION CUSTOM 'lsfusion.server.mail.ReceiveEmailActionProperty' ();
-receiveEmailAccountAction 'Получить почту' = ACTION CUSTOM 'lsfusion.server.mail.ReceiveEmailAccountActionProperty' (Account);
+receiveEmailAction 'Получить почту' = ACTION CUSTOM 'lsfusion.server.mail.ReceiveEmailAccountActionProperty' (Account);
 
 emailSent 'Отправлено' = DATA LOCAL BOOLEAN ();
 
 FORM account 'E-mail аккаунт'
     OBJECTS a = Account FIXED PANEL
-    PROPERTIES(a) nameAccount, passwordAccount, fromAddressAccount, smtpHostAccount, smtpPortAccount, nameReceiveAccountTypeAccount, receiveHostAccount,
-                  receivePortAccount, nameEncryptedConnectionTypeAccount, blindCarbonCopyAccount, deleteMessagesAccount, lastDaysAccount, 
-                  isDefaultNotificationAccount, isDefaultInboxAccount, disableAccount
+    PROPERTIES(a) name, password, fromAddress, smtpHost, smtpPort, nameReceiveAccountType, receiveHost,
+                  receivePort, nameEncryptedConnectionType, blindCarbonCopy, deleteMessages, lastDays, 
+                  isDefaultNotification, isDefaultInbox, disable
     EDIT Account OBJECT a
 ;
 
 FORM accounts 'E-mail аккаунты'
    
     OBJECTS a = Account
-    PROPERTIES(a) READONLY nameAccount, passwordAccount, fromAddressAccount, smtpHostAccount, smtpPortAccount, nameReceiveAccountTypeAccount, receiveHostAccount,
-                  receivePortAccount, nameEncryptedConnectionTypeAccount, blindCarbonCopyAccount, deleteMessagesAccount, lastDaysAccount,
-                  isDefaultNotificationAccount, disableAccount
+    PROPERTIES(a) READONLY name, password, fromAddress, smtpHost, smtpPort, nameReceiveAccountType, receiveHost,
+                  receivePort, nameEncryptedConnectionType, blindCarbonCopy, deleteMessages, lastDays,
+                  isDefaultNotification, disable
     PROPERTIES(a) ADDFORM, EDITFORM, DELETE TOOLBAR
 
     DIALOG Account OBJECT a
@@ -110,64 +110,64 @@ FORM accounts 'E-mail аккаунты'
 CLASS AttachmentEmail 'Вложение';
 TABLE attachmentEmail(AttachmentEmail);
 
-idAttachmentEmail = DATA VARSTRING[100] (AttachmentEmail);  
-importedAttachmentEmail 'Импортировано' = DATA BOOLEAN (AttachmentEmail);  
-importErrorAttachmentEmail 'Ошибка при импорте' = DATA BOOLEAN (AttachmentEmail);  
-showErrorAttachmentEmail (attachmentEmail) = NOT importedAttachmentEmail (attachmentEmail) OR importErrorAttachmentEmail(attachmentEmail)
+id = DATA VARSTRING[100] (AttachmentEmail);  
+imported 'Импортировано' = DATA BOOLEAN (AttachmentEmail);  
+importError 'Ошибка при импорте' = DATA BOOLEAN (AttachmentEmail);  
+showError (AttachmentEmail attachmentEmail) = NOT imported (attachmentEmail) OR importError(attachmentEmail)
                                                             AND attachmentEmail IS AttachmentEmail;
-notImportedAttachmentEmail (attachmentEmail) = NOT importedAttachmentEmail (attachmentEmail) AND NOT importErrorAttachmentEmail(attachmentEmail)
+notImported (AttachmentEmail attachmentEmail) = NOT imported (attachmentEmail) AND NOT importError(attachmentEmail)
                                                             AND attachmentEmail IS AttachmentEmail;
-emailAttachmentEmail = DATA Email (AttachmentEmail);
-attachmentEmailIdEmail (id, email) = GROUP AGGR attachment BY idAttachmentEmail (attachment), idEmail(emailAttachmentEmail(attachment)) WHERE attachment IS AttachmentEmail; 
-nameAttachmentEmail 'Имя файла' = DATA VARSTRING[255] (AttachmentEmail);
-fileAttachmentEmail 'Файл' = DATA CUSTOMFILE (AttachmentEmail);
-openFileAttachmentEmail 'Файл' (attachmentEmail) = ACTION OPENFILE fileAttachmentEmail(attachmentEmail);
-lastErrorAttachmentEmail 'Последняя ошибка при импорте файла' = DATA TEXT (AttachmentEmail);
+email = DATA Email (AttachmentEmail);
+attachmentEmail (id, email) = GROUP AGGR AttachmentEmail attachment BY id (attachment), id(email(attachment)) WHERE attachment IS AttachmentEmail; 
+name 'Имя файла' = DATA VARSTRING[255] (AttachmentEmail);
+file 'Файл' = DATA CUSTOMFILE (AttachmentEmail);
+openFile 'Файл' (AttachmentEmail attachmentEmail) = ACTION OPENFILE file(attachmentEmail);
+lastError 'Последняя ошибка при импорте файла' = DATA TEXT (AttachmentEmail);
 
 FORM remindUserPass 'Напоминание пароля'
 
     OBJECTS u=CustomUser FIXED PANEL
-    PROPERTIES(u) READONLY loginCustomUser, nameContact
+    PROPERTIES(u) READONLY login, name[Contact]
 ;
 
-emailUserPassUser 'Напоминание пароля' (user) = ACTION EMAIL
+emailUserPass 'Напоминание пароля' (Contact user) = ACTION EMAIL
                                SUBJECT 'Напоминание пароля' IF user IS CustomUser
-                               TO emailContact(user)
+                               TO email(user)
                                INLINE remindUserPass OBJECTS u = user;
 
 FORM mail 'Почта' 
 
     OBJECTS a=Account
 
-    PROPERTIES(a) nameAccount, smtpHostAccount, smtpPortAccount, nameReceiveAccountTypeAccount, receiveHostAccount, receivePortAccount, nameEncryptedConnectionTypeAccount,
-                  fromAddressAccount, passwordAccount, blindCarbonCopyAccount, deleteMessagesAccount, lastDaysAccount,
-                  isDefaultNotificationAccount, isDefaultInboxAccount, disableAccount 
+    PROPERTIES(a) name, smtpHost, smtpPort, nameReceiveAccountType, receiveHost, receivePort, nameEncryptedConnectionType,
+                  fromAddress, password, blindCarbonCopy, deleteMessages, lastDays,
+                  isDefaultNotification, isDefaultInbox, disable 
     PROPERTIES(a) FORCE PANEL ADDOBJ, DELETE TOOLBAR
     
     OBJECTS e=Email
   
-    PROPERTIES(e) subjectEmail, fromAddressEmail, toAddressEmail, dateTimeSentEmail, 
-                   dateTimeReceivedEmail, openEMLFileEmail, messageEmail READONLY FORCE PANEL
+    PROPERTIES(e) subject, fromAddress, toAddress, dateTimeSent, 
+                   dateTimeReceived, openEMLFile, message READONLY FORCE PANEL
     PROPERTIES(e) DELETE
-    PROPERTIES(a) FORCE PANEL receiveEmailAccountAction TODRAW e 
-    FILTERS accountEmail(e)==a
+    PROPERTIES(a) FORCE PANEL receiveEmailAction TODRAW e 
+    FILTERS account(e)==a
                     
     OBJECTS ae=AttachmentEmail
     
-    PROPERTIES(ae) importedAttachmentEmail, importErrorAttachmentEmail, nameAttachmentEmail READONLY, 
-                    lastErrorAttachmentEmail SHOWIF showErrorAttachmentEmail(ae), openFileAttachmentEmail
-    FILTERS emailAttachmentEmail(ae)==e
+    PROPERTIES(ae) imported, importError, name READONLY, 
+                    lastError SHOWIF showError(ae), openFile
+    FILTERS email(ae)==e
     
     OBJECTS n=Notification
     OBJECTS p=Property
         
-    PROPERTIES(n, p) inNotificationProperty
-    PROPERTIES(n) subjectNotification, textNotification FORCE PANEL, emailFromNotification, emailToNotification, emailToCCNotification, emailToBCNotification, isEventNotification, ADDOBJ
-    PROPERTIES(p) READONLY captionProperty, canonicalNameProperty
-    ORDER BY canonicalNameProperty(p)
+    PROPERTIES(n, p) in
+    PROPERTIES(n) subject, text FORCE PANEL, emailFrom, emailTo, emailToCC, emailToBC, isEvent, ADDOBJ
+    PROPERTIES(p) READONLY caption, canonicalName
+    ORDER BY canonicalName(p)
         
     FILTERGROUP emailFilter
-        FILTER 'Только отмеченные' inNotificationProperty(n, p) 'F9'
+        FILTER 'Только отмеченные' in(n, p) 'F9'
 ;
 
 DESIGN mail {
@@ -187,7 +187,7 @@ DESIGN mail {
                         NEW textContainer {
                             caption = 'Сообщение';
                             type = CONTAINERV;        
-                            MOVE PROPERTY(messageEmail(e)) {
+                            MOVE PROPERTY(message(e)) {
                                 fill = 1;
                                 preferredSize = ( -1, 200);
                                 panelCaptionAbove = TRUE;
@@ -203,7 +203,7 @@ DESIGN mail {
                         fill = 1;
                         type = CONTAINERH;
                         MOVE p.box;
-                        MOVE PROPERTY(textNotification(n)) {
+                        MOVE PROPERTY(text(n)) {
                             fill = 1;
                             panelCaptionAbove = TRUE;
                         }

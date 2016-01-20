@@ -62,17 +62,17 @@ public class TimeLogicsModule extends ScriptingLogicsModule{
         month = (ConcreteCustomClass) findClass("Month");
         DOW = (ConcreteCustomClass) findClass("DOW");
 
-        extractYear = findProperty("extractYear");
-        currentDate = findProperty("currentDate");
-        currentMonth = findProperty("currentMonth");
+        extractYear = findProperty("extractYear[?]");
+        currentDate = findProperty("currentDate[]");
+        currentMonth = findProperty("currentMonth[]");
 
-        toDate = findProperty("toDate");
-        toTime = findProperty("toTime");
-        sumDate = findProperty("sumDate");
-        subtractDate = findProperty("subtractDate");
+        toDate = findProperty("toDate[DATETIME]");
+        toTime = findProperty("toTime[DATETIME]");
+        sumDate = findProperty("sum[DATE,LONG]");
+        subtractDate = findProperty("subtract[DATE,LONG]");
 
-        numberDOW = findProperty("numberDOW");
+        numberDOW = findProperty("number[DOW]");
 
-        currentTime = findProperty("currentTime");
+        currentTime = findProperty("currentTime[]");
     }
 }

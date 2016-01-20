@@ -20,7 +20,7 @@ public class OverCalculateStatsActionProperty extends ScriptingActionProperty {
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         try {
             DataSession session = context.getSession();
-            Integer maxQuantityOverCalculate = (Integer) findProperty("maxQuantityOverCalculate").read(session);
+            Integer maxQuantityOverCalculate = (Integer) findProperty("maxQuantityOverCalculate[]").read(session);
             context.getBL().overCalculateStats(session, maxQuantityOverCalculate);
             session.apply(context);
         } catch (ScriptingErrorLog.SemanticErrorException e) {
