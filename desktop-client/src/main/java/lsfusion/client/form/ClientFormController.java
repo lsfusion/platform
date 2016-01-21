@@ -21,6 +21,7 @@ import lsfusion.client.form.grid.GridUserPreferences;
 import lsfusion.client.form.layout.ClientFormLayout;
 import lsfusion.client.form.tree.TreeGroupController;
 import lsfusion.client.logics.*;
+import lsfusion.client.logics.classes.ClientActionClass;
 import lsfusion.client.logics.classes.ClientObjectClass;
 import lsfusion.client.logics.filter.ClientPropertyFilter;
 import lsfusion.client.navigator.ClientNavigator;
@@ -1149,7 +1150,8 @@ public class ClientFormController implements AsyncListener {
 
         for (List<ClientPropertyFilter> groupFilters : currentFilters.values()) {
             for (ClientPropertyFilter filter : groupFilters) {
-                filters.add(Serializer.serializeClientFilter(filter));
+                if (!(filter.property.baseType instanceof ClientActionClass))
+                    filters.add(Serializer.serializeClientFilter(filter));
             }
         }
 
