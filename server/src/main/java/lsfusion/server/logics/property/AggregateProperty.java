@@ -1,5 +1,6 @@
 package lsfusion.server.logics.property;
 
+import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.ProgressBar;
 import lsfusion.base.col.MapFact;
@@ -138,13 +139,17 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Cal
         return calculateExpr(joinImplement, CalcType.STAT, PropertyChanges.EMPTY, null);
     }
 
+    public Expr calculateInconsistentExpr(ImMap<T, ? extends Expr> joinImplement) { // вызывается до stored, поэтому чтобы не было проблем с кэшами, сделано так
+        return calculateExpr(joinImplement, CalcType.RECALC, PropertyChanges.EMPTY, null);
+    }
+
     private Query<T, String> getRecalculateQuery(boolean outDB, BaseClass baseClass, boolean checkInconsistence) {
         assert isStored();
         
         QueryBuilder<T, String> query = new QueryBuilder<>(this);
 
         Expr dbExpr = checkInconsistence ? getInconsistentExpr(query.getMapExprs(), baseClass) : getExpr(query.getMapExprs());
-        Expr calculateExpr = calculateExpr(query.getMapExprs());
+        Expr calculateExpr = isFullProperty() ? calculateInconsistentExpr(query.getMapExprs()) : calculateExpr(query.getMapExprs());  // оптимизация - только для FULL свойств, так как в остальных лучше использовать кэш по EXPR
         if(outDB)
             query.addProperty("dbvalue", dbExpr);
         query.addProperty("calcvalue", calculateExpr);
@@ -152,6 +157,11 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Cal
         if(outDB || !DBManager.RECALC_REUPDATE)
             query.and(dbExpr.compare(calculateExpr, Compare.EQUALS).not().and(dbExpr.getWhere().or(calculateExpr.getWhere())));
         return query.getQuery();
+    }
+
+    private boolean isFullProperty() {
+        IsClassField fullField;
+        return (fullField = mapTable.table.getFullField()) != null && BaseUtils.hashEquals(fullField.getField(), field);
     }
 
     public static AggregateProperty recalculate = null;

@@ -69,6 +69,9 @@ public class ImplementTable extends GlobalTable { // последний инте
     }
     public void setFullField(final PropertyField field) {
         setFullField(new IsClassField() {
+            public PropertyField getField() {
+                return field;
+            }
             public BaseExpr getFollowExpr(BaseExpr joinExpr) {
                 return (BaseExpr) joinAnd(MapFact.singleton(keys.single(), joinExpr)).getExpr(field);
             }

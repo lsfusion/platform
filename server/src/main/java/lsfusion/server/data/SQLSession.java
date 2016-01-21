@@ -341,7 +341,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         lock.readLock().lock();
         try {
             setActiveThread();
-            owner.checkThreadSafeAccess(writeOwner);
+            if(owner != OperationOwner.unknown)
+                owner.checkThreadSafeAccess(writeOwner);
         } catch (Throwable t) {
             unlockRead();
             throw t;

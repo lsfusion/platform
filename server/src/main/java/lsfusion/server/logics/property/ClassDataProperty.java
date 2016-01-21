@@ -70,6 +70,10 @@ public class ClassDataProperty extends CalcProperty<ClassPropertyInterface> impl
         return getActionChangeProps();
     }
 
+    public PropertyField getField() {
+        return field;
+    }
+
     public BaseExpr getFollowExpr(BaseExpr joinExpr) {
         return (BaseExpr) joinExpr.classExpr(this);
     }

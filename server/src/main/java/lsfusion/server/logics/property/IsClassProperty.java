@@ -149,7 +149,7 @@ public class IsClassProperty extends AggregateProperty<ClassPropertyInterface> {
         if(calcType instanceof CalcClassType && (((CalcClassType)calcType).replaceIs() || interfaceClass instanceof BaseClass)) // жесткий хак
             return getVirtualTableExpr(joinImplement, ((CalcClassType) calcType));
 
-        return ValueExpr.get(joinImplement.singleValue().isUpClass(interfaceClass));
+        return ValueExpr.get(joinImplement.singleValue().isUpClass(interfaceClass, calcType.isRecalc()));
     }
 
     @Override
