@@ -51,11 +51,11 @@ getVMInfo 'Данные виртуальной машины' = ACTION CUSTOM 'ls
 runSQL 'Выполнить SQL' = ACTION CUSTOM 'lsfusion.server.logics.service.RunSQLScriptActionProperty' (TEXT);
 
 vacuumTableAction 'Упаковать таблицу' = ACTION (Table table) {
-    runSQL('VACUUM ' + sid(table));
+    runSQL('VACUUM FULL ' + sid(table));
 }
 
 vacuumTablesAction 'Упаковать БД потаблично' () = ACTION {
-    FOR rows(Table table) IF NOT skipVacuum(table) ORDER rows(table) DO {
+    FOR table IS Table AND NOT skipVacuum(table) ORDER rows(table) DO {
         vacuumTableAction(table);
     }
     MESSAGE 'Упаковка БД была успешно завершена';
