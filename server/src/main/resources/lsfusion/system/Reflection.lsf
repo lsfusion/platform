@@ -140,6 +140,7 @@ TABLE tables (Table);
 sid 'Имя таблицы' = DATA VARISTRING[100] (Table);
 table 'Имя таблицы' (sID) = GROUP AGGR Table table BY sid (table) WHERE table IS Table;
 rows 'Количество записей' = DATA INTEGER (Table);
+skipVacuum 'Не упаковывать' = DATA BOOLEAN (Table);
 table 'Таблица' = DATA Table (TableKey);
 
 CLASS TableKey 'Ключ';
@@ -230,7 +231,7 @@ pivot 'Pivot' = DATA BOOLEAN (FormGrouping, PropertyDraw);
 FORM physicalModel 'Таблицы'
     OBJECTS t=Table
     PROPERTIES(t) READONLY sid, rows, sparseColumns
-    PROPERTIES(t) recalculateColumnsAggregations, checkClasses, recalculateClasses, recalculateStats
+    PROPERTIES(t) recalculateColumnsAggregations, checkClasses, recalculateClasses, recalculateStats, skipVacuum
 
     OBJECTS tk=TableKey
     PROPERTIES(tk) READONLY class, classSID, name, quantity
