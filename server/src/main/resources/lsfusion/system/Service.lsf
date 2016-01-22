@@ -48,6 +48,21 @@ vacuumDBAction 'Упаковать БД' = ACTION CUSTOM 'lsfusion.server.logics
 packAction 'Упаковать таблицы' = ACTION CUSTOM 'lsfusion.server.logics.service.PackActionProperty' ();
 getVMInfo 'Данные виртуальной машины' = ACTION CUSTOM 'lsfusion.server.logics.service.GetVMInfoActionProperty' ();
 
+runSQL 'Выполнить SQL' = ACTION CUSTOM 'lsfusion.server.logics.service.RunSQLScriptActionProperty' (TEXT);
+
+vacuumTableAction 'Упаковать таблицу' = ACTION (Table table) {
+    runSQL('VACUUM ' + sid(table));
+}
+
+vacuumTablesAction 'Упаковать БД потаблично' () = ACTION {
+    FOR rows(Table table) ORDER rows(table) DO {
+        vacuumTableAction(table);
+    }
+    MESSAGE 'Упаковка БД была успешно завершена';
+}
+
+EXTEND FORM physicalModel PROPERTIES(t) vacuumTableAction;
+
 singleTransaction 'Перерасчет одной транзакцией' = DATA BOOLEAN ();
 
 CLASS DBType {
@@ -267,7 +282,7 @@ FORM admin 'Администрирование'
                  threadCountMultiThread, recalculateClassesMultiThreadAction, recalculateMultiThreadAction, recalculateFollowsMultiThreadAction,
                  recalculateStatsMultiThreadAction, overCalculateStatsMultiThreadAction,
                  packAction, analyzeDBAction, uploadToDBAction, uploadStaticCaptionType, uploadHost, uploadUser, uploadPassword, uploadInstance, uploadDB,    
-                 vacuumDBAction, serviceDBAction, serviceDBMultiThreadAction, runGarbageCollector, getVMInfo, dropLRUPercent, randomDropLRU, dropLRU, makeHeapDump, 
+                 vacuumDBAction, vacuumTablesAction, serviceDBAction, serviceDBMultiThreadAction, runGarbageCollector, getVMInfo, dropLRUPercent, randomDropLRU, dropLRU, makeHeapDump, 
                  TILMode, hostnameServerComputer, reupdateMode, singleTransaction,
                  turnExplainAnalizeOnCurrentUser, clearApplicationLog
     OBJECTS u=User
@@ -357,6 +372,7 @@ DESIGN admin {
             MOVE PROPERTY(packAction());
             MOVE PROPERTY(analyzeDBAction());
             MOVE PROPERTY(vacuumDBAction());
+            MOVE PROPERTY(vacuumTablesAction());
             MOVE PROPERTY(TILMode());
             MOVE PROPERTY(reupdateMode());
             MOVE PROPERTY(singleTransaction());
