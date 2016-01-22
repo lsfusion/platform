@@ -962,8 +962,12 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                     fields = fields.addExcl(property.field, property.getCanonicalName());
                 ImMap<String, Pair<Integer, Integer>> propStats;
                 try (DataSession session = createSession()) {
+                    long start = System.currentTimeMillis();
+                    serviceLogger.info(String.format("Update Aggregation Stats started: %s", table));
                     propStats = table.calculateStat(reflectionLM, session, fields, onlyTable);
                     session.apply(businessLogics);
+                    long time = System.currentTimeMillis() - start;
+                    serviceLogger.info(String.format("Update Aggregation Stats: %s, %sms", table, time));
                 }
                 table.updateStat(tableStats, null, propStats, false, fields.keys());
             }
