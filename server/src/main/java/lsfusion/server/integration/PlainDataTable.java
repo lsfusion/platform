@@ -15,8 +15,8 @@ import java.util.Map;
  */
 
 public class PlainDataTable<T> implements Iterable<PlainDataTable.Row> {
-    public final ImOrderSet<T> fields; // todo [dale]: отрефакторить, не нужен тут public
-    public List<List<Object>> data;
+    private final ImOrderSet<T> fields; 
+    private List<List<Object>> data;
     protected final Map<T, Integer> fieldIndex;
 
     public PlainDataTable(List<T> fields, List<List<Object>> data) {
@@ -32,6 +32,10 @@ public class PlainDataTable<T> implements Iterable<PlainDataTable.Row> {
     public void add(PlainDataTable<T> table) {
         assert fieldIndex.equals(table.fieldIndex) && fields.equals(table.fields);
         data.addAll(table.data);
+    }
+
+    public ImOrderSet<T> getFields() {
+        return fields;
     }
 
     public class Row {

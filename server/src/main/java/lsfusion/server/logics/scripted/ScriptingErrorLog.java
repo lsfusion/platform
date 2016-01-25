@@ -485,7 +485,7 @@ public class ScriptingErrorLog {
     }
 
     public void emitOnlyDataCasePropertyIsAllowedError(ScriptParser parser, String propertyName) throws SemanticErrorException {
-        emitSimpleError(parser, format("'%s' is only allowed to be DATA/ABSTRACT/CASE property", propertyName));
+        emitSimpleError(parser, format("'%s' is only allowed to be DATA/MULTI/CASE property", propertyName));
     }
 
     public void emitOnlyDataPropertyIsAllowedError(ScriptParser parser, String propertyName) throws SemanticErrorException {

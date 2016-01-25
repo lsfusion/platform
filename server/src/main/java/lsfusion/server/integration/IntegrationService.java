@@ -61,12 +61,12 @@ public class IntegrationService {
 
     @StackMessage("message.synchronize")
     public void synchronize(boolean replaceNull, boolean replaceEqual) throws SQLException, SQLHandledException {
-        SingleKeyTableUsage<ImportField> importTable = new SingleKeyTableUsage<ImportField>(IntegerClass.instance, table.fields, ImportField.typeGetter);
+        SingleKeyTableUsage<ImportField> importTable = new SingleKeyTableUsage<>(IntegerClass.instance, table.getFields(), ImportField.typeGetter);
         
         MExclMap<ImMap<String, DataObject>, ImMap<ImportField, ObjectValue>> mRows = MapFact.mExclMap();
         int counter = 0;
         for (final PlainDataTable.Row row : table)
-            mRows.exclAdd(MapFact.singleton("key", new DataObject(counter++)), table.fields.getSet().mapValues(new GetValue<ObjectValue, ImportField>() {
+            mRows.exclAdd(MapFact.singleton("key", new DataObject(counter++)), table.getFields().getSet().mapValues(new GetValue<ObjectValue, ImportField>() {
                 public ObjectValue getMapValue(ImportField value) {
                     return ObjectValue.getValue(row.getValue(value), value.getFieldClass());
                 }}));

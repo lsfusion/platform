@@ -1,8 +1,6 @@
 package lsfusion.server.logics;
 
-import lsfusion.server.classes.sets.AndClassSet;
 import lsfusion.server.classes.sets.ResolveClassSet;
-import lsfusion.server.form.entity.PropertyObjectEntity;
 
 import java.util.List;
 
@@ -57,16 +55,4 @@ public class DefaultDBNamePolicy implements PropertyDBNamePolicy {
         return cutToMaxLength(dbName);
     }
     
-    // todo [dale]: temporary
-    public static String staticTransformCanonicalNameToDBName(String canonicalName) {
-        int bracketPos = canonicalName.indexOf(PropertyCanonicalNameUtils.signatureLBracket);
-
-        String signatureStr = canonicalName.substring(bracketPos);
-        signatureStr = signatureStr.replaceAll("[a-zA-Z0-9_]+\\.", "");
-
-        String dbName = canonicalName.substring(0, bracketPos) + signatureStr;
-        dbName = dbName.replaceAll("\\?", "null");
-        dbName = dbName.replaceAll("[^a-zA-Z0-9_]", "_");
-        return dbName.substring(0, dbName.length() - 1); // убираем завершающее подчеркивание 
-    }
 }

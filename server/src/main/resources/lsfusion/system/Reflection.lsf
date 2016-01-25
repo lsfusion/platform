@@ -58,7 +58,6 @@ CONSTRAINT SET (userLoggable(Property p)) AND maxStatsProperty() AND stats(p) > 
 EXTEND FORM options PROPERTIES maxStatsProperty();
 DESIGN options { commons { MOVE PROPERTY(maxStatsProperty()); } }
 
-property 'Свойство' (sID) = GROUP NAGGR Property property BY dbName(property) WHERE property IS Property; // todo [dale]: временно, нужно для миграции на 15 версию БД
 propertyCanonicalName 'Свойство' (cn) = GROUP AGGR Property property BY canonicalName(property) WHERE property IS Property;
 propertyTable 'Свойство' (string, sID) = GROUP AGGR Property property BY tableSID(property), dbName(property) WHERE stored(property);
 

@@ -1887,18 +1887,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         return formatMessageList(messageList);
     }
 
-    private void test(String testCase) {
-        try {
-            PropertyCanonicalNameParser parser = new PropertyCanonicalNameParser(this, testCase);
-            List<ResolveClassSet> res = parser.getSignature();
-            System.out.print('"' + testCase + "\": " + (res == null ? "null" : res.toString()));
-            testCase = testCase.replaceAll(" ", "");
-            System.out.println(" -> " + DefaultDBNamePolicy.staticTransformCanonicalNameToDBName(testCase));
-        } catch (PropertyCanonicalNameParser.ParseException e) {
-            System.out.println('"' + testCase + "\": error (" + e.getMessage() + ")");
-        }
-    }
-
     public LP findSafeProperty(String canonicalName) {
         LP lp = null;
         try {

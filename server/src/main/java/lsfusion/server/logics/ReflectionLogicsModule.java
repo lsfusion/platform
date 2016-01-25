@@ -50,7 +50,6 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
     public LCP statsProperty;
     public LCP overStatsProperty;
     public LCP maxStatsProperty;
-    public LCP propertySID;
     public LCP propertyCanonicalName;
     public LCP propertyTableSID;
     public LCP quantityProperty;
@@ -212,7 +211,6 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
         classProperty = findProperty("class[Property]");
         complexityProperty = findProperty("complexity[Property]");
         captionProperty = findProperty("caption[Property]");
-        propertySID = findProperty("property[VARSTRING[100]]");
         propertyCanonicalName = findProperty("propertyCanonicalName[VARSTRING[512]]");
         propertyTableSID = findProperty("propertyTable[VARSTRING[100],VARSTRING[100]]");
         quantityProperty = findProperty("quantity[Property]");

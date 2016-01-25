@@ -1533,7 +1533,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         LP toPropertyLP = findJoinMainProp(toPropertyUsage, toPropertyMapping, newContext);
 
         if (!(toPropertyLP.property instanceof DataProperty || toPropertyLP.property instanceof CaseUnionProperty)) {
-            errLog.emitOnlyDataCasePropertyIsAllowedError(parser, toPropertyUsage.name); // todo [dale]: изменить формат сообщения об ошибке
+            errLog.emitOnlyDataCasePropertyIsAllowedError(parser, toPropertyUsage.name); 
         }
 
         if (fromProperty.property != null && fromProperty.property.property.getType() != null &&
