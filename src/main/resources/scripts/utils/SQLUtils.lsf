@@ -1,6 +1,27 @@
 MODULE SQLUtils;
 
-REQUIRE System, Authentication, Utils, Time;
+REQUIRE System, Authentication, Service, Utils, Time;
+
+runSQL 'Выполнить SQL' = ACTION CUSTOM 'lsfusion.erp.utils.RunSQLScriptActionProperty' (TEXT);
+
+vacuumTableAction 'Упаковать таблицу' = ACTION (Table table) {
+    runSQL('VACUUM FULL ' + sid(table));
+}
+
+vacuumTablesAction 'Упаковать БД потаблично' () = ACTION {
+    FOR table IS Table AND NOT skipVacuum(table) ORDER rows(table) DO {
+        vacuumTableAction(table);
+    }
+    MESSAGE 'Упаковка БД была успешно завершена';
+}
+
+EXTEND FORM physicalModel PROPERTIES(t) vacuumTableAction BEFORE skipVacuum(t);
+EXTEND FORM admin PROPERTIES() vacuumTablesAction;
+DESIGN admin {
+    database {
+        MOVE PROPERTY(vacuumTablesAction());
+    }
+}
 
 CLASS ProcessType 'Фильтр процессов' {
     all 'Все',
