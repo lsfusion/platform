@@ -5,6 +5,10 @@ REQUIRE System, Reflection, SchedulerDefaultData;
 makeBackup 'Копировать'= ACTION CUSTOM 'lsfusion.erp.utils.backup.BackupActionProperty' () TOOLBAR;
 save 'Скачать'= ACTION CUSTOM 'lsfusion.erp.utils.backup.SaveBackupActionProperty' (Backup) TOOLBAR;
 delete 'Удалить'= ACTION CUSTOM 'lsfusion.erp.utils.backup.DeleteBackupActionProperty' (Backup) CONFIRM;
+
+saveMondayBackups 'Оставлять бэкап за понедельник (от недели до месяца)' = DATA BOOLEAN ();
+saveFirstDayBackups 'Оставлять бэкап за первое число месяца (старше месяца)' = DATA BOOLEAN ();
+maxQuantityBackups 'Максимальное число сохраняемых бэкапов' = DATA INTEGER ();
 decimateBackups 'Проредить'= ACTION CUSTOM 'lsfusion.erp.utils.backup.DecimateBackupsActionProperty' () TOOLBAR CONFIRM;
 
 customRestore 'Восстановить таблицы' = ACTION CUSTOM 'lsfusion.erp.utils.backup.CustomRestoreActionProperty' (Backup);
@@ -34,7 +38,7 @@ exclude 'Исключена' = DATA BOOLEAN (Backup, Table);
 
 FORM backup 'Резервное копирование'
     OBJECTS b = Backup
-    PROPERTIES() decimateBackups TODRAW b FORCE PANEL, makeBackup TODRAW b FORCE PANEL
+    PROPERTIES() saveFirstDayBackups, maxQuantityBackups, saveMondayBackups, decimateBackups TODRAW b FORCE PANEL, makeBackup TODRAW b FORCE PANEL
     PROPERTIES(b) save TODRAW b FORCE PANEL
     PROPERTIES(b) READONLY date, time, file, fileDeleted, log FORCE PANEL
     PROPERTIES(b) delete
@@ -50,22 +54,33 @@ FORM backup 'Резервное копирование'
 DESIGN backup {
     NEW pane {
         fill = 1;
-        type = CONTAINERH;
-        NEW leftPane {
-            fill = 1;
-            MOVE b.box;
-            MOVE t1.box;
-        }
-        NEW rightPane {
-            fill = 1;
-            MOVE PROPERTY(log(b)) {
+        type = TABBED;
+        NEW pane1 {
+            caption = 'Резервные копии';
+            type = CONTAINERH;
+            NEW leftPane {
                 fill = 1;
-                panelCaptionAbove = TRUE;
+                MOVE b.box;
+                MOVE t1.box;
             }
-            MOVE t2.box {
-                caption = 'Скопированные таблицы';
+            NEW rightPane {
+                fill = 1;
+                MOVE PROPERTY(log(b)) {
+                    fill = 1;
+                    panelCaptionAbove = TRUE;
+                }
+                MOVE t2.box {
+                    caption = 'Скопированные таблицы';
+                }
             }
         }
+        NEW pane2 {
+            caption = 'Настройки';
+            align = STRETCH;
+            MOVE PROPERTY(saveFirstDayBackups());
+            MOVE PROPERTY(saveMondayBackups());
+            MOVE PROPERTY(maxQuantityBackups());
+        }        
     }
     MOVE functions.box;
 }

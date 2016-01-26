@@ -31,6 +31,12 @@ public class DecimateBackupsActionProperty extends ScriptingActionProperty {
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         try (DataSession session = context.createSession()) {
 
+            boolean saveFirstDay = findProperty("saveFirstDayBackups[]").read(context) != null;
+            boolean saveMonday = findProperty("saveMondayBackups[]").read(context) != null;
+            Integer maxQuantity = (Integer) findProperty("maxQuantityBackups[]").read(context);
+            if(maxQuantity == null && !saveFirstDay && !saveMonday)
+                maxQuantity = 30;
+
             long currentDate = Calendar.getInstance().getTime().getTime();
             long month = new Long("2592000000"); // 30 * 24 * 3600 * 1000
             long week = new Long("604800000"); // 7 * 24 * 3600 * 1000
@@ -46,19 +52,24 @@ public class DecimateBackupsActionProperty extends ScriptingActionProperty {
 
             ImOrderMap<ImMap<Object, DataObject>, ImMap<Object, ObjectValue>> backupResult = backupQuery.executeClasses(session);
 
-            for (int i = 0, result = backupResult.size(); i < result; i++) {
-                DataObject backupObject = backupResult.getKey(i).valueIt().iterator().next();
+            int count = 0;
+            for (int i = backupResult.size() - 1; i >= 0; i--) {
+                DataObject backupObject = backupResult.getKey(i).getObject("Backup");
 
                 Date dateBackup = (Date) backupResult.getValue(i).get("dateBackup").getValue();
                 long delta = currentDate - dateBackup.getTime();
                 Calendar calendar = Calendar.getInstance();
                 calendar.setTime(dateBackup);
-                boolean firstDay = calendar.get(Calendar.DAY_OF_MONTH) == 1;
-                boolean monday = calendar.get(Calendar.DAY_OF_WEEK) == Calendar.MONDAY;
-                //Если старше недели - оставляем только за понедельник и за первое число, если старше месяца, только за первое число.
-                if ((delta > month && !firstDay) || (delta < month && delta > week && !firstDay && !monday))
+                boolean limit = maxQuantity != null && count >= maxQuantity;
+                boolean firstDay = calendar.get(Calendar.DAY_OF_MONTH) == 1 && saveFirstDay;
+                boolean monday = calendar.get(Calendar.DAY_OF_WEEK) == Calendar.MONDAY && saveMonday;
+                //Если превышен лимит кол-ва, удаляем;
+                //Если старше недели, оставляем только за понедельник и за первое число;
+                //Если старше месяца, только за первое число.
+                if (limit || (delta > month && !firstDay) || (delta < month && delta > week && !firstDay && !monday))
                     findAction("delete[Backup]").execute(session, backupObject);
-
+                else
+                    count++;
             }
 
             session.apply(context);
