@@ -48,8 +48,8 @@ public class ReportGenerator {
     private boolean toExcel;
 
     // Для того, чтобы в отчетах данные выводились по несколько раз, нужно создать в .jrxml файле parameter строкового типа
-    // с таким именем, и в default value expression вписать имя field'а, который будет содержать количество копий
-    // имя должно быть, как строковая константа, в двойных кавычках
+    // с таким именем, и в default value expression вписать имя field'а, который будет содержать количество копий,
+    // в формате $F{fieldName} 
     private final String repeatPropertyFieldName = "REPORT_REPEAT_FIELD";
 
     public static final String SIDES_PROPERTY_NAME = "print-sides";
@@ -141,10 +141,13 @@ public class ReportGenerator {
         JRParameter parameter = designs.get(parentID).getParametersMap().get(repeatPropertyFieldName);
         if (parameter != null) {
             propName = parameter.getDefaultValueExpression().getText();
-            if (propName != null && propName.length() > 1) {
-                propName = propName.substring(1, propName.length()-1);
-            } else {
-                propName = null;
+            if (propName != null) {
+                propName = propName.replaceAll("\\s", "");
+                if (propName.length() > 4) {
+                    propName = propName.substring(3, propName.length() - 1);
+                } else {
+                    propName = null;
+                }
             }
         }
         return propName;
