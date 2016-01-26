@@ -1,6 +1,7 @@
 package lsfusion.gwt.form.shared.view;
 
 import lsfusion.gwt.base.shared.GwtSharedUtils;
+import lsfusion.gwt.form.client.MainFrame;
 import lsfusion.gwt.form.shared.view.changes.dto.GFormChangesDTO;
 
 import java.io.Serializable;
@@ -17,7 +18,7 @@ public class GForm implements Serializable {
     public String canonicalName;
 
     public String caption;
-    public String tooltip;
+    public String creationPath;
 
     public int autoRefresh;
 
@@ -121,5 +122,15 @@ public class GForm implements Serializable {
         if (!usedFonts.contains(font)) {
             usedFonts.add(font);
         }
+    }
+
+    public String getTooltip() {
+        return MainFrame.configurationAccessAllowed ?
+                GwtSharedUtils.stringFormat("<html><body bgcolor=#FFFFE1>" +
+                        "<b>%s</b><br/><hr>" +
+                        "<b>sID:</b> %s<br/>" +
+                        "<b>Путь:</b> %s<br/>" +
+                        "</body></html>", caption, canonicalName, creationPath) :
+                GwtSharedUtils.stringFormat("<html><body bgcolor=#FFFFE1><b>%s</b></body></html>", caption);
     }
 }

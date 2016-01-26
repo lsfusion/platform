@@ -498,7 +498,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         this.form = form;
 
         form.caption = clientForm.caption;
-        form.tooltip = clientForm.getTooltip();
+        form.creationPath = clientForm.creationPath;
         form.autoRefresh = clientForm.autoRefresh;
         form.mainContainer = convertOrCast(clientForm.mainContainer);
 
