@@ -338,27 +338,11 @@ public class CaseUnionProperty extends IncrementUnionProperty {
         String caseCaption = caseImplement.toString();
         checkContainsAll(caseWhere.property, caseCaption, caseWhere.mapping, caseImplement);
 
-        if (abs.checkExclusiveImplementations) {
-            ImList<ExplicitCalcCase<Interface>> listCases = getNFCases(version);
-
-            for (int i = 0; i < listCases.size(); i++) {
-                CalcPropertyMapImplement<?, Interface> prevCaseWhere = (CalcPropertyMapImplement<?, Interface>) listCases.get(i).where;
-                prevCaseWhere.mapCheckExclusiveness(listCases.get(i).implement.toString(), caseWhere, caseCaption);
-            }
-        }
-
         addAbstractCase(addCase, version);
     }
 
     public ImList<CalcCase<Interface>> getCases() {
         return (ImList<CalcCase<Interface>>)cases;
-    }
-    public ImList<ExplicitCalcCase<Interface>> getNFCases() {
-        return BaseUtils.immutableCast(((NFList<AbstractCalcCase<Interface>>)cases).getList().filterList(new SFunctionSet<AbstractCalcCase<Interface>>() {
-            public boolean contains(AbstractCalcCase<Interface> element) {
-                return element instanceof ExplicitCalcCase; // only explicit cases, for backward compatibility
-            }
-        }));
     }
     public ImList<ExplicitCalcCase<Interface>> getNFCases(Version version) {
         return BaseUtils.immutableCast(((NFList<AbstractCalcCase<Interface>>)cases).getNFList(version).filterList(new SFunctionSet<AbstractCalcCase<Interface>>() {
@@ -413,19 +397,36 @@ public class CaseUnionProperty extends IncrementUnionProperty {
     }
 
     public void checkAbstract() {
-        if (isAbstract() && abs.checkAllImplementations) {
-            ImList<CalcPropertyMapImplement<?, Interface>> cases = getNFCases().mapListValues(new GetValue<CalcPropertyMapImplement<?, Interface>, ExplicitCalcCase<Interface>>() {
-                public CalcPropertyMapImplement<?, Interface> getMapValue(ExplicitCalcCase<Interface> value) {
-                    return (CalcPropertyMapImplement<?, Interface>) value.where;
-                }});
-            
-            checkAllImplementations(cases.mapListValues(new GetValue<CalcProperty<PropertyInterface>, CalcPropertyMapImplement<?, Interface>>() {
-                public CalcProperty<PropertyInterface> getMapValue(CalcPropertyMapImplement<?, Interface> value) {
-                    return (CalcProperty<PropertyInterface>) value.property;
-                }}), cases.mapListValues(new GetValue<ImRevMap<PropertyInterface, Interface>, CalcPropertyMapImplement<?, Interface>>() {
-                public ImRevMap<PropertyInterface, Interface> getMapValue(CalcPropertyMapImplement<?, Interface> value) {
-                    return (ImRevMap<PropertyInterface, Interface>) value.mapping;
-                }}));
+        if (isAbstract()) {
+            if (abs.checkExclusiveImplementations) { // тут конечно она и implicit проверит заодно, но в addCase нужна final версия cases иначе с синхронизацией проблемы
+                ImList<CalcCase<Interface>> listCases = getCases();
+
+                for (int i = 0; i < listCases.size(); i++) {
+                    CalcPropertyMapImplement<?, Interface> caseWhere = (CalcPropertyMapImplement<?, Interface>) listCases.get(i).where;
+                    for (int j = i + 1; j < listCases.size(); j++) {
+                        CalcPropertyMapImplement<?, Interface> prevCaseWhere = (CalcPropertyMapImplement<?, Interface>) listCases.get(j).where;
+                        prevCaseWhere.mapCheckExclusiveness(listCases.get(j).implement.toString(), caseWhere, listCases.get(i).implement.toString());
+                    }
+                }
+            }
+
+            if (abs.checkAllImplementations) {
+                ImList<CalcPropertyMapImplement<?, Interface>> cases = getCases().mapListValues(new GetValue<CalcPropertyMapImplement<?, Interface>, CalcCase<Interface>>() {
+                    public CalcPropertyMapImplement<?, Interface> getMapValue(CalcCase<Interface> value) {
+                        return (CalcPropertyMapImplement<?, Interface>) value.where;
+                    }
+                });
+
+                checkAllImplementations(cases.mapListValues(new GetValue<CalcProperty<PropertyInterface>, CalcPropertyMapImplement<?, Interface>>() {
+                    public CalcProperty<PropertyInterface> getMapValue(CalcPropertyMapImplement<?, Interface> value) {
+                        return (CalcProperty<PropertyInterface>) value.property;
+                    }
+                }), cases.mapListValues(new GetValue<ImRevMap<PropertyInterface, Interface>, CalcPropertyMapImplement<?, Interface>>() {
+                    public ImRevMap<PropertyInterface, Interface> getMapValue(CalcPropertyMapImplement<?, Interface> value) {
+                        return (ImRevMap<PropertyInterface, Interface>) value.mapping;
+                    }
+                }));
+            }
         }
     }
 
