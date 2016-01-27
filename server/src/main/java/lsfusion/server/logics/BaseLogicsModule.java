@@ -75,11 +75,9 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     public LCP greater2, less2;
     public LCP object1, and1, andNot1;
     public LCP equals2, diff2;
-    public LCP upper;
     public LCP sum;
     public LCP subtract;
     public LCP multiply;
-    public LCP subtractInteger;
     public LCP divide;
 
 //    public LCP string2SP, istring2SP, string3SP, istring3SP, string4SP, istring4SP, string5SP, istring5SP;
@@ -385,13 +383,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         cancel = findAction("cancel[]");
 
         onStarted = findAction("onStarted[]");
-
-
-        // Обработка строк
-        upper = findProperty("upper[?]");
-
-        // Операции с целыми числами
-        subtractInteger = findProperty("subtractInteger[DATE,DATE]");
 
         seek = findAction("seek[Object]");
         

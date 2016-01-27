@@ -39,6 +39,7 @@ parent 'Родит. группа' = DATA PropertyGroup (Property);
 number 'Номер' = DATA INTEGER (Property);
 dbName 'Код свойства' = DATA VARSTRING[100] (Property) IN base;
 canonicalName 'Имя свойства' = DATA VARSTRING[512] (Property) IN recognize;
+leftTo = FORMULA PG 'left($1, strpos($1, $2) - 1)', MS 'LEFT($1, CHARINDEX($2, $1) - 1)';
 shortName 'Имя свойства' (Property p) = leftTo(canonicalName(p), '[');
 loggable 'Логируется' = DATA BOOLEAN (Property);
 userLoggable 'Логируется пользователем' = DATA BOOLEAN (Property);
