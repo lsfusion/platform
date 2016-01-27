@@ -18,6 +18,8 @@ resultCustomFile = DATA LOCAL CUSTOMFILE ();
 stringToCustomFile 'Запись строки в файл' = ACTION CUSTOM 'lsfusion.erp.utils.utils.StringToFileActionProperty' (VARISTRING[255], VARSTRING[10], VARSTRING[10]);
 // --------------------------------------------- Работа со строками --------------------------------- //
 
+lower = FORMULA 'lower($1)';
+
 stringEqualsAll(STRING[3] string) = string == STRING[3]('Все');
 
 isWordInCSV = FORMULA NULL INTEGER PG 'CASE WHEN CAST($1 AS text)=ANY(string_to_array($2,\',\')) THEN 1 ELSE NULL END', MS 'CASE WHEN CHARINDEX(\' \' + CAST($1 AS nvarchar(max)) + \' \',\' \' + REPLACE($2,\',\',\' \') + \' \') > 0 THEN 1 ELSE NULL END';

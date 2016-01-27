@@ -90,16 +90,18 @@ META defineNumberedAbstract(class)
         
 END
 
+useLoweredNumber 'Использовать нижний регистр для номера' = DATA BOOLEAN ();
 useUpperedSeries 'Использовать верхний регистр для серии' = DATA BOOLEAN (); 
 keepNumberSpaces 'Разрешить пробелы в номерах' = DATA BOOLEAN (); 
 
 EXTEND FORM options
-    PROPERTIES () useUpperedSeries, keepNumberSpaces
+    PROPERTIES () useLoweredNumber, useUpperedSeries, keepNumberSpaces
 ;
 DESIGN options{
     commons {
         NEW numerator {
             caption = 'Нумератор';
+            MOVE PROPERTY (useLoweredNumber());
             MOVE PROPERTY (useUpperedSeries());
             MOVE PROPERTY (keepNumberSpaces());
         }
@@ -110,6 +112,9 @@ META defineNumbered(class)
     number 'Номер' = DATA STRING[18] (class) IN numbered MINCHARWIDTH 7;
     series 'Серия' = DATA STRING[2] (class) IN numbered FIXEDCHARWIDTH 3;
      
+    WHEN useLoweredNumber() AND CHANGED(number(class o))
+         DO number(o) <- lower(number(o));
+         
     WHEN useUpperedSeries() AND CHANGED(series(class o))
          DO series(o) <- upper(series(o));
     
