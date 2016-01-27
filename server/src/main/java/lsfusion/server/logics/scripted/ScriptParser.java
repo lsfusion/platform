@@ -128,7 +128,7 @@ public class ScriptParser {
     public List<String> grabJavaCode() throws ScriptingErrorLog.SemanticErrorException {
         List<String> code = new ArrayList<>();
         Parser curParser = getCurrentParser();
-        while (!curParser.input.LT(1).getText().equals("END")) {
+        while (!curParser.input.LT(1).getText().equals("}>")) {
             if (curParser.input.LT(1).getType() == LsfLogicsParser.EOF) {
                 errLog.emitJavaCodeNotEndedError(this);
             }

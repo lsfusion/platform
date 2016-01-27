@@ -2119,20 +2119,18 @@ customActionPropertyDefinitionBody returns [LP property, List<ResolveClassSet> s
 @init {
 	boolean allowNullValue = false;
 	List<String> classes = null;
-	List<String> tokens = null;
 }
 @after {
 	if (inPropParseState()) {
-	    if(tokens == null)
+	    if($code.val == null)
 	        $property = self.addScriptedCustomActionProp($classN.val, classes, allowNullValue);
 	    else
-		    $property = self.addScriptedCustomActionProp(tokens, $text, allowNullValue);
+		    $property = self.addScriptedCustomActionProp($code.val, allowNullValue);
 		$signature = (classes == null ? Collections.<ResolveClassSet>nCopies($property.listInterfaces.size(), null) : self.createClassSetsFromClassNames(classes)); 
 	}
 }
 	:	'CUSTOM' 
-		(classN = stringLiteral ('(' cls=classIdList ')' { classes = $cls.ids; })? |
-	    'CODE' { tokens = self.grabJavaCode(); } 'END')
+		(classN = stringLiteral ('(' cls=classIdList ')' { classes = $cls.ids; })? | code = codeLiteral)
 	    ('NULL' { allowNullValue = true; })?
 	;
 
@@ -3662,7 +3660,11 @@ boundsIntLiteral returns [Insets val]
 boundsDoubleLiteral returns [Bounds val]
 	:	'(' top=doubleLiteral ',' left=doubleLiteral ',' bottom=doubleLiteral ',' right=doubleLiteral ')' { $val = new Bounds($top.val, $left.val, $bottom.val, $right.val); }
 	;
-	
+
+codeLiteral returns [String val]
+	:	s=CODE_LITERAL { $val = self.transformStringLiteral($s.text); }
+	;
+
 insertRelativePositionLiteral returns [InsertPosition val]
 	:	'BEFORE' { $val = InsertPosition.BEFORE; }
 	|	'AFTER' { $val = InsertPosition.AFTER; }
@@ -3781,6 +3783,8 @@ fragment EDIGITS	:	('0'..'9')*;
 fragment HEX_DIGIT	: 	'0'..'9' | 'a'..'f' | 'A'..'F';
 fragment FIRST_ID_LETTER	: ('a'..'z'|'A'..'Z');
 fragment NEXT_ID_LETTER		: ('a'..'z'|'A'..'Z'|'_'|'0'..'9');
+fragment OPEN_CODE_BRACKET	: '<{';
+fragment CLOSE_CODE_BRACKET : '}>';
 
 PRIMITIVE_TYPE  :	'INTEGER' | 'DOUBLE' | 'LONG' | 'BOOLEAN' | 'DATE' | 'DATETIME' | 'YEAR' | 'TEXT'  | 'RICHTEXT' | 'TIME' | 'WORDFILE' | 'IMAGEFILE' | 'PDFFILE' | 'CUSTOMFILE' | 'EXCELFILE' | 'STRING[' DIGITS ']' | 'ISTRING[' DIGITS ']'  | 'VARSTRING[' DIGITS ']' | 'VARISTRING[' DIGITS ']' | 'NUMERIC[' DIGITS ',' DIGITS ']' | 'COLOR';
 LOGICAL_LITERAL :	'TRUE' | 'FALSE';
@@ -3809,4 +3813,5 @@ MULT		:	'*';
 DIV		:	'/';
 ADDOR_OPERAND	:	'(+)' | {ahead("(-)")}?=> '(-)';
 CONCAT_OPERAND	:	'##';
-CONCAT_CAPITALIZE_OPERAND	:	'###';	
+CONCAT_CAPITALIZE_OPERAND	:	'###';
+CODE_LITERAL    : OPEN_CODE_BRACKET .* CLOSE_CODE_BRACKET;

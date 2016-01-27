@@ -1155,17 +1155,11 @@ public class ScriptingLogicsModule extends LogicsModule {
         return null;
     }
 
-    public LP addScriptedCustomActionProp(List<String> javaTokens, String code, boolean allowNullValue) throws ScriptingErrorLog.SemanticErrorException {
+    public LP addScriptedCustomActionProp(String code, boolean allowNullValue) throws ScriptingErrorLog.SemanticErrorException {
         String script = "";
         try {
 
-            int codePos = 0;
-            for (String javaToken : javaTokens) {
-                int tokenStartPos = code.indexOf(javaToken, codePos);
-                String whitespaces = codePos == 0 ? "" : code.substring(codePos, tokenStartPos);
-                script += whitespaces + javaToken.replace("'", "\"");
-                codePos = tokenStartPos + javaToken.length();
-            }
+            script = code.substring(1, code.length() - 1); //remove brackets
 
             String javaClass = "import lsfusion.server.data.SQLHandledException;\n" +
                     "import lsfusion.server.logics.property.ClassPropertyInterface;\n" +
@@ -1195,7 +1189,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             sc.cook(javaClass);
             Class<?> executeClass = sc.getClassLoader().loadClass("ExecuteActionProperty");
 
-            ActionProperty instance = (ActionProperty) executeClass.getConstructor(this.getClass()).newInstance(this);
+            ActionProperty instance = (ActionProperty) executeClass.getConstructor(ScriptingLogicsModule.class).newInstance(this);
             if (instance instanceof ExplicitActionProperty && allowNullValue) {
                 ((ExplicitActionProperty) instance).allowNullValue = true;
             }
