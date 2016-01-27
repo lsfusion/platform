@@ -438,6 +438,9 @@ FORM propertyPolicy 'Политика безопасности для свойс
     PROPERTIES(ur, p) permitView, forbidView, permitChange, forbidChange
 ;
 
+checkCurrentDateDependsAction = ACTION CUSTOM 'lsfusion.server.logics.security.CheckCurrentDateDependsActionProperty' (Property);
+WHEN FORMS propertyPolicy, properties SETCHANGED(userLoggable(Property p)) DO checkCurrentDateDependsAction(p);
+
 DESIGN propertyPolicy {
     NEW property {
         type = CONTAINERH;
