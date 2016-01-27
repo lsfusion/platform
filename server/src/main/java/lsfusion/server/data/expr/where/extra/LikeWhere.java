@@ -46,10 +46,12 @@ public class LikeWhere extends BinaryWhere<LikeWhere> {
     @Override
     protected String getBaseSource(CompileSource compile) {
         Type type = operator1.getType(compile.keyType);
+        boolean needTrim = compareType != null && compareType.equals(3) && type instanceof StringClass && ((StringClass) type).blankPadded;
+        String column = (needTrim ? "RTRIM(" : "") + operator1.getSource(compile) + (needTrim ? ")" : "");
         String likeString = type instanceof StringClass && ((StringClass) type).caseInsensitive ? " " + compile.syntax.getInsensitiveLike() + " " : " LIKE ";
         String before = compareType != null && (compareType.equals(2) || compareType.equals(3)) ? ("'%' " + compile.syntax.getStringConcatenate() + " ") : "";
         String after = compareType != null && (compareType.equals(1) || compareType.equals(2)) ? (" " + compile.syntax.getStringConcatenate() + " '%'") : "";
-        return operator1.getSource(compile) + likeString + "(" + before + operator2.getSource(compile) + after + ")";
+        return column + likeString + "(" + before + operator2.getSource(compile) + after + ")";
     }
 
     public static Where create(BaseExpr operator1, BaseExpr operator2, Integer compareType) {
