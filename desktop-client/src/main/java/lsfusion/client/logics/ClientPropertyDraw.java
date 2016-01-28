@@ -478,8 +478,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
                     "%2$s";
 
     public static final String DETAILED_TOOL_TIP_FORMAT =
-            "<hr>" +
-                    "<b>sID:</b> %3$s<br>" +
+            "<hr><b>sID:</b> %3$s<br>" +
                     "<b>" + getString("logics.grid") + ":</b> %4$s<br>" +
                     "<b>" + getString("logics.objects") + ":</b> %5$s<br>" +
                     "<b>" + getString("logics.signature") + ":</b> %7$s <i>%3$s</i> (%6$s)<br>" +
@@ -488,10 +487,21 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
                     "<b>" + getString("logics.formpath") + ":</b> %10$s" +
                     "</html>";
 
+    public static final String DETAILED_ACTION_TOOL_TIP_FORMAT =
+            "<hr><b>sID:</b> %3$s<br>" +
+                    "<b>" + getString("logics.objects") + ":</b> %4$s<br>" +
+                    "<b>" + getString("logics.scriptpath") + ":</b> %5$s<br>" +
+                    "<b>" + getString("logics.formpath") + ":</b> %6$s" +
+                    "</html>";
+
     public static final String EDIT_KEY_TOOL_TIP_FORMAT =
             "<hr><b>" + getString("logics.property.edit.key") + ":</b> %1$s<br>";
 
     public String getTooltipText(String caption) {
+        return getTooltipText(caption, false);
+    }
+
+    public String getTooltipText(String caption, boolean action) {
         String propCaption = nullTrim(!isRedundantString(toolTip) ? toolTip : caption);
         String editKeyText = editKey == null ? "" : String.format(EDIT_KEY_TOOL_TIP_FORMAT, SwingUtils.getKeyStrokeCaption(editKey));
 
@@ -507,7 +517,10 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
             String script = creationScript != null ? creationScript.replace("\n", "<br>") : "";
             String scriptPath = creationPath != null ? creationPath.replace("\n", "<br>") : "";
             String scriptFormPath = formPath != null ? formPath.replace("\n", "<br>") : "";
-            return String.format(TOOL_TIP_FORMAT + DETAILED_TOOL_TIP_FORMAT,
+            return action ?
+                    String.format(TOOL_TIP_FORMAT + DETAILED_ACTION_TOOL_TIP_FORMAT,
+                    propCaption, editKeyText, sid, ifaceObjects, scriptPath, scriptFormPath) :
+                    String.format(TOOL_TIP_FORMAT + DETAILED_TOOL_TIP_FORMAT,
                     propCaption, editKeyText, sid, tableName, ifaceObjects, ifaceClasses, returnClass, script, scriptPath, scriptFormPath);
         }
     }

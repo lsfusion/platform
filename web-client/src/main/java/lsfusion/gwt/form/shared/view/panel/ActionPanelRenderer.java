@@ -4,10 +4,7 @@ import com.google.gwt.dom.client.BrowserEvents;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.EventTarget;
 import com.google.gwt.dom.client.NativeEvent;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.dom.client.ContextMenuEvent;
-import com.google.gwt.event.dom.client.ContextMenuHandler;
+import com.google.gwt.event.dom.client.*;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.base.client.ui.GKeyStroke;
@@ -17,6 +14,7 @@ import lsfusion.gwt.form.client.form.dispatch.GEditPropertyDispatcher;
 import lsfusion.gwt.form.client.form.dispatch.GEditPropertyHandler;
 import lsfusion.gwt.form.client.form.ui.GFormController;
 import lsfusion.gwt.form.client.form.ui.GPropertyContextMenuPopup;
+import lsfusion.gwt.form.client.form.ui.TooltipManager;
 import lsfusion.gwt.form.shared.view.GEditBindingMap;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
 import lsfusion.gwt.form.shared.view.ImageDescription;
@@ -39,6 +37,7 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
     private final EditManager editManager = new ActionEditManager();
     private final GPropertyContextMenuPopup contextMenuPopup = new GPropertyContextMenuPopup();
     private final GPropertyDraw property;
+    private String tooltip;
 
     private final GGroupObjectValue columnKey;
     private final ActionButton button;
@@ -61,6 +60,26 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
         button.addStyleName("actionPanelRenderer");
 
         setTooltip(property.caption);
+
+        button.addMouseOverHandler(new MouseOverHandler() {
+            @Override
+            public void onMouseOver(MouseOverEvent event) {
+                TooltipManager.get().showTooltip(event.getClientX(), event.getClientY(),
+                        property.getTooltipText(tooltip, true));
+            }
+        });
+        button.addMouseOutHandler(new MouseOutHandler() {
+            @Override
+            public void onMouseOut(MouseOutEvent event) {
+                TooltipManager.get().hideTooltip();
+            }
+        });
+        button.addMouseMoveHandler(new MouseMoveHandler() {
+            @Override
+            public void onMouseMove(MouseMoveEvent event) {
+                TooltipManager.get().updateMousePosition(event.getClientX(), event.getClientY());
+            }
+        });
 
         if (property.getPreferredPixelHeight() > -1) {
             button.setHeight(property.getPreferredHeight());
@@ -181,14 +200,7 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
     }
 
     public void setTooltip(String caption) {
-        String toolTip = !GwtSharedUtils.isRedundantString(property.toolTip) ? property.toolTip : caption;
-        if (MainFrame.configurationAccessAllowed) {
-            toolTip += " (sID: " + property.sID + ")";
-        }
-        if (property.editKey != null) {
-            toolTip += " (" + property.editKey.toString() + ")";
-        }
-        button.setTitle(toolTip);
+        tooltip = !GwtSharedUtils.isRedundantString(property.toolTip) ? property.toolTip : caption;
     }
 
     @Override

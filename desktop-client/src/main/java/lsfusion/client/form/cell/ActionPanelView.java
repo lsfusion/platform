@@ -180,14 +180,7 @@ public class ActionPanelView extends JButton implements PanelView, EditPropertyH
     }
 
     public void setToolTip(String caption) {
-        String toolTip = !BaseUtils.isRedundantString(property.toolTip) ? property.toolTip : caption;
-        if (Main.configurationAccessAllowed) {
-            toolTip += " (sID: " + property.getSID() + ")";
-        }
-        if (property.editKey != null) {
-            toolTip += " (" + SwingUtils.getKeyStrokeCaption(property.editKey) + ")";
-        }
-        setToolTipText(toolTip);
+        setToolTipText(property.getTooltipText(!BaseUtils.isRedundantString(property.toolTip) ? property.toolTip : caption, true));
     }
 
     @Override

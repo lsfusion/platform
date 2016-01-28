@@ -180,12 +180,10 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
     }
 
     public static final String TOOL_TIP_FORMAT =
-            "<html><b>%s</b><br>" +
-                    "%s";
+            "<html><b>%s</b><br>%s";
 
     public static final String DETAILED_TOOL_TIP_FORMAT =
-            "<hr>" +
-            "<b>sID:</b> %s<br>" +
+            "<hr><b>sID:</b> %s<br>" +
             "<b>Таблица:</b> %s<br>" +
             "<b>Объекты:</b> %s<br>" +
             "<b>Сигнатура:</b> %s <i>%s</i> (%s)<br>" +
@@ -194,10 +192,21 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
             "<b>Объявление на форме:</b> %s" +
             "</html>";
 
+    public static final String DETAILED_ACTION_TOOL_TIP_FORMAT =
+            "<hr><b>sID:</b> %s<br>" +
+            "<b>Объекты:</b> %s<br>" +
+            "<b>Путь:</b> %s<br>" +
+            "<b>Объявление на форме:</b> %s" +
+            "</html>";
+
     public static final String EDIT_KEY_TOOL_TIP_FORMAT =
             "<hr><b>Горячая клавиша:</b> %s<br>";
 
     public String getTooltipText(String caption) {
+        return getTooltipText(caption, false);
+    }
+
+    public String getTooltipText(String caption, boolean action) {
         String propCaption = GwtSharedUtils.nullTrim(!GwtSharedUtils.isRedundantString(toolTip) ? toolTip : caption);
         String editKeyText = editKey == null ? "" : GwtSharedUtils.stringFormat(EDIT_KEY_TOOL_TIP_FORMAT, editKey.toString());
 
@@ -213,8 +222,11 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
             String script = creationScript != null ? creationScript.replace("\n", "<br>") : "";
             String scriptPath = creationPath != null ? creationPath.replace("\n", "<br>") : "";
             String scriptFormPath = formPath != null ? formPath.replace("\n", "<br>") : "";
-            return GwtSharedUtils.stringFormat(TOOL_TIP_FORMAT + DETAILED_TOOL_TIP_FORMAT,
-                    propCaption, editKeyText, sid, tableName, ifaceObjects, returnClass, sid, ifaceClasses, script, scriptPath, scriptFormPath);
+            return action ?
+                    GwtSharedUtils.stringFormat(TOOL_TIP_FORMAT + DETAILED_ACTION_TOOL_TIP_FORMAT,
+                            propCaption, editKeyText, sid, ifaceObjects, scriptPath, scriptFormPath) :
+                    GwtSharedUtils.stringFormat(TOOL_TIP_FORMAT + DETAILED_TOOL_TIP_FORMAT,
+                            propCaption, editKeyText, sid, tableName, ifaceObjects, returnClass, sid, ifaceClasses, script, scriptPath, scriptFormPath);
         }
     }
 
