@@ -1,5 +1,7 @@
 MODULE Hierarchy;
 
+REQUIRE Utils;
+
 META defineHierarchy(object)
     @defineHierarchy(object, ###object);
 END
@@ -47,6 +49,13 @@ META defineHierarchyCustom (object, class)
     canonicalName 'Полное имя' (class object) = VARSTRING[255](
                            [= GROUP CONCAT name(class parent), ' / ' BY class child ORDER DESC level(child, parent)](object))
                            MINCHARWIDTH 50 MAXCHARWIDTH 100 PREFCHARWIDTH 100 PERSISTENT;
+END
+
+META defineHierarchyFilter(object, class, property)
+    // фильтры по имени
+    filter###property###object 'Фильтр по наименованию' = DATA LOCAL NESTED VARSTRING[255] ();
+    inFilterName = GROUP SUM 1 IF isParent(class child, class parent) AND isSubstring(name(child), filter###property###object()) BY parent; 
+    inIFilterName = GROUP SUM 1 IF isParent(class child, class parent) AND isISubstring(name(child), filter###property###object()) BY parent; 
 END
 
 META defineHierarchyPlain(object)
