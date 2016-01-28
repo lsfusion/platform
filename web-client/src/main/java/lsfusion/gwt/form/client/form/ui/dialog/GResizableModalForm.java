@@ -21,7 +21,7 @@ public class GResizableModalForm extends GResizableModalWindow {
     private final GFormController form;
 
     public GResizableModalForm(FormsController formsController, GForm gForm, boolean isDialog, EditEvent initFilterEvent, final WindowHiddenHandler hiddenHandler) {
-        super(gForm.caption, hiddenHandler);
+        super(gForm.caption, gForm.getTooltip(), hiddenHandler);
         this.initFilterEvent = initFilterEvent;
 
         form = new GFormController(formsController, gForm, true, isDialog) {

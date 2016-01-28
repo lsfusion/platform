@@ -3,12 +3,14 @@ package lsfusion.gwt.form.client.form.ui.dialog;
 import com.allen_sauer.gwt.dnd.client.DragContext;
 import com.allen_sauer.gwt.dnd.client.util.Location;
 import com.allen_sauer.gwt.dnd.client.util.WidgetLocation;
+import com.google.gwt.event.dom.client.*;
 import com.google.gwt.event.logical.shared.CloseEvent;
 import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.event.logical.shared.HasCloseHandlers;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
+import lsfusion.gwt.form.client.form.ui.TooltipManager;
 
 import static lsfusion.gwt.form.client.form.ui.dialog.ResizableWindow.Direction.*;
 
@@ -37,6 +39,8 @@ public class ResizableWindow extends Composite implements HasCloseHandlers<Resiz
 
     private FocusPanel headerPanel;
 
+    private String tooltip;
+
     private Grid contentGrid;
 
     private Widget northEdge;
@@ -53,17 +57,18 @@ public class ResizableWindow extends Composite implements HasCloseHandlers<Resiz
 
     protected boolean initialOnLoad = true;
 
-    public ResizableWindow(String htmlCaption) {
-        this(htmlCaption, null);
+    public ResizableWindow(String htmlCaption, String htmlTooltip) {
+        this(htmlCaption, htmlTooltip, null);
     }
 
-    public ResizableWindow(String htmlCaption, Widget icontentWidget) {
-        this(WindowDragDropController.rootController, icontentWidget, new HeaderWidget(htmlCaption));
+    public ResizableWindow(String htmlCaption, String htmlTooltip, Widget icontentWidget) {
+        this(WindowDragDropController.rootController, icontentWidget, new HeaderWidget(htmlCaption), htmlTooltip);
     }
 
-    public ResizableWindow(WindowDragDropController iwindowController, Widget icontentWidget, Widget iheaderWidget) {
+    public ResizableWindow(WindowDragDropController iwindowController, Widget icontentWidget, Widget iheaderWidget, String iHTMLTooltip) {
         windowController = iwindowController;
         headerWidget = iheaderWidget;
+        tooltip = iHTMLTooltip;
 
         initWidget(mainPanel = new FocusPanel());
 
@@ -93,6 +98,26 @@ public class ResizableWindow extends Composite implements HasCloseHandlers<Resiz
         headerPanel.addStyleName(RESIZABLE_DIALOG_HEADER_STYLE);
         headerPanel.add(headerWidget);
         headerPanel.setTabIndex(-1);
+
+        headerPanel.addMouseOverHandler(new MouseOverHandler() {
+            @Override
+            public void onMouseOver(MouseOverEvent event) {
+                TooltipManager.get().showTooltip(event.getClientX(), event.getClientY(),
+                        tooltip);
+            }
+        });
+        headerPanel.addMouseOutHandler(new MouseOutHandler() {
+            @Override
+            public void onMouseOut(MouseOutEvent event) {
+                TooltipManager.get().hideTooltip();
+            }
+        });
+        headerPanel.addMouseMoveHandler(new MouseMoveHandler() {
+            @Override
+            public void onMouseMove(MouseMoveEvent event) {
+                TooltipManager.get().updateMousePosition(event.getClientX(), event.getClientY());
+            }
+        });
 
         VerticalPanel centerPanel = new VerticalPanel();
         centerPanel.add(headerPanel);

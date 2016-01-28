@@ -15,11 +15,11 @@ public class GResizableModalWindow extends ResizableWindow {
     private HandlerRegistration nativePreviewHandlerReg;
 
     public GResizableModalWindow(String caption) {
-        this(caption, null);
+        this(caption, null, null);
     }
 
-    public GResizableModalWindow(String caption, WindowHiddenHandler ihiddenHandler) {
-        super(caption);
+    public GResizableModalWindow(String caption, String tooltip, WindowHiddenHandler ihiddenHandler) {
+        super(caption, tooltip);
 
         this.hiddenHandler = ihiddenHandler;
 
