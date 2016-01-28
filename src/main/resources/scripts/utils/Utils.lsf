@@ -18,14 +18,14 @@ resultCustomFile = DATA LOCAL CUSTOMFILE ();
 stringToCustomFile 'Запись строки в файл' = ACTION CUSTOM 'lsfusion.erp.utils.utils.StringToFileActionProperty' (VARISTRING[255], VARSTRING[10], VARSTRING[10]);
 // --------------------------------------------- Работа со строками --------------------------------- //
 
-lower = FORMULA 'lower($1)';
+lower (TEXT p1) = FORMULA 'lower($1)';
 
 stringEqualsAll(STRING[3] string) = string == STRING[3]('Все');
 
 isWordInCSV = FORMULA NULL INTEGER PG 'CASE WHEN CAST($1 AS text)=ANY(string_to_array($2,\',\')) THEN 1 ELSE NULL END', MS 'CASE WHEN CHARINDEX(\' \' + CAST($1 AS nvarchar(max)) + \' \',\' \' + REPLACE($2,\',\',\' \') + \' \') > 0 THEN 1 ELSE NULL END';
 
-getWord = FORMULA '(string_to_array($1,$2))[($3)]';
-wordCount = FORMULA 'array_length((string_to_array($1,$2)),1)';
+getWord (TEXT p1, TEXT p2, INTEGER p3) = FORMULA '(string_to_array($1,$2))[($3)]';
+wordCount (TEXT p1, TEXT p2) = FORMULA 'array_length((string_to_array($1,$2)),1)';
 
 istartsWith = FORMULA NULL INTEGER PG 'CASE WHEN (($1) ILIKE (($2)||\'%\')) THEN 1 ELSE NULL END', MS 'CASE WHEN (($1) LIKE (($2)+\'%\')) THEN 1 ELSE NULL END';
 startsWith = FORMULA NULL INTEGER PG 'CASE WHEN (($1) LIKE (($2)||\'%\')) THEN 1 ELSE NULL END', MS 'CASE WHEN (($1) LIKE (($2)+\'%\')) THEN 1 ELSE NULL END';
@@ -35,30 +35,30 @@ endsWith = FORMULA NULL INTEGER PG 'CASE WHEN (($1) LIKE (\'%\'||($2))) THEN 1 E
 isISubstring = FORMULA NULL INTEGER PG 'CASE WHEN position(lower($2) in lower($1)) > 0 THEN 1 ELSE NULL END', MS 'CASE WHEN (($1) LIKE (\'%\'+($2)+\'%\')) THEN 1 ELSE NULL END'; 
 isSubstring = FORMULA NULL INTEGER PG 'CASE WHEN position(($2) in ($1)) > 0 THEN 1 ELSE NULL END', MS 'CASE WHEN (($1) LIKE (\'%\'+($2)+\'%\')) THEN 1 ELSE NULL END';
 
-replace = FORMULA TEXT 'replace($1,$2,$3)';
+replace (TEXT p1, TEXT p2, TEXT p3) = FORMULA TEXT 'replace($1,$2,$3)';
 
-charLength = FORMULA INTEGER PG 'char_length($1)', MS 'len($1)';
+charLength (TEXT p1) = FORMULA INTEGER PG 'char_length($1)', MS 'len($1)';
 
-substr = FORMULA TEXT 'substring($1, $2, $3)';
-substrFrom = FORMULA TEXT 'substring($1, $2)'; 
+substr (TEXT p1, INTEGER p2, INTEGER p3) = FORMULA TEXT 'substring($1, $2, $3)';
+substrFrom (TEXT p1, INTEGER p2) = FORMULA TEXT PG 'substring($1, $2)', MS 'substring($1, $2, len($1) - $2 + 1)'; 
 
-ltrim = FORMULA TEXT 'ltrim($1)';
-rtrim = FORMULA TEXT 'rtrim($1)';
+ltrim (TEXT p1) = FORMULA TEXT 'ltrim($1)';
+rtrim (TEXT p1) = FORMULA TEXT 'rtrim($1)';
 
-ltrim = FORMULA TEXT 'ltrim($1,$2)';
-rtrim = FORMULA TEXT 'rtrim($1,$2)';
+ltrim (TEXT p1, TEXT p2) = FORMULA TEXT PG 'ltrim($1,$2)';
+rtrim (TEXT p1, TEXT p2) = FORMULA TEXT PG 'rtrim($1,$2)';
 
-trim = FORMULA TEXT 'trim($1)';
+trim (TEXT p1) = FORMULA TEXT PG 'trim($1)', MS 'ltrim(rtrim($1))';
 
-left = FORMULA TEXT 'left($1,$2)';
-right = FORMULA TEXT 'right($1,$2)';
+left (TEXT p1, INTEGER p2) = FORMULA TEXT 'left($1,$2)';
+right (TEXT p1, INTEGER p2) = FORMULA TEXT 'right($1,$2)';
 
-lpad = FORMULA TEXT 'lpad($1,$2,$3)';
-rpad = FORMULA TEXT 'rpad($1,$2,$3)';
+lpad (TEXT p1, INTEGER p2, TEXT p3) = FORMULA TEXT PG 'lpad($1,$2,$3)';
+rpad (TEXT p1, INTEGER p2, TEXT p3) = FORMULA TEXT PG 'rpad($1,$2,$3)';
 
-repeat = FORMULA TEXT 'repeat($1,$2)';
+repeat (TEXT p1, INTEGER p2) = FORMULA TEXT PG 'repeat($1,$2)', MS 'REPLICATE ($1,$2)';
 
-onlyDigits = FORMULA NULL INTEGER 'CASE WHEN trim($1) ~ \'^[0-9]*$\' THEN 1 ELSE NULL END';
+onlyDigits (TEXT p1) = FORMULA NULL INTEGER PG 'CASE WHEN trim($1) ~ \'^[0-9]*$\' THEN 1 ELSE NULL END', MS 'CASE WHEN ltrim($1) NOT LIKE \'%[^0-9]%\' THEN 1 ELSE NULL END';
 
 // --------------------------------------------- Работа с числами --------------------------------- //
 
