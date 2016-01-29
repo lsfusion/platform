@@ -337,6 +337,7 @@ public class Main {
     private static void initSwing() throws ClassNotFoundException, InstantiationException, IllegalAccessException, UnsupportedLookAndFeelException {
 //        FocusOwnerTracer.installFocusTracer();
 
+        ToolTipManager.sharedInstance().setInitialDelay(1500);
         ToolTipManager.sharedInstance().setDismissDelay(Integer.MAX_VALUE);
         
         // при первом использовании rich-editora во время редактирования, его создание тормозит...
