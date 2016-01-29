@@ -232,6 +232,8 @@ public class Settings {
 
     private long threadAllocatedMemoryPeriod = 240000; //every 4 minutes
 
+    private long maxThreadAllocatedBytes = 1048576; //1MB
+
     public long getMaxRecalculateTime() {
         return maxRecalculateTime;
     }
@@ -1514,6 +1516,14 @@ public class Settings {
 
     public void setThreadAllocatedMemoryPeriod(long threadAllocatedMemoryPeriod) {
         this.threadAllocatedMemoryPeriod = threadAllocatedMemoryPeriod;
+    }
+
+    public long getMaxThreadAllocatedBytes() {
+        return maxThreadAllocatedBytes;
+    }
+
+    public void setMaxThreadAllocatedBytes(long maxThreadAllocatedBytes) {
+        this.maxThreadAllocatedBytes = maxThreadAllocatedBytes;
     }
 
     private int updateStatisticsLimit = 300; // при изменении какого количества записей будет принудительный ANALYZE таблицы делаться

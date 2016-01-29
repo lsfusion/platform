@@ -33,6 +33,8 @@ public class ServerLoggers {
 
     public static final Logger lruLogger = Logger.getLogger("LRULogger");
 
+    public static final Logger allocatedBytesLogger = Logger.getLogger("AllocatedBytesLogger");
+
     public static final Logger assertLogger = Logger.getLogger("AssertLogger");
 
     public static final Logger exInfoLogger = Logger.getLogger("ExInfoLogger");

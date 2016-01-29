@@ -62,8 +62,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     private Integer idActiveThread;
 
     private static ConcurrentWeakHashMap<SQLSession, Integer> sqlSessionMap = new ConcurrentWeakHashMap<>();
-    private static ConcurrentHashMap<Long, Long> threadAllocatedBytesAMap = new ConcurrentHashMap<>();
-    private static ConcurrentHashMap<Long, Long> threadAllocatedBytesBMap = new ConcurrentHashMap<>();
+    public static ConcurrentHashMap<Long, Long> threadAllocatedBytesAMap = new ConcurrentHashMap<>();
+    public static ConcurrentHashMap<Long, Long> threadAllocatedBytesBMap = new ConcurrentHashMap<>();
 
     private Long startTransaction;
     private Map<String, Integer> attemptCountMap = new HashMap<>();
