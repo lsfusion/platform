@@ -9,7 +9,7 @@ import lsfusion.gwt.base.shared.GwtSharedUtils;
 public class TooltipManager {
     private static final TooltipManager instance = new TooltipManager();
 
-    private static final int DELAY = 300;
+    private static final int DELAY = 1500;
 
     private int mouseX;
     private int mouseY;
