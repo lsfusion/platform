@@ -121,7 +121,7 @@ public class WriteActionProperty extends ScriptingActionProperty {
                         throw Throwables.propagate(new RuntimeException("Some error occurred while downloading file from ftp"));
                     }
                 } else {
-                    throw Throwables.propagate(new RuntimeException("Incorrect login or password"));
+                    throw Throwables.propagate(new RuntimeException("Incorrect login or password. Downloading file from ftp failed"));
                 }
             } finally {
                 try {
