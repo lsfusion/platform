@@ -94,7 +94,7 @@ hostnameServerComputer 'Сервер' () = hostname(serverComputer());
 
 setExplainAnalyzeMode 'Выводить в лог EXPLAIN ANALYZE запросов' = ACTION CUSTOM 'lsfusion.server.logics.service.SetExplainAnalyzeModeUserActionProperty' (BOOLEAN, User);
 explainAnalyzeMode 'Включён Explain Analyze' = DATA BOOLEAN (User);
-refreshExplainAnalyzeMode 'Обновить Explain Analyze'(User user) = ACTION  {
+refreshExplainAnalyzeMode 'Обновить Explain Analyze' = ACTION (User user) {
     setExplainAnalyzeMode(explainAnalyzeMode(user), user);  
 }
 WHEN CHANGED(explainAnalyzeMode(User user)) DO {
@@ -107,7 +107,7 @@ turnExplainAnalizeOnCurrentUser 'Включить EXPLAIN ANALYZE' () = ACTION {
 
 setExplainMode 'Выводить в лог EXPLAIN запросов' = ACTION CUSTOM 'lsfusion.server.logics.service.SetExplainModeUserActionProperty' (BOOLEAN, User);
 explainMode 'Включён Explain' = DATA BOOLEAN (User);
-refreshExplainMode 'Обновить Explain'(User user) = ACTION  {
+refreshExplainMode 'Обновить Explain' = ACTION (User user) {
     setExplainMode(explainMode(user), user);  
 }
 WHEN CHANGED(explainMode(User user)) DO {
@@ -116,7 +116,7 @@ WHEN CHANGED(explainMode(User user)) DO {
 
 setLoggerDebugEnabled 'Включить вывод в лог SQL запросов' = ACTION CUSTOM 'lsfusion.server.logics.service.SetLoggerDebugEnabledUserActionProperty' (BOOLEAN, User);
 loggerDebugEnabled 'Выводить в лог SQL запросы' = DATA BOOLEAN (User);
-refreshLoggerDebugEnabled ''(User user) = ACTION  {
+refreshLoggerDebugEnabled '' = ACTION (User user) {
     setLoggerDebugEnabled(loggerDebugEnabled(user), user);
 }
 WHEN CHANGED(loggerDebugEnabled(User user)) DO {
@@ -125,7 +125,7 @@ WHEN CHANGED(loggerDebugEnabled(User user)) DO {
 
 setRemoteLoggerDebugEnabled 'Включить вывод в лог действий пользователей' = ACTION CUSTOM 'lsfusion.server.logics.service.SetRemoteLoggerDebugEnabledUserActionProperty' (BOOLEAN, User);
 remoteLoggerDebugEnabled 'Выводить в лог действия пользователей' = DATA BOOLEAN (User);
-refreshRemoteLoggerDebugEnabled ''(User user) = ACTION  {
+refreshRemoteLoggerDebugEnabled '' = ACTION (User user) {
     setRemoteLoggerDebugEnabled(remoteLoggerDebugEnabled(user), user);
 }
 WHEN CHANGED(remoteLoggerDebugEnabled(User user)) DO {
@@ -134,7 +134,7 @@ WHEN CHANGED(remoteLoggerDebugEnabled(User user)) DO {
 
 setExLogEnabled 'Включить вывод в лог сист. инфо (debug)' = ACTION CUSTOM 'lsfusion.server.logics.service.SetExLogUserActionProperty' (BOOLEAN, User);
 remoteExLogEnabled 'Выводить в лог сист. инфо (debug)' = DATA BOOLEAN (User);
-refreshExLogEnabled ''(User user) = ACTION  {
+refreshExLogEnabled '' = ACTION (User user) {
     setExLogEnabled(remoteExLogEnabled(user), user);
 }
 WHEN CHANGED(remoteExLogEnabled(User user)) DO {
@@ -155,7 +155,7 @@ id (TypeExecEnv type) = CASE EXCLUSIVE
 
 setExecEnv 'Выводить в лог EXPLAIN запросов' = ACTION CUSTOM 'lsfusion.server.logics.service.SetExecEnvUserActionProperty' (INTEGER, User);
 execEnv 'Тип адаптивного выполнения' = DATA TypeExecEnv (User);
-refreshExecEnv 'Обновить Explain'(User user) = ACTION  {
+refreshExecEnv 'Обновить Explain' = ACTION (User user) {
     setExecEnv(id(execEnv(user)), user);  
 }
 WHEN CHANGED(execEnv(User user)) DO {
@@ -196,7 +196,7 @@ DESIGN options {
 
 setVolatileStatsEnabled 'Установить использование nested loop' = ACTION CUSTOM 'lsfusion.server.logics.service.SetVolatileStatsEnabledUserActionProperty' (BOOLEAN, User);
 volatileStatsEnabled 'Не использовать nested loop' = DATA BOOLEAN (User);
-refreshVolatileStatsEnabled ''(User user) = ACTION  {
+refreshVolatileStatsEnabled '' = ACTION (User user) {
     setVolatileStatsEnabled(volatileStatsEnabled(user), user);
 }
 WHEN CHANGED(volatileStatsEnabled(User user)) DO {

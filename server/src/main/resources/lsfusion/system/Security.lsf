@@ -262,7 +262,7 @@ FORM userRole 'Роль'
 // ---------------------------------------- Копирование роли ----------------------- //
 overCopy = ACTION ABSTRACT LIST (UserRole, UserRole);
 
-copyData(UserRole userRole, UserRole ur) = ACTION  {
+copyData = ACTION (UserRole userRole, UserRole ur) {
     ASSIGN name(ur) <- name(userRole);
     ASSIGN permitViewAllProperty(ur) <- permitViewAllProperty(userRole);
     ASSIGN forbidViewAllProperty(ur) <- forbidViewAllProperty(userRole);
@@ -291,7 +291,7 @@ copyData(UserRole userRole, UserRole ur) = ACTION  {
     EXEC overCopy(userRole, ur);
 }
 
-copy 'Копировать'(UserRole userRole) = ACTION  NEWSESSION {
+copy 'Копировать' = ACTION (UserRole userRole) NEWSESSION {
     FOR ADDOBJ ur = UserRole DO {
         EXEC copyData(userRole, ur);
         FORM userRole OBJECTS ur = ur MANAGESESSION DOCKEDMODAL;
