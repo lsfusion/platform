@@ -23,6 +23,20 @@ DESIGN admin {
     }
 }
 
+changeAllDates 'Сместить время всех свойств и ключей' = ACTION CUSTOM 'lsfusion.erp.utils.ChangeAllDatesActionProperty' ();
+secondsChangeAllDates 'Интервал в секундах' = DATA INTEGER ();
+
+EXTEND FORM admin PROPERTIES() changeAllDates, secondsChangeAllDates;
+DESIGN admin {
+    pane {
+        NEW changeDates {
+            caption = 'Сместить время';
+            MOVE PROPERTY(changeAllDates());
+            MOVE PROPERTY(secondsChangeAllDates());
+        }
+    }
+}
+
 CLASS ProcessType 'Фильтр процессов' {
     all 'Все',
     activeAll 'Все активные',
