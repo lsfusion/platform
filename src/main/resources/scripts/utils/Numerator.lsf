@@ -164,7 +164,7 @@ META defineNumeratedDefault(class, captionV, seriesV, prefix)
         PROPERTIES() nameDefaultNumerator##class
     ;
     
-    loadDefaultNumerators() += ACTION  {
+    loadDefaultNumerators() += ACTION () {
         FOR ADDOBJ n = Numerator DO {
             ASSIGN name(n) <- captionV;
             ASSIGN series(n) <- seriesV;
