@@ -28,7 +28,7 @@ secondsChangeAllDates 'Интервал в секундах' = DATA INTEGER ();
 
 EXTEND FORM admin PROPERTIES() changeAllDates, secondsChangeAllDates;
 DESIGN admin {
-    pane {
+    rightColumn {
         NEW changeDates {
             caption = 'Сместить время';
             MOVE PROPERTY(changeAllDates());
