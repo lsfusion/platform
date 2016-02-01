@@ -110,7 +110,7 @@ unlock(Object object) = ACTION NEWSESSION {
     APPLY locked(object) <- NULL;
 }
 
-changeSHA256Password = ACTION(CustomUser customUser) {
+changeSHA256Password(CustomUser customUser) = ACTION {
     REQUEST STRING[30] INPUT;
     EXEC calculateBase64Hash('SHA-256', requestedString());
     ASSIGN sha256Password(customUser) <- calculatedHash();
@@ -202,7 +202,7 @@ DESIGN reloginLoginUser {
     }
 }
 
-reloginLoginUser = ACTION () {
+reloginLoginUser() = ACTION  {
     FORM reloginLoginUser MODAL;
     IF formResult() == FormResult.ok THEN {
         LOCAL user = CustomUser();
@@ -247,7 +247,7 @@ DESIGN reloginPasswordUser {
     }
 }
 
-reloginPassword = ACTION (CustomUser customUser) {
+reloginPassword(CustomUser customUser) = ACTION  {
     FORM reloginPasswordUser MODAL;
     IF formResult() == FormResult.ok THEN {
         IF isLocked(customUser) THEN {
@@ -305,7 +305,7 @@ DESIGN changePasswordUser {
     }
 }
 
-changePassword = ACTION (CustomUser customUser) {
+changePassword(CustomUser customUser) = ACTION  {
     FORM changePasswordUser MODAL;
     IF formResult() == FormResult.ok THEN {
             EXEC calculateBase64Hash('SHA-256', chosenString('old'));
@@ -325,7 +325,7 @@ changePassword = ACTION (CustomUser customUser) {
         }
 }
 
-changePassword = ACTION () {
+changePassword() = ACTION  {
       IF forbidChangePassword(currentUser()) THEN {
         MESSAGE 'Вы не можете изменить свой пароль';
       }
