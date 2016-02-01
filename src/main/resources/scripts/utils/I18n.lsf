@@ -70,7 +70,7 @@ nameLanguageToTranslation 'На язык'() = name(languageToTranslation());
 
 translate  = ACTION CUSTOM 'lsfusion.erp.utils.i18n.TranslateActionProperty' (TEXT, Language, Language);
 
-translateTerm 'Перевести'(DictionaryEntry dictionaryEntry) = ACTION  {
+translateTerm 'Перевести' = ACTION (DictionaryEntry dictionaryEntry) {
 
     EXEC translate (TEXT(term(dictionaryEntry)),
             languageFrom(dictionary(dictionaryEntry)),
@@ -78,7 +78,7 @@ translateTerm 'Перевести'(DictionaryEntry dictionaryEntry) = ACTION  {
     ASSIGN translation(dictionaryEntry) <- VARSTRING[50](translationResult());
 }
 
-translateText 'Перевести'() = ACTION  {
+translateText 'Перевести' = ACTION () {
     EXEC translate (translationInput(), languageFromTranslation(), languageToTranslation());
 }
 
