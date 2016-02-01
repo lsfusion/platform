@@ -278,102 +278,107 @@ DESIGN admin {
     NEW pane {
         type = COLUMNS;
         columns = 3;
-        NEW current {
-            caption = 'Текущие значения';
-            MOVE PROPERTY(currentDate());
-        }
-        NEW colors {
-            caption = 'Цвета';
-            MOVE PROPERTY(defaultBackgroundColor());
-            MOVE PROPERTY(defaultForegroundColor());
-            MOVE PROPERTY(selectedRowBackgroundColor());
-            MOVE PROPERTY(selectedRowBorderColor());
-            MOVE PROPERTY(selectedCellBackgroundColor());
-            MOVE PROPERTY(focusedCellBackgroundColor());
-            MOVE PROPERTY(focusedCellBorderColor());
-        }
-        NEW report {
-            caption = 'Отчеты';
-            MOVE PROPERTY(reportCharWidth());
-            MOVE PROPERTY(reportRowHeight());
-            MOVE PROPERTY(reportNotToStretch());
-        }
-        NEW administration {
-            caption = 'Запуск';
-            
-            MOVE PROPERTY(restartServerAction());
-            MOVE PROPERTY(cancelRestartServerAction());
-            MOVE PROPERTY(hostnameServerComputer());
-        }
-        NEW oneThread {
-            caption = 'Однопоточные действия';
-            MOVE PROPERTY(serviceDBAction());
-            NEW recalculateOneThread {
-                caption = 'Исправление целостности базы данных';
-                MOVE PROPERTY(recalculateClassesAction());
-                MOVE PROPERTY(recalculateAction());
-                MOVE PROPERTY(recalculateFollowsAction());
-                MOVE PROPERTY(recalculateStatsAction());
-                MOVE PROPERTY(overCalculateStatsAction());             
-                MOVE PROPERTY(maxQuantityOverCalculate());
+        NEW leftColumn {
+            NEW current {
+                caption = 'Текущие значения';
+                MOVE PROPERTY(currentDate());
             }
-            NEW checkOneThread {
-                caption = 'Проверка целостности базы данных';
-                MOVE PROPERTY(checkClassesAction());
-                MOVE PROPERTY(checkAggregationsAction());
-                MOVE PROPERTY(checkIndicesAction());
-            }            
-        }
-        NEW multiThread {
-            caption = 'Многопоточные действия';
-            MOVE PROPERTY(threadCountMultiThread());
-            MOVE PROPERTY(serviceDBMultiThreadAction());
-            NEW recalculateMultiThread {
-                caption = 'Исправление целостности базы данных';
-                MOVE PROPERTY(recalculateClassesMultiThreadAction());
-                MOVE PROPERTY(recalculateMultiThreadAction());
-                MOVE PROPERTY(recalculateFollowsMultiThreadAction());
-                MOVE PROPERTY(recalculateStatsMultiThreadAction());  
-                MOVE PROPERTY(overCalculateStatsMultiThreadAction());
+            NEW administration {
+                caption = 'Запуск';
+                MOVE PROPERTY(restartServerAction());
+                MOVE PROPERTY(cancelRestartServerAction());
+                MOVE PROPERTY(hostnameServerComputer());
+            }    
+            NEW upload {
+                caption = 'Загрузить в другую базу';
+                MOVE PROPERTY(uploadStaticCaptionType());
+                MOVE PROPERTY(uploadHost());
+                MOVE PROPERTY(uploadUser());
+                MOVE PROPERTY(uploadPassword());
+                MOVE PROPERTY(uploadInstance());
+                MOVE PROPERTY(uploadDB());
+                MOVE PROPERTY(uploadToDBAction());
             }
-            NEW checkMultiThread {
-                caption = 'Проверка целостности базы данных';
-                MOVE PROPERTY(checkClassesMultiThreadAction());
-                MOVE PROPERTY(checkAggregationsMultiThreadAction());
-            }                  
+            NEW log {
+                caption = 'Логирование';
+                MOVE PROPERTY(turnExplainAnalizeOnCurrentUser());
+                MOVE PROPERTY(clearApplicationLog());
+            }
+            NEW report {
+                caption = 'Отчеты';
+                MOVE PROPERTY(reportCharWidth());
+                MOVE PROPERTY(reportRowHeight());
+                MOVE PROPERTY(reportNotToStretch());
+            }        
+            NEW colors {
+                caption = 'Цвета';
+                MOVE PROPERTY(defaultBackgroundColor());
+                MOVE PROPERTY(defaultForegroundColor());
+                MOVE PROPERTY(selectedRowBackgroundColor());
+                MOVE PROPERTY(selectedRowBorderColor());
+                MOVE PROPERTY(selectedCellBackgroundColor());
+                MOVE PROPERTY(focusedCellBackgroundColor());
+                MOVE PROPERTY(focusedCellBorderColor());
+            }                                        
         }
-        NEW upload {
-            caption = 'Загрузить в другую базу';
-            MOVE PROPERTY(uploadStaticCaptionType());
-            MOVE PROPERTY(uploadHost());
-            MOVE PROPERTY(uploadUser());
-            MOVE PROPERTY(uploadPassword());
-            MOVE PROPERTY(uploadInstance());
-            MOVE PROPERTY(uploadDB());
-            MOVE PROPERTY(uploadToDBAction());
+        NEW centralColumn {
+            NEW oneThread {
+                caption = 'Однопоточные действия';
+                MOVE PROPERTY(serviceDBAction());
+                NEW recalculateOneThread {
+                    caption = 'Исправление целостности базы данных';
+                    MOVE PROPERTY(recalculateClassesAction());
+                    MOVE PROPERTY(recalculateAction());
+                    MOVE PROPERTY(recalculateFollowsAction());
+                    MOVE PROPERTY(recalculateStatsAction());
+                    MOVE PROPERTY(overCalculateStatsAction());             
+                    MOVE PROPERTY(maxQuantityOverCalculate());
+                }
+                NEW checkOneThread {
+                    caption = 'Проверка целостности базы данных';
+                    MOVE PROPERTY(checkClassesAction());
+                    MOVE PROPERTY(checkAggregationsAction());
+                    MOVE PROPERTY(checkIndicesAction());
+                }
+            NEW database {
+                caption = 'База данных';
+                MOVE PROPERTY(packAction());
+                MOVE PROPERTY(analyzeDBAction());
+                MOVE PROPERTY(vacuumDBAction());
+                MOVE PROPERTY(TILMode());
+                MOVE PROPERTY(reupdateMode());
+                MOVE PROPERTY(singleTransaction());
+            }                            
+            }        
         }
-        NEW database {
-            caption = 'База данных';
-            MOVE PROPERTY(packAction());
-            MOVE PROPERTY(analyzeDBAction());
-            MOVE PROPERTY(vacuumDBAction());
-            MOVE PROPERTY(TILMode());
-            MOVE PROPERTY(reupdateMode());
-            MOVE PROPERTY(singleTransaction());
-        }
-        NEW virtualMachine {
-            caption = 'Виртуальная машина';
-            MOVE PROPERTY(runGarbageCollector());
-            MOVE PROPERTY(getVMInfo());
-            MOVE PROPERTY(dropLRUPercent());
-            MOVE PROPERTY(randomDropLRU());
-            MOVE PROPERTY(dropLRU());
-            MOVE PROPERTY(makeHeapDump());
-        }
-        NEW log {
-            caption = 'Логирование';
-            MOVE PROPERTY(turnExplainAnalizeOnCurrentUser());
-            MOVE PROPERTY(clearApplicationLog());
+        NEW rightColumn {
+             NEW multiThread {
+                 caption = 'Многопоточные действия';
+                 MOVE PROPERTY(threadCountMultiThread());
+                 MOVE PROPERTY(serviceDBMultiThreadAction());
+                 NEW recalculateMultiThread {
+                     caption = 'Исправление целостности базы данных';
+                     MOVE PROPERTY(recalculateClassesMultiThreadAction());
+                     MOVE PROPERTY(recalculateMultiThreadAction());
+                     MOVE PROPERTY(recalculateFollowsMultiThreadAction());
+                     MOVE PROPERTY(recalculateStatsMultiThreadAction());  
+                     MOVE PROPERTY(overCalculateStatsMultiThreadAction());
+                 }
+                 NEW checkMultiThread {
+                     caption = 'Проверка целостности базы данных';
+                     MOVE PROPERTY(checkClassesMultiThreadAction());
+                     MOVE PROPERTY(checkAggregationsMultiThreadAction());
+                 }                  
+             }  
+            NEW virtualMachine {
+                caption = 'Виртуальная машина';
+                MOVE PROPERTY(runGarbageCollector());
+                MOVE PROPERTY(getVMInfo());
+                MOVE PROPERTY(dropLRUPercent());
+                MOVE PROPERTY(randomDropLRU());
+                MOVE PROPERTY(dropLRU());
+                MOVE PROPERTY(makeHeapDump());
+            }                      
         }
     }
     MOVE u.box;
