@@ -142,6 +142,7 @@ table 'Имя таблицы' (sID) = GROUP AGGR Table table BY sid (table) WHER
 rows 'Количество записей' = DATA INTEGER (Table);
 skipVacuum 'Не упаковывать' = DATA BOOLEAN (Table);
 table 'Таблица' = DATA Table (TableKey);
+sidTable (TableKey tableKey) = sid(table(tableKey));
 
 CLASS TableKey 'Ключ';
 TABLE tableKey (TableKey);
