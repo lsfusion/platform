@@ -115,7 +115,7 @@ NAVIGATOR {
     }
 }
 
-loadDefaultScheduledTasks () += ACTION ()  {    
+loadDefaultScheduledTasks () += ACTION   {    
     loadDefaultScheduledTask ('Резервное копирование', 2014_07_01_01:00, 86400, SchedulerStartType.afterStart);
     loadDefaultScheduledTaskDetail ('Резервное копирование', 1, 'Backup.makeBackup[]');
     loadDefaultScheduledTaskDetail ('Резервное копирование', 2, 'Backup.decimateBackups[]');        

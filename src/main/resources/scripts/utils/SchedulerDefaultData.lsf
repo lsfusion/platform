@@ -26,7 +26,7 @@ loadDefaultScheduledTaskDetail 'Добавить стандарное задан
     }
 }
 
-loadDefaultScheduledTasks () += ACTION ()  {       
+loadDefaultScheduledTasks () += ACTION   {       
     loadDefaultScheduledTask ('Обслуживание БД', 2014_07_01_03:00, 86400, SchedulerStartType.afterStart);
     loadDefaultScheduledTaskDetail ('Обслуживание БД', 1, 'Service.serviceDBAction[]');
     loadDefaultScheduledTaskDetail ('Обслуживание БД', 2, 'Service.vacuumDBAction[]');        
