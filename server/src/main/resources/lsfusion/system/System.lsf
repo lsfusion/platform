@@ -196,3 +196,11 @@ META defineRandom2(cls1, cls2, name, fnc)
      maxRand###cls1 = GROUP SUM 1 IF prevCurrentBalance(###cls1 prm1, ###cls2 prm2) BY prm2;
      random###cls1(INTEGER max, ###cls2 prm2) = cls1##FromRand((MIN maxRand###cls1(prm2), max AS INTEGER), prm2);     
 END;
+
+// Options
+META defineOption(property, caption, container)
+    property caption = DATA BOOLEAN ();
+    
+    EXTEND FORM options PROPERTIES() property;
+    DESIGN options { container { MOVE PROPERTY(property()); } }
+END
