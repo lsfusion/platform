@@ -23,7 +23,7 @@ lpadStringWithZero = FORMULA STRING[18] PG 'lpad(CAST($1 AS text),$2,\'0\')', MS
 
 curStringValue 'Тек. значение (строка)' (Numerator numerator) = lpadStringWithZero(curValue(numerator), stringLength(numerator)) IN base;
 
-incrementValue 'Увеличить значение' = ACTION (Numerator numerator) NEWSESSION {
+incrementValue 'Увеличить значение'(Numerator numerator) = ACTION  NEWSESSION {
     IF curValue(numerator) >= maxValue(numerator) THEN
         MESSAGE 'Счетчик нумератора ' + name(numerator) + ' достиг максимального значения. Обратитесь к администратору.'
     ELSE {
@@ -32,7 +32,7 @@ incrementValue 'Увеличить значение' = ACTION (Numerator numerat
     };
 };
 
-incrementValueSession 'Увеличить значение' = ACTION (Numerator numerator) {
+incrementValueSession 'Увеличить значение'(Numerator numerator) = ACTION  {
     IF curValue(numerator) >= maxValue(numerator) THEN
         MESSAGE 'Счетчик нумератора достиг максимального значения. Обратитесь к администратору.'
     ELSE
@@ -131,7 +131,7 @@ META defineNumerated(class)
     numerator 'Нумератор (ИД)' = DATA Numerator (class);
     nameNumerator 'Нумератор' (class o) = name(numerator(o)) IN numbered MINCHARWIDTH 7 PREFCHARWIDTH 15;
 
-    generateSeriesNumber 'Сгенерировать номер' = ACTION (class o) {
+    generateSeriesNumber 'Сгенерировать номер'(class o) = ACTION  {
         number(o) <- curStringValue(numerator(o));
         series(o) <- series(numerator(o));
         incrementValueSession(numerator(o));
@@ -189,7 +189,7 @@ META defineNumerated(object1, object2)
     numerator = DATA Numerator (###object1, ###object2);
     nameNumerator 'Нумератор' (###object1 object1, ###object2 object2) = name(numerator(object1, object2)) MINCHARWIDTH 7 PREFCHARWIDTH 15;
 
-    setValueSessionNumerated 'Сгенерировать номер' = ACTION (###object1 object1, ###object2 object2) {
+    setValueSessionNumerated 'Сгенерировать номер'(###object1 object1, ###object2 object2) = ACTION  {
         ASSIGN number(object1, object2) <- curStringValue(numerator(object1, object2));
         ASSIGN series(object1, object2) <- series(numerator(object1, object2));
         EXEC incrementValueSession(numerator(object1, object2));

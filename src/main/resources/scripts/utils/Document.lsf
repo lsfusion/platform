@@ -362,7 +362,7 @@ closeDocuments = ACTION ABSTRACT LIST (DATE);
 
 documentsClosedDate 'Дата закрытия документов' = DATA DATE();
  
-dialogCloseDocumentsDate 'Закрыть документы' = ACTION () {
+dialogCloseDocumentsDate 'Закрыть документы'() = ACTION  {
     IF documentsClosedDate() THEN
         FORM dialogDate OBJECTS d = documentsClosedDate() MODAL
     ELSE
@@ -465,7 +465,7 @@ META defineDocumentDetailSortOrder (object, detailClass)
     sortOrder 'Порядок сортировки' (d) = ABSTRACT VARSTRING[100] (detailClass);
     sortOrder##detailClass = GROUP SUM 1 IF sortOrder(detailClass d) BY object(d);
     
-    updateSortOrder 'Сортировать' = ACTION (detailClass detail) {
+    updateSortOrder 'Сортировать'(detailClass detail) = ACTION  {
         IF sortOrder##detailClass(object(detail)) THEN {    
             LOCAL int = INTEGER();
             int() <- NULL;
@@ -504,7 +504,7 @@ END
 
 // Action'ы
 META defineDocumentDetailActionsCustom (object, detailClass)
-    delete##detailClass 'Очистить' = ACTION (###object o) {
+    delete##detailClass 'Очистить'(###object o) = ACTION  {
         //FOR object##detailClass (d) == o DO {
         DELETE detailClass d WHERE object (d) == o;
         //}
@@ -512,7 +512,7 @@ META defineDocumentDetailActionsCustom (object, detailClass)
 END
 
 META defineDocumentDetailActions (object, detailClass)
-    delete##detailClass 'Очистить' = ACTION (###object o) {
+    delete##detailClass 'Очистить'(###object o) = ACTION  {
         //FOR object##detailClass (d) == o DO {
         DELETE detailClass d WHERE object (d) == o;
         //}
