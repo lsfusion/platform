@@ -46,7 +46,7 @@ getCoordinatesAddress = ACTION CUSTOM 'lsfusion.erp.utils.geo.GetCoordinatesAddr
 getCoordinates(STRING[255] address) = ACTION getCoordinatesAddress(address, calculateMapProvider());
 recalculateDistance = ACTION CUSTOM 'lsfusion.erp.utils.geo.RecalculateDistancePOIActionProperty' (POI);
 
-calculateCoordinates 'Рассчитать координаты'= ACTION (POI POI) {
+calculateCoordinates 'Рассчитать координаты'(POI POI)= ACTION {
 
     getCoordinates (CONCAT ',', nameCountry(POI), address(POI));
     latitude(POI) <- readLatitude();
@@ -56,7 +56,7 @@ calculateCoordinates 'Рассчитать координаты'= ACTION (POI PO
 }
 WHEN SESSION (SETCHANGED(nameCountry(POI POI)) OR SETCHANGED(address(POI))) AND autoSynchronizeCoordinates() DO EXEC calculateCoordinates(POI);
 
-recalculateAllDistances 'Пересчитать все расстояния' = ACTION () {
+recalculateAllDistances 'Пересчитать все расстояния'() = ACTION {
     FOR POI p IS POI DO {
         recalculateDistance(p);
     }
@@ -66,7 +66,7 @@ recalculateAllDistances 'Пересчитать все расстояния' = A
 showOnMap 'Показать на карте'= ACTION CUSTOM 'lsfusion.erp.utils.geo.ShowOnMapActionProperty' (DOUBLE, DOUBLE, MapProvider, STRING[100]);
 showOnMap(DOUBLE latitude, DOUBLE longitude, STRING[100] address) = ACTION showOnMap (latitude, longitude, showMapProvider(), address);
 
-showOnMap 'Показать на карте'= ACTION (POI POI) {
+showOnMap 'Показать на карте'(POI POI)= ACTION {
     EXEC showOnMap (latitude (POI), longitude (POI), address(POI));
 }
 

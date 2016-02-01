@@ -4,7 +4,7 @@ REQUIRE System, Authentication, Service, Utils, Time;
 
 runSQL 'Выполнить SQL' = ACTION CUSTOM 'lsfusion.erp.utils.RunSQLScriptActionProperty' (TEXT);
 
-vacuumTableAction 'Упаковать таблицу' = ACTION (Table table) {
+vacuumTableAction 'Упаковать таблицу'(Table table) = ACTION {
     runSQL('VACUUM FULL ' + sid(table));
 }
 
@@ -218,7 +218,7 @@ showExtraButtons(VARSTRING[10] i) = idSQLProcess(i) AND NOT startsWith(idThreadP
 //test3Action = ACTION CUSTOM 'lsfusion.erp.utils.Test3ActionProperty'();
 //test4Action = ACTION CUSTOM 'lsfusion.erp.utils.Test4ActionProperty'();
               
-setDefaultProcessType = ACTION () {
+setDefaultProcessType() = ACTION {
     processType() <- ProcessType.activeSQL;
 }               
                

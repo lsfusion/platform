@@ -16,7 +16,7 @@ process = ACTION CUSTOM 'lsfusion.erp.utils.excel.ProcessTemplateActionProperty'
 resultTemplate = DATA LOCAL EXCELFILE ();
 openResultTemplate () = ACTION OPENFILE resultTemplate();
 
-openProcess 'Сгенерировать документ' = ACTION (Template template) {
+openProcess 'Сгенерировать документ'(Template template) = ACTION {
     process(template);
     openResultTemplate();
 }
