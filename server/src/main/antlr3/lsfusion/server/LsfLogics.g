@@ -1970,27 +1970,8 @@ eventIdSetting [LP property]
 ////////////////////////////////////////////////////////////////////////////////
 
 concreteActionDefinition[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property, List<ResolveClassSet> signature]
-@init {
-	List<TypedParameter> localContext = context;
-	boolean localDynamic = dynamic;
-	boolean ownContext = false;
-}
-@after {
-	if (inPropParseState()) {
-		self.checkActionAllParamsUsed(localContext, $property.property, ownContext);
-	}
-}
 	:	'ACTION'
-		( '(' list=typedParameterList ')' 
-			{ 
-				localContext = $list.params; localDynamic = false; ownContext = true; 
-				
-				if (inPropParseState() && !dynamic)	{
-					self.mergeActionLocalContext(context, localContext);
-				}
-			} 
-		)?
-		(	aDB=topContextDependentActionDefinitionBody[localContext, localDynamic, true] { if (inPropParseState()) { $property = $aDB.property; $signature = $aDB.signature; }}
+		(	aDB=topContextDependentActionDefinitionBody[context, dynamic, true] { if (inPropParseState()) { $property = $aDB.property; $signature = $aDB.signature; }}
 		|	ciADB=contextIndependentActionDB { $property = $ciADB.property; $signature = $ciADB.signature; }
 		)
 	;

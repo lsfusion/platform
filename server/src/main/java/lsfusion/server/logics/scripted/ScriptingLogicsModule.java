@@ -3091,12 +3091,6 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public void checkActionAllParamsUsed(List<TypedParameter> context, LP property, boolean ownContext) throws ScriptingErrorLog.SemanticErrorException {
-        if (ownContext && context.size() > property.property.interfaces.size()) {
-            errLog.emitNamedParamsError(parser);
-        }
-    }
-
     public void checkActionProperty(LP property) throws ScriptingErrorLog.SemanticErrorException {
         if (!(property instanceof LAP<?>)) {
             errLog.emitNotActionPropertyError(parser);
@@ -3125,22 +3119,6 @@ public class ScriptingLogicsModule extends LogicsModule {
     public void checkSessionProperty(LP property) throws ScriptingErrorLog.SemanticErrorException {
         if (!(property.property instanceof SessionDataProperty)) {
             errLog.emitNotSessionOrLocalPropertyError(parser);
-        }
-    }
-
-    public void mergeActionLocalContext(List<TypedParameter> oldContext, List<TypedParameter> newContext) throws ScriptingErrorLog.SemanticErrorException {
-        if (oldContext.size() != newContext.size()) {
-            errLog.emitNamedParamsError(parser);
-        }
-        for (int i = 0; i < oldContext.size(); ++i) {
-            TypedParameter oldParam = oldContext.get(i);
-            TypedParameter newParam = newContext.get(i);
-            if (newParam.cls != null && oldParam.cls != null && newParam.cls != oldParam.cls) {
-                errLog.emitActionParamTypesError(parser);    
-            }
-            if (newParam.cls == null) {
-                newParam.cls = oldParam.cls;
-            }
         }
     }
 
