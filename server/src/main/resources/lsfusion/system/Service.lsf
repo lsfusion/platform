@@ -165,7 +165,7 @@ nameExecEnv 'Тип адаптивного выполнения' (User user) = c
 
 // --------------- Удаление прикладных логов ------------------------ //
 
-clearApplicationLog 'Очистить прикладные логи' = ABSTRACT ACTION LIST () ;
+clearApplicationLog 'Очистить прикладные логи' = ACTION ABSTRACT LIST () ;
 
 META defineLog (object, caption, container)
     countDaysClear##object 'За сколько дней хранить лог '##caption = DATA INTEGER (); 

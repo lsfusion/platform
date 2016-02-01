@@ -260,7 +260,7 @@ FORM userRole 'Роль'
 ;
 
 // ---------------------------------------- Копирование роли ----------------------- //
-overCopy = ABSTRACT ACTION LIST (UserRole, UserRole);
+overCopy = ACTION ABSTRACT LIST (UserRole, UserRole);
 
 copyData = ACTION (UserRole userRole, UserRole ur) {
     ASSIGN name(ur) <- name(userRole);
