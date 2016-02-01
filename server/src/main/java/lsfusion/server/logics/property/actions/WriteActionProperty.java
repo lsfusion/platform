@@ -4,6 +4,7 @@ import com.google.common.base.Throwables;
 import com.jcraft.jsch.*;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.IOUtils;
+import lsfusion.server.ServerLoggers;
 import lsfusion.server.classes.DynamicFormatFileClass;
 import lsfusion.server.classes.StaticFormatFileClass;
 import lsfusion.server.classes.StringClass;
@@ -95,6 +96,7 @@ public class WriteActionProperty extends ScriptingActionProperty {
     }
 
     public static void storeFileToFTP(String path, File file) throws IOException {
+        ServerLoggers.systemLogger.info(String.format("Writing file to %s", path));
         /*ftp://username:password@host:port/path_to_file*/
         Pattern connectionStringPattern = Pattern.compile("ftp:\\/\\/(.*):(.*)@([^\\/:]*)(?::([^\\/]*))?(?:\\/(.*))?");
         Matcher connectionStringMatcher = connectionStringPattern.matcher(path);
@@ -106,7 +108,7 @@ public class WriteActionProperty extends ScriptingActionProperty {
             Integer port = noPort ? 21 : Integer.parseInt(connectionStringMatcher.group(4)); //21
             String remoteFile = connectionStringMatcher.group(5);
             FTPClient ftpClient = new FTPClient();
-            ftpClient.setConnectTimeout(3600000); //1 hour = 3600 sec
+            ftpClient.setConnectTimeout(5000); //1 hour = 3600 sec
             try {
 
                 ftpClient.connect(server, port);
@@ -117,7 +119,10 @@ public class WriteActionProperty extends ScriptingActionProperty {
                     InputStream inputStream = new FileInputStream(file);
                     boolean done = ftpClient.storeFile(remoteFile, inputStream);
                     inputStream.close();
-                    if (!done) {
+                    if(done)
+                        ServerLoggers.systemLogger.info(String.format("Successful writing file to %s", path));
+                    else {
+                        ServerLoggers.systemLogger.error(String.format("Failed writing file to %s", path));
                         throw Throwables.propagate(new RuntimeException("Some error occurred while downloading file from ftp"));
                     }
                 } else {
