@@ -41,7 +41,7 @@ DESIGN chooseScriptName {
     }
 }
 
-saveAsScriptAction 'Сохранить как' = ACTION () {
+saveAsScriptAction 'Сохранить как'() = ACTION {
     FORM chooseScriptName MODAL;
     IF formResult() == FormResult.ok THEN {
         FOR ADDOBJ s = Script DO {
@@ -52,7 +52,7 @@ saveAsScriptAction 'Сохранить как' = ACTION () {
     }
 }
 
-saveAction 'Сохранить' = ACTION (Script script) {
+saveAction 'Сохранить'(Script script) = ACTION {
     text(script) <- scriptStorage();
     dateTime(script) <- currentDateTime();
 }
