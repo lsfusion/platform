@@ -174,7 +174,7 @@ META defineLog (object, caption, container)
     DESIGN options { container { MOVE PROPERTY(countDaysClear##object());} }    
 END
 META defineLog (object, dateProp)
-    clearApplicationLog () += ACTION () NEWSESSION {
+    clearApplicationLog () += ACTION  NEWSESSION {
         IF countDaysClear##object() THEN {
             DELETE object d WHERE d IS object AND dateProp(d)<= subtract(currentDate(), countDaysClear##object());
         }

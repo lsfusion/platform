@@ -153,7 +153,7 @@ countDaysClearPings 'За сколько дней хранить статист�
 EXTEND FORM options PROPERTIES countDaysClearPings();
 DESIGN options { log { MOVE PROPERTY(countDaysClearPings());} }    
     
-clearApplicationLog () += ACTION () NEWSESSION {
+clearApplicationLog () += ACTION  NEWSESSION {
     IF countDaysClearPings() THEN {
         pingFromTo(Computer c, DATETIME dFrom, DATETIME dTo) <- NULL WHERE dTo <= subtractDay(currentDateTime(), countDaysClearPings());
         minTotalMemoryFromTo(Computer c, DATETIME dFrom, DATETIME dTo) <- NULL WHERE dTo <= subtractDay(currentDateTime(), countDaysClearPings());
