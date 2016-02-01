@@ -247,5 +247,5 @@ META defineNumeratedID(object, caption)
 END
 // --------------------------------------------- Стандартные значения ---------------------------- //
 
-loadDefaultNumerators 'Загрузить стандартные нумераторы' = ABSTRACT ACTION LIST ();
+loadDefaultNumerators 'Загрузить стандартные нумераторы' = ACTION ABSTRACT LIST ();
 @implementLoadDefaultData(loadDefaultNumerators);

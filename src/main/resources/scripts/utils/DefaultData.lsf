@@ -4,7 +4,7 @@ REQUIRE System;
 
 GROUP loadDefault 'Загрузка отдельных объектов' : public;
 
-loadDefaultData 'Загрузить стандартные данные' = ABSTRACT ACTION LIST ();
+loadDefaultData 'Загрузить стандартные данные' = ACTION ABSTRACT LIST ();
 
 FORM defaultData 'Стандартные данные'
     PROPERTIES() loadDefaultData
