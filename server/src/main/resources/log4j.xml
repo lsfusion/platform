@@ -1,12 +1,35 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 <!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
 <log4j:configuration>
-    <appender name="stdout" class="org.apache.log4j.ConsoleAppender">
-        <param name="target" value="System.out"/>
+    <appender name="stdout" class="lsfusion.base.CustodianDailyRollingFileAppender">
+        <param name="file" value="logs/stdout.log" />
+        <param name="encoding" value="UTF-8" />
+        <param name="DatePattern" value="'.'yyyy-MM-dd" />
+        <param name="MaxNumberOfDays" value="7" />
+        <param name="CompressBackups" value="true" />
         <layout class="org.apache.log4j.EnhancedPatternLayout">
-            <param name="ConversionPattern" value="%d{DATE} %X{client} - %X{computer} - %X{remoteAddress} %5p %c{1} - %m%n%throwable{1000}"/>
+            <param name="ConversionPattern" value="%d{DATE} %5p %c{1} - %m%n%throwable{1000}"/>
         </layout>
+        <filter class="org.apache.log4j.varia.LevelRangeFilter">
+            <param name="LevelMin" value="ALL"/>
+            <param name="LevelMax" value="INFO"/>
+        </filter>
     </appender>
+
+    <appender name="stderr" class="lsfusion.base.CustodianDailyRollingFileAppender">
+        <param name="file" value="logs/stderr.log" />
+        <param name="encoding" value="UTF-8" />
+        <param name="DatePattern" value="'.'yyyy-MM-dd" />
+        <param name="MaxNumberOfDays" value="7" />
+        <param name="CompressBackups" value="true" />
+        <layout class="org.apache.log4j.EnhancedPatternLayout">
+            <param name="ConversionPattern" value="%d{DATE} %5p %c{1} - %m%n%throwable{1000}"/>
+        </layout>
+        <filter class="org.apache.log4j.varia.LevelRangeFilter">
+            <param name="LevelMin" value="WARN"/>
+        </filter>
+    </appender>
+
 
     <appender name="serverlog" class="org.apache.log4j.rolling.RollingFileAppender">
         <param name="encoding" value="UTF-8" />
@@ -44,7 +67,7 @@
         <param name="encoding" value="UTF-8" />
         <rollingPolicy class="org.apache.log4j.rolling.FixedWindowRollingPolicy">
             <param name="minIndex" value="1"/>
-            <param name="maxIndex" value="12"/>
+            <param name="maxIndex" value="9"/>
             <param name="activeFileName" value="logs/server-err.log"/>
             <param name="fileNamePattern" value="logs/server-err-%i.log.zip"/>
         </rollingPolicy>
@@ -63,7 +86,7 @@
         <param name="encoding" value="UTF-8" />
         <rollingPolicy class="org.apache.log4j.rolling.FixedWindowRollingPolicy">
             <param name="minIndex" value="1"/>
-            <param name="maxIndex" value="12"/>
+            <param name="maxIndex" value="9"/>
             <param name="activeFileName" value="logs/sql.log"/>
             <param name="fileNamePattern" value="logs/sql-%i.log.zip"/>
         </rollingPolicy>
@@ -79,7 +102,7 @@
         <param name="encoding" value="UTF-8" />
         <rollingPolicy class="org.apache.log4j.rolling.FixedWindowRollingPolicy">
             <param name="minIndex" value="1"/>
-            <param name="maxIndex" value="12"/>
+            <param name="maxIndex" value="9"/>
             <param name="activeFileName" value="logs/security.log"/>
             <param name="fileNamePattern" value="logs/security-%i.log.zip"/>
         </rollingPolicy>
@@ -95,7 +118,7 @@
         <param name="encoding" value="UTF-8" />
         <rollingPolicy class="org.apache.log4j.rolling.FixedWindowRollingPolicy">
             <param name="minIndex" value="1"/>
-            <param name="maxIndex" value="12"/>
+            <param name="maxIndex" value="9"/>
             <param name="activeFileName" value="logs/sqlhand.log"/>
             <param name="fileNamePattern" value="logs/sqlhand-%i.log.zip"/>
         </rollingPolicy>
@@ -111,7 +134,7 @@
         <param name="encoding" value="UTF-8" />
         <rollingPolicy class="org.apache.log4j.rolling.FixedWindowRollingPolicy">
             <param name="minIndex" value="1"/>
-            <param name="maxIndex" value="12"/>
+            <param name="maxIndex" value="9"/>
             <param name="activeFileName" value="logs/lru.log"/>
             <param name="fileNamePattern" value="logs/lru-%i.log.zip"/>
         </rollingPolicy>
@@ -127,7 +150,7 @@
         <param name="encoding" value="UTF-8" />
         <rollingPolicy class="org.apache.log4j.rolling.FixedWindowRollingPolicy">
             <param name="minIndex" value="1"/>
-            <param name="maxIndex" value="12"/>
+            <param name="maxIndex" value="9"/>
             <param name="activeFileName" value="logs/allocatedbytes.log"/>
             <param name="fileNamePattern" value="logs/allocatedbytes-%i.log.zip"/>
         </rollingPolicy>
@@ -143,7 +166,7 @@
         <param name="encoding" value="UTF-8" />
         <rollingPolicy class="org.apache.log4j.rolling.FixedWindowRollingPolicy">
             <param name="minIndex" value="1"/>
-            <param name="maxIndex" value="12"/>
+            <param name="maxIndex" value="9"/>
             <param name="activeFileName" value="logs/assert.log"/>
             <param name="fileNamePattern" value="logs/assert-%i.log.zip"/>
         </rollingPolicy>
@@ -159,7 +182,7 @@
         <param name="encoding" value="UTF-8" />
         <rollingPolicy class="org.apache.log4j.rolling.FixedWindowRollingPolicy">
             <param name="minIndex" value="1"/>
-            <param name="maxIndex" value="12"/>
+            <param name="maxIndex" value="9"/>
             <param name="activeFileName" value="logs/exinfo.log"/>
             <param name="fileNamePattern" value="logs/exinfo-%i.log.zip"/>
         </rollingPolicy>
@@ -175,7 +198,7 @@
         <param name="encoding" value="UTF-8" />
         <rollingPolicy class="org.apache.log4j.rolling.FixedWindowRollingPolicy">
             <param name="minIndex" value="1"/>
-            <param name="maxIndex" value="12"/>
+            <param name="maxIndex" value="9"/>
             <param name="activeFileName" value="logs/hexinfolog.log"/>
             <param name="fileNamePattern" value="logs/hexinfolog-%i.log.zip"/>
         </rollingPolicy>
@@ -206,7 +229,7 @@
         <param name="encoding" value="UTF-8" />
         <rollingPolicy class="org.apache.log4j.rolling.FixedWindowRollingPolicy">
             <param name="minIndex" value="1"/>
-            <param name="maxIndex" value="12"/>
+            <param name="maxIndex" value="9"/>
             <param name="activeFileName" value="logs/server-remote.log"/>
             <param name="fileNamePattern" value="logs/server-remote-%i.log.zip"/>
         </rollingPolicy>
@@ -222,7 +245,7 @@
         <param name="encoding" value="UTF-8" />
         <rollingPolicy class="org.apache.log4j.rolling.FixedWindowRollingPolicy">
             <param name="minIndex" value="1"/>
-            <param name="maxIndex" value="12"/>
+            <param name="maxIndex" value="9"/>
             <param name="activeFileName" value="logs/mail.log"/>
             <param name="fileNamePattern" value="logs/mail-%i.log.zip"/>
         </rollingPolicy>
@@ -238,7 +261,7 @@
         <param name="encoding" value="UTF-8" />
         <rollingPolicy class="org.apache.log4j.rolling.FixedWindowRollingPolicy">
             <param name="minIndex" value="1"/>
-            <param name="maxIndex" value="12"/>
+            <param name="maxIndex" value="9"/>
             <param name="activeFileName" value="logs/script.log"/>
             <param name="fileNamePattern" value="logs/script-%i.log.zip"/>
         </rollingPolicy>
@@ -254,7 +277,7 @@
         <param name="encoding" value="UTF-8" />
         <rollingPolicy class="org.apache.log4j.rolling.FixedWindowRollingPolicy">
             <param name="minIndex" value="1"/>
-            <param name="maxIndex" value="12"/>
+            <param name="maxIndex" value="9"/>
             <param name="activeFileName" value="logs/import.log"/>
             <param name="fileNamePattern" value="logs/import-%i.log.zip"/>
         </rollingPolicy>
@@ -270,7 +293,7 @@
         <param name="encoding" value="UTF-8" />
         <rollingPolicy class="org.apache.log4j.rolling.FixedWindowRollingPolicy">
             <param name="minIndex" value="1"/>
-            <param name="maxIndex" value="12"/>
+            <param name="maxIndex" value="9"/>
             <param name="activeFileName" value="logs/invocation.log"/>
             <param name="fileNamePattern" value="logs/invocation-%i.log.zip"/>
         </rollingPolicy>
@@ -403,6 +426,7 @@
     <root>
         <priority value="ERROR"/>
         <appender-ref ref="stdout"/>
+        <appender-ref ref="stderr"/>
         <appender-ref ref="serverlog"/>
         <appender-ref ref="servererr"/>
     </root>
