@@ -188,6 +188,7 @@ public class EmailReceiver {
         }
 
         Message[] messages = emailFolder.getMessages();
+        ServerLoggers.mailLogger.info(String.format("Account %s: found %s emails", nameAccount, messages.length));
         for (Message message : messages) {
             Timestamp dateTimeSentEmail = getSentDate(message);
             if(minDateTime == null || dateTimeSentEmail == null || minDateTime.compareTo(dateTimeSentEmail) <= 0) {
@@ -195,7 +196,6 @@ public class EmailReceiver {
                 String fromAddressEmail = ((InternetAddress) message.getFrom()[0]).getAddress();
                 String idEmail = (dateTimeSentEmail == null ? "" : dateTimeSentEmail.getTime()) + fromAddressEmail;
                 String subjectEmail = message.getSubject();
-                ServerLoggers.systemLogger.info("downloading email: " + subjectEmail);
                 Object messageContent = getEmailContent(message);
                 MultipartBody messageEmail = messageContent instanceof Multipart ? getMultipartBody(subjectEmail, (Multipart) messageContent) :
                         messageContent instanceof BASE64DecoderStream ? getMultipartBody64(subjectEmail, (BASE64DecoderStream) messageContent, message.getFileName()) :
