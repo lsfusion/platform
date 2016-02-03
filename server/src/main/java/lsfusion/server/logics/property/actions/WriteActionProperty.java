@@ -108,7 +108,7 @@ public class WriteActionProperty extends ScriptingActionProperty {
             Integer port = noPort ? 21 : Integer.parseInt(connectionStringMatcher.group(4)); //21
             String remoteFile = connectionStringMatcher.group(5);
             FTPClient ftpClient = new FTPClient();
-            ftpClient.setConnectTimeout(5000); //1 hour = 3600 sec
+            ftpClient.setConnectTimeout(3600000); //1 hour = 3600 sec
             try {
 
                 ftpClient.connect(server, port);
