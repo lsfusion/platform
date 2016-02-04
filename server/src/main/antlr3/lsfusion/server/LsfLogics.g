@@ -2063,6 +2063,7 @@ formActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns 
 	ModalityType modalityType = ModalityType.DOCKED;
 	boolean checkOnOk = false;
 	boolean showDrop = false;
+	boolean noCancel = false;
 	FormPrintType printType = null;
 	FormExportType exportType = null;
 	List<String> objects = new ArrayList<String>();
@@ -2074,7 +2075,7 @@ formActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns 
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedFAProp($formName.sid, objects, mapping, contextObjectName, contextProperty, initFilterPropertyName, initFilterPropertyMapping, modalityType, sessionScope, checkOnOk, showDrop, printType, exportType);
+		$property = self.addScriptedFAProp($formName.sid, objects, mapping, contextObjectName, contextProperty, initFilterPropertyName, initFilterPropertyMapping, modalityType, sessionScope, checkOnOk, showDrop, noCancel, printType, exportType);
 	}
 }
 	:	'FORM' formName=compoundID 
@@ -2085,6 +2086,7 @@ formActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns 
 		(modality = modalityTypeLiteral { modalityType = $modality.val; })?
 		('CHECK' { checkOnOk = true; })?
 		('SHOWDROP' { showDrop = true; })?
+		('NOCANCEL' { noCancel = true; })?
 		(print = formPrintTypeLiteral { printType = $print.val; })?
 		(export = formExportTypeLiteral { exportType = $export.val; })?
 	;
