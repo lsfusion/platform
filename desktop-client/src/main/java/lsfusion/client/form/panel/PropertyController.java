@@ -132,7 +132,7 @@ public class PropertyController {
         for (ClientGroupObjectValue columnKey : columnKeys) {
             if (showIfs == null || showIfs.get(columnKey) != null) {
                 PanelView view = views.get(columnKey);
-                if (view == null) {
+                if (view == null && !property.hide) {
                     view = property.getPanelView(form, columnKey);
                     views.put(columnKey, view);
 

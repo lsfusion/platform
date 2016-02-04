@@ -20,8 +20,9 @@ text 'Текст' = DATA TEXT (Script);
 countTextScript() = GROUP MAX Script script IF text(script) == scriptStorage(); 
 dateTime 'Дата запуска' = DATA DATETIME (Script);
 
-updateStorage(Script script) = ACTION {
+updateStorage(Script script) = ACTION NEWSESSION {
     scriptStorage() <- text(script);
+    apply();
 }
 
 FORM chooseScriptName 'Сохранить как'
@@ -84,10 +85,11 @@ date3 'Дата 3' = DATA DATE (Row);
 
 FORM script 'Скрипт'
     OBJECTS s = Script FIXED PANEL
-    PROPERTIES(s) name SELECTOR EVENTS ON CHANGE s updateStorage(s) 
+    PROPERTIES(s) dateTime, name SELECTOR EVENTS ON CHANGE s updateStorage(s)
     PROPERTIES() scriptStorage,
                  scriptExecution, actionBodyExecution, formExecution, javaActionBodyExecution, saveAsScriptAction
     PROPERTIES(s) saveAction
+    ORDER BY dateTime(s) DESC
                  
     OBJECTS r = Row FIXED GRID
     PROPERTIES(r) string1, string2, string3, string4, string5, string6, string7, string8, string9, string10 
@@ -96,6 +98,7 @@ FORM script 'Скрипт'
 ;
 
 DESIGN script {
+    PROPERTY(dateTime(s)) { hide = TRUE; }
     NEW pane {
         fill = 1;
         type = TABBED;
