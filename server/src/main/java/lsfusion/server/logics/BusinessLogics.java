@@ -32,6 +32,7 @@ import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.daemons.DiscountCardDaemonTask;
 import lsfusion.server.daemons.ScannerDaemonTask;
 import lsfusion.server.data.*;
+import lsfusion.server.data.Field;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.ValueExpr;
@@ -81,7 +82,7 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Method;
+import java.lang.reflect.*;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.*;
@@ -251,7 +252,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     }
 
     public void createModules() throws IOException {
-        LM = addModule(new BaseLogicsModule(this, new DefaultDBNamePolicy(63)));
+        LM = addModule(new BaseLogicsModule(this, getDBNamingPolicy()));
         serviceLM = addModule(new ServiceLogicsModule(this, LM));
         reflectionLM = addModule(new ReflectionLogicsModule(this, LM));
         contactLM = addModule(new ContactLogicsModule(this, LM));
@@ -264,6 +265,21 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         evalScriptLM = addModule(new ScriptingLogicsModule(
                SchedulerLogicsModule.class.getResourceAsStream("/lsfusion/system/EvalScript.lsf"), 
                "/lsfusion/system/EvalScript.lsf", LM, this));
+    }
+
+    private PropertyDBNamePolicy getDBNamingPolicy() {
+        PropertyDBNamePolicy dbNamingPolicy = null;
+        try {
+            String policyName = getDbManager().getDbNamingPolicy();
+            if (policyName != null && !policyName.isEmpty()) {
+                Integer maxIdLength = getDbManager().getDbMaxIdLength();
+                Class cls = Class.forName(policyName);
+                dbNamingPolicy = (PropertyDBNamePolicy) cls.getConstructors()[0].newInstance(maxIdLength);
+            }
+        } catch (InvocationTargetException | ClassNotFoundException | IllegalAccessException | InstantiationException e) {
+            systemLogger.error("Failed to get DBNamingPolicy, used default", e);
+        }
+        return dbNamingPolicy == null ? new DefaultDBNamePolicy(63) : dbNamingPolicy;
     }
 
     protected void addModulesFromResource(List<String> paths, List<String> excludedPaths) throws IOException {

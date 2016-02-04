@@ -145,6 +145,8 @@
         <property name="restartManager" ref="restartManager"/>
         <property name="denyDropModules" value="${db.denyDropModules:false}"/>
         <property name="denyDropTables" value="${db.denyDropTables:false}"/>
+        <property name="dbNamingPolicy" value="${db.namingPolicy:}"/>
+        <property name="dbMaxIdLength" value="${db.maxIdLength:}"/>
     </bean>
 
     <bean id="reflectionManager" class="lsfusion.server.logics.ReflectionManager">

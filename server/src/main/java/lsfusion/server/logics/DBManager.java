@@ -117,6 +117,9 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
 
     private boolean denyDropTables;
 
+    private String dbNamingPolicy;
+    private Integer dbMaxIdLength;
+
     public boolean needExtraUpdateStats = false;
     
     private BaseLogicsModule<?> LM;
@@ -168,6 +171,23 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
 
     public void setDenyDropTables(boolean denyDropTables) {
         this.denyDropTables = denyDropTables;
+    }
+
+
+    public String getDbNamingPolicy() {
+        return dbNamingPolicy;
+    }
+
+    public void setDbNamingPolicy(String dbNamingPolicy) {
+        this.dbNamingPolicy = dbNamingPolicy;
+    }
+
+    public Integer getDbMaxIdLength() {
+        return dbMaxIdLength;
+    }
+
+    public void setDbMaxIdLength(Integer dbMaxIdLength) {
+        this.dbMaxIdLength = dbMaxIdLength;
     }
 
     public void updateStats(SQLSession sql) throws SQLException, SQLHandledException {
