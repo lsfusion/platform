@@ -35,7 +35,7 @@
         <param name="encoding" value="UTF-8" />
         <rollingPolicy class="org.apache.log4j.rolling.FixedWindowRollingPolicy">
             <param name="minIndex" value="1"/>
-            <param name="maxIndex" value="12"/>
+            <param name="maxIndex" value="9"/>
             <param name="activeFileName" value="logs/server.log"/>
             <param name="fileNamePattern" value="logs/server-%i.log.zip"/>
         </rollingPolicy>
@@ -51,7 +51,7 @@
         <param name="encoding" value="UTF-8" />
         <rollingPolicy class="org.apache.log4j.rolling.FixedWindowRollingPolicy">
             <param name="minIndex" value="1"/>
-            <param name="maxIndex" value="12"/>
+            <param name="maxIndex" value="9"/>
             <param name="activeFileName" value="logs/service.log"/>
             <param name="fileNamePattern" value="logs/service-%i.log.zip"/>
         </rollingPolicy>
