@@ -38,6 +38,8 @@ public class ReadFormRequestHandler implements HttpRequestHandler {
     @Autowired
     private ServletContext context;
 
+    private static RemoteNavigatorInterface navigator = null;
+
     @Override
     public void handleRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String canonicalName = request.getParameter(FORM_SID_PARAM);
@@ -81,9 +83,11 @@ public class ReadFormRequestHandler implements HttpRequestHandler {
 //            if(dimension != null) {
 //                screenSize = (int) dimension.getWidth() + "x" + (int) dimension.getHeight();
 //            }
-            RemoteNavigatorInterface navigator = bl.createNavigator(true, new NavigatorInfo(exportUser, exportPassword,
-                    bl.getComputer(SystemUtils.getLocalHostName()), "127.0.0.1", osVersion, processor, architecture, cores,
-                    physicalMemory, totalMemory, maximumMemory, freeMemory, javaVersion, null), false);
+
+            if (navigator == null)
+                navigator = bl.createNavigator(true, new NavigatorInfo(exportUser, exportPassword,
+                        bl.getComputer(SystemUtils.getLocalHostName()), "127.0.0.1", osVersion, processor, architecture, cores,
+                        physicalMemory, totalMemory, maximumMemory, freeMemory, javaVersion, null), false);
 
             if (!bl.checkFormExportPermission(canonicalName)) {
 //                blProvider.invalidate();
@@ -94,7 +98,8 @@ public class ReadFormRequestHandler implements HttpRequestHandler {
             reportData = form.getReportData(-1, -1, null, false, null);
 
         } catch (RemoteException e) {
-//            blProvider.invalidate();
+            blProvider.invalidate();
+            navigator = null;
             throw new RuntimeException("Не могу прочитать данные", e);
         }
 
