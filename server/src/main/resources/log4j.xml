@@ -449,7 +449,7 @@
         <priority value="ERROR"/>
         <appender-ref ref="stdout"/>
         <appender-ref ref="stderr"/>
-        <appender-ref ref="serverlog"/>
+        <!--<appender-ref ref="serverlog"/>-->
         <appender-ref ref="servererr"/>
     </root>
 </log4j:configuration>
