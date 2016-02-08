@@ -131,3 +131,4 @@ video/x-msvideo avi
 video/x-ms-wmv wmv
 video/x-sgi-movie movie
 x-conference/x-cooltalk ice
+*.dbf dbf

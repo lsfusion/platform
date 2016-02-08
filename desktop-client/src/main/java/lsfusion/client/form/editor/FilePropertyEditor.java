@@ -42,7 +42,13 @@ public class FilePropertyEditor extends DialogBasedPropertyEditor {
                 return;
             }
         }
-        fileChooser.addChoosableFileFilter(new FileNameExtensionFilter(description, extensions));
+        if(fileChooser.isAcceptAllFileFilterUsed()) {
+            fileChooser.setAcceptAllFileFilterUsed(false);
+            fileChooser.addChoosableFileFilter(new FileNameExtensionFilter(description, extensions));
+            fileChooser.setAcceptAllFileFilterUsed(true);
+        } else {
+            fileChooser.addChoosableFileFilter(new FileNameExtensionFilter(description, extensions));
+        }
         fileChooser.setMultiSelectionEnabled(multiple);
     }
 
