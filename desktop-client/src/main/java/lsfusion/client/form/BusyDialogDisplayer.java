@@ -57,8 +57,11 @@ public class BusyDialogDisplayer extends TimerTask {
         try {
             hideSwingWorker = new HideSwingWorker(r);
             hideSwingWorker.execute();
-            blurWindow.setVisible(true);
-            busyDialog.setVisible(true);
+            //они не должны быть null, но stop может сработать раньше, чем show
+            if(blurWindow != null && busyDialog != null) {
+                blurWindow.setVisible(true);
+                busyDialog.setVisible(true);
+            }
         } finally {
             if (hideSwingWorker != null)
                 hideSwingWorker.cancel(false);
