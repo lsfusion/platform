@@ -202,7 +202,7 @@ public class EmailReceiver {
                                 messageContent instanceof String ? new MultipartBody((String) messageContent, null) : null;
                 if (messageEmail == null) {
                     messageEmail = new MultipartBody(messageContent == null ? null : String.valueOf(messageContent), null);
-                    ServerLoggers.systemLogger.error("Warning: missing attachment '" + messageContent + "' from email '" + subjectEmail + "'");
+                    ServerLoggers.mailLogger.error("Warning: missing attachment '" + messageContent + "' from email '" + subjectEmail + "'");
                 }
                 byte[] emlFileEmail = BaseUtils.mergeFileAndExtension(getEMLByteArray(message), "eml".getBytes());
                 dataEmails.add(Arrays.asList((Object) idEmail, dateTimeSentEmail, dateTimeReceivedEmail,
@@ -274,7 +274,7 @@ public class EmailReceiver {
                     }
                     fos.close();
                 } catch (IOException ioe) {
-                    ServerLoggers.systemLogger.error("Error reading attachment '" + fileName + "' from email '" + subjectEmail + "'");
+                    ServerLoggers.mailLogger.error("Error reading attachment '" + fileName + "' from email '" + subjectEmail + "'");
                     throw ioe;
                 }
                 
