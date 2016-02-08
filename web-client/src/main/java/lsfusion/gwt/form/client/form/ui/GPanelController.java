@@ -160,7 +160,7 @@ public class GPanelController {
                 for (GGroupObjectValue columnKey : columnKeys) {
                     if (showIfs == null || showIfs.get(columnKey) != null) {
                         PanelRenderer renderer = renderers.get(columnKey);
-                        if (renderer == null) {
+                        if (renderer == null && !property.hide) {
                             renderer = property.createPanelRenderer(form, columnKey);
                             renderers.put(columnKey, renderer);
                         }
