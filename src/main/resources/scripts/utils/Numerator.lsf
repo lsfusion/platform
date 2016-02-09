@@ -109,7 +109,7 @@ DESIGN options{
 }
 
 META defineNumbered(class)
-    number 'Номер' = DATA STRING[18] (class) IN numbered MINCHARWIDTH 7;
+    number 'Номер' = DATA STRING[18] (class) IN numbered INDEXED MINCHARWIDTH 7;
     series 'Серия' = DATA STRING[2] (class) IN numbered FIXEDCHARWIDTH 3;
      
     WHEN useLoweredNumber() AND CHANGED(number(class o))
