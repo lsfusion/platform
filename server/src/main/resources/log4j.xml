@@ -385,6 +385,7 @@
     <category name="ImportLogger" additivity="false">
         <priority value="INFO"/>
         <appender-ref ref="importlog"/>
+        <appender-ref ref="stdout"/>
     </category>
 
 
