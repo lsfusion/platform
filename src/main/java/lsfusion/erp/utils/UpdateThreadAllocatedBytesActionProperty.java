@@ -58,10 +58,10 @@ public class UpdateThreadAllocatedBytesActionProperty extends ScriptingActionPro
     private void updateThreadAllocatedBytesMap(ThreadMXBean tBean, long maxAllocatedBytes) {
         if (tBean instanceof com.sun.management.ThreadMXBean && ((com.sun.management.ThreadMXBean) tBean).isThreadAllocatedMemorySupported()) {
             long time = System.currentTimeMillis();
-
+            long sum = 0;
+            long totalSum = 0;
             SQLSession.updateThreadAllocatedBytesMap();
 
-            boolean found = false;
             for (Map.Entry<Long, Long> bEntry : SQLSession.threadAllocatedBytesBMap.entrySet()) {
                 Long id = bEntry.getKey();
                 if (id != null) {
@@ -69,22 +69,24 @@ public class UpdateThreadAllocatedBytesActionProperty extends ScriptingActionPro
                     Long aBytes = SQLSession.threadAllocatedBytesAMap.get(bEntry.getKey());
 
                     Long delta = bBytes != null && aBytes != null ? (bBytes - aBytes) : 0;
+                    totalSum += delta;
                     if (delta > maxAllocatedBytes) {
-                        found = true;
+                        sum += delta;
                         Thread thread = getThreadById(id.intValue());
                         LogInfo logInfo = thread == null ? null : ThreadLocalContext.logInfoMap.get(thread);
                         String computer = logInfo == null ? null : logInfo.hostnameComputer;
                         String user = logInfo == null ? null : logInfo.userName;
                         if (user == null)
-                            ServerLoggers.allocatedBytesLogger.info(String.format("Process ID %s: %s bytes", bEntry.getKey(), delta));
+                            ServerLoggers.allocatedBytesLogger.info(String.format("Process ID %s: %s", bEntry.getKey(), humanReadableByteCount(delta)));
                         else
-                            ServerLoggers.allocatedBytesLogger.info(String.format("Process ID %s, Computer %s, User %s: %s bytes", bEntry.getKey(),
-                                    computer == null ? "unknown" : computer, user, delta));
+                            ServerLoggers.allocatedBytesLogger.info(String.format("Process ID %s, Computer %s, User %s: %s", bEntry.getKey(),
+                                    computer == null ? "unknown" : computer, user, humanReadableByteCount(delta)));
                     }
                 }
             }
-            if (found)
-                ServerLoggers.allocatedBytesLogger.info(String.format("Reading allocated bytes: elapsed %sms", System.currentTimeMillis() - time));
+            if (sum > 0)
+                ServerLoggers.allocatedBytesLogger.info(String.format("Reading allocated bytes: elapsed %sms, sum: %s, totalSum: %s",
+                        System.currentTimeMillis() - time, humanReadableByteCount(sum), humanReadableByteCount(totalSum)));
         }
     }
 
@@ -95,5 +97,13 @@ public class UpdateThreadAllocatedBytesActionProperty extends ScriptingActionPro
             }
         }
         return null;
+    }
+
+    public static String humanReadableByteCount(long bytes) {
+        int unit = 1024;
+        if (bytes < unit) return bytes + " B";
+        int exp = (int) (Math.log(bytes) / Math.log(unit));
+        char pre = "KMGTPE".charAt(exp - 1);
+        return String.format("%.1f %sB", bytes / Math.pow(unit, exp), pre);
     }
 }
