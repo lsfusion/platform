@@ -108,7 +108,7 @@ META deriveDocumentHeaderTimeBeforePrefix (objectClass, prefix)
 END
 
 META defineDocumentAbstractHeaderTimePrefix (objectClass, prefix, caption)
-    prefix###date 'Дата'##caption = ABSTRACT DATE (objectClass) IN documentHeader PERSISTENT;
+    prefix###date 'Дата'##caption = ABSTRACT DATE (objectClass) IN documentHeader PERSISTENT INDEXED;
     prefix###time 'Время'##caption = ABSTRACT TIME (objectClass) IN documentHeader PERSISTENT;
     prefix###dateTime 'Дата/время'##caption (objectClass o) = dateTimeToDateTime(prefix###date(o), prefix###time(o)) PERSISTENT;
 END
