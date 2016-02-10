@@ -4,6 +4,7 @@ import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.DecoratedPopupPanel;
 import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.base.shared.GwtSharedUtils;
 
 public class TooltipManager {
@@ -24,7 +25,7 @@ public class TooltipManager {
         return instance;
     }
 
-    public void showTooltip(final int offsetX, final int offsetY, final String tooltipText) {
+    public void showTooltip(final Widget widget, final int offsetX, final int offsetY, final String tooltipText) {
         mouseX = offsetX;
         mouseY = offsetY;
         currentText = tooltipText;
@@ -33,7 +34,7 @@ public class TooltipManager {
         Scheduler.get().scheduleFixedDelay(new Scheduler.RepeatingCommand() {
             @Override
             public boolean execute() {
-                if (mouseIn && !GwtSharedUtils.isRedundantString(tooltipText) && tooltipText.equals(currentText)) {
+                if (mouseIn && widget.isAttached() && !GwtSharedUtils.isRedundantString(tooltipText) && tooltipText.equals(currentText)) {
                     if (tooltip != null) {
                         tooltip.hide();
                     }

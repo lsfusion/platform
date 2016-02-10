@@ -188,7 +188,7 @@ final class FormDockable {
             addDomHandler(new MouseOverHandler() {
                 @Override
                 public void onMouseOver(MouseOverEvent mouseOverEvent) {
-                    TooltipManager.get().showTooltip(mouseOverEvent.getClientX(), mouseOverEvent.getClientY(), form.getForm().getTooltip());
+                    TooltipManager.get().showTooltip(TabWidget.this, mouseOverEvent.getClientX(), mouseOverEvent.getClientY(), form.getForm().getTooltip());
 
                 }
             }, MouseOverEvent.getType());

@@ -9,7 +9,6 @@ import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.base.client.ui.GKeyStroke;
 import lsfusion.gwt.base.shared.GwtSharedUtils;
-import lsfusion.gwt.form.client.MainFrame;
 import lsfusion.gwt.form.client.form.dispatch.GEditPropertyDispatcher;
 import lsfusion.gwt.form.client.form.dispatch.GEditPropertyHandler;
 import lsfusion.gwt.form.client.form.ui.GFormController;
@@ -64,7 +63,7 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
         button.addMouseOverHandler(new MouseOverHandler() {
             @Override
             public void onMouseOver(MouseOverEvent event) {
-                TooltipManager.get().showTooltip(event.getClientX(), event.getClientY(),
+                TooltipManager.get().showTooltip(button, event.getClientX(), event.getClientY(),
                         property.getTooltipText(tooltip, true));
             }
         });

@@ -62,7 +62,7 @@ public class DataPanelRenderer implements PanelRenderer {
         label.addMouseOverHandler(new MouseOverHandler() {
             @Override
             public void onMouseOver(MouseOverEvent event) {
-                TooltipManager.get().showTooltip(event.getClientX(), event.getClientY(), tooltip);
+                TooltipManager.get().showTooltip(label, event.getClientX(), event.getClientY(), tooltip);
             }
         });
         label.addMouseOutHandler(new MouseOutHandler() {

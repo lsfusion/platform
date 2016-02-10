@@ -101,7 +101,7 @@ public class GGridPropertyTableHeader extends Header<String> {
                 }
             }
         } else if (MOUSEOVER.equals(eventType)) {
-            TooltipManager.get().showTooltip(event.getClientX(), event.getClientY(), toolTip);
+            TooltipManager.get().showTooltip(table, event.getClientX(), event.getClientY(), toolTip);
         } else if (MOUSEOUT.equals(eventType)) {
             TooltipManager.get().hideTooltip();
         }

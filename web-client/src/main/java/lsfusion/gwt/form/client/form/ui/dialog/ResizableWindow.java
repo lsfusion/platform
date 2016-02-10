@@ -102,7 +102,7 @@ public class ResizableWindow extends Composite implements HasCloseHandlers<Resiz
         headerPanel.addMouseOverHandler(new MouseOverHandler() {
             @Override
             public void onMouseOver(MouseOverEvent event) {
-                TooltipManager.get().showTooltip(event.getClientX(), event.getClientY(),
+                TooltipManager.get().showTooltip(headerPanel, event.getClientX(), event.getClientY(),
                         tooltip);
             }
         });
