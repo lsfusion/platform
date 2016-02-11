@@ -496,27 +496,8 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
         propertyReaders.exclAdd("blocking_statement", StringClass.get(100));
         propertyReaders.immutable();
 
-        final Result<Boolean> prevEnabled = new Result<>();
-        ImOrderMap rs = sql.executeSelect(originalQuery, OperationOwner.unknown, new StaticExecuteEnvironmentImpl(false) {
-                    @Override
-                    public void before(SQLSession sqlSession, ExConnection connection, String command, OperationOwner owner) throws SQLException {
-                        try{
-                            super.before(sqlSession, connection, command, owner);
-                        } finally {
-                            prevEnabled.set(sqlSession.isDisabledNestLoop);
-                            sqlSession.setEnableNestLoop(connection, owner, true);
-                        }
-                    }
-                    @Override
-                    public void after(SQLSession sqlSession, ExConnection connection, String command, OperationOwner owner) throws SQLException {
-                        try{
-                            sqlSession.setEnableNestLoop(connection, owner, prevEnabled.result);
-                        } finally {
-                            super.before(sqlSession, connection, command, owner);
-                        }
-                    }
-                }, (ImMap<String, ParseInterface>) MapFact.mExclMap(),
-                0, ((ImSet) keyNames).toRevMap(), (ImMap) keyReaders, ((ImSet) propertyNames).toRevMap(), (ImMap) propertyReaders);
+        ImOrderMap rs = sql.executeSelect(originalQuery, OperationOwner.unknown, StaticExecuteEnvironmentImpl.EMPTY, (ImMap<String, ParseInterface>) MapFact.mExclMap(),
+                0, ((ImSet) keyNames).toRevMap(), (ImMap) keyReaders, ((ImSet) propertyNames).toRevMap(), (ImMap) propertyReaders, true);
 
         Map<Integer, List<Object>> resultMap = new HashMap<>();
         for (Object rsValue : rs.values()) {
