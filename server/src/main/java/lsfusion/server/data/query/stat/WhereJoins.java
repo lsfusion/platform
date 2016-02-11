@@ -193,6 +193,14 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
             this.keyStat = keyStat;
             this.expr = expr;
         }
+
+        public boolean equals(Object o) {
+            return this == o || (o instanceof Edge && join.equals(((Edge<?>) o).join) && keyStat.equals(((Edge<?>) o).keyStat) && expr.equals(((Edge<?>) o).expr));
+        }
+
+        public int hashCode() {
+            return 31 * (31 * join.hashCode() + keyStat.hashCode()) + expr.hashCode();
+        }
     }
 
     private static Stat getPropStat(BaseExpr valueExpr, MAddMap<BaseJoin, Stat> joinStats, MAddMap<BaseExpr, Stat> propStats) {
