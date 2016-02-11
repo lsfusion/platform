@@ -1182,7 +1182,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
                 result += element.getComplexity(false);
             for(BaseExpr expr : innerOuter.valueIt())
                 result += expr.getComplexity(false);
-            return result - 1000 * indexDecrease;
+            return result; // - 1000 * indexDecrease;
         }
 
         protected Long secPriority;
