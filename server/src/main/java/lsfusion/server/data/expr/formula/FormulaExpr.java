@@ -163,7 +163,7 @@ public class FormulaExpr extends StaticClassExpr implements FormulaExprInterface
     }
     
     public static InnerBaseJoin<?> getBaseJoin(FormulaExprInterface expr) {
-        return new FormulaJoin<Integer>(expr.getFParams().toIndexedMap());
+        return new FormulaJoin<Integer>(expr.getFParams().toIndexedMap(), false);
     }
 
     public static boolean isComplex(FormulaExprInterface expr) {
