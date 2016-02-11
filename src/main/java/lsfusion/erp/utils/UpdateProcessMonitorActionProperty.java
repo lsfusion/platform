@@ -1,6 +1,7 @@
 package lsfusion.erp.utils;
 
 import com.google.common.base.Throwables;
+import lsfusion.base.Result;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.implementations.HMap;
@@ -14,13 +15,12 @@ import lsfusion.server.classes.IntegerClass;
 import lsfusion.server.classes.LongClass;
 import lsfusion.server.classes.StringClass;
 import lsfusion.server.context.ThreadLocalContext;
-import lsfusion.server.data.OperationOwner;
-import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.data.SQLSession;
-import lsfusion.server.data.StatusMessage;
+import lsfusion.server.data.*;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.formula.SQLSyntaxType;
+import lsfusion.server.data.query.EnsureTypeEnvironment;
 import lsfusion.server.data.query.Join;
+import lsfusion.server.data.query.StaticExecuteEnvironment;
 import lsfusion.server.data.query.StaticExecuteEnvironmentImpl;
 import lsfusion.server.data.type.ParseInterface;
 import lsfusion.server.data.type.Reader;
@@ -445,6 +445,8 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
     }
 
     private Map<Integer, List<Object>> getPostgresLockMap(ExecutionContext context) throws SQLException, SQLHandledException, ScriptingErrorLog.SemanticErrorException {
+        SQLSession sql = context.getSession().sql;
+
         String originalQuery = "SELECT blocked_locks.pid     AS blocked_pid,\n" +
                 "         blocked_activity.usename  AS blocked_user,\n" +
                 "         blocking_locks.pid     AS blocking_pid,\n" +
@@ -494,7 +496,26 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
         propertyReaders.exclAdd("blocking_statement", StringClass.get(100));
         propertyReaders.immutable();
 
-        ImOrderMap rs = context.getSession().sql.executeSelect(originalQuery, OperationOwner.unknown, StaticExecuteEnvironmentImpl.EMPTY, (ImMap<String, ParseInterface>) MapFact.mExclMap(),
+        final Result<Boolean> prevEnabled = new Result<>();
+        ImOrderMap rs = sql.executeSelect(originalQuery, OperationOwner.unknown, new StaticExecuteEnvironmentImpl(false) {
+                    @Override
+                    public void before(SQLSession sqlSession, ExConnection connection, String command, OperationOwner owner) throws SQLException {
+                        try{
+                            super.before(sqlSession, connection, command, owner);
+                        } finally {
+                            prevEnabled.set(sqlSession.isDisabledNestLoop);
+                            sqlSession.setEnableNestLoop(connection, owner, true);
+                        }
+                    }
+                    @Override
+                    public void after(SQLSession sqlSession, ExConnection connection, String command, OperationOwner owner) throws SQLException {
+                        try{
+                            sqlSession.setEnableNestLoop(connection, owner, prevEnabled.result);
+                        } finally {
+                            super.before(sqlSession, connection, command, owner);
+                        }
+                    }
+                }, (ImMap<String, ParseInterface>) MapFact.mExclMap(),
                 0, ((ImSet) keyNames).toRevMap(), (ImMap) keyReaders, ((ImSet) propertyNames).toRevMap(), (ImMap) propertyReaders);
 
         Map<Integer, List<Object>> resultMap = new HashMap<>();
