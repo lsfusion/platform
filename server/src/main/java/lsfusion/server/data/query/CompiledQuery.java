@@ -71,7 +71,8 @@ public class CompiledQuery<K,V> extends ImmutableObject {
     // тут немного специфичная оптимизация на уменьшения locks, с учетом того что почти у всех пользователей всегда будут одни и те же env'ы
     public DynamicExecuteEnvironment getQueryExecEnv(SQLSessionUserProvider userProvider) {
         TypeExecuteEnvironment typeEnv = getTypeExecEnv(userProvider);
-        if(queryExecEnv.getType().equals(typeEnv))
+        TypeExecuteEnvironment queryType = queryExecEnv.getType();
+        if(queryType == null || queryType.equals(typeEnv))
             return queryExecEnv;
         return extraEnvs.getEnv(typeEnv, sql);
     }

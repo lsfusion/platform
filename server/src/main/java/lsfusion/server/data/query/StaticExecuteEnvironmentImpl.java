@@ -48,7 +48,7 @@ public class StaticExecuteEnvironmentImpl extends TwinImmutableObject implements
     public final static StaticExecuteEnvironment EMPTY = new StaticExecuteEnvironmentImpl(true);
     public final static StaticExecuteEnvironment NOREADONLY = new StaticExecuteEnvironmentImpl(true, true);
 
-    public StaticExecuteEnvironmentImpl(boolean finalized) {
+    private StaticExecuteEnvironmentImpl(boolean finalized) {
         this(finalized, false);
     }
 
