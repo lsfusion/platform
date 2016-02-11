@@ -123,7 +123,7 @@ META defineNumbered(class)
 
     seriesNumber 'Серия/Номер' (class o) = 
         CONCAT '', series(o), number(o) 
-        MINCHARWIDTH 7 PREFCHARWIDTH 15 MAXCHARWIDTH 20 PERSISTENT;
+        MINCHARWIDTH 7 PREFCHARWIDTH 15 MAXCHARWIDTH 20 INDEXED PERSISTENT;
         
 END
 
