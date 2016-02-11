@@ -1076,14 +1076,14 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
     private static abstract class BestResult {
 
         protected Stat runStat;
-        protected abstract long getComplexity();
+        protected abstract long getSecPriority();
 
         // обе должны быть убывающими при вырезании join'ов, без изменения PRIM
         protected boolean primBetter(BestResult iteration) { // если лучше, то при remove'е join'ов не убирая ключи или группы результат не улучшишь
             return runStat.less(iteration.runStat);
         }
         protected boolean secBetter(BestResult iteration) {
-            return getComplexity() < iteration.getComplexity();
+            return getSecPriority() < iteration.getSecPriority();
         }
     }
 
@@ -1093,7 +1093,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
             runStat = baseStat;
         }
 
-        protected long getComplexity() { // мнтересует только если статистика строго меньше
+        protected long getSecPriority() { // мнтересует только если статистика строго меньше
             return Long.MIN_VALUE;
         }
     }
@@ -1140,6 +1140,20 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         private Stat calcRunStat(ImRevMap<K, BaseExpr> innerOuter, Stat outerRows, StatKeys<BaseExpr> outerKeys, Stat innerRows, StatKeys<K> innerKeys) {
             return innerRows.mult(calcMultStat(innerOuter.valuesSet(), outerRows, outerKeys)).div(calcMultStat(innerOuter.keys(), innerRows, innerKeys)).max(outerRows);
         }
+        private int calcIndexDecrease(ImRevMap<K, BaseExpr> innerOuter, Stat outerRows, StatKeys<BaseExpr> outerKeys, Stat innerRows, StatKeys<K> innerKeys) {
+            Stat sum = Stat.ONE;
+            for(int i=0,size=innerOuter.size();i<size;i++){
+                K inner = innerOuter.getKey(i);
+                BaseExpr outer = innerOuter.getValue(i);
+
+                Stat innerStat = innerKeys.distinct.get(inner);
+                Stat outerStat = outerKeys.distinct.get(outer);
+                if(outerStat.less(innerStat) && inner instanceof BaseExpr && ((BaseExpr) inner).isIndexed()) {
+                    sum = sum.mult(innerStat.div(outerStat));
+                }
+            }
+            return sum.getWeight();
+        }
 
         private void calcRunStat(Stat innerRows, StatKeys<K> innerKeys, KeyStat keyStat) {
             ImRevMap<K, BaseExpr> innerOuter = getInnerOuter();
@@ -1149,23 +1163,26 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
             StatKeys<BaseExpr> statKeys = joins.getStatKeys(innerOuter.valuesSet(), rows, keyStat);
 
             runStat = calcRunStat(innerOuter, rows.result, statKeys, innerRows, innerKeys);
+            indexDecrease = calcIndexDecrease(innerOuter, rows.result, statKeys, innerRows, innerKeys);
         }
 
-        private long calcComplexity() {
+        private int indexDecrease;
+
+        private long calcSecPriority() {
             long result = 0;
             for(WhereJoin element : joins)
                 result += element.getComplexity(false);
             for(BaseExpr expr : innerOuter.valueIt())
                 result += expr.getComplexity(false);
-            return result;
+            return result - 1000 * indexDecrease;
         }
 
-        protected Long complexity;
+        protected Long secPriority;
         @ManualLazy
-        protected long getComplexity() {
-            if(complexity == null)
-                complexity = calcComplexity();
-            return complexity;
+        protected long getSecPriority() {
+            if(secPriority == null)
+                secPriority = calcSecPriority();
+            return secPriority;
         }
 
         private enum Reduce {
