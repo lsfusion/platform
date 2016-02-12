@@ -63,8 +63,13 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
         button.addMouseOverHandler(new MouseOverHandler() {
             @Override
             public void onMouseOver(MouseOverEvent event) {
-                TooltipManager.get().showTooltip(button, event.getClientX(), event.getClientY(),
-                        property.getTooltipText(tooltip, true));
+                TooltipManager.TooltipCallback checkShow = new TooltipManager.TooltipCallback() {
+                    @Override
+                    public boolean stillShowTooltip() {
+                        return button.isAttached() && button.isVisible();
+                    }
+                };
+                TooltipManager.get().showTooltip(event.getClientX(), event.getClientY(), property.getTooltipText(tooltip, true), checkShow);
             }
         });
         button.addMouseOutHandler(new MouseOutHandler() {

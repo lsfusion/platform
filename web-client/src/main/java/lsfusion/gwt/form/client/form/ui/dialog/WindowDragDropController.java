@@ -16,6 +16,8 @@ public final class WindowDragDropController {
     private PickupDragController pickupDragController;
 
     private ResizeDragController resizeDragController;
+    
+    private boolean isDragging = false;
 
     public WindowDragDropController(AbsolutePanel boundaryPanel) {
         this.boundaryPanel = boundaryPanel;
@@ -24,6 +26,18 @@ public final class WindowDragDropController {
             @Override
             protected BoundaryDropController newBoundaryDropController(AbsolutePanel boundaryPanel, boolean allowDroppingOnBoundaryPanel) {
                 return new WindowDropController(boundaryPanel, allowDroppingOnBoundaryPanel);
+            }
+
+            @Override
+            public void dragStart() {
+                isDragging = true;
+                super.dragStart();
+            }
+
+            @Override
+            public void dragEnd() {
+                super.dragEnd();
+                isDragging = false;
             }
         };
         pickupDragController.setBehaviorConstrainedToBoundaryPanel(true);
@@ -36,6 +50,10 @@ public final class WindowDragDropController {
 
     public AbsolutePanel getBoundaryPanel() {
         return boundaryPanel;
+    }
+    
+    public boolean isDragging() {
+        return isDragging;
     }
 
     public PickupDragController getPickupDragController() {

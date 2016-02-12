@@ -4,8 +4,8 @@ import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.DecoratedPopupPanel;
 import com.google.gwt.user.client.ui.HTML;
-import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.base.shared.GwtSharedUtils;
+
+import static lsfusion.gwt.base.shared.GwtSharedUtils.isRedundantString;
 
 public class TooltipManager {
     private static final TooltipManager instance = new TooltipManager();
@@ -25,7 +25,7 @@ public class TooltipManager {
         return instance;
     }
 
-    public void showTooltip(final Widget widget, final int offsetX, final int offsetY, final String tooltipText) {
+    public void showTooltip(final int offsetX, final int offsetY, final String tooltipText, final TooltipCallback checkShow) {
         mouseX = offsetX;
         mouseY = offsetY;
         currentText = tooltipText;
@@ -34,7 +34,7 @@ public class TooltipManager {
         Scheduler.get().scheduleFixedDelay(new Scheduler.RepeatingCommand() {
             @Override
             public boolean execute() {
-                if (mouseIn && widget.isAttached() && !GwtSharedUtils.isRedundantString(tooltipText) && tooltipText.equals(currentText)) {
+                if (mouseIn && (checkShow == null || checkShow.stillShowTooltip()) && !isRedundantString(tooltipText) && tooltipText.equals(currentText)) {
                     if (tooltip != null) {
                         tooltip.hide();
                     }
@@ -87,5 +87,10 @@ public class TooltipManager {
             super(true);
             setWidget(new HTML(contents, false));
         }
+    }
+    
+    // to check if nothing changed after tooltip delay
+    public static abstract class TooltipCallback {
+        public abstract boolean stillShowTooltip();
     }
 }

@@ -15,7 +15,7 @@ import lsfusion.gwt.form.client.form.ui.TooltipManager;
 import static lsfusion.gwt.form.client.form.ui.dialog.ResizableWindow.Direction.*;
 
 /**
- * based on http://code.google.com/p/gwt-dnd/source/browse/DragDrop/demo/com/allen_sauer/gwt/dnd/demo/client/example/window/WindowPanel.java
+ * based on https://github.com/fredsa/gwt-dnd/blob/master/DragDrop/demo/com/allen_sauer/gwt/dnd/demo/client/example/window/WindowPanel.java
  */
 public class ResizableWindow extends Composite implements HasCloseHandlers<ResizableWindow> {
 
@@ -102,8 +102,13 @@ public class ResizableWindow extends Composite implements HasCloseHandlers<Resiz
         headerPanel.addMouseOverHandler(new MouseOverHandler() {
             @Override
             public void onMouseOver(MouseOverEvent event) {
-                TooltipManager.get().showTooltip(headerPanel, event.getClientX(), event.getClientY(),
-                        tooltip);
+                TooltipManager.TooltipCallback checkShow = new TooltipManager.TooltipCallback() {
+                    @Override
+                    public boolean stillShowTooltip() {
+                        return headerPanel.isAttached() && headerPanel.isVisible() && !windowController.isDragging();
+                    }
+                };
+                TooltipManager.get().showTooltip(event.getClientX(), event.getClientY(), tooltip, checkShow);
             }
         });
         headerPanel.addMouseOutHandler(new MouseOutHandler() {
