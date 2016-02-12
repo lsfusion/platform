@@ -11,6 +11,7 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
 import lsfusion.base.col.interfaces.mutable.add.MAddMap;
+import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.col.lru.LRUUtil;
@@ -1120,6 +1121,8 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
             this.innerOuter = innerOuter;
             this.keepKeys = keepKeys;
             this.priority = priority;
+
+            assert checkPriority(priority, getComparator(keepKeys));
         }
 
         private WhereJoins getJoins() {
@@ -1182,7 +1185,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
                 result += element.getComplexity(false);
             for(BaseExpr expr : innerOuter.valueIt())
                 result += expr.getComplexity(false);
-            return result; // - 1000 * indexDecrease;
+            return result - 1000 * indexDecrease;
         }
 
         protected Long secPriority;
@@ -1244,20 +1247,34 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
 
             ImSet<ParamExpr> newKeepKeys = this.keepKeys.addExcl(addKeepKeys);
 
+            MAddSet<PushElement> validateElements = SetFact.mAddSet();
             Comparator<PushElement> comparator = getComparator(newKeepKeys);
             for(int i=1,size=priority.size();i<size;i++) { // обновляем priority с учетом изменения comparator\а
                 final PushElement rest = priority.get(i);
                 final ImSet<ParamExpr> restKeys = rest.getKeys();
                 if(restKeys.intersect(addKeepKeys)) { // если пересекаются ключи, выкидываем, добавляем еще раз
                     newPriority.remove(rest);
-                    BaseUtils.addToOrderedList(newPriority, rest, 0, comparator);
+//                    BaseUtils.addToOrderedList(newPriority, rest, 0, comparator);
+                    validateElements.add(rest);
                 }
 
                 if(rest instanceof PushJoin && this.keepKeys.containsAll(restKeys)) // оптимизация по comparator'у в priority, если все из keep выходим
                     break;
             }
 
+            for(PushElement validateElement : validateElements)
+                BaseUtils.addToOrderedList(newPriority, validateElement, 0, comparator);
+
             return new PushIteration<K>(elements, joins, innerOuter, newKeepKeys, newPriority);
+        }
+
+        private boolean checkPriority(List<PushElement> priority, Comparator<PushElement> comparator) {
+            List<PushElement> checkPriority = new ArrayList<>();
+            for(PushElement element : priority)
+                BaseUtils.addToOrderedList(checkPriority, element, 0, comparator);
+            boolean result = checkPriority.equals(priority);
+            assert result;
+            return result;
         }
 
         public PushIteration<K> removeElement(Result<Boolean> reducedPrim) { // group не просто вырезаем а заменяем на join с upWhere

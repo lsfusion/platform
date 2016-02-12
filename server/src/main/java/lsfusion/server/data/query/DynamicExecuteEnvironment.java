@@ -41,12 +41,12 @@ public abstract class DynamicExecuteEnvironment<OE, S extends DynamicExecEnvSnap
 
         @Override
         public void beforeStatement(SQLSession sqlSession, ExConnection connection, String command, OperationOwner owner) throws SQLException {
-            sqlSession.setEnableNestLoop(connection, owner, true);
+            sqlSession.setEnableNestLoop(connection, owner, false);
         }
 
         @Override
         public void afterStatement(SQLSession sqlSession, ExConnection connection, String command, OperationOwner owner) throws SQLException {
-            sqlSession.setEnableNestLoop(connection, owner, false);
+            sqlSession.setEnableNestLoop(connection, owner, true);
         }
 
         @Override
@@ -70,7 +70,7 @@ public abstract class DynamicExecuteEnvironment<OE, S extends DynamicExecEnvSnap
 
         @Override
         public DisableNestLoopSnapshot forAnalyze() {
-            return null;
+            return this;
         }
 
         @Override
