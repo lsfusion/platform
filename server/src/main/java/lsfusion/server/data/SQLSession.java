@@ -1519,7 +1519,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         return attemptCountMap;
     }
 
-    private String getAttemptCountMap() {
+    public String getAttemptCountMap() {
         String result = "";
         if (attemptCountMap != null)
             for (Map.Entry<String, Integer> entry : attemptCountMap.entrySet()) {
