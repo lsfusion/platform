@@ -55,10 +55,12 @@ public class LRUUtil {
     private static boolean runningCleanLRU = false;
 
     private static final String cmsFraction = "-XX:CMSInitiatingOccupancyFraction=";
+    private static final String useGCFraction = "-XX:+UseG1GC";
     public static void initLRUTuner(final LRULogger logger) {
         final MemoryPoolMXBean tenuredGenPool = getTenuredPool();
         double averageRate = 0.7;
         double safeMem = 0.1;
+        boolean useG1GC = false;
         for(String arg : ManagementFactory.getRuntimeMXBean().getInputArguments()) {
             if (arg.startsWith(cmsFraction)) {
                 double cmsFractionValue = 0.0;
@@ -69,6 +71,9 @@ public class LRUUtil {
                 }
                 if(cmsFractionValue >= safeMem)
                     averageRate = cmsFractionValue;
+            }
+            if (arg.startsWith(useGCFraction)) {
+                useG1GC = true;
             }
         }
 
@@ -81,7 +86,7 @@ public class LRUUtil {
         final double upAverageMem = averageMem * (1.0 + safeMem);
         final double downAverageMem = averageMem * (1.0 - safeMem);
 
-        final boolean concurrent = !tenuredGenPool.isCollectionUsageThresholdSupported();
+        final boolean concurrent = !tenuredGenPool.isCollectionUsageThresholdSupported() || useG1GC;
         final long longCriticalMem = (long) Math.floor(criticalMem);
 
         scheduler = Executors.newSingleThreadScheduledExecutor(new DaemonThreadFactory("lru-tuner"));
