@@ -59,6 +59,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     private PreparedStatement executingStatement;
     private static final Logger logger = ServerLoggers.sqlLogger;
     private static final Logger handLogger = ServerLoggers.sqlHandLogger;
+    private static final Logger sqlConflictLogger = ServerLoggers.sqlConflictLogger;
     private Integer idActiveThread;
 
     private static ConcurrentWeakHashMap<SQLSession, Integer> sqlSessionMap = new ConcurrentWeakHashMap<>();
@@ -1313,6 +1314,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
 
         if(handled != null) {
             handLogger.info((inTransaction ? "TRANSACTION " : "") + " " + handled.toString() + message);
+            sqlConflictLogger.info((inTransaction ? "TRANSACTION " : "") + " " + handled.toString() + message);
             return handled;
         }
         
