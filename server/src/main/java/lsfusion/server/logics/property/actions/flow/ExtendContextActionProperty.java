@@ -49,8 +49,9 @@ public abstract class ExtendContextActionProperty<I extends PropertyInterface> e
         ImRevMap<I, KeyExpr> innerKeys = KeyExpr.getMapKeys(innerInterfaces.remove(innerValues.keys()));
         ImMap<I, Expr> innerExprs = MapFact.addExcl(innerKeys, DataObject.getMapExprs(innerValues));
 
-        executeExtend(context, innerKeys, innerValues, innerExprs);
-
+        FlowResult result = executeExtend(context, innerKeys, innerValues, innerExprs);
+        if(result == FlowResult.THROWS)
+            throw new RuntimeException("Thread has been interrupted by user");
         return FlowResult.FINISH;
     }
 

@@ -89,6 +89,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
                     return ((PGConnection) connection.sql).getBackendPID();
             }
         }
+        logger.error(String.format("Failed to interrupt process %s: no private connection found", processId));
         return null;
     }
 

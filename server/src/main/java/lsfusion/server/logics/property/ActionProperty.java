@@ -393,6 +393,8 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
     }
 
     public FlowResult executeImpl(ExecutionContext<P> context) throws SQLException, SQLHandledException {
+        if(Thread.currentThread().isInterrupted())
+            return FlowResult.THROWS;
 
         if(debugInfo != null && debugInfo.delegationType == ActionDelegationType.IN_DELEGATE) {
             context = context.override();
