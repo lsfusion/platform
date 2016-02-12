@@ -446,7 +446,7 @@ EXTEND FORM customUser
 
 // In dex
 META defineDocumentDetailIndex (object, detailClass)
-    dataIndex 'Номер строки (польз.)' = DATA INTEGER (detailClass); 
+    dataIndex 'Номер строки (польз.)' = DATA INTEGER (detailClass) INDEXED; 
     defaultIndex 'Номер строки (авт.)' (detailClass d) =
         PARTITION SUM 1 BY object(d)
         ORDER d MINCHARWIDTH 4 PREFCHARWIDTH 4;

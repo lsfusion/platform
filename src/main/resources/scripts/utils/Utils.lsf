@@ -79,7 +79,7 @@ delta = FORMULA 'abs(($1)-($2))';
 ln = FORMULA 'ln($1)';
 exp = FORMULA 'exp($1)';
 
-divideInteger = FORMULA INTEGER PG 'CAST(CAST(trunc($1) AS integer)/CAST(trunc($2) as integer) as integer)', MS 'CAST(CAST($1 AS integer)/CAST($2 as integer) as integer)';
+divideInteger(a,b) = INTEGER(a) / INTEGER(b);
 divideIntegerNeg = FORMULA INTEGER 'CASE WHEN CAST(($1) AS integer)<0 THEN -CAST(((-CAST(($1) as integer)-1)/CAST(($2) as integer)) as integer) ELSE CAST(CAST(($1) as integer)/CAST(($2) as integer) as integer) END';
 divideIntegerRnd = FORMULA INTEGER 'CAST(round(($1)/($2),0) as integer)';
 
