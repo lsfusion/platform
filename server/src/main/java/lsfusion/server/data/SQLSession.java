@@ -1298,8 +1298,10 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
 
         SQLHandledException handled = null;
         boolean deadLock = false;
-        if(syntax.isUpdateConflict(e) || (deadLock = syntax.isDeadLock(e)))
+        if(syntax.isUpdateConflict(e) || (deadLock = syntax.isDeadLock(e))) {
             handled = new SQLConflictException(!deadLock);
+            sqlConflictLogger.info((inTransaction ? "TRANSACTION " : "") + " " + handled.toString() + message);
+        }
 
         if(syntax.isUniqueViolation(e))
             handled = new SQLUniqueViolationException(false);
@@ -1314,7 +1316,6 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
 
         if(handled != null) {
             handLogger.info((inTransaction ? "TRANSACTION " : "") + " " + handled.toString() + message);
-            sqlConflictLogger.info((inTransaction ? "TRANSACTION " : "") + " " + handled.toString() + message);
             return handled;
         }
         
