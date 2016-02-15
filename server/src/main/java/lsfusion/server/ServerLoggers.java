@@ -96,7 +96,7 @@ public class ServerLoggers {
         }
         if(lsfStack)
             result += ExecutionStackAspect.getStackString() + '\n';
-        handledLog(result);
+        adjustLog(result);
     }
 
     public static void exinfoLog(String message) {
