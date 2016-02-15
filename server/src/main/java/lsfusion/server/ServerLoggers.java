@@ -5,7 +5,6 @@ import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.interop.DaemonThreadFactory;
 import lsfusion.logging.FlushableRollingFileAppender;
 import lsfusion.server.context.ThreadLocalContext;
-import lsfusion.server.form.navigator.SQLSessionUserProvider;
 import lsfusion.server.stack.ExecutionStackAspect;
 import org.apache.log4j.Logger;
 
@@ -14,7 +13,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class ServerLoggers {
     public static final Logger systemLogger = Logger.getLogger("SystemLogger");
@@ -83,13 +81,15 @@ public class ServerLoggers {
         sqlHandLogger.info(message + '\n' + ExceptionUtils.getStackTrace());
     }
 
-    public static void handledLog(ImList<String> messages) {
+    public static void handledLog(ImList<String> messages, boolean lsfStack) {
         String result = "";
         String tab = "";
         for(String message : messages) {
             result += '\n' + tab + message;
             tab += '\t';
         }
+        if(lsfStack)
+            result += ExecutionStackAspect.getStackString() + '\n';
         handledLog(result);
     }
 
