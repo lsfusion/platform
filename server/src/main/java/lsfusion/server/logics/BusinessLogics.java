@@ -98,9 +98,12 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     protected final static Logger debuglogger = Logger.getLogger(BusinessLogics.class);
     protected final static Logger lruLogger = ServerLoggers.lruLogger;
 
-    public static final List<String> defaultExcludedScriptPaths = Arrays.asList("lsfusion/system");
-    public static final List<String> defaultIncludedScriptPaths = Arrays.asList("");
+    public static final List<String> defaultExcludedScriptPaths = Collections.singletonList("lsfusion/system");
+    public static final List<String> defaultIncludedScriptPaths = Collections.singletonList("");
 
+    public static final String[] systemModulesNames = {"System", "Authentication", "Email", "EvalScript", "Reflection", "Contact", 
+                                                       "Scheduler", "Security", "Service", "SystemEvents", "Time"};
+    
     private List<LogicsModule> logicModules = new ArrayList<>();
     private Map<String, List<LogicsModule>> namespaceToModules = new HashMap<>();
 
@@ -503,17 +506,26 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         }
     }
 
+    private LogicsModule getModuleWithCheck(String moduleName) {
+        LogicsModule module = nameToModule.get(moduleName);
+        if (module == null) {
+            throw new RuntimeException(String.format("Module %s not found.", moduleName));
+        }
+        return module;
+    }
+    
     private void overrideModulesList(String startModuleName) {
-
         Set<LogicsModule> was = new HashSet<>();
         Queue<LogicsModule> queue = new LinkedList<>();
 
         fillNameToModules();
-
-        LogicsModule startModule = nameToModule.get(startModuleName);
-        if (startModule == null) {
-            throw new RuntimeException(String.format("Module %s not found.", startModuleName));
+        
+        // Всегда добавляем сначала системные модули 
+        for (String systemModuleName : systemModulesNames) {
+            was.add(getModuleWithCheck(systemModuleName));    
         }
+        
+        LogicsModule startModule = getModuleWithCheck(startModuleName);
         queue.add(startModule);
         was.add(startModule);
 
@@ -521,10 +533,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             LogicsModule current = queue.poll();
 
             for (String nextModuleName : current.getRequiredModules()) {
-                LogicsModule nextModule = nameToModule.get(nextModuleName);
-                if (nextModule == null) {
-                    throw new RuntimeException(String.format("Module %s not found.", nextModuleName));
-                }
+                LogicsModule nextModule = getModuleWithCheck(nextModuleName);
                 if (!was.contains(nextModule)) {
                     was.add(nextModule);
                     queue.add(nextModule);
