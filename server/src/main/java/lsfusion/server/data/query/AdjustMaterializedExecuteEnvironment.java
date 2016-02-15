@@ -193,7 +193,7 @@ public class AdjustMaterializedExecuteEnvironment extends DynamicExecuteEnvironm
         mList.add(message + (changeTo.isEmpty() ? "" : " FROM") + " : " + baseStep);
         for(Step change : changeTo)
             mList.add(" TO : " + change);
-        ServerLoggers.handledLog(mList.immutableList(), true);
+        ServerLoggers.adjustLog(mList.immutableList(), true);
     }
 
     private static Step getNextStep(Step current, SQLCommand command, Snapshot snapshot) {

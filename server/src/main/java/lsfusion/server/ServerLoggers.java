@@ -29,6 +29,8 @@ public class ServerLoggers {
 
     public static final Logger sqlHandLogger = Logger.getLogger("SQLHandLogger");
 
+    public static final Logger sqlAdjustLogger = Logger.getLogger("SQLAdjustLogger");
+
     public static final Logger sqlConflictLogger = Logger.getLogger("SQLConflictLogger");
 
     public static final Logger lruLogger = Logger.getLogger("LRULogger");
@@ -81,7 +83,11 @@ public class ServerLoggers {
         sqlHandLogger.info(message + '\n' + ExceptionUtils.getStackTrace());
     }
 
-    public static void handledLog(ImList<String> messages, boolean lsfStack) {
+    public static void adjustLog(String message) {
+        sqlAdjustLogger.info(message + '\n' + ExceptionUtils.getStackTrace());
+    }
+
+    public static void adjustLog(ImList<String> messages, boolean lsfStack) {
         String result = "";
         String tab = "";
         for(String message : messages) {
