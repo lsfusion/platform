@@ -32,7 +32,6 @@ import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.daemons.DiscountCardDaemonTask;
 import lsfusion.server.daemons.ScannerDaemonTask;
 import lsfusion.server.data.*;
-import lsfusion.server.data.Field;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.ValueExpr;
@@ -82,7 +81,8 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.*;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.*;
@@ -939,9 +939,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             //добавляем в контекстное меню пункт для показа формы
             property.setContextMenuAction(property.getSID(), formActionProperty.caption);
             property.setEditAction(property.getSID(), formActionProperty.getImplement(property.getOrderInterfaces()));
-            if (property instanceof ActionProperty) {
-                ((ActionProperty) property).checkReadOnly = false;
-            }
+            formActionProperty.checkReadOnly = false;
         }
     }
 
