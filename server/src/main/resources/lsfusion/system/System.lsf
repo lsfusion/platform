@@ -199,7 +199,7 @@ END;
 
 // Options
 META defineOption(property, caption, container)
-    property caption = DATA BOOLEAN ();
+    property caption = DATA BOOLEAN () COMPLEX;
     
     EXTEND FORM options PROPERTIES() property;
     DESIGN options { container { MOVE PROPERTY(property()); } }
