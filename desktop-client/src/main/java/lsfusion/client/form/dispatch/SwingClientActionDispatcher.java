@@ -317,16 +317,37 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
         beforeModalActionInSameEDT(false);
         try {
             if (!action.extended) {
-                JTextArea ta = new JTextArea(action.message);
-                ta.setEditable(false);
-                ta.setFont(null);
-                ta.setBackground(null);
-                JOptionPane.showMessageDialog(getDialogParentContainer(), ta, action.caption, JOptionPane.INFORMATION_MESSAGE);
+                JTextPane textPane = new JTextPane();
+                textPane.setText(action.message);
+                textPane.setEditable(false);
+                int width = (int) (Main.frame.getRootPane().getWidth() * 0.3);
+                textPane.setSize(new Dimension(width, 10));
+                if(getWidth(action.message) >= width) //set preferred size only for text with long lines
+                    textPane.setPreferredSize((new Dimension(width, textPane.getPreferredSize().height)));
+                textPane.setBackground(null);
+                JOptionPane.showMessageDialog(getDialogParentContainer(), textPane, action.caption, JOptionPane.INFORMATION_MESSAGE);
             } else {
                 new ExtendedMessageDialog(getDialogParentContainer(), action.caption, action.message).setVisible(true);
             }
         } finally {
             afterModalActionInSameEDT(false);
+        }
+    }
+
+    private int getWidth(String message) {
+        try {
+            FontMetrics metrics = getDialogParentContainer().getGraphics().getFontMetrics();
+            int maxWidth = 0;
+            if (metrics != null) {
+                for (String line : message.split("\n")) {
+                    int width = metrics.stringWidth(line);
+                    if (width > maxWidth)
+                        maxWidth = width;
+                }
+            }
+            return maxWidth;
+        } catch (Exception e) {
+            return 0;
         }
     }
 

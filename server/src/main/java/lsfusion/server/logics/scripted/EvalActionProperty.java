@@ -73,7 +73,7 @@ public class EvalActionProperty<P extends PropertyInterface> extends SystemExpli
                 runAction.execute(context);
             }
         } catch (EvalUtils.EvaluationException | RecognitionException e) {
-            context.delayUserInteraction(new MessageClientAction(e.getMessage(), "parse error"));
+            context.delayUserInteraction(new MessageClientAction(e.getMessage(), "Parse error"));
         }
     }
 }

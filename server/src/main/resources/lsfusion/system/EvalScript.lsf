@@ -20,9 +20,14 @@ text 'Текст' = DATA TEXT (Script);
 countTextScript() = GROUP MAX Script script IF text(script) == scriptStorage(); 
 dateTime 'Дата запуска' = DATA DATETIME (Script);
 
-updateStorage(Script script) = ACTION NEWSESSION {
+updateStorageNewSession(Script script) = ACTION NEWSESSION {
     scriptStorage() <- text(script);
     apply();
+}
+
+updateStorage(Script script) = ACTION {
+    updateStorageNewSession(script);
+    cancel();
 }
 
 FORM chooseScriptName 'Сохранить как'
