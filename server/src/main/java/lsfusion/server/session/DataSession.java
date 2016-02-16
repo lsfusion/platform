@@ -75,6 +75,17 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     private Map<CustomClass, DataObject> singleRemove = MapFact.mAddRemoveMap();
     private Map<DataObject, ConcreteObjectClass> newClasses = MapFact.mAddRemoveMap(); // просто lazy кэш для getCurrentClass
 
+    private boolean keepLastAttemptCountMap;
+    private String lastAttemptCountMap = null;
+
+    public void setKeepLastAttemptCountMap(boolean keepLastAttemptCountMap) {
+        this.keepLastAttemptCountMap = keepLastAttemptCountMap;
+    }
+
+    public String getLastAttemptCountMap() {
+        return lastAttemptCountMap;
+    }
+
     public static Where isValueClass(Expr expr, CustomClass customClass, Set<ConcreteObjectClass> usedNewClasses) {
         return isValueClass(expr, customClass.getUpSet(), usedNewClasses);
     }
@@ -291,6 +302,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
     private void commitTransaction() throws SQLException {
         endTransaction();
+        lastAttemptCountMap = keepLastAttemptCountMap ? sql.getAttemptCountMap() : null;
         sql.commitTransaction(getOwner());
     }
 
