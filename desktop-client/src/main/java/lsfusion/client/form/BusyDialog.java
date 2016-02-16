@@ -31,7 +31,6 @@ class BusyDialog extends JDialog {
     private JPanel subStackPanel;
     private JScrollPane scrollPane;
     private Object[] prevLines;
-    private static boolean devMode = Main.configurationAccessAllowed;
     private GridBagConstraints fieldConstraints = null;
 
     private boolean longAction;
@@ -67,7 +66,7 @@ class BusyDialog extends JDialog {
         scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         contentPane.add(scrollPane);
 
-        if(devMode) {
+        if(Main.configurationAccessAllowed) {
             btnCopy = new JButton(getString("form.loading.copy"));
             buttonPanel.add(btnCopy);
         }
@@ -100,7 +99,7 @@ class BusyDialog extends JDialog {
 
         int screenWidth = Main.frame.getRootPane().getWidth();
         int screenHeight = Main.frame.getRootPane().getHeight();
-        if (devMode) {
+        if (Main.configurationAccessAllowed) {
             setMinimumSize(new Dimension((int) (screenWidth * 0.50), (int) (screenHeight * 0.50)));
         } else {
             setMinimumSize(new Dimension((int) (screenWidth * 0.30), (int) getMinimumSize().getHeight()));
@@ -122,7 +121,7 @@ class BusyDialog extends JDialog {
     }
 
     private void initUIHandlers(final BusyDialog dialog) {
-        if(devMode) {
+        if(Main.configurationAccessAllowed) {
             btnCopy.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
@@ -173,7 +172,7 @@ class BusyDialog extends JDialog {
             }
         });
 
-        longActionTimer = new Timer(devMode ? 5000 : 60000, new ActionListener() {
+        longActionTimer = new Timer(Main.configurationAccessAllowed ? 5000 : 60000, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 btnExit.setEnabled(true);
@@ -208,7 +207,7 @@ class BusyDialog extends JDialog {
     public void updateBusyDialog(List<Object> input) {
         Object[] lines = input.toArray();
 
-        if(devMode)
+        if(Main.configurationAccessAllowed)
             setStackMessageDevMode(lines);
         else
             setStackMessage(lines);
