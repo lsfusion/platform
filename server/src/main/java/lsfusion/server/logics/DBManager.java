@@ -2,7 +2,6 @@ package lsfusion.server.logics;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.*;
-import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.implementations.abs.AMap;
@@ -13,7 +12,6 @@ import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.base.col.interfaces.mutable.MSet;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.interop.Compare;
 import lsfusion.server.*;
@@ -21,25 +19,19 @@ import lsfusion.server.caches.IdentityStrongLazy;
 import lsfusion.server.classes.ByteArrayClass;
 import lsfusion.server.classes.ConcreteCustomClass;
 import lsfusion.server.classes.DataClass;
-import lsfusion.server.classes.StringClass;
-import lsfusion.server.classes.sets.ResolveClassSet;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.*;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.ValueExpr;
-import lsfusion.server.data.expr.formula.CustomFormulaSyntax;
-import lsfusion.server.data.expr.formula.FormulaExpr;
 import lsfusion.server.data.expr.formula.SQLSyntaxType;
 import lsfusion.server.data.expr.query.GroupExpr;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.expr.where.CaseExprInterface;
-import lsfusion.server.data.query.Join;
 import lsfusion.server.data.query.Query;
 import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.data.sql.DataAdapter;
 import lsfusion.server.data.sql.SQLSyntax;
-import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.form.instance.FormInstance;
@@ -56,7 +48,6 @@ import lsfusion.server.logics.table.IDTable;
 import lsfusion.server.logics.table.ImplementTable;
 import lsfusion.server.session.DataSession;
 import lsfusion.server.session.SessionCreator;
-import lsfusion.server.session.SingleKeyTableUsage;
 import lsfusion.server.stack.ParamMessage;
 import lsfusion.server.stack.ProgressStackItem;
 import lsfusion.server.stack.StackMessage;
@@ -132,8 +123,6 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
     private final ThreadLocal<SQLSession> threadLocalSql;
 
     private final Map<ImList<CalcPropertyObjectInterfaceImplement<String>>, Boolean> indexes = new HashMap<>();
-
-    private int dbVersion;
 
     public DBManager() {
         super(DBMANAGER_ORDER);
@@ -219,7 +208,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
     }
 
     @IdentityStrongLazy // ресурсы потребляет
-    private SQLSession getIDSql() throws SQLException { // подразумевает synchronized использование
+    private SQLSession getIDSql() { // подразумевает synchronized использование
         try {
             return createSQL();
         } catch (Exception e) {
@@ -228,7 +217,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
     }
 
     @IdentityStrongLazy
-    private SQLSession getSystemSql() throws SQLException {
+    private SQLSession getSystemSql() {
         try {
             return createSQL();
         } catch (Exception e) {
@@ -237,7 +226,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
     }
 
     @IdentityStrongLazy
-    public SQLSession getStopSql() throws SQLException {
+    public SQLSession getStopSql() {
         try {
             return createSQL();
         } catch (Exception e) {
@@ -295,7 +284,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         return sql;
     }
 
-    public int generateID() throws RemoteException {
+    public int generateID() {
         try {
             return IDTable.instance.generateID(getIDSql(), IDTable.OBJECT);
         } catch (SQLException e) {
@@ -453,9 +442,9 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
 
     // Удаляем несуществующие индексы и убираем из newDBStructure не изменившиеся индексы
     // Делаем это до применения migration script, то есть не пытаемся сохранить все возможные индексы по максимуму
-    private void checkIndices(SQLSession sql, OldDBStructure oldDBStructure, NewDBStructure newDBStructure) throws SQLException, SQLHandledException {
+    private void checkIndices(SQLSession sql, OldDBStructure oldDBStructure, NewDBStructure newDBStructure) throws SQLException {
 
-        ImMap<String, String> propertyChanges = MapFact.fromJavaMap(alterPropertyChangesNewInferAlgorithm(oldDBStructure, getChangesAfter(oldDBStructure.dbVersion, storedPropertyCNChanges), sql, businessLogics.getOrderProperties()));
+        ImMap<String, String> propertyChanges = MapFact.fromJavaMap(getChangesAfter(oldDBStructure.dbVersion, storedPropertyCNChanges));
 
         ImMap<String, ImRevMap<String, String>> oldTableFieldToCan = MapFact.EMPTY(); ImMap<String, ImRevMap<String, String>> newTableFieldToCan = MapFact.EMPTY();
         if(!propertyChanges.isEmpty()) { // оптимизация
@@ -502,12 +491,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                         drop = true;
                     }
                 }
-                if(oldDBStructure.version <= 19) {
-                    sql.renameIndex(oldTable, oldTable.keys, oldIndexKeysSet, oldOrder);
-                }
-                if (oldDBStructure.version <= 20) {
-                    needExtraUpdateStats = true;
-                }
+                
                 if (drop) {
                     sql.dropIndex(oldTable, oldTable.keys, oldIndexKeysSet, oldOrder, Settings.get().isStartServerAnyWay());
                 } else {
@@ -586,33 +570,6 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
     private class ProgressStackItemResult {
         ProgressStackItem value;
     }
-/*    
-    void checkLP(List<LP<?, ?>> lps) {
-        Set<String> names = new HashSet<String>();
-        for (LP<?, ?> lp : lps) {
-            String cn = lp.property.getCanonicalName();
-            if (cn != null) {
-                if (names.contains(cn)) {
-                    System.out.println("Error!!! LP. Duplicate canonical name: " + cn);
-                }
-                names.add(cn);
-            }
-        }
-    }
-
-    void check(ImOrderSet<Property> props) {
-        Set<String> names = new HashSet<String>();
-        for (Property p : props) {
-            String cn = p.getCanonicalName();
-            if (cn != null) {
-                if (names.contains(cn)) {
-                    System.out.println("Error!!! Pr. Duplicate canonical name: " + cn);
-                }
-                names.add(cn);
-            }
-        }
-    }
-*/    
     
     private OldDBStructure getOldDBStructure(SQLSession sql) throws SQLException, SQLHandledException, IOException {
         DataInputStream inputDB = null;
@@ -621,15 +578,12 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         if (struct != null) {
             inputDB = new DataInputStream(new ByteArrayInputStream(struct));
         }    
-        return new OldDBStructure(inputDB, sql);
+        return new OldDBStructure(inputDB);
     }
 
     public static boolean explicitMigrate = false;
     
     public boolean synchronizeDB() throws SQLException, IOException, SQLHandledException, ScriptingErrorLog.SemanticErrorException {
-//        checkLP(businessLogics.getNamedProperties());
-//        check(businessLogics.getOrderProperties());
-
         SQLSession sql = getThreadLocalSql();
 
         // инициализируем таблицы
@@ -675,15 +629,14 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             DBVersion newDBVersion = getCurrentDBVersion(oldDBStructure.dbVersion);
             NewDBStructure newDBStructure = new NewDBStructure(newDBVersion);
 
-            if(newDBStructure.version >= 22 && oldDBStructure.version < 22) { // временно, для явной типизации
-                if(SystemProperties.isDebug) {
+            if(newDBStructure.version >= 22 && oldDBStructure.version < 22 && oldDBStructure.version > 0) { // временно, для явной типизации
+                if (SystemProperties.isDebug) {
                     throw new RuntimeException("YOU HAVE TO START SERVER WITH ISDEBUG : FALSE");
                 }
                 Settings.get().setStartServerAnyWay(true);
                 explicitMigrate = true;
             }
 
-            dbVersion = newDBStructure.version;
             checkUniqueDBName(newDBStructure);
             // запишем новое состояние таблиц (чтобы потом изменять можно было бы)
             newDBStructure.write(outDB);
@@ -898,7 +851,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             }
 
             systemLogger.info("Migrating reflection properties and actions");
-            if(!migrateReflectionProperties(oldDBStructure, sql))
+            if(!migrateReflectionProperties(oldDBStructure))
                 throw new RuntimeException("Error while migrating reflection properties and actions");
 
             newDBStructure.writeConcreteClasses(outDB);
@@ -946,9 +899,6 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                 reflectionLM.timeDropColumn.change(new Timestamp(Calendar.getInstance().getTimeInMillis()), session, object);
                 reflectionLM.revisionDropColumn.change(getRevision(), session, object);
             }
-            if (oldDBStructure.version < 16) {
-                convertReflectionPropertyTableToVersion16(session);
-            }
             session.apply(businessLogics);
 
             initSystemUser();
@@ -957,10 +907,6 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             hashModules = calculateHashModules();
             return checkHashModulesChanged(oldHashModules, hashModules);
         }
-    }
-
-    public Map<Table, Map<List<Field>, Boolean>> getTablesMap() {
-        return new NewDBStructure(new DBVersion(String.valueOf(dbVersion))).tables;
     }
 
     private void updateAggregationStats(List<AggregateProperty> recalculateProperties, ImMap<String, Integer> tableStats, boolean onlyTable) throws SQLException, SQLHandledException {
@@ -1006,9 +952,9 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         }
     }
 
-    private boolean migrateReflectionProperties(OldDBStructure oldDBStructure, SQLSession sql) throws SQLException, SQLHandledException {
+    private boolean migrateReflectionProperties(OldDBStructure oldDBStructure) {
         DBVersion oldDBVersion = oldDBStructure.dbVersion;
-        Map<String, String> nameChanges = alterPropertyChangesNewInferAlgorithm(oldDBStructure, getChangesAfter(oldDBVersion, propertyCNChanges), sql, businessLogics.getOrderProperties());
+        Map<String, String> nameChanges = getChangesAfter(oldDBVersion, propertyCNChanges);
         ImportField oldCanonicalNameField = new ImportField(reflectionLM.propertyCanonicalNameValueClass);
         ImportField newCanonicalNameField = new ImportField(reflectionLM.propertyCanonicalNameValueClass);
 
@@ -1030,40 +976,6 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                 service.synchronize(false, false);
                 return session.apply(businessLogics);
             }
-        } catch (Exception e) {
-            throw Throwables.propagate(e);
-        }
-    }
-    
-    private void convertReflectionPropertyTableToVersion16(DataSession session) {
-        ImportField canonicalNameNavigatorElementField = new ImportField(reflectionLM.navigatorElementCanonicalNameClass);
-        ImportField sidNavigatorElementField = new ImportField(reflectionLM.navigatorElementSIDClass);
-
-        ImportKey<?> keyNavigatorElement = new ImportKey(reflectionLM.navigatorElement, reflectionLM.navigatorElementSID.getMapping(sidNavigatorElementField));
-
-        try {
-            List<List<Object>> data = new ArrayList<>();
-            
-            for (NavigatorElement element : businessLogics.getNavigatorElements()) {
-                if (element.isNamed()) {
-                    String canonicalName = element.getCanonicalName();
-                    String oldSID = canonicalName.replace('.', '_');
-                    
-                    data.add(asList((Object)oldSID, canonicalName));
-                }
-            }
-
-            List<ImportProperty<?>> properties = new ArrayList<>();
-            properties.add(new ImportProperty(sidNavigatorElementField, reflectionLM.sidNavigatorElement.getMapping(keyNavigatorElement)));
-            properties.add(new ImportProperty(canonicalNameNavigatorElementField, reflectionLM.canonicalNameNavigatorElement.getMapping(keyNavigatorElement)));
-
-            List<ImportDelete> deletes = new ArrayList<>();
-            deletes.add(new ImportDelete(keyNavigatorElement, LM.is(reflectionLM.navigatorElement).getMapping(keyNavigatorElement), false));
-
-            ImportTable table = new ImportTable(asList(sidNavigatorElementField, canonicalNameNavigatorElementField), data);
-
-            IntegrationService service = new IntegrationService(session, table, Collections.singletonList(keyNavigatorElement), properties, deletes);
-            service.synchronize(true, false);
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }
@@ -1184,7 +1096,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                 session.rollbackTransaction();
                 if(t instanceof SQLHandledException && ((SQLHandledException)t).repeatApply(session, OperationOwner.unknown, attempts)) { // update conflict или deadlock или timeout - пробуем еще раз
                     //serviceLogger.error("Run error: ", t);
-                    run(session, runInTransaction, run, attempts + 1);
+                    run(session, true, run, attempts + 1);
                     return;
                 }
                 
@@ -1364,8 +1276,8 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         }
     }
     
-    private void renameMigratingProperties(SQLSession sql, OldDBStructure oldData) throws SQLException, SQLHandledException {
-        Map<String, String> propertyChanges = alterPropertyChangesNewInferAlgorithm(oldData, getChangesAfter(oldData.dbVersion, storedPropertyCNChanges), sql, businessLogics.getStoredProperties());
+    private void renameMigratingProperties(SQLSession sql, OldDBStructure oldData) throws SQLException {
+        Map<String, String> propertyChanges = getChangesAfter(oldData.dbVersion, storedPropertyCNChanges);
         for (Map.Entry<String, String> entry : propertyChanges.entrySet()) {
             boolean found = false;
             String newDBName = LM.getDBNamePolicy().transformToDBName(entry.getValue());
@@ -1411,22 +1323,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
     }
     
     private void migrateClassProperties(SQLSession sql, OldDBStructure oldData, NewDBStructure newData) throws SQLException {
-        // Заменим ссылки на классовые свойства. Нужно только для перехода на версию базы >= 17
-        if (oldData.version < 17) {
-            for (DBConcreteClass cls : oldData.concreteClasses) {
-                String oldClassPropertySID = cls.sDataPropID;
-                boolean found = false;
-                for (DBStoredProperty oldProperty : oldData.storedProperties) {
-                    if (oldProperty.getDBName().equals(oldClassPropertySID)) {
-                        assert !found;
-                        found = true;
-                        cls.sDataPropID = oldProperty.getCanonicalName();
-                    }
-                }
-            }
-        }
-
-        // Теперь изменим в старой структуре классовые свойства. Предполагаем, что в одной таблице может быть только одно классовое свойство. Переименовываем поля в таблицах
+        // Изменим в старой структуре классовые свойства. Предполагаем, что в одной таблице может быть только одно классовое свойство. Переименовываем поля в таблицах
         Map<String, String> tableNewClassProps = new HashMap<>();
         for (DBConcreteClass cls : newData.concreteClasses) {
             DBStoredProperty classProp = newData.getProperty(cls.sDataPropID);
@@ -1477,127 +1374,13 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         }
     }
     
-    private Map<String, String> alterPropertyChangesNewInferAlgorithm(SQLSession sql, ImOrderSet<? extends Property> props) throws SQLException, SQLHandledException {
-        // бежим по всем свойствам
-        OperationOwner opOwner = OperationOwner.unknown;
-
-        // высчитываем новый canonical name, затем заменяем ? -> * и ищем совпадающего по маске и для которых нет равного свойства
-        final StringClass nameClass = StringClass.get(false, false, 1000);
-        final StringClass maskClass = StringClass.get(false, false, 1000);
-        final StringClass captionClass = StringClass.get(false, false, 1000);
-        SingleKeyTableUsage table = new SingleKeyTableUsage<>(nameClass, SetFact.toOrderExclSet("mask", "shortname"), new Type.Getter<String>() {
-            public Type getType(String key) {
-                return key.equals("mask") ? maskClass : captionClass;
-            }
-        });
-        ImMap<Property, String> mapNames = ((ImOrderSet<Property>) props).getSet().mapValues(new GetValue<String, Property>() {
-            public String getMapValue(Property value) {
-                return value.getCanonicalName();
-            }
-        }).removeNulls();
-//        ImOrderMap<Property, String> ordered = mapNames.sort(new Comparator<Property>() {
-//            public int compare(Property o1, Property o2) {
-//                return o1.getCanonicalName().compareTo(o2.getCanonicalName());
-//            }
-//        });
-//        for(int i=0,size=ordered.size()-1;i<size;i++) {
-//            if(ordered.getValue(i).equals(ordered.getValue(i+1)))
-//                i = i;
-//        }
-        ImRevMap<String, Property> propNames = mapNames.toRevMap().reverse();
-        table.writeRows(sql, propNames.mapKeyValues(new GetValue<ImMap<String, DataObject>, String>() {
-            public ImMap<String, DataObject> getMapValue(String value) {
-                return MapFact.singleton("key", new DataObject(value, nameClass));
-            }
-        }, new GetKeyValue<ImMap<String, ObjectValue>, String, Property>() {
-            public ImMap<String, ObjectValue> getMapValue(String value, Property property) {
-                return MapFact.<String, ObjectValue>toMap("mask", new DataObject(value.replaceAll("\\?", "%"), maskClass), "shortname", new DataObject(value.substring(0, value.indexOf("[")), captionClass));
-            }
-        }), opOwner);
-
-        Map<String, String> result = new HashMap<>();
-
-        QueryBuilder<String, String> query = new QueryBuilder<>(SetFact.toSet("key1", "key2"));
-        Expr key1Expr = query.getMapExprs().get("key1");
-        Expr key2Expr = query.getMapExprs().get("key2");
-
-        Expr nameExpr = getSystemExpr(key1Expr, "reflection_canonicalnameproperty_property");
-        Expr shortNameExpr = FormulaExpr.create(FormulaExpr.createCustomFormulaImpl(new CustomFormulaSyntax("left(prm1, strpos(prm1, '[') - 1)"), StringClass.getv(400), false, SetFact.singletonOrder("prm1")), ListFact.singleton(nameExpr));
-
-        Join<String> tableJoin = table.join(key2Expr);
-        Expr maskExpr = tableJoin.getExpr("mask");
-        Expr tableCaptionExpr = tableJoin.getExpr("shortname");
-        query.addProperty("prevname", nameExpr);
-        query.and(nameExpr.compare(maskExpr, Compare.LIKE).and(shortNameExpr.compare(tableCaptionExpr, Compare.EQUALS)).and(nameExpr.compare(key2Expr, Compare.EQUALS).not()));
-        ImOrderMap<ImMap<String, Object>, ImMap<String, Object>> queryResult = query.execute(sql, opOwner);
-        for(int i=0,size=queryResult.size();i<size;i++) {
-            String prevName = (String)queryResult.getValue(i).get("prevname");
-            String name = (String)queryResult.getKey(i).get("key2");
-            PropertyCanonicalNameParser parser = new PropertyCanonicalNameParser(businessLogics, prevName);
-            try {
-                List<ResolveClassSet> signature = parser.getSignature();
-                if (signature.size() == propNames.get(name).getOrderInterfaces().size()) {
-                    result.put(prevName, name);
-                }
-            } catch (AbstractPropertyNameParser.ParseException e) {
-                throw new RuntimeException(e);
-            }
-        }
-        table.drop(sql, opOwner);
-
-        return result;
-    }
-
-    private Expr getSystemExpr(Expr key1Expr, String fieldName) {
-        KeyField kf = new KeyField("key0", ObjectType.instance);
-        PropertyField pf = new PropertyField(fieldName, StringClass.getv(400));
-        return new SerializedTable("reflection_property", SetFact.singletonOrder(kf), SetFact.singleton(pf), LM.baseClass).join(MapFact.singleton(kf, key1Expr)).getExpr(pf);
-    }
-
-    private Map<String, String> alterPropertyChangesNewInferAlgorithm(OldDBStructure oldDBStructure, Map<String, String> map, SQLSession sql, ImOrderSet<? extends Property> props) throws SQLException, SQLHandledException {
-        if(oldDBStructure.version < 19 && oldDBStructure.version > 0) {
-            Map<String, String> resultChanges = alterPropertyChangesNewInferAlgorithm(sql, props);
-            Map<String, String> versionChangesMap = new HashMap<>(map);
-            // todo [dale]: копипаст из getChangesAfter, нужно все это убрать после перехода всех проектов на 18 версию базы
-            
-            // Если в текущей версии есть переименование a -> b, а в предыдущих версиях есть c -> a, то заменяем c -> a на c -> b
-            for (Map.Entry<String, String> currentChanges : resultChanges.entrySet()) {
-                String renameTo = currentChanges.getValue();
-                if (versionChangesMap.containsKey(renameTo)) {
-                    currentChanges.setValue(versionChangesMap.get(renameTo));
-                    versionChangesMap.remove(renameTo);
-                }
-            }
-
-            // Добавляем оставшиеся (которые не получилось добавить к старым цепочкам) переименования из текущей версии в общий результат
-            for (Map.Entry<String, String> change : versionChangesMap.entrySet()) {
-                if (resultChanges.containsKey(change.getKey())) {
-                    throw new RuntimeException(String.format("Renaming '%s' twice", change.getKey()));
-                }
-                resultChanges.put(change.getKey(), change.getValue());
-            }
-
-            // Проверяем, чтобы не было нескольких переименований в одно и то же
-            Set<String> renameToSIDs = new HashSet<>();
-            for (String renameTo : resultChanges.values()) {
-                if (renameToSIDs.contains(renameTo)) {
-                    throw new RuntimeException(String.format("Renaming to '%s' twice.", renameTo));
-                }
-                renameToSIDs.add(renameTo);
-            }
-            
-            return resultChanges;
-        }
-        return map;
-    }
-
     // todo [dale]: временная реализация для переименования
     // Проблемы текущего способа: 
     // 1. Каноническое имя log-свойств сейчас определяется не из сигнатуры базового свойства, а из getInterfaces, которые могут не совпадать с сигнатурой
     // 2. Мы считаем, что при миграции свойств не меняются имена классов параметров, а это может быть не так
     // В дальнейшем. когда сделаем нормальные канонические имена у log-свойств, можно перенести этот функционал в setUserLoggableProperties 
     // и добавлять изменения канонических имен log-свойств напрямую в storedPropertyCNChanges еще на том шаге
-    void addLogPropertiesToMigration(OldDBStructure oldData, DBVersion newDBVersion) {
+    private void addLogPropertiesToMigration(OldDBStructure oldData, DBVersion newDBVersion) {
         Map<String, String> changes = getChangesAfter(oldData.dbVersion, propertyCNChanges);
         Map<String, String> rChanges = BaseUtils.reverse(changes);
         
@@ -1800,7 +1583,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         return adapter.backupDB(context, dumpFileName, excludeTables);
     }
 
-    public String customRestoreDB(String fileBackup, Set<String> tables) throws IOException, InterruptedException {
+    public String customRestoreDB(String fileBackup, Set<String> tables) throws IOException {
         return adapter.customRestoreDB(fileBackup, tables);
     }
 
@@ -2053,59 +1836,66 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         }
     }
 
+    public <P extends PropertyInterface> Map<Table, Map<List<Field>, Boolean>> getIndicesMap() {
+        Map<Table, Map<List<Field>, Boolean>> res = new HashMap<>();
+        for (Table table : LM.tableFactory.getImplementTablesMap().valueIt()) {
+            res.put(table, new HashMap<List<Field>, Boolean>());
+        }
+
+        for (Map.Entry<ImList<CalcPropertyObjectInterfaceImplement<String>>, Boolean> index : indexes.entrySet()) {
+            ImList<CalcPropertyObjectInterfaceImplement<String>> indexFields = index.getKey();
+
+            if (indexFields.isEmpty()) {
+                throw new RuntimeException(getString("logics.policy.forbidden.to.create.empty.indexes"));
+            }
+
+            CalcPropertyRevImplement<P, String> basePropertyImplement = (CalcPropertyRevImplement<P, String>) findProperty(indexFields);
+            assert basePropertyImplement != null; // исходя из логики addIndex
+
+            CalcProperty<P> baseProperty = basePropertyImplement.property;
+
+            if (!baseProperty.isStored())
+                throw new RuntimeException(getString("logics.policy.forbidden.to.create.indexes.on.non.regular.properties") + " (" + baseProperty + ")");
+
+            ImplementTable baseIndexTable = baseProperty.mapTable.table;
+            ImRevMap<String, KeyField> baseMapKeys = basePropertyImplement.mapping.crossJoin(baseProperty.mapTable.mapKeys);
+
+            List<Field> tableIndex = new ArrayList<>();
+
+            for (CalcPropertyObjectInterfaceImplement<String> indexField : indexFields) {
+                Field field;
+                if(indexField instanceof CalcPropertyRevImplement) {
+                    CalcPropertyRevImplement<P, String> propertyImplement = (CalcPropertyRevImplement<P, String>)indexField;
+                    CalcProperty<P> property = propertyImplement.property;
+
+                    if (!property.isStored())
+                        throw new RuntimeException(getString("logics.policy.forbidden.to.create.indexes.on.non.regular.properties") + " (" + property + ")");
+
+                    ImplementTable indexTable = property.mapTable.table;
+                    ImRevMap<String, KeyField> mapKeys = propertyImplement.mapping.crossJoin(property.mapTable.mapKeys);
+
+                    if (!BaseUtils.hashEquals(baseIndexTable, indexTable))
+                        throw new RuntimeException(getString("logics.policy.forbidden.to.create.indexes.on.properties.in.different.tables", baseProperty, property));
+                    if (!BaseUtils.hashEquals(baseMapKeys, mapKeys))
+                        throw new RuntimeException(getString("logics.policy.forbidden.to.create.indexes.on.properties.with.different.mappings", baseProperty, property, baseMapKeys, mapKeys));
+                    field = property.field;
+                } else {
+                    field = baseMapKeys.get(((CalcPropertyObjectImplement<String>)indexField).object);
+                }
+                tableIndex.add(field);
+            }
+            res.get(baseIndexTable).put(tableIndex, index.getValue());
+        }
+        return res;
+    }
+    
     private class NewDBStructure extends DBStructure<Field> {
 
         public <P extends PropertyInterface> NewDBStructure(DBVersion dbVersion) {
             version = 22;
             this.dbVersion = dbVersion;
 
-            for (Table table : LM.tableFactory.getImplementTablesMap().valueIt()) {
-                tables.put(table, new HashMap<List<Field>, Boolean>());
-            }
-
-            for (Map.Entry<ImList<CalcPropertyObjectInterfaceImplement<String>>, Boolean> index : indexes.entrySet()) {
-                ImList<CalcPropertyObjectInterfaceImplement<String>> indexFields = index.getKey();
-
-                if (indexFields.isEmpty())
-                    throw new RuntimeException(getString("logics.policy.forbidden.to.create.empty.indexes"));
-
-                CalcPropertyRevImplement<P, String> basePropertyImplement = (CalcPropertyRevImplement<P, String>) findProperty(indexFields);
-                assert basePropertyImplement != null; // исходя из логики addIndex
-
-                CalcProperty<P> baseProperty = basePropertyImplement.property;
-
-                if (!baseProperty.isStored())
-                    throw new RuntimeException(getString("logics.policy.forbidden.to.create.indexes.on.non.regular.properties") + " (" + baseProperty + ")");
-
-                ImplementTable baseIndexTable = baseProperty.mapTable.table;
-                ImRevMap<String, KeyField> baseMapKeys = basePropertyImplement.mapping.crossJoin(baseProperty.mapTable.mapKeys);
-
-                List<Field> tableIndex = new ArrayList<>();
-
-                for (CalcPropertyObjectInterfaceImplement<String> indexField : indexFields) {
-                    Field field;
-                    if(indexField instanceof CalcPropertyRevImplement) {
-                        CalcPropertyRevImplement<P, String> propertyImplement = (CalcPropertyRevImplement<P, String>)indexField;
-                        CalcProperty<P> property = propertyImplement.property;
-
-                        if (!property.isStored())
-                            throw new RuntimeException(getString("logics.policy.forbidden.to.create.indexes.on.non.regular.properties") + " (" + property + ")");
-
-                        ImplementTable indexTable = property.mapTable.table;
-                        ImRevMap<String, KeyField> mapKeys = propertyImplement.mapping.crossJoin(property.mapTable.mapKeys);
-
-                        if (!BaseUtils.hashEquals(baseIndexTable, indexTable))
-                            throw new RuntimeException(getString("logics.policy.forbidden.to.create.indexes.on.properties.in.different.tables", baseProperty, property));
-                        if (!BaseUtils.hashEquals(baseMapKeys, mapKeys))
-                            throw new RuntimeException(getString("logics.policy.forbidden.to.create.indexes.on.properties.with.different.mappings", baseProperty, property, baseMapKeys, mapKeys));
-                        field = property.field;
-                    } else {
-                        field = baseMapKeys.get(((CalcPropertyObjectImplement<String>)indexField).object);
-                    }
-                    tableIndex.add(field);
-                }
-                tables.get(baseIndexTable).put(tableIndex, index.getValue());
-            }
+            tables.putAll(getIndicesMap());
 
             for (CalcProperty<?> property : businessLogics.getStoredProperties()) {
                 storedProperties.add(new DBStoredProperty(property));
@@ -2155,7 +1945,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
 
     private class OldDBStructure extends DBStructure<String> {
 
-        public OldDBStructure(DataInputStream inputDB, SQLSession sql) throws IOException, SQLException, SQLHandledException {
+        public OldDBStructure(DataInputStream inputDB) throws IOException {
             dbVersion = new DBVersion("0.0");
             if (inputDB == null) {
                 version = -2;
@@ -2168,8 +1958,6 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                     for (int i = 0; i < modulesCount; i++)
                         modulesList.add(inputDB.readUTF());
                 }
-                if(version <= 18)
-                /*hashModules = */inputDB.readUTF();
 
                 for (int i = inputDB.readInt(); i > 0; i--) {
                     SerializedTable prevTable = new SerializedTable(inputDB, LM.baseClass);
@@ -2187,18 +1975,8 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
 
                 int prevStoredNum = inputDB.readInt();
                 for (int i = 0; i < prevStoredNum; i++) {
-                    String sID;
-                    String canonicalName = null;
-                    if (version >= 15) {
-                        canonicalName = inputDB.readUTF();
-                        if (version >= 17) {
-                            sID = inputDB.readUTF();
-                        } else {
-                            sID = LM.getDBNamePolicy().transformToDBName(canonicalName);
-                        }
-                    } else {
-                        sID = inputDB.readUTF();
-                    }
+                    String canonicalName = inputDB.readUTF();
+                    String sID = inputDB.readUTF();
                     boolean isDataProperty = inputDB.readBoolean();
                     
                     String tableName = inputDB.readUTF();

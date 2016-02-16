@@ -7,7 +7,6 @@ import java.util.Collection;
 import java.util.Enumeration;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
-import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 
 import static lsfusion.base.BaseUtils.isRedundantString;
@@ -15,7 +14,7 @@ import static lsfusion.base.BaseUtils.isRedundantString;
 public class ResourceList {
 
     public static Collection<String> getResources(final Pattern pattern) {
-        final ArrayList<String> retval = new ArrayList<String>();
+        final ArrayList<String> retval = new ArrayList<>();
         final String classPath = System.getProperty("java.class.path", ".");
         final String[] classPathElements = classPath.split(System.getProperty("path.separator"));
         for (final String element : classPathElements) {
@@ -27,7 +26,7 @@ public class ResourceList {
     }
 
     private static Collection<String> getResources(final String element, final Pattern pattern) {
-        final ArrayList<String> retval = new ArrayList<String>();
+        final ArrayList<String> retval = new ArrayList<>();
 
         if (element.endsWith("*")) {
             //java поддерживает возможность задавать в classpath все jar-ки в директории
@@ -54,12 +53,10 @@ public class ResourceList {
     }
 
     private static Collection<String> getResourcesFromJarFile(final File file, final Pattern pattern) {
-        final ArrayList<String> retval = new ArrayList<String>();
+        final ArrayList<String> retval = new ArrayList<>();
         ZipFile zf;
         try {
             zf = new ZipFile(file);
-        } catch (final ZipException e) {
-            throw new Error(e);
         } catch (final IOException e) {
             throw new Error(e);
         }
@@ -81,7 +78,7 @@ public class ResourceList {
     }
 
     private static Collection<String> getResourcesFromDirectory(final File directory, final String relativePath, final Pattern pattern) {
-        final ArrayList<String> result = new ArrayList<String>();
+        final ArrayList<String> result = new ArrayList<>();
 
         final File[] fileList = directory.listFiles();
         if (fileList != null) {
