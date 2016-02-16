@@ -233,6 +233,7 @@ public class AdjustMaterializedExecuteEnvironment extends DynamicExecuteEnvironm
             this.parent = parent;
 
             size = command.getCost(MapFact.<SQLQuery, Stat>EMPTY()).rows.getWeight();
+            hasTooLongKeys = query != null && SQLQuery.hasTooLongKeys(query.keyReaders);
 
             if(parent != null) {
                 parent.children.add(this);
@@ -241,6 +242,7 @@ public class AdjustMaterializedExecuteEnvironment extends DynamicExecuteEnvironm
 
         private int degree = 1;
         private final int size;
+        private final boolean hasTooLongKeys;
         private Set<Node> children = new HashSet<Node>();
     }
 
@@ -287,7 +289,7 @@ public class AdjustMaterializedExecuteEnvironment extends DynamicExecuteEnvironm
                         if(o.degree > target) // если больше target по сути запретим выбирать
                             return Integer.MAX_VALUE / 2;
                     } else {
-                        if (o.size >= max) // если больше порога не выбираем вообще
+                        if (o.size >= max || o.hasTooLongKeys) // если больше порога не выбираем вообще
                             return Integer.MAX_VALUE;
                     }
 

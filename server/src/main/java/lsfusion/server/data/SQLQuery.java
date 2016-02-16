@@ -13,6 +13,7 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
 import lsfusion.server.SystemProperties;
+import lsfusion.server.classes.FileClass;
 import lsfusion.server.data.query.*;
 import lsfusion.server.data.query.stat.ExecCost;
 import lsfusion.server.data.sql.SQLExecute;
@@ -67,9 +68,16 @@ public class SQLQuery extends SQLCommand<ResultHandler<String, String>> {
         return ((super.immutableHashCode() * 31 + keyReaders.hashCode()) * 31  + propertyReaders.hashCode()) * 31 + (union ? 1 : 0) + (recursionFunction ? 3 : 0);
     }
 
-    private <K> boolean hasUnlimited(ImMap<K, ? extends Reader> keyReaders) {
+    public static <K> boolean hasUnlimited(ImMap<K, ? extends Reader> keyReaders) {
         for(Reader reader : keyReaders.valueIt())
             if(reader.getCharLength().isUnlimited())
+                return true;
+        return false;
+    }
+
+    public static <K> boolean hasTooLongKeys(ImMap<K, ? extends Reader> keyReaders) {
+        for(Reader reader : keyReaders.valueIt())
+            if(reader instanceof FileClass)
                 return true;
         return false;
     }
