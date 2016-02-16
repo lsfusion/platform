@@ -7,6 +7,7 @@ import lsfusion.base.Result;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
+import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.Settings;
 import lsfusion.server.caches.AbstractValuesContext;
@@ -103,11 +104,28 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
             if(whereValue.isNull())
                 return resultRead.empty();
             else
-                return resultRead.singleRow(keyValues.result, propValues.result);
+                return resultRead.singleRow(castTypes(keyValues.result), castTypes(propValues.result));
         }
 
         pullQuery.set(query);
         return null;
+    }
+
+    private static <F extends Field, D extends ObjectValue> ImMap<F, D> castTypes(ImMap<F, D> values) {
+        return values.mapValues(new GetKeyValue<D, F, D>() {
+            @Override
+            public D getMapValue(F key, D value) {
+                if(!(key.type instanceof DataClass && value instanceof DataObject))
+                    return value;
+
+                DataClass dataClass = (DataClass) key.type;
+                DataObject dataObject = (DataObject)value;
+                if(BaseUtils.hashEquals(dataClass, dataObject.objectClass))
+                    return value;
+
+                return (D) new DataObject(dataClass.readCast(dataObject.object, dataObject.objectClass), dataClass);
+            }
+        });
     }
 
     private static SessionData write(final SQLSession session, final ImOrderSet<KeyField> keys, final ImSet<PropertyField> properties, IQuery<KeyField, PropertyField> query, BaseClass baseClass, final QueryEnvironment env, final TableOwner owner, boolean updateClasses) throws SQLException, SQLHandledException {

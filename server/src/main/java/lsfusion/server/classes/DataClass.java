@@ -1,5 +1,6 @@
 package lsfusion.server.classes;
 
+import lsfusion.base.BaseUtils;
 import lsfusion.base.ExtInt;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
@@ -60,6 +61,13 @@ public abstract class DataClass<T> extends AbstractType<T> implements StaticClas
     public boolean compatibleEquals(Object object, DataClass compareClass, Object compareObject) {
         DataClass compatible = getCompatible(compareClass, true);
         return compatible != null && compatible.read(object).equals(compatible.read(compareObject));
+    }
+
+    public T readCast(Object value, ConcreteClass typeFrom) {
+        if(!(typeFrom instanceof DataClass))
+            throw new RuntimeException("Cannot cast value : " + value + ", from : " + typeFrom + ", to : " + this);
+
+        return read(value);
     }
 
     public DataObject getDefaultObjectValue() {
