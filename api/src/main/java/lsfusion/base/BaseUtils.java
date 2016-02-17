@@ -51,14 +51,7 @@ public class BaseUtils {
     }
 
     public static int nullCompareTo(Comparable obj1, Comparable obj2) {
-        if (obj1 == null) {
-            if (obj2 == null)
-                return 0;
-            else
-                return obj2.compareTo(obj1);
-        }
-        
-        return obj1.compareTo(obj2);
+        return obj1 == null ? (obj2 == null ? 0 : -1) : (obj2 == null ? 1 : obj1.compareTo(obj2));
     }
 
     public static boolean nullHashEquals(Object obj1, Object obj2) {
