@@ -151,23 +151,20 @@ public class GroupJoinsWheres extends DNFWheres<WhereJoins, GroupJoinsWheres.Val
         return !(size() > Settings.get().getLimitWhereJoinsCount() || (!noWhere && getComplexity(true) > Settings.get().getLimitWhereJoinsComplexity()));
     }
 
-    // если сильно "наобъединяться" бОльшая вероятность, что не слишком умная СУБД сделает неправильный план (впрочем после materialized subqueries должно уйти)
-    private final static boolean collapseStats = false; // в запросе выполнения всегда объединять join'ы с одинаковой статистикой, а не только при превышении порога
-    
     private <K extends BaseExpr> GroupJoinsWheres pack(ImSet<K> keepStat, KeyStat keyStat, boolean saveStat) {
 
         GroupJoinsWheres result = this;
         if(saveStat && result.isFitPackThreshold())
             return result;
 
-        if(!collapseStats) {
+        if(!Settings.get().isCollapseStats()) {
             result = result.packMeans(keepStat, keyStat, true);
             if (result.isFitPackThreshold())
                 return result;
         }
 
         // оптимизация, так как packMeans быстрее packReduce, для не saveStat не стоит делать так как при A, AB, BC, где B маленький предикат логичнее A, B получить чем A, BC
-        if(saveStat == collapseStats) {
+        if(saveStat == Settings.get().isCollapseStats()) {
             result = result.packMeans(keepStat, keyStat, saveStat);
             if (result.isFitPackThreshold())
                 return result;
@@ -238,7 +235,7 @@ public class GroupJoinsWheres extends DNFWheres<WhereJoins, GroupJoinsWheres.Val
     
     // минимум изменения, абсолютной статистики, количества сршдвкутэjd    
     private static int[] getPriority(int rdmin, int oc, int rdmax, int r, int c) {
-        if(collapseStats)
+        if(Settings.get().isCollapseStats())
             return new int[] {rdmin, oc, rdmax, r, c};
 
         return new int[] {rdmin, oc, 0, rdmin == 0 ? 0 : r, c};
@@ -249,7 +246,7 @@ public class GroupJoinsWheres extends DNFWheres<WhereJoins, GroupJoinsWheres.Val
     }
 
     private static int[] getMinPriority(boolean saveStat) {
-        if(collapseStats) {
+        if(Settings.get().isCollapseStats()) {
             if (saveStat)
                 return getPriority(0, 0, 0, Integer.MAX_VALUE, Integer.MAX_VALUE); // при сохранении статистики главное не терять статистику
             else
