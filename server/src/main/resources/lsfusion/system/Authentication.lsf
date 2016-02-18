@@ -89,6 +89,10 @@ portLDAP 'Порт' = DATA INTEGER ();
 baseDNLDAP 'Base DN' = DATA VARSTRING[100] ();
 userDNSuffixLDAP 'Суффикс для User DN' = DATA VARSTRING[100] ();
 
+//показ busyDialog конкретному пользователю. В будущем станет не нужным.
+useBusyDialogCustom 'Показывать BusyDialog' = DATA BOOLEAN (CustomUser);
+useBusyDialog () = useBusyDialogCustom[CustomUser](currentUser());
+
 locked = DATA User (Object);
 lockResult = DATA LOCAL NESTED BOOLEAN ();
 
@@ -120,7 +124,7 @@ FORM customUser 'Пользователь'
     OBJECTS u=CustomUser FIXED PANEL
     PROPERTIES(u) firstName, lastName, login,
     sha256Password ON CHANGE changeSHA256Password(u), email,
-    forbidChangePassword, forbidEditProfile, isLocked, lastActivity, ignorePrintTypeCustom
+    forbidChangePassword, forbidEditProfile, isLocked, lastActivity, ignorePrintTypeCustom, useBusyDialogCustom
 
     EDIT CustomUser OBJECT u
 ;
@@ -142,7 +146,7 @@ DESIGN customUser {
 FORM customUsers 'Пользователи'
     OBJECTS u=CustomUser
     PROPERTIES(u) READONLY name[Contact], login, email
-    PROPERTIES(u) forbidChangePassword, forbidEditProfile, isLocked READONLY,
+    PROPERTIES(u) forbidChangePassword, forbidEditProfile, useBusyDialogCustom, isLocked READONLY,
                   lastActivity, restart, shutdown, ADDFORM, EDITFORM FORCE PANEL, DELETE FORCE PANEL TOOLBAR
 
     PROPERTIES() useLDAP, serverLDAP, portLDAP, baseDNLDAP, userDNSuffixLDAP
@@ -162,7 +166,7 @@ DESIGN customUsersDialog { main{ preferredSize = (1024, 768); }}
 FORM editProfile 'Редактировать профиль' IMAGE '/images/editReport.png'
     OBJECTS u=CustomUser FIXED PANEL
     PROPERTIES(u) login READONLY
-    PROPERTIES(u) READONLYIF forbidEditProfile(u) firstName, lastName, email
+    PROPERTIES(u) READONLYIF forbidEditProfile(u) firstName, lastName, email, useBusyDialogCustom
 
     FILTERS u==currentUser()
 ;

@@ -154,6 +154,11 @@ public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface> extends Re
     }
 
     @Override
+    public boolean isBusyDialog() throws RemoteException {
+        return target.isBusyDialog();
+    }
+
+    @Override
     public ServerResponse executeNavigatorAction(String navigatorActionSID) throws RemoteException {
         return target.executeNavigatorAction(navigatorActionSID);
     }

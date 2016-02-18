@@ -46,4 +46,6 @@ public interface RemoteNavigatorInterface extends PendingRemoteInterface {
 
     // для конфигуратора методы
     boolean isConfigurationAccessAllowed() throws RemoteException;
+
+    boolean isBusyDialog() throws RemoteException;
 }

@@ -239,7 +239,7 @@ public class Main {
                         task.start();
                     }
 
-                    busyDialog = remoteLogics.isBusyDialog();
+                    busyDialog = remoteLogics.isBusyDialog() || remoteNavigator.isBusyDialog();
 
                 } catch (Exception e) {
                     closeSplashScreen();

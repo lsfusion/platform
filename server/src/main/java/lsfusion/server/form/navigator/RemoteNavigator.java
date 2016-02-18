@@ -388,6 +388,15 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         return securityPolicy.configurator != null && securityPolicy.configurator;
     }
 
+    public boolean isBusyDialog() throws RemoteException {
+        boolean useBusyDialog = false;
+        try (DataSession session = createSession()) {
+            useBusyDialog = businessLogics.authenticationLM.useBusyDialog.read(session) != null;
+        } catch (SQLException | SQLHandledException ignored) {
+        }
+        return useBusyDialog;
+    }
+
     public void gainedFocus(FormInstance<T> form) {
         //todo: не нужно, так что позже можно удалить
     }

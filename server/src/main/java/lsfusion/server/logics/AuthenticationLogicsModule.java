@@ -48,6 +48,8 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
     public LCP baseDNLDAP;
     public LCP userDNSuffixLDAP;
 
+    public LCP useBusyDialog;
+
     public LAP generateLoginPassword;
 
     public AuthenticationLogicsModule(BusinessLogics BL, BaseLogicsModule baseLM) throws IOException {
@@ -105,6 +107,8 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
         portLDAP =  findProperty("portLDAP[]");
         baseDNLDAP =  findProperty("baseDNLDAP[]");
         userDNSuffixLDAP =  findProperty("userDNSuffixLDAP[]");
+
+        useBusyDialog = findProperty("useBusyDialog[]");
 
         generateLoginPassword = findAction("generateLoginPassword[CustomUser]");
 
