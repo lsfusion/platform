@@ -60,7 +60,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     private static final Logger logger = ServerLoggers.sqlLogger;
     private static final Logger handLogger = ServerLoggers.sqlHandLogger;
     private static final Logger sqlConflictLogger = ServerLoggers.sqlConflictLogger;
-    private Integer idActiveThread;
+    private WeakReference<Thread> activeThread;
 
     private static ConcurrentWeakHashMap<SQLSession, Integer> sqlSessionMap = new ConcurrentWeakHashMap<>();
     public static ConcurrentHashMap<Long, Long> threadAllocatedBytesAMap = new ConcurrentHashMap<>();
@@ -85,8 +85,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         for(SQLSession sqlSession : sqlSessionMap.keySet()) {
             ExConnection connection = sqlSession.getDebugConnection();
             if(connection != null) {
-                Integer activeThread = sqlSession.getActiveThread();
-                if(activeThread != null && activeThread.equals((int) processId))
+                Thread activeThread = sqlSession.getActiveThread();
+                if(activeThread != null && activeThread.getId() == processId)
                     return ((PGConnection) connection.sql).getBackendPID();
             }
         }
@@ -127,8 +127,10 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         threadAllocatedBytesBMap.clear();
         ThreadMXBean tBean = ManagementFactory.getThreadMXBean();
         if (tBean instanceof com.sun.management.ThreadMXBean) {
-            for (long id : tBean.getAllThreadIds()) {
-                threadAllocatedBytesBMap.put(id, ((com.sun.management.ThreadMXBean) tBean).getThreadAllocatedBytes(id));
+            long[] allThreadIds = tBean.getAllThreadIds();
+            long[] threadAllocatedBytes = ((com.sun.management.ThreadMXBean) tBean).getThreadAllocatedBytes(allThreadIds);
+            for (int i=0;i<allThreadIds.length;i++) {
+                threadAllocatedBytesBMap.put(allThreadIds[i], threadAllocatedBytes[i]);
             }
         }
     }
@@ -2360,12 +2362,15 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         return mapNames(exprs, exprs.keys().toRevMap(), order);
     }
 
-    public Integer getActiveThread() {
-        return idActiveThread;
+    public Thread getActiveThread() {
+        if(activeThread == null)
+            return null;
+
+        return activeThread.get();
     }
 
     private void setActiveThread() {
-        idActiveThread = (int) Thread.currentThread().getId();
+        activeThread = new WeakReference<>(Thread.currentThread());
     }
 
     /*private void resetActiveThread() {

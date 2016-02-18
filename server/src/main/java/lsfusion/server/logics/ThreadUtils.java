@@ -1,11 +1,19 @@
 package lsfusion.server.logics;
 
+import lsfusion.base.ReflectionUtils;
+import lsfusion.base.col.SetFact;
+import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.context.Context;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
 import lsfusion.server.logics.property.ExecutionContext;
 
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadMXBean;
 import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class ThreadUtils {
 
@@ -35,5 +43,23 @@ public class ThreadUtils {
     public static void cancelThread(SQLSession session, Thread thread) throws SQLException, SQLHandledException {
         if(thread != null)
             SQLSession.cancelExecutingStatement(session, thread.getId(), false);
+    }
+
+    public static ImSet<Thread> getAllThreads() {
+        return SetFact.toSet((Thread[])ReflectionUtils.invokePrivateMethod(Thread.class, null, "getThreads", new Class[]{}));
+    }
+
+    public static Thread getThreadById(long id) {
+        for(Thread thread : getAllThreads())
+            if(thread.getId() == id)
+                return thread;
+        return null;
+    }
+
+    public static Map<Long, Thread> getThreadMap() {
+        Map<Long, Thread> result = new HashMap<>();
+        for(Thread thread : getAllThreads())
+            result.put(thread.getId(), thread);
+        return result;
     }
 }
