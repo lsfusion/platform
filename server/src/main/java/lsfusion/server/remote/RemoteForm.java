@@ -116,7 +116,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
             public Map<String, String> call() throws Exception {
 
                 if (logger.isTraceEnabled()) {
-                    logger.trace(String.format("getReportPath Action. GroupID: ", groupId));
+                    logger.trace(String.format("getReportPath Action. GroupID: %d", groupId));
                 }
                 
                 return reportManager.getReportPath(toExcel, groupId, userPreferences);

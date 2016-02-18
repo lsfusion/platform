@@ -10,7 +10,7 @@ import static lsfusion.base.BaseUtils.*;
 public class ClientGroupObjectValue extends HashMap<ClientObject, Object> implements Serializable {
     public static final ClientGroupObjectValue EMPTY = new ClientGroupObjectValue() {
         @Override
-        public void putAll(Map<? extends ClientObject, ? extends Object> m) {
+        public void putAll(Map<? extends ClientObject, ?> m) {
             throw new UnsupportedOperationException("not supported");
         }
 
@@ -25,7 +25,7 @@ public class ClientGroupObjectValue extends HashMap<ClientObject, Object> implem
         }
     };
 
-    public static final List<ClientGroupObjectValue> SINGLE_EMPTY_KEY_LIST = Arrays.asList(EMPTY);
+    public static final List<ClientGroupObjectValue> SINGLE_EMPTY_KEY_LIST = Collections.singletonList(EMPTY);
 
     public ClientGroupObjectValue(ClientObject object, Object value) {
         put(object, value);

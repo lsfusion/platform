@@ -92,7 +92,7 @@ public abstract class QueryJoin<K extends Expr,I extends QueryJoin.Query<K, I>, 
         }
 
         public boolean calcTwins(TwinImmutableObject o) {
-            return thisObj.equals(thisObj);
+            return thisObj.equals(((QueryOuterContext)o).thisObj);
         }
 
         public InnerExpr getInnerExpr(WhereJoin join) {

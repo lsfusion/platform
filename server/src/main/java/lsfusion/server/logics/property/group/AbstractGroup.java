@@ -7,7 +7,6 @@ import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.base.col.interfaces.mutable.MOrderSet;
-import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.caches.IdentityStartLazy;
 import lsfusion.server.logics.mutables.NFFact;
 import lsfusion.server.logics.mutables.Version;
@@ -117,9 +116,7 @@ public class AbstractGroup extends AbstractNode {
 
     public List<AbstractGroup> getParentGroups() {
         List<AbstractGroup> result = new ArrayList<AbstractGroup>();
-        if (this instanceof AbstractGroup) {
-            result.add(this);
-        }
+        result.add(this);
         for (AbstractNode child : getChildrenListIt()) {
             if (child instanceof AbstractGroup) {
                 result.add((AbstractGroup) child);
@@ -129,7 +126,7 @@ public class AbstractGroup extends AbstractNode {
             for (AbstractGroup c : childGroups) {
                 if (!c.getChildren().isEmpty()) {
                     result.addAll(c.getParentGroups());
-                } else if (c instanceof AbstractGroup) {
+                } else {
                     result.add((c));
                 }
             }
