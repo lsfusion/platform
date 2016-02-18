@@ -514,7 +514,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
             String ifaceClasses = BaseUtils.toString(", ", interfacesTypes);
             String returnClass = this.returnClass.toString();
 
-            String script = creationScript != null ? creationScript.replace("\n", "<br>") : "";
+            String script = creationScript != null ? escapeHTML(creationScript).replace("\n", "<br>") : "";
             String scriptPath = creationPath != null ? creationPath.replace("\n", "<br>") : "";
             String scriptFormPath = formPath != null ? formPath.replace("\n", "<br>") : "";
             return action ?
@@ -523,6 +523,10 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
                     String.format(TOOL_TIP_FORMAT + DETAILED_TOOL_TIP_FORMAT,
                     propCaption, editKeyText, sid, tableName, ifaceObjects, ifaceClasses, returnClass, script, scriptPath, scriptFormPath);
         }
+    }
+
+    private String escapeHTML(String value) {
+        return value.replace("<", "&lt;").replace(">", "&gt;");
     }
 
     public class CaptionReader implements ClientPropertyReader {
