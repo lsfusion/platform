@@ -6,6 +6,7 @@ import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.navigator.LogInfo;
 import lsfusion.server.logics.DataObject;
+import lsfusion.server.logics.ThreadUtils;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
@@ -17,6 +18,7 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
 import java.sql.SQLException;
+import java.util.Map;
 
 public class GetActiveJavaThreadsActionProperty extends ScriptingActionProperty {
 
@@ -64,11 +66,12 @@ public class GetActiveJavaThreadsActionProperty extends ScriptingActionProperty 
         }
 
         ServerLoggers.systemLogger.info("GetActiveJavaThreads: update started");
-        
+
+        Map<Long, Thread> threadMap = ThreadUtils.getThreadMap();
         int max = 0;
         for(ThreadInfo threadInfo : threadsInfo) {
             int id = (int) threadInfo.getThreadId();
-            Thread thread = getThreadById(id);
+            Thread thread = threadMap.get(id);
             DataObject currentObject = new DataObject(id);
 
             String status = String.valueOf(threadInfo.getThreadState());
@@ -100,15 +103,6 @@ public class GetActiveJavaThreadsActionProperty extends ScriptingActionProperty 
         ServerLoggers.systemLogger.info("GetActiveJavaThreads: finished");
     }
 
-    private Thread getThreadById(int id) {
-        for (Thread t : Thread.getAllStackTraces().keySet()) {
-            if (t.getId() == id) {
-                return t;
-            }
-        }
-        return null;
-    }
-    
     private String stackTraceToString(StackTraceElement[] stackTrace) {
         StringBuilder sb = new StringBuilder();
         for (StackTraceElement element : stackTrace) {

@@ -29,12 +29,9 @@ public class CancelJavaProcessActionProperty extends ScriptingActionProperty {
         try {
             DataObject currentObject = context.getDataKeyValue(integerInterface);
             Integer id = Integer.parseInt((String) findProperty("idThreadProcess[VARSTRING[10]]").read(context, currentObject));
-            ThreadInfo threadInfo = ManagementFactory.getThreadMXBean().getThreadInfo(id);
-            if (threadInfo != null) {
-                for (Thread thread : Thread.getAllStackTraces().keySet()) {
-                    if (thread.getName().equals(threadInfo.getThreadName()))
-                        ThreadUtils.interruptThread(context, thread);
-                }
+            Thread thread = ThreadUtils.getThreadById(id);
+            if (thread != null) {
+                ThreadUtils.interruptThread(context, thread);
             }
         } catch (Exception e) {
             throw Throwables.propagate(e);

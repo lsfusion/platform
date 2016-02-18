@@ -4,6 +4,7 @@ import com.google.common.base.Throwables;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.DataObject;
+import lsfusion.server.logics.ThreadUtils;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
@@ -43,12 +44,9 @@ public class CancelActiveJavaThreadActionProperty extends ScriptingActionPropert
 
         DataObject currentObject = context.getDataKeyValue(integerInterface);
         Integer id = (Integer) findProperty("idActiveJavaThread[INTEGER]").read(context, currentObject);
-        ThreadInfo threadInfo = ManagementFactory.getThreadMXBean().getThreadInfo(id);
-        if(threadInfo != null) {
-            for (Thread thread : Thread.getAllStackTraces().keySet()) {
-                if (thread.getName().equals(threadInfo.getThreadName()))
-                    thread.stop();
-            }
+        Thread thread = ThreadUtils.getThreadById(id);
+        if(thread != null) {
+            thread.stop();
         }
         findAction("getActiveJavaThreadsAction[]").execute(context);
     }

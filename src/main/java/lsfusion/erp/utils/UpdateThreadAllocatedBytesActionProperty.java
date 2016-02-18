@@ -7,6 +7,7 @@ import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
 import lsfusion.server.form.navigator.LogInfo;
+import lsfusion.server.logics.ThreadUtils;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
@@ -61,6 +62,7 @@ public class UpdateThreadAllocatedBytesActionProperty extends ScriptingActionPro
             long sum = 0;
             long totalSum = 0;
             SQLSession.updateThreadAllocatedBytesMap();
+            Map<Long, Thread> threadMap = ThreadUtils.getThreadMap();
 
             for (Map.Entry<Long, Long> bEntry : SQLSession.threadAllocatedBytesBMap.entrySet()) {
                 Long id = bEntry.getKey();
@@ -72,7 +74,7 @@ public class UpdateThreadAllocatedBytesActionProperty extends ScriptingActionPro
                     totalSum += delta;
                     if (delta > maxAllocatedBytes) {
                         sum += delta;
-                        Thread thread = getThreadById(id.intValue());
+                        Thread thread = threadMap.get(id);
                         LogInfo logInfo = thread == null ? null : ThreadLocalContext.logInfoMap.get(thread);
                         String computer = logInfo == null ? null : logInfo.hostnameComputer;
                         String user = logInfo == null ? null : logInfo.userName;
@@ -88,15 +90,6 @@ public class UpdateThreadAllocatedBytesActionProperty extends ScriptingActionPro
                 ServerLoggers.allocatedBytesLogger.info(String.format("Reading allocated bytes: elapsed %sms, sum: %s, totalSum: %s",
                         System.currentTimeMillis() - time, humanReadableByteCount(sum), humanReadableByteCount(totalSum)));
         }
-    }
-
-    private Thread getThreadById(int id) {
-        for (Thread t : Thread.getAllStackTraces().keySet()) {
-            if (t.getId() == id) {
-                return t;
-            }
-        }
-        return null;
     }
 
     public static String humanReadableByteCount(long bytes) {

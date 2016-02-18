@@ -1,8 +1,10 @@
 package lsfusion.erp.utils;
 
 import com.google.common.base.Throwables;
+import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.logics.DataObject;
+import lsfusion.server.logics.ThreadUtils;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
@@ -28,12 +30,9 @@ public class KillJavaProcessActionProperty extends ScriptingActionProperty {
         try {
             DataObject currentObject = context.getDataKeyValue(integerInterface);
             Integer id = Integer.parseInt((String) findProperty("idThreadProcess[VARSTRING[10]]").read(context, currentObject));
-            ThreadInfo threadInfo = ManagementFactory.getThreadMXBean().getThreadInfo(id);
-            if (threadInfo != null) {
-                for (Thread thread : Thread.getAllStackTraces().keySet()) {
-                    if (thread.getName().equals(threadInfo.getThreadName()))
-                        thread.stop();
-                }
+            Thread thread = ThreadUtils.getThreadById(id);
+            if (thread != null) {
+                thread.stop();
             }
         } catch (Exception e) {
             throw Throwables.propagate(e);
