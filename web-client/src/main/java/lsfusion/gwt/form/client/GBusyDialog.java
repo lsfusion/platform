@@ -220,7 +220,7 @@ public class GBusyDialog extends WindowBox {
             btnCancel.setEnabled(visibleCancelBtn);
 
 
-        boolean showMessage = !widgetList.isEmpty();
+        boolean showMessage = !messageList.isEmpty();
         if (showMessage) {
 
             boolean resized = windowResized();
