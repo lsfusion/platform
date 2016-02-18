@@ -1868,7 +1868,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         int groupPropParamCount = mergeAllParams(mergeLists(mainProps, groupProps, orderProps)).size();
         List<ResolveClassSet> explicitInnerClasses = getClassesFromTypedParams(innerInterfaces);
-        assert groupPropParamCount == explicitInnerClasses.size();
+        assert groupPropParamCount == explicitInnerClasses.size(); // в отличии скажем от Partition, тут внешнего контекста быть
         
         LCP resultProp = null;
         if (type == GroupingType.SUM) {
@@ -1924,8 +1924,11 @@ public class ScriptingLogicsModule extends LogicsModule {
         if (partitionType == PartitionType.SUM || partitionType == PartitionType.PREVIOUS) {
             prop = addOProp(null, false, "", partitionType, isAscending, ordersNotNull, useLast, groupPropsCnt, resultParams.toArray());
         } else if (partitionType == PartitionType.DISTR_CUM_PROPORTION) {
-            List<ResolveClassSet> explicitInnerClasses = getClassesFromTypedParams(context); // для не script - временный хак
-            assert usedParams.size() == explicitInnerClasses.size();
+            List<ResolveClassSet> contextClasses = getClassesFromTypedParams(context);// для не script - временный хак
+            // может быть внешний context
+            List<ResolveClassSet> explicitInnerClasses = new ArrayList<>();
+            for(int usedParam : usedParams)
+                explicitInnerClasses.add(contextClasses.get(usedParam)); // one-based;
             prop = addPGProp(null, false, precision, strict, "", usedParams.size(), explicitInnerClasses, isAscending, ordersNotNull, (LCP) ungroupProp, resultParams.toArray());
         } else {
             prop = addUGProp(null, false, strict, "", usedParams.size(), isAscending, ordersNotNull, (LCP) ungroupProp, resultParams.toArray());
