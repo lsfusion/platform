@@ -2,12 +2,12 @@ package lsfusion.server.form.view;
 
 import lsfusion.base.identity.IdentityObject;
 import lsfusion.interop.ComponentDesign;
-import lsfusion.interop.form.layout.*;
+import lsfusion.interop.form.layout.AbstractComponent;
+import lsfusion.interop.form.layout.FlexAlignment;
 import lsfusion.server.caches.IdentityLazy;
-import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.logics.mutables.NFFact;
-import lsfusion.server.logics.mutables.interfaces.NFProperty;
 import lsfusion.server.logics.mutables.Version;
+import lsfusion.server.logics.mutables.interfaces.NFProperty;
 import lsfusion.server.serialization.ServerIdentitySerializable;
 import lsfusion.server.serialization.ServerSerializationPool;
 
@@ -105,7 +105,7 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
 
     }
     @IdentityLazy
-    public ComponentView getLocalHiddenContainer() { // show if or tabbed
+    public ComponentView getLocalHideableContainer() { // show if or tabbed
         ContainerView parent = getContainer();
         assert parent != null; // эквивалентно !isDesignHidden();
         if(parent.main)
@@ -114,7 +114,7 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
             return parent;
         if(parent.isTabbedPane())
             return this;
-        return parent.getLocalHiddenContainer();
+        return parent.getLocalHideableContainer();
     }
 
     @IdentityLazy

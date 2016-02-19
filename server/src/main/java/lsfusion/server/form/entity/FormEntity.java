@@ -46,7 +46,10 @@ import org.apache.log4j.Logger;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 
 import static lsfusion.server.logics.ServerResourceBundle.getString;
 
@@ -995,7 +998,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         eventActions.addAll(eventObject, Arrays.asList(actions), version);
     }
 
-    public ComponentView getDrawContainer(PropertyDrawEntity<?> property, boolean grid) {
+    public ComponentView getDrawComponent(PropertyDrawEntity<?> property, boolean grid) {
         FormView formView = getRichDesign();
         ComponentView drawComponent;
         if(grid) {
@@ -1111,17 +1114,17 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     }
 
     @IdentityLazy
-    public ComponentUpSet getDrawLocalHiddenContainers(GroupObjectEntity group) {
+    public ComponentUpSet getDrawLocalHideableContainers(GroupObjectEntity group) {
         ComponentUpSet result = new ComponentUpSet();
         for(PropertyDrawEntity property : getPropertyDrawsIt())
-            if(!group.getObjects().disjoint(property.propertyObject.mapping.values().toSet())) { // для свойств "зависящих" от группы
+            if(!group.getObjects().disjoint(property.propertyObject.mapping.values().toSet())) {  // для свойств "зависящих" от группы
                 for(int t=0;t<2;t++) {
-                    ComponentView drawContainer = getDrawContainer(property, t == 0); // не hidden и первый showifOrTab
-                    if(!isDesignHidden(drawContainer)) {
-                        ComponentView drawTabContainer = drawContainer.getLocalHiddenContainer();
-                        if (drawTabContainer == null) // cheat \ оптимизация
+                    ComponentView drawComponent = getDrawComponent(property, t == 0); // не hidden и первый showifOrTab
+                    if(!isDesignHidden(drawComponent)) {
+                        ComponentView localHideableContainer = drawComponent.getLocalHideableContainer();
+                        if (localHideableContainer == null) // cheat \ оптимизация
                             return null;
-                        result = result.addItem(drawTabContainer);
+                        result = result.addItem(localHideableContainer);
                     }
                 }
             }
@@ -1135,7 +1138,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
             }
         }
         for(GroupObjectEntity fixedGroupObject : mFixedGroupObjects.immutable()) {
-            ComponentUpSet drawContainers = getDrawLocalHiddenContainers(fixedGroupObject);
+            ComponentUpSet drawContainers = getDrawLocalHideableContainers(fixedGroupObject);
             if(drawContainers==null)
                 return null;
                 

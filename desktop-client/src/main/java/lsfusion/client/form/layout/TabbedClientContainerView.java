@@ -6,6 +6,7 @@ import lsfusion.client.form.ClientFormController;
 import lsfusion.client.form.grid.GridTable;
 import lsfusion.client.logics.ClientComponent;
 import lsfusion.client.logics.ClientContainer;
+import lsfusion.interop.KeyStrokes;
 import lsfusion.interop.form.layout.CachableLayout;
 
 import javax.swing.*;
@@ -87,7 +88,7 @@ public class TabbedClientContainerView extends AbstractClientContainerView {
         tabbedPane.addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
-                if (KeyEvent.VK_ENTER == e.getKeyCode()) {
+                if (KeyStrokes.isEnterEvent(e)) {
                     tabbedPane.transferFocus();
                 }
             }

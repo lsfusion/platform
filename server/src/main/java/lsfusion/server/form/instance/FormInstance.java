@@ -1351,24 +1351,30 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     // проверки видимости (для оптимизации pageframe'ов)
     protected Set<PropertyReaderInstance> pendingHidden = SetFact.mAddRemoveSet();
 
-    private ComponentView getDrawContainer(PropertyDrawInstance<?> property, boolean grid) {
-        return entity.getDrawContainer(property.entity, grid);
+    private ComponentView getDrawComponent(PropertyDrawInstance<?> property, boolean grid) {
+        return entity.getDrawComponent(property.entity, grid);
     }
 
     private boolean isTabHidden(PropertyDrawInstance<?> property, boolean grid) {
-        ComponentView drawContainer = getDrawContainer(property, grid);
-        assert !isNoTabHidden(drawContainer); // так как если бы был null не попалы бы в newIsShown в readShowIfs
-        ComponentView drawTabContainer = drawContainer.getTabContainer();
+        ComponentView drawComponent = getDrawComponent(property, grid);
+        assert !isNoTabHidden(drawComponent); // так как если бы был null не попалы бы в newIsShown в readShowIfs
+        ComponentView drawTabContainer = drawComponent.getTabContainer();
         return drawTabContainer != null && isTabHidden(drawTabContainer); // первая проверка - cheat / оптимизация
     }
 
     private boolean isHidden(GroupObjectInstance group) {
-        FormEntity.ComponentUpSet containers = entity.getDrawLocalHiddenContainers(group.entity);
+        FormEntity.ComponentUpSet containers = entity.getDrawLocalHideableContainers(group.entity);
         if (containers == null) // cheat / оптимизация, иначе пришлось бы в isHidden и еще в нескольких местах явную проверку на null
             return false;
         for (ComponentView component : containers.it())
             if (!isLocalHidden(component))
                 return false;
+        // для случая, когда группа FORCE PANEL, в группе только свойства, зависящие от ключей, и находятся не в первом табе.
+        // наличие ключа влияет на видимость этих свойств, которая в свою очередь влияет на видимость таба.
+        // неполное решение, т.к. возможны ещё более сложные случаи
+        if (group.isNull() && group.entity.isForcedPanel()) {
+            return false;
+        }
         return true;
     }
 
@@ -1615,7 +1621,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
             if (forceViewType != null && forceViewType == HIDE) continue;
 
             ImSet<GroupObjectInstance> propRowColumnGrids = drawProperty.getColumnGroupObjectsInGridView();
-            ImSet<GroupObjectInstance> propRowGrids = null;
+            ImSet<GroupObjectInstance> propRowGrids;
             Boolean newInInterface = null;
             if (curClassView == GRID && (forceViewType == null || forceViewType == GRID) &&
                     drawProperty.propertyObject.isInInterface(propRowGrids = propRowColumnGrids.addExcl(drawProperty.toDraw), forceViewType != null)) {
@@ -1626,11 +1632,11 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                 newInInterface = false;
             }
 
-            ComponentView drawContainer = null;
+            ComponentView drawComponent = null;
 
             if(newInInterface != null) {
-                drawContainer = getDrawContainer(drawProperty, newInInterface);
-                if (isNoTabHidden(drawContainer)) { // hidden, но без учета tab, для него отдельная оптимизация, чтобы не переобновляться при переключении "туда-назад",  связан с assertion'ом в FormInstance.isHidden
+                drawComponent = getDrawComponent(drawProperty, newInInterface);
+                if (isNoTabHidden(drawComponent)) { // hidden, но без учета tab, для него отдельная оптимизация, чтобы не переобновляться при переключении "туда-назад",  связан с assertion'ом в FormInstance.isHidden
                     newInInterface = null;
                 }
             }
@@ -1641,7 +1647,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
             Boolean oldInInterface = isInInterface.put(drawProperty, newInInterface);
             if (newInInterface != null) { // если показывается
-                ComponentView tabContainer = drawContainer.getTabContainer(); // у tab container'а по сравнению с containerShowIfs есть разница, так как они оптимизированы на изменение видимости без перезапроса данных
+                ComponentView tabContainer = drawComponent.getTabContainer(); // у tab container'а по сравнению с containerShowIfs есть разница, так как они оптимизированы на изменение видимости без перезапроса данных
                 boolean hidden = tabContainer != null && isTabHidden(tabContainer);
                 boolean isDefinitelyShown = drawProperty.propertyShowIf == null;
                 if (!isDefinitelyShown) {
