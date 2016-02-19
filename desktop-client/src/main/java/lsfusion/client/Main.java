@@ -338,6 +338,8 @@ public class Main {
 //        FocusOwnerTracer.installFocusTracer();
 
         ToolTipManager.sharedInstance().setInitialDelay(1500);
+        // через сколько после скрытия тултипа снова ждать Initial Delay до показа нового (не в рамках одного компонента)
+        ToolTipManager.sharedInstance().setReshowDelay(0);
         ToolTipManager.sharedInstance().setDismissDelay(Integer.MAX_VALUE);
         
         // при первом использовании rich-editora во время редактирования, его создание тормозит...
