@@ -39,7 +39,7 @@ public abstract class PopupBasedGridCellEditor extends AbstractGridCellEditor {
         this.textAlign = textAlign;
         this.property = property;
 
-        popup = new PopupPanel(false, true) {
+        popup = new PopupPanel(true, true) {
             @Override
             protected void onPreviewNativeEvent(Event.NativePreviewEvent event) {
                 if (Event.ONKEYUP == event.getTypeInt()) {
@@ -47,6 +47,14 @@ public abstract class PopupBasedGridCellEditor extends AbstractGridCellEditor {
                         onEscapePressed();
                     }
                 }
+            }
+
+            @Override
+            public void hide(boolean autoClosed) {
+                if (autoClosed) {
+                    cancelEditing();
+                }
+                super.hide(autoClosed);
             }
         };
         popup.setWidget(createPopupComponent());
@@ -81,8 +89,12 @@ public abstract class PopupBasedGridCellEditor extends AbstractGridCellEditor {
     }
 
     protected final void cancelEditing() {
-        popup.hide();
         editManager.cancelEditing();
+    }
+    
+    protected final void onCancel() {
+        popup.hide();
+        cancelEditing();
     }
 
     @Override
@@ -105,7 +117,7 @@ public abstract class PopupBasedGridCellEditor extends AbstractGridCellEditor {
     }
 
     protected void onEscapePressed() {
-        cancelEditing();
+        onCancel();
     }
 
     protected abstract Widget createPopupComponent();

@@ -7,7 +7,6 @@ import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.HasAlignment;
 import com.google.gwt.user.client.ui.Widget;
-import net.auroris.ColorPicker.client.ColorPicker;
 import lsfusion.gwt.base.client.ui.ResizableVerticalPanel;
 import lsfusion.gwt.cellview.client.cell.Cell;
 import lsfusion.gwt.form.client.MainFrameMessages;
@@ -15,6 +14,7 @@ import lsfusion.gwt.form.shared.view.GPropertyDraw;
 import lsfusion.gwt.form.shared.view.changes.dto.ColorDTO;
 import lsfusion.gwt.form.shared.view.grid.EditEvent;
 import lsfusion.gwt.form.shared.view.grid.EditManager;
+import net.auroris.ColorPicker.client.ColorPicker;
 
 public class ColorGridCellEditor extends PopupBasedGridCellEditor {
     private static final MainFrameMessages messages = MainFrameMessages.Instance.get();
@@ -41,7 +41,7 @@ public class ColorGridCellEditor extends PopupBasedGridCellEditor {
         btnCancel.addClickHandler(new ClickHandler() {
             @Override
             public void onClick(ClickEvent event) {
-                cancelEditing();
+                onCancel();
             }
         });
 
