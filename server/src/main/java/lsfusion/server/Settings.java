@@ -1628,7 +1628,7 @@ public class Settings {
 
     // если сильно "наобъединяться" бОльшая вероятность, что не слишком умная СУБД сделает неправильный план (впрочем после materialized subqueries должно уйти)
     // в запросе выполнения всегда объединять join'ы с одинаковой статистикой, а не только при превышении порога
-    private boolean collapseStats = false;
+    private boolean collapseStats = true;
 
     public boolean isCollapseStats() {
         return collapseStats;
