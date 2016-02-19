@@ -44,10 +44,31 @@ public class ThreadUtils {
         if(thread != null)
             SQLSession.cancelExecutingStatement(session, thread.getId(), false);
     }
-
-    public static ImSet<Thread> getAllThreads() {
-        return SetFact.toSet((Thread[])ReflectionUtils.invokePrivateMethod(Thread.class, null, "getThreads", new Class[]{}));
+    public static ThreadGroup getRootThreadGroup( ) {
+        ThreadGroup tg = Thread.currentThread( ).getThreadGroup( );
+        ThreadGroup ptg;
+        while ( (ptg = tg.getParent( )) != null )
+            tg = ptg;
+        return tg;
     }
+    public static ImSet<Thread> getAllThreads( ) {
+        final ThreadGroup root = getRootThreadGroup( );
+        final ThreadMXBean thbean = ManagementFactory.getThreadMXBean( );
+        int nAlloc = thbean.getThreadCount( );
+        int n = 0;
+        Thread[] threads;
+        do {
+            nAlloc *= 2;
+            threads = new Thread[ nAlloc ];
+            n = root.enumerate( threads, true );
+        } while ( n == nAlloc );
+        return SetFact.toSet(java.util.Arrays.copyOf( threads, n ));
+    }
+
+//    есть подозрение что от такой реализации крэшится JVM
+//    public static ImSet<Thread> getAllThreads() {
+//        return SetFact.toSet((Thread[]) ReflectionUtils.invokePrivateMethod(Thread.class, null, "getThreads", new Class[]{}));
+//    }
 
     public static Thread getThreadById(long id) {
         for(Thread thread : getAllThreads())
