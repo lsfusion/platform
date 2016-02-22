@@ -53,6 +53,7 @@ META addEventGenerateNumberOnForm(form, o, object)
         IF generateNumberOnForm() AND numerator(ob) AND NOT number(ob) THEN {
             incrementValue(numerator(ob));
             number(ob) <- incrementedValue();
+            series(ob) <- series(numerator(ob));
         }
     }
     EXTEND FORM form
