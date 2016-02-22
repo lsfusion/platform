@@ -543,21 +543,14 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
         }
         ThreadMXBean tBean = ManagementFactory.getThreadMXBean();
         ThreadInfo[] threadInfos;
-        if(Settings.get().isUseSafeMonitorProcess()) {
-            threadInfos = new ThreadInfo[threadIds.length];
-            for(int i=0;i<threadInfos.length;i++)
-                threadInfos[i] = tBean.getThreadInfo(threadIds[i], Integer.MAX_VALUE);
-        } else
+        if(threadIds.length > 0) // https://bugs.openjdk.java.net/browse/JDK-8074815
             threadInfos = tBean.getThreadInfo(threadIds, Integer.MAX_VALUE);
+        else
+            threadInfos = new ThreadInfo[] {};
 
         long[] allocatedBytes = null;
         if (readAllocatedBytes && tBean instanceof com.sun.management.ThreadMXBean) {
-            if(Settings.get().isUseSafeMonitorProcess()) {
-//                allocatedBytes = new long[threadIds.length];
-//                for (int i = 0; i < threadInfos.length; i++)
-//                    allocatedBytes[i] = ((com.sun.management.ThreadMXBean) tBean).getThreadAllocatedBytes(threadIds[i]);
-            } else
-                allocatedBytes = ((com.sun.management.ThreadMXBean) tBean).getThreadAllocatedBytes(threadIds);
+            allocatedBytes = ((com.sun.management.ThreadMXBean) tBean).getThreadAllocatedBytes(threadIds);
         }
 
         MExclMap<String, List<Object>> mResultMap = MapFact.mExclMap();
