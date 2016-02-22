@@ -3,6 +3,7 @@ package lsfusion.server.logics;
 import lsfusion.base.ReflectionUtils;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.server.Settings;
 import lsfusion.server.context.Context;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
@@ -52,17 +53,21 @@ public class ThreadUtils {
         return tg;
     }
     public static ImSet<Thread> getAllThreads( ) {
-        final ThreadGroup root = getRootThreadGroup( );
-        final ThreadMXBean thbean = ManagementFactory.getThreadMXBean( );
-        int nAlloc = thbean.getThreadCount( );
-        int n = 0;
-        Thread[] threads;
-        do {
-            nAlloc *= 2;
-            threads = new Thread[ nAlloc ];
-            n = root.enumerate( threads, true );
-        } while ( n == nAlloc );
-        return SetFact.toSet(java.util.Arrays.copyOf( threads, n ));
+        if(Settings.get().isUseSafeMonitorProcess()) {
+            return SetFact.fromJavaSet(Thread.getAllStackTraces().keySet());
+        } else {
+            final ThreadGroup root = getRootThreadGroup();
+            final ThreadMXBean thbean = ManagementFactory.getThreadMXBean();
+            int nAlloc = thbean.getThreadCount();
+            int n = 0;
+            Thread[] threads;
+            do {
+                nAlloc *= 2;
+                threads = new Thread[nAlloc];
+                n = root.enumerate(threads, true);
+            } while (n == nAlloc);
+            return SetFact.toSet(java.util.Arrays.copyOf(threads, n));
+        }
     }
 
 //    есть подозрение что от такой реализации крэшится JVM

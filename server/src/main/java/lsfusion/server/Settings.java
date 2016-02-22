@@ -1639,4 +1639,15 @@ public class Settings {
     public void setCollapseStats(boolean collapseStats) {
         this.collapseStats = collapseStats;
     }
+
+    // есть какой-то баг Java, который крашит всю JVM
+    private boolean useSafeMonitorProcess = true;
+
+    public boolean isUseSafeMonitorProcess() {
+        return useSafeMonitorProcess;
+    }
+
+    public void setUseSafeMonitorProcess(boolean useSafeMonitorProcess) {
+        this.useSafeMonitorProcess = useSafeMonitorProcess;
+    }
 }
