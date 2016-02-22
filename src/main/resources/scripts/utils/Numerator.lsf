@@ -23,12 +23,17 @@ lpadStringWithZero = FORMULA STRING[18] PG 'lpad(CAST($1 AS text),$2,\'0\')', MS
 
 curStringValue 'Тек. значение (строка)' (Numerator numerator) = lpadStringWithZero(curValue(numerator), stringLength(numerator)) IN base;
 
+incrementedValue = DATA LOCAL NESTED STRING[18] ();
+
 incrementValue 'Увеличить значение'(Numerator numerator) = ACTION NEWSESSION {
+    incrementedValue() <- NULL;
     IF curValue(numerator) >= maxValue(numerator) THEN
         MESSAGE 'Счетчик нумератора ' + name(numerator) + ' достиг максимального значения. Обратитесь к администратору.'
     ELSE {
-        curValue(numerator) <- curValue(numerator) + 1;
-        apply();
+        APPLY {
+            incrementedValue() <- curStringValue(numerator);
+            curValue(numerator) <- curValue(numerator) + 1;
+        }
     };
 };
 
