@@ -8,6 +8,8 @@ import org.apache.log4j.Logger;
 import org.springframework.context.support.AbstractXmlApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
+import java.lang.management.ManagementFactory;
+
 public class BusinessLogicsBootstrap {
     private static final Logger logger = ServerLoggers.systemLogger;
 

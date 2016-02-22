@@ -1640,7 +1640,6 @@ public class Settings {
         this.collapseStats = collapseStats;
     }
 
-    // есть какой-то баг Java, который крашит всю JVM
     private boolean useSafeMonitorProcess = true;
 
     public boolean isUseSafeMonitorProcess() {
