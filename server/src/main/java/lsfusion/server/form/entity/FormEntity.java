@@ -949,32 +949,6 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         outStream.writeUTF(modalityType.name());
     }
 
-    public void setAddOnEvent(ObjectEntity entity, LogicsModule lm, FormEventType... events) {
-        boolean needApplyConfirm = false;
-        boolean needOkConfirm = false;
-        for (FormEventType event : events) {
-            if (event == FormEventType.APPLY) {
-                needApplyConfirm = true;
-            } else if (event == FormEventType.APPLY) {
-                needOkConfirm = true;
-            }
-        }
-
-        if (needOkConfirm) {
-            okActionPropertyDraw.askConfirm = true;
-            okActionPropertyDraw.askConfirmMessage = (okActionPropertyDraw.askConfirmMessage == null ? "" : okActionPropertyDraw.askConfirmMessage)
-                    + getString("form.create.new.object") + " " + entity.getCaption() + " ?";
-        }
-
-        if (needApplyConfirm) {
-            applyActionPropertyDraw.askConfirm = true;
-            applyActionPropertyDraw.askConfirmMessage = (applyActionPropertyDraw.askConfirmMessage == null ? "" : applyActionPropertyDraw.askConfirmMessage)
-                    + getString("form.create.new.object") + " " + entity.getCaption() + " ?";
-        }
-
-        addActionsOnEvent(addPropertyObject(lm.getAddObjectAction(this, entity)), lm.getVersion(), events);
-    }
-
     public void addActionsOnObjectChange(ObjectEntity object, Version version, ActionPropertyObjectEntity... actions) {
         addActionsOnObjectChange(object, false, version, actions);
     }

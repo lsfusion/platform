@@ -1218,14 +1218,16 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     public boolean apply(BusinessLogics BL, UpdateCurrentClasses update, UserInteraction interaction, ImOrderSet<ActionPropertyValueImplement> applyActions, FunctionSet<SessionDataProperty> keepProperties, FormInstance formInstance) throws SQLException, SQLHandledException {
         assert formInstance == null || this == formInstance;
         update = CompoundUpdateCurrentClasses.merge(update, outerUpdateCurrentClasses);
-        
+
+        fireOnBeforeApply();
+
         boolean succeeded = session.apply(BL, this, update, interaction, applyActions, keepProperties);
 
         if (!succeeded)
             return false;
 
         refreshData(); // нужно перечитать ключи в таблицах, и т.п.
-        fireOnApply();
+        fireOnAfterApply();
 
         dataChanged = true; // временно пока applyChanges синхронен, для того чтобы пересылался факт изменения данных
 
@@ -2099,8 +2101,12 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         fireEvent(FormEventType.INIT);
     }
 
-    public void fireOnApply() throws SQLException, SQLHandledException {
-        fireEvent(FormEventType.APPLY);
+    public void fireOnBeforeApply() throws SQLException, SQLHandledException {
+        fireEvent(FormEventType.BEFOREAPPLY);
+    }
+
+    public void fireOnAfterApply() throws SQLException, SQLHandledException {
+        fireEvent(FormEventType.AFTERAPPLY);
     }
 
     public void fireOnCancel() throws SQLException, SQLHandledException {

@@ -1,5 +1,5 @@
 package lsfusion.interop;
 
 public enum FormEventType {
-    INIT, APPLY, CANCEL, OK, CLOSE, DROP, QUERYCLOSE, QUERYOK
+    INIT, BEFOREAPPLY, AFTERAPPLY, CANCEL, OK, CLOSE, DROP, QUERYCLOSE, QUERYOK
 }

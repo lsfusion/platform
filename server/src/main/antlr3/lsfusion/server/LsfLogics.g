@@ -802,9 +802,12 @@ formEventsList
 
 
 formEventDeclaration returns [ActionPropertyObjectEntity action, Object type]
-	:	'ON' 
+@init {
+    boolean before = false;
+}
+	:	'ON'
 		(	'OK' 	 { $type = FormEventType.OK; }
-		|	'APPLY'	 { $type = FormEventType.APPLY; }	
+		|	'APPLY' ('BEFORE' { before = true; } | 'AFTER' { before = true; } ) { $type = before ? FormEventType.BEFOREAPPLY : FormEventType.AFTERAPPLY; }
 		|	'CLOSE'	 { $type = FormEventType.CLOSE; }
 		|	'INIT'	 { $type = FormEventType.INIT; }
 		|	'CANCEL' { $type = FormEventType.CANCEL; }
