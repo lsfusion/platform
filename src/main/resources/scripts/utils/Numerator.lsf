@@ -2,6 +2,13 @@ MODULE Numerator;
 
 REQUIRE System, MasterData, DefaultData;
 
+DESIGN options {
+    commons {
+        NEW numerator {
+            caption = 'Нумератор';
+        }
+    }            
+}
 // ------------------------------------------- Нумераторы ----------------------------------------------- //
 
 CLASS Numerator 'Нумератор';
@@ -36,6 +43,25 @@ incrementValue 'Увеличить значение'(Numerator numerator) = ACTI
         }
     };
 };
+
+// -------------- Генерация счетчиков на форме с целью выноса из общей транзакции для уменьшения вероятности CONFLICT UPDATE
+
+@defineOption(generateNumberOnForm, 'Генерировать номер до общей транзакции', numerator);
+
+META addEventGenerateNumberOnForm(form, o, object)
+    generateNumber###object (###object ob)= ACTION {
+        IF generateNumberOnForm() AND numerator(ob) AND NOT number(ob) THEN {
+            incrementValue(numerator(ob));
+            number(ob) <- incrementedValue();
+        }
+    }
+    EXTEND FORM form
+        EVENTS ON OK generateNumber###object(o),
+               ON APPLY generateNumber###object(o)
+    ;
+END
+
+// --------------
 
 incrementValueSession 'Увеличить значение'(Numerator numerator) = ACTION {
     IF curValue(numerator) >= maxValue(numerator) THEN
@@ -103,14 +129,11 @@ EXTEND FORM options
     PROPERTIES () useLoweredNumber, useUpperedSeries, keepNumberSpaces
 ;
 DESIGN options{
-    commons {
-        NEW numerator {
-            caption = 'Нумератор';
-            MOVE PROPERTY (useLoweredNumber());
-            MOVE PROPERTY (useUpperedSeries());
-            MOVE PROPERTY (keepNumberSpaces());
-        }
-    }    
+    numerator {
+        MOVE PROPERTY (useLoweredNumber());
+        MOVE PROPERTY (useUpperedSeries());
+        MOVE PROPERTY (keepNumberSpaces());
+    }
 }
 
 META defineNumbered(class)
