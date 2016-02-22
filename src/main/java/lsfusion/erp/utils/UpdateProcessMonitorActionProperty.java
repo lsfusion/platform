@@ -553,9 +553,9 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
         long[] allocatedBytes = null;
         if (readAllocatedBytes && tBean instanceof com.sun.management.ThreadMXBean) {
             if(Settings.get().isUseSafeMonitorProcess()) {
-                allocatedBytes = new long[threadIds.length];
-                for (int i = 0; i < threadInfos.length; i++)
-                    allocatedBytes[i] = ((com.sun.management.ThreadMXBean) tBean).getThreadAllocatedBytes(threadIds[i]);
+//                allocatedBytes = new long[threadIds.length];
+//                for (int i = 0; i < threadInfos.length; i++)
+//                    allocatedBytes[i] = ((com.sun.management.ThreadMXBean) tBean).getThreadAllocatedBytes(threadIds[i]);
             } else
                 allocatedBytes = ((com.sun.management.ThreadMXBean) tBean).getThreadAllocatedBytes(threadIds);
         }
