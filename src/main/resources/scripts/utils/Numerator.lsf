@@ -56,8 +56,7 @@ META addEventGenerateNumberOnForm(form, o, object)
         }
     }
     EXTEND FORM form
-        EVENTS ON OK generateNumber###object(o),
-               ON APPLY generateNumber###object(o)
+        EVENTS ON APPLY BEFORE generateNumber###object(o)
     ;
 END
 
