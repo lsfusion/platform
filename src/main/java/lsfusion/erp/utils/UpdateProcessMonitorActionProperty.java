@@ -12,6 +12,7 @@ import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.ServerLoggers;
+import lsfusion.server.Settings;
 import lsfusion.server.classes.DateTimeClass;
 import lsfusion.server.classes.IntegerClass;
 import lsfusion.server.classes.LongClass;
@@ -541,11 +542,22 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
             threadIds[i] = threads.get(i).getId();
         }
         ThreadMXBean tBean = ManagementFactory.getThreadMXBean();
-        ThreadInfo[] threadInfos = tBean.getThreadInfo(threadIds, Integer.MAX_VALUE);
+        ThreadInfo[] threadInfos;
+        if(Settings.get().isUseSafeMonitorProcess()) {
+            threadInfos = new ThreadInfo[threadIds.length];
+            for(int i=0;i<threadInfos.length;i++)
+                threadInfos[i] = tBean.getThreadInfo(threadIds[i], Integer.MAX_VALUE);
+        } else
+            threadInfos = tBean.getThreadInfo(threadIds, Integer.MAX_VALUE);
 
         long[] allocatedBytes = null;
         if (readAllocatedBytes && tBean instanceof com.sun.management.ThreadMXBean) {
-            allocatedBytes = ((com.sun.management.ThreadMXBean) tBean).getThreadAllocatedBytes(threadIds);
+            if(Settings.get().isUseSafeMonitorProcess()) {
+                allocatedBytes = new long[threadIds.length];
+                for (int i = 0; i < threadInfos.length; i++)
+                    allocatedBytes[i] = ((com.sun.management.ThreadMXBean) tBean).getThreadAllocatedBytes(threadIds[i]);
+            } else
+                allocatedBytes = ((com.sun.management.ThreadMXBean) tBean).getThreadAllocatedBytes(threadIds);
         }
 
         MExclMap<String, List<Object>> mResultMap = MapFact.mExclMap();
