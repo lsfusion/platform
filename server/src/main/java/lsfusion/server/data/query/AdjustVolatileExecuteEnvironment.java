@@ -32,7 +32,7 @@ public class AdjustVolatileExecuteEnvironment extends DynamicExecuteEnvironment<
         if(!(volatileStats == snapshot.volatileStats && timeout == snapshot.timeout)) // discard'м если состояние на конец отличается от состояния на начало
             return false;
 
-        if(timeout == 0 || (!snapshot.volatileStats && snapshot.sessionVolatileStats) || snapshot.isTransactTimeout) // уже выключен, snapshot хочет volatile, а сессия нет, включился transactTimeout
+        if(timeout == 0 || snapshot.isTransactTimeout) // уже выключен, snapshot хочет volatile, а сессия нет, включился transactTimeout
             return false;
 
         return true;
@@ -77,7 +77,6 @@ public class AdjustVolatileExecuteEnvironment extends DynamicExecuteEnvironment<
         // состояние сессии (точнее потока + сессии), есть assertion что не изменяются вплоть до окончания выполнения
         public final int transactTimeout; // param
 
-        public boolean sessionVolatileStats; // ThreadLocal
         public boolean noHandled; // ThreadLocal
         public boolean inTransaction; // LockWrite
         public int secondsFromTransactStart; // LockWrite
@@ -141,11 +140,6 @@ public class AdjustVolatileExecuteEnvironment extends DynamicExecuteEnvironment<
 
             if(session.syntax.supportsDisableNestedLoop()) {
                 disableNestedLoop = volatileStats;
-                sessionVolatileStats = session.isVolatileStats();
-                if (sessionVolatileStats) { // проверяем локальный volatileStats
-                    disableNestedLoop = true;
-                    setTimeout = 0; // выключаем timeout
-                }
             }
 
             // уменьшаем timeout до локального максимума

@@ -63,7 +63,7 @@ public class SQLSessionLoggerAspect {
                     queryString = "[rows " + ((ImOrderMap) result).size() + "] " + queryString;
                 if (result instanceof Integer) // cheat, но чисто для логинга
                     queryString = "[rows " + result + "] " + queryString;
-                sqlLogger.info(String.format("Executed query (time: %1$d ms., running total: %3$d, running warn: %4$d, running count: %5$d): %2$s, volatile : %6$b", runTime / 1000000, queryString, runningTotal / 1000000, runningWarningTotal / 1000000, runningCount, session.isVolatileStats()));
+                sqlLogger.info(String.format("Executed query (time: %1$d ms., running total: %3$d, running warn: %4$d, running count: %5$d): %2$s", runTime / 1000000, queryString, runningTotal / 1000000, runningWarningTotal / 1000000, runningCount));
             }
         }
 

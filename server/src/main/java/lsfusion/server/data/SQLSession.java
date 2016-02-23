@@ -1244,7 +1244,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
                 }
                 double ttime = BaseUtils.nullAdd(rtime, ptime);
                 if(noAnalyze || thr==0 || ttime >= thr) {
-                    systemLogger.info(statement.toString() + " volatile : " + isVolatileStats() + " disabled nested loop : " + isDisabledNestLoop + " actual time : " + actualTime);
+                    systemLogger.info(statement.toString() + " disabled nested loop : " + isDisabledNestLoop + " actual time : " + actualTime);
                     systemLogger.info(ExecutionStackAspect.getStackString());
                     if(Settings.get().isExplainJavaStack())
                         systemLogger.info(ExceptionUtils.getStackTrace());
