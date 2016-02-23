@@ -44,6 +44,7 @@ public class UpdateThreadAllocatedBytesActionProperty extends ScriptingActionPro
                         timer.schedule(new TimerTask() {
                             @Override
                             public void run() {
+                                ThreadLocalContext.set(context.getLogicsInstance().getContext());
                                 ThreadMXBean tBean = ManagementFactory.getThreadMXBean();
                                 updateThreadAllocatedBytesMap(tBean, maxAllocatedBytes);
                             }
