@@ -7,6 +7,7 @@ import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
 import lsfusion.server.form.navigator.LogInfo;
+import lsfusion.server.logics.LogicsInstance;
 import lsfusion.server.logics.ThreadUtils;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
@@ -40,11 +41,12 @@ public class UpdateThreadAllocatedBytesActionProperty extends ScriptingActionPro
                         final long period = Settings.get().getThreadAllocatedMemoryPeriod();
                         final long maxAllocatedBytes = Settings.get().getMaxThreadAllocatedBytes();
 
+                        final LogicsInstance logicsInstance = context.getLogicsInstance();
                         timer = new Timer("ReadAllocatedBytes", true);
                         timer.schedule(new TimerTask() {
                             @Override
                             public void run() {
-                                ThreadLocalContext.set(context.getLogicsInstance().getContext());
+                                ThreadLocalContext.set(logicsInstance.getContext());
                                 ThreadMXBean tBean = ManagementFactory.getThreadMXBean();
                                 updateThreadAllocatedBytesMap(tBean, maxAllocatedBytes);
                             }
