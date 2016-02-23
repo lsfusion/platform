@@ -1640,7 +1640,7 @@ public class Settings {
         this.collapseStats = collapseStats;
     }
 
-    private boolean useSafeMonitorProcess = true;
+    private boolean useSafeMonitorProcess = false;
 
     public boolean isUseSafeMonitorProcess() {
         return useSafeMonitorProcess;
