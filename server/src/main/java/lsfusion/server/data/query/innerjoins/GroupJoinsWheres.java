@@ -162,8 +162,6 @@ public class GroupJoinsWheres extends DNFWheres<WhereJoins, GroupJoinsWheres.Val
             return result;
 
         boolean collapseStats = !fitsCollapseStatsThreshold();
-        if(collapseStats)
-            collapseStats = collapseStats;
         if(!collapseStats) {
             result = result.packMeans(keepStat, keyStat, true);
             if (result.fitsPackThreshold())
