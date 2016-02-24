@@ -661,6 +661,10 @@ public class MapFact {
         return true;
     }
 
+    public static <K extends V, V> boolean containsAll(ImSet<K> set1, ImSet<V> set2) {
+        return BaseUtils.<ImSet<V>>immutableCast(set1).containsAll(set2);
+    }
+
     public static <K> AddValue<K, Integer> addLinear() {
         return (AddValue<K, Integer>) addLinear;
     }

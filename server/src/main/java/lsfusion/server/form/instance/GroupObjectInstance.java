@@ -28,6 +28,7 @@ import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.ValueExpr;
 import lsfusion.server.data.expr.query.GroupExpr;
 import lsfusion.server.data.expr.query.GroupType;
+import lsfusion.server.data.expr.where.extra.CompareWhere;
 import lsfusion.server.data.expr.where.ifs.IfExpr;
 import lsfusion.server.data.query.MapKeysInterface;
 import lsfusion.server.data.query.Query;
@@ -1010,7 +1011,32 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
         public SeekObjects reverse() {
             return new SeekObjects(values, !end);
         }
-        
+
+        // оптимизация, так как при Limit 1 некоторые СУБД начинают чудить
+        private ImOrderMap<ImMap<ObjectInstance, DataObject>, ImMap<OrderInstance, ObjectValue>> executeSingleOrders(SQLSession session, QueryEnvironment env, final Modifier modifier, BaseClass baseClass, ReallyChanged reallyChanged) throws SQLException, SQLHandledException {
+            assert !isInTree();
+
+            ImMap<ObjectInstance, ObjectValue> objectValues;
+            ImMap<ObjectInstance, DataObject> dataObjects;
+            if(!(Settings.get().isEnableSingleReadObjectsOptimization() && // работает, только, если в поиске есть все объекты и все DataObject
+                    (objectValues = values.filter(objects)).size() == objects.size() &&
+                    (dataObjects = DataObject.onlyDataObjects(objectValues)) != null))
+                return MapFact.EMPTYORDER();
+
+            final ImRevMap<ObjectInstance, KeyExpr> mapKeys = getMapKeys();
+
+            assert orders.keys().containsAll(values.keys());
+
+            ImMap<OrderInstance, Expr> orderExprs = orders.getMap().mapKeyValuesEx(new GetExValue<Expr, OrderInstance, SQLException, SQLHandledException>() {
+                public Expr getMapValue(OrderInstance value) throws SQLException, SQLHandledException {
+                    return value.getExpr(mapKeys, modifier);
+                }
+            });
+
+            return new Query<>(mapKeys, orderExprs, getWhere(mapKeys, modifier, reallyChanged).and(CompareWhere.compareInclValues(orderExprs, dataObjects))).
+                    executeClasses(session, env, baseClass);
+        }
+
         // возвращает OrderInstance из orderSeeks со значениями, а также если есть parent, то parent'ы
         public ImOrderMap<ImMap<ObjectInstance, DataObject>, ImMap<OrderInstance, ObjectValue>> executeOrders(SQLSession session, QueryEnvironment env, final Modifier modifier, BaseClass baseClass, int readSize, boolean down, ReallyChanged reallyChanged) throws SQLException, SQLHandledException {
             assert !isInTree();
@@ -1059,7 +1085,9 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
 
         // считывает одну запись
         private Pair<ImMap<ObjectInstance, DataObject>, ImMap<OrderInstance, ObjectValue>> readObjects(SQLSession session, QueryEnvironment env, Modifier modifier, BaseClass baseClass, ReallyChanged reallyChanged) throws SQLException, SQLHandledException {
-            ImOrderMap<ImMap<ObjectInstance, DataObject>, ImMap<OrderInstance, ObjectValue>> result = executeOrders(session, env, modifier, baseClass, 1, !end, reallyChanged);
+            ImOrderMap<ImMap<ObjectInstance, DataObject>, ImMap<OrderInstance, ObjectValue>> result = executeSingleOrders(session, env, modifier, baseClass, reallyChanged);
+            if(result.size() == 0)
+                result = executeOrders(session, env, modifier, baseClass, 1, !end, reallyChanged);
             if (result.size() == 0)
                 result = new SeekObjects(values, !end).executeOrders(session, env, modifier, baseClass, 1, end, reallyChanged);
             if (result.size() > 0)

@@ -1658,4 +1658,14 @@ public class Settings {
     public void setUseSafeMonitorProcess(boolean useSafeMonitorProcess) {
         this.useSafeMonitorProcess = useSafeMonitorProcess;
     }
+
+    private boolean enableSingleReadObjectsOptimization = true;
+
+    public boolean isEnableSingleReadObjectsOptimization() {
+        return enableSingleReadObjectsOptimization;
+    }
+
+    public void setEnableSingleReadObjectsOptimization(boolean enableSingleReadObjectsOptimization) {
+        this.enableSingleReadObjectsOptimization = enableSingleReadObjectsOptimization;
+    }
 }
