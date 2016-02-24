@@ -147,30 +147,37 @@ public class GroupJoinsWheres extends DNFWheres<WhereJoins, GroupJoinsWheres.Val
         return size() > Settings.get().getLimitWhereJoinsCount() * degree || getComplexity(true) > Settings.get().getLimitWhereJoinsComplexity() * degree;
     }
 
-    public boolean isFitPackThreshold() {
+    public boolean fitsPackThreshold() {
         return !(size() > Settings.get().getLimitWhereJoinsCount() || (!noWhere && getComplexity(true) > Settings.get().getLimitWhereJoinsComplexity()));
+    }
+
+    public boolean fitsCollapseStatsThreshold() {
+        return !(size() > Settings.get().getCollapseStatsCount() || (!noWhere && getComplexity(true) > Settings.get().getCollapseStatsComplexity()));
     }
 
     private <K extends BaseExpr> GroupJoinsWheres pack(ImSet<K> keepStat, KeyStat keyStat, boolean saveStat) {
 
         GroupJoinsWheres result = this;
-        if(saveStat && result.isFitPackThreshold())
+        if(saveStat && result.fitsPackThreshold())
             return result;
 
-        if(!Settings.get().isCollapseStats()) {
+        boolean collapseStats = !fitsCollapseStatsThreshold();
+        if(collapseStats)
+            collapseStats = collapseStats;
+        if(!collapseStats) {
             result = result.packMeans(keepStat, keyStat, true);
-            if (result.isFitPackThreshold())
+            if (result.fitsPackThreshold())
                 return result;
         }
 
         // оптимизация, так как packMeans быстрее packReduce, для не saveStat не стоит делать так как при A, AB, BC, где B маленький предикат логичнее A, B получить чем A, BC
-        if(saveStat == Settings.get().isCollapseStats()) {
+        if(saveStat == collapseStats) {
             result = result.packMeans(keepStat, keyStat, saveStat);
-            if (result.isFitPackThreshold())
+            if (result.fitsPackThreshold())
                 return result;
         }
 
-        return result.packReduce(keepStat, keyStat, saveStat);
+        return result.packReduce(keepStat, keyStat, saveStat, collapseStats);
     }
 
     // keepStat нужен чтобы можно было гарантировать что не образуется case с недостающим WhereJoin существенно влияющим на статистику
@@ -234,26 +241,26 @@ public class GroupJoinsWheres extends DNFWheres<WhereJoins, GroupJoinsWheres.Val
     }    
     
     // минимум изменения, абсолютной статистики, количества сршдвкутэjd    
-    private static int[] getPriority(int rdmin, int oc, int rdmax, int r, int c) {
-        if(Settings.get().isCollapseStats())
+    private static int[] getPriority(int rdmin, int oc, int rdmax, int r, int c, boolean collapseStats) {
+        if(collapseStats)
             return new int[] {rdmin, oc, rdmax, r, c};
 
         return new int[] {rdmin, oc, 0, rdmin == 0 ? 0 : r, c};
     }
 
-    private static int[] getMaxPriority() {
-        return getPriority(Stat.AGGR.getWeight(), 0, 0, 0, 0);
+    private static int[] getMaxPriority(boolean collapseStats) {
+        return getPriority(Stat.AGGR.getWeight(), 0, 0, 0, 0, collapseStats);
     }
 
-    private static int[] getMinPriority(boolean saveStat) {
-        if(Settings.get().isCollapseStats()) {
+    private static int[] getMinPriority(boolean collapseStats, boolean saveStat) {
+        if(collapseStats) {
             if (saveStat)
-                return getPriority(0, 0, 0, Integer.MAX_VALUE, Integer.MAX_VALUE); // при сохранении статистики главное не терять статистику
+                return getPriority(0, 0, 0, Integer.MAX_VALUE, Integer.MAX_VALUE, collapseStats); // при сохранении статистики главное не терять статистику
             else
-                return getPriority(0, 0, Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MAX_VALUE); // при не сохранении статистики надо хотя бы чтобы одна сохранилась поддержать
+                return getPriority(0, 0, Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MAX_VALUE, collapseStats); // при не сохранении статистики надо хотя бы чтобы одна сохранилась поддержать
         }
 
-        return getPriority(0, 0, 0, 0, 0);
+        return getPriority(0, 0, 0, 0, 0, collapseStats);
     }
 
     private static int compare(int[] priorities1, int[] priorities2) {
@@ -271,11 +278,12 @@ public class GroupJoinsWheres extends DNFWheres<WhereJoins, GroupJoinsWheres.Val
     private static class CMerged extends CEntry implements Comparable<CMerged> {
         public final SymmPair<CEntry, CEntry> original;
         private int[] priority;
+        private boolean collapseStats;
 
-        public <K extends BaseExpr> CMerged(SymmPair<CEntry, CEntry> original, WhereJoins where, ImSet<K> keepStat, KeyStat keyStat) {
+        public <K extends BaseExpr> CMerged(SymmPair<CEntry, CEntry> original, WhereJoins where, ImSet<K> keepStat, KeyStat keyStat, boolean collapseStats) {
             super(where, keepStat, keyStat);
             this.original = original;
-
+            this.collapseStats = collapseStats;
 //            assert assertMeansOriginal(where);
         }
 
@@ -315,7 +323,7 @@ public class GroupJoinsWheres extends DNFWheres<WhereJoins, GroupJoinsWheres.Val
                 assert ocm <= oc1 && ocm <= oc2;
 
                 assert cm <= c1 && cm <= c2;
-                priority = GroupJoinsWheres.getPriority(getRowMinDiff(), BaseUtils.min(oc1 - ocm, oc2 - ocm), getRowMaxDiff(), rows, BaseUtils.min(c1 - cm, c2 - cm));
+                priority = GroupJoinsWheres.getPriority(getRowMinDiff(), BaseUtils.min(oc1 - ocm, oc2 - ocm), getRowMaxDiff(), rows, BaseUtils.min(c1 - cm, c2 - cm), collapseStats);
             }
             return priority;
         }
@@ -332,13 +340,13 @@ public class GroupJoinsWheres extends DNFWheres<WhereJoins, GroupJoinsWheres.Val
     }
     
     // эвристика с приоритезацией
-    private <K extends BaseExpr> GroupJoinsWheres packReduce(ImSet<K> keepStat, KeyStat keyStat, boolean saveStat) {
+    private <K extends BaseExpr> GroupJoinsWheres packReduce(ImSet<K> keepStat, KeyStat keyStat, boolean saveStat, boolean collapseStats) {
         if(!Settings.get().isCompileMeans())
             return this;
 
         int limit = Settings.get().getLimitWhereJoinsCount(); // пока только на count смотрим, так как complexity высчитываем в конце
-        int[] maxPriority = getMaxPriority();
-        int[] minPriority = getMinPriority(saveStat);
+        int[] maxPriority = getMaxPriority(collapseStats);
+        int[] minPriority = getMinPriority(collapseStats, saveStat);
 
         // (A, B) -> X, Heap по X
 
@@ -363,7 +371,7 @@ public class GroupJoinsWheres extends DNFWheres<WhereJoins, GroupJoinsWheres.Val
                 CEntry jJoin = list.get(j);
                 
                 SymmPair<CEntry, CEntry> pair = new SymmPair<CEntry, CEntry>(iJoin, jJoin);
-                CMerged cEntry = new CMerged(pair, iJoin.where.or(jJoin.where), keepStat, keyStat);
+                CMerged cEntry = new CMerged(pair, iJoin.where.or(jJoin.where), keepStat, keyStat, collapseStats);
                 priority.add(cEntry);
                 matrix.put(pair, cEntry);
             }
@@ -401,7 +409,7 @@ public class GroupJoinsWheres extends DNFWheres<WhereJoins, GroupJoinsWheres.Val
                 priority.remove(secondEntry);
 
                 SymmPair<CEntry, CEntry> newEntry = new SymmPair<CEntry, CEntry>(entry, element);
-                CMerged merged = new CMerged(newEntry, firstEntry.where.or(secondEntry.where), keepStat, keyStat);
+                CMerged merged = new CMerged(newEntry, firstEntry.where.or(secondEntry.where), keepStat, keyStat, collapseStats);
                 matrix.put(newEntry, merged);
                 priority.add(merged);
             }

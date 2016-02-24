@@ -1630,14 +1630,23 @@ public class Settings {
     // в запросе выполнения всегда объединять join'ы с одинаковой статистикой, а не только при превышении порога
     // проблема в "орел-решка", когда есть очень волатильная статистика (0 или очень большая статистика), сейчас берется пессимистичный вариант основным, к нему присоединяются "хорошие" варианты с индексом что не очень хорошо
     // до разделения пессимистично - оптимистичной статистики нельзя включать (примеры : WHEN value THEN HugeStat ELSE SmallStat, WHEN isParent - где IsParent рекурсивное свойство, еще один яркий пример неравномерной статистики)
-    private boolean collapseStats = false;
+    private int collapseStatsCount = 10;
+    private int collapseStatsComplexity = 200; // 100 - лучше в несколько раз на очень больших запросов, но есть большой риск попасть в "орел-решку"
 
-    public boolean isCollapseStats() {
-        return collapseStats;
+    public int getCollapseStatsCount() {
+        return collapseStatsCount;
     }
 
-    public void setCollapseStats(boolean collapseStats) {
-        this.collapseStats = collapseStats;
+    public void setCollapseStatsCount(int collapseStatsCount) {
+        this.collapseStatsCount = collapseStatsCount;
+    }
+
+    public int getCollapseStatsComplexity() {
+        return collapseStatsComplexity;
+    }
+
+    public void setCollapseStatsComplexity(int collapseStatsComplexity) {
+        this.collapseStatsComplexity = collapseStatsComplexity;
     }
 
     private boolean useSafeMonitorProcess = false;
