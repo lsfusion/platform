@@ -1,8 +1,6 @@
 package lsfusion.base.col;
 
-import lsfusion.base.BaseUtils;
-import lsfusion.base.OrderedMap;
-import lsfusion.base.Result;
+import lsfusion.base.*;
 import lsfusion.base.col.implementations.ArIndexedMap;
 import lsfusion.base.col.implementations.ArMap;
 import lsfusion.base.col.implementations.HMap;
@@ -16,12 +14,17 @@ import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
 import lsfusion.base.col.interfaces.mutable.add.MAddMap;
-import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImRevValueMap;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+
+import static lsfusion.base.ConcurrentWeakHashMap.DEFAULT_INITIAL_CAPACITY;
+import static lsfusion.base.ConcurrentWeakHashMap.DEFAULT_LOAD_FACTOR;
 
 public class MapFact {
     private final static AddValue<Object, Integer> addLinear = new SymmAddValue<Object, Integer>() {
@@ -706,5 +709,33 @@ public class MapFact {
 
     public static <K, V> GetValue<MSet<V>, K> mSet() {
         return BaseUtils.immutableCast(mSet);
+    }
+
+    private static <K, V> ConcurrentHashMap<K, V> getGlobalConcurrentHashMap(int initialCapacity) {
+        return new ConcurrentHashMap<>(initialCapacity, DEFAULT_LOAD_FACTOR, SystemUtils.getAvailableProcessors() * 2);
+    }
+    
+    public static <K, V> ConcurrentHashMap<K, V> getGlobalConcurrentHashMap() {
+        return getGlobalConcurrentHashMap(DEFAULT_INITIAL_CAPACITY);
+    }
+    
+    public static <K, V> ConcurrentHashMap<K, V> getGlobalConcurrentHashMap(ConcurrentHashMap<K, V> source) {
+        ConcurrentHashMap<K, V> result = getGlobalConcurrentHashMap(Math.max((int) (source.size() / DEFAULT_LOAD_FACTOR) + 1, DEFAULT_INITIAL_CAPACITY));
+        result.putAll(source);
+        return result;
+    }
+
+    private static <K, V> ConcurrentWeakHashMap<K, V> getGlobalConcurrentWeakHashMap(int initialCapacity) {
+        return new ConcurrentWeakHashMap<>(initialCapacity, DEFAULT_LOAD_FACTOR, SystemUtils.getAvailableProcessors() * 2);
+    }
+    
+    public static <K, V> ConcurrentWeakHashMap<K, V> getGlobalConcurrentWeakHashMap() {
+        return getGlobalConcurrentWeakHashMap(DEFAULT_INITIAL_CAPACITY);
+    }
+
+    public static <K, V> ConcurrentWeakHashMap<K, V> getGlobalConcurrentWeakHashMap(ConcurrentWeakHashMap<K, V> source) {
+        ConcurrentWeakHashMap<K, V> result = getGlobalConcurrentWeakHashMap(Math.max((int) (source.size() / DEFAULT_LOAD_FACTOR) + 1, DEFAULT_INITIAL_CAPACITY));
+        result.putAll(source);
+        return result;
     }
 }

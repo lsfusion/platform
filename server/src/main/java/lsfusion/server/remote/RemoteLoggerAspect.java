@@ -1,7 +1,7 @@
 package lsfusion.server.remote;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.ConcurrentWeakHashMap;
+import lsfusion.base.col.MapFact;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
 import lsfusion.server.form.navigator.RemoteNavigator;
@@ -13,16 +13,15 @@ import org.aspectj.lang.annotation.Aspect;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Aspect
 public class RemoteLoggerAspect {
     private final static Logger logger = ServerLoggers.remoteLogger;
 
-    public static final Map<Integer, Long> userActivityMap = new ConcurrentHashMap<>();
-    public static final Map<Integer, Map<Long, List<Long>>> pingInfoMap = new ConcurrentHashMap<>();
-    private static final Map<Long, Timestamp> dateTimeCallMap = new ConcurrentHashMap<>();
-    private static Map<Integer, Boolean> remoteLoggerDebugEnabled = new ConcurrentHashMap<>();
+    public static final Map<Integer, Long> userActivityMap = MapFact.getGlobalConcurrentHashMap();
+    public static final Map<Integer, Map<Long, List<Long>>> pingInfoMap = MapFact.getGlobalConcurrentHashMap();
+    private static final Map<Long, Timestamp> dateTimeCallMap = MapFact.getGlobalConcurrentHashMap();
+    private static Map<Integer, Boolean> remoteLoggerDebugEnabled = MapFact.getGlobalConcurrentHashMap();
 
     @Around("(execution(* lsfusion.interop.RemoteLogicsInterface.*(..))" +
             " || execution(* lsfusion.interop.form.RemoteFormInterface.*(..))" +

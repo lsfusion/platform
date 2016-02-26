@@ -234,6 +234,7 @@ dropLRUPercent 'Процент очистки LRU' = DATA DOUBLE ();
 randomDropLRU 'Случ. очистка LRU' = DATA BOOLEAN ();
 dropLRUCustom 'Очистить LRU' = ACTION CUSTOM 'lsfusion.server.logics.service.DropLRUActionProperty' (DOUBLE, BOOLEAN);
 dropLRU 'Очистить LRU' () = ACTION dropLRUCustom(dropLRUPercent(), randomDropLRU());
+turnCacheStatsOff 'Отключить статистику кэшей' = ACTION CUSTOM 'lsfusion.server.logics.service.TurnCacheStatsOff' ();
 makeHeapDump 'Сделать Heap Dump' = ACTION CUSTOM 'lsfusion.server.logics.service.MakeHeapDumpActionProperty' ();
 isServerRestarting = NATIVE BOOLEAN ();
 isNotServerRestarting () = NOT isServerRestarting();
@@ -267,7 +268,7 @@ FORM admin 'Администрирование'
                  threadCountMultiThread, recalculateClassesMultiThreadAction, recalculateMultiThreadAction, recalculateFollowsMultiThreadAction,
                  recalculateStatsMultiThreadAction, overCalculateStatsMultiThreadAction,
                  packAction, analyzeDBAction, uploadToDBAction, uploadStaticCaptionType, uploadHost, uploadUser, uploadPassword, uploadInstance, uploadDB,    
-                 vacuumDBAction, serviceDBAction, serviceDBMultiThreadAction, runGarbageCollector, getVMInfo, dropLRUPercent, randomDropLRU, dropLRU, makeHeapDump, 
+                 vacuumDBAction, serviceDBAction, serviceDBMultiThreadAction, runGarbageCollector, getVMInfo, dropLRUPercent, randomDropLRU, dropLRU, turnCacheStatsOff, makeHeapDump, 
                  TILMode, hostnameServerComputer, reupdateMode, singleTransaction,
                  turnExplainAnalizeOnCurrentUser, clearApplicationLog
     OBJECTS u=User
@@ -377,6 +378,7 @@ DESIGN admin {
                 MOVE PROPERTY(dropLRUPercent());
                 MOVE PROPERTY(randomDropLRU());
                 MOVE PROPERTY(dropLRU());
+                MOVE PROPERTY(turnCacheStatsOff());
                 MOVE PROPERTY(makeHeapDump());
             }                      
         }

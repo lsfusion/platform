@@ -1526,6 +1526,16 @@ public class Settings {
         this.maxThreadAllocatedBytes = maxThreadAllocatedBytes;
     }
 
+    private int cacheMissesStatsLimit = 10000;
+    
+    public int getCacheMissesStatsLimit() {
+        return cacheMissesStatsLimit;
+    }
+    
+    public void setCacheMissesStatsLimit(int cacheMissesStatsLimit) {
+        this.cacheMissesStatsLimit = cacheMissesStatsLimit;
+    }
+
     private int updateStatisticsLimit = 300; // при изменении какого количества записей будет принудительный ANALYZE таблицы делаться
 
     public int getUpdateStatisticsLimit() {

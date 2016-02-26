@@ -27,7 +27,9 @@ import lsfusion.server.data.type.*;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.form.navigator.SQLSessionUserProvider;
-import lsfusion.server.logics.*;
+import lsfusion.server.logics.BusinessLogics;
+import lsfusion.server.logics.DataObject;
+import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.stack.ExecutionStackAspect;
 import lsfusion.server.stack.ParamMessage;
 import lsfusion.server.stack.StackMessage;
@@ -62,9 +64,9 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     private static final Logger sqlConflictLogger = ServerLoggers.sqlConflictLogger;
     private WeakReference<Thread> activeThread;
 
-    private static ConcurrentWeakHashMap<SQLSession, Integer> sqlSessionMap = new ConcurrentWeakHashMap<>();
-    public static ConcurrentHashMap<Long, Long> threadAllocatedBytesAMap = new ConcurrentHashMap<>();
-    public static ConcurrentHashMap<Long, Long> threadAllocatedBytesBMap = new ConcurrentHashMap<>();
+    private static ConcurrentWeakHashMap<SQLSession, Integer> sqlSessionMap = MapFact.getGlobalConcurrentWeakHashMap();
+    public static ConcurrentHashMap<Long, Long> threadAllocatedBytesAMap = MapFact.getGlobalConcurrentHashMap();
+    public static ConcurrentHashMap<Long, Long> threadAllocatedBytesBMap = MapFact.getGlobalConcurrentHashMap();
 
     private Long startTransaction;
     private Map<String, Integer> attemptCountMap = new HashMap<>();
@@ -123,7 +125,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     }
 
     public static void updateThreadAllocatedBytesMap() {
-        threadAllocatedBytesAMap = new ConcurrentHashMap<>(threadAllocatedBytesBMap);
+        threadAllocatedBytesAMap = MapFact.getGlobalConcurrentHashMap(threadAllocatedBytesBMap);
         threadAllocatedBytesBMap.clear();
         ThreadMXBean tBean = ManagementFactory.getThreadMXBean();
         if (tBean instanceof com.sun.management.ThreadMXBean) {
@@ -1117,10 +1119,10 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         return executeDML(execute.command, execute.owner, execute.tableOwner, execute.params, execute.queryExecEnv, execute.outerEnv, execute.pureTime, execute.transactTimeout);
     }
 
-    private static Map<Integer, Boolean> explainUserMode = new ConcurrentHashMap<Integer, Boolean>();
-    private static Map<Integer, Boolean> explainNoAnalyzeUserMode = new ConcurrentHashMap<Integer, Boolean>();
-    private static Map<Integer, Boolean> loggerDebugEnabled = new ConcurrentHashMap<Integer, Boolean>();
-    private static Map<Integer, Boolean> userVolatileStats = new ConcurrentHashMap<Integer, Boolean>();
+    private static Map<Integer, Boolean> explainUserMode = MapFact.getGlobalConcurrentHashMap();
+    private static Map<Integer, Boolean> explainNoAnalyzeUserMode = MapFact.getGlobalConcurrentHashMap();
+    private static Map<Integer, Boolean> loggerDebugEnabled = MapFact.getGlobalConcurrentHashMap();
+    private static Map<Integer, Boolean> userVolatileStats = MapFact.getGlobalConcurrentHashMap();
 
     public static void setExplainAnalyzeMode(Integer user, Boolean mode) {
         explainUserMode.put(user, mode != null && mode);

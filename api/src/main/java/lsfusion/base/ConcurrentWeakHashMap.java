@@ -42,18 +42,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
-import java.util.AbstractCollection;
-import java.util.AbstractMap;
-import java.util.AbstractSet;
-import java.util.Collection;
-import java.util.ConcurrentModificationException;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
@@ -150,13 +139,13 @@ public class ConcurrentWeakHashMap<K, V> extends AbstractMap<K, V>
      * The default initial capacity for this table,
      * used when not otherwise specified in a constructor.
      */
-    static final int DEFAULT_INITIAL_CAPACITY = 16;
+    public static final int DEFAULT_INITIAL_CAPACITY = 16;
 
     /**
      * The default load factor for this table, used when not
      * otherwise specified in a constructor.
      */
-    static final float DEFAULT_LOAD_FACTOR = 0.75f;
+    public static final float DEFAULT_LOAD_FACTOR = 0.75f;
 
     /**
      * The default concurrency level for this table, used when not

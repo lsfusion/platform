@@ -1,13 +1,11 @@
 package lsfusion.server.data.translator;
 
-import lsfusion.base.col.lru.LRUWVWSMap;
-import org.aspectj.lang.ProceedingJoinPoint;
-import org.aspectj.lang.annotation.Around;
-import org.aspectj.lang.annotation.Aspect;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.base.col.lru.LRUWVWSMap;
 import lsfusion.server.caches.AbstractTranslateContext;
 import lsfusion.server.caches.CacheAspect;
+import lsfusion.server.caches.CacheStats;
 import lsfusion.server.caches.ParamExpr;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.NotNullExpr;
@@ -20,6 +18,9 @@ import lsfusion.server.data.where.AbstractWhere;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.MeanClassWheres;
 import lsfusion.server.session.PropertyChange;
+import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.annotation.Around;
+import org.aspectj.lang.annotation.Aspect;
 
 
 // аспект который заодно транслирует ManualLazy операции
@@ -139,14 +140,14 @@ public class AfterTranslateAspect {
     @Around("execution(lsfusion.base.Pair lsfusion.server.data.where.AbstractWhere.getWhereJoins(boolean, lsfusion.base.col.interfaces.immutable.ImSet, lsfusion.base.col.interfaces.immutable.ImOrderSet)) && target(where) && args(tryExclusive,keepStat,orderTop)")
     public Object callGetWhereJoins(ProceedingJoinPoint thisJoinPoint, AbstractWhere where, boolean tryExclusive, ImSet keepStat, ImOrderSet orderTop) throws Throwable {
         if(keepStat.equals(where.getOuterKeys()) && orderTop.isEmpty())
-            return CacheAspect.callMethod(where, thisJoinPoint, CacheAspect.Type.SIMPLE);
+            return CacheAspect.callMethod(where, thisJoinPoint, CacheAspect.Type.SIMPLE, CacheStats.CacheType.OTHER);
         return thisJoinPoint.proceed();
     }
 
     @Around("execution(lsfusion.base.col.interfaces.immutable.ImCol lsfusion.server.data.where.AbstractWhere.getStatJoins(boolean, lsfusion.base.col.interfaces.immutable.ImSet, lsfusion.server.data.query.innerjoins.GroupStatType, boolean)) && target(where) && args(exclusive,keepStat,type,noWhere)")
     public Object callGetStatJoins(ProceedingJoinPoint thisJoinPoint, AbstractWhere where, boolean exclusive, ImSet keepStat, GroupStatType type, boolean noWhere) throws Throwable {
         if(keepStat.equals(where.getOuterKeys()))
-            return CacheAspect.callMethod(where, thisJoinPoint, CacheAspect.Type.SIMPLE);
+            return CacheAspect.callMethod(where, thisJoinPoint, CacheAspect.Type.SIMPLE, CacheStats.CacheType.OTHER);
         return thisJoinPoint.proceed();
     }
 

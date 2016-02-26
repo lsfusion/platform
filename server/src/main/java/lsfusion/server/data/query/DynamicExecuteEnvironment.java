@@ -9,7 +9,6 @@ import lsfusion.server.form.navigator.SQLSessionUserProvider;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 // Mutable !!! нужен Thread Safe
 public abstract class DynamicExecuteEnvironment<OE, S extends DynamicExecEnvSnapshot<OE, S>> {
@@ -133,7 +132,7 @@ public abstract class DynamicExecuteEnvironment<OE, S extends DynamicExecEnvSnap
         }
     };
 
-    private static Map<Integer, Integer> userExecEnvs = new ConcurrentHashMap<>();
+    private static Map<Integer, Integer> userExecEnvs = MapFact.getGlobalConcurrentHashMap();
 
     public static void setUserExecEnv(Integer user, Integer type) {
         if(type == null)

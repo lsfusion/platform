@@ -1,46 +1,48 @@
 package lsfusion.server.data.query;
 
-import lsfusion.base.DProcessor;
-import lsfusion.base.col.interfaces.mutable.MSet;
-import lsfusion.base.col.lru.LRUUtil;
-import lsfusion.base.col.lru.LRUWSSVSMap;
-import lsfusion.server.ServerLoggers;
-import lsfusion.server.Settings;
-import lsfusion.server.context.ThreadLocalContext;
-import lsfusion.server.data.KeyField;
-import lsfusion.server.data.translator.RemapValuesTranslator;
-import lsfusion.server.logics.table.ImplementTable;
-import org.apache.log4j.Logger;
-import org.aspectj.lang.ProceedingJoinPoint;
-import org.aspectj.lang.annotation.Around;
-import org.aspectj.lang.annotation.Aspect;
 import lsfusion.base.BaseUtils;
+import lsfusion.base.DProcessor;
 import lsfusion.base.TwinImmutableObject;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.add.MAddCol;
+import lsfusion.base.col.lru.LRUUtil;
+import lsfusion.base.col.lru.LRUWSSVSMap;
+import lsfusion.server.ServerLoggers;
 import lsfusion.server.caches.*;
+import lsfusion.server.caches.CacheStats.CacheType;
 import lsfusion.server.caches.hash.HashCodeKeys;
 import lsfusion.server.caches.hash.HashContext;
 import lsfusion.server.caches.hash.HashValues;
+import lsfusion.server.data.KeyField;
 import lsfusion.server.data.Value;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.ValueExpr;
 import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.translator.MapValuesTranslate;
 import lsfusion.server.data.translator.MapValuesTranslator;
+import lsfusion.server.data.translator.RemapValuesTranslator;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.logics.property.*;
+import lsfusion.server.logics.table.ImplementTable;
 import lsfusion.server.session.DataChanges;
 import lsfusion.server.session.PropertyChange;
 import lsfusion.server.session.PropertyChanges;
 import lsfusion.server.session.StructChanges;
+import org.apache.log4j.Logger;
+import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.annotation.Around;
+import org.aspectj.lang.annotation.Aspect;
 
 import java.util.Arrays;
+
+import static lsfusion.server.caches.CacheStats.incrementHit;
+import static lsfusion.server.caches.CacheStats.incrementMissed;
 
 @Aspect
 public class MapCacheAspect {
@@ -131,9 +133,11 @@ public class MapCacheAspect {
                 if((translator = cache.implement.mapInner(joinImplement, true))!=null) {
                     // здесь не все values нужно докинуть их из контекста (ключи по идее все)
                     logger.debug("join cached");
+                    incrementHit(CacheType.JOIN);
                     return new MapJoin<V>(translator,cache.result);
                 }
             }
+            incrementMissed(CacheType.JOIN);
 /*            logger.info("join not cached"); //можно было бы так, уже есть translateRemoveValues, но так по аналогии с Query будут сразу кэшироваться нужные вызовы
             Join<V> join = (Join<V>) thisJoinPoint.proceed();
             cacheNoBig(joinImplement, hashCaches, join);
@@ -188,7 +192,7 @@ public class MapCacheAspect {
 
         // оптимизация самого верхнего уровня, проверка на isEmpty нужна для того чтобы до finalize'a (в CaseUnionProperty в частности) не вызвать случайно getRecDepends, там в fillDepends на это assert есть
         final Object[] filteredArgs = {!implement.isEmpty() ? implement.filterForProperty(property) : implement};
-        final ImSet<CalcProperty> result = (ImSet<CalcProperty>) CacheAspect.lazyIdentityExecute(property, thisJoinPoint, filteredArgs, true, CacheAspect.Type.SIMPLE);
+        final ImSet<CalcProperty> result = (ImSet<CalcProperty>) CacheAspect.lazyIdentityExecute(property, thisJoinPoint, filteredArgs, true, CacheAspect.Type.SIMPLE, CacheType.USED_CHANGES);
 
         if(checkCaches) {
             if(!inRecursion) {
@@ -284,12 +288,14 @@ public class MapCacheAspect {
                 MapTranslate translator;
                 if((translator=cache.implement.mapInner(implement, true))!=null) {
                     logger.debug("getDataChanges - cached "+property);
+                    incrementHit(CacheType.DATA_CHANGES);
                     if(changedWheres!=null) changedWheres.add(cache.result.where.translateOuter(translator));
                     return ((DataChangesResult<K>)cache.result).changes.translateValues(translator.mapValues());
                 }
             }
 
             logger.debug("getDataChanges - not cached "+property);
+            incrementMissed(CacheType.DATA_CHANGES);
             WhereBuilder cacheWheres = CalcProperty.cascadeWhere(changedWheres);
             DataChanges changes = (DataChanges) thisJoinPoint.proceed(new Object[]{property, change, propChanges, cacheWheres});
 
@@ -408,10 +414,12 @@ public class MapCacheAspect {
                 }
 
                 logger.debug("getExpr - not cached "+property);
+                incrementMissed(CacheType.EXPR);
             } else {
                 query = cacheQuery;
 
                 logger.debug("getExpr - cached "+property);
+                incrementHit(CacheType.EXPR);
             }
         }
 
@@ -519,6 +527,7 @@ public class MapCacheAspect {
                 MapTranslate translator;
                 if((translator=cache.implement.mapInner(implement, true))!=null) {
                     logger.debug("getExpr - cached "+property);
+                    incrementHit(CacheType.JOIN_EXPR);
                     if(changedWheres!=null) changedWheres.add(cache.result.where.translateOuter(translator));
                     cacheResult = cache.result.expr.translateOuter(translator);
                     if(checkCaches)
@@ -529,6 +538,7 @@ public class MapCacheAspect {
             }
 
             logger.debug("getExpr - not cached "+property);
+            incrementMissed(CacheType.JOIN_EXPR);
             WhereBuilder cacheWheres = CalcProperty.cascadeWhere(changedWheres);
             Expr expr = (Expr) thisJoinPoint.proceed(new Object[]{property, joinExprs, calcType, implement.usedChanges, cacheWheres});
 
@@ -588,10 +598,12 @@ public class MapCacheAspect {
                     logCaches(cacheChange, change, thisJoinPoint, "INCREMENTCHANGE", property);
 
                 logger.info("getIncrementChange - not cached "+property);
+                incrementMissed(CacheType.INCREMENT_CHANGE);
             } else {
                 change = cacheChange;
 
                 logger.info("getIncrementChange - cached "+property);
+                incrementHit(CacheType.INCREMENT_CHANGE);
             }
         }
 
@@ -678,10 +690,12 @@ public class MapCacheAspect {
                     logCaches(cacheQuery.getQuery(),query,thisJoinPoint,"READSAVEQUERY", null);
 
                 logger.info("readSaveQuery - not cached "+table.getName());
+                incrementMissed(CacheType.READ_SAVE);
             } else {
                 query = cacheQuery;
 
                 logger.info("readSaveQuery - cached "+table.getName());
+                incrementHit(CacheType.READ_SAVE);
             }
         }
 

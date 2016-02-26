@@ -3,6 +3,7 @@ package lsfusion.server.remote;
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.NavigatorInfo;
+import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.interop.GUIPreferences;
@@ -40,7 +41,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -265,7 +265,7 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
 
     public void sendPingInfo(Integer computerId, Map<Long, List<Long>> pingInfoMap) {
         Map<Long, List<Long>> pingInfoEntry = RemoteLoggerAspect.pingInfoMap.get(computerId);
-        pingInfoEntry = pingInfoEntry != null ? pingInfoEntry : new ConcurrentHashMap<Long, List<Long>>();
+        pingInfoEntry = pingInfoEntry != null ? pingInfoEntry : MapFact.<Long, List<Long>>getGlobalConcurrentHashMap();
         pingInfoEntry.putAll(pingInfoMap);
         RemoteLoggerAspect.pingInfoMap.put(computerId, pingInfoEntry);
     }

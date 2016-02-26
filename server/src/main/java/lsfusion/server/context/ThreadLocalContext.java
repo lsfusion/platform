@@ -1,6 +1,7 @@
 package lsfusion.server.context;
 
 import lsfusion.base.ConcurrentWeakHashMap;
+import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.interop.action.ClientAction;
@@ -33,7 +34,7 @@ import java.util.concurrent.ScheduledExecutorService;
 
 public class ThreadLocalContext {
     private static final ThreadLocal<Context> context = new ThreadLocal<Context>();
-    public static ConcurrentWeakHashMap<Thread, LogInfo> logInfoMap = new ConcurrentWeakHashMap<Thread, LogInfo>();
+    public static ConcurrentWeakHashMap<Thread, LogInfo> logInfoMap = MapFact.getGlobalConcurrentWeakHashMap();
     public static Context get() {
         return context.get();
     }

@@ -1112,6 +1112,10 @@ public class BaseUtils {
         }
         return list;
     }
+    
+    public static Long nullToZero(Long value) {
+        return value == null ? 0 : value;
+    }
 
     public static Object nullZero(String str) {
         return nullBoolean((Integer.parseInt(BaseUtils.nevl(str, "0")) == 1));

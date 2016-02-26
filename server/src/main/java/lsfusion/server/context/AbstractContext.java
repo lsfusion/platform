@@ -3,6 +3,8 @@ package lsfusion.server.context;
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.ConcurrentWeakHashMap;
+import lsfusion.base.ProgressBar;
+import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
@@ -27,13 +29,15 @@ import lsfusion.server.form.instance.FormSessionScope;
 import lsfusion.server.form.instance.PropertyObjectInterfaceInstance;
 import lsfusion.server.form.instance.listener.CustomClassListener;
 import lsfusion.server.form.instance.listener.FocusListener;
-import lsfusion.server.logics.*;
+import lsfusion.server.logics.DataObject;
+import lsfusion.server.logics.LogicsInstance;
+import lsfusion.server.logics.NullValue;
+import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.property.DialogRequest;
 import lsfusion.server.logics.property.PullChangeProperty;
 import lsfusion.server.remote.RemoteForm;
 import lsfusion.server.session.DataSession;
 import lsfusion.server.session.UpdateCurrentClasses;
-import lsfusion.base.ProgressBar;
 import lsfusion.server.stack.ExecutionStackItem;
 
 import java.io.ByteArrayOutputStream;
@@ -48,7 +52,7 @@ import static lsfusion.base.BaseUtils.serializeObject;
 import static lsfusion.server.data.type.TypeSerializer.serializeType;
 
 public abstract class AbstractContext implements Context {
-    public final ConcurrentWeakHashMap<Thread, TimedMessageStack> actionMessageStackMap = new ConcurrentWeakHashMap<>();
+    public final ConcurrentWeakHashMap<Thread, TimedMessageStack> actionMessageStackMap = MapFact.getGlobalConcurrentWeakHashMap();
 
     public abstract LogicsInstance getLogicsInstance();
 

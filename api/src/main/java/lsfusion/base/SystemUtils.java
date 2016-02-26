@@ -5,7 +5,6 @@ import lsfusion.base.col.interfaces.immutable.ImList;
 import org.springframework.util.FileCopyUtils;
 
 import java.io.*;
-import java.math.BigInteger;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
@@ -521,11 +520,20 @@ public class SystemUtils {
         Long freeMemory = Runtime.getRuntime().freeMemory() / 1024 / 1024;
         Long maxMemory = Runtime.getRuntime().maxMemory() / 1024 / 1024;
         Long totalMemory = Runtime.getRuntime().totalMemory() / 1024 / 1024;
-        Integer processors = Runtime.getRuntime().availableProcessors();
+        Integer processors = getAvailableProcessors();
         return "Processors: " + processors + "\n" +
                 "Free Memory: " + freeMemory + " MB\n" +
                 "Total Memory: " + totalMemory + " MB\n" +
                 "Max Memory: " + maxMemory + " MB";
+    }
+    
+    private static int availableProcessors = -1;
+    
+    public static int getAvailableProcessors() {
+        if (availableProcessors == -1) {
+            availableProcessors = Runtime.getRuntime().availableProcessors();
+        }
+        return availableProcessors;
     }
 
     public static String getRevision() {

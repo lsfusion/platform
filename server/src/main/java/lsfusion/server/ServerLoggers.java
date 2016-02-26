@@ -1,6 +1,7 @@
 package lsfusion.server;
 
 import lsfusion.base.ExceptionUtils;
+import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.interop.DaemonThreadFactory;
 import lsfusion.logging.FlushableRollingFileAppender;
@@ -10,7 +11,6 @@ import org.apache.log4j.Logger;
 
 import java.util.Enumeration;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
@@ -107,7 +107,7 @@ public class ServerLoggers {
         remoteLogger.info(message + '\n' + ExceptionUtils.getStackTrace());
     }
 
-    private static Map<Integer, Boolean> userExLogs = new ConcurrentHashMap<>();
+    private static Map<Integer, Boolean> userExLogs = MapFact.getGlobalConcurrentHashMap();
 
     public static void setUserExLog(Integer user, Boolean enabled) {
         final boolean newEnabled = enabled != null && enabled;

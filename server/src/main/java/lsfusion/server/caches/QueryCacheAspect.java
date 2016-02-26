@@ -1,9 +1,21 @@
 package lsfusion.server.caches;
 
+import lsfusion.base.BaseUtils;
 import lsfusion.base.ReflectionUtils;
+import lsfusion.base.Result;
+import lsfusion.base.col.ListFact;
+import lsfusion.base.col.MapFact;
+import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.base.col.interfaces.mutable.add.MAddCol;
 import lsfusion.base.col.lru.LRUSVSMap;
 import lsfusion.base.col.lru.LRUUtil;
+import lsfusion.server.data.Value;
+import lsfusion.server.data.query.IQuery;
+import lsfusion.server.data.query.MapQuery;
+import lsfusion.server.data.query.Query;
+import lsfusion.server.data.translator.MapTranslate;
+import lsfusion.server.data.translator.MapValuesTranslator;
 import lsfusion.server.data.translator.RemapValuesTranslator;
 import org.apache.log4j.Logger;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -11,18 +23,6 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.DeclareParents;
 import org.aspectj.lang.reflect.MethodSignature;
-import lsfusion.base.BaseUtils;
-import lsfusion.base.Result;
-import lsfusion.base.col.ListFact;
-import lsfusion.base.col.MapFact;
-import lsfusion.base.col.interfaces.immutable.ImRevMap;
-import lsfusion.base.col.interfaces.mutable.add.MAddCol;
-import lsfusion.server.data.Value;
-import lsfusion.server.data.query.IQuery;
-import lsfusion.server.data.query.MapQuery;
-import lsfusion.server.data.query.Query;
-import lsfusion.server.data.translator.MapTranslate;
-import lsfusion.server.data.translator.MapValuesTranslator;
 
 @Aspect
 public class QueryCacheAspect {
@@ -75,12 +75,14 @@ public class QueryCacheAspect {
                 IQuery<K,V> packed = cacheTwinQuery(cache, query);
                 if(packed !=null) {
                     logger.debug("cached");
+                    CacheStats.incrementHit(CacheStats.CacheType.QUERY);
 
                     ((QueryCacheInterface)query).setCacheTwin(result);
                     return packed;
                 }
             }
             logger.debug("not cached");
+            CacheStats.incrementMissed(CacheStats.CacheType.QUERY);
             Result<Query> cache = new Result<Query>();
             result = cacheNoBigTwin(query, cache);
             ((QueryCacheInterface)cache.result).setCacheTwin(cache.result);

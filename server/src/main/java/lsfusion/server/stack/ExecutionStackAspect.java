@@ -3,6 +3,7 @@ package lsfusion.server.stack;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.ConcurrentWeakHashMap;
 import lsfusion.base.ExceptionUtils;
+import lsfusion.base.col.MapFact;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.HandledException;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -15,7 +16,7 @@ import java.util.Stack;
 
 @Aspect
 public class ExecutionStackAspect {
-    private static ConcurrentWeakHashMap<Thread, Stack<ExecutionStackItem>> executionStack = new ConcurrentWeakHashMap<>();
+    private static ConcurrentWeakHashMap<Thread, Stack<ExecutionStackItem>> executionStack = MapFact.getGlobalConcurrentWeakHashMap();
     private static ThreadLocal<String> threadLocalExceptionStack = new ThreadLocal<>();
     
     @Around("execution(lsfusion.server.logics.property.actions.flow.FlowResult lsfusion.server.logics.property.ActionProperty.execute(lsfusion.server.logics.property.ExecutionContext))")

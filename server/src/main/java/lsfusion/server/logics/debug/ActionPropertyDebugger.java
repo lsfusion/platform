@@ -51,7 +51,6 @@ import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.sql.SQLException;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 import static java.util.Arrays.asList;
 import static lsfusion.server.logics.debug.ActionDelegationType.*;
@@ -408,7 +407,7 @@ public class ActionPropertyDebugger implements DebuggerService {
         }).toJavaList(), value);
     }
     
-    private Map<Pair<String, Integer>, Object> breakpoints = new ConcurrentHashMap<>();
+    private Map<Pair<String, Integer>, Object> breakpoints = MapFact.getGlobalConcurrentHashMap();
 
     @Override
     public void registerBreakpoint(String module, Integer line) throws RemoteException {
