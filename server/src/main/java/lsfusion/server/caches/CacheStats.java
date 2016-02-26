@@ -31,7 +31,9 @@ public class CacheStats {
             if (stats == null) {
                 stats = 0L;
             }
-            statsMap.put(type, stats + 1);
+            if (stats < Long.MAX_VALUE) {
+                statsMap.put(type, stats + 1);
+            }
         }
     }
     
