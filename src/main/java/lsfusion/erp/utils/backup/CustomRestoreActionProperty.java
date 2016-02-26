@@ -265,6 +265,6 @@ public class CustomRestoreActionProperty extends ScriptingActionProperty {
     }
 
     private DataObject getBooleanObject(Object value) {
-        return value instanceof Boolean ? new DataObject((Boolean) value) : value instanceof Integer ? new DataObject(value != 0) : new DataObject(String.valueOf(value).equalsIgnoreCase("true"));
+        return value instanceof Boolean ? new DataObject((Boolean) value) : value instanceof Integer ? new DataObject(((Integer) value) != 0) : new DataObject(String.valueOf(value).equalsIgnoreCase("true"));
     }
 }
