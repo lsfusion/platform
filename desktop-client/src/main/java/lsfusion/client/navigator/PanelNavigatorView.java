@@ -2,13 +2,14 @@ package lsfusion.client.navigator;
 
 import lsfusion.client.FlatRolloverButton;
 import lsfusion.client.form.queries.TitledPanel;
-import sun.awt.OrientableFlowLayout;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Set;
+
+//import sun.awt.OrientableFlowLayout;
 
 public class PanelNavigatorView extends NavigatorView {
     ClientNavigatorElement selected;
@@ -40,27 +41,28 @@ public class PanelNavigatorView extends NavigatorView {
             }
         };
 
+        // todo: подобрать другой layout, чтобы работа ло на Java 8
         //оборачиваем в панель, потому что OrientableFlowLayout не признаёт Border'ов панели
-        JPanel insidePanel = new JPanel(new OrientableFlowLayout(OrientableFlowLayout.VERTICAL, OrientableFlowLayout.LEFT, OrientableFlowLayout.TOP, 0, 0, 0, 0));
-
-        if (element instanceof ClientNavigatorForm) {
-            insidePanel.add(createButton(element));
-        } else {
-            for (ClientNavigatorElement child : element.children) {
-                if (child.hasChildren()) {
-                    addElement(child, insidePanel);
-                } else {
-                    insidePanel.add(createButton(child));
-                }
-            }
-        }
-
-        adjustPreferredSizes(insidePanel); //чтобы отрисовать кнопки и заоднопроставить им равные ширины
-        Component childComponent = insidePanel.getComponent(0);
-        insidePanel.setPreferredSize(new Dimension(childComponent.getPreferredSize().width * insidePanel.getComponentCount(), childComponent.getPreferredSize().height));
-        insidePanel.setMinimumSize(childComponent.getMinimumSize());
-
-        titledPanel.add(insidePanel, BorderLayout.CENTER);
+//        JPanel insidePanel = new JPanel(new OrientableFlowLayout(OrientableFlowLayout.VERTICAL, OrientableFlowLayout.LEFT, OrientableFlowLayout.TOP, 0, 0, 0, 0));
+//
+//        if (element instanceof ClientNavigatorForm) {
+//            insidePanel.add(createButton(element));
+//        } else {
+//            for (ClientNavigatorElement child : element.children) {
+//                if (child.hasChildren()) {
+//                    addElement(child, insidePanel);
+//                } else {
+//                    insidePanel.add(createButton(child));
+//                }
+//            }
+//        }
+//
+//        adjustPreferredSizes(insidePanel); //чтобы отрисовать кнопки и заоднопроставить им равные ширины
+//        Component childComponent = insidePanel.getComponent(0);
+//        insidePanel.setPreferredSize(new Dimension(childComponent.getPreferredSize().width * insidePanel.getComponentCount(), childComponent.getPreferredSize().height));
+//        insidePanel.setMinimumSize(childComponent.getMinimumSize());
+//
+//        titledPanel.add(insidePanel, BorderLayout.CENTER);
         container.add(titledPanel);
     }
 

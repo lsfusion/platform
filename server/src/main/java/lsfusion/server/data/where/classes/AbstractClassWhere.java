@@ -11,7 +11,10 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.base.col.interfaces.mutable.*;
+import lsfusion.base.col.interfaces.mutable.AddValue;
+import lsfusion.base.col.interfaces.mutable.MMap;
+import lsfusion.base.col.interfaces.mutable.MSet;
+import lsfusion.base.col.interfaces.mutable.SymmAddValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.caches.ManualLazy;
 import lsfusion.server.classes.ObjectValueClassSet;
@@ -262,7 +265,7 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
             And<K>[] andNots = and.andNot(where);
             if(andNots!=null) {
                 for(And<K> andNot : andNots)
-                    changedWhere = changedWhere.or(createThis(new And[]{andNot}));
+                    changedWhere = changedWhere.or((This) createThis(new And[]{andNot}));
             } else
                 rawKeepWheres[k++] = and;
         }
