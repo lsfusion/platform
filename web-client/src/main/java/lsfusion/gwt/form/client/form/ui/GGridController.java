@@ -69,7 +69,7 @@ public class GGridController {
     }
 
     public void update() {
-        table.update();
+        table.update(false);
         boolean oldGridVisibilityState = gridView.isVisible();
         if (oldGridVisibilityState != isVisible()) {
             gridView.setVisible(isVisible());

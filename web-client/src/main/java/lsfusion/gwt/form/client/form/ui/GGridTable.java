@@ -175,26 +175,35 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
         gridController.setForceHidden(true);
     }
 
-    public void update() {
+    public void update(boolean modifyGroupObject) {
         storeScrollPosition();
 
         updatedColumnsImpl();
 
         updateCaptionsImpl();
 
-        updateRowsImpl();
+        updateRowsImpl(modifyGroupObject);
 
         updateDataImpl();
     }
 
-    private void updateRowsImpl() {
+    private void updateRowsImpl(boolean modifyGroupObject) {
         if (rowsUpdated) {
             int currentSize = currentRecords.size();
             int newSize = rowKeys.size();
 
             if (currentSize > newSize) {
-                for (int i = currentSize - 1; i >= newSize; --i) {
-                    currentRecords.remove(i);
+                if (modifyGroupObject) {
+                    ArrayList<GridDataRecord> oldRecords = new ArrayList<>(currentRecords);
+                    for (GridDataRecord record : oldRecords) {
+                        if (!rowKeys.contains(record.getKey())) {
+                            currentRecords.remove(record);
+                        }
+                    }
+                } else {
+                    for (int i = currentSize - 1; i >= newSize; --i) {
+                        currentRecords.remove(i);
+                    }
                 }
             } else if (currentSize < newSize) {
                 for (int i = currentSize; i < newSize; ++i) {
@@ -725,7 +734,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
         }
         setKeys(rowKeys);
 
-        update();
+        update(true);
     }
 
     public void changeOrder(GPropertyDraw property, GOrder modiType) {
