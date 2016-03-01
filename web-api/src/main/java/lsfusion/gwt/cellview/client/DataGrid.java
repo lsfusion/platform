@@ -239,7 +239,7 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
     private final Map<Column<T, ?>, String> columnWidths = new HashMap<Column<T, ?>, String>();
 
     private boolean cellWasEditing;
-    private boolean cellIsEditing;
+    protected boolean cellIsEditing;
 
     private HandlerRegistration keyboardSelectionReg;
     /**

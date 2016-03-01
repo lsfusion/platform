@@ -151,9 +151,26 @@ public abstract class GPropertyTable<T> extends DataGrid<T> implements EditManag
 
         //убираем фокус, чтобы не ловить последующие нажатия
         setFocus(false);
+        // с той же целью. для групповой корректировки мало убрать фокус (воспроизводится на стрелках вправо/влево).
+        // эта часть нужна главным образом при вызове кнопкой в тулбаре 
+        if (GEditBindingMap.GROUP_CHANGE.equals(actionSID)) {
+            cellIsEditing = true;
+        }
 
         editDispatcher.setLatestEditEvent(editEvent);
         editDispatcher.executePropertyEditAction(property, columnKey, actionSID, oldValue);
+    }
+
+    @Override
+    protected <C> void postFireEventToCell(Event event, String eventType, Element cellParent, T rowValue, Context context, HasCell<T, C> column) {
+        GPropertyDraw property = getProperty(context);
+        String actionSID = getPropertyEditActionSID(editEvent, property, editBindingMap);
+        // см. комментарий в onEditEvent(). дублируется, поскольку при F12 после первого хака cellIsEditing успевает сброситься 
+        if (actionSID != null && GEditBindingMap.GROUP_CHANGE.equals(actionSID)) {
+            cellIsEditing = true;
+        } else {
+            super.postFireEventToCell(event, eventType, cellParent, rowValue, context, column);
+        }
     }
 
     protected void onContextMenuEvent(Context context, String actionSID) {

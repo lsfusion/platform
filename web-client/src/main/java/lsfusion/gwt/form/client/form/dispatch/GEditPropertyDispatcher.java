@@ -60,7 +60,7 @@ public class GEditPropertyDispatcher extends GFormActionDispatcher {
             form.executeEditAction(editProperty, columnKey, actionSID, new ErrorHandlingCallback<ServerResponseResult>() {
                 @Override
                 public void success(ServerResponseResult response) {
-                    Log.debug("Execute edit action response recieved...");
+                    Log.debug("Execute edit action response received...");
                     dispatchResponse(response);
                 }
             });

@@ -75,10 +75,10 @@ public abstract class TextBasedGridCellEditor extends AbstractGridCellEditor {
         inputElement.focus();
 
         if (selectAll) {
-            textBoxImpl.setSelectionRange((com.google.gwt.user.client.Element) (Element) inputElement, 0, currentText.length());
+            textBoxImpl.setSelectionRange(inputElement, 0, currentText.length());
         } else {
             //перемещаем курсор в конец текста
-            textBoxImpl.setSelectionRange((com.google.gwt.user.client.Element) (Element) inputElement, currentText.length(), 0);
+            textBoxImpl.setSelectionRange(inputElement, currentText.length(), 0);
         }
     }
 
