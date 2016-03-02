@@ -32,6 +32,7 @@ import lsfusion.server.form.entity.PropertyDrawEntity;
 import lsfusion.server.form.view.DefaultFormView;
 import lsfusion.server.form.view.PropertyDrawView;
 import lsfusion.server.logics.*;
+import lsfusion.server.logics.debug.DebugInfo;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LP;
 import lsfusion.server.logics.mutables.Version;
@@ -125,6 +126,8 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         return result;
     }
 
+    protected DebugInfo commonDebugInfo;
+    
     public boolean isField() {
         return false;
     }
@@ -355,7 +358,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         for (ImSet<ValueClassWrapper> classes : classLists) {
             if (interfaces.size() == classes.size()) {
                 final ImOrderSet<ValueClassWrapper> orderClasses = classes.toOrderSet();
-                for (ImOrderSet<T> mapping : new ListPermutations<T>(getOrderInterfaces())) {
+                for (ImOrderSet<T> mapping : new ListPermutations<>(getOrderInterfaces())) {
                     ImMap<T, AndClassSet> propertyInterface = mapping.mapOrderValues(new GetIndexValue<AndClassSet, T>() {
                         public AndClassSet getMapValue(int i, T value) {
                             return orderClasses.get(i).valueClass.getUpSet();
@@ -501,7 +504,13 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
 
     protected ImMap<T, ResolveClassSet> explicitClasses; // без nulls
 
-    protected static interface Checker<V> {
+    public void setCommonDebugInfo(DebugInfo commonDebugInfo) {
+        if (this.commonDebugInfo == null) {
+            this.commonDebugInfo = commonDebugInfo;
+        }
+    }
+
+    protected interface Checker<V> {
         boolean checkEquals(V expl, V calc);
     }
 

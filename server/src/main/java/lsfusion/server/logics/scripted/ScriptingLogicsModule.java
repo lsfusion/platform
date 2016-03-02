@@ -38,10 +38,7 @@ import lsfusion.server.form.navigator.NavigatorElement;
 import lsfusion.server.form.view.FormView;
 import lsfusion.server.form.window.*;
 import lsfusion.server.logics.*;
-import lsfusion.server.logics.debug.ActionDebugInfo;
-import lsfusion.server.logics.debug.ActionDelegationType;
-import lsfusion.server.logics.debug.ActionPropertyDebugger;
-import lsfusion.server.logics.debug.CalcPropertyDebugInfo;
+import lsfusion.server.logics.debug.*;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.linear.LP;
@@ -2753,6 +2750,11 @@ public class ScriptingLogicsModule extends LogicsModule {
                 }
             }
         }
+
+        if (property != null) {
+            DebugInfo di = new DebugInfo(getName(), line, offset);
+            property.property.setCommonDebugInfo(di);
+        }
     }
 
     public void actionPropertyDefinitionBodyCreated(LPWithParams lpWithParams, int line, int offset, boolean modifyContext) throws ScriptingErrorLog.SemanticErrorException {
@@ -2772,6 +2774,11 @@ public class ScriptingLogicsModule extends LogicsModule {
                 ScriptParser parser = getParser();
                 debugger.addDelegate(property, delegationType.getDebugInfo(getName(), line, offset, parser.getGlobalCurrentLineNumber(true), parser.getGlobalPositionInLine(true)));
             }
+        }
+
+        if (lpWithParams.property != null) {
+            DebugInfo di = new DebugInfo(getName(), line, offset);
+            lpWithParams.property.property.setCommonDebugInfo(di);
         }
     }
 

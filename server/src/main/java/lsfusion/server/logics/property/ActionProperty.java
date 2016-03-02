@@ -118,7 +118,7 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
         for(int i=0;i<size;i++) {
             CalcProperty property = changeExtProps.getKey(i);
             if(property instanceof ChangedProperty)
-                mResult.add((IsClassProperty)((ChangedProperty)property).property);
+                mResult.add(((ChangedProperty)property).property);
             else {
                 assert property instanceof DataProperty || property instanceof ObjectClassProperty || property instanceof ClassDataProperty;
                 mResult.add(property);
@@ -215,7 +215,7 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
     private ImSet<Pair<String, Integer>> getInnerDebugActions() {
         MSet<Pair<String, Integer>> result = SetFact.mSet();
         if (debugInfo != null) {
-            result.add(new Pair<String, Integer>(debugInfo.moduleName, debugInfo.line));
+            result.add(new Pair<>(debugInfo.moduleName, debugInfo.line));
         }
         for (ActionProperty actionProperty : getDependActions()) {
             result.addAll(actionProperty.getInnerDebugActions());
@@ -319,7 +319,7 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
     }
 
     public <V extends PropertyInterface> ActionPropertyMapImplement<P, V> getImplement(ImOrderSet<V> list) {
-        return new ActionPropertyMapImplement<P, V>(this, getMapInterfaces(list));
+        return new ActionPropertyMapImplement<>(this, getMapInterfaces(list));
     }
 
     public Object events = MapFact.mExclMap();
@@ -369,8 +369,8 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
     @Override
     public String toString() {
         String result = super.toString();
-        if(debugInfo != null)
-           result += ":" + debugInfo;
+        if(commonDebugInfo != null)
+           result += ":" + commonDebugInfo;
         return result;
     }
 
@@ -428,7 +428,7 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
     protected abstract FlowResult aspectExecute(ExecutionContext<P> context) throws SQLException, SQLHandledException;
 
     public ActionPropertyMapImplement<P, P> getImplement() {
-        return new ActionPropertyMapImplement<P, P>(this, getIdentityInterfaces());
+        return new ActionPropertyMapImplement<>(this, getIdentityInterfaces());
     }
 
     public void execute(ExecutionEnvironment env) throws SQLException, SQLHandledException {
@@ -471,7 +471,7 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
     }
 
     protected ActionPropertyClassImplement<P> createClassImplement(ImOrderSet<ValueClassWrapper> classes, ImOrderSet<P> mapping) {
-        return new ActionPropertyClassImplement<P>(this, classes, mapping);
+        return new ActionPropertyClassImplement<>(this, classes, mapping);
     }
 
     @IdentityInstanceLazy

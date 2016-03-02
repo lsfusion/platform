@@ -18,7 +18,7 @@ public class MetaCodeFragment {
     private String moduleName;
     private int lineNumber;
 
-    private char QUOTE = '\'';
+    private final char QUOTE = '\'';
 
     public MetaCodeFragment(List<String> params, List<String> tokens, String code, String moduleName, int lineNumber) {
         this.parameters = params;
@@ -30,8 +30,8 @@ public class MetaCodeFragment {
 
     public String getCode(List<String> params) {
         assert params.size() == parameters.size();
-        ArrayList<String> newTokens = new ArrayList<String>();
-        ArrayList<Integer> oldTokensCnt = new ArrayList<Integer>();
+        ArrayList<String> newTokens = new ArrayList<>();
+        ArrayList<Integer> oldTokensCnt = new ArrayList<>();
 
         for (int i = 0; i < tokens.size(); i++) {
             String tokenStr = transformedToken(params, tokens.get(i));
