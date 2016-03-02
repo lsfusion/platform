@@ -44,7 +44,7 @@ public class FormulaExpr extends StaticClassExpr implements FormulaExprInterface
     }
 
     private FormulaExpr(ImList<BaseExpr> exprs, FormulaJoinImpl formula) {
-        assert !formula.hasNotNull();
+//        assert !formula.hasNotNull();
         this.exprs = exprs;
         this.formula = formula;
     }
