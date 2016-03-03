@@ -103,21 +103,21 @@ public class ClientFormController implements AsyncListener {
 
     private final ClientFormLayout formLayout;
 
-    private final Map<ClientGroupObject, GroupObjectController> controllers = new HashMap<ClientGroupObject, GroupObjectController>();
-    private final Map<ClientTreeGroup, TreeGroupController> treeControllers = new HashMap<ClientTreeGroup, TreeGroupController>();
+    private final Map<ClientGroupObject, GroupObjectController> controllers = new HashMap<>();
+    private final Map<ClientTreeGroup, TreeGroupController> treeControllers = new HashMap<>();
 
-    private final Map<ClientGroupObject, List<JComponent>> filterViews = new HashMap<ClientGroupObject, List<JComponent>>();
+    private final Map<ClientGroupObject, List<JComponent>> filterViews = new HashMap<>();
 
     private boolean defaultOrdersInitialized = false;
 
     private final boolean isDialog;
     private final boolean isModal;
 
-    private final Map<ClientGroupObject, List<ClientPropertyFilter>> currentFilters = new HashMap<ClientGroupObject, List<ClientPropertyFilter>>();
+    private final Map<ClientGroupObject, List<ClientPropertyFilter>> currentFilters = new HashMap<>();
 
-    private final Map<ClientGroupObject, List<ClientGroupObjectValue>> currentGridObjects = new HashMap<ClientGroupObject, List<ClientGroupObjectValue>>();
+    private final Map<ClientGroupObject, List<ClientGroupObjectValue>> currentGridObjects = new HashMap<>();
 
-    private final OrderedMap<Long, ModifyObject> pendingModifyObjectRequests = new OrderedMap<Long, ModifyObject>();
+    private final OrderedMap<Long, ModifyObject> pendingModifyObjectRequests = new OrderedMap<>();
     private final Map<ClientGroupObject, Long> pendingChangeCurrentObjectsRequests = Maps.newHashMap();
     private final Table<ClientPropertyDraw, ClientGroupObjectValue, PropertyChange> pendingChangePropertyRequests = HashBasedTable.create();
 
@@ -290,7 +290,7 @@ public class ClientFormController implements AsyncListener {
     private GridUserPreferences findGridUserPreferences(List<GroupObjectUserPreferences> groupObjectUserPreferences, ClientGroupObject groupObject) {
         for (GroupObjectUserPreferences groupPreferences : groupObjectUserPreferences) {
             if (groupObject.getSID().equals(groupPreferences.groupObjectSID)) {
-                Map<ClientPropertyDraw, ColumnUserPreferences> columnPreferences = new HashMap<ClientPropertyDraw, ColumnUserPreferences>();
+                Map<ClientPropertyDraw, ColumnUserPreferences> columnPreferences = new HashMap<>();
                 for (Map.Entry<String, ColumnUserPreferences> entry : groupPreferences.getColumnUserPreferences().entrySet()) {
                     ClientPropertyDraw property = form.getProperty(entry.getKey());
                     if (property != null) {
@@ -395,6 +395,7 @@ public class ClientFormController implements AsyncListener {
         checkBox.addItemListener(new ItemListener() {
 
             public void itemStateChanged(final ItemEvent ie) {
+                // убрал invokeLater(), поскольку setRegularFilter() - синхронное событие - должно сразу блокировать EDT
                 RmiQueue.runAction(new Runnable() {
                     @Override
                     public void run() {
@@ -409,7 +410,7 @@ public class ClientFormController implements AsyncListener {
                             throw new RuntimeException(getString("form.error.changing.regular.filter"), e);
                         }
                     }
-                }, true);
+                });
             }
         });
 
@@ -433,7 +434,7 @@ public class ClientFormController implements AsyncListener {
 
         List<JComponent> groupFilters = filterViews.get(filterGroup.groupObject);
         if (groupFilters == null) {
-            groupFilters = new ArrayList<JComponent>();
+            groupFilters = new ArrayList<>();
             filterViews.put(filterGroup.groupObject, groupFilters);
         }
         groupFilters.add(filterView);
@@ -582,7 +583,7 @@ public class ClientFormController implements AsyncListener {
     }
 
     public void applyOrders(OrderedMap<ClientPropertyDraw, Boolean> orders, GroupObjectController groupObjectController) throws IOException {
-        Set<ClientGroupObject> wasOrder = new HashSet<ClientGroupObject>();
+        Set<ClientGroupObject> wasOrder = new HashSet<>();
         for (Map.Entry<ClientPropertyDraw, Boolean> entry : orders.entrySet()) {
             ClientPropertyDraw property = entry.getKey();
             ClientGroupObject groupObject = property.getGroupObject();
@@ -690,7 +691,7 @@ public class ClientFormController implements AsyncListener {
 
                 Map<ClientGroupObjectValue, Object> propertyValues = formChanges.properties.get(propertyDraw);
                 if (propertyValues == null) { // включаем изменение на старое значение, если ответ с сервера пришел, а новое значение нет
-                    propertyValues = new HashMap<ClientGroupObjectValue, Object>();
+                    propertyValues = new HashMap<>();
                     formChanges.properties.put(propertyDraw, propertyValues);
                     formChanges.updateProperties.add(propertyDraw);
                 }
@@ -987,9 +988,9 @@ public class ClientFormController implements AsyncListener {
     }
 
     public void pasteExternalTable(List<ClientPropertyDraw> propertyList, List<ClientGroupObjectValue> columnKeys, final List<List<String>> table, int maxColumns) throws IOException {
-        final List<List<byte[]>> values = new ArrayList<List<byte[]>>();
+        final List<List<byte[]>> values = new ArrayList<>();
         for (List<String> sRow : table) {
-            List<byte[]> valueRow = new ArrayList<byte[]>();
+            List<byte[]> valueRow = new ArrayList<>();
 
             int rowLength = Math.min(sRow.size(), maxColumns);
             for (int i = 0; i < rowLength; i++) {
@@ -1001,11 +1002,11 @@ public class ClientFormController implements AsyncListener {
             values.add(valueRow);
         }
 
-        final List<Integer> propertyIdList = new ArrayList<Integer>();
+        final List<Integer> propertyIdList = new ArrayList<>();
         for (ClientPropertyDraw propertyDraw : propertyList) {
             propertyIdList.add(propertyDraw.getID());
         }
-        final List<byte[]> serializedColumnKeys = new ArrayList<byte[]>();
+        final List<byte[]> serializedColumnKeys = new ArrayList<>();
         for (ClientGroupObjectValue key : columnKeys) {
             serializedColumnKeys.add(key.serialize());
         }
@@ -1022,14 +1023,14 @@ public class ClientFormController implements AsyncListener {
             return;
         }
 
-        final Map<Integer, List<byte[]>> mKeys = new HashMap<Integer, List<byte[]>>();
-        final Map<Integer, byte[]> mValues = new HashMap<Integer, byte[]>();
+        final Map<Integer, List<byte[]>> mKeys = new HashMap<>();
+        final Map<Integer, byte[]> mValues = new HashMap<>();
 
         for (Map.Entry<ClientPropertyDraw, PasteData> keysEntry : paste.entrySet()) {
             ClientPropertyDraw property = keysEntry.getKey();
             PasteData pasteData = keysEntry.getValue();
 
-            List<byte[]> propMKeys = new ArrayList<byte[]>();
+            List<byte[]> propMKeys = new ArrayList<>();
             for (int i = 0; i < pasteData.keys.size(); ++i) {
                 propMKeys.add(getFullCurrentKey(pasteData.keys.get(i)));
             }
@@ -1120,7 +1121,7 @@ public class ClientFormController implements AsyncListener {
     }
 
     public void changeFilter(ClientGroupObject groupObject, List<ClientPropertyFilter> conditions) throws IOException {
-        currentFilters.put(groupObject, new ArrayList<ClientPropertyFilter>(conditions));
+        currentFilters.put(groupObject, new ArrayList<>(conditions));
         applyCurrentFilters();
     }
 
@@ -1129,12 +1130,12 @@ public class ClientFormController implements AsyncListener {
             public ClientGroupObject group(ClientPropertyFilter key) {
                 return key.groupObject;
             }
-        }, new ArrayList<ClientPropertyFilter>(conditions));
+        }, new ArrayList<>(conditions));
 
         for (ClientGroupObject group : treeGroup.groups) {
             List<ClientPropertyFilter> groupFilters = filters.get(group);
             if (groupFilters == null) {
-                groupFilters = new ArrayList<ClientPropertyFilter>();
+                groupFilters = new ArrayList<>();
             }
 
             currentFilters.put(group, groupFilters);
@@ -1146,7 +1147,7 @@ public class ClientFormController implements AsyncListener {
     private void applyCurrentFilters() throws IOException {
         commitOrCancelCurrentEditing();
 
-        final List<byte[]> filters = new ArrayList<byte[]>();
+        final List<byte[]> filters = new ArrayList<>();
 
         for (List<ClientPropertyFilter> groupFilters : currentFilters.values()) {
             for (ClientPropertyFilter filter : groupFilters) {
@@ -1215,18 +1216,18 @@ public class ClientFormController implements AsyncListener {
             protected Map<List<Object>, List<Object>> doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
                 byte[] groupedData = remoteForm.groupData(requestIndex, lastReceivedRequestIndex, groupMap, sumMap, maxMap, onlyNotNull);
                 
-                Map<List<Object>, List<Object>> result = new OrderedMap<List<Object>, List<Object>>();
+                Map<List<Object>, List<Object>> result = new OrderedMap<>();
                 DataInputStream inputStream = new DataInputStream(new ByteArrayInputStream(groupedData));
                 try {
                     int resultSize = inputStream.readInt();
                     for (int i = 0; i < resultSize; i++) {
-                        List<Object> key = new ArrayList<Object>();
+                        List<Object> key = new ArrayList<>();
                         int keySize = inputStream.readInt();
                         for (int k = 0; k < keySize; k++) {
                             key.add(BaseUtils.deserializeObject(inputStream));
                         }
                         
-                        List<Object> value = new ArrayList<Object>();
+                        List<Object> value = new ArrayList<>();
                         int valueSize = inputStream.readInt();
                         for (int v = 0; v < valueSize; v++) {
                             value.add(BaseUtils.deserializeObject(inputStream));
@@ -1280,8 +1281,8 @@ public class ClientFormController implements AsyncListener {
     }
 
     public FormUserPreferences getUserPreferences() {
-        List<GroupObjectUserPreferences> groupObjectUserPreferencesList = new ArrayList<GroupObjectUserPreferences>();
-        List<GroupObjectUserPreferences> groupObjectGeneralPreferencesList = new ArrayList<GroupObjectUserPreferences>();
+        List<GroupObjectUserPreferences> groupObjectUserPreferencesList = new ArrayList<>();
+        List<GroupObjectUserPreferences> groupObjectGeneralPreferencesList = new ArrayList<>();
         for (GroupObjectController controller : controllers.values()) {
             if (controller.getGroupObject() != null) {
                 groupObjectUserPreferencesList.add(controller.getUserGridPreferences());
