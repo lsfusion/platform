@@ -1,9 +1,11 @@
 package lsfusion.gwt.form.client.form.ui;
 
 import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.event.dom.client.*;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.DecoratedPopupPanel;
 import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.Widget;
 
 import static lsfusion.gwt.base.shared.GwtSharedUtils.isRedundantString;
 
@@ -24,8 +26,40 @@ public class TooltipManager {
     public static TooltipManager get() {
         return instance;
     }
+    
+    public static void registerWidget(Widget widget, final TooltipHelper tooltipHelper) {
+        widget.addDomHandler(new MouseOverHandler() {
+            @Override
+            public void onMouseOver(MouseOverEvent mouseOverEvent) {
+                get().showTooltip(mouseOverEvent.getClientX(), mouseOverEvent.getClientY(), tooltipHelper);
+            }
+        }, MouseOverEvent.getType());
 
-    public void showTooltip(final int offsetX, final int offsetY, final String tooltipText, final TooltipCallback checkShow) {
+        widget.addDomHandler(new MouseDownHandler() {
+            @Override
+            public void onMouseDown(MouseDownEvent event) {
+                get().hideTooltip();
+            }
+        }, MouseDownEvent.getType());
+
+        widget.addDomHandler(new MouseOutHandler() {
+            @Override
+            public void onMouseOut(MouseOutEvent mouseOutEvent) {
+                get().hideTooltip();
+            }
+        }, MouseOutEvent.getType());
+
+        widget.addDomHandler(new MouseMoveHandler() {
+            @Override
+            public void onMouseMove(MouseMoveEvent event) {
+                get().updateMousePosition(event.getClientX(), event.getClientY());
+            }
+        }, MouseMoveEvent.getType());
+    } 
+
+    public void showTooltip(final int offsetX, final int offsetY, final TooltipHelper tooltipHelper) {
+        final String tooltipText = tooltipHelper.getTooltip();
+        
         mouseX = offsetX;
         mouseY = offsetY;
         currentText = tooltipText;
@@ -34,7 +68,9 @@ public class TooltipManager {
         Scheduler.get().scheduleFixedDelay(new Scheduler.RepeatingCommand() {
             @Override
             public boolean execute() {
-                if (mouseIn && (checkShow == null || checkShow.stillShowTooltip()) && !isRedundantString(tooltipText) && tooltipText.equals(currentText)) {
+                                                                                                        // если currentText поменялся, значит либо он сбросился,
+                                                                                                        // либо заново вызвался showTooltip()
+                if (mouseIn && (tooltipHelper.stillShowTooltip()) && !isRedundantString(tooltipText) && tooltipText.equals(currentText)) {
                     if (tooltip != null) {
                         tooltip.hide();
                     }
@@ -75,6 +111,7 @@ public class TooltipManager {
         currentText = "";
     }
 
+    // за время ожидания курсор может переместиться далеко от места, где вызвался showTooltip()
     public void updateMousePosition(int x, int y) {
         if (mouseIn) {
             mouseX = x;
@@ -89,8 +126,10 @@ public class TooltipManager {
         }
     }
     
-    // to check if nothing changed after tooltip delay
-    public static abstract class TooltipCallback {
+    public static abstract class TooltipHelper {
+        public abstract String getTooltip();
+
+        // to check if nothing changed after tooltip delay
         public abstract boolean stillShowTooltip();
     }
 }

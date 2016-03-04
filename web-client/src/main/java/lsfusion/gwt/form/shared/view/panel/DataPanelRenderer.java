@@ -4,7 +4,6 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.EventTarget;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.dom.client.Style;
-import com.google.gwt.event.dom.client.*;
 import com.google.gwt.safehtml.shared.SafeHtmlUtils;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.SimplePanel;
@@ -59,28 +58,15 @@ public class DataPanelRenderer implements PanelRenderer {
             label.getElement().getStyle().setMarginRight(4, Style.Unit.PX);
         }
 
-        label.addMouseOverHandler(new MouseOverHandler() {
+        TooltipManager.registerWidget(label, new TooltipManager.TooltipHelper() {
             @Override
-            public void onMouseOver(MouseOverEvent event) {
-                TooltipManager.TooltipCallback checkShow = new TooltipManager.TooltipCallback() {
-                    @Override
-                    public boolean stillShowTooltip() {
-                        return label.isAttached() && label.isVisible();
-                    }
-                };
-                TooltipManager.get().showTooltip(event.getClientX(), event.getClientY(), tooltip, checkShow);
+            public String getTooltip() {
+                return tooltip;
             }
-        });
-        label.addMouseOutHandler(new MouseOutHandler() {
+
             @Override
-            public void onMouseOut(MouseOutEvent event) {
-                TooltipManager.get().hideTooltip();
-            }
-        });
-        label.addMouseMoveHandler(new MouseMoveHandler() {
-            @Override
-            public void onMouseMove(MouseMoveEvent event) {
-                TooltipManager.get().updateMousePosition(event.getClientX(), event.getClientY());
+            public boolean stillShowTooltip() {
+                return label.isAttached() && label.isVisible();
             }
         });
 

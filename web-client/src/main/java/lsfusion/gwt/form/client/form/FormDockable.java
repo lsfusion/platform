@@ -1,7 +1,8 @@
 package lsfusion.gwt.form.client.form;
 
 import com.google.gwt.dom.client.Style;
-import com.google.gwt.event.dom.client.*;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.base.client.EscapeUtils;
 import lsfusion.gwt.form.client.form.ui.GFormController;
@@ -185,26 +186,17 @@ final class FormDockable {
                 }
             });
 
-            addDomHandler(new MouseOverHandler() {
+            TooltipManager.registerWidget(this, new TooltipManager.TooltipHelper() {
                 @Override
-                public void onMouseOver(MouseOverEvent mouseOverEvent) {
-                    TooltipManager.TooltipCallback checkShow = new TooltipManager.TooltipCallback() {
-                        @Override
-                        public boolean stillShowTooltip() {
-                            return TabWidget.this.isAttached() && TabWidget.this.isVisible();
-                        }
-                    };
-                    TooltipManager.get().showTooltip(mouseOverEvent.getClientX(), mouseOverEvent.getClientY(), form.getForm().getTooltip(), checkShow);
+                public String getTooltip() {
+                    return form.getForm().getTooltip();
                 }
-            }, MouseOverEvent.getType());
 
-            addDomHandler(new MouseOutHandler() {
                 @Override
-                public void onMouseOut(MouseOutEvent mouseOutEvent) {
-                    TooltipManager.get().hideTooltip();
-
+                public boolean stillShowTooltip() {
+                    return TabWidget.this.isAttached() && TabWidget.this.isVisible();
                 }
-            }, MouseOutEvent.getType());
+            });
         }
 
         public void setBlocked(boolean blocked) {

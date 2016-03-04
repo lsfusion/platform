@@ -3,7 +3,6 @@ package lsfusion.gwt.form.client.form.ui.dialog;
 import com.allen_sauer.gwt.dnd.client.DragContext;
 import com.allen_sauer.gwt.dnd.client.util.Location;
 import com.allen_sauer.gwt.dnd.client.util.WidgetLocation;
-import com.google.gwt.event.dom.client.*;
 import com.google.gwt.event.logical.shared.CloseEvent;
 import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.event.logical.shared.HasCloseHandlers;
@@ -99,28 +98,15 @@ public class ResizableWindow extends Composite implements HasCloseHandlers<Resiz
         headerPanel.add(headerWidget);
         headerPanel.setTabIndex(-1);
 
-        headerPanel.addMouseOverHandler(new MouseOverHandler() {
+        TooltipManager.registerWidget(this, new TooltipManager.TooltipHelper() {
             @Override
-            public void onMouseOver(MouseOverEvent event) {
-                TooltipManager.TooltipCallback checkShow = new TooltipManager.TooltipCallback() {
-                    @Override
-                    public boolean stillShowTooltip() {
-                        return headerPanel.isAttached() && headerPanel.isVisible() && !windowController.isDragging();
-                    }
-                };
-                TooltipManager.get().showTooltip(event.getClientX(), event.getClientY(), tooltip, checkShow);
+            public String getTooltip() {
+                return tooltip;
             }
-        });
-        headerPanel.addMouseOutHandler(new MouseOutHandler() {
+
             @Override
-            public void onMouseOut(MouseOutEvent event) {
-                TooltipManager.get().hideTooltip();
-            }
-        });
-        headerPanel.addMouseMoveHandler(new MouseMoveHandler() {
-            @Override
-            public void onMouseMove(MouseMoveEvent event) {
-                TooltipManager.get().updateMousePosition(event.getClientX(), event.getClientY());
+            public boolean stillShowTooltip() {
+                return headerPanel.isAttached() && headerPanel.isVisible() && !windowController.isDragging();
             }
         });
 
@@ -237,7 +223,7 @@ public class ResizableWindow extends Composite implements HasCloseHandlers<Resiz
         return addHandler(handler, CloseEvent.getType());
     }
 
-    public static enum Direction {
+    public enum Direction {
         NORTH("n", true, null),
         SOUTH("s", false, null),
         WEST("w", null, true),

@@ -101,18 +101,25 @@ public class GGridPropertyTableHeader extends Header<String> {
                 }
             }
         } else if (MOUSEOVER.equals(eventType)) {
-            TooltipManager.TooltipCallback checkShow = new TooltipManager.TooltipCallback() {
+            TooltipManager.get().showTooltip(event.getClientX(), event.getClientY(), new TooltipManager.TooltipHelper() {
+                @Override
+                public String getTooltip() {
+                    return toolTip;
+                }
+
                 @Override
                 public boolean stillShowTooltip() {
                     return table.isAttached() && table.isVisible();
                 }
-            };
-            TooltipManager.get().showTooltip(event.getClientX(), event.getClientY(), toolTip, checkShow);
+            });
         } else if (MOUSEOUT.equals(eventType)) {
             TooltipManager.get().hideTooltip();
         }
         if (MOUSEMOVE.equals(eventType)) {
             TooltipManager.get().updateMousePosition(event.getClientX(), event.getClientY());
+        }
+        if (MOUSEDOWN.equals(eventType)) {
+            TooltipManager.get().hideTooltip();
         }
     }
 

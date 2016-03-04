@@ -4,7 +4,10 @@ import com.google.gwt.dom.client.BrowserEvents;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.EventTarget;
 import com.google.gwt.dom.client.NativeEvent;
-import com.google.gwt.event.dom.client.*;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.ContextMenuEvent;
+import com.google.gwt.event.dom.client.ContextMenuHandler;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.base.client.ui.GKeyStroke;
@@ -60,28 +63,15 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
 
         setTooltip(property.caption);
 
-        button.addMouseOverHandler(new MouseOverHandler() {
+        TooltipManager.registerWidget(button, new TooltipManager.TooltipHelper() {
             @Override
-            public void onMouseOver(MouseOverEvent event) {
-                TooltipManager.TooltipCallback checkShow = new TooltipManager.TooltipCallback() {
-                    @Override
-                    public boolean stillShowTooltip() {
-                        return button.isAttached() && button.isVisible();
-                    }
-                };
-                TooltipManager.get().showTooltip(event.getClientX(), event.getClientY(), property.getTooltipText(tooltip, true), checkShow);
+            public String getTooltip() {
+                return property.getTooltipText(tooltip, true);
             }
-        });
-        button.addMouseOutHandler(new MouseOutHandler() {
+
             @Override
-            public void onMouseOut(MouseOutEvent event) {
-                TooltipManager.get().hideTooltip();
-            }
-        });
-        button.addMouseMoveHandler(new MouseMoveHandler() {
-            @Override
-            public void onMouseMove(MouseMoveEvent event) {
-                TooltipManager.get().updateMousePosition(event.getClientX(), event.getClientY());
+            public boolean stillShowTooltip() {
+                return button.isAttached() && button.isVisible();
             }
         });
 
