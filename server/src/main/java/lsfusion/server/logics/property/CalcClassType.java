@@ -6,6 +6,7 @@ import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.classes.sets.AndClassSet;
 import lsfusion.server.data.where.classes.ClassWhere;
+import lsfusion.server.logics.property.infer.ExClassSet;
 
 public class CalcClassType extends CalcType implements AlgType {
 
@@ -21,7 +22,7 @@ public class CalcClassType extends CalcType implements AlgType {
         return property.calcClassValueWhere(this);
     }
 
-    public <P extends PropertyInterface> ImMap<P, ValueClass> getInterfaceClasses(CalcProperty<P> property) {
+    public <P extends PropertyInterface> ImMap<P, ValueClass> getInterfaceClasses(CalcProperty<P> property, ExClassSet valueClasses) {
         return property.calcInterfaceClasses(this);
     }
 

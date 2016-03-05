@@ -33,6 +33,7 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.data.where.classes.ClassWhere;
+import lsfusion.server.form.entity.ObjectEntity;
 import lsfusion.server.form.entity.drilldown.DrillDownFormEntity;
 import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.logics.*;
@@ -57,6 +58,7 @@ import lsfusion.server.stack.ThisMessage;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.Callable;
 
 public abstract class CalcProperty<T extends PropertyInterface> extends Property<T> implements MapKeysInterface<T> {
@@ -444,13 +446,13 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
             return containsAll(inferredClasses, exInterfaceClasses, true); // тут вопрос с последним параметром, так как при false - A : C MULTI B : C пойдет в панель, с другой стороны при добавлении D : C поведение изменится
     }
 
-    public ImMap<T, ValueClass> inferGetInterfaceClasses(InferType inferType) {
-        ImMap<T, ExClassSet> inferred = getInferInterfaceClasses(inferType);
+    public ImMap<T, ValueClass> inferGetInterfaceClasses(InferType inferType, ExClassSet valueClasses) {
+        ImMap<T, ExClassSet> inferred = getInferInterfaceClasses(inferType, valueClasses);
         if(inferred == null)
             return MapFact.EMPTY();
         return ExClassSet.fromExValue(inferred).removeNulls();
     }
-
+    
     public static class VirtualTable<P extends PropertyInterface> extends Table {
 
         public final ImRevMap<KeyField, P> mapFields;
@@ -899,9 +901,13 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
 
     @IdentityLazy
     public ImMap<T, ValueClass> getInterfaceClasses(ClassType type) {
+        return getInterfaceClasses(type, null);
+    }
+
+    public ImMap<T, ValueClass> getInterfaceClasses(ClassType type, final ExClassSet valueClasses) {
         return classToAlg(type, new CallableWithParam<AlgType, ImMap<T, ValueClass>>() {
             public ImMap<T, ValueClass> call(AlgType arg) {
-                return arg.getInterfaceClasses(CalcProperty.this);
+                return arg.getInterfaceClasses(CalcProperty.this, valueClasses);
             }
         });
     }
@@ -1019,10 +1025,14 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         }
     };
 
-    @IdentityStartLazy
     public ClassWhere<Object> inferClassValueWhere(final InferType inferType) {
+        return inferClassValueWhere(inferType, null);
+    }
+    
+    @IdentityStartLazy
+    public ClassWhere<Object> inferClassValueWhere(final InferType inferType, final ExClassSet valueClasses) {
         // если prevBase и есть PREV'ы не используем explicitClasses
-        ImMap<T, ExClassSet> inferred = getInferInterfaceClasses(inferType);
+        ImMap<T, ExClassSet> inferred = getInferInterfaceClasses(inferType, valueClasses);
         if(inferred == null)
             return ClassWhere.FALSE();
         
@@ -1039,16 +1049,20 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
     }
 
     private ImMap<T, ExClassSet> getInferInterfaceClasses(final InferType inferType) {
+        return getInferInterfaceClasses(inferType, null);
+    }
+    
+    private ImMap<T, ExClassSet> getInferInterfaceClasses(final InferType inferType, final ExClassSet valueClasses) {
         return getInferExplicitCalcInterfaces(interfaces, noOld(), inferType, explicitClasses, new Callable<ImMap<T, ExClassSet>>() {
             public ImMap<T, ExClassSet> call() throws Exception {
-                return calcInferInterfaceClasses(inferType);
+                return calcInferInterfaceClasses(inferType, valueClasses);
             }}, "CALC " + this, checker);
     }
 
-    private ImMap<T, ExClassSet> calcInferInterfaceClasses(InferType inferType) {
-        return inferInterfaceClasses(null, inferType).finishEx(inferType);
+    private ImMap<T, ExClassSet> calcInferInterfaceClasses(InferType inferType, ExClassSet valueClasses) {
+        return inferInterfaceClasses(valueClasses, inferType).finishEx(inferType);
     }
-
+    
     public ClassWhere<Field> getClassWhere(MapKeysTable<T> mapTable, PropertyField storedField) {
         return getClassValueWhere(ClassType.storedPolicy).remap(MapFact.<Object, Field>addRevExcl(mapTable.mapKeys, "value", storedField)); //
     }
@@ -1447,17 +1461,30 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
     }
 
     // костыль для email
-    public static <I extends PropertyInterface> ValueClass[] getCommonClasses(ImList<I> mapInterfaces, ImCol<? extends CalcPropertyInterfaceImplement<I>> props) {
+    public static <I extends PropertyInterface> ValueClass[] getCommonClasses(ImList<I> mapInterfaces, ImCol<? extends CalcPropertyInterfaceImplement<I>> props, List<ObjectEntity> formObjects) {
         ValueClass[] result = new ValueClass[mapInterfaces.size()];
+        int index = 0;
         for(PropertyInterfaceImplement<I> prop : props) {
             ImMap<I, ValueClass> propClasses;
-            if(prop instanceof CalcPropertyMapImplement)
-                propClasses = ((CalcPropertyMapImplement<?, I>) prop).mapInterfaceClasses(ClassType.aroundPolicy);
-            else
-                propClasses = MapFact.EMPTY();
+            
+            if(prop instanceof CalcPropertyMapImplement) {
+                if (formObjects.get(index) == null) {
+                    propClasses = ((CalcPropertyMapImplement<?, I>) prop).mapInterfaceClasses(ClassType.aroundPolicy);
+                } else {
+                    propClasses = ((CalcPropertyMapImplement<?, I>) prop).mapInterfaceClasses(ClassType.aroundPolicy, new ExClassSet(formObjects.get(index).baseClass.getResolveSet()));
+                }
+            } else {
+                if (formObjects.get(index) != null && prop instanceof PropertyInterface) {
+                    propClasses = MapFact.singleton((I)prop, formObjects.get(index).baseClass);       
+                } else {
+                    propClasses = MapFact.EMPTY();
+                }
+            }
 
             for(int i=0;i<result.length;i++)
                 result[i] = op(result[i], propClasses.get(mapInterfaces.get(i)), true);
+            
+            ++index;
         }
         return result;
     }

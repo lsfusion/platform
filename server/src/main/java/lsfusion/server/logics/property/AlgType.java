@@ -6,6 +6,7 @@ import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.classes.sets.AndClassSet;
 import lsfusion.server.data.where.classes.ClassWhere;
+import lsfusion.server.logics.property.infer.ExClassSet;
 import lsfusion.server.logics.property.infer.InferType;
 
 // нужны сами классы - в Info не нужны
@@ -13,7 +14,7 @@ public interface AlgType {
 
     <P extends PropertyInterface> ClassWhere<Object> getClassValueWhere(CalcProperty<P> property);
 
-    <P extends PropertyInterface> ImMap<P, ValueClass> getInterfaceClasses(CalcProperty<P> property);
+    <P extends PropertyInterface> ImMap<P, ValueClass> getInterfaceClasses(CalcProperty<P> property, ExClassSet valueClasses);
 
     <P extends PropertyInterface> ValueClass getValueClass(CalcProperty<P> property);
 

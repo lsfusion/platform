@@ -1217,24 +1217,33 @@ public class ScriptingLogicsModule extends LogicsModule {
         allProps.add(subjProp);
         allProps.addAll(recipProps);
 
+        List<ObjectEntity> formObjects = new ArrayList<>(Collections.<ObjectEntity>nCopies(allProps.size(), null)); 
         for (int i = 0; i < forms.size(); ++i) {
-            allProps.addAll(mapObjects.get(i).values());
+            FormEntity form = findForm(forms.get(i));
+            for (Map.Entry<String, LPWithParams> e : mapObjects.get(i).entrySet()) {
+                allProps.add(e.getValue());
+                formObjects.add(findObjectEntity(form, e.getKey()));
+            }
+            
             if (formTypes.get(i) == FormStorageType.ATTACH && attachNames.get(i) != null) {
                 allProps.add(attachNames.get(i));
+                formObjects.add(null);
             }
         }
+        
         for (int i = 0; i < attachFileNames.size(); i++) {
             if (attachFileNames.get(i) != null) {
                 allProps.add(attachFileNames.get(i));
             }
             allProps.add(attachFiles.get(i));
         }
-                
+        
+        formObjects.addAll(Collections.<ObjectEntity>nCopies(allProps.size() - formObjects.size(), null));        
 
         Object[] allParams = getParamsPlainList(allProps).toArray();
 
         ImOrderSet<PropertyInterface> tempContext = genInterfaces(getIntNum(allParams));
-        ValueClass[] eaClasses = CalcProperty.getCommonClasses(tempContext, readCalcImplements(tempContext, allParams).getCol());
+        ValueClass[] eaClasses = CalcProperty.getCommonClasses(tempContext, readCalcImplements(tempContext, allParams).getCol(), formObjects);
 
         LAP<ClassPropertyInterface> eaPropLP = BL.emailLM.addEAProp(null, "", eaClasses, null, null);
         SendEmailActionProperty eaProp = (SendEmailActionProperty) eaPropLP.property;

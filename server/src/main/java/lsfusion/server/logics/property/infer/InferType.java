@@ -17,12 +17,16 @@ public class InferType implements AlgType {
     public static InferType RESOLVE = new InferType(); // PREVSAME
 
     public <P extends PropertyInterface> ClassWhere<Object> getClassValueWhere(CalcProperty<P> property) {
-        assert this != RESOLVE;
-        return property.inferClassValueWhere(this);
+        return getClassValueWhere(property, null);
     }
 
-    public <P extends PropertyInterface> ImMap<P, ValueClass> getInterfaceClasses(CalcProperty<P> property) {
-        return property.inferGetInterfaceClasses(this);
+    public <P extends PropertyInterface> ClassWhere<Object> getClassValueWhere(CalcProperty<P> property, ExClassSet valueClasses) {
+        assert this != RESOLVE;
+        return property.inferClassValueWhere(this, valueClasses);
+    }
+
+    public <P extends PropertyInterface> ImMap<P, ValueClass> getInterfaceClasses(CalcProperty<P> property, ExClassSet valueClasses) {
+        return property.inferGetInterfaceClasses(this, valueClasses);
     }
 
     public <P extends PropertyInterface> ValueClass getValueClass(CalcProperty<P> property) {

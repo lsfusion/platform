@@ -73,8 +73,13 @@ public class CalcPropertyMapImplement<P extends PropertyInterface, T extends Pro
     }
 
     public ImMap<T,ValueClass> mapInterfaceClasses(ClassType type) {
-        return mapping.rightCrossJoin(property.getInterfaceClasses(type));
+        return mapInterfaceClasses(type, null);
     }
+
+    public ImMap<T,ValueClass> mapInterfaceClasses(ClassType type, ExClassSet valueClasses) {
+        return mapping.rightCrossJoin(property.getInterfaceClasses(type, valueClasses));
+    }
+
     public ClassWhere<T> mapClassWhere(ClassType type) {
         return new ClassWhere<T>(property.getClassWhere(type),mapping);
     }
