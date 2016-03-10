@@ -461,6 +461,10 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         return caption;
     }
 
+    public String getHTMLCaption() {
+        return caption == null ? null : escapeHTML(caption);
+    }
+
     public String getDynamicCaption(Object captionValue) {
         return BaseUtils.toCaption(captionValue);
     }

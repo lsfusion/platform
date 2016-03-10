@@ -161,7 +161,7 @@ public class GridTableModel extends AbstractTableModel {
             Map<ClientGroupObjectValue, Object> propColumnCaptions = columnCaptions.get(columnProps[i]);
             columnNames[i] = propColumnCaptions != null ?
                     columnProps[i].getDynamicCaption(propColumnCaptions.get(columnKeys[i])) :
-                    toCaption(columnProps[i].getCaption());
+                    toCaption(columnProps[i].getHTMLCaption());
         }
     }
 
