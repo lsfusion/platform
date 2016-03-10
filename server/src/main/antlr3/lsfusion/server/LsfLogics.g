@@ -920,7 +920,7 @@ propertyStatement
 		(	pdef=propertyDefinition[context, dynamic] { property = $pdef.property; signature = $pdef.signature; }
 		|	adef=actionDefinition[context, dynamic] { property = $adef.property; signature = $adef.signature; }
 		)
-		propertyOptions[property, $declaration.name, $declaration.caption, context, signature]
+		opt=propertyOptions[property, $declaration.name, $declaration.caption, context, signature] { property = $opt.realProperty; }
 		( {!self.semicolonNeeded()}?=>  | ';')
 	;
 
@@ -1714,7 +1714,7 @@ propertyName returns [String name]
 	:	id=compoundID { $name = $id.sid; }
 	;
 
-propertyOptions[LP property, String propertyName, String caption, List<TypedParameter> context, List<ResolveClassSet> signature]
+propertyOptions[LP property, String propertyName, String caption, List<TypedParameter> context, List<ResolveClassSet> signature] returns [LP realProperty]
 @init {
 	String groupName = null;
 	String table = null;
@@ -1728,7 +1728,7 @@ propertyOptions[LP property, String propertyName, String caption, List<TypedPara
 }
 @after {
 	if (inPropParseState() && property != null) { // not native
-		self.addSettingsToProperty(property, propertyName, caption, context, signature, groupName, isPersistent, isComplex, noHint, table, notNull, notNullResolve, notNullEvent);
+		$realProperty = self.addSettingsToProperty(property, propertyName, caption, context, signature, groupName, isPersistent, isComplex, noHint, table, notNull, notNullResolve, notNullEvent);
 		self.makeLoggable(property, isLoggable);
 	}
 }

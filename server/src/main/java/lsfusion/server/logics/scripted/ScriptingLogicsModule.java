@@ -710,7 +710,9 @@ public class ScriptingLogicsModule extends LogicsModule {
         return paramClasses;
     }
     
-    public void addSettingsToProperty(LP property, String name, String caption, List<TypedParameter> params, List<ResolveClassSet> signature, String groupName, boolean isPersistent, boolean isComplex, boolean noHint, String tableName, BooleanDebug notNull, BooleanDebug notNullResolve, Event notNullEvent) throws ScriptingErrorLog.SemanticErrorException {
+    public LP addSettingsToProperty(LP property, String name, String caption, List<TypedParameter> params, List<ResolveClassSet> signature, 
+                                      String groupName, boolean isPersistent, boolean isComplex, boolean noHint, String tableName, BooleanDebug notNull, 
+                                      BooleanDebug notNullResolve, Event notNullEvent) throws ScriptingErrorLog.SemanticErrorException {
         checkDuplicateProperty(name, signature);
        
         List<String> paramNames = getParamNamesFromTypedParams(params);
@@ -721,7 +723,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         if (property.property.getSID().equals(lastOpimizedJPropSID)) {
             property = addJProp(false, "", (LCP) property, BaseUtils.consecutiveList(property.property.interfaces.size(), 1).toArray());
         }
-
+        
         makePropertyPublic(property, name, signature);
         
         AbstractGroup group = (groupName == null ? null : findGroup(groupName));
@@ -767,6 +769,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 //                checkClassWhere((LCP) property, name);
 //            }
         }
+        return property;
     }
 
     private void showAlwaysNullErrors() throws ScriptingErrorLog.SemanticErrorException {
