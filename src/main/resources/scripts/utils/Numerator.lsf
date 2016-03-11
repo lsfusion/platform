@@ -26,11 +26,11 @@ stringLength 'Длина' = DATA INTEGER (Numerator) IN base;
 curValue 'Тек. значение' = DATA LONG (Numerator) IN recognize MINCHARWIDTH 15;
 curValue(Numerator numerator) <- minValue(numerator) WHEN SET(numerator IS Numerator);
 
-lpadStringWithZero = FORMULA STRING[18] PG 'lpad(CAST($1 AS text),$2,\'0\')', MS 'RIGHT(REPLICATE(\'0\', $2) + $1, $2)';
+lpadStringWithZero = FORMULA VARSTRING[28] PG 'lpad(CAST($1 AS text),$2,\'0\')', MS 'RIGHT(REPLICATE(\'0\', $2) + $1, $2)';
 
 curStringValue 'Тек. значение (строка)' (Numerator numerator) = lpadStringWithZero(curValue(numerator), stringLength(numerator)) IN base;
 
-incrementedValue = DATA LOCAL NESTED STRING[18] ();
+incrementedValue = DATA LOCAL NESTED VARSTRING[28] ();
 
 incrementValue 'Увеличить значение'(Numerator numerator) = ACTION NEWSESSION {
     incrementedValue() <- NULL;
@@ -112,7 +112,7 @@ NAVIGATOR {
 GROUP numbered 'Нумератор' : recognize;
 
 META defineNumberedAbstract(class)
-    number 'Номер' = ABSTRACT STRING[18] (class) IN numbered PERSISTENT MINCHARWIDTH 7;
+    number 'Номер' = ABSTRACT VARSTRING[28] (class) IN numbered PERSISTENT MINCHARWIDTH 7;
     series 'Серия' = ABSTRACT STRING[2] (class) IN numbered PERSISTENT FIXEDCHARWIDTH 3; 
 
     seriesNumber 'Серия/Номер' (class o) = 
@@ -137,7 +137,7 @@ DESIGN options{
 }
 
 META defineNumbered(class)
-    number 'Номер' = DATA STRING[18] (class) IN numbered INDEXED MINCHARWIDTH 7;
+    number 'Номер' = DATA VARSTRING[28] (class) IN numbered INDEXED MINCHARWIDTH 7;
     series 'Серия' = DATA STRING[2] (class) IN numbered FIXEDCHARWIDTH 3;
      
     WHEN useLoweredNumber() AND CHANGED(number(class o))
@@ -210,7 +210,7 @@ END
 
 META defineNumerated(object1, object2)
 
-    number 'Номер' = DATA STRING[18] (###object1, ###object2) MINCHARWIDTH 7;
+    number 'Номер' = DATA VARSTRING[28] (###object1, ###object2) MINCHARWIDTH 7;
     series 'Серия' = DATA STRING[2] (###object1, ###object2) FIXEDCHARWIDTH 3;
     seriesNumber 'Серия/Номер' (###object1 object1, ###object2 object2) = CONCAT '', series(object1, object2), number(object1, object2) MINCHARWIDTH 7 PREFCHARWIDTH 15 MAXCHARWIDTH 20 PERSISTENT;
 
