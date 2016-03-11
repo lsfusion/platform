@@ -430,6 +430,11 @@ FORM userRoles 'Роли'
     PROPERTIES(ur) READONLY name, sid
     PROPERTIES(ur) copy FORCE PANEL
     PROPERTIES(ur) ADDFORM, EDITFORM, DELETE
+;
+
+FORM userRolesDialog 'Роли'
+    OBJECTS ur=UserRole
+    PROPERTIES(ur) READONLY name, sid
     DIALOG UserRole OBJECT ur
 ;
 
