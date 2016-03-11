@@ -31,6 +31,9 @@ in 'Вкл.' = DATA BOOLEAN (CustomUser, UserRole);
 overIn 'Вкл.' (User user, UserRole role) = mainRole(user) == role OR in(user, role);
 hasUserRoleCustom(user) = GROUP MAX overIn(User user, UserRole role) BY user;
 
+CONSTRAINT DROPPED(UserRole r IS UserRole) AND PREV(overIn(User user, r))
+    MESSAGE 'Запрещено удалять используемую роль';
+
 inMainRole(CustomUser customUser, UserRole userRole) = mainRole(customUser) == userRole OR in(customUser, userRole);
 
 forbidDuplicateForms 'Запретить открытие второй формы' = DATA BOOLEAN (UserRole);
