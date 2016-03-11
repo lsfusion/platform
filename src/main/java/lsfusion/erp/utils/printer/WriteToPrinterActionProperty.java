@@ -37,6 +37,7 @@ public class WriteToPrinterActionProperty extends ScriptingActionProperty {
             String text = (String) context.getDataKeyValue(textInterface).object;
             String charset = (String) context.getDataKeyValue(charsetInterface).object;
             String printerName = (String) context.getDataKeyValue(printerNameInterface).object;
+            ServerLoggers.systemLogger.info("Sending to printer" + printerName + ": \n" + text);
 
             String result = (String) context.requestUserInteraction(new WriteToPrinterClientAction(text, charset, printerName));
             findProperty("printed[]").change(result == null ? true : (Object) null, context);
