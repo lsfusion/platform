@@ -6,7 +6,6 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.server.classes.ConcreteCustomClass;
-import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.query.QueryBuilder;
@@ -36,29 +35,17 @@ public class BackupActionProperty extends ScriptingActionProperty {
     }
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+        makeBackup(context, false);
+    }
+
+    protected void makeBackup(ExecutionContext context, boolean partial) {
         try (DataSession session = context.createSession()) {
 
             Date currentDate = Calendar.getInstance().getTime();
             long currentTime = currentDate.getTime();
             String backupFileName = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss").format(currentDate);
 
-            KeyExpr tableExpr = new KeyExpr("Table");
-            ImRevMap<Object, KeyExpr> tableKeys = MapFact.<Object, KeyExpr>singletonRev("Table", tableExpr);
-
-            QueryBuilder<Object, Object> tableQuery = new QueryBuilder<Object, Object>(tableKeys);
-            tableQuery.addProperty("sidTable", findProperty("sid[Table]").getExpr(context.getModifier(), tableExpr));
-
-            tableQuery.and(findProperty("exclude[Table]").getExpr(context.getModifier(), tableExpr).getWhere());
-
-            ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> tableResult = tableQuery.execute(context.getSession());
-
-            List<String> excludeTables = new ArrayList<String>();
-            for (ImMap<Object, Object> entry : tableResult.values()) {
-
-                String sidTable = (String) entry.get("sidTable");
-                if (sidTable != null)
-                    excludeTables.add(sidTable.trim());
-            }
+            List<String> excludeTables = partial ? getExcludeTables(context) : new ArrayList<String>();
 
             String backupFilePath = context.getDbManager().backupDB(context, backupFileName, excludeTables);
             if (backupFilePath != null) {
@@ -71,13 +58,15 @@ public class BackupActionProperty extends ScriptingActionProperty {
                 findProperty("file[Backup]").change(backupFilePath, session, backupObject);
                 findProperty("name[Backup]").change(backupFileName + backupFileExtension, session, backupObject);
                 findProperty("fileLog[Backup]").change(backupFileLogPath, session, backupObject);
-
                 findProperty("log[Backup]").change(readFileToString(backupFileLogPath), session, backupObject);
 
-                for (String excludeTable : excludeTables) {
-                    ObjectValue tableObject = findProperty("table[VARISTRING[100]]").readClasses(session, new DataObject(excludeTable));
-                    if (tableObject instanceof DataObject)
-                        findProperty("exclude[Backup,Table]").change(true, session, backupObject, (DataObject) tableObject);
+                if(partial) {
+                    findProperty("partial[Backup]").change(true, session, backupObject);
+                    for (String excludeTable : excludeTables) {
+                        ObjectValue tableObject = findProperty("table[VARISTRING[100]]").readClasses(session, new DataObject(excludeTable));
+                        if (tableObject instanceof DataObject)
+                            findProperty("exclude[Backup,Table]").change(true, session, backupObject, (DataObject) tableObject);
+                    }
                 }
 
                 session.apply(context);
@@ -90,6 +79,26 @@ public class BackupActionProperty extends ScriptingActionProperty {
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }
+    }
+
+    private List<String> getExcludeTables(ExecutionContext context) throws ScriptingErrorLog.SemanticErrorException, SQLException, SQLHandledException {
+        KeyExpr tableExpr = new KeyExpr("Table");
+        ImRevMap<Object, KeyExpr> tableKeys = MapFact.<Object, KeyExpr>singletonRev("Table", tableExpr);
+
+        QueryBuilder<Object, Object> tableQuery = new QueryBuilder<>(tableKeys);
+        tableQuery.addProperty("sidTable", findProperty("sid[Table]").getExpr(context.getModifier(), tableExpr));
+        tableQuery.and(findProperty("exclude[Table]").getExpr(context.getModifier(), tableExpr).getWhere());
+
+        ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> tableResult = tableQuery.execute(context.getSession());
+
+        List<String> excludeTables = new ArrayList<>();
+        for (ImMap<Object, Object> entry : tableResult.values()) {
+
+            String sidTable = (String) entry.get("sidTable");
+            if (sidTable != null)
+                excludeTables.add(sidTable.trim());
+        }
+        return excludeTables;
     }
 
     @Override

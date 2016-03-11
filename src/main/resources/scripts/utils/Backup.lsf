@@ -3,6 +3,7 @@ MODULE Backup;
 REQUIRE System, Reflection, SchedulerDefaultData;
 
 makeBackup 'Копировать'= ACTION CUSTOM 'lsfusion.erp.utils.backup.BackupActionProperty' () TOOLBAR;
+makePartialBackup 'Копировать (оперативно)'= ACTION CUSTOM 'lsfusion.erp.utils.backup.PartialBackupActionProperty' () TOOLBAR;
 save 'Скачать'= ACTION CUSTOM 'lsfusion.erp.utils.backup.SaveBackupActionProperty' (Backup) TOOLBAR;
 delete 'Удалить'= ACTION CUSTOM 'lsfusion.erp.utils.backup.DeleteBackupActionProperty' (Backup) CONFIRM;
 
@@ -20,6 +21,7 @@ replaceOnlyNull 'Не замещать' = DATA BOOLEAN (TableColumn);
 CLASS Backup 'Резервная копия';
 TABLE backup(Backup);
 
+partial 'Оперативная копия' = DATA BOOLEAN (Backup);
 date 'Дата' = DATA DATE (Backup);
 time 'Время' = DATA TIME (Backup);
 file 'Адрес файла' = DATA VARSTRING[200] (Backup);
@@ -31,16 +33,17 @@ log 'Лог' = DATA TEXT (Backup);
 backupFileName 'Имя файла резервной копии' = DATA LOCAL VARSTRING[100] ();
 backupFilePath 'Файл резервной копии' = DATA LOCAL VARSTRING[200]();
 
-exclude 'Исключить' = DATA LOCAL BOOLEAN (Table);
+exclude 'Исключить из оперативного копирования' = DATA BOOLEAN (Table);
 
 TABLE backupTable(Backup, Table);
 exclude 'Исключена' = DATA BOOLEAN (Backup, Table);
 
 FORM backup 'Резервное копирование'
     OBJECTS b = Backup
-    PROPERTIES() saveFirstDayBackups, maxQuantityBackups, saveMondayBackups, decimateBackups TODRAW b FORCE PANEL, makeBackup TODRAW b FORCE PANEL
+    PROPERTIES() saveFirstDayBackups, maxQuantityBackups, saveMondayBackups
+    PROPERTIES() TODRAW b FORCE PANEL decimateBackups, makeBackup, makePartialBackup
     PROPERTIES(b) save TODRAW b FORCE PANEL
-    PROPERTIES(b) READONLY date, time, file, fileDeleted, log FORCE PANEL
+    PROPERTIES(b) READONLY partial, date, time, file, fileDeleted, log FORCE PANEL
     PROPERTIES(b) delete
     
     OBJECTS t1 = Table
@@ -87,7 +90,7 @@ DESIGN backup {
 
 FORM backups 'Резервные копии'
     OBJECTS b=Backup
-    PROPERTIES(b) READONLY name, file, fileDeleted
+    PROPERTIES(b) READONLY partial, name, file, fileDeleted
     FILTERS NOT fileDeleted(b)
     DIALOG Backup OBJECT b
 ;
