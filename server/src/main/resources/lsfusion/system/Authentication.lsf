@@ -154,9 +154,7 @@ FORM customUsers 'Пользователи'
 
 FORM customUsersDialog 'Пользователи'
     OBJECTS u=CustomUser
-    
     PROPERTIES(u) READONLY name[Contact], login, email
-    PROPERTIES(u) ADDFORM, EDITFORM FORCE PANEL, DELETE FORCE PANEL TOOLBAR
 
     DIALOG CustomUser OBJECT u
 ;
