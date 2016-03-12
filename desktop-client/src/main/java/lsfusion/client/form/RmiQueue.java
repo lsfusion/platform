@@ -28,7 +28,7 @@ public class RmiQueue {
 
     private final static Object edtSyncBlocker = new Object();
 
-    private final Queue<RmiFuture> rmiFutures = new ArrayDeque<>();
+    private final Queue<RmiFuture> rmiFutures = new ArrayDeque<RmiFuture>();
     private final ExecutorService rmiExecutor;
 
     private final TableManager tableManager;
@@ -175,7 +175,7 @@ public class RmiQueue {
             try {
                 RmiFuture<T> rmiFuture;
                 if (direct) {
-                    rmiFuture = new RmiFuture<>(request);
+                    rmiFuture = new RmiFuture<T>(request);
                     rmiExecutor.execute(rmiFuture);
                 } else {
                     rmiFuture = execRmiRequestInternal(request);
@@ -310,8 +310,6 @@ public class RmiQueue {
         runAction(r, false);
     }
 
-    // синхронные события не должны вызываться через invokeLater(), иначе может нарушиться синхронизация.
-    // EDT должен блокроваться без задержек
     public static void runAction(Runnable r, boolean invokeLater) {
         if (invokeLater)
             SwingUtilities.invokeLater(r);
@@ -329,7 +327,7 @@ public class RmiQueue {
             logger.debug("Executing request's thread: " + request);
         }
 
-        RmiFuture<T> rmiFuture = new RmiFuture<>(request);
+        RmiFuture<T> rmiFuture = new RmiFuture<T>(request);
 
         rmiFutures.add(rmiFuture);
         rmiExecutor.execute(rmiFuture);
@@ -403,7 +401,7 @@ public class RmiQueue {
         private final RmiRequest<T> request;
 
         public RmiFuture(final RmiRequest<T> request) {
-            super(new RequestCallable<>(request));
+            super(new RequestCallable<T>(request));
             this.request = request;
         }
 
