@@ -37,14 +37,14 @@ public class WriteToPrinterActionProperty extends ScriptingActionProperty {
             String text = (String) context.getDataKeyValue(textInterface).object;
             String charset = (String) context.getDataKeyValue(charsetInterface).object;
             String printerName = (String) context.getDataKeyValue(printerNameInterface).object;
-            ServerLoggers.systemLogger.info("Sending to printer" + printerName + ": \n" + text);
+            ServerLoggers.printerLogger.info("Sending to printer " + printerName + ": \n" + text);
 
             String result = (String) context.requestUserInteraction(new WriteToPrinterClientAction(text, charset, printerName));
             findProperty("printed[]").change(result == null ? true : (Object) null, context);
             if (result != null)
                 context.requestUserInteraction(new MessageClientAction(result, "Ошибка"));
         } catch (Exception e) {
-            ServerLoggers.systemLogger.error("WriteToPrinter error", e);
+            ServerLoggers.printerLogger.error("WriteToPrinter error", e);
             try {
                 findProperty("printed[]").change((Object) null, context);
             } catch (ScriptingErrorLog.SemanticErrorException ignored) {
