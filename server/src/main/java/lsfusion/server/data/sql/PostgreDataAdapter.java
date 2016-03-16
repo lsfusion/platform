@@ -253,8 +253,7 @@ public class PostgreDataAdapter extends DataAdapter {
         commandLine.addArgument(userID);
 
         for(String excludeTable : excludeTables) {
-            commandLine.addArgument("-T");
-            commandLine.addArgument(excludeTable.toLowerCase());
+            commandLine.addArgument("--exclude-table-data="+excludeTable.toLowerCase());
         }
         
         commandLine.addArgument("-F");
