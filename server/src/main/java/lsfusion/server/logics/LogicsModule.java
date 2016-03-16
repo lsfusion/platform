@@ -1793,7 +1793,7 @@ public abstract class LogicsModule {
         ActionPropertyMapImplement<?, ClassPropertyInterface> constraintAction =
                 DerivedProperty.createListAction(
                         SetFact.<ClassPropertyInterface>EMPTY(),
-                        ListFact.toList(new LogPropertyActionProperty<>(property, messageProperty).getImplement(),
+                        ListFact.toList(new LogPropertyActionProperty<T>(property, messageProperty).getImplement(),
                                 baseLM.cancel.property.getImplement(SetFact.<ClassPropertyInterface>EMPTYORDER())
                         )
                 );
