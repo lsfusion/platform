@@ -33,7 +33,7 @@ import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
 
 public class ThreadLocalContext {
-    private static final ThreadLocal<Context> context = new ThreadLocal<Context>();
+    private static final ThreadLocal<Context> context = new ThreadLocal<>();
     public static ConcurrentWeakHashMap<Thread, LogInfo> logInfoMap = MapFact.getGlobalConcurrentWeakHashMap();
     public static Context get() {
         return context.get();
@@ -91,8 +91,8 @@ public class ThreadLocalContext {
         return get().getFormInstance();
     }
 
-    public static FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, UpdateCurrentClasses outerUpdateCurrentClasses, DataSession session, boolean isModal, boolean isAdd, FormSessionScope sessionScope, boolean checkOnOk, boolean showDrop, boolean interactive, ImSet<FilterEntity> contextFilters, PropertyDrawEntity initFilterProperty, ImSet<PullChangeProperty> pullProps) throws SQLException, SQLHandledException {
-        return get().createFormInstance(formEntity, mapObjects, session, isModal, isAdd, sessionScope, outerUpdateCurrentClasses, checkOnOk, showDrop, interactive, contextFilters, initFilterProperty, pullProps);
+    public static FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, UpdateCurrentClasses outerUpdateCurrentClasses, DataSession session, boolean isModal, boolean isAdd, FormSessionScope sessionScope, boolean checkOnOk, boolean showDrop, boolean interactive, ImSet<FilterEntity> contextFilters, PropertyDrawEntity initFilterProperty, ImSet<PullChangeProperty> pullProps, boolean readonly) throws SQLException, SQLHandledException {
+        return get().createFormInstance(formEntity, mapObjects, session, isModal, isAdd, sessionScope, outerUpdateCurrentClasses, checkOnOk, showDrop, interactive, contextFilters, initFilterProperty, pullProps, readonly);
     }
 
     public static RemoteForm createRemoteForm(FormInstance formInstance) {

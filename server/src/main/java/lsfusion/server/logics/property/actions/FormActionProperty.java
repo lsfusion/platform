@@ -68,6 +68,7 @@ public class FormActionProperty extends SystemExplicitActionProperty {
     private final CalcPropertyMapImplement<PropertyInterface, ClassPropertyInterface> contextPropertyImplement;
 
     private final PropertyDrawEntity initFilterProperty;
+    private final boolean readOnly;
 
     public FormPrintType getPrintType() {
         return printType;
@@ -112,7 +113,7 @@ public class FormActionProperty extends SystemExplicitActionProperty {
                               AnyValuePropertyHolder chosenValueProperty,
                               ObjectEntity contextObject,
                               CalcProperty contextProperty,
-                              PropertyDrawEntity initFilterProperty) {
+                              PropertyDrawEntity initFilterProperty, boolean readOnly) {
         super(caption, getValueClasses(objectsToSet, contextProperty));
 
         this.formResultClass = formResultClass;
@@ -133,6 +134,7 @@ public class FormActionProperty extends SystemExplicitActionProperty {
 
         this.contextObject = contextObject;
         this.initFilterProperty = initFilterProperty;
+        this.readOnly = readOnly;
 
         this.contextPropertyImplement = contextProperty == null ? null : contextProperty.getImplement(
                 getOrderInterfaces().subOrder(objectsToSet.length, interfaces.size())
@@ -177,7 +179,8 @@ public class FormActionProperty extends SystemExplicitActionProperty {
                                                                         printType == null,
                                                                         contextFilters,
                                                                         initFilterProperty,
-                                                                        pullProps.result);
+                                                                        pullProps.result,
+                                                                        readOnly);
 
         if (printType != null && !newFormInstance.areObjectsFound()) {
             context.requestUserInteraction(

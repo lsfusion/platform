@@ -2164,7 +2164,7 @@ public class ScriptingLogicsModule extends LogicsModule {
                                           String initFilterPropertyName, List<String> initFilterPropertyMapping,
                                           ModalityType modalityType, FormSessionScope sessionScope,
                                           boolean checkOnOk, boolean showDrop, boolean noCancel,
-                                          FormPrintType printType, FormExportType exportType) throws ScriptingErrorLog.SemanticErrorException {
+                                          FormPrintType printType, FormExportType exportType, boolean readonly) throws ScriptingErrorLog.SemanticErrorException {
         if (contextProperty != null) {
             checkCalculationProperty(contextProperty.property);
         }
@@ -2189,7 +2189,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         LAP property = addFAProp(null, "", form, objects, null, noCancel, contextObject,
                 contextProperty == null ? null : (CalcProperty) contextProperty.property.property,
                 initFilterProperty,
-                sessionScope, modalityType, checkOnOk, showDrop, printType, exportType);
+                sessionScope, modalityType, checkOnOk, showDrop, printType, exportType, readonly);
 
         if (mapping.size() > 0) {
             if (contextProperty != null) {

@@ -565,15 +565,15 @@ public abstract class LogicsModule {
     }
 
     protected LAP addFAProp(AbstractGroup group, String caption, FormEntity form, ObjectEntity[] objectsToSet, ActionPropertyObjectEntity startAction, FormSessionScope sessionScope, ModalityType modalityType, boolean checkOnOk, FormPrintType printType) {
-        return addFAProp(group, caption, form, objectsToSet, startAction, false, null, null, null, sessionScope, modalityType, checkOnOk, false, printType, null);
+        return addFAProp(group, caption, form, objectsToSet, startAction, false, null, null, null, sessionScope, modalityType, checkOnOk, false, printType, null, false);
     }
 
     protected LAP addFAProp(AbstractGroup group, String caption, FormEntity form, ObjectEntity[] objectsToSet, ActionPropertyObjectEntity startAction, boolean isAdd, ObjectEntity contextObject, CalcProperty contextProperty, FormSessionScope sessionScope, ModalityType modalityType, boolean checkOnOk, boolean showDrop) {
-        return addFAProp(group, caption, form, objectsToSet, startAction, isAdd, null, null, null, sessionScope, modalityType, checkOnOk, false, null, null);
+        return addFAProp(group, caption, form, objectsToSet, startAction, isAdd, null, null, null, sessionScope, modalityType, checkOnOk, false, null, null, false);
     }
 
-    protected LAP addFAProp(AbstractGroup group, String caption, FormEntity form, ObjectEntity[] objectsToSet, ActionPropertyObjectEntity startAction, boolean isAdd, ObjectEntity contextObject, CalcProperty contextProperty, PropertyDrawEntity initFilterProperty, FormSessionScope sessionScope, ModalityType modalityType, boolean checkOnOk, boolean showDrop, FormPrintType printType, FormExportType exportType) {
-        return addProperty(group, new LAP(new FormActionProperty(caption, form, objectsToSet, startAction, isAdd, sessionScope, modalityType, checkOnOk, showDrop, printType, exportType, baseLM.formResult, baseLM.getFormResultProperty(), baseLM.formPageCount, baseLM.formExportFile, baseLM.ignorePrintType, baseLM.getChosenValueProperty(), contextObject, contextProperty, initFilterProperty)));
+    protected LAP addFAProp(AbstractGroup group, String caption, FormEntity form, ObjectEntity[] objectsToSet, ActionPropertyObjectEntity startAction, boolean isAdd, ObjectEntity contextObject, CalcProperty contextProperty, PropertyDrawEntity initFilterProperty, FormSessionScope sessionScope, ModalityType modalityType, boolean checkOnOk, boolean showDrop, FormPrintType printType, FormExportType exportType, boolean readonly) {
+        return addProperty(group, new LAP(new FormActionProperty(caption, form, objectsToSet, startAction, isAdd, sessionScope, modalityType, checkOnOk, showDrop, printType, exportType, baseLM.formResult, baseLM.getFormResultProperty(), baseLM.formPageCount, baseLM.formExportFile, baseLM.ignorePrintType, baseLM.getChosenValueProperty(), contextObject, contextProperty, initFilterProperty, readonly)));
     }
 
     // ------------------- Change Class action ----------------- //
@@ -1793,7 +1793,7 @@ public abstract class LogicsModule {
         ActionPropertyMapImplement<?, ClassPropertyInterface> constraintAction =
                 DerivedProperty.createListAction(
                         SetFact.<ClassPropertyInterface>EMPTY(),
-                        ListFact.toList(new LogPropertyActionProperty<T>(property, messageProperty).getImplement(),
+                        ListFact.toList(new LogPropertyActionProperty<>(property, messageProperty).getImplement(),
                                 baseLM.cancel.property.getImplement(SetFact.<ClassPropertyInterface>EMPTYORDER())
                         )
                 );

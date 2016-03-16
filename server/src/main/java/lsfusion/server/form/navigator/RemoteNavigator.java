@@ -94,7 +94,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
 
     private String remoteAddress;
 
-    private final WeakIdentityHashSet<DataSession> sessions = new WeakIdentityHashSet<DataSession>();
+    private final WeakIdentityHashSet<DataSession> sessions = new WeakIdentityHashSet<>();
 
     private final boolean isFullClient;
 
@@ -153,7 +153,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         Object currentRole = securityManager.getUserMainRole(this.user);
         if (BaseUtils.nullEquals(newRole, currentRole)) {
             this.user = user;
-            Result<Integer> timeout = new Result<Integer>();
+            Result<Integer> timeout = new Result<>();
             this.securityPolicy = getUserSecurityPolicy(timeout);
             this.transactionTimeout = timeout.result;
             updateEnvironmentProperty((CalcProperty) businessLogics.authenticationLM.currentUser.property, user);
@@ -220,9 +220,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         logger.error(title + " at '" + time + "' from '" + hostname + "': ", t);
         try {
             businessLogics.systemEventsLM.logException(businessLogics, t, this.user, hostname, true);
-        } catch (SQLException e) {
-            throw Throwables.propagate(e);
-        } catch (SQLHandledException e) {
+        } catch (SQLException | SQLHandledException e) {
             throw Throwables.propagate(e);
         }
     }
@@ -245,7 +243,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         try {
             String userName;
             try (DataSession session = createSession()) {
-                QueryBuilder<Object, String> query = new QueryBuilder<Object, String>(MapFact.<Object, KeyExpr>EMPTYREV());
+                QueryBuilder<Object, String> query = new QueryBuilder<>(MapFact.<Object, KeyExpr>EMPTYREV());
                 query.addProperty("name", businessLogics.authenticationLM.currentUserName.getExpr());
                 userName = BaseUtils.nvl((String) query.execute(session).singleValue().get("name"), "(без имени)").trim();
             }
@@ -284,7 +282,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         WeakReference<RemoteNavigator> weakThis;
 
         private WeakUserController(RemoteNavigator navigator) {
-            this.weakThis = new WeakReference<RemoteNavigator>(navigator);
+            this.weakThis = new WeakReference<>(navigator);
         }
 
         public boolean changeCurrentUser(DataObject user) throws SQLException, SQLHandledException {
@@ -300,7 +298,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         WeakReference<RemoteNavigator> weakThis;
 
         private WeakComputerController(RemoteNavigator navigator) {
-            this.weakThis = new WeakReference<RemoteNavigator>(navigator);
+            this.weakThis = new WeakReference<>(navigator);
         }
 
         public DataObject getCurrentComputer() {
@@ -316,7 +314,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         WeakReference<RemoteNavigator> weakThis;
 
         private WeakTimeoutController(RemoteNavigator navigator) {
-            this.weakThis = new WeakReference<RemoteNavigator>(navigator);
+            this.weakThis = new WeakReference<>(navigator);
         }
 
         public int getTransactionTimeout() {
@@ -328,7 +326,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         WeakReference<RemoteNavigator> weakThis;
 
         private WeakSQLSessionUserProvider(RemoteNavigator dbManager) {
-            this.weakThis = new WeakReference<RemoteNavigator>(dbManager);
+            this.weakThis = new WeakReference<>(dbManager);
         }
 
         @Override
@@ -407,7 +405,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
             try (DataSession session = ThreadLocalContext.getDbManager().createSession()) {
                 List<Pair<DataObject, String>> openForms;
                 synchronized (recentlyOpenForms) {
-                    openForms = new ArrayList<Pair<DataObject, String>>(recentlyOpenForms);
+                    openForms = new ArrayList<>(recentlyOpenForms);
                 }
                 recentlyOpenForms.clear();
 
@@ -553,11 +551,9 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
             return context.createRemoteForm(
                     context.createFormInstance(formEntity, MapFact.<ObjectEntity, DataObject>EMPTY(), createSession(),
                                                isModal, false, FormSessionScope.NEWSESSION, null, false, false, interactive, null,
-                                               null, null)
+                                               null, null, false)
             );
-        } catch (SQLException e) {
-            throw Throwables.propagate(e);
-        } catch (SQLHandledException e) {
+        } catch (SQLException | SQLHandledException e) {
             throw Throwables.propagate(e);
         }
     }
@@ -717,7 +713,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
     public void formCreated(RemoteForm form) {
         DataObject connection = getConnection();
         if (connection != null) {
-            recentlyOpenForms.add(new Pair<DataObject, String>(connection, form.getCanonicalName()));
+            recentlyOpenForms.add(new Pair<>(connection, form.getCanonicalName()));
         }
         createdForms.put(form, Boolean.TRUE);
     }
@@ -745,7 +741,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         //form.unexport изменяет createdForms, поэтому работает с копией, чтобы не было ConcurrentModificationException
         Set<RemoteForm> formsCopy;
         synchronized (createdForms) {
-            formsCopy = new HashSet<RemoteForm>(createdForms.keySet());
+            formsCopy = new HashSet<>(createdForms.keySet());
         }
         for (RemoteForm form : formsCopy) {
             if (form != null) {
@@ -823,7 +819,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         private void regChange(long newStamp, DataSession newSession) {
             DataSession lastSession;
             if(wLastSession == null || (lastSession = wLastSession.get()) == null || newSession != lastSession) { // другая сессия
-                wLastSession = new WeakReference<DataSession>(newSession);
+                wLastSession = new WeakReference<>(newSession);
                 lastSessionTimeStamp = timeStamp;
             }
             timeStamp = newStamp;

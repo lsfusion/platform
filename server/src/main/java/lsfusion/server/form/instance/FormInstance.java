@@ -126,9 +126,9 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     public final ImMap<ContainerView, CalcPropertyObjectInstance<?>> containerShowIfs;
 
     // "закэшированная" проверка присутствия в интерфейсе, отличается от кэша тем что по сути функция от mutable объекта
-    protected Map<PropertyDrawInstance, Boolean> isInInterface = new HashMap<PropertyDrawInstance, Boolean>();
-    protected Map<PropertyDrawInstance, Boolean> isShown = new HashMap<PropertyDrawInstance, Boolean>();
-    protected Map<ContainerView, Boolean> isContainerShown = new HashMap<ContainerView, Boolean>();
+    protected Map<PropertyDrawInstance, Boolean> isInInterface = new HashMap<>();
+    protected Map<PropertyDrawInstance, Boolean> isShown = new HashMap<>();
+    protected Map<ContainerView, Boolean> isContainerShown = new HashMap<>();
 
     public final PropertyDrawEntity initFilterPropertyDraw;
 
@@ -145,6 +145,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     private boolean interactive = true; // важно для assertion'а в endApply
 
     private ImSet<ObjectInstance> objects;
+    
+    private boolean readOnly = false;
 
     public FormInstance(FormEntity<T> entity, LogicsInstance logicsInstance, DataSession session, SecurityPolicy securityPolicy,
                         FocusListener<T> focusListener, CustomClassListener classListener,
@@ -154,8 +156,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                         boolean showDrop, boolean interactive,
                         ImSet<FilterEntity> contextFilters,
                         PropertyDrawEntity initFilterPropertyDraw,
-                        ImSet<PullChangeProperty> pullProps) throws SQLException, SQLHandledException {
-        this(entity, logicsInstance, session, securityPolicy, focusListener, classListener, computer, connection, mapObjects, outerUpdateCurrentClasses, isModal, isAdd, sessionScope, checkOnOk, showDrop, interactive, false, contextFilters, initFilterPropertyDraw, pullProps);
+                        ImSet<PullChangeProperty> pullProps, boolean readOnly) throws SQLException, SQLHandledException {
+        this(entity, logicsInstance, session, securityPolicy, focusListener, classListener, computer, connection, mapObjects, outerUpdateCurrentClasses, isModal, isAdd, sessionScope, checkOnOk, showDrop, interactive, false, contextFilters, initFilterPropertyDraw, pullProps, readOnly);
     }
 
     public FormInstance(FormEntity<T> entity, LogicsInstance logicsInstance, DataSession session, SecurityPolicy securityPolicy,
@@ -167,7 +169,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                         boolean showDrop, boolean interactive, boolean isDialog,
                         ImSet<FilterEntity> contextFilters,
                         PropertyDrawEntity initFilterPropertyDraw,
-                        ImSet<PullChangeProperty> pullProps) throws SQLException, SQLHandledException {
+                        ImSet<PullChangeProperty> pullProps,
+                        boolean readOnly) throws SQLException, SQLHandledException {
         this.outerUpdateCurrentClasses = sessionScope.isNewSession() ? null : outerUpdateCurrentClasses;
         this.sessionScope = sessionScope;
         this.isModal = isModal;
@@ -184,10 +187,12 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
         this.pullProps = pullProps;
 
+        this.readOnly = readOnly;
+        
         instanceFactory = new InstanceFactory(computer, connection);
 
-        this.weakFocusListener = new WeakReference<FocusListener<T>>(focusListener);
-        this.weakClassListener = new WeakReference<CustomClassListener>(classListener);
+        this.weakFocusListener = new WeakReference<>(focusListener);
+        this.weakClassListener = new WeakReference<>(classListener);
 
         groups = entity.getGroupsList().mapOrderSetValues(new GetValue<GroupObjectInstance, GroupObjectEntity>() {
             public GroupObjectInstance getMapValue(GroupObjectEntity value) {
@@ -284,7 +289,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
             }
         }
 
-        Set<GroupObjectInstance> wasOrder = new HashSet<GroupObjectInstance>();
+        Set<GroupObjectInstance> wasOrder = new HashSet<>();
         ImOrderMap<PropertyDrawEntity<?>, Boolean> defaultOrders = entity.getDefaultOrdersList();
         for (int i=0,size=defaultOrders.size();i<size;i++) {
             PropertyDrawInstance property = instanceFactory.getInstance(defaultOrders.getKey(i));
@@ -355,8 +360,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
             return null;
         }
         
-        List<GroupObjectUserPreferences> goUserPreferences = new ArrayList<GroupObjectUserPreferences>();
-        List<GroupObjectUserPreferences> goGeneralPreferences = new ArrayList<GroupObjectUserPreferences>();
+        List<GroupObjectUserPreferences> goUserPreferences = new ArrayList<>();
+        List<GroupObjectUserPreferences> goGeneralPreferences = new ArrayList<>();
         try {
 
             ObjectValue formValue = BL.reflectionLM.navigatorElementCanonicalName.readClasses(session, new DataObject(entity.getCanonicalName(), StringClass.get(50)));
@@ -373,7 +378,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
             ImRevMap<String, KeyExpr> newKeys = MapFact.singletonRev("propertyDraw", propertyDrawExpr);
 
-            QueryBuilder<String, String> query = new QueryBuilder<String, String>(newKeys);
+            QueryBuilder<String, String> query = new QueryBuilder<>(newKeys);
             Expr groupObjectPropertyDrawExpr = BL.reflectionLM.groupObjectPropertyDraw.getExpr(propertyDrawExpr);
             
             query.addProperty("propertySID", BL.reflectionLM.sidPropertyDraw.getExpr(propertyDrawExpr));
@@ -413,9 +418,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                 readPreferencesValues(values, goGeneralPreferences, true);
                 readPreferencesValues(values, goUserPreferences, false);
             }
-        } catch (SQLException e) {
-            throw Throwables.propagate(e);
-        } catch (SQLHandledException e) {
+        } catch (SQLException | SQLHandledException e) {
             throw Throwables.propagate(e);
         }
 
@@ -431,9 +434,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
             Color focusedCellBorder = (Color) BL.LM.overrideFocusedCellBorderColor.read(session);
             return new ColorPreferences(selectedRowBackground, selectedRowBorder, selectedCellBackground, 
                     focusedCellBackground, focusedCellBorder);
-        } catch (SQLException e) {
-            throw Throwables.propagate(e);
-        } catch (SQLHandledException e) {
+        } catch (SQLException | SQLHandledException e) {
             throw Throwables.propagate(e);
         }
     }
@@ -474,7 +475,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                 }
             }
             if (!prefsFound) {
-                Map preferencesMap = new HashMap<String, ColumnUserPreferences>();
+                Map preferencesMap = new HashMap<>();
                 preferencesMap.put(propertyDrawSID, columnPrefs);
                 goPreferences.add(new GroupObjectUserPreferences(preferencesMap,
                         groupObjectSID.trim(),
@@ -784,8 +785,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     }
 
     // сстандартные фильтры
-    public List<RegularFilterGroupInstance> regularFilterGroups = new ArrayList<RegularFilterGroupInstance>();
-    private Map<RegularFilterGroupInstance, RegularFilterInstance> regularFilterValues = new HashMap<RegularFilterGroupInstance, RegularFilterInstance>();
+    public List<RegularFilterGroupInstance> regularFilterGroups = new ArrayList<>();
+    private Map<RegularFilterGroupInstance, RegularFilterInstance> regularFilterValues = new HashMap<>();
 
     public void setRegularFilter(RegularFilterGroupInstance filterGroup, int filterId) {
         setRegularFilter(filterGroup, filterGroup.getFilter(filterId));
@@ -884,21 +885,27 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
             return;
         }
 
-            if (checkEditActionPermission(editAction, editActionSID, property)) {
-            if (editActionSID.equals(CHANGE) || editActionSID.equals(GROUP_CHANGE)) { //ask confirm logics...
-                PropertyDrawEntity propertyDraw = property.getEntity();
-                if (!pushConfirm && propertyDraw.askConfirm) {
-                    int result = (Integer) ThreadLocalContext.requestUserInteraction(new ConfirmClientAction("lsFusion",
-                            entity.getRichDesign().get(propertyDraw).getAskConfirmMessage()));
-                    if (result != JOptionPane.YES_OPTION) {
-                        return;
-                    }
+        if (!checkEditActionPermission(editAction, editActionSID, property)) {
+            ThreadLocalContext.delayUserInteraction(EditNotPerformedClientAction.instance);
+            return;
+        }
+
+        if (readOnly && !checkReadOnlyPermission(editAction, property)) {
+            ThreadLocalContext.delayUserInteraction(EditNotPerformedClientAction.instance);
+            return;
+        }
+
+        if (editActionSID.equals(CHANGE) || editActionSID.equals(GROUP_CHANGE)) { //ask confirm logics...
+            PropertyDrawEntity propertyDraw = property.getEntity();
+            if (!pushConfirm && propertyDraw.askConfirm) {
+                int result = (Integer) ThreadLocalContext.requestUserInteraction(new ConfirmClientAction("lsFusion",
+                        entity.getRichDesign().get(propertyDraw).getAskConfirmMessage()));
+                if (result != JOptionPane.YES_OPTION) {
+                    return;
                 }
             }
-            editAction.getRemappedPropertyObject(keys).execute(this, pushChange, pushAdd, property);
-        } else {
-            ThreadLocalContext.delayUserInteraction(EditNotPerformedClientAction.instance);
         }
+        editAction.getRemappedPropertyObject(keys).execute(this, pushChange, pushAdd, property);
     }
     
     private boolean checkEditActionPermission(ActionPropertyObjectInstance editAction, String editActionSID, PropertyDrawInstance property) {
@@ -913,6 +920,11 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
             }
         }
         return false;  
+    }
+    
+    private boolean checkReadOnlyPermission(ActionPropertyObjectInstance editAction, PropertyDrawInstance property) {
+         ChangePropertySecurityPolicy securityPolicy = logicsInstance.getSecurityManager().readOnlyPolicy.property.change;
+        return editAction != null && securityPolicy.checkPermission(editAction.property) && securityPolicy.checkPermission(property.propertyObject.property);
     }
 
     public void pasteExternalTable(List<PropertyDrawInstance> properties, List<ImMap<ObjectInstance, DataObject>> columnKeys, List<List<byte[]>> values) throws SQLException, IOException, SQLHandledException {
@@ -969,7 +981,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     public int countRecords(int groupObjectID) throws SQLException, SQLHandledException {
         GroupObjectInstance group = getGroupObjectInstance(groupObjectID);
         Expr expr = GroupExpr.create(MapFact.<Object, Expr>EMPTY(), new ValueExpr(1, IntegerClass.instance), group.getWhere(group.getMapKeys(), getModifier()), GroupType.SUM, MapFact.<Object, Expr>EMPTY());
-        QueryBuilder<Object, Object> query = new QueryBuilder<Object, Object>(MapFact.<Object, KeyExpr>EMPTYREV());
+        QueryBuilder<Object, Object> query = new QueryBuilder<>(MapFact.<Object, KeyExpr>EMPTYREV());
         query.addProperty("quant", expr);
         ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> result = query.execute(this);
         Integer quantity = (Integer) result.getValue(0).get("quant");
@@ -997,7 +1009,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
         Expr expr = GroupExpr.create(MapFact.<Object, Expr>EMPTY(), propertyDraw.getDrawInstance().getExpr(keys, getModifier()), groupObject.getWhere(mapKeys, getModifier()), GroupType.SUM, MapFact.<Object, Expr>EMPTY());
 
-        QueryBuilder<Object, String> query = new QueryBuilder<Object, String>(MapFact.<Object, KeyExpr>EMPTYREV());
+        QueryBuilder<Object, String> query = new QueryBuilder<>(MapFact.<Object, KeyExpr>EMPTYREV());
         query.addProperty("sum", expr);
         ImOrderMap<ImMap<Object, Object>, ImMap<String, Object>> result = query.execute(this);
         Object sum = result.getValue(0).get("sum");
@@ -1029,7 +1041,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         ImRevMap<String, KeyExpr> keyExprMap = mKeyExprMap.immutableRev();
         ImMap<String, Expr> exprMap = mExprMap.immutable();
 
-        QueryBuilder<String, String> query = new QueryBuilder<String, String>(keyExprMap);
+        QueryBuilder<String, String> query = new QueryBuilder<>(keyExprMap);
         Expr exprQuant = GroupExpr.create(exprMap, new ValueExpr(1, IntegerClass.instance), groupObject.getWhere(mapKeys, getModifier()), GroupType.SUM, keyExprMap);
         query.and(exprQuant.getWhere());
 
@@ -1071,14 +1083,14 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
             }
         }
 
-        Map<List<Object>, List<Object>> resultMap = new OrderedMap<List<Object>, List<Object>>();
+        Map<List<Object>, List<Object>> resultMap = new OrderedMap<>();
         ImOrderMap<ImMap<String, Object>, ImMap<String, Object>> result = query.execute(this);
         for (int j = 0, size = result.size(); j < size; j++) {
             ImMap<String, Object> one = result.getKey(j);
             ImMap<String, Object> oneValue = result.getValue(j);
 
-            List<Object> groupList = new ArrayList<Object>();
-            List<Object> sumList = new ArrayList<Object>();
+            List<Object> groupList = new ArrayList<>();
+            List<Object> sumList = new ArrayList<>();
 
             for (PropertyDrawInstance propertyDraw : toGroup.keyIt()) {
                 for (int i = 1; i <= toGroup.get(propertyDraw).size(); i++) {
@@ -1113,7 +1125,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
             return null;
         }
         
-        Map<String, FormGrouping> groupings = new LinkedHashMap<String, FormGrouping>();
+        Map<String, FormGrouping> groupings = new LinkedHashMap<>();
         
         ObjectValue groupObjectObjectValue = BL.reflectionLM.groupObjectSIDNavigatorElementNameGroupObject.readClasses(session, new DataObject(groupObjectSID, StringClass.get(50)), new DataObject(entity.getCanonicalName(), StringClass.get(50)));
         
@@ -1124,7 +1136,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
             ImRevMap<String, KeyExpr> newKeys = MapFact.toRevMap("formGrouping", formGroupingExpr, "propertyDraw", propertyDrawExpr);
 
-            QueryBuilder<String, String> query = new QueryBuilder<String, String>(newKeys);
+            QueryBuilder<String, String> query = new QueryBuilder<>(newKeys);
 
             query.addProperty("groupingSID", BL.reflectionLM.nameFormGrouping.getExpr(formGroupingExpr));
             query.addProperty("itemQuantity", BL.reflectionLM.itemQuantityFormGrouping.getExpr(formGroupingExpr));
@@ -1150,7 +1162,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                 grouping.propertyGroupings.add(grouping.new PropertyGrouping((String) values.get("propertySID"), (Integer) values.get("groupOrder"), (Boolean) values.get("sum"), (Boolean) values.get("max"), (Boolean) values.get("pivot")));
             }
         }
-        return new ArrayList<FormGrouping>(groupings.values());
+        return new ArrayList<>(groupings.values());
     }
 
     public void saveGrouping(FormGrouping grouping) throws SQLException, ScriptingErrorLog.SemanticErrorException, SQLHandledException {
@@ -1342,7 +1354,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     }
 
     // кэш на изменение
-    protected Set<CalcPropertyObjectInstance> isReallyChanged = new HashSet<CalcPropertyObjectInstance>();
+    protected Set<CalcPropertyObjectInstance> isReallyChanged = new HashSet<>();
     public boolean containsChange(CalcPropertyObjectInstance instance) {
         return isReallyChanged.contains(instance);
     }
@@ -1431,7 +1443,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         return tabContainer != null && isTabHidden(tabContainer);
     }
 
-    protected Map<ContainerView, ComponentView> visibleTabs = new HashMap<ContainerView, ComponentView>();
+    protected Map<ContainerView, ComponentView> visibleTabs = new HashMap<>();
 
     public void setTabVisible(ContainerView view, ComponentView page) {
         assert view.isTabbedPane();
@@ -1504,7 +1516,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
             GetKey<CalcPropertyObjectInstance<?>, T> getPropertyObject
     ) throws SQLException, SQLHandledException {
         
-        QueryBuilder<ObjectInstance, T> selectProps = new QueryBuilder<ObjectInstance, T>(GroupObjectInstance.getObjects(getUpTreeGroups(keyGroupObjects)));
+        QueryBuilder<ObjectInstance, T> selectProps = new QueryBuilder<>(GroupObjectInstance.getObjects(getUpTreeGroups(keyGroupObjects)));
         for (GroupObjectInstance keyGroup : keyGroupObjects) {
             selectProps.and(keyGroup.keyTable.getWhere(selectProps.getMapExprs()));
         }
@@ -1562,7 +1574,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         QueryEnvironment queryEnv = getQueryEnv();
 
         // если изменились данные, применяем изменения
-        Result<ChangedData> mChangedProps = new Result<ChangedData>(ChangedData.EMPTY);  // так как могут еще измениться свойства созданные при помощи операторов форм
+        Result<ChangedData> mChangedProps = new Result<>(ChangedData.EMPTY);  // так как могут еще измениться свойства созданные при помощи операторов форм
         updateData(mChangedProps);
 
         GroupObjectValue updateGroupObject = null; // так как текущий groupObject идет относительно treeGroup, а не group
@@ -1750,9 +1762,9 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
     private void fillChangedDrawProps(MFormChanges result, ChangedData changedProps) throws SQLException, SQLHandledException {
         //1е чтение - читаем showIfs
-        HashMap<PropertyDrawInstance, Boolean> newIsShown = new HashMap<PropertyDrawInstance, Boolean>();
-        HashMap<PropertyDrawInstance, ImSet<GroupObjectInstance>> rowGrids = new HashMap<PropertyDrawInstance, ImSet<GroupObjectInstance>>();
-        Map<PropertyDrawInstance, ImSet<GroupObjectInstance>> rowColumnGrids = new HashMap<PropertyDrawInstance, ImSet<GroupObjectInstance>>();
+        HashMap<PropertyDrawInstance, Boolean> newIsShown = new HashMap<>();
+        HashMap<PropertyDrawInstance, ImSet<GroupObjectInstance>> rowGrids = new HashMap<>();
+        Map<PropertyDrawInstance, ImSet<GroupObjectInstance>> rowColumnGrids = new HashMap<>();
 
         ImMap<PropertyReaderInstance, ImMap<ImMap<ObjectInstance, DataObject>, ObjectValue>> showIfValues =
                 readShowIfs(newIsShown, rowGrids, rowColumnGrids, changedProps);
@@ -1850,7 +1862,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
     // возвращает какие объекты на форме показываются
     private Set<GroupObjectInstance> getPropertyGroups() {
-        Set<GroupObjectInstance> reportObjects = new HashSet<GroupObjectInstance>();
+        Set<GroupObjectInstance> reportObjects = new HashSet<>();
         for (GroupObjectInstance group : getGroups())
             if (group.curClassView != HIDE)
                 reportObjects.add(group);
@@ -1884,7 +1896,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
         // пока сделаем тупо получаем один большой запрос
 
-        QueryBuilder<ObjectInstance, Object> query = new QueryBuilder<ObjectInstance, Object>(GroupObjectInstance.getObjects(classGroups));
+        QueryBuilder<ObjectInstance, Object> query = new QueryBuilder<>(GroupObjectInstance.getObjects(classGroups));
         MOrderMap<Object, Boolean> mQueryOrders = MapFact.mOrderMap();
 
         for (GroupObjectInstance group : getGroups()) {
@@ -1919,8 +1931,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
         ImOrderMap<ImMap<ObjectInstance, Object>, ImMap<Object, Object>> resultSelect = query.execute(this, mQueryOrders.immutableOrder(), orderTop);
 
-        Set<Integer> notEmptyValues = new HashSet<Integer>();
-        LinkedHashMap<ImMap<ObjectInstance, Object>, ImMap<PropertyDrawInstance, Object>> result = new LinkedHashMap<ImMap<ObjectInstance, Object>, ImMap<PropertyDrawInstance, Object>>();
+        Set<Integer> notEmptyValues = new HashSet<>();
+        LinkedHashMap<ImMap<ObjectInstance, Object>, ImMap<PropertyDrawInstance, Object>> result = new LinkedHashMap<>();
         MOrderExclMap<ImMap<ObjectInstance, Object>, ImMap<PropertyDrawInstance, Object>> mResult = MapFact.mOrderExclMap(resultSelect.size());
         for (int i = 0, size = resultSelect.size(); i < size; i++) {
             ImMap<ObjectInstance, Object> resultKey = resultSelect.getKey(i);
@@ -1965,7 +1977,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         MSet<PullChangeProperty> mPullProps = SetFact.mSet();
         for (MaxChangeProperty<?, P> constrainedProperty : implementProperty.getMaxChangeProperties(BL.getCheckConstrainedProperties(implementProperty))) {
             mPullProps.add(constrainedProperty);
-            mFixedFilters.add(new NotFilterEntity(new NotNullFilterEntity<MaxChangeProperty.Interface<P>>(
+            mFixedFilters.add(new NotFilterEntity(new NotNullFilterEntity<>(
                     constrainedProperty.getPropertyObjectEntity(propValues.mapping, filterObject))));
         }
 
@@ -1975,7 +1987,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                 for (CalcPropertyValueImplement<?> filterImplement : filter.getResolveChangeProperties(implementProperty)) {
                     OnChangeProperty<F, P> onChangeProperty = (OnChangeProperty<F, P>) ((CalcProperty) filterImplement.property).getOnChangeProperty((CalcProperty) propValues.property);
                     mPullProps.add(onChangeProperty);
-                    mFixedFilters.add(new NotNullFilterEntity<OnChangeProperty.Interface<F, P>>(
+                    mFixedFilters.add(new NotNullFilterEntity<>(
                             onChangeProperty.getPropertyObjectEntity((ImMap<F, DataObject>) filterImplement.mapping, propValues.mapping, filterObject)));
                 }
             }
@@ -2045,7 +2057,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
             @Override
             protected FormInstance doCreateDialog() throws SQLException, SQLHandledException {
                 ClassFormEntity<T> formEntity = propertyValues.getDialogClass(session).getDialogForm(BL.LM);
-                Result<ImSet<PullChangeProperty>> pullProps = new Result<ImSet<PullChangeProperty>>();
+                Result<ImSet<PullChangeProperty>> pullProps = new Result<>();
                 ImSet<FilterEntity> additionalFilters = getEditFixedFilters(formEntity, propertyValues, groupObject, pullProps);
 
                 dialogObject = formEntity.object;
@@ -2088,7 +2100,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                                 MapFact.singleton(dialogEntity, dialogValue),
                                 update,
                                 true, false, FormSessionScope.OLDSESSION, false, true, true, true,
-                                additionalFilters, initFilterPropertyDraw, pullProps);
+                                additionalFilters, initFilterPropertyDraw, pullProps, false);
     }
 
     // ---------------------------------------- Events ----------------------------------------
@@ -2174,7 +2186,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         return new OverrideSessionModifier(environmentIncrement, noHints, noHints, entity.getHintsIncrementTable(), entity.getHintsNoUpdate(), session.getModifier());
     }
 
-    public Map<SessionModifier, SessionModifier> modifiers = new HashMap<SessionModifier, SessionModifier>();
+    public Map<SessionModifier, SessionModifier> modifiers = new HashMap<>();
 
     @ManualLazy
     public Modifier getModifier() {

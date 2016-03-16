@@ -53,7 +53,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UpdateCurr
     private Stack<UpdateCurrentClasses> updateClasses;
     public void pushUpdate(UpdateCurrentClasses push) {
         if(updateClasses == null)
-            updateClasses = new Stack<UpdateCurrentClasses>();
+            updateClasses = new Stack<>();
         updateClasses.push(push);
     }
     public void popUpdate() {
@@ -63,7 +63,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UpdateCurr
     private Stack<UpdateInputListener> updateInputListeners;
     public void pushUpdateInput(UpdateInputListener push) {
         if (updateInputListeners == null) {
-            updateInputListeners = new Stack<UpdateInputListener>();
+            updateInputListeners = new Stack<>();
         }
         updateInputListeners.push(push);
     }
@@ -114,7 +114,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UpdateCurr
     }
     
     public ExecutionContext<P> override() { // для дебаггера
-        return new ExecutionContext<P>(keys, pushedUserInput, pushedAddObject, env, form, this);
+        return new ExecutionContext<>(keys, pushedUserInput, pushedAddObject, env, form, this);
     }
 
     public void setParamsToInterfaces(ImRevMap<String, P> paramsToInterfaces) {
@@ -379,7 +379,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UpdateCurr
     }
 
     public ExecutionContext<P> override(ExecutionEnvironment newEnv) {
-        return new ExecutionContext<P>(keys, pushedUserInput, pushedAddObject, newEnv, form, this);
+        return new ExecutionContext<>(keys, pushedUserInput, pushedAddObject, newEnv, form, this);
     }
 
     public <T extends PropertyInterface> ExecutionContext<T> override(ImMap<T, ? extends ObjectValue> keys, ImMap<T, ? extends CalcPropertyInterfaceImplement<P>> mapInterfaces) {
@@ -419,7 +419,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UpdateCurr
     
 
     public <T extends PropertyInterface> ExecutionContext<T> override(ImMap<T, ? extends ObjectValue> keys, FormEnvironment<T> form, ObjectValue pushedUserInput) {
-        return new ExecutionContext<T>(keys, pushedUserInput, pushedAddObject, env, form, this);
+        return new ExecutionContext<>(keys, pushedUserInput, pushedAddObject, env, form, this);
     }
 
     public QueryEnvironment getQueryEnv() {
@@ -484,12 +484,12 @@ public class ExecutionContext<P extends PropertyInterface> implements UpdateCurr
     }
 
     public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, FormSessionScope sessionScope, boolean checkOnOk, boolean showDrop, boolean interactive, ImSet<FilterEntity> contextFilters) throws SQLException, SQLHandledException {
-        return createFormInstance(formEntity, mapObjects, session, isModal, false, sessionScope, checkOnOk, showDrop, interactive, contextFilters, null, null);
+        return createFormInstance(formEntity, mapObjects, session, isModal, false, sessionScope, checkOnOk, showDrop, interactive, contextFilters, null, null, false);
     }
 
     // зеркалирование Context, чтобы если что можно было бы не юзать ThreadLocal
-    public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, boolean isAdd, FormSessionScope sessionScope, boolean checkOnOk, boolean showDrop, boolean interactive, ImSet<FilterEntity> contextFilters, PropertyDrawEntity initFilterProperty, ImSet<PullChangeProperty> pullProps) throws SQLException, SQLHandledException {
-        return ThreadLocalContext.createFormInstance(formEntity, mapObjects, this, session, isModal, isAdd, sessionScope, checkOnOk, showDrop, interactive, contextFilters, initFilterProperty, pullProps);
+    public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, boolean isAdd, FormSessionScope sessionScope, boolean checkOnOk, boolean showDrop, boolean interactive, ImSet<FilterEntity> contextFilters, PropertyDrawEntity initFilterProperty, ImSet<PullChangeProperty> pullProps, boolean readonly) throws SQLException, SQLHandledException {
+        return ThreadLocalContext.createFormInstance(formEntity, mapObjects, this, session, isModal, isAdd, sessionScope, checkOnOk, showDrop, interactive, contextFilters, initFilterProperty, pullProps, readonly);
     }
 
     public RemoteForm createRemoteForm(FormInstance formInstance) {
@@ -516,11 +516,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UpdateCurr
 
             return tempFile;
 
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        } catch (JRException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
+        } catch (ClassNotFoundException | IOException | JRException e) {
             throw new RuntimeException(e);
         }
     }

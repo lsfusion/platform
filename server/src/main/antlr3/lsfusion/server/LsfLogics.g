@@ -2075,10 +2075,11 @@ formActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns 
 	LPWithParams contextProperty = null;
 	String initFilterPropertyName = null;
 	List<String> initFilterPropertyMapping = null;
+	boolean readOnly = false;
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedFAProp($formName.sid, objects, mapping, contextObjectName, contextProperty, initFilterPropertyName, initFilterPropertyMapping, modalityType, sessionScope, checkOnOk, showDrop, noCancel, printType, exportType);
+		$property = self.addScriptedFAProp($formName.sid, objects, mapping, contextObjectName, contextProperty, initFilterPropertyName, initFilterPropertyMapping, modalityType, sessionScope, checkOnOk, showDrop, noCancel, printType, exportType, readOnly);
 	}
 }
 	:	'FORM' formName=compoundID 
@@ -2092,6 +2093,7 @@ formActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns 
 		('NOCANCEL' { noCancel = true; })?
 		(print = formPrintTypeLiteral { printType = $print.val; })?
 		(export = formExportTypeLiteral { exportType = $export.val; })?
+		('READONLY' { readOnly = true; })?
 	;
 
 initFilterDefinition returns [String propName, List<String> mapping]
