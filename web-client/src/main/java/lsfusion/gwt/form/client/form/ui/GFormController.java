@@ -83,18 +83,18 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     private final boolean isModal;
     private final boolean isDialog;
 
-    private final HashMap<GGroupObject, List<GGroupObjectValue>> currentGridObjects = new HashMap<GGroupObject, List<GGroupObjectValue>>();
+    private final HashMap<GGroupObject, List<GGroupObjectValue>> currentGridObjects = new HashMap<>();
 
-    private final Map<GGroupObject, List<GPropertyFilter>> currentFilters = new HashMap<GGroupObject, List<GPropertyFilter>>();
+    private final Map<GGroupObject, List<GPropertyFilter>> currentFilters = new HashMap<>();
 
-    private final Map<GGroupObject, GGroupObjectController> controllers = new LinkedHashMap<GGroupObject, GGroupObjectController>();
-    private final Map<GTreeGroup, GTreeGroupController> treeControllers = new LinkedHashMap<GTreeGroup, GTreeGroupController>();
+    private final Map<GGroupObject, GGroupObjectController> controllers = new LinkedHashMap<>();
+    private final Map<GTreeGroup, GTreeGroupController> treeControllers = new LinkedHashMap<>();
 
-    private final Map<GGroupObject, List<Widget>> filterViews = new HashMap<GGroupObject, List<Widget>>();
+    private final Map<GGroupObject, List<Widget>> filterViews = new HashMap<>();
 
-    private final LinkedHashMap<Integer, ModifyObject> pendingModifyObjectRequests = new LinkedHashMap<Integer, ModifyObject>();
-    private final NativeHashMap<GGroupObject, Integer> pendingChangeCurrentObjectsRequests = new NativeHashMap<GGroupObject, Integer>();
-    private final NativeHashMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, Change>> pendingChangePropertyRequests = new NativeHashMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, Change>>();
+    private final LinkedHashMap<Integer, ModifyObject> pendingModifyObjectRequests = new LinkedHashMap<>();
+    private final NativeHashMap<GGroupObject, Integer> pendingChangeCurrentObjectsRequests = new NativeHashMap<>();
+    private final NativeHashMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, Change>> pendingChangePropertyRequests = new NativeHashMap<>();
 
     private boolean initialFormChangesReceived = false;
     private boolean defaultOrdersInitialized = false;
@@ -156,7 +156,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         if (form.initialFormChanges != null) {
             applyRemoteChanges(form.initialFormChanges);
             form.initialFormChanges = null;
-        } else {
+        } else if (!initialFormChangesReceived) { // возможно уже получили в initializeDefaultOrders()
             getRemoteChanges();
         }
 
@@ -211,7 +211,8 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     }
 
     private void createMultipleFilterComponent(final GRegularFilterGroup filterGroup) {
-        final ListBox filterBox = new ListBox(false);
+        final ListBox filterBox = new ListBox();
+        filterBox.setMultipleSelect(false);
         filterBox.addItem("(Все)", "-1");
 
         ArrayList<GRegularFilter> filters = filterGroup.filters;
@@ -261,7 +262,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
         List<Widget> groupFilters = filterViews.get(filterGroup.groupObject);
         if (groupFilters == null) {
-            groupFilters = new ArrayList<Widget>();
+            groupFilters = new ArrayList<>();
             filterViews.put(filterGroup.groupObject, groupFilters);
         }
         groupFilters.add(filterWidget);
@@ -321,7 +322,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     private GGridUserPreferences findGridUserPreferences(List<GGroupObjectUserPreferences> groupObjectUserPreferences, GGroupObject groupObject) {
         for (GGroupObjectUserPreferences groupPreferences : groupObjectUserPreferences) {
             if (groupObject.getSID().equals(groupPreferences.getGroupObjectSID())) {
-                Map<GPropertyDraw, GColumnUserPreferences> columnPreferences = new HashMap<GPropertyDraw, GColumnUserPreferences>();
+                Map<GPropertyDraw, GColumnUserPreferences> columnPreferences = new HashMap<>();
                 for (Map.Entry<String, GColumnUserPreferences> entry : groupPreferences.getColumnUserPreferences().entrySet()) {
                     GPropertyDraw property = form.getProperty(entry.getKey());
                     if (property != null) {
@@ -334,19 +335,46 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         return null;
     }
 
-    public void initializeDefaultOrders() {
-        applyOrders(form.defaultOrders);
-        defaultOrdersInitialized = true;
-
-        LinkedHashMap<GPropertyDraw, Boolean> userOrders = new LinkedHashMap<GPropertyDraw, Boolean>();
-        for (GGroupObjectController controller : controllers.values()) {
-            userOrders.putAll(controller.getUserOrders());
+    private Map<GGroupObject, LinkedHashMap<GPropertyDraw, Boolean>> groupDefaultOrders() {
+        Map<GGroupObject, LinkedHashMap<GPropertyDraw, Boolean>> orders = new HashMap<>();
+        for(Map.Entry<GPropertyDraw, Boolean> defaultOrder : form.defaultOrders.entrySet()) {
+            GGroupObject groupObject = defaultOrder.getKey().groupObject;
+            LinkedHashMap<GPropertyDraw, Boolean> order = orders.get(groupObject);
+            if(order == null) {
+                order = new LinkedHashMap<>();
+                orders.put(groupObject,order);
+            }
+            order.put(defaultOrder.getKey(), defaultOrder.getValue());
         }
-        applyOrders(userOrders);
+        return orders;
     }
 
-    public void applyDefaultOrders(GGroupObject groupObject) {
-        applyOrders(form.getDefaultOrders(groupObject));
+    public void initializeDefaultOrders() {
+        applyOrders(form.defaultOrders, null);
+        defaultOrdersInitialized = true;
+
+        boolean hasUserOrders = false;
+        Map<GGroupObject, LinkedHashMap<GPropertyDraw, Boolean>> defaultOrders = null;
+        for (GGroupObjectController controller : controllers.values()) {
+            LinkedHashMap<GPropertyDraw, Boolean> objectUserOrders = controller.getUserOrders();
+            if (objectUserOrders != null) {
+                if (defaultOrders == null)
+                    defaultOrders = groupDefaultOrders();
+                LinkedHashMap<GPropertyDraw, Boolean> defaultObjectOrders = defaultOrders.get(controller.groupObject);
+                if (defaultObjectOrders == null)
+                    defaultObjectOrders = new LinkedHashMap<>();
+                if (!GwtSharedUtils.hashEquals(defaultObjectOrders, objectUserOrders)) {
+                    applyOrders(objectUserOrders, controller);
+                    hasUserOrders = true;
+                }
+            }
+        }
+        if (hasUserOrders)
+            getRemoteChanges();
+    }
+
+    public LinkedHashMap<GPropertyDraw, Boolean> getDefaultOrders(GGroupObject groupObject) {
+        return form.getDefaultOrders(groupObject);
     }
 
     private void initializeAutoRefresh() {
@@ -375,11 +403,12 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         }, form.autoRefresh * 1000);
     }
 
-    public void applyOrders(LinkedHashMap<GPropertyDraw, Boolean> orders) {
-        Set<GGroupObject> wasOrder = new HashSet<GGroupObject>();
+    public void applyOrders(LinkedHashMap<GPropertyDraw, Boolean> orders, GGroupObjectController groupObjectController) {
+        Set<GGroupObject> wasOrder = new HashSet<>();
         for (Map.Entry<GPropertyDraw, Boolean> entry : orders.entrySet()) {
             GPropertyDraw property = entry.getKey();
             GGroupObject groupObject = property.groupObject;
+            assert groupObjectController == null || groupObject.equals(groupObjectController.groupObject);
             GGroupObjectLogicsSupplier groupObjectLogicsSupplier = getGroupObjectLogicsSupplier(groupObject);
             if (groupObjectLogicsSupplier != null) {
                 groupObjectLogicsSupplier.changeOrder(property, !wasOrder.contains(groupObject) ? GOrder.REPLACE : GOrder.ADD);
@@ -387,6 +416,12 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
                 if (!entry.getValue()) {
                     groupObjectLogicsSupplier.changeOrder(property, GOrder.DIR);
                 }
+            }
+        }
+        if(groupObjectController != null) {
+            GGroupObject groupObject = groupObjectController.groupObject;
+            if(!wasOrder.contains(groupObject)) {
+                groupObjectController.clearOrders(groupObject);
             }
         }
     }
@@ -502,7 +537,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
                             HashMap<GGroupObjectValue, Object> propertyValues = fc.properties.get(property);
                             if (propertyValues == null) {
                                 // включаем изменение на старое значение, если ответ с сервера пришел, а новое значение нет
-                                propertyValues = new HashMap<GGroupObjectValue, Object>();
+                                propertyValues = new HashMap<>();
                                 fc.properties.put(property, propertyValues);
                                 fc.updateProperties.add(property);
                             }
@@ -576,10 +611,10 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     }
 
     public void pasteExternalTable(ArrayList<GPropertyDraw> propertyList, ArrayList<GGroupObjectValue> columnKeys, List<List<String>> table, int maxColumns) {
-        ArrayList<ArrayList<Object>> values = new ArrayList<ArrayList<Object>>();
+        ArrayList<ArrayList<Object>> values = new ArrayList<>();
 
         for (List<String> sRow : table) {
-            ArrayList<Object> valueRow = new ArrayList<Object>();
+            ArrayList<Object> valueRow = new ArrayList<>();
 
             int rowLength = Math.min(sRow.size(), maxColumns);
             for (int i = 0; i < rowLength; i++) {
@@ -592,7 +627,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             values.add(valueRow);
         }
 
-        final ArrayList<Integer> propertyIdList = new ArrayList<Integer>();
+        final ArrayList<Integer> propertyIdList = new ArrayList<>();
         for (GPropertyDraw propertyDraw : propertyList) {
             propertyIdList.add(propertyDraw.ID);
         }
@@ -796,19 +831,6 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         syncDispatch(new OkPressed(), new ServerResponseCallback());
     }
 
-    // судя по документации, TabPanel криво работает в StandardsMode. в данном случае неправильно отображает
-    // таблицы, кроме тех, что в первой вкладке. поэтому вынуждены сами вызывать onResize() для заголовков таблиц
-    private void relayoutTables(GComponent component) {
-        //TODO: ПРОТЕСТИРОВАТЬ: после переписывания TabPanel на div'ы этот хак возможно не нужен...
-        if (controllers.isEmpty() && treeControllers.isEmpty()) {
-            return;
-        }
-        GContainer container = component == null || component instanceof GContainer ? (GContainer) component : component.container;
-        if (container != null) {
-            formLayout.getFormContainer(container).onResize();
-        }
-    }
-
     private void setRemoteRegularFilter(GRegularFilterGroup filterGroup, GRegularFilter filter) {
         syncDispatch(new SetRegularFilter(filterGroup.ID, (filter == null) ? -1 : filter.ID), new ServerResponseCallback());
     }
@@ -828,7 +850,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         for (GGroupObject group : treeGroup.groups) {
             List<GPropertyFilter> groupFilters = filters.get(group);
             if (groupFilters == null) {
-                groupFilters = new ArrayList<GPropertyFilter>();
+                groupFilters = new ArrayList<>();
             }
             currentFilters.put(group, groupFilters);
         }
@@ -837,7 +859,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     }
 
     private void applyCurrentFilters() {
-        ArrayList<GPropertyFilterDTO> filters = new ArrayList<GPropertyFilterDTO>();
+        ArrayList<GPropertyFilterDTO> filters = new ArrayList<>();
 
         for (List<GPropertyFilter> groupFilters : currentFilters.values()) {
             for (GPropertyFilter filter : groupFilters) {
@@ -893,8 +915,8 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     }
 
     public GFormUserPreferences getUserPreferences() {
-        List<GGroupObjectUserPreferences> groupObjectUserPreferencesList = new ArrayList<GGroupObjectUserPreferences>();
-        List<GGroupObjectUserPreferences> groupObjectGeneralPreferencesList = new ArrayList<GGroupObjectUserPreferences>();
+        List<GGroupObjectUserPreferences> groupObjectUserPreferencesList = new ArrayList<>();
+        List<GGroupObjectUserPreferences> groupObjectGeneralPreferencesList = new ArrayList<>();
         for (GGroupObjectController controller : controllers.values()) {
             if (controller.groupObject != null) {
                 groupObjectUserPreferencesList.add(controller.getUserGridPreferences());
@@ -1046,7 +1068,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     }
 
     public List<GObject> getObjects() {
-        ArrayList<GObject> objects = new ArrayList<GObject>();
+        ArrayList<GObject> objects = new ArrayList<>();
         for (GGroupObject groupObject : form.groupObjects) {
             for (GObject object : groupObject.objects) {
                 objects.add(object);

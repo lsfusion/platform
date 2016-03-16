@@ -140,7 +140,7 @@ public class GwtSharedUtils {
     public static <R, C, V> void putToDoubleMap(Map<R, HashMap<C, V>> doubleMap, R row, C column, V value) {
         HashMap<C, V> rowMap = doubleMap.get(row);
         if (rowMap == null) {
-            doubleMap.put(row, rowMap = new HashMap<C, V>());
+            doubleMap.put(row, rowMap = new HashMap<>());
         }
         rowMap.put(column, value);
     }
@@ -148,7 +148,7 @@ public class GwtSharedUtils {
     public static <R, C, V> void putToDoubleNativeMap(NativeHashMap<R, NativeHashMap<C, V>> doubleMap, R row, C column, V value) {
         NativeHashMap<C, V> rowMap = doubleMap.get(row);
         if (rowMap == null) {
-            doubleMap.put(row, rowMap = new NativeHashMap<C, V>());
+            doubleMap.put(row, rowMap = new NativeHashMap<>());
         }
         rowMap.put(column, value);
     }
@@ -167,18 +167,22 @@ public class GwtSharedUtils {
         return result;
     }
 
+    public static boolean hashEquals(Object obj1, Object obj2) {
+        return obj1 == obj2 || (obj1.hashCode() == obj2.hashCode() && obj1.equals(obj2));
+    }
+
     public static abstract class Group<G, K> {
         public abstract G group(K key);
     }
 
     public static <G, K> Map<G, List<K>> groupList(Group<G, K> getter, List<K> keys) {
-        Map<G, List<K>> result = new HashMap<G, List<K>>();
+        Map<G, List<K>> result = new HashMap<>();
         for (K key : keys) {
             G group = getter.group(key);
             if(group!=null) {
                 List<K> groupList = result.get(group);
                 if (groupList == null) {
-                    groupList = new ArrayList<K>();
+                    groupList = new ArrayList<>();
                     result.put(group, groupList);
                 }
                 groupList.add(key);

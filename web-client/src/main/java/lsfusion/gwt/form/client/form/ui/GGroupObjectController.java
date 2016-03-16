@@ -174,7 +174,7 @@ public class GGroupObjectController extends GAbstractGroupObjectController {
                     addProperty(property, fc.panelProperties.contains(property));
 
                     if (property.columnGroupObjects != null) {
-                        LinkedHashMap<GGroupObject, List<GGroupObjectValue>> groupColumnKeys = new LinkedHashMap<GGroupObject, List<GGroupObjectValue>>();
+                        LinkedHashMap<GGroupObject, List<GGroupObjectValue>> groupColumnKeys = new LinkedHashMap<>();
                         for (GGroupObject columnGroupObject : property.columnGroupObjects) {
                             List<GGroupObjectValue> columnGroupKeys = currentGridObjects.get(columnGroupObject);
                             if (columnGroupKeys != null) {
@@ -403,31 +403,27 @@ public class GGroupObjectController extends GAbstractGroupObjectController {
     }
 
     public LinkedHashMap<GPropertyDraw, Boolean> getUserOrders() {
-        LinkedHashMap<GPropertyDraw, Boolean> userOrders = new LinkedHashMap<GPropertyDraw, Boolean>();
-        boolean userPreferencesEmpty = true;
         boolean hasUserPreferences = getGrid() != null && getGrid().getTable().hasUserPreferences();
         if (hasUserPreferences) {
+            LinkedHashMap<GPropertyDraw, Boolean> userOrders = new LinkedHashMap<>();
             List<GPropertyDraw> propertyDrawList = getGroupObjectProperties();
             Collections.sort(propertyDrawList, getGrid().getTable().getUserSortComparator());
             for (GPropertyDraw property : propertyDrawList) {
                 if (getGrid().getTable().getUserSort(property) != null && getGrid().getTable().getUserAscendingSort(property) != null) {
                     userOrders.put(property, getGrid().getTable().getUserAscendingSort(property));
-                    userPreferencesEmpty = false;
                 }
             }
+            return userOrders;
         }
-        if (userPreferencesEmpty && hasUserPreferences) {
-            clearOrders(groupObject);
-        }
-        return userOrders;
+        return null;
     }
     
     public void applyUserOrders() {
-        formController.applyOrders(getUserOrders());    
+        formController.applyOrders(getUserOrders(), this);    
     }
 
     public void applyDefaultOrders() {
-        formController.applyDefaultOrders(groupObject);
+        formController.applyOrders(formController.getDefaultOrders(groupObject), this);
     }
 
     public GGroupObjectUserPreferences getUserGridPreferences() {
@@ -445,7 +441,7 @@ public class GGroupObjectController extends GAbstractGroupObjectController {
 
     @Override
     public List<GPropertyDraw> getGroupObjectProperties() {
-        ArrayList<GPropertyDraw> properties = new ArrayList<GPropertyDraw>();
+        ArrayList<GPropertyDraw> properties = new ArrayList<>();
         for (GPropertyDraw property : formController.getPropertyDraws()) {
             if (groupObject.equals(property.groupObject)) {
                 properties.add(property);
