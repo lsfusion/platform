@@ -147,7 +147,7 @@ CLASS TypeExecEnv {
     none 'Нет'
 }
 
-captionExecEnv 'Название' (Object type) = staticCaption (type) IN base;
+captionExecEnv 'Название' (Object type) = staticCaption (type);
 id (TypeExecEnv type) = CASE EXCLUSIVE
                         WHEN type == TypeExecEnv.materialize THEN 2
                         WHEN type == TypeExecEnv.disablenestloop THEN 1
@@ -161,7 +161,7 @@ refreshExecEnv 'Обновить Explain'(User user) = ACTION {
 WHEN CHANGED(execEnv(User user)) DO {
     refreshExecEnv(user);
 }
-nameExecEnv 'Тип адаптивного выполнения' (User user) = captionExecEnv(execEnv(user));
+nameExecEnv 'Тип адаптивного выполнения' (User user) = captionExecEnv(execEnv(user)) IN base;
 
 // --------------- Удаление прикладных логов ------------------------ //
 

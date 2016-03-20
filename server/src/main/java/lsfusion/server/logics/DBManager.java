@@ -645,7 +645,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
 
             checkIndices(sql, oldDBStructure, newDBStructure);
             
-            systemLogger.info("Applying migration script");
+            systemLogger.info("Applying migration script (" + oldDBStructure.dbVersion + " -> " + newDBStructure.dbVersion + ")");
             
             // применяем к oldDBStructure изменения из migration script, переименовываем таблицы и поля  
             alterDBStructure(oldDBStructure, newDBStructure, sql);
