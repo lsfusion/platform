@@ -69,7 +69,7 @@ public class ReportHTMLExporter extends JRHtmlExporter {
 
         String verticalAlignment = HTML_VERTICAL_ALIGN_TOP;
 
-        switch (text.getVerticalAlignmentValue())
+        switch (text.getVerticalTextAlign())
         {
             case BOTTOM :
             {
@@ -103,7 +103,7 @@ public class ReportHTMLExporter extends JRHtmlExporter {
 
         if (textLength > 0)
         {
-            switch (text.getHorizontalAlignmentValue())
+            switch (text.getHorizontalTextAlign())
             {
                 case RIGHT :
                 {
