@@ -54,6 +54,9 @@ applyOnlyCheck = ACTION CUSTOM 'lsfusion.server.logics.property.actions.ApplyOnl
 applyOnlyData = ACTION CUSTOM 'lsfusion.server.logics.property.actions.ApplyOnlyDataActionProperty' ();
 applyAll = ACTION CUSTOM 'lsfusion.server.logics.property.actions.ApplyAllActionProperty' ();
 
+setNoCancelInTransaction() = ACTION CUSTOM <{ context.getSession().setNoCancelInTransaction(true); }>;
+dropNoCancelInTransaction() = ACTION CUSTOM <{ context.getSession().setNoCancelInTransaction(false); }>;
+
 check() = ACTION {
     applyOnlyCheck();
     
