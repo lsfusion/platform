@@ -243,7 +243,7 @@ public class GridController {
         }
     }
 
-    private Map<ClientPropertyDraw, ExternalScreenComponent> extViews = new HashMap<ClientPropertyDraw, ExternalScreenComponent>();
+    private Map<ClientPropertyDraw, ExternalScreenComponent> extViews = new HashMap<>();
 
     private void addExternalScreenComponent(ClientPropertyDraw key) {
         if (!extViews.containsKey(key)) {
@@ -268,8 +268,8 @@ public class GridController {
         table.setRowKeysAndCurrentObject(gridObjects, newCurrentObject);
     }
 
-    public void modifyGridObject(ClientGroupObjectValue gridObject, boolean add) {
-        table.modifyGroupObject(gridObject, add);
+    public void modifyGridObject(ClientGroupObjectValue gridObject, boolean add, int position) {
+        table.modifyGroupObject(gridObject, add, position);
     }
 
     public void updateColumnKeys(ClientPropertyDraw drawProperty, List<ClientGroupObjectValue> groupColumnKeys) {

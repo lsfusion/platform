@@ -494,6 +494,15 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             Map.Entry<Integer, ModifyObject> cell = iterator.next();
             if (cell.getKey() <= currentDispatchingRequestIndex) {
                 iterator.remove();
+
+                ModifyObject modifyObject = cell.getValue();
+                GGroupObject groupObject = modifyObject.object.groupObject;
+                // делаем обратный modify, чтобы удалить/добавить ряды, асинхронно добавленные/удалённые на клиенте, если с сервера не пришло подтверждение
+                // возможны скачки и путаница в строках на удалении, если до прихода ответа position утратил свою актуальность
+                // по этой же причине не заморачиваемся запоминанием соседнего объекта
+                if(!fc.gridObjects.containsKey(groupObject)) {
+                    controllers.get(groupObject).modifyGroupObject(modifyObject.value, !modifyObject.add, modifyObject.position);
+                }
             }
         }
 
@@ -767,28 +776,31 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         final GObject object = property.addRemove.object;
         final boolean add = property.addRemove.add;
 
+        GGroupObjectController controller = getGroupObjectController(property.addRemove.object.groupObject);
+        final int position = controller.getGrid().getTable().getKeyboardSelectedRow();
+
         if (add) {
             NavigatorDispatchAsync.Instance.get().execute(new GenerateID(), new ErrorHandlingCallback<GenerateIDResult>() {
                 @Override
                 public void success(GenerateIDResult result) {
-                    executeModifyObject(property, columnKey, object, add, result.ID, new GGroupObjectValue(object.ID, result.ID));
+                    executeModifyObject(property, columnKey, object, add, result.ID, new GGroupObjectValue(object.ID, result.ID), position);
                 }
             });
         } else {
             final GGroupObjectValue value = controllers.get(object.groupObject).getCurrentKey();
             final int ID = (Integer) value.getValue(0);
-            executeModifyObject(property, columnKey, object, add, ID, value);
+            executeModifyObject(property, columnKey, object, add, ID, value, position);
         }
     }
 
-    private void executeModifyObject(GPropertyDraw property, GGroupObjectValue columnKey, GObject object, boolean add, int ID, GGroupObjectValue value) {
+    private void executeModifyObject(GPropertyDraw property, GGroupObjectValue columnKey, GObject object, boolean add, int ID, GGroupObjectValue value, int position) {
         final GGroupObjectValue fullCurrentKey = getFullCurrentKey(columnKey); // чтобы не изменился
 
-        controllers.get(object.groupObject).modifyGroupObject(value, add);
+        controllers.get(object.groupObject).modifyGroupObject(value, add, -1);
 
         int requestIndex = dispatcher.execute(new ChangeProperty(property.ID, fullCurrentKey, null, add ? ID : null), new ServerResponseCallback());
         pendingChangeCurrentObjectsRequests.put(object.groupObject, requestIndex);
-        pendingModifyObjectRequests.put(requestIndex, new ModifyObject(object, add, value));
+        pendingModifyObjectRequests.put(requestIndex, new ModifyObject(object, add, value, position));
     }
 
     public void changeClassView(GGroupObject groupObject, GClassViewType newClassView) {
@@ -1159,11 +1171,13 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         public final GObject object;
         public final boolean add;
         public final GGroupObjectValue value;
+        public final int position;
 
-        private ModifyObject(GObject object, boolean add, GGroupObjectValue value) {
+        private ModifyObject(GObject object, boolean add, GGroupObjectValue value, int position) {
             this.object = object;
             this.add = add;
             this.value = value;
+            this.position = position;
         }
     }
 

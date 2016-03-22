@@ -736,8 +736,18 @@ public class ClientFormController implements AsyncListener {
 
         for (Iterator<Map.Entry<Long,ModifyObject>> iterator = pendingModifyObjectRequests.entrySet().iterator(); iterator.hasNext(); ) {
             Map.Entry<Long, ModifyObject> cell = iterator.next();
-            if(cell.getKey() <= currentDispatchingRequestIndex)
+            if (cell.getKey() <= currentDispatchingRequestIndex) {
                 iterator.remove();
+
+                ModifyObject modifyObject = cell.getValue();
+                ClientGroupObject groupObject = modifyObject.object.groupObject;
+                // делаем обратный modify, чтобы удалить/добавить ряды, асинхронно добавленные/удалённые на клиенте, если с сервера не пришло подтверждение
+                // возможны скачки и путаница в строках на удалении, если до прихода ответа position утратил свою актуальность
+                // по этой же причине не заморачиваемся запоминанием соседнего объекта
+                if(!formChanges.gridObjects.containsKey(groupObject)) {
+                    controllers.get(groupObject).modifyGroupObject(modifyObject.value, !modifyObject.add, modifyObject.position);
+                }
+            }
         }
 
         for (Map.Entry<Long, ModifyObject> e : pendingModifyObjectRequests.entrySet()) {
@@ -877,16 +887,18 @@ public class ClientFormController implements AsyncListener {
             value = controller.getCurrentObject();
             ID = (Integer) BaseUtils.singleValue(value);
         }
+        
+        final int position = controller.getCurrentRow();
 
         final byte[] fullCurrentKey = getFullCurrentKey(columnKey); // чтобы не изменился
 
         rmiQueue.asyncRequest(new ProcessServerResponseRmiRequest("modifyObject") {
             @Override
             protected void onAsyncRequest(long requestIndex) {
-                controller.modifyGroupObject(value, add); // сначала посылаем запрос, так как getFullCurrentKey может измениться
+                controller.modifyGroupObject(value, add, -1); // сначала посылаем запрос, так как getFullCurrentKey может измениться
 
                 pendingChangeCurrentObjectsRequests.put(object.groupObject, requestIndex); // так как по сути такой execute сам меняет groupObject
-                pendingModifyObjectRequests.put(requestIndex, new ModifyObject(object, add, value));
+                pendingModifyObjectRequests.put(requestIndex, new ModifyObject(object, add, value, position));
             }
 
             @Override
@@ -1566,11 +1578,13 @@ public class ClientFormController implements AsyncListener {
         public final ClientObject object;
         public final boolean add;
         public final ClientGroupObjectValue value;
+        public final int position;
 
-        private ModifyObject(ClientObject object, boolean add, ClientGroupObjectValue value) {
+        private ModifyObject(ClientObject object, boolean add, ClientGroupObjectValue value, int position) {
             this.object = object;
             this.add = add;
             this.value = value;
+            this.position = position;
         }
     }
 

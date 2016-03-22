@@ -468,10 +468,10 @@ public class GGroupObjectController extends GAbstractGroupObjectController {
         return grid.getSelectedValue(property);
     }
 
-    public void modifyGroupObject(GGroupObjectValue key, boolean add) {
+    public void modifyGroupObject(GGroupObjectValue key, boolean add, int position) {
         assert classView == GRID;
 
-        grid.modifyGridObject(key, add);
+        grid.modifyGridObject(key, add, position);
     }
 
     public boolean focusFirstWidget() {

@@ -69,7 +69,7 @@ public class GGridController {
     }
 
     public void update() {
-        table.update(false);
+        table.update();
         boolean oldGridVisibilityState = gridView.isVisible();
         if (oldGridVisibilityState != isVisible()) {
             gridView.setVisible(isVisible());
@@ -131,8 +131,8 @@ public class GGridController {
         table.updateRowForegroundValues(values);
     }
 
-    public void modifyGridObject(GGroupObjectValue key, boolean add) {
-        table.modifyGroupObject(key, add);
+    public void modifyGridObject(GGroupObjectValue key, boolean add, int position) {
+        table.modifyGroupObject(key, add, position);
     }
 
     public void updateColumnKeys(GPropertyDraw property, List<GGroupObjectValue> columnKeys) {

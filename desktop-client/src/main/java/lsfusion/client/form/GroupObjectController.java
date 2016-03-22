@@ -33,7 +33,7 @@ public class GroupObjectController extends AbstractGroupObjectController {
     public GridController grid;
     public ShowTypeController showType;
 
-    private final Map<ClientObject, ObjectController> objects = new HashMap<ClientObject, ObjectController>();
+    private final Map<ClientObject, ObjectController> objects = new HashMap<>();
 
     public ClassViewType classView = ClassViewType.GRID;
 
@@ -157,7 +157,7 @@ public class GroupObjectController extends AbstractGroupObjectController {
                 if (property.groupObject == groupObject && property.shouldBeDrawn(form) && !fc.updateProperties.contains(property)) {
                     addDrawProperty(property, fc.panelProperties.contains(property));
 
-                    OrderedMap<ClientGroupObject, List<ClientGroupObjectValue>> groupColumnKeys = new OrderedMap<ClientGroupObject, List<ClientGroupObjectValue>>();
+                    OrderedMap<ClientGroupObject, List<ClientGroupObjectValue>> groupColumnKeys = new OrderedMap<>();
                     for (ClientGroupObject columnGroupObject : property.columnGroupObjects) {
                         if (cachedGridObjects.containsKey(columnGroupObject)) {
                             groupColumnKeys.put(columnGroupObject, cachedGridObjects.get(columnGroupObject));
@@ -243,10 +243,10 @@ public class GroupObjectController extends AbstractGroupObjectController {
         }
     }
 
-    public void modifyGroupObject(ClientGroupObjectValue gridObject, boolean add) {
+    public void modifyGroupObject(ClientGroupObjectValue gridObject, boolean add, int position) {
         assert classView == ClassViewType.GRID;
 
-        grid.modifyGridObject(gridObject, add); // assert что grid!=null
+        grid.modifyGridObject(gridObject, add, position); // assert что grid!=null
 
         assert !groupObject.grid.autoHide;
         grid.update();
@@ -254,6 +254,10 @@ public class GroupObjectController extends AbstractGroupObjectController {
 
     public ClientGroupObjectValue getCurrentObject() {
         return grid != null && grid.getCurrentObject() != null ? grid.getCurrentObject() : ClientGroupObjectValue.EMPTY;
+    }
+    
+    public int getCurrentRow() {
+        return grid != null ? grid.table.getCurrentRow() : -1;
     }
 
     public void updateDrawColumnKeys(ClientPropertyDraw property, List<ClientGroupObjectValue> groupColumnKeys) {
@@ -344,7 +348,7 @@ public class GroupObjectController extends AbstractGroupObjectController {
 
     public OrderedMap<ClientPropertyDraw, Boolean> getUserOrders() throws IOException {
         if (grid != null && grid.table.hasUserPreferences()) {
-            OrderedMap<ClientPropertyDraw, Boolean> userOrders = new OrderedMap<ClientPropertyDraw, Boolean>();
+            OrderedMap<ClientPropertyDraw, Boolean> userOrders = new OrderedMap<>();
             List<ClientPropertyDraw> clientPropertyDrawList = getGroupObjectProperties();
             Collections.sort(clientPropertyDrawList, grid.table.getUserSortComparator());
             for (ClientPropertyDraw property : clientPropertyDrawList) {
@@ -416,7 +420,7 @@ public class GroupObjectController extends AbstractGroupObjectController {
     }
 
     public List<ClientPropertyDraw> getGroupObjectProperties() {
-        ArrayList<ClientPropertyDraw> properties = new ArrayList<ClientPropertyDraw>();
+        ArrayList<ClientPropertyDraw> properties = new ArrayList<>();
         for (ClientPropertyDraw property : getPropertyDraws()) {
             if (groupObject.equals(property.groupObject)) {
                 properties.add(property);

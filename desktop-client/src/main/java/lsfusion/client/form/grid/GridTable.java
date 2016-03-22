@@ -2,7 +2,6 @@ package lsfusion.client.form.grid;
 
 import com.google.common.base.Throwables;
 import com.sun.java.swing.plaf.windows.WindowsTableHeaderUI;
-import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.client.Main;
 import lsfusion.client.SwingUtils;
@@ -59,18 +58,18 @@ public class GridTable extends ClientPropertyTable {
     private long lastQuickSearchTime = 0;
     private EventObject lastQuickSearchEvent;
 
-    private final List<ClientPropertyDraw> properties = new ArrayList<ClientPropertyDraw>();
+    private final List<ClientPropertyDraw> properties = new ArrayList<>();
 
-    private List<ClientGroupObjectValue> rowKeys = new ArrayList<ClientGroupObjectValue>();
-    private Map<ClientPropertyDraw, List<ClientGroupObjectValue>> columnKeys = new HashMap<ClientPropertyDraw, List<ClientGroupObjectValue>>();
-    private Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> captions = new HashMap<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>>();
-    private Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> showIfs = new HashMap<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>>();
-    private Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> values = new HashMap<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>>();
-    private Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> readOnlyValues = new HashMap<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>>();
-    private Map<ClientGroupObjectValue, Object> rowBackground = new HashMap<ClientGroupObjectValue, Object>();
-    private Map<ClientGroupObjectValue, Object> rowForeground = new HashMap<ClientGroupObjectValue, Object>();
-    private Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> cellBackgroundValues = new HashMap<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>>();
-    private Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> cellForegroundValues = new HashMap<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>>();
+    private List<ClientGroupObjectValue> rowKeys = new ArrayList<>();
+    private Map<ClientPropertyDraw, List<ClientGroupObjectValue>> columnKeys = new HashMap<>();
+    private Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> captions = new HashMap<>();
+    private Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> showIfs = new HashMap<>();
+    private Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> values = new HashMap<>();
+    private Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> readOnlyValues = new HashMap<>();
+    private Map<ClientGroupObjectValue, Object> rowBackground = new HashMap<>();
+    private Map<ClientGroupObjectValue, Object> rowForeground = new HashMap<>();
+    private Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> cellBackgroundValues = new HashMap<>();
+    private Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> cellForegroundValues = new HashMap<>();
 
     private ClientGroupObjectValue currentObject;
 
@@ -179,7 +178,7 @@ public class GridTable extends ClientPropertyTable {
 
             @Override
             protected Pair<ClientPropertyDraw, ClientGroupObjectValue> getColumnKey(int column) {
-                return new Pair<ClientPropertyDraw, ClientGroupObjectValue>(model.getColumnProperty(column), model.getColumnKey(column));
+                return new Pair<>(model.getColumnProperty(column), model.getColumnKey(column));
             }
 
             @Override
@@ -412,7 +411,7 @@ public class GridTable extends ClientPropertyTable {
     }
     
     public List<ClientPropertyDraw> getOrderedVisibleProperties(List<ClientPropertyDraw> propertiesList) {
-        List<ClientPropertyDraw> result = new ArrayList<ClientPropertyDraw>();
+        List<ClientPropertyDraw> result = new ArrayList<>();
 
         for (ClientPropertyDraw property : propertiesList) {
             boolean add = !property.hide;
@@ -677,9 +676,15 @@ public class GridTable extends ClientPropertyTable {
         calledChangeGroupObject = false;
     }
 
-    public void modifyGroupObject(ClientGroupObjectValue rowKey, boolean add) {
+    public void modifyGroupObject(ClientGroupObjectValue rowKey, boolean add, int position) {
         if (add) {
-            setRowKeysAndCurrentObject(BaseUtils.add(rowKeys, rowKey), rowKey);
+            List<ClientGroupObjectValue> irowKeys = new ArrayList<>(rowKeys);
+            if (position >= 0) {
+                irowKeys.add(position, rowKey);
+            } else {
+                irowKeys.add(rowKey);
+            }
+            setRowKeysAndCurrentObject(irowKeys, rowKey);
         } else {
             setRowKeysAndCurrentObject(removeList(rowKeys, rowKey), currentObject.equals(rowKey) ? getNearObject(singleValue(rowKey), rowKeys) : null);
         }
@@ -705,11 +710,11 @@ public class GridTable extends ClientPropertyTable {
 
     public List<Pair<ClientPropertyDraw, ClientGroupObjectValue>> getVisibleProperties() {
         //возвращает все свойства, за исключеним тех, что формируют группы в колонки без единого значения
-        List<Pair<ClientPropertyDraw, ClientGroupObjectValue>> props = new ArrayList<Pair<ClientPropertyDraw, ClientGroupObjectValue>>();
+        List<Pair<ClientPropertyDraw, ClientGroupObjectValue>> props = new ArrayList<>();
         for (ClientPropertyDraw property : properties) {
             for (ClientGroupObjectValue columnKey : columnKeys.get(property)) {
                 if (model.getPropertyIndex(property, columnKey) != -1) {
-                    props.add(new Pair<ClientPropertyDraw, ClientGroupObjectValue>(property, columnKey));
+                    props.add(new Pair<>(property, columnKey));
                 }
             }
         }
@@ -817,8 +822,8 @@ public class GridTable extends ClientPropertyTable {
                 //т.е. вставляем в одну ячейку, но не одно значение
                 int columnsToInsert = Math.min(tableColumns, getColumnCount() - selectedColumn);
 
-                List<ClientPropertyDraw> propertyList = new ArrayList<ClientPropertyDraw>();
-                List<ClientGroupObjectValue> columnKeys = new ArrayList<ClientGroupObjectValue>();
+                List<ClientPropertyDraw> propertyList = new ArrayList<>();
+                List<ClientGroupObjectValue> columnKeys = new ArrayList<>();
                 for (int i = 0; i < columnsToInsert; i++) {
                     ClientPropertyDraw propertyDraw = model.getColumnProperty(selectedColumn + i);
                     propertyList.add(propertyDraw);
@@ -830,7 +835,7 @@ public class GridTable extends ClientPropertyTable {
                 //вставляем в несколько ячеек, используем только 1е значение
                 String sPasteValue = table.get(0).get(0);
 
-                Map<ClientPropertyDraw, PasteData> paste = new HashMap<ClientPropertyDraw, PasteData>();
+                Map<ClientPropertyDraw, PasteData> paste = new HashMap<>();
 
                 for (Map.Entry<Pair<ClientPropertyDraw, ClientGroupObjectValue>, Pair<List<ClientGroupObjectValue>, List<Object>>> e : selectionController.getSelectedCells().entrySet()) {
                     Pair<ClientPropertyDraw, ClientGroupObjectValue> propertyColumn = e.getKey();
@@ -844,7 +849,7 @@ public class GridTable extends ClientPropertyTable {
                     if (columnKey.isEmpty()) {
                         keys = rowKeys;
                     } else {
-                        keys = new ArrayList<ClientGroupObjectValue>();
+                        keys = new ArrayList<>();
                         for (ClientGroupObjectValue rowKey : rowKeys) {
                             keys.add(rowKey.isEmpty() ? columnKey : new ClientGroupObjectValue(rowKey, columnKey));
                         }
@@ -1103,7 +1108,7 @@ public class GridTable extends ClientPropertyTable {
         if (!update || propValues == null) {
             this.values.put(property, values);
         } else {
-            propValues = new HashMap<ClientGroupObjectValue, Object>(propValues);
+            propValues = new HashMap<>(propValues);
             propValues.putAll(values);
             this.values.put(property, propValues);
         }
@@ -1192,7 +1197,7 @@ public class GridTable extends ClientPropertyTable {
     }
 
     public Pair<ClientPropertyDraw, ClientGroupObjectValue> getColumnProperty(int column) {
-        return new Pair<ClientPropertyDraw, ClientGroupObjectValue>(getProperty(column), getColumnKey(0, column));
+        return new Pair<>(getProperty(column), getColumnKey(0, column));
     }
 
     public boolean isSelected(int row, int column) {
@@ -1209,7 +1214,7 @@ public class GridTable extends ClientPropertyTable {
 
     public void changeGridOrder(ClientPropertyDraw property, Order modiType) throws IOException {
         int ind = getMinPropertyIndex(property);
-        sortableHeaderManager.changeOrder(new Pair<ClientPropertyDraw, ClientGroupObjectValue>(property, ind == -1 ? ClientGroupObjectValue.EMPTY : model.getColumnKey(ind)), modiType);
+        sortableHeaderManager.changeOrder(new Pair<>(property, ind == -1 ? ClientGroupObjectValue.EMPTY : model.getColumnKey(ind)), modiType);
     }
 
     public void clearGridOrders(ClientGroupObject groupObject) throws IOException {
@@ -1333,7 +1338,7 @@ public class GridTable extends ClientPropertyTable {
             }
         }
         
-        return new Pair<Integer, Integer>(first == -1 ? 0 : first, last == -1 ? 0 : last);
+        return new Pair<>(first == -1 ? 0 : first, last == -1 ? 0 : last);
     }
 
     public void updatePageSizeIfNeeded(boolean checkVisible) {
