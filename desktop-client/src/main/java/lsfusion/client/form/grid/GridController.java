@@ -62,9 +62,6 @@ public class GridController {
             else
                 table.setFont(table.getFont().deriveFont(userFont.getStyle(), userFont.fontSize));
         }
-        Integer userPageSize = table.getUserPageSize();
-        if(userPageSize != null)
-            table.setPageSize(userPageSize);
     }
     
     public boolean containsProperty(ClientPropertyDraw property) {
