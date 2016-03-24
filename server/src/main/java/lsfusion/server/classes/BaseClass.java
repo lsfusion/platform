@@ -207,4 +207,9 @@ public class BaseClass extends AbstractCustomClass {
     public Table getInconsistentTable(ImplementTable table) {
         return table.getInconsistent(this);
     }
+
+    @Override
+    public boolean hasComplex() {
+        return false;
+    }
 }
