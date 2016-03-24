@@ -298,7 +298,8 @@ public class CacheAspect {
     }
     @Around("execution(@lsfusion.server.caches.IdentityInstanceLazy * *.*(..)) && target(object)")
     public Object callInstanceMethod(ProceedingJoinPoint thisJoinPoint, Object object) throws Throwable {
-        return callMethod(object, thisJoinPoint, Type.SIMPLE, CacheType.OTHER); // есть и для мелких объектов, а в этом случае нужна более быстрая синхронизация
+        return callMethod(object, thisJoinPoint, Type.STRONG, CacheType.OTHER); // есть и для мелких объектов, а в этом случае нужна более быстрая синхронизация
+                                                                                // STRONG пришлось поставить из-за использования в политике безопасности (в частности getDefaultEditAction для OBJVALUE)
     }
     @Around("execution(@lsfusion.server.caches.IdentityStrongLazy * *.*(..)) && target(object)")
     public Object callStrongMethod(ProceedingJoinPoint thisJoinPoint, Object object) throws Throwable {
