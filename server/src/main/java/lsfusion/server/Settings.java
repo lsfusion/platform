@@ -232,7 +232,7 @@ public class Settings {
 
     private long threadAllocatedMemoryPeriod = 240000; //every 4 minutes
 
-    private long maxThreadAllocatedBytes = 1048576; //1MB
+    private long maxThreadAllocatedBytes = 500048576; //500MB
 
     public long getMaxRecalculateTime() {
         return maxRecalculateTime;
