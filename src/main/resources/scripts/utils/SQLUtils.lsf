@@ -44,6 +44,13 @@ CLASS ProcessType 'Фильтр процессов' {
     activeJava 'Активные (Java)'
 }
 
+FORM processTypes 'Фильтры процессов'
+    OBJECTS t = ProcessType
+    PROPERTIES(t) READONLY staticCaption
+    
+    DIALOG ProcessType OBJECT t
+;
+
 getActiveTasksAction 'Обновить список активных процессов' = ACTION CUSTOM 'lsfusion.erp.utils.GetActiveTasksActionProperty' () TOOLBAR;
 getAllTasksAction 'Обновить список всех процессов' = ACTION CUSTOM 'lsfusion.erp.utils.GetAllTasksActionProperty' () TOOLBAR;
 cancelActiveTaskAction 'Снять процесс' = ACTION CUSTOM 'lsfusion.erp.utils.CancelActiveTaskActionProperty' (INTEGER);
