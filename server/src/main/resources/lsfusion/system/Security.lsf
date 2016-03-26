@@ -28,10 +28,10 @@ EXTEND FORM customUsers
 mainRole[User](CustomUser u) <- defaultMainRole() WHEN SET(u IS CustomUser);
 
 in 'Вкл.' = DATA BOOLEAN (CustomUser, UserRole);
-overIn 'Вкл.' (User user, UserRole role) = mainRole(user) == role OR in(user, role);
-hasUserRoleCustom(user) = GROUP MAX overIn(User user, UserRole role) BY user;
+has 'Вкл.' (User user, UserRole role) = mainRole(user) == role OR in(user, role);
+hasUserRoleCustom(user) = GROUP MAX has(User user, UserRole role) BY user;
 
-CONSTRAINT DROPPED(UserRole r IS UserRole) AND PREV(overIn(User user, r))
+CONSTRAINT DROPPED(UserRole r IS UserRole) AND PREV(has(User user, r))
     MESSAGE 'Запрещено удалять используемую роль';
 
 inMainRole(CustomUser customUser, UserRole userRole) = mainRole(customUser) == userRole OR in(customUser, userRole);
@@ -115,7 +115,7 @@ dataPermitView 'Разрешить просмотр свойства' = DATA BOO
 permitView 'Разрешить просмотр свойства' (UserRole userRole, Property property) = OVERRIDE levelPermitView (userRole, parent(property)), dataPermitView (userRole, property) PERSISTENT;
 permitView 'Разрешить просмотр свойства' (User user, Property property) = permitView(mainRole(user), property) PERSISTENT;
 overPermitView 'Разрешить просмотр свойства' (user, property) = 
-    GROUP MAX permitView(UserRole userRole, Property property) IF overIn(User user, userRole) BY user, property;
+    GROUP MAX permitView(UserRole userRole, Property property) IF has(User user, userRole) BY user, property;
 
 dataForbidView 'Запретить просмотр группы свойств' = DATA BOOLEAN (UserRole, PropertyGroup);
 
@@ -136,7 +136,7 @@ fullForbidView (UserRole userRole, Property property) = (OVERRIDE
 
 fullForbidView (User user, Property property) = 
     IF hasUserRoleCustom(user)
-       THEN TRUE IF NOT [=GROUP SUM 1 IF NOT fullForbidView(UserRole userRole, property) AND overIn(User user, userRole) BY user, property] (user, property)
+       THEN TRUE IF NOT [=GROUP SUM 1 IF NOT fullForbidView(UserRole userRole, property) AND has(User user, userRole) BY user, property] (user, property)
        ELSE forbidView(property) AND NOT permitView(property);
          
 dataPermitChange 'Разрешить изменение группы свойств' = DATA BOOLEAN (UserRole, PropertyGroup);
@@ -152,7 +152,7 @@ dataPermitChange 'Разрешить изменение свойства' = DATA
 permitChange 'Разрешить изменение свойства' (UserRole userRole, Property property) = OVERRIDE levelPermitChange (userRole, parent(property)), dataPermitChange (userRole, property) PERSISTENT;
 permitChange 'Разрешить изменение свойства' (User user, Property property) = permitChange (mainRole(user), property) PERSISTENT;
 overPermitChange 'Разрешить изменение свойства' (user, property) = 
-    GROUP MAX permitChange(UserRole userRole, Property property) IF overIn(User user, userRole) BY user, property;
+    GROUP MAX permitChange(UserRole userRole, Property property) IF has(User user, userRole) BY user, property;
     
 dataForbidChange 'Запретить изменение группы свойств' = DATA BOOLEAN (UserRole, PropertyGroup);
 
@@ -173,7 +173,7 @@ fullForbidChange (UserRole userRole, Property property) = (OVERRIDE
 
 fullForbidChange (User user, Property property) = 
     IF hasUserRoleCustom(user)
-       THEN TRUE IF NOT [=GROUP SUM 1 IF NOT fullForbidChange(UserRole userRole, property) AND overIn(User user, userRole) BY user, property] (user, property)
+       THEN TRUE IF NOT [=GROUP SUM 1 IF NOT fullForbidChange(UserRole userRole, property) AND has(User user, userRole) BY user, property] (user, property)
        ELSE forbidChange(property) AND NOT permitChange(property);
     
 CLASS DefaultForms 'Отображение форм при запуске' {
@@ -209,11 +209,11 @@ forbid 'Запретить форму' = DATA BOOLEAN (UserRole, NavigatorElemen
 forbid 'Запретить форму' = forbid(mainRole(User user), NavigatorElement navigatorElement);
 
 overDefaultNumber 'Номер по умолчанию' (user, navigatorElement) = 
-    GROUP MIN defaultNumber(UserRole userRole, NavigatorElement navigatorElement) IF overIn(User user, userRole) AND permit(userRole, navigatorElement) BY user, navigatorElement;
+    GROUP MIN defaultNumber(UserRole userRole, NavigatorElement navigatorElement) IF has(User user, userRole) AND permit(userRole, navigatorElement) BY user, navigatorElement;
 overPermit 'Разрешить форму' (user, navigatorElement) = 
-    GROUP MAX permit(UserRole userRole, NavigatorElement navigatorElement) IF overIn(User user, userRole) BY user, navigatorElement;
+    GROUP MAX permit(UserRole userRole, NavigatorElement navigatorElement) IF has(User user, userRole) BY user, navigatorElement;
 overForbid 'Запретить форму' (User user, navigatorElement) = 
-    TRUE IF hasUserRoleCustom(user) AND NOT [=GROUP SUM 1 IF NOT forbid(UserRole userRole, navigatorElement) AND overIn(User user, userRole) BY user, navigatorElement] (user, navigatorElement);
+    TRUE IF hasUserRoleCustom(user) AND NOT [=GROUP SUM 1 IF NOT forbid(UserRole userRole, navigatorElement) AND has(User user, userRole) BY user, navigatorElement] (user, navigatorElement);
 
 level 'Уровень' (NavigatorElement child, NavigatorElement parent) = RECURSION 1l IF child IS NavigatorElement AND parent == child
                                                               STEP 2l IF parent == parent($parent) PERSISTENT;
