@@ -61,7 +61,6 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
 
 import java.io.*;
-import java.rmi.RemoteException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.Connection;
@@ -76,7 +75,7 @@ import static lsfusion.server.logics.ServerResourceBundle.getString;
 
 public class DBManager extends LifecycleAdapter implements InitializingBean {
     public static final Logger logger = Logger.getLogger(DBManager.class);
-    public static final Logger systemLogger = ServerLoggers.systemLogger;
+    public static final Logger startLogger = ServerLoggers.startLogger;
     public static final Logger serviceLogger = ServerLoggers.serviceLogger;
 
     private static Comparator<DBVersion> dbVersionComparator = new Comparator<DBVersion>() {
@@ -200,7 +199,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             if(adapter.getSyntaxType() == SQLSyntaxType.MSSQL)
                 Expr.useCasesCount = 5;
             
-            systemLogger.info("Synchronizing DB.");
+            startLogger.info("Synchronizing DB.");
             sourceHashChanged = synchronizeDB();
         } catch (Exception e) {
             throw new RuntimeException("Error synchronizing DB: ", e);
@@ -507,7 +506,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         for (DBStoredProperty property : struct.storedProperties) {
             Pair<String, String> key = new Pair<>(property.getDBName(), property.getTable().getName());
             if (sids.containsKey(key)) {
-                systemLogger.error(String.format("Equal sid '%s' in table '%s': %s and %s", key.first, key.second, sids.get(key).getCanonicalName(), property.getCanonicalName()));
+                startLogger.error(String.format("Equal sid '%s' in table '%s': %s and %s", key.first, key.second, sids.get(key).getCanonicalName(), property.getCanonicalName()));
             }
             sids.put(key, property);
          }
@@ -641,11 +640,11 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             // запишем новое состояние таблиц (чтобы потом изменять можно было бы)
             newDBStructure.write(outDB);
 
-            systemLogger.info("Checking indices");
+            startLogger.info("Checking indices");
 
             checkIndices(sql, oldDBStructure, newDBStructure);
             
-            systemLogger.info("Applying migration script (" + oldDBStructure.dbVersion + " -> " + newDBStructure.dbVersion + ")");
+            startLogger.info("Applying migration script (" + oldDBStructure.dbVersion + " -> " + newDBStructure.dbVersion + ")");
             
             // применяем к oldDBStructure изменения из migration script, переименовываем таблицы и поля  
             alterDBStructure(oldDBStructure, newDBStructure, sql);
@@ -659,7 +658,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             }
 
             // добавим таблицы которых не было
-            systemLogger.info("Creating tables");
+            startLogger.info("Creating tables");
             for (Table table : newDBStructure.tables.keySet()) {
                 if (oldDBStructure.getTable(table.getName()) == null)
                     sql.createTable(table, table.keys);
@@ -673,7 +672,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                         KeyField oldKey = oldTable.findKey(key.getName());
                         if (!(key.type.equals(oldKey.type))) {
                             sql.modifyColumn(table, key, oldKey.type);
-                            systemLogger.info("Changing type of key column " + key + " in table " + table + " from " + oldKey.type + " to " + key.type);
+                            startLogger.info("Changing type of key column " + key + " in table " + table + " from " + oldKey.type + " to " + key.type);
                         }
                     }
                 }
@@ -708,17 +707,17 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                                 sql.addColumn(newTable, newProperty.property.field);
                                 // делаем запрос на перенос
 
-                                systemLogger.info(getString("logics.info.property.is.transferred.from.table.to.table", newProperty.property.field, newProperty.property.caption, oldProperty.tableName, newProperty.tableName));
+                                startLogger.info(getString("logics.info.property.is.transferred.from.table.to.table", newProperty.property.field, newProperty.property.caption, oldProperty.tableName, newProperty.tableName));
                                 newProperty.property.mapTable.table.moveColumn(sql, newProperty.property.field, oldTable,
                                         foundInterfaces.join((ImMap<PropertyInterface, KeyField>) newProperty.property.mapTable.mapKeys), oldTable.findProperty(oldProperty.getDBName()));
-                                systemLogger.info("Done");
+                                startLogger.info("Done");
                                 moved = true;
                                 if(newProperty.property instanceof AggregateProperty)
                                     recalculateTableProperties.add((AggregateProperty) newProperty.property);
                             } else { // надо проверить что тип не изменился
                                 Type oldType = oldTable.findProperty(oldProperty.getDBName()).type;
                                 if (!oldType.equals(newProperty.property.field.type)) {
-                                    systemLogger.info("Changing type of property column " + newProperty.property.field + " in table " + newProperty.tableName + " from " + oldType + " to " + newProperty.property.field.type);
+                                    startLogger.info("Changing type of property column " + newProperty.property.field + " in table " + newProperty.tableName + " from " + oldType + " to " + newProperty.property.field.type);
                                     sql.modifyColumn(newTable, newProperty.property.field, oldType);
                                 }
                             }
@@ -792,7 +791,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                 copyObjects.addProperty(table.findProperty(classProp.getDBName()), mExpr.getFinal());
                 copyObjects.and(moveWhere);
 
-                systemLogger.info(getString("logics.info.objects.are.transferred.from.tables.to.table", classProp.tableName, mCopyFromTables.immutable().toString()));
+                startLogger.info(getString("logics.info.objects.are.transferred.from.tables.to.table", classProp.tableName, mCopyFromTables.immutable().toString()));
                 sql.modifyRecords(new ModifyQuery(table, copyObjects.getQuery(), OperationOwner.unknown, TableOwner.global));
             }
             ImMap<String, ImSet<Integer>> toClean = MapFact.mergeMaps(toCopy.values(), ASet.<String, Integer>addMergeSet());
@@ -810,13 +809,13 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                 dropClassObjects.addProperty(oldField, Expr.NULL);
                 dropClassObjects.and(moveWhere);
 
-                systemLogger.info(getString("logics.info.objects.are.removed.from.table", classProp.tableName));
+                startLogger.info(getString("logics.info.objects.are.removed.from.table", classProp.tableName));
                 sql.updateRecords(new ModifyQuery(table, dropClassObjects.getQuery(), OperationOwner.unknown, TableOwner.global));
             }
 
             MSet<ImplementTable> mPackTables = SetFact.mSet();
             for (Pair<String, String> dropColumn : mDropColumns.immutable()) {
-                systemLogger.info("Dropping column " + dropColumn.second + " from table " + dropColumn.first);
+                startLogger.info("Dropping column " + dropColumn.second + " from table " + dropColumn.first);
                 sql.dropColumn(dropColumn.first, dropColumn.second);
                 ImplementTable table = (ImplementTable) newDBStructure.getTable(dropColumn.first);
                 if (table != null) mPackTables.add(table);
@@ -826,23 +825,23 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             for (Table table : oldDBStructure.tables.keySet()) {
                 if (newDBStructure.getTable(table.getName()) == null) {
                     sql.dropTable(table);
-                    systemLogger.info("Table " + table + " has been dropped");
+                    startLogger.info("Table " + table + " has been dropped");
                 }
             }
 
-            systemLogger.info("Packing tables");
+            startLogger.info("Packing tables");
             packTables(sql, mPackTables.immutable(), false); // упакуем таблицы
 
-            systemLogger.info("Updating stats");
+            startLogger.info("Updating stats");
             ImMap<String, Integer> tableStats = businessLogics.updateStats(sql);  // пересчитаем статистику
 
             // создадим индексы в базе
-            systemLogger.info("Adding indices");
+            startLogger.info("Adding indices");
             for (Map.Entry<Table, Map<List<Field>, Boolean>> mapIndex : newDBStructure.tables.entrySet())
                 for (Map.Entry<List<Field>, Boolean> index : mapIndex.getValue().entrySet())
                     sql.addIndex(mapIndex.getKey(), mapIndex.getKey().keys, SetFact.fromJavaOrderSet(index.getKey()), index.getValue());
 
-            systemLogger.info("Filling static objects ids");
+            startLogger.info("Filling static objects ids");
             if(!fillIDs(getChangesAfter(oldDBStructure.dbVersion, classSIDChanges), getChangesAfter(oldDBStructure.dbVersion, objectSIDChanges)))
                 throw new RuntimeException("Error while filling static objects ids");
 
@@ -850,7 +849,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                 newClass.ID = newClass.customClass.ID;
             }
 
-            systemLogger.info("Migrating reflection properties and actions");
+            startLogger.info("Migrating reflection properties and actions");
             if(!migrateReflectionProperties(oldDBStructure))
                 throw new RuntimeException("Error while migrating reflection properties and actions");
 
@@ -864,17 +863,17 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             }
 
             if (oldDBStructure.version < 0) {
-                systemLogger.info("Recalculate class stats");
+                startLogger.info("Recalculate class stats");
                 DataSession session = createSession(OperationOwner.unknown);
                 businessLogics.recalculateClassStat(session);
                 session.apply(businessLogics);
             }
 
-            systemLogger.info("Updating class stats");
+            startLogger.info("Updating class stats");
             businessLogics.updateClassStat(sql, false);
 
-            systemLogger.info("Recalculating aggregations");
-            recalculateAggregations(sql, recalculateProperties, false); // перерасчитаем агрегации
+            startLogger.info("Recalculating aggregations");
+            recalculateAggregations(sql, recalculateProperties, false, startLogger); // перерасчитаем агрегации
             updateAggregationStats(recalculateProperties, tableStats, false);
             updateAggregationStats(recalculateTableProperties, tableStats, true);
             if(!noTransSyncDB)
@@ -929,11 +928,11 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                 ImMap<String, Pair<Integer, Integer>> propStats;
                 try (DataSession session = createSession()) {
                     long start = System.currentTimeMillis();
-                    serviceLogger.info(String.format("Update Aggregation Stats started: %s", table));
+                    startLogger.info(String.format("Update Aggregation Stats started: %s", table));
                     propStats = table.calculateStat(reflectionLM, session, fields, onlyTable);
                     session.apply(businessLogics);
                     long time = System.currentTimeMillis() - start;
-                    serviceLogger.info(String.format("Update Aggregation Stats: %s, %sms", table, time));
+                    startLogger.info(String.format("Update Aggregation Stats: %s, %sms", table, time));
                 }
                 table.updateStat(tableStats, null, propStats, false, fields.keys());
             }
@@ -942,11 +941,11 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
 
     public void writeModulesHash() {
         try {
-            serviceLogger.info("Writing hashModules " + hashModules);
+            startLogger.info("Writing hashModules " + hashModules);
             DataSession session = createSession();
             businessLogics.LM.findProperty("hashModules[]").change(hashModules, session);
             session.apply(businessLogics);
-            serviceLogger.info("Writing hashModules finished successfully");
+            startLogger.info("Writing hashModules finished successfully");
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }
@@ -1056,7 +1055,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
     }
 
     public String recalculateAggregations(SQLSession session, boolean isolatedTransaction) throws SQLException, SQLHandledException {
-        return recalculateAggregations(session, businessLogics.getAggregateStoredProperties(), isolatedTransaction);
+        return recalculateAggregations(session, businessLogics.getAggregateStoredProperties(), isolatedTransaction, serviceLogger);
     }
 
     public void ensureLogLevel() {
@@ -1107,27 +1106,27 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             run.run(session);
     }
 
-    public String recalculateAggregations(SQLSession session, final List<AggregateProperty> recalculateProperties, boolean isolatedTransaction) throws SQLException, SQLHandledException {
+    public String recalculateAggregations(SQLSession session, final List<AggregateProperty> recalculateProperties, boolean isolatedTransaction, Logger logger) throws SQLException, SQLHandledException {
         final List<String> messageList = new ArrayList<>();
         final int total = recalculateProperties.size();
         final long maxRecalculateTime = Settings.get().getMaxRecalculateTime();
         for (int i = 0; i < recalculateProperties.size(); i++) {
-            recalculateAggregation(session, isolatedTransaction, new ProgressBar(getString("logics.recalculation.aggregations"), i, total), messageList, maxRecalculateTime, recalculateProperties.get(i));
+            recalculateAggregation(session, isolatedTransaction, new ProgressBar(getString("logics.recalculation.aggregations"), i, total), messageList, maxRecalculateTime, recalculateProperties.get(i), logger);
         }
         return businessLogics.formatMessageList(messageList);
     }
 
     @StackProgress
-    private void recalculateAggregation(SQLSession session, boolean isolatedTransaction, @StackProgress final ProgressBar progressBar, final List<String> messageList, final long maxRecalculateTime, @ParamMessage final AggregateProperty property) throws SQLException, SQLHandledException {
+    private void recalculateAggregation(SQLSession session, boolean isolatedTransaction, @StackProgress final ProgressBar progressBar, final List<String> messageList, final long maxRecalculateTime, @ParamMessage final AggregateProperty property, final Logger logger) throws SQLException, SQLHandledException {
         run(session, isolatedTransaction, new RunService() {
             public void run(SQLSession sql) throws SQLException, SQLHandledException {
                 long start = System.currentTimeMillis();
-                serviceLogger.info(String.format("Recalculate Aggregation started: %s", property.getSID()));
+                logger.info(String.format("Recalculate Aggregation started: %s", property.getSID()));
                 property.recalculateAggregation(sql, LM.baseClass);
 
                 long time = System.currentTimeMillis() - start;
                 String message = String.format("Recalculate Aggregation: %s, %sms", property.getSID(), time);
-                serviceLogger.info(message);
+                logger.info(message);
                 if (time > maxRecalculateTime)
                     messageList.add(message);
             }
@@ -1202,7 +1201,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         String droppedModules = "";
         for (String moduleName : dbStructure.modulesList)
             if (businessLogics.getSysModule(moduleName) == null) {
-                systemLogger.info("Module " + moduleName + " has been dropped");
+                startLogger.info("Module " + moduleName + " has been dropped");
                 droppedModules += moduleName + ", ";
             }
         if (denyDropModules && !droppedModules.isEmpty())
@@ -1224,7 +1223,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
     }
 
     private boolean checkHashModulesChanged(String oldHash, String newHash) {
-        serviceLogger.info(String.format("Comparing hashModules: old %s, new %s", oldHash, newHash));
+        startLogger.info(String.format("Comparing hashModules: old %s, new %s", oldHash, newHash));
         return (oldHash == null || newHash == null) || !oldHash.equals(newHash);
     }
 
@@ -1269,7 +1268,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
     private void renameColumn(SQLSession sql, OldDBStructure oldData, DBStoredProperty oldProperty, String newName) throws SQLException {
         String oldName = oldProperty.getDBName();
         if (!oldName.equals(newName)) {
-            systemLogger.info("Renaming column from " + oldName + " to " + newName + " in table " + oldProperty.tableName);
+            startLogger.info("Renaming column from " + oldName + " to " + newName + " in table " + oldProperty.tableName);
             sql.renameColumn(oldProperty.getTableName(adapter), oldName, newName);
             PropertyField field = oldData.getTable(oldProperty.tableName).findProperty(oldName);
             field.setName(newName);
@@ -1290,7 +1289,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                 }
             }
             if (!found) {
-                systemLogger.warn("Property " + entry.getKey() + " was not found for renaming to " + entry.getValue());
+                startLogger.warn("Property " + entry.getKey() + " was not found for renaming to " + entry.getValue());
             }
         }
     }
@@ -1306,7 +1305,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         for (Table table : oldData.tables.keySet()) {
             if (tableChanges.containsKey(table.getName())) {
                 String newSID = tableChanges.get(table.getName());
-                systemLogger.info("Renaming table from " + table + " to " + newSID);
+                startLogger.info("Renaming table from " + table + " to " + newSID);
                 sql.renameTable(table, newSID);
                 table.setName(newSID);
             }

@@ -13,7 +13,7 @@ import org.springframework.util.Assert;
 
 public class ModulesHashManager extends LifecycleAdapter implements InitializingBean {
 
-    public static final Logger systemLogger = ServerLoggers.systemLogger;
+    public static final Logger startLogger = ServerLoggers.startLogger;
 
     private BusinessLogics<?> businessLogics;
     
@@ -47,7 +47,7 @@ public class ModulesHashManager extends LifecycleAdapter implements Initializing
     @Override
     protected void onStarted(LifecycleEvent event) {
         try {
-            new TaskRunner(businessLogics).runTask(initTask, systemLogger);
+            new TaskRunner(businessLogics).runTask(initTask, startLogger);
         } catch (Exception e) {
             throw new RuntimeException("Error starting ReflectionManager: ", e);
         }

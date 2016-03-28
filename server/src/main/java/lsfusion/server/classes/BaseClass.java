@@ -1,13 +1,5 @@
 package lsfusion.server.classes;
 
-import lsfusion.server.data.OperationOwner;
-import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.data.Table;
-import lsfusion.server.logics.mutables.Version;
-import lsfusion.server.logics.property.ObjectClassField;
-import lsfusion.server.logics.table.FullTablesInterface;
-import lsfusion.server.logics.table.ImplementTable;
-import org.apache.log4j.Logger;
 import lsfusion.base.Pair;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
@@ -19,7 +11,10 @@ import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.caches.IdentityStrongLazy;
 import lsfusion.server.classes.sets.AndClassSet;
 import lsfusion.server.classes.sets.OrObjectClassSet;
+import lsfusion.server.data.OperationOwner;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
+import lsfusion.server.data.Table;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.IsClassExpr;
 import lsfusion.server.data.expr.IsClassType;
@@ -29,10 +24,14 @@ import lsfusion.server.logics.NullValue;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.ServerResourceBundle;
 import lsfusion.server.logics.linear.LCP;
+import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.ObjectClassField;
 import lsfusion.server.logics.property.ObjectClassProperty;
 import lsfusion.server.logics.property.actions.ChangeClassValueActionProperty;
+import lsfusion.server.logics.table.FullTablesInterface;
+import lsfusion.server.logics.table.ImplementTable;
 import lsfusion.server.session.DataSession;
+import org.apache.log4j.Logger;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -40,7 +39,7 @@ import java.util.*;
 public class BaseClass extends AbstractCustomClass {
 
     protected final static Logger logger = Logger.getLogger(BaseClass.class);
-    private static final Logger systemLogger = ServerLoggers.systemLogger;
+    private static final Logger startLogger = ServerLoggers.startLogger;
 
     public final UnknownClass unknown;
 
@@ -141,13 +140,13 @@ public class BaseClass extends AbstractCustomClass {
             }
 
         for (Map.Entry<DataObject, String> modifiedSID : modifiedSIDs.entrySet()) {
-            systemLogger.info("changing sid of class with id " + modifiedSID.getKey() + " to " + modifiedSID.getValue());
+            startLogger.info("changing sid of class with id " + modifiedSID.getKey() + " to " + modifiedSID.getValue());
             staticName.change(modifiedSID.getValue(), session, modifiedSID.getKey());
         }
 
         // применение переименования классов вынесено сюда, поскольку objectClass.fillIDs() вызывается раньше проставления ID'шников - не срабатывает execute()
         for (Map.Entry<DataObject, String> modifiedName : modifiedNames.entrySet()) {
-            systemLogger.info("renaming class with id " + modifiedName.getKey() + " to " + modifiedName.getValue());
+            startLogger.info("renaming class with id " + modifiedName.getKey() + " to " + modifiedName.getValue());
             staticCaption.change(modifiedName.getValue(), session, modifiedName.getKey());
         }
     }

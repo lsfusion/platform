@@ -55,7 +55,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static lsfusion.server.ServerLoggers.systemLogger;
+import static lsfusion.server.ServerLoggers.explainLogger;
 
 public class SQLSession extends MutableClosedObject<OperationOwner> {
     private PreparedStatement executingStatement;
@@ -1246,14 +1246,14 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
                 }
                 double ttime = BaseUtils.nullAdd(rtime, ptime);
                 if(noAnalyze || thr==0 || ttime >= thr) {
-                    systemLogger.info(statement.toString() + " disabled nested loop : " + isDisabledNestLoop + " actual time : " + actualTime);
-                    systemLogger.info(ExecutionStackAspect.getStackString());
+                    explainLogger.info(statement.toString() + " disabled nested loop : " + isDisabledNestLoop + " actual time : " + actualTime);
+                    explainLogger.info(ExecutionStackAspect.getStackString());
                     if(Settings.get().isExplainJavaStack())
-                        systemLogger.info(ExceptionUtils.getStackTrace());
+                        explainLogger.info(ExceptionUtils.getStackTrace());
                     for(String outRow : out)
-                        systemLogger.info(outRow);
+                        explainLogger.info(outRow);
                 } //else {
-                  //  systemLogger.info(rtime);
+                  //  explainLogger.info(rtime);
                 //}
             }
         } finally {

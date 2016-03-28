@@ -89,12 +89,14 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 
-import static lsfusion.base.BaseUtils.*;
+import static lsfusion.base.BaseUtils.isRedundantString;
+import static lsfusion.base.BaseUtils.serviceLogger;
 import static lsfusion.server.logics.LogicsModule.*;
 import static lsfusion.server.logics.ServerResourceBundle.getString;
 
 public abstract class BusinessLogics<T extends BusinessLogics<T>> extends LifecycleAdapter implements InitializingBean {
     protected final static Logger logger = ServerLoggers.systemLogger;
+    protected final static Logger startLogger = ServerLoggers.startLogger;
     protected final static Logger debuglogger = Logger.getLogger(BusinessLogics.class);
     protected final static Logger lruLogger = ServerLoggers.lruLogger;
 
@@ -165,11 +167,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     @Override
     protected void onInit(LifecycleEvent event) {
         if (initialized.compareAndSet(false, true)) {
-            logger.info("Initializing BusinessLogics");
+            startLogger.info("Initializing BusinessLogics");
             try {
                 getDbManager().ensureLogLevel();
                 
-                new TaskRunner(this).runTask(initTask, logger);
+                new TaskRunner(this).runTask(initTask, startLogger);
             } catch (ScriptParsingException e) {
                 throw e;
             } catch (RuntimeException re) {
@@ -185,7 +187,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         startLruCache = null;
         MapCacheAspect.cleanClassCaches();
 
-        logger.info("Obsolete caches were successfully cleaned");
+        startLogger.info("Obsolete caches were successfully cleaned");
     }
     
     public ScriptingLogicsModule getModule(String name) {
@@ -280,7 +282,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
                 dbNamingPolicy = (PropertyDBNamePolicy) cls.getConstructors()[0].newInstance(maxIdLength);
             }
         } catch (InvocationTargetException | ClassNotFoundException | IllegalAccessException | InstantiationException e) {
-            systemLogger.error("Failed to get DBNamingPolicy, used default", e);
+            logger.error("Failed to get DBNamingPolicy, used default", e);
         }
         return dbNamingPolicy == null ? new DefaultDBNamePolicy(63) : dbNamingPolicy;
     }
@@ -651,7 +653,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         try {
             SQLSession sql = getDbManager().getThreadLocalSql();
             
-            systemLogger.info("Setting user logging for properties");
+            startLogger.info("Setting user logging for properties");
             try {
                 setUserLoggableProperties(sql);
             } catch (Exception e) {
@@ -673,10 +675,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
                 useReparse = false;
             }
 
-            systemLogger.info("Setting user not null constraints for properties");
+            startLogger.info("Setting user not null constraints for properties");
             setNotNullProperties(sql);
-            
-            systemLogger.info("Setting user notifications for property changes");
+
+            startLogger.info("Setting user notifications for property changes");
             setupPropertyNotifications(sql);
             
         } catch (Exception ignored) {
@@ -1412,7 +1414,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
                 show += findDependency(property, property.showDep, LinkType.USEDACTION);
             }
         if (!show.isEmpty()) {
-            systemLogger.debug("Dependencies: " + show);
+            logger.debug("Dependencies: " + show);
         }
 
         if(found)

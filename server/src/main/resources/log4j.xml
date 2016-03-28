@@ -30,23 +30,6 @@
         </filter>
     </appender>
 
-
-    <appender name="serverlog" class="org.apache.log4j.rolling.RollingFileAppender">
-        <param name="encoding" value="UTF-8" />
-        <rollingPolicy class="org.apache.log4j.rolling.FixedWindowRollingPolicy">
-            <param name="minIndex" value="1"/>
-            <param name="maxIndex" value="9"/>
-            <param name="activeFileName" value="logs/server.log"/>
-            <param name="fileNamePattern" value="logs/server-%i.log.zip"/>
-        </rollingPolicy>
-        <triggeringPolicy class="org.apache.log4j.rolling.SizeBasedTriggeringPolicy">
-            <param name="maxFileSize" value="104857600"/> <!-- 100MB -->
-        </triggeringPolicy>
-        <layout class="org.apache.log4j.EnhancedPatternLayout">
-            <param name="ConversionPattern" value="%d{DATE} %5p %c{1} - %m%n%throwable{1000}"/>
-        </layout>
-    </appender>
-
     <appender name="servicelog" class="org.apache.log4j.rolling.RollingFileAppender">
         <param name="encoding" value="UTF-8" />
         <rollingPolicy class="org.apache.log4j.rolling.FixedWindowRollingPolicy">
@@ -61,25 +44,6 @@
         <layout class="org.apache.log4j.EnhancedPatternLayout">
             <param name="ConversionPattern" value="%d{DATE} %5p %c{1} - %m%n%throwable{1000}"/>
         </layout>
-    </appender>
-
-    <appender name="servererr" class="org.apache.log4j.rolling.RollingFileAppender">
-        <param name="encoding" value="UTF-8" />
-        <rollingPolicy class="org.apache.log4j.rolling.FixedWindowRollingPolicy">
-            <param name="minIndex" value="1"/>
-            <param name="maxIndex" value="9"/>
-            <param name="activeFileName" value="logs/server-err.log"/>
-            <param name="fileNamePattern" value="logs/server-err-%i.log.zip"/>
-        </rollingPolicy>
-        <triggeringPolicy class="org.apache.log4j.rolling.SizeBasedTriggeringPolicy">
-            <param name="maxFileSize" value="10485760"/> <!-- 10MB -->
-        </triggeringPolicy>
-        <layout class="org.apache.log4j.EnhancedPatternLayout">
-            <param name="ConversionPattern" value="%d{DATE} %5p %c{1} - %m%n%throwable{1000}"/>
-        </layout>
-        <filter class="org.apache.log4j.varia.LevelRangeFilter">
-            <param name="LevelMin" value="WARN"/>
-        </filter>
     </appender>
 
     <appender name="sqllog" class="org.apache.log4j.rolling.RollingFileAppender">
@@ -385,6 +349,38 @@
         </layout>
     </appender>
 
+    <appender name="explainlog" class="org.apache.log4j.rolling.RollingFileAppender">
+        <param name="encoding" value="UTF-8" />
+        <rollingPolicy class="org.apache.log4j.rolling.FixedWindowRollingPolicy">
+            <param name="minIndex" value="1"/>
+            <param name="maxIndex" value="5"/>
+            <param name="activeFileName" value="logs/explain.log"/>
+            <param name="fileNamePattern" value="logs/explain-%i.log.zip"/>
+        </rollingPolicy>
+        <triggeringPolicy class="org.apache.log4j.rolling.SizeBasedTriggeringPolicy">
+            <param name="maxFileSize" value="10485760"/> <!-- 10MB -->
+        </triggeringPolicy>
+        <layout class="org.apache.log4j.EnhancedPatternLayout">
+            <param name="ConversionPattern" value="%d{DATE} %5p %c{1} - %m%n%throwable{1000}"/>
+        </layout>
+    </appender>
+    
+    <appender name="startlog" class="org.apache.log4j.rolling.RollingFileAppender">
+        <param name="encoding" value="UTF-8" />
+        <rollingPolicy class="org.apache.log4j.rolling.FixedWindowRollingPolicy">
+            <param name="minIndex" value="1"/>
+            <param name="maxIndex" value="3"/>
+            <param name="activeFileName" value="logs/start.log"/>
+            <param name="fileNamePattern" value="logs/start-%i.log.zip"/>
+        </rollingPolicy>
+        <triggeringPolicy class="org.apache.log4j.rolling.SizeBasedTriggeringPolicy">
+            <param name="maxFileSize" value="10485760"/> <!-- 10MB -->
+        </triggeringPolicy>
+        <layout class="org.apache.log4j.EnhancedPatternLayout">
+            <param name="ConversionPattern" value="%d{DATE} %5p %c{1} - %m%n%throwable{1000}"/>
+        </layout>
+    </appender>
+
     <category name="SystemLogger">
         <priority value="ALL"/>
     </category>
@@ -494,11 +490,19 @@
         <appender-ref ref="scriptlog"/>
     </category>
 
+    <category name="ExplainLogger" additivity="false">
+        <priority value="INFO"/>
+        <appender-ref ref="explainlog"/>
+    </category>
+    
+    <category name="StartLogger">
+        <priority value="INFO"/>
+        <appender-ref ref="startlog"/>
+    </category>
+
     <root>
         <priority value="ERROR"/>
         <appender-ref ref="stdout"/>
         <appender-ref ref="stderr"/>
-        <appender-ref ref="serverlog"/>
-        <appender-ref ref="servererr"/>
     </root>
 </log4j:configuration>

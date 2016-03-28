@@ -18,7 +18,7 @@ import java.rmi.RemoteException;
 import static lsfusion.server.logics.ServerResourceBundle.getString;
 
 public class RemoteLogicsLoader extends LifecycleAdapter implements RemoteLogicsLoaderInterface, InitializingBean {
-    private static final Logger logger = ServerLoggers.systemLogger;
+    private static final Logger logger = ServerLoggers.startLogger;
 
     public static final String EXPORT_NAME = "RemoteLogicsLoader";
 

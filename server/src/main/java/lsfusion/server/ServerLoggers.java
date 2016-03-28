@@ -52,6 +52,10 @@ public class ServerLoggers {
     public static final Logger scriptLogger = Logger.getLogger("ScriptLogger");
 
     public static final Logger pausablesInvocationLogger = Logger.getLogger("PausableInvocationsLogger");
+    
+    public static final Logger explainLogger = Logger.getLogger("ExplainLogger");
+    
+    public static final Logger startLogger = Logger.getLogger("StartLogger");
 
     private static final int FORCE_FLUSH_DELAY = 60;
 

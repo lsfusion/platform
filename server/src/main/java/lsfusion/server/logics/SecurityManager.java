@@ -45,7 +45,8 @@ import static lsfusion.base.BaseUtils.nullTrim;
 import static lsfusion.server.logics.ServerResourceBundle.getString;
 
 public class SecurityManager extends LifecycleAdapter implements InitializingBean {
-    private static final Logger logger = ServerLoggers.systemLogger;
+    private static final Logger startLogger = ServerLoggers.startLogger;
+    private static final Logger systemLogger = ServerLoggers.systemLogger;
 
     public static SecurityPolicy serverSecurityPolicy = new SecurityPolicy();
 
@@ -95,7 +96,7 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
 
     @Override
     protected void onInit(LifecycleEvent event) {
-        logger.info("Initializing Security Manager.");
+        startLogger.info("Initializing Security Manager.");
         this.LM = businessLogics.LM;
         this.authenticationLM = businessLogics.authenticationLM;
         this.securityLM = businessLogics.securityLM;
@@ -156,7 +157,7 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
 
     @Override
     protected void onStarted(LifecycleEvent event) {
-        logger.info("Starting Security Manager.");
+        startLogger.info("Starting Security Manager.");
         try {
             businessLogics.initAuthentication(this);
         } catch (SQLException | SQLHandledException e) {
@@ -377,7 +378,7 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
                     throw new LoginException();
                 }
             } catch (CommunicationException e) {
-                logger.error("LDAP authentication failed", e);
+                systemLogger.error("LDAP authentication failed", e);
             }
         }
 

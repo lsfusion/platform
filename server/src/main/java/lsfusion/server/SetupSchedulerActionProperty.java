@@ -24,7 +24,7 @@ public class SetupSchedulerActionProperty extends ScriptingActionProperty {
         try {
             boolean isServer = context.getDbManager().isServer();
             if (isServer) {
-                ServerLoggers.systemLogger.info("Starting Scheduler");
+                ServerLoggers.startLogger.info("Starting Scheduler");
                 Scheduler scheduler = context.getLogicsInstance().getCustomObject(Scheduler.class);
                 scheduler.setupScheduledTasks(context.getSession());
             } else {

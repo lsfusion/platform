@@ -1,11 +1,8 @@
 package lsfusion.server.logics;
 
 import com.google.common.base.Throwables;
-import lsfusion.base.MultiCauseException;
-import org.apache.log4j.Logger;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.util.Assert;
 import lsfusion.base.GlobalObject;
+import lsfusion.base.MultiCauseException;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
 import lsfusion.server.ServerLoggers;
@@ -13,12 +10,15 @@ import lsfusion.server.Settings;
 import lsfusion.server.context.LogicsInstanceContext;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.lifecycle.LifecycleManager;
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.util.Assert;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public class LogicsInstance implements InitializingBean {
-    private static final Logger logger = ServerLoggers.systemLogger;
+    private static final Logger logger = ServerLoggers.startLogger;
 
     private final LogicsInstanceContext context;
 

@@ -3,7 +3,6 @@ package lsfusion.server.logics;
 import com.google.common.base.Throwables;
 import lsfusion.interop.remote.RMIUtils;
 import lsfusion.server.ServerLoggers;
-import lsfusion.server.SystemProperties;
 import lsfusion.server.lifecycle.LifecycleAdapter;
 import lsfusion.server.lifecycle.LifecycleEvent;
 import org.apache.log4j.Logger;
@@ -28,7 +27,7 @@ import java.rmi.server.UnicastRemoteObject;
 import static lsfusion.base.BaseUtils.isRedundantString;
 
 public class RMIManager extends LifecycleAdapter implements InitializingBean {
-    private static final Logger logger = ServerLoggers.systemLogger;
+    private static final Logger logger = ServerLoggers.startLogger;
 
     public static final String DEFAULT_EXPORT_NAME = "default";
 
