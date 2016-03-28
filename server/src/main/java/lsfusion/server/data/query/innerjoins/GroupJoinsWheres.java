@@ -343,6 +343,7 @@ public class GroupJoinsWheres extends DNFWheres<WhereJoins, GroupJoinsWheres.Val
             return this;
 
         int limit = Settings.get().getLimitWhereJoinsCount(); // пока только на count смотрим, так как complexity высчитываем в конце
+        int limitIgnoreSaveStats = Settings.get().getLimitIgnoreSaveStatsCount();
         int[] maxPriority = getMaxPriority(collapseStats);
         int[] minPriority = getMinPriority(collapseStats, saveStat);
 
@@ -386,7 +387,7 @@ public class GroupJoinsWheres extends DNFWheres<WhereJoins, GroupJoinsWheres.Val
             
             CMerged entry = priority.poll();
 
-            if(saveStat && entry.getRowMaxDiff() > 0) // в intermediate нельзя вообще сливать с разной статистикой, потому как перейдем к большей статистике, а на самом деле она может collapse'ся потом, при and not этого условия
+            if(saveStat && (entry.getRowMaxDiff() > 0 && current.size() <= limitIgnoreSaveStats)) // в intermediate нельзя вообще сливать с разной статистикой, потому как перейдем к большей статистике, а на самом деле она может collapse'ся потом, при and not этого условия
                 break;
             int[] currentPriority = entry.getPriority();
             if(compare(currentPriority, maxPriority) >= 0) // не теряем ключи никогда

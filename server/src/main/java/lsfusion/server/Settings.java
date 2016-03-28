@@ -114,6 +114,8 @@ public class Settings {
     private int limitWhereJoinsCount = 15;
     private int limitWhereJoinsDegree = 2;
 
+    private int limitIgnoreSaveStatsCount = 999999;
+
     private boolean singleInstance;
 
     private boolean busyDialog;
@@ -236,6 +238,16 @@ public class Settings {
 
     public long getMaxRecalculateTime() {
         return maxRecalculateTime;
+    }
+
+    private long maxPrereadCachesTime = 10000;// 10 seconds
+
+    public long getMaxPrereadCachesTime() {
+        return maxPrereadCachesTime;
+    }
+
+    public void setMaxPrereadCachesTime(long maxPrereadCachesTime) {
+        this.maxPrereadCachesTime = maxPrereadCachesTime;
     }
 
     public void setMaxRecalculateTime(long maxRecalculateTime) {
@@ -606,6 +618,14 @@ public class Settings {
 
     public void setLimitWhereJoinsCount(int limitWhereJoinsCount) {
         this.limitWhereJoinsCount = limitWhereJoinsCount;
+    }
+
+    public int getLimitIgnoreSaveStatsCount() {
+        return limitIgnoreSaveStatsCount;
+    }
+
+    public void setLimitIgnoreSaveStatsCount(int limitIgnoreSaveStatsCount) {
+        this.limitIgnoreSaveStatsCount = limitIgnoreSaveStatsCount;
     }
 
     public int getLimitWhereJoinsComplexity() {

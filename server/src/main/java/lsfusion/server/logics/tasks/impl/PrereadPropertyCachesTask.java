@@ -1,8 +1,12 @@
 package lsfusion.server.logics.tasks.impl;
 
+import lsfusion.server.Settings;
 import lsfusion.server.SystemProperties;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.tasks.GroupPropertiesTask;
+
+import static lsfusion.base.BaseUtils.serviceLogger;
+import static lsfusion.base.BaseUtils.systemLogger;
 
 public class PrereadPropertyCachesTask extends GroupPropertiesTask {
 
@@ -28,7 +32,16 @@ public class PrereadPropertyCachesTask extends GroupPropertiesTask {
     }
 
     protected void runTask(Property property) {
+
+        final long maxPrereadCachesTime = Settings.get().getMaxPrereadCachesTime();
+        long start = System.currentTimeMillis();
+
         property.prereadCaches();
+
+        long time = System.currentTimeMillis() - start;
+        if (time > maxPrereadCachesTime) {
+            systemLogger.info(String.format("Preread Caches: %sms, %s", time, property.toString()));
+        }
     }
 
     @Override
