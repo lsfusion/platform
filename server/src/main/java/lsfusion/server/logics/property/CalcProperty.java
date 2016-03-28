@@ -1286,7 +1286,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         }
     }
 
-    @IdentityInstanceLazy
+    @IdentityStrongLazy // STRONG пришлось поставить из-за использования в политике безопасности
     public ActionPropertyMapImplement<?, T> getDefaultEditAction(String editActionSID, CalcProperty filterProperty) {
         ImMap<T, ValueClass> interfaceClasses = getInterfaceClasses(ClassType.tryEditPolicy); // так как в определении propertyDraw также используется FULL, а не ASSERTFULL
         if(interfaceClasses.size() < interfaces.size()) // не все классы есть

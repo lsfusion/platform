@@ -8,8 +8,8 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
-import lsfusion.server.caches.IdentityInstanceLazy;
 import lsfusion.server.caches.IdentityStartLazy;
+import lsfusion.server.caches.IdentityStrongLazy;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.classes.sets.ResolveClassSet;
 import lsfusion.server.data.expr.Expr;
@@ -225,7 +225,7 @@ public class CaseUnionProperty extends IncrementUnionProperty {
     }
 
     @Override
-    @IdentityInstanceLazy
+    @IdentityStrongLazy // STRONG пришлось поставить из-за использования в политике безопасности
     public ActionPropertyMapImplement<?, Interface> getDefaultEditAction(String editActionSID, CalcProperty filterProperty) {
         // нужно создать List - if(where[classes]) {getEditAction(); return;}
         ActionPropertyMapImplement<?, Interface> result = null;

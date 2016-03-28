@@ -10,8 +10,8 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.interop.ClassViewType;
 import lsfusion.interop.Compare;
 import lsfusion.interop.form.ServerResponse;
-import lsfusion.server.caches.IdentityInstanceLazy;
 import lsfusion.server.caches.IdentityStartLazy;
+import lsfusion.server.caches.IdentityStrongLazy;
 import lsfusion.server.classes.CustomClass;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.expr.Expr;
@@ -278,7 +278,7 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
     }
 
     @Override
-    @IdentityInstanceLazy
+    @IdentityStrongLazy // STRONG пришлось поставить из-за использования в политике безопасности
     public ActionPropertyMapImplement<?, Interface> getDefaultEditAction(String editActionSID, CalcProperty filterProperty) {
         CalcProperty<T> aggProp = implement.property;
 
