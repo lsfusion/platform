@@ -1,6 +1,7 @@
 package lsfusion.server.logics.property.actions.importing.xlsx;
 
 import com.google.common.base.Throwables;
+import lsfusion.server.ServerLoggers;
 import lsfusion.server.classes.DateClass;
 import lsfusion.server.classes.DateTimeClass;
 import lsfusion.server.classes.TimeClass;
@@ -20,6 +21,7 @@ import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class ImportXLSXIterator extends ImportIterator {
@@ -59,6 +61,8 @@ public class ImportXLSXIterator extends ImportIterator {
                 }
             }
         } catch (ParseException e) {
+            //временно, до обнаружения проблемы
+            ServerLoggers.importLogger.error("IMPORT XLSX NextRow exception occurred: ", e);
             Throwables.propagate(e);
         }
         current++;
@@ -73,6 +77,9 @@ public class ImportXLSXIterator extends ImportIterator {
                 switch (xssfCell.getCellType()) {
                     case Cell.CELL_TYPE_NUMERIC:
                         if (dateFormat != null) {
+                            Date value = xssfCell.getDateCellValue();
+                            //временно, до обнаружения проблемы
+                            ServerLoggers.importLogger.info(String.format("IMPORT XLSX: reading %s, format %s", value, dateFormat));
                             result = dateFormat.format(xssfCell.getDateCellValue());
                         } else {
                             result = new DecimalFormat("#.#####").format(xssfCell.getNumericCellValue());
