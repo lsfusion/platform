@@ -77,10 +77,14 @@ public class ImportXLSXIterator extends ImportIterator {
                 switch (xssfCell.getCellType()) {
                     case Cell.CELL_TYPE_NUMERIC:
                         if (dateFormat != null) {
-                            Date value = xssfCell.getDateCellValue();
+                            Date value = getDateValue(xssfCell);
                             //временно, до обнаружения проблемы
-                            ServerLoggers.importLogger.info(String.format("IMPORT XLSX: reading %s, format %s", value, dateFormat));
-                            result = dateFormat.format(xssfCell.getDateCellValue());
+                            if(value == null) {
+                                ServerLoggers.importLogger.info(String.format("IMPORT XLSX: failed to parse date (cell %s)", xssfCell));
+                            } else {
+                                ServerLoggers.importLogger.info(String.format("IMPORT XLSX: reading %s (cell %s)", value, xssfCell));
+                                result = dateFormat.format(value);
+                            }
                         } else {
                             result = new DecimalFormat("#.#####").format(xssfCell.getNumericCellValue());
                             result = result.endsWith(".0") ? result.substring(0, result.length() - 2) : result;
@@ -103,5 +107,13 @@ public class ImportXLSXIterator extends ImportIterator {
 
     @Override
     protected void release() {
+    }
+
+    private Date getDateValue(XSSFCell xssfCell) {
+        try {
+            return xssfCell.getDateCellValue();
+        } catch (Exception ignored) {
+            return null;
+        }
     }
 }
