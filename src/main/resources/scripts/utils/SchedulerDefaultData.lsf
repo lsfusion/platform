@@ -4,7 +4,7 @@ REQUIRE Scheduler, DefaultData;
 
 NAMESPACE Scheduler;
 
-loadDefaultScheduledTasks 'Загрузить стандарные задания планировщика' () = ACTION ABSTRACT LIST () IN loadDefault;
+loadDefaultScheduledTasks 'Загрузить стандартные задания планировщика' () = ACTION ABSTRACT LIST () IN loadDefault;
 @implementLoadDefaultData(loadDefaultScheduledTasks);
 
 loadDefaultScheduledTask 'Добавить стандарное задание планировщика'(VARSTRING[100] iname, DATETIME startTime, INTEGER integer, SchedulerStartType type) = ACTION {
