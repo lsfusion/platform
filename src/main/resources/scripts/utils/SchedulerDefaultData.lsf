@@ -7,7 +7,7 @@ NAMESPACE Scheduler;
 loadDefaultScheduledTasks 'Загрузить стандартные задания планировщика' () = ACTION ABSTRACT LIST () IN loadDefault;
 @implementLoadDefaultData(loadDefaultScheduledTasks);
 
-loadDefaultScheduledTask 'Добавить стандарное задание планировщика'(VARSTRING[100] iname, DATETIME startTime, INTEGER integer, SchedulerStartType type) = ACTION {
+loadDefaultScheduledTask 'Добавить стандартное задание планировщика'(VARSTRING[100] iname, DATETIME startTime, INTEGER integer, SchedulerStartType type) = ACTION {
     FOR ADDOBJ s = ScheduledTask DO {
         name(s) <- iname;
         active(s) <- TRUE ;
@@ -17,7 +17,7 @@ loadDefaultScheduledTask 'Добавить стандарное задание �
     }
 }
 
-loadDefaultScheduledTaskDetail 'Добавить стандарное задание планировщика (действия)'(VARSTRING[100] iname, INTEGER order, VARSTRING[512] prop) = ACTION {
+loadDefaultScheduledTaskDetail 'Добавить стандартное задание планировщика (действия)'(VARSTRING[100] iname, INTEGER order, VARSTRING[512] prop) = ACTION {
     FOR ADDOBJ d = ScheduledTaskDetail DO {
         order(d) <- order;
         active(d) <- TRUE;
