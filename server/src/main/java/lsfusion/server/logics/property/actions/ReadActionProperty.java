@@ -31,12 +31,20 @@ import java.io.OutputStream;
 import java.net.URL;
 import java.sql.*;
 import java.util.*;
+import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class ReadActionProperty extends ScriptingActionProperty {
     private final LCP<?> targetProp;
     private final boolean delete;
+
+    private static final String EQ = "=";
+    private static final String GE = ">=";
+    private static final String GT = ">";
+    private static final String LE = "<=";
+    private static final String LT = "<";
+    private static final String IN = " IN ";
 
     public ReadActionProperty(ScriptingLogicsModule LM, ValueClass sourceProp, LCP<?> targetProp, ValueClass moveProp, boolean delete) {
         super(LM, moveProp == null ? new ValueClass[] {sourceProp} : new ValueClass[] {sourceProp, moveProp});
@@ -361,6 +369,7 @@ public class ReadActionProperty extends ScriptingActionProperty {
 
     private void copyMDBToFile(String path, File file) throws IOException {
         /*mdb://path:table;where [NOT] condition1 [AND|OR conditionN]*/
+        /*conditions: field=value (<,>,<=,>=) or field IN (value1,value2,value3)*/
         Pattern queryPattern = Pattern.compile("mdb:\\/\\/(.*):([^;]*)(?:;([^;]*))*");
         Matcher queryMatcher = queryPattern.matcher(path);
         if (queryMatcher.matches()) {
@@ -375,8 +384,8 @@ public class ReadActionProperty extends ScriptingActionProperty {
 
                 String wheres = queryMatcher.group(3);
                 if(wheres != null) { //spaces in value are not permitted
-                        Pattern wherePattern = Pattern.compile("(?:\\s(AND|OR)\\s)?(?:(NOT)\\s)?([^=<>]+)(=|<|>|<=|>=)([^=<>\\s]+)");
-                        Matcher whereMatcher = wherePattern.matcher(wheres);
+                    Pattern wherePattern = Pattern.compile("(?:\\s(AND|OR)\\s)?(?:(NOT)\\s)?([^=<>\\s]+)(\\sIN\\s|=|<|>|<=|>=)([^=<>\\s]+)");
+                    Matcher whereMatcher = wherePattern.matcher(wheres);
                         while(whereMatcher.find()) {
                             String condition = whereMatcher.group(1);
                             String not = whereMatcher.group(2);
@@ -402,9 +411,8 @@ public class ReadActionProperty extends ScriptingActionProperty {
                         String sign = where.get(3);
                         String value = where.get(4);
 
-
                         if (!rowEntry.containsKey(field)) {
-                            throw Throwables.propagate(new RuntimeException("Incorrect WHERE in mdb url. No such column. Note: names are sensitive"));
+                            throw Throwables.propagate(new RuntimeException("Incorrect WHERE in mdb url. No such column. Note: names are case sensitive"));
                         }
                         boolean conditionResult;
                         Object fieldValue = rowEntry.get(field);
@@ -414,7 +422,7 @@ public class ReadActionProperty extends ScriptingActionProperty {
                             conditionResult = ignoreRowIntegerCondition(not, fieldValue, sign, value);
                         } else if (fieldValue instanceof Double) {
                             conditionResult = ignoreRowDoubleCondition(not, fieldValue, sign, value);
-                        } else if (fieldValue instanceof java.util.Date) {
+                        } else if (fieldValue instanceof Date) {
                             conditionResult = ignoreRowDateCondition(not, fieldValue, sign, value);
                         } else {
                             conditionResult = ignoreRowStringCondition(not, fieldValue, sign, value);
@@ -446,128 +454,181 @@ public class ReadActionProperty extends ScriptingActionProperty {
 
     private boolean ignoreRowIntegerCondition(boolean not, Object fieldValue, String sign, String value) {
         boolean ignoreRow = false;
-        Integer intValue;
+        if (sign.equals(IN)) {
+            List<Integer> intValues = new ArrayList<>();
+            for (String v : splitIn(value)) {
+                intValues.add(parseInt(v));
+            }
+            ignoreRow = !intValues.contains(fieldValue);
+        } else {
+            Integer intValue = parseInt(value);
+            switch (sign) {
+                case EQ:
+                    if (!fieldValue.equals(intValue))
+                        ignoreRow = true;
+                    break;
+                case GE:
+                    if (((Integer) fieldValue).compareTo(intValue) < 0)
+                        ignoreRow = true;
+                    break;
+                case GT:
+                    if (((Integer) fieldValue).compareTo(intValue) <= 0)
+                        ignoreRow = true;
+                    break;
+                case LE:
+                    if (((Integer) fieldValue).compareTo(intValue) > 0)
+                        ignoreRow = true;
+                    break;
+                case LT:
+                    if (((Integer) fieldValue).compareTo(intValue) >= 0)
+                        ignoreRow = true;
+                    break;
+            }
+        }
+        return not != ignoreRow;
+    }
+
+    private Integer parseInt(String value) {
         try {
-            intValue = Integer.parseInt(value);
+            return Integer.parseInt(value);
         } catch (Exception e) {
             throw Throwables.propagate(new RuntimeException("Incorrect WHERE in mdb url. Invalid value"));
         }
-        switch (sign) {
-            case "=":
-                if (!fieldValue.equals(intValue))
-                    ignoreRow = true;
-                break;
-            case ">=":
-                if (((Integer) fieldValue).compareTo(intValue) < 0)
-                    ignoreRow = true;
-                break;
-            case ">":
-                if (((Integer) fieldValue).compareTo(intValue) <= 0)
-                    ignoreRow = true;
-                break;
-            case "<=":
-                if (((Integer) fieldValue).compareTo(intValue) > 0)
-                    ignoreRow = true;
-                break;
-            case "<":
-                if (((Integer) fieldValue).compareTo(intValue) >= 0)
-                    ignoreRow = true;
-                break;
-        }
-        return not != ignoreRow;
     }
 
     private boolean ignoreRowDoubleCondition(boolean not, Object fieldValue, String sign, String value) {
         boolean ignoreRow = false;
-        Double doubleValue;
+        if (sign.equals(IN)) {
+            List<Double> doubleValues = new ArrayList<>();
+            for (String v : splitIn(value)) {
+                doubleValues.add(parseDouble(v));
+            }
+            ignoreRow = !doubleValues.contains(fieldValue);
+        } else {
+
+            Double doubleValue = parseDouble(value);
+            switch (sign) {
+                case EQ:
+                    if (!fieldValue.equals(doubleValue))
+                        ignoreRow = true;
+                    break;
+                case GE:
+                    if (((Double) fieldValue).compareTo(doubleValue) < 0)
+                        ignoreRow = true;
+                    break;
+                case GT:
+                    if (((Double) fieldValue).compareTo(doubleValue) <= 0)
+                        ignoreRow = true;
+                    break;
+                case LE:
+                    if (((Double) fieldValue).compareTo(doubleValue) > 0)
+                        ignoreRow = true;
+                    break;
+                case LT:
+                    if (((Double) fieldValue).compareTo(doubleValue) >= 0)
+                        ignoreRow = true;
+                    break;
+            }
+        }
+        return not != ignoreRow;
+    }
+
+    private Double parseDouble(String value) {
         try {
-            doubleValue = Double.parseDouble(value);
+            return Double.parseDouble(value);
         } catch (Exception e) {
             throw Throwables.propagate(new RuntimeException("Incorrect WHERE in mdb url. Invalid value"));
         }
-        switch (sign) {
-            case "=":
-                if (!fieldValue.equals(doubleValue))
-                    ignoreRow = true;
-                break;
-            case ">=":
-                if (((Double) fieldValue).compareTo(doubleValue) < 0)
-                    ignoreRow = true;
-                break;
-            case ">":
-                if (((Double) fieldValue).compareTo(doubleValue) <= 0)
-                    ignoreRow = true;
-                break;
-            case "<=":
-                if (((Double) fieldValue).compareTo(doubleValue) > 0)
-                    ignoreRow = true;
-                break;
-            case "<":
-                if (((Double) fieldValue).compareTo(doubleValue) >= 0)
-                    ignoreRow = true;
-                break;
-        }
-        return not != ignoreRow;
     }
 
     private boolean ignoreRowDateCondition(boolean not, Object fieldValue, String sign, String value) {
         boolean ignoreRow = false;
-        java.util.Date dateValue;
-        try {
-            dateValue = DateUtils.parseDate(value, new String[] {"yyyy-MM-dd"});
-        } catch (Exception e) {
-            throw Throwables.propagate(new RuntimeException("Incorrect WHERE in mdb url. Invalid value"));
-        }
-        switch (sign) {
-            case "=":
-                if (((java.util.Date) fieldValue).compareTo(dateValue) != 0)
-                    ignoreRow = true;
-                break;
-            case ">=":
-                if (((java.util.Date) fieldValue).compareTo(dateValue) < 0)
-                    ignoreRow = true;
-                break;
-            case ">":
-                if (((java.util.Date) fieldValue).compareTo(dateValue) <= 0)
-                    ignoreRow = true;
-                break;
-            case "<=":
-                if (((java.util.Date) fieldValue).compareTo(dateValue) > 0)
-                    ignoreRow = true;
-                break;
-            case "<":
-                if (((java.util.Date) fieldValue).compareTo(dateValue) >= 0)
-                    ignoreRow = true;
-                break;
+        if (sign.equals(IN)) {
+            List<Date> dateValues = new ArrayList<>();
+            for (String v : splitIn(value)) {
+                dateValues.add(parseDate(v));
+            }
+            ignoreRow = !dateValues.contains(fieldValue);
+        } else {
+
+            Date dateValue = parseDate(value);
+            switch (sign) {
+                case EQ:
+                    if (((Date) fieldValue).compareTo(dateValue) != 0)
+                        ignoreRow = true;
+                    break;
+                case GE:
+                    if (((Date) fieldValue).compareTo(dateValue) < 0)
+                        ignoreRow = true;
+                    break;
+                case GT:
+                    if (((Date) fieldValue).compareTo(dateValue) <= 0)
+                        ignoreRow = true;
+                    break;
+                case LE:
+                    if (((Date) fieldValue).compareTo(dateValue) > 0)
+                        ignoreRow = true;
+                    break;
+                case LT:
+                    if (((Date) fieldValue).compareTo(dateValue) >= 0)
+                        ignoreRow = true;
+                    break;
+            }
         }
         return not != ignoreRow;
     }
 
+    private Date parseDate(String value) {
+        try {
+            return DateUtils.parseDate(value, "yyyy-MM-dd");
+        } catch (Exception e) {
+            throw Throwables.propagate(new RuntimeException("Incorrect WHERE in mdb url. Invalid value"));
+        }
+    }
+
     private boolean ignoreRowStringCondition(boolean not, Object fieldValue, String sign, String value) {
         boolean ignoreRow = false;
-        String stringFieldValue = String.valueOf(fieldValue);
-        switch (sign) {
-            case "=":
-                if (!stringFieldValue.equals(value))
-                    ignoreRow = true;
-                break;
-            case ">=":
-                if (stringFieldValue.compareTo(value) < 0)
-                    ignoreRow = true;
-                break;
-            case ">":
-                if (stringFieldValue.compareTo(value) <= 0)
-                    ignoreRow = true;
-                break;
-            case "<=":
-                if (stringFieldValue.compareTo(value) > 0)
-                    ignoreRow = true;
-                break;
-            case "<":
-                if (stringFieldValue.compareTo(value) >= 0)
-                    ignoreRow = true;
-                break;
+        if (sign.equals(IN)) {
+            List<String> stringValues = splitIn(value);
+            ignoreRow = !stringValues.contains(fieldValue);
+        } else {
+            String stringFieldValue = String.valueOf(fieldValue);
+            switch (sign) {
+                case EQ:
+                    if (!stringFieldValue.equals(value))
+                        ignoreRow = true;
+                    break;
+                case GE:
+                    if (stringFieldValue.compareTo(value) < 0)
+                        ignoreRow = true;
+                    break;
+                case GT:
+                    if (stringFieldValue.compareTo(value) <= 0)
+                        ignoreRow = true;
+                    break;
+                case LE:
+                    if (stringFieldValue.compareTo(value) > 0)
+                        ignoreRow = true;
+                    break;
+                case LT:
+                    if (stringFieldValue.compareTo(value) >= 0)
+                        ignoreRow = true;
+                    break;
+            }
         }
         return not != ignoreRow;
+    }
+
+    private List<String> splitIn(String value) {
+        List<String> values = null;
+        if (value.matches("\\(.*\\)")) {
+            try {
+                values = Arrays.asList(value.substring(1, value.length() - 1).split(","));
+            } catch (Exception ignored) {
+            }
+            if (values == null)
+                throw Throwables.propagate(new RuntimeException("Incorrect WHERE in mdb url. Invalid \"IN\" condition"));
+        }
+        return values;
     }
 }
