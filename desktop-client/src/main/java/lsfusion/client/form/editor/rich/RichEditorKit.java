@@ -1,11 +1,13 @@
 package lsfusion.client.form.editor.rich;
 
 import net.atlanticbb.tantlinger.ui.text.WysiwygHTMLEditorKit;
+import net.atlanticbb.tantlinger.ui.text.actions.TabAction;
 
 import javax.swing.*;
 import javax.swing.text.*;
 import javax.swing.text.html.HTML;
 import javax.swing.text.html.HTMLDocument;
+import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.HashSet;
@@ -15,7 +17,7 @@ public class RichEditorKit extends WysiwygHTMLEditorKit {
 
     private ViewFactory viewFactory = new RichEditorViewFactory();
 
-    private Set<JEditorPane> installed = new HashSet<JEditorPane>();
+    private Set<JEditorPane> installed = new HashSet<>();
 
     @Override
     public ViewFactory getViewFactory() {
@@ -34,11 +36,34 @@ public class RichEditorKit extends WysiwygHTMLEditorKit {
 
     @Override
     public void install(JEditorPane ed) {
+        ActionMap actionMap = ed.getActionMap();
+        
+        Action tabDelegate = actionMap.get("insert-tab");
+        actionMap.put("insert-tab", new RichTabAction(TabAction.FORWARD, tabDelegate));
+        
         super.install(ed);
         if (!installed.contains(ed)) {
-            Action enterAction = ed.getActionMap().get("insert-break");
-            ed.getActionMap().put("insert-break", new EnterKeyAction(enterAction));
+            Action enterAction = actionMap.get("insert-break");
+            actionMap.put("insert-break", new EnterKeyAction(enterAction));
             installed.add(ed);
+        }
+    }
+
+    public class RichTabAction extends TabAction {
+        public RichTabAction(int type, Action defaultTabAction) {
+            super(type, defaultTabAction);
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            JEditorPane editor = (JEditorPane) getTextComponent(e);
+            HTMLDocument document = (HTMLDocument) editor.getDocument();
+            Element elem = document.getParagraphElement(editor.getCaretPosition());
+            try {
+                document.insertAfterStart(elem, "&nbsp;&nbsp;&nbsp;&nbsp;");
+            } catch (BadLocationException | IOException e1) {
+                getDelegate().actionPerformed(e);
+            }
         }
     }
 
