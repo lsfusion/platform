@@ -10,6 +10,8 @@ import java.util.concurrent.TimeUnit;
 
 public class ClientLoggers {
     public static final Logger systemLogger = Logger.getLogger("SystemLogger");
+    
+    public static final Logger clientLogger = Logger.getLogger("ClientLogger");
 
     public static final Logger remoteLogger = Logger.getLogger("RemoteLogger");
 

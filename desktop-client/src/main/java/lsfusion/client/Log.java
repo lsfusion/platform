@@ -2,6 +2,7 @@ package lsfusion.client;
 
 import lsfusion.base.ExceptionUtils;
 import lsfusion.client.rmi.ConnectionLostManager;
+import org.apache.log4j.Logger;
 
 import javax.swing.*;
 import javax.swing.border.LineBorder;
@@ -19,14 +20,16 @@ import java.util.List;
 import static lsfusion.client.ClientResourceBundle.getString;
 
 public final class Log {
+    static Logger logger = ClientLoggers.clientLogger;
+    
     private static String text = "";
 
-    private static WeakReference<LogPanel> logPanelRef = new WeakReference<LogPanel>(null);
+    private static WeakReference<LogPanel> logPanelRef = new WeakReference<>(null);
 
     public static JPanel recreateLogPanel() {
         LogPanel logPanel = new LogPanel();
 
-        logPanelRef = new WeakReference<LogPanel>(logPanel);
+        logPanelRef = new WeakReference<>(logPanel);
         text = "";
 
         return logPanel;
@@ -87,6 +90,7 @@ public final class Log {
 
     public static void message(String message) {
         printmsg(message);
+        logger.info(message);
         provideSuccessFeedback(message);
     }
 
@@ -122,6 +126,7 @@ public final class Log {
         SwingUtils.assertDispatchThread();
 
         printmsg(message);
+        logger.error(message);
 
         provideErrorFeedback();
 
