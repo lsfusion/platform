@@ -490,7 +490,7 @@
         <appender-ref ref="scriptlog"/>
     </category>
 
-    <category name="ExplainLogger" additivity="false">
+    <category name="ExplainLogger">
         <priority value="INFO"/>
         <appender-ref ref="explainlog"/>
     </category>
