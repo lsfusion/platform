@@ -136,7 +136,7 @@ public class ObjectType extends AbstractType<Integer> {
     }
 
     public ExtInt getCharLength() {
-        return new ExtInt(8);
+        return new ExtInt(10);
     }
 
     public Integer parseString(String s) throws ParseException {
