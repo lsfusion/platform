@@ -183,9 +183,9 @@ public class SQLQuery extends SQLCommand<ResultHandler<String, String>> {
 
         String name = "";
         for(int i=0,size=keyReaders.size();i<size;i++)
-            name += StringUtils.rightPad(keyReaders.getKey(i), keyReaders.getValue(i).getCharLength().getAprValue() + 1);
+            name += StringUtils.rightPad(keyReaders.getKey(i), keyReaders.getValue(i).getCharLength().getAprValue()) + " ";
         for(int i=0,size=propertyReaders.size();i<size;i++)
-            name += StringUtils.rightPad(propertyReaders.getKey(i), propertyReaders.getValue(i).getCharLength().getAprValue() + 1);
+            name += StringUtils.rightPad(propertyReaders.getKey(i), propertyReaders.getValue(i).getCharLength().getAprValue()) + " ";
         resultString += name + '\n';
 
         for(int i=0,size=result.size();i<size;i++) {
@@ -193,10 +193,10 @@ public class SQLQuery extends SQLCommand<ResultHandler<String, String>> {
 
             ImMap<String, Object> keyMap = result.getKey(i);
             for(int j=0,sizeJ=keyMap.size();j<sizeJ;j++)
-                rowName += StringUtils.rightPad(BaseUtils.nullToString(keyMap.getValue(j)), keyReaders.get(keyMap.getKey(j)).getCharLength().getAprValue() + 1);
+                rowName += StringUtils.rightPad(BaseUtils.nullToString(keyMap.getValue(j)), keyReaders.get(keyMap.getKey(j)).getCharLength().getAprValue()) + " ";
             ImMap<String, Object> rowMap = result.getValue(i);
             for(int j=0,sizeJ=rowMap.size();j<sizeJ;j++)
-                rowName += StringUtils.rightPad(BaseUtils.nullToString(rowMap.getValue(j)), propertyReaders.get(rowMap.getKey(j)).getCharLength().getAprValue() + 1);
+                rowName += StringUtils.rightPad(BaseUtils.nullToString(rowMap.getValue(j)), propertyReaders.get(rowMap.getKey(j)).getCharLength().getAprValue()) + " ";
 
             resultString += rowName + '\n';
 
