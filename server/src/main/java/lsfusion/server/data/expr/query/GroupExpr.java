@@ -249,7 +249,9 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
         Where queryWhere = query.getWhere();
         if(query.type.hasAdd()) {
             statKeys = new StatKeys<Expr>(group.keys());
-            for(GroupStatWhere<Expr> join : getSplitJoins(queryWhere, query.type, getRevGroup().reverse(), true))
+            ImCol<GroupStatWhere<Expr>> splitJoins = getSplitJoins(queryWhere, query.type, getRevGroup().reverse(), true);
+            assert !splitJoins.isEmpty();
+            for(GroupStatWhere<Expr> join : splitJoins)
                 statKeys = statKeys.or(join.stats);
         } else
             statKeys = queryWhere.getStatExprs(group.keys());

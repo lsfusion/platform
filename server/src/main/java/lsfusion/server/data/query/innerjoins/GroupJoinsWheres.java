@@ -447,6 +447,7 @@ public class GroupJoinsWheres extends DNFWheres<WhereJoins, GroupJoinsWheres.Val
     
     public <K extends BaseExpr> StatKeys<K> getStatKeys(ImSet<K> keepStat, KeyStat keyStat) {
         StatKeys<K> result = new StatKeys<K>(keepStat);
+        assert !isEmpty();
         for(WhereJoins whereJoins : keyIt())
             result = result.or(whereJoins.getStatKeys(keepStat, keyStat));
         return result;    

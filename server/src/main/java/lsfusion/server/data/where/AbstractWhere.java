@@ -328,7 +328,9 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
 
     public <K extends BaseExpr> StatKeys<K> getStatKeys(ImSet<K> groups) { // assertion что ключи groups входят в это where
         StatKeys<K> result = new StatKeys<K>(groups);
-        for(GroupStatWhere<K> groupJoin : getStatJoins(groups, false, GroupStatType.ALL, true))
+        ImCol<GroupStatWhere<K>> statJoins = getStatJoins(groups, false, GroupStatType.ALL, true);
+        assert !statJoins.isEmpty();
+        for(GroupStatWhere<K> groupJoin : statJoins)
             result = result.or(groupJoin.stats);
         return result;
     }
@@ -345,7 +347,9 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
 
     public <K extends Expr> StatKeys<K> getStatExprs(ImSet<K> groups) {
         StatKeys<K> result = new StatKeys<K>(groups);
-        for(GroupStatWhere<K> groupJoin : getStatJoins(false, groups, GroupStatType.ALL, true))
+        ImCol<GroupStatWhere<K>> statJoins = getStatJoins(false, groups, GroupStatType.ALL, true);
+        assert !statJoins.isEmpty();
+        for(GroupStatWhere<K> groupJoin : statJoins)
             result = result.or(groupJoin.stats);
         return result;
     }
