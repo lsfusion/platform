@@ -6,6 +6,7 @@ import com.jacob.com.Dispatch;
 import com.jacob.com.Variant;
 import jxl.CellView;
 import jxl.Workbook;
+import jxl.WorkbookSettings;
 import jxl.biff.DisplayFormat;
 import jxl.format.BorderLineStyle;
 import jxl.format.VerticalAlignment;
@@ -696,7 +697,9 @@ public abstract class GroupingDialog extends JDialog {
 
     private File exportToExcel(boolean isPivot) throws IOException, WriteException {
         File file = File.createTempFile("tableContents", ".xls");
-        WritableWorkbook workbook = Workbook.createWorkbook(file);
+        WorkbookSettings ws = new WorkbookSettings();
+        ws.setGCDisabled(true);
+        WritableWorkbook workbook = Workbook.createWorkbook(file, ws);
         WritableSheet sheet = workbook.createSheet(getString("form.queries.grouping.sheet1"), 0);
 
         addExcelSubrows(sheet, 1, (GroupingTreeTable.SortableTreeTableNode) treeTable.getRoot(), new int[treeTable.getColumnCount()]);
