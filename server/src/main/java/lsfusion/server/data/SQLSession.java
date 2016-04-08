@@ -544,7 +544,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     }
 
     // удостоверивается что таблица есть
-    public void ensureTable(Table table) throws SQLException {
+    public void ensureTable(Table table, Logger logger) throws SQLException {
         lockRead(OperationOwner.unknown);
         ExConnection connection = getConnection();
 
@@ -563,7 +563,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
             DatabaseMetaData metaData = connection.sql.getMetaData();
             ResultSet tables = metaData.getTables(null, null, syntax.getMetaName(table.getName()), new String[]{"TABLE"});
             if (!tables.next()) {
-                createTable(table, table.keys);
+                createTable(table, table.keys, logger);
                 for (PropertyField property : table.properties)
                     addColumn(table, property);
             }
@@ -574,9 +574,9 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         }
     }
 
-    public void addExtraIndices(Table table, ImOrderSet<KeyField> keys) throws SQLException {
+    public void addExtraIndices(Table table, ImOrderSet<KeyField> keys, Logger logger) throws SQLException {
         for(int i=1;i<keys.size();i++)
-            addIndex(table, BaseUtils.<ImOrderSet<Field>>immutableCast(keys).subOrder(i, keys.size()).toOrderMap(true));
+            addIndex(table, BaseUtils.<ImOrderSet<Field>>immutableCast(keys).subOrder(i, keys.size()).toOrderMap(true), logger);
     }
 
     private String getConstraintName(String table) {
@@ -589,7 +589,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         return "PRIMARY KEY " + syntax.getClustered() + " (" + keyString + ")";
     }
 
-    public void createTable(Table table, ImOrderSet<KeyField> keys) throws SQLException {
+    public void createTable(Table table, ImOrderSet<KeyField> keys, Logger logger) throws SQLException {
         MStaticExecuteEnvironment env = StaticExecuteEnvironmentImpl.mEnv();
 
         if (keys.size() == 0)
@@ -599,7 +599,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
 
 //        System.out.println("CREATE TABLE "+Table.Name+" ("+CreateString+")");
         executeDDL("CREATE TABLE " + table.getName(syntax) + " (" + createString + ")", env.finish());
-        addExtraIndices(table, keys);
+        addExtraIndices(table, keys, logger);
     }
 
     public void renameTable(Table table, String newTableName) throws SQLException {
@@ -636,8 +636,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         return result;
     }
     
-    public void addIndex(Table table, ImOrderSet<KeyField> keyFields, ImOrderSet<Field> fields, boolean order) throws SQLException {
-        addIndex(table, getOrderFields(keyFields, order, fields));
+    public void addIndex(Table table, ImOrderSet<KeyField> keyFields, ImOrderSet<Field> fields, boolean order, Logger logger) throws SQLException {
+        addIndex(table, getOrderFields(keyFields, order, fields), logger);
     }
 
     public boolean checkIndex(Table table, ImOrderSet<KeyField> keyFields, ImOrderSet<Field> fields, boolean order) throws SQLException {
@@ -651,7 +651,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         return exists;
      }
 
-    public void addIndex(Table table, ImOrderMap<Field, Boolean> fields) throws SQLException {
+    public void addIndex(Table table, ImOrderMap<Field, Boolean> fields, Logger logger) throws SQLException {
         String columns = fields.toString(new GetKeyValue<String, Field, Boolean>() {
             public String getMapValue(Field key, Boolean value) {
                 return key.getName(syntax) + " " + syntax.getOrderDirection(false, value);

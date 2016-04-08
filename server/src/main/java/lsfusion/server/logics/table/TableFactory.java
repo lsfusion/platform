@@ -9,6 +9,7 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
+import lsfusion.server.ServerLoggers;
 import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.classes.*;
 import lsfusion.server.data.*;
@@ -19,11 +20,13 @@ import lsfusion.server.logics.mutables.NFFact;
 import lsfusion.server.logics.mutables.NFLazy;
 import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.mutables.interfaces.NFOrderSet;
+import org.apache.log4j.Logger;
 
 import java.sql.SQLException;
 import java.util.*;
 
 public class TableFactory implements FullTablesInterface {
+    private static final Logger startLogger = ServerLoggers.startLogger;
 
     private BaseClass baseClass;
     private Map<Integer, NFOrderSet<ImplementTable>> implementTablesMap = new HashMap<Integer, NFOrderSet<ImplementTable>>();
@@ -165,18 +168,18 @@ public class TableFactory implements FullTablesInterface {
         try {
             sql.startTransaction(DBManager.START_TIL, OperationOwner.unknown);
 
-            sql.ensureTable(IDTable.instance);
-            sql.ensureTable(StructTable.instance);
+            sql.ensureTable(IDTable.instance, startLogger);
+            sql.ensureTable(StructTable.instance, startLogger);
 
             ImMap<Integer, Integer> counters = IDTable.getCounters();
             for (int i = 0, size = counters.size(); i < size; i++)
                 sql.ensureRecord(IDTable.instance, MapFact.singleton(IDTable.instance.key, new DataObject(counters.getKey(i), SystemClass.instance)), MapFact.singleton(IDTable.instance.value, (ObjectValue) new DataObject(counters.getValue(i), SystemClass.instance)), TableOwner.global, OperationOwner.unknown);
 
             // создадим dumb
-            sql.ensureTable(DumbTable.instance);
+            sql.ensureTable(DumbTable.instance, startLogger);
             sql.ensureRecord(DumbTable.instance, MapFact.singleton(DumbTable.instance.key, new DataObject(1, SystemClass.instance)), MapFact.<PropertyField, ObjectValue>EMPTY(), TableOwner.global, OperationOwner.unknown);
 
-            sql.ensureTable(EmptyTable.instance);
+            sql.ensureTable(EmptyTable.instance, startLogger);
 
             sql.commitTransaction();
         } catch (Throwable e) {

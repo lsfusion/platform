@@ -96,6 +96,7 @@ import static lsfusion.server.logics.ServerResourceBundle.getString;
 
 public abstract class BusinessLogics<T extends BusinessLogics<T>> extends LifecycleAdapter implements InitializingBean {
     protected final static Logger logger = ServerLoggers.systemLogger;
+    protected final static Logger sqlLogger = ServerLoggers.sqlLogger;
     protected final static Logger startLogger = ServerLoggers.startLogger;
     protected final static Logger debuglogger = Logger.getLogger(BusinessLogics.class);
     protected final static Logger lruLogger = ServerLoggers.lruLogger;
@@ -1814,7 +1815,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             for (Map.Entry<Table, Map<List<Field>, Boolean>> mapIndex : getDbManager().getIndicesMap().entrySet())
                 for (Map.Entry<List<Field>, Boolean> index : mapIndex.getValue().entrySet()) {
                     if (!getDbManager().getThreadLocalSql().checkIndex(mapIndex.getKey(), mapIndex.getKey().keys, SetFact.fromJavaOrderSet(index.getKey()), index.getValue()))
-                        session.addIndex(mapIndex.getKey(), mapIndex.getKey().keys, SetFact.fromJavaOrderSet(index.getKey()), index.getValue());
+                        session.addIndex(mapIndex.getKey(), mapIndex.getKey().keys, SetFact.fromJavaOrderSet(index.getKey()), index.getValue(), sqlLogger);
                 }
             session.commitTransaction();
         } catch (Exception e) {

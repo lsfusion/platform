@@ -661,7 +661,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             startLogger.info("Creating tables");
             for (Table table : newDBStructure.tables.keySet()) {
                 if (oldDBStructure.getTable(table.getName()) == null)
-                    sql.createTable(table, table.keys);
+                    sql.createTable(table, table.keys, startLogger);
             }
 
             // проверяем изменение структуры ключей
@@ -839,7 +839,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             startLogger.info("Adding indices");
             for (Map.Entry<Table, Map<List<Field>, Boolean>> mapIndex : newDBStructure.tables.entrySet())
                 for (Map.Entry<List<Field>, Boolean> index : mapIndex.getValue().entrySet())
-                    sql.addIndex(mapIndex.getKey(), mapIndex.getKey().keys, SetFact.fromJavaOrderSet(index.getKey()), index.getValue());
+                    sql.addIndex(mapIndex.getKey(), mapIndex.getKey().keys, SetFact.fromJavaOrderSet(index.getKey()), index.getValue(), startLogger);
 
             startLogger.info("Filling static objects ids");
             if(!fillIDs(getChangesAfter(oldDBStructure.dbVersion, classSIDChanges), getChangesAfter(oldDBStructure.dbVersion, objectSIDChanges)))

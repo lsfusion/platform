@@ -5,11 +5,13 @@ import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
-import lsfusion.base.col.interfaces.mutable.*;
+import lsfusion.base.col.interfaces.mutable.MExclMap;
+import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
+import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
 import lsfusion.server.caches.AbstractValuesContext;
 import lsfusion.server.caches.ManualLazy;
@@ -43,6 +45,7 @@ import lsfusion.server.logics.DBManager;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.session.DataSession;
+import org.apache.log4j.Logger;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -51,6 +54,7 @@ import java.sql.SQLException;
 import static lsfusion.base.BaseUtils.hashEquals;
 
 public class SessionTable extends Table implements ValuesContext<SessionTable>, Value {// в явную хранимые ряды
+    private static final Logger sqlLogger = ServerLoggers.sqlLogger;
 
     public final int count; // вообще должен быть точным, или как минимум пессимистичным, чтобы в addObjects учитываться
 
@@ -716,7 +720,7 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
         SQLSession dbSql = ThreadLocalContext.getDbManager().createSQL();
 
         dbSql.startTransaction(DBManager.DEBUG_TIL, OperationOwner.unknown);
-        dbSql.ensureTable(this);
+        dbSql.ensureTable(this, sqlLogger);
         dbSql.insertSessionBatchRecords(getName(sql.syntax), keys, read(sql, ThreadLocalContext.getBusinessLogics().LM.baseClass, OperationOwner.debug).getMap(), OperationOwner.debug, TableOwner.debug);
         dbSql.commitTransaction();
 
