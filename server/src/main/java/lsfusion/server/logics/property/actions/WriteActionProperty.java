@@ -96,7 +96,7 @@ public class WriteActionProperty extends ScriptingActionProperty {
     }
 
     public static void storeFileToFTP(String path, File file) throws IOException {
-        ServerLoggers.systemLogger.info(String.format("Writing file to %s", path));
+        ServerLoggers.importLogger.info(String.format("Writing file to %s", path));
         /*ftp://username:password@host:port/path_to_file*/
         Pattern connectionStringPattern = Pattern.compile("ftp:\\/\\/(.*):(.*)@([^\\/:]*)(?::([^\\/]*))?(?:\\/(.*))?");
         Matcher connectionStringMatcher = connectionStringPattern.matcher(path);
@@ -120,9 +120,9 @@ public class WriteActionProperty extends ScriptingActionProperty {
                     boolean done = ftpClient.storeFile(remoteFile, inputStream);
                     inputStream.close();
                     if(done)
-                        ServerLoggers.systemLogger.info(String.format("Successful writing file to %s", path));
+                        ServerLoggers.importLogger.info(String.format("Successful writing file to %s", path));
                     else {
-                        ServerLoggers.systemLogger.error(String.format("Failed writing file to %s", path));
+                        ServerLoggers.importLogger.error(String.format("Failed writing file to %s", path));
                         throw Throwables.propagate(new RuntimeException("Some error occurred while downloading file from ftp"));
                     }
                 } else {
