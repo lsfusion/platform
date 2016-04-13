@@ -17,7 +17,7 @@ public class SystemProperties {
         if (System.getProperty("sun.rmi.dgc.server.leaseValue") == null) {
             System.setProperty("java.rmi.dgc.leaseValue", "1800000");
             System.setProperty("java.rmi.dgc.checkInterval", "900000");
-            System.setProperty("sun.rmi.dgc.server.gcInterval", "3600000");
+            System.setProperty("sun.rmi.dgc.server.gcInterval", String.valueOf(Long.MAX_VALUE)); // отключаем по сути
         }
     }
 
