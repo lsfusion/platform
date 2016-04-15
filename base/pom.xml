@@ -26,7 +26,7 @@
         <commons.exec.version>1.1</commons.exec.version>
         <google.guava.version>13.0.1</google.guava.version>
         <jdom.version>1.1</jdom.version>
-        <commons-net.version>3.3</commons-net.version>
+        <commons.net.version>3.3</commons.net.version>
         <com.jcraft.version>0.1.53</com.jcraft.version>
         <com.healthmarketscience.version>2.0.4</com.healthmarketscience.version>
         <netty.version>3.2.1.Final</netty.version>
@@ -58,6 +58,22 @@
         <jna.version>3.2.3</jna.version>
         <stax.version>1.2.0</stax.version>
         <shef.version>0.5</shef.version>
+        <axis.version>1.4</axis.version>
+        <axis.jaxrpc.version>1.4</axis.jaxrpc.version>
+        <commons.discovery.version>0.5</commons.discovery.version>
+        <wsdl4j.version>1.6.2</wsdl4j.version>
+        <mysql.connector.version>5.1.21</mysql.connector.version>
+        <sqlite.jdbc.version>3.7.2</sqlite.jdbc.version>
+        <sqljdbc4.version>4.0</sqljdbc4.version>
+        <jdbf.version>1.1</jdbf.version>
+        <junrar.version>0.7</junrar.version>
+        <jsoup.version>1.8.1</jsoup.version>
+        <netlib.version>0.0.2</netlib.version>
+        <geocoder.version>0.11</geocoder.version>
+        <fax4j.version>0.43.1</fax4j.version>
+        <jnlp.api.version>7.0</jnlp.api.version>
+        <ojdbc14.version>11.2.0.4</ojdbc14.version>
+        <janino.version>2.7.8</janino.version>
         
         <spring.version>3.0.5.RELEASE</spring.version>
         <cglib.version>2.2.2</cglib.version>
@@ -71,7 +87,7 @@
         <commons.fileupload.version>1.2.2</commons.fileupload.version>
         <cachefilter.version>2.0</cachefilter.version>
         <url.rewriter.version>4.0.3</url.rewriter.version>
-        <jaxws-rt-version>2.2.10</jaxws-rt-version>
+        <jaxws.rt.version>2.2.10</jaxws.rt.version>
 
         <!-- note: gwt jar-ки пропатчены, поэтому нельзя просто поменять эту версию на более новую, нужно сначала перенакатить патч... см. описание в jar-ках  -->
         <gwt.version>2.7.0-patched-1</gwt.version>
@@ -262,7 +278,6 @@
                     <plugin>
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>build-helper-maven-plugin</artifactId>
-                        <version>1.8</version>
                         <executions>
                             <execution>
                                 <id>attach-assembly</id>
@@ -492,6 +507,11 @@
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-release-plugin</artifactId>
+                    <version>2.4.1</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-dependency-plugin</artifactId>
                     <version>2.8</version>
                 </plugin>
@@ -538,6 +558,11 @@
                             <version>${aspectj.version}</version>
                         </dependency>
                     </dependencies>
+                </plugin>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>build-helper-maven-plugin</artifactId>
+                    <version>1.8</version>
                 </plugin>
             </plugins>
         </pluginManagement>
@@ -653,7 +678,7 @@
             <dependency>
                 <groupId>commons-net</groupId>
                 <artifactId>commons-net</artifactId>
-                <version>${commons-net.version}</version>
+                <version>${commons.net.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.jcraft</groupId>
@@ -832,6 +857,66 @@
                 <artifactId>shef</artifactId>
                 <version>${shef.version}</version>
             </dependency>
+            <dependency>
+                <groupId>mysql</groupId>
+                <artifactId>mysql-connector-java</artifactId>
+                <version>${mysql.connector.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.xerial</groupId>
+                <artifactId>sqlite-jdbc</artifactId>
+                <version>${sqlite.jdbc.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.microsoft.sqlserver.jdbc</groupId>
+                <artifactId>sqljdbc4</artifactId>
+                <version>${sqljdbc4.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jdbf</groupId>
+                <artifactId>jdbf</artifactId>
+                <version>${jdbf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.github.junrar</groupId>
+                <artifactId>junrar</artifactId>
+                <version>${junrar.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jsoup</groupId>
+                <artifactId>jsoup</artifactId>
+                <version>${jsoup.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.silvertunnel-ng</groupId>
+                <artifactId>netlib</artifactId>
+                <version>${netlib.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.google.code.geocoder-java</groupId>
+                <artifactId>geocoder-java</artifactId>
+                <version>${geocoder.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.sf.fax4j</groupId>
+                <artifactId>fax4j</artifactId>
+                <version>${fax4j.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>javax.jnlp</groupId>
+                <artifactId>jnlp-api</artifactId>
+                <version>${jnlp.api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.oracle</groupId>
+                <artifactId>ojdbc14</artifactId>
+                <version>${ojdbc14.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.codehaus.janino</groupId>
+                <artifactId>janino</artifactId>
+                <version>${janino.version}</version>
+            </dependency>
 
             <!-- Spring libraries -->
             <dependency>
@@ -948,7 +1033,27 @@
             <dependency>
                 <groupId>com.sun.xml.ws</groupId>
                 <artifactId>jaxws-rt</artifactId>
-                <version>${jaxws-rt-version}</version>
+                <version>${jaxws.rt.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.axis</groupId>
+                <artifactId>axis</artifactId>
+                <version>${axis.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.axis</groupId>
+                <artifactId>axis-jaxrpc</artifactId>
+                <version>${axis.jaxrpc.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>commons-discovery</groupId>
+                <artifactId>commons-discovery</artifactId>
+                <version>${commons.discovery.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>wsdl4j</groupId>
+                <artifactId>wsdl4j</artifactId>
+                <version>${wsdl4j.version}</version>
             </dependency>
 
             <!-- GWT-related libraries -->
@@ -1085,8 +1190,13 @@
             </dependency>
 
             <dependency>
-                <groupId>lsfusion.platform</groupId>
-                <artifactId>fsl</artifactId>
+                <groupId>lsfusion.fsl</groupId>
+                <artifactId>fsl-server</artifactId>
+                <version>${lsfusion.fsl.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>lsfusion.fsl</groupId>
+                <artifactId>fsl-logics</artifactId>
                 <version>${lsfusion.fsl.version}</version>
             </dependency>
         </dependencies>

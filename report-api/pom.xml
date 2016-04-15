@@ -17,6 +17,7 @@
             <groupId>lsfusion.platform</groupId>
             <artifactId>api</artifactId>
         </dependency>
+        
         <dependency>
             <groupId>net.sf.jasperreports</groupId>
             <artifactId>jasperreports</artifactId>

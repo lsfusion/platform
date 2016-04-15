@@ -56,6 +56,15 @@
 
     <dependencies>
         <dependency>
+            <groupId>lsfusion.platform</groupId>
+            <artifactId>api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>lsfusion.platform</groupId>
+            <artifactId>report-api</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <scope>test</scope>
@@ -74,21 +83,12 @@
             <artifactId>commons-collections</artifactId>
         </dependency>
         <dependency>
-            <groupId>lsfusion.platform</groupId>
-            <artifactId>api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>lsfusion.platform</groupId>
-            <artifactId>report-api</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
         </dependency>
         <dependency>
             <groupId>com.oracle</groupId>
             <artifactId>ojdbc14</artifactId>
-            <version>11.2.0.4</version>
         </dependency>
         <!--<dependency>-->
             <!--<groupId>net.sourceforge.jtds</groupId>-->
@@ -203,7 +203,6 @@
         <dependency>
             <groupId>org.codehaus.janino</groupId>
             <artifactId>janino</artifactId>
-            <version>2.7.8</version>
         </dependency>
     </dependencies>
 </project>

@@ -131,7 +131,6 @@
                     <plugin>
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>build-helper-maven-plugin</artifactId>
-                        <version>1.8</version>
                         <executions>
                             <execution>
                                 <id>attach-war</id>
@@ -186,6 +185,15 @@
     </build>
 
     <dependencies>
+        <dependency>
+            <groupId>lsfusion.platform</groupId>
+            <artifactId>web-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>lsfusion.platform</groupId>
+            <artifactId>desktop-client</artifactId>
+        </dependency>
+        
         <dependency>
             <groupId>jstl</groupId>
             <artifactId>jstl</artifactId>
@@ -251,15 +259,6 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-jdbc</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>lsfusion.platform</groupId>
-            <artifactId>web-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>lsfusion.platform</groupId>
-            <artifactId>desktop-client</artifactId>
         </dependency>
     </dependencies>
 </project>
