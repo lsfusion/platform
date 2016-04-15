@@ -11,6 +11,7 @@
 
     <groupId>lsfusion.fsl</groupId>
     <artifactId>fsl-server</artifactId>
+  <version>1.2.0-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>Fusion Standard Library Server</name>
 
@@ -43,6 +44,6 @@
     </dependencies>
 
     <scm>
-        <developerConnection>scm:svn:svn://server/lsfusion/fsl/trunk</developerConnection>
+        <developerConnection>scm:svn:svn://server/lsfusion/fsl/branches/fsl-RC/trunk</developerConnection>
     </scm>
 </project>
