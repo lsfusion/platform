@@ -1,7 +1,6 @@
 package lsfusion.erp.utils;
 
 import com.google.common.base.Throwables;
-import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ThreadUtils;
@@ -10,8 +9,6 @@ import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 
-import java.lang.management.ManagementFactory;
-import java.lang.management.ThreadInfo;
 import java.sql.SQLException;
 import java.util.Iterator;
 

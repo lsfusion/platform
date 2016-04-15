@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>lsfusion.platform</groupId>
+        <artifactId>base</artifactId>
+        <version>1.2.0-SNAPSHOT</version>
+        <relativePath>../../platform/base/pom.xml</relativePath>
+    </parent>
+
+    <groupId>lsfusion.fsl</groupId>
+    <artifactId>fsl-server</artifactId>
+    <packaging>jar</packaging>
+    <name>Fusion Standard Library Server</name>
+
+    <dependencies>
+        <dependency>
+            <groupId>lsfusion.platform</groupId>
+            <artifactId>server</artifactId>
+        </dependency>
+        
+        <dependency>
+            <groupId>com.google.code.geocoder-java</groupId>
+            <artifactId>geocoder-java</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>net.sf.fax4j</groupId>
+            <artifactId>fax4j</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jsoup</groupId>
+            <artifactId>jsoup</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.silvertunnel-ng</groupId>
+            <artifactId>netlib</artifactId>
+        </dependency>
+    </dependencies>
+
+    <scm>
+        <developerConnection>scm:svn:svn://server/lsfusion/fsl/trunk</developerConnection>
+    </scm>
+</project>

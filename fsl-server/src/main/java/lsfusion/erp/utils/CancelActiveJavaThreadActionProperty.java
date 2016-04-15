@@ -11,8 +11,6 @@ import lsfusion.server.logics.scripted.ScriptingActionProperty;
 import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 
-import java.lang.management.ManagementFactory;
-import java.lang.management.ThreadInfo;
 import java.sql.SQLException;
 import java.util.Iterator;
 
