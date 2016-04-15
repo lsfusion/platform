@@ -10,15 +10,11 @@ import java.io.IOException;
 import java.util.*;
 
 /**
- * Created by DAle on 20.08.2015.
- */
-
-/**
  * Решает следующую задачу:
  * Дан ориентированный взвешенный граф G, в котором если есть ребро (i, j), то не существует ребра (j, i). Вершины также имеют вес.
  * Рассмотрим неориентированный граф G'', который получается из графа G заменой ориентированных ребер на неориентированные. 
  * В графе G'' нужно найти остовное дерево, на котором достигается максимум функции f, где f = SUM(v(i)), по всем вершинам i графа G,
- * где v(i) = MAX(weight(i), СУММ(weight(j, i))), по всем j таким, что в графе G есть ребро (j, i) и соответствующее ребро в графе G'' попало в остовное дерево. 
+ * где v(i) = MAX(weight(i), SUM(weight(j, i))), по всем j таким, что в графе G есть ребро (j, i) и соответствующее ребро в графе G'' попало в остовное дерево. 
  * <p>
  * Предполагается, что графы рассматриваются сильно разреженные.
  * <p>
@@ -52,22 +48,22 @@ public class SpanningTreeWithBlackjack<T> {
         public boolean direct;
     }
     
-    private Map<T, Integer> vertexIndex = new HashMap<>();
+    private Map<T, Integer> nodeIndex = new HashMap<>();
     private List<Integer> weights = new ArrayList<>();
     private List<List<Edge>> graph = new ArrayList<>();
     private int nodesCnt;
 
     public void addNode(T node, int weight) {
-        assert !vertexIndex.containsKey(node);
-        vertexIndex.put(node, vertexIndex.size());
+        assert !nodeIndex.containsKey(node);
+        nodeIndex.put(node, nodeIndex.size());
         weights.add(weight);
         graph.add(new ArrayList<Edge>());
     }
 
     public void addEdge(T nodeFrom, T nodeTo, int weight) {
-        assert vertexIndex.containsKey(nodeFrom) && vertexIndex.containsKey(nodeTo);
-        int nodeFromIndex = vertexIndex.get(nodeFrom);
-        int nodeToIndex = vertexIndex.get(nodeTo);
+        assert nodeIndex.containsKey(nodeFrom) && nodeIndex.containsKey(nodeTo);
+        int nodeFromIndex = nodeIndex.get(nodeFrom);
+        int nodeToIndex = nodeIndex.get(nodeTo);
         addEdgeFrom(nodeFromIndex, new Edge(nodeFromIndex, nodeToIndex, weight, true));
         addEdgeFrom(nodeToIndex, new Edge(nodeToIndex, nodeFromIndex, weight, false));
     }
@@ -306,8 +302,8 @@ public class SpanningTreeWithBlackjack<T> {
     private int calculateComponent(ArrayList<Integer> component, int iterations) {
         // Строим список направленных ребер, отсортированный по невозрастанию веса 
         ArrayList<Edge> componentEdges = new ArrayList<>();
-        for (Integer vertexIndex : component) {
-            for (Edge e : graph.get(vertexIndex)) {
+        for (Integer nodeIndex : component) {
+            for (Edge e : graph.get(nodeIndex)) {
                 if (e.direct) {
                     componentEdges.add(e);
                 }
