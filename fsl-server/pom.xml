@@ -42,8 +42,4 @@
             <artifactId>netlib</artifactId>
         </dependency>
     </dependencies>
-
-    <scm>
-        <developerConnection>scm:svn:svn://server/lsfusion/fsl/trunk</developerConnection>
-    </scm>
 </project>
