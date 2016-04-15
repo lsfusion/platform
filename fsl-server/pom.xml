@@ -44,6 +44,6 @@
     </dependencies>
 
     <scm>
-        <developerConnection>scm:svn:svn://server/lsfusion/fsl/branches/fsl-RC/trunk</developerConnection>
+        <developerConnection>scm:svn:svn://server/lsfusion/fsl/trunk</developerConnection>
     </scm>
 </project>
