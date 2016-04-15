@@ -25,7 +25,7 @@
     </modules>
 
     <scm>
-        <developerConnection>scm:svn:svn://server/lsfusion/platform/branches/platform-RC</developerConnection>
+        <developerConnection>scm:svn:svn://server/lsfusion/platform/trunk</developerConnection>
     </scm>
 
     <build>
