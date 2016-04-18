@@ -30,6 +30,7 @@
                 <artifactId>maven-release-plugin</artifactId>
                 <configuration>
                     <autoVersionSubmodules>true</autoVersionSubmodules>
+                    <releaseProfiles>sources</releaseProfiles>
                 </configuration>
             </plugin>
         </plugins>
