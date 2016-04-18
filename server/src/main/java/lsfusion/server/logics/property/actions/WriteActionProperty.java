@@ -123,10 +123,10 @@ public class WriteActionProperty extends ScriptingActionProperty {
                         ServerLoggers.importLogger.info(String.format("Successful writing file to %s", path));
                     else {
                         ServerLoggers.importLogger.error(String.format("Failed writing file to %s", path));
-                        throw Throwables.propagate(new RuntimeException("Some error occurred while downloading file from ftp"));
+                        throw Throwables.propagate(new RuntimeException("Some error occurred while writing file to ftp"));
                     }
                 } else {
-                    throw Throwables.propagate(new RuntimeException("Incorrect login or password. Downloading file from ftp failed"));
+                    throw Throwables.propagate(new RuntimeException("Incorrect login or password. Writing file from ftp failed"));
                 }
             } finally {
                 try {
