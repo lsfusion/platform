@@ -7,25 +7,26 @@ import java.util.*;
  *  <p>
  *  Входные данные: исходный граф G(V, E) - набор вершин и заданных ребер между ними. 
  *  Также необходима оценочная функция - реализация интерфейса CalculateCost, результат выполнения которой
- *  зависит от двух вершин изменяемого графа G'(N, E') и набор ребер исходного графа G.
+ *  зависит от двух вершин изменяемого графа G'(N, E') и набора ребер исходного графа G.
  *  <p>
  *  Алгоритм: 
  *  По исходному графу G, строим новый граф G'(N, E'), вершинами которого являются объекты класса Node, которые
  *  представляют собой подможножество вершин исходного графа G. Изначально каждой вершине исходного графа соответствует
  *  вершина графа G'. Граф G' всегда полный. 
- *  Затем находим вес каждого ребра в полном графе G' с помощью вызова оценочной функции, если в исходном графе не было
+ *  Затем находим стоимость каждого ребра в полном графе G' с помощью вызова оценочной функции, если в исходном графе не было
  *  ребер между вершинами, то в функцию передается пустой набор ребер.
  *  Затем на каждом шаге находим минимальное ребро, и объединяем вершины этого ребра в одну вершину. При этом две вершины
- *  графа G' удаляются и добавляется новая, для которой пересчитываются все ребра с остальными вершинами графа.
+ *  графа G' удаляются и добавляется новая, для которой пересчитываются все ребра с остальными вершинами графа. Новой 
+ *  вершине устанавливается стоимость, равная стоимости минимального ребра. 
  */
 
 public class GreedyTreeBuilding<V, C extends Comparable<C>> {
-    interface Edge<V> {
+    public interface Edge<V> {
         V getFrom();
         V getTo();
     }
     
-    interface CalculateCost<V, C extends Comparable<C>> {
+    public interface CalculateCost<V, C extends Comparable<C>> {
         C calculate(Node<V, C> a, Node<V, C> b, Iterable<Edge<V>> edges); 
     }
     
@@ -341,6 +342,15 @@ public class GreedyTreeBuilding<V, C extends Comparable<C>> {
         System.out.print(")");
     }
     
+    private static class WeightedEdge<T> extends SimpleEdge<T> {
+        int w;
+        
+        public WeightedEdge(T from, T to, int weight) {
+            super(from, to);
+            w = weight;
+        }
+    }
+    
     public static void test() {
         GreedyTreeBuilding<Integer, Integer> algo = new GreedyTreeBuilding<>();
         int cnt = 5;
@@ -349,17 +359,22 @@ public class GreedyTreeBuilding<V, C extends Comparable<C>> {
         for (int i = 0; i < cnt; ++i) {
             algo.addVertex(num[i], 0);
         }
-        for (int i = 0; i < cnt-2; ++i) {
-            algo.addEdge(new SimpleEdge<>(num[i], num[i+1]));
-            algo.addEdge(new SimpleEdge<>(num[i], num[i+2]));
-        }
+        
+        algo.addEdge(new WeightedEdge<>(num[0], num[1], 5));
+        algo.addEdge(new WeightedEdge<>(num[0], num[2], 10));
+        algo.addEdge(new WeightedEdge<>(num[1], num[2], 6));
+        algo.addEdge(new WeightedEdge<>(num[1], num[3], 4));
+        algo.addEdge(new WeightedEdge<>(num[2], num[3], 2));
+        algo.addEdge(new WeightedEdge<>(num[2], num[4], 5));
+        algo.addEdge(new WeightedEdge<>(num[3], num[4], 4));
         
         Node<Integer, Integer> res = algo.compute(new CalculateCost<Integer, Integer>() {
             @Override
             public Integer calculate(Node<Integer, Integer> a, Node<Integer, Integer> b, Iterable<Edge<Integer>> edges) {
-                int ecnt = 0;
-                for (Edge<Integer> e : edges) ++ecnt;
-                return a.getCost() + b.getCost() + Math.abs(a.getCost() - b.getCost()) + ecnt;  
+                if (!edges.iterator().hasNext()) return 100;
+                int minw = 100;
+                for (Edge<Integer> e : edges) minw = /*a.getCost() + b.getCost() +*/ Math.min(minw, ((WeightedEdge<Integer>)e).w);
+                return minw;  
             }
         });
         System.out.println("!!!!!!! " + res.getCost());
