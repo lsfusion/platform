@@ -212,10 +212,6 @@ public class GreedyTreeBuilding<V, C extends Comparable<C>> {
         adjList.get(fromIndex).add(e);
     }
     
-    public void addVertex(V vertex) {
-        addVertex(vertex, null);
-    }   
-    
     public void addVertex(V vertex, C cost) {
         assert !vertexIndex.containsKey(vertex);
         vertices.add(vertex);
@@ -331,6 +327,67 @@ public class GreedyTreeBuilding<V, C extends Comparable<C>> {
         return nodes.get(nodes.size() - 1); 
     }
 
+    private int indexFromMask(int mask) {
+        return (int)Math.round(Math.log(mask) / Math.log(2.0));        
+    }
+    
+    private Node<V, C> DP(int mask, ArrayList<Node<V, C>> memo, CalculateCost<V, C> functor) {
+        if (memo.get(mask) != null) {
+            return memo.get(mask);
+        }
+        if ((mask & (mask-1)) == 0) { // если подмножество состоит из одного элемента
+            int nodeIndex = indexFromMask(mask);
+            memo.set(mask, nodes.get(nodeIndex));
+            return nodes.get(nodeIndex);
+        }
+        
+        C bestCost = null;
+        int bestSubmask = -1;
+        
+        // перебор всех подмасок (http://e-maxx.ru/algo/all_submasks) суммарно за O(3^n)
+        for (int submask = mask; submask != 0; submask = (submask - 1) & mask) {
+            if (submask != mask) {
+                int submask2 = mask ^ submask;
+                if (submask < submask2) { // для исключения одинаковых разбиений (предполагаем, что функция оценки коммутативна)
+                    Node<V, C> firstNode = DP(submask, memo, functor);
+                    Node<V, C> secondNode = DP(submask2, memo, functor);
+                    EdgeLinkedList<Edge<V>> edgeList = new EdgeLinkedList<>();
+                    for (int firstIndex = 0; firstIndex < nodes.size(); ++firstIndex) {
+                        if ((submask & (1<<firstIndex)) != 0) {
+                            for (Edge<V> edge : adjList.get(firstIndex)) {
+                                int secondIndex;
+                                if (vertexIndex.get(edge.getTo()) == firstIndex) {
+                                    secondIndex = vertexIndex.get(edge.getFrom());
+                                } else {
+                                    secondIndex = vertexIndex.get(edge.getTo());
+                                }
+                                if ((submask2 & (1<<secondIndex)) != 0) {
+                                    edgeList.addEdge(edge);
+                                }
+                            }
+                        }
+                    }
+                    C curCost = functor.calculate(firstNode, secondNode, edgeList);
+                    if (bestCost == null || bestCost.compareTo(curCost) > 0) {
+                        bestCost = curCost;
+                        bestSubmask = submask;
+                    }
+                }
+            }
+        }
+        
+        Node<V, C> resNode = new Node<>(null, bestCost, memo.get(bestSubmask), memo.get(mask ^ bestSubmask));
+        memo.set(mask, resNode);
+        return resNode;
+    }
+    
+    public Node<V, C> computeDP(CalculateCost<V, C> functor) {
+        initNodes();
+        assert nodes.size() <= 12;
+        int subsetsCount = (1 << nodes.size());
+        return DP(subsetsCount - 1, new ArrayList<>(Collections.<Node<V, C>>nCopies(subsetsCount, null)), functor);
+    }
+    
     public static void drawTree(Node node) {
         System.out.print("(");
         if (node.left == null) {
@@ -373,12 +430,27 @@ public class GreedyTreeBuilding<V, C extends Comparable<C>> {
             public Integer calculate(Node<Integer, Integer> a, Node<Integer, Integer> b, Iterable<Edge<Integer>> edges) {
                 if (!edges.iterator().hasNext()) return 100;
                 int minw = 100;
-                for (Edge<Integer> e : edges) minw = /*a.getCost() + b.getCost() +*/ Math.min(minw, ((WeightedEdge<Integer>)e).w);
+                for (Edge<Integer> e : edges) minw = a.getCost() + b.getCost() + Math.min(minw, ((WeightedEdge<Integer>)e).w);
                 return minw;  
             }
         });
+
+        Node<Integer, Integer> res2 = algo.computeDP(new CalculateCost<Integer, Integer>() {
+            @Override
+            public Integer calculate(Node<Integer, Integer> a, Node<Integer, Integer> b, Iterable<Edge<Integer>> edges) {
+                assert a != null && b != null;
+                if (!edges.iterator().hasNext()) return 100;
+                int minw = 100;
+                for (Edge<Integer> e : edges) minw = a.getCost() + b.getCost() + Math.min(minw, ((WeightedEdge<Integer>)e).w);
+                return minw;
+            }
+        });
+        
         System.out.println("!!!!!!! " + res.getCost());
         drawTree(res);
         System.out.println();
+        System.out.println("!!!!!!! " + res2.getCost());
+        drawTree(res2);
+        System.out.println(); 
     }
 }
