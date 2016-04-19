@@ -36,6 +36,8 @@
                 <configuration>
                     <autoVersionSubmodules>true</autoVersionSubmodules>
                     <releaseProfiles>sources</releaseProfiles>
+                    <username>redmine</username>
+                    <password>enimder</password>
                 </configuration>
             </plugin>
         </plugins>

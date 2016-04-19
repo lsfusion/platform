@@ -74,6 +74,7 @@
         <jnlp.api.version>7.0</jnlp.api.version>
         <ojdbc14.version>11.2.0.4</ojdbc14.version>
         <janino.version>2.7.8</janino.version>
+        <httpmime.version>4.5.2</httpmime.version>
         
         <spring.version>3.0.5.RELEASE</spring.version>
         <cglib.version>2.2.2</cglib.version>
@@ -574,6 +575,11 @@
                     <artifactId>maven-javadoc-plugin</artifactId>
                     <version>2.10.3</version>
                 </plugin>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>versions-maven-plugin</artifactId>
+                    <version>2.2</version>
+                </plugin>
             </plugins>
         </pluginManagement>
     </build>
@@ -1064,6 +1070,11 @@
                 <groupId>wsdl4j</groupId>
                 <artifactId>wsdl4j</artifactId>
                 <version>${wsdl4j.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>httpmime</artifactId>
+                <version>${httpmime.version}</version>
             </dependency>
 
             <!-- GWT-related libraries -->
