@@ -136,7 +136,7 @@ META defineDocumentInterfaceHeaderTime(objectClass)
 END
 
 META defineDocumentDetailTimePrefix (object, detailClass, prefix, caption)
-    prefix###dateTime 'Дата/время'##caption (detailClass d) = prefix###dateTime(object(d)) PERSISTENT;
+    prefix###dateTime 'Дата/время'##caption (detailClass d) = prefix###dateTime(object(d)) PERSISTENT MINCHARWIDTH 10 PREFCHARWIDTH 15;
     prefix###date 'Дата'##caption (detailClass d) = prefix###date(object(d));
     prefix###time 'Время'##caption (detailClass d) = prefix###time(object(d));
 END
