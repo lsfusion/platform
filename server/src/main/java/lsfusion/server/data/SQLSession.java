@@ -902,6 +902,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
                 if(firstException.result != null) {
                     runSuppressed(new SQLRunnable() {
                         public void run() throws SQLException {
+                            lastReturnedStamp.remove(table);
                             privateConnection.temporary.removeTable(table);
                         }}, firstException);
                     runSuppressed(new SQLRunnable() {
@@ -2507,6 +2508,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         runCleanOperation(new SQLRunnable() {
             public void run() throws SQLException, SQLHandledException {
                 if(!sessionTablesMap.containsKey(table) && timeStamp == getTimeStamp(table)) { // double check, not used and the same time stamp
+                    lastReturnedStamp.remove(table);
                     privateConnection.temporary.removeTable(table);
                     dropTemporaryTableFromDB(table);
                 }
