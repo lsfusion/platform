@@ -51,13 +51,15 @@ public class CacheStats {
     }
 
     public enum CacheType {
-        JOIN, DATA_CHANGES, EXPR, JOIN_EXPR, INCREMENT_CHANGE, READ_SAVE, AUTOHINT, QUERY,
+        JOIN, DATA_CHANGES, EXPR, JOIN_EXPR, INCREMENT_CHANGE, READ_SAVE, AUTOHINT, QUERY, TEMP_TABLE,
         TWIN_LAZY, USED_CHANGES, PARAM_LAZY, IDENTITY_LAZY, QUICK_LAZY, OTHER;
 
         @Override
         public String toString() {
             switch (this) {
-                case JOIN: 
+                case TEMP_TABLE:
+                    return "TT";
+                case JOIN:
                     return "J";
                 case DATA_CHANGES:
                     return "DC";

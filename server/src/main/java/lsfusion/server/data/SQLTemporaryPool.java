@@ -8,6 +8,8 @@ import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
+import lsfusion.server.caches.CacheAspect;
+import lsfusion.server.caches.CacheStats;
 import lsfusion.server.data.expr.query.Stat;
 
 import java.lang.ref.WeakReference;
@@ -49,6 +51,7 @@ public class SQLTemporaryPool {
         }
     }
 
+    // SQLSession.assertLock : temporaryTables.lock + read
     @AssertSynchronized
     public String getTable(SQLSession session, ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, Integer count, Map<String, WeakReference<TableOwner>> used, Result<Boolean> isNew, TableOwner owner, OperationOwner opOwner) throws SQLException { //, Map<String, String> usedStacks
         FieldStruct fieldStruct = new FieldStruct(keys, properties, count);
@@ -71,10 +74,12 @@ public class SQLTemporaryPool {
                 assert session.getSessionCount(matchTable, opOwner) == 0; // си. clearHints, после used !!! потому как выполняет sql, и например может выполнится tryCommon который вернет privateConnection
 //                SQLSession.addUsed(matchTable, owner, used, usedStacks);
                 isNew.set(false);
+                CacheStats.incrementHit(CacheStats.CacheType.TEMP_TABLE);
                 return matchTable;
             }
 
         // если нет, "создаем" таблицу
+        CacheStats.incrementMissed(CacheStats.CacheType.TEMP_TABLE);
         String table = getTableName(counter);
         assert !used.containsKey(table);
         used.put(table, new WeakReference<TableOwner>(owner)); // до всех sql, см. выше
@@ -91,6 +96,11 @@ public class SQLTemporaryPool {
         return "t_" + count;
     }
 
+    public Set<String> getTables() {
+        return structs.keySet();
+    }
+
+    // lockRead, нет temporaryTables.lock
     public void fillData(SQLSession session, FillTemporaryTable data, Integer count, Result<Integer> resultActual, String table, OperationOwner owner) throws SQLException, SQLHandledException {
 
         Integer actual = data.fill(table); // заполняем
@@ -99,6 +109,7 @@ public class SQLTemporaryPool {
             if (Settings.get().isAutoAnalyzeTempStats())
                 session.vacuumAnalyzeSessionTable(table, owner);
             else {
+                assert false; // ??? с синхронизацией stats
                 Object actualStatistics = getDBStatistics(actual);
                 Object currentStat = stats.get(table);
                 if (!actualStatistics.equals(currentStat)) {
@@ -113,16 +124,15 @@ public class SQLTemporaryPool {
             resultActual.set(count);
     }
 
-    public void removeTable(String table) {
-        synchronized (tables) {
-            if(!Settings.get().isAutoAnalyzeTempStats())
-                stats.remove(table);
-            FieldStruct fieldStruct = structs.remove(table);
-            Set<String> structTables = tables.get(fieldStruct);
-            structTables.remove(table);
-            if(structTables.isEmpty())
-                tables.remove(fieldStruct);
-        }
+    @AssertSynchronized
+    public void removeTable(String table) { // SQLSession.assertLock - либо temporaryTables.lock() + lockRead либо lockWrite
+        if(!Settings.get().isAutoAnalyzeTempStats())
+            stats.remove(table);
+        FieldStruct fieldStruct = structs.remove(table);
+        Set<String> structTables = tables.get(fieldStruct);
+        structTables.remove(table);
+        if(structTables.isEmpty())
+            tables.remove(fieldStruct);
     }
 
     private static class FieldStruct {

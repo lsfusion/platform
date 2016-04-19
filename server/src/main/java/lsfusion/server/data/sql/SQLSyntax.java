@@ -232,4 +232,6 @@ public interface SQLSyntax {
     boolean hasNullWhereEstimateProblem(); // проблема при A LEFT JOIN B WHERE B.f IS NULL, где в A очень много записей в B очень мало, СУБД сначала join'ит их, а потом применяет selectivity f
 
     boolean hasTransactionSavepointProblem();
+
+    String getAnalyze(String table);
 }

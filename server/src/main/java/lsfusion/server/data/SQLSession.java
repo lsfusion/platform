@@ -167,7 +167,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         }
     }
 
-    private static interface SQLRunnable {
+    private interface SQLRunnable {
         void run() throws SQLException, SQLHandledException;
     }
     private void runSuppressed(SQLRunnable run, Result<Throwable> firstException) {
@@ -342,9 +342,22 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     }
 
     private void lockRead(OperationOwner owner) {
+        lockRead(owner, false);
+    }
+
+    private boolean tryLockRead(OperationOwner owner) {
+        return lockRead(owner, true);
+    }
+
+    private boolean lockRead(OperationOwner owner, boolean tryLock) {
         checkClosed();
 
-        lock.readLock().lock();
+        if(tryLock) {
+            boolean locked = lock.readLock().tryLock();
+            if(!locked)
+                return false;
+        } else
+            lock.readLock().lock();
         try {
             setActiveThread();
             if(owner != OperationOwner.unknown)
@@ -353,6 +366,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
             unlockRead();
             throw t;
         }
+
+        return true;
     }
 
     @Override
@@ -750,8 +765,9 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         executeDML("DELETE FROM " + table.getName(syntax) + (dropWhere.length() == 0 ? "" : " WHERE " + dropWhere), owner, tableOwner);
     }
 
-    private final Map<String, WeakReference<TableOwner>> sessionTablesMap = MapFact.mAddRemoveMap();
-//    
+    private final Map<String, WeakReference<TableOwner>> sessionTablesMap = MapFact.mAddRemoveMap(); // все использования assertLock
+    private final Map<String, Long> lastReturnedStamp = MapFact.mAddRemoveMap(); // все использования assertLock
+//
 //    public static void addUsed(String table, TableOwner owner, Map<String, WeakReference<TableOwner>> sessionTablesMap, Map<String, String> sessionTablesStackGot) {
 //        fdfd
 //    }
@@ -835,13 +851,15 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     private void removeUnusedTemporaryTables(boolean force, OperationOwner opOwner) throws SQLException {
         if(isInTransaction()) // потому как truncate сможет rollback'ся
             return;
-        
+
+        assertLock();
         for (Iterator<Map.Entry<String, WeakReference<TableOwner>>> iterator = sessionTablesMap.entrySet().iterator(); iterator.hasNext();) {
             Map.Entry<String, WeakReference<TableOwner>> entry = iterator.next();
             TableOwner tableOwner = entry.getValue().get();
             if (force || tableOwner == null) {
 //                    dropTemporaryTableFromDB(entry.getKey());
 //                fifo.add("RU " + getCurrentTimeStamp() + " " + force + " " + entry.getKey() + " " + privateConnection.temporary + " " + (tableOwner == null ? TableOwner.none : tableOwner) + " " + opOwner + " " + this + " " + ExecutionStackAspect.getExStackTrace());
+                lastReturnedStamp.put(entry.getKey(), System.currentTimeMillis());
                 truncateSession(entry.getKey(), opOwner, (tableOwner == null ? TableOwner.none : tableOwner));
                 logger.info("REMOVE UNUSED TEMP TABLE : " + entry.getKey()); // потом надо будет больше инфы по owner'у добавить
                 iterator.remove();
@@ -874,6 +892,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         try {
             Result<Throwable> firstException = new Result<Throwable>();
 //            fifo.add("RETURN " + getCurrentTimeStamp() + " " + truncate + " " + table + " " + privateConnection.temporary + " " + BaseUtils.nullToString(sessionTablesMap.get(table)) +  " " + owner + " " + opOwner  + " " + this + " " + ExecutionStackAspect.getExStackTrace());
+            lastReturnedStamp.put(table, System.currentTimeMillis());
             if(truncate) {
                 runSuppressed(new SQLRunnable() {
                     public void run() throws SQLException {
@@ -885,6 +904,10 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
                         public void run() throws SQLException {
                             privateConnection.temporary.removeTable(table);
                         }}, firstException);
+                    runSuppressed(new SQLRunnable() {
+                        public void run() throws SQLException {
+                            dropTemporaryTableFromDB(table);
+                        }}, firstException);
                 }
             }
     
@@ -895,7 +918,6 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
                     assert removed.get()==owner;
                 }}, firstException);
     
-    //            dropTemporaryTableFromDB(table.name);
             runSuppressed(new SQLRunnable() {
                 public void run() throws SQLException {
                     tryCommon(opOwner);
@@ -949,7 +971,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
 
     public void vacuumAnalyzeSessionTable(String table, OperationOwner owner) throws SQLException {
 //        (isInTransaction()? "" :"VACUUM ") + по идее не надо так как TRUNCATE делается
-        executeDDL("ANALYZE " + table, StaticExecuteEnvironmentImpl.NOREADONLY, owner);
+        executeDDL(syntax.getAnalyze(table), StaticExecuteEnvironmentImpl.NOREADONLY, owner);
     }
 
     private int noReadOnly = 0;
@@ -2198,6 +2220,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         temporaryTablesLock.lock();
 
         try {
+            sqlSessionMap.remove(this);
+
             if(privateConnection !=null) {
                 try {
                     removeUnusedTemporaryTables(true, owner);
@@ -2379,4 +2403,114 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         idActiveThread = null;
     }*/
 
+    private void runCleanOperation(SQLRunnable run) throws SQLException, SQLHandledException {
+        if (isClosed())
+            return;
+
+        boolean locked = tryLockRead(OperationOwner.unknown);
+        if(!locked)
+            return;
+
+        try {
+            temporaryTablesLock.lock();
+            try {
+                if (isClosed())
+                    return;
+
+                if (privateConnection != null) {
+                    ServerLoggers.assertLog(!isInTransaction(), "SHOULD NOT BE IN TRANSACTION"); // иначе lockRead не получился бы
+                    run.run();
+                }
+            } finally {
+                temporaryTablesLock.unlock();
+            }
+        } finally {
+            unlockRead();
+        }
+    }
+
+    private long getTimeStamp(String table) {
+        Long timeStamp = lastReturnedStamp.get(table);
+        if(timeStamp == null)
+            return 0;
+        return timeStamp;
+    }
+
+    public static void cleanTemporaryTables() throws SQLException, SQLHandledException {
+
+        List<TableUsage> notUsedTables = new ArrayList<>();
+        Result<Integer> recentlyUsedTables = new Result<>(0);
+        long beforeTime = System.currentTimeMillis() - Settings.get().getTempTablesTimeThreshold() * 1000;
+
+        Map<SQLSession, Integer> sessions = new IdentityHashMap<SQLSession, Integer>(sqlSessionMap);
+
+        for(SQLSession sqlSession : sessions.keySet()) {
+            sqlSession.readNotUsedTables(notUsedTables, recentlyUsedTables, beforeTime);
+        }
+
+        int max = Settings.get().getTempTablesCountThreshold() * sessions.size();
+        int tempTablesKeep = max - recentlyUsedTables.result;
+
+        // вырезаем все таблицы кроме "последних" tempTablesKeep
+        if(tempTablesKeep < 0)
+            tempTablesKeep = 0;
+        int size = notUsedTables.size();
+        if(tempTablesKeep >= size)
+            return;
+
+        int removeFirst = size - tempTablesKeep;
+        Collections.sort(notUsedTables); // least first
+
+        ServerLoggers.exInfoLogger.info("CLEAN TEMP TABLES : not used - " + size + ", drop - " + removeFirst + ", max  - " + max + ", used / recently used - " + recentlyUsedTables.result);
+
+        for(int i=0;i<removeFirst;i++) {
+            TableUsage usage = notUsedTables.get(i);
+            usage.sql.cleanNotUsedTable(usage.table, usage.timeStamp);
+        }
+    }
+
+    private static class TableUsage implements Comparable<TableUsage> {
+        private final SQLSession sql;
+        private final String table;
+        private final long timeStamp;
+
+        public TableUsage(SQLSession sql, String table, long timeStamp) {
+            this.sql = sql;
+            this.table = table;
+            this.timeStamp = timeStamp;
+        }
+
+        @Override
+        public int compareTo(TableUsage o) {
+            return Long.compare(timeStamp, o.timeStamp);
+        }
+    }
+
+    // так как нет обращений к базе, собираем таблицы группой, drop'аем таблицы по отдельности
+
+
+    private void readNotUsedTables(final List<TableUsage> notUsedTables, final Result<Integer> recentlyUsedTables, final long beforeTime) throws SQLException, SQLHandledException {
+        runCleanOperation(new SQLRunnable() {
+            public void run() throws SQLException, SQLHandledException {
+                for(String table : privateConnection.temporary.getTables()) {
+                    long timeStamp;
+                    if (!sessionTablesMap.containsKey(table) && (timeStamp = getTimeStamp(table)) < beforeTime)
+                        notUsedTables.add(new TableUsage(SQLSession.this, table, timeStamp));
+                    else
+                        recentlyUsedTables.set(recentlyUsedTables.result + 1);
+                }
+            }
+        });
+    }
+
+    private void cleanNotUsedTable(final String table, final long timeStamp) throws SQLException, SQLHandledException {
+        runCleanOperation(new SQLRunnable() {
+            public void run() throws SQLException, SQLHandledException {
+                if(!sessionTablesMap.containsKey(table) && timeStamp == getTimeStamp(table)) { // double check, not used and the same time stamp
+                    privateConnection.temporary.removeTable(table);
+                    dropTemporaryTableFromDB(table);
+                }
+            }
+        });
+    }
 }

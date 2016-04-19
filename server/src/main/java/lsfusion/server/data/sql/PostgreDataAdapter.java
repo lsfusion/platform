@@ -8,6 +8,7 @@ import lsfusion.base.col.lru.LRUSVSMap;
 import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.interop.action.MessageClientAction;
 import lsfusion.server.ServerLoggers;
+import lsfusion.server.Settings;
 import lsfusion.server.data.Log4jWriter;
 import lsfusion.server.data.expr.formula.SQLSyntaxType;
 import lsfusion.server.data.query.MStaticExecuteEnvironment;
@@ -770,5 +771,15 @@ public class PostgreDataAdapter extends DataAdapter {
     @Override
     public boolean hasTransactionSavepointProblem() {
         return true;
+    }
+
+    @Override
+    public String getAnalyze(String table) {
+
+        String result = super.getAnalyze(table);
+        int tempStatisticsTarget = Settings.get().getTempStatisticsTarget();
+        if(tempStatisticsTarget > 0)
+            result = "SET default_statistics_target=" +tempStatisticsTarget + ";" + result + ";SET default_statistics_target=DEFAULT";
+        return result;
     }
 }

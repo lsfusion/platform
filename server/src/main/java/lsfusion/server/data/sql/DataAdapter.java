@@ -726,4 +726,8 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
         String scriptString = IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream(getPath() + script));
         executeEnsure(stringResolver.replacePlaceholders(scriptString, props));
     }
+
+    public String getAnalyze(String table) {
+        return "ANALYZE " + table;
+    }
 }

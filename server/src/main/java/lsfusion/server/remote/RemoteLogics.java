@@ -22,6 +22,7 @@ import lsfusion.server.auth.User;
 import lsfusion.server.classes.*;
 import lsfusion.server.context.ContextAwareDaemonThreadFactory;
 import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.data.SQLSession;
 import lsfusion.server.form.navigator.RemoteNavigator;
 import lsfusion.server.lifecycle.LifecycleEvent;
 import lsfusion.server.lifecycle.LifecycleListener;
@@ -158,6 +159,7 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
             initOpenFormCountUpdate();
             initUserLastActivityUpdate();
             initPingInfoUpdate();
+            initSessionClean();
         }
     }
 
@@ -203,6 +205,21 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
                 RemoteNavigator.updatePingInfo(businessLogics);
             }
         }, Settings.get().getUpdatePingInfo(), Settings.get().getUpdatePingInfo(), TimeUnit.MILLISECONDS);
+    }
+
+    private void initSessionClean() {
+        ScheduledExecutorService openFormUpdateExecutor = Executors.newSingleThreadScheduledExecutor(new ContextAwareDaemonThreadFactory(getContext(), "open-form-count-daemon"));
+        openFormUpdateExecutor.scheduleAtFixedRate(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    SQLSession.cleanTemporaryTables();
+                } catch (Throwable e) {
+                    ServerLoggers.systemLogger.error("Clean tables error : ", e);
+                    throw Throwables.propagate(e);
+                }
+            }
+        }, Settings.get().getTempTablesTimeThreshold(), Settings.get().getTempTablesTimeThreshold(), TimeUnit.MILLISECONDS);
     }
 
     public RemoteNavigatorInterface createNavigator(boolean isFullClient, NavigatorInfo navigatorInfo, boolean reuseSession) {
