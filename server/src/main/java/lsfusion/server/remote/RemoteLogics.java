@@ -219,7 +219,7 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
                     throw Throwables.propagate(e);
                 }
             }
-        }, Settings.get().getTempTablesTimeThreshold(), Settings.get().getTempTablesTimeThreshold(), TimeUnit.MILLISECONDS);
+        }, Settings.get().getTempTablesTimeThreshold() * 1000, Settings.get().getTempTablesTimeThreshold() * 1000, TimeUnit.MILLISECONDS);
     }
 
     public RemoteNavigatorInterface createNavigator(boolean isFullClient, NavigatorInfo navigatorInfo, boolean reuseSession) {
