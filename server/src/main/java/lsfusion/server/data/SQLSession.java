@@ -2513,8 +2513,10 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
             public void run() throws SQLException, SQLHandledException {
                 if(!sessionTablesMap.containsKey(table) && timeStamp == getTimeStamp(table)) { // double check, not used and the same time stamp
                     lastReturnedStamp.remove(table);
-                    privateConnection.temporary.removeTable(table);
-                    dropTemporaryTableFromDB(table);
+                    if(privateConnection.temporary.getTables().contains(table)) { // тут теоретически raceCondition'ов может быть очень много
+                        privateConnection.temporary.removeTable(table);
+                        dropTemporaryTableFromDB(table);
+                    }
                 }
             }
         });
