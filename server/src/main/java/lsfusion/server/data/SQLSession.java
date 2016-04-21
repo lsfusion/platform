@@ -2512,8 +2512,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         runCleanOperation(new SQLRunnable() {
             public void run() throws SQLException, SQLHandledException {
                 if(!sessionTablesMap.containsKey(table) && timeStamp == getTimeStamp(table)) { // double check, not used and the same time stamp
-                    lastReturnedStamp.remove(table);
                     if(privateConnection.temporary.getTables().contains(table)) { // тут теоретически raceCondition'ов может быть очень много
+                        lastReturnedStamp.remove(table);
                         privateConnection.temporary.removeTable(table);
                         dropTemporaryTableFromDB(table);
                     }
