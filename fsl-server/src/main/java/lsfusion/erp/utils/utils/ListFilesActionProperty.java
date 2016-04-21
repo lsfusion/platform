@@ -108,7 +108,7 @@ public class ListFilesActionProperty extends ScriptingActionProperty {
             String remotePath = connectionStringMatcher.group(noPort ? 4 : 5);
             FTPClient ftpClient = new FTPClient();
             try {
-                ftpClient.setConnectTimeout(3600000); //1 minute = 60 sec
+                ftpClient.setConnectTimeout(60000); //1 minute = 60 sec
                 ftpClient.setControlEncoding("UTF-8");
                 ftpClient.connect(server, port);
                 ftpClient.login(username, password);
