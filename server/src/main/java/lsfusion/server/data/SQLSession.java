@@ -2455,14 +2455,18 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         // вырезаем все таблицы кроме "последних" tempTablesKeep
         if(tempTablesKeep < 0)
             tempTablesKeep = 0;
-        int size = notUsedTables.size();
-        if(tempTablesKeep >= size)
-            return;
 
+        int size = notUsedTables.size();
         int removeFirst = size - tempTablesKeep;
-        Collections.sort(notUsedTables); // least first
+        if(removeFirst < 0)
+            removeFirst = 0;
 
         ServerLoggers.exInfoLogger.info("CLEAN TEMP TABLES : not used - " + size + ", drop - " + removeFirst + ", max  - " + max + ", used / recently used - " + recentlyUsedTables.result);
+
+        if(removeFirst == 0)
+            return;
+
+        Collections.sort(notUsedTables); // least first
 
         for(int i=0;i<removeFirst;i++) {
             TableUsage usage = notUsedTables.get(i);

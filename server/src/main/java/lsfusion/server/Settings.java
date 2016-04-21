@@ -1110,7 +1110,7 @@ public class Settings {
     }
 
     private int tempTablesTimeThreshold = 60; // время сколько будет гарантированно жить таблица (в секундах), нужно для предотвращения ротации кэшей, должно быть соизмеримо со стандартным временем использования
-    private int tempTablesCountThreshold = 20000; // очищать таблицы, когда их общее количество превысило данный порог * количество соединений
+    private int tempTablesCountThreshold = 20; // очищать таблицы, когда их общее количество превысило данный порог * количество соединений
 
     public int getTempTablesTimeThreshold() {
         return tempTablesTimeThreshold;
