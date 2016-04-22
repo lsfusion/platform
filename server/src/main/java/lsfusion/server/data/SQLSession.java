@@ -2413,7 +2413,10 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
             return;
 
         try {
-            temporaryTablesLock.lock();
+            locked = temporaryTablesLock.tryLock();
+            if(!locked)
+                return;
+
             try {
                 if (isClosed())
                     return;
