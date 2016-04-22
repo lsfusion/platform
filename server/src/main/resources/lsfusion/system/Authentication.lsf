@@ -83,6 +83,7 @@ generateLoginPassword 'Сгенерировать логин и пароль' = 
 restart 'Переподключить' = ACTION CUSTOM 'lsfusion.server.logics.authentication.RestartCustomUserActionProperty' (CustomUser) CONFIRM;
 shutdown 'Отключить' = ACTION CUSTOM 'lsfusion.server.logics.authentication.ShutdownCustomUserActionProperty' (CustomUser) CONFIRM;
 
+minHashLength 'Минимальное совпадение хэша пароля (символов)' = DATA INTEGER ();
 useLDAP 'Использовать LDAP аутентификацию' = DATA BOOLEAN ();
 serverLDAP 'Сервер' = DATA VARSTRING[100] ();
 portLDAP 'Порт' = DATA INTEGER ();
@@ -149,7 +150,7 @@ FORM customUsers 'Пользователи'
     PROPERTIES(u) forbidChangePassword, forbidEditProfile, useBusyDialogCustom, isLocked READONLY,
                   lastActivity, restart, shutdown, ADDFORM, EDITFORM FORCE PANEL, DELETE FORCE PANEL TOOLBAR
 
-    PROPERTIES() useLDAP, serverLDAP, portLDAP, baseDNLDAP, userDNSuffixLDAP
+    PROPERTIES() useLDAP, serverLDAP, portLDAP, baseDNLDAP, userDNSuffixLDAP, minHashLength
 ;
 
 FORM customUsersDialog 'Пользователи'
