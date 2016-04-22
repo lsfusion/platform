@@ -42,7 +42,6 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
     public LCP currentComputer;
     public LCP hostnameCurrentComputer;
 
-    public LCP minHashLength;
     public LCP useLDAP;
     public LCP serverLDAP;
     public LCP portLDAP;
@@ -103,7 +102,6 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
         lastActivityCustomUser = findProperty("lastActivity[CustomUser]");
         ignorePrintTypeCustomUser = findProperty("ignorePrintTypeCustom[User]");
 
-        minHashLength = findProperty("minHashLength[]");
         useLDAP = findProperty("useLDAP[]");
         serverLDAP = findProperty("serverLDAP[]");
         portLDAP =  findProperty("portLDAP[]");

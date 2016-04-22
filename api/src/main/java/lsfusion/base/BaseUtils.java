@@ -2320,31 +2320,19 @@ public class BaseUtils {
     }
 
     public static String calculateBase64Hash(String algorithm, String input, Object salt) throws RuntimeException {
-        return new String(Base64.encodeBase64(calculateHash(algorithm, input, salt)), Charset.forName("UTF-8"));
-    }
-
-    public static byte[] calculateHash(String algorithm, String input, Object salt) throws RuntimeException {
         try {
-            return MessageDigest.getInstance(algorithm).digest(mergePasswordAndSalt(input, salt).getBytes("UTF-8"));
-        } catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    //TODO: убрать после перехода всех на Java 8
-    public static String calculateBase64HashOld(String algorithm, String input, Object salt) throws RuntimeException {
-        try {
-            return new String(Base64.encodeBase64(calculateHashOld(algorithm, input, salt).getBytes("UTF-8")), Charset.forName("UTF-8"));
+            return new String(Base64.encodeBase64(calculateHash(algorithm, input, salt).getBytes("UTF-8")), Charset.forName("UTF-8"));
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e);
         }
     }
 
-    //TODO: убрать после перехода всех на Java 8
-    public static String calculateHashOld(String algorithm, String input, Object salt) throws RuntimeException {
+    public static String calculateHash(String algorithm, String input, Object salt) throws RuntimeException {
         try {
             return new String(MessageDigest.getInstance(algorithm).digest(mergePasswordAndSalt(input, salt).getBytes("UTF-8")), Charset.forName("UTF-8"));
-        } catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e);
         }
     }
