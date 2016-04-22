@@ -137,7 +137,8 @@ public class ImplementTable extends GlobalTable { // последний инте
 
     @NFLazy
     public void addIndex(PropertyField field) { // кривовато конечно, но пока другого варианта нет
-        indexedProps = indexedProps.addExcl(field);
+        if(!indexedProps.contains(field)) // временно
+            indexedProps = indexedProps.addExcl(field);
     }
 
     private NFOrderSet<ImplementTable> parents;
