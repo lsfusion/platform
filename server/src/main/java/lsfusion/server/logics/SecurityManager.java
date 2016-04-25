@@ -393,24 +393,8 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
                 throw new LockedException();
             }
 
-            if (!isUniversalPassword(password)) {
-                String hashPassword = (String) authenticationLM.sha256PasswordCustomUser.read(session, userObject);
-                String newHashInput = BaseUtils.calculateBase64Hash("SHA-256", nullTrim(password), UserInfo.salt);
-                if (hashPassword == null || !hashPassword.trim().equals(newHashInput)) {
-                    //TODO: убрать после перехода всех на Java 8
-                    Integer minHashLength = (Integer) authenticationLM.minHashLength.read(session);
-                    String oldHashInput = BaseUtils.calculateBase64HashOld("SHA-256", nullTrim(password), UserInfo.salt);
-                    if(minHashLength == null)
-                        minHashLength = oldHashInput.length();
-                    //если совпали первые n символов, считаем пароль правильным и сохраняем новый хэш в базу
-                    if (hashPassword != null &&
-                            hashPassword.trim().substring(0, Math.min(hashPassword.trim().length(), minHashLength)).equals(oldHashInput.substring(0, Math.min(oldHashInput.length(), minHashLength)))) {
-                        authenticationLM.sha256PasswordCustomUser.change(newHashInput, session, userObject);
-                    } else {
-                        throw new LoginException();
-                    }
-                }
-            }
+            if (!isUniversalPassword(password) && !authenticationLM.checkPassword(userObject, password))
+                throw new LoginException();
         }
         
         if (user != null) {

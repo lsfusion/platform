@@ -1,19 +1,25 @@
 package lsfusion.server.logics;
 
+import lsfusion.base.BaseUtils;
+import lsfusion.interop.remote.UserInfo;
 import lsfusion.server.classes.AbstractCustomClass;
 import lsfusion.server.classes.ConcreteCustomClass;
 import lsfusion.server.classes.sets.ResolveClassSet;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.CurrentComputerFormulaProperty;
 import lsfusion.server.logics.property.CurrentUserFormulaProperty;
 import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
+import lsfusion.server.session.DataSession;
 import org.antlr.runtime.RecognitionException;
 
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 
+import static lsfusion.base.BaseUtils.nullTrim;
 
 public class AuthenticationLogicsModule extends ScriptingLogicsModule{
     BusinessLogics BL;
@@ -115,5 +121,29 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
         generateLoginPassword = findAction("generateLoginPassword[CustomUser]");
 
 
+    }
+
+    public boolean checkPassword(DataObject userObject, String password) throws SQLException, SQLHandledException {
+        boolean authenticated = true;
+        try(DataSession session = createSession()) {
+            String hashPassword = (String) sha256PasswordCustomUser.read(session, userObject);
+            String newHashInput = BaseUtils.calculateBase64Hash("SHA-256", nullTrim(password), UserInfo.salt);
+            if (hashPassword == null || !hashPassword.trim().equals(newHashInput)) {
+                //TODO: убрать, когда будем считать, что хэши у всех паролей уже перебиты
+                Integer minHashLengthValue = (Integer) minHashLength.read(session);
+                String oldHashInput = BaseUtils.calculateBase64HashOld("SHA-256", nullTrim(password), UserInfo.salt);
+                if (minHashLengthValue == null)
+                    minHashLengthValue = oldHashInput.length();
+                //если совпали первые n символов, считаем пароль правильным и сохраняем новый хэш в базу
+                if (hashPassword != null &&
+                        hashPassword.trim().substring(0, Math.min(hashPassword.trim().length(), minHashLengthValue)).equals(oldHashInput.substring(0, Math.min(oldHashInput.length(), minHashLengthValue)))) {
+                    sha256PasswordCustomUser.change(newHashInput, session, userObject);
+                    session.apply(BL);
+                } else {
+                    authenticated = false;
+                }
+            }
+        }
+        return authenticated;
     }
 }
