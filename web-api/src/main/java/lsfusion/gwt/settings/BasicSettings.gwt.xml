@@ -11,9 +11,6 @@
     <!-- убираем дефолтную локаль -->
     <set-property name="locale" value="en,ru"/>
 
-
-    <!--<inherits name="com.smartgwt.tools.SmartGwtTools"/>-->
-
     <!-- note:
          Раскомментить при разработке для быстрой компиляции.
          При этом будет работать только в firefox и только с английской локалью

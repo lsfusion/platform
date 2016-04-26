@@ -1,6 +1,13 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>lsfusion.platform</groupId>
+
+    <parent>
+        <groupId>lsfusion.platform</groupId>
+        <artifactId>build</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+        <relativePath>../build/pom.xml</relativePath>
+    </parent>
+    
     <artifactId>base</artifactId>
     <packaging>pom</packaging>
     <version>1.2.0-SNAPSHOT</version>
@@ -8,13 +15,10 @@
 
     <properties>
         <lsfusion.version>1.2.0-SNAPSHOT</lsfusion.version>
-        <lsfusion.fsl.version>${lsfusion.version}</lsfusion.fsl.version>
 
-        <findbugs.version>1.0.0</findbugs.version>
         <junit.version>4.10</junit.version>
         <log4j.version>1.2.16</log4j.version>
         <log4j.extras.version>1.0</log4j.extras.version>
-        <seven.zip.version>4.65.1.04</seven.zip.version>
         <xbasej.version>1.0.1</xbasej.version>
         <jacob.version>1.15-M3</jacob.version>
         <commons.lang.version>3.4</commons.lang.version>
@@ -58,26 +62,12 @@
         <jna.version>3.2.3</jna.version>
         <stax.version>1.2.0</stax.version>
         <shef.version>0.5</shef.version>
-        <axis.version>1.4</axis.version>
-        <axis.jaxrpc.version>1.4</axis.jaxrpc.version>
-        <commons.discovery.version>0.5</commons.discovery.version>
-        <wsdl4j.version>1.6.2</wsdl4j.version>
-        <mysql.connector.version>5.1.21</mysql.connector.version>
-        <sqlite.jdbc.version>3.7.2</sqlite.jdbc.version>
-        <sqljdbc4.version>4.0</sqljdbc4.version>
-        <jdbf.version>1.1</jdbf.version>
-        <junrar.version>0.7</junrar.version>
-        <jsoup.version>1.8.1</jsoup.version>
-        <netlib.version>0.0.2</netlib.version>
-        <geocoder.version>0.11</geocoder.version>
         <fax4j.version>0.43.1</fax4j.version>
         <jnlp.api.version>7.0</jnlp.api.version>
         <ojdbc14.version>11.2.0.4</ojdbc14.version>
         <janino.version>2.7.8</janino.version>
-        <httpmime.version>4.5.2</httpmime.version>
         
         <spring.version>3.0.5.RELEASE</spring.version>
-        <cglib.version>2.2.2</cglib.version>
         <aspectj.version>1.8.5</aspectj.version>
 
         <servlet.api.version>2.5</servlet.api.version>
@@ -86,14 +76,11 @@
         <json.version>20090211</json.version>
         <jstl.version>1.2</jstl.version>
         <commons.fileupload.version>1.2.2</commons.fileupload.version>
-        <cachefilter.version>2.0</cachefilter.version>
         <url.rewriter.version>4.0.3</url.rewriter.version>
-        <jaxws.rt.version>2.2.10</jaxws.rt.version>
 
         <!-- note: gwt jar-ки пропатчены, поэтому нельзя просто поменять эту версию на более новую, нужно сначала перенакатить патч... см. описание в jar-ках  -->
         <gwt.version>2.7.0-patched-1</gwt.version>
 
-        <gwt.plugin.version>2.7.0</gwt.plugin.version>
         <smartgwt.version>3.0p</smartgwt.version>
         <gwt.log.version>3.3.0</gwt.log.version>
         <gwt.dnd.version>3.3.0</gwt.dnd.version>
@@ -105,311 +92,9 @@
         <gwt.selection.version>1.1</gwt.selection.version>
         
         <asm.version>5.0.4</asm.version>
-
-        <!-- general properties -->
-        <maven.test.skip>true</maven.test.skip>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-
-        <!-- used by compiler -->
-        <maven.compiler.source>1.7</maven.compiler.source>
-        <maven.compiler.target>${maven.compiler.source}</maven.compiler.target>
-
-        <!-- used by AspectJ-->
-        <mojo.java.target>${maven.compiler.source}</mojo.java.target>
-        <project.build.java.target>${maven.compiler.target}</project.build.java.target>
-
-        <!-- assemble properties -->
-        <assemble.finalName>base</assemble.finalName>
-        <assemble.jar>${project.build.directory}/${assemble.finalName}.jar</assemble.jar>
-        <assemble.packed>${assemble.jar}.pack.gz</assemble.packed>
-        <keystore.file>${project.basedir}/src/assemble/keystore</keystore.file>
-        <keystore.alias>luxsoft</keystore.alias>
-        <keystore.pass>f7y45cnb</keystore.pass>
-
-        <!-- Repositories properties -->
-        <lsfusion.releases.repo>http://lsfusion.ru:8080/nexus/content/repositories/releases</lsfusion.releases.repo>
-        <lsfusion.public.repo>http://lsfusion.ru:8080/nexus/content/groups/public</lsfusion.public.repo>
-        <lsfusion.snapshots.repo>http://lsfusion.ru:8080/nexus/content/repositories/snapshots</lsfusion.snapshots.repo>
     </properties>
 
-    <repositories>
-        <repository>
-            <id>lsfusion.public</id>
-            <name>lsFusion Public Repository</name>
-            <url>${lsfusion.public.repo}</url>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-        </repository>
-        <repository>
-            <id>lsfusion</id>
-            <name>lsFusion Releases Repository</name>
-            <url>${lsfusion.releases.repo}</url>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-        </repository>
-        <repository>
-            <id>lsfusion.snapshots</id>
-            <name>lsFusion Snapshot Repository</name>
-            <url>${lsfusion.snapshots.repo}</url>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-            <releases>
-                <enabled>false</enabled>
-            </releases>
-        </repository>
-    </repositories>
-
-    <distributionManagement>
-        <repository>
-            <id>lsfusion</id>
-            <url>${lsfusion.releases.repo}</url>
-        </repository>
-        <snapshotRepository>
-            <id>lsfusion.snapshots</id>
-            <url>${lsfusion.snapshots.repo}</url>
-        </snapshotRepository>
-    </distributionManagement>
-
     <profiles>
-        <profile>
-            <id>assemble</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>com.google.code.maven-svn-revision-number-plugin</groupId>
-                        <artifactId>svn-revision-number-maven-plugin</artifactId>
-                        <version>1.13</version>
-                        <dependencies>
-                            <dependency>
-                                <groupId>org.tmatesoft.svnkit</groupId>
-                                <artifactId>svnkit</artifactId>
-                                <version>1.8.5</version>
-                            </dependency>
-                        </dependencies>
-                        <executions>
-                            <execution>
-                                <phase>prepare-package</phase>
-                                <goals>
-                                    <goal>revision</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                        <configuration>
-                            <entries>
-                                <entry>
-                                    <prefix>lsfusion</prefix>
-                                    <path>${project.basedir}</path>
-                                    <depth>empty</depth>
-                                    <reportUnversioned>false</reportUnversioned>
-                                    <reportIgnored>false</reportIgnored>
-                                    <reportOutOfDate>false</reportOutOfDate>
-                                </entry>
-                            </entries>
-                        </configuration>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-shade-plugin</artifactId>
-                        <configuration>
-                            <finalName>${assemble.finalName}</finalName>
-                            <shadedArtifactAttached>false</shadedArtifactAttached>
-                            <filters>
-                                <filter>
-                                    <artifact>net.sf.jasperreports:jasperreports</artifact>
-                                    <excludes>
-                                        <exclude>jasperreports_extension.properties</exclude>
-                                    </excludes>
-                                </filter>
-                                <filter>
-                                    <artifact>net.sf.jasperreports:jasperreports-html-component</artifact>
-                                    <excludes>
-                                        <exclude>jasperreports.properties</exclude>
-                                        <exclude>jasperreports_extension.properties</exclude>
-                                    </excludes>
-                                </filter>
-                                <filter>
-                                    <artifact>*:*</artifact>
-                                    <excludes>
-                                        <exclude>META-INF/*.SF</exclude>
-                                        <exclude>META-INF/*.DSA</exclude>
-                                        <exclude>META-INF/*.RSA</exclude>
-                                    </excludes>
-                                </filter>
-                            </filters>
-                            <transformers>
-                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <manifestEntries>
-                                        <Main-Class>${assemble.mainClass}</Main-Class>
-                                        <SCM-Version>${lsfusion.revision}</SCM-Version>
-                                        <Implementation-Version>${project.version}</Implementation-Version>
-                                        <Permissions>all-permissions</Permissions>
-                                    </manifestEntries>
-                                </transformer>
-                                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
-                                    <resource>META-INF/spring.handlers</resource>
-                                </transformer>
-                                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
-                                    <resource>META-INF/spring.schemas</resource>
-                                </transformer>
-                                <transformer implementation="org.apache.maven.plugins.shade.resource.ApacheLicenseResourceTransformer" />
-                                <transformer implementation="org.apache.maven.plugins.shade.resource.ApacheNoticeResourceTransformer">
-                                    <addHeader>false</addHeader>
-                                </transformer>
-                            </transformers>
-                        </configuration>
-                        <executions>
-                            <execution>
-                                <id>make-assembly</id>
-                                <phase>package</phase>
-                                <goals>
-                                    <goal>shade</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>build-helper-maven-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>attach-assembly</id>
-                                <phase>package</phase>
-                                <goals>
-                                    <goal>attach-artifact</goal>
-                                </goals>
-                                <configuration>
-                                    <artifacts>
-                                        <artifact>
-                                            <file>${assemble.jar}</file>
-                                            <type>jar</type>
-                                            <classifier>assembly</classifier>
-                                        </artifact>
-                                    </artifacts>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-
-        <profile>
-            <id>sign</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <artifactId>maven-antrun-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>ant-sign</id>
-                                <phase>package</phase>
-                                <goals>
-                                    <goal>run</goal>
-                                </goals>
-                                <configuration>
-                                    <target>
-                                        <echo message="Repacking jar ${assemble.jar}" />
-                                        <exec executable="pack200">
-                                            <arg value="--repack" />
-                                            <arg value="--effort=1" />
-                                            <arg value="--segment-limit=-1" />
-                                            <arg value="${assemble.jar}" />
-                                        </exec>
-
-                                        <signjar jar="${assemble.jar}" keystore="${keystore.file}" alias="${keystore.alias}" storepass="${keystore.pass}" />
-                                    </target>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-
-        <profile>
-            <id>pack</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <artifactId>maven-antrun-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>ant-pack</id>
-                                <phase>package</phase>
-                                <goals>
-                                    <goal>run</goal>
-                                </goals>
-                                <configuration>
-                                    <target>
-                                        <echo message="Pack200-ing jar ${assemble.jar}" />
-                                        <exec executable="pack200">
-                                            <arg value="--effort=1" />
-                                            <arg value="--segment-limit=-1" />
-                                            <arg value="${assemble.packed}" />
-                                            <arg value="${assemble.jar}" />
-                                        </exec>
-                                    </target>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>build-helper-maven-plugin</artifactId>
-                        <version>1.8</version>
-                        <executions>
-                            <execution>
-                                <id>attach-assembly-packed</id>
-                                <phase>package</phase>
-                                <goals>
-                                    <goal>attach-artifact</goal>
-                                </goals>
-                                <configuration>
-                                    <artifacts>
-                                        <artifact>
-                                            <file>${assemble.packed}</file>
-                                            <type>pack.gz</type>
-                                            <classifier>assembly</classifier>
-                                        </artifact>
-                                    </artifacts>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-
-        <profile>
-            <id>sources</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <artifactId>maven-source-plugin</artifactId>
-                        <version>2.2.1</version>
-                        <executions>
-                            <execution>
-                                <id>attach-sources</id>
-                                <phase>verify</phase>
-                                <goals>
-                                    <goal>jar-no-fork</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-
         <profile>
             <id>exec-client</id>
             <build>
@@ -419,10 +104,11 @@
                         <configuration>
                             <exportAntProperties>true</exportAntProperties>
                             <target>
-                                <java classpathref="maven.runtime.classpath" classname="lsfusion.client.Main" fork="true" clonevm="true" failonerror="true">
-                                    <jvmarg value="-Xms512m" />
-                                    <jvmarg value="-Xmx1400m" />
-                                    <jvmarg value="-ea" />
+                                <java classpathref="maven.runtime.classpath" classname="lsfusion.client.Main"
+                                      fork="true" clonevm="true" failonerror="true">
+                                    <jvmarg value="-Xms512m"/>
+                                    <jvmarg value="-Xmx1400m"/>
+                                    <jvmarg value="-ea"/>
                                 </java>
                             </target>
                         </configuration>
@@ -440,163 +126,6 @@
         </profile>
     </profiles>
 
-    <build>
-        <resources>
-            <resource>
-                <directory>${project.basedir}/src/main/resources</directory>
-            </resource>
-            <resource>
-                <directory>${project.basedir}/src/main/java</directory>
-                <includes>
-                    <include>**/*.properties</include>
-                </includes>
-            </resource>
-        </resources>
-
-        <pluginManagement>
-            <plugins>
-                <plugin>
-                    <artifactId>maven-antrun-plugin</artifactId>
-                    <version>1.7</version>
-                    <dependencies>
-                        <dependency>
-                            <groupId>de.matthiasmann</groupId>
-                            <artifactId>p200ant</artifactId>
-                            <version>1.0</version>
-                        </dependency>
-                    </dependencies>
-                </plugin>
-                <plugin>
-                    <groupId>org.codehaus.mojo</groupId>
-                    <artifactId>gwt-maven-plugin</artifactId>
-                    <version>${gwt.plugin.version}</version>
-                    <executions>
-                        <execution>
-                            <phase>compile</phase>
-                            <goals>
-                                <goal>resources</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                    <dependencies>
-                        <dependency>
-                            <groupId>com.google.gwt</groupId>
-                            <artifactId>gwt-user</artifactId>
-                            <version>${gwt.version}</version>
-                        </dependency>
-                        <dependency>
-                            <groupId>com.google.gwt</groupId>
-                            <artifactId>gwt-codeserver</artifactId>
-                            <version>${gwt.version}</version>
-                        </dependency>
-                        <dependency>
-                            <groupId>com.google.gwt</groupId>
-                            <artifactId>gwt-dev</artifactId>
-                            <version>${gwt.version}</version>
-                        </dependency>
-                    </dependencies>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-war-plugin</artifactId>
-                    <version>2.3</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-resources-plugin</artifactId>
-                    <version>2.6</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-release-plugin</artifactId>
-                    <version>2.5.3</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-dependency-plugin</artifactId>
-                    <version>2.8</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-assembly-plugin</artifactId>
-                    <version>2.4</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-shade-plugin</artifactId>
-                    <version>2.1</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-compiler-plugin</artifactId>
-                    <version>2.5.1</version>
-                    <!--в новой версии plugina баг, ломающий инкрементную компиляцию... -->
-                    <!--<version>3.1</version>-->
-                </plugin>
-                <plugin>
-                    <groupId>org.codehaus.mojo</groupId>
-                    <artifactId>aspectj-maven-plugin</artifactId>
-                    <version>1.5</version>
-                    <configuration>
-                        <complianceLevel>${maven.compiler.source}</complianceLevel>
-                    </configuration>
-                    <executions>
-                        <execution>
-                            <goals>
-                                <goal>compile</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                    <dependencies>
-                        <dependency>
-                            <groupId>org.aspectj</groupId>
-                            <artifactId>aspectjrt</artifactId>
-                            <version>${aspectj.version}</version>
-                        </dependency>
-                        <dependency>
-                            <groupId>org.aspectj</groupId>
-                            <artifactId>aspectjtools</artifactId>
-                            <version>${aspectj.version}</version>
-                        </dependency>
-                    </dependencies>
-                </plugin>
-                <plugin>
-                    <groupId>org.codehaus.mojo</groupId>
-                    <artifactId>build-helper-maven-plugin</artifactId>
-                    <version>1.8</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-deploy-plugin</artifactId>
-                    <version>2.8.2</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-javadoc-plugin</artifactId>
-                    <version>2.10.3</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.codehaus.mojo</groupId>
-                    <artifactId>versions-maven-plugin</artifactId>
-                    <version>2.2</version>
-                </plugin>
-            </plugins>
-        </pluginManagement>
-    </build>
-
-    <pluginRepositories>
-        <pluginRepository>
-            <id>Codehaus Snapshots</id>
-            <url>http://snapshots.repository.codehaus.org/</url>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-        </pluginRepository>
-    </pluginRepositories>
-
     <dependencyManagement>
         <dependencies>
             <!--Common libraries-->
@@ -604,11 +133,6 @@
                 <groupId>org.ow2.asm</groupId>
                 <artifactId>asm</artifactId>
                 <version>${asm.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>findbugs</groupId>
-                <artifactId>annotations</artifactId>
-                <version>${findbugs.version}</version>
             </dependency>
             <dependency>
                 <groupId>junit</groupId>
@@ -625,16 +149,6 @@
                 <groupId>log4j</groupId>
                 <artifactId>apache-log4j-extras</artifactId>
                 <version>${log4j.extras.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>net.sf.sevenzipjbinding</groupId>
-                <artifactId>SevenZip</artifactId>
-                <version>${seven.zip.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>net.sf.sevenzipjbinding</groupId>
-                <artifactId>SevenZipNativeInitializationException</artifactId>
-                <version>${seven.zip.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.xBaseJ</groupId>
@@ -874,46 +388,6 @@
                 <version>${shef.version}</version>
             </dependency>
             <dependency>
-                <groupId>mysql</groupId>
-                <artifactId>mysql-connector-java</artifactId>
-                <version>${mysql.connector.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.xerial</groupId>
-                <artifactId>sqlite-jdbc</artifactId>
-                <version>${sqlite.jdbc.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.microsoft.sqlserver.jdbc</groupId>
-                <artifactId>sqljdbc4</artifactId>
-                <version>${sqljdbc4.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.jdbf</groupId>
-                <artifactId>jdbf</artifactId>
-                <version>${jdbf.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.github.junrar</groupId>
-                <artifactId>junrar</artifactId>
-                <version>${junrar.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.jsoup</groupId>
-                <artifactId>jsoup</artifactId>
-                <version>${jsoup.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.silvertunnel-ng</groupId>
-                <artifactId>netlib</artifactId>
-                <version>${netlib.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.google.code.geocoder-java</groupId>
-                <artifactId>geocoder-java</artifactId>
-                <version>${geocoder.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>net.sf.fax4j</groupId>
                 <artifactId>fax4j</artifactId>
                 <version>${fax4j.version}</version>
@@ -975,11 +449,6 @@
                 <artifactId>spring-context</artifactId>
                 <version>${spring.version}</version>
             </dependency>
-            <dependency>
-                <groupId>cglib</groupId>
-                <artifactId>cglib-nodep</artifactId>
-                <version>${cglib.version}</version>
-            </dependency>
 
             <!-- AspectJ libraries -->
             <dependency>
@@ -1037,44 +506,9 @@
                 <version>${commons.fileupload.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.samaxes.filter</groupId>
-                <artifactId>cachefilter</artifactId>
-                <version>${cachefilter.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>org.tuckey</groupId>
                 <artifactId>urlrewritefilter</artifactId>
                 <version>${url.rewriter.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.sun.xml.ws</groupId>
-                <artifactId>jaxws-rt</artifactId>
-                <version>${jaxws.rt.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.axis</groupId>
-                <artifactId>axis</artifactId>
-                <version>${axis.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.axis</groupId>
-                <artifactId>axis-jaxrpc</artifactId>
-                <version>${axis.jaxrpc.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>commons-discovery</groupId>
-                <artifactId>commons-discovery</artifactId>
-                <version>${commons.discovery.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>wsdl4j</groupId>
-                <artifactId>wsdl4j</artifactId>
-                <version>${wsdl4j.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.httpcomponents</groupId>
-                <artifactId>httpmime</artifactId>
-                <version>${httpmime.version}</version>
             </dependency>
 
             <!-- GWT-related libraries -->
@@ -1109,26 +543,6 @@
                 <groupId>net.customware.gwt.dispatch</groupId>
                 <artifactId>gwt-dispatch</artifactId>
                 <version>${gwt.dispatch.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.gwtplatform</groupId>
-                <artifactId>gwtp-dispatch-server-spring</artifactId>
-                <version>${gwt.platform.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.gwtplatform</groupId>
-                <artifactId>gwtp-mvp-client</artifactId>
-                <version>${gwt.platform.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.gwtplatform</groupId>
-                <artifactId>gwtp-clients-common</artifactId>
-                <version>${gwt.platform.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.gwtplatform</groupId>
-                <artifactId>gwtp-dispatch-client</artifactId>
-                <version>${gwt.platform.version}</version>
             </dependency>
             <dependency>
                 <groupId>net.auroris</groupId>
@@ -1208,17 +622,6 @@
                 <groupId>lsfusion.platform</groupId>
                 <artifactId>web-client</artifactId>
                 <version>${lsfusion.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>lsfusion.fsl</groupId>
-                <artifactId>fsl-server</artifactId>
-                <version>${lsfusion.fsl.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>lsfusion.fsl</groupId>
-                <artifactId>fsl-logics</artifactId>
-                <version>${lsfusion.fsl.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

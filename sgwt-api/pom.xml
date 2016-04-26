@@ -33,10 +33,6 @@
         </dependency>
 
         <dependency>
-            <groupId>com.google.gwt</groupId>
-            <artifactId>gwt-user</artifactId>
-        </dependency>
-        <dependency>
             <groupId>com.smartgwt</groupId>
             <artifactId>smartgwt</artifactId>
         </dependency>
