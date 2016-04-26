@@ -18,6 +18,38 @@
         <assemble.finalName>lsfusion-server-${project.version}</assemble.finalName>
     </properties>
 
+    <profiles>
+        <profile>
+            <id>exec-client</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <configuration>
+                            <exportAntProperties>true</exportAntProperties>
+                            <target>
+                                <java classpathref="maven.runtime.classpath" classname="lsfusion.client.Main"
+                                      fork="true" clonevm="true" failonerror="true">
+                                    <jvmarg value="-Xms512m"/>
+                                    <jvmarg value="-Xmx1400m"/>
+                                    <jvmarg value="-ea"/>
+                                </java>
+                            </target>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+
+            <dependencies>
+                <dependency>
+                    <groupId>lsfusion.platform</groupId>
+                    <artifactId>desktop-client</artifactId>
+                    <version>${lsfusion.version}</version>
+                </dependency>
+            </dependencies>
+        </profile>
+    </profiles>
+
     <dependencies>
         <dependency>
             <groupId>lsfusion.platform</groupId>
