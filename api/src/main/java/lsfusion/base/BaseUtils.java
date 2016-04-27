@@ -19,6 +19,7 @@ import java.awt.*;
 import java.io.*;
 import java.lang.reflect.Array;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -2583,5 +2584,21 @@ public class BaseUtils {
     public static String trimToNull(String str) {
         String ts = trim(str);
         return isEmpty(ts)?null:ts;
+    }
+
+    public static double denominateMultiply(double value, boolean denominate) {
+        return denominate ? (value * 10000) : value;
+    }
+
+    public static BigDecimal denominateMultiply(BigDecimal value, boolean denominate) {
+        return value == null ? null : denominate ? value.multiply(new BigDecimal(10000)) : value;
+    }
+
+    public static double denominateDivide(double value, boolean denominate) {
+        return denominate ? (value / 10000) : value;
+    }
+
+    public static BigDecimal denominateDivide(BigDecimal value, boolean denominate) {
+        return value == null ? null : denominate ? value.divide(new BigDecimal(10000), RoundingMode.HALF_UP) : value;
     }
 }
