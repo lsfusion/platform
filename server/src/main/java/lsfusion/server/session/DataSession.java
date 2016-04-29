@@ -1756,7 +1756,17 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                             noTimeout = true;
                     }
                 }
-                
+
+                if(t instanceof SQLConflictException) {
+                    Integer attempts = attemptCountMap.get(((SQLConflictException) t).getDescription(true));
+                    if(attempts != null && attempts >= Settings.get().getConflictSleepThreshold())
+                        try {
+                            Thread.sleep(attempts * Settings.get().getConflictSleepTimeCoeff() * 1000);
+                        } catch (InterruptedException e) {
+                            ThreadUtils.interruptThread(sql, Thread.currentThread()); // тут SQL
+                        }
+                }
+
                 if(noTimeout)
                     sql.pushNoTransactTimeout();
                     

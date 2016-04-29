@@ -1727,4 +1727,23 @@ public class Settings {
     public void setEnableSingleReadObjectsOptimization(boolean enableSingleReadObjectsOptimization) {
         this.enableSingleReadObjectsOptimization = enableSingleReadObjectsOptimization;
     }
+
+    private int conflictSleepThreshold = 3; // начинать засыпать после попытки включительно
+    private int conflictSleepTimeCoeff = 1; // кол-во попыток умноженное на это время (порог ожидания)
+
+    public int getConflictSleepThreshold() {
+        return conflictSleepThreshold;
+    }
+
+    public void setConflictSleepThreshold(int conflictSleepThreshold) {
+        this.conflictSleepThreshold = conflictSleepThreshold;
+    }
+
+    public int getConflictSleepTimeCoeff() {
+        return conflictSleepTimeCoeff;
+    }
+
+    public void setConflictSleepTimeCoeff(int conflictSleepTimeCoeff) {
+        this.conflictSleepTimeCoeff = conflictSleepTimeCoeff;
+    }
 }
