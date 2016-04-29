@@ -53,9 +53,9 @@ subtractDay(DATETIME dateTime, LONG days) = [= FORMULA DATETIME PG '(($1)-($2)*C
 dateTimeToDateTime = FORMULA DATETIME PG 'to_timestamp(CAST($1 as char(10)) || CAST($2 as char(12)), \'YYYY-MM-DDHH24:MI:SS.MS\')',
                                       MS 'CAST($1 AS DATETIME) + CAST($2 AS DATETIME)';
 
-subtractInteger(DATE dateFrom, DATE dateTo) = [= FORMULA INTEGER PG '(($1)-($2))', MS 'DATEDIFF(dd, $2, $1)'](dateFrom AS DATE, dateTo AS DATE);
+daysBetweenDates(DATE dateFrom, DATE dateTo) = [= FORMULA INTEGER PG '(($1)-($2))', MS 'DATEDIFF(dd, $2, $1)'](dateFrom AS DATE, dateTo AS DATE);
 
-daysInclBetweenDates (DATE date1, DATE date2) = subtractInteger(date2, date1) + 1;
+daysInclBetweenDates (DATE date1, DATE date2) = daysBetweenDates(date2, date1) + 1;
 
 sumWeekFrom (DATE date, INTEGER int) = sum(date, int * 7) IF date IS DATE AND int IS INTEGER;
 sumWeekTo (DATE date, INTEGER int) = sum(date, int * 7 + 6) IF date IS DATE AND int IS INTEGER;
