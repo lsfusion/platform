@@ -55,7 +55,7 @@ currentUserName 'Имя Тек. Польз.' () = name[Contact](currentUser());
 name 'Имя пользователя' (User user) = IF user IS SystemUser 
                         THEN 'Системный пользователь'
                         ELSE name[Contact](user);
-name (CustomUser user) = name[User](user AS CustomUser);
+name 'Имя пользователя' (CustomUser user) = name[User](user AS CustomUser);
 
 currentComputer = NATIVE Computer ();
 hostnameCurrentComputer 'Текущий компьютер' () = hostname(currentComputer());
