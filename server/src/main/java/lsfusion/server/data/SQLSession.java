@@ -359,7 +359,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         } else
             lock.readLock().lock();
         try {
-            setActiveThread();
+            if(!tryLock) // временно, потом что-то логичнее надо придумать, потому как надо ближе к непосредственно выполнению, иначе скажем очистка временных таблиц начинает быть activeThread для долгих процессов
+                setActiveThread();
             if(owner != OperationOwner.unknown)
                 owner.checkThreadSafeAccess(writeOwner);
         } catch (Throwable t) {
@@ -2418,6 +2419,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
                 return;
 
             try {
+                setActiveThread();
+
                 if (isClosed())
                     return;
 
