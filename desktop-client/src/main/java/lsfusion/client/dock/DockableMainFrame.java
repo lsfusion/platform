@@ -111,6 +111,14 @@ public class DockableMainFrame extends MainFrame {
         }
     }
 
+    public void executeNavigatorAction(String navigatorActionSID) {
+        try {
+            actionDispatcher.dispatchResponse(remoteNavigator.executeNavigatorAction(navigatorActionSID));
+        } catch (IOException e) {
+            throw new RuntimeException(getString("errors.error.executing.action"), e);
+        }
+    }
+
     private void bindUIHandlers() {
         // временно отключаем из-за непредсказуемого поведения при измении окон
         addWindowListener(new WindowAdapter() {

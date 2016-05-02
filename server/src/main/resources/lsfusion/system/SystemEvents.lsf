@@ -149,6 +149,14 @@ freeMemory 'Свободная память для JVM, МБ' (Computer computer
 javaVersion 'Версия java' (Computer computer) = javaVersion(lastConnection(computer));
 
 countDaysClearPings 'За сколько дней хранить статистику пингов и памяти' = DATA INTEGER (); 
+
+onClientStarted = ACTION ABSTRACT LIST ();
+
+NAVIGATOR {
+    administration {
+        NEW onClientStarted ACTION SystemEvents.onClientStarted[];
+    }
+}
     
 EXTEND FORM options PROPERTIES countDaysClearPings();
 DESIGN options { log { MOVE PROPERTY(countDaysClearPings());} }    
