@@ -672,18 +672,24 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
     }
 
     @Override
-    public ServerResponse executeNavigatorAction(String navigatorActionSID) throws RemoteException {
-        final NavigatorElement element = businessLogics.LM.root.getNavigatorElementBySID(navigatorActionSID);
+    public ServerResponse executeNavigatorAction(String actionSID, boolean isNavigatorAction) throws RemoteException {
+        final ActionProperty property;
+        if (isNavigatorAction) {
+            final NavigatorElement element = businessLogics.LM.root.getNavigatorElementBySID(actionSID);
 
-        if (!(element instanceof NavigatorAction)) {
-            throw new RuntimeException(ServerResourceBundle.getString("form.navigator.action.not.found"));
+            if (!(element instanceof NavigatorAction)) {
+                throw new RuntimeException(ServerResourceBundle.getString("form.navigator.action.not.found"));
+            }
+
+            if (!securityPolicy.navigator.checkPermission(element)) {
+                throw new RuntimeException(ServerResourceBundle.getString("form.navigator.not.enough.permissions"));
+            }
+
+            property = ((NavigatorAction) element).getProperty();
+        } else {
+            property = (ActionProperty) businessLogics.findProperty(actionSID).property;
         }
 
-        if (!securityPolicy.navigator.checkPermission(element)) {
-            throw new RuntimeException(ServerResourceBundle.getString("form.navigator.not.enough.permissions"));
-        }
-
-        final ActionProperty property = ((NavigatorAction) element).getProperty();
         currentInvocation = new RemotePausableInvocation(pausablesExecutor, this) {
             @Override
             protected ServerResponse callInvocation() throws Throwable {

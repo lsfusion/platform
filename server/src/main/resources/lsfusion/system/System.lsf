@@ -118,6 +118,8 @@ importedString = DATA LOCAL BOOLEAN (VARSTRING[10]);
 
 ignorePrintType 'Игнорировать опции PRINT' = ABSTRACT BOOLEAN ();
 
+prepareLibrary 'Скопировать библиотеку на клиент' = ACTION CUSTOM 'lsfusion.server.lib.PrepareLibraryActionProperty' (VARSTRING[100], VARSTRING[100]); 
+
 META defineAnyValue(name, param) 
     name##Object = DATA LOCAL Object (param);
     name##String = DATA LOCAL STRING[2000] (param);

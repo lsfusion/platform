@@ -105,7 +105,15 @@ public class DockableMainFrame extends MainFrame {
 
     private void executeNavigatorAction(ClientNavigatorAction action) {
         try {
-            actionDispatcher.dispatchResponse(remoteNavigator.executeNavigatorAction(action.getSID()));
+            actionDispatcher.dispatchResponse(remoteNavigator.executeNavigatorAction(action.getSID(), true));
+        } catch (IOException e) {
+            throw new RuntimeException(getString("errors.error.executing.action"), e);
+        }
+    }
+
+    public void executeAction(String actionSID) {
+        try {
+            actionDispatcher.dispatchResponse(remoteNavigator.executeNavigatorAction(actionSID, false));
         } catch (IOException e) {
             throw new RuntimeException(getString("errors.error.executing.action"), e);
         }

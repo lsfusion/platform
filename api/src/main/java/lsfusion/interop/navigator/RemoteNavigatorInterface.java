@@ -17,7 +17,7 @@ public interface RemoteNavigatorInterface extends PendingRemoteInterface {
     // окна лог, релевантные классы, статус и т.п.
     byte[] getCommonWindows() throws RemoteException;
 
-    ServerResponse executeNavigatorAction(String navigatorActionSID) throws RemoteException;
+    ServerResponse executeNavigatorAction(String actionSID, boolean isNavigatorAction) throws RemoteException;
 
     ServerResponse continueNavigatorAction(Object[] actionResults) throws RemoteException;
 

@@ -214,6 +214,8 @@ public class Main {
                     frame = module.initFrame(remoteNavigator);
                     logger.info("After init frame");
 
+                    ((DockableMainFrame) frame).executeAction("SystemEvents.onClientStarted[]");
+
                     remoteNavigator.setUpdateTime(pullMessagesPeriod);
 
                     frame.addWindowListener(
