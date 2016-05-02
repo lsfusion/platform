@@ -431,7 +431,7 @@ public class ImplementTable extends GlobalTable { // последний инте
     public ImMap<String, Pair<Integer, Integer>> calculateStat(ReflectionLogicsModule reflectionLM, DataSession session, ImMap<PropertyField, String> props, boolean onlyTable) throws SQLException, SQLHandledException {
         ImMap<String, Pair<Integer, Integer>> propStats = MapFact.EMPTY();
         if (!SystemProperties.doNotCalculateStats) {
-            boolean calcKeys = props == null || onlyTable;
+            boolean calcKeys = true;//props == null || onlyTable;
             ImRevMap<KeyField, KeyExpr> mapKeys = getMapKeys();
             lsfusion.server.data.query.Join<PropertyField> join = join(mapKeys);
 
