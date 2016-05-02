@@ -90,8 +90,6 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
     public LCP minUsedMemoryComputerDateTimeFromDateTimeTo;;
     public LCP maxUsedMemoryComputerDateTimeFromDateTimeTo;
 
-    public LAP onClientStarted;
-
     public SystemEventsLogicsModule(BusinessLogics BL, BaseLogicsModule baseLM) throws IOException {
         super(SystemEventsLogicsModule.class.getResourceAsStream("/lsfusion/system/SystemEvents.lsf"), "/lsfusion/system/SystemEvents.lsf", baseLM, BL);
         setBaseLogicsModule(baseLM);
@@ -174,8 +172,6 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
         maxTotalMemoryComputerDateTimeFromDateTimeTo = findProperty("maxTotalMemoryFromTo[Computer,DATETIME,DATETIME]");
         minUsedMemoryComputerDateTimeFromDateTimeTo = findProperty("minUsedMemoryFromTo[Computer,DATETIME,DATETIME]");
         maxUsedMemoryComputerDateTimeFromDateTimeTo = findProperty("maxUsedMemoryFromTo[Computer,DATETIME,DATETIME]");
-
-        onClientStarted = findAction("onClientStarted[]");
     }
 
     public void logException(BusinessLogics bl, Throwable t, DataObject user, String clientName, boolean client) throws SQLException, SQLHandledException {
