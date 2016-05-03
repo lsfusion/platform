@@ -31,8 +31,6 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
-import static lsfusion.base.BaseUtils.trimToNull;
-
 public class ProcessTemplateActionProperty extends ScriptingActionProperty {
     public final ClassPropertyInterface templateInterface;
 
@@ -72,8 +70,8 @@ public class ProcessTemplateActionProperty extends ScriptingActionProperty {
 
                     for (ImMap<Object, Object> templateEntry : templateEntryResult.values()) {
 
-                        String keyTemplateEntry = trimToNull((String) templateEntry.get("keyTemplateEntry"));
-                        String valueTemplateEntry = trimToNull((String) templateEntry.get("valueTemplateEntry"));
+                        String keyTemplateEntry = (String) templateEntry.get("keyTemplateEntry");
+                        String valueTemplateEntry = (String) templateEntry.get("valueTemplateEntry");
                         boolean isTableTemplateEntry = templateEntry.get("isTableTemplateEntry") != null;
 
                         if (keyTemplateEntry != null && valueTemplateEntry != null)
