@@ -1855,6 +1855,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         checkGPropAggregateConsistence(type, mainProps.size());
         checkGPropAggrConstraints(type, mainProps, groupProps);
         checkGPropWhereConsistence(type, whereProp);
+        checkGPropSumConstraints(type, mainProps.get(0));
 
         List<LPWithParams> whereProps = new ArrayList<>();
         if (type == GroupingType.AGGR || type == GroupingType.NAGGR) {
@@ -2225,24 +2226,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         checkMetaCodeParamCount(metaCode, params.size());
 
         String code = metaCode.getCode(params);
-        parser.runMetaCode(this, code, metaCode, metaCodeCallString(name, metaCode, params), lineNumber, enabledMeta); 
-    }
-
-    private String metaCodeCallString(String name, MetaCodeFragment metaCode, List<String> actualParams) {
-        StringBuilder builder = new StringBuilder();
-        builder.append("@");
-        builder.append(name);
-        builder.append("(");
-        for (int i = 0; i < actualParams.size(); i++) {
-            if (i > 0) {
-                builder.append(", ");
-            }
-            builder.append(metaCode.getParameters().get(i));
-            builder.append("=");
-            builder.append(actualParams.get(i));
-        }
-        builder.append(")");
-        return builder.toString();
+        parser.runMetaCode(this, code, metaCode, MetaCodeFragment.metaCodeCallString(name, metaCode, params), lineNumber, enabledMeta); 
     }
 
     public List<String> grabMetaCode(String metaCodeName) throws ScriptingErrorLog.SemanticErrorException {
@@ -3100,6 +3084,14 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
+    private void checkGPropSumConstraints(GroupingType type, LPWithParams mainProp) throws ScriptingErrorLog.SemanticErrorException {
+        if (type == GroupingType.SUM && mainProp.property != null) {
+            if (!(mainProp.property.property.getValueClass(ClassType.valuePolicy).getType() instanceof IntegralClass)) {
+                errLog.emitNonIntegralSumArgumentError(parser);
+            }
+        }
+    }
+    
     private void checkGPropAggrConstraints(GroupingType type, List<LPWithParams> mainProps, List<LPWithParams> groupProps) throws ScriptingErrorLog.SemanticErrorException {
         if (type == GroupingType.AGGR || type == GroupingType.NAGGR) {
             if (mainProps.get(0).property != null) {

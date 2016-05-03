@@ -128,4 +128,21 @@ public class MetaCodeFragment {
     public List<String> getParameters() {
         return parameters;
     }
+
+    static public String metaCodeCallString(String name, MetaCodeFragment metaCode, List<String> actualParams) {
+        StringBuilder builder = new StringBuilder();
+        builder.append("@");
+        builder.append(name);
+        builder.append("(");
+        for (int i = 0; i < actualParams.size(); i++) {
+            if (i > 0) {
+                builder.append(", ");
+            }
+            builder.append(metaCode.getParameters().get(i));
+            builder.append("=");
+            builder.append(actualParams.get(i));
+        }
+        builder.append(")");
+        return builder.toString();
+    }
 }

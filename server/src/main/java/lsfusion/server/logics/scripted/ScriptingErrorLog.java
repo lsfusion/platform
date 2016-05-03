@@ -329,6 +329,10 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, "GROUP CONCAT property should have two aggregate properties exactly (second is a separator)");
     }
 
+    public void emitNonIntegralSumArgumentError(ScriptParser parser) throws SemanticErrorException {
+        emitSimpleError(parser, "GROUP SUM main property should have integral class as return value");
+    }
+    
     public void emitNonObjectAggrGPropError(ScriptParser parser) throws SemanticErrorException {
         emitSimpleError(parser, "GROUP AGGR should have simple parameter as aggregate function");
     }
