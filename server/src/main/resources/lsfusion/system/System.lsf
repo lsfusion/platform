@@ -74,7 +74,8 @@ nameStatic (name) = GROUP MAX Object object BY staticName(object);
 
 staticCaption 'Статический заголовок' = DATA ISTRING[100] (Object);
 
-objectClassName 'Класс объекта' (Object o) = staticCaption(objectClass(o));;
+objectClassName 'Класс объекта' (Object o) = staticCaption(objectClass(o));
+prevObjectClassName 'Класс объекта' (Object o) = staticCaption(PREV(objectClass(o)));
 
 defaultBackgroundColor 'Цвет фона по умолчанию при выделении' = DATA COLOR ();
 defaultOverrideBackgroundColor 'Цвет фона по умолчанию при выделении' = OVERRIDE RGB(255, 255, 0), defaultBackgroundColor() PERSISTENT;
