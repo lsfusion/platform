@@ -1022,6 +1022,8 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     private void executeGlobalEvent(ExecutionEnvironment env, @ParamMessage ActionProperty<?> action) throws SQLException, SQLHandledException {
         boolean hasChanges = false;
         for(SessionCalcProperty property : action.getGlobalEventSessionCalcDepends()) { // оптимизация основанная на отсутствии последействия
+            // тут конечно для PREV брать CHANGED, не совсем правильно, так как новое значение может не использоваться вообще в действии, и PREV используется не для определения условия события, а для непосредственно тела
+            // поэтому по хорошему надо смотреть либо на getUsedProps или как-то хитрее определять условие. Аналогичную оптимизацию нужно было бы реализовать в applySingleStored
             if(property.getChangedProperty().hasChanges(getModifier())) {
                 hasChanges = true;
                 break;
@@ -1504,7 +1506,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                     SinglePropertyTableUsage<D> dependChange = depend.readChangeTable(sql, modifier, baseClass, env);
                     applySingleStored((CalcProperty)depend, (SinglePropertyTableUsage)dependChange, BL);
                     noUpdate.addNoChange(depend); // докидываем noUpdate чтобы по нескольку раз одну ветку не отрабатывать
-                } else {
+                } else { // тут по аналогии с оптимизацией в executeGlobalEvent, можно было бы сделать оптимизацию на PREV, без used (то есть не входящих в условие событие) - смотреть на условия события в котором используется (в том числе рекурсивно по другим событием, и проверкой выполнилось или нет)
                     SinglePropertyTableUsage<D> dependChange = ((OldProperty<D>) depend).property.readChangeTable(sql, modifier, baseClass, env);
                     updateApplyStart((OldProperty<D>) depend, dependChange);
                 }
