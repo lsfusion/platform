@@ -26,6 +26,7 @@ TABLE templateEntry(TemplateEntry);
 
 template 'Шаблон' = DATA Template (TemplateEntry);
 key 'Параметр' = DATA VARSTRING[100](TemplateEntry);
+description 'Описание' = DATA VARSTRING[100](TemplateEntry);
 value 'Значение' = DATA LOCAL TEXT (TemplateEntry);
 
 FORM template 'Шаблон Excel'
@@ -35,7 +36,7 @@ FORM template 'Шаблон Excel'
     PROPERTIES (t) loadFile, openFile
 
     OBJECTS te = TemplateEntry
-    PROPERTIES (te) key, value, ADDOBJ, DELETESESSION
+    PROPERTIES (te) key, description, value, ADDOBJ, DELETESESSION
     PROPERTIES (t) TODRAW te FORCE PANEL TOOLBAR openProcess
 
     FILTERS template (te) == t
@@ -71,7 +72,7 @@ FORM templates 'Шаблоны Excel'
     PROPERTIES (t) ADDFORM, EDITFORM, DELETE
 
     OBJECTS te = TemplateEntry
-    PROPERTIES (te) READONLY key, value
+    PROPERTIES (te) READONLY key, description, value
 
     FILTERS template (te) == t
 ;

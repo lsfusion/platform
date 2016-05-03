@@ -29,6 +29,7 @@ TABLE templateEntry(TemplateEntry);
 template 'Шаблон' = DATA Template (TemplateEntry);
 isTable 'Таблица' = DATA BOOLEAN(TemplateEntry);
 key 'Параметр' = DATA VARSTRING[100](TemplateEntry);
+description 'Описание' = DATA VARSTRING[100](TemplateEntry);
 value 'Значение' = DATA LOCAL TEXT (TemplateEntry);
 
 templateEntryKeyEntryIdTemplate (string1, string2) = GROUP AGGR TemplateEntry templateEntry BY  key(templateEntry), id(template(templateEntry)) WHERE templateEntry IS TemplateEntry;
@@ -40,7 +41,7 @@ FORM template 'Шаблон Word'
     PROPERTIES (t) loadFile, openFile
 
     OBJECTS te = TemplateEntry
-    PROPERTIES (te) isTable, key, value, ADDOBJ, DELETESESSION
+    PROPERTIES (te) isTable, key, description, value, ADDOBJ, DELETESESSION
     PROPERTIES (t) TODRAW te FORCE PANEL TOOLBAR openProcess
 
     FILTERS template (te) == t
@@ -77,7 +78,7 @@ FORM templates 'Шаблоны Word'
     PROPERTIES (t) ADDFORM, EDITFORM, DELETE
 
     OBJECTS te = TemplateEntry
-    PROPERTIES (te) READONLY isTable, key, value
+    PROPERTIES (te) READONLY isTable, key, description, value
     FILTERS template (te) == t
 ;
 
