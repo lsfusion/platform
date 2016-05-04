@@ -294,18 +294,18 @@ public class EmailSender {
                         count++;
                         try {
                             sendMessage(message, smtpHost, smtpPort, userName, password);
-                            logger.info(ServerResourceBundle.getString("mail.successful.mail.sending") + messageInfo);
+                            logger.info(ServerResourceBundle.getString("mail.successful.mail.sending") + " : " + messageInfo);
                         } catch (MessagingException e) {
                             send = false;
                             if (count < 40) {
-                                logger.info(ServerResourceBundle.getString("mail.unsuccessful.attempt.to.send.mail") + " " + e.getMessage() + " " + messageInfo);
+                                logger.info(ServerResourceBundle.getString("mail.unsuccessful.attempt.to.send.mail") + " : " + e.getMessage() + " " + messageInfo);
                                 try {
                                     Thread.sleep(30000);
                                 } catch (InterruptedException ignored) {
                                 }
                             } else {
-                                logger.error(ServerResourceBundle.getString("mail.failed.to.send.mail") + " " + messageInfo, e);
-                                throw new RuntimeException(ServerResourceBundle.getString("mail.error.send.mail") + " " + messageInfo, e);
+                                logger.error(ServerResourceBundle.getString("mail.failed.to.send.mail") + " : " + messageInfo, e);
+                                throw new RuntimeException(ServerResourceBundle.getString("mail.error.send.mail") + " : " + messageInfo, e);
                             }
                         }
                     }
