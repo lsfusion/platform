@@ -7,12 +7,12 @@ import org.apache.commons.io.FileUtils;
 import java.io.File;
 import java.io.IOException;
 
-public class PrepareLibraryClientAction implements ClientAction {
+public class DownloadFileClientAction implements ClientAction {
     String path;
     String filename;
     public byte[] bytes;
 
-    public PrepareLibraryClientAction(String path, String filename, byte[] bytes) {
+    public DownloadFileClientAction(String path, String filename, byte[] bytes) {
         this.path = path;
         this.filename = filename;
         this.bytes = bytes;
