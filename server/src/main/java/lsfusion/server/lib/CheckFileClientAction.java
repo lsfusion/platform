@@ -1,7 +1,9 @@
 package lsfusion.server.lib;
 
+import lsfusion.base.SystemUtils;
 import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.action.ClientActionDispatcher;
+import lsfusion.server.ServerLoggers;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.FileUtils;
 
@@ -13,22 +15,20 @@ import java.security.NoSuchAlgorithmException;
 
 public class CheckFileClientAction implements ClientAction {
     String path;
-    String filename;
 
-    public CheckFileClientAction(String path, String filename) {
+    public CheckFileClientAction(String path) {
         this.path = path;
-        this.filename = filename;
     }
 
     public Object dispatch(ClientActionDispatcher dispatcher) throws IOException {
         String hash = null;
         try {
-            File dll = new File(System.getProperty("user.home", "") + "/.fusion/" + filename);
-            if (dll.exists()) {
-                hash = new String(Hex.encodeHex(MessageDigest.getInstance("MD5").digest(FileUtils.readFileToByteArray(dll))));
+            File file = SystemUtils.getUserFile(path);
+            if (file.exists()) {
+                hash = new String(Hex.encodeHex(MessageDigest.getInstance("MD5").digest(FileUtils.readFileToByteArray(file))));
             }
         } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
+            ServerLoggers.systemLogger.error("CheckFile Error: ", e);
         }
         return hash;
     }

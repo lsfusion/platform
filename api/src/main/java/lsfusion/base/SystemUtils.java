@@ -2,6 +2,7 @@ package lsfusion.base;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.col.interfaces.immutable.ImList;
+import org.apache.commons.io.FileUtils;
 import org.springframework.util.FileCopyUtils;
 
 import java.io.*;
@@ -445,6 +446,11 @@ public class SystemUtils {
         if (makeDir && !userDir.exists())
             userDir.mkdirs();
         return userFile;
+    }
+
+    public static void writeUserFile(String filename, byte[] bytes) throws IOException {
+        File file = getUserFile(filename);
+        FileUtils.writeByteArrayToFile(file, bytes);
     }
 
     public static String getLocalHostName() {

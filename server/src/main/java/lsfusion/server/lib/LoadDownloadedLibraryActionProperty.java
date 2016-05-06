@@ -14,20 +14,17 @@ import java.util.Iterator;
 
 public class LoadDownloadedLibraryActionProperty extends ScriptingActionProperty {
     private final ClassPropertyInterface pathInterface;
-    private final ClassPropertyInterface filenameInterface;
 
     public LoadDownloadedLibraryActionProperty(BaseLogicsModule LM, ValueClass... classes) throws ScriptingErrorLog.SemanticErrorException {
         super(LM, classes);
 
         Iterator<ClassPropertyInterface> i = interfaces.iterator();
         pathInterface = i.next();
-        filenameInterface = i.next();
     }
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         DataObject path = context.getDataKeyValue(pathInterface);
-        DataObject filename = context.getDataKeyValue(filenameInterface);
-        if (path != null && filename != null)
-            context.requestUserInteraction(new LoadDownloadedLibraryClientAction((String) path.getValue(), (String) filename.getValue()));
+        if (path != null)
+            context.requestUserInteraction(new LoadDownloadedLibraryClientAction((String) path.getValue()));
     }
 }

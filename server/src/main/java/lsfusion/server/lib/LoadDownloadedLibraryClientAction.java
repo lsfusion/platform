@@ -1,5 +1,6 @@
 package lsfusion.server.lib;
 
+import lsfusion.base.SystemUtils;
 import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.action.ClientActionDispatcher;
 
@@ -9,15 +10,13 @@ import java.io.IOException;
 
 public class LoadDownloadedLibraryClientAction implements ClientAction {
     String path;
-    String filename;
 
-    public LoadDownloadedLibraryClientAction(String path, String filename) {
+    public LoadDownloadedLibraryClientAction(String path) {
         this.path = path;
-        this.filename = filename;
     }
 
     public Object dispatch(ClientActionDispatcher dispatcher) throws IOException {
-        File dll = new File(path + filename);
+        File dll = SystemUtils.getUserFile(path);
         if(dll.exists())
             setJNALibraryPath(dll.getParentFile().getAbsolutePath());
         return null;

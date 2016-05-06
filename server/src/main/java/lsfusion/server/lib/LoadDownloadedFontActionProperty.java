@@ -1,6 +1,6 @@
 package lsfusion.server.lib;
 
-import com.google.common.base.Throwables;
+import lsfusion.server.ServerLoggers;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.BaseLogicsModule;
@@ -15,23 +15,20 @@ import java.util.Iterator;
 
 public class LoadDownloadedFontActionProperty extends ScriptingActionProperty {
     private final ClassPropertyInterface pathInterface;
-    private final ClassPropertyInterface filenameInterface;
 
     public LoadDownloadedFontActionProperty(BaseLogicsModule LM, ValueClass... classes) throws ScriptingErrorLog.SemanticErrorException {
         super(LM, classes);
 
         Iterator<ClassPropertyInterface> i = interfaces.iterator();
         pathInterface = i.next();
-        filenameInterface = i.next();
     }
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         DataObject path = context.getDataKeyValue(pathInterface);
-        DataObject filename = context.getDataKeyValue(filenameInterface);
-        if (path != null && filename != null) {
-            String result = (String) context.requestUserInteraction(new LoadDownloadedFontClientAction((String) path.getValue(), (String) filename.getValue()));
+        if (path != null) {
+            String result = (String) context.requestUserInteraction(new LoadDownloadedFontClientAction((String) path.getValue()));
             if (result != null) {
-                Throwables.propagate(new RuntimeException(result));
+                ServerLoggers.systemLogger.error("LoadDownloadedFont Error: " + result);
             }
         }
     }

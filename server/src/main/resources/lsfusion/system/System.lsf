@@ -119,19 +119,19 @@ importedString = DATA LOCAL BOOLEAN (VARSTRING[10]);
 
 ignorePrintType 'Игнорировать опции PRINT' = ABSTRACT BOOLEAN ();
 
-downloadFile 'Скопировать файл на клиент' = ACTION CUSTOM 'lsfusion.server.lib.DownloadFileActionProperty' (VARSTRING[100], VARSTRING[100]); 
+downloadFile 'Скопировать файл на клиент' = ACTION CUSTOM 'lsfusion.server.lib.DownloadFileActionProperty' (VARSTRING[100]); 
 
-loadDownloadedLibrary 'Загрузить скачанную библиотеку' = ACTION CUSTOM 'lsfusion.server.lib.LoadDownloadedLibraryActionProperty' (VARSTRING[100], VARSTRING[100]);
-loadDownloadedFont 'Загрузить шрифт' = ACTION CUSTOM 'lsfusion.server.lib.LoadDownloadedFontActionProperty' (VARSTRING[100], VARSTRING[100]);
+loadDownloadedLibrary 'Загрузить скачанную библиотеку' = ACTION CUSTOM 'lsfusion.server.lib.LoadDownloadedLibraryActionProperty' (VARSTRING[100]);
+loadDownloadedFont 'Загрузить шрифт' = ACTION CUSTOM 'lsfusion.server.lib.LoadDownloadedFontActionProperty' (VARSTRING[100]);
 
-loadLibrary 'Загрузить библиотеку' (path, filename)  = ACTION {
-    downloadFile(path, filename);
-    loadDownloadedLibrary(path, filename);
+loadLibrary 'Загрузить библиотеку' (path)  = ACTION {
+    downloadFile(path);
+    loadDownloadedLibrary(path);
 }
 
-loadFont 'Загрузить шрифт' (path, filename)  = ACTION {
-    downloadFile(path, filename);
-    loadDownloadedFont(path, filename);
+loadFont 'Загрузить шрифт' (path)  = ACTION {
+    downloadFile(path);
+    loadDownloadedFont(path);
 }
 
 META defineAnyValue(name, param) 
