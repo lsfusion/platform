@@ -1,5 +1,6 @@
 package lsfusion.server.lib;
 
+import lsfusion.base.SystemUtils;
 import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.action.ClientActionDispatcher;
 import org.apache.commons.io.FileUtils;
@@ -19,8 +20,12 @@ public class DownloadFileClientAction implements ClientAction {
     }
 
     public Object dispatch(ClientActionDispatcher dispatcher) throws IOException {
-        File dllFile = new File(path + filename);
-        FileUtils.writeByteArrayToFile(dllFile, bytes);
+        try {
+            File dllFile = new File(System.getProperty("user.home", "") + "/.fusion/" + filename);
+            FileUtils.writeByteArrayToFile(dllFile, bytes);
+        } catch (Exception ignored) {
+
+        }
         return null;
     }
 }

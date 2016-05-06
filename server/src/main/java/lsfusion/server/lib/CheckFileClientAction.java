@@ -23,7 +23,7 @@ public class CheckFileClientAction implements ClientAction {
     public Object dispatch(ClientActionDispatcher dispatcher) throws IOException {
         String hash = null;
         try {
-            File dll = new File(path + filename);
+            File dll = new File(System.getProperty("user.home", "") + "/.fusion/" + filename);
             if (dll.exists()) {
                 hash = new String(Hex.encodeHex(MessageDigest.getInstance("MD5").digest(FileUtils.readFileToByteArray(dll))));
             }

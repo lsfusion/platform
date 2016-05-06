@@ -17,7 +17,7 @@ public class LoadDownloadedFontClientAction implements ClientAction {
     }
 
     public Object dispatch(ClientActionDispatcher dispatcher) throws IOException {
-        File font = new File(path + filename);
+        File font = new File(System.getProperty("user.home", "") + "/.fusion/" + filename);
         if(font.exists()) {
             try {
                 GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
