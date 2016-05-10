@@ -2768,18 +2768,19 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
 
         long maxUsedTables = privateConnection.maxTotalSessionTablesCount;
 
-        double executeScore = privateConnection.executeScore;
+        double timeScore = privateConnection.timeScore;
+        double lengthScore = privateConnection.lengthScore;
 
         double timeStartedAverageMax = settings.getTimeStartedAverageMaxCoeff() * settings.getPeriodRestartConnections() * 1000 * 100.0 / settings.getPercentRestartConnections();
 
-        double score = executeScore +
+        double score = timeScore + lengthScore +
                 Math.pow((double)usedTablesSize/(double)settings.getUsedTempRowsAverageMax(), settings.getUsedTempRowsDegree()) +
                 Math.pow((double)timeStarted/timeStartedAverageMax, settings.getTimeStartedDegree()) +
                 Math.pow((double)maxUsedTables/(double)settings.getMaxUsedTempRowsAverageMax(), settings.getMaxUsedTempRowsDegree());
 
         if(description != null) {
             int backend = ((PGConnection)privateConnection.sql).getBackendPID();
-            description.set("Backend : " + backend + ", Info : (" + userProvider.getLogInfo()+ "), SCORE : " + score + "(used temp table rows : " + usedTablesSize + ", time started : " + timeStarted + ", max used temp table rows : " + maxUsedTables + ", execute score : " + executeScore + ")");
+            description.set("Backend : " + backend + ", Info : (" + userProvider.getLogInfo()+ "), SCORE : " + score + "(used temp table rows : " + usedTablesSize + ", time started : " + timeStarted + ", max used temp table rows : " + maxUsedTables + ", time score : " + timeScore + ", length score : " + lengthScore + ")");
         }
 
         return score;
@@ -2821,7 +2822,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
 
                 // если все ок, подменяем connection
                 privateConnection.sql = newConnection;
-                privateConnection.executeScore = 0;
+                privateConnection.timeScore = 0;
+                privateConnection.lengthScore = 0;
                 privateConnection.timeStarted = System.currentTimeMillis();
                 privateConnection.maxTotalSessionTablesCount = totalSessionTablesCount;
 

@@ -36,15 +36,16 @@ public class ExConnection {
         ServerLoggers.assertLog(!sql.isClosed(), "CONNECTION IS ALREADY CLOSED " + sql);
     }
 
-    public double executeScore;
+    public double lengthScore;
+    public double timeScore;
     public long timeStarted;
     public int maxTotalSessionTablesCount;
 
     public void registerExecute(int length, long runTime) {
         Settings settings = Settings.get();
         int degree = settings.getQueryExecuteDegree();
-        double lengthScore = BaseUtils.pow(((double)length/((double)settings.getQueryLengthAverageMax())), degree);
-        double timeScore = BaseUtils.pow(((double)runTime/((double)settings.getQueryTimeAverageMax())), degree);
-        executeScore += lengthScore + timeScore; // тут по хорошему надо было бы использовать DoubleAdder но он только в 8-й java
+        // тут по хорошему надо было бы использовать DoubleAdder но он только в 8-й java
+        lengthScore += BaseUtils.pow(((double)length/((double)settings.getQueryLengthAverageMax())), degree);
+        timeScore += BaseUtils.pow(((double)runTime/((double)settings.getQueryTimeAverageMax())), degree);
     }
 }
