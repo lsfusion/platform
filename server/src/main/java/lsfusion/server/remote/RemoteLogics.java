@@ -3,6 +3,7 @@ package lsfusion.server.remote;
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.NavigatorInfo;
+import lsfusion.base.Result;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
@@ -160,6 +161,7 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
             initUserLastActivityUpdate();
             initPingInfoUpdate();
             initSessionClean();
+            initConnectionRestart();
         }
     }
 
@@ -220,6 +222,22 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
                 }
             }
         }, Settings.get().getTempTablesTimeThreshold() * 1000, Settings.get().getTempTablesTimeThreshold() * 1000, TimeUnit.MILLISECONDS);
+    }
+
+    private void initConnectionRestart() {
+        final Result<Double> prevStart = new Result<>(0.0);
+        ScheduledExecutorService openFormUpdateExecutor = Executors.newSingleThreadScheduledExecutor(new ContextAwareDaemonThreadFactory(getContext(), "connection-restart-daemon"));
+        openFormUpdateExecutor.scheduleAtFixedRate(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    SQLSession.restartConnections(prevStart);
+                } catch (Throwable e) {
+                    ServerLoggers.systemLogger.error("Connection restart error : ", e);
+                    throw Throwables.propagate(e);
+                }
+            }
+        }, Settings.get().getPeriodRestartConnections() * 1000, Settings.get().getPeriodRestartConnections() * 1000, TimeUnit.MILLISECONDS);
     }
 
     public RemoteNavigatorInterface createNavigator(boolean isFullClient, NavigatorInfo navigatorInfo, boolean reuseSession) {

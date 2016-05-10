@@ -96,8 +96,14 @@ public class SQLTemporaryPool {
         return "t_" + count;
     }
 
+    // assert synchronized
     public Set<String> getTables() {
         return structs.keySet();
+    }
+
+    // assert synchronized
+    public FieldStruct getStruct(String table) {
+        return structs.get(table);
     }
 
     // lockRead, нет temporaryTables.lock
@@ -135,7 +141,7 @@ public class SQLTemporaryPool {
             tables.remove(fieldStruct);
     }
 
-    private static class FieldStruct {
+    public static class FieldStruct {
 
         public final ImOrderSet<KeyField> keys;
         public final ImSet<PropertyField> properties;

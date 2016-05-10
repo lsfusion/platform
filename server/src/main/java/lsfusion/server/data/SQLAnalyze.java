@@ -6,7 +6,7 @@ import lsfusion.base.TwinImmutableObject;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
-public class SQLAnalyze extends SQLCommand<Result<Integer>> {
+public class SQLAnalyze extends SQLCommand<SQLDML.Handler> {
 
     private final boolean dml;
     public SQLAnalyze(SQLCommand command, boolean noAnalyze) {
@@ -25,7 +25,7 @@ public class SQLAnalyze extends SQLCommand<Result<Integer>> {
         return super.immutableHashCode() * 31 + (noAnalyze ? 1 : 0);
     }
 
-    public void execute(PreparedStatement statement, Result<Integer> handler, SQLSession session) throws SQLException {
-        handler.set(session.executeExplain(statement, noAnalyze, dml));
+    public void execute(PreparedStatement statement, SQLDML.Handler handler, SQLSession session) throws SQLException {
+        handler.proceed(session.executeExplain(statement, noAnalyze, dml));
     }
 }

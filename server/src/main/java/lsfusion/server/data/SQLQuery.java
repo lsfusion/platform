@@ -142,7 +142,7 @@ public class SQLQuery extends SQLCommand<ResultHandler<String, String>> {
                     mRowProperties.mapValue(i, propertyReaders.getValue(i).read(result, syntax, propertyReaders.getKey(i)));
                 handler.proceed(mRowKeys.immutableValue(), mRowProperties.immutableValue());
 
-                if(!isNoQueryLimit && rowCount++ > pessLimit) {
+                if(!isNoQueryLimit && handler.hasQueryLimit() && rowCount++ > pessLimit) {
                     if(adjLimit == 0) {
                         rowSize = calculateRowSize(keyReaders, propertyReaders, handler.getPrevResults());
                         adjLimit = BaseUtils.max(getMemoryLimit() / rowSize, pessLimit);
@@ -245,7 +245,7 @@ public class SQLQuery extends SQLCommand<ResultHandler<String, String>> {
         String insertString = SetFact.addOrderExcl(keyFieldOrder, propertyFieldOrder).toString(Field.<Field>nameGetter(syntax), ",");
 
         MStaticExecuteEnvironment execEnv = StaticExecuteEnvironmentImpl.mEnv(this.env);
-        return new SQLDML("INSERT INTO " + name + " (" + (insertString.length() == 0 ? "dumb" : insertString) + ") " +
+        return new SQLDML("INSERT INTO " + syntax.getSessionTableName(name) + " (" + (insertString.length() == 0 ? "dumb" : insertString) + ") " +
                 getInsertSelect(orderPreserved, keySelectOrder, propertySelectOrder,
                         propertyFieldOrder, syntax, execEnv), baseCost, subQueries, execEnv.finish(), recursionFunction);
     }
@@ -294,7 +294,7 @@ public class SQLQuery extends SQLCommand<ResultHandler<String, String>> {
         String table = session.getTemporaryTable(keyOrder, propOrder.getSet(), new FillTemporaryTable() {
             public Integer fill(String name) throws SQLException, SQLHandledException {
                 SQLDML dml = getInsertDML(name, keyOrder, propOrder, false, keys, properties, session.syntax);
-                SQLExecute execute = getExecute(dml, queryParams, subQueryExecEnv, materializedQueries, pureTime, transactTimeout, owner, tableOwner);
+                SQLExecute execute = getExecute(dml, queryParams, subQueryExecEnv, materializedQueries, pureTime, transactTimeout, owner, tableOwner, SQLSession.register(name, tableOwner, TableChange.INSERT));
                 return session.insertSessionSelect(execute, new ERunnable() {
                     public void run() throws Exception {
                         outSelect(session, subQueryExecEnv, queryParams, transactTimeout, owner);
@@ -308,10 +308,10 @@ public class SQLQuery extends SQLCommand<ResultHandler<String, String>> {
         return new MaterializedQuery(table, mapFields, SystemProperties.isDebug ? keyOrder : null, SystemProperties.isDebug ?  propOrder.getSet() : null, actual.result, pureTime.get(), tableOwner);
     }
 
-    private static SQLExecute getExecute(SQLDML dml, ImMap<String, ParseInterface> queryParams, DynamicExecuteEnvironment queryExecEnv, ImMap<SQLQuery, MaterializedQuery> materializedQueries, PureTimeInterface pureTime, int transactTimeout, OperationOwner owner, TableOwner tableOwner) {
+    private static SQLExecute getExecute(SQLDML dml, ImMap<String, ParseInterface> queryParams, DynamicExecuteEnvironment queryExecEnv, ImMap<SQLQuery, MaterializedQuery> materializedQueries, PureTimeInterface pureTime, int transactTimeout, OperationOwner owner, TableOwner tableOwner, RegisterChange registerChange) {
         if(queryExecEnv instanceof AdjustMaterializedExecuteEnvironment)
-            return new SQLExecute<ImMap<SQLQuery, MaterializedQuery>, AdjustMaterializedExecuteEnvironment.Snapshot>(dml, queryParams, (AdjustMaterializedExecuteEnvironment)queryExecEnv, materializedQueries, pureTime, transactTimeout, owner, tableOwner);
-        return new SQLExecute(dml, queryParams, queryExecEnv, transactTimeout, owner, tableOwner);
+            return new SQLExecute<ImMap<SQLQuery, MaterializedQuery>, AdjustMaterializedExecuteEnvironment.Snapshot>(dml, queryParams, (AdjustMaterializedExecuteEnvironment)queryExecEnv, materializedQueries, pureTime, transactTimeout, owner, tableOwner, registerChange);
+        return new SQLExecute(dml, queryParams, queryExecEnv, transactTimeout, owner, tableOwner, registerChange);
     }
 
     public int getLength() {

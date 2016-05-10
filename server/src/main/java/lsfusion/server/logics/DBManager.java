@@ -242,7 +242,12 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         public Integer getCurrentUser() {
             return systemUserObject;
         }
-        
+
+        @Override
+        public LogInfo getLogInfo() {
+            return LogInfo.system;
+        }
+
         @Override
         public Integer getCurrentComputer() {
             return systemComputer;

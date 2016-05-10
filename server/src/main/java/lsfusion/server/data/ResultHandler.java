@@ -15,4 +15,6 @@ public interface ResultHandler<K, V>  {
     void finish() throws SQLException;
     
     Provider<ImOrderMap<ImMap<K, Object>, ImMap<V, Object>>> getPrevResults();
+
+    boolean hasQueryLimit();
 }

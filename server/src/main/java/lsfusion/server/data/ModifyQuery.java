@@ -111,7 +111,7 @@ public class ModifyQuery {
         }
 
         SQLDML dml = new SQLDML(update, changeCompile.sql.baseCost, changeCompile.sql.subQueries, changeCompile.sql.env, changeCompile.sql.recursionFunction);
-        return new SQLExecute(dml,changeCompile.getQueryParams(env), changeCompile.getQueryExecEnv(userProvider), env.getTransactTimeout(), env.getOpOwner(), owner);
+        return new SQLExecute(dml,changeCompile.getQueryParams(env), changeCompile.getQueryExecEnv(userProvider), env.getTransactTimeout(), env.getOpOwner(), owner, register(TableChange.UPDATE));
     }
 
     public SQLExecute getDelete(final SQLSyntax syntax, SQLSessionUserProvider userProvider) {
@@ -151,7 +151,11 @@ public class ModifyQuery {
         }
 
         SQLDML dml = new SQLDML(delete, deleteCompile.sql.baseCost, deleteCompile.sql.subQueries, deleteCompile.sql.env, deleteCompile.sql.recursionFunction);
-        return new SQLExecute(dml, deleteCompile.getQueryParams(env), deleteCompile.getQueryExecEnv(userProvider), env.getTransactTimeout(), env.getOpOwner(), owner);
+        return new SQLExecute(dml, deleteCompile.getQueryParams(env), deleteCompile.getQueryExecEnv(userProvider), env.getTransactTimeout(), env.getOpOwner(), owner, register(TableChange.DELETE));
+    }
+
+    private RegisterChange register(TableChange coeff) {
+        return SQLSession.register(table, owner, coeff);
     }
 
 
@@ -181,15 +185,15 @@ public class ModifyQuery {
         return leftKeysQuery.getQuery();
     }
 
-    public static SQLExecute getInsertSelect(String name, IQuery<KeyField, PropertyField> query, QueryEnvironment env, TableOwner owner, SQLSyntax syntax, SQLSessionUserProvider userProvider, Table table) {
+    public static SQLExecute getInsertSelect(String name, IQuery<KeyField, PropertyField> query, QueryEnvironment env, TableOwner owner, SQLSyntax syntax, SQLSessionUserProvider userProvider, Table table, RegisterChange change) {
         CompiledQuery<KeyField, PropertyField> changeCompile = query.compile(new CompileOptions<PropertyField>(syntax, table != null ? table.getPropTypes() : null));
 
         SQLDML dml = changeCompile.sql.getInsertDML(name, changeCompile.keyOrder, changeCompile.propertyOrder, true, changeCompile.keyOrder.mapOrder(changeCompile.keyNames), changeCompile.propertyOrder.mapOrder(changeCompile.propertyNames), syntax);
-        return new SQLExecute(dml, changeCompile.getQueryParams(env), changeCompile.getQueryExecEnv(userProvider), env.getTransactTimeout(), env.getOpOwner(), owner);
+        return new SQLExecute(dml, changeCompile.getQueryParams(env), changeCompile.getQueryExecEnv(userProvider), env.getTransactTimeout(), env.getOpOwner(), owner, change);
     }
 
     public SQLExecute getInsertSelect(SQLSyntax syntax, SQLSessionUserProvider userProvider) {
-        return getInsertSelect(table.getName(syntax), change, env, owner, syntax, userProvider, table);
+        return getInsertSelect(table.getName(syntax), change, env, owner, syntax, userProvider, table, register(TableChange.INSERT));
     }
 
     public boolean isEmpty() {
