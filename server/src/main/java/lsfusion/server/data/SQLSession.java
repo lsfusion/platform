@@ -1890,6 +1890,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     } 
 
     private <K, V> void insertBatchRecords(String table, ImOrderSet<KeyField> keys, ImMap<ImMap<KeyField, K>, ImMap<PropertyField, V>> rows, Parser<K, V> parser, OperationOwner opOwner, RegisterChange registerChange) throws SQLException {
+        if(rows.isEmpty())
+            return;
 
         ImOrderSet<PropertyField> properties = rows.getValue(0).keys().toOrderSet();
 
@@ -2875,6 +2877,9 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         insertBatchRecords(connection, typePool, syntax, syntax.getSessionTableName(table), rows, dataParser, opOwner);
     }
     private static void insertBatchRecords(final Connection connection, final TypePool typePool, SQLSyntax syntax, String table, ImMap<ImMap<KeyField, Object>, ImMap<PropertyField, Object>> rows, Parser<Object, Object> parser, final OperationOwner opOwner) throws SQLException {
+        if(rows.isEmpty())
+            return;
+
         ImOrderSet<KeyField> keys = rows.getKey(0).keys().toOrderSet();
         ImOrderSet<PropertyField> properties = rows.getValue(0).keys().toOrderSet();
 
