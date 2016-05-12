@@ -8,16 +8,14 @@ import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.Settings;
 import lsfusion.server.caches.AbstractTranslateValues;
-import lsfusion.server.data.ExConnection;
-import lsfusion.server.data.OperationOwner;
-import lsfusion.server.data.SQLSession;
-import lsfusion.server.data.SessionTable;
+import lsfusion.server.data.*;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.translator.MapValuesTranslate;
 import lsfusion.server.data.type.ArrayClass;
 import lsfusion.server.data.type.ConcatenateType;
 import lsfusion.server.data.type.Type;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 
 public class StaticExecuteEnvironmentImpl extends TwinImmutableObject implements StaticExecuteEnvironment, MStaticExecuteEnvironment {
@@ -167,32 +165,55 @@ public class StaticExecuteEnvironmentImpl extends TwinImmutableObject implements
     }
 
     public void before(SQLSession sqlSession, ExConnection connection, String command, OperationOwner owner) throws SQLException {
+        before(connection.sql, sqlSession.typePool, sqlSession, command, owner);
+    }
+    public void after(SQLSession sqlSession, ExConnection connection, String command, OperationOwner owner) throws SQLException {
+        after(connection.sql, sqlSession.typePool, sqlSession, command, owner);
+    }
+
+    public void before(Connection connection, TypePool typePool, String command, OperationOwner owner) throws SQLException {
+        before(connection, typePool, null, command, owner);
+    }
+
+    public void after(Connection connection, TypePool typePool, String command, OperationOwner owner) throws SQLException {
+        after(connection, typePool, null, command, owner);
+    }
+
+    public void before(Connection connection, TypePool typePool, SQLSession sqlSession, String command, OperationOwner owner) throws SQLException {
         assert finalized;
 
         for(ConcatenateType concType : concTypes)
-            sqlSession.typePool.ensureConcType(concType);
+            typePool.ensureConcType(concType);
         for(ArrayClass arrayClass : arrayClasses)
-            sqlSession.typePool.ensureArrayClass(arrayClass);
+            typePool.ensureArrayClass(arrayClass);
         for(Object recursion : recursions)
-            sqlSession.typePool.ensureRecursion(recursion);
+            typePool.ensureRecursion(recursion);
         for(Type type : safeCastTypes)
-            sqlSession.typePool.ensureSafeCast(type);
+            typePool.ensureSafeCast(type);
         for(Pair<GroupType, ImList<Type>> gaOrder : groupAggOrders)
-            sqlSession.typePool.ensureGroupAggOrder(gaOrder);
+            typePool.ensureGroupAggOrder(gaOrder);
         for(Pair<TypeFunc, Type> tf : typeFuncs)
-            sqlSession.typePool.ensureTypeFunc(tf);
+            typePool.ensureTypeFunc(tf);
 
-        if(noReadOnly)
-            sqlSession.pushNoReadOnly(connection.sql);
+        if(noReadOnly) {
+            if(sqlSession == null)
+                connection.setReadOnly(false);
+            else
+                sqlSession.pushNoReadOnly(connection);
+        }
         if(volatileStats || command.length() > Settings.get().getCommandLengthVolatileStats())
             sqlSession.pushVolatileStats(owner);
     }
 
-    public void after(SQLSession sqlSession, ExConnection connection, String command, OperationOwner owner) throws SQLException {
+    public void after(Connection connection, TypePool typePool, SQLSession sqlSession, String command, OperationOwner owner) throws SQLException {
         assert finalized;
 
-        if(noReadOnly)
-            sqlSession.popNoReadOnly(connection.sql);
+        if(noReadOnly) {
+            if(sqlSession == null)
+                connection.setReadOnly(true);
+            else
+                sqlSession.popNoReadOnly(connection);
+        }
         if(volatileStats || command.length() > Settings.get().getCommandLengthVolatileStats())
             sqlSession.popVolatileStats(owner);
     }

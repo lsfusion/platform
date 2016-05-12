@@ -100,6 +100,11 @@ public abstract class AbstractConnectionPool implements ConnectionPool {
         }
     }
 
+    @Override
+    public Connection newRestartConnection() throws SQLException {
+        return newConnection();
+    }
+
     public ExConnection getPrivate(MutableObject object) throws SQLException {
         if(Settings.get().isDisablePoolConnections())
             return newExConnection();

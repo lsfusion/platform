@@ -110,6 +110,9 @@ public abstract class SQLCommand<H> extends TwinImmutableObject<SQLCommand<H>> {
     // session для настроек а не выполнения
     public abstract void execute(PreparedStatement statement, H handler, SQLSession session) throws SQLException;
 
+    // когда lockRead остался, но все остальное уже выполнено
+    public abstract void afterExecute(H handler);
+
     public boolean useVolatileStats() {
         return command.length() > Settings.get().getCommandLengthVolatileStats();
     }

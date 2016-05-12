@@ -47,4 +47,9 @@ public class MapResultHandler<MK, MV, K, V> implements ResultHandler<K, V>, Prov
     public Provider<ImOrderMap<ImMap<K, Object>, ImMap<V, Object>>> getPrevResults() {
         return this;
     }
+
+    @Override
+    public boolean hasQueryLimit() {
+        return handler.hasQueryLimit();
+    }
 }
