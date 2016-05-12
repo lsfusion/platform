@@ -288,7 +288,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         removeUnusedTemporaryTables(false, owner);
         // в зависимости от политики или локальный пул (для сессии) или глобальный пул
         assertLock();
-        if(inTransaction == 0 && sessionTablesMap.isEmpty() && !explicitNeedPrivate) { // вернемся к commonConnection'у
+        if(inTransaction == 0 && sessionTablesMap.isEmpty() && explicitNeedPrivate == 0) { // вернемся к commonConnection'у
             ServerLoggers.assertLog(privateConnection != null, "BRACES NEEDPRIVATE - TRYCOMMON SHOULD MATCH");
             connectionPool.returnPrivate(this, privateConnection);
 //            System.out.println(this + " " + privateConnection + " -> NULL " + " " + sessionTablesMap.keySet() +  ExceptionUtils.getStackTrace());
@@ -301,19 +301,24 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         ServerLoggers.assertLog((temporaryTablesLock.isLocked() && lock.getReadLockCount() > 0) || lock.isWriteLocked(), "TEMPORARY TABLE SHOULD BY LOCKED");
     }
 
-    private boolean explicitNeedPrivate; 
+    private int explicitNeedPrivate;
     public void lockNeedPrivate() throws SQLException {
         temporaryTablesLock.lock();
-        
-        explicitNeedPrivate = true;
-        
-        needPrivate();
+
+        try {
+            explicitNeedPrivate++;
+
+            needPrivate();
+        } finally {
+            temporaryTablesLock.unlock();
+        }
     }
 
     public void lockTryCommon(OperationOwner owner) throws SQLException {
-        explicitNeedPrivate = false;
-
+        temporaryTablesLock.lock();
         try {
+            explicitNeedPrivate--;
+
             tryCommon(owner);
         } finally {
             temporaryTablesLock.unlock();
@@ -412,7 +417,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     public void startFakeTransaction(OperationOwner owner) throws SQLException, SQLHandledException {
         lockWrite(owner);
 
-        explicitNeedPrivate = true;
+        explicitNeedPrivate++;
 
         needPrivate();
 
@@ -424,7 +429,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
 
         tryCommon(owner);
 
-        explicitNeedPrivate = false;
+        explicitNeedPrivate--;
 
         unlockWrite();
     }
