@@ -2801,16 +2801,16 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         boolean noError = false;
         try {
             boolean locked = tryLockWrite(owner);
-            Result<String> description = new Result<>();
-            if(!locked || isClosed() || privateConnection == null || score > getScore(description)) { // double check - score упал
-                notUsedConnections.put(connectionPool, newConnection); // если не использовали возвращаем
-                noError = true;
-                return false;
-            }
-
-            long timeRestartStarted = System.currentTimeMillis();
-
             try {
+                Result<String> description = new Result<>();
+                if(!locked || isClosed() || privateConnection == null || score > getScore(description)) { // double check - score упал
+                    notUsedConnections.put(connectionPool, newConnection); // если не использовали возвращаем
+                    noError = true;
+                    return false;
+                }
+
+                long timeRestartStarted = System.currentTimeMillis();
+
                 // сначала переносим временные таблицы
                 for (String table : sessionTablesMap.keySet()) {
                     SQLTemporaryPool.FieldStruct struct = privateConnection.temporary.getStruct(table);
@@ -2840,7 +2840,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
                 int newBackend = ((PGConnection)newConnection).getBackendPID();
                 ServerLoggers.exInfoLogger.info("RESTART CONNECTION : Time : " + (System.currentTimeMillis() - timeRestartStarted) + ", New : " + newBackend + ", " + description.result);
             } finally {
-                unlockWrite();
+                if(locked)
+                    unlockWrite();
             }
         } finally {
             if(!noError)
