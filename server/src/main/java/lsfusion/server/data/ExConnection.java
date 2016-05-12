@@ -1,6 +1,5 @@
 package lsfusion.server.data;
 
-import lsfusion.base.BaseUtils;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
 import lsfusion.server.data.sql.SQLSyntax;
@@ -15,7 +14,6 @@ public class ExConnection {
     public ExConnection(Connection sql, SQLTemporaryPool temporary) {
         this.sql = sql;
         this.temporary = temporary;
-        this.timeStarted = System.currentTimeMillis();
     }
     
     private Integer lastLogLevel; // оптимизация
@@ -34,18 +32,5 @@ public class ExConnection {
     
     public void checkClosed() throws SQLException {
         ServerLoggers.assertLog(!sql.isClosed(), "CONNECTION IS ALREADY CLOSED " + sql);
-    }
-
-    public double lengthScore;
-    public double timeScore;
-    public long timeStarted;
-    public int maxTotalSessionTablesCount;
-
-    public void registerExecute(int length, long runTime) {
-        Settings settings = Settings.get();
-        int degree = settings.getQueryExecuteDegree();
-        // тут по хорошему надо было бы использовать DoubleAdder но он только в 8-й java
-        lengthScore += BaseUtils.pow(((double)length/((double)settings.getQueryLengthAverageMax())), degree);
-        timeScore += BaseUtils.pow(((double)runTime/((double)settings.getQueryTimeAverageMax())), degree);
     }
 }

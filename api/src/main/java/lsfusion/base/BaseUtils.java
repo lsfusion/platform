@@ -2569,13 +2569,6 @@ public class BaseUtils {
         commonClassSet3(vthis, cint, null,mAdd, checks);
     }
 
-    public static double pow(double value, int pow) {
-        double result = value;
-        for(int i=0;i<pow-1;i++)
-            result = result * value;
-        return result;
-    }
-
     public static String trimToEmpty(String str) {
         return str == null?"":str.trim();
     }

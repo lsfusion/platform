@@ -11,11 +11,9 @@ import java.sql.PreparedStatement;
 public class ParsedStatement {
     public final PreparedStatement statement;
     public final ImList<String> preparedParams;
-    public final int length;
 
-    public ParsedStatement(PreparedStatement statement, ImList<String> preparedParams, int length) {
+    public ParsedStatement(PreparedStatement statement, ImList<String> preparedParams) {
         this.statement = statement;
         this.preparedParams = preparedParams;
-        this.length = length;
     }
 }

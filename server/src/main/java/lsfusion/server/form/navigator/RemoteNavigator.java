@@ -337,13 +337,6 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
             return (Integer) wThis.user.object;
         }
 
-        public LogInfo getLogInfo() {
-            final RemoteNavigator wThis = weakThis.get();
-            if(wThis == null) // используется в мониторе процессов
-                return null;
-            return wThis.getLogInfo();
-        }
-
         @Override
         public Integer getCurrentComputer() {
             final RemoteNavigator wThis = weakThis.get();

@@ -38,15 +38,6 @@ public abstract class Field extends TwinImmutableObject implements BinarySeriali
         return (Type.Getter<F>) typeGetter;
     }
 
-    private final static GetValue<Type, Field> fnTypeGetter = new GetValue<Type, Field>() {
-        public Type getMapValue(Field value) {
-            return value.type;
-        }
-    };
-    public static <F extends Field> GetValue<Type, F> fnTypeGetter() {
-        return (GetValue<Type, F>) fnTypeGetter;
-    }
-
     public static <F extends Field> GetValue<String, F> nameGetter(final SQLSyntax syntax) {
         return (GetValue<String, F>) new GetValue<String, Field>() {
             public String getMapValue(Field value) {

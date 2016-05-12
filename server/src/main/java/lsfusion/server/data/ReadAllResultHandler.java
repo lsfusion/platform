@@ -31,8 +31,4 @@ public class ReadAllResultHandler<K, V> implements ResultHandler<K, V>, Provider
     public Provider<ImOrderMap<ImMap<K, Object>, ImMap<V, Object>>> getPrevResults() {
         return this;
     }
-
-    public boolean hasQueryLimit() {
-        return true;
-    }
 }

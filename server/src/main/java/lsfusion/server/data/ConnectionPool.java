@@ -13,6 +13,4 @@ public interface ConnectionPool {
 
     ExConnection getPrivate(MutableObject object) throws SQLException;
     void returnPrivate(MutableObject object, ExConnection connection) throws SQLException;
-
-    Connection newRestartConnection() throws SQLException;
 }

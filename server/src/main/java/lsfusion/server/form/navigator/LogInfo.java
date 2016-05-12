@@ -12,9 +12,4 @@ public class LogInfo {
         this.hostnameComputer = hostnameComputer;
         this.remoteAddress = remoteAddress;
     }
-
-    @Override
-    public String toString() {
-        return "User : " + userName + ", Host : " + hostnameComputer + ", Remote : " + remoteAddress;
-    }
 }

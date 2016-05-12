@@ -16,12 +16,11 @@ public class SQLExecute<OE, S extends DynamicExecEnvSnapshot<OE, S>> {
     public final OperationOwner owner;
     public final TableOwner tableOwner;
     public final PureTimeInterface pureTime;
-    public final RegisterChange registerChange;
 
-    public SQLExecute(SQLDML command, ImMap<String, ParseInterface> params, DynamicExecuteEnvironment queryExecEnv, int transactTimeout, OperationOwner owner, TableOwner tableOwner, RegisterChange registerChange) {
-        this(command, params, queryExecEnv, null, PureTime.VOID, transactTimeout, owner, tableOwner, registerChange);
+    public SQLExecute(SQLDML command, ImMap<String, ParseInterface> params, DynamicExecuteEnvironment queryExecEnv, int transactTimeout, OperationOwner owner, TableOwner tableOwner) {
+        this(command, params, queryExecEnv, null, PureTime.VOID, transactTimeout, owner, tableOwner);
     }
-    public SQLExecute(SQLDML command, ImMap<String, ParseInterface> params, DynamicExecuteEnvironment<OE, S> queryExecEnv, OE outerEnv, PureTimeInterface pureTime, int transactTimeout, OperationOwner owner, TableOwner tableOwner, RegisterChange registerChange) {
+    public SQLExecute(SQLDML command, ImMap<String, ParseInterface> params, DynamicExecuteEnvironment<OE, S> queryExecEnv, OE outerEnv, PureTimeInterface pureTime, int transactTimeout, OperationOwner owner, TableOwner tableOwner) {
         this.command = command;
         this.params = params;
         this.queryExecEnv = queryExecEnv;
@@ -30,6 +29,5 @@ public class SQLExecute<OE, S extends DynamicExecEnvSnapshot<OE, S>> {
         this.transactTimeout = transactTimeout;
         this.owner = owner;
         this.tableOwner = tableOwner;
-        this.registerChange = registerChange;
     }
 }

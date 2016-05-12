@@ -39,6 +39,6 @@ public class ParsedParamString extends ParsedString {
     }
 
     public ParsedStatement prepareStatement(Connection connection) throws SQLException {
-        return new ParsedStatement(connection.prepareStatement(string), params, string.length());
+        return new ParsedStatement(connection.prepareStatement(string), params);
     }
 }

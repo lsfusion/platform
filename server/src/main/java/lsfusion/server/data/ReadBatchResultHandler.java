@@ -42,8 +42,4 @@ public abstract class ReadBatchResultHandler<K, V> implements ResultHandler<K, V
     public Provider<ImOrderMap<ImMap<K, Object>, ImMap<V, Object>>> getPrevResults() {
         return this;
     }
-
-    public boolean hasQueryLimit() {
-        return false;
-    }
 }
