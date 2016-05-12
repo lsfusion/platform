@@ -2775,8 +2775,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
 
         double timeStartedAverageMax = settings.getTimeStartedAverageMaxCoeff() * settings.getPeriodRestartConnections() * 1000 * 100.0 / settings.getPercentRestartConnections();
 
-        double score = timeScore + lengthScore +
-                Math.pow((double)usedTablesSize/(double)settings.getUsedTempRowsAverageMax(), settings.getUsedTempRowsDegree()) +
+        double score = timeScore + lengthScore
+                - Math.pow((double)usedTablesSize/(double)settings.getUsedTempRowsAverageMax(), settings.getUsedTempRowsDegree()) +
                 Math.pow((double)timeStarted/timeStartedAverageMax, settings.getTimeStartedDegree()) +
                 Math.pow((double)maxUsedTables/(double)settings.getMaxUsedTempRowsAverageMax(), settings.getMaxUsedTempRowsDegree());
 
