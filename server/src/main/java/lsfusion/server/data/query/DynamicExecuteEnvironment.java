@@ -142,7 +142,10 @@ public abstract class DynamicExecuteEnvironment<OE, S extends DynamicExecEnvSnap
     }
 
     public static Integer getUserExecEnv(SQLSessionUserProvider userProvider) {
-        return userExecEnvs.get(userProvider.getCurrentUser());
+        Integer currentUser = userProvider.getCurrentUser();
+        if(currentUser == null)
+            return null;
+        return userExecEnvs.get(currentUser);
     }
 
     public static <OE, S extends DynamicExecEnvSnapshot<OE, S>> DynamicExecEnvOuter<OE, S> create(final OE outerEnv) {

@@ -1239,21 +1239,33 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     }
 
     public boolean getVolatileStats() {
-        return getVolatileStats(userProvider.getCurrentUser());
+        Integer currentUser = userProvider.getCurrentUser();
+        if(currentUser == null)
+            return false;
+        return getVolatileStats(currentUser);
     }
 
     public boolean explainAnalyze() {
-        Boolean eam = explainUserMode.get(userProvider.getCurrentUser());
+        Integer currentUser = userProvider.getCurrentUser();
+        if(currentUser == null)
+            return false;
+        Boolean eam = explainUserMode.get(currentUser);
         return eam != null && eam;
     }
 
     public boolean explainNoAnalyze() {
-        Boolean ea = explainNoAnalyzeUserMode.get(userProvider.getCurrentUser());
+        Integer currentUser = userProvider.getCurrentUser();
+        if(currentUser == null)
+            return false;
+        Boolean ea = explainNoAnalyzeUserMode.get(currentUser);
         return ea != null && ea;
     }
 
     public boolean isLoggerDebugEnabled() {
-        Boolean lde = loggerDebugEnabled.get(userProvider.getCurrentUser());
+        Integer currentUser = userProvider.getCurrentUser();
+        if(currentUser == null)
+            return false;
+        Boolean lde = loggerDebugEnabled.get(currentUser);
         return lde != null && lde;
     }
     
