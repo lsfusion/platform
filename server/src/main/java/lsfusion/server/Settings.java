@@ -1753,6 +1753,8 @@ public class Settings {
     private int usedTempRowsAverageMax = 500; // 500 записей всего (на 1000 перестарт уже близок к секунде может быть)
     private int maxUsedTempRowsAverageMax = 5000; // сколько в моменте использовано, по хорошему должен быть больше usedTempRows, а степень наоборот
 
+    private int lastTempTablesActivityAverageMax = 180000; // 3 минуты отсуствует активность
+
     private double timeStartedAverageMaxCoeff = 1.25; // какой коэффициент от среднего времени жизни connection'а брать, меньше 1 нет смысла брать, так как соединения будут просто перестартовывать по очереди
 
     // степени - влияния
@@ -1790,6 +1792,14 @@ public class Settings {
 
     public double getTimeStartedAverageMaxCoeff() {
         return timeStartedAverageMaxCoeff;
+    }
+
+    public int getLastTempTablesActivityAverageMax() {
+        return lastTempTablesActivityAverageMax;
+    }
+
+    public void setLastTempTablesActivityAverageMax(int lastTempTablesActivityAverageMax) {
+        this.lastTempTablesActivityAverageMax = lastTempTablesActivityAverageMax;
     }
 
     public void setTimeStartedAverageMaxCoeff(double timeStartedAverageMaxCoeff) {

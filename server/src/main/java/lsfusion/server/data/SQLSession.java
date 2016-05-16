@@ -1525,8 +1525,11 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
             }
             totalSessionTablesCount += delta;
             assert privateConnection != null;
-            if(privateConnection != null && totalSessionTablesCount > privateConnection.maxTotalSessionTablesCount)
-                privateConnection.maxTotalSessionTablesCount = totalSessionTablesCount;
+            if(privateConnection != null) {
+                if (totalSessionTablesCount > privateConnection.maxTotalSessionTablesCount)
+                    privateConnection.maxTotalSessionTablesCount = totalSessionTablesCount;
+                privateConnection.lastTempTablesActivity = System.currentTimeMillis();
+            }
         } finally {
             temporaryTablesLock.unlock();
         }
@@ -2783,7 +2786,9 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
 
         int usedTablesSize = getSessionTablesCountAll();
 
-        long timeStarted = (System.currentTimeMillis() - privateConnection.timeStarted);
+        long currentTime = System.currentTimeMillis();
+        long timeStarted = (currentTime - privateConnection.timeStarted);
+        long lastTempTablesActivity = (currentTime - privateConnection.lastTempTablesActivity);
 
         long maxUsedTables = privateConnection.maxTotalSessionTablesCount;
 
@@ -2792,14 +2797,17 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
 
         double timeStartedAverageMax = settings.getTimeStartedAverageMaxCoeff() * settings.getPeriodRestartConnections() * 1000 * 100.0 / settings.getPercentRestartConnections();
 
+        double usedAntiScore = Math.pow((double) usedTablesSize / (double) settings.getUsedTempRowsAverageMax(), settings.getUsedTempRowsDegree()) -
+                Math.pow((double) lastTempTablesActivity / Settings.get().getLastTempTablesActivityAverageMax(), settings.getTimeStartedDegree()); // если не было активности долгое время перестартовываем
+
         double score = timeScore + lengthScore
-                - Math.pow((double)usedTablesSize/(double)settings.getUsedTempRowsAverageMax(), settings.getUsedTempRowsDegree()) +
+                - BaseUtils.max(usedAntiScore, 0.0) +
                 Math.pow((double)timeStarted/timeStartedAverageMax, settings.getTimeStartedDegree()) +
                 Math.pow((double)maxUsedTables/(double)settings.getMaxUsedTempRowsAverageMax(), settings.getMaxUsedTempRowsDegree());
 
         if(description != null) {
             int backend = ((PGConnection)privateConnection.sql).getBackendPID();
-            description.set("Backend : " + backend + ", Info : (" + userProvider.getLogInfo()+ "), SCORE : " + score + "(used temp table rows : " + usedTablesSize + ", time started : " + timeStarted + ", max used temp table rows : " + maxUsedTables + ", time score : " + timeScore + ", length score : " + lengthScore + ")");
+            description.set("Backend : " + backend + ", Info : (" + userProvider.getLogInfo()+ "), SCORE : " + score + "(used temp table rows : " + usedTablesSize + ", time started : " + timeStarted + ", max used temp table rows : " + maxUsedTables + ", last temp tables activity : " + lastTempTablesActivity + ", time score : " + timeScore + ", length score : " + lengthScore + ")");
         }
 
         return score;
@@ -2843,7 +2851,9 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
                 privateConnection.sql = newConnection;
                 privateConnection.timeScore = 0;
                 privateConnection.lengthScore = 0;
-                privateConnection.timeStarted = System.currentTimeMillis();
+                long currentTime = System.currentTimeMillis();
+                privateConnection.timeStarted = currentTime;
+                privateConnection.lastTempTablesActivity = currentTime;
                 privateConnection.maxTotalSessionTablesCount = totalSessionTablesCount;
 
                 // очищаем pool

@@ -15,7 +15,9 @@ public class ExConnection {
     public ExConnection(Connection sql, SQLTemporaryPool temporary) {
         this.sql = sql;
         this.temporary = temporary;
-        this.timeStarted = System.currentTimeMillis();
+        long currentTime = System.currentTimeMillis();
+        this.timeStarted = currentTime;
+        this.lastTempTablesActivity = currentTime;
     }
     
     private Integer lastLogLevel; // оптимизация
@@ -40,6 +42,7 @@ public class ExConnection {
     public double timeScore;
     public long timeStarted;
     public int maxTotalSessionTablesCount;
+    public long lastTempTablesActivity;
 
     public void registerExecute(int length, long runTime) {
         Settings settings = Settings.get();

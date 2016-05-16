@@ -2201,6 +2201,10 @@ public class BaseUtils {
         return a > b ? a : b;
     }
 
+    public static double max(double a, double b) {
+        return a > b ? a : b;
+    }
+
     public static int cmp(int a, int b, boolean max) {
         return max ? max(a, b) : min(a, b);
     }
