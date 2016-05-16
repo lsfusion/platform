@@ -1206,7 +1206,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
             statement.execute(DDL);
 
         } catch (Throwable e) {
-            logger.error(statement == null ? "PREPARING STATEMENT" : statement.toString() + " " + e.getMessage());
+            logger.error((statement == null ? "PREPARING STATEMENT" : statement.toString()) + " " + e.getMessage());
             firstException.set(e);
         }
         
@@ -1566,7 +1566,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
 
             result = statement.executeUpdate(command);
         } catch (Throwable e) {
-            logger.error(statement == null ? "PREPARING STATEMENT" : statement.toString() + " " + e.getMessage());
+            logger.error((statement == null ? "PREPARING STATEMENT" : statement.toString()) + " " + e.getMessage());
             firstException.set(e);
         }
 
