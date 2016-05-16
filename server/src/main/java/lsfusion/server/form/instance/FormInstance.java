@@ -2207,11 +2207,13 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         return false;
     }
 
-    public void onQueryClose() throws SQLException, SQLHandledException {
+    // close делать не надо, так как по умолчанию добавляется обработчик события formClose
+    public void formQueryClose() throws SQLException, SQLHandledException {
         fireQueryClose();
     }
 
-    public void onQueryOk() throws SQLException, SQLHandledException {
+    // close делать не надо, так как по умолчанию добавляется обработчик события formOk
+    public void formQueryOk() throws SQLException, SQLHandledException {
         fireQueryOk();
     }
 

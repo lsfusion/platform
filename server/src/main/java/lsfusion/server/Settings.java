@@ -1750,10 +1750,10 @@ public class Settings {
     // блок average - "нормальные" значения для запроса \ соединения
     private int queryLengthAverageMax = 10000; // 10 кб
     private int queryTimeAverageMax = 10000; // 10 секунд
-    private int usedTempRowsAverageMax = 100; // 100 записей всего (на 1000 перестарт уже близок к секунде может быть)
-    private int maxUsedTempRowsAverageMax = 1000; // сколько в моменте использовано, по хорошему должен быть больше usedTempRows, а степень наоборот
+    private int usedTempRowsAverageMax = 500; // 500 записей всего (на 1000 перестарт уже близок к секунде может быть)
+    private int maxUsedTempRowsAverageMax = 5000; // сколько в моменте использовано, по хорошему должен быть больше usedTempRows, а степень наоборот
 
-    private double timeStartedAverageMaxCoeff = 2; // какой коэффициент от среднего времени жизни connection'а брать, меньше 1 нет смысла брать, так как соединения будут просто перестартовывать по очереди
+    private double timeStartedAverageMaxCoeff = 1.25; // какой коэффициент от среднего времени жизни connection'а брать, меньше 1 нет смысла брать, так как соединения будут просто перестартовывать по очереди
 
     // степени - влияния
     private int queryExecuteDegree = 2;

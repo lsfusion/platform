@@ -633,7 +633,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
                     logger.trace("closedPressed Action");
                 }
 
-                form.onQueryClose();
+                form.formQueryClose();
             }
         });
     }
@@ -647,7 +647,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
                     logger.trace("okPressed Action");
                 }
                 
-                form.onQueryOk();
+                form.formQueryOk();
             }
         });
     }
