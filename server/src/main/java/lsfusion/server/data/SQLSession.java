@@ -1518,7 +1518,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         if(tableChange == TableChange.UPDATE)
             return;
 
-        if(Settings.get().isDisableRegisterChange())
+        if(Settings.get().isDisableRegisterChanges())
             return;
 
         temporaryTablesLock.lock();

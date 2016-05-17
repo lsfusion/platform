@@ -1862,13 +1862,13 @@ public class Settings {
         this.maxUsedTempRowsAverageMax = maxUsedTempRowsAverageMax;
     }
 
-    private boolean disableRegisterChange = false; // временно, потом убрать
+    private boolean disableRegisterChanges = false; // временно, потом убрать
 
-    public boolean isDisableRegisterChange() {
-        return disableRegisterChange;
+    public boolean isDisableRegisterChanges() {
+        return disableRegisterChanges;
     }
 
-    public void setDisableRegisterChange(boolean disableRegisterChange) {
-        this.disableRegisterChange = disableRegisterChange;
+    public void setDisableRegisterChanges(boolean disableRegisterChanges) {
+        this.disableRegisterChanges = disableRegisterChanges;
     }
 }
