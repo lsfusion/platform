@@ -217,7 +217,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         ExConnection resultConnection = null;
         boolean useCommon = false;
         if (privateConnection != null) {
-            explicitNeedPrivate++; // нужно чтобы никто не вернул connection, до returnConnection
+            explicitNeedPrivate++; // нужно чтобы никто не вернул connection, до returnConnection, по сути мы требуем private, если он уже есть
 
             needPrivate(); // на самом деле не обязательно вызывать (connection уже private), чисто для скобок needPrivate / tryCommon в returnConnection
 

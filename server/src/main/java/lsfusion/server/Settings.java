@@ -118,7 +118,7 @@ public class Settings {
 
     private boolean singleInstance;
 
-    private boolean busyDialog;
+    private boolean busyDialog = true;
 
     private boolean safeCheckFileExistence = true;
 
