@@ -217,10 +217,6 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         ExConnection resultConnection = null;
         boolean useCommon = false;
         if (privateConnection != null) {
-            explicitNeedPrivate++; // нужно чтобы никто не вернул connection, до returnConnection, по сути мы требуем private, если он уже есть
-
-            needPrivate(); // на самом деле не обязательно вызывать (connection уже private), чисто для скобок needPrivate / tryCommon в returnConnection
-
             resultConnection = privateConnection;
             temporaryTablesLock.unlock();
         } else
@@ -239,20 +235,10 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         return resultConnection;
     }
 
-    public void returnConnection(ExConnection connection, OperationOwner owner) throws SQLException {
-        if(privateConnection !=null) { // вернутся / изменится не может так как explicitNeedPrivate включен
+    public void returnConnection(ExConnection connection) throws SQLException {
+        if(privateConnection !=null)
             assert privateConnection == connection;
-            // по сути lockTryCommon, но так как в getConnection lockNeedPrivate - нельзя использовать, оставим здесь этот код в явную
-            temporaryTablesLock.lock();
-
-            try {
-                explicitNeedPrivate--;
-
-                tryCommon(owner);
-            } finally {
-                temporaryTablesLock.unlock();
-            }
-        } else { // висит полный lock
+        else {
             try {
                 connectionPool.returnCommon(this, connection);
             } finally {
@@ -622,7 +608,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
                     addColumn(table, property);
             }
         } finally {
-            returnConnection(connection, OperationOwner.unknown);
+            returnConnection(connection);
 
             unlockRead();
         }
@@ -1500,7 +1486,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
 
             runSuppressed(new SQLRunnable() {
                 public void run() throws SQLException {
-                    returnConnection(connection, owner);
+                    returnConnection(connection);
                 }
             }, firstException);
         }
@@ -1861,7 +1847,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
 
             runSuppressed(new SQLRunnable() {
                 public void run() throws SQLException {
-                    returnConnection(connection, owner);
+                    returnConnection(connection);
                 }
             }, firstException);
         }
