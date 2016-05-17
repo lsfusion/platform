@@ -217,6 +217,10 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         ExConnection resultConnection = null;
         boolean useCommon = false;
         if (privateConnection != null) {
+            explicitNeedPrivate++; // нужно чтобы никто не вернул connection, до returnConnection, по сути мы требуем private, если он уже есть
+
+            needPrivate(); // на самом деле не обязательно вызывать (connection уже private), чисто для скобок needPrivate / tryCommon в returnConnection
+
             resultConnection = privateConnection;
             temporaryTablesLock.unlock();
         } else
@@ -235,10 +239,20 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         return resultConnection;
     }
 
-    public void returnConnection(ExConnection connection) throws SQLException {
-        if(privateConnection !=null)
+    public void returnConnection(ExConnection connection, OperationOwner owner) throws SQLException {
+        if(privateConnection !=null) { // вернутся / изменится не может так как explicitNeedPrivate включен
             assert privateConnection == connection;
-        else {
+            // по сути lockTryCommon, но так как в getConnection lockNeedPrivate - нельзя использовать, оставим здесь этот код в явную
+            temporaryTablesLock.lock();
+
+            try {
+                explicitNeedPrivate--;
+
+                tryCommon(owner);
+            } finally {
+                temporaryTablesLock.unlock();
+            }
+        } else { // висит полный lock
             try {
                 connectionPool.returnCommon(this, connection);
             } finally {
@@ -285,11 +299,20 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         }
     }
 
+    private boolean recTempGuard = false; // так как removeUnused вызывает truncate, который может также вызывать tryCommon
     private void tryCommon(OperationOwner owner) throws SQLException { // пытается вернуться к
-        removeUnusedTemporaryTables(false, owner);
-        // в зависимости от политики или локальный пул (для сессии) или глобальный пул
         assertLock();
-        if(inTransaction == 0 && sessionTablesMap.isEmpty() && !explicitNeedPrivate) { // вернемся к commonConnection'у
+        if(recTempGuard)
+            return;
+
+        recTempGuard = true;
+        try {
+            removeUnusedTemporaryTables(false, owner);
+        } finally {
+            recTempGuard = false;
+        }
+        // в зависимости от политики или локальный пул (для сессии) или глобальный пул
+        if(inTransaction == 0 && sessionTablesMap.isEmpty() && explicitNeedPrivate == 0) { // вернемся к commonConnection'у
             ServerLoggers.assertLog(privateConnection != null, "BRACES NEEDPRIVATE - TRYCOMMON SHOULD MATCH");
             connectionPool.returnPrivate(this, privateConnection);
 //            System.out.println(this + " " + privateConnection + " -> NULL " + " " + sessionTablesMap.keySet() +  ExceptionUtils.getStackTrace());
@@ -302,19 +325,24 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         ServerLoggers.assertLog((temporaryTablesLock.isLocked() && lock.getReadLockCount() > 0) || lock.isWriteLocked(), "TEMPORARY TABLE SHOULD BY LOCKED");
     }
 
-    private boolean explicitNeedPrivate; 
+    private int explicitNeedPrivate;
     public void lockNeedPrivate() throws SQLException {
         temporaryTablesLock.lock();
-        
-        explicitNeedPrivate = true;
-        
-        needPrivate();
+
+        try {
+            explicitNeedPrivate++;
+
+            needPrivate();
+        } finally {
+            temporaryTablesLock.unlock();
+        }
     }
 
     public void lockTryCommon(OperationOwner owner) throws SQLException {
-        explicitNeedPrivate = false;
-
+        temporaryTablesLock.lock();
         try {
+            explicitNeedPrivate--;
+
             tryCommon(owner);
         } finally {
             temporaryTablesLock.unlock();
@@ -427,7 +455,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     public void startFakeTransaction(OperationOwner owner) throws SQLException, SQLHandledException {
         lockWrite(owner);
 
-        explicitNeedPrivate = true;
+        explicitNeedPrivate++;
 
         needPrivate();
 
@@ -437,9 +465,9 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     public void endFakeTransaction(OperationOwner owner) throws SQLException, SQLHandledException {
         privateConnection.sql.setReadOnly(false);
 
-        tryCommon(owner);
+        explicitNeedPrivate--;
 
-        explicitNeedPrivate = false;
+        tryCommon(owner);
 
         unlockWrite();
     }
@@ -603,7 +631,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
                     addColumn(table, property);
             }
         } finally {
-            returnConnection(connection);
+            returnConnection(connection, OperationOwner.unknown);
 
             unlockRead();
         }
@@ -1481,7 +1509,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
 
             runSuppressed(new SQLRunnable() {
                 public void run() throws SQLException {
-                    returnConnection(connection);
+                    returnConnection(connection, owner);
                 }
             }, firstException);
         }
@@ -1842,7 +1870,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
 
             runSuppressed(new SQLRunnable() {
                 public void run() throws SQLException {
-                    returnConnection(connection);
+                    returnConnection(connection, owner);
                 }
             }, firstException);
         }

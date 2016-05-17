@@ -746,7 +746,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                                 connection.rollback(savepoint);
                             mDropColumns.exclAdd(new Pair<>(oldTable.getName(syntax), oldProperty.getDBName()));
                         } finally {
-                            sql.returnConnection(exConnection);
+                            sql.returnConnection(exConnection, OperationOwner.unknown);
                         }
                     } else
                         mDropColumns.exclAdd(new Pair<>(oldTable.getName(syntax), oldProperty.getDBName()));
