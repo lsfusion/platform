@@ -182,7 +182,7 @@ public class LRUUtil {
      * The default concurrency level for this table, used when not
      * otherwise specified in a constructor.
      */
-    public static final int DEFAULT_CONCURRENCY_LEVEL = 64;
+    public static final int DEFAULT_CONCURRENCY_LEVEL = 128;
 
     public static class Strategy {
         public int baseTime;
