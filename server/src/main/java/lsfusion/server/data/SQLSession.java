@@ -248,7 +248,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
             try {
                 explicitNeedPrivate--;
 
-                tryCommon(owner);
+                tryCommon(owner, false); // здесь не может быть true, так как в removeUnused идут DDL команды, которые тоже используют get/returnConnection, и получается бесконечный цикл
             } finally {
                 temporaryTablesLock.unlock();
             }
@@ -299,18 +299,12 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         }
     }
 
-    private boolean recTempGuard = false; // так как removeUnused вызывает truncate, который может также вызывать tryCommon
-    private void tryCommon(OperationOwner owner) throws SQLException { // пытается вернуться к
+    private void tryCommon(OperationOwner owner, boolean removeUnused) throws SQLException { // пытается вернуться к
         assertLock();
-        if(recTempGuard)
-            return;
 
-        recTempGuard = true;
-        try {
+        if(removeUnused)
             removeUnusedTemporaryTables(false, owner);
-        } finally {
-            recTempGuard = false;
-        }
+
         // в зависимости от политики или локальный пул (для сессии) или глобальный пул
         if(inTransaction == 0 && sessionTablesMap.isEmpty() && explicitNeedPrivate == 0) { // вернемся к commonConnection'у
             ServerLoggers.assertLog(privateConnection != null, "BRACES NEEDPRIVATE - TRYCOMMON SHOULD MATCH");
@@ -343,7 +337,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         try {
             explicitNeedPrivate--;
 
-            tryCommon(owner);
+            tryCommon(owner, false);
         } finally {
             temporaryTablesLock.unlock();
         }
@@ -467,7 +461,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
 
         explicitNeedPrivate--;
 
-        tryCommon(owner);
+        tryCommon(owner, false);
 
         unlockWrite();
     }
@@ -525,7 +519,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
 
         runSuppressed(new SQLRunnable() {
             public void run() throws SQLException {
-                tryCommon(owner);
+                tryCommon(owner, true);
             }}, firstException);
 
         startTransaction = null;
@@ -1011,7 +1005,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     
             runSuppressed(new SQLRunnable() {
                 public void run() throws SQLException {
-                    tryCommon(opOwner);
+                    tryCommon(opOwner, true);
                 }}, firstException);
 
             finishExceptions(firstException);
