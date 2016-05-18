@@ -176,7 +176,7 @@ public class CacheAspect {
 
         public ConcurrentIdentityInvocationWeakMap() {
 
-            final int DEFAULT_CONCURRENCY_LEVEL = 16;
+            final int DEFAULT_CONCURRENCY_LEVEL = LRUUtil.DEFAULT_CONCURRENCY_LEVEL;
             int sshift = 0;
             int ssize = 1;
             while (ssize < DEFAULT_CONCURRENCY_LEVEL) {

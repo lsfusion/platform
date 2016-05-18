@@ -38,6 +38,8 @@
 
 package lsfusion.base;
 
+import lsfusion.base.col.lru.LRUUtil;
+
 import java.io.IOException;
 import java.io.Serializable;
 import java.lang.ref.ReferenceQueue;
@@ -151,7 +153,7 @@ public class ConcurrentWeakHashMap<K, V> extends AbstractMap<K, V>
      * The default concurrency level for this table, used when not
      * otherwise specified in a constructor.
      */
-    static final int DEFAULT_CONCURRENCY_LEVEL = 16;
+    static final int DEFAULT_CONCURRENCY_LEVEL = LRUUtil.DEFAULT_CONCURRENCY_LEVEL;
 
     /**
      * The maximum capacity, used if a higher value is implicitly
