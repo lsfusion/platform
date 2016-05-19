@@ -6,6 +6,7 @@ import lsfusion.client.form.ClientFormController;
 import lsfusion.client.form.ClientPropertyTable;
 import lsfusion.client.logics.ClientGroupObjectValue;
 import lsfusion.client.logics.ClientPropertyDraw;
+import lsfusion.client.logics.classes.ClientStringClass;
 
 import javax.swing.table.TableCellEditor;
 import java.awt.*;
@@ -62,6 +63,12 @@ public abstract class SingleCellTable extends ClientPropertyTable {
 
     public ClientPropertyDraw getProperty(int row, int column) {
         return model.getProperty();
+    }
+
+    @Override
+    public boolean richTextSelected() {
+        ClientPropertyDraw property = getProperty();
+        return property.baseType instanceof ClientStringClass && ((ClientStringClass) property.baseType).rich;
     }
 
     public void pasteTable(List<List<String>> table) {

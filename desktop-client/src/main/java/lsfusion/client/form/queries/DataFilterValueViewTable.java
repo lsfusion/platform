@@ -4,6 +4,7 @@ import lsfusion.client.SwingUtils;
 import lsfusion.client.form.*;
 import lsfusion.client.form.cell.PropertyTableCellEditor;
 import lsfusion.client.logics.ClientPropertyDraw;
+import lsfusion.client.logics.classes.ClientStringClass;
 import lsfusion.interop.KeyStrokes;
 
 import javax.swing.*;
@@ -46,12 +47,18 @@ class DataFilterValueViewTable extends JTable implements TableTransferHandler.Ta
     }
 
     @Override
+    public boolean richTextSelected() {
+        ClientPropertyDraw property = getProperty();
+        return property.baseType instanceof ClientStringClass && ((ClientStringClass) property.baseType).rich;
+    }
+
+    @Override
     public void pasteTable(List<List<String>> table) {
         if (!table.isEmpty()) {
             List<String> row = table.get(0);
             if (!row.isEmpty()) {
                 try {
-                    setValueAt(model.getProperty().parseBaseValue(row.get(0)), 0, 0);
+                    setValueAt(getProperty().parseBaseValue(row.get(0)), 0, 0);
                 } catch (ParseException ignored) {
                 }
             }

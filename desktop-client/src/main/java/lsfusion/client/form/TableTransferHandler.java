@@ -12,11 +12,14 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
+import static java.util.Collections.singletonList;
+
 public class TableTransferHandler extends TransferHandler {
 
     private final TableInterface table;
 
     public interface TableInterface {
+        boolean richTextSelected();
         ClientPropertyDraw getProperty(int row, int column);
         void pasteTable(List<List<String>> table);
     }
@@ -60,8 +63,8 @@ public class TableTransferHandler extends TransferHandler {
         return null;
     }
 
-    private boolean checkFlavor(DataFlavor flavor) {
-        return (flavor.getHumanPresentableName().equals("text/plain") || flavor.getHumanPresentableName().equals("Unicode String"));
+    private boolean checkFlavor(DataFlavor flavor, boolean rich) {
+        return (rich && flavor.getHumanPresentableName().equals("text/html")) || flavor.getHumanPresentableName().equals("text/plain") || flavor.getHumanPresentableName().equals("Unicode String");
     }
 
     /**
@@ -148,15 +151,16 @@ public class TableTransferHandler extends TransferHandler {
     @Override
     public boolean importData(JComponent c, Transferable t) {
         if (c == table) {
+            boolean rich = table.richTextSelected();
             for (DataFlavor flavor : t.getTransferDataFlavors()) {
-                if (String.class.isAssignableFrom(flavor.getRepresentationClass()) && checkFlavor(flavor)) {
+                if (String.class.isAssignableFrom(flavor.getRepresentationClass()) && checkFlavor(flavor, rich)) {
                     String value = null;
                     try {
                         value = (String) t.getTransferData(flavor);
                     } catch (Exception ignored) {
                     }
                     if (value != null) {
-                        List<List<String>> clipboardTable = getClipboardTable(value);
+                        List<List<String>> clipboardTable = rich ? singletonList(singletonList(value)) : getClipboardTable(value);
                         table.pasteTable(clipboardTable);
                         return true;
                     }

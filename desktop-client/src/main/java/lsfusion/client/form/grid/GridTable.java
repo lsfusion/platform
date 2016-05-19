@@ -16,6 +16,7 @@ import lsfusion.client.logics.ClientForm;
 import lsfusion.client.logics.ClientGroupObject;
 import lsfusion.client.logics.ClientGroupObjectValue;
 import lsfusion.client.logics.ClientPropertyDraw;
+import lsfusion.client.logics.classes.ClientStringClass;
 import lsfusion.interop.FontInfo;
 import lsfusion.interop.KeyStrokes;
 import lsfusion.interop.Order;
@@ -797,6 +798,12 @@ public class GridTable extends ClientPropertyTable {
                 : model.getColumnCount() > 0
                 ? model.getColumnProperty(0)
                 : null;
+    }
+
+    @Override
+    public boolean richTextSelected() {
+        ClientPropertyDraw property = getCurrentProperty();
+        return property != null && property.baseType instanceof ClientStringClass && ((ClientStringClass) property.baseType).rich;
     }
 
     public void pasteTable(List<List<String>> table) {

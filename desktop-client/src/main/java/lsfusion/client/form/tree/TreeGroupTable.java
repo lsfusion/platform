@@ -17,6 +17,7 @@ import lsfusion.client.logics.ClientGroupObject;
 import lsfusion.client.logics.ClientGroupObjectValue;
 import lsfusion.client.logics.ClientPropertyDraw;
 import lsfusion.client.logics.ClientTreeGroup;
+import lsfusion.client.logics.classes.ClientStringClass;
 import lsfusion.client.logics.classes.ClientType;
 import lsfusion.interop.Order;
 import lsfusion.interop.form.ColorPreferences;
@@ -664,6 +665,12 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
                 return ((TreeGroupNode) node).key;
         }
         return ClientGroupObjectValue.EMPTY;
+    }
+
+    @Override
+    public boolean richTextSelected() {
+        ClientPropertyDraw property = getCurrentProperty();
+        return property != null && property.baseType instanceof ClientStringClass && ((ClientStringClass) property.baseType).rich;
     }
 
     public void pasteTable(List<List<String>> table) {

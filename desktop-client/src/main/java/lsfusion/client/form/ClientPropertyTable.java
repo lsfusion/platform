@@ -9,6 +9,7 @@ import lsfusion.client.form.cell.ClientAbstractCellRenderer;
 import lsfusion.client.form.dispatch.EditPropertyDispatcher;
 import lsfusion.client.logics.ClientGroupObjectValue;
 import lsfusion.client.logics.ClientPropertyDraw;
+import lsfusion.client.logics.classes.ClientStringClass;
 import lsfusion.client.logics.classes.ClientType;
 import lsfusion.interop.KeyStrokes;
 
@@ -274,6 +275,13 @@ public abstract class ClientPropertyTable extends JTable implements TableTransfe
 
         if (rowIndex != -1 && colIndex != -1) {
             ClientPropertyDraw cellProperty = getProperty(rowIndex, colIndex);
+            
+            // todo: временно отключил тултипы для richText'а. часто вылетает (особенно при вставке из Word). следует включить после перехода на Java 8:
+            // https://bugs.openjdk.java.net/browse/JDK-8034955
+            if (cellProperty.baseType instanceof ClientStringClass && ((ClientStringClass) cellProperty.baseType).rich) {
+                return null;
+            }
+            
             if (!cellProperty.echoSymbols) {
                 Object value = getValueAt(rowIndex, colIndex);
                 if (value != null) {

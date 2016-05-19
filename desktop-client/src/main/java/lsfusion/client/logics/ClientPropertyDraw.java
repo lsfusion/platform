@@ -8,6 +8,7 @@ import lsfusion.client.SwingUtils;
 import lsfusion.client.form.*;
 import lsfusion.client.form.cell.PanelView;
 import lsfusion.client.logics.classes.ClientClass;
+import lsfusion.client.logics.classes.ClientStringClass;
 import lsfusion.client.logics.classes.ClientType;
 import lsfusion.client.logics.classes.ClientTypeSerializer;
 import lsfusion.client.serialization.ClientIdentitySerializable;
@@ -531,6 +532,10 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
     private String escapeHTML(String value) {
         return value.replace("<", "&lt;").replace(">", "&gt;");
+    }
+    
+    public boolean isRichTextType() {
+        return baseType instanceof ClientStringClass && ((ClientStringClass) baseType).rich;
     }
 
     public class CaptionReader implements ClientPropertyReader {
