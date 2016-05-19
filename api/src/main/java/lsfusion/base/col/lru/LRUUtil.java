@@ -1,6 +1,7 @@
 package lsfusion.base.col.lru;
 
 import lsfusion.base.BaseUtils;
+import lsfusion.base.SystemUtils;
 import lsfusion.interop.DaemonThreadFactory;
 
 import javax.management.Notification;
@@ -182,7 +183,7 @@ public class LRUUtil {
      * The default concurrency level for this table, used when not
      * otherwise specified in a constructor.
      */
-    public static final int DEFAULT_CONCURRENCY_LEVEL = 128;
+    public static final int DEFAULT_CONCURRENCY_LEVEL = SystemUtils.getAvailableProcessors() * 8;
 
     public static class Strategy {
         public int baseTime;

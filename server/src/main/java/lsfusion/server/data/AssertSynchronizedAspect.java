@@ -3,6 +3,7 @@ package lsfusion.server.data;
 import lsfusion.base.ExceptionUtils;
 import lsfusion.base.WeakIdentityHashMap;
 import lsfusion.base.WeakIdentityHashSet;
+import lsfusion.base.col.MapFact;
 import lsfusion.server.ServerLoggers;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -19,7 +20,7 @@ import static lsfusion.server.ServerLoggers.sqlLogger;
 @Aspect
 public class AssertSynchronizedAspect {
 
-    private static Map<Object, WeakReference<Thread>> map = new ConcurrentIdentityHashMap<Object, WeakReference<Thread>>();
+    private static Map<Object, WeakReference<Thread>> map = MapFact.getGlobalConcurrentIdentityWeakHashMap();
 
     @Around("execution(@lsfusion.server.data.AssertSynchronized * *.*(..)) && target(object)")
     public Object callMethod(ProceedingJoinPoint thisJoinPoint, Object object) throws Throwable {

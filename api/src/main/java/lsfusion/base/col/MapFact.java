@@ -17,6 +17,7 @@ import lsfusion.base.col.interfaces.mutable.add.MAddMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImRevValueMap;
+import lsfusion.base.col.lru.LRUUtil;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -712,7 +713,7 @@ public class MapFact {
     }
 
     private static <K, V> ConcurrentHashMap<K, V> getGlobalConcurrentHashMap(int initialCapacity) {
-        return new ConcurrentHashMap<>(initialCapacity, DEFAULT_LOAD_FACTOR, SystemUtils.getAvailableProcessors() * 2);
+        return new ConcurrentHashMap<>(initialCapacity, DEFAULT_LOAD_FACTOR, LRUUtil.DEFAULT_CONCURRENCY_LEVEL);
     }
     
     public static <K, V> ConcurrentHashMap<K, V> getGlobalConcurrentHashMap() {
@@ -726,9 +727,13 @@ public class MapFact {
     }
 
     private static <K, V> ConcurrentWeakHashMap<K, V> getGlobalConcurrentWeakHashMap(int initialCapacity) {
-        return new ConcurrentWeakHashMap<>(initialCapacity, DEFAULT_LOAD_FACTOR, SystemUtils.getAvailableProcessors() * 2);
+        return new ConcurrentWeakHashMap<>(initialCapacity, DEFAULT_LOAD_FACTOR, LRUUtil.DEFAULT_CONCURRENCY_LEVEL);
     }
-    
+
+    public static <K, V> ConcurrentIdentityWeakHashMap<K, V> getGlobalConcurrentIdentityWeakHashMap() {
+        return new ConcurrentIdentityWeakHashMap<>(DEFAULT_INITIAL_CAPACITY, DEFAULT_LOAD_FACTOR, LRUUtil.DEFAULT_CONCURRENCY_LEVEL);
+    }
+
     public static <K, V> ConcurrentWeakHashMap<K, V> getGlobalConcurrentWeakHashMap() {
         return getGlobalConcurrentWeakHashMap(DEFAULT_INITIAL_CAPACITY);
     }
