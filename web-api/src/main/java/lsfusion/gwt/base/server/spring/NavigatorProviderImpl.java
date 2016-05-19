@@ -56,7 +56,7 @@ public class NavigatorProviderImpl implements NavigatorProvider, DisposableBean,
                     Integer totalMemory = (int) (Runtime.getRuntime().totalMemory() / 1048576);
                     Integer maximumMemory = (int) (Runtime.getRuntime().maxMemory() / 1048576);
                     Integer freeMemory = (int) (Runtime.getRuntime().freeMemory() / 1048576);
-                    String javaVersion = System.getProperty("java.version") + " " + System.getProperty("sun.arch.data.model") + " bit";
+                    String javaVersion = SystemUtils.getJavaVersion() + " " + System.getProperty("sun.arch.data.model") + " bit";
 
                     try {
                         RemoteLogicsInterface bl = blProvider.getLogics();

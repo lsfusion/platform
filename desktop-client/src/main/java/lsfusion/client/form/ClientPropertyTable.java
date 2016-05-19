@@ -2,6 +2,7 @@ package lsfusion.client.form;
 
 import com.google.common.base.Preconditions;
 import lsfusion.base.BaseUtils;
+import lsfusion.base.SystemUtils;
 import lsfusion.client.SwingUtils;
 import lsfusion.client.form.cell.CellTableInterface;
 import lsfusion.client.form.cell.ClientAbstractCellEditor;
@@ -276,9 +277,10 @@ public abstract class ClientPropertyTable extends JTable implements TableTransfe
         if (rowIndex != -1 && colIndex != -1) {
             ClientPropertyDraw cellProperty = getProperty(rowIndex, colIndex);
             
-            // todo: временно отключил тултипы для richText'а. часто вылетает (особенно при вставке из Word). следует включить после перехода на Java 8:
+            // todo: временно отключил тултипы для richText'а для Java старше 8. часто вылетает (особенно при вставке из Word). следует убрать проверку после перехода на Java 8:
             // https://bugs.openjdk.java.net/browse/JDK-8034955
-            if (cellProperty.baseType instanceof ClientStringClass && ((ClientStringClass) cellProperty.baseType).rich) {
+            Double javaVersion = SystemUtils.getJavaSpecificationVersion();
+            if ((javaVersion == null || javaVersion < 1.8) && cellProperty.baseType instanceof ClientStringClass && ((ClientStringClass) cellProperty.baseType).rich) {
                 return null;
             }
             

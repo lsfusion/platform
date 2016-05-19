@@ -3,8 +3,8 @@ package lsfusion.client;
 import lsfusion.base.NavigatorInfo;
 import lsfusion.base.SystemUtils;
 import lsfusion.client.remote.proxy.RemoteBusinessLogicProxy;
-import lsfusion.interop.RemoteLogicsLoaderInterface;
 import lsfusion.interop.RemoteLogicsInterface;
+import lsfusion.interop.RemoteLogicsLoaderInterface;
 import lsfusion.interop.exceptions.LockedException;
 import lsfusion.interop.exceptions.LoginException;
 import lsfusion.interop.exceptions.RemoteInternalException;
@@ -153,7 +153,7 @@ public final class LoginAction {
             Integer totalMemory = (int) (Runtime.getRuntime().totalMemory() / 1048576);
             Integer maximumMemory = (int) (Runtime.getRuntime().maxMemory() / 1048576);
             Integer freeMemory = (int) (Runtime.getRuntime().freeMemory() / 1048576);
-            String javaVersion = System.getProperty("java.version") + " " + System.getProperty("sun.arch.data.model") + " bit";
+            String javaVersion = SystemUtils.getJavaVersion() + " " + System.getProperty("sun.arch.data.model") + " bit";
 
             String screenSize = null;
             Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();

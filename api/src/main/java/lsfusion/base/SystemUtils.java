@@ -493,6 +493,22 @@ public class SystemUtils {
     public static TimeZone getCurrentTimeZone() {
         return Calendar.getInstance().getTimeZone();
     }
+    
+    public static String getJavaVersion() {
+        return getSystemProperty("java.version");
+    }
+    
+    public static String getJavaSpecificationVersionString() {
+        return getSystemProperty("java.specification.version");   
+    }
+    
+    public static Double getJavaSpecificationVersion() {
+        try {
+            return Double.parseDouble(getJavaSpecificationVersionString());
+        } catch (NullPointerException | NumberFormatException e) {
+            return null;
+        }
+    } 
 
     public static String resolveName(Class<?> c, String name) {
         if (name == null) {

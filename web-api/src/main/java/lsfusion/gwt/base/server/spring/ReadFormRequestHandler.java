@@ -24,11 +24,9 @@ import javax.servlet.http.HttpServletResponse;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
-import java.awt.*;
 import java.io.*;
 import java.rmi.RemoteException;
 import java.util.*;
-import java.util.List;
 
 public class ReadFormRequestHandler implements HttpRequestHandler {
     private static final String FORM_SID_PARAM = "sid";
@@ -76,7 +74,7 @@ public class ReadFormRequestHandler implements HttpRequestHandler {
             Integer totalMemory = (int) (Runtime.getRuntime().totalMemory() / 1048576);
             Integer maximumMemory = (int) (Runtime.getRuntime().maxMemory() / 1048576);
             Integer freeMemory = (int) (Runtime.getRuntime().freeMemory() / 1048576);
-            String javaVersion = System.getProperty("java.version") + " " + System.getProperty("sun.arch.data.model") + " bit";
+            String javaVersion = SystemUtils.getJavaVersion() + " " + System.getProperty("sun.arch.data.model") + " bit";
 
 //            String screenSize = null;
 //            Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
