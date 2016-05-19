@@ -409,7 +409,7 @@ public class ClientFormController implements AsyncListener {
                 // срабатывает событие FOCUS_LOST, которое приводит к ещё одному нежелательному событию itemStateChanged.
                 // в результате получаем нарушение синхронности событий.
                 // в то же время предлагаемый вызов через invokeLater нам тоже не помогает. поэтому извращаемся таким образом
-                if (latestCheckBoxEvent[0].getID() != FocusEvent.FOCUS_LOST) {
+                if (latestCheckBoxEvent[0] == null || latestCheckBoxEvent[0].getID() != FocusEvent.FOCUS_LOST) {
                     // убрал invokeLater(), поскольку setRegularFilter() - синхронное событие - должно сразу блокировать EDT
                     RmiQueue.runAction(new Runnable() {
                         @Override
