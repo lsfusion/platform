@@ -29,13 +29,13 @@ public class StringToFileActionProperty extends ScriptingActionProperty {
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
 
-        String inputValue = (String) context.getDataKeyValue(inputValueInterface).object;
-        String charset = (String) context.getDataKeyValue(charsetInterface).object;
-        String extension = (String) context.getDataKeyValue(extensionInterface).object;
+        String inputValue = (String) context.getKeyValue(inputValueInterface).getValue();
+        String charset = (String) context.getKeyValue(charsetInterface).getValue();
+        String extension = (String) context.getKeyValue(extensionInterface).getValue();
 
         try {
-            byte[] file = inputValue.getBytes(charset);
-            byte[] ext = extension.getBytes(charset);
+            byte[] file = inputValue == null ? new byte[0] : inputValue.getBytes(charset);
+            byte[] ext = extension == null ? new byte[0] : extension.getBytes(charset);
             byte[] fileBytes = ext.length == 0 ? BaseUtils.mergeFileWithoutExtension(file) : BaseUtils.mergeFileAndExtension(file, ext);
             if (fileBytes != null) {
                 findProperty("resultCustomFile[]").change(fileBytes, context);
@@ -43,5 +43,10 @@ public class StringToFileActionProperty extends ScriptingActionProperty {
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }
+    }
+
+    @Override
+    protected boolean allowNulls() {
+        return true;
     }
 }
