@@ -1186,6 +1186,7 @@ expressionFriendlyPD[List<TypedParameter> context, boolean dynamic] returns [LPW
 	|	castDef=castPropertyDefinition[context, dynamic] { $property = $castDef.property; }
 	|	sessionDef=sessionPropertyDefinition[context, dynamic] { $property = $sessionDef.property; }
 	|	signDef=signaturePropertyDefinition[context, dynamic] { $property = $signDef.property; }
+	|	tabVisibleDef=tabVisiblePropertyDefinition[context, dynamic] { $property = $tabVisibleDef.property; }
 	|	constDef=constantProperty { $property = new LPWithParams($constDef.property, new ArrayList<Integer>()); }
 	;
 
@@ -1550,6 +1551,31 @@ signaturePropertyDefinition[List<TypedParameter> context, boolean dynamic] retur
 	}
 } 
 	: 	'CLASS' '(' expr=propertyExpression[context, dynamic] ')'
+	;
+
+tabVisiblePropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
+@init {
+    FormEntity form = null;
+    ComponentView comp = null;
+}
+@after {
+	if (inPropParseState()) {
+		$property = self.addScriptedTabVisibleProp(comp);
+	}
+}
+	: 	'TABVISIBLE'
+		formPart=ID '.'
+			{
+				if (inPropParseState()) {
+					form = self.findForm($formPart.text);
+				}
+			}
+			mid=multiCompoundID
+          		{
+            			if (inPropParseState()) {
+            				comp = form.getNFRichDesign(self.getVersion()).getComponentBySID($mid.sid, self.getVersion());
+            			}
+            		}
 	;
 
 formulaPropertyDefinition returns [LP property, List<ResolveClassSet> signature]

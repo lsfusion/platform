@@ -35,6 +35,7 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.form.entity.*;
 import lsfusion.server.form.instance.FormSessionScope;
 import lsfusion.server.form.navigator.NavigatorElement;
+import lsfusion.server.form.view.ComponentView;
 import lsfusion.server.form.view.FormView;
 import lsfusion.server.form.window.*;
 import lsfusion.server.logics.*;
@@ -2401,6 +2402,11 @@ public class ScriptingLogicsModule extends LogicsModule {
         checkCalculationProperty(property.property);
         LCP newProp = addClassProp((LCP) property.property);
         return new LPWithParams(newProp, property.usedParams);
+    }
+
+    public LPWithParams addScriptedTabVisibleProp(ComponentView componentView) throws ScriptingErrorLog.SemanticErrorException {
+        CalcPropertyRevImplement<ClassPropertyInterface, ObjectEntity> tabVisibleProperty = componentView.getTabVisible();
+        return new LPWithParams(new LCP<>(tabVisibleProperty.property), new ArrayList<Integer>());
     }
 
     public void addScriptedFollows(PropertyUsage mainPropUsage, List<TypedParameter> namedParams, List<PropertyFollowsDebug> resolveOptions, LPWithParams rightProp, Event event, ActionDebugInfo debugInfo) throws ScriptingErrorLog.SemanticErrorException {

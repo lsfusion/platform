@@ -1,20 +1,30 @@
 package lsfusion.server.form.view;
 
+import lsfusion.base.col.MapFact;
 import lsfusion.base.identity.IdentityObject;
 import lsfusion.interop.ComponentDesign;
 import lsfusion.interop.form.layout.AbstractComponent;
 import lsfusion.interop.form.layout.FlexAlignment;
 import lsfusion.server.caches.IdentityLazy;
+import lsfusion.server.classes.LogicalClass;
+import lsfusion.server.classes.ValueClass;
+import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.form.entity.ObjectEntity;
 import lsfusion.server.logics.mutables.NFFact;
 import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.mutables.interfaces.NFProperty;
+import lsfusion.server.logics.property.CalcPropertyRevImplement;
+import lsfusion.server.logics.property.ClassPropertyInterface;
+import lsfusion.server.logics.property.derived.DerivedProperty;
 import lsfusion.server.serialization.ServerIdentitySerializable;
 import lsfusion.server.serialization.ServerSerializationPool;
+import lsfusion.server.session.DataSession;
 
 import java.awt.*;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.sql.SQLException;
 
 import static java.lang.Math.max;
 
@@ -35,6 +45,20 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
     public int marginRight;
 
     public boolean defaultComponent = false;
+
+    private CalcPropertyRevImplement<ClassPropertyInterface, ObjectEntity> tabVisible;
+
+    public CalcPropertyRevImplement<ClassPropertyInterface, ObjectEntity> getTabVisible() {
+        if (tabVisible == null) {
+            tabVisible = DerivedProperty.createDataPropRev(this.toString(), MapFact.<ObjectEntity, ValueClass>EMPTY(), LogicalClass.instance);
+        }
+        return tabVisible;
+    }
+
+    public void updateTabVisibleProperty(DataSession session, Boolean value) throws SQLException, SQLHandledException {
+        if(tabVisible != null)
+            tabVisible.property.change(session, value);
+    }
 
     public ComponentView() {
     }

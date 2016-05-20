@@ -1445,9 +1445,17 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
     protected Map<ContainerView, ComponentView> visibleTabs = new HashMap<>();
 
-    public void setTabVisible(ContainerView view, ComponentView page) {
+    public void setTabVisible(ContainerView view, ComponentView page) throws SQLException, SQLHandledException {
         assert view.isTabbedPane();
+        updateTabVisibleProperty(page);
         visibleTabs.put(view, page);
+    }
+
+    private void updateTabVisibleProperty(ComponentView page) throws SQLException, SQLHandledException {
+        for(ComponentView tab : visibleTabs.values()) {
+            tab.updateTabVisibleProperty(session, null);
+        }
+        page.updateTabVisibleProperty(session, true);
     }
 
     boolean refresh = true;
