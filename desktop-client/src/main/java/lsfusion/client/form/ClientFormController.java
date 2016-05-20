@@ -37,7 +37,10 @@ import lsfusion.interop.form.*;
 import javax.swing.*;
 import javax.swing.Timer;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.KeyEvent;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.File;
@@ -386,49 +389,17 @@ public class ClientFormController implements AsyncListener {
     }
 
     private void createSingleFilterComponent(final ClientRegularFilterGroup filterGroup, final ClientRegularFilter singleFilter) {
-        final AWTEvent[] latestCheckBoxEvent = new AWTEvent[1];
-        final JCheckBox checkBox = new JCheckBox(singleFilter.getFullCaption()) {
+        final SingleFilterBox checkBox = new SingleFilterBox(filterGroup, singleFilter) {
             @Override
-            protected void processEvent(AWTEvent e) {
-                latestCheckBoxEvent[0] = e;
-                super.processEvent(e);
+            public void selected() throws IOException {
+                setRegularFilter(filterGroup, singleFilter);
+            }
+
+            @Override
+            public void deselected() throws IOException {
+                setRegularFilter(filterGroup, null);
             }
         };
-
-        if (filterGroup.defaultFilterIndex >= 0) {
-            checkBox.setSelected(true);
-        }
-
-        checkBox.addItemListener(new ItemListener() {
-
-            public void itemStateChanged(final ItemEvent ie) {
-                // штука, которую не собираются править 
-                // http://bugs.java.com/view_bug.do?bug_id=6924233
-                // блокировка EDT путём показывания нашего busyDialog'а во время обработки события не очень хорошая идея.
-                // это может привести к разным непредвиденным последствиям. в нашем случае при показе диалога на чек-боксе 
-                // срабатывает событие FOCUS_LOST, которое приводит к ещё одному нежелательному событию itemStateChanged.
-                // в результате получаем нарушение синхронности событий.
-                // в то же время предлагаемый вызов через invokeLater нам тоже не помогает. поэтому извращаемся таким образом
-                if (latestCheckBoxEvent[0] == null || latestCheckBoxEvent[0].getID() != FocusEvent.FOCUS_LOST) {
-                    // убрал invokeLater(), поскольку setRegularFilter() - синхронное событие - должно сразу блокировать EDT
-                    RmiQueue.runAction(new Runnable() {
-                        @Override
-                        public void run() {
-                            try {
-                                if (ie.getStateChange() == ItemEvent.SELECTED) {
-                                    setRegularFilter(filterGroup, singleFilter);
-                                }
-                                if (ie.getStateChange() == ItemEvent.DESELECTED) {
-                                    setRegularFilter(filterGroup, null);
-                                }
-                            } catch (IOException e) {
-                                throw new RuntimeException(getString("form.error.changing.regular.filter"), e);
-                            }
-                        }
-                    });
-                }
-            }
-        });
 
         addFilterView(filterGroup, checkBox);
 
