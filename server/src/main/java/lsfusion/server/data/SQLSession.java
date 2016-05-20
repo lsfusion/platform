@@ -1061,9 +1061,14 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         return new Pair<>(command, env);
     }
 
+    private static Pair<String, StaticExecuteEnvironment> getVacuumAnalyzeDDL(String table, SQLSyntax syntax) {
+        return new Pair<>(syntax.getAnalyze(table), StaticExecuteEnvironmentImpl.NOREADONLY);
+    }
+
     public void vacuumAnalyzeSessionTable(String table, OperationOwner owner) throws SQLException {
 //        (isInTransaction()? "" :"VACUUM ") + по идее не надо так как TRUNCATE делается
-        executeDDL(syntax.getAnalyze(table), StaticExecuteEnvironmentImpl.NOREADONLY, owner);
+        Pair<String, StaticExecuteEnvironment> ddl = getVacuumAnalyzeDDL(table, syntax);
+        executeDDL(ddl.first, ddl.second, owner);
     }
 
     private int noReadOnly = 0;
@@ -2900,16 +2905,29 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     }
     private static void createTemporaryTable(Connection connection, TypePool typePool, SQLSyntax syntax, String table, ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, OperationOwner owner) throws SQLException {
         Pair<String, StaticExecuteEnvironment> result = getCreateDDL(table, keys, properties, syntax);
+        executeDDL(result, connection, typePool, owner);
+    }
+    private void vacuumAnalyzeSessionTable(Connection connection, String table, OperationOwner owner) throws SQLException {
+        vacuumAnalyzeSessionTable(table, connection, typePool, syntax, owner);
+    }
+    private static void vacuumAnalyzeSessionTable(String table, Connection connection, TypePool typePool, SQLSyntax syntax, OperationOwner owner) throws SQLException {
+        Pair<String, StaticExecuteEnvironment> ddl = getVacuumAnalyzeDDL(table, syntax);
+        executeDDL(ddl, connection, typePool, owner);
+    }
+
+    private static void executeDDL(Pair<String, StaticExecuteEnvironment> result, Connection connection, TypePool typePool, OperationOwner owner) throws SQLException {
+        String command = result.first;
+        StaticExecuteEnvironment env = result.second;
 
         Statement statement = null;
 
         Result<Throwable> firstException = new Result<Throwable>();
         try {
-            result.second.before(connection, typePool, result.first, owner);
+            env.before(connection, typePool, command, owner);
 
             statement = createSingleStatement(connection);
 
-            statement.execute(result.first);
+            statement.execute(command);
 
         } catch (Throwable e) {
             logger.error(statement == null ? "PREPARING STATEMENT" : statement.toString() + " " + e.getMessage());
@@ -2984,6 +3002,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         };
 
         readData(table, keys, properties, reader, owner);
+
+        vacuumAnalyzeSessionTable(sqlTo, table, owner);
     }
 
     private void readData(String table, ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, ResultHandler<KeyField, PropertyField> reader, OperationOwner owner) throws SQLException, SQLHandledException {
