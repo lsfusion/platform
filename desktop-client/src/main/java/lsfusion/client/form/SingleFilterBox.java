@@ -53,6 +53,7 @@ public abstract class SingleFilterBox extends JCheckBox {
                     });
                 } else {
                     internalChange = true; // при изменении состояния на FOCUS_LOST ничего не делаем => возвращаем состояние
+                    latestCheckBoxEvent = null;
                     setSelected(!isSelected());
                 }
             }
