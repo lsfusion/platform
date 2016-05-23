@@ -12,6 +12,17 @@ vacuumTablesAction 'Упаковать БД потаблично' () = ACTION {
     FOR table IS Table AND NOT skipVacuum(table) ORDER rows(table) DO {
         vacuumTableAction(table);
     }
+    
+    //vacuum части системных таблиц
+    runSQL('VACUUM FULL pg_catalog.pg_statistic');
+    runSQL('VACUUM FULL pg_catalog.pg_attribute');
+    runSQL('VACUUM FULL pg_catalog.pg_class');
+    runSQL('VACUUM FULL pg_catalog.pg_depend');
+    runSQL('VACUUM FULL pg_catalog.pg_type');
+    runSQL('VACUUM FULL pg_catalog.pg_constraint');
+    runSQL('VACUUM FULL pg_catalog.pg_index');
+    runSQL('VACUUM FULL pg_catalog.pg_proc');
+    
     MESSAGE 'Упаковка БД была успешно завершена';
 }
 
