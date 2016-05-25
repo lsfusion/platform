@@ -21,7 +21,7 @@
     </modules>
 
     <scm>
-        <developerConnection>scm:svn:svn://server/lsfusion/fsl/trunk</developerConnection>
+        <developerConnection>scm:svn:svn://server/lsfusion/fsl/branches/fsl-RC</developerConnection>
     </scm>
 
     <build>

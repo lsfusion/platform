@@ -15,7 +15,7 @@
     <name>Fusion Standard Library Logics</name>
 
     <properties>
-        <lsfusion.version>1.2.0-SNAPSHOT</lsfusion.version>
+        <fsl.version>1.2.0-SNAPSHOT</fsl.version>
         <assemble.mainClass>lsfusion.server.logics.BusinessLogicsBootstrap</assemble.mainClass>
         <assemble.finalName>lsfusion-server-${project.version}</assemble.finalName>
     </properties>
@@ -24,7 +24,7 @@
         <dependency>
             <groupId>lsfusion.fsl</groupId>
             <artifactId>fsl-server</artifactId>
-            <version>${lsfusion.version}</version>
+            <version>${fsl.version}</version> <!-- нельзя использовать project.version, т.к. будет браться версия модуля-потомка -->
         </dependency>
     </dependencies>
 </project>

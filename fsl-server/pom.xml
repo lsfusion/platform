@@ -15,15 +15,11 @@
     <packaging>jar</packaging>
     <name>Fusion Standard Library Server</name>
     
-    <properties>
-        <lsfusion.version>1.2.0-SNAPSHOT</lsfusion.version>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>lsfusion.platform</groupId>
             <artifactId>server</artifactId>
-            <version>${lsfusion.version}</version>
+            <version>${project.version}</version>
         </dependency>
         
         <dependency>
