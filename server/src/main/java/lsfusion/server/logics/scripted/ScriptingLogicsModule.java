@@ -1379,7 +1379,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public LPWithParams addScriptedListAProp(boolean newSession, List<PropertyUsage> migrateSessionProps, boolean migrateAllSessionProps,
                                              boolean isNested, boolean singleApply, List<LPWithParams> properties,
-                                             List<LP> localProps, boolean newThread, long delay, Long period) throws ScriptingErrorLog.SemanticErrorException {
+                                             List<LP> localProps) throws ScriptingErrorLog.SemanticErrorException {
         List<Object> resultParams = getParamsPlainList(properties);
 
         MExclSet<Pair<LP, List<ResolveClassSet>>> mDebugLocals = null;
@@ -1405,11 +1405,6 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         if (newSession) {
             listLP = addNewSessionAProp(null, "", listLP, isNested, false, singleApply, getMigrateProps(migrateSessionProps, migrateAllSessionProps));
-        }
-
-        if (newThread) {
-            assert newSession;
-            listLP = addNewThreadAProp(null, "", listLP, delay, period);
         }
 
         List<Integer> usedParams = mergeAllParams(properties);
@@ -2304,6 +2299,15 @@ public class ScriptingLogicsModule extends LogicsModule {
     public LPWithParams addScriptedImportActionProperty(ImportSourceFormat format, LPWithParams fileProp, List<String> ids, List<PropertyUsage> propUsages) throws ScriptingErrorLog.SemanticErrorException {
         List<LCP> props = getProperties(propUsages);
         return addScriptedJoinAProp(addAProp(ImportDataActionProperty.createProperty(fileProp.property.property.getValueClass(ClassType.valuePolicy), format, this, ids, props)), Collections.singletonList(fileProp));
+    }
+
+    public LPWithParams addScriptedNewThreadActionProperty(LPWithParams actionProp, LPWithParams connectionProp, long delay, Long period) throws ScriptingErrorLog.SemanticErrorException {
+        List<LPWithParams> propParams = toList(actionProp);
+        if(connectionProp != null)
+            propParams.add(connectionProp);
+        List<Integer> allParams = mergeAllParams(propParams);
+        LAP<?> property = addNewThreadAProp(null, "", delay, period, getParamsPlainList(propParams).toArray());
+        return new LPWithParams(property, allParams);
     }
 
     private List<LCP> getProperties(List<PropertyUsage> propUsages) throws ScriptingErrorLog.SemanticErrorException {

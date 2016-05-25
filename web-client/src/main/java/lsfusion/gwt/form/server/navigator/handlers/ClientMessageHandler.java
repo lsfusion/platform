@@ -7,6 +7,8 @@ import lsfusion.gwt.form.shared.actions.navigator.ClientMessage;
 import lsfusion.gwt.form.shared.actions.navigator.ClientMessageResult;
 import lsfusion.interop.RemoteLogicsInterface;
 import lsfusion.interop.remote.CallbackMessage;
+import lsfusion.interop.remote.ClientCallbackMessage;
+import lsfusion.interop.remote.LifecycleMessage;
 import net.customware.gwt.dispatch.server.ExecutionContext;
 import net.customware.gwt.dispatch.shared.DispatchException;
 
@@ -20,7 +22,18 @@ public class ClientMessageHandler extends SimpleActionHandlerEx<ClientMessage, C
 
     @Override
     public ClientMessageResult executeEx(ClientMessage action, ExecutionContext context) throws DispatchException, IOException {
-        List<CallbackMessage> messages = servlet.getNavigator().getClientCallBack().pullMessages();
-        return new ClientMessageResult(messages != null && messages.contains(CallbackMessage.SERVER_RESTARTING));
+        List<LifecycleMessage> messages = servlet.getNavigator().getClientCallBack().pullMessages();
+        return new ClientMessageResult(serverRestarting(messages));
+    }
+
+    private boolean serverRestarting(List<LifecycleMessage> messages) {
+        boolean result = false;
+        if(messages != null) {
+            for (LifecycleMessage message : messages) {
+                if (message instanceof ClientCallbackMessage && ((ClientCallbackMessage) message).message.equals(CallbackMessage.SERVER_RESTARTING))
+                    result = true;
+            }
+        }
+        return result;
     }
 }

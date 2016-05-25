@@ -1,8 +1,10 @@
 package lsfusion.client;
 
 import lsfusion.client.rmi.ConnectionLostManager;
-import lsfusion.interop.remote.CallbackMessage;
 import lsfusion.interop.remote.ClientCallBackInterface;
+import lsfusion.interop.remote.ClientCallbackMessage;
+import lsfusion.interop.remote.LifecycleMessage;
+import lsfusion.interop.remote.PushMessage;
 
 import javax.swing.*;
 import java.rmi.RemoteException;
@@ -17,40 +19,49 @@ public class ClientCallBackProcessor {
         this.remoteClient = remoteClient;
     }
 
-    public void processMessages(List<CallbackMessage> messages) {
+    public void processMessages(List<LifecycleMessage> messages) {
         if (messages != null) {
-            for (CallbackMessage message : messages) {
+            for (LifecycleMessage message : messages) {
                 processMessage(message);
             }
         }
     }
 
-    private void processMessage(CallbackMessage message) {
-        switch (message) {
-            case DISCONNECTED:
-                Main.closeHangingSockets();
-                disconnect(getString("rmi.connectionlost.disconnect"));
-                break;
-            case SERVER_RESTARTING:
-                notifyServerRestarting();
-                break;
-            case CLIENT_RESTART:
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        Main.reconnect();
-                    }
-                });
-                Main.reconnect();
-                break;
-            case CLIENT_SHUTDOWN:
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        Main.shutdown();
-                    }
-                });
-                break;
+    private void processMessage(final LifecycleMessage message) {
+        if(message instanceof ClientCallbackMessage) {
+            switch (((ClientCallbackMessage) message).message) {
+                case DISCONNECTED:
+                    Main.closeHangingSockets();
+                    disconnect(getString("rmi.connectionlost.disconnect"));
+                    break;
+                case SERVER_RESTARTING:
+                    notifyServerRestarting();
+                    break;
+                case CLIENT_RESTART:
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            Main.reconnect();
+                        }
+                    });
+                    Main.reconnect();
+                    break;
+                case CLIENT_SHUTDOWN:
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            Main.shutdown();
+                        }
+                    });
+                    break;
+            }
+        } else if(message instanceof PushMessage) {
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    Main.executeNavigatorAction(((PushMessage)message).idNotification);
+                }
+            });
         }
     }
 

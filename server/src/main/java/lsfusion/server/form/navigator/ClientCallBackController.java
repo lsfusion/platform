@@ -1,8 +1,6 @@
 package lsfusion.server.form.navigator;
 
-import lsfusion.interop.remote.CallbackMessage;
-import lsfusion.interop.remote.ClientCallBackInterface;
-import lsfusion.interop.remote.RemoteObject;
+import lsfusion.interop.remote.*;
 import lsfusion.server.ServerLoggers;
 
 import java.rmi.RemoteException;
@@ -15,7 +13,7 @@ public class ClientCallBackController extends RemoteObject implements ClientCall
         void used();
     }
 
-    private final List<CallbackMessage> messages = new ArrayList<>();
+    private final List<LifecycleMessage> messages = new ArrayList<>();
     private final UsageTracker usageTracker;
     private Boolean deniedRestart = null;
 
@@ -26,16 +24,16 @@ public class ClientCallBackController extends RemoteObject implements ClientCall
     }
 
     public synchronized void disconnect() {
-        addMessage(CallbackMessage.DISCONNECTED);
+        addMessage(new ClientCallbackMessage(CallbackMessage.DISCONNECTED));
     }
 
     public synchronized void notifyServerRestart() {
         deniedRestart = false;
-        addMessage(CallbackMessage.SERVER_RESTARTING);
+        addMessage(new ClientCallbackMessage(CallbackMessage.SERVER_RESTARTING));
     }
 
     public synchronized void shutdownClient(boolean restart) {
-        addMessage(restart ? CallbackMessage.CLIENT_RESTART : CallbackMessage.CLIENT_SHUTDOWN);
+        addMessage(new ClientCallbackMessage(restart ? CallbackMessage.CLIENT_RESTART : CallbackMessage.CLIENT_SHUTDOWN));
     }
 
     public synchronized void notifyServerRestartCanceled() {
@@ -51,11 +49,15 @@ public class ClientCallBackController extends RemoteObject implements ClientCall
         return deniedRestart != null && !deniedRestart;
     }
 
-    public synchronized void addMessage(CallbackMessage message) {
+    public synchronized void pushMessage(Integer idNotification) {
+        addMessage(new PushMessage(idNotification));
+    }
+
+    public synchronized void addMessage(LifecycleMessage message) {
         messages.add(message);
     }
 
-    public synchronized List<CallbackMessage> pullMessages() {
+    public synchronized List<LifecycleMessage> pullMessages() {
         if (usageTracker != null) {
             usageTracker.used();
         }

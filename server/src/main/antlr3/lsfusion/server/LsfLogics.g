@@ -1668,6 +1668,25 @@ importActionDefinitionBody[List<TypedParameter> context, boolean dynamic] return
 		'FROM' expr=propertyExpression[context, dynamic]
 	;
 
+newThreadActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
+@init {
+	List<LPWithParams> props = new ArrayList<LPWithParams>();
+	List<LP> localProps = new ArrayList<LP>();
+	long ldelay = 0;
+	Long lperiod = null;
+}
+@after {
+	if (inPropParseState()) {
+		$property = self.addScriptedNewThreadActionProperty($aDB.property, $connExpr.property, ldelay, lperiod);
+	}
+}
+	:	'NEWTHREAD' aDB=innerActionDefinitionBody[context, dynamic]
+	    (
+	        ('CONNECTION' connExpr=propertyExpression[context, dynamic])
+	    |   ('SCHEDULE' (period=intLiteral { lperiod = (long)$period.val; })? ('DELAY' delay=intLiteral { ldelay = $delay.val; })? )?
+        )
+	;
+
 nonEmptyPropertyUsageListWithIds returns [List<String> ids, List<PropertyUsage> propUsages]
 @init {
 	$ids = new ArrayList<String>();
@@ -2074,6 +2093,7 @@ keepContextActionDB[List<TypedParameter> context, boolean dynamic] returns [LPWi
 	|	readADB=readActionDefinitionBody[context, dynamic] { $property = $readADB.property; }
 	|	writeADB=writeActionDefinitionBody[context, dynamic] { $property = $writeADB.property; }
 	|	importADB=importActionDefinitionBody[context, dynamic] { $property = $importADB.property; }
+	|	newThreadADB=newThreadActionDefinitionBody[context, dynamic] { $property = $newThreadADB.property; }
 	;
 	
 contextIndependentActionDB returns [LPWithParams property, List<ResolveClassSet> signature]
@@ -2415,19 +2435,15 @@ listActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns 
 	boolean migrateAllSessionProps = false;
 	boolean isNested = false;
 	boolean singleApply = false;
-	boolean newThread = false;
-	long ldelay = 0;
-	Long lperiod = null;
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedListAProp(newSession, migrateSessionProps, migrateAllSessionProps, isNested, singleApply, props, localProps, newThread, ldelay, lperiod);
+		$property = self.addScriptedListAProp(newSession, migrateSessionProps, migrateAllSessionProps, isNested, singleApply, props, localProps);
 	}
 }
 	:	(
 			(	'NEWSESSION' (mps=nestedPropertiesSelector { migrateAllSessionProps = $mps.all; migrateSessionProps = $mps.props; })?
 			|	'NESTEDSESSION' { isNested = true; }
-			|	('NEWTHREAD' { newThread = true; } (period=intLiteral { lperiod = (long)$period.val; })? ('DELAY' delay=intLiteral { ldelay = $delay.val; })? ) 
 			)	{ newSession = true; }
 			('SINGLE' { singleApply = true; })?
 		)?

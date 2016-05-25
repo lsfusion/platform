@@ -4,6 +4,7 @@ import com.google.common.base.Throwables;
 import lsfusion.base.NavigatorInfo;
 import lsfusion.base.Pair;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
+import lsfusion.server.ServerLoggers;
 import lsfusion.server.auth.User;
 import lsfusion.server.context.ContextAwareDaemonThreadFactory;
 import lsfusion.server.data.SQLHandledException;
@@ -325,6 +326,29 @@ public class NavigatorsManager extends LifecycleAdapter implements InitializingB
                                 logger.error(getString("logics.server.remote.exception.on.shutdown.client"), e);
                             else
                                 logger.error(getString("logics.server.remote.exception.on.restart.client"), e);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    public void pushNotificationCustomUser(DataObject connectionObject, Runnable run) {
+        synchronized (navigators) {
+            boolean found = false;
+            for (List<RemoteNavigator> remoteNavigatorsList : navigators.values()) {
+                if(remoteNavigatorsList != null) {
+                    for(RemoteNavigator remoteNavigator : remoteNavigatorsList) {
+                        try {
+                            if (remoteNavigator.getConnection() != null && remoteNavigator.getConnection().equals(connectionObject)) {
+                                if (!found) {
+                                    remoteNavigator.pushNotification(run);
+                                    found = true;
+                                } else
+                                    ServerLoggers.assertLog(false, "Two RemoteNavigators with same connection");
+                            }
+                        } catch (RemoteException e) {
+                                logger.error(getString("logics.server.remote.exception.on.push.action"), e);
                         }
                     }
                 }

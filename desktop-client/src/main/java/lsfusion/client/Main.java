@@ -214,7 +214,7 @@ public class Main {
                     frame = module.initFrame(remoteNavigator);
                     logger.info("After init frame");
 
-                    ((DockableMainFrame) frame).executeAction("SystemEvents.onClientStarted[]");
+                    ((DockableMainFrame) frame).executeAction("SystemEvents.onClientStarted[]", 0);
 
                     remoteNavigator.setUpdateTime(pullMessagesPeriod);
 
@@ -487,6 +487,10 @@ public class Main {
         });
         timer.setRepeats(false);
         timer.start();
+    }
+
+    public static void executeNavigatorAction(Integer idNotification) {
+        ((DockableMainFrame)frame).executeAction(String.valueOf(idNotification), 2);
     }
 
     private static void clean() {

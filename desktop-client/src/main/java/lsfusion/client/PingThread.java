@@ -3,8 +3,8 @@ package lsfusion.client;
 import lsfusion.base.SystemUtils;
 import lsfusion.client.form.RmiQueue;
 import lsfusion.client.rmi.ConnectionLostManager;
-import lsfusion.interop.remote.CallbackMessage;
 import lsfusion.interop.remote.ClientCallBackInterface;
+import lsfusion.interop.remote.LifecycleMessage;
 import org.apache.log4j.Logger;
 
 import javax.swing.*;
@@ -74,8 +74,8 @@ public class PingThread extends Thread {
                 if (!ConnectionLostManager.shouldBeBlocked()) {
                     //не спамим лишний раз, если отключены
                     try {
-                        List<CallbackMessage> messages = RmiQueue.runRetryableRequest(new Callable<List<CallbackMessage>>() {
-                            public List<CallbackMessage> call() throws Exception {
+                        List<LifecycleMessage> messages = RmiQueue.runRetryableRequest(new Callable<List<LifecycleMessage>>() {
+                            public List<LifecycleMessage> call() throws Exception {
                                 return remoteClient.pullMessages();
                             }
                         }, abandoned);

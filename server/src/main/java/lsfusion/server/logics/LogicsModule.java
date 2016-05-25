@@ -757,11 +757,11 @@ public abstract class LogicsModule {
                         caption, listInterfaces, actionImplement, singleApply, doApply, migrateSessionProps, isNested)));
     }
 
-    protected LAP addNewThreadAProp(AbstractGroup group, String caption, LAP action, long delay, Long period) {
-        ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(action.listInterfaces.size());
-        ActionPropertyMapImplement<?, PropertyInterface> actionImplement = mapActionListImplement(action, listInterfaces);
-
-        return addProperty(group, new LAP(new NewThreadActionProperty(caption, listInterfaces, actionImplement, period, delay)));
+    protected LAP addNewThreadAProp(AbstractGroup group, String caption, long delay, Long period, Object... params) {
+        ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(getIntNum(params));
+        ImList<PropertyInterfaceImplement<PropertyInterface>> readImplements = readImplements(listInterfaces, params);
+        CalcPropertyInterfaceImplement connection = readImplements.size() == 1 ? null : (CalcPropertyInterfaceImplement) readImplements.get(1);
+        return addProperty(group, new LAP(new NewThreadActionProperty(caption, listInterfaces, (ActionPropertyMapImplement) readImplements.get(0), period, delay, connection)));
     }
 
     // ------------------- Request action ----------------- //

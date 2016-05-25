@@ -73,6 +73,8 @@ import static lsfusion.base.BaseUtils.nvl;
 public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePendingRemoteObject implements RemoteNavigatorInterface, FocusListener<T>, CustomClassListener, RemoteFormListener, Unreferenced {
     protected final static Logger logger = ServerLoggers.systemLogger;
 
+    private static NotificationsMap notificationsMap = new NotificationsMap();
+
     private final SQLSession sql;
 
     final LogicsInstance logicsInstance;
@@ -623,6 +625,10 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         client.notifyServerRestartCanceled();
     }
 
+    public void pushNotification(Runnable run) throws RemoteException {
+        client.pushMessage(notificationsMap.putNotification(run));
+    }
+
     @Override
     public DefaultFormsType showDefaultForms() throws RemoteException {
         return securityManager.showDefaultForms(user);
@@ -679,7 +685,36 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
     }
 
     @Override
-    public ServerResponse executeNavigatorAction(String actionSID, boolean isNavigatorAction) throws RemoteException {
+    public ServerResponse executeNavigatorAction(final String actionSID, final int type) throws RemoteException {
+        currentInvocation = new RemotePausableInvocation(pausablesExecutor, this) {
+            @Override
+            protected ServerResponse callInvocation() throws Throwable {
+                if (type == 2)
+                    runNotification(actionSID);
+                else
+                    runAction(actionSID, type == 1);
+                assert !delayedGetRemoteChanges && !delayedHideForm; // тут не должно быть никаких delayRemote или hideForm
+                return new ServerResponse(delayedActions.toArray(new ClientAction[delayedActions.size()]), false);
+            }
+        };
+
+        return currentInvocation.execute();
+    }
+
+    private void runNotification(String actionSID) {
+        Integer idNotification;
+        try {
+            idNotification = Integer.parseInt(actionSID);
+        } catch (Exception e) {
+            idNotification = null;
+        }
+        if(idNotification != null) {
+            Runnable notification = notificationsMap.getNotification(idNotification);
+            notification.run();
+        }
+    }
+
+    private void runAction(String actionSID, boolean isNavigatorAction) throws SQLException, SQLHandledException {
         final ActionProperty property;
         if (isNavigatorAction) {
             final NavigatorElement element = businessLogics.LM.root.getNavigatorElementBySID(actionSID);
@@ -696,20 +731,10 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         } else {
             property = (ActionProperty) businessLogics.findProperty(actionSID).property;
         }
-
-        currentInvocation = new RemotePausableInvocation(pausablesExecutor, this) {
-            @Override
-            protected ServerResponse callInvocation() throws Throwable {
-                try(DataSession session = createSession()) {
-                    property.execute(MapFact.<ClassPropertyInterface, DataObject>EMPTY(), session, null);
-                    session.apply(businessLogics);
-                }
-                assert !delayedGetRemoteChanges && !delayedHideForm; // тут не должно быть никаких delayRemote или hideForm
-                return new ServerResponse(delayedActions.toArray(new ClientAction[delayedActions.size()]), false);
-            }
-        };
-
-        return currentInvocation.execute();
+        try (DataSession session = createSession()) {
+            property.execute(MapFact.<ClassPropertyInterface, DataObject>EMPTY(), session, null);
+            session.apply(businessLogics);
+        }
     }
 
     @Override
@@ -921,6 +946,21 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
 
         public synchronized void unregisterForm(FormInstance form) {
             formStamps.remove(form);
+        }
+    }
+
+    private static class NotificationsMap {
+        private Map<Integer, Runnable> notificationsMap = new HashMap<>();
+        private int counter = 0;
+
+        private synchronized Integer putNotification(Runnable value) {
+            counter++;
+            notificationsMap.put(counter, value);
+            return counter;
+        }
+
+        private synchronized Runnable getNotification(Integer key) {
+            return notificationsMap.remove(key);
         }
     }
 
