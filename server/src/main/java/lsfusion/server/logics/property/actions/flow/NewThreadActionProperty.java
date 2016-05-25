@@ -63,24 +63,29 @@ public class NewThreadActionProperty extends AroundAspectActionProperty {
                 context.getNavigatorsManager().pushNotificationCustomUser((DataObject) connectionObject, run);
         } else {
 
-            Runnable runContext = new Runnable() {
-                public void run() {
-                    try {
-                        ThreadLocalContext.set(logicsContext);
-                    } catch (Throwable t) {
-                        throw Throwables.propagate(t);
-                    }
-                }
-            };
+            Runnable runContext = new ScheduleRunnable(run, logicsContext);
 
             if (repeat != null) {
                 executor.scheduleAtFixedRate(runContext, delay, repeat, TimeUnit.MILLISECONDS);
-                executor.scheduleAtFixedRate(run, delay, repeat, TimeUnit.MILLISECONDS);
             } else {
                 executor.schedule(runContext, delay, TimeUnit.MILLISECONDS);
-                executor.schedule(run, delay, TimeUnit.MILLISECONDS);
             }
         }
         return FlowResult.FINISH;
+    }
+
+    class ScheduleRunnable implements Runnable {
+        Runnable r;
+        LogicsInstanceContext logicsContext;
+
+        ScheduleRunnable(Runnable r, LogicsInstanceContext logicsContext) {
+            this.r = r;
+            this.logicsContext = logicsContext;
+        }
+
+        public void run() {
+            ThreadLocalContext.set(logicsContext);
+            r.run();
+        }
     }
 }
