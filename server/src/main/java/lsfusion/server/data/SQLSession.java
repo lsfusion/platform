@@ -1959,6 +1959,14 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
             result = rows.size();
 
         } catch (Throwable e) {
+            while(e instanceof BatchUpdateException) {
+                logger.error(statement == null ? "PREPARING STATEMENT" : statement.toString() + " BATCH UPDATE : " + e.getMessage());
+                SQLException next = ((BatchUpdateException) e).getNextException();
+                if(next == null)
+                    break;
+                else
+                    e = next;
+            }
             logger.error(statement == null ? "PREPARING STATEMENT" : statement.toString() + " " + e.getMessage());
             firstException.set(e);
         }
