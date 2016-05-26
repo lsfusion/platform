@@ -1708,7 +1708,7 @@ importSourceFormat [List<TypedParameter> context, boolean dynamic] returns [Impo
 	: 'XLS' { $format = ImportSourceFormat.XLS; } ('SHEET' sheetProperty = propertyExpression[context, dynamic] { $sheet = $sheetProperty.property; })?
 	| 'XLSX' { $format = ImportSourceFormat.XLSX; } ('SHEET' sheetProperty = propertyExpression[context, dynamic] { $sheet = $sheetProperty.property; })?
 	| 'DBF'  { $format = ImportSourceFormat.DBF; }
-	| 'CSV'  { $format = ImportSourceFormat.CSV; } (separatorVal = stringLiteral { $separator = separatorVal.val; })? ('NOHEADER' { $noHeader = true; })? ('CHARSET' charsetVal = stringLiteral { $charset = charsetVal.val; })?
+	| 'CSV'  { $format = ImportSourceFormat.CSV; } (separatorVal = stringLiteral { $separator = $separatorVal.val; })? ('NOHEADER' { $noHeader = true; })? ('CHARSET' charsetVal = stringLiteral { $charset = $charsetVal.val; })?
 	| 'XML'  { $format = ImportSourceFormat.XML; } ('ATTR' { $attr = true; })?
 	| 'JDBC' { $format = ImportSourceFormat.JDBC; }
 	| 'MDB'  { $format = ImportSourceFormat.MDB; }
@@ -3170,7 +3170,7 @@ designHeader returns [ScriptingFormView view]
 		$view = self.getFormDesign($cid.sid, caption, customDesign);
 	}
 }
-	:	'DESIGN' cid=compoundID (s=stringLiteral { caption = s.val; })? ('CUSTOM' { customDesign = true; })?
+	:	'DESIGN' cid=compoundID (s=stringLiteral { caption = $s.val; })? ('CUSTOM' { customDesign = true; })?
 	;
 
 componentStatementBody [ComponentView parentComponent]
@@ -3218,7 +3218,7 @@ newComponentStatement[ComponentView parentComponent]
 	:	'NEW' cid=multiCompoundID insPosition=componentInsertPosition
 		{
 			if (inPropParseState()) {
-				newComp = $designStatement::design.createNewComponent($cid.sid, parentComponent, insPosition.position, insPosition.anchor, self.getVersion());
+				newComp = $designStatement::design.createNewComponent($cid.sid, parentComponent, $insPosition.position, $insPosition.anchor, self.getVersion());
 			}
 		}
 		componentStatementBody[newComp]
@@ -3231,7 +3231,7 @@ moveComponentStatement[ComponentView parentComponent]
 	:	'MOVE' insSelector=componentSelector { insComp = $insSelector.component; } insPosition=componentInsertPosition
 		{
 			if (inPropParseState()) {
-				$designStatement::design.moveComponent(insComp, parentComponent, insPosition.position, insPosition.anchor, self.getVersion());
+				$designStatement::design.moveComponent(insComp, parentComponent, $insPosition.position, $insPosition.anchor, self.getVersion());
 			}
 		}
 		componentStatementBody[insComp]

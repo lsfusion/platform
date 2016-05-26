@@ -57,7 +57,7 @@
         <mssql.version>4.0</mssql.version>
         <javax.mail.version>1.5.3</javax.mail.version>
         <blocking.map.version>1.0-patched</blocking.map.version>
-        <antlr.version>3.3</antlr.version>
+        <antlr.version>3.5.2</antlr.version>
         <supercsv.version>1.52</supercsv.version>
         <edireader.version>4.7.3</edireader.version>
         <jna.version>3.2.3</jna.version>
