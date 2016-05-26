@@ -420,8 +420,8 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         }
     }
 
-    public DataObject getFormObject(String canonicalName) {
-        return new DataObject(getForm(canonicalName), businessLogics.reflectionLM.form);
+    public ObjectValue getFormObject(String canonicalName) {
+        return canonicalName == null ? NullValue.instance : new DataObject(getForm(canonicalName), businessLogics.reflectionLM.form);
     }
 
     public Integer getForm(String canonicalName) {
