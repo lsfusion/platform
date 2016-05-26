@@ -159,7 +159,7 @@ public class ServerLoggers {
         return useLog != null && useLog;
     }
     public static boolean isPausableLogEnabled() {
-        return (enabledPausableLog > 0 && isPausableLogEnabled(ThreadLocalContext.get().getCurrentUser()));
+        return SystemProperties.isDebug || (enabledPausableLog > 0 && isPausableLogEnabled(ThreadLocalContext.get().getCurrentUser()));
     }
     public static void pausableLog(String s) {
         if(isPausableLogEnabled())
