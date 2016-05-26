@@ -272,6 +272,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     public final static String userParam = "adsadaweewuser";
     public final static String isServerRestartingParam = "sdfisserverrestartingpdfdf";
     public final static String computerParam = "fjruwidskldsor";
+    public final static String formParam = "yfifybdfnenfykfqyth";
     public final static String isDebugParam = "dsiljdsiowee";
     public final static String isFullClientParam = "fdfdijir";
 

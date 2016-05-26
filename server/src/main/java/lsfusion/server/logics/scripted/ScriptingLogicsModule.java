@@ -2408,9 +2408,9 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LPWithParams(newProp, property.usedParams);
     }
 
-    public LPWithParams addScriptedTabVisibleProp(ComponentView componentView) throws ScriptingErrorLog.SemanticErrorException {
-        CalcPropertyRevImplement<ClassPropertyInterface, ObjectEntity> tabVisibleProperty = componentView.getTabVisible();
-        return new LPWithParams(new LCP<>(tabVisibleProperty.property), new ArrayList<Integer>());
+    public LPWithParams addScriptedTabActiveProp(ComponentView componentView) throws ScriptingErrorLog.SemanticErrorException {
+        CalcPropertyRevImplement<ClassPropertyInterface, ObjectEntity> tabActiveProperty = componentView.getTabActive();
+        return new LPWithParams(new LCP<>(tabActiveProperty.property), new ArrayList<Integer>());
     }
 
     public void addScriptedFollows(PropertyUsage mainPropUsage, List<TypedParameter> namedParams, List<PropertyFollowsDebug> resolveOptions, LPWithParams rightProp, Event event, ActionDebugInfo debugInfo) throws ScriptingErrorLog.SemanticErrorException {

@@ -32,6 +32,8 @@ is (NavigatorElement navigatorElement) = navigatorElement IS NavigatorElement AN
 is (Form form) = form IS Form;
 is (NavigatorAction navigatorAction) = navigatorAction IS NavigatorAction;
 
+currentForm = NATIVE Form ();
+
 CLASS Property 'Свойство';
 TABLE property (Property);
 

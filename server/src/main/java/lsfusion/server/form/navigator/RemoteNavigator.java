@@ -90,6 +90,8 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
 
     private DataObject computer;
 
+    private DataObject currentForm;
+
     private DataObject connection;
 
     private int updateTime;
@@ -132,6 +134,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
 
         this.user = currentUser.getDataObject(businessLogics.authenticationLM.customUser, session);
         this.computer = new DataObject(computer, businessLogics.authenticationLM.computer);
+        this.currentForm = new DataObject(businessLogics.getDbManager().getSystemForm(), businessLogics.reflectionLM.form);
 
         this.remoteAddress = remoteAddress;
         this.sql = dbManager.createSQL(new WeakSQLSessionUserProvider(this));
@@ -312,6 +315,23 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         }
     }
 
+    private static class WeakFormController implements FormController { // чтобы помочь сборщику мусора и устранить цикл
+        WeakReference<RemoteNavigator> weakThis;
+
+        private WeakFormController(RemoteNavigator navigator) {
+            this.weakThis = new WeakReference<>(navigator);
+        }
+
+        @Override
+        public void changeCurrentForm(DataObject form) {
+            weakThis.get().currentForm = form;
+        }
+
+        public DataObject getCurrentForm() {
+            return weakThis.get().currentForm.getDataObject();
+        }
+    }
+
     private static class WeakTimeoutController implements TimeoutController { // чтобы помочь сборщику мусора и устранить цикл
         WeakReference<RemoteNavigator> weakThis;
 
@@ -385,7 +405,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
     }
     
     private DataSession createSession() throws SQLException {
-        DataSession session = dbManager.createSession(sql, new WeakUserController(this), new WeakComputerController(this), new WeakTimeoutController(this), new WeakChangesUserProvider(changesSync), null);
+        DataSession session = dbManager.createSession(sql, new WeakUserController(this), new WeakComputerController(this), new WeakFormController(this), new WeakTimeoutController(this), new WeakChangesUserProvider(changesSync), null);
         sessions.add(session);
         return session;
     }

@@ -1279,6 +1279,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         FocusListener<T> focusListener = getFocusListener();
         if (focusListener != null)
             focusListener.gainedFocus(this);
+        session.form.changeCurrentForm(BL.getDbManager().getFormObject(entity.getCanonicalName()));
     }
 
     @Override
@@ -1447,15 +1448,15 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
     public void setTabVisible(ContainerView view, ComponentView page) throws SQLException, SQLHandledException {
         assert view.isTabbedPane();
-        updateTabVisibleProperty(page);
+        updateTabActiveProperty(page);
         visibleTabs.put(view, page);
     }
 
-    private void updateTabVisibleProperty(ComponentView page) throws SQLException, SQLHandledException {
+    private void updateTabActiveProperty(ComponentView page) throws SQLException, SQLHandledException {
         for(ComponentView tab : visibleTabs.values()) {
-            tab.updateTabVisibleProperty(session, null);
+            tab.updateTabActiveProperty(session, null);
         }
-        page.updateTabVisibleProperty(session, true);
+        page.updateTabActiveProperty(session, true);
     }
 
     boolean refresh = true;

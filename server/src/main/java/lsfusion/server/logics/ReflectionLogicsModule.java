@@ -3,12 +3,15 @@ package lsfusion.server.logics;
 import lsfusion.server.classes.ConcreteCustomClass;
 import lsfusion.server.classes.LogicalClass;
 import lsfusion.server.classes.StringClass;
+import lsfusion.server.classes.sets.ResolveClassSet;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
+import lsfusion.server.logics.property.CurrentFormFormulaProperty;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 import org.antlr.runtime.RecognitionException;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 public class ReflectionLogicsModule extends ScriptingLogicsModule {
 
@@ -157,6 +160,8 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
     public final LogicalClass propertyStoredValueClass = LogicalClass.instance;
     public final LogicalClass propertyIsSetNotNullValueClass = LogicalClass.instance;
 
+    public LCP currentForm;
+
     public ReflectionLogicsModule(BusinessLogics BL, BaseLogicsModule baseLM) throws IOException {
         super(ReflectionLogicsModule.class.getResourceAsStream("/lsfusion/system/Reflection.lsf"), "/lsfusion/system/Reflection.lsf", baseLM, BL);
         setBaseLogicsModule(baseLM);
@@ -181,6 +186,9 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
 
     @Override
     public void initProperties() throws RecognitionException {
+        currentForm = addProperty(null, new LCP<>(new CurrentFormFormulaProperty(form)));
+        makePropertyPublic(currentForm, "currentForm", new ArrayList<ResolveClassSet>());
+
         super.initProperties();
 
         // ------- Доменная логика --------- //

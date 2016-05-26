@@ -118,6 +118,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
 
     private int systemUserObject;
     private int systemComputer;
+    private int systemForm = 0;
 
     private final ThreadLocal<SQLSession> threadLocalSql;
 
@@ -127,6 +128,10 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         super(DBMANAGER_ORDER);
 
         threadLocalSql = new ThreadLocal<>();
+    }
+
+    public int getSystemForm() {
+        return systemForm;
     }
 
     public String getDataBaseName() {
@@ -328,7 +333,18 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                         return false;
                     }
                 },
-                new TimeoutController() {
+                new FormController() {
+                    @Override
+                    public void changeCurrentForm(DataObject form) {
+                        throw new RuntimeException("not supported");
+                    }
+
+                    @Override
+                    public DataObject getCurrentForm() {
+                        return new DataObject(systemForm, businessLogics.reflectionLM.form);
+                    }
+                },
+        new TimeoutController() {
                     public int getTransactionTimeout() {
                         return 0;
                     }
@@ -350,9 +366,9 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         );
     }
 
-    public DataSession createSession(SQLSession sql, UserController userController, ComputerController computerController, TimeoutController timeoutController, ChangesController changesController, OperationOwner owner) throws SQLException {
+    public DataSession createSession(SQLSession sql, UserController userController, ComputerController computerController, FormController formController, TimeoutController timeoutController, ChangesController changesController, OperationOwner owner) throws SQLException {
         //todo: неплохо бы избавиться от зависимости на restartManager, а то она неестественна
-        return new DataSession(sql, userController, computerController,
+        return new DataSession(sql, userController, computerController, formController,
                 timeoutController, changesController, new IsServerRestartingController() {
                                    public boolean isServerRestarting() {
                                        return restartManager.isPendingRestart();
@@ -405,6 +421,28 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             }
         } catch (Exception e) {
             logger.error("Error reading computer: ", e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    public DataObject getFormObject(String canonicalName) {
+        return new DataObject(getForm(canonicalName), businessLogics.reflectionLM.form);
+    }
+
+    public Integer getForm(String canonicalName) {
+        try {
+            try (DataSession session = createSession(getSystemSql())) {
+                Integer result = (Integer) businessLogics.reflectionLM.navigatorElementCanonicalName.read(session, new DataObject(canonicalName));
+                if (result == null) {
+                    DataObject addObject = session.addObject(businessLogics.reflectionLM.form);
+                    businessLogics.reflectionLM.canonicalNameNavigatorElement.change(canonicalName, session, addObject);
+                    result = (Integer) addObject.object;
+                    session.apply(businessLogics);
+                }
+                return result;
+            }
+        } catch (Exception e) {
+            logger.error("Error reading form: ", e);
             throw new RuntimeException(e);
         }
     }

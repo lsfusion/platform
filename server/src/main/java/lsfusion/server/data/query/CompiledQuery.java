@@ -1654,6 +1654,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
             });
         mMapValues.exclAdd(SQLSession.userParam, env.getSQLUser());
         mMapValues.exclAdd(SQLSession.computerParam, env.getSQLComputer());
+        mMapValues.exclAdd(SQLSession.formParam, env.getSQLForm());
         mMapValues.exclAdd(SQLSession.isServerRestartingParam, env.getIsServerRestarting());
         mMapValues.exclAdd(SQLSession.isFullClientParam, env.getIsFullClient());
         mMapValues.exclAdd(SQLSession.isDebugParam, new LogicalParseInterface() {

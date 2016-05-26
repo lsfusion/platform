@@ -1186,7 +1186,7 @@ expressionFriendlyPD[List<TypedParameter> context, boolean dynamic] returns [LPW
 	|	castDef=castPropertyDefinition[context, dynamic] { $property = $castDef.property; }
 	|	sessionDef=sessionPropertyDefinition[context, dynamic] { $property = $sessionDef.property; }
 	|	signDef=signaturePropertyDefinition[context, dynamic] { $property = $signDef.property; }
-	|	tabVisibleDef=tabVisiblePropertyDefinition[context, dynamic] { $property = $tabVisibleDef.property; }
+	|	tabActiveDef=tabActivePropertyDefinition[context, dynamic] { $property = $tabActiveDef.property; }
 	|	constDef=constantProperty { $property = new LPWithParams($constDef.property, new ArrayList<Integer>()); }
 	;
 
@@ -1553,17 +1553,17 @@ signaturePropertyDefinition[List<TypedParameter> context, boolean dynamic] retur
 	: 	'CLASS' '(' expr=propertyExpression[context, dynamic] ')'
 	;
 
-tabVisiblePropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
+tabActivePropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
 @init {
     FormEntity form = null;
     ComponentView comp = null;
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedTabVisibleProp(comp);
+		$property = self.addScriptedTabActiveProp(comp);
 	}
 }
-	: 	'TABVISIBLE'
+	: 	'TABACTIVE'
 		formPart=ID '.'
 			{
 				if (inPropParseState()) {

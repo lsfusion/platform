@@ -12,6 +12,7 @@ public interface QueryEnvironment {
 
     ParseInterface getIsFullClient();
     ParseInterface getSQLComputer();
+    ParseInterface getSQLForm();
     ParseInterface getIsServerRestarting();
 
 }
