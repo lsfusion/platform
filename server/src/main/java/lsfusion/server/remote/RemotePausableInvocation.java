@@ -5,6 +5,7 @@ import com.google.common.base.Throwables;
 import lsfusion.base.ExceptionUtils;
 import lsfusion.interop.action.*;
 import lsfusion.interop.form.ServerResponse;
+import lsfusion.server.ServerLoggers;
 import lsfusion.server.stack.ExecutionStackAspect;
 
 import java.rmi.RemoteException;
@@ -58,8 +59,8 @@ public abstract class RemotePausableInvocation extends PausableInvocation<Server
      * рабочий поток
      */
     public final void delayUserInteraction(ClientAction action) {
-        if (logger.isDebugEnabled()) {
-            logger.debug("Interaction " + sid + " called delayUserInteraction: " + action);
+        if (ServerLoggers.isPausableLogEnabled()) {
+            ServerLoggers.pausableLog("Interaction " + sid + " called delayUserInteraction: " + action);
         }
 
         if (action instanceof AsyncGetRemoteChangesClientAction) {
@@ -88,8 +89,8 @@ public abstract class RemotePausableInvocation extends PausableInvocation<Server
      * рабочий поток
      */
     public final Object[] pauseForUserInteraction(ClientAction... actions) {
-        if (logger.isDebugEnabled()) {
-            logger.debug("Interaction " + sid + " called pauseForUserInteraction: " + Arrays.toString(actions));
+        if (ServerLoggers.isPausableLogEnabled()) {
+            ServerLoggers.pausableLog("Interaction " + sid + " called pauseForUserInteraction: " + Arrays.toString(actions));
         }
 
         int neededActionResultsCnt = actions.length;
@@ -116,8 +117,8 @@ public abstract class RemotePausableInvocation extends PausableInvocation<Server
     public final ServerResponse resumeAfterUserInteraction(Object[] actionResults) throws RemoteException {
         Preconditions.checkState(isPaused(), "can't resume after user interaction - wasn't paused for user interaction");
 
-        if (logger.isDebugEnabled()) {
-            logger.debug("Interaction " + sid + " resumed after userInteraction: " + Arrays.toString(actionResults));
+        if (ServerLoggers.isPausableLogEnabled()) {
+            ServerLoggers.pausableLog("Interaction " + sid + " resumed after userInteraction: " + Arrays.toString(actionResults));
         }
 
         this.actionResults = actionResults;
@@ -127,7 +128,7 @@ public abstract class RemotePausableInvocation extends PausableInvocation<Server
     public final ServerResponse resumeWithThrowable(Throwable clientThrowable) throws RemoteException {
         Preconditions.checkState(isPaused(), "can't resume after user interaction - wasn't paused for user interaction");
 
-        logger.debug("Interaction " + sid + " thrown client exception: ", clientThrowable);
+        ServerLoggers.pausableLog("Interaction " + sid + " thrown client exception: ", clientThrowable);
 
         this.clientThrowable = clientThrowable;
         return resume();

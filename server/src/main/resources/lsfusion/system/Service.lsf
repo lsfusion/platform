@@ -141,6 +141,15 @@ WHEN CHANGED(remoteExLogEnabled(User user)) DO {
     refreshExLogEnabled(user);
 }
 
+setPausableLogEnabled 'Включить вывод в лог синх. инфо (debug)' = ACTION CUSTOM 'lsfusion.server.logics.service.SetPausableLogUserActionProperty' (BOOLEAN, User);
+remotePausableLogEnabled 'Выводить в лог синх. инфо (debug)' = DATA BOOLEAN (User);
+refreshPausableLogEnabled ''(User user) = ACTION {
+    setPausableLogEnabled(remotePausableLogEnabled(user), user);
+}
+WHEN CHANGED(remotePausableLogEnabled(User user)) DO {
+    refreshPausableLogEnabled(user);
+}
+
 CLASS TypeExecEnv {
     materialize 'Материализация подзапросов', 
     disablenestloop 'Отключение nested loop', 
@@ -211,6 +220,7 @@ onStarted() += ACTION {
         refreshVolatileStatsEnabled(u);
         refreshRemoteLoggerDebugEnabled(u);
         refreshExLogEnabled(u);
+        refreshPausableLogEnabled(u);
         refreshExecEnv(u);
     }
 } 
@@ -272,7 +282,7 @@ FORM admin 'Администрирование'
                  TILMode, hostnameServerComputer, reupdateMode, singleTransaction,
                  turnExplainAnalizeOnCurrentUser, clearApplicationLog
     OBJECTS u=User
-    PROPERTIES(u) name READONLY, nameMainRole, explainAnalyzeMode, explainMode, loggerDebugEnabled, remoteLoggerDebugEnabled, remoteExLogEnabled, nameExecEnv, volatileStatsEnabled;
+    PROPERTIES(u) name READONLY, nameMainRole, explainAnalyzeMode, explainMode, loggerDebugEnabled, remoteLoggerDebugEnabled, remoteExLogEnabled, remotePausableLogEnabled, nameExecEnv, volatileStatsEnabled;
 ;
 
 DESIGN admin {

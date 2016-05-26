@@ -10,7 +10,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.SynchronousQueue;
 
 public abstract class PausableInvocation<T, E extends Exception> implements Callable<T> {
-    protected final static Logger logger = ServerLoggers.pausablesInvocationLogger;
 
     protected final String sid;
     private final ExecutorService invocationsExecutor;
@@ -52,16 +51,16 @@ public abstract class PausableInvocation<T, E extends Exception> implements Call
                 }
                 lsfStackTrace = null;
                 
-                logger.debug("Run invocation: " + sid);
+                ServerLoggers.pausableLog("Run invocation: " + sid);
 
                 try {
                     runInvocation();
                     invocationResult = InvocationResult.FINISHED;
-                    logger.debug("Invocation " + sid + " finished");
+                    ServerLoggers.pausableLog("Invocation " + sid + " finished");
                 } catch (Throwable t) {
                     invocationResult = new InvocationResult(t);
                     lsfStackTrace = ExecutionStackAspect.getExceptionStackString();
-                    logger.debug("Invocation " + sid + " thrown an exception: ", t);
+                    ServerLoggers.pausableLog("Invocation " + sid + " thrown an exception: ", t);
                 }
 
                 try {

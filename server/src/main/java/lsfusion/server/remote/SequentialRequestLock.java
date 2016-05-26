@@ -10,7 +10,6 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutorService;
 
 public class SequentialRequestLock {
-    private final static Logger logger = ServerLoggers.pausablesInvocationLogger;
 
     private static final Object LOCK_OBJECT = new Object();
 
@@ -34,33 +33,33 @@ public class SequentialRequestLock {
     }
 
     public void acquireRequestLock(String ownerSID, long requestIndex) {
-        logger.debug("Acquiring request lock for " + ownerSID + " for request #" + requestIndex);
+        ServerLoggers.pausableLog("Acquiring request lock for " + ownerSID + " for request #" + requestIndex);
         try {
             if (requestIndex >= 0) {
                 sequentialRequestLock.take(requestIndex);
             }
             requestLock.take();
-            logger.debug("Acquired request lock for " + ownerSID + " for request #" + requestIndex);
+            ServerLoggers.pausableLog("Acquired request lock for " + ownerSID + " for request #" + requestIndex);
         } catch (InterruptedException e) {
             Throwables.propagate(e);
         }
     }
 
     public void releaseRequestLock(String ownerSID, long requestIndex) {
-        logger.debug("Releasing request lock for " + ownerSID + " for request #" + requestIndex);
+        ServerLoggers.pausableLog("Releasing request lock for " + ownerSID + " for request #" + requestIndex);
         try {
             requestLock.put(LOCK_OBJECT);
             if (requestIndex >= 0) {
                 sequentialRequestLock.offer(requestIndex + 1, LOCK_OBJECT);
             }
-            logger.debug("Released request lock for " + ownerSID + " for request #" + requestIndex);
+            ServerLoggers.pausableLog("Released request lock for " + ownerSID + " for request #" + requestIndex);
         } catch (InterruptedException e) {
             Throwables.propagate(e);
         }
     }
 
     public void skipRequestLock(ExecutorService pausablesExecutor, final String ownerSID, final long requestIndex) {
-        logger.debug("Skipping request lock for " + ownerSID + " for request #" + requestIndex);
+        ServerLoggers.pausableLog("Skipping request lock for " + ownerSID + " for request #" + requestIndex);
         pausablesExecutor.submit(new Runnable() {
             @Override
             public void run() {

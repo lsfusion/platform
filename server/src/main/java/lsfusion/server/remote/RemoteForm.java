@@ -770,7 +770,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     private ServerResponse executeServerInvocation(long requestIndex, long lastReceivedRequestIndex, RemotePausableInvocation invocation) throws RemoteException {
         Optional<?> optionalResult = recentResults.get(requestIndex);
         if (optionalResult != null) {
-            pausablesInvocationLogger.debug("Return cachedResult for: " + requestIndex);
+            ServerLoggers.pausableLog("Return cachedResult for: " + requestIndex);
             return optionalResult(optionalResult);
         }
 
@@ -898,7 +898,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
 
     private String generateInvocationSid(long requestIndex) {
         String invocationSID;
-        if (pausablesInvocationLogger.isDebugEnabled()) {
+        if (ServerLoggers.isPausableLogEnabled()) {
             StackTraceElement[] st = new Throwable().getStackTrace();
             String methodName = st[2].getMethodName();
 
@@ -951,7 +951,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
             Integer cachedContinueIndex = requestsContinueIndices.get(requestIndex);
             if (cachedContinueIndex != null && cachedContinueIndex == continueIndex) {
                 Optional<?> result = recentResults.get(requestIndex);
-                pausablesInvocationLogger.debug("Return cachedResult for continue: rq#" + requestIndex + "; cont#" + continueIndex);
+                ServerLoggers.pausableLog("Return cachedResult for continue: rq#" + requestIndex + "; cont#" + continueIndex);
                 return optionalResult(result);
             }
             if (cachedContinueIndex == null) {
