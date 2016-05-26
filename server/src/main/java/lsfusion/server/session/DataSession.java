@@ -2036,7 +2036,12 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         }
 
         public ParseInterface getSQLForm() {
-            return new TypeObject(form.getCurrentForm().object, ObjectType.instance);
+            ObjectValue currentForm = form.getCurrentForm();
+            if(currentForm instanceof DataObject) {
+                return new TypeObject(((DataObject)form.getCurrentForm()).object, ObjectType.instance);
+            } else {
+                return ((NullValue)currentForm).getParse(ObjectType.instance);
+            }
         }
 
         public int getTransactTimeout() {

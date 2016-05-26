@@ -118,7 +118,6 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
 
     private int systemUserObject;
     private int systemComputer;
-    private int systemForm = 0;
 
     private final ThreadLocal<SQLSession> threadLocalSql;
 
@@ -128,10 +127,6 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         super(DBMANAGER_ORDER);
 
         threadLocalSql = new ThreadLocal<>();
-    }
-
-    public int getSystemForm() {
-        return systemForm;
     }
 
     public String getDataBaseName() {
@@ -335,13 +330,13 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                 },
                 new FormController() {
                     @Override
-                    public void changeCurrentForm(DataObject form) {
+                    public void changeCurrentForm(ObjectValue form) {
                         throw new RuntimeException("not supported");
                     }
 
                     @Override
-                    public DataObject getCurrentForm() {
-                        return new DataObject(systemForm, businessLogics.reflectionLM.form);
+                    public ObjectValue getCurrentForm() {
+                        return NullValue.instance;
                     }
                 },
         new TimeoutController() {

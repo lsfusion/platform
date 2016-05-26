@@ -90,7 +90,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
 
     private DataObject computer;
 
-    private DataObject currentForm;
+    private ObjectValue currentForm;
 
     private DataObject connection;
 
@@ -134,7 +134,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
 
         this.user = currentUser.getDataObject(businessLogics.authenticationLM.customUser, session);
         this.computer = new DataObject(computer, businessLogics.authenticationLM.computer);
-        this.currentForm = new DataObject(businessLogics.getDbManager().getSystemForm(), businessLogics.reflectionLM.form);
+        this.currentForm = NullValue.instance;
 
         this.remoteAddress = remoteAddress;
         this.sql = dbManager.createSQL(new WeakSQLSessionUserProvider(this));
@@ -323,12 +323,12 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         }
 
         @Override
-        public void changeCurrentForm(DataObject form) {
+        public void changeCurrentForm(ObjectValue form) {
             weakThis.get().currentForm = form;
         }
 
-        public DataObject getCurrentForm() {
-            return weakThis.get().currentForm.getDataObject();
+        public ObjectValue getCurrentForm() {
+            return weakThis.get().currentForm;
         }
     }
 

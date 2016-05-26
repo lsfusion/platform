@@ -133,6 +133,10 @@ public class NullValue extends ObjectValue<NullValue> {
         return new Parse(field.type);
     }
 
+    public ParseInterface getParse(Type type) {
+        return new Parse(type);
+    }
+
     @Override
     public String toString() {
         return "null";

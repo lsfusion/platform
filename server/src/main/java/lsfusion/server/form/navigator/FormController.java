@@ -1,9 +1,9 @@
 package lsfusion.server.form.navigator;
 
-import lsfusion.server.logics.DataObject;
+import lsfusion.server.logics.ObjectValue;
 
 public interface FormController {
 
-    void changeCurrentForm(DataObject form);
-    DataObject getCurrentForm();
+    void changeCurrentForm(ObjectValue form);
+    ObjectValue getCurrentForm();
 }
