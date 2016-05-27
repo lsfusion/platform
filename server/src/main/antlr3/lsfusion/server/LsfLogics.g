@@ -2094,6 +2094,7 @@ keepContextActionDB[List<TypedParameter> context, boolean dynamic] returns [LPWi
 	|	writeADB=writeActionDefinitionBody[context, dynamic] { $property = $writeADB.property; }
 	|	importADB=importActionDefinitionBody[context, dynamic] { $property = $importADB.property; }
 	|	newThreadADB=newThreadActionDefinitionBody[context, dynamic] { $property = $newThreadADB.property; }
+	|	formActiveADB=formActiveActionDefinitionBody[context, dynamic] { $property = $formActiveADB.property; }
 	;
 	
 contextIndependentActionDB returns [LPWithParams property, List<ResolveClassSet> signature]
@@ -2424,6 +2425,22 @@ requestInputActionDefinitionBody[List<TypedParameter> context, boolean dynamic] 
 		(	'INPUT'
 		|	(objID=ID)? aDB=innerActionDefinitionBody[context, dynamic]
 		)
+	;
+
+formActiveActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
+@init {
+    FormEntity form = null;
+}
+@after {
+	if (inPropParseState()) {
+		$property = self.addScriptedFormActiveAProp(form);
+	}
+}
+	:	'FORMACTIVE' formPart=ID {
+            if (inPropParseState()) {
+                form = self.findForm($formPart.text);
+            }
+        }
 	;
 
 listActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]

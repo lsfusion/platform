@@ -1537,6 +1537,10 @@ public abstract class LogicsModule {
         return baseLM.getRequestCanceledProperty();
     }
 
+    public LCP getIsFormActiveProperty() {
+        return baseLM.getIsFormActiveProperty();
+    }
+
     public LCP getFormResultProperty() {
         return baseLM.getFormResultProperty();
     }

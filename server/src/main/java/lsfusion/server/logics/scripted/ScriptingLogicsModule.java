@@ -1427,6 +1427,10 @@ public class ScriptingLogicsModule extends LogicsModule {
         return prop;
     }
 
+    public LPWithParams addScriptedFormActiveAProp(FormEntity form) throws ScriptingErrorLog.SemanticErrorException {
+        return new LPWithParams(addAProp(null, new IsFormActiveActionProperty("", form, baseLM.getIsFormActiveProperty())), new ArrayList<Integer>());
+    }
+
     public LCP addLocalDataProperty(String name, String returnClassName, List<String> paramClassNames, boolean isNested) throws ScriptingErrorLog.SemanticErrorException {
         List<ResolveClassSet> signature = new ArrayList<>();
         for (String className : paramClassNames) {
