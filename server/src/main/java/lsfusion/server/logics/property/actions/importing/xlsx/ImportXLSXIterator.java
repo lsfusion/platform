@@ -89,6 +89,9 @@ public class ImportXLSXIterator extends ImportIterator {
                     case Cell.CELL_TYPE_ERROR:
                         result = null;
                         break;
+                    case Cell.CELL_TYPE_BOOLEAN:
+                        result = String.valueOf(xssfCell.getBooleanCellValue());
+                        break;
                     case Cell.CELL_TYPE_STRING:
                     default:
                         result = (xssfCell.getStringCellValue().isEmpty()) ? defaultValue : xssfCell.getStringCellValue().trim();

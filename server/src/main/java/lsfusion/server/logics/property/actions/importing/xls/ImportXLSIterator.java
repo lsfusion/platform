@@ -12,6 +12,7 @@ import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.Cell;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -70,8 +71,8 @@ public class ImportXLSIterator extends ImportIterator {
             HSSFCell hssfCell = hssfRow.getCell(cell);
             if (hssfCell != null) {
                 switch (hssfCell.getCellType()) {
-                    case org.apache.poi.ss.usermodel.Cell.CELL_TYPE_NUMERIC:
-                    case org.apache.poi.ss.usermodel.Cell.CELL_TYPE_FORMULA:
+                    case Cell.CELL_TYPE_NUMERIC:
+                    case Cell.CELL_TYPE_FORMULA:
                         String result;
                         try {
                             if (dateFormat != null) {
@@ -83,7 +84,9 @@ public class ImportXLSIterator extends ImportIterator {
                             result = hssfCell.getStringCellValue().isEmpty() ? defaultValue : hssfCell.getStringCellValue();
                         }
                         return result.endsWith(".0") ? result.substring(0, result.length() - 2) : result;
-                    case org.apache.poi.ss.usermodel.Cell.CELL_TYPE_STRING:
+                    case Cell.CELL_TYPE_BOOLEAN:
+                        return String.valueOf(hssfCell.getBooleanCellValue());
+                    case Cell.CELL_TYPE_STRING:
                     default:
                         return (hssfCell.getStringCellValue().isEmpty()) ? defaultValue : hssfCell.getStringCellValue();
                 }
