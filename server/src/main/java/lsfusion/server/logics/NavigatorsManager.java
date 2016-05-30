@@ -169,7 +169,7 @@ public class NavigatorsManager extends LifecycleAdapter implements InitializingB
 
         synchronized (navigators) {
             if (newConnection != null) {
-                navigator.setConnection(new DataObject(newConnection.object, businessLogics.systemEventsLM.connection));
+                navigator.changeCurrentConnection(new DataObject(newConnection.object, businessLogics.systemEventsLM.connection));
             }
             List<RemoteNavigator> navigatorsList = navigators.get(key);
             if(navigatorsList == null)

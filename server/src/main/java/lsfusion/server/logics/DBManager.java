@@ -339,6 +339,17 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                         return NullValue.instance;
                     }
                 },
+                new ConnectionController() {
+                    @Override
+                    public void changeCurrentConnection(DataObject connection) {
+                        throw new RuntimeException("not supported");
+                    }
+
+                    @Override
+                    public ObjectValue getCurrentConnection() {
+                        return NullValue.instance;
+                    }
+                },
         new TimeoutController() {
                     public int getTransactionTimeout() {
                         return 0;
@@ -361,9 +372,10 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         );
     }
 
-    public DataSession createSession(SQLSession sql, UserController userController, ComputerController computerController, FormController formController, TimeoutController timeoutController, ChangesController changesController, OperationOwner owner) throws SQLException {
+    public DataSession createSession(SQLSession sql, UserController userController, ComputerController computerController, FormController formController,
+                                     ConnectionController connectionController, TimeoutController timeoutController, ChangesController changesController, OperationOwner owner) throws SQLException {
         //todo: неплохо бы избавиться от зависимости на restartManager, а то она неестественна
-        return new DataSession(sql, userController, computerController, formController,
+        return new DataSession(sql, userController, computerController, formController, connectionController,
                 timeoutController, changesController, new IsServerRestartingController() {
                                    public boolean isServerRestarting() {
                                        return restartManager.isPendingRestart();

@@ -332,6 +332,24 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         }
     }
 
+    private static class WeakConnectionController implements ConnectionController { // чтобы помочь сборщику мусора и устранить цикл
+        WeakReference<RemoteNavigator> weakThis;
+
+        private WeakConnectionController(RemoteNavigator navigator) {
+            this.weakThis = new WeakReference<>(navigator);
+        }
+
+        @Override
+        public void changeCurrentConnection(DataObject connection) {
+            weakThis.get().connection = connection;
+        }
+
+        public ObjectValue getCurrentConnection() {
+            return weakThis.get().connection;
+        }
+    }
+
+
     private static class WeakTimeoutController implements TimeoutController { // чтобы помочь сборщику мусора и устранить цикл
         WeakReference<RemoteNavigator> weakThis;
 
@@ -405,7 +423,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
     }
     
     private DataSession createSession() throws SQLException {
-        DataSession session = dbManager.createSession(sql, new WeakUserController(this), new WeakComputerController(this), new WeakFormController(this), new WeakTimeoutController(this), new WeakChangesUserProvider(changesSync), null);
+        DataSession session = dbManager.createSession(sql, new WeakUserController(this), new WeakComputerController(this), new WeakFormController(this), new WeakConnectionController(this), new WeakTimeoutController(this), new WeakChangesUserProvider(changesSync), null);
         sessions.add(session);
         return session;
     }
@@ -611,6 +629,11 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
 
     public void setConnection(DataObject connection) {
         this.connection = connection;
+    }
+
+    public void changeCurrentConnection(DataObject connection) throws SQLException {
+        setConnection(connection);
+        createSession().connection.changeCurrentConnection(connection);
     }
 
     public void setUpdateTime(int updateTime) {

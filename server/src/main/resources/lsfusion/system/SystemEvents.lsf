@@ -97,6 +97,8 @@ disconnect 'Отключить' = ACTION CUSTOM 'lsfusion.server.logics.property
 
 @defineLog (Connection, 'подключений', log, connectDate);
 
+currentConnection = NATIVE Connection();
+
 //заменили user на customUser
 user 'Пользователь сессии' = DATA User (Session);
 nameUser 'Пользователь сессии' (Session session) = name(user(session));

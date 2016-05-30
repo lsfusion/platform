@@ -9,9 +9,11 @@ import lsfusion.interop.exceptions.NonFatalHandledRemoteException;
 import lsfusion.interop.exceptions.RemoteServerException;
 import lsfusion.server.classes.AbstractCustomClass;
 import lsfusion.server.classes.ConcreteCustomClass;
+import lsfusion.server.classes.sets.ResolveClassSet;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
+import lsfusion.server.logics.property.CurrentConnectionFormulaProperty;
 import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 import lsfusion.server.session.DataSession;
@@ -21,6 +23,7 @@ import org.antlr.runtime.RecognitionException;
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Calendar;
 
 public class SystemEventsLogicsModule extends ScriptingLogicsModule {
@@ -57,6 +60,8 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
     public LCP connectTimeConnection;
     public LCP disconnectTimeConnection;
     public LAP disconnectConnection;
+
+    public LCP currentConnection;
 
     public LCP computerLaunch;
     public LCP timeLaunch;
@@ -116,6 +121,9 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
 
     @Override
     public void initProperties() throws RecognitionException {
+        currentConnection = addProperty(null, new LCP<>(new CurrentConnectionFormulaProperty(connection)));
+        makePropertyPublic(currentConnection, "currentConnection", new ArrayList<ResolveClassSet>());
+
         super.initProperties();
 
         // Подключения к серверу
