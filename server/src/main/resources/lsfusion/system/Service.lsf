@@ -203,6 +203,11 @@ DESIGN options {
     }
 }
 
+countDaysClearFusionTempFiles 'За сколько дней хранить временные файлы lsfusion' = DATA INTEGER (); 
+clearFusionTempFiles = ACTION CUSTOM 'lsfusion.server.logics.service.ClearFusionTempFilesActionProperty' ();
+EXTEND FORM options PROPERTIES countDaysClearFusionTempFiles();
+    DESIGN options { log { MOVE PROPERTY(countDaysClearFusionTempFiles());} }    
+
 setVolatileStatsEnabled 'Установить использование nested loop' = ACTION CUSTOM 'lsfusion.server.logics.service.SetVolatileStatsEnabledUserActionProperty' (BOOLEAN, User);
 volatileStatsEnabled 'Не использовать nested loop' = DATA BOOLEAN (User);
 refreshVolatileStatsEnabled ''(User user) = ACTION {
