@@ -69,17 +69,25 @@ public class WriteActionProperty extends ScriptingActionProperty {
                             else
                                 IOUtils.putFileBytes(file, fileBytes);
                         } else if (type.equals("ftp")) {
-                            File file = File.createTempFile("downloaded", ".tmp");
-                            IOUtils.putFileBytes(file, fileBytes);
-                            storeFileToFTP(path, file);
-                            if(!file.delete())
-                                file.deleteOnExit();
-                        } else if(type.equals("sftp")) {
-                            File file = File.createTempFile("downloaded", ".tmp");
-                            IOUtils.putFileBytes(file, fileBytes);
-                            storeFileToSFTP(path, file);
-                            if(!file.delete())
-                                file.deleteOnExit();
+                            File file = null;
+                            try {
+                                file = File.createTempFile("downloaded", ".tmp");
+                                IOUtils.putFileBytes(file, fileBytes);
+                                storeFileToFTP(path, file);
+                            } finally {
+                                if(file != null && !file.delete())
+                                    file.deleteOnExit();
+                            }
+                        } else if (type.equals("sftp")) {
+                            File file = null;
+                            try {
+                                file = File.createTempFile("downloaded", ".tmp");
+                                IOUtils.putFileBytes(file, fileBytes);
+                                storeFileToSFTP(path, file);
+                            } finally {
+                                if (file != null && !file.delete())
+                                    file.deleteOnExit();
+                            }
                         }
                     } else {
                         throw Throwables.propagate(new RuntimeException("Incorrect path. Please use format: file://path_to_file or ftp|sftp://username:password@host:port/path_to_file"));

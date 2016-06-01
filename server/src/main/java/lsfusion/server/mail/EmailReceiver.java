@@ -273,14 +273,16 @@ public class EmailReceiver {
                         fos.write(buf, 0, bytesRead);
                     }
                     fos.close();
+
+                    attachments.put(fileName, BaseUtils.mergeFileAndExtension(IOUtils.getFileBytes(f), fileExtension.getBytes()));
+
                 } catch (IOException ioe) {
                     ServerLoggers.mailLogger.error("Error reading attachment '" + fileName + "' from email '" + subjectEmail + "'");
                     throw ioe;
+                } finally {
+                    if(!f.delete())
+                        f.deleteOnExit();
                 }
-                
-                attachments.put(fileName, BaseUtils.mergeFileAndExtension(IOUtils.getFileBytes(f), fileExtension.getBytes()));
-                if(!f.delete())
-                    f.deleteOnExit();
             } else {
                 Object content = bp.getContent();
                 body = content instanceof MimeMultipart ? getMultipartBody(subjectEmail, (Multipart) content).message : String.valueOf(content);
