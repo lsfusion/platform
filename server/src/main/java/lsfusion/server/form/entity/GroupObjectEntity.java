@@ -155,7 +155,7 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
             prop = DerivedProperty.createDataPropRev(type.toString() + " (" + objects.toString() + ")", getObjects().mapValues(new GetValue<ValueClass, ObjectEntity>() {
                 public ValueClass getMapValue(ObjectEntity value) {
                     return value.baseClass;
-                }}), type.getValueClass());
+                }}), type.getValueClass(), false);
             mProps.exclAdd(type, prop);
         }
         return prop;

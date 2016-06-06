@@ -1186,7 +1186,7 @@ expressionFriendlyPD[List<TypedParameter> context, boolean dynamic] returns [LPW
 	|	castDef=castPropertyDefinition[context, dynamic] { $property = $castDef.property; }
 	|	sessionDef=sessionPropertyDefinition[context, dynamic] { $property = $sessionDef.property; }
 	|	signDef=signaturePropertyDefinition[context, dynamic] { $property = $signDef.property; }
-	|	tabActiveDef=tabActivePropertyDefinition[context, dynamic] { $property = $tabActiveDef.property; }
+	|	activeTabDef=activeTabPropertyDefinition[context, dynamic] { $property = $activeTabDef.property; }
 	|	constDef=constantProperty { $property = new LPWithParams($constDef.property, new ArrayList<Integer>()); }
 	;
 
@@ -1553,17 +1553,17 @@ signaturePropertyDefinition[List<TypedParameter> context, boolean dynamic] retur
 	: 	'CLASS' '(' expr=propertyExpression[context, dynamic] ')'
 	;
 
-tabActivePropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
+activeTabPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
 @init {
     FormEntity form = null;
     ComponentView comp = null;
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedTabActiveProp(comp);
+		$property = self.addScriptedActiveTabProp(comp);
 	}
 }
-	: 	'TABACTIVE'
+	: 	'ACTIVE' 'TAB'
 		formPart=ID '.'
 			{
 				if (inPropParseState()) {
@@ -2094,7 +2094,7 @@ keepContextActionDB[List<TypedParameter> context, boolean dynamic] returns [LPWi
 	|	writeADB=writeActionDefinitionBody[context, dynamic] { $property = $writeADB.property; }
 	|	importADB=importActionDefinitionBody[context, dynamic] { $property = $importADB.property; }
 	|	newThreadADB=newThreadActionDefinitionBody[context, dynamic] { $property = $newThreadADB.property; }
-	|	formActiveADB=formActiveActionDefinitionBody[context, dynamic] { $property = $formActiveADB.property; }
+	|	activeFormADB=activeFormActionDefinitionBody[context, dynamic] { $property = $activeFormADB.property; }
 	;
 	
 contextIndependentActionDB returns [LPWithParams property, List<ResolveClassSet> signature]
@@ -2427,16 +2427,16 @@ requestInputActionDefinitionBody[List<TypedParameter> context, boolean dynamic] 
 		)
 	;
 
-formActiveActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
+activeFormActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
 @init {
     FormEntity form = null;
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedFormActiveAProp(form);
+		$property = self.addScriptedActiveFormAProp(form);
 	}
 }
-	:	'FORMACTIVE' formPart=ID {
+	:	'ACTIVE' 'FORM' formPart=ID {
             if (inPropParseState()) {
                 form = self.findForm($formPart.text);
             }

@@ -1427,8 +1427,8 @@ public class ScriptingLogicsModule extends LogicsModule {
         return prop;
     }
 
-    public LPWithParams addScriptedFormActiveAProp(FormEntity form) throws ScriptingErrorLog.SemanticErrorException {
-        return new LPWithParams(addAProp(null, new IsFormActiveActionProperty("", form, baseLM.getIsFormActiveProperty())), new ArrayList<Integer>());
+    public LPWithParams addScriptedActiveFormAProp(FormEntity form) throws ScriptingErrorLog.SemanticErrorException {
+        return new LPWithParams(addAProp(null, new IsActiveFormActionProperty("", form, baseLM.getIsActiveFormProperty())), new ArrayList<Integer>());
     }
 
     public LCP addLocalDataProperty(String name, String returnClassName, List<String> paramClassNames, boolean isNested) throws ScriptingErrorLog.SemanticErrorException {
@@ -2412,9 +2412,9 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LPWithParams(newProp, property.usedParams);
     }
 
-    public LPWithParams addScriptedTabActiveProp(ComponentView componentView) throws ScriptingErrorLog.SemanticErrorException {
-        CalcPropertyRevImplement<ClassPropertyInterface, ObjectEntity> tabActiveProperty = componentView.getTabActive();
-        return new LPWithParams(new LCP<>(tabActiveProperty.property), new ArrayList<Integer>());
+    public LPWithParams addScriptedActiveTabProp(ComponentView componentView) throws ScriptingErrorLog.SemanticErrorException {
+        CalcPropertyRevImplement<ClassPropertyInterface, ObjectEntity> activeTabProperty = componentView.getActiveTab();
+        return new LPWithParams(new LCP<>(activeTabProperty.property), new ArrayList<Integer>());
     }
 
     public void addScriptedFollows(PropertyUsage mainPropUsage, List<TypedParameter> namedParams, List<PropertyFollowsDebug> resolveOptions, LPWithParams rightProp, Event event, ActionDebugInfo debugInfo) throws ScriptingErrorLog.SemanticErrorException {

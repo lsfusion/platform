@@ -724,11 +724,12 @@ public class DerivedProperty {
         return dataProperty.getImplement(listInterfaces);
     }
 
-    public static <T> CalcPropertyRevImplement<ClassPropertyInterface, T> createDataPropRev(String caption, ImMap<T, ValueClass> interfaces, ValueClass valueClass) {
+    public static <T> CalcPropertyRevImplement<ClassPropertyInterface, T> createDataPropRev(String caption, ImMap<T, ValueClass> interfaces, ValueClass valueClass, boolean isNested) {
         ImOrderMap<T, ValueClass> orderInterfaces = interfaces.toOrderMap();
         ImOrderSet<T> listInterfaces = orderInterfaces.keyOrderSet();
         ValueClass[] interfaceClasses = orderInterfaces.valuesList().toArray(new ValueClass[orderInterfaces.size()]);
-        DataProperty dataProperty = new SessionDataProperty(caption, interfaceClasses, valueClass);
+        SessionDataProperty dataProperty = new SessionDataProperty(caption, interfaceClasses, valueClass);
+        dataProperty.isNested = isNested;
         return dataProperty.getRevImplement(listInterfaces);
     }
 

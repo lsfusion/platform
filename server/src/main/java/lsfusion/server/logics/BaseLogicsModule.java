@@ -130,7 +130,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     private LCP addedObject;
     private LCP confirmed;
     private LCP requestCanceled;
-    private LCP isFormActive;
+    private LCP isActiveForm;
     private LCP formResultProp;
     public LCP formPageCount;
     public LCP formExportFile;
@@ -390,7 +390,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         addedObject = findProperty("addedObject[]");
         confirmed = findProperty("confirmed[]");
         requestCanceled = findProperty("requestCanceled[]");
-        isFormActive = findProperty("isFormActive[]");
+        isActiveForm = findProperty("isActiveForm[]");
         formResultProp = findProperty("formResult[]");
         formPageCount = findProperty("formPageCount[]");
         formExportFile = findProperty("formExportFile[]");
@@ -670,8 +670,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
 
     @Override
     @IdentityStrongLazy
-    public LCP getIsFormActiveProperty() {
-        return isFormActive;
+    public LCP getIsActiveFormProperty() {
+        return isActiveForm;
     }
 
     @Override

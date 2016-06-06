@@ -46,18 +46,18 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
 
     public boolean defaultComponent = false;
 
-    private CalcPropertyRevImplement<ClassPropertyInterface, ObjectEntity> tabActive;
+    private CalcPropertyRevImplement<ClassPropertyInterface, ObjectEntity> activeTab;
 
-    public CalcPropertyRevImplement<ClassPropertyInterface, ObjectEntity> getTabActive() {
-        if (tabActive == null) {
-            tabActive = DerivedProperty.createDataPropRev(this.toString(), MapFact.<ObjectEntity, ValueClass>EMPTY(), LogicalClass.instance);
+    public CalcPropertyRevImplement<ClassPropertyInterface, ObjectEntity> getActiveTab() {
+        if (activeTab == null) {
+            activeTab = DerivedProperty.createDataPropRev(this.toString(), MapFact.<ObjectEntity, ValueClass>EMPTY(), LogicalClass.instance, true);
         }
-        return tabActive;
+        return activeTab;
     }
 
-    public void updateTabActiveProperty(DataSession session, Boolean value) throws SQLException, SQLHandledException {
-        if(tabActive != null)
-            tabActive.property.change(session, value);
+    public void updateActiveTabProperty(DataSession session, Boolean value) throws SQLException, SQLHandledException {
+        if(activeTab != null)
+            activeTab.property.change(session, value);
     }
 
     public ComponentView() {

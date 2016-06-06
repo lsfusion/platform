@@ -158,7 +158,7 @@ END
 @defineAnyValue(requested, );
 @defineAnyValue(chosen, STRING[100]);
 
-isFormActive = DATA LOCAL BOOLEAN ();
+isActiveForm = DATA LOCAL BOOLEAN ();
 
 META applicationForm(sid, name)
     FORM sid name;

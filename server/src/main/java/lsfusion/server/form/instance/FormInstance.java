@@ -1448,15 +1448,15 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
     public void setTabVisible(ContainerView view, ComponentView page) throws SQLException, SQLHandledException {
         assert view.isTabbedPane();
-        updateTabActiveProperty(page);
+        updateActiveTabProperty(page);
         visibleTabs.put(view, page);
     }
 
-    private void updateTabActiveProperty(ComponentView page) throws SQLException, SQLHandledException {
+    private void updateActiveTabProperty(ComponentView page) throws SQLException, SQLHandledException {
         for(ComponentView tab : visibleTabs.values()) {
-            tab.updateTabActiveProperty(session, null);
+            tab.updateActiveTabProperty(session, null);
         }
-        page.updateTabActiveProperty(session, true);
+        page.updateActiveTabProperty(session, true);
     }
 
     boolean refresh = true;

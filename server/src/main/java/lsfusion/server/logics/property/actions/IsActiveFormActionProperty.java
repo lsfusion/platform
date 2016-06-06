@@ -10,25 +10,25 @@ import lsfusion.server.logics.property.ExecutionContext;
 
 import java.sql.SQLException;
 
-public class IsFormActiveActionProperty extends SystemExplicitActionProperty {
+public class IsActiveFormActionProperty extends SystemExplicitActionProperty {
 
-    private LCP<?> isFormActiveProperty;
+    private LCP<?> isActiveFormProperty;
     private FormEntity requestedForm;
 
     public ImMap<CalcProperty, Boolean> aspectChangeExtProps() {
-        return getChangeProps(isFormActiveProperty.property);
+        return getChangeProps(isActiveFormProperty.property);
     }
 
-    public IsFormActiveActionProperty(String caption, FormEntity form, LCP isFormActiveProperty) {
+    public IsActiveFormActionProperty(String caption, FormEntity form, LCP isActiveFormProperty) {
         super(caption);
         this.requestedForm = form;
-        this.isFormActiveProperty = isFormActiveProperty;
+        this.isActiveFormProperty = isActiveFormProperty;
     }
 
     @Override
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         FormEntity<?> activeForm = context.getFormInstance() == null ? null : context.getFormInstance().entity;
         Boolean isActive = activeForm != null && requestedForm != null && activeForm.equals(requestedForm);
-        isFormActiveProperty.change(isActive, context);
+        isActiveFormProperty.change(isActive, context);
     }
 }
