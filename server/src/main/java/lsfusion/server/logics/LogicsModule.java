@@ -742,19 +742,19 @@ public abstract class LogicsModule {
     
     // ------------------- NEWSESSION ----------------- //
 
-    protected LAP addNewSessionAProp(AbstractGroup group, String caption, LAP action, boolean doApply, boolean singleApply, boolean isNested) {
-        return addNewSessionAProp(group, caption, action, isNested, doApply, singleApply, SetFact.<SessionDataProperty>EMPTY());
+    protected LAP addNewSessionAProp(AbstractGroup group, String caption, LAP action, boolean doApply, boolean singleApply, boolean noClose, boolean isNested) {
+        return addNewSessionAProp(group, caption, action, isNested, doApply, singleApply, noClose, SetFact.<SessionDataProperty>EMPTY());
     }
     
     protected LAP addNewSessionAProp(AbstractGroup group, String caption,
-                                     LAP action, boolean isNested, boolean doApply, boolean singleApply,
+                                     LAP action, boolean isNested, boolean doApply, boolean singleApply, boolean noClose,
                                      FunctionSet<SessionDataProperty> migrateSessionProps) {
         ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(action.listInterfaces.size());
         ActionPropertyMapImplement<?, PropertyInterface> actionImplement = mapActionListImplement(action, listInterfaces);
 
         return addProperty(group, new LAP(
                 new NewSessionActionProperty(
-                        caption, listInterfaces, actionImplement, singleApply, doApply, migrateSessionProps, isNested)));
+                        caption, listInterfaces, actionImplement, singleApply, noClose, doApply, migrateSessionProps, isNested)));
     }
 
     protected LAP addNewThreadAProp(AbstractGroup group, String caption, long delay, Long period, Object... params) {

@@ -2452,14 +2452,15 @@ listActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns 
 	boolean migrateAllSessionProps = false;
 	boolean isNested = false;
 	boolean singleApply = false;
+	boolean noClose = false;
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedListAProp(newSession, migrateSessionProps, migrateAllSessionProps, isNested, singleApply, props, localProps);
+		$property = self.addScriptedListAProp(newSession, migrateSessionProps, migrateAllSessionProps, isNested, singleApply, noClose, props, localProps);
 	}
 }
 	:	(
-			(	'NEWSESSION' (mps=nestedPropertiesSelector { migrateAllSessionProps = $mps.all; migrateSessionProps = $mps.props; })?
+			(	'NEWSESSION' ('NOCLOSE' { noClose = true; })? (mps=nestedPropertiesSelector { migrateAllSessionProps = $mps.all; migrateSessionProps = $mps.props; })?
 			|	'NESTEDSESSION' { isNested = true; }
 			)	{ newSession = true; }
 			('SINGLE' { singleApply = true; })?

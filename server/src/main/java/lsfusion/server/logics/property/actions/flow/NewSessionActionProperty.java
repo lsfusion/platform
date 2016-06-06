@@ -16,15 +16,18 @@ public class NewSessionActionProperty extends AroundAspectActionProperty {
     private final FunctionSet<SessionDataProperty> migrateSessionProperties;
     private final boolean isNested;
     private final boolean singleApply;
+    private final boolean noClose;
     private final boolean doApply;
 
     public <I extends PropertyInterface> NewSessionActionProperty(String caption, ImOrderSet<I> innerInterfaces,
-                                                                  ActionPropertyMapImplement<?, I> action, boolean singleApply, boolean doApply,
+                                                                  ActionPropertyMapImplement<?, I> action, boolean singleApply,
+                                                                  boolean noClose, boolean doApply,
                                                                   FunctionSet<SessionDataProperty> migrateSessionProperties,
                                                                   boolean isNested) {
         super(caption, innerInterfaces, action);
 
         this.singleApply = singleApply;
+        this.noClose = noClose;
 
         assert !(isNested && !migrateSessionProperties.isEmpty());
 
@@ -97,7 +100,8 @@ public class NewSessionActionProperty extends AroundAspectActionProperty {
     }
 
     protected void finallyAspect(ExecutionContext<PropertyInterface> context, ExecutionContext<PropertyInterface> innerContext) throws SQLException, SQLHandledException {
-        innerContext.getSession().close();
+        if(!noClose)
+            innerContext.getSession().close();
     }
 
     @Override

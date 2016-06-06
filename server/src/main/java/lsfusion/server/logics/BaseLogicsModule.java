@@ -717,7 +717,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
 
         LAP res = addChangeClassAProp(baseClass.unknown, 1, 0, false, true, 1, is(cls), 1);
         if (!oldSession) {
-            res = addNewSessionAProp(null, res.property.caption, res, true, false, false);
+            res = addNewSessionAProp(null, res.property.caption, res, true, false, false, false);
             res.setAskConfirm(true);
         }
         setDeleteActionOptions(res);

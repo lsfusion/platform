@@ -1378,7 +1378,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public LPWithParams addScriptedListAProp(boolean newSession, List<PropertyUsage> migrateSessionProps, boolean migrateAllSessionProps,
-                                             boolean isNested, boolean singleApply, List<LPWithParams> properties,
+                                             boolean isNested, boolean singleApply, boolean noClose, List<LPWithParams> properties,
                                              List<LP> localProps) throws ScriptingErrorLog.SemanticErrorException {
         List<Object> resultParams = getParamsPlainList(properties);
 
@@ -1404,7 +1404,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
 
         if (newSession) {
-            listLP = addNewSessionAProp(null, "", listLP, isNested, false, singleApply, getMigrateProps(migrateSessionProps, migrateAllSessionProps));
+            listLP = addNewSessionAProp(null, "", listLP, isNested, false, singleApply, noClose, getMigrateProps(migrateSessionProps, migrateAllSessionProps));
         }
 
         List<Integer> usedParams = mergeAllParams(properties);
