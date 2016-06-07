@@ -11,11 +11,11 @@
     <groupId>lsfusion.platform</groupId>
     <artifactId>base</artifactId>
     <packaging>pom</packaging>
-    <version>1.2.0-SNAPSHOT</version>
+    <version>1.2.0</version>
     <name>Base</name>
 
     <properties>
-        <lsfusion.version>1.2.0-SNAPSHOT</lsfusion.version>
+        <lsfusion.version>1.2.0</lsfusion.version>
 
         <junit.version>4.10</junit.version>
         <log4j.version>1.2.16</log4j.version>
@@ -594,4 +594,8 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
+
+  <scm>
+    <developerConnection>scm:svn:svn://server/lsfusion/build/tags/platform-1.2.0/base</developerConnection>
+  </scm>
 </project>
