@@ -138,7 +138,7 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
             }
         }
 
-        Set<PropertyDrawInstance> parentProps = subReportTableOptimization ? new HashSet<>(filterProperties(parentGroups.getSet())) : new HashSet<PropertyDrawInstance>();
+        Set<PropertyDrawInstance> parentProps = subReportTableOptimization && parentJoin != null ? new HashSet<>(filterProperties(parentGroups.getSet())) : new HashSet<PropertyDrawInstance>();
         for(PropertyDrawInstance<?> property : filterProperties(groups.getSet())) {
             boolean inParent = parentProps.contains(property);
             if (property.getColumnGroupObjects().isEmpty()) {
