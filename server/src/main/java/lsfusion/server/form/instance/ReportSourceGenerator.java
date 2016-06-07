@@ -14,7 +14,9 @@ import lsfusion.interop.form.ColumnUserPreferences;
 import lsfusion.interop.form.FormUserPreferences;
 import lsfusion.interop.form.GroupObjectUserPreferences;
 import lsfusion.interop.form.ReportConstants;
+import lsfusion.server.Settings;
 import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.data.query.Join;
 import lsfusion.server.data.query.Query;
 import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.data.type.Type;
@@ -80,8 +82,10 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
         return sources;
     }
 
-    private Query<ObjectInstance, Pair<Object, PropertyType>> createQuery(ImOrderSet<GroupObjectInstance> groups, SessionTableUsage<ObjectInstance,
+    private Query<ObjectInstance, Pair<Object, PropertyType>> createQuery(ImOrderSet<GroupObjectInstance> groups, ImOrderSet<GroupObjectInstance> parentGroups, SessionTableUsage<ObjectInstance,
             Pair<Object, PropertyType>> parentTable, Result<ImOrderMap<Pair<Object, PropertyType>, Boolean>> orders, Result<ImMap<Pair<Object, PropertyType>, Type>> types) throws SQLException, SQLHandledException {
+
+        assert parentTable == null || BaseUtils.hashEquals(GroupObjectInstance.getObjects(parentGroups.getSet()),parentTable.getMapKeys().keys());
 
         QueryBuilder<ObjectInstance, Pair<Object, PropertyType>> newQuery;
         if (groupId == null) {
@@ -100,55 +104,65 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
         MExclMap<Pair<Object, PropertyType>, Type> mTypes = MapFact.mExclMap();
         MOrderExclMap<Pair<Object, PropertyType>, Boolean> mOrders = MapFact.mOrderExclMap();
 
-        if (parentTable != null) {
-            newQuery.and(parentTable.getWhere(newQuery.getMapExprs()));
+        boolean subReportTableOptimization = Settings.get().isSubReportTableOptimization();
+        Join<Pair<Object, PropertyType>> parentJoin = null;
+        if(parentTable != null) {
+            parentJoin = parentTable.join(newQuery.getMapExprs());
+        }
+
+        if (parentJoin != null) {
+            newQuery.and(parentJoin.getWhere());
         }
 
         Modifier modifier = form.getModifier();
         for (GroupObjectInstance group : groups) {
             if (groupId == null || groupId.equals(group.getID())) {
-                newQuery.and(group.getWhere(newQuery.getMapExprs(), modifier));
+                boolean inParent = parentGroups.contains(group);
+                if(!(subReportTableOptimization && inParent)) {
+                    newQuery.and(group.getWhere(newQuery.getMapExprs(), modifier));
+
+                    if (!gridGroupsId.contains(group.getID())) {
+                        for (ObjectInstance object : group.objects) {
+                            newQuery.and(object.getExpr(newQuery.getMapExprs(), modifier).compare(object.getObjectValue().getExpr(), Compare.EQUALS));
+                        }
+                    }
+                }
 
                 ImOrderMap<OrderInstance,Boolean> mergeOrders = group.orders.mergeOrder(group.getOrderObjects().toOrderMap(false));
                 for(int i=0,size=mergeOrders.size();i<size;i++) {
                     OrderInstance order = mergeOrders.getKey(i);
 
-                    Pair<Object, PropertyType> orderObject = new Pair<Object, PropertyType>(order, PropertyType.ORDER);
-                    newQuery.addProperty(orderObject, order.getExpr(newQuery.getMapExprs(), modifier));
+                    Pair<Object, PropertyType> orderObject = addProperty(order, order, PropertyType.ORDER, modifier, inParent, parentJoin, newQuery, mTypes);
                     mOrders.exclAdd(orderObject, mergeOrders.getValue(i));
-                    mTypes.exclAdd(orderObject, order.getType());
-                }
-
-                if (!gridGroupsId.contains(group.getID())) {
-                    for (ObjectInstance object : group.objects) {
-                        newQuery.and(object.getExpr(newQuery.getMapExprs(), modifier).compare(object.getObjectValue().getExpr(), Compare.EQUALS));
-                    }
                 }
             }
         }
 
+        Set<PropertyDrawInstance> parentProps = subReportTableOptimization ? new HashSet<>(filterProperties(parentGroups.getSet())) : new HashSet<PropertyDrawInstance>();
         for(PropertyDrawInstance<?> property : filterProperties(groups.getSet())) {
+            boolean inParent = parentProps.contains(property);
             if (property.getColumnGroupObjects().isEmpty()) {
-                Pair<Object, PropertyType> propertyObject = new Pair<Object, PropertyType>(property, PropertyType.PLAIN);
-                newQuery.addProperty(propertyObject, property.getDrawInstance().getExpr(newQuery.getMapExprs(), modifier));
-                mTypes.exclAdd(propertyObject, property.propertyObject.getType());
+                addProperty(property, property.getDrawInstance(), PropertyType.PLAIN, modifier, inParent, parentJoin, newQuery, mTypes);
 
                 if (property.propertyCaption != null) {
-                    Pair<Object, PropertyType> captionObject = new Pair<Object, PropertyType>(property, PropertyType.CAPTION);
-                    newQuery.addProperty(captionObject, property.propertyCaption.getExpr(newQuery.getMapExprs(), modifier));
-                    mTypes.exclAdd(captionObject, property.propertyCaption.getType());
+                    addProperty(property, property.propertyCaption, PropertyType.CAPTION, modifier, inParent, parentJoin, newQuery, mTypes);
                 }
 
                 if (property.propertyFooter != null) {
-                    Pair<Object, PropertyType> footerObject = new Pair<Object, PropertyType>(property, PropertyType.FOOTER);
-                    newQuery.addProperty(footerObject, property.propertyFooter.getExpr(newQuery.getMapExprs(), modifier));
-                    mTypes.exclAdd(footerObject, property.propertyFooter.getType());
+                    addProperty(property, property.propertyFooter, PropertyType.FOOTER, modifier, inParent, parentJoin, newQuery, mTypes);
                 }
             }
         }
         types.set(mTypes.immutable());
         orders.set(mOrders.immutableOrder());
         return newQuery.getQuery();
+    }
+
+    private Pair<Object, PropertyType> addProperty(Object property, OrderInstance pObject, PropertyType type, Modifier modifier, boolean inParent, Join<Pair<Object, PropertyType>> parentJoin, QueryBuilder<ObjectInstance, Pair<Object, PropertyType>> newQuery, MExclMap<Pair<Object, PropertyType>, Type> mTypes) throws SQLException, SQLHandledException {
+        Pair<Object, PropertyType> propertyObject = new Pair<Object, PropertyType>(property, type);
+        newQuery.addProperty(propertyObject, inParent ? parentJoin.getExpr(propertyObject) : pObject.getExpr(newQuery.getMapExprs(), modifier));
+        mTypes.exclAdd(propertyObject, pObject.getType());
+        return propertyObject;
     }
 
     private void iterateChildReports(List<ReportNode> children, ImOrderSet<GroupObjectInstance> parentGroups, SessionTableUsage<ObjectInstance, Pair<Object, PropertyType>> parentTable) throws SQLException, SQLHandledException {
@@ -170,7 +184,7 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
                     return value.getType();
                 }});
 
-            Query<ObjectInstance, Pair<Object, PropertyType>> query = createQuery(groups, parentTable, orders, propTypes);
+            Query<ObjectInstance, Pair<Object, PropertyType>> query = createQuery(groups, parentGroups, parentTable, orders, propTypes);
             SessionTableUsage<ObjectInstance, Pair<Object, PropertyType>> reportTable = new SessionTableUsage<>(
                     form.session.sql, query, form.BL.LM.baseClass, form.getQueryEnv(), keyTypes, propTypes.result);
 

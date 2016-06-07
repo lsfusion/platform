@@ -1371,7 +1371,8 @@ public class Settings {
         this.subQueriesRowsMax = subQueriesRowsMax;
     }
 
-    private int subQueriesRowCountCoeff = 1; // коэффициент, для оценки  - определяет баланс между размером таблицы, количеством подзапросов
+    private int subQueriesRowCountCoeff = 2; // коэффициент, для оценки  - определяет баланс между размером таблицы, количеством подзапросов
+    private int subQueriesParentCoeff = 2; // коэффициент количество путей до вершины (по сути сколько раз подзапрос будет выполняться), для оценки  - определяет баланс между размером таблицы, количеством подзапросов
 
     public int getSubQueriesRowCountCoeff() {
         return subQueriesRowCountCoeff;
@@ -1379,6 +1380,14 @@ public class Settings {
 
     public void setSubQueriesRowCountCoeff(int subQueriesRowCountCoeff) {
         this.subQueriesRowCountCoeff = subQueriesRowCountCoeff;
+    }
+
+    public int getSubQueriesParentCoeff() {
+        return subQueriesParentCoeff;
+    }
+
+    public void setSubQueriesParentCoeff(int subQueriesParentCoeff) {
+        this.subQueriesParentCoeff = subQueriesParentCoeff;
     }
 
     private int explainThreshold = 100;
@@ -1870,5 +1879,15 @@ public class Settings {
 
     public void setDisableRegisterChanges(boolean disableRegisterChanges) {
         this.disableRegisterChanges = disableRegisterChanges;
+    }
+
+    private boolean subReportTableOptimization = true;
+
+    public boolean isSubReportTableOptimization() {
+        return subReportTableOptimization;
+    }
+
+    public void setSubReportTableOptimization(boolean subReportTableOptimization) {
+        this.subReportTableOptimization = subReportTableOptimization;
     }
 }

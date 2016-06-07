@@ -226,42 +226,55 @@ public class AdjustMaterializedExecuteEnvironment extends DynamicExecuteEnvironm
 
     private static class Node {
         private SQLQuery query;
-        private Node parent;
+        private Set<Node> parents = new HashSet<>();
 
-        public Node(SQLQuery query, Node parent, SQLCommand command) {
+        public Node(SQLQuery query, SQLCommand command) {
             this.query = query;
-            this.parent = parent;
 
             size = command.getCost(MapFact.<SQLQuery, Stat>EMPTY()).rows.getWeight();
             hasTooLongKeys = query != null && SQLQuery.hasTooLongKeys(query.keyReaders);
-
-            if(parent != null) {
-                parent.children.add(this);
-            }
         }
 
-        private int degree = 1;
+        public boolean isRoot() {
+            return query == null;
+        }
+
+        private int getParentDegree() { // количество путей до node'а
+            int result = isRoot() ? 1 : 0;
+            for(Node parent : parents)
+                result += parent.getParentDegree();
+            return result;
+        }
+        private int getChildrenDegree() {
+            int result = 1;
+            for(Node child : children)
+                result += child.getChildrenDegree();
+            return result;
+        }
         private final int size;
         private final boolean hasTooLongKeys;
         private Set<Node> children = new HashSet<Node>();
+
+        private Integer priority = null;
     }
 
-    private static void recCreateNode(SQLCommand<?> command, Node parent, ImSet<SQLQuery> materializedQueries, Set<Node> nodes) {
+    private static void recCreateNode(SQLCommand<?> command, Node parent, ImSet<SQLQuery> materializedQueries, Map<SQLCommand, Node> nodes) {
         for(SQLQuery subQuery : command.subQueries.values()) {
             if(!materializedQueries.contains(subQuery)) {
-                Node subNode = new Node(subQuery, parent, subQuery);
+                Node subNode = nodes.get(subQuery);
+                if(subNode == null) {
+                    subNode = new Node(subQuery, subQuery);
+                    nodes.put(subQuery, subNode);
+                }
+
                 recCreateNode(subQuery, subNode, materializedQueries, nodes);
-                nodes.add(subNode);
-                if(parent != null)
-                    parent.degree += subNode.degree;
+
+                if(parent != null) {
+                    subNode.parents.add(parent);
+                    parent.children.add(subNode);
+                }
             }
         }
-    }
-
-    private static void recRemoveChildren(Node node, PriorityQueue<Node> queue) {
-        queue.remove(node);
-        for(Node child : node.children)
-            recRemoveChildren(child, queue);
     }
 
     private static Step createNextStep(SQLCommand command, Step step, ImSet<SQLQuery> outerQueries) {
@@ -269,62 +282,71 @@ public class AdjustMaterializedExecuteEnvironment extends DynamicExecuteEnvironm
         // наша цель найти поддеревья с максимально близкой степенью к этой величине, материализовать ее
         // ищем вершину с максимально подходящей степенью, включаем в результат, берем следующую и т.д. пока не останется пустое дерево
 
-        Set<Node> nodes = new HashSet<>();
+        final Map<SQLCommand, Node> nodes = new HashMap<>();
         ServerLoggers.assertLog(outerQueries.containsAll(step.getMaterializedQueries()), "SHOULD CONTAIN ALL"); // может включать еще "верхние"
-        final Node topNode = new Node(null, null, command);
+        final Node topNode = new Node(null, command);
         recCreateNode(command, topNode, outerQueries, nodes); // не важно inner или нет
         if(!nodes.isEmpty()) { // оптимизация
-            nodes.add(topNode);
+            nodes.put(command, topNode);
 
-            int split = Settings.get().getSubQueriesSplit();
-            final int threshold = new Stat(Settings.get().getSubQueriesRowsThreshold()).getWeight();
-            final int max = new Stat(Settings.get().getSubQueriesRowsMax()).getWeight();
-            final int coeff = Settings.get().getSubQueriesRowCountCoeff();
+            Settings settings = Settings.get();
+            int split = settings.getSubQueriesSplit();
+            final int threshold = new Stat(settings.getSubQueriesRowsThreshold()).getWeight();
+            final int max = new Stat(settings.getSubQueriesRowsMax()).getWeight();
+            final int rowCountCoeff = settings.getSubQueriesRowCountCoeff();
+            final int parentCoeff = settings.getSubQueriesParentCoeff();
 
-            final int target = (int) Math.round(((double)nodes.size()) / split);
+            final int target = (int) Math.round(((double)topNode.getChildrenDegree()) / split);
 
-            Comparator<Node> comparator = new Comparator<Node>() {
-                private int getPriority(Node o) {
+            GetValue<Integer, Node> priorityCalc = new GetValue<Integer, Node>() {
+                public Integer getMapValue(Node o) {
+                    int pdeg = o.getParentDegree();
+                    int cdeg = o.getChildrenDegree();
                     if(o == topNode) {
-                        if(o.degree > target) // если больше target по сути запретим выбирать
+                        assert pdeg == 1;
+                        if(cdeg > target) // если больше target по сути запретим выбирать
                             return Integer.MAX_VALUE / 2;
                     } else {
-                        if (o.size >= max || o.hasTooLongKeys) // если больше порога не выбираем вообще
+                        if (pdeg == 0 || o.size >= max || o.hasTooLongKeys) // если удаленная вершина или больше порога не выбираем вообще
                             return Integer.MAX_VALUE;
                     }
 
-                    return BaseUtils.max(o.size, threshold) * coeff + Math.abs(o.degree - target);
+                    return BaseUtils.max(o.size, threshold) * rowCountCoeff + Math.abs(pdeg * cdeg - target) - pdeg * parentCoeff;
                 }
+            };
+            Comparator<Node> comparator = new Comparator<Node>() {
                 public int compare(Node o1, Node o2) {
-                    return Integer.compare(getPriority(o1), getPriority(o2));
+                    return Integer.compare(o1.priority, o2.priority);
                 }
             };
 
             PriorityQueue<Node> priority = new PriorityQueue<Node>(nodes.size(), comparator);
-            priority.addAll(nodes);
+            addNodes(nodes.values(), priorityCalc, priority);
 
             MOrderSet<SQLQuery> mNextQueries = SetFact.mOrderSet();
             while(true) {
                 Node bestNode = priority.poll();
 
-                recRemoveChildren(bestNode, priority); // удаляем поддерево
-
-                if(bestNode.query == null) {
+                if(bestNode.isRoot()) {
                     assert bestNode == topNode;
                     break;
                 }
-
                 mNextQueries.add(bestNode.query);
 
-                // пересчитываем degree
-                Node parentNode = bestNode.parent;
-                while(parentNode != null) {
-                    priority.remove(parentNode); // важно сначала удалить, так как degree используется в компараторе
-                    parentNode.degree -= bestNode.degree;
-                    priority.add(parentNode);
+                // удаляем parent'ы и children'ы из priority
+                Set<Node> removedNodes = new HashSet<>();
+                priority.remove(bestNode);
+                recRemoveChildren(bestNode, priority, removedNodes);
+                recRemoveParent(bestNode, priority, removedNodes);
 
-                    parentNode = parentNode.parent;
-                }
+                // удаляем вершину
+                for(Node node : bestNode.parents)
+                    node.children.remove(bestNode);
+                for(Node node : bestNode.children)
+                    node.parents.remove(bestNode);
+
+                // закидываем заново элементы (новые приоритеты пересчитаются)
+                addNodes(removedNodes, priorityCalc, priority);
             }
             final ImOrderSet<SQLQuery> nextQueries = mNextQueries.immutableOrder();
 
@@ -333,6 +355,36 @@ public class AdjustMaterializedExecuteEnvironment extends DynamicExecuteEnvironm
         }
 
         return new Step(true, step); // включение disableNestedLoop
+    }
+
+    private static void addNodes(Collection<Node> nodes, GetValue<Integer, Node> priorityCalc, PriorityQueue<Node> queue) {
+        for(Node node : nodes) {
+            node.priority = priorityCalc.getMapValue(node);
+            queue.add(node);
+        }
+    }
+    private static boolean removeNode(Node node, Set<Node> removedNodes, PriorityQueue<Node> queue) {
+        if(removedNodes.add(node)) {
+            queue.remove(node);
+            node.priority = null;
+            return true;
+        }
+        return false;
+    }
+
+    private static void recRemoveChildren(Node node, PriorityQueue<Node> queue, Set<Node> removedNodes) {
+        for(Node child : node.children) {
+            if(removeNode(child, removedNodes, queue))
+                recRemoveChildren(child, queue, removedNodes);
+        }
+    }
+
+    private static void recRemoveParent(Node node, PriorityQueue<Node> priority, Set<Node> removedNodes) {
+        for(Node parent : node.parents) {
+            if(removeNode(parent, removedNodes, priority)) {
+                recRemoveParent(parent, priority, removedNodes);
+            }
+        }
     }
 
     private static int getDefaultTimeout(SQLCommand command, ImMap<SQLQuery, MaterializedQuery> queries) {
