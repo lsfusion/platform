@@ -388,15 +388,19 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             @Override
             public boolean execute() {
                 if (!formHidden) {
-                    dispatcher.execute(new GetRemoteChanges(true), new ServerResponseCallback() {
-                        @Override
-                        public void success(ServerResponseResult response) {
-                            super.success(response);
-                            if (!formHidden) {
-                                scheduleRefresh();
+                    if (isShowing(GFormController.this)) {
+                        dispatcher.execute(new GetRemoteChanges(true), new ServerResponseCallback() {
+                            @Override
+                            public void success(ServerResponseResult response) {
+                                super.success(response);
+                                if (!formHidden) {
+                                    scheduleRefresh();
+                                }
                             }
-                        }
-                    });
+                        });
+                    } else {
+                        scheduleRefresh();   
+                    }
                 }
                 return false;
             }

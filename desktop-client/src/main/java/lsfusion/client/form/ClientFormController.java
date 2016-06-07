@@ -329,23 +329,27 @@ public class ClientFormController implements AsyncListener {
             autoRefreshScheduler.schedule(new Runnable() {
                 @Override
                 public void run() {
-                    SwingUtils.invokeLater(new ERunnable() {
-                        @Override
-                        public void run() throws Exception {
-                            rmiQueue.asyncRequest(new ProcessServerResponseRmiRequest("autoRefresh.getRemoteChanges") {
-                                @Override
-                                protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
-                                    return remoteForm.getRemoteChanges(requestIndex, lastReceivedRequestIndex, true);
-                                }
+                    if (formLayout.isShowing()) {
+                        SwingUtils.invokeLater(new ERunnable() {
+                            @Override
+                            public void run() throws Exception {
+                                rmiQueue.asyncRequest(new ProcessServerResponseRmiRequest("autoRefresh.getRemoteChanges") {
+                                    @Override
+                                    protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
+                                        return remoteForm.getRemoteChanges(requestIndex, lastReceivedRequestIndex, true);
+                                    }
 
-                                @Override
-                                protected void onResponse(long requestIndex, ServerResponse result) throws Exception {
-                                    super.onResponse(requestIndex, result);
-                                    scheduleRefresh();
-                                }
-                            });
-                        }
-                    });
+                                    @Override
+                                    protected void onResponse(long requestIndex, ServerResponse result) throws Exception {
+                                        super.onResponse(requestIndex, result);
+                                        scheduleRefresh();
+                                    }
+                                });
+                            }
+                        });
+                    } else {
+                        scheduleRefresh();
+                    }
                 }
             }, form.autoRefresh, TimeUnit.SECONDS);
         }
