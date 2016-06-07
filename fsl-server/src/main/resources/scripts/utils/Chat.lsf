@@ -1,0 +1,380 @@
+MODULE Chat;
+
+REQUIRE Authentication, Integration, Time, SystemEvents, Utils;
+
+CLASS Chat 'Чат';
+TABLE chat(Chat);
+TABLE chatCustomUser(Chat, CustomUser);
+
+@defineExternalizable(chat, VARSTRING[100]);
+
+in 'Вкл.' = DATA BOOLEAN (Chat, CustomUser);
+in (Chat c) = in(c, currentUser()); 
+isDialog(Chat chat) = [=GROUP SUM 1 IF in(chat, CustomUser user) BY chat](chat) == 2;
+chatIn(user1, user2) = GROUP MAX Chat chat IF in(chat, CustomUser user1) AND in(chat, CustomUser user2) AND isDialog(chat) BY user1, user2;
+readonly 'Только чтение' = DATA BOOLEAN (Chat, CustomUser);
+readonly 'Только чтение' (Chat c) = readonly(c, currentUser());
+
+dataName 'Имя' = DATA VARISTRING[100] (Chat);
+concatName (Chat chat) =  GROUP CONCAT name(CustomUser user), ',' IF in(chat, user) AND NOT user ==currentUser() BY chat;
+name 'Имя' (Chat chat) = (OVERRIDE [=GROUP CONCAT name(CustomUser user), ',' IF in(chat, user) AND NOT user ==currentUser() BY chat](chat), dataName(chat)) MINCHARWIDTH 15 PREFCHARWIDTH 30;
+
+setInChat(Chat chat) = ACTION {
+    FOR(name(User u)) DO {
+        in(chat, u) <- TRUE;
+        IF NOT login(u)=='admin' THEN
+            readonly(chat, u) <- TRUE;
+    }
+}
+
+onStarted() += ACTION {
+    LOCAL systemChat = Chat();
+    systemChat() <- chat('system');
+    IF NOT systemChat() THEN {
+        ADDOBJ Chat;
+        systemChat() <- addedObject();
+        id(c) <- 'system';
+        dataName(c) <- 'System Chat';   
+    }
+    setInChat(systemChat());
+}
+
+CLASS MessageStatus {
+    sent 'Отправлено',
+    delivered 'Доставлено',
+    seen 'Прочитано'
+}
+
+CLASS Message 'Сообщение';
+TABLE message(Message);
+TABLE messageCustomUser(Message, CustomUser);
+
+pushNotification 'Отправить уведомление пользователю' = ACTION ABSTRACT (CustomUser);
+seekLastMessageInFullChat = ACTION ABSTRACT ();
+
+author 'Автор' = DATA CustomUser (Message);
+nameAutor 'Автор' (Message message) = name(author(message)) MAXCHARWIDTH 30 PREFCHARWIDTH 30;
+text 'Текст' = DATA TEXT (Message);
+dateTime 'Время' = DATA DATETIME (Message) MAXCHARWIDTH 30 PREFCHARWIDTH 30;
+push 'Push' = DATA BOOLEAN (Message);
+status 'Статус' = DATA MessageStatus (Message, CustomUser);
+captionStatus 'Статус' (Message message, CustomUser user) = staticCaption(status(message, user));
+captionStatus 'Статус' (Message message) = captionStatus(message, currentUser());
+chat = DATA Chat (Message);
+nameChat 'Чат' (Message message) = name(chat(message)) MINCHARWIDTH 15 PREFCHARWIDTH 30;
+
+readonly (Message message) = readonly(chat(message));
+editable (Message message) = NOT readonly(message);
+
+own(Message message) = author(message) == currentUser();
+seenCount(Message message) = GROUP SUM 1 IF status(message, CustomUser user) == MessageStatus.seen BY message;
+ 
+unreadMessages 'Непрочитанных' (chat, user) = GROUP SUM 1 IF (NOT status(Message message, CustomUser user) == MessageStatus.seen) AND (author(message) != user) BY chat(message), user;
+unreadMessages'Непрочитанных' (Chat chat) = unreadMessages(chat, currentUser()) MAXCHARWIDTH 10 PREFCHARWIDTH 10;
+unreadMessages 'Непрочитанных' (CustomUser user) = unreadMessages(chatIn(user, currentUser()), currentUser()) MAXCHARWIDTH 10 PREFCHARWIDTH 10;
+
+chatNotFound = DATA LOCAL BOOLEAN ();
+defaultNewMessage 'Новое сообщение' = DATA LOCAL TEXT ();
+chatNewMessage 'Новое сообщение' = DATA LOCAL TEXT (Chat);
+newMessage 'Новое сообщение' (Chat chat) = DATA LOCAL TEXT (Chat);
+
+setSeenMessageUser(Message m, CustomUser user) = ACTION {
+    status(m, user) <- MessageStatus.seen;
+}
+sendMessage 'Написать в чат' (Chat chat, TEXT message) = ACTION {
+    FOR ADDOBJ m = Message DO {
+        chat(m) <- chat;
+        dateTime(m) <- currentDateTime();
+        author(m) <- currentUser();
+        push(m) <- TRUE;
+        text(m) <- message;
+        IF chatNotFound() THEN
+            defaultNewMessage() <- NULL
+        ELSE
+            chatNewMessage(chat) <- NULL; 
+        
+        setSeenMessageUser(m, currentUser());
+        FOR in(chat, CustomUser user) AND user != currentUser() DO {
+            status(m, user) <- MessageStatus.sent;
+            pushNotification(user);
+        }            
+    }
+    APPLY NESTED defaultNewMessage[], chatNewMessage[Chat] {};
+    seekLastMessageInFullChat();
+}
+
+sendMessage 'Отправить' = ACTION ABSTRACT LIST (Chat, CustomUser) EDITKEY 'F3';
+
+seekChat = ACTION ABSTRACT(CustomUser);
+  
+saveNewMessage(Chat c) = ACTION {
+    REQUEST TEXT INPUT;
+    IF requestedText() THEN {
+        newMessage(c) <- requestedText();
+        IF chatNotFound() THEN
+            defaultNewMessage() <- newMessage(c)
+        ELSE 
+            chatNewMessage(c) <- newMessage(c);
+    }
+    
+}  
+  
+FORM editChat 'Чат'
+    OBJECTS c = Chat FIXED PANEL
+    PROPERTIES (c) name
+    
+    OBJECTS u = CustomUser
+    PROPERTIES(u) name
+    PROPERTIES(c,u) TODRAW u in, readonly 
+    
+    FILTERGROUP in FILTER 'Включены в чат' in(c,u)          
+
+    EDIT Chat OBJECT c
+;  
+
+editChatAction 'Редактировать' () = ACTION {
+    FORM editChat MODAL;
+}
+//----------------------------FULL CHAT----------------------------//
+
+recentVisible  = ABSTRACT BOOLEAN ();
+readonlyFullChat(Chat chat) = readonly(chat) AND recentVisible();
+markSeenOnChange = ACTION ABSTRACT (Chat);
+prevUser() = DATA CustomUser();
+
+backgroundUnread 'Цвет' (Chat chat) = RGB(255, 0, 0) IF unreadMessages(chat);
+backgroundUnread 'Цвет' (CustomUser user) = RGB(255, 0, 0) IF unreadMessages(user);
+
+backgroundMessage (Message m) = IF NOT own(m) THEN RGB(200, 244, 248) ELSE IF seenCount(m) < 2 THEN RGB(220, 244, 248) ELSE RGB(240, 244, 248);
+
+FORM fullChat 'Чаты'
+    OBJECTS c = Chat
+    PROPERTIES(c) READONLY name ON SHORTCUT editChatAction(), unreadMessages BACKGROUND backgroundUnread(c)
+    PROPERTIES(c) FORCE PANEL TOOLBAR ADDFORM
+    PROPERTIES(c) newMessage READONLYIF readonlyFullChat(c) FORCE PANEL ON CHANGE saveNewMessage(c)
+    
+    EVENTS ON INIT markSeenOnChange(c)
+    EVENTS ON CHANGE c markSeenOnChange(c)
+
+    OBJECTS u = CustomUser
+    PROPERTIES(u) name, unreadMessages BACKGROUND backgroundUnread(u) 
+    
+    EVENTS ON INIT seekChat(u)
+    EVENTS ON CHANGE u seekChat(u)
+    
+    FILTERS u != currentUser()
+    
+    PROPERTIES(c, u) FORCE PANEL sendMessage
+    
+    OBJECTS m = Message LAST
+    PROPERTIES(m) READONLY BACKGROUND backgroundMessage(m) nameAutor, text, dateTime
+        
+    FILTERS in(c), chat(m) == c AND (NOT chatNotFound() OR recentVisible()), status(m, currentUser())
+    
+
+    
+    DIALOG Chat OBJECT c
+;
+
+DESIGN fullChat {
+    main {
+        NEW topMain {
+            type = CONTAINERH;
+            fill = 1;
+            NEW left {
+                fill = 0.3;
+                type = TABBED;
+       
+                NEW contacts {
+                    caption = 'Контакты';
+                    MOVE u.box { caption = 'Контакты'; PROPERTY(name(u)) { caption = 'Пользователь'; }}
+                }
+                NEW recent {
+                    caption = 'Чаты';
+                    MOVE c.box { caption = 'Чаты'; } 
+                }                         
+                
+            }
+            NEW right {
+                fill = 0.7;
+                MOVE m.box { fill = 0.8; }
+                MOVE PROPERTY(newMessage(c)) {
+                    panelCaptionAbove = TRUE;
+                    fill = 0.2;
+                };             
+                NEW sendBox {
+                    type = CONTAINERH;
+                    MOVE PROPERTY(sendMessage(c, u));
+                }
+            }            
+        }
+        REMOVE functions.box;
+    }           
+}
+
+sendMessage 'Написать в чат' (Chat chat) = ACTION {
+    IF newMessage(chat) THEN
+        sendMessage(chat, newMessage(chat));
+}
+
+sendMessage 'Написать пользователю' (CustomUser user) = ACTION {
+    LOCAL chat = Chat();
+    chat() <- chatIn(user, currentUser());
+    IF NOT chat() THEN {
+        FOR ADDOBJ chat = Chat DO {
+            in(chat, user) <- TRUE;
+            in(chat, currentUser) <- TRUE WHERE currentUser == currentUser();
+            newMessage(chat) <- defaultNewMessage();
+            sendMessage(chat);
+            SEEK fullChat.c chat;
+        } 
+    } ELSE sendMessage(chat());
+}
+
+
+//----------------------------SHORT CHAT----------------------------//
+
+deliveredNotificationAction(CustomUser user) += ACTION {
+    FOR in(chat(Message m)) AND status(m, user) == MessageStatus.sent DO {
+        status(m, user) <- MessageStatus.delivered;
+    }
+}
+
+markSeenMessages (CustomUser user) = ACTION {
+    FOR in(chat(Message m)) AND status(m, user) == MessageStatus.delivered DO {
+        status(m, user) <- MessageStatus.seen;
+    }
+};
+
+markSeenOnChangeMessages (Chat chat, CustomUser user) = ACTION {
+    LOCAL needApply = BOOLEAN();
+    FOR in(chat) AND (status(Message m, user) == MessageStatus.sent OR status(m, user) == MessageStatus.delivered) DO {
+        status(m, user) <- MessageStatus.seen;
+        needApply() <- TRUE;
+    }
+    IF needApply() THEN {
+        APPLY NESTED defaultNewMessage[], chatNewMessage[Chat] {};
+    }
+};
+
+markSeenOnChange(Chat c) += ACTION {
+    markSeenOnChangeMessages(c, currentUser());
+    seekLastMessageInFullChat();
+};
+
+closeChat 'Закрыть' = ACTION { 
+    markSeenMessages(currentUser()); 
+    formClose();
+}
+
+reply 'Ответ' = DATA LOCAL TEXT (Message);
+replyChat 'Ответить' (Chat c, Message m) = ACTION { 
+    markSeenMessages(currentUser());
+    newMessage(c) <- reply(m);
+    sendMessage(chat(m));
+    formClose();
+};
+
+replyChat 'Ответить' (Message m) = ACTION { 
+    replyChat(chat(m), m);
+};
+
+openChat 'Перейти в чат' (Chat c, Message m) = ACTION {
+    markSeenMessages(currentUser());
+    FORM fullChat DOCKED;
+    NEWTHREAD {
+        ACTIVATE TAB fullChat.recent;
+        SEEK fullChat.c chat(m);
+        SEEK LAST fullChat.m NULL;
+        newMessage(c) <-reply(m);
+    } CONNECTION currentConnection();
+    formClose();
+};
+
+openChat 'Перейти в чат' (Message m) = ACTION {
+    openChat(chat(m), m);
+};
+
+FORM shortChat 'Новое сообщение' DOCKEDMODAL
+OBJECTS m = Message LAST
+PROPERTIES(m) READONLY nameChat, text, dateTime
+PROPERTIES(m) FORCE PANEL reply READONLYIF readonly(m), replyChat SHOWIF editable(m), openChat
+PROPERTIES() closeChat
+FILTERS in(chat(m)), status(m, currentUser()), status(m, currentUser()) != MessageStatus.seen
+;
+
+DESIGN shortChat {
+    main {
+        MOVE PROPERTY(reply(m)) {
+            panelCaptionAbove = TRUE;   
+            fill = 1;
+        }
+        NEW buttons {
+            type = CONTAINERH;
+            MOVE PROPERTY(replyChat(m));
+            MOVE PROPERTY(openChat(m));
+            MOVE PROPERTY(closeChat());
+        }
+        REMOVE functions.box;
+    }      
+}  
+
+pushAction() = ACTION {
+    ACTIVE FORM fullChat;
+    IF isActiveForm() THEN {
+        //markSeenMessages(currentUser());
+        APPLY NESTED defaultNewMessage[], chatNewMessage[Chat] {};
+        seekLastMessageInFullChat();
+        formRefresh();
+    }
+    ELSE {
+        ACTIVE FORM shortChat;
+        IF isActiveForm() THEN {
+            formRefresh();
+            SEEK LAST shortChat.m NULL;
+        } 
+        ELSE {
+            NEWSESSION NOCLOSE {
+                FORM shortChat MODAL;
+            }
+        }
+    }
+}
+
+seekLastMessageInFullChat() += ACTION {
+    SEEK LAST fullChat.m NULL;
+}
+
+pushNotification (CustomUser user) += ACTION {
+    FOR user(Connection conn) == user AND connectionStatus(conn) == ConnectionStatus.connectedConnection DO {
+        NEWTHREAD pushAction() CONNECTION conn;
+    }    
+};
+
+recentVisible() += ACTIVE TAB fullChat.recent;
+sendMessage(Chat chat, CustomUser user) += ACTION {
+    IF recentVisible() THEN sendMessage(chat) ELSE sendMessage(user);
+}
+
+fillChat(Chat chat, CustomUser user) = ACTION {
+    in(chat, user) <- TRUE;
+    in(chat, currentUser) <- TRUE WHERE currentUser == currentUser();
+}
+
+seekChat(CustomUser user) += ACTION {
+    LOCAL chat = Chat();
+    chat() <- chatIn(user, currentUser());
+    IF NOT chat() THEN {
+        chatNotFound() <- TRUE;
+        //prevUser тут - предыдущий выбранный user на форме
+        markSeenOnChange(chatIn(prevUser(), currentUser()));
+    } ELSE {
+        chatNotFound() <- NULL;
+        SEEK fullChat.c chat();
+    }
+    prevUser() <- user;
+}
+
+NAVIGATOR {
+    ADD fullChat IMAGE '/images/chat.png';
+}
