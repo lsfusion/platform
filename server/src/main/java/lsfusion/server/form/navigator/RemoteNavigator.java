@@ -14,6 +14,7 @@ import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.form.RemoteFormInterface;
 import lsfusion.interop.form.ServerResponse;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
+import lsfusion.server.EnvRunnable;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
 import lsfusion.server.auth.SecurityPolicy;
@@ -48,6 +49,7 @@ import lsfusion.server.remote.RemoteForm;
 import lsfusion.server.remote.RemoteLoggerAspect;
 import lsfusion.server.remote.RemotePausableInvocation;
 import lsfusion.server.session.DataSession;
+import lsfusion.server.session.ExecutionEnvironment;
 import org.apache.log4j.Logger;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -668,7 +670,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         client.notifyServerRestartCanceled();
     }
 
-    public void pushNotification(Runnable run) throws RemoteException {
+    public void pushNotification(EnvRunnable run) throws RemoteException {
         client.pushMessage(notificationsMap.putNotification(run));
     }
 
@@ -732,10 +734,14 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         currentInvocation = new RemotePausableInvocation(pausablesExecutor, this) {
             @Override
             protected ServerResponse callInvocation() throws Throwable {
-                if (type == 2)
-                    runNotification(actionSID);
-                else
-                    runAction(actionSID, type == 1);
+                if (type == 2) {
+                    runNotification(createSession(), actionSID);
+                } else {
+                    try (DataSession session = createSession()) {
+                        runAction(session, actionSID, type == 1);
+                        session.apply(businessLogics);
+                    }
+                }
                 assert !delayedGetRemoteChanges && !delayedHideForm; // тут не должно быть никаких delayRemote или hideForm
                 return new ServerResponse(delayedActions.toArray(new ClientAction[delayedActions.size()]), false);
             }
@@ -744,20 +750,25 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         return currentInvocation.execute();
     }
 
-    private void runNotification(String actionSID) {
+    private void runNotification(ExecutionEnvironment env, String actionSID) {
         Integer idNotification;
         try {
             idNotification = Integer.parseInt(actionSID);
         } catch (Exception e) {
             idNotification = null;
         }
-        if(idNotification != null) {
-            Runnable notification = notificationsMap.getNotification(idNotification);
-            notification.run();
+        if (idNotification != null) {
+            try {
+                businessLogics.authenticationLM.deliveredNotificationAction.execute(env.getSession(), user);
+                EnvRunnable notification = notificationsMap.getNotification(idNotification);
+                notification.run(env);
+            } catch (SQLException | SQLHandledException e) {
+                ServerLoggers.systemLogger.error("DeliveredNotificationAction failed: ", e);
+            }
         }
     }
 
-    private void runAction(String actionSID, boolean isNavigatorAction) throws SQLException, SQLHandledException {
+    private void runAction(DataSession session, String actionSID, boolean isNavigatorAction) throws SQLException, SQLHandledException {
         final ActionProperty property;
         if (isNavigatorAction) {
             final NavigatorElement element = businessLogics.LM.root.getNavigatorElementBySID(actionSID);
@@ -774,10 +785,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         } else {
             property = (ActionProperty) businessLogics.findProperty(actionSID).property;
         }
-        try (DataSession session = createSession()) {
-            property.execute(MapFact.<ClassPropertyInterface, DataObject>EMPTY(), session, null);
-            session.apply(businessLogics);
-        }
+        property.execute(MapFact.<ClassPropertyInterface, DataObject>EMPTY(), session, null);
     }
 
     @Override
@@ -802,6 +810,15 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
     @Override
     public void formDestroyed(RemoteForm form) {
         createdForms.remove(form);
+    }
+
+    @Override
+    public void executeNotificationAction(ExecutionEnvironment env, Integer idNotification) throws RemoteException {
+        try {
+            runNotification(env, String.valueOf(idNotification));
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
@@ -993,16 +1010,16 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
     }
 
     private static class NotificationsMap {
-        private Map<Integer, Runnable> notificationsMap = new HashMap<>();
+        private Map<Integer, EnvRunnable> notificationsMap = new HashMap<>();
         private int counter = 0;
 
-        private synchronized Integer putNotification(Runnable value) {
+        private synchronized Integer putNotification(EnvRunnable value) {
             counter++;
             notificationsMap.put(counter, value);
             return counter;
         }
 
-        private synchronized Runnable getNotification(Integer key) {
+        private synchronized EnvRunnable getNotification(Integer key) {
             return notificationsMap.remove(key);
         }
     }

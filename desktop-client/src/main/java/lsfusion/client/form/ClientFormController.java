@@ -18,7 +18,9 @@ import lsfusion.client.form.cell.PanelView;
 import lsfusion.client.form.dispatch.ClientFormActionDispatcher;
 import lsfusion.client.form.dispatch.SimpleChangePropertyDispatcher;
 import lsfusion.client.form.grid.GridUserPreferences;
+import lsfusion.client.form.layout.ClientContainerView;
 import lsfusion.client.form.layout.ClientFormLayout;
+import lsfusion.client.form.layout.TabbedClientContainerView;
 import lsfusion.client.form.tree.TreeGroupController;
 import lsfusion.client.logics.*;
 import lsfusion.client.logics.classes.ClientActionClass;
@@ -222,6 +224,25 @@ public class ClientFormController implements AsyncListener {
 
     public ColorPreferences getColorPreferences() {
         return colorPreferences;
+    }
+
+    public void activateTab(String tabSID) {
+        ClientContainer parentContainer = form.findParentContainerBySID(tabSID);
+        if(parentContainer != null && parentContainer.isTabbed()) {
+            Map<String, Integer> tabMap = getTabMap(parentContainer);
+            ClientContainerView containerView = getLayout().getContainerView(parentContainer);
+            if(containerView instanceof TabbedClientContainerView)
+                ((TabbedClientContainerView)containerView).activateTab(tabMap.get(tabSID));
+        }
+    }
+
+    private Map<String, Integer> getTabMap(ClientContainer component) {
+        Map<String, Integer> tabMap = new HashMap<>();
+        List<ClientComponent> tabs = component.getChildren();
+        if (tabs != null)
+            for (int i = 0; i < tabs.size(); i++)
+                tabMap.put(tabs.get(i).getSID(), i);
+        return tabMap;
     }
 
     // ------------------------------------------------------------------------------------ //
@@ -986,6 +1007,15 @@ public class ClientFormController implements AsyncListener {
             @Override
             protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
                 return remoteForm.setTabVisible(requestIndex, lastReceivedRequestIndex, container.getID(), component.getID());
+            }
+        });
+    }
+
+    public void executeNotificationAction(final Integer idNotification) throws IOException {
+        rmiQueue.asyncRequest(new ProcessServerResponseRmiRequest("executeNotificationAction") {
+            @Override
+            protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
+                return remoteForm.executeNotificationAction(requestIndex, lastReceivedRequestIndex, idNotification);
             }
         });
     }

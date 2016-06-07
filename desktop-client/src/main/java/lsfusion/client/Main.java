@@ -6,6 +6,7 @@ import lsfusion.base.SystemUtils;
 import lsfusion.client.dock.DockableMainFrame;
 import lsfusion.client.exceptions.ClientExceptionManager;
 import lsfusion.client.form.ClientExternalScreen;
+import lsfusion.client.form.ClientFormController;
 import lsfusion.client.form.editor.rich.RichEditorPane;
 import lsfusion.client.remote.proxy.RemoteFormProxy;
 import lsfusion.client.rmi.ConnectionLostManager;
@@ -77,6 +78,8 @@ public class Main {
     public static Date wideFormattableDateTime;
 
     public static MainFrame frame;
+
+    public static ClientFormController currentForm;
 
     public static int asyncTimeOut;
 
@@ -489,8 +492,24 @@ public class Main {
         timer.start();
     }
 
-    public static void executeNavigatorAction(Integer idNotification) {
-        ((DockableMainFrame)frame).executeAction(String.valueOf(idNotification), 2);
+    public static void executeNotificationAction(Integer idNotification) {
+        try {
+            if (currentForm != null)
+                currentForm.executeNotificationAction(idNotification);
+            else
+                ((DockableMainFrame) frame).executeAction(String.valueOf(idNotification), 2);
+        } catch (IOException e) {
+            logger.error("Error executing notification action: ", e);
+        }
+    }
+
+    public static void setCurrentForm(ClientFormController currentForm) {
+        Main.currentForm = currentForm;
+    }
+
+    public static void dropCurrentForm(ClientFormController form) {
+        if(currentForm != null && currentForm.equals(form))
+            currentForm = null;
     }
 
     private static void clean() {

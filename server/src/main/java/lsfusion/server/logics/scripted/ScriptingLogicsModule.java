@@ -1431,6 +1431,10 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LPWithParams(addAProp(null, new IsActiveFormActionProperty("", form, baseLM.getIsActiveFormProperty())), new ArrayList<Integer>());
     }
 
+    public LPWithParams addScriptedActivateAProp(FormEntity form, ComponentView componentView) throws ScriptingErrorLog.SemanticErrorException {
+        return new LPWithParams(addAProp(null, new ActivateActionProperty("", form, componentView)), new ArrayList<Integer>());
+    }
+
     public LCP addLocalDataProperty(String name, String returnClassName, List<String> paramClassNames, boolean isNested) throws ScriptingErrorLog.SemanticErrorException {
         List<ResolveClassSet> signature = new ArrayList<>();
         for (String className : paramClassNames) {
@@ -1511,6 +1515,29 @@ public class ScriptingLogicsModule extends LogicsModule {
         if (object != null) {
             List<Object> resultParams = getParamsPlainList(singletonList(seekProp));
             LAP lap = addOSAProp(object, resultParams.toArray());
+            return new LPWithParams(lap, seekProp.usedParams);
+        } else {
+            errLog.emitNotFoundError(parser, "оbject", objectName);
+            return null;
+        }
+    }
+
+    public LPWithParams addScriptedGroupObjectSeekProp(String name, LPWithParams seekProp, boolean last) throws ScriptingErrorLog.SemanticErrorException {
+        int pointPos = name.lastIndexOf('.');
+        assert pointPos > 0;
+
+        String formName = name.substring(0, pointPos);
+        String objectName = name.substring(pointPos+1);
+
+        FormEntity form = findForm(formName);
+        if(form == null) {
+            errLog.emitNotFoundError(parser, "form", formName);
+        }
+
+        GroupObjectEntity groupObject = form.getNFGroupObject(objectName, getVersion());
+        if (groupObject != null) {
+            List<Object> resultParams = getParamsPlainList(singletonList(seekProp));
+            LAP lap = addGOSAProp(groupObject, last, resultParams.toArray());
             return new LPWithParams(lap, seekProp.usedParams);
         } else {
             errLog.emitNotFoundError(parser, "оbject", objectName);

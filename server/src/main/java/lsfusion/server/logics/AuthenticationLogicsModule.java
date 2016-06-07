@@ -57,6 +57,8 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
 
     public LCP useBusyDialog;
 
+    public LAP deliveredNotificationAction;
+
     public LAP generateLoginPassword;
 
     public AuthenticationLogicsModule(BusinessLogics BL, BaseLogicsModule baseLM) throws IOException {
@@ -117,6 +119,8 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
         userDNSuffixLDAP =  findProperty("userDNSuffixLDAP[]");
 
         useBusyDialog = findProperty("useBusyDialog[]");
+
+        deliveredNotificationAction = findAction("deliveredNotificationAction[CustomUser]");
 
         generateLoginPassword = findAction("generateLoginPassword[CustomUser]");
 

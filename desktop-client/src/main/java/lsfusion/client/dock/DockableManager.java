@@ -78,6 +78,8 @@ public class DockableManager {
         page.setExtendedMode(mode);
         page.toFront();
         page.requestFocusInWindow();
+
+        page.onOpened();
     }
 
     public ClientDockable openForm(ClientNavigator navigator, String canonicalName, String formSID) throws IOException, ClassNotFoundException, JRException {
@@ -103,6 +105,11 @@ public class DockableManager {
         ClientFormDockable page = new ClientFormDockable(navigator, canonicalName, formSID, remoteForm, this, closeListener, firstChanges);
         openForm(page);
         return page;
+    }
+
+    public void activateTab(String formSID, String tabSID) throws IOException, ClassNotFoundException, JRException {
+        ClientFormDockable page = (ClientFormDockable) control.getCDockable(control.getCDockableCount() - forms.getFormsList().size() + forms.getFormsList().indexOf(formSID));
+        page.activateTab(tabSID);
     }
 
     public void openModalForm(String canonicalName, String formSID, ClientNavigator navigator, boolean showFullScreen) throws IOException, ClassNotFoundException {

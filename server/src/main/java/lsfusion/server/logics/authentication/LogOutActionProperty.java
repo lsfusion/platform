@@ -18,5 +18,6 @@ public class LogOutActionProperty extends ScriptingActionProperty {
     @Override
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         context.delayUserInteraction(new LogOutClientAction());
+        context.apply();
     }
 }

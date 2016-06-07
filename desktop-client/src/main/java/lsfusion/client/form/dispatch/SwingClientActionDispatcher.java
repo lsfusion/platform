@@ -171,6 +171,10 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
         }
     }
 
+    public void execute(ActivateTabClientAction action) {
+        Main.frame.activateTab(action.formSID, action.tabSID);
+    }
+
     protected void beforeModalActionInSameEDT(boolean blockView) {
     }
 

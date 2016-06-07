@@ -749,6 +749,19 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         });
     }
 
+    public ServerResponse executeNotificationAction(long requestIndex, long lastReceivedRequestIndex, final int idNotification) throws RemoteException {
+        return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, new ERunnable() {
+            @Override
+            public void run() throws Exception {
+
+                RemoteFormListener remoteNavigator = getRemoteFormListener();
+                if(remoteNavigator != null) {
+                    remoteNavigator.executeNotificationAction(form, idNotification);
+                }
+            }
+        });
+    }
+
     private <T> T processRMIRequest(long requestIndex, long lastReceivedRequestIndex, Callable<T> request) throws RemoteException {
         Optional<?> optionalResult = recentResults.get(requestIndex);
         if (optionalResult != null) {

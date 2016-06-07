@@ -43,6 +43,11 @@ public abstract class ClientFormActionDispatcher extends SwingClientActionDispat
     }
 
     @Override
+    public void execute(ActivateTabClientAction action) {
+        super.execute(action);
+    }
+
+    @Override
     protected void beforeModalActionInSameEDT(boolean blockView) {
         getFormController().block(blockView);
     }

@@ -94,6 +94,8 @@ userDNSuffixLDAP 'Суффикс для User DN' = DATA VARSTRING[100] ();
 useBusyDialogCustom 'Показывать BusyDialog' = DATA BOOLEAN (CustomUser);
 useBusyDialog () = useBusyDialogCustom[CustomUser](currentUser());
 
+deliveredNotificationAction = ACTION ABSTRACT LIST (CustomUser);
+
 locked = DATA User (Object);
 lockResult = DATA LOCAL NESTED BOOLEAN ();
 
@@ -228,6 +230,7 @@ reloginLoginUser() = ACTION {
             MESSAGE 'Пользователь не найден';
         }
     }
+    apply();
 }
 
 // Смена пользователя по паролю
@@ -335,6 +338,7 @@ changePassword() = ACTION {
       ELSE {
             EXEC changePassword(currentUser());
       }
+      apply();
 }
 
 NAVIGATOR {

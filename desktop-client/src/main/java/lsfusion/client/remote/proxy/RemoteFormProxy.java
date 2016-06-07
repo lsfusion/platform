@@ -272,7 +272,15 @@ public class RemoteFormProxy extends RemoteObjectProxy<RemoteFormInterface> impl
     public ServerResponse executeEditAction(long requestIndex, long lastReceivedRequestIndex, int propertyID, byte[] fullKey, String actionSID) throws RemoteException {
         logRemoteMethodStartCall("executeEditAction");
         ServerResponse result = target.executeEditAction(requestIndex, lastReceivedRequestIndex, propertyID, fullKey, actionSID);
-        logRemoteMethodEndCall("getPropertyChangeType", result);
+        logRemoteMethodEndCall("executeEditAction", result);
+        return result;
+    }
+
+    @Override
+    public ServerResponse executeNotificationAction(long requestIndex, long lastReceivedRequestIndex, int idNotification) throws RemoteException {
+        logRemoteMethodStartCall("executeNotificationAction");
+        ServerResponse result = target.executeNotificationAction(requestIndex, lastReceivedRequestIndex, idNotification);
+        logRemoteMethodEndCall("executeNotificationAction", result);
         return result;
     }
 

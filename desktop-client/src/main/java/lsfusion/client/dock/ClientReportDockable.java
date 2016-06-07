@@ -70,4 +70,8 @@ public class ClientReportDockable extends ClientDockable {
         });
         return viewer;
     }
+
+    @Override
+    public void onOpened() {
+    }
 }

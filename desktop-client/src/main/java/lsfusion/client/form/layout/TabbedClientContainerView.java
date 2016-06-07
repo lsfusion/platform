@@ -135,6 +135,10 @@ public class TabbedClientContainerView extends AbstractClientContainerView {
         return panel;
     }
 
+    public void activateTab(int index) {
+        tabbedPane.activateTab(index);
+    }
+
     public class TabbedPane extends JTabbedPane {
         //JTabbedPane.getPrefferedSize() возвращает некорректное значение,
         //приходится вот так хардкодить, чтобы его компенсировать
@@ -198,6 +202,11 @@ public class TabbedClientContainerView extends AbstractClientContainerView {
             proxyPanel.add(childView);
 
             insertTab(caption, null, proxyPanel, null, index);
+        }
+
+        private void activateTab(int index) {
+            if(getTabCount() > index)
+                setSelectedIndex(index);
         }
 
         private void updatePageSizes(Container container) {

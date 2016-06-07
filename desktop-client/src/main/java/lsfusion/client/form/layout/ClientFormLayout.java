@@ -1,9 +1,6 @@
 package lsfusion.client.form.layout;
 
-import lsfusion.client.ClientActionProxy;
-import lsfusion.client.ContainerFocusListener;
-import lsfusion.client.FormFocusTraversalPolicy;
-import lsfusion.client.MultiAction;
+import lsfusion.client.*;
 import lsfusion.client.form.ClientFormController;
 import lsfusion.client.logics.ClientComponent;
 import lsfusion.client.logics.ClientContainer;
@@ -59,6 +56,7 @@ public class ClientFormLayout extends JPanel {
         focusListener = new FocusAdapter() {
             public void focusGained(FocusEvent e) {
                 form.gainedFocus();
+                Main.setCurrentForm(form);
             }
         };
 
@@ -71,6 +69,16 @@ public class ClientFormLayout extends JPanel {
                 requestFocusInWindow();
             }
         });
+    }
+
+    @Override
+    public void removeNotify() {
+        super.removeNotify();
+        Main.dropCurrentForm(form);
+    }
+
+    public ClientContainerView getContainerView(ClientContainer container) {
+        return containerViews.get(container);
     }
 
     // метод рекурсивно создает для каждого ClientContainer соответствующий ContainerView

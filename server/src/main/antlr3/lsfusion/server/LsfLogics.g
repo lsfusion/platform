@@ -1570,12 +1570,11 @@ activeTabPropertyDefinition[List<TypedParameter> context, boolean dynamic] retur
 					form = self.findForm($formPart.text);
 				}
 			}
-			mid=multiCompoundID
-          		{
-            			if (inPropParseState()) {
-            				comp = form.getNFRichDesign(self.getVersion()).getComponentBySID($mid.sid, self.getVersion());
-            			}
-            		}
+			mid=multiCompoundID {
+                if (inPropParseState()) {
+                    comp = form.getNFRichDesign(self.getVersion()).getComponentBySID($mid.sid, self.getVersion());
+                }
+            }
 	;
 
 formulaPropertyDefinition returns [LP property, List<ResolveClassSet> signature]
@@ -2095,6 +2094,7 @@ keepContextActionDB[List<TypedParameter> context, boolean dynamic] returns [LPWi
 	|	importADB=importActionDefinitionBody[context, dynamic] { $property = $importADB.property; }
 	|	newThreadADB=newThreadActionDefinitionBody[context, dynamic] { $property = $newThreadADB.property; }
 	|	activeFormADB=activeFormActionDefinitionBody[context, dynamic] { $property = $activeFormADB.property; }
+	|	activateADB=activateActionDefinitionBody[context, dynamic] { $property = $activateADB.property; }
 	;
 	
 contextIndependentActionDB returns [LPWithParams property, List<ResolveClassSet> signature]
@@ -2323,12 +2323,16 @@ asyncUpdateActionDefinitionBody[List<TypedParameter> context, boolean dynamic] r
 	;
 
 seekObjectActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
+@init {
+	Boolean last = null;
+}
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedObjectSeekProp($gobj.sid, $pe.property);
+		$property = last == null ? self.addScriptedObjectSeekProp($gobj.sid, $pe.property)
+		                         : self.addScriptedGroupObjectSeekProp($gobj.sid, $pe.property, last);
 	}
 }
-	:	'SEEK' gobj=groupObjectID pe=propertyExpression[context, dynamic]
+	:	'SEEK' ('FIRST' { last = false; } | 'LAST' {last = true; })? gobj=groupObjectID pe=propertyExpression[context, dynamic]
 	;
 
 fileActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
@@ -2441,6 +2445,38 @@ activeFormActionDefinitionBody[List<TypedParameter> context, boolean dynamic] re
                 form = self.findForm($formPart.text);
             }
         }
+	;
+
+activateActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
+@init {
+    FormEntity form = null;
+    ComponentView comp = null;
+}
+@after {
+	if (inPropParseState()) {
+		$property = self.addScriptedActivateAProp(form, comp);
+	}
+}
+	:	'ACTIVATE' (
+	                    ('FORM' formPart=ID {
+                                    if (inPropParseState()) {
+                                        form = self.findForm($formPart.text);
+                                    }
+                                }
+                        )
+                   |
+                        ('TAB'  formPart=ID {
+                                    if (inPropParseState()) {
+                                        form = self.findForm($formPart.text);
+                                    }
+                                } '.'
+                                mid=multiCompoundID {
+                                    if (inPropParseState()) {
+                                        comp = form.getNFRichDesign(self.getVersion()).getComponentBySID($mid.sid, self.getVersion());
+                                    }
+                                }
+                        )
+                   )
 	;
 
 listActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]

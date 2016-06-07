@@ -59,7 +59,7 @@ public class ClientCallBackProcessor {
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
                 public void run() {
-                    Main.executeNavigatorAction(((PushMessage)message).idNotification);
+                    Main.executeNotificationAction(((PushMessage)message).idNotification);
                 }
             });
         }

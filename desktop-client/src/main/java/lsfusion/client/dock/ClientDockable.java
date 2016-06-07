@@ -146,6 +146,8 @@ abstract class ClientDockable extends DefaultMultipleCDockable {
         this.blockingForm = blockingForm;
     }
 
+    public abstract void onOpened();
+
     private final static class ShadowLayerUI extends LockableUI {
         public static final double opacity = 0.5;
 

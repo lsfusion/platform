@@ -5,6 +5,8 @@ public interface ClientActionDispatcher {
 
     void execute(FormClientAction action);
 
+    void execute(ActivateTabClientAction activateTabClientAction);
+
     Integer execute(ReportClientAction action);
 
     Object execute(RuntimeClientAction action);

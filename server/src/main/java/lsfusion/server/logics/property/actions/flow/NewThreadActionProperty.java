@@ -4,6 +4,7 @@ import com.google.common.base.Throwables;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.interop.DaemonThreadFactory;
+import lsfusion.server.EnvRunnable;
 import lsfusion.server.context.*;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.DBManager;
@@ -14,6 +15,7 @@ import lsfusion.server.logics.property.CalcPropertyInterfaceImplement;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.session.DataSession;
+import lsfusion.server.session.ExecutionEnvironment;
 
 import java.sql.SQLException;
 import java.util.concurrent.Executors;
@@ -45,12 +47,11 @@ public class NewThreadActionProperty extends AroundAspectActionProperty {
         final DBManager dbManager = context.getDbManager();
         final LogicsInstanceContext logicsContext = context.getLogicsInstance().getContext();
 
-        Runnable run = new Runnable() {
-            public void run() {
+        EnvRunnable run = new EnvRunnable() {
+            @Override
+            public void run(ExecutionEnvironment env) {
                 try {
-                    try (DataSession session = dbManager.createSession()) {
-                        proceed(context.override(session));
-                    }
+                    proceed(context.override(env));
                 } catch (Throwable t) {
                     throw Throwables.propagate(t);
                 }
@@ -63,7 +64,7 @@ public class NewThreadActionProperty extends AroundAspectActionProperty {
                 context.getNavigatorsManager().pushNotificationCustomUser((DataObject) connectionObject, run);
         } else {
 
-            Runnable runContext = new ScheduleRunnable(run, logicsContext);
+            Runnable runContext = new ScheduleRunnable(run, logicsContext, dbManager);
 
             if (repeat != null) {
                 executor.scheduleAtFixedRate(runContext, delay, repeat, TimeUnit.MILLISECONDS);
@@ -75,17 +76,23 @@ public class NewThreadActionProperty extends AroundAspectActionProperty {
     }
 
     class ScheduleRunnable implements Runnable {
-        Runnable r;
+        EnvRunnable r;
         LogicsInstanceContext logicsContext;
+        DBManager dbManager;
 
-        ScheduleRunnable(Runnable r, LogicsInstanceContext logicsContext) {
+        ScheduleRunnable(EnvRunnable r, LogicsInstanceContext logicsContext, DBManager dbManager) {
             this.r = r;
             this.logicsContext = logicsContext;
+            this.dbManager = dbManager;
         }
 
         public void run() {
             ThreadLocalContext.set(logicsContext);
-            r.run();
+            try (DataSession session = dbManager.createSession()) {
+                r.run(session);
+            } catch (Throwable t) {
+                throw Throwables.propagate(t);
+            }
         }
     }
 }

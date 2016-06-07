@@ -477,6 +477,10 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
         userSeeks = userSeeks.remove(object);
     }
 
+    public void addSeek(boolean end) {
+        userSeeks = new SeekObjects(MapFact.<OrderInstance, ObjectValue>EMPTY(), end);
+    }
+
     public void seek(boolean end) {
         userSeeks = new SeekObjects(MapFact.<OrderInstance, ObjectValue>EMPTY(), end);
     }

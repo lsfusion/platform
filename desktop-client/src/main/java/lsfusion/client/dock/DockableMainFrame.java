@@ -284,6 +284,15 @@ public class DockableMainFrame extends MainFrame {
         return null;
     }
 
+    @Override
+    public void activateTab(String formSID, String tabSID) {
+        try {
+            dockableManager.activateTab(formSID, tabSID);
+        } catch (Exception e) {
+            Throwables.propagate(e);
+        }
+    }
+
     private void initWindows() {
         ClientAbstractWindow formsWindow;
         LinkedHashMap<ClientAbstractWindow, JComponent> windows = new LinkedHashMap<>();

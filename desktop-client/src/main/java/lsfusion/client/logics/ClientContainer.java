@@ -226,6 +226,17 @@ public class ClientContainer extends ClientComponent implements AbstractContaine
         return null;
     }
 
+    public ClientContainer findParentContainerBySID(ClientContainer parent, String sID) {
+        if (sID.equals(this.sID)) return parent;
+        for (ClientComponent comp : children) {
+            if (comp instanceof ClientContainer) {
+                ClientContainer result = ((ClientContainer) comp).findParentContainerBySID(this, sID);
+                if (result != null) return result;
+            }
+        }
+        return null;
+    }
+
     public boolean isAncestorOf(ClientContainer container) {
         return container != null && (equals(container) || isAncestorOf(container.container));
     }

@@ -1,5 +1,6 @@
 package lsfusion.client.dock;
 
+import lsfusion.client.Main;
 import lsfusion.client.MainFrame;
 import lsfusion.client.form.ClientFormController;
 import lsfusion.client.form.RmiQueue;
@@ -80,5 +81,15 @@ public class ClientFormDockable extends ClientDockable {
         if (clientForm != null) {
             clientForm.setSelected(newShowing);
         }
+    }
+
+    @Override
+    public void onOpened() {
+        if (clientForm != null)
+            Main.setCurrentForm(clientForm);
+    }
+
+    public void activateTab(String tabSID) {
+        clientForm.activateTab(tabSID);
     }
 }

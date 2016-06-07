@@ -4,6 +4,7 @@ import com.google.common.base.Throwables;
 import lsfusion.base.NavigatorInfo;
 import lsfusion.base.Pair;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
+import lsfusion.server.EnvRunnable;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.auth.User;
 import lsfusion.server.context.ContextAwareDaemonThreadFactory;
@@ -333,7 +334,7 @@ public class NavigatorsManager extends LifecycleAdapter implements InitializingB
         }
     }
 
-    public void pushNotificationCustomUser(DataObject connectionObject, Runnable run) {
+    public void pushNotificationCustomUser(DataObject connectionObject, EnvRunnable run) {
         synchronized (navigators) {
             boolean found = false;
             for (List<RemoteNavigator> remoteNavigatorsList : navigators.values()) {

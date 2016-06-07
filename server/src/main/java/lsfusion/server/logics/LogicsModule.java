@@ -1760,6 +1760,20 @@ public abstract class LogicsModule {
         return addProperty(null, new LAP<>(seekProperty));
     }
 
+    protected LAP addGOSAProp(GroupObjectEntity object, boolean last, Object... params) {
+        return addGOSAProp(null, "", object, last, params);
+    }
+
+    protected LAP addGOSAProp(AbstractGroup group, String caption, GroupObjectEntity object, boolean last, Object... params) {
+        return addJoinAProp(group, caption, addGOSAProp(object, last), params);
+    }
+
+    @IdentityStrongLazy // для ID
+    public LAP addGOSAProp(GroupObjectEntity object, boolean last) {
+        SeekGroupObjectActionProperty seekProperty = new SeekGroupObjectActionProperty((ScriptingLogicsModule)this, object, last);
+        return addProperty(null, new LAP<>(seekProperty));
+    }
+
     public void addConstraint(CalcProperty property, boolean checkChange) {
         addConstraint(property, null, checkChange);
     }
