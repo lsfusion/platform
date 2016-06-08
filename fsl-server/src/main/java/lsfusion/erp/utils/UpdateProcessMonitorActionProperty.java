@@ -12,6 +12,7 @@ import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.ServerLoggers;
+import lsfusion.server.Settings;
 import lsfusion.server.classes.DateTimeClass;
 import lsfusion.server.classes.IntegerClass;
 import lsfusion.server.classes.LongClass;
@@ -67,16 +68,11 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
     protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
 
         try {
-            boolean readAllocatedBytes = findProperty("readAllocatedBytes[]").read(context) != null;
+            boolean readAllocatedBytes = Settings.get().isReadAllocatedBytes();
             String processType = trimToEmpty((String) findProperty("nameProcessType[]").read(context));
-            context.getSession().cancel(SetFact.singleton((SessionDataProperty) findProperty("processType[]").property));
+            context.getSession().cancel(context.stack, SetFact.singleton((SessionDataProperty) findProperty("processType[]").property));
 
             updateProcessMonitor(context, processType, readAllocatedBytes);
-
-            boolean baseReadAllocatedBytes = findProperty("readAllocatedBytes[]").read(context) != null;
-            if (baseReadAllocatedBytes != readAllocatedBytes) {
-                findProperty("readAllocatedBytes[]").change(readAllocatedBytes ? true : null, context);
-            }
 
         } catch (SQLHandledException | ScriptingErrorLog.SemanticErrorException e) {
             throw Throwables.propagate(e);

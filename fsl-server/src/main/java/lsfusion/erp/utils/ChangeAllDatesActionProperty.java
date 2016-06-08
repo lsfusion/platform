@@ -80,7 +80,7 @@ public class ChangeAllDatesActionProperty extends ScriptingActionProperty {
                     }
                 }
 
-                session.apply(context.getBL());
+                session.apply(context);
             }
 
         } catch (ScriptingErrorLog.SemanticErrorException e) {
