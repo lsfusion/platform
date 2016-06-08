@@ -2421,7 +2421,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     }
     
     @Override
-    protected void explicitClose(OperationOwner owner) throws SQLException {
+    protected void onExplicitClose(OperationOwner owner) throws SQLException {
         lockWrite(owner);
         temporaryTablesLock.lock();
 

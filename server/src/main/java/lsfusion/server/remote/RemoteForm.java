@@ -3,7 +3,6 @@ package lsfusion.server.remote;
 import com.google.common.base.Optional;
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
-import lsfusion.base.ERunnable;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
@@ -22,8 +21,7 @@ import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.action.ProcessFormChangesClientAction;
 import lsfusion.interop.form.*;
 import lsfusion.server.ServerLoggers;
-import lsfusion.server.context.ContextAwareDaemonThreadFactory;
-import lsfusion.server.context.ThreadLocalContext;
+import lsfusion.server.context.*;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.instance.*;
 import lsfusion.server.form.instance.filter.FilterInstance;
@@ -31,10 +29,7 @@ import lsfusion.server.form.instance.listener.RemoteFormListener;
 import lsfusion.server.form.navigator.LogInfo;
 import lsfusion.server.form.view.ContainerView;
 import lsfusion.server.form.view.FormView;
-import lsfusion.server.logics.BusinessLogics;
-import lsfusion.server.logics.DataObject;
-import lsfusion.server.logics.ObjectValue;
-import lsfusion.server.logics.ThreadUtils;
+import lsfusion.server.logics.*;
 import lsfusion.server.serialization.SerializationType;
 import lsfusion.server.serialization.ServerContext;
 import lsfusion.server.serialization.ServerSerializationPool;
@@ -46,13 +41,10 @@ import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.google.common.base.Optional.fromNullable;
 import static lsfusion.base.BaseUtils.deserializeObject;
-import static lsfusion.server.ServerLoggers.pausablesInvocationLogger;
 
 // фасад для работы с клиентом
 public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> extends ContextAwarePendingRemoteObject implements RemoteFormInterface {
@@ -64,7 +56,6 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
 
     private final WeakReference<RemoteFormListener> weakRemoteFormListener;
 
-    private final ExecutorService pausablesExecutor;
     private final AtomicInteger numberOfFormChangesRequests = new AtomicInteger();
     private final SequentialRequestLock requestLock;
     private RemotePausableInvocation currentInvocation = null;
@@ -74,22 +65,21 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
 
     private long minReceivedRequestIndex = 0;
 
-    public RemoteForm(F form, int port, RemoteFormListener remoteFormListener) throws RemoteException {
+    public RemoteForm(F form, int port, RemoteFormListener remoteFormListener, ExecutionStack upStack) throws RemoteException {
         super(port);
 
-        setContext(new RemoteFormContext(this));
-
+        setContext(new RemoteFormContext<>(this));
         this.form = form;
         this.richDesign = form.entity.getRichDesign();
         this.reportManager = new FormReportManager(form);
         this.requestLock = new SequentialRequestLock();
 
-        pausablesExecutor = Executors.newCachedThreadPool(new ContextAwareDaemonThreadFactory(getContext(), getSID() + "-pausable-daemon"));
-
         this.weakRemoteFormListener = new WeakReference<RemoteFormListener>(remoteFormListener);
         if (remoteFormListener != null) {
             remoteFormListener.formCreated(this);
         }
+
+        finalizeInit(upStack, form.isModal() ? SyncType.SYNC : SyncType.NOSYNC);
     }
 
     public RemoteFormListener getRemoteFormListener() {
@@ -97,9 +87,9 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     }
 
     public ReportGenerationData getReportData(long requestIndex, long lastReceivedRequestIndex, final Integer groupId, final boolean toExcel, final FormUserPreferences userPreferences) throws RemoteException {
-        return processRMIRequest(requestIndex, lastReceivedRequestIndex, new Callable<ReportGenerationData>() {
+        return processRMIRequest(requestIndex, lastReceivedRequestIndex, new EExecutionStackCallable<ReportGenerationData>() {
             @Override
-            public ReportGenerationData call() throws Exception {
+            public ReportGenerationData call(ExecutionStack stack) throws Exception {
 
                 if (logger.isTraceEnabled()) {
                     logger.trace(String.format("getReportData Action. GroupID: %s", groupId));
@@ -111,9 +101,9 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     }
 
     public Map<String, String> getReportPath(long requestIndex, long lastReceivedRequestIndex, final boolean toExcel, final Integer groupId, final FormUserPreferences userPreferences) throws RemoteException {
-        return processRMIRequest(requestIndex, lastReceivedRequestIndex, new Callable<Map<String, String>>() {
+        return processRMIRequest(requestIndex, lastReceivedRequestIndex, new EExecutionStackCallable<Map<String, String>>() {
             @Override
-            public Map<String, String> call() throws Exception {
+            public Map<String, String> call(ExecutionStack stack) throws Exception {
 
                 if (logger.isTraceEnabled()) {
                     logger.trace(String.format("getReportPath Action. GroupID: %d", groupId));
@@ -177,10 +167,9 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     }
 
     public ServerResponse changePageSize(long requestIndex, long lastReceivedRequestIndex, final int groupID, final Integer pageSize) throws RemoteException {
-        return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, new ERunnable() {
+        return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, new EExecutionStackRunnable() {
             @Override
-            public void run() throws Exception {
-
+            public void run(ExecutionStack stack) throws Exception {
                 if (logger.isTraceEnabled()) {
                     GroupObjectInstance groupObject = form.getGroupObjectInstance(groupID);
                     logger.trace(String.format("changePageSize: [ID: %1$d]", groupObject.getID()));
@@ -194,24 +183,24 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     }
 
     public void gainedFocus(long requestIndex, long lastReceivedRequestIndex) throws RemoteException {
-        processRMIRequest(requestIndex, lastReceivedRequestIndex, new Callable<Void>() {
+        processRMIRequest(requestIndex, lastReceivedRequestIndex, new EExecutionStackCallable<Void>() {
             @Override
-            public Void call() throws Exception {
+            public Void call(ExecutionStack stack) throws Exception {
 
                 if (logger.isTraceEnabled()) {
                     logger.trace("gainedFocus Action");                    
                 }
                 
-                form.gainedFocus();
+                form.gainedFocus(stack);
                 return null;
             }
         });
     }
 
     public ServerResponse getRemoteChanges(long requestIndex, long lastReceivedRequestIndex, final boolean refresh) throws RemoteException {
-        return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, new ERunnable() {
+        return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, new EExecutionStackRunnable() {
             @Override
-            public void run() throws Exception {
+            public void run(ExecutionStack stack) throws Exception {
                 if (refresh) {
                     form.refreshData();
                 }
@@ -253,16 +242,16 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     }
 
     public ServerResponse changeGroupObject(long requestIndex, long lastReceivedRequestIndex, final int groupID, final byte[] value) throws RemoteException {
-        return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, new ERunnable() {
+        return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, new EExecutionStackRunnable() {
             @Override
-            public void run() throws Exception {
+            public void run(ExecutionStack stack) throws Exception {
                 GroupObjectInstance groupObject = form.getGroupObjectInstance(groupID);
                 ImMap<ObjectInstance, DataObject> valueToSet = deserializeGroupObjectKeys(groupObject, value);
                 if (valueToSet == null) {
                     return;
                 }
 
-                groupObject.change(form.session, valueToSet, form);
+                groupObject.change(form.session, valueToSet, form, stack);
 
                 if (logger.isTraceEnabled()) {
                     logger.trace(String.format("changeGroupObject: [ID: %1$d]", groupObject.getID()));
@@ -276,9 +265,9 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     }
 
     public ServerResponse expandGroupObject(long requestIndex, long lastReceivedRequestIndex, final int groupId, final byte[] groupValues) throws RemoteException {
-        return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, new ERunnable() {
+        return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, new EExecutionStackRunnable() {
             @Override
-            public void run() throws Exception {
+            public void run(ExecutionStack stack) throws Exception {
                 GroupObjectInstance group = form.getGroupObjectInstance(groupId);
                 ImMap<ObjectInstance, DataObject> valueToSet = deserializeGroupObjectKeys(group, groupValues);
                 if (valueToSet != null) {
@@ -297,9 +286,9 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     }
 
     public ServerResponse collapseGroupObject(long requestIndex, long lastReceivedRequestIndex, final int groupId, final byte[] groupValues) throws RemoteException {
-        return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, new ERunnable() {
+        return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, new EExecutionStackRunnable() {
             @Override
-            public void run() throws Exception {
+            public void run(ExecutionStack stack) throws Exception {
                 GroupObjectInstance group = form.getGroupObjectInstance(groupId);
                 ImMap<ObjectInstance, DataObject> valueToSet = deserializeGroupObjectKeys(group, groupValues);
                 if (valueToSet != null) {
@@ -318,9 +307,9 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     }
 
     public ServerResponse moveGroupObject(long requestIndex, long lastReceivedRequestIndex, final int parentGroupId, final byte[] parentKey, final int childGroupId, final byte[] childKey, final int index) throws RemoteException {
-        return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, new ERunnable() {
+        return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, new EExecutionStackRunnable() {
             @Override
-            public void run() throws Exception {
+            public void run(ExecutionStack stack) throws Exception {
                 GroupObjectInstance parentGroup = form.getGroupObjectInstance(parentGroupId);
                 GroupObjectInstance childGroup = form.getGroupObjectInstance(childGroupId);
                 //todo:
@@ -330,9 +319,9 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     }
 
     public ServerResponse changeGroupObject(long requestIndex, long lastReceivedRequestIndex, final int groupID, final byte changeType) throws RemoteException {
-        return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, new ERunnable() {
+        return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, new EExecutionStackRunnable() {
             @Override
-            public void run() throws Exception {
+            public void run(ExecutionStack stack) throws Exception {
                 GroupObjectInstance groupObject = form.getGroupObjectInstance(groupID);
 
                 if (logger.isTraceEnabled()) {
@@ -346,9 +335,9 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     }
 
     public ServerResponse pasteExternalTable(long requestIndex, long lastReceivedRequestIndex, final List<Integer> propertyIDs, final List<byte[]> columnKeys, final List<List<byte[]>> values) throws RemoteException {
-        return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, new ERunnable() {
+        return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, new EExecutionStackRunnable() {
             @Override
-            public void run() throws Exception {
+            public void run(ExecutionStack stack) throws Exception {
                 List<PropertyDrawInstance> properties = new ArrayList<PropertyDrawInstance>();
                 List<ImMap<ObjectInstance, DataObject>> keys = new ArrayList<ImMap<ObjectInstance, DataObject>>();
                 for (int i =0; i < propertyIDs.size(); i++) {
@@ -365,15 +354,15 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
                     }                  
                 }
                 
-                form.pasteExternalTable(properties, keys, values);
+                form.pasteExternalTable(properties, keys, values, stack);
             }
         });
     }
 
     public ServerResponse pasteMulticellValue(long requestIndex, long lastReceivedRequestIndex, final Map<Integer, List<byte[]>> bkeys, final Map<Integer, byte[]> bvalues) throws RemoteException {
-        return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, new ERunnable() {
+        return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, new EExecutionStackRunnable() {
             @Override
-            public void run() throws Exception {
+            public void run(ExecutionStack stack) throws Exception {
                 Map<PropertyDrawInstance, ImOrderMap<ImMap<ObjectInstance, DataObject>, Object>> keysValues
                         = new HashMap<PropertyDrawInstance, ImOrderMap<ImMap<ObjectInstance, DataObject>, Object>>();
 
@@ -396,15 +385,15 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
                     keysValues.put(propertyDraw, propKeys.immutableOrder());
                 }
 
-                form.pasteMulticellValue(keysValues);
+                form.pasteMulticellValue(keysValues, stack);
             }
         });
     }
 
     public ServerResponse changeGridClass(long requestIndex, long lastReceivedRequestIndex, final int objectID, final int idClass) throws RemoteException {
-        return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, new ERunnable() {
+        return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, new EExecutionStackRunnable() {
             @Override
-            public void run() throws Exception {
+            public void run(ExecutionStack stack) throws Exception {
 
                 if (logger.isTraceEnabled()) {
                     logger.trace(String.format("changeGridClass: [ID: %1$d]", objectID));
@@ -417,9 +406,9 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     }
 
     public ServerResponse changeClassView(long requestIndex, long lastReceivedRequestIndex, final int groupID, final ClassViewType classView) throws RemoteException {
-        return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, new ERunnable() {
+        return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, new EExecutionStackRunnable() {
             @Override
-            public void run() throws Exception {
+            public void run(ExecutionStack stack) throws Exception {
 
                 GroupObjectInstance groupObject = form.getGroupObjectInstance(groupID);
 
@@ -434,9 +423,9 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     }
 
     public ServerResponse changePropertyOrder(long requestIndex, long lastReceivedRequestIndex, final int propertyID, final byte modiType, final byte[] columnKeys) throws RemoteException {
-        return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, new ERunnable() {
+        return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, new EExecutionStackRunnable() {
             @Override
-            public void run() throws Exception {
+            public void run(ExecutionStack stack) throws Exception {
                 PropertyDrawInstance<?> propertyDraw = form.getPropertyDraw(propertyID);
                 if(propertyDraw != null) {
                     ImMap<ObjectInstance, DataObject> keys = deserializePropertyKeys(propertyDraw, columnKeys);
@@ -455,9 +444,9 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     }
 
     public ServerResponse clearPropertyOrders(long requestIndex, long lastReceivedRequestIndex, final int groupObjectID) throws RemoteException {
-        return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, new ERunnable() {
+        return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, new EExecutionStackRunnable() {
             @Override
-            public void run() throws Exception {
+            public void run(ExecutionStack stack) throws Exception {
 
                 GroupObjectInstance groupObject = form.getGroupObjectInstance(groupObjectID);
 
@@ -471,9 +460,9 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     }
 
     public int countRecords(long requestIndex, long lastReceivedRequestIndex, final int groupObjectID) throws RemoteException {
-        return processRMIRequest(requestIndex, lastReceivedRequestIndex, new Callable<Integer>() {
+        return processRMIRequest(requestIndex, lastReceivedRequestIndex, new EExecutionStackCallable<Integer>() {
             @Override
-            public Integer call() throws Exception {
+            public Integer call(ExecutionStack stack) throws Exception {
 
                 int result = form.countRecords(groupObjectID);
 
@@ -488,9 +477,9 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     }
 
     public Object calculateSum(long requestIndex, long lastReceivedRequestIndex, final int propertyID, final byte[] columnKeys) throws RemoteException {
-        return processRMIRequest(requestIndex, lastReceivedRequestIndex, new Callable<Object>() {
+        return processRMIRequest(requestIndex, lastReceivedRequestIndex, new EExecutionStackCallable<Object>() {
             @Override
-            public Object call() throws Exception {
+            public Object call(ExecutionStack stack) throws Exception {
                 PropertyDrawInstance<?> propertyDraw = form.getPropertyDraw(propertyID);
                 ImMap<ObjectInstance, DataObject> keys = deserializePropertyKeys(propertyDraw, columnKeys);
 
@@ -507,9 +496,9 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
 
     public byte[] groupData(long requestIndex, long lastReceivedRequestIndex, final Map<Integer, List<byte[]>> groupMap, final Map<Integer, List<byte[]>> sumMap,
                                                      final Map<Integer, List<byte[]>> maxMap, final boolean onlyNotNull) throws RemoteException {
-        return processRMIRequest(requestIndex, lastReceivedRequestIndex, new Callable<byte[]>() {
+        return processRMIRequest(requestIndex, lastReceivedRequestIndex, new EExecutionStackCallable<byte[]>() {
             @Override
-            public byte[] call() throws Exception {
+            public byte[] call(ExecutionStack stack) throws Exception {
                 List<Map<Integer, List<byte[]>>> inMaps = new ArrayList<Map<Integer, List<byte[]>>>(BaseUtils.toList(groupMap, sumMap, maxMap));
                 List<ImOrderMap<Object, ImList<ImMap<ObjectInstance, DataObject>>>> outMaps = new ArrayList<ImOrderMap<Object, ImList<ImMap<ObjectInstance, DataObject>>>>();
                 for (Map<Integer, List<byte[]>> one : inMaps) {
@@ -557,9 +546,9 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
 
     @Override
     public List<FormGrouping> readGroupings(long requestIndex, long lastReceivedRequestIndex, final String groupObjectSID) throws RemoteException {
-        return processRMIRequest(requestIndex, lastReceivedRequestIndex, new Callable<List<FormGrouping>>() {
+        return processRMIRequest(requestIndex, lastReceivedRequestIndex, new EExecutionStackCallable<List<FormGrouping>>() {
             @Override
-            public List<FormGrouping> call() throws Exception {
+            public List<FormGrouping> call(ExecutionStack stack) throws Exception {
                 if (logger.isTraceEnabled()) {
                     logger.trace(String.format("readGroupings Action. GroupObjectSID: %s", groupObjectSID));
                 }
@@ -570,24 +559,24 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
 
     @Override
     public void saveGrouping(long requestIndex, long lastReceivedRequestIndex, final FormGrouping grouping) throws RemoteException {
-        processRMIRequest(requestIndex, lastReceivedRequestIndex, new Callable<Void>() {
+        processRMIRequest(requestIndex, lastReceivedRequestIndex, new EExecutionStackCallable<Void>() {
             @Override
-            public Void call() throws Exception {
+            public Void call(ExecutionStack stack) throws Exception {
 
                 if (logger.isTraceEnabled()) {
                     logger.trace(String.format("readGroupings Action: [ID: %s]", grouping.groupObjectSID));
                 }
                 
-                form.saveGrouping(grouping);
+                form.saveGrouping(grouping, stack);
                 return null;
             }
         });
     }
 
     public ServerResponse setUserFilters(long requestIndex, long lastReceivedRequestIndex, final byte[][] filters) throws RemoteException {
-        return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, new ERunnable() {
+        return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, new EExecutionStackRunnable() {
             @Override
-            public void run() throws Exception {
+            public void run(ExecutionStack stack) throws Exception {
                 for (GroupObjectInstance group : form.getGroups()) {
                     group.clearUserFilters();
                 }
@@ -604,9 +593,9 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     }
 
     public ServerResponse setRegularFilter(long requestIndex, long lastReceivedRequestIndex, final int groupID, final int filterID) throws RemoteException {
-        return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, new ERunnable() {
+        return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, new EExecutionStackRunnable() {
             @Override
-            public void run() throws Exception {
+            public void run(ExecutionStack stack) throws Exception {
                 form.setRegularFilter(form.getRegularFilterGroup(groupID), filterID);
                 if (logger.isTraceEnabled()) {
                     logger.trace(String.format("set regular filter: [GROUP: %1$s]", groupID));
@@ -625,37 +614,37 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     }
 
     public ServerResponse closedPressed(long requestIndex, long lastReceivedRequestIndex) throws RemoteException {
-        return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, new ERunnable() {
+        return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, new EExecutionStackRunnable() {
             @Override
-            public void run() throws Exception {
+            public void run(ExecutionStack stack) throws Exception {
 
                 if (logger.isTraceEnabled()) {
                     logger.trace("closedPressed Action");
                 }
 
-                form.formQueryClose();
+                form.formQueryClose(stack);
             }
         });
     }
 
     public ServerResponse okPressed(long requestIndex, long lastReceivedRequestIndex) throws RemoteException {
-        return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, new ERunnable() {
+        return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, new EExecutionStackRunnable() {
             @Override
-            public void run() throws Exception {
+            public void run(ExecutionStack stack) throws Exception {
                 
                 if (logger.isTraceEnabled()) {
                     logger.trace("okPressed Action");
                 }
                 
-                form.formQueryOk();
+                form.formQueryOk(stack);
             }
         });
     }
 
     public ServerResponse setTabVisible(long requestIndex, long lastReceivedRequestIndex, final int tabPaneID, final int childId) throws RemoteException {
-        return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, new ERunnable() {
+        return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, new EExecutionStackRunnable() {
             @Override
-            public void run() throws Exception {
+            public void run(ExecutionStack stack) throws Exception {
 
                 if (logger.isTraceEnabled()) {
                     logger.trace("setTabVisible Action");
@@ -668,23 +657,23 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
 
     @Override
     public ServerResponse saveUserPreferences(long requestIndex, long lastReceivedRequestIndex, final GroupObjectUserPreferences preferences, final boolean forAllUsers, final boolean completeOverride) throws RemoteException {
-        return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, new ERunnable() {
+        return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, new EExecutionStackRunnable() {
             @Override
-            public void run() throws Exception {
+            public void run(ExecutionStack stack) throws Exception {
 
                 if (logger.isTraceEnabled()) {
                     logger.trace("saveUserPreferences Action");
                 }
                 
-                form.saveUserPreferences(preferences, forAllUsers, completeOverride);
+                form.saveUserPreferences(stack, preferences, forAllUsers, completeOverride);
             }
         });
     }
 
     public ServerResponse changeProperty(final long requestIndex, long lastReceivedRequestIndex, final int propertyID, final byte[] fullKey, final byte[] pushChange, final Integer pushAdd) throws RemoteException {
-        return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, new ERunnable() {
+        return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, new EExecutionStackRunnable() {
             @Override
-            public void run() throws Exception {
+            public void run(ExecutionStack stack) throws Exception {
                 PropertyDrawInstance propertyDraw = form.getPropertyDraw(propertyID);
                 ImMap<ObjectInstance, DataObject> keys = deserializePropertyKeys(propertyDraw, fullKey);
 
@@ -698,7 +687,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
                     pushAddObject = new DataObject(pushAdd, form.session.baseClass.unknown);
                 }
 
-                form.executeEditAction(propertyDraw, ServerResponse.CHANGE, keys, pushChangeObject, pushAddObject, true);
+                form.executeEditAction(propertyDraw, ServerResponse.CHANGE, keys, pushChangeObject, pushAddObject, true, stack);
 
                 if (logger.isTraceEnabled()) {
                     logger.trace(String.format("changeProperty: [ID: %1$d, SID: %2$s]", propertyDraw.getID(), propertyDraw.getsID()));
@@ -721,13 +710,13 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     }
 
     public ServerResponse executeEditAction(long requestIndex, long lastReceivedRequestIndex, final int propertyID, final byte[] fullKey, final String actionSID) throws RemoteException {
-        return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, new ERunnable() {
+        return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, new EExecutionStackRunnable() {
             @Override
-            public void run() throws Exception {
+            public void run(ExecutionStack stack) throws Exception {
                 PropertyDrawInstance propertyDraw = form.getPropertyDraw(propertyID);
                 ImMap<ObjectInstance, DataObject> keys = deserializePropertyKeys(propertyDraw, fullKey);
 
-                form.executeEditAction(propertyDraw, actionSID, keys);
+                form.executeEditAction(propertyDraw, actionSID, keys, stack);
 
                 if (logger.isTraceEnabled()) {
                     logger.trace(String.format("executeEditAction: [ID: %1$d, SID: %2$s]", propertyDraw.getID(), propertyDraw.getsID()));
@@ -750,19 +739,17 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     }
 
     public ServerResponse executeNotificationAction(long requestIndex, long lastReceivedRequestIndex, final int idNotification) throws RemoteException {
-        return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, new ERunnable() {
-            @Override
-            public void run() throws Exception {
-
+        return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, new EExecutionStackRunnable() {
+            public void run(ExecutionStack stack) throws Exception {
                 RemoteFormListener remoteNavigator = getRemoteFormListener();
                 if(remoteNavigator != null) {
-                    remoteNavigator.executeNotificationAction(form, idNotification);
+                    remoteNavigator.executeNotificationAction(form, stack, idNotification);
                 }
             }
         });
     }
 
-    private <T> T processRMIRequest(long requestIndex, long lastReceivedRequestIndex, Callable<T> request) throws RemoteException {
+    private <T> T processRMIRequest(long requestIndex, long lastReceivedRequestIndex, final EExecutionStackCallable<T> request) throws RemoteException {
         Optional<?> optionalResult = recentResults.get(requestIndex);
         if (optionalResult != null) {
             return optionalResult(optionalResult);
@@ -772,7 +759,11 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
 
         requestLock.acquireRequestLock(invocationSID, requestIndex);
         try {
-            return callAndCacheResult(requestIndex, lastReceivedRequestIndex, request);
+            return callAndCacheResult(requestIndex, lastReceivedRequestIndex, new Callable<T>() {
+                public T call() throws Exception {
+                    return request.call(getStack());
+                }
+            });
         } catch (Exception e) {
             throw Throwables.propagate(e);
         } finally {
@@ -846,13 +837,14 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         }
     }
 
-    private ServerResponse processPausableRMIRequest(final long requestIndex, long lastReceivedRequestIndex, final ERunnable runnable) throws RemoteException {
+    private ServerResponse processPausableRMIRequest(final long requestIndex, long lastReceivedRequestIndex, final EExecutionStackRunnable runnable) throws RemoteException {
 
         return executeServerInvocation(requestIndex, lastReceivedRequestIndex, new RemotePausableInvocation(requestIndex, generateInvocationSid(requestIndex), pausablesExecutor, this) {
             @Override
             protected ServerResponse callInvocation() throws Throwable {
-                runnable.run();
-                return prepareRemoteChangesResponse(requestIndex, delayedActions, delayedGetRemoteChanges, delayedHideForm);
+                ExecutionStack stack = getStack();
+                runnable.run(stack);
+                return prepareRemoteChangesResponse(requestIndex, delayedActions, delayedGetRemoteChanges, delayedHideForm, stack);
             }
 
             @Override
@@ -876,28 +868,28 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         });
     }
 
-    private ServerResponse prepareRemoteChangesResponse(long requestIndex, List<ClientAction> pendingActions, boolean delayedGetRemoteChanges, boolean delayedHideForm) {
+    private ServerResponse prepareRemoteChangesResponse(long requestIndex, List<ClientAction> pendingActions, boolean delayedGetRemoteChanges, boolean delayedHideForm, ExecutionStack stack) {
+        if (delayedHideForm) {
+            closeLater();
+        }
+
         if (numberOfFormChangesRequests.get() > 1 || delayedGetRemoteChanges) {
             return new ServerResponse(requestIndex, pendingActions.toArray(new ClientAction[pendingActions.size()]), false);
         }
 
-        byte[] formChanges = getFormChangesByteArray();
+        byte[] formChanges = getFormChangesByteArray(stack);
 
         List<ClientAction> resultActions = new ArrayList<ClientAction>();
         resultActions.add(new ProcessFormChangesClientAction(requestIndex, formChanges));
 
         resultActions.addAll(pendingActions);
 
-        if (delayedHideForm) {
-            unexportAndCleanLater();
-        }
-
         return new ServerResponse(requestIndex, resultActions.toArray(new ClientAction[resultActions.size()]), false);
     }
 
-    public byte[] getFormChangesByteArray() {
+    public byte[] getFormChangesByteArray(ExecutionStack stack) {
         try {
-            FormChanges formChanges = form.endApply();
+            FormChanges formChanges = form.endApply(stack);
 
             if (logger.isTraceEnabled()) {
                 formChanges.logChanges(form, logger);
@@ -1015,15 +1007,6 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         }
     }
 
-    @Override
-    public void unexportAndClean() {
-        RemoteFormListener listener = getRemoteFormListener();
-        if (listener != null) {
-            listener.formDestroyed(this);
-        }
-        super.unexportAndClean();
-    }
-
     public Object[] getImmutableMethods() {
         try {
             return new Object[]{getUserPreferences(), getColorPreferences(), getRichDesignByteArray(), getInitFilterPropertyDraw()};
@@ -1035,5 +1018,33 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     @Override
     public String toString() {
         return "RF - " + form;
+    }
+
+
+    // будем считать что если unreferenced \ finalized то форма точно также должна закрыться ???
+    @Override
+    protected void onExplicitClose() {
+        RemoteFormListener listener = getRemoteFormListener();
+        if (listener != null) {
+            listener.formExplicitClosed(this);
+        }
+
+        super.onExplicitClose();
+    }
+
+    @Override
+    protected void onFinalClose() {
+        RemoteFormListener listener = getRemoteFormListener();
+        if (listener != null) {
+            listener.formFinalClosed(this);
+        }
+
+        try {
+            form.close();
+        } catch (Throwable t) {
+            ServerLoggers.sqlSuppLog(t);
+        }
+
+        super.onFinalClose();
     }
 }

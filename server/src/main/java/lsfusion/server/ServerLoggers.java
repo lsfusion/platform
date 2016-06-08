@@ -135,7 +135,7 @@ public class ServerLoggers {
     }
 
     public static boolean isUserExLog() {
-        return enabledUserExLog > 0 && getUserExLog(ThreadLocalContext.get().getCurrentUser());
+        return enabledUserExLog > 0 && getUserExLog(ThreadLocalContext.getCurrentUser());
     }
 
     private static Map<Integer, Boolean> pausableLogs = MapFact.getGlobalConcurrentHashMap();

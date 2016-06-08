@@ -2025,7 +2025,12 @@ concreteActionDefinition[List<TypedParameter> context, boolean dynamic] returns 
 
 // top level, not recursive
 topContextDependentActionDefinitionBody[List<TypedParameter> context, boolean dynamic, boolean needFullContext] returns [LPWithParams property, List<ResolveClassSet> signature]
-    :	aDB=modifyContextFlowActionDefinitionBody[new ArrayList<TypedParameter>(), context, dynamic, needFullContext] { $property = $aDB.property; $signature = $aDB.signature; }    
+@after{
+    if (inPropParseState()) {
+        self.topContextActionPropertyDefinitionBodyCreated($property);
+    }
+}
+    :   aDB=modifyContextFlowActionDefinitionBody[new ArrayList<TypedParameter>(), context, dynamic, needFullContext] { $property = $aDB.property; $signature = $aDB.signature; }
 	;
 
 // modifies context + is flow action (uses another actions)

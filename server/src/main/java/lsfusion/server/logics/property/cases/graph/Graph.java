@@ -2,16 +2,15 @@ package lsfusion.server.logics.property.cases.graph;
 
 import lsfusion.base.*;
 import lsfusion.base.col.ListFact;
+import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
-import lsfusion.base.col.interfaces.mutable.MCol;
-import lsfusion.base.col.interfaces.mutable.MExclSet;
-import lsfusion.base.col.interfaces.mutable.MList;
-import lsfusion.base.col.interfaces.mutable.MSet;
+import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
+import lsfusion.server.logics.property.Property;
 
 import java.util.Comparator;
 import java.util.HashSet;
@@ -31,7 +30,50 @@ public class Graph<T> {
         
         assert checkGraph();
     }
-    
+
+    public static <T> ImMap<T, ImSet<T>> buildEdgesOut(ImMap<T, ImSet<T>> edgesIn) {
+        MExclMap<T, MSet<T>> mResult = MapFact.mExclMap();
+
+        for(T prop : edgesIn.keyIt())
+            mResult.exclAdd(prop, SetFact.<T>mSet());
+
+        for(int i=0,size=edgesIn.size();i<size;i++) {
+            T element = edgesIn.getKey(i);
+            for(T elementIn : edgesIn.getValue(i))
+                mResult.get(elementIn).add(element);
+        }
+
+        return MapFact.immutableMap(mResult);
+    }
+
+    public Graph(ImMap<T, ImSet<T>> edgesIn) {
+        this(buildEdgesOut(edgesIn), edgesIn);
+    }
+
+    private static <T> void recFindEdges(T element, boolean includeThis, ImMap<T, ImSet<T>> edges, ImSet<T> filteredElements, MSet<T> mResult) {
+        if(includeThis && filteredElements.contains(element))
+            mResult.add(element);
+        else {
+            for(T out : edges.get(element))
+                recFindEdges(out, true, edges, filteredElements, mResult);
+        }
+    }
+
+    private static <T> ImMap<T, ImSet<T>> filter(final ImMap<T, ImSet<T>> edges, FunctionSet<T> filter) {
+        final ImSet<T> filteredEdges = edges.keys().filterFn(filter);
+        return filteredEdges.mapValues(new GetValue<ImSet<T>, T>() {
+            public ImSet<T> getMapValue(T element) {
+                MSet<T> mResult = SetFact.mSet();
+                recFindEdges(element, false, edges, filteredEdges, mResult);
+                return mResult.immutable();
+            }
+        });
+    }
+
+    public Graph<T> filterGraph(FunctionSet<T> filter)  {
+        return new Graph<T>(filter(edgesOut, filter), filter(edgesIn, filter));
+    }
+
     private boolean checkGraph() {
         if(!edgesIn.keys().equals(edgesOut.keys()))
             return false;

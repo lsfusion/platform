@@ -20,6 +20,7 @@ import lsfusion.server.ServerLoggers;
 import lsfusion.server.SystemProperties;
 import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.classes.sets.ResolveClassSet;
+import lsfusion.server.context.ExecutionStack;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.ObjectValue;
@@ -123,6 +124,10 @@ public class ActionPropertyDebugger implements DebuggerService {
     public synchronized <P extends PropertyInterface> void addDelegate(CalcPropertyDebugInfo debugInfo) {
         delegates.add(debugInfo);
         firstInLineDelegates.add(debugInfo.getModuleLine(), debugInfo);
+    }
+
+    public synchronized <P extends PropertyInterface> void setNewDebugStack(ActionProperty<P> property) {
+        property.setNewDebugStack(true);
     }
 
     public synchronized <P extends PropertyInterface> void addParamInfo(ActionProperty<P> property, Map<String, P> paramsToInterfaces, Map<String, String> paramsToClassFQN) {
@@ -316,12 +321,14 @@ public class ActionPropertyDebugger implements DebuggerService {
 
     private Object evalAction(ExecutionContext<?> context, String namespace, String require, String priorities, String expression, final String valueName) throws EvalUtils.EvaluationException, ScriptingErrorLog.SemanticErrorException, SQLException, SQLHandledException {
         //используем все доступные в контексте параметры
-        ImOrderMap<String, String> paramsWithClasses = context.getAllParamsWithClassesInStack().toOrderMap();
-        ImMap<String, ObjectValue> paramsWithValues = context.getAllParamsWithValuesInStack();
+        ExecutionStack stack = context.stack;
 
-        ImSet<Pair<LP, List<ResolveClassSet>>> locals = context.getAllLocalsInStack();
+        ImOrderMap<String, String> paramsWithClasses = stack.getAllParamsWithClassesInStack().toOrderMap();
+        ImMap<String, ObjectValue> paramsWithValues = stack.getAllParamsWithValuesInStack();
 
-        ExecutionContext<PropertyInterface> watchContext = new ExecutionContext<>(MapFact.<PropertyInterface, ObjectValue>EMPTY(), context.getEnv());
+        ImSet<Pair<LP, List<ResolveClassSet>>> locals = stack.getAllLocalsInStack();
+
+        ExecutionContext<PropertyInterface> watchContext = new ExecutionContext<>(MapFact.<PropertyInterface, ObjectValue>EMPTY(), context.getEnv(), stack);
 
         Pair<LAP<PropertyInterface>, Boolean> evalResult = evalAction(namespace, require, priorities, expression, paramsWithClasses, locals, watchContext.isPrevEventScope(), context.getBL());
         LAP<PropertyInterface> evalAction = evalResult.first;

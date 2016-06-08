@@ -19,6 +19,7 @@ import lsfusion.server.caches.IdentityStrongLazy;
 import lsfusion.server.classes.ByteArrayClass;
 import lsfusion.server.classes.ConcreteCustomClass;
 import lsfusion.server.classes.DataClass;
+import lsfusion.server.context.ExecutionStack;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.*;
 import lsfusion.server.data.expr.Expr;
@@ -37,8 +38,8 @@ import lsfusion.server.data.where.Where;
 import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.form.navigator.*;
 import lsfusion.server.integration.*;
-import lsfusion.server.lifecycle.LifecycleAdapter;
 import lsfusion.server.lifecycle.LifecycleEvent;
+import lsfusion.server.lifecycle.LogicsManager;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.mutables.NFLazy;
 import lsfusion.server.logics.property.*;
@@ -73,7 +74,7 @@ import static java.util.Arrays.asList;
 import static lsfusion.base.SystemUtils.getRevision;
 import static lsfusion.server.logics.ServerResourceBundle.getString;
 
-public class DBManager extends LifecycleAdapter implements InitializingBean {
+public class DBManager extends LogicsManager implements InitializingBean {
     public static final Logger logger = Logger.getLogger(DBManager.class);
     public static final Logger startLogger = ServerLoggers.startLogger;
     public static final Logger serviceLogger = ServerLoggers.serviceLogger;
@@ -395,11 +396,11 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         }
     }            
     
-    public DataObject getServerComputerObject() {
-        return new DataObject(getComputer(SystemUtils.getLocalHostName()), businessLogics.authenticationLM.computer);
+    public DataObject getServerComputerObject(ExecutionStack stack) {
+        return new DataObject(getComputer(SystemUtils.getLocalHostName(), stack), businessLogics.authenticationLM.computer);
     }
 
-    public Integer getComputer(String strHostName) {
+    public Integer getComputer(String strHostName, ExecutionStack stack) {
         try {
             try (DataSession session = createSession(getSystemSql())) {
 
@@ -418,7 +419,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                     businessLogics.authenticationLM.hostnameComputer.change(strHostName, session, addObject);
 
                     result = (Integer) addObject.object;
-                    session.apply(businessLogics);
+                    session.apply(businessLogics, stack);
                 } else {
                     result = (Integer) keys.iterator().next().get("key");
                 }
@@ -432,11 +433,11 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         }
     }
 
-    public ObjectValue getFormObject(String canonicalName) {
-        return canonicalName == null ? NullValue.instance : new DataObject(getForm(canonicalName), businessLogics.reflectionLM.form);
+    public ObjectValue getFormObject(String canonicalName, ExecutionStack stack) {
+        return canonicalName == null ? NullValue.instance : new DataObject(getForm(canonicalName, stack), businessLogics.reflectionLM.form);
     }
 
-    public Integer getForm(String canonicalName) {
+    public Integer getForm(String canonicalName, ExecutionStack stack) {
         try {
             try (DataSession session = createSession(getSystemSql())) {
                 Integer result = (Integer) businessLogics.reflectionLM.navigatorElementCanonicalName.read(session, new DataObject(canonicalName));
@@ -444,7 +445,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                     DataObject addObject = session.addObject(businessLogics.reflectionLM.form);
                     businessLogics.reflectionLM.canonicalNameNavigatorElement.change(canonicalName, session, addObject);
                     result = (Integer) addObject.object;
-                    session.apply(businessLogics);
+                    session.apply(businessLogics, stack);
                 }
                 return result;
             }
@@ -916,7 +917,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                 startLogger.info("Recalculate class stats");
                 DataSession session = createSession(OperationOwner.unknown);
                 businessLogics.recalculateClassStat(session);
-                session.apply(businessLogics);
+                session.apply(businessLogics, getStack());
             }
 
             startLogger.info("Updating class stats");
@@ -948,7 +949,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                 reflectionLM.timeDropColumn.change(new Timestamp(Calendar.getInstance().getTimeInMillis()), session, object);
                 reflectionLM.revisionDropColumn.change(getRevision(), session, object);
             }
-            session.apply(businessLogics);
+            session.apply(businessLogics, getStack());
 
             initSystemUser();
 
@@ -980,7 +981,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                     long start = System.currentTimeMillis();
                     startLogger.info(String.format("Update Aggregation Stats started: %s", table));
                     propStats = table.calculateStat(reflectionLM, session, fields, onlyTable);
-                    session.apply(businessLogics);
+                    session.apply(businessLogics, getStack());
                     long time = System.currentTimeMillis() - start;
                     startLogger.info(String.format("Update Aggregation Stats: %s, %sms", table, time));
                 }
@@ -994,7 +995,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             startLogger.info("Writing hashModules " + hashModules);
             DataSession session = createSession();
             businessLogics.LM.findProperty("hashModules[]").change(hashModules, session);
-            session.apply(businessLogics);
+            session.apply(businessLogics, getStack());
             startLogger.info("Writing hashModules finished successfully");
         } catch (Exception e) {
             throw Throwables.propagate(e);
@@ -1023,7 +1024,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             try (DataSession session = createSession(OperationOwner.unknown)) { // создание сессии аналогично fillIDs
                 IntegrationService service = new IntegrationService(session, table, Collections.singletonList(keyProperty), properties);
                 service.synchronize(false, false);
-                return session.apply(businessLogics);
+                return session.apply(businessLogics, getStack());
             }
         } catch (Exception e) {
             throw Throwables.propagate(e);
@@ -1033,7 +1034,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
     private boolean fillIDs(Map<String, String> sIDChanges, Map<String, String> objectSIDChanges) throws SQLException, SQLHandledException {
         try (DataSession session = createSession(OperationOwner.unknown)) { // по сути вложенная транзакция
             LM.baseClass.fillIDs(session, LM.staticCaption, LM.staticName, sIDChanges, objectSIDChanges);
-            return session.apply(businessLogics);
+            return session.apply(businessLogics, getStack());
         }
     }
 
@@ -1193,7 +1194,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
     public String checkTableClasses(SQLSession session, String tableName, boolean isolatedTransaction) throws SQLException, SQLHandledException {
         for (ImplementTable table : businessLogics.LM.tableFactory.getImplementTables())
             if (tableName.equals(table.getName())) {
-                return DataSession.checkTableClasses(table, session, LM.baseClass);
+                return DataSession.checkTableClasses(table, session, LM.baseClass, true);
             }
         return null;
     }
@@ -1740,7 +1741,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                 ImOrderSet<ImMap<String, Object>> rows = query.execute(session, MapFact.<Object, Boolean>EMPTYORDER(), 1).keyOrderSet();
                 if (rows.size() == 0) { // если нету добавим
                     systemUserObject = (Integer) session.addObject(businessLogics.authenticationLM.systemUser).object;
-                    session.apply(businessLogics);
+                    session.apply(businessLogics, getStack());
                 } else
                     systemUserObject = (Integer) rows.single().get("key");
 
@@ -1751,7 +1752,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                     DataObject computerObject = session.addObject(businessLogics.authenticationLM.computer);
                     systemComputer = (Integer) computerObject.object;
                     businessLogics.authenticationLM.hostnameComputer.change("systemhost", session, computerObject);
-                    session.apply(businessLogics);
+                    session.apply(businessLogics, getStack());
                 } else
                     systemComputer = (Integer) rows.single().get("key");
 

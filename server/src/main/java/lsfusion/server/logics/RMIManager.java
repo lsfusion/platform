@@ -5,6 +5,7 @@ import lsfusion.interop.remote.RMIUtils;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.lifecycle.LifecycleAdapter;
 import lsfusion.server.lifecycle.LifecycleEvent;
+import lsfusion.server.lifecycle.LogicsManager;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
@@ -26,7 +27,7 @@ import java.rmi.server.UnicastRemoteObject;
 
 import static lsfusion.base.BaseUtils.isRedundantString;
 
-public class RMIManager extends LifecycleAdapter implements InitializingBean {
+public class RMIManager extends LogicsManager implements InitializingBean {
     private static final Logger logger = ServerLoggers.startLogger;
 
     public static final String DEFAULT_EXPORT_NAME = "default";

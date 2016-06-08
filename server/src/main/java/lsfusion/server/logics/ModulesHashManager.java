@@ -4,6 +4,7 @@ import com.google.common.base.Throwables;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.lifecycle.LifecycleAdapter;
 import lsfusion.server.lifecycle.LifecycleEvent;
+import lsfusion.server.lifecycle.LogicsManager;
 import lsfusion.server.logics.tasks.PublicTask;
 import lsfusion.server.logics.tasks.TaskRunner;
 import lsfusion.server.session.DataSession;
@@ -11,7 +12,7 @@ import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
 
-public class ModulesHashManager extends LifecycleAdapter implements InitializingBean {
+public class ModulesHashManager extends LogicsManager implements InitializingBean {
 
     public static final Logger startLogger = ServerLoggers.startLogger;
 
@@ -52,15 +53,4 @@ public class ModulesHashManager extends LifecycleAdapter implements Initializing
             throw new RuntimeException("Error starting ReflectionManager: ", e);
         }
     }
-
-
-    public void runOnStarted() {
-        try (DataSession session = dbManager.createSession()) {
-            LM.onStarted.execute(session);
-            session.apply(businessLogics);
-        } catch (Exception e) {
-            throw Throwables.propagate(e);
-        }
-    }
-
 }

@@ -29,7 +29,7 @@
         <commons.logging.version>1.1</commons.logging.version>
         <commons.daemon.version>1.0.5</commons.daemon.version>
         <commons.exec.version>1.1</commons.exec.version>
-        <google.guava.version>13.0.1</google.guava.version>
+        <google.guava.version>19.0</google.guava.version>
         <jdom.version>1.1</jdom.version>
         <commons.net.version>3.3</commons.net.version>
         <com.jcraft.version>0.1.53</com.jcraft.version>
@@ -67,7 +67,7 @@
         <jnlp.api.version>7.0</jnlp.api.version>
         <ojdbc14.version>11.2.0.4</ojdbc14.version>
         <janino.version>2.7.8</janino.version>
-        
+
         <spring.version>3.0.5.RELEASE</spring.version>
         <aspectj.version>1.8.5</aspectj.version>
 

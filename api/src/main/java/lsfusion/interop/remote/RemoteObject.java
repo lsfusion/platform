@@ -38,17 +38,4 @@ public class RemoteObject implements Remote {
         } catch (NoSuchObjectException ignore) {
         }
     }
-
-    public void unexportAndClean() {
-        unexport();
-    }
-
-    public void unexportAndCleanLater() {
-        BaseUtils.runLater(15000, new Runnable() {
-            @Override
-            public void run() {
-                unexportAndClean();
-            }
-        });
-    }
 }

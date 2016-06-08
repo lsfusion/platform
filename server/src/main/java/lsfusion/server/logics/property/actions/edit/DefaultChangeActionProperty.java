@@ -86,13 +86,13 @@ public class DefaultChangeActionProperty<P extends PropertyInterface> extends Sy
                 } else if (changeType instanceof ObjectType) {
                     if (ServerResponse.EDIT_OBJECT.equals(editActionSID)) {
                         context.requestUserObject(
-                                formInstance.createObjectEditorDialogRequest(propertyValues, context)
+                                formInstance.createObjectEditorDialogRequest(propertyValues, context.stack)
                         );
                         return;
                     }
 
                     changeValue = context.requestUserObject(
-                            formInstance.createChangeEditorDialogRequest(propertyValues, context.getChangingPropertyToDraw(), filterProperty, context)
+                            formInstance.createChangeEditorDialogRequest(propertyValues, context.getChangingPropertyToDraw(), filterProperty, context.stack)
                     );
 
                     if(filterProperty!=null && changeValue!=null) {

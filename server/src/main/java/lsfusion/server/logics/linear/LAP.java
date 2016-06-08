@@ -5,8 +5,8 @@ import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.classes.sets.ResolveClassSet;
+import lsfusion.server.context.ExecutionStack;
 import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.PropertyUtils;
@@ -31,8 +31,8 @@ public class LAP<T extends PropertyInterface> extends LP<T, ActionProperty<T>> {
         super(property, listInterfaces);
     }
 
-    public void execute(DataSession session, ObjectValue... objects) throws SQLException, SQLHandledException {
-        property.execute(getMapValues(objects), session, null);
+    public void execute(DataSession session, ExecutionStack stack, ObjectValue... objects) throws SQLException, SQLHandledException {
+        property.execute(getMapValues(objects), session, stack, null);
     }
 
     public FlowResult execute(ExecutionContext<?> context, ObjectValue... objects) throws SQLException, SQLHandledException {

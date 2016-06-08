@@ -16,6 +16,7 @@ import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.LogicsInstance;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.property.DialogRequest;
+import lsfusion.server.context.ExecutionStack;
 import lsfusion.server.remote.RemoteForm;
 import lsfusion.server.stack.ExecutionStackItem;
 
@@ -23,10 +24,13 @@ import java.sql.SQLException;
 import java.util.List;
 
 public class WrapperContext extends AbstractContext implements Context {
-    private final Context wrappedContext;
+    private Context wrappedContext;
 
-    public WrapperContext(Context wrappedContext) {
-        this.wrappedContext = wrappedContext;
+    public void setContext(Context context) {
+        wrappedContext = context;
+    }
+
+    public WrapperContext() {
     }
 
     @Override
@@ -50,8 +54,8 @@ public class WrapperContext extends AbstractContext implements Context {
         return wrappedContext.getClassListener();
     }
 
-    public PropertyObjectInterfaceInstance getComputer() {
-        return wrappedContext.getComputer();
+    public PropertyObjectInterfaceInstance getComputer(ExecutionStack stack) {
+        return wrappedContext.getComputer(stack);
     }
 
     public Integer getCurrentUser() {
@@ -62,12 +66,12 @@ public class WrapperContext extends AbstractContext implements Context {
         return wrappedContext.getConnection();
     }
 
-    public RemoteForm createRemoteForm(FormInstance formInstance) {
-        return wrappedContext.createRemoteForm(formInstance);
+    public RemoteForm createRemoteForm(FormInstance formInstance, ExecutionStack stack) {
+        return wrappedContext.createRemoteForm(formInstance, stack);
     }
 
-    public ObjectValue requestUserObject(DialogRequest dialogRequest) throws SQLException, SQLHandledException {
-        return wrappedContext.requestUserObject(dialogRequest);
+    public ObjectValue requestUserObject(DialogRequest dialogRequest, ExecutionStack stack) throws SQLException, SQLHandledException {
+        return wrappedContext.requestUserObject(dialogRequest, stack);
     }
 
     public ObjectValue requestUserData(DataClass dataClass, Object oldValue) {

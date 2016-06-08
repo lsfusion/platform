@@ -111,7 +111,13 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
             return this;
         }
 
-        public void update(DataSession session) throws SQLException, SQLHandledException {
+        public void updateOnApply(DataSession session) throws SQLException, SQLHandledException {
+            final ImOrderSet<ImMap<I, DataObject>> prevRows = rows;
+            session.addRollbackInfo(new Runnable() {
+                public void run() {
+                    rows = prevRows;
+                }
+            });
             MOrderExclSet<ImMap<I, DataObject>> mRows = SetFact.mOrderExclSet(rows.size() - i);
             for(int j=i;j<rows.size();j++)
                 mRows.exclAdd(session.updateCurrentClasses(rows.get(j)));

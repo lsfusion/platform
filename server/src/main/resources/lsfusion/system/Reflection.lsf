@@ -180,6 +180,7 @@ percentNotNull 'Не null, %' (TableColumn tableColumn) = IF rows (table(tableCo
 sparseColumns 'Количество разреженных колонок' (table) = GROUP SUM 1 BY table(TableColumn tableColumn) IF percentNotNull(tableColumn) < 50;
 
 notRecalculate 'Не пересчитывать аггрегации' = DATA BOOLEAN (TableColumn);
+notRecalculate 'Не пересчитывать аггрегации' (VARISTRING[100] sid) = notRecalculate(tableColumnSID(sid));
 
 recalculateAggregation 'Пересчитать агрегации' = ACTION CUSTOM 'lsfusion.server.logics.reflection.RecalculateTableColumnActionProperty' (TableColumn);
 recalculateAggregationWithDependencies 'Пересчитать агрегации (+зависимости)' = ACTION CUSTOM 'lsfusion.server.logics.reflection.RecalculateTableColumnWithDependenciesActionProperty' (TableColumn);

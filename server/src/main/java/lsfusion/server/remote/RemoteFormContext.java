@@ -1,17 +1,10 @@
 package lsfusion.server.remote;
 
-import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.base.BaseUtils;
 import lsfusion.interop.action.ClientAction;
 import lsfusion.server.auth.SecurityPolicy;
 import lsfusion.server.context.AbstractContext;
-import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.form.entity.FormEntity;
-import lsfusion.server.form.entity.ObjectEntity;
-import lsfusion.server.form.entity.PropertyDrawEntity;
-import lsfusion.server.form.entity.filter.FilterEntity;
 import lsfusion.server.form.instance.FormInstance;
-import lsfusion.server.form.instance.FormSessionScope;
 import lsfusion.server.form.instance.PropertyObjectInterfaceInstance;
 import lsfusion.server.form.instance.listener.CustomClassListener;
 import lsfusion.server.form.instance.listener.FocusListener;
@@ -19,13 +12,7 @@ import lsfusion.server.form.navigator.LogInfo;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.LogicsInstance;
-import lsfusion.server.logics.ObjectValue;
-import lsfusion.server.logics.property.PullChangeProperty;
-import lsfusion.server.session.CompoundUpdateCurrentClasses;
-import lsfusion.server.session.DataSession;
-import lsfusion.server.session.UpdateCurrentClasses;
-
-import java.sql.SQLException;
+import lsfusion.server.context.ExecutionStack;
 
 public class RemoteFormContext<T extends BusinessLogics<T>, F extends FormInstance<T>> extends AbstractContext {
     private final RemoteForm<T, F> form;
@@ -61,9 +48,9 @@ public class RemoteFormContext<T extends BusinessLogics<T>, F extends FormInstan
     }
 
     @Override
-    public RemoteForm createRemoteForm(FormInstance formInstance) {
+    public RemoteForm createRemoteForm(FormInstance formInstance, ExecutionStack stack) {
         try {
-            return new RemoteForm<T, FormInstance<T>>(formInstance, form.getExportPort(), form.getRemoteFormListener());
+            return new RemoteForm<T, FormInstance<T>>(formInstance, form.getExportPort(), form.getRemoteFormListener(), stack);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -81,7 +68,7 @@ public class RemoteFormContext<T extends BusinessLogics<T>, F extends FormInstan
         return form.form.getClassListener();
     }
 
-    public PropertyObjectInterfaceInstance getComputer() {
+    public PropertyObjectInterfaceInstance getComputer(ExecutionStack stack) {
         return form.form.instanceFactory.computer;
     }
 
@@ -91,10 +78,5 @@ public class RemoteFormContext<T extends BusinessLogics<T>, F extends FormInstan
 
     public DataObject getConnection() {
         return form.form.instanceFactory.connection;
-    }
-
-    @Override
-    public UpdateCurrentClasses getUpdateCurrentClasses(UpdateCurrentClasses outerUpdateCurrentClasses) {
-        return CompoundUpdateCurrentClasses.merge(outerUpdateCurrentClasses, form.form.outerUpdateCurrentClasses);
     }
 }

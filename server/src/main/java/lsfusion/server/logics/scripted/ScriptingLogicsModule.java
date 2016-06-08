@@ -2819,6 +2819,19 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
+    public void topContextActionPropertyDefinitionBodyCreated(LPWithParams lpWithParams) throws ScriptingErrorLog.SemanticErrorException {
+        boolean isDebug = debugger.isEnabled();
+
+        if(isDebug) {
+            //noinspection unchecked
+            LAP<PropertyInterface> lAction = (LAP<PropertyInterface>) lpWithParams.property;
+
+            ActionProperty property = (ActionProperty) lAction.property;
+
+            debugger.setNewDebugStack(property);
+        }
+    }
+
     public LPWithParams modifyContextFlowActionPropertyDefinitionBodyCreated(LPWithParams lpWithParams,
                                                     List<TypedParameter> newContext, List<TypedParameter> oldContext,
                                                     List<ResolveClassSet> signature, boolean needFullContext) throws ScriptingErrorLog.SemanticErrorException {
