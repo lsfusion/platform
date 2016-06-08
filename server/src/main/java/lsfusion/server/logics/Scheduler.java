@@ -94,8 +94,8 @@ public class Scheduler extends MonitorServer implements InitializingBean {
 
                 java.sql.Date currentDate = (java.sql.Date) BL.timeLM.currentDate.read(session);
                 java.sql.Date newDate = DateConverter.getCurrentDate();
-                logger.info(String.format("ChangeCurrentDate started: from %s to %s", currentDate, newDate));
                 if (currentDate == null || currentDate.getDate() != newDate.getDate() || currentDate.getMonth() != newDate.getMonth() || currentDate.getYear() != newDate.getYear()) {
+                    logger.info(String.format("ChangeCurrentDate started: from %s to %s", currentDate, newDate));
                     BL.timeLM.currentDate.change(newDate, session);
                     String result = session.applyMessage(BL, stack);
                     if (result == null)
