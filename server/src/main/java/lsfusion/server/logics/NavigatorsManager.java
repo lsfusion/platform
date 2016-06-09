@@ -173,12 +173,7 @@ public class NavigatorsManager extends LogicsManager implements InitializingBean
 
     public void navigatorExplicitClosed(RemoteNavigator navigator) {
         synchronized (navigators) {
-            for (Iterator<RemoteNavigator> iterator = navigators.iterator(); iterator.hasNext(); ) {
-                RemoteNavigator n = iterator.next();
-                if(n != null && BaseUtils.hashEquals(navigator, n)) {
-                    iterator.remove();
-                }
-            }
+            navigators.remove(navigator);
             if (navigators.isEmpty()) {
                 restartManager.forcedRestartIfPending();
             }
