@@ -433,9 +433,10 @@ public class Scheduler extends MonitorServer implements InitializingBean {
 
         public boolean run(ScheduledTaskDetail detail) {
             try {
+                ExecutionStack stack = getStack(); // иначе assertion'ы внутри с проверкой контекста валятся
                 Context prevContext = ThreadLocalContext.wrapContext(new SchedulerContext());
                 try {
-                    return executeLAP(detail);
+                    return executeLAP(detail, stack);
                 } finally {
                     ThreadLocalContext.unwrapContext(prevContext);
                 }
@@ -445,8 +446,7 @@ public class Scheduler extends MonitorServer implements InitializingBean {
             }
         }
 
-        private boolean executeLAP(ScheduledTaskDetail detail) throws SQLException, SQLHandledException {
-            ExecutionStack stack = getStack();
+        private boolean executeLAP(ScheduledTaskDetail detail, ExecutionStack stack) throws SQLException, SQLHandledException {
             try (DataSession beforeStartLogSession = dbManager.createSession()) {
                 DataObject currentScheduledTaskLogStartObject = beforeStartLogSession.addObject(BL.schedulerLM.scheduledTaskLog);
                 afterFinishLogSession = dbManager.createSession(getLogSql());
