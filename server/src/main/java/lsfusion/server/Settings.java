@@ -1910,4 +1910,14 @@ public class Settings {
     public void setSubReportTableOptimization(boolean subReportTableOptimization) {
         this.subReportTableOptimization = subReportTableOptimization;
     }
+
+    private boolean disableUnreferenced = true; // есть вопрос с синхронизацией explicitClose FormInstance
+
+    public boolean isDisableUnreferenced() {
+        return disableUnreferenced;
+    }
+
+    public void setDisableUnreferenced(boolean disableUnreferenced) {
+        this.disableUnreferenced = disableUnreferenced;
+    }
 }

@@ -5,6 +5,7 @@ import lsfusion.base.ExceptionUtils;
 import lsfusion.base.WeakIdentityHashSet;
 import lsfusion.interop.remote.PendingRemoteObject;
 import lsfusion.server.ServerLoggers;
+import lsfusion.server.Settings;
 import lsfusion.server.context.*;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.BusinessLogics;
@@ -113,7 +114,8 @@ public abstract class ContextAwarePendingRemoteObject extends PendingRemoteObjec
     public void unreferenced() {
         ThreadLocalContext.aspectBeforeRmi(this, true);
         try {
-            shutdown(true);
+            if(!Settings.get().isDisableUnreferenced())
+                shutdown(true);
         } finally {
             ThreadLocalContext.aspectAfterRmi();
         }
