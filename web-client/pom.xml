@@ -16,7 +16,7 @@
         <war.finalName>lsfusion-client-${project.version}</war.finalName>
         <war.explodedDir>${project.build.directory}/${war.finalName}</war.explodedDir>
         <war.packed>${project.build.directory}/${war.finalName}.war</war.packed>
-        <war.desktopClientPath>${war.explodedDir}/lsfusion-client-${lsfusion.version}.jar.pack.gz</war.desktopClientPath>
+        <war.desktopClientPath>${war.explodedDir}/lsfusion-client.jar.pack.gz</war.desktopClientPath>
     </properties>
 
     <profiles>
