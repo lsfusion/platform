@@ -400,19 +400,28 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         }
 
         public void regChange(ImSet<CalcProperty> changes, DataSession session) {
-            weakThis.get().regChange(changes, session);
+            ChangesSync changesSync = weakThis.get();
+            if(changesSync != null)
+                changesSync.regChange(changes, session);
         }
 
         public ImSet<CalcProperty> update(DataSession session, FormInstance form) {
-            return weakThis.get().update(session, form);
+            ChangesSync changesSync = weakThis.get();
+            if(changesSync != null)
+                return changesSync.update(session, form);
+            return SetFact.EMPTY();
         }
 
         public void registerForm(FormInstance form) {
-            weakThis.get().registerForm(form);
+            ChangesSync changesSync = weakThis.get();
+            if(changesSync != null)
+                changesSync.registerForm(form);
         }
 
         public void unregisterForm(FormInstance form) {
-            weakThis.get().unregisterForm(form);
+            ChangesSync changesSync = weakThis.get();
+            if(changesSync != null)
+                changesSync.unregisterForm(form);
         }
     }
 
