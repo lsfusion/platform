@@ -140,7 +140,7 @@ editChatAction 'Редактировать' () = ACTION {
 recentVisible  = ABSTRACT BOOLEAN ();
 readonlyFullChat(Chat chat) = readonly(chat) AND recentVisible();
 markSeenOnChange = ACTION ABSTRACT (Chat);
-prevUser() = DATA CustomUser();
+prevUser() = DATA LOCAL CustomUser();
 
 backgroundUnread 'Цвет' (Chat chat) = RGB(255, 0, 0) IF unreadMessages(chat);
 backgroundUnread 'Цвет' (CustomUser user) = RGB(255, 0, 0) IF unreadMessages(user);
