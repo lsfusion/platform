@@ -799,6 +799,17 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         executeDDL("ALTER TABLE " + table + " ALTER COLUMN " + field.getName(syntax) + " " + syntax.getTypeChange(oldType, field.type, field.getName(syntax), env));
     }
 
+    public void modifyColumns(Table table, Map<Field, Type> fieldTypeMap) throws SQLException {
+        MStaticExecuteEnvironment env = StaticExecuteEnvironmentImpl.mEnv();
+        String ddl = "";
+        for(Map.Entry<Field, Type> entry : fieldTypeMap.entrySet()) {
+            Field field = entry.getKey();
+            Type oldType = entry.getValue();
+            ddl += (ddl.isEmpty() ? "" : ",") + " ALTER COLUMN " + field.getName(syntax) + " " + syntax.getTypeChange(oldType, field.type, field.getName(syntax), env);
+        }
+        executeDDL("ALTER TABLE " + table + " " + ddl);
+    }
+
     public void packTable(Table table, OperationOwner owner, TableOwner tableOwner) throws SQLException {
         checkTableOwner(table, tableOwner);
         

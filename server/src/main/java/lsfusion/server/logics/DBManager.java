@@ -736,6 +736,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
             // бежим по свойствам
             List<DBStoredProperty> restNewDBStored = new LinkedList<>(newDBStructure.storedProperties);
             List<AggregateProperty> recalculateTableProperties = new ArrayList<>();
+            Map<Table, Map<Field, Type>> alterTableMap = new HashMap<>();
             for (DBStoredProperty oldProperty : oldDBStructure.storedProperties) {
                 Table oldTable = oldDBStructure.getTable(oldProperty.tableName);
 
@@ -768,8 +769,12 @@ public class DBManager extends LogicsManager implements InitializingBean {
                             } else { // надо проверить что тип не изменился
                                 Type oldType = oldTable.findProperty(oldProperty.getDBName()).type;
                                 if (!oldType.equals(newProperty.property.field.type)) {
-                                    startLogger.info("Changing type of property column " + newProperty.property.field + " in table " + newProperty.tableName + " from " + oldType + " to " + newProperty.property.field.type);
-                                    sql.modifyColumn(newTable, newProperty.property.field, oldType);
+                                    startLogger.info("Prepare changing type of property column " + newProperty.property.field + " in table " + newProperty.tableName + " from " + oldType + " to " + newProperty.property.field.type);
+                                    Map<Field, Type> fieldTypeMap = alterTableMap.get(newTable);
+                                    if(fieldTypeMap == null)
+                                        fieldTypeMap = new HashMap<>();
+                                    fieldTypeMap.put(newProperty.property.field, oldType);
+                                    alterTableMap.put(newTable, fieldTypeMap);
                                 }
                             }
                             is.remove();
@@ -797,6 +802,12 @@ public class DBManager extends LogicsManager implements InitializingBean {
                     } else
                         mDropColumns.exclAdd(new Pair<>(oldTable.getName(syntax), oldProperty.getDBName()));
                 }
+            }
+
+            for (Map.Entry<Table, Map<Field, Type>> entry : alterTableMap.entrySet()) {
+                startLogger.info("Changing type of property columns (" + entry.getValue().size() + ") in table " + entry.getKey().getName() + " started");
+                sql.modifyColumns(entry.getKey(), entry.getValue());
+                startLogger.info("Changing type of property columns (" + entry.getValue().size() + ") in table " + entry.getKey().getName() + " finished");
             }
 
             for (DBStoredProperty property : restNewDBStored) { // добавляем оставшиеся
