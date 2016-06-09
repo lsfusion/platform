@@ -381,8 +381,12 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
             boolean locked = lock.readLock().tryLock();
             if(!locked)
                 return false;
-        } else
+        } else {
+            ServerLoggers.pausableLogStack("LOCKREAD TRY " + this);
             lock.readLock().lock();
+        }
+        ServerLoggers.pausableLogStack("LOCKREAD GET " + this);
+
         try {
             if(!tryLock) // временно, потом что-то логичнее надо придумать, потому как надо ближе к непосредственно выполнению, иначе скажем очистка временных таблиц начинает быть activeThread для долгих процессов
                 setActiveThread();
@@ -407,6 +411,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
 
     private void unlockRead() {
         lock.readLock().unlock();
+        ServerLoggers.pausableLogStack("UNLOCKREAD " + this);
         //resetActiveThread();
     }
     
@@ -425,8 +430,11 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
             boolean locked = lock.writeLock().tryLock();
             if(!locked)
                 return false;
-        } else
+        } else {
+            ServerLoggers.pausableLogStack("LOCKWRITE TRY " + this);
             lock.writeLock().lock();
+        }
+        ServerLoggers.pausableLogStack("LOCKWRITE GET " + this);
 
         setActiveThread();
         writeOwner = owner;
@@ -438,6 +446,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         writeOwner = null;
         
         lock.writeLock().unlock();
+        ServerLoggers.pausableLogStack("UNLOCKWRITE " + this);
         //resetActiveThread();
     }
     

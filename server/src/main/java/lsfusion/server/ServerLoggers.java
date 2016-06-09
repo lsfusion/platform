@@ -166,6 +166,11 @@ public class ServerLoggers {
             pausablesInvocationLogger.info(s);
     }
 
+    public static void pausableLogStack(String s) {
+        if(isPausableLogEnabled())
+            pausablesInvocationLogger.info(s + '\n' + ExceptionUtils.getStackTrace());
+    }
+
     public static void pausableLog(String s, Throwable t) {
         if(isPausableLogEnabled())
             pausablesInvocationLogger.debug(s);
