@@ -147,7 +147,7 @@ backgroundUnread 'Цвет' (CustomUser user) = RGB(255, 0, 0) IF unreadMessages
 
 backgroundMessage (Message m) = IF NOT own(m) THEN RGB(200, 244, 248) ELSE IF seenCount(m) < 2 THEN RGB(220, 244, 248) ELSE RGB(240, 244, 248);
 
-FORM fullChat 'Чаты'
+FORM fullChat 'Чат'
     OBJECTS c = Chat
     PROPERTIES(c) READONLY name ON SHORTCUT editChatAction(), unreadMessages BACKGROUND backgroundUnread(c)
     PROPERTIES(c) FORCE PANEL TOOLBAR ADDFORM
@@ -376,5 +376,5 @@ seekChat(CustomUser user) += ACTION {
 }
 
 NAVIGATOR {
-    ADD fullChat IMAGE '/images/chat.png';
+    ADD fullChat IMAGE '/images/chat.png' BEFORE Authentication.account;
 }
