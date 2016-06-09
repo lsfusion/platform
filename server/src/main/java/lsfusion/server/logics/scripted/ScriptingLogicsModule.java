@@ -713,9 +713,11 @@ public class ScriptingLogicsModule extends LogicsModule {
     
     public LP addSettingsToProperty(LP property, String name, String caption, List<TypedParameter> params, List<ResolveClassSet> signature, 
                                       String groupName, boolean isPersistent, boolean isComplex, boolean noHint, String tableName, BooleanDebug notNull, 
-                                      BooleanDebug notNullResolve, Event notNullEvent) throws ScriptingErrorLog.SemanticErrorException {
+                                      BooleanDebug notNullResolve, Event notNullEvent, String annotation) throws ScriptingErrorLog.SemanticErrorException {
         checkDuplicateProperty(name, signature);
-       
+
+        property.property.annotation = annotation;
+
         List<String> paramNames = getParamNamesFromTypedParams(params);
         checkDistinctParameters(paramNames);
         checkNamedParams(property, paramNames);

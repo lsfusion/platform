@@ -50,6 +50,7 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
     public LCP complexityProperty;
     public LCP captionProperty;
     public LCP tableSIDProperty;
+    public LCP annotationProperty;
     public LCP statsProperty;
     public LCP overStatsProperty;
     public LCP maxStatsProperty;
@@ -206,6 +207,7 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
         // Свойства
         parentProperty = findProperty("parent[Property]");
         tableSIDProperty = findProperty("tableSID[Property]");
+        annotationProperty = findProperty("annotation[Property]");
         statsProperty = findProperty("stats[Property]");
         overStatsProperty = findProperty("overStats[Property]");
         maxStatsProperty = findProperty("maxStatsProperty[]");
