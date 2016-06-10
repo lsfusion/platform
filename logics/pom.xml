@@ -50,6 +50,24 @@
             </dependencies>
         </profile>
     </profiles>
+    
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>aspectj-maven-plugin</artifactId>
+                <configuration>
+                    <!-- чтобы weave'лись аспекты из сервера -->
+                    <aspectLibraries>
+                        <aspectLibrary>
+                            <groupId>lsfusion.platform</groupId>
+                            <artifactId>server</artifactId>
+                        </aspectLibrary>
+                    </aspectLibraries>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 
     <dependencies>
         <dependency>

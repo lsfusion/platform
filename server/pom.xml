@@ -15,25 +15,6 @@
         <assemble.finalName>lsfusion-server-${project.version}</assemble.finalName>
     </properties>
 
-    <profiles>
-        <profile>
-            <id>full-build</id>
-            <activation>
-                <property>
-                    <name>!quickbuild</name>
-                </property>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>aspectj-maven-plugin</artifactId>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
-
     <build>
         <plugins>
             <plugin>
@@ -50,6 +31,10 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>aspectj-maven-plugin</artifactId>
             </plugin>
         </plugins>
     </build>
