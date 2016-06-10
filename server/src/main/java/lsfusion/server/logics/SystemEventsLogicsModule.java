@@ -218,8 +218,10 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
                     exceptionObject = session.addObject(clientException);
                 }
                 clientClientException.change(clientName, session, exceptionObject);
-                String userLogin = (String) authenticationLM.loginCustomUser.read(session, user);
-                loginClientException.change(userLogin, session, exceptionObject);
+                if(user != null) {
+                    String userLogin = (String) authenticationLM.loginCustomUser.read(session, user);
+                    loginClientException.change(userLogin, session, exceptionObject);
+                }
             } else {
                 exceptionObject = session.addObject(serverException);
             }
