@@ -234,7 +234,7 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
                     SQLSession.restartConnections(prevStart);
                 } catch (Throwable e) {
                     ServerLoggers.systemLogger.error("Connection restart error : ", e);
-                    throw Throwables.propagate(e);
+//                    throw Throwables.propagate(e);
                 }
             }
         }, Settings.get().getPeriodRestartConnections() * 1000, Settings.get().getPeriodRestartConnections() * 1000, TimeUnit.MILLISECONDS);
