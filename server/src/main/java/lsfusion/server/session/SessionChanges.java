@@ -30,6 +30,4 @@ public interface SessionChanges {
 
     // узнает список изменений произошедших без него
     public ChangedData update(FormInstance<?> toUpdate) throws SQLException;
-
-    public String applyMessage(BusinessLogics<?> BL) throws SQLException, SQLHandledException;
 }

@@ -24,12 +24,10 @@ import lsfusion.server.logics.property.DialogRequest;
 import lsfusion.server.logics.property.PullChangeProperty;
 import lsfusion.server.remote.RemoteForm;
 import lsfusion.server.session.DataSession;
-import lsfusion.server.session.UpdateCurrentClasses;
 import lsfusion.server.stack.ExecutionStackItem;
 
 import java.sql.SQLException;
 import java.util.List;
-import java.util.concurrent.ScheduledExecutorService;
 
 public interface Context {
 
@@ -37,10 +35,10 @@ public interface Context {
 
     FormInstance getFormInstance();
 
-    FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, boolean isAdd, FormSessionScope sessionScope, UpdateCurrentClasses outerUpdateCurrentClasses, boolean checkOnOk, boolean showDrop, boolean interactive, ImSet<FilterEntity> contextFilters, PropertyDrawEntity initFilterProperty, ImSet<PullChangeProperty> pullProps, boolean readonly) throws SQLException, SQLHandledException;
-    RemoteForm createRemoteForm(FormInstance formInstance);
+    FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, boolean isAdd, FormSessionScope sessionScope, ExecutionStack stack, boolean checkOnOk, boolean showDrop, boolean interactive, ImSet<FilterEntity> contextFilters, PropertyDrawEntity initFilterProperty, ImSet<PullChangeProperty> pullProps, boolean readonly) throws SQLException, SQLHandledException;
+    RemoteForm createRemoteForm(FormInstance formInstance, ExecutionStack stack);
 
-    ObjectValue requestUserObject(DialogRequest dialogRequest) throws SQLException, SQLHandledException;
+    ObjectValue requestUserObject(DialogRequest dialogRequest, ExecutionStack stack) throws SQLException, SQLHandledException;
     ObjectValue requestUserData(DataClass dataClass, Object oldValue);
     ObjectValue requestUserClass(CustomClass baseClass, CustomClass defaultValue, boolean concrete);
 
@@ -56,15 +54,12 @@ public interface Context {
     Thread getLastThread();
     void pushActionMessage(ExecutionStackItem stackItem);
     void popActionMessage(ExecutionStackItem stackItem);
-    ScheduledExecutorService getExecutorService();
 
     // для создания форм
     SecurityPolicy getSecurityPolicy();
     FocusListener getFocusListener();
     CustomClassListener getClassListener();
-    PropertyObjectInterfaceInstance getComputer();
+    PropertyObjectInterfaceInstance getComputer(ExecutionStack stack);
     Integer getCurrentUser();
     DataObject getConnection();
-    UpdateCurrentClasses getUpdateCurrentClasses(UpdateCurrentClasses outerUpdateCurrentClasses);
-
 }

@@ -6,5 +6,5 @@ import java.sql.SQLException;
 
 public interface UpdateCurrentClasses {
 
-    void update(DataSession session) throws SQLException, SQLHandledException;
+    void updateOnApply(DataSession session) throws SQLException, SQLHandledException;
 }

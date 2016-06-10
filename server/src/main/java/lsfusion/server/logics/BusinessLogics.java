@@ -22,12 +22,16 @@ import lsfusion.interop.form.screen.ExternalScreenParameters;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
 import lsfusion.server.SystemProperties;
+import lsfusion.server.caches.CacheStats;
+import lsfusion.server.caches.CacheStats.CacheType;
 import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.caches.IdentityStrongLazy;
 import lsfusion.server.classes.*;
 import lsfusion.server.classes.sets.OrObjectClassSet;
 import lsfusion.server.classes.sets.ResolveClassSet;
 import lsfusion.server.classes.sets.ResolveOrObjectClassSet;
+import lsfusion.server.context.EExecutionStackRunnable;
+import lsfusion.server.context.ExecutionStack;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.daemons.DiscountCardDaemonTask;
 import lsfusion.server.daemons.ScannerDaemonTask;
@@ -47,10 +51,13 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.entity.LogFormEntity;
+import lsfusion.server.form.navigator.LogInfo;
 import lsfusion.server.form.navigator.NavigatorElement;
+import lsfusion.server.form.navigator.RemoteNavigator;
 import lsfusion.server.form.window.AbstractWindow;
 import lsfusion.server.lifecycle.LifecycleAdapter;
 import lsfusion.server.lifecycle.LifecycleEvent;
+import lsfusion.server.lifecycle.LogicsManager;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.linear.LP;
@@ -61,6 +68,7 @@ import lsfusion.server.logics.property.actions.FormActionProperty;
 import lsfusion.server.logics.property.actions.SessionEnvEvent;
 import lsfusion.server.logics.property.actions.SystemEvent;
 import lsfusion.server.logics.property.cases.AbstractCase;
+import lsfusion.server.logics.property.cases.graph.Graph;
 import lsfusion.server.logics.property.group.AbstractGroup;
 import lsfusion.server.logics.scripted.MetaCodeFragment;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
@@ -81,15 +89,19 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadMXBean;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 
 import static lsfusion.base.BaseUtils.isRedundantString;
+import static lsfusion.base.BaseUtils.nullToZero;
 import static lsfusion.base.BaseUtils.serviceLogger;
 import static lsfusion.server.logics.LogicsModule.*;
 import static lsfusion.server.logics.ServerResourceBundle.getString;
@@ -1101,7 +1113,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     }
 
     public ImOrderSet<Property> getPropertyList() {
-        return getPropertyList(ApplyFilter.NO);
+        return getPropertyListWithGraph(ApplyFilter.NO).first;
     }
 
     private void fillActionChangeProps() { // используется только для getLinks, соответственно построения лексикографики и поиска зависимостей
@@ -1125,9 +1137,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     }
 
     // находит свойство входящее в "верхнюю" сильносвязную компоненту
-    private static HSet<Link> buildOrder(Property<?> property, MAddMap<Property, HSet<Link>> linksMap, List<Property> order, HSet<Link> removedLinks, boolean include, HSet<Property> component, boolean events) {
+    private static HSet<Link> buildOrder(Property<?> property, MAddMap<Property, HSet<Link>> linksMap, List<Property> order, ImSet<Link> removedLinks, boolean include, ImSet<Property> component, boolean events, boolean recursive, boolean checkNotRecursive) {
         HSet<Link> linksIn = linksMap.get(property);
         if (linksIn == null) { // уже были, linksMap - одновременно используется и как пометки, и как список, и как обратный обход
+            assert !(recursive && checkNotRecursive);
             linksIn = new HSet<>();
             linksMap.add(property, linksIn);
 
@@ -1135,9 +1148,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             for (int i = 0,size = links.size(); i < size; i++) {
                 Link link = links.get(i);
                 if (!removedLinks.contains(link) && component.contains(link.to) == include)
-                    buildOrder(link.to, linksMap, order, removedLinks, include, component, events).add(link);
+                    buildOrder(link.to, linksMap, order, removedLinks, include, component, events, true, checkNotRecursive).add(link);
             }
-            order.add(property);
+            if(order != null)
+                order.add(property);
         }
         return linksIn;
     }
@@ -1294,7 +1308,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         for (int i = 0; i < props.size; i++) {
             Property property = props.get(i);
             if (linksMap.get(property) == null) // проверка что не было
-                buildOrder(property, linksMap, order, removedLinks, exclude == null, exclude != null ? exclude : props, events);
+                buildOrder(property, linksMap, order, removedLinks, exclude == null, exclude != null ? exclude : props, events, false, false);
         }
 
         Result<Property> minProperty = new Result<>();
@@ -1422,8 +1436,58 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             dropActionChangeProps();
     }
 
+    @IdentityLazy
+    public Graph<ActionProperty> getRecalculateFollowsGraph() {
+        return BaseUtils.<Graph<ActionProperty>>immutableCast(getPropertyGraph().filterGraph(new SFunctionSet<Property>() {
+            public boolean contains(Property element) {
+                return element instanceof ActionProperty && ((ActionProperty) element).hasResolve();
+            }
+        }));
+    }
+
+    @IdentityLazy
+    public Graph<AggregateProperty> getAggregateStoredGraph() {
+        return BaseUtils.<Graph<AggregateProperty>>immutableCast(getPropertyGraph().filterGraph(new SFunctionSet<Property>() {
+            public boolean contains(Property element) {
+                return element instanceof AggregateProperty && ((AggregateProperty) element).isStored();
+            }
+        }));
+    }
+
+    public Graph<AggregateProperty> getRecalculateAggregateStoredGraph() {
+        QueryBuilder<String, Object> query = new QueryBuilder<>(SetFact.singleton("key"));
+
+        ImSet<String> skipProperties = SetFact.EMPTY();
+        try (final DataSession dataSession = getDbManager().createSession()) {
+
+            Expr expr = reflectionLM.notRecalculateSID.getExpr(query.getMapExprs().singleValue());
+            query.and(expr.getWhere());
+            skipProperties = query.execute(dataSession).keys().mapSetValues(new GetValue<String, ImMap<String,Object>>() {
+                @Override
+                public String getMapValue(ImMap<String, Object> value) {
+                    return (String)value.singleValue();
+                }
+            });
+
+        } catch (SQLException | SQLHandledException e) {
+            serviceLogger.info(e.getMessage());
+        }
+
+
+        final ImSet<String> fSkipProperties = skipProperties;
+        return getAggregateStoredGraph().filterGraph(new SFunctionSet<AggregateProperty>() {
+            public boolean contains(AggregateProperty element) {
+                return !fSkipProperties.contains(element.getDBName());
+            }
+        });
+    }
+
+    public Graph<Property> getPropertyGraph() {
+        return getPropertyListWithGraph(ApplyFilter.NO).second;
+    }
+
     @IdentityStrongLazy // глобальное очень сложное вычисление
-    public ImOrderSet<Property> getPropertyList(ApplyFilter filter) {
+    public Pair<ImOrderSet<Property>, Graph<Property>> getPropertyListWithGraph(ApplyFilter filter) {
         // жестковато тут конечно написано, но пока не сильно времени жрет
 
         fillActionChangeProps();
@@ -1441,38 +1505,64 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         boolean events = filter != ApplyFilter.ONLY_DATA;
 
         MOrderExclSet<Property> mCancelResult = SetFact.mOrderExclSet();
-        HSet<Property> proceeded = buildList(cancelActions, new HSet<Property>(), new HSet<Link>(), mCancelResult, events);
+        HSet<Link> firstRemoved = new HSet<>();
+        HSet<Property> proceeded = buildList(cancelActions, new HSet<Property>(), firstRemoved, mCancelResult, events);
         ImOrderSet<Property> cancelResult = mCancelResult.immutableOrder();
 
         // потом бежим по всем остальным, за исключением proceeded
         MOrderExclSet<Property> mRestResult = SetFact.mOrderExclSet();
         HSet<Property> removed = new HSet<>();
         removed.addAll(rest.remove(proceeded));
-        buildList(removed, proceeded, new HSet<Link>(), mRestResult, events); // потом этот cast уберем
+        HSet<Link> secondRemoved = new HSet<>();
+        buildList(removed, proceeded, secondRemoved, mRestResult, events); // потом этот cast уберем
         ImOrderSet<Property> restResult = mRestResult.immutableOrder();
 
         // затем по всем кроме proceeded на прошлом шаге
         assert cancelResult.getSet().disjoint(restResult.getSet());
         ImOrderSet<Property> result = cancelResult.reverseOrder().addOrderExcl(restResult.reverseOrder());
 
+        Graph<Property> graph = null;
+        if(filter == ApplyFilter.NO) {
+            graph = buildGraph(result, firstRemoved.addExcl(secondRemoved));
+        }
+
         for(Property property : result) {
             property.dropLinks();
             if(property instanceof CalcProperty)
                 ((CalcProperty)property).dropActionChangeProps();
         }
-        return result;
+        return new Pair<>(result, graph);
     }
 
+    private static Graph<Property> buildGraph(ImOrderSet<Property> props, ImSet<Link> removedLinks) {
+        MAddMap<Property, HSet<Link>> linksMap = MapFact.mAddOverrideMap();
+        for (int i = 0, size = props.size(); i < size; i++) {
+            Property property = props.get(i);
+            if (linksMap.get(property) == null) // проверка что не было
+                buildOrder(property, linksMap, null, removedLinks, true, props.getSet(), true, false, true);
+        }
+
+        MExclMap<Property, ImSet<Property>> mEdgesIn = MapFact.mExclMap(linksMap.size());
+        for(int i=0,size=linksMap.size();i<size;i++) {
+            final Property property = linksMap.getKey(i);
+            HSet<Link> links = linksMap.getValue(i);
+            mEdgesIn.exclAdd(property, links.mapSetValues(new GetValue<Property, Link>() {
+                public Property getMapValue(Link value) {
+                    assert BaseUtils.hashEquals(value.to, property);
+                    return value.from;
+                }
+            }));
+        }
+        return new Graph<>(mEdgesIn.immutable());
+    }
+
+    // используется не в task'ах
     public List<AggregateProperty> getAggregateStoredProperties() {
-        return getAggregateStoredProperties(true);
-    }
-
-    public List<AggregateProperty> getAggregateStoredProperties(boolean filterRecalculate) {
         List<AggregateProperty> result = new ArrayList<>();
         try (final DataSession dataSession = getDbManager().createSession()) {
             for (Property property : getStoredProperties())
                 if (property instanceof AggregateProperty) {
-                    boolean recalculate = !filterRecalculate || reflectionLM.notRecalculateTableColumn.read(dataSession, reflectionLM.tableColumnSID.readClasses(dataSession, new DataObject(property.getDBName()))) == null;
+                    boolean recalculate = reflectionLM.notRecalculateTableColumn.read(dataSession, reflectionLM.tableColumnSID.readClasses(dataSession, new DataObject(property.getDBName()))) == null;
                     if(recalculate)
                         result.add((AggregateProperty) property);
                 }
@@ -1482,38 +1572,13 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         return result;
     }
 
-    public Set<AggregateProperty> getNotRecalculateAggregateStoredProperties() {
-        Set<AggregateProperty> result = new HashSet<>();
+    public ImOrderSet<CalcProperty> getStoredDataProperties() {
         try (final DataSession dataSession = getDbManager().createSession()) {
-            for (Property property : getStoredProperties())
-                if (property instanceof AggregateProperty) {
-                    boolean notRecalculate = reflectionLM.notRecalculateTableColumn.read(dataSession, reflectionLM.tableColumnSID.readClasses(dataSession, new DataObject(property.getDBName()))) != null;
-                    if(notRecalculate)
-                        result.add((AggregateProperty) property);
-                }
-        } catch (SQLException | SQLHandledException e) {
-            serviceLogger.info(e.getMessage());
-        }
-        return result;
-    }
-
-    @IdentityLazy
-    public ImOrderSet<CalcProperty> getStoredProperties() {
-        return BaseUtils.immutableCast(getPropertyList().filterOrder(new SFunctionSet<Property>() {
-            public boolean contains(Property property) {
-                return property instanceof CalcProperty && ((CalcProperty) property).isStored();
-            }
-        }));
-    }
-
-    @IdentityLazy
-    public ImOrderSet<CalcProperty> getStoredDataProperties(final boolean filterRecalculate) {
-        try (final DataSession dataSession = getDbManager().createSession()) {
-            return BaseUtils.immutableCast(getPropertyList().filterOrder(new SFunctionSet<Property>() {
-                public boolean contains(Property property) {
+            return BaseUtils.immutableCast(getStoredProperties().filterOrder(new SFunctionSet<CalcProperty>() {
+                public boolean contains(CalcProperty property) {
                     boolean recalculate = true;
                     try {
-                        recalculate = !filterRecalculate || property.getDBName() == null || reflectionLM.notRecalculateTableColumn.read(dataSession, reflectionLM.tableColumnSID.readClasses(dataSession, new DataObject(property.getDBName()))) == null;
+                        recalculate = reflectionLM.notRecalculateTableColumn.read(dataSession, reflectionLM.tableColumnSID.readClasses(dataSession, new DataObject(property.getDBName()))) == null;
                     } catch (SQLException | SQLHandledException e) {
                         serviceLogger.error(e.getMessage());
                     }
@@ -1524,6 +1589,15 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             serviceLogger.info(e.getMessage());
         }
         return SetFact.EMPTYORDER();
+    }
+
+    @IdentityLazy
+    public ImOrderSet<CalcProperty> getStoredProperties() {
+        return BaseUtils.immutableCast(getPropertyList().filterOrder(new SFunctionSet<Property>() {
+            public boolean contains(Property property) {
+                return property instanceof CalcProperty && ((CalcProperty) property).isStored();
+            }
+        }));
     }
 
     public ImSet<CustomClass> getCustomClasses() {
@@ -1564,7 +1638,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     @IdentityLazy
     public ImOrderMap<Object, SessionEnvEvent> getAppliedProperties(ApplyFilter increment) {
         // здесь нужно вернуть список stored или тех кто
-        ImOrderSet<Property> list = getPropertyList(increment);
+        ImOrderSet<Property> list = getPropertyListWithGraph(increment).first;
         MOrderExclMap<Object, SessionEnvEvent> mResult = MapFact.mOrderExclMapMax(list.size());
         for (Property property : list) {
             if (property instanceof CalcProperty && ((CalcProperty) property).isStored())
@@ -1761,7 +1835,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         }
     }
 
-    public String recalculateFollows(SessionCreator creator, boolean isolatedTransaction) throws SQLException, SQLHandledException {
+    public String recalculateFollows(SessionCreator creator, boolean isolatedTransaction, final ExecutionStack stack) throws SQLException, SQLHandledException {
         final List<String> messageList = new ArrayList<>();
         final long maxRecalculateTime = Settings.get().getMaxRecalculateTime();
         for (Property property : getPropertyList())
@@ -1772,7 +1846,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
                     try {
                         DBManager.runData(creator, isolatedTransaction, new DBManager.RunServiceData() {
                             public void run(SessionCreator session) throws SQLException, SQLHandledException {
-                                ((DataSession) session).resolve(action);
+                                ((DataSession) session).resolve(action, stack);
                             }
                         });
                     } catch (LogMessageLogicsException e) { // suppress'им так как понятная ошибка
@@ -1802,9 +1876,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     public String checkClasses(SQLSession session) throws SQLException, SQLHandledException {
         String message = DataSession.checkClasses(session, LM.baseClass);
         for(ImplementTable implementTable : LM.tableFactory.getImplementTables()) {
-            message += DataSession.checkTableClasses(implementTable, session, LM.baseClass);
+            message += DataSession.checkTableClasses(implementTable, session, LM.baseClass, false); // так как снизу есть проверка классов
         }
-        for (CalcProperty property : getStoredDataProperties(false))
+        for (CalcProperty property : getStoredDataProperties())
             message += DataSession.checkClasses(property, session, LM.baseClass);
         return message;
     }
@@ -1898,7 +1972,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             });
         }
 
-        for (final CalcProperty property : getStoredDataProperties(true))
+        for (final CalcProperty property : getStoredDataProperties())
             DBManager.run(session, isolatedTransactions, new DBManager.RunService() {
                 public void run(SQLSession sql) throws SQLException, SQLHandledException {
                     long start = System.currentTimeMillis();
@@ -2106,5 +2180,187 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     
     public String getDataBaseName() {
         return getDbManager().getDataBaseName();
+    }
+
+    private void updateThreadAllocatedBytesMap() {
+        if(!Settings.get().isReadAllocatedBytes())
+            return;
+
+        final long period = Settings.get().getThreadAllocatedMemoryPeriod();
+        final long maxAllocatedBytes = Settings.get().getMaxThreadAllocatedBytes();
+        final int cacheMissesStatsLimit = Settings.get().getCacheMissesStatsLimit();
+
+        ThreadMXBean tBean = ManagementFactory.getThreadMXBean();
+        if (tBean instanceof com.sun.management.ThreadMXBean && ((com.sun.management.ThreadMXBean) tBean).isThreadAllocatedMemorySupported()) {
+            long time = System.currentTimeMillis();
+            long bytesSum = 0;
+            long totalBytesSum = 0;
+            SQLSession.updateThreadAllocatedBytesMap();
+            Map<Long, Thread> threadMap = ThreadUtils.getThreadMap();
+
+            ConcurrentHashMap<Long, HashMap<CacheType, Long>> hitStats = MapFact.getGlobalConcurrentHashMap(CacheStats.getCacheHitStats());
+            ConcurrentHashMap<Long, HashMap<CacheType, Long>> missedStats = MapFact.getGlobalConcurrentHashMap(CacheStats.getCacheMissedStats());
+            CacheStats.resetStats();
+
+            long totalHit = 0;
+            long totalMissed = 0;
+            HashMap<CacheType, Long> totalHitMap = new HashMap<>();
+            HashMap<CacheType, Long> totalMissedMap = new HashMap<>();
+            long exceededMisses = 0;
+            long exceededMissesHits = 0;
+            HashMap<CacheType, Long> exceededHitMap = new HashMap<>();
+            HashMap<CacheType, Long> exceededMissedMap = new HashMap<>();
+
+            boolean logTotal = false;
+
+            for (Map.Entry<Long, Long> bEntry : SQLSession.threadAllocatedBytesBMap.entrySet()) {
+                Long id = bEntry.getKey();
+                if (id != null) {
+                    Long bBytes = bEntry.getValue();
+                    Long aBytes = SQLSession.threadAllocatedBytesAMap.get(bEntry.getKey());
+
+                    Long deltaBytes = bBytes != null && aBytes != null ? (bBytes - aBytes) : 0;
+                    totalBytesSum += deltaBytes;
+
+                    long userMissed = 0;
+                    long userHit = 0;
+
+                    HashMap<CacheType, Long> userHitMap = hitStats.get(id) != null ? hitStats.get(id) : new HashMap<CacheType, Long>();
+                    HashMap<CacheType, Long> userMissedMap = missedStats.get(id) != null ? missedStats.get(id) : new HashMap<CacheType, Long>();
+                    for (CacheType cacheType : CacheType.values()) {
+                        Long hit = nullToZero(userHitMap.get(cacheType));
+                        Long missed = nullToZero(userMissedMap.get(cacheType));
+                        userHit += hit;
+                        userMissed += missed;
+                    }
+                    totalHit += userHit;
+                    totalMissed += userMissed;
+                    sumMap(totalHitMap, userHitMap);
+                    sumMap(totalMissedMap, userMissedMap);
+
+                    if (deltaBytes > maxAllocatedBytes || userMissed > cacheMissesStatsLimit) {
+                        logTotal = true;
+
+                        bytesSum += deltaBytes;
+
+                        exceededMisses += userMissed;
+                        exceededMissesHits += userHit;
+                        sumMap(exceededHitMap, userHitMap);
+                        sumMap(exceededMissedMap, userMissedMap);
+
+                        Thread thread = threadMap.get(id);
+                        LogInfo logInfo = thread == null ? null : ThreadLocalContext.logInfoMap.get(thread);
+                        String computer = logInfo == null ? null : logInfo.hostnameComputer;
+                        String user = logInfo == null ? null : logInfo.userName;
+
+                        String userMessage;
+                        if (user == null) {
+                            userMessage = String.format("PID %s: %s", bEntry.getKey(), humanReadableByteCount(deltaBytes));
+                        } else {
+                            userMessage = String.format("PID %s, %s, Comp. %s, User %s", bEntry.getKey(),
+                                    humanReadableByteCount(deltaBytes), computer == null ? "unknown" : computer, user);
+                        }
+                        userMessage += String.format(", missed-hit: All: %s-%s, %s", userMissed, userHit, getStringMap(userHitMap, userMissedMap));
+
+                        ServerLoggers.allocatedBytesLogger.info(userMessage);
+                    }
+                }
+            }
+            if (logTotal) {
+                ServerLoggers.allocatedBytesLogger.info(String.format("Exceeded: sum: %s, \t\t\tmissed-hit: All: %s-%s, %s",
+                        humanReadableByteCount(bytesSum), exceededMisses, exceededMissesHits, getStringMap(exceededHitMap, exceededMissedMap)));
+                ServerLoggers.allocatedBytesLogger.info(String.format("Total: sum: %s, elapsed %sms, missed-hit: All: %s-%s, %s",
+                        humanReadableByteCount(totalBytesSum), System.currentTimeMillis() - time, totalMissed, totalHit, getStringMap(totalHitMap, totalMissedMap)));
+            }
+        }
+    }
+
+    public static String humanReadableByteCount(long bytes) {
+        int unit = 1024;
+        if (bytes < unit) return bytes + " B";
+        int exp = (int) (Math.log(bytes) / Math.log(unit));
+        char pre = "KMGTPE".charAt(exp - 1);
+        return String.format("%.1f %sB", bytes / Math.pow(unit, exp), pre);
+    }
+
+    private String getStringMap(HashMap<CacheType, Long> hitStats, HashMap<CacheType, Long> missedStats) {
+        String result = "";
+        for (int i = 0; i < CacheType.values().length; i++) {
+            CacheType type = CacheType.values()[i];
+            result += type + ": " + nullToZero(missedStats.get(type)) + "-" + nullToZero(hitStats.get(type));
+            if (i < CacheType.values().length - 1) {
+                result += "; ";
+            }
+        }
+        return result;
+    }
+
+    private void sumMap(HashMap<CacheType, Long> target, HashMap<CacheType, Long> source) {
+        for (CacheType type : CacheType.values()) {
+            target.put(type, nullToZero(target.get(type)) + nullToZero(source.get(type)));
+        }
+    }
+
+    public List<Scheduler.SchedulerTask> getSystemTasks(Scheduler scheduler) {
+        if(SystemProperties.isDebug) // чтобы не мешать при включенных breakPoint'ах
+            return new ArrayList<>();
+
+        List<Scheduler.SchedulerTask> result = new ArrayList<>();
+        result.add(getOpenFormCountUpdateTask(scheduler));
+        result.add(getUserLastActivityUpdateTask(scheduler));
+        result.add(getInitPingInfoUpdateTask(scheduler));
+        result.add(getAllocatedBytesUpdateTask(scheduler));
+        result.add(getCleanTempTablesTask(scheduler));
+        result.add(getRestartConnectionsTask(scheduler));
+        return result;
+    }
+
+    private Scheduler.SchedulerTask getOpenFormCountUpdateTask(Scheduler scheduler) {
+        return scheduler.createSystemTask(new EExecutionStackRunnable() {
+            public void run(ExecutionStack stack) throws Exception {
+                RemoteNavigator.updateOpenFormCount(BusinessLogics.this, stack);
+            }
+        }, false, Settings.get().getUpdateFormCountPeriod(), false);
+    }
+
+    private Scheduler.SchedulerTask getUserLastActivityUpdateTask(Scheduler scheduler) {
+        return scheduler.createSystemTask(new EExecutionStackRunnable() {
+            public void run(ExecutionStack stack) throws Exception {
+                RemoteNavigator.updateUserLastActivity(BusinessLogics.this, stack);
+            }
+        }, false, Settings.get().getUpdateUserLastActivity(), false);
+    }
+
+    private Scheduler.SchedulerTask getInitPingInfoUpdateTask(Scheduler scheduler) {
+        return scheduler.createSystemTask(new EExecutionStackRunnable() {
+            public void run(ExecutionStack stack) throws Exception {
+                RemoteNavigator.updatePingInfo(BusinessLogics.this, stack);
+            }
+        }, false, Settings.get().getUpdatePingInfo(), false);
+    }
+
+    private Scheduler.SchedulerTask getCleanTempTablesTask(Scheduler scheduler) {
+        return scheduler.createSystemTask(new EExecutionStackRunnable() {
+            public void run(ExecutionStack stack) throws Exception {
+                SQLSession.cleanTemporaryTables();
+            }
+        }, false, Settings.get().getTempTablesTimeThreshold() * 1000, false);
+    }
+
+    private Scheduler.SchedulerTask getRestartConnectionsTask(Scheduler scheduler) {
+        final Result<Double> prevStart = new Result<>(0.0);
+        return scheduler.createSystemTask(new EExecutionStackRunnable() {
+            public void run(ExecutionStack stack) throws Exception {
+                SQLSession.restartConnections(prevStart);
+            }
+        }, false, Settings.get().getPeriodRestartConnections() * 1000, false);
+    }
+
+    private Scheduler.SchedulerTask getAllocatedBytesUpdateTask(Scheduler scheduler) {
+        return scheduler.createSystemTask(new EExecutionStackRunnable() {
+            public void run(ExecutionStack stack) throws Exception {
+                updateThreadAllocatedBytesMap();
+            }
+        }, false, Settings.get().getThreadAllocatedMemoryPeriod() / 2, false);
     }
 }

@@ -11,6 +11,7 @@ import lsfusion.server.form.instance.*;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.CalcPropertyValueImplement;
+import lsfusion.server.context.ExecutionStack;
 import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.session.ExecutionEnvironment;
 import lsfusion.server.session.Modifier;
@@ -55,7 +56,7 @@ public class NotNullFilterInstance<P extends PropertyInterface> extends Property
     }
 
     @Override
-    public void resolveAdd(ExecutionEnvironment env, CustomObjectInstance object, DataObject addObject) throws SQLException, SQLHandledException {
+    public void resolveAdd(ExecutionEnvironment env, CustomObjectInstance object, DataObject addObject, ExecutionStack stack) throws SQLException, SQLHandledException {
 
         if(!resolveAdd)
             return;
@@ -65,6 +66,6 @@ public class NotNullFilterInstance<P extends PropertyInterface> extends Property
 
         ImRevMap<P, KeyExpr> mapKeys = property.property.getMapKeys();
         ImRevMap<PropertyObjectInterfaceInstance, KeyExpr> mapObjects = property.mapping.toRevMap().crossJoin(mapKeys);
-        property.property.setNotNull(mapKeys, getChangedWhere(object, mapObjects, addObject), env, true);
+        property.property.setNotNull(mapKeys, getChangedWhere(object, mapObjects, addObject), env, true, stack);
     }
 }

@@ -23,8 +23,8 @@ import lsfusion.server.form.entity.PropertyDrawEntity;
 import lsfusion.server.form.navigator.NavigatorAction;
 import lsfusion.server.form.navigator.NavigatorElement;
 import lsfusion.server.integration.*;
-import lsfusion.server.lifecycle.LifecycleAdapter;
 import lsfusion.server.lifecycle.LifecycleEvent;
+import lsfusion.server.lifecycle.LogicsManager;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.group.AbstractGroup;
@@ -44,12 +44,12 @@ import java.util.*;
 import static java.util.Arrays.asList;
 import static lsfusion.base.SystemUtils.getRevision;
 
-public class ReflectionManager extends LifecycleAdapter implements InitializingBean {
+public class ReflectionManager extends LogicsManager implements InitializingBean {
 
     public static final Logger startLogger = ServerLoggers.startLogger;
 
     private BusinessLogics<?> businessLogics;
-    
+
     private DBManager dbManager;
 
     private PublicTask initTask;
@@ -97,7 +97,7 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
     }
 
     public Integer getServerComputer() {
-        return dbManager.getComputer(SystemUtils.getLocalHostName());
+        return dbManager.getComputer(SystemUtils.getLocalHostName(), getStack());
     }
     
     private DataSession createSession() throws SQLException {
@@ -113,13 +113,6 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
 
     public boolean isSourceHashChanged() {
         return dbManager.sourceHashChanged;
-    }
-
-    private void synchronizeForms() {
-        synchronizeNavigatorElements();
-        synchronizeParents();
-        synchronizeGroupObjects();
-        synchronizePropertyDraws();
     }
 
     public void synchronizeNavigatorElements() {
@@ -160,7 +153,7 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
                 IntegrationService service = new IntegrationService(session, table, Collections.singletonList(keyNavigatorElement), propsNavigatorElement, deletes);
                 service.synchronize(true, false);
                 session.popVolatileStats();
-                session.apply(businessLogics);
+                session.apply(businessLogics, getStack());
                 startLogger.info("synchronizeNavigatorElements finished");
             }
         } catch (Exception e) {
@@ -190,7 +183,7 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
                 IntegrationService service = new IntegrationService(session, table, asList(keyElement, keyParent), propsParent);
                 service.synchronize(true, false);
                 session.popVolatileStats();
-                session.apply(businessLogics);
+                session.apply(businessLogics, getStack());
                 startLogger.info("synchronizeParents finished");
             }
         } catch (Exception e) {
@@ -270,7 +263,7 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
             try (DataSession session = createSyncSession()) {
                 IntegrationService service = new IntegrationService(session, table, asList(keyForm, keyProperty), properties);
                 service.synchronize(false, false);
-                session.apply(businessLogics);
+                session.apply(businessLogics, getStack());
                 startLogger.info("migratePropertyDraws finished");
             }
         } catch (Exception e) {
@@ -322,7 +315,7 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
                 IntegrationService service = new IntegrationService(session, table, asList(keyForm, keyPropertyDraw, keyGroupObject), propsPropertyDraw, deletes);
                 service.synchronize(true, false);
                 session.popVolatileStats();
-                session.apply(businessLogics);
+                session.apply(businessLogics, getStack());
                 startLogger.info("synchronizePropertyDraws finished");
             }
         } catch (Exception e) {
@@ -368,7 +361,7 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
                 IntegrationService service = new IntegrationService(session, table, asList(keyForm, keyGroupObject), propsGroupObject, deletes);
                 service.synchronize(true, false);
                 session.popVolatileStats();
-                session.apply(businessLogics);
+                session.apply(businessLogics, getStack());
                 startLogger.info("synchronizeGroupObjects finished");
             }
         } catch (Exception e) {
@@ -393,6 +386,7 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
         ImportField classPropertyField = new ImportField(reflectionLM.propertyClassValueClass);
         ImportField complexityPropertyField = new ImportField(LongClass.instance);
         ImportField tableSIDPropertyField = new ImportField(reflectionLM.propertyTableValueClass);
+        ImportField annotationPropertyField = new ImportField(reflectionLM.propertyTableValueClass);
         ImportField statsPropertyField = new ImportField(IntegerClass.instance);
 
         ImportKey<?> keyProperty = new ImportKey(reflectionLM.property, reflectionLM.propertyCanonicalName.getMapping(canonicalNamePropertyField));
@@ -426,7 +420,7 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
                     dataProperty.add(asList(property.getCanonicalName(),(Object) property.getDBName(), property.caption, property.loggable ? true : null,
                             property instanceof CalcProperty && ((CalcProperty) property).isStored() ? true : null,
                             property instanceof CalcProperty && ((CalcProperty) property).reflectionNotNull ? true : null,
-                            returnClass, classProperty, complexityProperty, tableSID, (Settings.get().isDisableSyncStatProps() ? (Integer)Stat.DEFAULT.getCount() : businessLogics.getStatsProperty(property))));
+                            returnClass, classProperty, complexityProperty, tableSID, property.annotation, (Settings.get().isDisableSyncStatProps() ? (Integer)Stat.DEFAULT.getCount() : businessLogics.getStatsProperty(property))));
                 }
             }
 
@@ -442,6 +436,7 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
             properties.add(new ImportProperty(classPropertyField, reflectionLM.classProperty.getMapping(keyProperty)));
             properties.add(new ImportProperty(complexityPropertyField, reflectionLM.complexityProperty.getMapping(keyProperty)));
             properties.add(new ImportProperty(tableSIDPropertyField, reflectionLM.tableSIDProperty.getMapping(keyProperty)));
+            properties.add(new ImportProperty(annotationPropertyField, reflectionLM.annotationProperty.getMapping(keyProperty)));
             properties.add(new ImportProperty(statsPropertyField, reflectionLM.statsProperty.getMapping(keyProperty)));
 
             List<ImportDelete> deletes = new ArrayList<>();
@@ -449,14 +444,14 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
 
             ImportTable table = new ImportTable(asList(canonicalNamePropertyField, dbNamePropertyField, captionPropertyField, loggablePropertyField,
                     storedPropertyField, isSetNotNullPropertyField, returnPropertyField,
-                    classPropertyField, complexityPropertyField, tableSIDPropertyField, statsPropertyField), dataProperty);
+                    classPropertyField, complexityPropertyField, tableSIDPropertyField, annotationPropertyField, statsPropertyField), dataProperty);
 
             try (DataSession session = createSyncSession()) {
                 session.pushVolatileStats("RM_PE");
                 IntegrationService service = new IntegrationService(session, table, Collections.singletonList(keyProperty), properties, deletes);
                 service.synchronize(true, false);
                 session.popVolatileStats();
-                session.apply(businessLogics);
+                session.apply(businessLogics, getStack());
                 startLogger.info("synchronizePropertyEntities finished");
             }
         } catch (Exception e) {
@@ -492,7 +487,7 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
                 IntegrationService service = new IntegrationService(session, table, asList(keyProperty, keyParent), properties);
                 service.synchronize(true, false);
                 session.popVolatileStats();
-                session.apply(businessLogics);
+                session.apply(businessLogics, getStack());
                 startLogger.info("synchronizePropertyParents finished");
             }
         } catch (Exception e) {
@@ -548,7 +543,7 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
                 service = new IntegrationService(session, table2, asList(key, key2), props2);
                 service.synchronize(true, false);
                 session.popVolatileStats();
-                session.apply(businessLogics);
+                session.apply(businessLogics, getStack());
                 startLogger.info("synchronizeGroupProperties finished");
             }
         } catch (Exception e) {
@@ -652,7 +647,7 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
                 service.synchronize(true, false);
 
                 session.popVolatileStats();
-                session.apply(businessLogics);
+                session.apply(businessLogics, getStack());
                 startLogger.info("synchronizeTables finished");
             }
         } catch (Exception e) {
@@ -667,7 +662,7 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
                         systemEventsLM.connectionStatusConnection.property.interfaces.single(),
                         systemEventsLM.connectionStatus.getDataObject("connectedConnection"));
                 session.change((CalcProperty) systemEventsLM.connectionStatusConnection.property, statusChanges);
-                session.apply(businessLogics);
+                session.apply(businessLogics, getStack());
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -677,13 +672,13 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
     public void runOnStarted() {
         try {
             try (DataSession session = dbManager.createSession()) {
-                LM.onStarted.execute(session);
-                session.apply(businessLogics);
+                LM.onStarted.execute(session, getStack());
+                session.apply(businessLogics, getStack());
             }
             if(dbManager.needExtraUpdateStats) {
                 try (DataSession session = dbManager.createSession()) {
                     dbManager.updateStats(session.sql);
-                    session.apply(businessLogics);
+                    session.apply(businessLogics, getStack());
                 }
             }
 
@@ -699,7 +694,7 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
                 systemEventsLM.computerLaunch.change(getServerComputer(), session, newLaunch);
                 systemEventsLM.timeLaunch.change(timeLM.currentDateTime.read(session), session, newLaunch);
                 systemEventsLM.revisionLaunch.change(getRevision(), session, newLaunch);
-                session.apply(businessLogics);
+                session.apply(businessLogics, getStack());
             }
         } catch (Exception e) {
             throw new RuntimeException(e);

@@ -6,6 +6,7 @@ import lsfusion.interop.RemoteLogicsLoaderInterface;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.lifecycle.LifecycleAdapter;
 import lsfusion.server.lifecycle.LifecycleEvent;
+import lsfusion.server.lifecycle.LogicsManager;
 import lsfusion.server.logics.RMIManager;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
@@ -17,7 +18,7 @@ import java.rmi.RemoteException;
 
 import static lsfusion.server.logics.ServerResourceBundle.getString;
 
-public class RemoteLogicsLoader extends LifecycleAdapter implements RemoteLogicsLoaderInterface, InitializingBean {
+public class RemoteLogicsLoader extends LogicsManager implements RemoteLogicsLoaderInterface, InitializingBean {
     private static final Logger logger = ServerLoggers.startLogger;
 
     public static final String EXPORT_NAME = "RemoteLogicsLoader";

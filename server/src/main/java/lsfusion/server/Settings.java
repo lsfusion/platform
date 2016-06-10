@@ -167,11 +167,13 @@ public class Settings {
 
     private long limitApplyHintIncrementStat = 1000;
 
-    private int updateFormCountPeriod = 30000;
+    private int updateFormCountPeriod = 30;
     
-    private int updateUserLastActivity = 30000;
+    private int updateUserLastActivity = 30;
 
-    private int updatePingInfo = 3600000;
+    private int updatePingInfo = 3600;
+
+    private int checkCurrentDate = 30;
 
     private boolean autoAnalyzeTempStats = true; // автоматически анализировать статистику после каждого заполнения временной таблицы (прикол в том что после удаления таблицы и добавления новых записей статистика сама увеличивается)
 
@@ -232,7 +234,9 @@ public class Settings {
 
     private boolean groupByTables = true; //для recalculate
 
-    private long threadAllocatedMemoryPeriod = 240000; //every 4 minutes
+    private int threadAllocatedMemoryPeriod = 180000; //every 3 minutes
+
+    private boolean readAllocatedBytes = true;
 
     private long maxThreadAllocatedBytes = 500048576; //500MB
 
@@ -806,6 +810,14 @@ public class Settings {
         this.updateUserLastActivity = updateUserLastActivity;
     }
 
+    public int getCheckCurrentDate() {
+        return checkCurrentDate;
+    }
+
+    public void setCheckCurrentDate(int checkCurrentDate) {
+        this.checkCurrentDate = checkCurrentDate;
+    }
+
     public int getUpdatePingInfo() {
         return updatePingInfo;
     }
@@ -1321,7 +1333,7 @@ public class Settings {
         this.defaultTypeExecuteEnvironment = defaultTypeExecuteEnvironment;
     }
 
-    private int timeoutNanosPerRow = 70;
+    private int timeoutNanosPerRow = 120;
 
     public int getTimeoutNanosPerRow() {
         return timeoutNanosPerRow;
@@ -1568,11 +1580,11 @@ public class Settings {
         this.groupByTables = groupByTables;
     }
 
-    public long getThreadAllocatedMemoryPeriod() {
+    public int getThreadAllocatedMemoryPeriod() {
         return threadAllocatedMemoryPeriod;
     }
 
-    public void setThreadAllocatedMemoryPeriod(long threadAllocatedMemoryPeriod) {
+    public void setThreadAllocatedMemoryPeriod(int threadAllocatedMemoryPeriod) {
         this.threadAllocatedMemoryPeriod = threadAllocatedMemoryPeriod;
     }
 
@@ -1585,13 +1597,21 @@ public class Settings {
     }
 
     private int cacheMissesStatsLimit = 10000;
-    
+
     public int getCacheMissesStatsLimit() {
         return cacheMissesStatsLimit;
     }
-    
+
     public void setCacheMissesStatsLimit(int cacheMissesStatsLimit) {
         this.cacheMissesStatsLimit = cacheMissesStatsLimit;
+    }
+
+    public boolean isReadAllocatedBytes() {
+        return readAllocatedBytes;
+    }
+
+    public void setReadAllocatedBytes(boolean readAllocatedBytes) {
+        this.readAllocatedBytes = readAllocatedBytes;
     }
 
     private int updateStatisticsLimit = 300; // при изменении какого количества записей будет принудительный ANALYZE таблицы делаться
@@ -1889,5 +1909,15 @@ public class Settings {
 
     public void setSubReportTableOptimization(boolean subReportTableOptimization) {
         this.subReportTableOptimization = subReportTableOptimization;
+    }
+
+    private boolean disableUnreferenced = true; // есть вопрос с синхронизацией explicitClose FormInstance
+
+    public boolean isDisableUnreferenced() {
+        return disableUnreferenced;
+    }
+
+    public void setDisableUnreferenced(boolean disableUnreferenced) {
+        this.disableUnreferenced = disableUnreferenced;
     }
 }

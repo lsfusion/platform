@@ -8,6 +8,7 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.classes.ConcreteCustomClass;
 import lsfusion.server.classes.IntegerClass;
 import lsfusion.server.classes.ObjectValueClassSet;
+import lsfusion.server.context.ExecutionStack;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
@@ -16,7 +17,6 @@ import lsfusion.server.data.expr.query.GroupExpr;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.query.QueryBuilder;
-import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.table.ImplementTable;
 import lsfusion.server.logics.tasks.GroupPropertiesSingleTask;
 import lsfusion.server.session.DataSession;
@@ -26,24 +26,19 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import static lsfusion.base.BaseUtils.serviceLogger;
+public class RecalculateStatsTask extends GroupPropertiesSingleTask<Object> { // ImplementTable, ObjectValueClassSet
 
-public class RecalculateStatsTask extends GroupPropertiesSingleTask {
-
-    public void init(ExecutionContext context) throws SQLException, SQLHandledException {
-        super.init(context);
+    @Override
+    public String getTaskCaption(Object element) {
+        return "Recalculate Stats";
     }
 
     @Override
-    protected void runTask(final Object element) throws RecognitionException {
-        String currentTask = String.format("Recalculate Stats: %s", element);
-        startedTask(currentTask);
+    protected void runInnerTask(Object element, ExecutionStack stack) throws RecognitionException, SQLException, SQLHandledException {
         try (DataSession session = getDbManager().createSession()) {
-            long start = System.currentTimeMillis();
-            serviceLogger.info(currentTask);
-            if(element instanceof ImplementTable) {
+            if (element instanceof ImplementTable) {
                 ((ImplementTable) element).calculateStat(getBL().reflectionLM, session);
-            } else if(element instanceof ObjectValueClassSet) {
+            } else if (element instanceof ObjectValueClassSet) {
                 QueryBuilder<Integer, Integer> classes = new QueryBuilder<>(SetFact.singleton(0));
 
                 KeyExpr countKeyExpr = new KeyExpr("count");
@@ -61,23 +56,14 @@ public class RecalculateStatsTask extends GroupPropertiesSingleTask {
                     getBL().LM.statCustomObjectClass.change(classStat == null ? 1 : (Integer) classStat.singleValue(), session, customClass.getClassObject());
                 }
             }
-            session.apply(getBL());
-            long time = System.currentTimeMillis() - start;
-            if(time > maxRecalculateTime)
-                addMessage(element, time);
-            serviceLogger.info(String.format("%s, %sms", currentTask, time));
-        } catch (SQLException | SQLHandledException e) {
-            addMessage("Recalculate Stats:", element, e);
-            serviceLogger.info(currentTask, e);
-        } finally {
-            finishedTask(currentTask);
+            session.apply(getBL(), stack);
         }
     }
 
     @Override
-    protected List getElements() {
-        initContext();
-        List elements = new ArrayList();
+    protected List<Object> getElements() {
+        checkContext();
+        List<Object> elements = new ArrayList<>();
         elements.addAll(getBL().LM.tableFactory.getImplementTables().toJavaSet());
         elements.addAll(getBL().LM.baseClass.getUpObjectClassFields().values().toJavaCol());
         return elements;

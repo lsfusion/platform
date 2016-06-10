@@ -68,7 +68,7 @@ public abstract class RemotePausableInvocation extends PausableInvocation<Server
                 delayedActions.add(action);
                 delayedGetRemoteChanges = true;
             }
-        } else if (action instanceof HideFormClientAction) {
+        } else if (action instanceof HideFormClientAction) { // оптимизация, чтобы не делать round-trip в HideFormClientAction
             if (!delayedHideForm) {
                 delayedActions.add(action);
                 delayedHideForm = true;

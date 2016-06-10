@@ -49,8 +49,8 @@ public class LogicsInstanceContext extends AbstractContext {
         return null;
     }
 
-    public PropertyObjectInterfaceInstance getComputer() {
-        return logicsInstance.getDbManager().getServerComputerObject();
+    public PropertyObjectInterfaceInstance getComputer(ExecutionStack stack) {
+        return logicsInstance.getDbManager().getServerComputerObject(stack);
     }
 
     public Integer getCurrentUser() {
@@ -62,9 +62,9 @@ public class LogicsInstanceContext extends AbstractContext {
     }
 
     @Override
-    public RemoteForm createRemoteForm(FormInstance formInstance) {
+    public RemoteForm createRemoteForm(FormInstance formInstance, ExecutionStack stack) {
         try {
-            return new RemoteForm(formInstance, logicsInstance.getRmiManager().getExportPort(), null);
+            return new RemoteForm(formInstance, logicsInstance.getRmiManager().getExportPort(), null, stack);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

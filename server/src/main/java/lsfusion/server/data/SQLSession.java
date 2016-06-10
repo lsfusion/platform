@@ -381,8 +381,12 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
             boolean locked = lock.readLock().tryLock();
             if(!locked)
                 return false;
-        } else
+        } else {
+//            ServerLoggers.pausableLogStack("LOCKREAD TRY " + this);
             lock.readLock().lock();
+        }
+//        ServerLoggers.pausableLogStack("LOCKREAD GET " + this);
+
         try {
             if(!tryLock) // временно, потом что-то логичнее надо придумать, потому как надо ближе к непосредственно выполнению, иначе скажем очистка временных таблиц начинает быть activeThread для долгих процессов
                 setActiveThread();
@@ -407,6 +411,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
 
     private void unlockRead() {
         lock.readLock().unlock();
+//        ServerLoggers.pausableLogStack("UNLOCKREAD " + this);
         //resetActiveThread();
     }
     
@@ -425,8 +430,11 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
             boolean locked = lock.writeLock().tryLock();
             if(!locked)
                 return false;
-        } else
+        } else {
+//            ServerLoggers.pausableLogStack("LOCKWRITE TRY " + this);
             lock.writeLock().lock();
+        }
+//        ServerLoggers.pausableLogStack("LOCKWRITE GET " + this);
 
         setActiveThread();
         writeOwner = owner;
@@ -438,6 +446,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         writeOwner = null;
         
         lock.writeLock().unlock();
+//        ServerLoggers.pausableLogStack("UNLOCKWRITE " + this);
         //resetActiveThread();
     }
     
@@ -459,13 +468,15 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     }
 
     public void endFakeTransaction(OperationOwner owner) throws SQLException, SQLHandledException {
-        privateConnection.sql.setReadOnly(false);
+        try {
+            privateConnection.sql.setReadOnly(false);
 
-        explicitNeedPrivate--;
+            explicitNeedPrivate--;
 
-        tryCommon(owner, false);
-
-        unlockWrite();
+            tryCommon(owner, false);
+        } finally {
+            unlockWrite();
+        }
     }
 
     public void startTransaction(int isolationLevel, OperationOwner owner) throws SQLException, SQLHandledException {
@@ -627,9 +638,11 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
                     addColumn(table, property);
             }
         } finally {
-            returnConnection(connection, OperationOwner.unknown);
-
-            unlockRead();
+            try {
+                returnConnection(connection, OperationOwner.unknown);
+            } finally {
+                unlockRead();
+            }
         }
     }
 
@@ -797,6 +810,17 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     public void modifyColumn(Table table, Field field, Type oldType) throws SQLException {
         MStaticExecuteEnvironment env = StaticExecuteEnvironmentImpl.mEnv();
         executeDDL("ALTER TABLE " + table + " ALTER COLUMN " + field.getName(syntax) + " " + syntax.getTypeChange(oldType, field.type, field.getName(syntax), env));
+    }
+
+    public void modifyColumns(Table table, Map<Field, Type> fieldTypeMap) throws SQLException {
+        MStaticExecuteEnvironment env = StaticExecuteEnvironmentImpl.mEnv();
+        String ddl = "";
+        for(Map.Entry<Field, Type> entry : fieldTypeMap.entrySet()) {
+            Field field = entry.getKey();
+            Type oldType = entry.getValue();
+            ddl += (ddl.isEmpty() ? "" : ",") + " ALTER COLUMN " + field.getName(syntax) + " " + syntax.getTypeChange(oldType, field.type, field.getName(syntax), env);
+        }
+        executeDDL("ALTER TABLE " + table + " " + ddl);
     }
 
     public void packTable(Table table, OperationOwner owner, TableOwner tableOwner) throws SQLException {
@@ -1486,7 +1510,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         unlockConnection(false, owner);
     }
 
-    private void afterStatementExecute(Result<Throwable> firstException, final String command, final StaticExecuteEnvironment env, final ExConnection connection, final Statement statement, final OperationOwner owner, RegisterChange registerChange, int rowsChange) throws SQLException {
+    private void afterStatementExecute(Result<Throwable> firstException, final String command, final StaticExecuteEnvironment env, final ExConnection connection, final Statement statement, final OperationOwner owner, final RegisterChange registerChange, final int rowsChange) throws SQLException {
         if(connection != null) {
             if (statement != null)
                 runSuppressed(new SQLRunnable() {
@@ -1515,8 +1539,12 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
             }, firstException);
         }
 
-        if(registerChange != null)
-            registerChange.register(this, rowsChange);
+        runSuppressed(new SQLRunnable() {
+            public void run() throws SQLException {
+                if(registerChange != null)
+                    registerChange.register(SQLSession.this, rowsChange);
+            }
+        }, firstException);
 
         unlockRead();
 
@@ -1842,7 +1870,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         afterExStatementExecute(owner, env, snapEnv, connection, runTime, returnStatement, statement, string, command, handler, firstException);
     }
 
-    private <H> void afterExStatementExecute(final OperationOwner owner, final StaticExecuteEnvironment env, final DynamicExecEnvSnapshot execInfo, final ExConnection connection, final long runTime, final Result<ReturnStatement> returnStatement, final PreparedStatement statement, final String string, SQLCommand<H> command, H handler, Result<Throwable> firstException) throws SQLException, SQLHandledException {
+    private <H> void afterExStatementExecute(final OperationOwner owner, final StaticExecuteEnvironment env, final DynamicExecEnvSnapshot execInfo, final ExConnection connection, final long runTime, final Result<ReturnStatement> returnStatement, final PreparedStatement statement, final String string, final SQLCommand<H> command, final H handler, Result<Throwable> firstException) throws SQLException, SQLHandledException {
         if(connection != null) {
             runSuppressed(new SQLRunnable() {
                 public void run() throws SQLException {
@@ -1882,7 +1910,13 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
             }
         }, firstException);
 
-        command.afterExecute(handler);
+        runSuppressed(new SQLRunnable() {
+              @Override
+              public void run() throws SQLException, SQLHandledException {
+                  command.afterExecute(handler);
+              }
+           }
+        , firstException);
 
         unlockRead();
 
@@ -2421,7 +2455,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     }
     
     @Override
-    protected void explicitClose(OperationOwner owner) throws SQLException {
+    protected void onExplicitClose(OperationOwner owner) throws SQLException {
         lockWrite(owner);
         temporaryTablesLock.lock();
 

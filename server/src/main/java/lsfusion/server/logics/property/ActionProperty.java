@@ -17,6 +17,7 @@ import lsfusion.server.classes.CustomClass;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.classes.sets.AndClassSet;
 import lsfusion.server.classes.sets.ResolveClassSet;
+import lsfusion.server.context.ExecutionStack;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.DataObject;
@@ -44,8 +45,9 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
 
     private ActionDebugInfo debugInfo;
 
+    private boolean newDebugStack; // только для "top-level" action
     private ParamDebugInfo<P> paramInfo; // только для "top-level" action
-    
+
     private ImSet<Pair<LP, List<ResolveClassSet>>> debugLocals;// только для list action
     
     public boolean hasDebugLocals() {
@@ -71,6 +73,10 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
     
     public ActionDebugInfo getDebugInfo() {
         return debugInfo;
+    }
+
+    public void setNewDebugStack(boolean newDebugStack) {
+        this.newDebugStack = newDebugStack;
     }
 
     public void setParamInfo(ParamDebugInfo<P> paramInfo) {
@@ -385,6 +391,10 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
             context = context.override();
             context.setLocals(debugLocals);
         }
+        if(newDebugStack) {
+            context = context.override();
+            context.setNewDebugStack(true);
+        }
         if (debugInfo != null) {
             return debugger.delegate(this, context);
         } else {
@@ -395,11 +405,6 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
     public FlowResult executeImpl(ExecutionContext<P> context) throws SQLException, SQLHandledException {
         if(Thread.currentThread().isInterrupted())
             return FlowResult.THROWS;
-
-        if(debugInfo != null && debugInfo.delegationType == ActionDelegationType.IN_DELEGATE) {
-            context = context.override();
-            context.setNewDebugStack(true);
-        }
 
         for(ActionPropertyMapImplement<?, P> aspect : getBeforeAspects()) {
             FlowResult beforeResult = aspect.execute(context);
@@ -431,13 +436,13 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
         return new ActionPropertyMapImplement<>(this, getIdentityInterfaces());
     }
 
-    public void execute(ExecutionEnvironment env) throws SQLException, SQLHandledException {
+    public void execute(ExecutionEnvironment env, ExecutionStack stack) throws SQLException, SQLHandledException {
         assert interfaces.size()==0;
-        execute(MapFact.<P, DataObject>EMPTY(), env, null);
+        execute(MapFact.<P, DataObject>EMPTY(), env, stack, null);
     }
 
-    public void execute(ImMap<P, ? extends ObjectValue> keys, ExecutionEnvironment env, FormEnvironment<P> formEnv) throws SQLException, SQLHandledException {
-        env.execute(this, keys, formEnv, null, null);
+    public void execute(ImMap<P, ? extends ObjectValue> keys, ExecutionEnvironment env, ExecutionStack stack, FormEnvironment<P> formEnv) throws SQLException, SQLHandledException {
+        env.execute(this, keys, formEnv, null, null, stack);
     }
 
     public ValueClass getValueClass(ClassType classType) {

@@ -18,7 +18,7 @@ public class DropActionProperty extends FormToolbarActionProperty {
     }
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
-        context.getFormInstance().formDrop();
+        context.getFormInstance().formDrop(context);
     }
 
     @Override

@@ -17,6 +17,8 @@ import lsfusion.server.logics.tasks.TaskRunner;
 import java.sql.SQLException;
 import java.util.Iterator;
 
+import static lsfusion.server.logics.ServerResourceBundle.getString;
+
 public abstract class MultiThreadActionProperty extends ScriptingActionProperty {
     private ClassPropertyInterface threadCountInterface;
     private ClassPropertyInterface propertyTimeoutInterface;
@@ -29,17 +31,18 @@ public abstract class MultiThreadActionProperty extends ScriptingActionProperty 
         propertyTimeoutInterface = i.next();
     }
 
+
     @Override
     public void executeCustom(final ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         TaskRunner taskRunner = new TaskRunner(context.getBL());
         GroupPropertiesSingleTask task = createTask();
+        task.setBL(context.getBL());
         boolean errorOccurred = false;
         try {
             ObjectValue threadCount = context.getKeyValue(threadCountInterface);
             ObjectValue propertyTimeout = context.getKeyValue(propertyTimeoutInterface);
-            task.init(context);
             taskRunner.runTask(task, ServerLoggers.serviceLogger, threadCount == null ? null : (Integer) threadCount.getValue(),
-                    propertyTimeout == null ? null : (Integer) propertyTimeout.getValue());
+                    propertyTimeout == null ? null : (Integer) propertyTimeout.getValue(), context);
         } catch (InterruptedException | MultiCauseException e) {
             errorOccurred = true;
             task.logTimeoutTasks();

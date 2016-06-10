@@ -14,6 +14,7 @@ import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.CurrentConnectionFormulaProperty;
+import lsfusion.server.context.ExecutionStack;
 import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 import lsfusion.server.session.DataSession;
@@ -186,7 +187,7 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
         onClientStarted = findAction("onClientStarted[]");
     }
 
-    public void logException(BusinessLogics bl, Throwable t, DataObject user, String clientName, boolean client) throws SQLException, SQLHandledException {
+    public void logException(BusinessLogics bl, ExecutionStack stack, Throwable t, DataObject user, String clientName, boolean client) throws SQLException, SQLHandledException {
         @SuppressWarnings("ThrowableResultOfMethodCallIgnored")
         String message = Throwables.getRootCause(t).getLocalizedMessage();
         String errorType = t.getClass().getName();
@@ -231,7 +232,7 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
             lsfTraceException.change(lsfStack, session, exceptionObject);
             dateException.change(DateConverter.dateToStamp(Calendar.getInstance().getTime()), session, exceptionObject);
 
-            session.apply(bl);
+            session.apply(bl, stack);
         }
     }
 }

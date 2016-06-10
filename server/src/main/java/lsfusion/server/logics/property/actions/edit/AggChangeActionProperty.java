@@ -51,7 +51,7 @@ public class AggChangeActionProperty<P extends PropertyInterface> extends Around
             readValue = context.requestUserData((DataClass) type, null);
         } else {
             context.requestUserObject(
-                    context.getFormInstance().createObjectDialogRequest((CustomClass) aggProp.getValueClass(ClassType.editPolicy), context)
+                    context.getFormInstance().createObjectDialogRequest((CustomClass) aggProp.getValueClass(ClassType.editPolicy), context.stack)
             );
         }
 

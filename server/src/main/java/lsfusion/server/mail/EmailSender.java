@@ -7,6 +7,7 @@ import lsfusion.base.ByteArray;
 import lsfusion.base.Pair;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.context.Context;
+import lsfusion.server.context.ExecutorFactory;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.logics.ServerResourceBundle;
 import lsfusion.server.logics.linear.LCP;
@@ -35,10 +36,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.ScheduledExecutorService;
 
 public class EmailSender {
     private final static Logger logger = ServerLoggers.mailLogger;
-    Context threadLocalContext;
     SMTPMessage message;
     Multipart mp = new MimeMultipart();
     Properties mailProps = new Properties();
@@ -62,7 +63,6 @@ public class EmailSender {
     }
 
     public EmailSender(String smtpHostAccount, String fromAddressAccount, Map<String, Message.RecipientType> targets) {
-        threadLocalContext = ThreadLocalContext.get();
         //mailProps.setProperty("mail.debug", "true");
         mailProps.setProperty("mail.smtp.host", smtpHostAccount);
         mailProps.setProperty("mail.from", fromAddressAccount);
@@ -271,9 +271,10 @@ public class EmailSender {
     private void sendMail(final ExecutionContext context, final SMTPMessage message, final String subject) throws ScriptingErrorLog.SemanticErrorException {
         final LCP emailSent = context == null ? null : context.getBL().emailLM.findProperty("emailSent[]");
 
-        new Thread() {
+        ScheduledExecutorService executor = ExecutorFactory.createNewThreadService(context);
+        executor.submit(new Runnable() {
+            @Override
             public void run() {
-
                 String messageInfo = subject.trim();
                 try {
                     Address[] addressesTo = message.getRecipients(MimeMessage.RecipientType.TO);
@@ -312,8 +313,6 @@ public class EmailSender {
                 } finally {
                     try {
                         if (emailSent != null) {
-                            if(ThreadLocalContext.get() == null)
-                                ThreadLocalContext.set(threadLocalContext);
                             emailSent.change(send ? true : null, context.getSession());
                         }
                     } catch (Exception e) {
@@ -321,7 +320,8 @@ public class EmailSender {
                     }
                 }
             }
-        }.start();
+        });
+        executor.shutdown();
     }
 
     private void sendMessage(SMTPMessage message, String smtpHost, String smtpPort, String userName, String password) throws MessagingException {

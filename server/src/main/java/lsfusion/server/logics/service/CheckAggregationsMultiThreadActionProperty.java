@@ -7,6 +7,7 @@ import lsfusion.server.logics.ServiceLogicsModule;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.tasks.GroupPropertiesSingleTask;
+import lsfusion.server.logics.tasks.impl.recalculate.CheckAggregationsTask;
 import lsfusion.server.logics.tasks.impl.recalculate.OverCalculateStatsTask;
 
 import java.sql.SQLException;
@@ -20,13 +21,8 @@ public class CheckAggregationsMultiThreadActionProperty extends MultiThreadActio
     }
 
     @Override
-    public void executeCustom(final ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
-        super.executeCustom(context);
-    }
-
-    @Override
     protected GroupPropertiesSingleTask createTask() {
-        return new OverCalculateStatsTask();
+        return new CheckAggregationsTask();
     }
 
     @Override

@@ -5,6 +5,7 @@ import lsfusion.interop.remote.UserInfo;
 import lsfusion.server.classes.AbstractCustomClass;
 import lsfusion.server.classes.ConcreteCustomClass;
 import lsfusion.server.classes.sets.ResolveClassSet;
+import lsfusion.server.context.ExecutionStack;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
@@ -127,7 +128,7 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
 
     }
 
-    public boolean checkPassword(DataObject userObject, String password) throws SQLException, SQLHandledException {
+    public boolean checkPassword(DataObject userObject, String password, ExecutionStack stack) throws SQLException, SQLHandledException {
         boolean authenticated = true;
         try(DataSession session = createSession()) {
             String hashPassword = (String) sha256PasswordCustomUser.read(session, userObject);
@@ -142,7 +143,7 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
                 if (hashPassword != null &&
                         hashPassword.trim().substring(0, Math.min(hashPassword.trim().length(), minHashLengthValue)).equals(oldHashInput.substring(0, Math.min(oldHashInput.length(), minHashLengthValue)))) {
                     sha256PasswordCustomUser.change(newHashInput, session, userObject);
-                    session.apply(BL);
+                    session.apply(BL, stack);
                 } else {
                     authenticated = false;
                 }

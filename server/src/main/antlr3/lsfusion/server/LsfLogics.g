@@ -1769,10 +1769,11 @@ propertyOptions[LP property, String propertyName, String caption, List<TypedPara
 	BooleanDebug notNull = null;
 	BooleanDebug notNullResolve = null;
 	Event notNullEvent = null;
+	String annotation = null;
 }
 @after {
 	if (inPropParseState() && property != null) { // not native
-		$realProperty = self.addSettingsToProperty(property, propertyName, caption, context, signature, groupName, isPersistent, isComplex, noHint, table, notNull, notNullResolve, notNullEvent);
+		$realProperty = self.addSettingsToProperty(property, propertyName, caption, context, signature, groupName, isPersistent, isComplex, noHint, table, notNull, notNullResolve, notNullEvent, annotation);
 		self.makeLoggable(property, isLoggable);
 	}
 }
@@ -1804,6 +1805,7 @@ propertyOptions[LP property, String propertyName, String caption, List<TypedPara
 			}	
 		|	onEditEventSetting [property, context]
 		|	eventIdSetting [property]
+		|   '@@' ann = ID { annotation = $ann.text; }
 		)*
 	;
 
@@ -2025,7 +2027,12 @@ concreteActionDefinition[List<TypedParameter> context, boolean dynamic] returns 
 
 // top level, not recursive
 topContextDependentActionDefinitionBody[List<TypedParameter> context, boolean dynamic, boolean needFullContext] returns [LPWithParams property, List<ResolveClassSet> signature]
-    :	aDB=modifyContextFlowActionDefinitionBody[new ArrayList<TypedParameter>(), context, dynamic, needFullContext] { $property = $aDB.property; $signature = $aDB.signature; }    
+@after{
+    if (inPropParseState()) {
+        self.topContextActionPropertyDefinitionBodyCreated($property);
+    }
+}
+    :   aDB=modifyContextFlowActionDefinitionBody[new ArrayList<TypedParameter>(), context, dynamic, needFullContext] { $property = $aDB.property; $signature = $aDB.signature; }
 	;
 
 // modifies context + is flow action (uses another actions)
