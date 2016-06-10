@@ -4,25 +4,24 @@ import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.MultiCauseException;
 import lsfusion.server.ServerLoggers;
-import lsfusion.server.context.ExecutorFactory;
+import lsfusion.server.context.ContextAwareDaemonThreadFactory;
+import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.ThreadUtils;
-import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
-import lsfusion.server.logics.property.PropertyInterface;
 import org.apache.log4j.Logger;
 
 import java.lang.reflect.Field;
 import java.sql.SQLException;
 import java.util.*;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class TaskRunner {
     BusinessLogics BL;
-    ExecutorService executor;
+    ThreadPoolExecutor executor;
 
     public TaskRunner(BusinessLogics BL) {
         this.BL = BL;
@@ -32,12 +31,11 @@ public class TaskRunner {
         return BaseUtils.max(Runtime.getRuntime().availableProcessors(), 1);
     }
 
-    // lifecycle
     public void runTask(PublicTask task, Logger logger) throws InterruptedException {
-        runTask(task, logger, null, null, null);
+        runTask(task, logger, null, null);
     }
 
-    public void runTask(PublicTask task, Logger logger, Integer threadCount, Integer propertyTimeout, ExecutionContext<ClassPropertyInterface> context) throws InterruptedException {
+    public void runTask(PublicTask task, Logger logger, Integer threadCount, Integer propertyTimeout) throws InterruptedException {
         Set<Task> initialTasks = new HashSet<>();
         task.markInDependencies(initialTasks);
 
@@ -45,8 +43,10 @@ public class TaskRunner {
         int nThreads = threadCount != null && threadCount != 0 ? threadCount : availableProcessors();
         TaskBlockingQueue taskQueue = new TaskBlockingQueue();
 //        BlockingQueue<Task.PriorityRunnable> taskQueue = new PriorityBlockingQueue<Task.PriorityRunnable>();
-        executor = ExecutorFactory.createTaskService(nThreads, taskQueue,  BaseUtils.<ExecutionContext<PropertyInterface>>immutableCast(context));
-
+        executor = new ThreadPoolExecutor(nThreads, nThreads,
+                                                          0L, TimeUnit.MILLISECONDS,
+                                                          taskQueue,
+                                                          new ContextAwareDaemonThreadFactory(ThreadLocalContext.get(), "taskRunner-pool"));
 //        ExecutorService executor = Executors.newSingleThreadExecutor(new ContextAwareDaemonThreadFactory(ThreadLocalContext.get(), "task-daemon"));
         AtomicInteger taskCount = new AtomicInteger(0);
         final Object monitor = new Object();
@@ -54,7 +54,7 @@ public class TaskRunner {
         final ThrowableConsumer throwableConsumer = new ThrowableConsumer();
         
         for (Task initialTask : initialTasks) {
-            initialTask.execute(BL, executor, context, monitor, taskCount, logger, taskQueue, throwableConsumer, propertyTimeout);
+            initialTask.execute(BL, executor, monitor, taskCount, logger, taskQueue, throwableConsumer, propertyTimeout);
         }
 
         try {

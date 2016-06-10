@@ -8,7 +8,6 @@ import lsfusion.server.form.instance.*;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.CalcPropertyValueImplement;
-import lsfusion.server.context.ExecutionStack;
 import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.session.ExecutionEnvironment;
 import lsfusion.server.session.Modifier;
@@ -61,9 +60,9 @@ public abstract class OpFilterInstance extends FilterInstance {
     }
 
     @Override
-    public void resolveAdd(ExecutionEnvironment env, CustomObjectInstance object, DataObject addObject, ExecutionStack stack) throws SQLException, SQLHandledException {
-        op1.resolveAdd(env, object, addObject, stack);
-        op2.resolveAdd(env, object, addObject, stack);
+    public void resolveAdd(ExecutionEnvironment env, CustomObjectInstance object, DataObject addObject) throws SQLException, SQLHandledException {
+        op1.resolveAdd(env, object, addObject);
+        op2.resolveAdd(env, object, addObject);
     }
 
     @Override

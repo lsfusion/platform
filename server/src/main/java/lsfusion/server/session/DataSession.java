@@ -20,10 +20,10 @@ import lsfusion.interop.action.ConfirmClientAction;
 import lsfusion.interop.action.LogMessageClientAction;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
+import lsfusion.server.SystemProperties;
 import lsfusion.server.caches.ManualLazy;
 import lsfusion.server.classes.*;
 import lsfusion.server.classes.sets.UpClassSet;
-import lsfusion.server.context.ExecutionStack;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.*;
 import lsfusion.server.data.expr.*;
@@ -245,7 +245,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     private Transaction applyTransaction; // restore point
     private boolean isInTransaction;
 
-    private void startTransaction(BusinessLogics<?> BL, Map<String, Integer> attemptCountMap) throws SQLException, SQLHandledException {
+    private void startTransaction(UpdateCurrentClasses update, BusinessLogics<?> BL, Map<String, Integer> attemptCountMap) throws SQLException, SQLHandledException {
         sql.startTransaction(DBManager.getCurrentTIL(), getOwner(), attemptCountMap);
         isInTransaction = true;
         if(applyFilter == ApplyFilter.ONLY_DATA)
@@ -416,7 +416,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     public final SQLSession idSession;
     
     @Override
-    protected void onExplicitClose(Object o) throws SQLException {
+    protected void explicitClose(Object o) throws SQLException {
         assert o == null;
         
 //        SQLSession.fifo.add("DC " + getOwner() + SQLSession.getCurrentTimeStamp() + " " + this + '\n' + ExceptionUtils.getStackTrace());
@@ -985,7 +985,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     }
 
 
-    public <T extends PropertyInterface> void executeSessionEvents(FormInstance form, ExecutionStack stack) throws SQLException, SQLHandledException {
+    public <T extends PropertyInterface> void executeSessionEvents(FormInstance form) throws SQLException, SQLHandledException {
 //        ServerLoggers.assertLog(!isInTransaction(), "LOCAL EVENTS IN TRANSACTION"); // так как LogPropertyAction создает форму
         if(sessionEventChangedOld.getProperties().size() > 0) { // оптимизационная проверка
 
@@ -1000,7 +1000,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
             try {
                 for(ActionProperty<?> action : getActiveSessionEvents()) {
-                    executeSessionEvent(env, stack, action);
+                    executeSessionEvent(env, action);
                     if(!isInSessionEvent())
                         return;
                 }
@@ -1017,16 +1017,16 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
     @LogTime
     @ThisMessage
-    private void executeSessionEvent(ExecutionEnvironment env, ExecutionStack stack, @ParamMessage ActionProperty<?> action) throws SQLException, SQLHandledException {
+    private void executeSessionEvent(ExecutionEnvironment env, @ParamMessage ActionProperty<?> action) throws SQLException, SQLHandledException {
         if(!sessionEventChangedOld.getProperties().intersect(action.getSessionEventOldDepends()))// оптимизация аналогичная верхней
             return;
 
-        action.execute(env, stack);
+        action.execute(env);
     }
 
     @LogTime
     @ThisMessage
-    private void executeGlobalEvent(ExecutionEnvironment env, ExecutionStack stack, @ParamMessage ActionProperty<?> action) throws SQLException, SQLHandledException {
+    private void executeGlobalEvent(ExecutionEnvironment env, @ParamMessage ActionProperty<?> action) throws SQLException, SQLHandledException {
         boolean hasChanges = false;
         for(SessionCalcProperty property : action.getGlobalEventSessionCalcDepends()) { // оптимизация основанная на отсутствии последействия
             // тут конечно для PREV брать CHANGED, не совсем правильно, так как новое значение может не использоваться вообще в действии, и PREV используется не для определения условия события, а для непосредственно тела
@@ -1040,31 +1040,31 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         if(Settings.get().isDisableGlobalEventOptimization()) {
             if (!hasChanges)
                 changedFlag.set(true);
-            action.execute(env, stack);
+            action.execute(env);
             if (!hasChanges)
                 changedFlag.set(null);
         } else {
             if(hasChanges)
-                action.execute(env, stack);
+                action.execute(env);
         }
     }
 
     @LogTime
     @ThisMessage
-    private void executeActionInTransaction(ExecutionEnvironment env, ExecutionStack stack, @ParamMessage ActionPropertyValueImplement<?> action) throws SQLException, SQLHandledException {
-        action.execute(env, stack);
+    private void executeActionInTransaction(ExecutionEnvironment env, @ParamMessage ActionPropertyValueImplement<?> action) throws SQLException, SQLHandledException {
+        action.execute(env);
     }
 
     @StackProgress
     @Cancelable
-    private boolean executeGlobalEvent(BusinessLogics BL, ExecutionStack stack, Object property, @StackProgress final ProgressBar progressBar) throws SQLException, SQLHandledException {
+    private boolean executeGlobalEvent(BusinessLogics BL, Object property, @StackProgress final ProgressBar progressBar) throws SQLException, SQLHandledException {
         if(property instanceof ActionProperty || property instanceof ActionPropertyValueImplement) {
             startPendingSingles(property instanceof ActionPropertyValueImplement ? ((ActionPropertyValueImplement) property).property : (ActionProperty) property);
 
             if(property instanceof ActionPropertyValueImplement)
-                executeActionInTransaction(this, stack, (ActionPropertyValueImplement)property);
+                executeActionInTransaction(this, (ActionPropertyValueImplement)property);
             else
-                executeGlobalEvent(this, stack, (ActionProperty) property);
+                executeGlobalEvent(this, (ActionProperty) property);
 
             if(!isInTransaction()) // если ушли из транзакции вываливаемся
                 return false;
@@ -1078,7 +1078,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
     private OverrideSessionModifier resolveModifier = null;
 
-    public <T extends PropertyInterface> void resolve(ActionProperty<?> action, ExecutionStack stack) throws SQLException, SQLHandledException {
+    public <T extends PropertyInterface> void resolve(ActionProperty<?> action) throws SQLException, SQLHandledException {
         IncrementChangeProps changes = new IncrementChangeProps();
         for(SessionCalcProperty sessionCalcProperty : action.getSessionCalcDepends(false))
             if(sessionCalcProperty instanceof ChangedProperty) {
@@ -1089,7 +1089,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         
         resolveModifier = new OverrideSessionModifier(changes, true, dataModifier);
         try {
-            action.execute(this, stack);
+            action.execute(this);
         } finally {
             resolveModifier.clean(sql, getOwner());
             resolveModifier = null;
@@ -1209,12 +1209,12 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         return inTable.and(correctClasses.not());
     }
 
-    public static String checkTableClasses(@ParamMessage ImplementTable table, SQLSession sql, BaseClass baseClass, boolean includeProps) throws SQLException, SQLHandledException {
-        return checkTableClasses(table, sql, null, baseClass, includeProps);
+    public static String checkTableClasses(@ParamMessage ImplementTable table, SQLSession sql, BaseClass baseClass) throws SQLException, SQLHandledException {
+        return checkTableClasses(table, sql, null, baseClass);
     }
 
-    public static String checkTableClasses(@ParamMessage ImplementTable table, SQLSession sql, QueryEnvironment env, BaseClass baseClass, boolean includeProps) throws SQLException, SQLHandledException {
-        Query<KeyField, Object> query = getIncorrectQuery(table, baseClass, includeProps, true);
+    public static String checkTableClasses(@ParamMessage ImplementTable table, SQLSession sql, QueryEnvironment env, BaseClass baseClass) throws SQLException, SQLHandledException {
+        Query<KeyField, Object> query = getIncorrectQuery(table, baseClass, true, true);
 
         String incorrect = env == null ? query.readSelect(sql) : query.readSelect(sql, env);
         if(!incorrect.isEmpty())
@@ -1359,30 +1359,30 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         return new ChangedData(incrementChange.properties, wasRestart);
     }
 
-    public String applyMessage(BusinessLogics<?> BL, ExecutionStack stack) throws SQLException, SQLHandledException {
-        return applyMessage(BL, stack, null);
+    public String applyMessage(BusinessLogics<?> BL) throws SQLException, SQLHandledException {
+        return applyMessage(BL, null);
     }
 
     public String applyMessage(ExecutionContext context) throws SQLException, SQLHandledException {
-        return applyMessage(context.getBL(), context.stack, context);
+        return applyMessage(context.getBL(), context);
     }
 
-    public String applyMessage(BusinessLogics<?> BL, ExecutionStack stack, UserInteraction interaction) throws SQLException, SQLHandledException {
-        if(apply(BL, stack, interaction))
+    public String applyMessage(BusinessLogics<?> BL, UserInteraction interaction) throws SQLException, SQLHandledException {
+        if(apply(BL, interaction))
             return null;
         else
             return ThreadLocalContext.getLogMessage();
 //            return ((LogMessageClientAction)BaseUtils.single(actions)).message;
     }
 
-    public boolean apply(BusinessLogics BL, ExecutionStack stack, UserInteraction interaction, ImOrderSet<ActionPropertyValueImplement> applyActions, FunctionSet<SessionDataProperty> keepProperties, FormInstance formInstance) throws SQLException, SQLHandledException {
-        return apply(BL, formInstance, stack, interaction, applyActions, keepProperties);
+    public boolean apply(BusinessLogics BL, UpdateCurrentClasses update, UserInteraction interaction, ImOrderSet<ActionPropertyValueImplement> applyActions, FunctionSet<SessionDataProperty> keepProperties, FormInstance formInstance) throws SQLException, SQLHandledException {
+        return apply(BL, formInstance, update, interaction, applyActions, keepProperties);
     }
 
-    public boolean check(BusinessLogics BL, FormInstance form, ExecutionStack stack, UserInteraction interaction) throws SQLException, SQLHandledException {
+    public boolean check(BusinessLogics BL, FormInstance form, UserInteraction interaction) throws SQLException, SQLHandledException {
         setApplyFilter(ApplyFilter.ONLYCHECK);
 
-        boolean result = apply(BL, form, stack, interaction, SetFact.<ActionPropertyValueImplement>EMPTYORDER(), SetFact.<SessionDataProperty>EMPTY());
+        boolean result = apply(BL, form, null, interaction, SetFact.<ActionPropertyValueImplement>EMPTYORDER(), SetFact.<SessionDataProperty>EMPTY());
 
         setApplyFilter(ApplyFilter.NO);
         return result;
@@ -1669,7 +1669,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         return count;
     }
 
-    public boolean apply(final BusinessLogics<?> BL, FormInstance form, ExecutionStack stack, UserInteraction interaction,
+    public boolean apply(final BusinessLogics<?> BL, FormInstance form, UpdateCurrentClasses update, UserInteraction interaction,
                          ImOrderSet<ActionPropertyValueImplement> applyActions, FunctionSet<SessionDataProperty> keepProps) throws SQLException, SQLHandledException {
         if(!hasChanges() && applyActions.isEmpty())
             return true;
@@ -1677,7 +1677,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         if(isInTransaction()) {
             ServerLoggers.assertLog(false, "NESTED APPLY");
             for(ActionPropertyValueImplement applyAction : applyActions)
-                applyAction.execute(this, stack);
+                applyAction.execute(this);
             return true;
         }
 
@@ -1724,23 +1724,23 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             }
         }
 
-        executeSessionEvents(form, stack);
+        executeSessionEvents(form);
 
         // очистим, так как в транзакции уже другой механизм используется, и старые increment'ы будут мешать
         dataModifier.clearHints(sql, getOwner());
 
-        return transactApply(BL, stack, interaction, new HashMap<String, Integer>(), 0, applyActions, keepProps);
+        return transactApply(BL, update, interaction, new HashMap<String, Integer>(), 0, applyActions, keepProps);
     }
 
-    private boolean transactApply(BusinessLogics<?> BL, ExecutionStack stack,
+    private boolean transactApply(BusinessLogics<?> BL, UpdateCurrentClasses update,
                                   UserInteraction interaction,
                                   Map<String, Integer> attemptCountMap, int autoAttemptCount,
                                   ImOrderSet<ActionPropertyValueImplement> applyActions, FunctionSet<SessionDataProperty> keepProps) throws SQLException, SQLHandledException {
 //        assert !isInTransaction();
-        startTransaction(BL, attemptCountMap);
+        startTransaction(update, BL, attemptCountMap);
 
         try {
-            return recursiveApply(applyActions, BL, stack, keepProps);
+            return recursiveApply(applyActions, BL, update, keepProps);
         } catch (Throwable t) { // assert'им что последняя SQL комманда, работа с транзакцией
             try {
                 rollbackApply();
@@ -1781,7 +1781,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                     
                 try {
                     SQLSession.incAttemptCount(attemptCountMap, ((SQLHandledException) t).getDescription(true));
-                    return transactApply(BL, stack, interaction, attemptCountMap, autoAttemptCount, applyActions, keepProps);
+                    return transactApply(BL, update, interaction, attemptCountMap, autoAttemptCount, applyActions, keepProps);
                 } finally {
                     if(noTimeout)
                         sql.popNoTransactTimeout();
@@ -1853,13 +1853,13 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         rollbackInfo.add(run);
     }
 
-    private boolean recursiveApply(ImOrderSet<ActionPropertyValueImplement> actions, BusinessLogics BL, ExecutionStack stack, FunctionSet<SessionDataProperty> keepProps) throws SQLException, SQLHandledException {
+    private boolean recursiveApply(ImOrderSet<ActionPropertyValueImplement> actions, BusinessLogics BL, UpdateCurrentClasses update, FunctionSet<SessionDataProperty> keepProps) throws SQLException, SQLHandledException {
         // тоже нужен посередине, чтобы он успел dataproperty изменить до того как они обработаны
         ImOrderSet<Object> execActions = SetFact.addOrderExcl(actions, BL.getAppliedProperties(this));
         for (int i = 0, size = execActions.size(); i < size; i++) {
             try {
                 sql.statusMessage = new StatusMessage("event", execActions.get(i), i, size);
-                if (!executeGlobalEvent(BL, stack, execActions.get(i), new ProgressBar(getString("logics.server.apply.message"), i, size, execActions.get(i) + ", " + i + " of " + size)))
+                if (!executeGlobalEvent(BL, execActions.get(i), new ProgressBar(getString("logics.server.apply.message"), i, size, execActions.get(i) + ", " + i + " of " + size)))
                     return false;
             } finally {
                 sql.statusMessage = null;
@@ -1867,7 +1867,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         }
 
         if (applyFilter == ApplyFilter.ONLYCHECK) {
-            cancel(stack);
+            cancel();
             return true;
         }
 
@@ -1876,9 +1876,8 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         ImOrderSet<ActionPropertyValueImplement> updatedRecursiveActions;
         try {
             updatedRecursiveActions = updateCurrentClasses(keepProps);
-            assert stack != null;
-            if(stack != null)
-                stack.updateOnApply(this);
+            if(update != null)
+                update.update(this);
 
             // записываем в базу, то что туда еще не сохранено, приходится сохранять группами, так могут не подходить по классам
             packRemoveClasses(BL); // нужно делать до, так как классы должны быть актуальными, иначе спакует свои же изменения
@@ -1909,7 +1908,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         if(recursiveActions.size() > 0) {
             recursiveUsed = SetFact.EMPTY();
             recursiveActions.clear();
-            return recursiveApply(updatedRecursiveActions, BL, stack, keepProps);
+            return recursiveApply(updatedRecursiveActions, BL, update, keepProps);
         }
 
         commitTransaction();
@@ -2301,7 +2300,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     }
 
     @Override
-    public void cancel(ExecutionStack stack, FunctionSet<SessionDataProperty> keep) throws SQLException, SQLHandledException {
+    public void cancel(FunctionSet<SessionDataProperty> keep) throws SQLException, SQLHandledException {
         cancelSession(keep);
     }
 

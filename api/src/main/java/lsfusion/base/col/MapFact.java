@@ -300,13 +300,6 @@ public class MapFact {
             }});
     }
 
-    public static <K, V> ImMap<K, ImSet<V>> immutableMap(MExclMap<K, MSet<V>> mMap) {
-        return mMap.immutable().mapValues(new GetValue<ImSet<V>, MSet<V>>() {
-            public ImSet<V> getMapValue(MSet<V> value) {
-                return value.immutable();
-            }});
-    }
-
     public static <G, K, V> ImMap<G, ImOrderMap<K, V>> immutableOrder(MExclMap<G, MOrderExclMap<K, V>> mMap) {
         return mMap.immutable().mapValues(new GetValue<ImOrderMap<K, V>, MOrderExclMap<K, V>>() {
             public ImOrderMap<K, V> getMapValue(MOrderExclMap<K, V> value) {

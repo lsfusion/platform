@@ -28,8 +28,8 @@ public abstract class MutableClosedObject<O> extends MutableObject implements Au
         if(closed)
             return;
         if(explicit)
-            onExplicitClose(owner);
-        onFinalClose(owner);
+            explicitClose(owner);
+        finalClose(owner);
         closed = true;
     }
     
@@ -37,12 +37,13 @@ public abstract class MutableClosedObject<O> extends MutableObject implements Au
         return null;
     }
     
-    // явная очистка ресурсов, которые поддерживаются через weak ref'ы
-    protected void onExplicitClose(O owner) throws SQLException {
+    // явная очистка ресурсов, которые также поддерживаются через weak ref'ы
+    // это нельзя делать в finalClose так как нарушит много assertion'ов
+    protected void explicitClose(O owner) throws SQLException {
     }
 
-    // все кроме weakRef (onExplicitClose)
-    protected void onFinalClose(O owner) throws SQLException {
+    // explicit resource cleaning which is not implemented with weak refs  
+    protected void finalClose(O owner) throws SQLException {
     }
 
     protected void finalize() throws Throwable {

@@ -37,7 +37,7 @@ import lsfusion.server.logics.property.DialogRequest;
 import lsfusion.server.logics.property.PullChangeProperty;
 import lsfusion.server.remote.RemoteForm;
 import lsfusion.server.session.DataSession;
-import lsfusion.base.ProgressBar;
+import lsfusion.server.session.UpdateCurrentClasses;
 import lsfusion.server.stack.ExecutionStackItem;
 
 import java.io.ByteArrayOutputStream;
@@ -45,6 +45,8 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 
 import static lsfusion.base.BaseUtils.serializeObject;
 import static lsfusion.server.data.type.TypeSerializer.serializeType;
@@ -59,20 +61,20 @@ public abstract class AbstractContext implements Context {
         return null;
     }
 
-    public ObjectValue requestUserObject(DialogRequest dialog, ExecutionStack stack) throws SQLException, SQLHandledException { // null если canceled
+    public ObjectValue requestUserObject(DialogRequest dialog) throws SQLException, SQLHandledException { // null если canceled
         FormInstance dialogInstance = dialog.createDialog();
         if (dialogInstance == null) {
             return null;
         }
 
-        RemoteForm remoteForm = createRemoteForm(dialogInstance, stack);
+        RemoteForm remoteForm = createRemoteForm(dialogInstance);
         requestUserInteraction(
                 new FormClientAction(
                         dialogInstance.entity.getCanonicalName(),
                         dialogInstance.entity.getSID(),
                         remoteForm,
                         remoteForm.getImmutableMethods(),
-                        Settings.get().isDisableFirstChangesOptimization() ? null : remoteForm.getFormChangesByteArray(stack),
+                        Settings.get().isDisableFirstChangesOptimization() ? null : remoteForm.getFormChangesByteArray(),
                         ModalityType.DIALOG_MODAL));
 
         if (dialogInstance.getFormResult() == FormCloseType.CLOSE) {
@@ -140,22 +142,26 @@ public abstract class AbstractContext implements Context {
 
     public abstract CustomClassListener getClassListener();
 
-    public abstract PropertyObjectInterfaceInstance getComputer(ExecutionStack stack);
+    public abstract PropertyObjectInterfaceInstance getComputer();
 
     public abstract Integer getCurrentUser();
 
     public abstract DataObject getConnection();
 
-    public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, boolean isAdd, FormSessionScope sessionScope, ExecutionStack stack, boolean checkOnOk, boolean showDrop, boolean interactive, ImSet<FilterEntity> contextFilters, PropertyDrawEntity initFilterProperty, ImSet<PullChangeProperty> pullProps, boolean readonly) throws SQLException, SQLHandledException {
+    public UpdateCurrentClasses getUpdateCurrentClasses(UpdateCurrentClasses outerUpdateCurrentClasses) {
+        return outerUpdateCurrentClasses;
+    }
+
+    public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, boolean isAdd, FormSessionScope sessionScope, UpdateCurrentClasses outerUpdateCurrentClasses, boolean checkOnOk, boolean showDrop, boolean interactive, ImSet<FilterEntity> contextFilters, PropertyDrawEntity initFilterProperty, ImSet<PullChangeProperty> pullProps, boolean readonly) throws SQLException, SQLHandledException {
         return new FormInstance(formEntity, getLogicsInstance(),
                 sessionScope.createSession(session),
                 getSecurityPolicy(), getFocusListener(), getClassListener(),
-                getComputer(stack), getConnection(), mapObjects, stack, isModal,
+                getComputer(), getConnection(), mapObjects, getUpdateCurrentClasses(outerUpdateCurrentClasses), isModal,
                 isAdd, sessionScope,
                 checkOnOk, showDrop, interactive, contextFilters, initFilterProperty, pullProps, readonly);
     }
 
-    public RemoteForm createRemoteForm(FormInstance formInstance, ExecutionStack stack) {
+    public RemoteForm createRemoteForm(FormInstance formInstance) {
         throw new UnsupportedOperationException("createRemoteForm is not supported");
     }
 
@@ -266,5 +272,16 @@ public abstract class AbstractContext implements Context {
         public TimedMessageStack(MessageStack messageStack) {
             this.messageStack = messageStack;
         }
+    }
+
+    private ScheduledExecutorService executor;
+    @Override
+    public ScheduledExecutorService getExecutorService() {
+        if(executor==null)
+            synchronized (this) {
+                if(executor==null)
+                    executor = Executors.newScheduledThreadPool(50, new ContextAwareDaemonThreadFactory(this, "newthread-pool"));
+            }
+        return executor;
     }
 }

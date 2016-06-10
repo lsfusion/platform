@@ -16,16 +16,17 @@ import lsfusion.server.Settings;
 import lsfusion.server.auth.SecurityPolicy;
 import lsfusion.server.auth.User;
 import lsfusion.server.classes.StringClass;
-import lsfusion.server.context.ExecutionStack;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.form.navigator.NavigatorElement;
+import lsfusion.server.lifecycle.LifecycleAdapter;
 import lsfusion.server.lifecycle.LifecycleEvent;
-import lsfusion.server.lifecycle.LogicsManager;
 import lsfusion.server.logics.linear.LP;
-import lsfusion.server.logics.property.*;
+import lsfusion.server.logics.property.ActionPropertyMapImplement;
+import lsfusion.server.logics.property.Property;
+import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.logics.property.actions.FormActionProperty;
 import lsfusion.server.logics.property.actions.flow.JoinActionProperty;
 import lsfusion.server.logics.property.actions.flow.ListActionProperty;
@@ -40,9 +41,10 @@ import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.*;
 
+import static lsfusion.base.BaseUtils.nullTrim;
 import static lsfusion.server.logics.ServerResourceBundle.getString;
 
-public class SecurityManager extends LogicsManager implements InitializingBean {
+public class SecurityManager extends LifecycleAdapter implements InitializingBean {
     private static final Logger startLogger = ServerLoggers.startLogger;
     private static final Logger systemLogger = ServerLoggers.systemLogger;
 
@@ -188,7 +190,7 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
         User user = addUser("admin", initialAdminPassword, session);
         applySecurityPolicy(user, session);
         setUserPolicies(user.ID, permitAllPolicy, allowConfiguratorPolicy);
-        session.apply(businessLogics, getStack());
+        session.apply(businessLogics);
     }
 
     private DataSession createSession() throws SQLException {
@@ -205,7 +207,7 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
                 securityLM.namePolicy.change(policyName, session, addObject);
                 securityLM.descriptionPolicy.change(description, session, addObject);
                 policyID = (Integer) addObject.object;
-                session.apply(businessLogics, getStack());
+                session.apply(businessLogics);
             }
         }
 
@@ -218,7 +220,7 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
         return (Integer) securityLM.policyName.read(session, new DataObject(name, StringClass.get(50)));
     }
 
-    public String addUser(String username, String email, String password, String firstName, String lastName, String localeLanguage, ExecutionStack stack) throws RemoteException {
+    public String addUser(String username, String email, String password, String firstName, String lastName, String localeLanguage) throws RemoteException {
         try {
             //todo: в будущем нужно поменять на проставление локали в Context
 //            ServerResourceBundle.load(localeLanguage);
@@ -238,7 +240,7 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
             authenticationLM.sha256PasswordCustomUser.change(BaseUtils.calculateBase64Hash("SHA-256", password, UserInfo.salt), session, userObject);
             businessLogics.contactLM.firstNameContact.change(firstName, session, userObject);
             businessLogics.contactLM.lastNameContact.change(lastName, session, userObject);
-            session.apply(businessLogics, stack);
+            session.apply(businessLogics);
         } catch (SQLException e) {
             return getString("logics.error.registration");
         } catch (SQLHandledException e) {
@@ -354,7 +356,7 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
         }
     }
 
-    public User authenticateUser(DataSession session, String login, String password, ExecutionStack stack) throws SQLException, SQLHandledException {
+    public User authenticateUser(DataSession session, String login, String password) throws SQLException, SQLHandledException {
         boolean needAuthentication = true;
         boolean useLDAP = authenticationLM.useLDAP.read(session) != null;
         User user = readUser(login, useLDAP, session);
@@ -391,7 +393,7 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
                 throw new LockedException();
             }
 
-            if (!isUniversalPassword(password) && !authenticationLM.checkPassword(userObject, password, stack))
+            if (!isUniversalPassword(password) && !authenticationLM.checkPassword(userObject, password))
                 throw new LoginException();
         }
         

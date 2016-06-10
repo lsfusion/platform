@@ -51,7 +51,7 @@ public class CheckCurrentDateDependsActionProperty extends ScriptingActionProper
         if (!allow) {
             try(DataSession session = context.createSession()) {
                 BL.reflectionLM.userLoggableProperty.change((Boolean) null, session, propertyObject);
-                session.apply(context);
+                session.apply(BL);
             }
         }
     }

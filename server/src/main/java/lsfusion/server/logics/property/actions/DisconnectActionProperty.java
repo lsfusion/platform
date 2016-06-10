@@ -1,6 +1,6 @@
 package lsfusion.server.logics.property.actions;
 
-import lsfusion.interop.remote.CallbackMessage;
+import lsfusion.base.Pair;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.view.DefaultFormView;
@@ -23,10 +23,11 @@ public class DisconnectActionProperty extends ScriptingActionProperty {
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         DataObject connection = context.getDataKeyValue(getOrderInterfaces().get(0));
 
-        Integer user = ((Integer) context.getBL().systemEventsLM.userConnection.read(context, connection));
+        String login = ((String) context.getBL().systemEventsLM.userLoginConnection.read(context, connection)).trim();
         Integer computer = (Integer) context.getBL().systemEventsLM.computerConnection.read(context, connection);
+        Pair<String, Integer> key = new Pair<String, Integer>(login, computer);
 
-        context.getNavigatorsManager().forceDisconnect(context.stack, user, computer, CallbackMessage.DISCONNECTED);
+        context.getNavigatorsManager().forceDisconnect(key);
     }
 
     @Override

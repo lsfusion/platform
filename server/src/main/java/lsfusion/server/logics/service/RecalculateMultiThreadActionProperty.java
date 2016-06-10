@@ -20,6 +20,11 @@ public class RecalculateMultiThreadActionProperty extends MultiThreadActionPrope
     }
 
     @Override
+    public void executeCustom(final ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+        super.executeCustom(context);
+    }
+
+    @Override
     protected GroupPropertiesSingleTask createTask() {
         return new RecalculateAggregationsTask();
     }

@@ -52,7 +52,6 @@ class 'Класс свойства' = DATA VARSTRING[100] (Property);
 complexity 'Сложность свойства' = DATA LONG (Property);
 caption 'Заголовок' = DATA VARSTRING[250] (Property) IN base;
 tableSID 'Таблица' = DATA VARSTRING[100] (Property);
-annotation 'Аннотация' = DATA VARSTRING[100] (Property);
 
 stats 'Кол-во записей' = DATA INTEGER (Property);
 maxStatsProperty 'Максимальное кол-во записей для логируемого свойства' = DATA INTEGER ();
@@ -181,7 +180,6 @@ percentNotNull 'Не null, %' (TableColumn tableColumn) = IF rows (table(tableCo
 sparseColumns 'Количество разреженных колонок' (table) = GROUP SUM 1 BY table(TableColumn tableColumn) IF percentNotNull(tableColumn) < 50;
 
 notRecalculate 'Не пересчитывать аггрегации' = DATA BOOLEAN (TableColumn);
-notRecalculate 'Не пересчитывать аггрегации' (VARISTRING[100] sid) = notRecalculate(tableColumnSID(sid));
 
 recalculateAggregation 'Пересчитать агрегации' = ACTION CUSTOM 'lsfusion.server.logics.reflection.RecalculateTableColumnActionProperty' (TableColumn);
 recalculateAggregationWithDependencies 'Пересчитать агрегации (+зависимости)' = ACTION CUSTOM 'lsfusion.server.logics.reflection.RecalculateTableColumnWithDependenciesActionProperty' (TableColumn);
@@ -344,7 +342,7 @@ dumb (PropertyGroup pg) = ' ' IF pg IS PropertyGroup;
 
 FORM properties 'Свойства'
     OBJECTS p=Property
-    PROPERTIES(p) READONLY caption, canonicalName, dbName, annotation, tableSID, return, class, complexity, parent, number, quantity, notNullQuantity, userLoggable EDITABLE, loggable, stored EDITABLE, isSetNotNull EDITABLE
+    PROPERTIES(p) READONLY caption, canonicalName, dbName, tableSID, return, class, complexity, parent, number, quantity, notNullQuantity, userLoggable EDITABLE, loggable, stored EDITABLE, isSetNotNull EDITABLE
 
     TREE treePropertiesObject tps=PropertyGroup PARENT parent, ps=Property
     PROPERTIES(tps) READONLY caption, SID, dumb, dumb, dumb, dumb, dumb, parent, number, dumb, dumb, dumb, dumb

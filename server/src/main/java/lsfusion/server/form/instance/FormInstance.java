@@ -26,7 +26,6 @@ import lsfusion.server.auth.ChangePropertySecurityPolicy;
 import lsfusion.server.auth.SecurityPolicy;
 import lsfusion.server.caches.ManualLazy;
 import lsfusion.server.classes.*;
-import lsfusion.server.context.ExecutionStack;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.*;
 import lsfusion.server.data.expr.Expr;
@@ -137,43 +136,42 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
     private final boolean isModal;
 
-    public boolean isModal() {
-        return isModal;
-    }
-
     private final FormSessionScope sessionScope;
 
     private final boolean showDrop;
 
+    public final UpdateCurrentClasses outerUpdateCurrentClasses;
+
     private boolean interactive = true; // важно для assertion'а в endApply
 
     private ImSet<ObjectInstance> objects;
-
+    
     private boolean readOnly = false;
 
     public FormInstance(FormEntity<T> entity, LogicsInstance logicsInstance, DataSession session, SecurityPolicy securityPolicy,
                         FocusListener<T> focusListener, CustomClassListener classListener,
                         PropertyObjectInterfaceInstance computer, DataObject connection,
                         ImMap<ObjectEntity, ? extends ObjectValue> mapObjects,
-                        ExecutionStack stack, boolean isModal, boolean isAdd, FormSessionScope sessionScope, boolean checkOnOk,
+                        UpdateCurrentClasses outerUpdateCurrentClasses, boolean isModal, boolean isAdd, FormSessionScope sessionScope, boolean checkOnOk,
                         boolean showDrop, boolean interactive,
                         ImSet<FilterEntity> contextFilters,
                         PropertyDrawEntity initFilterPropertyDraw,
                         ImSet<PullChangeProperty> pullProps, boolean readOnly) throws SQLException, SQLHandledException {
-        this(entity, logicsInstance, session, securityPolicy, focusListener, classListener, computer, connection, mapObjects, stack, isModal, isAdd, sessionScope, checkOnOk, showDrop, interactive, false, contextFilters, initFilterPropertyDraw, pullProps, readOnly);
+        this(entity, logicsInstance, session, securityPolicy, focusListener, classListener, computer, connection, mapObjects, outerUpdateCurrentClasses, isModal, isAdd, sessionScope, checkOnOk, showDrop, interactive, false, contextFilters, initFilterPropertyDraw, pullProps, readOnly);
     }
 
     public FormInstance(FormEntity<T> entity, LogicsInstance logicsInstance, DataSession session, SecurityPolicy securityPolicy,
                         FocusListener<T> focusListener, CustomClassListener classListener,
                         PropertyObjectInterfaceInstance computer, DataObject connection,
                         ImMap<ObjectEntity, ? extends ObjectValue> mapObjects,
-                        ExecutionStack stack,
+                        UpdateCurrentClasses outerUpdateCurrentClasses,
                         boolean isModal, boolean isAdd, FormSessionScope sessionScope, boolean checkOnOk,
                         boolean showDrop, boolean interactive, boolean isDialog,
                         ImSet<FilterEntity> contextFilters,
                         PropertyDrawEntity initFilterPropertyDraw,
                         ImSet<PullChangeProperty> pullProps,
                         boolean readOnly) throws SQLException, SQLHandledException {
+        this.outerUpdateCurrentClasses = sessionScope.isNewSession() ? null : outerUpdateCurrentClasses;
         this.sessionScope = sessionScope;
         this.isModal = isModal;
         this.checkOnOk = checkOnOk;
@@ -190,7 +188,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         this.pullProps = pullProps;
 
         this.readOnly = readOnly;
-
+        
         instanceFactory = new InstanceFactory(computer, connection);
 
         this.weakFocusListener = new WeakReference<>(focusListener);
@@ -314,7 +312,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         environmentIncrement = createEnvironmentIncrement(isModal, isDialog, isAdd, sessionScope.isManageSession(), entity.isReadOnly(), showDrop);
 
         if (!interactive) {
-            endApply(stack);
+            endApply();
             this.mapObjects = mapObjects;
         } else {
             this.mapObjects = null;
@@ -322,7 +320,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
         this.interactive = interactive; // обязательно в конце чтобы assertion с endApply не рушить
 
-        fireOnInit(stack);
+        fireOnInit();
 
         ServerLoggers.remoteLifeLog("FORM OPEN : " + this);
     }
@@ -487,7 +485,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         }    
     }
 
-    public String saveUserPreferences(ExecutionStack stack, GroupObjectUserPreferences preferences, boolean forAllUsers, boolean completeOverride) {
+    public String saveUserPreferences(GroupObjectUserPreferences preferences, boolean forAllUsers, boolean completeOverride) {
         if (!entity.isNamed()) {
             return null;
         }
@@ -557,7 +555,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                 BL.reflectionLM.isFontBoldGroupObjectCustomUser.change(preferences.fontInfo.isBold() ? true : null, dataSession, groupObjectObject, userObject);
                 BL.reflectionLM.isFontItalicGroupObjectCustomUser.change(preferences.fontInfo.isItalic() ? true : null, dataSession, groupObjectObject, userObject);
             }
-            return dataSession.applyMessage(BL, stack);
+            return dataSession.applyMessage(BL);
         } catch (SQLException | SQLHandledException e) {
             throw Throwables.propagate(e);
         }
@@ -716,10 +714,10 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         }
     }
 
-    public void changeGroupObject(ImSet<ObjectInstance> objects, ExecutionStack stack) throws SQLException, SQLHandledException {
+    public void changeGroupObject(ImSet<ObjectInstance> objects) throws SQLException, SQLHandledException {
         for (ObjectInstance objectInstance : objects) {
             if ((objectInstance.updated & UPDATED_OBJECT) != 0) {
-                fireObjectChanged(objectInstance, stack);
+                fireObjectChanged(objectInstance);
             }
         }
     }
@@ -822,13 +820,13 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         }).equals(groupTo.filters);
     }
 
-    public <P extends PropertyInterface> DataObject addFormObject(CustomObjectInstance object, ConcreteCustomClass cls, DataObject pushed, ExecutionStack stack) throws SQLException, SQLHandledException {
+    public <P extends PropertyInterface> DataObject addFormObject(CustomObjectInstance object, ConcreteCustomClass cls, DataObject pushed) throws SQLException, SQLHandledException {
         DataObject dataObject = session.addObject(cls, pushed);
 
         // резолвим все фильтры
         assert checkFilters(object.groupTo);
         for (FilterInstance filter : object.groupTo.filters)
-            filter.resolveAdd(this, object, dataObject, stack);
+            filter.resolveAdd(this, object, dataObject);
 
         for (LP lp : BL.getNamedProperties()) {
             if (lp instanceof LCP) {
@@ -873,13 +871,13 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
             session.changeClass(objectInstance, dataObject, cls);
     }
 
-    public void executeEditAction(PropertyDrawInstance property, String editActionSID, ImMap<ObjectInstance, DataObject> keys, ExecutionStack stack) throws SQLException, SQLHandledException {
-        executeEditAction(property, editActionSID, keys, null, null, false, stack);
+    public void executeEditAction(PropertyDrawInstance property, String editActionSID, ImMap<ObjectInstance, DataObject> keys) throws SQLException, SQLHandledException {
+        executeEditAction(property, editActionSID, keys, null, null, false);
     }
     
     @LogTime
     @ThisMessage
-    public void executeEditAction(PropertyDrawInstance property, String editActionSID, ImMap<ObjectInstance, DataObject> keys, ObjectValue pushChange, DataObject pushAdd, boolean pushConfirm, ExecutionStack stack) throws SQLException, SQLHandledException {
+    public void executeEditAction(PropertyDrawInstance property, String editActionSID, ImMap<ObjectInstance, DataObject> keys, ObjectValue pushChange, DataObject pushAdd, boolean pushConfirm) throws SQLException, SQLHandledException {
         ActionPropertyObjectInstance editAction = property.getEditAction(editActionSID, instanceFactory, entity);
 
         if (property.propertyReadOnly != null && property.propertyReadOnly.getRemappedPropertyObject(keys).read(this) != null && editAction != null && ((ActionProperty) editAction.property).checkReadOnly) {
@@ -907,7 +905,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                 }
             }
         }
-        editAction.getRemappedPropertyObject(keys).execute(this, stack, pushChange, pushAdd, property);
+        editAction.getRemappedPropertyObject(keys).execute(this, pushChange, pushAdd, property);
     }
     
     private boolean checkEditActionPermission(ActionPropertyObjectInstance editAction, String editActionSID, PropertyDrawInstance property) {
@@ -923,20 +921,20 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         }
         return false;  
     }
-
+    
     private boolean checkReadOnlyPermission(ActionPropertyObjectInstance editAction, PropertyDrawInstance property) {
          ChangePropertySecurityPolicy securityPolicy = logicsInstance.getSecurityManager().readOnlyPolicy.property.change;
         return editAction != null && securityPolicy.checkPermission(editAction.property) && securityPolicy.checkPermission(property.propertyObject.property);
     }
 
-    public void pasteExternalTable(List<PropertyDrawInstance> properties, List<ImMap<ObjectInstance, DataObject>> columnKeys, List<List<byte[]>> values, ExecutionStack stack) throws SQLException, IOException, SQLHandledException {
+    public void pasteExternalTable(List<PropertyDrawInstance> properties, List<ImMap<ObjectInstance, DataObject>> columnKeys, List<List<byte[]>> values) throws SQLException, IOException, SQLHandledException {
         GroupObjectInstance groupObject = properties.get(0).toDraw;
         ImOrderSet<ImMap<ObjectInstance, DataObject>> executeList = groupObject.seekObjects(session.sql, getQueryEnv(), getModifier(), BL.LM.baseClass, values.size()).keyOrderSet();
 
         //создание объектов
         int availableQuantity = executeList.size();
         if (availableQuantity < values.size()) {
-            executeList = executeList.addOrderExcl(groupObject.createObjects(session, this, values.size() - availableQuantity, stack));
+            executeList = executeList.addOrderExcl(groupObject.createObjects(session, this, values.size() - availableQuantity));
         }
 
         for (int i = 0; i < properties.size(); i++) {
@@ -948,18 +946,18 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                 mvPasteRows.mapValue(j, value);
             }
 
-            executePasteAction(property, columnKeys.get(i), mvPasteRows.immutableValueOrder(), stack);
+            executePasteAction(property, columnKeys.get(i), mvPasteRows.immutableValueOrder());
         }
     }
 
-    public void pasteMulticellValue(Map<PropertyDrawInstance, ImOrderMap<ImMap<ObjectInstance, DataObject>, Object>> cellsValues, ExecutionStack stack) throws SQLException, IOException, SQLHandledException {
+    public void pasteMulticellValue(Map<PropertyDrawInstance, ImOrderMap<ImMap<ObjectInstance, DataObject>, Object>> cellsValues) throws SQLException, IOException, SQLHandledException {
         for (Entry<PropertyDrawInstance, ImOrderMap<ImMap<ObjectInstance, DataObject>, Object>> e : cellsValues.entrySet()) { // бежим по ячейкам
             PropertyDrawInstance property = e.getKey();
-            executePasteAction(property, null, e.getValue(), stack);
+            executePasteAction(property, null, e.getValue());
         }
     }
 
-    private void executePasteAction(PropertyDrawInstance<?> property, ImMap<ObjectInstance, DataObject> columnKey, ImOrderMap<ImMap<ObjectInstance, DataObject>, Object> pasteRows, ExecutionStack stack) throws SQLException, SQLHandledException {
+    private void executePasteAction(PropertyDrawInstance<?> property, ImMap<ObjectInstance, DataObject> columnKey, ImOrderMap<ImMap<ObjectInstance, DataObject>, Object> pasteRows) throws SQLException, SQLHandledException {
         if (!pasteRows.isEmpty()) {
             for (int i = 0, size = pasteRows.size(); i < size; i++) {
                 ImMap<ObjectInstance, DataObject> key = pasteRows.getKey(i);
@@ -975,7 +973,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                         value = session.getObjectValue(changeType, oValue);
                     }
                 }
-                executeEditAction(property, CHANGE_WYS, key, value, null, true, stack);
+                executeEditAction(property, CHANGE_WYS, key, value, null, true);
             }
         }
     }
@@ -1167,7 +1165,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         return new ArrayList<>(groupings.values());
     }
 
-    public void saveGrouping(FormGrouping grouping, ExecutionStack stack) throws SQLException, ScriptingErrorLog.SemanticErrorException, SQLHandledException {
+    public void saveGrouping(FormGrouping grouping) throws SQLException, ScriptingErrorLog.SemanticErrorException, SQLHandledException {
         if (!entity.isNamed()) {
             return;
         }
@@ -1185,7 +1183,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
                 if (grouping.propertyGroupings == null) { // признак удаления группировки
                     dataSession.changeClass(groupingObject, null);
-                    dataSession.apply(BL, stack);
+                    dataSession.apply(BL);
                     return;
                 }
             } else {
@@ -1211,7 +1209,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                     throw new RuntimeException("Свойство " + propGrouping.propertySID + " (" + entity.getCanonicalName() + ") не найдено");
                 }
             }
-            dataSession.apply(BL, stack);
+            dataSession.apply(BL);
         }
     }
 
@@ -1225,22 +1223,23 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         dataChanged = session.hasChanges();
     }
 
-    public boolean checkApply(ExecutionStack stack, UserInteraction interaction) throws SQLException, SQLHandledException {
-        return session.check(BL, this, stack, interaction);
+    public boolean checkApply(UserInteraction interaction) throws SQLException, SQLHandledException {
+        return session.check(BL, this, interaction);
     }
 
-    public boolean apply(BusinessLogics BL, ExecutionStack stack, UserInteraction interaction, ImOrderSet<ActionPropertyValueImplement> applyActions, FunctionSet<SessionDataProperty> keepProperties, FormInstance formInstance) throws SQLException, SQLHandledException {
+    public boolean apply(BusinessLogics BL, UpdateCurrentClasses update, UserInteraction interaction, ImOrderSet<ActionPropertyValueImplement> applyActions, FunctionSet<SessionDataProperty> keepProperties, FormInstance formInstance) throws SQLException, SQLHandledException {
         assert formInstance == null || this == formInstance;
+        update = CompoundUpdateCurrentClasses.merge(update, outerUpdateCurrentClasses);
 
-        fireOnBeforeApply(stack);
+        fireOnBeforeApply();
 
-        boolean succeeded = session.apply(BL, this, stack, interaction, applyActions, keepProperties);
+        boolean succeeded = session.apply(BL, this, update, interaction, applyActions, keepProperties);
 
         if (!succeeded)
             return false;
 
         refreshData(); // нужно перечитать ключи в таблицах, и т.п.
-        fireOnAfterApply(stack);
+        fireOnAfterApply();
 
         dataChanged = true; // временно пока applyChanges синхронен, для того чтобы пересылался факт изменения данных
 
@@ -1253,13 +1252,13 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     }
 
     @Override
-    public void cancel(ExecutionStack stack, FunctionSet<SessionDataProperty> keep) throws SQLException, SQLHandledException {
+    public void cancel(FunctionSet<SessionDataProperty> keep) throws SQLException, SQLHandledException {
         if(session.cancelSession(keep)) {
             // пробежим по всем объектам
             for (ObjectInstance object : getObjects())
                 if (object instanceof CustomObjectInstance)
                     ((CustomObjectInstance) object).updateCurrentClass(session);
-            fireOnCancel(stack);
+            fireOnCancel();
 
             dataChanged = true;
         }
@@ -1275,16 +1274,21 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         groupObject.setPageSize(pageSize);
     }
 
-    public void gainedFocus(ExecutionStack stack) {
+    public void gainedFocus() {
         dataChanged = true;
         FocusListener<T> focusListener = getFocusListener();
         if (focusListener != null)
             focusListener.gainedFocus(this);
-        session.form.changeCurrentForm(BL.getDbManager().getFormObject(entity.getCanonicalName(), stack));
+        session.form.changeCurrentForm(BL.getDbManager().getFormObject(entity.getCanonicalName()));
     }
 
     @Override
-    protected void onExplicitClose(Object o) throws SQLException {
+    protected void finalClose(Object owner) throws SQLException {
+        ServerLoggers.remoteLifeLog("FORM CLOSE : " + this);
+    }
+
+    @Override
+    protected void explicitClose(Object o) throws SQLException {
         assert o == null;
 
         session.unregisterForm(this);
@@ -1296,12 +1300,6 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                 group.expandTable.drop(session.sql, owner);
         }
     }
-
-    @Override
-    protected void onFinalClose(Object owner) throws SQLException {
-        ServerLoggers.remoteLifeLog("FORM CLOSE : " + this);
-    }
-
 
     // --------------------------------------------------------------------------------------- //
     // --------------------- Общение в обратную сторону с ClientForm ------------------------- //
@@ -1550,11 +1548,11 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         }
     }
 
-    private void updateData(Result<ChangedData> mChangedProps, ExecutionStack stack) throws SQLException, SQLHandledException {
+    private void updateData(Result<ChangedData> mChangedProps) throws SQLException, SQLHandledException {
         mChangedProps.set(mChangedProps.result.merge(session.updateExternal(this)));
 
         if (dataChanged) {
-            session.executeSessionEvents(this, stack);
+            session.executeSessionEvents(this);
             
             ChangedData update = session.update(this);
             if(update.wasRestart) // очищаем кэш при рестарте
@@ -1569,7 +1567,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     @LogTime
     @ThisMessage
     @AssertSynchronized
-    public FormChanges endApply(ExecutionStack stack) throws SQLException, SQLHandledException {
+    public FormChanges endApply() throws SQLException, SQLHandledException {
 
         assert interactive;
 
@@ -1585,8 +1583,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         QueryEnvironment queryEnv = getQueryEnv();
 
         // если изменились данные, применяем изменения
-        Result<ChangedData> mChangedProps = new Result<ChangedData>(ChangedData.EMPTY);  // так как могут еще измениться свойства созданные при помощи операторов форм
-        updateData(mChangedProps, stack);
+        Result<ChangedData> mChangedProps = new Result<>(ChangedData.EMPTY);  // так как могут еще измениться свойства созданные при помощи операторов форм
+        updateData(mChangedProps);
 
         GroupObjectValue updateGroupObject = null; // так как текущий groupObject идет относительно treeGroup, а не group
         for (GroupObjectInstance group : getOrderGroups()) {
@@ -1596,7 +1594,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                     updateGroupObject = new GroupObjectValue(group, selectObjects);
 
                 if (group.getDownTreeGroups().size() == 0 && updateGroupObject != null) { // так как в tree группе currentObject друг на друга никак не влияют, то можно и нужно делать updateGroupObject в конце
-                    updateGroupObject.group.update(session, result, this, updateGroupObject.value, stack);
+                    updateGroupObject.group.update(session, result, this, updateGroupObject.value);
                     updateGroupObject = null;
                 }
             } catch (EmptyStackException e) {
@@ -1605,7 +1603,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
             }
         }
 
-        updateData(mChangedProps, stack); // повторная проверка для VIEW свойств
+        updateData(mChangedProps); // повторная проверка для VIEW свойств
 
         fillChangedDrawProps(result, mChangedProps.result);
 
@@ -2031,18 +2029,18 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         return property.read(this);
     }
 
-    public DialogRequest createObjectDialogRequest(final CustomClass objectClass, final ExecutionStack stack) throws SQLException {
+    public DialogRequest createObjectDialogRequest(final CustomClass objectClass, final UpdateCurrentClasses update) throws SQLException {
         return new DialogRequestAdapter() {
             @Override
             public FormInstance doCreateDialog() throws SQLException, SQLHandledException {
                 ClassFormEntity<T> classForm = objectClass.getDialogForm(BL.LM);
                 dialogObject = classForm.object;
-                return createDialogInstance(classForm.form, dialogObject, NullValue.instance, null, null, null, stack);
+                return createDialogInstance(classForm.form, dialogObject, NullValue.instance, null, null, null, update);
             }
         };
     }
 
-    public DialogRequest createObjectEditorDialogRequest(final CalcPropertyValueImplement propertyValues, final ExecutionStack stack) throws SQLException {
+    public DialogRequest createObjectEditorDialogRequest(final CalcPropertyValueImplement propertyValues, final UpdateCurrentClasses update) throws SQLException {
         return new DialogRequestAdapter() {
             @Override
             protected FormInstance doCreateDialog() throws SQLException, SQLHandledException {
@@ -2055,7 +2053,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 //                }
 
                 dialogObject = classForm.object;
-                return currentObject == null ? null : createDialogInstance(classForm.form, dialogObject, currentObject, null, null, null, stack);
+                return currentObject == null ? null : createDialogInstance(classForm.form, dialogObject, currentObject, null, null, null, update);
             }
         };
     }
@@ -2063,7 +2061,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     public DialogRequest createChangeEditorDialogRequest(final CalcPropertyValueImplement propertyValues,
                                                          final GroupObjectInstance groupObject,
                                                          final CalcProperty filterProperty,
-                                                         final ExecutionStack stack) throws SQLException {
+                                                         final UpdateCurrentClasses update) throws SQLException {
         return new DialogRequestAdapter() {
             @Override
             protected FormInstance doCreateDialog() throws SQLException, SQLHandledException {
@@ -2075,7 +2073,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
                 PropertyDrawEntity initFilterPropertyDraw = filterProperty == null ? null : formEntity.form.getPropertyDraw(filterProperty, dialogObject);
 
-                return createDialogInstance(formEntity.form, dialogObject, propertyValues.readClasses(FormInstance.this), additionalFilters, initFilterPropertyDraw, pullProps.result, stack);
+                return createDialogInstance(formEntity.form, dialogObject, propertyValues.readClasses(FormInstance.this), additionalFilters, initFilterPropertyDraw, pullProps.result, update);
             }
         };
     }
@@ -2084,7 +2082,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                                                          final ObjectValue dialogValue,
                                                          final GroupObjectInstance groupObject,
                                                          final CalcProperty filterProperty,
-                                                         final ExecutionStack stack) throws SQLException {
+                                                         final UpdateCurrentClasses update) throws SQLException {
         return new DialogRequestAdapter() {
             @Override
             protected FormInstance doCreateDialog() throws SQLException, SQLHandledException {
@@ -2095,45 +2093,45 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
                 PropertyDrawEntity initFilterPropertyDraw = filterProperty == null ? null : formEntity.form.getPropertyDraw(filterProperty, dialogObject);
 
-                return createDialogInstance(formEntity.form, dialogObject, dialogValue, additionalFilters, initFilterPropertyDraw, SetFact.<PullChangeProperty>EMPTY(), stack);
+                return createDialogInstance(formEntity.form, dialogObject, dialogValue, additionalFilters, initFilterPropertyDraw, SetFact.<PullChangeProperty>EMPTY(), update);
             }
         };
     }
 
-    // вызов из обработчиков по умолчанию AggChange, DefaultChange, ChangeReadObject
     private FormInstance createDialogInstance(FormEntity<T> entity, ObjectEntity dialogEntity, ObjectValue dialogValue,
                                               ImSet<FilterEntity> additionalFilters, PropertyDrawEntity initFilterPropertyDraw,
-                                              ImSet<PullChangeProperty> pullProps, ExecutionStack outerStack) throws SQLException, SQLHandledException {
+                                              ImSet<PullChangeProperty> pullProps, UpdateCurrentClasses outerUpdate) throws SQLException, SQLHandledException {
+        UpdateCurrentClasses update = CompoundUpdateCurrentClasses.merge(outerUpdate, outerUpdateCurrentClasses);
         return new FormInstance(entity, this.logicsInstance,
                                 this.session, this.securityPolicy,
                                 getFocusListener(), getClassListener(),
                                 instanceFactory.computer, instanceFactory.connection,
                                 MapFact.singleton(dialogEntity, dialogValue),
-                                outerStack,
+                                update,
                                 true, false, FormSessionScope.OLDSESSION, false, true, true, true,
                                 additionalFilters, initFilterPropertyDraw, pullProps, false);
     }
 
     // ---------------------------------------- Events ----------------------------------------
 
-    public void fireObjectChanged(ObjectInstance object, ExecutionStack stack) throws SQLException, SQLHandledException {
-        fireEvent(object.entity, stack);
+    public void fireObjectChanged(ObjectInstance object) throws SQLException, SQLHandledException {
+        fireEvent(object.entity);
     }
 
-    public void fireOnInit(ExecutionStack stack) throws SQLException, SQLHandledException {
-        fireEvent(FormEventType.INIT, stack);
+    public void fireOnInit() throws SQLException, SQLHandledException {
+        fireEvent(FormEventType.INIT);
     }
 
-    public void fireOnBeforeApply(ExecutionStack stack) throws SQLException, SQLHandledException {
-        fireEvent(FormEventType.BEFOREAPPLY, stack);
+    public void fireOnBeforeApply() throws SQLException, SQLHandledException {
+        fireEvent(FormEventType.BEFOREAPPLY);
     }
 
-    public void fireOnAfterApply(ExecutionStack stack) throws SQLException, SQLHandledException {
-        fireEvent(FormEventType.AFTERAPPLY, stack);
+    public void fireOnAfterApply() throws SQLException, SQLHandledException {
+        fireEvent(FormEventType.AFTERAPPLY);
     }
 
-    public void fireOnCancel(ExecutionStack stack) throws SQLException, SQLHandledException {
-        fireEvent(FormEventType.CANCEL, stack);
+    public void fireOnCancel() throws SQLException, SQLHandledException {
+        fireEvent(FormEventType.CANCEL);
     }
 
     public void fireOnOk() throws SQLException, SQLHandledException {
@@ -2143,27 +2141,27 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         return getEvents(FormEventType.OK);
     }
 
-    public void fireOnClose(ExecutionStack stack) throws SQLException, SQLHandledException {
+    public void fireOnClose() throws SQLException, SQLHandledException {
         formResult = FormCloseType.CLOSE;
-        fireEvent(FormEventType.CLOSE, stack);
+        fireEvent(FormEventType.CLOSE);
     }
 
-    public void fireOnDrop(ExecutionStack stack) throws SQLException, SQLHandledException {
+    public void fireOnDrop() throws SQLException, SQLHandledException {
         formResult = FormCloseType.DROP;
-        fireEvent(FormEventType.DROP, stack);
+        fireEvent(FormEventType.DROP);
     }
 
-    public void fireQueryOk(ExecutionStack stack) throws SQLException, SQLHandledException {
-        fireEvent(FormEventType.QUERYOK, stack);
+    public void fireQueryOk() throws SQLException, SQLHandledException {
+        fireEvent(FormEventType.QUERYOK);
     }
 
-    public void fireQueryClose(ExecutionStack stack) throws SQLException, SQLHandledException {
-        fireEvent(FormEventType.QUERYCLOSE, stack);
+    public void fireQueryClose() throws SQLException, SQLHandledException {
+        fireEvent(FormEventType.QUERYCLOSE);
     }
 
-    private void fireEvent(Object eventObject, ExecutionStack stack) throws SQLException, SQLHandledException {
+    private void fireEvent(Object eventObject) throws SQLException, SQLHandledException {
         for(ActionPropertyValueImplement event : getEvents(eventObject))
-            event.execute(this, stack);
+            event.execute(this);
     }
 
     private ImOrderSet<ActionPropertyValueImplement> getEvents(Object eventObject) {
@@ -2219,62 +2217,62 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     }
 
     // close делать не надо, так как по умолчанию добавляется обработчик события formClose
-    public void formQueryClose(ExecutionStack stack) throws SQLException, SQLHandledException {
-        fireQueryClose(stack);
+    public void formQueryClose() throws SQLException, SQLHandledException {
+        fireQueryClose();
     }
 
     // close делать не надо, так как по умолчанию добавляется обработчик события formOk
-    public void formQueryOk(ExecutionStack stack) throws SQLException, SQLHandledException {
-        fireQueryOk(stack);
+    public void formQueryOk() throws SQLException, SQLHandledException {
+        fireQueryOk();
     }
 
-    public void formApply(ExecutionContext context) throws SQLException, SQLHandledException {
-        if(apply(BL, context))
+    public void formApply(UserInteraction interaction) throws SQLException, SQLHandledException {
+        if(apply(BL, interaction))
             environmentIncrement.add(FormEntity.isAdd, PropertyChange.<ClassPropertyInterface>STATIC(false));
     }
 
-    public void formCancel(ExecutionContext context) throws SQLException, SQLHandledException {
-        int result = (Integer) context.requestUserInteraction(new ConfirmClientAction("lsFusion", getString("form.do.you.really.want.to.undo.changes")));
+    public void formCancel(UserInteraction interfaction) throws SQLException, SQLHandledException {
+        int result = (Integer) interfaction.requestUserInteraction(new ConfirmClientAction("lsFusion", getString("form.do.you.really.want.to.undo.changes")));
         if (result == JOptionPane.YES_OPTION) {
-            cancel(context.stack);
+            cancel();
         }
     }
 
-    public void formClose(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+    public void formClose(UserInteraction interaction) throws SQLException, SQLHandledException {
         if (sessionScope.isManageSession() && session.isStoredDataChanged()) {
-            int result = (Integer) context.requestUserInteraction(new ConfirmClientAction("lsFusion", getString("form.do.you.really.want.to.close.form")));
+            int result = (Integer) interaction.requestUserInteraction(new ConfirmClientAction("lsFusion", getString("form.do.you.really.want.to.close.form")));
             if (result != JOptionPane.YES_OPTION) {
                 return;
             }
         }
 
-        fireOnClose(context.stack);
-        formHide(context);
+        fireOnClose();
+        ThreadLocalContext.delayUserInteraction(new HideFormClientAction());
+        close();
     }
 
-    private void formHide(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
-        context.delayUserInteraction(new HideFormClientAction());
-        // здесь не делаем close, так как нет RemoteForm + надо делать closeLater, так как могут остаться еще запросы к форме которые возможно надо обработать, так что это делается prepareRemoteChangesResponse
+    public void formDrop() throws SQLException, SQLHandledException {
+        fireOnDrop();
+
+        ThreadLocalContext.delayUserInteraction(new HideFormClientAction());
+        close();
     }
 
-    public void formDrop(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
-        fireOnDrop(context.stack);
-        formHide(context);
-    }
-
-    public void formOk(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+    public void formOk(UserInteraction interaction) throws SQLException, SQLHandledException {
         if (checkOnOk) {
-            if (!checkApply(context.stack, context)) {
+            if (!checkApply(interaction)) {
                 return;
             }
         }
 
         fireOnOk();
 
-        if (sessionScope.isManageSession() && !apply(BL, context, getEventsOnOk())) {
+        if (sessionScope.isManageSession() && !apply(BL, interaction, getEventsOnOk())) {
             return;
         }
-        formHide(context);
+
+        ThreadLocalContext.delayUserInteraction(new HideFormClientAction());
+        close();
     }
 
     public void formRefresh() throws SQLException, SQLHandledException {

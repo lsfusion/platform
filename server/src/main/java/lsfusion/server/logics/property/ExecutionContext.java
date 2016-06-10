@@ -20,8 +20,6 @@ import lsfusion.server.classes.ConcreteObjectClass;
 import lsfusion.server.classes.CustomClass;
 import lsfusion.server.classes.DataClass;
 import lsfusion.server.classes.sets.ResolveClassSet;
-import lsfusion.server.context.ExecutionStack;
-import lsfusion.server.context.SameThreadExecutionStack;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.QueryEnvironment;
 import lsfusion.server.data.SQLHandledException;
@@ -48,8 +46,9 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Stack;
+import java.util.concurrent.ScheduledExecutorService;
 
-public class ExecutionContext<P extends PropertyInterface> implements UserInteraction, SessionCreator {
+public class ExecutionContext<P extends PropertyInterface> implements UpdateCurrentClasses, UserInteraction, SessionCreator {
     private ImMap<P, ? extends ObjectValue> keys;
     private Stack<UpdateCurrentClasses> updateClasses;
     public void pushUpdate(UpdateCurrentClasses push) {
@@ -59,98 +58,6 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
     }
     public void popUpdate() {
         updateClasses.pop();
-    }
-
-    public final ExecutionStack stack;
-
-    private class ContextStack extends SameThreadExecutionStack {
-
-        public ContextStack(ExecutionStack upStack) {
-            super(upStack);
-        }
-
-        @Override
-        protected DataSession getSession() {
-            return env.getSession();
-        }
-
-        public ImMap<String, String> getAllParamsWithClassesInStack() {
-            ImMap<String, String> result = MapFact.EMPTY();
-
-            if(paramsToFQN != null) {
-                result = paramsToFQN.addExcl(result);
-            }
-
-            if(newDebugStack)
-                return result;
-
-            return result.addExcl(super.getAllParamsWithClassesInStack());
-        }
-
-        public ImMap<String, ObjectValue> getAllParamsWithValuesInStack() {
-            ImMap<String, ObjectValue> result = MapFact.EMPTY();
-
-            if(paramsToInterfaces != null) {
-                result = paramsToInterfaces.mapValues(new GetValue<ObjectValue, P>() {
-                    public ObjectValue getMapValue(P value) {
-                        return getKeyValue(value);
-                    }
-                }).addExcl(result);
-            }
-
-            if(newDebugStack)
-                return result;
-
-            return result.addExcl(super.getAllParamsWithValuesInStack());
-        }
-
-        public ImSet<Pair<LP, List<ResolveClassSet>>> getAllLocalsInStack() {
-            ImSet<Pair<LP, List<ResolveClassSet>>> result = SetFact.EMPTY();
-
-            if(locals != null)
-                result = result.addExcl(locals);
-
-            if(newDebugStack)
-                return result;
-
-            return result.addExcl(super.getAllLocalsInStack());
-        }
-
-        public boolean hasNewDebugStack() {
-            if(newDebugStack)
-                return true;
-            return super.hasNewDebugStack();
-        }
-
-        public Processor<ImMap<String, ObjectValue>> getWatcher() {
-            if(watcher != null)
-                return watcher;
-            return super.getWatcher();
-        }
-
-        public void updateOnApply(DataSession session) throws SQLException, SQLHandledException {
-            final ImMap<P, ? extends ObjectValue> prevKeys = keys;
-            keys = session.updateCurrentClasses(keys);
-            session.addRollbackInfo(new Runnable() {
-                public void run() {
-                    keys = prevKeys;
-                }});
-
-            if(updateClasses!=null) {
-                for(UpdateCurrentClasses update : updateClasses)
-                    update.updateOnApply(session);
-            }
-            super.updateOnApply(session);
-        }
-
-        public void updateLastUserInput(DataSession session, final ObjectValue userInput) {
-            if (updateInputListeners != null) {
-                for (UpdateInputListener inputListener : updateInputListeners) {
-                    inputListener.userInputUpdated(userInput);
-                }
-            }
-            super.updateLastUserInput(session, userInput);
-        }
     }
 
     private Stack<UpdateInputListener> updateInputListeners;
@@ -168,6 +75,8 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
     private final DataObject pushedAddObject;
 
     private final ExecutionEnvironment env;
+        
+    private final ExecutionContext stack;
 
     private final FormEnvironment<P> form;
 
@@ -191,21 +100,21 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
 //        return level;
 //    } 
 //    
-    public ExecutionContext(ImMap<P, ? extends ObjectValue> keys, ExecutionEnvironment env, ExecutionStack stack) {
-        this(keys, null, null, env, null, stack);
+    public ExecutionContext(ImMap<P, ? extends ObjectValue> keys, ExecutionEnvironment env) {
+        this(keys, null, null, env, null, null);
     }
-
-    public ExecutionContext(ImMap<P, ? extends ObjectValue> keys, ObjectValue pushedUserInput, DataObject pushedAddObject, ExecutionEnvironment env, FormEnvironment<P> form, ExecutionStack stack) {
+    
+    public ExecutionContext(ImMap<P, ? extends ObjectValue> keys, ObjectValue pushedUserInput, DataObject pushedAddObject, ExecutionEnvironment env, FormEnvironment<P> form, ExecutionContext stack) {
         this.keys = keys;
         this.pushedUserInput = pushedUserInput;
         this.pushedAddObject = pushedAddObject;
         this.env = env;
         this.form = form;
-        this.stack = new ContextStack(stack);
+        this.stack = stack;
     }
     
     public ExecutionContext<P> override() { // для дебаггера
-        return new ExecutionContext<P>(keys, pushedUserInput, pushedAddObject, env, form, stack);
+        return new ExecutionContext<>(keys, pushedUserInput, pushedAddObject, env, form, this);
     }
 
     public void setParamsToInterfaces(ImRevMap<String, P> paramsToInterfaces) {
@@ -220,8 +129,16 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         this.newDebugStack = newDebugStack;        
     }
 
+    private boolean hasNewDebugStack() {
+        if(newDebugStack)
+            return true;
+        if(stack != null)
+            return stack.hasNewDebugStack();
+        return false;
+    }
+
     public boolean isPrevEventScope() { // если не в объявлении действия и не в локальном событии
-        return getSession().isInSessionEvent() && !stack.hasNewDebugStack();
+        return getSession().isInSessionEvent() && !hasNewDebugStack();
     }
 
     public void setWatcher(Processor<ImMap<String, ObjectValue>> watcher) {
@@ -334,6 +251,10 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         ThreadLocalContext.delayUserInteraction(action);
     }
 
+    public ScheduledExecutorService getExecutorService() {
+        return ThreadLocalContext.getExecutorService();
+    }
+
     public FormInstance<?> getFormInstance() {
         return env.getFormInstance();
     }
@@ -416,7 +337,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
 
     public DataObject addFormObject(ObjectEntity object, ConcreteCustomClass cls) throws SQLException, SQLHandledException {
         FormInstance<?> form = getFormInstance();
-        return form.addFormObject((CustomObjectInstance) form.instanceFactory.getInstance(object), cls, pushedAddObject, stack);
+        return form.addFormObject((CustomObjectInstance) form.instanceFactory.getInstance(object), cls, pushedAddObject);
     }
 
     public void changeClass(PropertyObjectInterfaceInstance objectInstance, DataObject object, ConcreteObjectClass changeClass) throws SQLException, SQLHandledException {
@@ -428,7 +349,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
     }
 
     public boolean checkApply(BusinessLogics BL) throws SQLException, SQLHandledException {
-        return getSession().check(BL, getFormInstance(), stack, this);
+        return getSession().check(BL, getFormInstance(), this);
     }
 
     public boolean checkApply() throws SQLException, SQLHandledException {
@@ -444,11 +365,11 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
     }
     
     public boolean apply(ImOrderSet<ActionPropertyValueImplement> applyActions, FunctionSet<SessionDataProperty> keepProperties) throws SQLException, SQLHandledException {
-        return getEnv().apply(getBL(), stack, this, applyActions, keepProperties, getFormInstance());
+        return getEnv().apply(getBL(), this, this, applyActions, keepProperties, getFormInstance());
     }
 
     public void cancel() throws SQLException, SQLHandledException {
-        getEnv().cancel(stack);
+        getEnv().cancel();
     }
 
     public void emitExceptionIfNotInFormSession() {
@@ -458,11 +379,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
     }
 
     public ExecutionContext<P> override(ExecutionEnvironment newEnv) {
-        return new ExecutionContext<P>(keys, pushedUserInput, pushedAddObject, newEnv, form, stack);
-    }
-
-    public ExecutionContext<P> override(ExecutionEnvironment newEnv, ExecutionStack stack) {
-        return new ExecutionContext<P>(keys, pushedUserInput, pushedAddObject, newEnv, form, stack);
+        return new ExecutionContext<>(keys, pushedUserInput, pushedAddObject, newEnv, form, this);
     }
 
     public <T extends PropertyInterface> ExecutionContext<T> override(ImMap<T, ? extends ObjectValue> keys, ImMap<T, ? extends CalcPropertyInterfaceImplement<P>> mapInterfaces) {
@@ -481,8 +398,28 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         return override(keys, form, pushedUserInput);
     }
 
+    @Override
+    public void update(DataSession session) throws SQLException, SQLHandledException {
+        keys = session.updateCurrentClasses(keys);
+
+        final ImMap<P, ? extends ObjectValue> prevKeys = keys;
+        session.addRollbackInfo(new Runnable() {
+            public void run() {
+                keys = prevKeys;
+            }});
+        
+        if(updateClasses!=null) {
+            for(UpdateCurrentClasses update : updateClasses)
+                update.update(session);
+        }
+        if(stack != null && env == stack.env)
+            stack.update(session);
+    }
+    
+    
+
     public <T extends PropertyInterface> ExecutionContext<T> override(ImMap<T, ? extends ObjectValue> keys, FormEnvironment<T> form, ObjectValue pushedUserInput) {
-        return new ExecutionContext<T>(keys, pushedUserInput, pushedAddObject, env, form, stack);
+        return new ExecutionContext<>(keys, pushedUserInput, pushedAddObject, env, form, this);
     }
 
     public QueryEnvironment getQueryEnv() {
@@ -512,7 +449,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
     // чтение пользователя
     public ObjectValue requestUserObject(DialogRequest dialog) throws SQLException, SQLHandledException { // null если canceled
         assertNotUserInteractionInTransaction();
-        ObjectValue userInput = pushedUserInput != null ? pushedUserInput : ThreadLocalContext.requestUserObject(dialog, stack);
+        ObjectValue userInput = pushedUserInput != null ? pushedUserInput : ThreadLocalContext.requestUserObject(dialog);
         setLastUserInput(userInput);
         return userInput;
     }
@@ -532,7 +469,18 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
     }
 
     public void setLastUserInput(ObjectValue userInput) {
-        stack.updateLastUserInput(getSession(), userInput);
+        updateLastUserInput(userInput);
+    }
+
+    public void updateLastUserInput(final ObjectValue userInput) {
+        if (updateInputListeners != null) {
+            for (UpdateInputListener inputListener : updateInputListeners) {
+                inputListener.userInputUpdated(userInput);
+            }
+        }
+
+        if(stack != null && env == stack.env)
+            stack.updateLastUserInput(userInput);
     }
 
     public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, FormSessionScope sessionScope, boolean checkOnOk, boolean showDrop, boolean interactive, ImSet<FilterEntity> contextFilters) throws SQLException, SQLHandledException {
@@ -541,11 +489,11 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
 
     // зеркалирование Context, чтобы если что можно было бы не юзать ThreadLocal
     public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, boolean isAdd, FormSessionScope sessionScope, boolean checkOnOk, boolean showDrop, boolean interactive, ImSet<FilterEntity> contextFilters, PropertyDrawEntity initFilterProperty, ImSet<PullChangeProperty> pullProps, boolean readonly) throws SQLException, SQLHandledException {
-        return ThreadLocalContext.createFormInstance(formEntity, mapObjects, stack, session, isModal, isAdd, sessionScope, checkOnOk, showDrop, interactive, contextFilters, initFilterProperty, pullProps, readonly);
+        return ThreadLocalContext.createFormInstance(formEntity, mapObjects, this, session, isModal, isAdd, sessionScope, checkOnOk, showDrop, interactive, contextFilters, initFilterProperty, pullProps, readonly);
     }
 
     public RemoteForm createRemoteForm(FormInstance formInstance) {
-        return ThreadLocalContext.createRemoteForm(formInstance, stack);
+        return ThreadLocalContext.createRemoteForm(formInstance);
     }
 
     public RemoteForm createReportForm(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects) throws SQLException, SQLHandledException {
@@ -572,5 +520,4 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
             throw new RuntimeException(e);
         }
     }
-
 }

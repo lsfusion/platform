@@ -9,7 +9,6 @@ import lsfusion.server.form.instance.listener.CustomClassListener;
 import lsfusion.server.form.instance.listener.FocusListener;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.LogicsInstance;
-import lsfusion.server.context.ExecutionStack;
 import lsfusion.server.remote.RemoteForm;
 
 public class RemoteNavigatorContext extends AbstractContext {
@@ -54,7 +53,7 @@ public class RemoteNavigatorContext extends AbstractContext {
         return navigator;
     }
 
-    public PropertyObjectInterfaceInstance getComputer(ExecutionStack stack) {
+    public PropertyObjectInterfaceInstance getComputer() {
         return navigator.getComputer();
     }
 
@@ -67,9 +66,9 @@ public class RemoteNavigatorContext extends AbstractContext {
     }
 
     @Override
-    public RemoteForm createRemoteForm(FormInstance formInstance, ExecutionStack stack) {
+    public RemoteForm createRemoteForm(FormInstance formInstance) {
         try {
-            return new RemoteForm(formInstance, navigator.getExportPort(), navigator, stack);
+            return new RemoteForm(formInstance, navigator.getExportPort(), navigator);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

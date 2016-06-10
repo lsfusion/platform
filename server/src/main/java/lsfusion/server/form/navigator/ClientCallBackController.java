@@ -23,13 +23,17 @@ public class ClientCallBackController extends RemoteObject implements ClientCall
         this.usageTracker = usageTracker;
     }
 
-    public synchronized void disconnect(CallbackMessage message) {
-        addMessage(new ClientCallbackMessage(message));
+    public synchronized void disconnect() {
+        addMessage(new ClientCallbackMessage(CallbackMessage.DISCONNECTED));
     }
 
     public synchronized void notifyServerRestart() {
         deniedRestart = false;
         addMessage(new ClientCallbackMessage(CallbackMessage.SERVER_RESTARTING));
+    }
+
+    public synchronized void shutdownClient(boolean restart) {
+        addMessage(new ClientCallbackMessage(restart ? CallbackMessage.CLIENT_RESTART : CallbackMessage.CLIENT_SHUTDOWN));
     }
 
     public synchronized void notifyServerRestartCanceled() {

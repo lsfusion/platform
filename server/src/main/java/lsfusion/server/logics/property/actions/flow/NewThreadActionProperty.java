@@ -39,16 +39,19 @@ public class NewThreadActionProperty extends AroundAspectActionProperty {
         }
     }
 
+    private static ScheduledExecutorService executor = Executors.newScheduledThreadPool(50, new DaemonThreadFactory("newthread-pool"));
+
     @Override
     protected FlowResult aroundAspect(final ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
 
         final DBManager dbManager = context.getDbManager();
+        final LogicsInstanceContext logicsContext = context.getLogicsInstance().getContext();
 
         EnvRunnable run = new EnvRunnable() {
             @Override
             public void run(ExecutionEnvironment env) {
                 try {
-                    proceed(context.override(env, ThreadLocalContext.getStack()));
+                    proceed(context.override(env));
                 } catch (Throwable t) {
                     throw Throwables.propagate(t);
                 }
@@ -61,28 +64,30 @@ public class NewThreadActionProperty extends AroundAspectActionProperty {
                 context.getNavigatorsManager().pushNotificationCustomUser((DataObject) connectionObject, run);
         } else {
 
-            Runnable runContext = new ScheduleRunnable(run, dbManager);
+            Runnable runContext = new ScheduleRunnable(run, logicsContext, dbManager);
 
-            ScheduledExecutorService executor = ExecutorFactory.createNewThreadService(context);
-            if(repeat!=null)
+            if (repeat != null) {
                 executor.scheduleAtFixedRate(runContext, delay, repeat, TimeUnit.MILLISECONDS);
-            else
+            } else {
                 executor.schedule(runContext, delay, TimeUnit.MILLISECONDS);
-            executor.shutdown();
+            }
         }
         return FlowResult.FINISH;
     }
 
     class ScheduleRunnable implements Runnable {
         EnvRunnable r;
+        LogicsInstanceContext logicsContext;
         DBManager dbManager;
 
-        ScheduleRunnable(EnvRunnable r, DBManager dbManager) {
+        ScheduleRunnable(EnvRunnable r, LogicsInstanceContext logicsContext, DBManager dbManager) {
             this.r = r;
+            this.logicsContext = logicsContext;
             this.dbManager = dbManager;
         }
 
         public void run() {
+            ThreadLocalContext.set(logicsContext);
             try (DataSession session = dbManager.createSession()) {
                 r.run(session);
             } catch (Throwable t) {

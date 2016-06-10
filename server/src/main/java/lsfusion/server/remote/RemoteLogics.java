@@ -3,6 +3,7 @@ package lsfusion.server.remote;
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.NavigatorInfo;
+import lsfusion.base.Result;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
@@ -20,7 +21,10 @@ import lsfusion.server.Settings;
 import lsfusion.server.SystemProperties;
 import lsfusion.server.auth.User;
 import lsfusion.server.classes.*;
+import lsfusion.server.context.ContextAwareDaemonThreadFactory;
 import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.data.SQLSession;
+import lsfusion.server.form.navigator.RemoteNavigator;
 import lsfusion.server.lifecycle.LifecycleEvent;
 import lsfusion.server.lifecycle.LifecycleListener;
 import lsfusion.server.logics.*;
@@ -28,7 +32,6 @@ import lsfusion.server.logics.SecurityManager;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.ClassType;
-import lsfusion.server.context.ExecutionStack;
 import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.session.DataSession;
 import org.apache.log4j.Logger;
@@ -40,6 +43,9 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import static lsfusion.server.logics.ServerResourceBundle.getString;
 
@@ -150,7 +156,88 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     public void lifecycleEvent(LifecycleEvent event) {
         if (LifecycleEvent.INIT.equals(event.getType())) {
             this.baseLM = businessLogics.LM;
+        } else if (LifecycleEvent.STARTED.equals(event.getType())) {
+            initOpenFormCountUpdate();
+            initUserLastActivityUpdate();
+            initPingInfoUpdate();
+            initSessionClean();
+            initConnectionRestart();
         }
+    }
+
+    private void initOpenFormCountUpdate() {
+        if(SystemProperties.isDebug) // чтобы не мешать при включенных breakPoint'ах
+            return;
+
+        ScheduledExecutorService openFormUpdateExecutor = Executors.newSingleThreadScheduledExecutor(new ContextAwareDaemonThreadFactory(getContext(), "open-form-count-daemon"));
+        openFormUpdateExecutor.scheduleAtFixedRate(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    RemoteNavigator.updateOpenFormCount(businessLogics);
+                } catch (Throwable e) {
+                    e.printStackTrace();
+                    throw new RuntimeException(e);
+                }
+            }
+        }, Settings.get().getUpdateFormCountPeriod(), Settings.get().getUpdateFormCountPeriod(), TimeUnit.MILLISECONDS);
+    }
+
+    private void initUserLastActivityUpdate() {
+        if(SystemProperties.isDebug) // чтобы не мешать при включенных breakPoint'ах
+            return;
+
+        ScheduledExecutorService userLastActivityUpdateExecutor = Executors.newSingleThreadScheduledExecutor(new ContextAwareDaemonThreadFactory(getContext(), "user-last-activity-daemon"));
+        userLastActivityUpdateExecutor.scheduleAtFixedRate(new Runnable() {
+            @Override
+            public void run() {
+                RemoteNavigator.updateUserLastActivity(businessLogics);
+            }
+        }, Settings.get().getUpdateUserLastActivity(), Settings.get().getUpdateUserLastActivity(), TimeUnit.MILLISECONDS);
+    }
+
+    private void initPingInfoUpdate() {
+        if(SystemProperties.isDebug) // чтобы не мешать при включенных breakPoint'ах
+            return;
+
+        ScheduledExecutorService pingInfoUpdateExecutor = Executors.newSingleThreadScheduledExecutor(new ContextAwareDaemonThreadFactory(getContext(), "ping-info-daemon"));
+        pingInfoUpdateExecutor.scheduleAtFixedRate(new Runnable() {
+            @Override
+            public void run() {
+                RemoteNavigator.updatePingInfo(businessLogics);
+            }
+        }, Settings.get().getUpdatePingInfo(), Settings.get().getUpdatePingInfo(), TimeUnit.MILLISECONDS);
+    }
+
+    private void initSessionClean() {
+        ScheduledExecutorService openFormUpdateExecutor = Executors.newSingleThreadScheduledExecutor(new ContextAwareDaemonThreadFactory(getContext(), "clean-temp-tables-daemon"));
+        openFormUpdateExecutor.scheduleAtFixedRate(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    SQLSession.cleanTemporaryTables();
+                } catch (Throwable e) {
+                    ServerLoggers.systemLogger.error("Clean tables error : ", e);
+                    throw Throwables.propagate(e);
+                }
+            }
+        }, Settings.get().getTempTablesTimeThreshold() * 1000, Settings.get().getTempTablesTimeThreshold() * 1000, TimeUnit.MILLISECONDS);
+    }
+
+    private void initConnectionRestart() {
+        final Result<Double> prevStart = new Result<>(0.0);
+        ScheduledExecutorService openFormUpdateExecutor = Executors.newSingleThreadScheduledExecutor(new ContextAwareDaemonThreadFactory(getContext(), "connection-restart-daemon"));
+        openFormUpdateExecutor.scheduleAtFixedRate(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    SQLSession.restartConnections(prevStart);
+                } catch (Throwable e) {
+                    ServerLoggers.systemLogger.error("Connection restart error : ", e);
+                    throw Throwables.propagate(e);
+                }
+            }
+        }, Settings.get().getPeriodRestartConnections() * 1000, Settings.get().getPeriodRestartConnections() * 1000, TimeUnit.MILLISECONDS);
     }
 
     public RemoteNavigatorInterface createNavigator(boolean isFullClient, NavigatorInfo navigatorInfo, boolean reuseSession) {
@@ -158,7 +245,7 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
             return null;
         }
 
-        return navigatorsManager.createNavigator(getStack(), isFullClient, navigatorInfo, reuseSession);
+        return navigatorsManager.createNavigator(isFullClient, navigatorInfo, reuseSession);
     }
 
     protected DataSession createSession() throws SQLException {
@@ -166,7 +253,7 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     }
 
     public Integer getComputer(String strHostName) {
-        return dbManager.getComputer(strHostName, getStack());
+        return dbManager.getComputer(strHostName);
     }
 
     @Override
@@ -227,7 +314,7 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
             throw Throwables.propagate(e);
         }
         try {
-            User user = securityManager.authenticateUser(session, userName, password, getStack());
+            User user = securityManager.authenticateUser(session, userName, password);
             if (user != null) {
                 return securityManager.getUserRolesNames(userName, getExtraUserRoleNames(userName));    
             }
@@ -267,7 +354,7 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
                     throw new RuntimeException(getString("mail.user.not.found") + ": " + email);
                 }
 
-                businessLogics.emailLM.emailUserPassUser.execute(session, getStack(), new DataObject(userId, businessLogics.authenticationLM.customUser));
+                businessLogics.emailLM.emailUserPassUser.execute(session, new DataObject(userId, businessLogics.authenticationLM.customUser));
             }
         } catch (Exception e) {
             logger.error("Error reminding password: ", e);
@@ -352,9 +439,8 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
                     }
                     objects[i] = session.getDataObject(valueClass, objectValue);
                 }
-                ExecutionStack stack = getStack();
-                property.execute(session, stack, objects);
-                session.apply(businessLogics, stack);
+                property.execute(session, objects);
+                session.apply(businessLogics);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
@@ -365,16 +451,11 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
 
     @Override
     public String addUser(String username, String email, String password, String firstName, String lastName, String localeLanguage) throws RemoteException {
-        return securityManager.addUser(username, email, password, firstName, lastName, localeLanguage, getStack());
+        return securityManager.addUser(username, email, password, firstName, lastName, localeLanguage);
     }
     
     public Integer getCurrentUser() {
         return dbManager.getSystemUserObject();
-    }
-
-    @Override
-    public String getSID() {
-        return "logics";
     }
 }
 

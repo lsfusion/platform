@@ -116,8 +116,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     public LCP<?> canceled;
     public LAP<?> onStarted;
 
-    public LAP<?> empty;
-
     public LAP flowBreak;
     public LAP flowReturn;
     public LAP<?> cancel;

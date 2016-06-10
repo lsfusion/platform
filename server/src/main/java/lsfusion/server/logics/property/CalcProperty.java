@@ -17,7 +17,6 @@ import lsfusion.server.classes.sets.AndClassSet;
 import lsfusion.server.classes.sets.OrClassSet;
 import lsfusion.server.classes.sets.ResolveClassSet;
 import lsfusion.server.classes.sets.ResolveUpClassSet;
-import lsfusion.server.context.ExecutionStack;
 import lsfusion.server.data.*;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
@@ -453,7 +452,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
             return MapFact.EMPTY();
         return ExClassSet.fromExValue(inferred).removeNulls();
     }
-
+    
     public static class VirtualTable<P extends PropertyInterface> extends Table {
 
         public final ImRevMap<KeyField, P> mapFields;
@@ -1029,7 +1028,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
     public ClassWhere<Object> inferClassValueWhere(final InferType inferType) {
         return inferClassValueWhere(inferType, null);
     }
-
+    
     @IdentityStartLazy
     public ClassWhere<Object> inferClassValueWhere(final InferType inferType, final ExClassSet valueClasses) {
         // если prevBase и есть PREV'ы не используем explicitClasses
@@ -1052,7 +1051,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
     private ImMap<T, ExClassSet> getInferInterfaceClasses(final InferType inferType) {
         return getInferInterfaceClasses(inferType, null);
     }
-
+    
     private ImMap<T, ExClassSet> getInferInterfaceClasses(final InferType inferType, final ExClassSet valueClasses) {
         return getInferExplicitCalcInterfaces(interfaces, noOld(), inferType, explicitClasses, new Callable<ImMap<T, ExClassSet>>() {
             public ImMap<T, ExClassSet> call() throws Exception {
@@ -1063,7 +1062,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
     private ImMap<T, ExClassSet> calcInferInterfaceClasses(InferType inferType, ExClassSet valueClasses) {
         return inferInterfaceClasses(valueClasses, inferType).finishEx(inferType);
     }
-
+    
     public ClassWhere<Field> getClassWhere(MapKeysTable<T> mapTable, PropertyField storedField) {
         return getClassValueWhere(ClassType.storedPolicy).remap(MapFact.<Object, Field>addRevExcl(mapTable.mapKeys, "value", storedField)); //
     }
@@ -1227,16 +1226,16 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         }
     }
 
-    public void setNotNull(ImMap<T, DataObject> values, ExecutionEnvironment env, ExecutionStack stack, boolean notNull, boolean check) throws SQLException, SQLHandledException {
+    public void setNotNull(ImMap<T, DataObject> values, ExecutionEnvironment env, boolean notNull, boolean check) throws SQLException, SQLHandledException {
         if(!check || (read(env.getSession().sql, values, env.getModifier(), env.getQueryEnv())!=null) != notNull) {
             ActionPropertyMapImplement<?, T> action = getSetNotNullAction(notNull);
             if(action!=null)
-                action.execute(new ExecutionContext<T>(values , env, stack));
+                action.execute(new ExecutionContext<>(values , env));
         }
     }
-    public void setNotNull(ImRevMap<T, KeyExpr> mapKeys, Where where, ExecutionEnvironment env, boolean notNull, ExecutionStack stack) throws SQLException, SQLHandledException {
-        for(ImMap<T, DataObject> row : new Query<T, Object>(mapKeys, where).executeClasses(env).keys())
-            setNotNull(row, env, stack, notNull, true);
+    public void setNotNull(ImRevMap<T, KeyExpr> mapKeys, Where where, ExecutionEnvironment env, boolean notNull) throws SQLException, SQLHandledException {
+        for(ImMap<T, DataObject> row : new Query<>(mapKeys, where).executeClasses(env).keys())
+            setNotNull(row, env, notNull, true);
     }
 
     protected DataObject getDefaultObjectValue() {
@@ -1467,7 +1466,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         int index = 0;
         for(PropertyInterfaceImplement<I> prop : props) {
             ImMap<I, ValueClass> propClasses;
-
+            
             if(prop instanceof CalcPropertyMapImplement) {
                 if (formObjects.get(index) == null) {
                     propClasses = ((CalcPropertyMapImplement<?, I>) prop).mapInterfaceClasses(ClassType.aroundPolicy);
@@ -1476,7 +1475,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
                 }
             } else {
                 if (formObjects.get(index) != null && prop instanceof PropertyInterface) {
-                    propClasses = MapFact.singleton((I)prop, formObjects.get(index).baseClass);
+                    propClasses = MapFact.singleton((I)prop, formObjects.get(index).baseClass);       
                 } else {
                     propClasses = MapFact.EMPTY();
                 }
@@ -1484,7 +1483,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
 
             for(int i=0;i<result.length;i++)
                 result[i] = op(result[i], propClasses.get(mapInterfaces.get(i)), true);
-
+            
             ++index;
         }
         return result;

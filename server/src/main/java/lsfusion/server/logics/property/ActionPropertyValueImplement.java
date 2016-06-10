@@ -1,8 +1,8 @@
 package lsfusion.server.logics.property;
 
 import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
-import lsfusion.server.context.ExecutionStack;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.instance.PropertyObjectInterfaceInstance;
 import lsfusion.server.logics.ObjectValue;
@@ -26,8 +26,8 @@ public class ActionPropertyValueImplement<T extends PropertyInterface> extends A
         this.mapObjects = mapObjects;
     }
 
-    public void execute(ExecutionEnvironment session, ExecutionStack stack) throws SQLException, SQLHandledException {
-        property.execute(mapping, session, stack, mapObjects == null ? null : new FormEnvironment<T>(mapObjects, null));
+    public void execute(ExecutionEnvironment session) throws SQLException, SQLHandledException {
+        property.execute(mapping, session, mapObjects == null ? null : new FormEnvironment<T>(mapObjects, null));
     }
     
     public ActionPropertyValueImplement<T> updateCurrentClasses(final DataSession session) throws SQLException, SQLHandledException {

@@ -39,7 +39,7 @@ public class ChangeReadObjectActionProperty extends SystemExplicitActionProperty
                 if (objectInstance instanceof CustomObjectInstance) {
                     final CustomObjectInstance customObjectInstance = (CustomObjectInstance) objectInstance;
                     changeValue = context.requestUserObject(
-                            formInstance.createChangeObjectDialogRequest(customObjectInstance.getBaseClass(), oldValue, customObjectInstance.groupTo, filterProperty, context.stack)
+                            formInstance.createChangeObjectDialogRequest(customObjectInstance.getBaseClass(), oldValue, customObjectInstance.groupTo, filterProperty, context)
                     );
                 } else {
                     changeValue = context.requestUserData(((DataObjectInstance) objectInstance).getBaseClass(), oldValue.getValue());

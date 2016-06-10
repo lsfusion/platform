@@ -189,7 +189,7 @@ public class FormActionProperty extends SystemExplicitActionProperty {
             final FormInstance thisFormInstance = context.getFormInstance();
 
             if (startAction != null) {
-                newFormInstance.instanceFactory.getInstance(startAction).execute(newFormInstance, context.stack);
+                newFormInstance.instanceFactory.getInstance(startAction).execute(newFormInstance);
             }
 
             RemoteForm newRemoteForm = context.createRemoteForm(newFormInstance);
@@ -219,7 +219,7 @@ public class FormActionProperty extends SystemExplicitActionProperty {
                 formPageCount.change(pageCount, context);
             }
             if (exportType == null && printType == null) {
-                context.requestUserInteraction(new FormClientAction(form.getCanonicalName(), form.getSID(), newRemoteForm, newRemoteForm.getImmutableMethods(), Settings.get().isDisableFirstChangesOptimization() ? null : newRemoteForm.getFormChangesByteArray(context.stack), modalityType));
+                context.requestUserInteraction(new FormClientAction(form.getCanonicalName(), form.getSID(), newRemoteForm, newRemoteForm.getImmutableMethods(), Settings.get().isDisableFirstChangesOptimization() ? null : newRemoteForm.getFormChangesByteArray(), modalityType));
             }
 
             if (modalityType.isModal()) {
@@ -258,7 +258,7 @@ public class FormActionProperty extends SystemExplicitActionProperty {
                 if (formResult == FormCloseType.CLOSE) {
                     if (closeAction != null) {
                         try {
-                            newFormInstance.instanceFactory.getInstance(closeAction).execute(newFormInstance, context.stack);
+                            newFormInstance.instanceFactory.getInstance(closeAction).execute(newFormInstance);
                         } catch (SQLException e) {
                             throw new RuntimeException(e);
                         }

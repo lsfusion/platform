@@ -1,6 +1,5 @@
 package lsfusion.base;
 
-import java.util.HashSet;
 import java.util.Iterator;
 
 public class WeakIdentityHashSet<E> implements Iterable<E> {
@@ -41,12 +40,5 @@ public class WeakIdentityHashSet<E> implements Iterable<E> {
 
     public void clear() {
         map.clear();
-    }
-
-    public HashSet<E> copy() {
-        HashSet<E> result = new HashSet<>();
-        for(E element : this)
-            result.add(element);
-        return result;
     }
 }

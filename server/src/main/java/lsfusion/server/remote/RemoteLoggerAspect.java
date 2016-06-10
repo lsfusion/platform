@@ -23,7 +23,7 @@ public class RemoteLoggerAspect {
     private static final Map<Long, Timestamp> dateTimeCallMap = MapFact.getGlobalConcurrentHashMap();
     private static Map<Integer, Boolean> remoteLoggerDebugEnabled = MapFact.getGlobalConcurrentHashMap();
 
-    @Around("(execution(* (lsfusion.interop.RemoteLogicsInterface+ && *..*Interface).*(..))" +
+    @Around("(execution(* lsfusion.interop.RemoteLogicsInterface.*(..))" +
             " || execution(* lsfusion.interop.form.RemoteFormInterface.*(..))" +
             " || execution(* lsfusion.interop.navigator.RemoteNavigatorInterface.*(..)))" +
             " && !execution(* *.ping(..))" +

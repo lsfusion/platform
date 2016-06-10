@@ -15,7 +15,6 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Future;
 
 public class ThreadUtils {
 
@@ -31,21 +30,11 @@ public class ThreadUtils {
         interruptThread(dbManager.getStopSql(), thread);
     }
 
-    public static void interruptThread(DBManager dbManager, Long threadId, Future future) throws SQLException, SQLHandledException {
-        interruptThread(dbManager.getStopSql(), threadId, future);
-    }
-
     public static void interruptThread(SQLSession sqlSession, Thread thread) throws SQLException, SQLHandledException {
         if(thread != null) {
             SQLSession.cancelExecutingStatement(sqlSession, thread.getId(), true);
             thread.interrupt();
         }
-    }
-
-    public static void interruptThread(SQLSession sqlSession, Long threadId, Future future) throws SQLException, SQLHandledException {
-        if(threadId != null)
-            SQLSession.cancelExecutingStatement(sqlSession, threadId, true);
-        future.cancel(true);
     }
 
     public static void cancelThread(Context context, Thread thread) throws SQLException, SQLHandledException {

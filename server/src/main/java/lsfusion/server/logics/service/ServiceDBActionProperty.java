@@ -47,7 +47,7 @@ public class ServiceDBActionProperty extends ScriptingActionProperty {
 
         runData(context, new RunServiceData() {
             public void run(SessionCreator session, boolean isolatedTransaction) throws SQLException, SQLHandledException {
-                String result = context.getBL().recalculateFollows(session, isolatedTransaction, context.stack);
+                String result = context.getBL().recalculateFollows(session, isolatedTransaction);
                 if(result != null)
                     context.delayUserInterfaction(new MessageClientAction(result, getString("logics.service.db")));
             }});

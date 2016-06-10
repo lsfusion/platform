@@ -19,7 +19,6 @@ import lsfusion.server.classes.BaseClass;
 import lsfusion.server.classes.ConcreteCustomClass;
 import lsfusion.server.classes.OrderClass;
 import lsfusion.server.classes.ValueClass;
-import lsfusion.server.context.ExecutionStack;
 import lsfusion.server.data.QueryEnvironment;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
@@ -589,7 +588,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
         return GroupExpr.create(upKeys, validSubElementExpr, GroupType.ANY, outerMapKeys);
     }
 
-    public void change(SessionChanges session, ImMap<ObjectInstance, DataObject> value, FormInstance eventForm, ExecutionStack stack) throws SQLException, SQLHandledException {
+    public void change(SessionChanges session, ImMap<ObjectInstance, DataObject> value, FormInstance eventForm) throws SQLException, SQLHandledException {
         // проставим все объектам метки изменений
         ImSet<ObjectInstance> upGroups = GroupObjectInstance.getObjects(getUpTreeGroups());
         assert value.isEmpty() || value.keys().equals(upGroups);
@@ -599,12 +598,12 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
         for(ObjectInstance object : downGroups)
             object.changeValue(session, NullValue.instance);
 
-        eventForm.changeGroupObject(upGroups.addExcl(downGroups), stack);
+        eventForm.changeGroupObject(upGroups.addExcl(downGroups));
     }
 
-    public void update(SessionChanges session, MFormChanges changes, FormInstance eventForm, ImMap<ObjectInstance, DataObject> value, ExecutionStack stack) throws SQLException, SQLHandledException {
+    public void update(SessionChanges session, MFormChanges changes, FormInstance eventForm, ImMap<ObjectInstance, DataObject> value) throws SQLException, SQLHandledException {
         changes.objects.exclAdd(this, value.isEmpty() ? NullValue.getMap(getObjects(getUpTreeGroups())) : value);
-        change(session, value, eventForm, stack);
+        change(session, value, eventForm);
     }
 
     public ImMap<GroupObjectProp, CalcPropertyRevImplement<ClassPropertyInterface, ObjectInstance>> props;
@@ -967,7 +966,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
         return orderSeeks.executeOrders(sql, env, modifier, baseClass, readSize, true, null);
     }
 
-    public ImOrderSet<ImMap<ObjectInstance, DataObject>> createObjects(DataSession session, FormInstance form, int quantity, ExecutionStack stack) throws SQLException, SQLHandledException {
+    public ImOrderSet<ImMap<ObjectInstance, DataObject>> createObjects(DataSession session, FormInstance form, int quantity) throws SQLException, SQLHandledException {
         if (objects.size() > 1) {
             return SetFact.EMPTYORDER();
         }
@@ -977,7 +976,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
             for (int j=0,size=objects.size();j<size;j++) {
                 ObjectInstance objectInstance = objects.get(j);
                 if (objectInstance.getBaseClass() instanceof ConcreteCustomClass)
-                    mvObjectKeys.mapValue(j, form.addFormObject((CustomObjectInstance)objectInstance, (ConcreteCustomClass) objectInstance.getBaseClass(), null, stack));
+                    mvObjectKeys.mapValue(j, form.addFormObject((CustomObjectInstance)objectInstance, (ConcreteCustomClass) objectInstance.getBaseClass(), null));
             }
             mResultSet.exclAdd(mvObjectKeys.immutableValue());
         }

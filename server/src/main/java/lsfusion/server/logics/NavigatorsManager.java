@@ -1,20 +1,18 @@
 package lsfusion.server.logics;
 
 import com.google.common.base.Throwables;
-import lsfusion.base.BaseUtils;
 import lsfusion.base.NavigatorInfo;
-import lsfusion.base.WeakIdentityHashSet;
+import lsfusion.base.Pair;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
 import lsfusion.server.EnvRunnable;
-import lsfusion.interop.remote.CallbackMessage;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.auth.User;
+import lsfusion.server.context.ContextAwareDaemonThreadFactory;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.navigator.RemoteNavigator;
+import lsfusion.server.lifecycle.LifecycleAdapter;
 import lsfusion.server.lifecycle.LifecycleEvent;
-import lsfusion.server.lifecycle.LogicsManager;
 import lsfusion.server.logics.property.CalcProperty;
-import lsfusion.server.context.ExecutionStack;
 import lsfusion.server.session.DataSession;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
@@ -23,11 +21,14 @@ import org.springframework.util.Assert;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static lsfusion.server.logics.ServerResourceBundle.getString;
 
-public class NavigatorsManager extends LogicsManager implements InitializingBean {
+public class NavigatorsManager extends LifecycleAdapter implements InitializingBean {
     private static final Logger logger = Logger.getLogger(NavigatorsManager.class);
 
     //время жизни неиспользуемого навигатора - 3 часа по умолчанию
@@ -47,10 +48,9 @@ public class NavigatorsManager extends LogicsManager implements InitializingBean
 
     private DBManager dbManager;
 
-//    private ScheduledExecutorService executor;
+    private ScheduledExecutorService executor;
 
-    // synchronize'ся везде
-    private final WeakIdentityHashSet<RemoteNavigator> navigators = new WeakIdentityHashSet<RemoteNavigator>();
+    private final Map<Pair<String, Integer>, List<RemoteNavigator>> navigators = Collections.synchronizedMap(new HashMap<Pair<String, Integer>, List<RemoteNavigator>>());
 
     private AtomicBoolean removeExpiredScheduled = new AtomicBoolean(false);
 
@@ -94,10 +94,10 @@ public class NavigatorsManager extends LogicsManager implements InitializingBean
     @Override
     protected void onInit(LifecycleEvent event) {
         baseLM = businessLogics.LM;
-//        executor = Executors.newSingleThreadScheduledExecutor(new ContextAwareDaemonThreadFactory(logicsInstance.getContext(), "navigator-manager-daemon"));
+        executor = Executors.newSingleThreadScheduledExecutor(new ContextAwareDaemonThreadFactory(logicsInstance.getContext(), "navigator-manager-daemon"));
     }
 
-    public RemoteNavigatorInterface createNavigator(ExecutionStack stack, boolean isFullClient, NavigatorInfo navigatorInfo, boolean reuseSession) {
+    public RemoteNavigatorInterface createNavigator(boolean isFullClient, NavigatorInfo navigatorInfo, boolean reuseSession) {
         //пока отключаем механизм восстановления сессии... т.к. он не работает с текущей схемой последовательных запросов в форме
         reuseSession = false;
 
@@ -112,25 +112,30 @@ public class NavigatorsManager extends LogicsManager implements InitializingBean
         }
 
         try {
-            User user = securityManager.authenticateUser(session, navigatorInfo.login, navigatorInfo.password, stack);
+            User user = securityManager.authenticateUser(session, navigatorInfo.login, navigatorInfo.password);
 
-//            if (reuseSession) {
-//                List<RemoteNavigator> navigatorsList = navigators.get(loginKey);
-//                if (navigatorsList != null) {
-//                    for(RemoteNavigator navigator : navigatorsList) {
-//                        navigator.disconnect();
-//                        navigator.unexportAndClean();
-//                        removeNavigator(stack, loginKey);
-//                    }
-//                }
-//            }
+            Pair<String, Integer> loginKey = new Pair<>(navigatorInfo.login, navigatorInfo.computer);
 
-            return new RemoteNavigator(logicsInstance, isFullClient, navigatorInfo, user, rmiManager.getExportPort(), session, stack);
+            if (reuseSession) {
+                List<RemoteNavigator> navigatorsList = navigators.get(loginKey);
+                if (navigatorsList != null) {
+                    for(RemoteNavigator navigator : navigatorsList) {
+                        navigator.disconnect();
+                        navigator.unexportAndClean();
+                        removeNavigator(loginKey);
+                    }
+                }
+            }
+
+            RemoteNavigator navigator = new RemoteNavigator(logicsInstance, isFullClient, navigatorInfo.remoteAddress, user, navigatorInfo.computer, rmiManager.getExportPort(), session);
+            addNavigator(loginKey, navigator, navigatorInfo, securityManager.isUniversalPassword(navigatorInfo.password));
+
+            return navigator;
         } catch (Exception e) {
             throw Throwables.propagate(e);
         } finally {
             try {
-                session.apply(businessLogics, stack);
+                session.apply(businessLogics);
                 session.close();
             } catch (Exception e) {
                 throw Throwables.propagate(e);
@@ -138,10 +143,10 @@ public class NavigatorsManager extends LogicsManager implements InitializingBean
         }
     }
 
-    public void navigatorCreated(ExecutionStack stack, RemoteNavigator navigator, NavigatorInfo navigatorInfo) throws SQLException, SQLHandledException {
+    private void addNavigator(Pair<String, Integer> key, RemoteNavigator navigator, NavigatorInfo navigatorInfo, boolean skipLogging) throws SQLException, SQLHandledException {
         DataObject newConnection = null;
 
-        if(!securityManager.isUniversalPassword(navigatorInfo.password)) {
+        if(!skipLogging) {
             try (DataSession session = dbManager.createSession()) {
                 newConnection = session.addObject(businessLogics.systemEventsLM.connection);
                 businessLogics.systemEventsLM.userConnection.change(navigator.getUser().object, session, newConnection);
@@ -159,7 +164,7 @@ public class NavigatorsManager extends LogicsManager implements InitializingBean
                 businessLogics.systemEventsLM.connectionStatusConnection.change(businessLogics.systemEventsLM.connectionStatus.getObjectID("connectedConnection"), session, newConnection);
                 businessLogics.systemEventsLM.connectTimeConnection.change(businessLogics.timeLM.currentDateTime.read(session), session, newConnection);
                 businessLogics.systemEventsLM.remoteAddressConnection.change(navigator.getRemoteAddress(), session, newConnection);
-                session.apply(businessLogics, stack);
+                session.apply(businessLogics);
             }
         }
 
@@ -167,50 +172,107 @@ public class NavigatorsManager extends LogicsManager implements InitializingBean
             if (newConnection != null) {
                 navigator.changeCurrentConnection(new DataObject(newConnection.object, businessLogics.systemEventsLM.connection));
             }
-            navigators.add(navigator);
+            List<RemoteNavigator> navigatorsList = navigators.get(key);
+            if(navigatorsList == null)
+                navigatorsList = new ArrayList<>();
+            navigatorsList.add(navigator);
+            navigators.put(key, navigatorsList);
         }
     }
 
-    public void navigatorExplicitClosed(RemoteNavigator navigator) {
-        synchronized (navigators) {
-            navigators.remove(navigator);
-            if (navigators.isEmpty()) {
-                restartManager.forcedRestartIfPending();
-            }
-        }
-    }
-
-    public void navigatorFinalClosed(ExecutionStack stack, RemoteNavigator navigator) {
+    private void removeNavigator(Pair<String, Integer> key) {
         try {
             try (DataSession session = dbManager.createSession()) {
-                if (navigator != null && navigator.getConnection() != null) {
-                    businessLogics.systemEventsLM.connectionStatusConnection.change(businessLogics.systemEventsLM.connectionStatus.getObjectID("disconnectedConnection"), session, navigator.getConnection());
-                } else
-                    ServerLoggers.assertLog(false, "SHOULD NOT BE");
-                session.apply(businessLogics, stack);
+                synchronized (navigators) {
+                    List<RemoteNavigator> navigatorsList = navigators.get(key);
+                    if (navigatorsList != null) {
+                        for (RemoteNavigator navigator : navigatorsList)
+                            removeNavigator(navigator, session);
+                        navigators.remove(key);
+                    }
+                }
+                session.apply(businessLogics);
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
-    //    //логика EXPIRED навигаторов неактуальна, пока не работает механизм восстановления сессии
-//    private synchronized void scheduleRemoveExpired() {
-//        if (removeExpiredScheduled.compareAndSet(false, true)) {
-//            executor.schedule(new Runnable() {
-//                @Override
-//                public void run() {
-//                    removeNavigators(getStack(), NavigatorFilter.FALSE);
-//                    removeExpiredScheduled.set(false);
-//                }
-//            }, 5, TimeUnit.SECONDS);
-//        }
-//    }
+    private void removeNavigator(RemoteNavigator navigator, DataSession session) throws SQLException, SQLHandledException {
+        if (navigator != null && navigator.getConnection() != null) {
+            businessLogics.systemEventsLM.connectionStatusConnection.change(businessLogics.systemEventsLM.connectionStatus.getObjectID("disconnectedConnection"), session, navigator.getConnection());
+        }
+    }
+
+    public void navigatorClosed(RemoteNavigator navigator) {
+        removeNavigators(NavigatorFilter.single(navigator));
+    }
+
+    private void removeNavigators(NavigatorFilter filter) {
+        try {
+            try (DataSession session = dbManager.createSession()) {
+                synchronized (navigators) {
+                    for (Iterator<Map.Entry<Pair<String, Integer>, List<RemoteNavigator>>> iterator = navigators.entrySet().iterator(); iterator.hasNext(); ) {
+                        List<RemoteNavigator> navigatorsList = iterator.next().getValue();
+                        //логика EXPIRED навигаторов неактуальна, пока не работает механизм восстановления сессии
+                        //if (NavigatorFilter.EXPIRED.accept(navigator) || filter.accept(navigator)) {
+                        if(navigatorsList != null) {
+                            Iterator<RemoteNavigator> i = navigatorsList.iterator();
+                            while (i.hasNext()) {
+                                RemoteNavigator n = i.next();
+                                if(filter.accept(n)) {
+                                    removeNavigator(n, session);
+                                    i.remove();
+                                }
+                            }
+                            if(navigatorsList.isEmpty())
+                                iterator.remove();
+                        }
+
+                    }
+                    if (navigators.isEmpty()) {
+                        restartManager.forcedRestartIfPending();
+                    }
+                }
+                session.apply(businessLogics);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    //логика EXPIRED навигаторов неактуальна, пока не работает механизм восстановления сессии
+    private synchronized void scheduleRemoveExpired() {
+        if (removeExpiredScheduled.compareAndSet(false, true)) {
+            executor.schedule(new Runnable() {
+                @Override
+                public void run() {
+                    removeNavigators(NavigatorFilter.FALSE);
+                    removeExpiredScheduled.set(false);
+                }
+            }, 5, TimeUnit.SECONDS);
+        }
+    }
 
     public void updateEnvironmentProperty(CalcProperty property, ObjectValue value) throws SQLException {
         synchronized (navigators) {
-            for (RemoteNavigator remoteNavigator : navigators) {
-                remoteNavigator.updateEnvironmentProperty(property, value);
+            for (List<RemoteNavigator> remoteNavigatorsList : navigators.values()) {
+                for(RemoteNavigator remoteNavigator : remoteNavigatorsList)
+                    remoteNavigator.updateEnvironmentProperty(property, value);
+            }
+        }
+    }
+
+    public void forceDisconnect(Pair<String, Integer> key) {
+        final List<RemoteNavigator> navigatorsList = navigators.get(key);
+        if (navigatorsList != null) {
+            for(RemoteNavigator navigator : navigatorsList) {
+                if (navigator != null) {
+                    navigator.disconnect();
+
+                    removeNavigator(key);
+                    navigator.unexportAndCleanLater();
+                }
             }
         }
     }
@@ -218,13 +280,17 @@ public class NavigatorsManager extends LogicsManager implements InitializingBean
     public boolean notifyServerRestart() {
         synchronized (navigators) {
             boolean canRestart = true;
-            for (RemoteNavigator remoteNavigator : navigators) {
-                if (!remoteNavigator.isRestartAllowed()) {
-                    canRestart = false;
-                    try {
-                        remoteNavigator.notifyServerRestart();
-                    } catch (RemoteException e) {
-                        logger.error(getString("logics.server.remote.exception.on.questioning.client.for.stopping"), e);
+            for (List<RemoteNavigator> remoteNavigatorsList : navigators.values()) {
+                if(remoteNavigatorsList != null) {
+                    for(RemoteNavigator remoteNavigator : remoteNavigatorsList) {
+                        if (!remoteNavigator.isRestartAllowed()) {
+                            canRestart = false;
+                            try {
+                                remoteNavigator.notifyServerRestart();
+                            } catch (RemoteException e) {
+                                logger.error(getString("logics.server.remote.exception.on.questioning.client.for.stopping"), e);
+                            }
+                        }
                     }
                 }
             }
@@ -234,29 +300,35 @@ public class NavigatorsManager extends LogicsManager implements InitializingBean
 
     public void notifyServerRestartCanceled() {
         synchronized (navigators) {
-            for (RemoteNavigator remoteNavigator : navigators) {
-                try {
-                    remoteNavigator.notifyServerRestartCanceled();
-                } catch (RemoteException e) {
-                    logger.error(getString("logics.server.remote.exception.on.questioning.client.for.stopping"), e);
+            for (List<RemoteNavigator> remoteNavigatorsList : navigators.values()) {
+                if(remoteNavigatorsList != null) {
+                    for(RemoteNavigator remoteNavigator : remoteNavigatorsList) {
+                        try {
+                            remoteNavigator.notifyServerRestartCanceled();
+                        } catch (RemoteException e) {
+                            logger.error(getString("logics.server.remote.exception.on.questioning.client.for.stopping"), e);
+                        }
+                    }
                 }
             }
         }
     }
 
-    public void forceDisconnect(RemoteNavigator navigator, CallbackMessage message) {
-        navigator.disconnect(message);
-        navigator.explicitClose(); // явное закрытие на сервере, по идее придет с клиента, но на всякий случай закроем сразу
-    }
-
-    public void forceDisconnect(ExecutionStack stack, Integer user, Integer computer, CallbackMessage message) {
+    public void shutdownCustomUser(DataObject customUser, boolean restart) {
         synchronized (navigators) {
-            for (RemoteNavigator navigator : navigators) {
-                if(navigator != null) {
-                    Object navigatorComputer = navigator.getComputer().object;
-                    Object navigatorUser = navigator.getUser().object;
-                    if(user.equals(navigatorUser) && (computer == null || computer.equals(navigatorComputer)))
-                        forceDisconnect(navigator, message);
+            for (List<RemoteNavigator> remoteNavigatorsList : navigators.values()) {
+                if(remoteNavigatorsList != null) {
+                    for(RemoteNavigator remoteNavigator : remoteNavigatorsList) {
+                        try {
+                            if (remoteNavigator.getUser() != null && remoteNavigator.getUser().equals(customUser))
+                                remoteNavigator.shutdownClient(restart);
+                        } catch (RemoteException e) {
+                            if (restart)
+                                logger.error(getString("logics.server.remote.exception.on.shutdown.client"), e);
+                            else
+                                logger.error(getString("logics.server.remote.exception.on.restart.client"), e);
+                        }
+                    }
                 }
             }
         }
@@ -265,18 +337,20 @@ public class NavigatorsManager extends LogicsManager implements InitializingBean
     public void pushNotificationCustomUser(DataObject connectionObject, EnvRunnable run) {
         synchronized (navigators) {
             boolean found = false;
-            for (RemoteNavigator navigator : navigators) {
-                if(navigator != null) {
-                    try {
-                        if (navigator.getConnection() != null && navigator.getConnection().equals(connectionObject)) {
-                            if (!found) {
-                                navigator.pushNotification(run);
-                                found = true;
-                            } else
-                                ServerLoggers.assertLog(false, "Two RemoteNavigators with same connection");
+            for (List<RemoteNavigator> remoteNavigatorsList : navigators.values()) {
+                if(remoteNavigatorsList != null) {
+                    for(RemoteNavigator remoteNavigator : remoteNavigatorsList) {
+                        try {
+                            if (remoteNavigator.getConnection() != null && remoteNavigator.getConnection().equals(connectionObject)) {
+                                if (!found) {
+                                    remoteNavigator.pushNotification(run);
+                                    found = true;
+                                } else
+                                    ServerLoggers.assertLog(false, "Two RemoteNavigators with same connection");
+                            }
+                        } catch (RemoteException e) {
+                                logger.error(getString("logics.server.remote.exception.on.push.action"), e);
                         }
-                    } catch (RemoteException e) {
-                            logger.error(getString("logics.server.remote.exception.on.push.action"), e);
                     }
                 }
             }

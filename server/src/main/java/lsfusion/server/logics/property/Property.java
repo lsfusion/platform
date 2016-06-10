@@ -58,7 +58,6 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     private String dbName;
     private String name;
     private String canonicalName;
-    public String annotation;
 
     private boolean local = false;
     

@@ -1,6 +1,5 @@
 package lsfusion.interop;
 
-// временно так, потом возможно будет смысл отдельно разделить на DOCKED / FLOAT, NOWAIT / WAIT
 public enum ModalityType {
     DOCKED, MODAL, FULLSCREEN_MODAL, DOCKED_MODAL, DIALOG_MODAL;
 

@@ -4,11 +4,12 @@ import lsfusion.base.ExceptionUtils;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.Settings;
-import lsfusion.server.context.ExecutionStack;
 import lsfusion.server.data.*;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.logics.DBManager;
+import lsfusion.server.logics.property.AggregateProperty;
 import lsfusion.server.logics.property.CalcProperty;
+import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.table.ImplementTable;
 import lsfusion.server.logics.tasks.GroupPropertiesSingleTask;
 import lsfusion.server.session.DataSession;
@@ -17,50 +18,76 @@ import org.antlr.runtime.RecognitionException;
 import java.sql.SQLException;
 import java.util.*;
 
-public class RecalculateClassesTask extends GroupPropertiesSingleTask<Object> { // 1 - excl, ImplementTable
+import static lsfusion.base.BaseUtils.serviceLogger;
+
+public class RecalculateClassesTask extends GroupPropertiesSingleTask {
     public static int RECALC_TIL = -1;
+    private Set<AggregateProperty> notRecalculateSet;
     Map<ImplementTable, List<CalcProperty>> calcPropertiesMap;
     private boolean groupByTables;
 
-    public RecalculateClassesTask() {
+    public void init(ExecutionContext context) throws SQLException, SQLHandledException {
+        super.init(context);
+        notRecalculateSet = context.getBL().getNotRecalculateAggregateStoredProperties();
         groupByTables = Settings.get().isGroupByTables();
     }
 
     @Override
-    public String getTaskCaption(Object element) {
-        if (element instanceof Integer) {
-            return "Recalculate Exclusiveness";
-        } else if (element instanceof ImplementTable) {
-            return "Recalculate Table Classes \\ Pack Table";
-        }
-        assert element instanceof CalcProperty;
-        return "Recalculate Class";
-    }
+    protected void runTask(final Object element) throws RecognitionException {
+        String currentTask = String.format("Recalculate Class: %s", element);
+        startedTask(currentTask);
+        try {
+            SQLSession sql = getDbManager().getThreadLocalSql();
+            if (element instanceof Integer) {
+                serviceLogger.info("Recalculate Exclusiveness");
+                long start = System.currentTimeMillis();
+                getBL().recalculateExclusiveness(sql, true);
+                long time = System.currentTimeMillis() - start;
+                if(time > maxRecalculateTime)
+                    addMessage("Recalculate Exclusiveness", time);
+                serviceLogger.info(String.format("Recalculate Exclusiveness, %sms", time));
+            } else if (element instanceof ImplementTable) {
+                DBManager.run(sql, true, new DBManager.RunService() {
+                    public void run(SQLSession sql) throws SQLException, SQLHandledException {
+                        serviceLogger.info(String.format("Recalculate Table Classes: %s", element));
+                        long start = System.currentTimeMillis();
+                        DataSession.recalculateTableClasses((ImplementTable) element, sql, getBL().LM.baseClass);
+                        long time = System.currentTimeMillis() - start;
+                        if (time > maxRecalculateTime)
+                            addMessage(element, time);
+                        serviceLogger.info(String.format("Recalculate Table Classes: %s, %sms", element, time));
+                    }
+                });
 
-    @Override
-    protected void runInnerTask(final Object element, ExecutionStack stack) throws RecognitionException, SQLException, SQLHandledException {
-        SQLSession sql = getDbManager().getThreadLocalSql();
-        if (element instanceof Integer) {
-            getBL().recalculateExclusiveness(sql, true);
-        } else if (element instanceof ImplementTable) {
-            DBManager.run(sql, true, new DBManager.RunService() {
-                public void run(SQLSession sql) throws SQLException, SQLHandledException {
-                    DataSession.recalculateTableClasses((ImplementTable) element, sql, getBL().LM.baseClass);
-                }
-            });
+                serviceLogger.info(String.format("Pack table %s", element));
+                long start = System.currentTimeMillis();
+                run(sql, new RunService() {
+                    @Override
+                    public void run(SQLSession sql) throws SQLException, SQLHandledException {
+                        sql.packTable((ImplementTable) element, OperationOwner.unknown, TableOwner.global);
+                    }
+                });
+                long time = System.currentTimeMillis() - start;
+                serviceLogger.info(String.format("Pack table: %s, %sms", element, time));
 
-            run(sql, new RunService() {
-                @Override
-                public void run(SQLSession sql) throws SQLException, SQLHandledException {
-                    sql.packTable((ImplementTable) element, OperationOwner.unknown, TableOwner.global);
-                }
-            });
-        } else if (element instanceof CalcProperty) {
-            DBManager.run(sql, true, new DBManager.RunService() {
-                public void run(SQLSession sql) throws SQLException, SQLHandledException {
-                    ((CalcProperty) element).recalculateClasses(sql, getBL().LM.baseClass);
-                }
-            });
+            } else if (element instanceof CalcProperty && !notRecalculateSet.contains(element)) {
+                DBManager.run(sql, true, new DBManager.RunService() {
+                    public void run(SQLSession sql) throws SQLException, SQLHandledException {
+                        serviceLogger.info(String.format("Recalculate Class: %s", ((CalcProperty) element).getSID()));
+                        long start = System.currentTimeMillis();
+                        ((CalcProperty) element).recalculateClasses(sql, getBL().LM.baseClass);
+                        long time = System.currentTimeMillis() - start;
+                        if(time > maxRecalculateTime)
+                            addMessage(element, time);
+                        serviceLogger.info(String.format("Recalculate Class: %s, %sms", ((CalcProperty) element).getSID(), time));
+                    }
+                });
+            }
+        } catch (SQLException | SQLHandledException e) {
+            addMessage("Recalculate Class", element, e);
+            serviceLogger.info(currentTask, e);
+        } finally {
+            finishedTask(currentTask);
         }
     }
 
@@ -89,12 +116,12 @@ public class RecalculateClassesTask extends GroupPropertiesSingleTask<Object> { 
 
     @Override
     protected List getElements() {
-        checkContext();
+        initContext();
         List elements = new ArrayList();
         elements.add(1);
         elements.addAll(getBL().LM.tableFactory.getImplementTables().toJavaSet());
 
-        List<CalcProperty> storedDataPropertiesList = getBL().getStoredDataProperties().toJavaList();
+        List<CalcProperty> storedDataPropertiesList = getBL().getStoredDataProperties(true).toJavaList();
         if(groupByTables) {
             calcPropertiesMap = new HashMap<>();
             for (CalcProperty property : storedDataPropertiesList) {

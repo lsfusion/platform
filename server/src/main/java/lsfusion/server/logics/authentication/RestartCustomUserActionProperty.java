@@ -1,6 +1,5 @@
 package lsfusion.server.logics.authentication;
 
-import lsfusion.interop.remote.CallbackMessage;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.AuthenticationLogicsModule;
@@ -27,6 +26,6 @@ public class RestartCustomUserActionProperty extends ScriptingActionProperty {
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         DataObject customUserObject = context.getDataKeyValue(customUserInterface);
         if(customUserObject != null)
-            context.getNavigatorsManager().forceDisconnect(context.stack, (Integer) customUserObject.object, null, CallbackMessage.CLIENT_RESTART);
+            context.getNavigatorsManager().shutdownCustomUser(customUserObject, true);
     }
 }

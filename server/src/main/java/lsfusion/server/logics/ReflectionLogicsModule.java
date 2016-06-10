@@ -50,7 +50,6 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
     public LCP complexityProperty;
     public LCP captionProperty;
     public LCP tableSIDProperty;
-    public LCP annotationProperty;
     public LCP statsProperty;
     public LCP overStatsProperty;
     public LCP maxStatsProperty;
@@ -140,8 +139,6 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
     public LCP notRecalculateTableColumn;
     public LAP recalculateAggregationTableColumn;
 
-    public LCP notRecalculateSID;
-
     public LCP<?> sidTableDropColumn;
     public LCP<?> sidDropColumn;
     public LCP dropColumnSID;
@@ -207,7 +204,6 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
         // Свойства
         parentProperty = findProperty("parent[Property]");
         tableSIDProperty = findProperty("tableSID[Property]");
-        annotationProperty = findProperty("annotation[Property]");
         statsProperty = findProperty("stats[Property]");
         overStatsProperty = findProperty("overStats[Property]");
         maxStatsProperty = findProperty("maxStatsProperty[]");
@@ -338,7 +334,6 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
         notNullQuantityTableColumn = findProperty("notNullQuantity[TableColumn]");
 
         notRecalculateTableColumn = findProperty("notRecalculate[TableColumn]");
-        notRecalculateSID = findProperty("notRecalculate[VARISTRING[100]]");
         recalculateAggregationTableColumn = findAction("recalculateAggregation[TableColumn]");
 
         // Удаленные колонки

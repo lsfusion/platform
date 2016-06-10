@@ -2,10 +2,10 @@ package lsfusion.server.logics.tasks.impl.recalculate;
 
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.server.context.ExecutionStack;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
 import lsfusion.server.logics.property.AggregateProperty;
+import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.tasks.GroupPropertiesSingleTask;
 import org.antlr.runtime.RecognitionException;
 
@@ -13,38 +13,59 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Set;
 
-public class CheckAggregationsTask extends GroupPropertiesSingleTask<AggregateProperty> {
-    @Override
-    protected void runInnerTask(AggregateProperty element, ExecutionStack stack) throws RecognitionException, SQLException, SQLHandledException {
-        SQLSession sql = getDbManager().getThreadLocalSql();
-        String result = element.checkAggregation(sql, getBL().LM.baseClass);
-        if (result != null && !result.isEmpty())
-            addMessage(result);
+import static lsfusion.base.BaseUtils.serviceLogger;
+
+public class CheckAggregationsTask extends GroupPropertiesSingleTask{
+    private Set<AggregateProperty> notRecalculateSet;
+
+    public void init(ExecutionContext context) throws SQLException, SQLHandledException {
+        super.init(context);
+        notRecalculateSet = context.getBL().getNotRecalculateAggregateStoredProperties();
     }
 
     @Override
-    protected List<AggregateProperty> getElements() {
-        checkContext();
-        return getBL().getAggregateStoredProperties();
+    protected void runTask(final Object property) throws RecognitionException {
+        if (property instanceof AggregateProperty && !notRecalculateSet.contains(property)) {
+            String currentTask = String.format("Check Aggregations: %s", property);
+            startedTask(currentTask);
+            try {
+                SQLSession sql = getDbManager().getThreadLocalSql();
+                long start = System.currentTimeMillis();
+                String result = ((AggregateProperty) property).checkAggregation(sql, getBL().LM.baseClass);
+                if (result != null && !result.isEmpty())
+                    addMessage(result);
+                long time = System.currentTimeMillis() - start;
+                if(time > maxRecalculateTime)
+                    addMessage(property, time);
+                serviceLogger.info(String.format("Check Aggregations: %s, %sms", ((AggregateProperty) property).getSID(), time));
+            } catch (SQLException | SQLHandledException e) {
+                addMessage("Check Aggregation", property, e);
+                serviceLogger.info(currentTask, e);
+            }
+            finally {
+                finishedTask(currentTask);
+            }
+        }
     }
 
     @Override
-    public String getTaskCaption(AggregateProperty element) {
-        return "Check Aggregations";
+    protected List getElements() {
+        initContext();
+        return getBL().getAggregateStoredProperties(false);
     }
 
     @Override
-    protected String getElementCaption(AggregateProperty element) {
-        return element.getSID();
+    protected String getElementCaption(Object element) {
+        return element instanceof AggregateProperty ? ((AggregateProperty) element).getSID() : null;
     }
 
     @Override
-    protected String getErrorsDescription(AggregateProperty element) {
+    protected String getErrorsDescription(Object element) {
         return "";
     }
 
     @Override
-    protected ImSet<AggregateProperty> getDependElements(AggregateProperty key) {
+    protected ImSet<Object> getDependElements(Object key) {
         return SetFact.EMPTY();
     }
 }
