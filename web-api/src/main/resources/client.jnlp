@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<jnlp spec="1.5+" codebase="${jnlp.codebase}" href="${jnlp.url}">
+<jnlp spec="1.5+" codebase="${jnlp.codebase}" href="${jnlp.url}" version="1">
     <information>
         <title>${jnlp.appName}</title>
         <vendor>Luxsoft Ltd.</vendor>
