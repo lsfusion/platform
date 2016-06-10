@@ -2,7 +2,6 @@ package lsfusion.server.context;
 
 import lsfusion.interop.DaemonThreadFactory;
 import lsfusion.server.lifecycle.MonitorServer;
-import lsfusion.server.lifecycle.MonitorServerInterface;
 import lsfusion.server.logics.LogicsInstance;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.PropertyInterface;
@@ -97,12 +96,13 @@ public class ExecutorFactory {
 
         return wrapInnerService(executorService, type, new TaskInnerAspect() {
             @Override
-            public void aspectSubmit() {
+            public Object aspectSubmit() {
                 ThreadLocalContext.assureRmi(object);
+                return null;
             }
 
             @Override
-            public void aspectBeforeRun() {
+            public void aspectBeforeRun(Object submit) {
                 ThreadLocalContext.aspectBeforeRmi(object, true, type);
             }
 
@@ -122,12 +122,13 @@ public class ExecutorFactory {
 
         return wrapInnerService(executorService, type, new TaskInnerAspect() {
             @Override
-            public void aspectSubmit() {
+            public Object aspectSubmit() {
                 ThreadLocalContext.assureMonitor(monitor);
+                return null;
             }
 
             @Override
-            public void aspectBeforeRun() {
+            public void aspectBeforeRun(Object submit) {
                 ThreadLocalContext.aspectBeforeMonitor(monitor, type);
             }
 
@@ -149,12 +150,13 @@ public class ExecutorFactory {
 
         return wrapInnerService(executorService, type, new TaskInnerAspect() {
             @Override
-            public void aspectSubmit() {
+            public Object aspectSubmit() {
                 ThreadLocalContext.assureLifecycle(logicsInstance);
+                return null;
             }
 
             @Override
-            public void aspectBeforeRun() {
+            public void aspectBeforeRun(Object submit) {
                 ThreadLocalContext.aspectBeforeLifecycle(logicsInstance, type);
             }
 
@@ -194,12 +196,13 @@ public class ExecutorFactory {
 
         return wrapInnerAspectService(executorService, type, new TaskInnerAspect() {
             @Override
-            public void aspectSubmit() {
+            public Object aspectSubmit() {
                 ThreadLocalContext.assureLifecycle(logicsInstance);
+                return null;
             }
 
             @Override
-            public void aspectBeforeRun() {
+            public void aspectBeforeRun(Object submit) {
                 ThreadLocalContext.aspectBeforeLifecycle(logicsInstance, type);
             }
 
@@ -326,20 +329,20 @@ public class ExecutorFactory {
 
     // ЛОКАЛЬНЫЕ СЕРВИСЫ
 
-    private interface TaskInnerAspect extends TaskAspect {
-        void aspectSubmit(); // верхний поток \ стек
+    private interface TaskInnerAspect<S> {
+        S aspectSubmit(); // верхний поток \ стек
 
-        void aspectBeforeRun(); // внутренний поток \ стек
+        void aspectBeforeRun(S submit); // внутренний поток \ стек
         void aspectAfterRun();
     }
 
     private static <T> Callable<T> wrapInnerTask(final Callable<T> callable, final TaskInnerAspect aspect, SyncType type) {
-        aspect.aspectSubmit();
+        final Object submit = aspect.aspectSubmit();
 
         return new Callable<T>() {
             @Override
             public T call() throws Exception {
-                aspect.aspectBeforeRun();
+                aspect.aspectBeforeRun(submit);
                 try {
                     return callable.call();
                 } finally {
@@ -361,18 +364,19 @@ public class ExecutorFactory {
 
     public static abstract class AspectRunnable implements Runnable {
         private TaskInnerAspect aspect;
+        private Object submit;
 
         public void setAspect(TaskInnerAspect aspect) {
             assert this.aspect == null;
             this.aspect = aspect;
-            aspect.aspectSubmit();
+            submit = aspect.aspectSubmit();
         }
 
         protected abstract void aspectRun();
 
         @Override
         public void run() {
-            aspect.aspectBeforeRun();
+            aspect.aspectBeforeRun(submit);
             try {
                 aspectRun();
             } finally {
@@ -405,15 +409,15 @@ public class ExecutorFactory {
     }
 
     private static TaskInnerAspect createContextAspect(final ExecutionContext<PropertyInterface> context, final SyncType type) {
-        return new TaskInnerAspect() {
+        return new TaskInnerAspect<Context>() {
             @Override
-            public void aspectSubmit() {
-                ThreadLocalContext.assureContext(context);
+            public Context aspectSubmit() {
+                return ThreadLocalContext.assureContext(context);
             }
 
             @Override
-            public void aspectBeforeRun() {
-                ThreadLocalContext.aspectBeforeContext(context, type);
+            public void aspectBeforeRun(Context submit) {
+                ThreadLocalContext.aspectBeforeContext(submit, context, type);
             }
 
             @Override

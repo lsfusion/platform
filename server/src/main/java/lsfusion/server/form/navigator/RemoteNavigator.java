@@ -978,7 +978,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
     }
 
     @Override
-    protected void onFinalClose() {
+    protected void onFinalClose(boolean explicit) {
         synchronized (forms) {
             for (RemoteForm form : forms.copy()) { // copy так как идет formClosed и соответственно будет ConcurrentModificationException
                 form.explicitClose();
@@ -994,6 +994,6 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
             ServerLoggers.sqlSuppLog(t);
         }
 
-        super.onFinalClose();
+        super.onFinalClose(explicit);
     }
 }

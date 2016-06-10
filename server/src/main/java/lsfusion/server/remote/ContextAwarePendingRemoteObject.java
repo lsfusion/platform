@@ -126,12 +126,13 @@ public abstract class ContextAwarePendingRemoteObject extends PendingRemoteObjec
         unexport();
     }
 
-    // все кроме weakRef (onExplicitClose)
-    protected void onFinalClose() {
+    // все кроме weakRef (onExplicitClose) !!!! ВАЖНО нельзя запускать очистку weakRef ресурсов, так как WeakReference'у уже могут стать null, и ресурсы (например временные таблицы) перейдут другому владельцу, в итоге почистятся ресурсы используемые уже новым объектом
+    protected void onFinalClose(boolean explicit) { // assert synchronized
         if(pausablesExecutor != null)
             pausablesExecutor.shutdown();
 
         synchronized (threads) {
+            ServerLoggers.assertLog(explicit, "THREADS CANNOT BE FOR FINALIZED OBJECT");
             for (Thread thread : threads) {
                 ServerLoggers.exinfoLog("FORCEFULLY STOPPED : " + thread + '\n' + ExceptionUtils.getStackTrace() + '\n' + ExceptionUtils.getStackTrace(thread.getStackTrace()));
                 try {
@@ -153,7 +154,7 @@ public abstract class ContextAwarePendingRemoteObject extends PendingRemoteObjec
         ServerLoggers.remoteLifeLog("REMOTE OBJECT CLOSE " + this);
         if (explicit)
             onExplicitClose();
-        onFinalClose();
+        onFinalClose(explicit);
         closed = true;
     }
 

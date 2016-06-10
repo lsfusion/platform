@@ -1033,7 +1033,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     }
 
     @Override
-    protected void onFinalClose() {
+    protected void onFinalClose(boolean explicit) {
         RemoteFormListener listener = getRemoteFormListener();
         if (listener != null) {
             listener.formFinalClosed(this);
@@ -1045,6 +1045,6 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
             ServerLoggers.sqlSuppLog(t);
         }
 
-        super.onFinalClose();
+        super.onFinalClose(explicit);
     }
 }

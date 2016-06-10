@@ -41,7 +41,7 @@ public abstract class MutableClosedObject<O> extends MutableObject implements Au
     protected void onExplicitClose(O owner) throws SQLException {
     }
 
-    // все кроме weakRef (onExplicitClose)
+    // все кроме weakRef (onExplicitClose)  !!!! ВАЖНО нельзя запускать очистку weakRef ресурсов, так как WeakReference'у уже могут стать null, и ресурсы (например временные таблицы) перейдут другому владельцу, в итоге почистятся ресурсы используемые уже новым объектом
     protected void onFinalClose(O owner) throws SQLException {
     }
 

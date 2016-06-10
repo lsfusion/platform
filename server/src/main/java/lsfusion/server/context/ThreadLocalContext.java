@@ -296,11 +296,12 @@ public class ThreadLocalContext {
     }
 
     // вызов из другого контекста в стеке
-    public static void assureContext(ExecutionContext<PropertyInterface> context) {
+    public static Context assureContext(ExecutionContext<PropertyInterface> context) {
+        return get();
 //        assure(get(), getStack());
     }
-    public static void aspectBeforeContext(ExecutionContext<PropertyInterface> context, SyncType type) {
-        aspectBefore(get(), true, SyncExecutionStack.newThread(context.stack, "new-thread", type), type);
+    public static void aspectBeforeContext(Context exContext, ExecutionContext<PropertyInterface> context, SyncType type) { // проблема в том, что ExecutionContext не умеет возвращать свой контекст и его приходится передавать в явну.
+        aspectBefore(exContext, true, SyncExecutionStack.newThread(context.stack, "new-thread", type), type);
     }
     public static void aspectAfterContext() {
         aspectAfter(null, true);
