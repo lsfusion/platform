@@ -105,10 +105,15 @@ CLASS StateProcess 'Статус процесса' {
 }
 
 updateProcessMonitorAction 'Обновить монитор процессов' = ACTION CUSTOM 'lsfusion.erp.utils.UpdateProcessMonitorActionProperty' () TOOLBAR;
+updateThreadAllocatedBytesAction = ACTION CUSTOM 'lsfusion.erp.utils.UpdateThreadAllocatedBytesActionProperty' ();
 killJavaProcess 'Убить java-процесс' = ACTION CUSTOM 'lsfusion.erp.utils.KillJavaProcessActionProperty' (VARSTRING[10]);
 killSQLProcess 'Убить SQL-процесс' = ACTION CUSTOM 'lsfusion.erp.utils.KillSQLProcessActionProperty' (VARSTRING[10]);
 cancelJavaProcess 'Снять java-процесс' = ACTION CUSTOM 'lsfusion.erp.utils.CancelJavaProcessActionProperty' (VARSTRING[10]);
 cancelSQLProcess 'Снять SQL-процесс' = ACTION CUSTOM 'lsfusion.erp.utils.CancelSQLProcessActionProperty' (VARSTRING[10]);
+
+readAllocatedBytes 'Показывать выделенную память' = DATA BOOLEAN ();
+WHEN CHANGED (readAllocatedBytes()) DO updateThreadAllocatedBytesAction();
+onStarted() += ACTION updateThreadAllocatedBytesAction();
 
 processType 'Фильтр процессов'= DATA LOCAL ProcessType();
 nameProcessType 'Фильтр процессов' () = staticName(processType()) PREFCHARWIDTH 15;
@@ -241,8 +246,8 @@ FORM processMonitor 'Монитор процессов'
     PROPERTIES(i) READONLY BACKGROUND backgroundProcess(i) activeProcess, idThreadProcess, nameComputer, nameUser,
                            dateTimeCallProcess, querySQLProcess, dateTimeSQLProcess, isActiveSQLProcess, inTransactionSQLProcess, 
                            startTransactionSQLProcess, attemptCountSQLProcess, statusMessageSQLProcess,
-                           addressUserSQLProcess, lsfStackTraceProcess, threadAllocatedBytesProcess, 
-                           lastThreadAllocatedBytesProcess, nameJavaProcess, statusJavaProcess, lockNameJavaProcess, 
+                           addressUserSQLProcess, lsfStackTraceProcess, threadAllocatedBytesProcess SHOWIF readAllocatedBytes(), 
+                           lastThreadAllocatedBytesProcess SHOWIF readAllocatedBytes(), nameJavaProcess, statusJavaProcess, lockNameJavaProcess, 
                            stackTraceJavaProcess, lockOwnerIdProcess, lockOwnerNameProcess, isDisabledNestLoopProcess, queryTimeoutProcess, 
                            idSQLProcess, fullQuerySQLProcess
     PROPERTIES(i) TOOLBAR cancelProcess, killProcess, cancelJavaProcess SHOWIF showExtraButtons(i), killJavaProcess SHOWIF showExtraButtons(i)                       
@@ -254,8 +259,8 @@ FORM processMonitor 'Монитор процессов'
                             activeProcess, idThreadProcess, nameComputer, nameUser, dateTimeCallProcess,
                             querySQLProcess, dateTimeSQLProcess, isActiveSQLProcess, inTransactionSQLProcess, 
                             startTransactionSQLProcess, attemptCountSQLProcess, statusMessageSQLProcess,
-                            addressUserSQLProcess, lsfStackTraceProcess, threadAllocatedBytesProcess, 
-                            lastThreadAllocatedBytesProcess, nameJavaProcess, statusJavaProcess, lockNameJavaProcess, 
+                            addressUserSQLProcess, lsfStackTraceProcess, threadAllocatedBytesProcess SHOWIF readAllocatedBytes(), 
+                            lastThreadAllocatedBytesProcess SHOWIF readAllocatedBytes(), nameJavaProcess, statusJavaProcess, lockNameJavaProcess, 
                             stackTraceJavaProcess, lockOwnerIdProcess, lockOwnerNameProcess, isDisabledNestLoopProcess, queryTimeoutProcess, 
                             idSQLProcess, fullQuerySQLProcess
     PROPERTIES(i2) TOOLBAR cancelProcess, killProcess, cancelJavaProcess SHOWIF isActiveSQLProcess(i2), killJavaProcess SHOWIF isActiveSQLProcess(i2)  
@@ -267,15 +272,15 @@ FORM processMonitor 'Монитор процессов'
                                  sumBlocking, nameComputer, nameUser, dateTimeCallProcess,
                                  querySQLProcess, dateTimeSQLProcess, isActiveSQLProcess, inTransactionSQLProcess, 
                                  startTransactionSQLProcess, attemptCountSQLProcess, statusMessageSQLProcess,
-                                  lsfStackTraceProcess, threadAllocatedBytesProcess, 
-                                 lastThreadAllocatedBytesProcess, nameJavaProcess, statusJavaProcess, 
+                                  lsfStackTraceProcess, threadAllocatedBytesProcess SHOWIF readAllocatedBytes(), 
+                                 lastThreadAllocatedBytesProcess SHOWIF readAllocatedBytes(), nameJavaProcess, statusJavaProcess, 
                                  lockNameJavaProcess, stackTraceJavaProcess, lockOwnerIdProcess, lockOwnerNameProcess, isDisabledNestLoopProcess, 
                                  queryTimeoutProcess, idSQLProcess, fullQuerySQLProcess
     PROPERTIES(blocking) READONLY activeProcess, idThreadProcess, sumBlocking, nameComputer, nameUser, dateTimeCallProcess,
                                  querySQLProcess, dateTimeSQLProcess, isActiveSQLProcess, inTransactionSQLProcess, 
                                  startTransactionSQLProcess, attemptCountSQLProcess, statusMessageSQLProcess,
-                                 addressUserSQLProcess, lsfStackTraceProcess, threadAllocatedBytesProcess, 
-                                 lastThreadAllocatedBytesProcess, nameJavaProcess, statusJavaProcess,
+                                 addressUserSQLProcess, lsfStackTraceProcess, threadAllocatedBytesProcess SHOWIF readAllocatedBytes(), 
+                                 lastThreadAllocatedBytesProcess SHOWIF readAllocatedBytes(), nameJavaProcess, statusJavaProcess,
                                  lockNameJavaProcess, stackTraceJavaProcess, lockOwnerIdProcess, lockOwnerNameProcess, isDisabledNestLoopProcess, 
                                  queryTimeoutProcess, idSQLProcess, fullQuerySQLProcess
     PROPERTIES(blocking) TOOLBAR cancelProcess, killProcess, cancelJavaProcess SHOWIF isActiveSQLProcess(blocking), killJavaProcess SHOWIF isActiveSQLProcess(blocking)                                   
@@ -283,7 +288,7 @@ FORM processMonitor 'Монитор процессов'
     FILTERGROUP nonBlocking FILTER 'Только не блокирующие' sumBlocked(blocked) == 0 OR isDeadlock(blocked) DEFAULT 
     ORDER BY sumBlocking(blocked) DESC, sumBlocking(blocking) DESC
     
-    PROPERTIES() captionProcessType, updateProcessMonitorAction
+    PROPERTIES() readAllocatedBytes, captionProcessType, updateProcessMonitorAction
 ;
 
 DESIGN processMonitor {
@@ -318,6 +323,7 @@ DESIGN processMonitor {
     NEW bottom {
         type = CONTAINERH;
         align = TRAILING;
+        MOVE PROPERTY(readAllocatedBytes());
         MOVE PROPERTY(captionProcessType());
         MOVE PROPERTY(updateProcessMonitorAction());
     }

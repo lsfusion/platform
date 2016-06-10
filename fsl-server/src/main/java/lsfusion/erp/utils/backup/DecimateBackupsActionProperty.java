@@ -67,7 +67,7 @@ public class DecimateBackupsActionProperty extends ScriptingActionProperty {
                 //Если старше недели, оставляем только за понедельник и за первое число;
                 //Если старше месяца, только за первое число.
                 if (limit || (delta > month && !firstDay) || (delta < month && delta > week && !firstDay && !monday))
-                    findAction("delete[Backup]").execute(session, context.stack, backupObject);
+                    findAction("delete[Backup]").execute(session, backupObject);
                 else
                     count++;
             }
