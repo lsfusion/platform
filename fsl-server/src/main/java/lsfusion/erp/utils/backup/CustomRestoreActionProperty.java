@@ -125,7 +125,7 @@ public class CustomRestoreActionProperty extends ScriptingActionProperty {
                 if(columnEntry.get("replaceOnlyNullTableColumn") != null)
                     table.replaceOnlyNullSet.add(canonicalNameTableColumn);
                 table.sqlProperties.add(sidTableColumn);
-                table.lcpProperties.add(canonicalNameTableColumn.split("\\[")[0]);
+                table.lcpProperties.add(canonicalNameTableColumn);
                 tables.put(sidTable, table);
             }
 
@@ -162,55 +162,57 @@ public class CustomRestoreActionProperty extends ScriptingActionProperty {
                 List<List<Object>> keys = data.get(0);
                 List<List<Object>> columns = data.get(1);
 
-                //step1: props, mRows
-                final ImOrderSet<LP> props = getProps(context.getBL().findProperties(table.lcpProperties.toArray(new String[table.lcpProperties.size()])));
-                MExclMap<ImMap<KeyField, DataObject>, ImMap<LP, ObjectValue>> mRows = MapFact.mExclMap();
+                if(!keys.isEmpty() || !columns.isEmpty()) {
+                    //step1: props, mRows
+                    final ImOrderSet<LP> props = getProps(context.getBL().findProperties(table.lcpProperties.toArray(new String[table.lcpProperties.size()])));
+                    MExclMap<ImMap<KeyField, DataObject>, ImMap<LP, ObjectValue>> mRows = MapFact.mExclMap();
 
-                for (int i = 0; i < columns.size(); i++) {
-                    List<Object> keysEntry = keys.get(i);
-                    final List<Object> columnsEntry = columns.get(i);
+                    for (int i = 0; i < columns.size(); i++) {
+                        List<Object> keysEntry = keys.get(i);
+                        final List<Object> columnsEntry = columns.get(i);
 
-                    //step2: exclAdd
-                    ImMap<KeyField, DataObject> keysMap = MapFact.EMPTY();
-                    for (int k = 0; k < keysEntry.size(); k++) {
-                        ValueClass valueClass = context.getBL().findClass(table.classKeys.get(k).replace("_", "."));
-                        DataObject keyObject = context.getSession().getDataObject(valueClass, keysEntry.get(k));
-                        if (keyObject.objectClass instanceof UnknownClass && valueClass instanceof ConcreteCustomClass && table.restoreObjects) {
-                            try (DataSession session = context.getSession().createSession()) {
-                                //приходится пока через новую сессию, иначе свойства для новосозданного объекта не проставляются
-                                keyObject = session.addObject((ConcreteCustomClass) valueClass, keyObject);
-                                keyObject.object = keysEntry.get(k);
-                                session.apply(context);
-                                keyObject = context.getSession().getDataObject(valueClass, keysEntry.get(k));
+                        //step2: exclAdd
+                        ImMap<KeyField, DataObject> keysMap = MapFact.EMPTY();
+                        for (int k = 0; k < keysEntry.size(); k++) {
+                            ValueClass valueClass = context.getBL().findClass(table.classKeys.get(k).replace("_", "."));
+                            DataObject keyObject = context.getSession().getDataObject(valueClass, keysEntry.get(k));
+                            if (keyObject.objectClass instanceof UnknownClass && valueClass instanceof ConcreteCustomClass && table.restoreObjects) {
+                                try (DataSession session = context.getSession().createSession()) {
+                                    //приходится пока через новую сессию, иначе свойства для новосозданного объекта не проставляются
+                                    keyObject = session.addObject((ConcreteCustomClass) valueClass, keyObject);
+                                    keyObject.object = keysEntry.get(k);
+                                    session.apply(context);
+                                    keyObject = context.getSession().getDataObject(valueClass, keysEntry.get(k));
+                                }
                             }
+                            keysMap = keysMap.addExcl(new KeyField("key" + k, IntegerClass.instance), keyObject);
                         }
-                        keysMap = keysMap.addExcl(new KeyField("key" + k, IntegerClass.instance), keyObject);
+
+                        mRows.exclAdd(keysMap, props.getSet().mapValues(new GetValue<ObjectValue, LP>() {
+                            public ObjectValue getMapValue(LP prop) {
+                                try {
+                                    Object object = columnsEntry.get(props.indexOf(prop));
+                                    if (object == null) return NullValue.instance;
+                                    ValueClass classValue = ((StoredDataProperty) prop.property).value;
+                                    if (classValue instanceof ConcreteCustomClass) {
+                                        return context.getSession().getDataObject(((StoredDataProperty) prop.property).value, object);
+                                    } else if (classValue instanceof LogicalClass) {
+                                        return getBooleanObject(object);
+                                    } else
+                                        return object instanceof String ? new DataObject(((String) object).trim()) : object instanceof Integer ? new DataObject((Integer) object)
+                                                : object instanceof BigDecimal ? new DataObject(object, (NumericClass) classValue) : new DataObject(String.valueOf(object));
+                                } catch (SQLException | SQLHandledException e) {
+                                    return null;
+                                }
+                            }
+                        }));
                     }
 
-                    mRows.exclAdd(keysMap, props.getSet().mapValues(new GetValue<ObjectValue, LP>() {
-                        public ObjectValue getMapValue(LP prop) {
-                            try {
-                                Object object = columnsEntry.get(props.indexOf(prop));
-                                if (object == null) return NullValue.instance;
-                                ValueClass classValue = ((StoredDataProperty) prop.property).value;
-                                if (classValue instanceof ConcreteCustomClass) {
-                                    return context.getSession().getDataObject(((StoredDataProperty) prop.property).value, object);
-                                } else if(classValue instanceof LogicalClass) {
-                                    return getBooleanObject(object);
-                                } else
-                                    return object instanceof String ? new DataObject(((String) object).trim()) : object instanceof Integer ? new DataObject((Integer) object)
-                                            : object instanceof BigDecimal ? new DataObject(object, (NumericClass) classValue) : new DataObject(String.valueOf(object));
-                            } catch (SQLException | SQLHandledException e) {
-                                return null;
-                            }
-                        }
-                    }));
+                    //step3: writeRows
+                    String result = writeRows(context, props, mRows, keys.get(0).size(), table.replaceOnlyNullSet);
+                    if (result != null)
+                        context.requestUserInteraction(new MessageClientAction(result, "Error restoring table " + tableName));
                 }
-
-                //step3: writeRows
-                String result = writeRows(context, props, mRows, keys.get(0).size(), table.replaceOnlyNullSet);
-                if (result != null)
-                    context.requestUserInteraction(new MessageClientAction(result, "Error restoring table " + tableName));
             }
         } catch (Exception e) {
             throw Throwables.propagate(e);
