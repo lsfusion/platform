@@ -144,7 +144,7 @@ public abstract class ContextAwarePendingRemoteObject extends PendingRemoteObjec
     }
 
     private boolean closed;
-    private synchronized void shutdown(boolean explicit) {
+    private synchronized void shutdown(boolean explicit) {  // по идее assert synchronized но может быть проблема так как unreferenced и explicitClose могут быть вместе
         if(closed) {
 //            if (explicit) // много вариантов когда закрывается несколько раз explicit, unreferenced + close, * + forceDisconnect
 //                ServerLoggers.assertLog(false, "REMOTE OBJECT ALREADY CLOSED " + this);
