@@ -764,6 +764,13 @@ public abstract class LogicsModule {
         return addProperty(group, new LAP(new NewThreadActionProperty(caption, listInterfaces, (ActionPropertyMapImplement) readImplements.get(0), period, delay, connection)));
     }
 
+    protected LAP addNewExecutorAProp(AbstractGroup group, String caption, Object... params) {
+        ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(getIntNum(params));
+        ImList<PropertyInterfaceImplement<PropertyInterface>> readImplements = readImplements(listInterfaces, params);
+        return addProperty(group, new LAP(new NewExecutorActionProperty(caption, listInterfaces,
+                (ActionPropertyMapImplement) readImplements.get(0), (CalcPropertyMapImplement) readImplements.get(1))));
+    }
+
     // ------------------- Request action ----------------- //
 
     protected LP addRequestUserInputAProp(AbstractGroup group, String caption, LAP action, Type requestValueType, String chosenKey) {

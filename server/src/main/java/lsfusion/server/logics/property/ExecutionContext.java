@@ -48,6 +48,8 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Stack;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ScheduledExecutorService;
 
 public class ExecutionContext<P extends PropertyInterface> implements UserInteraction, SessionCreator {
     private ImMap<P, ? extends ObjectValue> keys;
@@ -169,6 +171,8 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
 
     private final ExecutionEnvironment env;
 
+    private final ScheduledExecutorService executorService;
+
     private final FormEnvironment<P> form;
 
     // debug info 
@@ -190,22 +194,23 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
 //            System.out.println((level++) + actionName + (newDebugStack ? " NEWSTACK" : ""));
 //        return level;
 //    } 
-//    
+//
     public ExecutionContext(ImMap<P, ? extends ObjectValue> keys, ExecutionEnvironment env, ExecutionStack stack) {
-        this(keys, null, null, env, null, stack);
+        this(keys, null, null, env, null, null, stack);
     }
 
-    public ExecutionContext(ImMap<P, ? extends ObjectValue> keys, ObjectValue pushedUserInput, DataObject pushedAddObject, ExecutionEnvironment env, FormEnvironment<P> form, ExecutionStack stack) {
+    public ExecutionContext(ImMap<P, ? extends ObjectValue> keys, ObjectValue pushedUserInput, DataObject pushedAddObject, ExecutionEnvironment env, ScheduledExecutorService executorService, FormEnvironment<P> form, ExecutionStack stack) {
         this.keys = keys;
         this.pushedUserInput = pushedUserInput;
         this.pushedAddObject = pushedAddObject;
         this.env = env;
+        this.executorService = executorService;
         this.form = form;
         this.stack = new ContextStack(stack);
     }
     
     public ExecutionContext<P> override() { // для дебаггера
-        return new ExecutionContext<P>(keys, pushedUserInput, pushedAddObject, env, form, stack);
+        return new ExecutionContext<P>(keys, pushedUserInput, pushedAddObject, env, executorService, form, stack);
     }
 
     public void setParamsToInterfaces(ImRevMap<String, P> paramsToInterfaces) {
@@ -226,6 +231,10 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
 
     public void setWatcher(Processor<ImMap<String, ObjectValue>> watcher) {
         this.watcher = watcher;
+    }
+
+    public ScheduledExecutorService getExecutorService() {
+        return executorService;
     }
 
     public ImRevMap<String, P> getParamsToInterfaces() {
@@ -458,11 +467,15 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
     }
 
     public ExecutionContext<P> override(ExecutionEnvironment newEnv) {
-        return new ExecutionContext<P>(keys, pushedUserInput, pushedAddObject, newEnv, form, stack);
+        return new ExecutionContext<P>(keys, pushedUserInput, pushedAddObject, newEnv, executorService, form, stack);
+    }
+
+    public ExecutionContext<P> override(ScheduledExecutorService newExecutorService) {
+        return new ExecutionContext<P>(keys, pushedUserInput, pushedAddObject, env, newExecutorService, form, stack);
     }
 
     public ExecutionContext<P> override(ExecutionEnvironment newEnv, ExecutionStack stack) {
-        return new ExecutionContext<P>(keys, pushedUserInput, pushedAddObject, newEnv, form, stack);
+        return new ExecutionContext<P>(keys, pushedUserInput, pushedAddObject, newEnv, executorService, form, stack);
     }
 
     public <T extends PropertyInterface> ExecutionContext<T> override(ImMap<T, ? extends ObjectValue> keys, ImMap<T, ? extends CalcPropertyInterfaceImplement<P>> mapInterfaces) {
@@ -482,7 +495,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
     }
 
     public <T extends PropertyInterface> ExecutionContext<T> override(ImMap<T, ? extends ObjectValue> keys, FormEnvironment<T> form, ObjectValue pushedUserInput) {
-        return new ExecutionContext<T>(keys, pushedUserInput, pushedAddObject, env, form, stack);
+        return new ExecutionContext<T>(keys, pushedUserInput, pushedAddObject, env, executorService, form, stack);
     }
 
     public QueryEnvironment getQueryEnv() {

@@ -48,7 +48,7 @@ public abstract class ExecutionEnvironment extends MutableClosedObject<Object> {
     }
 
     public <P extends PropertyInterface> FlowResult execute(ActionProperty<P> property, ImMap<P, ? extends ObjectValue> change, FormEnvironment<P> formEnv, ObjectValue pushUserInput, DataObject pushAddObject, ExecutionStack stack) throws SQLException, SQLHandledException {
-        return property.execute(new ExecutionContext<P>(change, pushUserInput, pushAddObject, this, formEnv, stack));
+        return property.execute(new ExecutionContext<P>(change, pushUserInput, pushAddObject, this, null, formEnv, stack));
     }
 
     public abstract void changeClass(PropertyObjectInterfaceInstance objectInstance, DataObject dataObject, ConcreteObjectClass cls) throws SQLException, SQLHandledException;

@@ -2343,6 +2343,13 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LPWithParams(property, allParams);
     }
 
+    public LPWithParams addScriptedNewExecutorActionProperty(LPWithParams actionProp, LPWithParams threadsProp) throws ScriptingErrorLog.SemanticErrorException {
+        List<LPWithParams> propParams = toList(actionProp, threadsProp);
+        List<Integer> allParams = mergeAllParams(propParams);
+        LAP<?> property = addNewExecutorAProp(null, "", getParamsPlainList(propParams).toArray());
+        return new LPWithParams(property, allParams);
+    }
+
     private List<LCP> getProperties(List<PropertyUsage> propUsages) throws ScriptingErrorLog.SemanticErrorException {
         List<LCP> props = new ArrayList<>();
         for (PropertyUsage propUsage : propUsages) {

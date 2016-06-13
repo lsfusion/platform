@@ -63,12 +63,14 @@ public class NewThreadActionProperty extends AroundAspectActionProperty {
 
             Runnable runContext = new ScheduleRunnable(run, dbManager);
 
-            ScheduledExecutorService executor = ExecutorFactory.createNewThreadService(context);
-            if(repeat!=null)
+            boolean externalExecutor = context.getExecutorService() != null;
+            ScheduledExecutorService executor = externalExecutor ? context.getExecutorService() : ExecutorFactory.createNewThreadService(context);
+            if (repeat != null)
                 executor.scheduleAtFixedRate(runContext, delay, repeat, TimeUnit.MILLISECONDS);
             else
                 executor.schedule(runContext, delay, TimeUnit.MILLISECONDS);
-            executor.shutdown();
+            if (!externalExecutor)
+                executor.shutdown();
         }
         return FlowResult.FINISH;
     }

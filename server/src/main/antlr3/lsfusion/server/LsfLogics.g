@@ -1686,6 +1686,19 @@ newThreadActionDefinitionBody[List<TypedParameter> context, boolean dynamic] ret
         )
 	;
 
+newExecutorActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
+@init {
+	List<LPWithParams> props = new ArrayList<LPWithParams>();
+	List<LP> localProps = new ArrayList<LP>();
+}
+@after {
+	if (inPropParseState()) {
+		$property = self.addScriptedNewExecutorActionProperty($aDB.property, $threadsExpr.property);
+	}
+}
+	:	'NEWEXECUTOR' aDB=innerActionDefinitionBody[context, dynamic] 'THREADS' threadsExpr=propertyExpression[context, dynamic]
+	;
+
 nonEmptyPropertyUsageListWithIds returns [List<String> ids, List<PropertyUsage> propUsages]
 @init {
 	$ids = new ArrayList<String>();
@@ -2100,6 +2113,7 @@ keepContextActionDB[List<TypedParameter> context, boolean dynamic] returns [LPWi
 	|	writeADB=writeActionDefinitionBody[context, dynamic] { $property = $writeADB.property; }
 	|	importADB=importActionDefinitionBody[context, dynamic] { $property = $importADB.property; }
 	|	newThreadADB=newThreadActionDefinitionBody[context, dynamic] { $property = $newThreadADB.property; }
+	|	newExecutorADB=newExecutorActionDefinitionBody[context, dynamic] { $property = $newExecutorADB.property; }
 	|	activeFormADB=activeFormActionDefinitionBody[context, dynamic] { $property = $activeFormADB.property; }
 	|	activateADB=activateActionDefinitionBody[context, dynamic] { $property = $activateADB.property; }
 	;
