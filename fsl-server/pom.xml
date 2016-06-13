@@ -15,6 +15,11 @@
     <packaging>jar</packaging>
     <name>Fusion Standard Library Server</name>
     
+    <properties>
+        <assemble.mainClass>lsfusion.server.logics.BusinessLogicsBootstrap</assemble.mainClass>
+        <assemble.finalName>lsfusion-server-${project.version}</assemble.finalName>
+    </properties>
+    
     <dependencies>
         <dependency>
             <groupId>lsfusion.platform</groupId>
