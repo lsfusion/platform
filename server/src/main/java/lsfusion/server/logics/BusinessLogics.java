@@ -57,7 +57,6 @@ import lsfusion.server.form.navigator.RemoteNavigator;
 import lsfusion.server.form.window.AbstractWindow;
 import lsfusion.server.lifecycle.LifecycleAdapter;
 import lsfusion.server.lifecycle.LifecycleEvent;
-import lsfusion.server.lifecycle.LogicsManager;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.linear.LP;
@@ -2320,7 +2319,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             public void run(ExecutionStack stack) throws Exception {
                 RemoteNavigator.updateOpenFormCount(BusinessLogics.this, stack);
             }
-        }, false, Settings.get().getUpdateFormCountPeriod(), false);
+        }, false, Settings.get().getUpdateFormCountPeriod(), false, "Open Form Count");
     }
 
     private Scheduler.SchedulerTask getUserLastActivityUpdateTask(Scheduler scheduler) {
@@ -2328,7 +2327,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             public void run(ExecutionStack stack) throws Exception {
                 RemoteNavigator.updateUserLastActivity(BusinessLogics.this, stack);
             }
-        }, false, Settings.get().getUpdateUserLastActivity(), false);
+        }, false, Settings.get().getUpdateUserLastActivity(), false, "User Last Activity");
     }
 
     private Scheduler.SchedulerTask getInitPingInfoUpdateTask(Scheduler scheduler) {
@@ -2336,7 +2335,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             public void run(ExecutionStack stack) throws Exception {
                 RemoteNavigator.updatePingInfo(BusinessLogics.this, stack);
             }
-        }, false, Settings.get().getUpdatePingInfo(), false);
+        }, false, Settings.get().getUpdatePingInfo(), false, "Ping Info");
     }
 
     private Scheduler.SchedulerTask getCleanTempTablesTask(Scheduler scheduler) {
@@ -2344,7 +2343,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             public void run(ExecutionStack stack) throws Exception {
                 SQLSession.cleanTemporaryTables();
             }
-        }, false, Settings.get().getTempTablesTimeThreshold() * 1000, false);
+        }, false, Settings.get().getTempTablesTimeThreshold(), false, "Drop Temp Tables");
     }
 
     private Scheduler.SchedulerTask getRestartConnectionsTask(Scheduler scheduler) {
@@ -2354,10 +2353,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
                 try {
                     SQLSession.restartConnections(prevStart);
                 } catch (Throwable t) { // временно так, чтобы не останавливался restartConnections никогда
-                    ServerLoggers.systemLogger.error("Connection restart error : ", t);
                 }
             }
-        }, false, Settings.get().getPeriodRestartConnections() * 1000, false);
+        }, false, Settings.get().getPeriodRestartConnections(), false, "Connection restart");
     }
 
     private Scheduler.SchedulerTask getAllocatedBytesUpdateTask(Scheduler scheduler) {
@@ -2365,6 +2363,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             public void run(ExecutionStack stack) throws Exception {
                 updateThreadAllocatedBytesMap();
             }
-        }, false, Settings.get().getThreadAllocatedMemoryPeriod() / 2, false);
+        }, false, Settings.get().getThreadAllocatedMemoryPeriod() / 2, false, "Allocated Bytes");
     }
 }

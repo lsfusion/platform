@@ -140,7 +140,7 @@ public class Scheduler extends MonitorServer implements InitializingBean {
             public void run(ExecutionStack stack) throws Exception {
                 changeCurrentDate(stack);
             }
-        }, true, Settings.get().getCheckCurrentDate(), true));
+        }, true, Settings.get().getCheckCurrentDate(), true, "Changing current date"));
         tasks.addAll(BL.getSystemTasks(this));
     }
 
@@ -228,19 +228,19 @@ public class Scheduler extends MonitorServer implements InitializingBean {
 
             UserSchedulerTask task = new UserSchedulerTask(nameScheduledTask, currentScheduledTaskObject, propertySIDMap, timeFrom, timeTo, daysOfWeek, daysOfMonth);
             if(startDate != null)
-                tasks.add(new SchedulerTask(task, runAtStart, startDate, period, fixedDelay));
+                tasks.add(new SchedulerTask(nameScheduledTask, task, runAtStart, startDate, period, fixedDelay));
         }
     }
 
     public class SystemSchedulerTask extends SchedulerTask {
 
-        public SystemSchedulerTask(final EExecutionStackRunnable task, boolean runAtStart, Integer period, boolean fixedDelay) {
-            super(task, runAtStart, null, period, fixedDelay);
+        public SystemSchedulerTask(final EExecutionStackRunnable task, boolean runAtStart, Integer period, boolean fixedDelay, String name) {
+            super(name, task, runAtStart, null, period, fixedDelay);
         }
     }
 
-    public SchedulerTask createSystemTask(EExecutionStackRunnable task, boolean runAtStart, Integer period, boolean fixedDelay) {
-        return new SystemSchedulerTask(task, runAtStart, period, fixedDelay);
+    public SchedulerTask createSystemTask(EExecutionStackRunnable task, boolean runAtStart, Integer period, boolean fixedDelay, String name) {
+        return new SystemSchedulerTask(task, runAtStart, period, fixedDelay, name);
     }
 
     public class SchedulerTask {
@@ -250,13 +250,15 @@ public class Scheduler extends MonitorServer implements InitializingBean {
         private final boolean fixedDelay;
         private final Runnable task;
 
-        public SchedulerTask(final EExecutionStackRunnable task, boolean runAtStart, Timestamp startDate, Integer period, boolean fixedDelay) {
+        public SchedulerTask(final String name, final EExecutionStackRunnable task, boolean runAtStart, Timestamp startDate, Integer period, boolean fixedDelay) {
             this.task = new Runnable() {
                 public void run() {
+                    schedulerLogger.info("Started running scheduler task - " + name);
                     try {
                         task.run(getStack());
+                        schedulerLogger.info("Finished running scheduler task - " + name);
                     } catch (Throwable e) {
-                        schedulerLogger.error("Error while running scheduler task (in SchedulerTask.run()):", e);
+                        schedulerLogger.error("Error while running scheduler task - " + name + " :", e);
                         throw new RuntimeException(e);
                     }
                 }

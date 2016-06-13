@@ -68,9 +68,6 @@ public class CustomObjectInstance extends ObjectInstance {
     public void changeValue(SessionChanges session, ObjectValue changeValue) throws SQLException, SQLHandledException {
         if(changeValue.equals(value)) return;
 
-        if(changeValue instanceof NullValue)
-            ServerLoggers.exinfoLog("DROPPED OBJECT TO NULL : " + this);
-
         value = changeValue;
 
         updateCurrentClass(session);
