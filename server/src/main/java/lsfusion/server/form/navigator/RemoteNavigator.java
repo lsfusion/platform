@@ -290,11 +290,13 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         }
 
         public boolean changeCurrentUser(DataObject user) throws SQLException, SQLHandledException {
-            return weakThis.get().changeCurrentUser(user);
+            RemoteNavigator remoteNavigator = weakThis.get();
+            return remoteNavigator != null && remoteNavigator.changeCurrentUser(user);
         }
 
         public DataObject getCurrentUser() {
-            return weakThis.get().user;
+            RemoteNavigator remoteNavigator = weakThis.get();
+            return remoteNavigator == null ? null : remoteNavigator.user;
         }
     }
 
@@ -306,11 +308,13 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         }
 
         public DataObject getCurrentComputer() {
-            return weakThis.get().computer.getDataObject();
+            RemoteNavigator remoteNavigator = weakThis.get();
+            return remoteNavigator == null ? null : remoteNavigator.computer.getDataObject();
         }
 
         public boolean isFullClient() {
-            return weakThis.get().isFullClient();
+            RemoteNavigator remoteNavigator = weakThis.get();
+            return remoteNavigator != null && remoteNavigator.isFullClient();
         }
     }
 
@@ -323,11 +327,14 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
 
         @Override
         public void changeCurrentForm(ObjectValue form) {
-            weakThis.get().currentForm = form;
+            RemoteNavigator remoteNavigator = weakThis.get();
+            if(remoteNavigator !=null)
+                remoteNavigator.currentForm = form;
         }
 
         public ObjectValue getCurrentForm() {
-            return weakThis.get().currentForm;
+            RemoteNavigator remoteNavigator = weakThis.get();
+            return remoteNavigator == null ? NullValue.instance : remoteNavigator.currentForm;
         }
     }
 
@@ -340,11 +347,14 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
 
         @Override
         public void changeCurrentConnection(DataObject connection) {
-            weakThis.get().connection = connection;
+            RemoteNavigator remoteNavigator = weakThis.get();
+            if(remoteNavigator != null)
+                remoteNavigator.connection = connection;
         }
 
         public ObjectValue getCurrentConnection() {
-            return weakThis.get().connection;
+            RemoteNavigator remoteNavigator = weakThis.get();
+            return remoteNavigator == null ? NullValue.instance : remoteNavigator.connection;
         }
     }
 
@@ -357,7 +367,8 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         }
 
         public int getTransactionTimeout() {
-            return weakThis.get().getTransactionTimeout();
+            RemoteNavigator remoteNavigator = weakThis.get();
+            return remoteNavigator == null ? 0 : remoteNavigator.getTransactionTimeout();
         }
     }
 
