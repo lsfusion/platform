@@ -1679,7 +1679,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
     public static int START_TIL = -1;
     public static int DEBUG_TIL = -1;
     public static int RECALC_TIL = -1;
-    public static int SESSION_TIL = -1;
+    public static int SESSION_TIL = Connection.TRANSACTION_REPEATABLE_READ;
     public static int ID_TIL = Connection.TRANSACTION_REPEATABLE_READ;
     
     private static Stack<Integer> STACK_TIL = new Stack<>();
