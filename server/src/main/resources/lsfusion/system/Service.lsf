@@ -84,11 +84,11 @@ META defineMode(property, action, type, caption1, caption2)
     } 
 END
 
-TILMode 'Включен SERIALIZABLE' = DATA BOOLEAN ();
+disableTILMode 'Выключен SERIALIZABLE' = DATA BOOLEAN ();
 serverComputer 'Сервер' = DATA Computer();
 hostnameServerComputer 'Сервер' () = hostname(serverComputer());
 
-@defineMode(TILMode, 'lsfusion.server.logics.service.SetRepeatableReadTILModeActionProperty', BOOLEAN, 'Включить SERIALIZABLE', 'Обновить SERIALIZABLE в VM');
+@defineMode(disableTILMode, 'lsfusion.server.logics.service.SetRepeatableReadDisableTILModeActionProperty', BOOLEAN, 'Выключить SERIALIZABLE', 'Обновить SERIALIZABLE в VM');
 
 @defineMode(hostnameServerComputer, 'lsfusion.server.logics.service.SetHostnameServerComputerActionProperty', VARSTRING[100], 'Записать Hostname Server', 'Обновить Hostname Server');
 
@@ -284,7 +284,7 @@ FORM admin 'Администрирование'
                  recalculateStatsMultiThreadAction, overCalculateStatsMultiThreadAction,
                  packAction, analyzeDBAction, uploadToDBAction, uploadStaticCaptionType, uploadHost, uploadUser, uploadPassword, uploadInstance, uploadDB,    
                  vacuumDBAction, serviceDBAction, serviceDBMultiThreadAction, runGarbageCollector, getVMInfo, dropLRUPercent, randomDropLRU, dropLRU, turnCacheStatsOff, makeHeapDump, 
-                 TILMode, hostnameServerComputer, reupdateMode, singleTransaction,
+                 disableTILMode, hostnameServerComputer, reupdateMode, singleTransaction,
                  turnExplainAnalizeOnCurrentUser, clearApplicationLog
     OBJECTS u=User
     PROPERTIES(u) name READONLY, nameMainRole, explainAnalyzeMode, explainMode, loggerDebugEnabled, remoteLoggerDebugEnabled, remoteExLogEnabled, remotePausableLogEnabled, nameExecEnv, volatileStatsEnabled;
@@ -361,7 +361,7 @@ DESIGN admin {
                 MOVE PROPERTY(packAction());
                 MOVE PROPERTY(analyzeDBAction());
                 MOVE PROPERTY(vacuumDBAction());
-                MOVE PROPERTY(TILMode());
+                MOVE PROPERTY(disableTILMode());
                 MOVE PROPERTY(reupdateMode());
                 MOVE PROPERTY(singleTransaction());
             }                            
