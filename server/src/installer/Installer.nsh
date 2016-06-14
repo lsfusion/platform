@@ -4,7 +4,7 @@ SetCompressor lzma
 
 # General Symbol Definitions
 !define REGKEY "SOFTWARE\$(^Name)"
-!define VERSION 1.2.0
+!define VERSION 1.2.1
 !define COMPANY luxsoft
 !define URL lsfusion.ru
 
@@ -139,7 +139,7 @@ InstallDir "$ProgramFiles${ARCH}\lsFusion Platform"
 CRCCheck on
 XPStyle on
 ShowInstDetails show
-VIProductVersion 1.2.0.0
+VIProductVersion ${VERSION}.0
 VIAddVersionKey /LANG=${LANG_ENGLISH} ProductName "lsFusion Platform"
 VIAddVersionKey /LANG=${LANG_ENGLISH} ProductVersion "${VERSION}"
 VIAddVersionKey /LANG=${LANG_ENGLISH} CompanyName "${COMPANY}"
