@@ -1554,27 +1554,12 @@ signaturePropertyDefinition[List<TypedParameter> context, boolean dynamic] retur
 	;
 
 activeTabPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
-@init {
-    FormEntity form = null;
-    ComponentView comp = null;
-}
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedActiveTabProp(comp);
+		$property = self.addScriptedActiveTabProp($formName.text, $compName.sid);
 	}
 }
-	: 	'ACTIVE' 'TAB'
-		formPart=ID '.'
-			{
-				if (inPropParseState()) {
-					form = self.findForm($formPart.text);
-				}
-			}
-			mid=multiCompoundID {
-                if (inPropParseState()) {
-                    comp = form.getNFRichDesign(self.getVersion()).getComponentBySID($mid.sid, self.getVersion());
-                }
-            }
+	: 	'ACTIVE' 'TAB' formName=ID '.' compName=multiCompoundID 
 	;
 
 formulaPropertyDefinition returns [LP property, List<ResolveClassSet> signature]
@@ -2430,13 +2415,7 @@ focusActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns
 		$property = self.addScriptedFocusActionProp($prop.propertyDraw);
 	}
 }
-	:	'FOCUS'
-		(namespacePart=ID '.')? formPart=ID '.'
-		{   
-			if (inPropParseState()) {
-				form = self.findForm(($namespacePart != null ? $namespacePart.text + '.' : "") + $formPart.text);
-			}
-		}
+	:	'FOCUS' formName=compoundID '.' { if (inPropParseState()) { form = self.findForm($formName.sid); }}
 		prop=formPropertySelector[form]
 	;	
 
@@ -2453,51 +2432,28 @@ requestInputActionDefinitionBody[List<TypedParameter> context, boolean dynamic] 
 	;
 
 activeFormActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
-@init {
-    FormEntity form = null;
-}
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedActiveFormAProp(form);
+		$property = self.addScriptedActiveFormAProp($name.sid);
 	}
 }
-	:	'ACTIVE' 'FORM' formPart=ID {
-            if (inPropParseState()) {
-                form = self.findForm($formPart.text);
-            }
-        }
+	:	'ACTIVE' 'FORM' name=compoundID 
 	;
 
 activateActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
 @init {
-    FormEntity form = null;
-    ComponentView comp = null;
+    String formName = null;
+    String componentName = null;
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedActivateAProp(form, comp);
+		$property = self.addScriptedActivateAProp(formName, componentName);
 	}
 }
-	:	'ACTIVATE' (
-	                    ('FORM' formPart=ID {
-                                    if (inPropParseState()) {
-                                        form = self.findForm($formPart.text);
-                                    }
-                                }
-                        )
-                   |
-                        ('TAB'  formPart=ID {
-                                    if (inPropParseState()) {
-                                        form = self.findForm($formPart.text);
-                                    }
-                                } '.'
-                                mid=multiCompoundID {
-                                    if (inPropParseState()) {
-                                        comp = form.getNFRichDesign(self.getVersion()).getComponentBySID($mid.sid, self.getVersion());
-                                    }
-                                }
-                        )
-                   )
+	:	'ACTIVATE' 
+		(	'FORM' fName=compoundID { formName = $fName.sid; }
+		|	'TAB'  formPart=ID  '.' componentPart=multiCompoundID { formName = $formPart.text; componentName = $componentPart.sid; }
+		)
 	;
 
 listActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]

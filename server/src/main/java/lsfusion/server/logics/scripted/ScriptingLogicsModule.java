@@ -1429,12 +1429,19 @@ public class ScriptingLogicsModule extends LogicsModule {
         return prop;
     }
 
-    public LPWithParams addScriptedActiveFormAProp(FormEntity form) throws ScriptingErrorLog.SemanticErrorException {
+    public LPWithParams addScriptedActiveFormAProp(String formName) throws ScriptingErrorLog.SemanticErrorException {
+        FormEntity form = findForm(formName);
         return new LPWithParams(addAProp(null, new IsActiveFormActionProperty("", form, baseLM.getIsActiveFormProperty())), new ArrayList<Integer>());
     }
 
-    public LPWithParams addScriptedActivateAProp(FormEntity form, ComponentView componentView) throws ScriptingErrorLog.SemanticErrorException {
-        return new LPWithParams(addAProp(null, new ActivateActionProperty("", form, componentView)), new ArrayList<Integer>());
+    public LPWithParams addScriptedActivateAProp(String formName, String componentName) throws ScriptingErrorLog.SemanticErrorException {
+        FormEntity form = findForm(formName);
+        ComponentView component = null;
+        if (componentName != null) {
+            component = form.getNFRichDesign(getVersion()).getComponentBySID(componentName, getVersion());
+            checkComponent(component, componentName); 
+        }
+        return new LPWithParams(addAProp(null, new ActivateActionProperty("", form, component)), new ArrayList<Integer>());
     }
 
     public LCP addLocalDataProperty(String name, String returnClassName, List<String> paramClassNames, boolean isNested) throws ScriptingErrorLog.SemanticErrorException {
@@ -2448,9 +2455,11 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LPWithParams(newProp, property.usedParams);
     }
 
-    public LPWithParams addScriptedActiveTabProp(ComponentView componentView) throws ScriptingErrorLog.SemanticErrorException {
-        CalcPropertyRevImplement<ClassPropertyInterface, ObjectEntity> activeTabProperty = componentView.getActiveTab();
-        return new LPWithParams(new LCP<>(activeTabProperty.property), new ArrayList<Integer>());
+    public LPWithParams addScriptedActiveTabProp(String formName, String componentName) throws ScriptingErrorLog.SemanticErrorException {
+        FormEntity form = findForm(formName);
+        ComponentView component = form.getNFRichDesign(getVersion()).getComponentBySID(componentName, getVersion());
+        checkComponent(component, componentName);
+        return new LPWithParams(new LCP<>(component.getActiveTab().property), new ArrayList<Integer>());
     }
 
     public void addScriptedFollows(PropertyUsage mainPropUsage, List<TypedParameter> namedParams, List<PropertyFollowsDebug> resolveOptions, LPWithParams rightProp, Event event, ActionDebugInfo debugInfo) throws ScriptingErrorLog.SemanticErrorException {
@@ -2920,6 +2929,12 @@ public class ScriptingLogicsModule extends LogicsModule {
     private void checkClass(ValueClass cls, String name) throws ScriptingErrorLog.SemanticErrorException {
         if (cls == null) {
             errLog.emitClassNotFoundError(parser, name);
+        }
+    }
+
+    private void checkComponent(ComponentView component, String name) throws ScriptingErrorLog.SemanticErrorException {
+        if (component == null) {
+            errLog.emitComponentNotFoundError(parser, name);
         }
     }
 
