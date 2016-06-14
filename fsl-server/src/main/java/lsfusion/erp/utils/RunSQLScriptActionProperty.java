@@ -4,6 +4,7 @@ import com.google.common.base.Throwables;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.data.query.StaticExecuteEnvironmentImpl;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
@@ -28,7 +29,7 @@ public class RunSQLScriptActionProperty extends ScriptingActionProperty {
             String script = (String) context.getDataKeyValue(stringInterface).object;
             if(script != null) {
                 ServerLoggers.systemLogger.info("Executing SQL: " + script);
-                context.getSession().sql.executeDDL(script);
+                context.getSession().sql.executeDDL(script, StaticExecuteEnvironmentImpl.NOREADONLY);
             }
         } catch (Exception e) {
             throw Throwables.propagate(e);
