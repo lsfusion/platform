@@ -10,12 +10,8 @@ import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
-import lsfusion.server.logics.property.Property;
 
 import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 // assert что граф всегда полный
 public class Graph<T> {
@@ -50,12 +46,14 @@ public class Graph<T> {
         this(buildEdgesOut(edgesIn), edgesIn);
     }
 
-    private static <T> void recFindEdges(T element, boolean includeThis, ImMap<T, ImSet<T>> edges, ImSet<T> filteredElements, MSet<T> mResult) {
+    private static <T> void recFindEdges(T element, boolean includeThis, ImMap<T, ImSet<T>> edges, ImSet<T> filteredElements, MSet<T> mResult, MAddSet<T> proceeded) {
         if(includeThis && filteredElements.contains(element))
             mResult.add(element);
         else {
+            if(proceeded.add(element))
+                return;
             for(T out : edges.get(element))
-                recFindEdges(out, true, edges, filteredElements, mResult);
+                recFindEdges(out, true, edges, filteredElements, mResult, proceeded);
         }
     }
 
@@ -63,8 +61,9 @@ public class Graph<T> {
         final ImSet<T> filteredEdges = edges.keys().filterFn(filter);
         return filteredEdges.mapValues(new GetValue<ImSet<T>, T>() {
             public ImSet<T> getMapValue(T element) {
+                MAddSet<T> proceeded = SetFact.mAddSet();
                 MSet<T> mResult = SetFact.mSet();
-                recFindEdges(element, false, edges, filteredEdges, mResult);
+                recFindEdges(element, false, edges, filteredEdges, mResult, proceeded);
                 return mResult.immutable();
             }
         });
