@@ -28,7 +28,7 @@ public class RunSQLScriptActionProperty extends ScriptingActionProperty {
         try {
             String script = (String) context.getDataKeyValue(stringInterface).object;
             if(script != null) {
-                ServerLoggers.systemLogger.info("Executing SQL: " + script);
+                ServerLoggers.sqlLogger.info("Executing SQL: " + script);
                 context.getSession().sql.executeDDL(script, StaticExecuteEnvironmentImpl.NOREADONLY);
             }
         } catch (Exception e) {
