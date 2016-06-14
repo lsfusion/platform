@@ -983,20 +983,13 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
 
     @Override
     protected void onExplicitClose() {
-        navigatorManager.navigatorExplicitClosed(this);
-
-        super.onExplicitClose();
-    }
-
-    @Override
-    protected void onFinalClose(boolean explicit) {
         synchronized (forms) {
             for (RemoteForm form : forms.copy()) { // copy так как идет formClosed и соответственно будет ConcurrentModificationException
                 form.explicitClose();
             }
         }
 
-        navigatorManager.navigatorFinalClosed(getStack(), this);
+        navigatorManager.navigatorExplicitClosed(this);
 
         try {
             ThreadLocalContext.assureRmi(this);
@@ -1004,6 +997,13 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         } catch (Throwable t) {
             ServerLoggers.sqlSuppLog(t);
         }
+
+        super.onExplicitClose();
+    }
+
+    @Override
+    protected void onFinalClose(boolean explicit) {
+        navigatorManager.navigatorFinalClosed(getStack(), this); // тут по идее другой connection
 
         super.onFinalClose(explicit);
     }
