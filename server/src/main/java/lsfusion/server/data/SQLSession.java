@@ -2903,9 +2903,14 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
                 long timeRestartStarted = System.currentTimeMillis();
 
                 // сначала переносим временные таблицы
-                for (String table : sessionTablesMap.keySet()) {
-                    SQLTemporaryPool.FieldStruct struct = privateConnection.temporary.getStruct(table);
-                    uploadTableToConnection(table, struct, newConnection, OperationOwner.unknown);
+                try {
+                    for (String table : sessionTablesMap.keySet()) {
+                        SQLTemporaryPool.FieldStruct struct = privateConnection.temporary.getStruct(table);
+                        uploadTableToConnection(table, struct, newConnection, OperationOwner.unknown);
+                    }
+                } catch (SQLException | SQLHandledException t) { // если проблема в SQL, пишем в лог / игнорируем
+                    logger.error("RESTART CONNECTION ERROR : " + description.result, t);
+                    return false;
                 }
 
                 // закрываем старое соединение
