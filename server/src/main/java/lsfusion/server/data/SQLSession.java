@@ -1228,7 +1228,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         executeDDL(DDL, StaticExecuteEnvironmentImpl.EMPTY, owner);
     }
 
-    private void executeDDL(String DDL, StaticExecuteEnvironment env) throws SQLException {
+    public void executeDDL(String DDL, StaticExecuteEnvironment env) throws SQLException {
         executeDDL(DDL, env, OperationOwner.unknown);
     }
     
