@@ -779,7 +779,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         }
         if (idNotification != null) {
             try {
-                businessLogics.authenticationLM.deliveredNotificationAction.execute(env.getSession(), getStack(), user);
+                businessLogics.authenticationLM.deliveredNotificationAction.execute(env.getSession(), stack, user);
                 EnvRunnable notification = notificationsMap.getNotification(idNotification);
                 notification.run(env);
             } catch (SQLException | SQLHandledException e) {
