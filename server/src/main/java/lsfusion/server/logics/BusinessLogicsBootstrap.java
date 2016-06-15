@@ -1,12 +1,17 @@
 package lsfusion.server.logics;
 
+import lsfusion.base.ExceptionUtils;
+import lsfusion.base.Result;
 import lsfusion.base.SystemUtils;
 import lsfusion.interop.remote.RMIUtils;
 import lsfusion.server.ServerLoggers;
+import lsfusion.server.Settings;
 import lsfusion.server.SystemProperties;
 import org.apache.log4j.Logger;
 import org.springframework.context.support.AbstractXmlApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+import java.util.Map;
 
 public class BusinessLogicsBootstrap {
     private static final Logger logger = ServerLoggers.startLogger;
@@ -90,6 +95,27 @@ public class BusinessLogicsBootstrap {
             RMIUtils.killRmiThread();
 
             logger.info("Server has stopped...");
+
+            if(Settings.get().isEnableDumpThreadsOnClose()) {
+                final Result<Integer> ticker = new Result<Integer>();
+                // форсируем выход в отдельном потоке
+                final Thread dump = new Thread("Dump closing threads...") {
+                    @Override
+                    public void run() {
+                        //убиваемся, если через 5 секунд ещё не вышли
+                        SystemUtils.sleep(1000);
+
+                        ticker.set(ticker.result + 1);
+                        logger.info("TICK <<< : " + ticker.result  + ">>>");
+                        Map<Thread, StackTraceElement[]> allStackTraces = Thread.getAllStackTraces();
+                        for (Map.Entry<Thread, StackTraceElement[]> entry : allStackTraces.entrySet()) {
+                            logger.info("Thread : " + entry.getKey() + '\n' + ExceptionUtils.getStackTrace(entry.getValue()));
+                        }
+                    }
+                };
+                dump.setDaemon(true);
+                dump.start();
+            }
 
             // форсируем выход в отдельном потоке
             final Thread closer = new Thread("Closing thread...") {
