@@ -382,6 +382,10 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
 
     public final FlowResult execute(ExecutionContext<P> context) throws SQLException, SQLHandledException {
 //        context.actionName = toString();
+        if(newDebugStack) { // самым первым, так как paramInfo
+            context = context.override();
+            context.setNewDebugStack(true);
+        }
         if(paramInfo != null) {
             context = context.override();
             context.setParamsToInterfaces(paramInfo.paramsToInterfaces);
@@ -390,10 +394,6 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
         if(debugLocals != null) {
             context = context.override();
             context.setLocals(debugLocals);
-        }
-        if(newDebugStack) {
-            context = context.override();
-            context.setNewDebugStack(true);
         }
         if (debugInfo != null) {
             return debugger.delegate(this, context);
