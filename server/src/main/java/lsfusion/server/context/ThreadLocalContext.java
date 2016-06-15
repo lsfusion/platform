@@ -227,7 +227,7 @@ public class ThreadLocalContext {
         aspectAfterEvent(null, true);
     }
     private static NewThreadExecutionStack eventStack(EventServer eventServer) {
-        return new TopExecutionStack(eventServer.getEventName());
+        return eventServer.getTopStack();
     }
 
     // RMI вызовы
