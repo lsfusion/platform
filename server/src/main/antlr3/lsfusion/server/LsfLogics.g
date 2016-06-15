@@ -2415,7 +2415,7 @@ focusActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns
 		$property = self.addScriptedFocusActionProp($prop.propertyDraw);
 	}
 }
-	:	'FOCUS' formName=compoundID '.' { if (inPropParseState()) { form = self.findForm($formName.sid); }}
+	:	'FOCUS' (namespace=ID '.')? formSName=ID '.' { if (inPropParseState()) { form = self.findForm(($namespace == null ? "" : $namespace.text + ".") + $formSName.text); }}
 		prop=formPropertySelector[form]
 	;	
 
