@@ -9,9 +9,17 @@ public abstract class NavigatorView {
     JComponent component;
     INavigatorController controller;
 
-    public NavigatorView(ClientNavigatorWindow window, JComponent component, INavigatorController controller) {
+    public NavigatorView(ClientNavigatorWindow window, JComponent iComponent, INavigatorController controller) {
         this.window = window;
-        this.component = window.drawScrollBars ? new JScrollPane(component) : component;
+        
+        if (window.drawScrollBars) {
+            component = new JScrollPane(iComponent);
+            ((JScrollPane) component).getVerticalScrollBar().setUnitIncrement(14);
+            ((JScrollPane) component).getHorizontalScrollBar().setUnitIncrement(14);
+        } else {
+            component = iComponent;   
+        }
+        
         this.controller = controller;
     }
 
