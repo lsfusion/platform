@@ -1930,14 +1930,4 @@ public class Settings {
     public void setDisableFinalized(boolean disableFinalized) {
         this.disableFinalized = disableFinalized;
     }
-
-    private boolean enableDumpThreadsOnClose = true;
-
-    public boolean isEnableDumpThreadsOnClose() {
-        return enableDumpThreadsOnClose;
-    }
-
-    public void setEnableDumpThreadsOnClose(boolean enableDumpThreadsOnClose) {
-        this.enableDumpThreadsOnClose = enableDumpThreadsOnClose;
-    }
 }
