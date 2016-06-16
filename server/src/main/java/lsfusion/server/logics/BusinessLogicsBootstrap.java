@@ -79,7 +79,6 @@ public class BusinessLogicsBootstrap {
                       new int[]{settings.getLRUOftenProceedBucket(), settings.getLRURareProceedBucket()});
     }*/
 
-    public static boolean enableDumpThreadsOnClose = true;
     public synchronized static void stop() {
         if (!stopped) {
             logger.info("Server is stopping...");
@@ -97,7 +96,7 @@ public class BusinessLogicsBootstrap {
 
             logger.info("Server has stopped...");
 
-            if(enableDumpThreadsOnClose) {
+            if(Settings.get().isEnableDumpThreadsOnClose()) {
                 final Result<Integer> ticker = new Result<Integer>();
                 // форсируем выход в отдельном потоке
                 final Thread dump = new Thread("Dump closing threads...") {
