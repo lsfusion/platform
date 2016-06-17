@@ -15,7 +15,7 @@ import lsfusion.interop.form.RemoteFormInterface;
 import lsfusion.interop.form.ServerResponse;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
 import lsfusion.interop.remote.CallbackMessage;
-import lsfusion.server.EnvRunnable;
+import lsfusion.server.EnvStackRunnable;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
 import lsfusion.server.auth.SecurityPolicy;
@@ -27,7 +27,6 @@ import lsfusion.server.classes.DateTimeClass;
 import lsfusion.server.context.ExecutionStack;
 import lsfusion.server.context.SyncType;
 import lsfusion.server.context.ThreadLocalContext;
-import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
 import lsfusion.server.data.expr.KeyExpr;
@@ -110,7 +109,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
     private static final List<Pair<DataObject, String>> recentlyOpenForms = Collections.synchronizedList(new ArrayList<Pair<DataObject, String>>());
 
     // в настройку надо будет вынести : по группам, способ релевантности групп, какую релевантность отсекать
-    public RemoteNavigator(LogicsInstance logicsInstance, boolean isFullClient, NavigatorInfo navigatorInfo, User currentUser, int port, DataSession session, ExecutionStack stack) throws RemoteException, ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException, SQLHandledException {
+    public RemoteNavigator(LogicsInstance logicsInstance, boolean isFullClient, NavigatorInfo navigatorInfo, User currentUser, int port, ExecutionStack stack) throws RemoteException, ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException, SQLHandledException {
         super(port);
 
         this.logicsInstance = logicsInstance;
@@ -127,7 +126,9 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         this.securityPolicy = currentUser.getSecurityPolicy();
         this.transactionTimeout = currentUser.getTimeout();
 
-        this.user = currentUser.getDataObject(businessLogics.authenticationLM.customUser, session);
+        try(DataSession session = dbManager.createSession()) {
+            this.user = currentUser.getDataObject(businessLogics.authenticationLM.customUser, session);
+        }
         this.computer = new DataObject(navigatorInfo.computer, businessLogics.authenticationLM.computer);
         this.currentForm = NullValue.instance;
 
@@ -173,9 +174,11 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
 
     public SecurityPolicy getUserSecurityPolicy(Result<Integer> timeout) {
         try {
-            User user = securityManager.readUserWithSecurityPolicy(getUserLogin(), createSession());
-            timeout.set(user.getTimeout());
-            return user.getSecurityPolicy();
+            try(DataSession session = createSession()) {
+                User user = securityManager.readUserWithSecurityPolicy(getUserLogin(), session);
+                timeout.set(user.getTimeout());
+                return user.getSecurityPolicy();
+            }
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -343,13 +346,6 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
 
         private WeakConnectionController(RemoteNavigator navigator) {
             this.weakThis = new WeakReference<>(navigator);
-        }
-
-        @Override
-        public void changeCurrentConnection(DataObject connection) {
-            RemoteNavigator remoteNavigator = weakThis.get();
-            if(remoteNavigator != null)
-                remoteNavigator.connection = connection;
         }
 
         public ObjectValue getCurrentConnection() {
@@ -615,11 +611,13 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
 //        }
         try {
             ExecutionStack stack = getStack();
-            return context.createRemoteForm(
-                    context.createFormInstance(formEntity, MapFact.<ObjectEntity, DataObject>EMPTY(), createSession(),
-                                               isModal, false, FormSessionScope.NEWSESSION, stack, false, false, interactive, null,
-                                               null, null, false),
-                    stack);
+            try(DataSession session = createSession()) {
+                return context.createRemoteForm(
+                        context.createFormInstance(formEntity, MapFact.<ObjectEntity, DataObject>EMPTY(), session,
+                                isModal, false, FormSessionScope.OLDSESSION, stack, false, false, interactive, null,
+                                null, null, false),
+                        stack);
+            }
         } catch (SQLException | SQLHandledException e) {
             throw Throwables.propagate(e);
         }
@@ -649,11 +647,6 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
 
     public void setConnection(DataObject connection) {
         this.connection = connection;
-    }
-
-    public void changeCurrentConnection(DataObject connection) throws SQLException {
-        setConnection(connection);
-        createSession().connection.changeCurrentConnection(connection);
     }
 
     public void setUpdateTime(int updateTime) {
@@ -689,7 +682,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         client.notifyServerRestartCanceled();
     }
 
-    public void pushNotification(EnvRunnable run) throws RemoteException {
+    public void pushNotification(EnvStackRunnable run) throws RemoteException {
         client.pushMessage(notificationsMap.putNotification(run));
     }
 
@@ -755,7 +748,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
             protected ServerResponse callInvocation() throws Throwable {
                 ExecutionStack stack = getStack();
                 if (type == 2) {
-                    runNotification(createSession(), stack, actionSID);
+                    runNotification(stack, actionSID);
                 } else {
                     try (DataSession session = createSession()) {
                         runAction(session, actionSID, type == 1, stack);
@@ -770,7 +763,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         return currentInvocation.execute();
     }
 
-    private void runNotification(ExecutionEnvironment env, ExecutionStack stack, String actionSID) {
+    private void runNotification(ExecutionStack stack, String actionSID) {
         Integer idNotification;
         try {
             idNotification = Integer.parseInt(actionSID);
@@ -779,9 +772,11 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         }
         if (idNotification != null) {
             try {
-                businessLogics.authenticationLM.deliveredNotificationAction.execute(env.getSession(), stack, user);
-                EnvRunnable notification = notificationsMap.getNotification(idNotification);
-                notification.run(env);
+                try(DataSession session = createSession()) {
+                    businessLogics.authenticationLM.deliveredNotificationAction.execute(session, stack, user);
+                }
+                EnvStackRunnable notification = notificationsMap.getNotification(idNotification);
+                notification.run(null, stack);
             } catch (SQLException | SQLHandledException e) {
                 ServerLoggers.systemLogger.error("DeliveredNotificationAction failed: ", e);
             }
@@ -839,7 +834,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
     @Override
     public void executeNotificationAction(ExecutionEnvironment env, ExecutionStack stack, Integer idNotification) throws RemoteException {
         try {
-            runNotification(env, stack, String.valueOf(idNotification));
+            runNotification(stack, String.valueOf(idNotification));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -955,16 +950,16 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
     }
 
     private static class NotificationsMap {
-        private Map<Integer, EnvRunnable> notificationsMap = new HashMap<>();
+        private Map<Integer, EnvStackRunnable> notificationsMap = new HashMap<>();
         private int counter = 0;
 
-        private synchronized Integer putNotification(EnvRunnable value) {
+        private synchronized Integer putNotification(EnvStackRunnable value) {
             counter++;
             notificationsMap.put(counter, value);
             return counter;
         }
 
-        private synchronized EnvRunnable getNotification(Integer key) {
+        private synchronized EnvStackRunnable getNotification(Integer key) {
             return notificationsMap.remove(key);
         }
     }
@@ -993,7 +988,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
 
         try {
             ThreadLocalContext.assureRmi(this);
-            sql.close(OperationOwner.unknown);
+            sql.close();
         } catch (Throwable t) {
             ServerLoggers.sqlSuppLog(t);
         }

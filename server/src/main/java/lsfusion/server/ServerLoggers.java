@@ -57,6 +57,8 @@ public class ServerLoggers {
     
     public static final Logger startLogger = Logger.getLogger("StartLogger");
 
+    public static final Logger schedulerLogger = Logger.getLogger("SchedulerLogger");
+
     private static final int FORCE_FLUSH_DELAY = 60;
 
     static {

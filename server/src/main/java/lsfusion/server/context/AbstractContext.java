@@ -147,12 +147,18 @@ public abstract class AbstractContext implements Context {
     public abstract DataObject getConnection();
 
     public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, boolean isAdd, FormSessionScope sessionScope, ExecutionStack stack, boolean checkOnOk, boolean showDrop, boolean interactive, ImSet<FilterEntity> contextFilters, PropertyDrawEntity initFilterProperty, ImSet<PullChangeProperty> pullProps, boolean readonly) throws SQLException, SQLHandledException {
-        return new FormInstance(formEntity, getLogicsInstance(),
-                sessionScope.createSession(session),
-                getSecurityPolicy(), getFocusListener(), getClassListener(),
-                getComputer(stack), getConnection(), mapObjects, stack, isModal,
-                isAdd, sessionScope,
-                checkOnOk, showDrop, interactive, contextFilters, initFilterProperty, pullProps, readonly);
+        DataSession newSession = sessionScope.createSession(session);
+        try {
+            return new FormInstance(formEntity, getLogicsInstance(),
+                    newSession,
+                    getSecurityPolicy(), getFocusListener(), getClassListener(),
+                    getComputer(stack), getConnection(), mapObjects, stack, isModal,
+                    isAdd, sessionScope,
+                    checkOnOk, showDrop, interactive, contextFilters, initFilterProperty, pullProps, readonly);
+        } finally {
+            if (newSession != session) // временный хак, когда уйдет SessionScope тогда и он уйдет
+                newSession.close();
+        }
     }
 
     public RemoteForm createRemoteForm(FormInstance formInstance, ExecutionStack stack) {

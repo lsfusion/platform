@@ -992,6 +992,11 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     }
 
     @Override
+    public OperationOwner getDefaultExplicitOwner() {
+        return OperationOwner.unknown;
+    }
+
+    @Override
     public OperationOwner getFinalizeOwner() {
         return OperationOwner.unknown;
     }

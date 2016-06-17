@@ -717,14 +717,13 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
     }
     
     public void saveToDBForDebug(SQLSession sql) throws SQLException, IllegalAccessException, InstantiationException, ClassNotFoundException, SQLHandledException {
-        SQLSession dbSql = ThreadLocalContext.getDbManager().createSQL();
+        try(SQLSession dbSql = ThreadLocalContext.getDbManager().createSQL()) {
 
-        dbSql.startTransaction(DBManager.DEBUG_TIL, OperationOwner.unknown);
-        dbSql.ensureTable(this, sqlLogger);
-        dbSql.insertSessionBatchRecords(getName(sql.syntax), keys, read(sql, ThreadLocalContext.getBusinessLogics().LM.baseClass, OperationOwner.debug).getMap(), OperationOwner.debug, TableOwner.debug);
-        dbSql.commitTransaction();
-
-        dbSql.close(OperationOwner.unknown);
+            dbSql.startTransaction(DBManager.DEBUG_TIL, OperationOwner.unknown);
+            dbSql.ensureTable(this, sqlLogger);
+            dbSql.insertSessionBatchRecords(getName(sql.syntax), keys, read(sql, ThreadLocalContext.getBusinessLogics().LM.baseClass, OperationOwner.debug).getMap(), OperationOwner.debug, TableOwner.debug);
+            dbSql.commitTransaction();
+        }
     }
     
     public static void saveToDBForDebug(ImSet<? extends Value> values, SQLSession sql) throws SQLException, IllegalAccessException, ClassNotFoundException, InstantiationException, SQLHandledException {

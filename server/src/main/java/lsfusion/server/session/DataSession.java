@@ -1,6 +1,7 @@
 package lsfusion.server.session;
 
 import com.google.common.base.Throwables;
+import com.google.common.collect.Iterables;
 import lsfusion.base.*;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
@@ -34,7 +35,6 @@ import lsfusion.server.data.query.Query;
 import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.data.type.*;
 import lsfusion.server.data.where.Where;
-import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.instance.ChangedData;
 import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.form.instance.PropertyObjectInterfaceInstance;
@@ -55,7 +55,7 @@ import java.util.*;
 import static lsfusion.base.col.SetFact.fromJavaSet;
 import static lsfusion.server.logics.ServerResourceBundle.getString;
 
-public class DataSession extends ExecutionEnvironment implements SessionChanges, SessionCreator {
+public class DataSession extends ExecutionEnvironment implements SessionChanges, SessionCreator, AutoCloseable {
 
     public static final SessionDataProperty isDataChanged = new SessionDataProperty("Is data changed", LogicalClass.instance);
 
@@ -521,6 +521,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             upOwner = new OperationOwner() {}; 
         this.owner = upOwner;
 
+        registerThreadStack(); // создающий поток также является владельцем сессии
 //        SQLSession.fifo.add("DCR " + getOwner() + SQLSession.getCurrentTimeStamp() + " " + this + '\n' + ExceptionUtils.getStackTrace());
     }
 
@@ -931,7 +932,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             incrementChange.second.add(changes);
         }
 
-        for (FormInstance form : activeForms.keysIt()) {
+        for (FormInstance form : getAllActiveForms()) {
             form.dataChanged = true;
         }
     }
@@ -1797,8 +1798,10 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
     private WeakIdentityHashMap<FormInstance, Object> activeForms = new WeakIdentityHashMap<FormInstance, Object>();
     public void registerForm(FormInstance form) throws SQLException, SQLHandledException {
-        activeForms.put(form, true);
-        changes.registerForm(form); // пометка что есть форма
+        synchronized (closeLock) {
+            activeForms.put(form, true);
+            changes.registerForm(form); // пометка что есть форма
+        }
 
         dropFormCaches();
 
@@ -1809,20 +1812,26 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             modifier.clean(sql, getOwner());
 
         changes.unregisterForm(form);
-        activeForms.remove(form);
         incrementChanges.remove(form);
         appliedChanges.remove(form);
         updateChanges.remove(form);
 
         dropFormCaches();
+
+        synchronized (closeLock) {
+            activeForms.remove(form);
+            tryClose();
+        }
     }
     private void dropFormCaches() throws SQLException {
         activeSessionEvents = null;
         sessionEventOldDepends = null;
     }
-    public ImSet<FormEntity> extraActiveForms; // временный хак, пока не появится нормальное управление событиями     
-    public Iterable<FormInstance> getActiveForms() {
-        return activeForms.keysIt();
+    public Iterable<FormInstance> getAllActiveForms() { // including nested
+        Iterable<FormInstance> result = activeForms.keysIt();
+        if(parentSession != null)
+            result = Iterables.concat(result, parentSession.activeForms.keysIt());
+        return result;
     }
     public <K> ImOrderSet<K> filterOrderEnv(ImOrderMap<K, SessionEnvEvent> elements) {
         return elements.filterOrderValues(new SFunctionSet<SessionEnvEvent>() {
@@ -2282,7 +2291,6 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     public void setParentSession(DataSession parentSession) throws SQLException, SQLHandledException {
         assert parentSession != null;
         
-        activeForms.putAll(parentSession.activeForms);        
         parentSession.copyDataTo(this, true, SetFact.<SessionDataProperty>EMPTY()); // копируем все local'ы
 
         this.parentSession = parentSession;
@@ -2466,5 +2474,38 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     @Override
     public String toString() {
         return "DS@"+System.identityHashCode(this);
+    }
+
+    // нет особого смысла хранить сами потоки, так как потоки все равно в pool'ах с большой вероятностью
+//    private final WeakIdentityHashSet<Thread> threads = new WeakIdentityHashSet<>();
+    private int threadCount = 0;
+    private final Object closeLock = new Object();
+
+    public void registerThreadStack() {
+        synchronized (closeLock) {
+            threadCount++;
+        }
+//        threads.add(Thread.currentThread());
+    }
+
+    public void unregisterThreadStack() throws SQLException {
+        synchronized (closeLock) {
+            threadCount--;
+
+            tryClose();
+        }
+//        threads.remove(Thread.currentThread());
+    }
+
+    public boolean tryClose() throws SQLException { // assert synchronized
+        if(threadCount == 0 && activeForms.isEmpty()) { // не осталось владельцев - закрываем
+            explicitClose();
+            return true;
+        }
+        return false;
+    }
+    @Override
+    public void close() throws SQLException {
+        unregisterThreadStack();
     }
 }

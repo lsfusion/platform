@@ -1,11 +1,10 @@
 package lsfusion.server.logics;
 
 import com.google.common.base.Throwables;
-import lsfusion.base.BaseUtils;
 import lsfusion.base.NavigatorInfo;
 import lsfusion.base.WeakIdentityHashSet;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
-import lsfusion.server.EnvRunnable;
+import lsfusion.server.EnvStackRunnable;
 import lsfusion.interop.remote.CallbackMessage;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.auth.User;
@@ -22,7 +21,6 @@ import org.springframework.util.Assert;
 
 import java.rmi.RemoteException;
 import java.sql.SQLException;
-import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static lsfusion.server.logics.ServerResourceBundle.getString;
@@ -104,15 +102,11 @@ public class NavigatorsManager extends LogicsManager implements InitializingBean
         //логика EXPIRED навигаторов неактуальна, пока не работает механизм восстановления сессии
 //        scheduleRemoveExpired();
 
-        DataSession session;
         try {
-            session = dbManager.createSession();
-        } catch (Exception e) {
-            throw Throwables.propagate(e);
-        }
-
-        try {
-            User user = securityManager.authenticateUser(session, navigatorInfo.login, navigatorInfo.password, stack);
+            User user;
+            try (DataSession session = dbManager.createSession()) {
+                user = securityManager.authenticateUser(session, navigatorInfo.login, navigatorInfo.password, stack);
+            }
 
 //            if (reuseSession) {
 //                List<RemoteNavigator> navigatorsList = navigators.get(loginKey);
@@ -125,16 +119,9 @@ public class NavigatorsManager extends LogicsManager implements InitializingBean
 //                }
 //            }
 
-            return new RemoteNavigator(logicsInstance, isFullClient, navigatorInfo, user, rmiManager.getExportPort(), session, stack);
+            return new RemoteNavigator(logicsInstance, isFullClient, navigatorInfo, user, rmiManager.getExportPort(), stack);
         } catch (Exception e) {
             throw Throwables.propagate(e);
-        } finally {
-            try {
-                session.apply(businessLogics, stack);
-                session.close();
-            } catch (Exception e) {
-                throw Throwables.propagate(e);
-            }
         }
     }
 
@@ -165,7 +152,7 @@ public class NavigatorsManager extends LogicsManager implements InitializingBean
 
         synchronized (navigators) {
             if (newConnection != null) {
-                navigator.changeCurrentConnection(new DataObject(newConnection.object, businessLogics.systemEventsLM.connection));
+                navigator.setConnection(new DataObject(newConnection.object, businessLogics.systemEventsLM.connection));
             }
             navigators.add(navigator);
         }
@@ -262,7 +249,7 @@ public class NavigatorsManager extends LogicsManager implements InitializingBean
         }
     }
 
-    public void pushNotificationCustomUser(DataObject connectionObject, EnvRunnable run) {
+    public void pushNotificationCustomUser(DataObject connectionObject, EnvStackRunnable run) {
         synchronized (navigators) {
             boolean found = false;
             for (RemoteNavigator navigator : navigators) {

@@ -3,11 +3,10 @@ package lsfusion.server.logics.property.actions.flow;
 import com.google.common.base.Throwables;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
-import lsfusion.interop.DaemonThreadFactory;
-import lsfusion.server.EnvRunnable;
+import lsfusion.server.EnvStackRunnable;
+import lsfusion.server.ServerLoggers;
 import lsfusion.server.context.*;
 import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.logics.DBManager;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.property.ActionPropertyMapImplement;
@@ -18,7 +17,6 @@ import lsfusion.server.session.DataSession;
 import lsfusion.server.session.ExecutionEnvironment;
 
 import java.sql.SQLException;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -42,14 +40,23 @@ public class NewThreadActionProperty extends AroundAspectActionProperty {
     @Override
     protected FlowResult aroundAspect(final ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
 
-        final DBManager dbManager = context.getDbManager();
-
-        EnvRunnable run = new EnvRunnable() {
+        final EnvStackRunnable run = new EnvStackRunnable() {
             @Override
-            public void run(ExecutionEnvironment env) {
+            public void run(ExecutionEnvironment env, ExecutionStack stack) {
                 try {
-                    proceed(context.override(env, ThreadLocalContext.getStack()));
+                    if(env != null)
+                        proceed(context.override(env, stack));
+                    else {
+                        DataSession session = context.getSession();
+                        session.registerThreadStack();
+                        try {
+                            proceed(context.override(stack));
+                        } finally {
+                            session.unregisterThreadStack();
+                        }
+                    };
                 } catch (Throwable t) {
+                    ServerLoggers.schedulerLogger.error("New thread error : ", t);
                     throw Throwables.propagate(t);
                 }
             }
@@ -60,9 +67,11 @@ public class NewThreadActionProperty extends AroundAspectActionProperty {
             if(connectionObject instanceof DataObject)
                 context.getNavigatorsManager().pushNotificationCustomUser((DataObject) connectionObject, run);
         } else {
-
-            Runnable runContext = new ScheduleRunnable(run, dbManager);
-
+            Runnable runContext = new Runnable() {
+                public void run() {
+                    run.run(null, ThreadLocalContext.getStack());
+                }
+            };
             boolean externalExecutor = context.getExecutorService() != null;
             ScheduledExecutorService executor = externalExecutor ? context.getExecutorService() : ExecutorFactory.createNewThreadService(context);
             if (repeat != null)
@@ -73,23 +82,5 @@ public class NewThreadActionProperty extends AroundAspectActionProperty {
                 executor.shutdown();
         }
         return FlowResult.FINISH;
-    }
-
-    class ScheduleRunnable implements Runnable {
-        EnvRunnable r;
-        DBManager dbManager;
-
-        ScheduleRunnable(EnvRunnable r, DBManager dbManager) {
-            this.r = r;
-            this.dbManager = dbManager;
-        }
-
-        public void run() {
-            try (DataSession session = dbManager.createSession()) {
-                r.run(session);
-            } catch (Throwable t) {
-                throw Throwables.propagate(t);
-            }
-        }
     }
 }

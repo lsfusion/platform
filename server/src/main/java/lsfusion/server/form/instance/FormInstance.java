@@ -1287,7 +1287,6 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     protected void onExplicitClose(Object o) throws SQLException {
         assert o == null;
 
-        session.unregisterForm(this);
         for (GroupObjectInstance group : getGroups()) {
             OperationOwner owner = session.getOwner();
             if (group.keyTable != null)
@@ -1295,6 +1294,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
             if (group.expandTable != null)
                 group.expandTable.drop(session.sql, owner);
         }
+        session.unregisterForm(this); // важно после, так как сессия может закрыться
     }
 
     @Override

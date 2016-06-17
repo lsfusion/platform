@@ -478,6 +478,10 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         return new ExecutionContext<P>(keys, pushedUserInput, pushedAddObject, newEnv, executorService, form, stack);
     }
 
+    public ExecutionContext<P> override(ExecutionStack stack) {
+        return new ExecutionContext<P>(keys, pushedUserInput, pushedAddObject, env, executorService, form, stack);
+    }
+
     public <T extends PropertyInterface> ExecutionContext<T> override(ImMap<T, ? extends ObjectValue> keys, ImMap<T, ? extends CalcPropertyInterfaceImplement<P>> mapInterfaces) {
         return override(keys, form!=null ? form.mapJoin(mapInterfaces) : null, pushedUserInput);
     }
@@ -549,6 +553,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
     }
 
     public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, FormSessionScope sessionScope, boolean checkOnOk, boolean showDrop, boolean interactive, ImSet<FilterEntity> contextFilters) throws SQLException, SQLHandledException {
+        assert sessionScope.equals(FormSessionScope.OLDSESSION);
         return createFormInstance(formEntity, mapObjects, session, isModal, false, sessionScope, checkOnOk, showDrop, interactive, contextFilters, null, null, false);
     }
 
