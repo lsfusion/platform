@@ -282,12 +282,12 @@ replyChat 'Ответить' (Message m) = ACTION {
 openChat 'Перейти в чат' (Chat c, Message m) = ACTION {
     markSeenMessages(currentUser());
     FORM fullChat DOCKED;
-    NEWTHREAD {
+    NEWSESSION { NEWTHREAD {
         ACTIVATE TAB fullChat.recent;
         SEEK fullChat.c chat(m);
         SEEK LAST fullChat.m NULL;
         newMessage(c) <-reply(m);
-    } CONNECTION currentConnection();
+    } CONNECTION currentConnection(); }
     formClose();
 };
 
@@ -347,7 +347,7 @@ seekLastMessageInFullChat() += ACTION {
 
 pushNotification (CustomUser user) += ACTION {
     FOR user(Connection conn) == user AND connectionStatus(conn) == ConnectionStatus.connectedConnection DO {
-        NEWTHREAD pushAction() CONNECTION conn;
+        NEWSESSION { NEWTHREAD pushAction() CONNECTION conn; }
     }    
 };
 
