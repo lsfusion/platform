@@ -1559,7 +1559,7 @@ activeTabPropertyDefinition[List<TypedParameter> context, boolean dynamic] retur
 		$property = self.addScriptedActiveTabProp($formName.text, $compName.sid);
 	}
 }
-	: 	'ACTIVE' 'TAB' formName=ID '.' compName=multiCompoundID 
+	: 	'ACTIVE' 'TAB' compName=multiCompoundID 'FORM' formName=compoundID
 	;
 
 formulaPropertyDefinition returns [LP property, List<ResolveClassSet> signature]
@@ -2452,7 +2452,7 @@ activateActionDefinitionBody[List<TypedParameter> context, boolean dynamic] retu
 }
 	:	'ACTIVATE' 
 		(	'FORM' fName=compoundID { formName = $fName.sid; }
-		|	'TAB'  formPart=ID  '.' componentPart=multiCompoundID { formName = $formPart.text; componentName = $componentPart.sid; }
+		|	'TAB'  component=multiCompoundID 'FORM' formPart=compoundID { formName = $formPart.text; componentName = $component.sid; }
 		)
 	;
 
