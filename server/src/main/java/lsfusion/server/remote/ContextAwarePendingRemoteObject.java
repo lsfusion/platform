@@ -132,8 +132,8 @@ public abstract class ContextAwarePendingRemoteObject extends PendingRemoteObjec
             pausablesExecutor.shutdown();
 
         synchronized (threads) {
-            ServerLoggers.assertLog(explicit, "THREADS CANNOT BE FOR FINALIZED OBJECT");
             for (Thread thread : threads) {
+                ServerLoggers.assertLog(explicit, "THREADS CANNOT BE FOR FINALIZED OBJECT");
                 ServerLoggers.exinfoLog("FORCEFULLY STOPPED : " + thread + '\n' + ExceptionUtils.getStackTrace() + '\n' + ExceptionUtils.getStackTrace(thread.getStackTrace()));
                 try {
                     ThreadUtils.interruptThread(context, thread);
