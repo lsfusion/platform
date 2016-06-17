@@ -283,7 +283,7 @@ openChat 'Перейти в чат' (Chat c, Message m) = ACTION {
     markSeenMessages(currentUser());
     FORM fullChat DOCKED;
     NEWSESSION { NEWTHREAD {
-        ACTIVATE TAB fullChat.recent;
+        ACTIVATE TAB recent FORM fullChat;
         SEEK fullChat.c chat(m);
         SEEK LAST fullChat.m NULL;
         newMessage(c) <-reply(m);
@@ -351,7 +351,7 @@ pushNotification (CustomUser user) += ACTION {
     }    
 };
 
-recentVisible() += ACTIVE TAB fullChat.recent;
+recentVisible() += ACTIVE TAB recent FORM fullChat;
 sendMessage(Chat chat, CustomUser user) += ACTION {
     IF recentVisible() THEN sendMessage(chat) ELSE sendMessage(user);
 }
