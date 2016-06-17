@@ -614,7 +614,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
             try(DataSession session = createSession()) {
                 return context.createRemoteForm(
                         context.createFormInstance(formEntity, MapFact.<ObjectEntity, DataObject>EMPTY(), session,
-                                isModal, false, FormSessionScope.OLDSESSION, stack, false, false, interactive, null,
+                                isModal, false, FormSessionScope.MANAGESESSION, stack, false, false, interactive, null,
                                 null, null, false),
                         stack);
             }
