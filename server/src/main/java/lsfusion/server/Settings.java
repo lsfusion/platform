@@ -130,12 +130,8 @@ public class Settings {
         this.limitWhereJoinsDegree = limitWhereJoinsDegree;
     }
 
-    // test commit
-
     private int limitWhereJoinsComplexity = 300;
 
-    // test commit2
-    
     // очень опасная эвристика - может в определенных случаях "потерять ключ", то есть образуется And в котором не хватает KeyExpr'а
     private int limitClassWhereCount = 40;
 
