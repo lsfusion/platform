@@ -273,6 +273,11 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
         public int immutableHashCode() {
             return 31 * (31 * (31 * (31 * (31 * keys.hashCode() + properties.hashCode()) + classes.hashCode()) + propertyClasses.hashCode()) + statKeys.hashCode()) + statProps.hashCode();
         }
+
+        @Override
+        public String toString() {
+            return "{ cl : " + classes + " " + propertyClasses + ", st: " + statKeys + " " + statProps + "}" ;
+        }
     }
 
     private Struct struct = null;

@@ -537,11 +537,11 @@ public class MapCacheAspect {
                 }
             }
 
-            logger.debug("getExpr - not cached "+property);
             incrementMissed(CacheType.JOIN_EXPR);
             WhereBuilder cacheWheres = CalcProperty.cascadeWhere(changedWheres);
             Expr expr = (Expr) thisJoinPoint.proceed(new Object[]{property, joinExprs, calcType, implement.usedChanges, cacheWheres});
 
+            logger.debug("getExpr - not cached "+property);
             cacheNoBig(implement, hashCaches, new ExprResult(expr, changedWheres != null ? cacheWheres.toWhere() : null));
             if(checkCaches && cacheResult != null)
                 logCaches(cacheResult, expr, thisJoinPoint, "JOINEXPR", property);
