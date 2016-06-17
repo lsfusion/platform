@@ -151,3 +151,4 @@ distanceDOWDOW (DOW d1, DOW d2) = (number(d2) - number(d1)) (+) (7 IF number(d2)
 
 testRC() = 1;
 testRC2() = 10;
+testRC3() = 20;
