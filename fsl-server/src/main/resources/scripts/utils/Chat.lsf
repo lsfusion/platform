@@ -334,7 +334,7 @@ pushAction() = ACTION {
             SEEK LAST shortChat.m NULL;
         } 
         ELSE {
-            NEWSESSION NOCLOSE {
+            NEWSESSION {
                 FORM shortChat MODAL;
             }
         }
