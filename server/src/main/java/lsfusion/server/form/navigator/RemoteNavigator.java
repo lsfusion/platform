@@ -748,7 +748,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
             protected ServerResponse callInvocation() throws Throwable {
                 ExecutionStack stack = getStack();
                 if (type == 2) {
-                    runNotification(stack, actionSID);
+                    runNotification(null, stack, actionSID);
                 } else {
                     try (DataSession session = createSession()) {
                         runAction(session, actionSID, type == 1, stack);
@@ -763,7 +763,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         return currentInvocation.execute();
     }
 
-    private void runNotification(ExecutionStack stack, String actionSID) {
+    private void runNotification(ExecutionEnvironment env, ExecutionStack stack, String actionSID) {
         Integer idNotification;
         try {
             idNotification = Integer.parseInt(actionSID);
@@ -776,7 +776,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
                     businessLogics.authenticationLM.deliveredNotificationAction.execute(session, stack, user);
                 }
                 EnvStackRunnable notification = notificationsMap.getNotification(idNotification);
-                notification.run(null, stack);
+                notification.run(env, stack);
             } catch (SQLException | SQLHandledException e) {
                 ServerLoggers.systemLogger.error("DeliveredNotificationAction failed: ", e);
             }
@@ -834,7 +834,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
     @Override
     public void executeNotificationAction(ExecutionEnvironment env, ExecutionStack stack, Integer idNotification) throws RemoteException {
         try {
-            runNotification(stack, String.valueOf(idNotification));
+            runNotification(env, stack, String.valueOf(idNotification));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
