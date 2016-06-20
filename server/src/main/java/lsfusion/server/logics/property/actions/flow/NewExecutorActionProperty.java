@@ -14,11 +14,11 @@ import java.util.concurrent.ScheduledExecutorService;
 
 public class NewExecutorActionProperty extends AroundAspectActionProperty {
     ScheduledExecutorService executor;
-    private final CalcPropertyMapImplement threadsProp;
+    private final CalcPropertyInterfaceImplement threadsProp;
 
     public <I extends PropertyInterface> NewExecutorActionProperty(String caption, ImOrderSet<I> innerInterfaces,
                                                                    ActionPropertyMapImplement<?, I> action,
-                                                                   CalcPropertyMapImplement<?, I> threadsProp) {
+                                                                   CalcPropertyInterfaceImplement threadsProp) {
         super(caption, innerInterfaces, action);
 
         this.threadsProp = threadsProp;

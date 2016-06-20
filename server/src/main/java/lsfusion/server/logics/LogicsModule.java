@@ -768,7 +768,7 @@ public abstract class LogicsModule {
         ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(getIntNum(params));
         ImList<PropertyInterfaceImplement<PropertyInterface>> readImplements = readImplements(listInterfaces, params);
         return addProperty(group, new LAP(new NewExecutorActionProperty(caption, listInterfaces,
-                (ActionPropertyMapImplement) readImplements.get(0), (CalcPropertyMapImplement) readImplements.get(1))));
+                (ActionPropertyMapImplement) readImplements.get(0), (CalcPropertyInterfaceImplement) readImplements.get(1))));
     }
 
     // ------------------- Request action ----------------- //
