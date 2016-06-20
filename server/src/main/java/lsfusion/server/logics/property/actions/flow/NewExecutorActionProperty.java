@@ -2,6 +2,7 @@ package lsfusion.server.logics.property.actions.flow;
 
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
+import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.server.classes.CustomClass;
 import lsfusion.server.context.ExecutorFactory;
 import lsfusion.server.data.SQLHandledException;
@@ -10,6 +11,7 @@ import lsfusion.server.logics.tasks.TaskRunner;
 
 import java.sql.SQLException;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class NewExecutorActionProperty extends AroundAspectActionProperty {
     ScheduledExecutorService executor;
@@ -20,7 +22,8 @@ public class NewExecutorActionProperty extends AroundAspectActionProperty {
                                                                    CalcPropertyInterfaceImplement threadsProp) {
         super(caption, innerInterfaces, action);
 
-        this.threadsProp = threadsProp;
+        ImRevMap<I, PropertyInterface> mapInterfaces = getMapInterfaces(innerInterfaces).reverse();
+        this.threadsProp = threadsProp.map(mapInterfaces);
 
         finalizeInit();
     }
@@ -50,8 +53,13 @@ public class NewExecutorActionProperty extends AroundAspectActionProperty {
             executor = ExecutorFactory.createNewThreadService(context, nThreads);
             return proceed(context.override(executor));
         } finally {
-            if(executor != null)
+            if(executor != null) {
                 executor.shutdown();
+                try {
+                    executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+                } catch (InterruptedException ignored) {
+                }
+            }
         }
     }
 
