@@ -40,21 +40,24 @@ public class NewThreadActionProperty extends AroundAspectActionProperty {
     @Override
     protected FlowResult aroundAspect(final ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
 
+        DataSession session = context.getSession();
+        session.registerThreadStack();
+
         final EnvStackRunnable run = new EnvStackRunnable() {
             @Override
             public void run(ExecutionEnvironment env, ExecutionStack stack) {
                 try {
-                    if(env != null)
+                    DataSession session = context.getSession();
+                    if(env != null) {
+                        session.unregisterThreadStack(); // уже не нужна сессия
                         proceed(context.override(env, stack));
-                    else {
-                        DataSession session = context.getSession();
-                        session.registerThreadStack();
+                    } else {
                         try {
                             proceed(context.override(stack));
                         } finally {
                             session.unregisterThreadStack();
                         }
-                    };
+                    }
                 } catch (Throwable t) {
                     ServerLoggers.schedulerLogger.error("New thread error : ", t);
                     throw Throwables.propagate(t);
