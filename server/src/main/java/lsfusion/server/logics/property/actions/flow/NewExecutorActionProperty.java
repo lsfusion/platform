@@ -2,12 +2,11 @@ package lsfusion.server.logics.property.actions.flow;
 
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
-import lsfusion.server.Settings;
 import lsfusion.server.classes.CustomClass;
 import lsfusion.server.context.ExecutorFactory;
 import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.logics.property.*;
+import lsfusion.server.logics.tasks.TaskRunner;
 
 import java.sql.SQLException;
 import java.util.concurrent.ScheduledExecutorService;
@@ -45,7 +44,9 @@ public class NewExecutorActionProperty extends AroundAspectActionProperty {
     @Override
     protected FlowResult aroundAspect(final ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
         try {
-            Integer nThreads = (Integer) threadsProp.read(context, context.getKeys());;
+            Integer nThreads = (Integer) threadsProp.read(context, context.getKeys());
+            if(nThreads == null || nThreads == 0)
+                nThreads = TaskRunner.availableProcessors();
             executor = ExecutorFactory.createNewThreadService(context, nThreads);
             return proceed(context.override(executor));
         } finally {
