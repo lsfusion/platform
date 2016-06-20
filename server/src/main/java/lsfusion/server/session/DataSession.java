@@ -526,6 +526,9 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     }
 
     public DataSession createSession() throws SQLException {
+        return createSession(sql);
+    }
+    public DataSession createSession(SQLSession sql) throws SQLException {
         return new DataSession(sql, user, computer, form, connection, timeout, changes, isServerRestarting, baseClass, sessionClass, currentSession, idSession, sessionEvents, null);
     }
 
