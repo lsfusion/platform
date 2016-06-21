@@ -67,7 +67,9 @@ public class ClassDataProperty extends CalcProperty<ClassPropertyInterface> impl
 
     @Override
     protected ImCol<Pair<Property<?>, LinkType>> calculateLinks(boolean events) {
-        return getActionChangeProps();
+        if(events)
+            return getActionChangeProps();
+        return SetFact.EMPTY();
     }
 
     public PropertyField getField() {
