@@ -780,10 +780,10 @@ END
 
 // -- Price
 META defineDocumentDetailPriceCustomPrefix (detail, prefix, caption)
-    prefix###price 'Цена'###caption = DATA NUMERIC[14,2] (###detail);
+    prefix###price 'Цена'###caption = DATA NUMERIC[14,2] (###detail) @@denomination;
 END
 META defineDocumentAbstractDetailPriceCustomPrefix (detail, prefix, caption)
-    prefix###price 'Цена'###caption = ABSTRACT NUMERIC[14,2] (###detail) PERSISTENT;
+    prefix###price 'Цена'###caption = ABSTRACT NUMERIC[14,2] (###detail) PERSISTENT @@denomination;
 END
 META defineDocumentInterfaceDetailPriceCustomPrefix (detail, prefix, caption)
     @defineDocumentAbstractDetailPriceCustomPrefix(detail, prefix, caption);
@@ -859,10 +859,10 @@ END
 
 //--
 META defineDocumentDetailDataSumCustomPrefix (detail, prefix, caption)
-    prefix###sum 'Сумма'###caption = DATA NUMERIC[16,2] (###detail);
+    prefix###sum 'Сумма'###caption = DATA NUMERIC[16,2] (###detail) @@denomination;
 END
 META defineDocumentAbstractDetailDataSumCustomPrefix (detail, prefix, caption)
-    prefix###sum 'Сумма'###caption = ABSTRACT NUMERIC[16,2] (###detail) PERSISTENT;
+    prefix###sum 'Сумма'###caption = ABSTRACT NUMERIC[16,2] (###detail) PERSISTENT @@denomination;
 END
 
 META defineDocumentInterfaceDetailDataSumCustomPrefix (detail, prefix, caption)
@@ -984,10 +984,10 @@ META defineDocumentInterfaceDetailMarkupPrefix (object, prefix, caption)
 END
 
 META defineDocumentDetailMarkupSumCustomPrefix (detail, prefix, caption)
-    prefix###markupSum 'Сумма надбавки'###caption = DATA NUMERIC[16,2] (###detail);
+    prefix###markupSum 'Сумма надбавки'###caption = DATA NUMERIC[16,2] (###detail) @@denomination;
 END
 META defineDocumentAbstractDetailMarkupSumCustomPrefix (detail, prefix, caption)
-    prefix###markupSum 'Сумма надбавки'###caption = ABSTRACT NUMERIC[16,2] (###detail) PERSISTENT;
+    prefix###markupSum 'Сумма надбавки'###caption = ABSTRACT NUMERIC[16,2] (###detail) PERSISTENT @@denomination;
 END
 META defineDocumentInterfaceDetailMarkupSumCustomPrefix (detail, prefix, caption)
     @defineDocumentAbstractDetailMarkupSumCustomPrefix(detail, prefix, caption);
