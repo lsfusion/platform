@@ -9,6 +9,7 @@ import lsfusion.server.logics.DBManager;
 import lsfusion.server.logics.property.AggregateProperty;
 import lsfusion.server.logics.property.cases.graph.Graph;
 import lsfusion.server.logics.tasks.GroupGraphTask;
+import lsfusion.server.session.DataSession;
 import org.antlr.runtime.RecognitionException;
 
 import java.sql.SQLException;
@@ -24,13 +25,16 @@ public class RecalculateAggregationsTask extends GroupGraphTask<AggregatePropert
 
     @Override
     protected void runInnerTask(final AggregateProperty element, ExecutionStack stack) throws RecognitionException, SQLException, SQLHandledException {
-        SQLSession sql = getDbManager().getThreadLocalSql();
-        serviceLogger.info(String.format("Recalculate Aggregation started: %s", element.getSID()));
-        DBManager.run(sql, true, new DBManager.RunService() {
-            public void run(SQLSession sql) throws SQLException, SQLHandledException {
-                element.recalculateAggregation(sql, getBL().LM.baseClass);
-            }
-        });
+        try (final DataSession session = getDbManager().createSession()) {
+            SQLSession sql = getDbManager().getThreadLocalSql();
+            serviceLogger.info(String.format("Recalculate Aggregation started: %s", element.getSID()));
+            DBManager.run(sql, true, new DBManager.RunService() {
+                public void run(SQLSession sql) throws SQLException, SQLHandledException {
+                    element.recalculateAggregation(getBL(), session, sql, getBL().LM.baseClass);
+                }
+            });
+            session.apply(getBL(), stack);
+        }
     }
 
     @Override

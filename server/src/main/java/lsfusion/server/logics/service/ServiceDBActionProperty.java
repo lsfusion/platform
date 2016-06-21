@@ -32,7 +32,7 @@ public class ServiceDBActionProperty extends ScriptingActionProperty {
 
         run(context, new RunService() {
             public void run(SQLSession session, boolean isolatedTransaction) throws SQLException, SQLHandledException {
-                String result = context.getDbManager().recalculateAggregations(session, isolatedTransaction);
+                String result = context.getDbManager().recalculateAggregations(context.stack, session, isolatedTransaction);
                 if(result != null)
                     context.delayUserInterfaction(new MessageClientAction(result, getString("logics.service.db")));
             }});

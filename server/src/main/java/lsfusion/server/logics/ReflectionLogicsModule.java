@@ -58,6 +58,7 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
     public LCP propertyTableSID;
     public LCP quantityProperty;
     public LCP notNullQuantityProperty;
+    public LCP lastRecalculateProperty;
 
     public LCP sidNavigatorElement;
     public LCP numberNavigatorElement;
@@ -227,6 +228,7 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
         propertyTableSID = findProperty("propertyTable[VARSTRING[100],VARSTRING[100]]");
         quantityProperty = findProperty("quantity[Property]");
         notNullQuantityProperty = findProperty("notNullQuantity[Property]");
+        lastRecalculateProperty = findProperty("lastRecalculate[Property]");
 
         // ------- Логика представлений --------- //
 

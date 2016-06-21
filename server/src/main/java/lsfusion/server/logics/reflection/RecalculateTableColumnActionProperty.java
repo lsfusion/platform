@@ -13,6 +13,7 @@ import lsfusion.server.logics.scripted.ScriptingActionProperty;
 import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.logics.service.RunService;
 import lsfusion.server.logics.service.ServiceDBActionProperty;
+import lsfusion.server.session.DataSession;
 
 import java.sql.SQLException;
 import java.util.Iterator;
@@ -35,10 +36,14 @@ public class RecalculateTableColumnActionProperty extends ScriptingActionPropert
         final ObjectValue propertyObject = context.getBL().reflectionLM.propertyTableColumn.readClasses(context, tableColumnObject);
         final String propertyCanonicalName = (String) context.getBL().reflectionLM.canonicalNameProperty.read(context, propertyObject);
 
-        ServiceDBActionProperty.run(context, new RunService() {
-            public void run(SQLSession session, boolean isolatedTransaction) throws SQLException, SQLHandledException {
-                context.getDbManager().recalculateAggregationTableColumn(session, propertyCanonicalName.trim(), isolatedTransaction);
-            }});
+        try(DataSession dataSession = context.createSession()) {
+            ServiceDBActionProperty.run(context, new RunService() {
+                public void run(SQLSession session, boolean isolatedTransaction) throws SQLException, SQLHandledException {
+                    context.getDbManager().recalculateAggregationTableColumn(dataSession, session, propertyCanonicalName.trim(), isolatedTransaction);
+                }
+            });
+            dataSession.apply(context);
+        }
 
         context.delayUserInterfaction(new MessageClientAction(getString("logics.recalculation.completed", getString("logics.recalculation.aggregations")), getString("logics.recalculation.aggregations")));
     }

@@ -94,7 +94,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
     private TreeMap<DBVersion, List<SIDChange>> objectSIDChanges = new TreeMap<>(dbVersionComparator);
 
     private Map<String, String> finalPropertyDrawNameChanges = new HashMap<>();
-    
+
     private DataAdapter adapter;
 
     private RestartManager restartManager;
@@ -112,7 +112,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
     private Integer dbMaxIdLength;
 
     public boolean needExtraUpdateStats = false;
-    
+
     private BaseLogicsModule<?> LM;
 
     private ReflectionLogicsModule reflectionLM;
@@ -137,7 +137,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
     public DataAdapter getAdapter() {
         return adapter;
     }
-    
+
     public void setAdapter(DataAdapter adapter) {
         this.adapter = adapter;
     }
@@ -182,7 +182,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
     public void updateStats(SQLSession sql) throws SQLException, SQLHandledException {
         businessLogics.updateStats(sql);
     }
-    
+
     @Override
     public void afterPropertiesSet() throws Exception {
         Assert.notNull(adapter, "adapter must be specified");
@@ -190,7 +190,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         Assert.notNull(restartManager, "restartManager must be specified");
     }
 
-    public boolean sourceHashChanged; 
+    public boolean sourceHashChanged;
     public String hashModules;
     @Override
     protected void onInit(LifecycleEvent event) {
@@ -199,7 +199,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         try {
             if(adapter.getSyntaxType() == SQLSyntaxType.MSSQL)
                 Expr.useCasesCount = 5;
-            
+
             startLogger.info("Synchronizing DB.");
             sourceHashChanged = synchronizeDB();
         } catch (Exception e) {
@@ -233,7 +233,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
             throw new RuntimeException(e);
         }
     }
-    
+
     public int getSystemUserObject() {
         return systemUserObject;
     }
@@ -253,7 +253,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         public Integer getCurrentComputer() {
             return systemComputer;
         }
-    }; 
+    };
 
     public SQLSession createSQL() throws SQLException, ClassNotFoundException, IllegalAccessException, InstantiationException {
         return createSQL(userProvider);
@@ -300,7 +300,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
     public DataSession createSession() throws SQLException {
         return createSession((OperationOwner)null);
     }
-    
+
     public DataSession createSession(OperationOwner upOwner) throws SQLException {
         return createSession(getThreadLocalSql(), upOwner);
     }
@@ -393,8 +393,8 @@ public class DBManager extends LogicsManager implements InitializingBean {
             logger.error("Error reading computer: ", e);
             throw new RuntimeException(e);
         }
-    }            
-    
+    }
+
     public DataObject getServerComputerObject(ExecutionStack stack) {
         return new DataObject(getComputer(SystemUtils.getLocalHostName(), stack), businessLogics.authenticationLM.computer);
     }
@@ -540,7 +540,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
                         drop = true;
                     }
                 }
-                
+
                 if (drop) {
                     sql.dropIndex(oldTable, oldTable.keys, oldIndexKeysSet, oldOrder, Settings.get().isStartServerAnyWay());
                 } else {
@@ -619,19 +619,19 @@ public class DBManager extends LogicsManager implements InitializingBean {
     private class ProgressStackItemResult {
         ProgressStackItem value;
     }
-    
+
     private OldDBStructure getOldDBStructure(SQLSession sql) throws SQLException, SQLHandledException, IOException {
         DataInputStream inputDB = null;
         StructTable structTable = StructTable.instance;
         byte[] struct = (byte[]) sql.readRecord(structTable, MapFact.<KeyField, DataObject>EMPTY(), structTable.struct, OperationOwner.unknown);
         if (struct != null) {
             inputDB = new DataInputStream(new ByteArrayInputStream(struct));
-        }    
+        }
         return new OldDBStructure(inputDB);
     }
 
     public static boolean explicitMigrate = false;
-    
+
     public boolean synchronizeDB() throws SQLException, IOException, SQLHandledException, ScriptingErrorLog.SemanticErrorException {
         SQLSession sql = getThreadLocalSql();
 
@@ -658,7 +658,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
         // В этот момент в обычной ситуации migration script уже был обработан, вызов оставлен на всякий случай. Повторный вызов ничего не делает.
         runMigrationScript();
-        
+
         Map<String, String> columnsToDrop = new HashMap<>();
 
         boolean noTransSyncDB = Settings.get().isNoTransSyncDB();
@@ -693,9 +693,9 @@ public class DBManager extends LogicsManager implements InitializingBean {
             startLogger.info("Checking indices");
 
             checkIndices(sql, oldDBStructure, newDBStructure);
-            
+
             startLogger.info("Applying migration script (" + oldDBStructure.dbVersion + " -> " + newDBStructure.dbVersion + ")");
-            
+
             // применяем к oldDBStructure изменения из migration script, переименовываем таблицы и поля  
             alterDBStructure(oldDBStructure, newDBStructure, sql);
 
@@ -935,7 +935,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
             businessLogics.updateClassStat(sql, false);
 
             startLogger.info("Recalculating aggregations");
-            recalculateAggregations(sql, recalculateProperties, false, startLogger); // перерасчитаем агрегации
+            recalculateAggregations(getStack(), sql, recalculateProperties, false, startLogger); // перерасчитаем агрегации
             updateAggregationStats(recalculateProperties, tableStats, false);
             updateAggregationStats(recalculateTableProperties, tableStats, true);
             if(!noTransSyncDB)
@@ -1041,7 +1041,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
             throw Throwables.propagate(e);
         }
     }
-    
+
     private boolean fillIDs(Map<String, String> sIDChanges, Map<String, String> objectSIDChanges) throws SQLException, SQLHandledException {
         try (DataSession session = createSession(OperationOwner.unknown)) { // по сути вложенная транзакция
             LM.baseClass.fillIDs(session, LM.staticCaption, LM.staticName, sIDChanges, objectSIDChanges);
@@ -1113,11 +1113,11 @@ public class DBManager extends LogicsManager implements InitializingBean {
             if (propertyCanonicalName.equals(property.getCanonicalName())) {
                 return ((AggregateProperty) property).checkAggregation(session, LM.baseClass);
             }
-        return null; 
+        return null;
     }
 
-    public String recalculateAggregations(SQLSession session, boolean isolatedTransaction) throws SQLException, SQLHandledException {
-        return recalculateAggregations(session, businessLogics.getAggregateStoredProperties(), isolatedTransaction, serviceLogger);
+    public String recalculateAggregations(ExecutionStack stack, SQLSession session, boolean isolatedTransaction) throws SQLException, SQLHandledException {
+        return recalculateAggregations(stack, session, businessLogics.getAggregateStoredProperties(), isolatedTransaction, serviceLogger);
     }
 
     public void ensureLogLevel() {
@@ -1146,7 +1146,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
     public static void run(SQLSession session, boolean runInTransaction, RunService run) throws SQLException, SQLHandledException {
         run(session, runInTransaction, run, 0);
     }
-    
+
     private static void run(SQLSession session, boolean runInTransaction, RunService run, int attempts) throws SQLException, SQLHandledException {
         if(runInTransaction) {
             session.startTransaction(RECALC_TIL, OperationOwner.unknown);
@@ -1160,31 +1160,36 @@ public class DBManager extends LogicsManager implements InitializingBean {
                     run(session, true, run, attempts + 1);
                     return;
                 }
-                
+
                 throw ExceptionUtils.propagate(t, SQLException.class, SQLHandledException.class);
             }
-                
+
         } else
             run.run(session);
     }
 
-    public String recalculateAggregations(SQLSession session, final List<AggregateProperty> recalculateProperties, boolean isolatedTransaction, Logger logger) throws SQLException, SQLHandledException {
+    public String recalculateAggregations(ExecutionStack stack, SQLSession session, final List<AggregateProperty> recalculateProperties, boolean isolatedTransaction, Logger logger) throws SQLException, SQLHandledException {
         final List<String> messageList = new ArrayList<>();
         final int total = recalculateProperties.size();
         final long maxRecalculateTime = Settings.get().getMaxRecalculateTime();
-        for (int i = 0; i < recalculateProperties.size(); i++) {
-            recalculateAggregation(session, isolatedTransaction, new ProgressBar(getString("logics.recalculation.aggregations"), i, total), messageList, maxRecalculateTime, recalculateProperties.get(i), logger);
+        if(total > 0) {
+            try (DataSession dataSession = createSession()) {
+                for (int i = 0; i < recalculateProperties.size(); i++) {
+                    recalculateAggregation(dataSession, session, isolatedTransaction, new ProgressBar(getString("logics.recalculation.aggregations"), i, total), messageList, maxRecalculateTime, recalculateProperties.get(i), logger);
+                }
+                dataSession.apply(businessLogics, stack);
+            }
         }
         return businessLogics.formatMessageList(messageList);
     }
 
     @StackProgress
-    private void recalculateAggregation(SQLSession session, boolean isolatedTransaction, @StackProgress final ProgressBar progressBar, final List<String> messageList, final long maxRecalculateTime, @ParamMessage final AggregateProperty property, final Logger logger) throws SQLException, SQLHandledException {
+    private void recalculateAggregation(final DataSession dataSession, SQLSession session, boolean isolatedTransaction, @StackProgress final ProgressBar progressBar, final List<String> messageList, final long maxRecalculateTime, @ParamMessage final AggregateProperty property, final Logger logger) throws SQLException, SQLHandledException {
         run(session, isolatedTransaction, new RunService() {
             public void run(SQLSession sql) throws SQLException, SQLHandledException {
                 long start = System.currentTimeMillis();
                 logger.info(String.format("Recalculate Aggregation started: %s", property.getSID()));
-                property.recalculateAggregation(sql, LM.baseClass);
+                property.recalculateAggregation(businessLogics, dataSession, sql, LM.baseClass);
 
                 long time = System.currentTimeMillis() - start;
                 String message = String.format("Recalculate Aggregation: %s, %sms", property.getSID(), time);
@@ -1218,42 +1223,45 @@ public class DBManager extends LogicsManager implements InitializingBean {
     }
 
 
-    public void recalculateAggregationTableColumn(SQLSession session, String propertyCanonicalName, boolean isolatedTransaction) throws SQLException, SQLHandledException {
+    public void recalculateAggregationTableColumn(DataSession dataSession, SQLSession session, String propertyCanonicalName, boolean isolatedTransaction) throws SQLException, SQLHandledException {
         for (AggregateProperty property : businessLogics.getAggregateStoredProperties())
             if (propertyCanonicalName.equals(property.getCanonicalName())) {
-                runAggregationRecalculation(session, property, isolatedTransaction);
+                runAggregationRecalculation(dataSession, session, property, isolatedTransaction);
             }
     }
-    
-    private void runAggregationRecalculation(SQLSession session, final AggregateProperty aggregateProperty, boolean isolatedTransaction) throws SQLException, SQLHandledException {
+
+    private void runAggregationRecalculation(final DataSession dataSession, SQLSession session, final AggregateProperty aggregateProperty, boolean isolatedTransaction) throws SQLException, SQLHandledException {
         run(session, isolatedTransaction, new RunService() {
             public void run(SQLSession sql) throws SQLException, SQLHandledException {
-                aggregateProperty.recalculateAggregation(sql, LM.baseClass);
-            }});    
+                aggregateProperty.recalculateAggregation(businessLogics, dataSession, sql, LM.baseClass);
+            }});
     }
 
     public void recalculateAggregationWithDependenciesTableColumn(SQLSession session, String propertyCanonicalName, boolean isolatedTransaction, boolean dependents) throws SQLException, SQLHandledException {
-        recalculateAggregationWithDependenciesTableColumn(session, businessLogics.findProperty(propertyCanonicalName).property, isolatedTransaction, new HashSet<CalcProperty>(), dependents);    
+        try(DataSession dataSession = createSession()) {
+            recalculateAggregationWithDependenciesTableColumn(dataSession, session, businessLogics.findProperty(propertyCanonicalName).property, isolatedTransaction, new HashSet<CalcProperty>(), dependents);
+            dataSession.apply(businessLogics, getStack());
+        }
     }
-    
-    private void recalculateAggregationWithDependenciesTableColumn(SQLSession session, Property property, boolean isolatedTransaction, Set<CalcProperty> calculated, boolean dependents) throws SQLException, SQLHandledException {
+
+    private void recalculateAggregationWithDependenciesTableColumn(DataSession dataSession, SQLSession session, Property property, boolean isolatedTransaction, Set<CalcProperty> calculated, boolean dependents) throws SQLException, SQLHandledException {
         if (!dependents) {
             for (CalcProperty prop : (Iterable<CalcProperty>) ((CalcProperty) property).getDepends()) {
                 if (prop != property && !calculated.contains(prop)) {
-                    recalculateAggregationWithDependenciesTableColumn(session, prop, isolatedTransaction, calculated, false);
+                    recalculateAggregationWithDependenciesTableColumn(dataSession, session, prop, isolatedTransaction, calculated, false);
                 }
-            }            
+            }
         }
         
         if (property instanceof AggregateProperty && ((AggregateProperty) property).isStored()) {
-            runAggregationRecalculation(session, (AggregateProperty) property, isolatedTransaction);
+            runAggregationRecalculation(dataSession, session, (AggregateProperty) property, isolatedTransaction);
             calculated.add((AggregateProperty) property);
         }
 
         if (dependents) {
             for (AggregateProperty prop : businessLogics.getAggregateStoredProperties()) {
                 if (prop != property && !calculated.contains(prop) && CalcProperty.depends(prop, (CalcProperty) property)) {
-                    recalculateAggregationWithDependenciesTableColumn(session, prop, isolatedTransaction, calculated, true);
+                    recalculateAggregationWithDependenciesTableColumn(dataSession, session, prop, isolatedTransaction, calculated, true);
                 }
             }
         }

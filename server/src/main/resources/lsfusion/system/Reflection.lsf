@@ -69,6 +69,8 @@ quantity 'Количество разновидностей' = DATA INTEGER (Pro
 notNullQuantity 'Количество не null значений' = DATA INTEGER (Property);
 overStats 'Кол-во записей' (Property property) = OVERRIDE stats(property), notNullQuantity(property);
 
+lastRecalculate 'Последний пересчёт аггрегаций' = DATA DATETIME (Property);
+
 CLASS PropertyDraw 'Свойство на форме';
 
 CLASS PropertyDrawShowStatus 'Показ свойства' {
@@ -344,7 +346,8 @@ dumb (PropertyGroup pg) = ' ' IF pg IS PropertyGroup;
 
 FORM properties 'Свойства'
     OBJECTS p=Property
-    PROPERTIES(p) READONLY caption, canonicalName, dbName, annotation, tableSID, return, class, complexity, parent, number, quantity, notNullQuantity, userLoggable EDITABLE, loggable, stored EDITABLE, isSetNotNull EDITABLE
+    PROPERTIES(p) READONLY caption, canonicalName, dbName, annotation, tableSID, return, class, complexity, parent, number,
+     quantity, notNullQuantity, userLoggable EDITABLE, loggable, stored EDITABLE, isSetNotNull EDITABLE, lastRecalculate
 
     TREE treePropertiesObject tps=PropertyGroup PARENT parent, ps=Property
     PROPERTIES(tps) READONLY caption, SID, dumb, dumb, dumb, dumb, dumb, parent, number, dumb, dumb, dumb, dumb

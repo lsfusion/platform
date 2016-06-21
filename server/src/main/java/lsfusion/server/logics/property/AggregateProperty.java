@@ -24,7 +24,10 @@ import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.data.query.stat.StatKeys;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassWhere;
+import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.DBManager;
+import lsfusion.server.logics.DataObject;
+import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.property.infer.InferType;
 import lsfusion.server.session.DataSession;
 import lsfusion.server.session.PropertyChanges;
@@ -33,6 +36,7 @@ import lsfusion.server.stack.StackProgress;
 import lsfusion.server.stack.ThisMessage;
 
 import java.sql.SQLException;
+import java.sql.Timestamp;
 
 public abstract class AggregateProperty<T extends PropertyInterface> extends CalcProperty<T> {
 
@@ -166,8 +170,12 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Cal
 
     public static AggregateProperty recalculate = null;
 
-    public void recalculateAggregation(SQLSession session, BaseClass baseClass) throws SQLException, SQLHandledException {
-        recalculateAggregation(session, null, baseClass);
+    public void recalculateAggregation(BusinessLogics BL, DataSession session, SQLSession sql, BaseClass baseClass) throws SQLException, SQLHandledException {
+        recalculateAggregation(sql, null, baseClass);
+
+        ObjectValue propertyObject = BL.reflectionLM.propertyCanonicalName.readClasses(session, new DataObject(getCanonicalName()));
+        if (propertyObject instanceof DataObject)
+            BL.reflectionLM.lastRecalculateProperty.change(new Timestamp(System.currentTimeMillis()), session, (DataObject) propertyObject);
     }
 
     @StackMessage("logics.info.recalculation.of.aggregated.property")
