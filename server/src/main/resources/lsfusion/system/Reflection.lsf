@@ -169,6 +169,7 @@ longSID(TableColumn tableColumn) = sid(table(tableColumn)) + '.' + sid(tableColu
 tableColumnLong 'Колонка' (sID) = GROUP AGGR TableColumn tableColumn BY longSID(tableColumn) WHERE tableColumn IS TableColumn; 
 tableColumnSID (sid) = GROUP MAX TableColumn tableColumn BY sid(tableColumn);
 property 'Свойство' (TableColumn tableColumn) = propertyTable(sid(table(tableColumn)), sid(tableColumn));
+lastRecalculateProperty 'Последний пересчёт аггрегаций' (TableColumn tableColumn) = lastRecalculate(property(tableColumn));
 caption 'Заголовок свойства' (TableColumn tableColumn) = caption(property(tableColumn));
 canonicalName 'Каноническое имя свойства' (TableColumn tableColumn) = canonicalName(property(tableColumn));
 quantity 'Количество разновидностей' (TableColumn tableColumn) = quantity(property(tableColumn));
@@ -245,7 +246,7 @@ FORM physicalModel 'Таблицы'
 
     OBJECTS tc=TableColumn
     PROPERTIES(tc) READONLY sid, caption, canonicalName, property, quantity, notNullQuantity,
-                   percentNotNull
+                   percentNotNull, lastRecalculateProperty
     PROPERTIES(tc) notRecalculate, recalculateAggregation, recalculateAggregationWithDependencies, 
             recalculateAggregationWithDependents, checkAggregation
 
@@ -253,9 +254,11 @@ FORM physicalModel 'Таблицы'
     PROPERTIES(dc) READONLY sidTable, sid, time, revision
     PROPERTIES(dc) drop
 
+    FILTERGROUP filtersForm
+        FILTER 'Фильтр по таблице' table(tc)==t 'F8' DEFAULT
+
     FILTERS
-        table(tk)==t,
-        table(tc)==t
+        table(tk)==t
 ;
 
 DESIGN physicalModel {
