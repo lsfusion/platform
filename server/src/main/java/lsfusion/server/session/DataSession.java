@@ -1831,9 +1831,12 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         sessionEventOldDepends = null;
     }
     public Iterable<FormInstance> getAllActiveForms() { // including nested
-        Iterable<FormInstance> result = activeForms.keysIt();
+        Iterable<FormInstance> result;
+        synchronized(closeLock) {
+            result = BaseUtils.toList(activeForms.keysIt());
+        }
         if(parentSession != null)
-            result = Iterables.concat(result, parentSession.activeForms.keysIt());
+            result = Iterables.concat(result, parentSession.getAllActiveForms());
         return result;
     }
     public <K> ImOrderSet<K> filterOrderEnv(ImOrderMap<K, SessionEnvEvent> elements) {
