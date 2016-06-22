@@ -748,7 +748,10 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
             protected ServerResponse callInvocation() throws Throwable {
                 ExecutionStack stack = getStack();
                 if (type == 2) {
-                    runNotification(null, stack, actionSID);
+                    //временно, так как иначе все контроллеры идут от верхней сессии, в частности, currentUser получается чужой
+                    try(DataSession session = createSession()) {
+                        runNotification(session, stack, actionSID);
+                    }
                 } else {
                     try (DataSession session = createSession()) {
                         runAction(session, actionSID, type == 1, stack);
