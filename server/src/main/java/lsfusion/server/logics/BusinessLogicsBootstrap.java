@@ -111,7 +111,7 @@ public class BusinessLogicsBootstrap {
                             logger.info("TICK <<< : " + ticker.result + ">>>");
                             Map<Thread, StackTraceElement[]> allStackTraces = Thread.getAllStackTraces();
                             for (Map.Entry<Thread, StackTraceElement[]> entry : allStackTraces.entrySet()) {
-                                logger.info("Thread : " + entry.getKey() + '\n' + ExceptionUtils.getStackTrace(entry.getValue()));
+                                logger.info("Thread : " + entry.getKey() + ", State : " + entry.getKey().getState() + '\n' + ExceptionUtils.getStackTrace(entry.getValue()));
                             }
                         }
                     }
