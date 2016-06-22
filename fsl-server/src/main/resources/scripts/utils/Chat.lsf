@@ -54,7 +54,7 @@ seekLastMessageInFullChat = ACTION ABSTRACT ();
 
 author 'Автор' = DATA CustomUser (Message);
 nameAutor 'Автор' (Message message) = name(author(message)) MAXCHARWIDTH 30 PREFCHARWIDTH 30;
-text 'Текст' = DATA TEXT (Message);
+text 'Текст' = DATA TEXT (Message) MINCHARWIDTH 50;
 dateTime 'Время' = DATA DATETIME (Message) MAXCHARWIDTH 30 PREFCHARWIDTH 30;
 push 'Push' = DATA BOOLEAN (Message);
 status 'Статус' = DATA MessageStatus (Message, CustomUser);
@@ -179,7 +179,7 @@ FORM fullChat 'Чат'
 DESIGN fullChat {
     main {
         NEW topMain {
-            type = CONTAINERH;
+            type = SPLITH;
             fill = 1;
             NEW left {
                 fill = 0.3;
@@ -196,19 +196,29 @@ DESIGN fullChat {
                 
             }
             NEW right {
+                type = SPLITV;
                 fill = 0.7;
-                MOVE m.box { fill = 0.8; }
-                MOVE PROPERTY(newMessage(c)) {
-                    panelCaptionAbove = TRUE;
-                    fill = 0.2;
-                };             
-                NEW sendBox {
-                    type = CONTAINERH;
-                    MOVE PROPERTY(sendMessage(c, u));
+                MOVE m.box { 
+                    fill = 0.8; 
+                    PROPERTY(text(m)) {
+                        minimumWidth = 300;
+                    }                       
+                }
+                            
+                NEW bottom {   
+                    fill = 0.2; 
+                    type = CONTAINERV;
+                    MOVE PROPERTY(newMessage(c)) {
+                        fill = 1; 
+                        panelCaptionAbove = TRUE;
+                    }           
+                    MOVE PROPERTY(sendMessage(c, u)) {
+                        font = 'bold 24';
+                    }
                 }
             }            
         }
-        REMOVE functions.box;
+        MOVE functions.box;
     }           
 }
 
