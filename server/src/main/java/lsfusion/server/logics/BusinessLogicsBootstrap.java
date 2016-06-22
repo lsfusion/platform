@@ -104,13 +104,15 @@ public class BusinessLogicsBootstrap {
                     @Override
                     public void run() {
                         //убиваемся, если через 5 секунд ещё не вышли
-                        SystemUtils.sleep(1000);
+                        while(true) {
+                            SystemUtils.sleep(1000);
 
-                        ticker.set(ticker.result + 1);
-                        logger.info("TICK <<< : " + ticker.result  + ">>>");
-                        Map<Thread, StackTraceElement[]> allStackTraces = Thread.getAllStackTraces();
-                        for (Map.Entry<Thread, StackTraceElement[]> entry : allStackTraces.entrySet()) {
-                            logger.info("Thread : " + entry.getKey() + '\n' + ExceptionUtils.getStackTrace(entry.getValue()));
+                            ticker.set(ticker.result + 1);
+                            logger.info("TICK <<< : " + ticker.result + ">>>");
+                            Map<Thread, StackTraceElement[]> allStackTraces = Thread.getAllStackTraces();
+                            for (Map.Entry<Thread, StackTraceElement[]> entry : allStackTraces.entrySet()) {
+                                logger.info("Thread : " + entry.getKey() + '\n' + ExceptionUtils.getStackTrace(entry.getValue()));
+                            }
                         }
                     }
                 };
