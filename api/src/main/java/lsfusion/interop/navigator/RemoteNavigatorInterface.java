@@ -36,6 +36,10 @@ public interface RemoteNavigatorInterface extends PendingRemoteInterface {
 
     boolean isForbidDuplicateForms() throws RemoteException;
 
+    //for notifications
+    void setCurrentForm(String formID) throws RemoteException;
+    String getCurrentForm() throws RemoteException;
+
     // пингование сервера
     ClientCallBackInterface getClientCallBack() throws RemoteException;
 

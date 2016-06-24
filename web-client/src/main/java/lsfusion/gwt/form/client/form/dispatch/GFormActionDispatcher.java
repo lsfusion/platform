@@ -123,4 +123,9 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
     public void execute(GFocusAction action) {
         form.focusProperty(action.propertyId);
     }
+
+    @Override
+    public void execute(GActivateTabAction action) {
+        form.activateTab(action.formSID, action.tabSID);
+    }
 }

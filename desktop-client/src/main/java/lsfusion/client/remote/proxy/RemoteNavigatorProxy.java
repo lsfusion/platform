@@ -120,6 +120,19 @@ public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface> extends Re
         return result;
     }
 
+    @Override
+    public void setCurrentForm(String formID) throws RemoteException {
+        target.setCurrentForm(formID);
+    }
+
+    @Override
+    public String getCurrentForm() throws RemoteException {
+        logRemoteMethodStartCall("getCurrentForm");
+        String result = target.getCurrentForm();
+        logRemoteMethodEndCall("getCurrentForm", result);
+        return result;
+    }
+
     @ImmutableMethod
     public byte[] getNavigatorTree() throws RemoteException {
         try {

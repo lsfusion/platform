@@ -59,6 +59,7 @@ import lsfusion.gwt.form.shared.view.window.GModalityType;
 import net.customware.gwt.dispatch.shared.Result;
 import net.customware.gwt.dispatch.shared.general.StringResult;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.*;
 
@@ -163,6 +164,15 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         initializeAutoRefresh();
 
         hotkeyManager.install(this);
+    }
+
+    protected void dropCurrentForm() {
+        if(formsController != null)
+        formsController.dropCurForm(this);
+    }
+
+    public GFormLayout getFormLayout() {
+        return formLayout;
     }
 
     public boolean hasCanonicalName() {
@@ -375,6 +385,10 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
     public LinkedHashMap<GPropertyDraw, Boolean> getDefaultOrders(GGroupObject groupObject) {
         return form.getDefaultOrders(groupObject);
+    }
+
+    public void executeNotificationAction(final Integer idNotification) throws IOException {
+        syncDispatch(new ExecuteNotification(idNotification), new ServerResponseCallback());
     }
 
     private void initializeAutoRefresh() {
@@ -598,6 +612,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         if (modalityType == GModalityType.DOCKED_MODAL) {
             setBlockingWidget(blockingWidget);
         }
+        formsController.setCurrentForm(form.sID);
     }
 
     public void showClassDialog(GObjectClass baseClass, GObjectClass defaultClass, boolean concreate, final ClassChosenHandler classChosenHandler) {
@@ -910,6 +925,16 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         if (propertyDraw != null && controllers.containsKey(propertyDraw.groupObject)) {
             controllers.get(propertyDraw.groupObject).focusProperty(propertyDraw);
         }
+    }
+
+    public void activateTab(String formID, String tabID) {
+        int a = 5;
+        a++;
+        formsController.selectTab(formID, tabID);
+//        GPropertyDraw propertyDraw = form.getProperty(propertyDrawId);
+//        if (propertyDraw != null && controllers.containsKey(propertyDraw.groupObject)) {
+//            controllers.get(propertyDraw.groupObject).focusProperty(propertyDraw);
+//        }
     }
 
     public void countRecords(final GGroupObject groupObject) {

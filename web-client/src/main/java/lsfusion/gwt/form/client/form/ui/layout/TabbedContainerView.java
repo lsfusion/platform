@@ -59,6 +59,10 @@ public class TabbedContainerView extends GAbstractContainerView {
         });
     }
 
+    public void selectTab(int i) {
+        tabbedDelegate.selectTab(i);
+    }
+
     protected void onTabSelected(int selectedIndex, GFormController formController, GContainer container) {
         if (selectedIndex >= 0) {
             GComponent selectedChild = visibleChildren.get(selectedIndex);

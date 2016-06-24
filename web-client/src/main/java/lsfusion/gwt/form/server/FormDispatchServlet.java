@@ -36,6 +36,8 @@ public class FormDispatchServlet extends LogicsAwareDispatchServlet<RemoteLogics
         registry.addHandler(new ClosePressedHandler(this));
         registry.addHandler(new FormHiddenHandler(this));
         registry.addHandler(new OkPressedHandler(this));
+        registry.addHandler(new SetCurrentFormHandler(this));
+        registry.addHandler(new ExecuteNotificationHandler(this));
         registry.addHandler(new ExecuteNavigatorActionHandler(this));
         registry.addHandler(new ContinueNavigatorActionHandler(this));
         registry.addHandler(new ThrowInNavigatorActionHandler(this));

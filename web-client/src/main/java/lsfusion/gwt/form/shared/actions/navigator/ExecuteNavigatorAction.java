@@ -6,10 +6,12 @@ import net.customware.gwt.dispatch.shared.Action;
 
 public class ExecuteNavigatorAction implements Action<ServerResponseResult>, NavigatorAction {
     public String actionSID;
+    public int type;
 
     public ExecuteNavigatorAction() {}
 
-    public ExecuteNavigatorAction(String actionSID) {
+    public ExecuteNavigatorAction(String actionSID, int type) {
         this.actionSID = actionSID;
+        this.type = type;
     }
 }

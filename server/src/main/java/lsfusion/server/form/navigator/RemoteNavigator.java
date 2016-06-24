@@ -108,6 +108,8 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
 
     private static final List<Pair<DataObject, String>> recentlyOpenForms = Collections.synchronizedList(new ArrayList<Pair<DataObject, String>>());
 
+    private String formID = null;
+
     // в настройку надо будет вынести : по группам, способ релевантности групп, какую релевантность отсекать
     public RemoteNavigator(LogicsInstance logicsInstance, boolean isFullClient, NavigatorInfo navigatorInfo, User currentUser, int port, ExecutionStack stack) throws RemoteException, ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException, SQLHandledException {
         super(port);
@@ -244,6 +246,15 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }
+    }
+
+    @Override
+    public void setCurrentForm(String formID) throws RemoteException {
+        this.formID = formID;
+    }
+
+    public String getCurrentForm() {
+        return formID;
     }
 
     public byte[] getCurrentUserInfoByteArray() {
@@ -777,6 +788,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
             try {
                 try(DataSession session = createSession()) {
                     businessLogics.authenticationLM.deliveredNotificationAction.execute(session, stack, user);
+                    session.apply(businessLogics, stack);
                 }
                 EnvStackRunnable notification = notificationsMap.getNotification(idNotification);
                 notification.run(env, stack);

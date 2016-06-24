@@ -36,4 +36,6 @@ public interface GActionDispatcher {
     public void execute(GExportFileAction action);
     
     public void execute(GFocusAction action);
+
+    public void execute(GActivateTabAction action);
 }
