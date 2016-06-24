@@ -2350,10 +2350,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         final Result<Double> prevStart = new Result<>(0.0);
         return scheduler.createSystemTask(new EExecutionStackRunnable() {
             public void run(ExecutionStack stack) throws Exception {
-                try {
-                    SQLSession.restartConnections(prevStart);
-                } catch (Throwable t) { // временно так, чтобы не останавливался restartConnections никогда
-                }
+                SQLSession.restartConnections(prevStart);
             }
         }, false, Settings.get().getPeriodRestartConnections(), false, "Connection restart");
     }

@@ -2789,40 +2789,46 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     }
 
     public static void restartConnections(Result<Double> prevStart) throws SQLException, SQLHandledException {
-        Double leftFromPrevStart = prevStart.result;
-
-        Map<SQLSession, Integer> sessions = new IdentityHashMap<>(sqlSessionMap);
-
-        double connectionsRestart = Settings.get().getPercentRestartConnections() * sessions.size() / 100;
-        connectionsRestart += leftFromPrevStart;
-        int removeFirst = (int) Math.round(connectionsRestart);
-        leftFromPrevStart = connectionsRestart - removeFirst;
-
-        prevStart.set(leftFromPrevStart);
-
-        if(removeFirst == 0)
-            return;
-
-        List<ConnectionUsage> usedSQLConnections = new ArrayList<>();
-
-        for(SQLSession session : sessions.keySet()) {
-            session.readRestartConnection(usedSQLConnections, false);
-        }
-
-        Collections.sort(usedSQLConnections); // least first
-
-        Map<ConnectionPool, Connection> notUsedNewConnections = new IdentityHashMap<ConnectionPool, Connection>();
         try {
-            int succeeded = 0;
-            for (ConnectionUsage usage : usedSQLConnections) {
-                if (usage.sql.restartConnection(usage.score, notUsedNewConnections))
-                    succeeded++;
-                if (succeeded >= removeFirst)
-                    break;
+            Double leftFromPrevStart = prevStart.result;
+
+            Map<SQLSession, Integer> sessions = new IdentityHashMap<>(sqlSessionMap);
+
+            double connectionsRestart = Settings.get().getPercentRestartConnections() * sessions.size() / 100;
+            connectionsRestart += leftFromPrevStart;
+            int removeFirst = (int) Math.round(connectionsRestart);
+            leftFromPrevStart = connectionsRestart - removeFirst;
+
+            prevStart.set(leftFromPrevStart);
+
+            ServerLoggers.exInfoLogger.info("Global restart connections : count - " + sessions.size() + ", remove first : " + removeFirst);
+
+            if(removeFirst == 0)
+                return;
+
+            List<ConnectionUsage> usedSQLConnections = new ArrayList<>();
+
+            for(SQLSession session : sessions.keySet()) {
+                session.readRestartConnection(usedSQLConnections, false);
             }
-        } finally {
-            for (Connection notUsedConnection : notUsedNewConnections.values())
-                notUsedConnection.close();
+
+            Collections.sort(usedSQLConnections); // least first
+
+            Map<ConnectionPool, Connection> notUsedNewConnections = new IdentityHashMap<ConnectionPool, Connection>();
+            try {
+                int succeeded = 0;
+                for (ConnectionUsage usage : usedSQLConnections) {
+                    if (usage.sql.restartConnection(usage.score, notUsedNewConnections))
+                        succeeded++;
+                    if (succeeded >= removeFirst)
+                        break;
+                }
+            } finally {
+                for (Connection notUsedConnection : notUsedNewConnections.values())
+                    notUsedConnection.close();
+            }
+        } catch (Throwable t) { // временно так, чтобы не останавливался restartConnections никогда
+            logger.error("GLOBAL RESTART CONNECTIONS ERROR", t);
         }
     }
 
