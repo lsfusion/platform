@@ -155,6 +155,7 @@ FORM fullChat 'Чат'
     
     EVENTS ON INIT markSeenOnChange(c)
     EVENTS ON CHANGE c markSeenOnChange(c)
+    EVENTS ON CLOSE markSeenOnChange(c)
 
     OBJECTS u = CustomUser
     PROPERTIES(u) name, unreadMessages BACKGROUND backgroundUnread(u) 
@@ -273,7 +274,8 @@ markSeenOnChange(Chat c) += ACTION {
 };
 
 closeChat 'Закрыть' = ACTION { 
-    markSeenMessages(currentUser()); 
+    markSeenMessages(currentUser());
+    apply(); 
     formClose();
 }
 
@@ -298,6 +300,7 @@ openChat 'Перейти в чат' (Chat c, Message m) = ACTION {
         SEEK LAST fullChat.m NULL;
         newMessage(c) <-reply(m);
     } CONNECTION currentConnection(); }
+    APPLY NESTED newMessage[Chat], reply[Message] {};
     formClose();
 };
 
