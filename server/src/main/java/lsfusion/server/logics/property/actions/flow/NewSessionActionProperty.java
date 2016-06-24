@@ -92,7 +92,7 @@ public class NewSessionActionProperty extends AroundAspectActionProperty {
     }
 
     protected void afterAspect(FlowResult result, ExecutionContext<PropertyInterface> context, ExecutionContext<PropertyInterface> innerContext) throws SQLException, SQLHandledException {
-        if (!context.getSession().isInTransaction() && noClose) {
+        if (!context.getSession().isInTransaction() && !noClose) {
             if (!isNested) {
                 migrateSessionProperties(innerContext.getSession(), context.getSession());
             }
