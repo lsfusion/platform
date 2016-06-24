@@ -480,7 +480,7 @@
         <appender-ref ref="terminallog"/>
     </category>
 
-    <category name="SchedulerLogger" additivity="false">
+    <category name="SchedulerLogger">
         <priority value="ALL"/>
         <appender-ref ref="schedulerlog"/>
     </category>

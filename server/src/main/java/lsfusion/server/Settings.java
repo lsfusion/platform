@@ -1911,7 +1911,7 @@ public class Settings {
         this.subReportTableOptimization = subReportTableOptimization;
     }
 
-    private boolean disableUnreferenced = true; // проблема в том что DataSession не синхронизирована (assertion, что синхронизация обеспечивается модальностью вызовов), а unreferenced нарушает этот assertion (и непонятно как ее обойти, да и не понятно имеет ли смысл)
+    private boolean disableUnreferenced = true; // есть вопрос с синхронизацией explicitClose FormInstance
 
     public boolean isDisableUnreferenced() {
         return disableUnreferenced;
@@ -1921,13 +1921,13 @@ public class Settings {
         this.disableUnreferenced = disableUnreferenced;
     }
 
-    private boolean disableFinalized = false; // есть вопрос с синхронизацией explicitClose FormInstance
+    private boolean enableDumpThreadsOnClose = true;
 
-    public boolean isDisableFinalized() {
-        return disableFinalized;
+    public boolean isEnableDumpThreadsOnClose() {
+        return enableDumpThreadsOnClose;
     }
 
-    public void setDisableFinalized(boolean disableFinalized) {
-        this.disableFinalized = disableFinalized;
+    public void setEnableDumpThreadsOnClose(boolean enableDumpThreadsOnClose) {
+        this.enableDumpThreadsOnClose = enableDumpThreadsOnClose;
     }
 }

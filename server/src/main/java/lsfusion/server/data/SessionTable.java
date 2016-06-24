@@ -273,11 +273,6 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
         public int immutableHashCode() {
             return 31 * (31 * (31 * (31 * (31 * keys.hashCode() + properties.hashCode()) + classes.hashCode()) + propertyClasses.hashCode()) + statKeys.hashCode()) + statProps.hashCode();
         }
-
-        @Override
-        public String toString() {
-            return "{ cl : " + classes + " " + propertyClasses + ", st: " + statKeys + " " + statProps + "}" ;
-        }
     }
 
     private Struct struct = null;
@@ -722,13 +717,14 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
     }
     
     public void saveToDBForDebug(SQLSession sql) throws SQLException, IllegalAccessException, InstantiationException, ClassNotFoundException, SQLHandledException {
-        try(SQLSession dbSql = ThreadLocalContext.getDbManager().createSQL()) {
+        SQLSession dbSql = ThreadLocalContext.getDbManager().createSQL();
 
-            dbSql.startTransaction(DBManager.DEBUG_TIL, OperationOwner.unknown);
-            dbSql.ensureTable(this, sqlLogger);
-            dbSql.insertSessionBatchRecords(getName(sql.syntax), keys, read(sql, ThreadLocalContext.getBusinessLogics().LM.baseClass, OperationOwner.debug).getMap(), OperationOwner.debug, TableOwner.debug);
-            dbSql.commitTransaction();
-        }
+        dbSql.startTransaction(DBManager.DEBUG_TIL, OperationOwner.unknown);
+        dbSql.ensureTable(this, sqlLogger);
+        dbSql.insertSessionBatchRecords(getName(sql.syntax), keys, read(sql, ThreadLocalContext.getBusinessLogics().LM.baseClass, OperationOwner.debug).getMap(), OperationOwner.debug, TableOwner.debug);
+        dbSql.commitTransaction();
+
+        dbSql.close(OperationOwner.unknown);
     }
     
     public static void saveToDBForDebug(ImSet<? extends Value> values, SQLSession sql) throws SQLException, IllegalAccessException, ClassNotFoundException, InstantiationException, SQLHandledException {

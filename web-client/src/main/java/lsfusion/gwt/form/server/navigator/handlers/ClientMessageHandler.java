@@ -9,12 +9,10 @@ import lsfusion.interop.RemoteLogicsInterface;
 import lsfusion.interop.remote.CallbackMessage;
 import lsfusion.interop.remote.ClientCallbackMessage;
 import lsfusion.interop.remote.LifecycleMessage;
-import lsfusion.interop.remote.PushMessage;
 import net.customware.gwt.dispatch.server.ExecutionContext;
 import net.customware.gwt.dispatch.shared.DispatchException;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 public class ClientMessageHandler extends SimpleActionHandlerEx<ClientMessage, ClientMessageResult, RemoteLogicsInterface> implements NavigatorActionHandler {
@@ -25,23 +23,17 @@ public class ClientMessageHandler extends SimpleActionHandlerEx<ClientMessage, C
     @Override
     public ClientMessageResult executeEx(ClientMessage action, ExecutionContext context) throws DispatchException, IOException {
         List<LifecycleMessage> messages = servlet.getNavigator().getClientCallBack().pullMessages();
-        return getClientMessageResult(messages);
+        return new ClientMessageResult(serverRestarting(messages));
     }
 
-    private ClientMessageResult getClientMessageResult(List<LifecycleMessage> messages) throws IOException {
+    private boolean serverRestarting(List<LifecycleMessage> messages) {
         boolean result = false;
-        String currentForm = null;
-        List<Integer> notificationList = new ArrayList<>();
         if(messages != null) {
-            currentForm = servlet.getNavigator().getCurrentForm();
             for (LifecycleMessage message : messages) {
                 if (message instanceof ClientCallbackMessage && ((ClientCallbackMessage) message).message.equals(CallbackMessage.SERVER_RESTARTING))
                     result = true;
-                else if(message instanceof PushMessage) {
-                    notificationList.add(((PushMessage) message).idNotification);
-                }
             }
         }
-        return new ClientMessageResult(result, currentForm, notificationList);
+        return result;
     }
 }

@@ -7,8 +7,6 @@ import lsfusion.gwt.base.client.Dimension;
 import lsfusion.gwt.base.client.ErrorHandlingCallback;
 import lsfusion.gwt.base.client.ui.GKeyStroke;
 import lsfusion.gwt.base.shared.actions.NumberResult;
-import lsfusion.gwt.form.client.MainFrame;
-import lsfusion.gwt.form.client.form.DefaultFormsController;
 import lsfusion.gwt.form.client.form.FormsController;
 import lsfusion.gwt.form.client.form.ui.GFormController;
 import lsfusion.gwt.form.shared.view.GForm;
@@ -31,7 +29,6 @@ public class GResizableModalForm extends GResizableModalWindow {
             public void hideForm() {
                 super.hideForm();
                 GResizableModalForm.this.hide();
-                dropCurrentForm();
             }
 
             @Override
@@ -50,10 +47,6 @@ public class GResizableModalForm extends GResizableModalWindow {
 
         //сразу добавляем в DOM, чтобы можно было посчитать естественную ширину элементов
         attach();
-    }
-
-    public GFormController getForm() {
-        return form;
     }
 
     @Override

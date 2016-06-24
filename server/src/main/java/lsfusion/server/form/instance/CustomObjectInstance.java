@@ -28,7 +28,7 @@ public class CustomObjectInstance extends ObjectInstance {
     private WeakReference<CustomClassListener> weakClassListener;
 
     public CustomClassListener getClassListener() {
-        return weakClassListener == null ? null : weakClassListener.get();
+        return weakClassListener.get();        
     }
 
     public void setClassListener(CustomClassListener classListener) {

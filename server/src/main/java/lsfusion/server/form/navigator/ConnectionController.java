@@ -5,5 +5,6 @@ import lsfusion.server.logics.ObjectValue;
 
 public interface ConnectionController {
 
+    void changeCurrentConnection(DataObject connection);
     ObjectValue getCurrentConnection();
 }

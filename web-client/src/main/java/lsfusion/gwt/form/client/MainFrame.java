@@ -17,18 +17,15 @@ import lsfusion.gwt.base.client.ErrorHandlingCallback;
 import lsfusion.gwt.base.client.GwtClientUtils;
 import lsfusion.gwt.base.client.ui.DialogBoxHelper;
 import lsfusion.gwt.base.shared.actions.BooleanResult;
-import lsfusion.gwt.base.shared.actions.VoidResult;
 import lsfusion.gwt.form.client.dispatch.NavigatorDispatchAsync;
 import lsfusion.gwt.form.client.form.DefaultFormsController;
 import lsfusion.gwt.form.client.form.dispatch.GwtActionDispatcher;
-import lsfusion.gwt.form.client.form.ui.GFormController;
 import lsfusion.gwt.form.client.form.ui.dialog.WindowHiddenHandler;
 import lsfusion.gwt.form.client.log.GLog;
 import lsfusion.gwt.form.client.navigator.GNavigatorAction;
 import lsfusion.gwt.form.client.navigator.GNavigatorController;
 import lsfusion.gwt.form.client.window.WindowsController;
 import lsfusion.gwt.form.shared.actions.form.ServerResponseResult;
-import lsfusion.gwt.form.shared.actions.navigator.SetCurrentForm;
 import lsfusion.gwt.form.shared.actions.navigator.*;
 import lsfusion.gwt.form.shared.view.GDefaultFormsType;
 import lsfusion.gwt.form.shared.view.actions.GFormAction;
@@ -36,7 +33,6 @@ import lsfusion.gwt.form.shared.view.window.GAbstractWindow;
 import lsfusion.gwt.form.shared.view.window.GModalityType;
 import lsfusion.gwt.form.shared.view.window.GNavigatorWindow;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -76,27 +72,12 @@ public class MainFrame implements EntryPoint {
         formsController = new DefaultFormsController() {
             @Override
             public void executeNavigatorAction(GNavigatorAction action) {
-                dispatcher.execute(new ExecuteNavigatorAction(action.sid, 1), new ErrorHandlingCallback<ServerResponseResult>() {
+                dispatcher.execute(new ExecuteNavigatorAction(action.sid), new ErrorHandlingCallback<ServerResponseResult>() {
                     @Override
                     public void success(ServerResponseResult result) {
                         actionDispatcher.dispatchResponse(result);
                     }
                 });
-            }
-
-            @Override
-            public void executeNotificationAction(String actionSID, int type) {
-                dispatcher.execute(new ExecuteNavigatorAction(actionSID, type), new ErrorHandlingCallback<ServerResponseResult>() {
-                    @Override
-                    public void success(ServerResponseResult result) {
-                        actionDispatcher.dispatchResponse(result);
-                    }
-                });
-            }
-
-            @Override
-            public void setCurrentForm(String formID) {
-                dispatcher.execute(new SetCurrentForm(formID), new ErrorHandlingCallback<VoidResult>());
             }
         };
 
@@ -175,19 +156,6 @@ public class MainFrame implements EntryPoint {
                                     }
                                 }
                             });
-                        } else {
-                            for(Integer idNotification : result.notificationList) {
-                                GFormController form = result.currentForm == null ? null : formsController.getForm(result.currentForm);
-                                if (form != null)
-                                    try {
-                                        form.executeNotificationAction(idNotification);
-                                    } catch (IOException e) {
-                                        GWT.log(e.getMessage());
-                                    }
-                                else {
-                                    formsController.executeNotificationAction(String.valueOf(idNotification), 2);
-                                }
-                            }
                         }
                     }
 
@@ -199,7 +167,7 @@ public class MainFrame implements EntryPoint {
                 });
                 return isShouldRepeatPingRequest();
             }
-        }, 1000);
+        }, 10000);
     }
     
     private void setShouldRepeatPingRequest(boolean shouldRepeatPingRequest) {

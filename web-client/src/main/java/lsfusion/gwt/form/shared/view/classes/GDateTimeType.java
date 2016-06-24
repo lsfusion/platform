@@ -29,11 +29,8 @@ public class GDateTimeType extends GDataType {
 
     @Override
     public Timestamp parseString(String value) throws ParseException {
-        if (value.isEmpty()) {
-            return null;
-        }
         Date date = GDateType.parseDate(value, getDefaultDateTimeFormat(), getDefaultDateTimeShortFormat(), getDefaultDateFormat());
-        return new Timestamp(date.getTime());
+        return value.isEmpty() ? null : new Timestamp(date.getTime());
     }
 
     @Override

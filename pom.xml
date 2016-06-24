@@ -9,7 +9,7 @@
 
     <groupId>lsfusion.platform</groupId>
     <artifactId>platform</artifactId>
-    <version>1.2.2-SNAPSHOT</version>
+    <version>1.2.1</version>
     <packaging>pom</packaging>
     <name>lsFusion platform</name>
 
@@ -27,7 +27,7 @@
     </modules>
 
     <scm>
-        <developerConnection>scm:svn:svn://server/lsfusion/platform/branches/platform-RC</developerConnection>
+        <developerConnection>scm:svn:svn://server/lsfusion/platform/tags/platform-1.2.1</developerConnection>
     </scm>
 
     <build>

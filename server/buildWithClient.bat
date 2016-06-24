@@ -1,5 +1,5 @@
 set BUILD_DIR=%~dp0
-call buildTrunk
+call build
 
 cd %BUILD_DIR%\..\desktop-client
 call assemble

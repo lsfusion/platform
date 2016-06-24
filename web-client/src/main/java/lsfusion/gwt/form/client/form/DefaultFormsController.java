@@ -14,41 +14,28 @@ import lsfusion.gwt.base.client.ErrorHandlingCallback;
 import lsfusion.gwt.base.client.GwtClientUtils;
 import lsfusion.gwt.form.client.MainFrame;
 import lsfusion.gwt.form.client.dispatch.NavigatorDispatchAsync;
-import lsfusion.gwt.form.client.form.ui.GFormController;
 import lsfusion.gwt.form.client.form.ui.dialog.GResizableModalForm;
 import lsfusion.gwt.form.client.form.ui.dialog.WindowHiddenHandler;
-import lsfusion.gwt.form.client.form.ui.layout.GAbstractContainerView;
-import lsfusion.gwt.form.client.form.ui.layout.GFormLayout;
-import lsfusion.gwt.form.client.form.ui.layout.TabbedContainerView;
 import lsfusion.gwt.form.shared.actions.GetForm;
 import lsfusion.gwt.form.shared.actions.GetFormResult;
-import lsfusion.gwt.form.shared.view.GComponent;
-import lsfusion.gwt.form.shared.view.GContainer;
 import lsfusion.gwt.form.shared.view.GFontMetrics;
 import lsfusion.gwt.form.shared.view.GForm;
 import lsfusion.gwt.form.shared.view.grid.EditEvent;
 import lsfusion.gwt.form.shared.view.window.GModalityType;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public abstract class DefaultFormsController implements FormsController {
     private final TabLayoutPanel tabsPanel;
     private List<String> formsList = new ArrayList<>();
-    private List<GFormController> gFormControllersList = new ArrayList<>();
-    private Map<String, GFormController> gFormControllersMap = new HashMap<>();
 
     public DefaultFormsController() {
         tabsPanel = new TabLayoutPanel(21, Style.Unit.PX);
         tabsPanel.addSelectionHandler(new SelectionHandler<Integer>() {
             @Override
             public void onSelection(SelectionEvent<Integer> event) {
-                int selected = tabsPanel.getSelectedIndex();
-                ((FormDockable.ContentWidget) tabsPanel.getWidget(selected)).setSelected(true);
-                if(gFormControllersList.size() > selected)
-                    setCurForm(gFormControllersList.get(selected));
+                ((FormDockable.ContentWidget) tabsPanel.getWidget(tabsPanel.getSelectedIndex())).setSelected(true);
             }
         });
         tabsPanel.addBeforeSelectionHandler(new BeforeSelectionHandler<Integer>() {
@@ -139,15 +126,13 @@ public abstract class DefaultFormsController implements FormsController {
             form.caption += "(" + form.sID + ")";
         }
         if (modalityType.isModalWindow()) {
-            GResizableModalForm modalForm = showModalForm(form, modalityType, initFilterEvent, hiddenHandler);
-            setCurForm(modalForm.getForm());
+            showModalForm(form, modalityType, initFilterEvent, hiddenHandler);
         } else {
             if (dockable == null) {
                 dockable = addDockable(new FormDockable(this, form), form.sID);
             } else {
                 dockable.initialize(this, form);
             }
-            setCurForm(dockable.getForm());
 
             final FormDockable finalDockable = dockable;
             dockable.setHiddenHandler(new WindowHiddenHandler() {
@@ -167,10 +152,10 @@ public abstract class DefaultFormsController implements FormsController {
         tabsPanel.selectTab(widget);
     }
 
-    private GResizableModalForm showModalForm(GForm form, GModalityType modality, EditEvent initFilterEvent, final WindowHiddenHandler handler) {
+    private void showModalForm(GForm form, GModalityType modality, EditEvent initFilterEvent, final WindowHiddenHandler handler) {
         assert modality.isModalWindow();
 
-        return GResizableModalForm.showForm(this, form, modality.isDialog(), initFilterEvent, handler);
+        GResizableModalForm.showForm(this, form, modality.isDialog(), initFilterEvent, handler);
     }
 
     private FormDockable addDockable(FormDockable dockable, String formSID) {
@@ -181,58 +166,8 @@ public abstract class DefaultFormsController implements FormsController {
     }
 
     private void removeDockable(FormDockable dockable, String formSID) {
-        dropCurForm(dockable.getForm());
         formsList.remove(formSID);
         tabsPanel.remove(dockable.getContentWidget());
-    }
-
-    private void setCurForm(GFormController form) {
-        if(!(gFormControllersList.contains(form))) {
-            gFormControllersList.add(form);
-            gFormControllersMap.put(form.getForm().sID, form);
-            setCurrentForm(form.getForm().sID);
-        }
-    }
-
-    @Override
-    public void dropCurForm(GFormController form) {
-        gFormControllersList.remove(form);
-        gFormControllersMap.remove(form.getForm().sID);
-        if(gFormControllersList.isEmpty())
-            setCurrentForm(null);
-    }
-
-    @Override
-    public void selectTab(String formID, String tabID) {
-        FormDockable.ContentWidget selectedFormWidget = (FormDockable.ContentWidget) tabsPanel.getWidget(tabsPanel.getSelectedIndex());
-        GFormLayout formLayout = ((GFormController) selectedFormWidget.getContent()).getFormLayout();
-        Object[] parent = findContainerParent(formLayout.getMainContainer(), tabID);
-        if (parent != null) {
-            GAbstractContainerView view = formLayout.getFormContainer((GContainer) parent[0]);
-            if (view instanceof TabbedContainerView) {
-                ((TabbedContainerView) view).selectTab((Integer) parent[1]);
-            }
-        }
-    }
-
-    private Object[] findContainerParent(GContainer parent, String tabID) {
-        for (int i = 0; i < parent.children.size(); i++) {
-            GComponent child = parent.children.get(i);
-            if (child instanceof GContainer) {
-                if (child.sID != null && child.sID.equals(tabID))
-                    return new Object[] {parent, i};
-                else {
-                    Object[] result = findContainerParent((GContainer) child, tabID);
-                    if (result != null)
-                        return result;
-                }
-            }
-        }
-        return null;
-    }
-
-    public GFormController getForm(String sid) {
-        return gFormControllersMap.get(sid);
     }
 
     @Override

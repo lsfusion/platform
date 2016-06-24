@@ -225,16 +225,6 @@ public class ExecutorFactory {
         return wrapInnerService(executorService, type, createContextAspect(context, type));
     }
 
-    public static ScheduledExecutorService createNewThreadService(ExecutionContext<PropertyInterface> context, Integer nThreads) {
-        SyncType type = SyncType.NOSYNC;
-
-        ClosableDaemonThreadFactory threadFactory = new ClosableDaemonThreadFactory(context.getLogicsInstance(), "executor-pool");
-
-        ScheduledExecutorService executorService = Executors.newScheduledThreadPool(nThreads, threadFactory); // тут возможно имеет смысл кэшировать
-
-        return wrapInnerService(executorService, type, createContextAspect(context, type));
-    }
-
     // создает граф потоков синхронизированным с внешним контекстом, но внутри своя логика синхронизации
     // assert что submit'ся только AspectRunnable
     public static ExecutorService createTaskService(int nThreads, BlockingQueue<Runnable> taskQueue, ExecutionContext<PropertyInterface> context) {

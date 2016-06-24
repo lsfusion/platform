@@ -166,7 +166,7 @@ public abstract class ContextAwarePendingRemoteObject extends PendingRemoteObjec
         ThreadLocalContext.aspectBeforeRmi(this, true);
         try {
             try {
-                if(!Settings.get().isDisableFinalized())
+                if(!Settings.get().isDisableUnreferenced())
                     shutdown(false);
             } catch (Throwable ignored) {
             } finally {

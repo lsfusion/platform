@@ -13,7 +13,6 @@ import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.caches.ManualLazy;
 import lsfusion.server.caches.MapValuesIterable;
 import lsfusion.server.caches.hash.HashValues;
-import lsfusion.server.data.SessionTable;
 import lsfusion.server.data.Value;
 import lsfusion.server.data.translator.MapValuesTranslate;
 import lsfusion.server.logics.property.CalcProperty;
@@ -129,22 +128,5 @@ public class PropertyChanges extends AbstractValuesContext<PropertyChanges> {
 
     public ImSet<CalcProperty> getProperties() {
         return changes.keys();
-    }
-
-    public String exToString() {
-        String result = "";
-        for(int i=0,size=changes.size();i<size;i++) {
-            CalcProperty key = changes.getKey(i);
-            ModifyChange change = changes.getValue(i);
-            result += "PROP : " + key + ", CHANGE : " + change + ", HASH : " + change.getValueComponents().hash;
-
-            ImSet<Value> values = change.getValues();
-            for(Value value : values) {
-                if(value instanceof SessionTable)
-                    result += value + " " + ((SessionTable)value).getValueClass();
-            }
-            result += '\n';
-        }
-        return result;
     }
 }

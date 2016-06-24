@@ -11,11 +11,11 @@
     <groupId>lsfusion.platform</groupId>
     <artifactId>base</artifactId>
     <packaging>pom</packaging>
-    <version>1.2.2-SNAPSHOT</version>
+    <version>1.2.1</version>
     <name>Base</name>
 
     <properties>
-        <lsfusion.version>1.2.2-SNAPSHOT</lsfusion.version>
+        <lsfusion.version>1.2.1</lsfusion.version>
 
         <junit.version>4.10</junit.version>
         <log4j.version>1.2.16</log4j.version>
@@ -78,7 +78,7 @@
         <jstl.version>1.2</jstl.version>
         <commons.fileupload.version>1.2.2</commons.fileupload.version>
         <url.rewriter.version>4.0.3</url.rewriter.version>
-
+         
         <!-- note: gwt jar-ки пропатчены, поэтому нельзя просто поменять эту версию на более новую, нужно сначала перенакатить патч... см. описание в jar-ках  -->
         <gwt.version>2.7.0-patched-1</gwt.version>
 
@@ -594,4 +594,8 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
+
+  <scm>
+    <developerConnection>scm:svn:svn://server/lsfusion/build/tags/platform-1.2.1/base</developerConnection>
+  </scm>
 </project>

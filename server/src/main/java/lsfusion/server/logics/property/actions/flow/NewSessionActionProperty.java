@@ -1,13 +1,11 @@
 package lsfusion.server.logics.property.actions.flow;
 
-import com.google.common.base.Throwables;
 import lsfusion.base.FunctionSet;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.server.Settings;
 import lsfusion.server.classes.CustomClass;
 import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.data.SQLSession;
 import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.session.DataSession;
@@ -18,7 +16,7 @@ public class NewSessionActionProperty extends AroundAspectActionProperty {
     private final FunctionSet<SessionDataProperty> migrateSessionProperties;
     private final boolean isNested;
     private final boolean singleApply;
-    private final boolean noClose; // переименовать потом в newsql или что-то вроде того
+    private final boolean noClose;
     private final boolean doApply;
 
     public <I extends PropertyInterface> NewSessionActionProperty(String caption, ImOrderSet<I> innerInterfaces,
@@ -64,23 +62,12 @@ public class NewSessionActionProperty extends AroundAspectActionProperty {
             return null;
         }
 
+        DataSession newSession = session.createSession();
 
-        DataSession newSession;
-        if(noClose) {
-            SQLSession sql;
-            try {
-                sql = context.getDbManager().createSQL();
-            } catch (ClassNotFoundException | IllegalAccessException | InstantiationException e) {
-                throw Throwables.propagate(e);
-            }
-            newSession = session.createSession(sql);
+        if (isNested) {
+            newSession.setParentSession(session);
         } else {
-            newSession = session.createSession();
-            if (isNested) {
-                newSession.setParentSession(session);
-            } else {
-                migrateSessionProperties(session, newSession);
-            }
+            migrateSessionProperties(session, newSession);
         }
 
         return context.override(newSession);
@@ -92,7 +79,7 @@ public class NewSessionActionProperty extends AroundAspectActionProperty {
     }
 
     protected void afterAspect(FlowResult result, ExecutionContext<PropertyInterface> context, ExecutionContext<PropertyInterface> innerContext) throws SQLException, SQLHandledException {
-        if (!context.getSession().isInTransaction() && noClose) {
+        if (!context.getSession().isInTransaction()) {
             if (!isNested) {
                 migrateSessionProperties(innerContext.getSession(), context.getSession());
             }
@@ -109,18 +96,12 @@ public class NewSessionActionProperty extends AroundAspectActionProperty {
     }
 
     private void migrateSessionProperties(DataSession migrateFrom, DataSession migrateTo) throws SQLException, SQLHandledException {
-        assert !noClose;
         migrateFrom.copyDataTo(migrateTo, migrateSessionProperties);
     }
 
     protected void finallyAspect(ExecutionContext<PropertyInterface> context, ExecutionContext<PropertyInterface> innerContext) throws SQLException, SQLHandledException {
-        DataSession session = innerContext.getSession();
-        try {
-            session.close();
-        } finally {
-            if(noClose) // тут конечно нюанс, что делать если newSession продолжит жить своей жизнью (скажем NEWSESSION NEWTHREAD, а не наоборот), реализуем потом (по аналогии с NEWSESSION) вместе с NESTED
-                session.sql.close();
-        }
+        if(!noClose)
+            innerContext.getSession().close();
     }
 
     @Override

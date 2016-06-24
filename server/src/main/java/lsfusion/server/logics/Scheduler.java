@@ -47,7 +47,7 @@ import static org.apache.commons.lang3.StringUtils.trim;
 
 public class Scheduler extends MonitorServer implements InitializingBean {
     private static final Logger logger = ServerLoggers.systemLogger;
-    public static final Logger schedulerLogger = ServerLoggers.schedulerLogger;
+    public static final Logger schedulerLogger = Logger.getLogger("SchedulerLogger");
 
     public ScheduledExecutorService daemonTasksExecutor;
 

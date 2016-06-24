@@ -79,10 +79,6 @@ final class FormDockable {
         };
     }
 
-    public GFormController getForm() {
-        return form;
-    }
-
     public void setHiddenHandler(WindowHiddenHandler hiddenHandler) {
         this.hiddenHandler = hiddenHandler;
     }
@@ -111,10 +107,6 @@ final class FormDockable {
             maskWrapper = new FocusPanel(mask);
             maskWrapper.setStyleName("dockableBlockingMask");
             setContent(content);
-        }
-
-        public Widget getContent() {
-            return content;
         }
 
         public void setContent(Widget icontent) {

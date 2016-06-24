@@ -193,9 +193,4 @@ public class ClientActionToGwtConverter extends ObjectConverter {
     public GProgressBar convertProgressBar(ProgressBar progressBar) {
         return new GProgressBar(progressBar.message, progressBar.progress, progressBar.total, progressBar.params);
     }
-
-    @Converter(from = ActivateTabClientAction.class)
-    public GActivateTabAction convertAction(ActivateTabClientAction action) {
-        return new GActivateTabAction(action.formSID, action.tabSID);
-    }
 }

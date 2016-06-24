@@ -1029,12 +1029,6 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
             listener.formExplicitClosed(this);
         }
 
-        try {
-            form.close();
-        } catch (Throwable t) {
-            ServerLoggers.sqlSuppLog(t);
-        }
-
         super.onExplicitClose();
     }
 
@@ -1043,6 +1037,12 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         RemoteFormListener listener = getRemoteFormListener();
         if (listener != null) {
             listener.formFinalClosed(this);
+        }
+
+        try {
+            form.close();
+        } catch (Throwable t) {
+            ServerLoggers.sqlSuppLog(t);
         }
 
         super.onFinalClose(explicit);

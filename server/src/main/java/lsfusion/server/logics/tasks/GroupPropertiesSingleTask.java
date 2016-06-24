@@ -70,7 +70,7 @@ public abstract class GroupPropertiesSingleTask<T> extends GroupSingleTask<T> {
             long time = System.currentTimeMillis() - start;
             if (time > maxRecalculateTime)
                 addMessage(element, time);
-            serviceLogger.info(String.format("%s, %sms", currentTask, time));
+            serviceLogger.info(String.format(caption + " : %s, %sms", currentTask, time));
         } catch (SQLException | SQLHandledException e) {
             addMessage(caption + " :", element, e);
             serviceLogger.info(currentTask, e);

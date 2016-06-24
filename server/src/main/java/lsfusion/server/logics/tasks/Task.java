@@ -130,9 +130,7 @@ public abstract class Task {
     public void proceed(BusinessLogics BL, Executor executor, ExecutionContext context, Object monitor, AtomicInteger taskCount, Logger logger,
                         TaskBlockingQueue taskQueue, ThrowableConsumer throwableConsumer, Integer propertyTimeout) throws InterruptedException, SQLException, SQLHandledException, ExecutionException {
         if (isLoggable()) {
-            String caption = getCaption();
-            if(caption != null)
-                logger.info(caption);
+            logger.info(getCaption());
         }
         if(propertyTimeout == null) {
             run();

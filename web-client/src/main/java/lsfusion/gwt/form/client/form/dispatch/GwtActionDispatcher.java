@@ -217,8 +217,4 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
             Window.open(fileUrl, filePath, "");
         }
     }
-
-    @Override
-    public void execute(GActivateTabAction action) {
-    }
 }

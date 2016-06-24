@@ -37,10 +37,6 @@ public class GFormLayout extends ResizableSimplePanel {
         layoutImpl.setupMainContainer(mainContainerView);
     }
 
-    public GContainer getMainContainer() {
-        return mainContainer;
-    }
-
     private void createContainerViews(GContainer container) {
         GAbstractContainerView containerView = layoutImpl.createContainerView(form, container);
 

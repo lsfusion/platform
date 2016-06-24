@@ -280,7 +280,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         SQLSession sql = threadLocalSql.get();
         if(sql!=null)
             try {
-                sql.close();
+                sql.close(OperationOwner.unknown);
             } catch (SQLException e) {
                 ServerLoggers.sqlSuppLog(e);
             } finally {
@@ -341,6 +341,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
                     }
                 },
                 new ConnectionController() {
+                    @Override
                     public void changeCurrentConnection(DataObject connection) {
                         throw new RuntimeException("not supported");
                     }
@@ -925,10 +926,9 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
             if (oldDBStructure.version < 0) {
                 startLogger.info("Recalculate class stats");
-                try(DataSession session = createSession(OperationOwner.unknown)) {
-                    businessLogics.recalculateClassStat(session);
-                    session.apply(businessLogics, getStack());
-                }
+                DataSession session = createSession(OperationOwner.unknown);
+                businessLogics.recalculateClassStat(session);
+                session.apply(businessLogics, getStack());
             }
 
             startLogger.info("Updating class stats");

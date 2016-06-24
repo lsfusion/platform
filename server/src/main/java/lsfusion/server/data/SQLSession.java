@@ -992,11 +992,6 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     }
 
     @Override
-    public OperationOwner getDefaultExplicitOwner() {
-        return OperationOwner.unknown;
-    }
-
-    @Override
     public OperationOwner getFinalizeOwner() {
         return OperationOwner.unknown;
     }
@@ -1233,7 +1228,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         executeDDL(DDL, StaticExecuteEnvironmentImpl.EMPTY, owner);
     }
 
-    public void executeDDL(String DDL, StaticExecuteEnvironment env) throws SQLException {
+    private void executeDDL(String DDL, StaticExecuteEnvironment env) throws SQLException {
         executeDDL(DDL, env, OperationOwner.unknown);
     }
     
@@ -2914,14 +2909,9 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
                 long timeRestartStarted = System.currentTimeMillis();
 
                 // сначала переносим временные таблицы
-                try {
-                    for (String table : sessionTablesMap.keySet()) {
-                        SQLTemporaryPool.FieldStruct struct = privateConnection.temporary.getStruct(table);
-                        uploadTableToConnection(table, struct, newConnection, OperationOwner.unknown);
-                    }
-                } catch (SQLException | SQLHandledException t) { // если проблема в SQL, пишем в лог / игнорируем
-                    logger.error("RESTART CONNECTION ERROR : " + description.result, t);
-                    return false;
+                for (String table : sessionTablesMap.keySet()) {
+                    SQLTemporaryPool.FieldStruct struct = privateConnection.temporary.getStruct(table);
+                    uploadTableToConnection(table, struct, newConnection, OperationOwner.unknown);
                 }
 
                 // закрываем старое соединение

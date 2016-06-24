@@ -10,7 +10,7 @@ public abstract class MutableClosedObject<O> extends MutableObject implements Au
 
     private boolean closed;
     @AssertSynchronized
-    protected void explicitClose(O owner) throws SQLException {
+    public void close(O owner) throws SQLException {
         ServerLoggers.assertLog(!closed, "ALREADY CLOSED " + this);
         shutdown(owner, true);
     }
@@ -19,13 +19,9 @@ public abstract class MutableClosedObject<O> extends MutableObject implements Au
         return closed;
     }
 
-    protected void explicitClose() throws SQLException { // explicitClose чтобы не пересекаться с AutoClosable
-        explicitClose(getDefaultExplicitOwner());
-    }
-
     @Override
-    public void close() throws SQLException { // не использовать напряму
-        explicitClose();
+    public void close() throws SQLException {
+        close(null);
     }
 
     private void shutdown(O owner, boolean explicit) throws SQLException {
@@ -36,12 +32,7 @@ public abstract class MutableClosedObject<O> extends MutableObject implements Au
         onFinalClose(owner);
         closed = true;
     }
-
-    public O getDefaultExplicitOwner() {
-        return null;
-    }
-
-
+    
     public O getFinalizeOwner() {
         return null;
     }
