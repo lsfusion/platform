@@ -233,7 +233,7 @@ public class NavigatorsManager extends LogicsManager implements InitializingBean
 
     public void forceDisconnect(RemoteNavigator navigator, CallbackMessage message) {
         navigator.disconnect(message);
-        navigator.explicitClose(); // явное закрытие на сервере, по идее придет с клиента, но на всякий случай закроем сразу
+        //navigator.explicitClose(); // явное закрытие на сервере, по идее придет с клиента, но на всякий случай закроем сразу
     }
 
     public void forceDisconnect(ExecutionStack stack, Integer user, Integer computer, CallbackMessage message) {
