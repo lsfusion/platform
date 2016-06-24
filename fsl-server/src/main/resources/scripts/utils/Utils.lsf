@@ -2,6 +2,8 @@ MODULE Utils;
 
 REQUIRE System;
 
+printToLog 'Записать в лог' = ACTION CUSTOM 'lsfusion.erp.utils.utils.PrintToLogActionProperty' (TEXT);
+
 // --------------------------------------------- Стандартные группы --------------------------------- //
 
 GROUP print 'Печатные формы' : public;
