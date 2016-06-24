@@ -1379,9 +1379,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new ArrayList<>(s);
     }
 
-    public LPWithParams addScriptedListAProp(boolean newSession, List<PropertyUsage> migrateSessionProps, boolean migrateAllSessionProps,
-                                             boolean isNested, boolean singleApply, boolean noClose, List<LPWithParams> properties,
-                                             List<LP> localProps) throws ScriptingErrorLog.SemanticErrorException {
+    public LPWithParams addScriptedListAProp(List<LPWithParams> properties, List<LP> localProps) {
         List<Object> resultParams = getParamsPlainList(properties);
 
         MExclSet<Pair<LP, List<ResolveClassSet>>> mDebugLocals = null;
@@ -1405,14 +1403,16 @@ public class ScriptingLogicsModule extends LogicsModule {
             listLP.property.setDebugLocals(mDebugLocals.immutable());
         }
 
-        if (newSession) {
-            listLP = addNewSessionAProp(null, "", listLP, isNested, false, singleApply, noClose, getMigrateProps(migrateSessionProps, migrateAllSessionProps));
-        }
-
         List<Integer> usedParams = mergeAllParams(properties);
         return new LPWithParams(listLP, usedParams);
     }
 
+    public LPWithParams addScriptedNewSessionAProp(LPWithParams action, List<PropertyUsage> migrateSessionProps, boolean migrateAllSessionProps,
+                                                   boolean isNested, boolean singleApply, boolean noClose) throws ScriptingErrorLog.SemanticErrorException {
+        LAP<?> sessionLP = addNewSessionAProp(null, "", (LAP) action.property, isNested, false, singleApply, noClose, getMigrateProps(migrateSessionProps, migrateAllSessionProps));
+        return new LPWithParams(sessionLP, action.usedParams);
+    }
+    
     public LPWithParams addScriptedRequestUserInputAProp(String typeId, String chosenKey, LPWithParams action) throws ScriptingErrorLog.SemanticErrorException {
         Type requestValueType = getPredefinedType(typeId);
 

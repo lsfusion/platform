@@ -1684,6 +1684,26 @@ newExecutorActionDefinitionBody[List<TypedParameter> context, boolean dynamic] r
 	:	'NEWEXECUTOR' aDB=innerActionDefinitionBody[context, dynamic] 'THREADS' threadsExpr=propertyExpression[context, dynamic]
 	;
 
+newSessionActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
+@init {
+	List<PropertyUsage> migrateSessionProps = Collections.emptyList();
+	boolean migrateAllSessionProps = false;
+	boolean isNested = false;
+	boolean singleApply = false;
+	boolean noClose = false;
+}
+@after {
+	if (inPropParseState()) {
+		$property = self.addScriptedNewSessionAProp($aDB.property, migrateSessionProps, migrateAllSessionProps, isNested, singleApply, noClose);
+	}
+}
+	:	(	'NEWSESSION' ('NOCLOSE' { noClose = true; })? (mps=nestedPropertiesSelector { migrateAllSessionProps = $mps.all; migrateSessionProps = $mps.props; })?
+		|	'NESTEDSESSION' { isNested = true; }
+		)	
+		('SINGLE' { singleApply = true; })? 
+		aDB=innerActionDefinitionBody[context, dynamic] 
+	; 
+
 nonEmptyPropertyUsageListWithIds returns [List<String> ids, List<PropertyUsage> propUsages]
 @init {
 	$ids = new ArrayList<String>();
@@ -2076,6 +2096,7 @@ extendContextActionDB[List<TypedParameter> context, boolean dynamic] returns [LP
 	
 keepContextActionDB[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
 	:	listADB=listActionDefinitionBody[context, dynamic] { $property = $listADB.property; }
+	|	newSessionADB=newSessionActionDefinitionBody[context, dynamic] { $property = $newSessionADB.property; }
 	|	requestInputADB=requestInputActionDefinitionBody[context, dynamic] { $property = $requestInputADB.property; }
 	|	execADB=execActionDefinitionBody[context, dynamic] { $property = $execADB.property; }	
 	|	tryADB=tryActionDefinitionBody[context, dynamic] { $property = $tryADB.property; }
@@ -2139,7 +2160,7 @@ formActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns 
 		('OBJECTS' list=formActionObjectList[context, dynamic] { objects = $list.objects; mapping = $list.exprs; })?
 		('CONTEXTFILTER' objName=ID '=' contextPropertyExpr=propertyExpression[context, dynamic] { contextObjectName = $objName.text; contextProperty = $contextPropertyExpr.property; })?
 		(initFilter = initFilterDefinition { initFilterPropertyMapping = $initFilter.mapping; initFilterPropertyName = $initFilter.propName; })?
-		(sessScope = formSessionScopeLiteral { sessionScope = $sessScope.val; })?
+		('MANAGESESSION' { sessionScope = FormSessionScope.MANAGESESSION; })?
 		(modality = modalityTypeLiteral { modalityType = $modality.val; })?
 		('CHECK' { checkOnOk = true; })?
 		('SHOWDROP' { showDrop = true; })?
@@ -2460,25 +2481,13 @@ listActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns 
 @init {
 	List<LPWithParams> props = new ArrayList<LPWithParams>();
 	List<LP> localProps = new ArrayList<LP>();
-	boolean newSession = false;
-	List<PropertyUsage> migrateSessionProps = Collections.emptyList();
-	boolean migrateAllSessionProps = false;
-	boolean isNested = false;
-	boolean singleApply = false;
-	boolean noClose = false;
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedListAProp(newSession, migrateSessionProps, migrateAllSessionProps, isNested, singleApply, noClose, props, localProps);
+		$property = self.addScriptedListAProp(props, localProps);
 	}
 }
-	:	(
-			(	'NEWSESSION' ('NOCLOSE' { noClose = true; })? (mps=nestedPropertiesSelector { migrateAllSessionProps = $mps.all; migrateSessionProps = $mps.props; })?
-			|	'NESTEDSESSION' { isNested = true; }
-			)	{ newSession = true; }
-			('SINGLE' { singleApply = true; })?
-		)?
-		'{'
+	:	'{'
 			(	(aDB=innerActionDefinitionBody[context, dynamic] { props.add($aDB.property); }
 				( {!self.semicolonNeeded()}?=>  | ';'))
 			|	def=localDataPropertyDefinition ';' { localProps.add($def.property); }
