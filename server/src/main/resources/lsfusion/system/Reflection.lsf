@@ -175,12 +175,12 @@ canonicalName 'Каноническое имя свойства' (TableColumn ta
 quantity 'Количество разновидностей' (TableColumn tableColumn) = quantity(property(tableColumn));
 notNullQuantity 'Количество не null значений' (TableColumn tableColumn) = notNullQuantity(property(tableColumn));
 tableColumn(Property property) = tableColumnLong(tableSID(property) + '.' + dbName(property));
-
-toNumeric15p2(w) = NUMERIC[15,2](w);
+annotation 'Аннотация' (TableColumn tableColumn) = annotation(property(tableColumn));
+return 'Возвращаемый класс свойства ' (TableColumn tableColumn) = return(property(tableColumn));
 
 percentNotNull 'Не null, %' (TableColumn tableColumn) = IF rows (table(tableColumn)) == 0
                                                           THEN 100.00
-                                                          ELSE toNumeric15p2(notNullQuantity(tableColumn)) / rows (table(tableColumn)) * 100;
+                                                          ELSE NUMERIC[15,2](notNullQuantity(tableColumn)) / rows (table(tableColumn)) * 100;
 sparseColumns 'Количество разреженных колонок' (table) = GROUP SUM 1 BY table(TableColumn tableColumn) IF percentNotNull(tableColumn) < 50;
 
 notRecalculate 'Не пересчитывать аггрегации' = DATA BOOLEAN (TableColumn);
@@ -245,7 +245,7 @@ FORM physicalModel 'Таблицы'
     PROPERTIES(tk) READONLY class, classSID, name, quantity
 
     OBJECTS tc=TableColumn
-    PROPERTIES(tc) READONLY sid, caption, canonicalName, property, quantity, notNullQuantity,
+    PROPERTIES(tc) READONLY sid, caption, canonicalName, annotation, property, return, quantity, notNullQuantity,
                    percentNotNull, lastRecalculateProperty
     PROPERTIES(tc) notRecalculate, recalculateAggregation, recalculateAggregationWithDependencies, 
             recalculateAggregationWithDependents, checkAggregation
@@ -271,12 +271,15 @@ DESIGN physicalModel {
                 caption = 'Таблицы';
                 MOVE t.box {
                     caption = 'Таблицы';
+                    fill = 1;
                 };
                 MOVE tk.box {
                     caption = 'Ключи';
+                    fill = 0.5;
                 }
                 MOVE tc.box {
                     caption = 'Колонки';
+                    fill = 1;
                 }
             }
 
