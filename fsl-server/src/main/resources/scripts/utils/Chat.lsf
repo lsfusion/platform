@@ -22,21 +22,7 @@ name 'Имя' (Chat chat) = (OVERRIDE [=GROUP CONCAT name(CustomUser user), ',' 
 setInChat(Chat chat) = ACTION {
     FOR(name(User u)) DO {
         in(chat, u) <- TRUE;
-        //IF NOT login(u)=='admin' THEN
-        //    readonly(chat, u) <- TRUE;
     }
-}
-
-onStarted() += ACTION {
-    LOCAL systemChat = Chat();
-    systemChat() <- chat('system');
-    IF NOT systemChat() THEN {
-        ADDOBJ Chat;
-        systemChat() <- addedObject();
-        id(c) <- 'system';
-        dataName(c) <- 'Все'; 
-    }
-    setInChat(systemChat());
 }
 
 CLASS MessageStatus {
@@ -56,7 +42,7 @@ author 'Автор' = DATA CustomUser (Message);
 nameAuthor 'Автор' (Message message) = name(author(message)) MAXCHARWIDTH 30 PREFCHARWIDTH 30;
 text 'Текст' = DATA TEXT (Message) MINCHARWIDTH 50;
 dateTime 'Время' = DATA DATETIME (Message) MAXCHARWIDTH 30 PREFCHARWIDTH 30;
-push 'Push' = DATA BOOLEAN (Message);
+system 'Системное' = DATA BOOLEAN (Message);
 status 'Статус' = DATA MessageStatus (Message, CustomUser);
 captionStatus 'Статус' (Message message, CustomUser user) = staticCaption(status(message, user));
 captionStatus 'Статус' (Message message) = captionStatus(message, currentUser());
@@ -79,15 +65,31 @@ defaultNewMessage 'Новое сообщение' = DATA LOCAL TEXT ();
 chatNewMessage 'Новое сообщение' = DATA LOCAL TEXT (Chat);
 newMessage 'Новое сообщение' (Chat chat) = DATA LOCAL TEXT (Chat);
 
+onStarted() += ACTION {
+    LOCAL systemChat = Chat();
+    systemChat() <- chat('system');
+    IF NOT systemChat() THEN {
+        ADDOBJ Chat;
+        systemChat() <- addedObject();
+        id(c) <- 'system';
+        dataName(c) <- 'Все'; 
+    }
+    setInChat(systemChat());
+    
+    FOR system(Message m) DO {
+        status(m, CustomUser u) <- MessageStatus.seen;
+    }
+}
+
 setSeenMessageUser(Message m, CustomUser user) = ACTION {
     status(m, user) <- MessageStatus.seen;
 }
-sendMessage 'Написать в чат' (Chat chat, TEXT message) = ACTION {
+sendMessage 'Написать в чат' (Chat chat, TEXT message, BOOLEAN system) = ACTION {
     FOR ADDOBJ m = Message DO {
         chat(m) <- chat;
         dateTime(m) <- currentDateTime();
         author(m) <- currentUser();
-        push(m) <- TRUE;
+        system(m) <- system;
         text(m) <- message;
         IF chatNotFound() THEN
             defaultNewMessage() <- NULL
@@ -110,9 +112,9 @@ sendMessage 'Написать в чат' (Chat chat, TEXT message) = ACTION {
 
 sendMessage 'Отправить' = ACTION ABSTRACT LIST (Chat, CustomUser) EDITKEY 'F3';
 
-restartServer() += ACTION { sendMessage(chat('system'), 'Сервер будет остановлен через 5 минут!\nСохраните текущую работу и выйдите из приложения.'); }
+restartServer() += ACTION { sendMessage(chat('system'), 'Сервер будет остановлен через 5 минут!\nСохраните текущую работу и выйдите из приложения.', TRUE); }
 
-cancelRestartServer() += ACTION { sendMessage(chat('system'), 'Остановка сервера отменена'); }
+cancelRestartServer() += ACTION { sendMessage(chat('system'), 'Остановка сервера отменена', TRUE); }
 
 seekChat = ACTION ABSTRACT(CustomUser);
   
@@ -234,7 +236,7 @@ DESIGN fullChat {
 
 sendMessage 'Написать в чат' (Chat chat) = ACTION {
     IF newMessage(chat) THEN
-        sendMessage(chat, newMessage(chat));
+        sendMessage(chat, newMessage(chat), NULL);
 }
 
 sendMessage 'Написать пользователю' (CustomUser user) = ACTION {
