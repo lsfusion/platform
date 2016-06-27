@@ -93,7 +93,19 @@ connectDate 'Дата подключения' (Connection c) = DATE(connectTime(
 disconnectTime 'Время отключения' = DATA DATETIME (Connection);
 disconnectTime (Connection connection) <- currentDateTime() WHEN SET(connectionStatus(connection) == ConnectionStatus.disconnectedConnection);
 
-disconnect 'Отключить' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.DisconnectActionProperty' (Connection); 
+reconnect 'Переподключить' (CustomUser user) = ACTION {
+    FOR user(Connection conn) == user AND connectionStatus(conn) == ConnectionStatus.connectedConnection DO {
+            NEWSESSION { NEWTHREAD reconnect() CONNECTION conn; }
+        }
+} CONFIRM;
+
+shutdown 'Отключить' (CustomUser user) = ACTION {
+    FOR user(Connection conn) == user AND connectionStatus(conn) == ConnectionStatus.connectedConnection DO {
+            NEWSESSION { NEWTHREAD shutdown() CONNECTION conn; }
+        }
+} CONFIRM;
+
+EXTEND FORM customUsers PROPERTIES(u) reconnect, shutdown;
 
 @defineLog (Connection, 'подключений', log, connectDate);
 

@@ -163,30 +163,16 @@ public class MainFrame implements EntryPoint {
                     public void success(ClientMessageResult result) {
                         setShouldRepeatPingRequest(true);
                         super.success(result);
-                        if(result.restart) {
-                            DialogBoxHelper.showConfirmBox("Остановка сервера", "Сервер будет остановлен через 5 минут!\n" +
-                                    "Сохраните текущую работу и выйдите из приложения.\n" +
-                                    "Если вы выполняете работу, которая не может быть прервана, нажмите нет.",
-                                    false, new DialogBoxHelper.CloseCallback() {
-                                @Override
-                                public void closed(DialogBoxHelper.OptionType chosenOption) {
-                                    if (chosenOption == DialogBoxHelper.OptionType.NO) {
-                                        dispatcher.execute(new ClientResponse(1), null);
-                                    }
+                        for (Integer idNotification : result.notificationList) {
+                            GFormController form = result.currentForm == null ? null : formsController.getForm(result.currentForm);
+                            if (form != null)
+                                try {
+                                    form.executeNotificationAction(idNotification);
+                                } catch (IOException e) {
+                                    GWT.log(e.getMessage());
                                 }
-                            });
-                        } else {
-                            for(Integer idNotification : result.notificationList) {
-                                GFormController form = result.currentForm == null ? null : formsController.getForm(result.currentForm);
-                                if (form != null)
-                                    try {
-                                        form.executeNotificationAction(idNotification);
-                                    } catch (IOException e) {
-                                        GWT.log(e.getMessage());
-                                    }
-                                else {
-                                    formsController.executeNotificationAction(String.valueOf(idNotification), 2);
-                                }
+                            else {
+                                formsController.executeNotificationAction(String.valueOf(idNotification), 2);
                             }
                         }
                     }

@@ -49,14 +49,9 @@ public class RestartManager implements InitializingBean {
         try {
             restartFuture = scheduler.scheduleAtFixedRate(new Runnable() {
                 public void run() {
-                    boolean canRestart = navigatorsManager.notifyServerRestart();
-                    if (canRestart) {
-                        doRestart();
-                    } else {
-                        logger.info("Some clients prohibited server stopping.");
-                    }
+                    doRestart();
                 }
-            }, 0, restartDelayMinutes, TimeUnit.MINUTES);
+            }, restartDelayMinutes, restartDelayMinutes, TimeUnit.MINUTES);
         } catch (RejectedExecutionException e) {
             e.printStackTrace();
             throw e;
@@ -88,12 +83,6 @@ public class RestartManager implements InitializingBean {
         restartFuture.cancel(false);
 
         restartFuture = null;
-
-        scheduler.submit(new Runnable() {
-            public void run() {
-                navigatorsManager.notifyServerRestartCanceled();
-            }
-        });
 
         updateRestartProperty();
     }

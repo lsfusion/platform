@@ -5,7 +5,6 @@ import lsfusion.base.NavigatorInfo;
 import lsfusion.base.WeakIdentityHashSet;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
 import lsfusion.server.EnvStackRunnable;
-import lsfusion.interop.remote.CallbackMessage;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.auth.User;
 import lsfusion.server.data.SQLHandledException;
@@ -198,53 +197,6 @@ public class NavigatorsManager extends LogicsManager implements InitializingBean
         synchronized (navigators) {
             for (RemoteNavigator remoteNavigator : navigators) {
                 remoteNavigator.updateEnvironmentProperty(property, value);
-            }
-        }
-    }
-
-    public boolean notifyServerRestart() {
-        synchronized (navigators) {
-            boolean canRestart = true;
-            for (RemoteNavigator remoteNavigator : navigators) {
-                if (!remoteNavigator.isRestartAllowed()) {
-                    canRestart = false;
-                    try {
-                        remoteNavigator.notifyServerRestart();
-                    } catch (RemoteException e) {
-                        logger.error(getString("logics.server.remote.exception.on.questioning.client.for.stopping"), e);
-                    }
-                }
-            }
-            return canRestart;
-        }
-    }
-
-    public void notifyServerRestartCanceled() {
-        synchronized (navigators) {
-            for (RemoteNavigator remoteNavigator : navigators) {
-                try {
-                    remoteNavigator.notifyServerRestartCanceled();
-                } catch (RemoteException e) {
-                    logger.error(getString("logics.server.remote.exception.on.questioning.client.for.stopping"), e);
-                }
-            }
-        }
-    }
-
-    public void forceDisconnect(RemoteNavigator navigator, CallbackMessage message) {
-        navigator.disconnect(message);
-        //navigator.explicitClose(); // явное закрытие на сервере, по идее придет с клиента, но на всякий случай закроем сразу
-    }
-
-    public void forceDisconnect(ExecutionStack stack, Integer user, Integer computer, CallbackMessage message) {
-        synchronized (navigators) {
-            for (RemoteNavigator navigator : navigators) {
-                if(navigator != null) {
-                    Object navigatorComputer = navigator.getComputer().object;
-                    Object navigatorUser = navigator.getUser().object;
-                    if(user.equals(navigatorUser) && (computer == null || computer.equals(navigatorComputer)))
-                        forceDisconnect(navigator, message);
-                }
             }
         }
     }

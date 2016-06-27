@@ -52,14 +52,6 @@ public class RMITimeoutSocketFactory extends ZipSocketFactory implements Compres
         outSum += out;
     }
 
-    public void closeHangingSockets() {
-        for (CountZipSocket socket : sockets) {
-            if (socket != null) {
-                socket.closeIfHung();
-            }
-        }
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) {

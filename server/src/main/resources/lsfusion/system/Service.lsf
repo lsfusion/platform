@@ -242,9 +242,15 @@ onStarted() += ACTION {
     refreshReupdateMode();
 } 
 
+restartServer 'Остановить сервер' = ACTION ABSTRACT LIST ();
 restartServerAction 'Остановить сервер' = ACTION CUSTOM 'lsfusion.server.logics.service.RestartActionProperty' ();
-runGarbageCollector 'Запустить сборщик мусора' = ACTION CUSTOM 'lsfusion.server.logics.service.GarbageCollectorActionProperty' ();
+restartServer() += ACTION { restartServerAction(); }
+
+cancelRestartServer 'Отменить остановку сервера' = ACTION ABSTRACT LIST ();
 cancelRestartServerAction 'Отменить остановку сервера' = ACTION CUSTOM 'lsfusion.server.logics.service.CancelRestartActionProperty' ();
+cancelRestartServer() += ACTION { cancelRestartServerAction(); }
+
+runGarbageCollector 'Запустить сборщик мусора' = ACTION CUSTOM 'lsfusion.server.logics.service.GarbageCollectorActionProperty' ();
 dropLRUPercent 'Процент очистки LRU' = DATA DOUBLE ();
 randomDropLRU 'Случ. очистка LRU' = DATA BOOLEAN ();
 dropLRUCustom 'Очистить LRU' = ACTION CUSTOM 'lsfusion.server.logics.service.DropLRUActionProperty' (DOUBLE, BOOLEAN);
@@ -277,7 +283,7 @@ FORM admin 'Администрирование'
     PROPERTIES() currentDate, defaultBackgroundColor, defaultForegroundColor, 
                  selectedRowBackgroundColor, selectedRowBorderColor, selectedCellBackgroundColor, focusedCellBackgroundColor, focusedCellBorderColor,
                  reportCharWidth, reportRowHeight, reportNotToStretch, 
-                 restartServerAction SHOWIF isNotServerRestarting(), cancelRestartServerAction SHOWIF isServerRestarting(), 
+                 restartServer SHOWIF isNotServerRestarting(), cancelRestartServer SHOWIF isServerRestarting(), 
                  checkAggregationsAction, checkClassesAction, checkIndicesAction, checkAggregationsMultiThreadAction, checkClassesMultiThreadAction,
                  recalculateClassesAction, recalculateAction, recalculateFollowsAction, recalculateStatsAction, overCalculateStatsAction, maxQuantityOverCalculate,
                  threadCountMultiThread, recalculateClassesMultiThreadAction, recalculateMultiThreadAction, recalculateFollowsMultiThreadAction,
@@ -301,8 +307,8 @@ DESIGN admin {
             }
             NEW administration {
                 caption = 'Запуск';
-                MOVE PROPERTY(restartServerAction());
-                MOVE PROPERTY(cancelRestartServerAction());
+                MOVE PROPERTY(restartServer());
+                MOVE PROPERTY(cancelRestartServer());
                 MOVE PROPERTY(hostnameServerComputer());
             }    
             NEW upload {

@@ -75,13 +75,20 @@ ignorePrintTypeCustom 'Открывать печатные формы в инт�
 ignorePrintType() += ignorePrintTypeCustom(currentUser());
 
 calculateBase64Hash 'Вычислить Base64 хэш' = ACTION CUSTOM 'lsfusion.server.logics.authentication.CalculateBase64HashActionProperty' (STRING[10], STRING[30]);
-logOut 'Выйти' = ACTION CUSTOM 'lsfusion.server.logics.authentication.LogOutActionProperty' ();
+logOut (restart, reconnect) = ACTION CUSTOM 'lsfusion.server.logics.authentication.LogOutActionProperty' (BOOLEAN, BOOLEAN);
+shutdown 'Отключить' = ACTION {
+    logOut(NULL, NULL);
+}
+reconnect 'Переподключить' = ACTION {
+    logOut(TRUE, TRUE);
+}
+restart 'Выйти' = ACTION {
+    logOut(TRUE, NULL);
+}
+
 relogin 'Сменить пользователя' = ACTION CUSTOM 'lsfusion.server.logics.authentication.ReloginUserActionProperty' (CustomUser);
 
 generateLoginPassword 'Сгенерировать логин и пароль' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.GenerateLoginPasswordActionProperty' (CustomUser);
-
-restart 'Переподключить' = ACTION CUSTOM 'lsfusion.server.logics.authentication.RestartCustomUserActionProperty' (CustomUser) CONFIRM;
-shutdown 'Отключить' = ACTION CUSTOM 'lsfusion.server.logics.authentication.ShutdownCustomUserActionProperty' (CustomUser) CONFIRM;
 
 minHashLength 'Минимальное совпадение хэша пароля (символов)' = DATA INTEGER ();
 useLDAP 'Использовать LDAP аутентификацию' = DATA BOOLEAN ();
@@ -150,7 +157,7 @@ FORM customUsers 'Пользователи'
     OBJECTS u=CustomUser
     PROPERTIES(u) READONLY name[Contact], login, email
     PROPERTIES(u) forbidChangePassword, forbidEditProfile, useBusyDialogCustom, isLocked READONLY,
-                  lastActivity, restart, shutdown, ADDFORM, EDITFORM FORCE PANEL, DELETE FORCE PANEL TOOLBAR
+                  lastActivity, ADDFORM, EDITFORM FORCE PANEL, DELETE FORCE PANEL TOOLBAR
 
     PROPERTIES() useLDAP, serverLDAP, portLDAP, baseDNLDAP, userDNSuffixLDAP, minHashLength
 ;
@@ -352,6 +359,6 @@ NAVIGATOR {
         NEW reloginLoginUserAction 'Сменить пользователя' ACTION reloginLoginUser[] IMAGE '/images/relogin.png';
         ADD editProfile;
         NEW changePasswordAction 'Сменить пароль' ACTION changePassword[] IMAGE '/images/change_password.png';
-        NEW logOutAction 'Выйти' ACTION logOut[] IMAGE '/images/logout.png';
+        NEW logOutAction 'Выйти' ACTION reconnect[] IMAGE '/images/logout.png';
     }
 }

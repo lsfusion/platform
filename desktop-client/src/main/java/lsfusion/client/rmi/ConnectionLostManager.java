@@ -110,15 +110,6 @@ public class ConnectionLostManager {
         return connectionLost.get();
     }
 
-    public static void forceDisconnect(String message) {
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                Main.restart();
-            }
-        });
-    }
-
     public static void blockIfHasFailed() {
         SwingUtils.assertDispatchThread();
 

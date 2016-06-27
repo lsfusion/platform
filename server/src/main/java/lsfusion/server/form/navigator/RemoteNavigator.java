@@ -14,7 +14,6 @@ import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.form.RemoteFormInterface;
 import lsfusion.interop.form.ServerResponse;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
-import lsfusion.interop.remote.CallbackMessage;
 import lsfusion.server.EnvStackRunnable;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
@@ -674,23 +673,6 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
 
     public synchronized ClientCallBackController getClientCallBack() throws RemoteException {
         return client;
-    }
-
-    public boolean isRestartAllowed() {
-        return client.isRestartAllowed();
-    }
-
-    public synchronized void notifyServerRestart() throws RemoteException {
-        client.notifyServerRestart();
-    }
-
-    public synchronized void disconnect(CallbackMessage message) {
-        if(client != null)
-            client.disconnect(message);
-    }
-
-    public void notifyServerRestartCanceled() throws RemoteException {
-        client.notifyServerRestartCanceled();
     }
 
     public void pushNotification(EnvStackRunnable run) throws RemoteException {

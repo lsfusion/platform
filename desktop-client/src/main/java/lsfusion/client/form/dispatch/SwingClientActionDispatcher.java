@@ -448,7 +448,13 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
     }
 
     public void execute(LogOutClientAction action) {
-        Main.restart();
+        if (action.restart) {
+            if (action.reconnect)
+                Main.reconnect();
+            else
+                Main.restart();
+        } else
+            Main.shutdown();
     }
 
     @Override

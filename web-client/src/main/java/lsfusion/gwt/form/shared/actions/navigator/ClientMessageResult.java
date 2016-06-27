@@ -5,15 +5,13 @@ import net.customware.gwt.dispatch.shared.Result;
 import java.util.List;
 
 public class ClientMessageResult implements Result {
-    public boolean restart;
     public String currentForm;
     public List<Integer> notificationList;
 
     public ClientMessageResult() {
     }
 
-    public ClientMessageResult(boolean restart, String currentForm, List<Integer> notificationList) {
-        this.restart = restart;
+    public ClientMessageResult(String currentForm, List<Integer> notificationList) {
         this.currentForm = currentForm;
         this.notificationList = notificationList;
     }
