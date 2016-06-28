@@ -2253,6 +2253,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     }
 
     private void formHide(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
+        ServerLoggers.remoteLifeLog("FORM HIDE : " + this);
         context.delayUserInteraction(new HideFormClientAction());
         // здесь не делаем close, так как нет RemoteForm + надо делать closeLater, так как могут остаться еще запросы к форме которые возможно надо обработать, так что это делается prepareRemoteChangesResponse
     }

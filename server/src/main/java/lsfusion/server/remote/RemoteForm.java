@@ -870,6 +870,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
 
     private ServerResponse prepareRemoteChangesResponse(long requestIndex, List<ClientAction> pendingActions, boolean delayedGetRemoteChanges, boolean delayedHideForm, ExecutionStack stack) {
         if (delayedHideForm) {
+            ServerLoggers.remoteLifeLog("FORM DELAYED HIDE : " + this);
             closeLater();
         }
 
