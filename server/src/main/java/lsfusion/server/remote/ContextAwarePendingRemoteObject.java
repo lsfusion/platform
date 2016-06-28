@@ -188,6 +188,6 @@ public abstract class ContextAwarePendingRemoteObject extends PendingRemoteObjec
 
     public void logServerException(Throwable t) throws SQLException, SQLHandledException {
         BusinessLogics businessLogics = getContext().getLogicsInstance().getBusinessLogics();
-        businessLogics.systemEventsLM.logException(businessLogics, getStack(), t, null, null, true);
+        businessLogics.systemEventsLM.logException(businessLogics, getStack(), t, null, null, false);
     }
 }
