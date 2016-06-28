@@ -64,7 +64,6 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     private static final Logger handLogger = ServerLoggers.sqlHandLogger;
     private static final Logger sqlConflictLogger = ServerLoggers.sqlConflictLogger;
     private WeakReference<Thread> activeThread;
-    private boolean isSystemOperation = false;
 
     private static ConcurrentWeakHashMap<SQLSession, Integer> sqlSessionMap = MapFact.getGlobalConcurrentWeakHashMap();
     public static ConcurrentHashMap<Long, Long> threadAllocatedBytesAMap = MapFact.getGlobalConcurrentHashMap();
@@ -388,18 +387,13 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         }
 //        ServerLoggers.pausableLogStack("LOCKREAD GET " + this);
 
-        WeakReference<Thread> prevActiveThread = null;
         try {
-            if(!tryLock) // временно, потом что-то логичнее надо придумать, потому как надо ближе к непосредственно выполнению, иначе скажем очистка временных таблиц начинает быть activeThread для долгих процессов
-                prevActiveThread = setActiveThread();
+            prevActiveThread = setActiveThread();
             if(owner != OperationOwner.unknown)
                 owner.checkThreadSafeAccess(writeOwner);
         } catch (Throwable t) {
             unlockRead();
             throw t;
-        } finally {
-            if(!tryLock)
-                dropActiveThread(prevActiveThread);
         }
 
         return true;
@@ -415,9 +409,14 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     }
 
     private void unlockRead() {
+        unlockRead(false);
+    }
+
+    private void unlockRead(boolean dropActiveThread) {
+        if(dropActiveThread)
+            dropActiveThread(prevActiveThread);
         lock.readLock().unlock();
 //        ServerLoggers.pausableLogStack("UNLOCKREAD " + this);
-        //resetActiveThread();
     }
 
     private WeakReference<Thread> prevActiveThread;
@@ -449,12 +448,16 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     }
 
     private void unlockWrite() {
+        unlockWrite(false);
+    }
+
+    private void unlockWrite(boolean dropActiveThread) {
         writeOwner = null;
 
-        dropActiveThread(prevActiveThread);
+        if(dropActiveThread)
+            dropActiveThread(prevActiveThread);
         lock.writeLock().unlock();
 //        ServerLoggers.pausableLogStack("UNLOCKWRITE " + this);
-        //resetActiveThread();
     }
     
     private Integer prevIsolation;
@@ -1842,12 +1845,11 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
             long started = System.currentTimeMillis();
 
             try {
-                PreparedStatement prevExecutingStatement = executingStatement;
                 try {
                     executingStatement = statement;
                     command.execute(statement, handler, this);
                 } finally {
-                    executingStatement = prevExecutingStatement;
+                    executingStatement = null;
                 }
             } finally {
                 runTime = System.currentTimeMillis() - started;
@@ -2656,13 +2658,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     }
 
     private void dropActiveThread(WeakReference<Thread> prev) {
-        if(isSystemOperation)
-            activeThread = prev;
+        activeThread = prev;
     }
-
-    /*private void resetActiveThread() {
-        idActiveThread = null;
-    }*/
 
     private void runLockReadOperation(SQLRunnable run) throws SQLException, SQLHandledException {
         if (isClosed())
@@ -2677,10 +2674,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
             if(!locked)
                 return;
 
-            WeakReference<Thread> prevActiveThread = null;
             try {
-                isSystemOperation = true;
-                prevActiveThread = setActiveThread();
 
                 if (isClosed())
                     return;
@@ -2690,12 +2684,10 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
                     run.run();
                 }
             } finally {
-                dropActiveThread(prevActiveThread);
-                isSystemOperation = false;
                 temporaryTablesLock.unlock();
             }
         } finally {
-            unlockRead();
+            unlockRead(true);
         }
     }
 
@@ -2930,7 +2922,6 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
                     return false;
                 }
 
-                isSystemOperation = true;
                 long timeRestartStarted = System.currentTimeMillis();
 
                 // сначала переносим временные таблицы
@@ -2969,9 +2960,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
                 int newBackend = ((PGConnection)newConnection).getBackendPID();
                 ServerLoggers.exInfoLogger.info("RESTART CONNECTION : Time : " + (System.currentTimeMillis() - timeRestartStarted) + ", New : " + newBackend + ", " + description.result);
             } finally {
-                isSystemOperation = false;
                 if(locked)
-                    unlockWrite();
+                    unlockWrite(true);
             }
         } finally {
             if(!noError)
