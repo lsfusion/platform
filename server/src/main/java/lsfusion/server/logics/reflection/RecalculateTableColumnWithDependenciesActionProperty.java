@@ -36,7 +36,7 @@ public class RecalculateTableColumnWithDependenciesActionProperty extends Script
 
         ServiceDBActionProperty.run(context, new RunService() {
             public void run(SQLSession session, boolean isolatedTransaction) throws SQLException, SQLHandledException {
-                context.getDbManager().recalculateAggregationWithDependenciesTableColumn(session, propertyCanonicalName.trim(), isolatedTransaction, false);
+                context.getDbManager().recalculateAggregationWithDependenciesTableColumn(session, context.stack, propertyCanonicalName.trim(), isolatedTransaction, false);
             }
         });
 

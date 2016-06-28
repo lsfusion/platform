@@ -1237,10 +1237,10 @@ public class DBManager extends LogicsManager implements InitializingBean {
             }});
     }
 
-    public void recalculateAggregationWithDependenciesTableColumn(SQLSession session, String propertyCanonicalName, boolean isolatedTransaction, boolean dependents) throws SQLException, SQLHandledException {
+    public void recalculateAggregationWithDependenciesTableColumn(SQLSession session, ExecutionStack stack, String propertyCanonicalName, boolean isolatedTransaction, boolean dependents) throws SQLException, SQLHandledException {
         try(DataSession dataSession = createSession()) {
             recalculateAggregationWithDependenciesTableColumn(dataSession, session, businessLogics.findProperty(propertyCanonicalName).property, isolatedTransaction, new HashSet<CalcProperty>(), dependents);
-            dataSession.apply(businessLogics, getStack());
+            dataSession.apply(businessLogics, stack);
         }
     }
 
