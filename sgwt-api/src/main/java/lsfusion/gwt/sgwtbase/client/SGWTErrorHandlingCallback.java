@@ -40,6 +40,7 @@ public class SGWTErrorHandlingCallback<T> extends AsyncCallbackEx<T> {
                 return;
             }
         }
+        Log.error("Internal Server Error. ", caught);
         SC.warn(baseMessages.internalServerErrorMessage());
     }
 
