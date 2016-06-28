@@ -16,18 +16,18 @@ public class ErrorHandlingCallback<T> extends AsyncCallbackEx<T> {
 
     @Override
     public void failure(Throwable caught) {
-        if (Log.isDebugEnabled()) {
-            Log.debug("Failure, while performing an action. ", caught);
-        } else {
-            GWT.log("Failure, while performing an action. ", caught);
-        }
-
         GwtClientUtils.removeLoaderFromHostedPage();
 
         showErrorMessage(caught);
     }
 
     protected void showErrorMessage(final Throwable caught) {
+        if (Log.isDebugEnabled()) {
+            Log.debug("Failure, while performing an action. ", caught);
+        } else {
+            GWT.log("Failure, while performing an action. ", caught);
+        }
+
         String message = getServerMessage(caught);
         if (message != null) {
             DialogBoxHelper.showMessageBox(true, "Error: ", message, null);
