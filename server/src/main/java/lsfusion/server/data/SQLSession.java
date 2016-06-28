@@ -2812,7 +2812,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
 
             prevStart.set(leftFromPrevStart);
 
-            ServerLoggers.exInfoLogger.info("Global restart connections : count - " + sessions.size() + ", remove first : " + removeFirst);
+            ServerLoggers.sqlConnectionLogger.info("Global restart connections : count - " + sessions.size() + ", remove first : " + removeFirst);
 
             if(removeFirst == 0)
                 return;
@@ -2958,7 +2958,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
                     }
 
                 int newBackend = ((PGConnection)newConnection).getBackendPID();
-                ServerLoggers.exInfoLogger.info("RESTART CONNECTION : Time : " + (System.currentTimeMillis() - timeRestartStarted) + ", New : " + newBackend + ", " + description.result);
+                ServerLoggers.sqlConnectionLogger.info("RESTART CONNECTION : Time : " + (System.currentTimeMillis() - timeRestartStarted) + ", New : " + newBackend + ", " + description.result);
             } finally {
                 if(locked)
                     unlockWrite(true);
