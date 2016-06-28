@@ -34,6 +34,7 @@ import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.form.entity.*;
 import lsfusion.server.form.instance.FormSessionScope;
+import lsfusion.server.form.navigator.DefaultIcon;
 import lsfusion.server.form.navigator.NavigatorElement;
 import lsfusion.server.form.view.ComponentView;
 import lsfusion.server.form.view.FormView;
@@ -2738,6 +2739,13 @@ public class ScriptingLogicsModule extends LogicsModule {
         
         if (options.imagePath != null) {
             element.setImage(options.imagePath);
+        } else if (element.defaultIcon != null) {
+            NavigatorElement root = baseLM.findNavigatorElement("root");
+            if (root != null && parent != null && root.equals(parent)) {
+                element.setImage(element.defaultIcon == DefaultIcon.ACTION ? "/images/actionTop.png" :
+                        element.defaultIcon == DefaultIcon.OPEN ? "/images/openTop.png" : "/images/formTop.png");
+            }
+            element.defaultIcon = null;
         }
         
         if (parent != null && (adding || options.position != InsertPosition.IN)) {

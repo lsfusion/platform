@@ -31,6 +31,7 @@ public class NavigatorElement<T extends BusinessLogics<T>> {
     public static final String FORM_ANONYMOUS_SID_PREFIX = "_FORM_";
     
     private ImageIcon image;
+    public DefaultIcon defaultIcon;
 
     public String caption = "";
 
@@ -47,7 +48,7 @@ public class NavigatorElement<T extends BusinessLogics<T>> {
         this.ID = BaseLogicsModule.generateStaticNewID();
         this.caption = caption;
 
-        setImage(icon != null ? icon : "/images/open.png");
+        setImage(icon != null ? icon : "/images/open.png", icon != null ? null : DefaultIcon.OPEN);
 
         if (parent != null) {
             setParent(parent, version);
@@ -233,7 +234,12 @@ public class NavigatorElement<T extends BusinessLogics<T>> {
     }
 
     public void setImage(String icon) {
-        image = new ImageIcon(NavigatorElement.class.getResource(icon), icon.lastIndexOf("/") == -1 ? icon : icon.substring(icon.lastIndexOf("/") + 1));
+        setImage(icon, null);
+    }
+
+    public void setImage(String icon, DefaultIcon defaultIcon) {
+        this.image = new ImageIcon(NavigatorElement.class.getResource(icon), icon.lastIndexOf("/") == -1 ? icon : icon.substring(icon.lastIndexOf("/") + 1));
+        this.defaultIcon = defaultIcon;
     }
 
     public ImageIcon getImage() {

@@ -24,6 +24,7 @@ import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.form.entity.filter.FilterEntity;
 import lsfusion.server.form.entity.filter.RegularFilterEntity;
 import lsfusion.server.form.entity.filter.RegularFilterGroupEntity;
+import lsfusion.server.form.navigator.DefaultIcon;
 import lsfusion.server.form.navigator.NavigatorElement;
 import lsfusion.server.form.view.ComponentView;
 import lsfusion.server.form.view.DefaultFormView;
@@ -173,7 +174,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
 
     private FormEntity(NavigatorElement<T> parent, String canonicalName, String caption, String icon, Version version) {
         super(parent, canonicalName, caption, null, version);
-        setImage(icon != null ? icon : "/images/form.png");
+        setImage(icon != null ? icon : "/images/form.png", icon != null ? null : DefaultIcon.FORM);
         logger.debug("Initializing form " + caption + "...");
 
         BaseLogicsModule baseLM = ThreadLocalContext.getBusinessLogics().LM;
