@@ -1911,6 +1911,16 @@ public class Settings {
         this.subReportTableOptimization = subReportTableOptimization;
     }
 
+    private int closeFormDelay = 15000;
+
+    public int getCloseFormDelay() {
+        return closeFormDelay;
+    }
+
+    public void setCloseFormDelay(int closeFormDelay) {
+        this.closeFormDelay = closeFormDelay;
+    }
+
     private boolean disableUnreferenced = true; // проблема в том что DataSession не синхронизирована (assertion, что синхронизация обеспечивается модальностью вызовов), а unreferenced нарушает этот assertion (и непонятно как ее обойти, да и не понятно имеет ли смысл)
 
     public boolean isDisableUnreferenced() {

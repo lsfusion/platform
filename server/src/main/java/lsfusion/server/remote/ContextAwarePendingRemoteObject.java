@@ -91,7 +91,7 @@ public abstract class ContextAwarePendingRemoteObject extends PendingRemoteObjec
     }
 
     public void closeLater() {
-        BaseUtils.runLater(15000, new Runnable() { // тут надо бы на ContextAwareDaemonThreadFactory переделать
+        BaseUtils.runLater(Settings.get().getCloseFormDelay(), new Runnable() { // тут надо бы на ContextAwareDaemonThreadFactory переделать
             @Override
             public void run() {
                 ThreadLocalContext.aspectBeforeRmi(ContextAwarePendingRemoteObject.this, true);
