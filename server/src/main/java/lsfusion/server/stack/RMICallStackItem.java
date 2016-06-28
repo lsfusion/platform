@@ -12,7 +12,7 @@ public class RMICallStackItem extends ExecutionStackItem {
     @Override
     public String toString() {
         RemoteForm remoteForm = (RemoteForm) joinPoint.getTarget();
-        String result = remoteForm.getCanonicalName() + " - RMI ";
+        String result = remoteForm + " - RMI ";
         
         result += joinPoint.toShortString();
         return result;
