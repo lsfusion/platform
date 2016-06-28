@@ -1408,8 +1408,8 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public LPWithParams addScriptedNewSessionAProp(LPWithParams action, List<PropertyUsage> migrateSessionProps, boolean migrateAllSessionProps,
-                                                   boolean isNested, boolean singleApply, boolean noClose) throws ScriptingErrorLog.SemanticErrorException {
-        LAP<?> sessionLP = addNewSessionAProp(null, "", (LAP) action.property, isNested, false, singleApply, noClose, getMigrateProps(migrateSessionProps, migrateAllSessionProps));
+                                                   boolean isNested, boolean singleApply, boolean newSQL) throws ScriptingErrorLog.SemanticErrorException {
+        LAP<?> sessionLP = addNewSessionAProp(null, "", (LAP) action.property, isNested, false, singleApply, newSQL, getMigrateProps(migrateSessionProps, migrateAllSessionProps));
         return new LPWithParams(sessionLP, action.usedParams);
     }
     
