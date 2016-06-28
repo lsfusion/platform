@@ -780,10 +780,10 @@ END
 
 // -- Price
 META defineDocumentDetailPriceCustomPrefix (detail, prefix, caption)
-    prefix###price 'Цена'###caption = DATA NUMERIC[14,2] (###detail) @@denomination;
+    prefix###price 'Цена'###caption = DATA NUMERIC[16,4] (###detail) @@denomination;
 END
 META defineDocumentAbstractDetailPriceCustomPrefix (detail, prefix, caption)
-    prefix###price 'Цена'###caption = ABSTRACT NUMERIC[14,2] (###detail) PERSISTENT @@denomination;
+    prefix###price 'Цена'###caption = ABSTRACT NUMERIC[16,4] (###detail) PERSISTENT @@denomination;
 END
 META defineDocumentInterfaceDetailPriceCustomPrefix (detail, prefix, caption)
     @defineDocumentAbstractDetailPriceCustomPrefix(detail, prefix, caption);
@@ -823,10 +823,10 @@ END
 
 // -- Sum
 META defineDocumentDetailSumCustom (detail, currencyProp)
-    sum 'Сумма' (###detail detail) = NUMERIC[16,2](round((quantity(detail) * price(detail)), currencyProp(detail)));
+    sum 'Сумма' (###detail detail) = NUMERIC[18,4](round((quantity(detail) * price(detail)), currencyProp(detail)));
 END
 META defineDocumentDetailSumCustomRound (detail, roundProp)
-    sum###detail 'Сумма' (detail) = NUMERIC[16,2](round((quantity###detail(detail) * price###detail(detail)), roundProp###detail(detail)));
+    sum###detail 'Сумма' (detail) = NUMERIC[18,4](round((quantity###detail(detail) * price###detail(detail)), roundProp###detail(detail)));
 END
 META defineDocumentDetailSumCustom (detail)
     @defineDocumentDetailSumCustom(detail, currency);
@@ -859,10 +859,10 @@ END
 
 //--
 META defineDocumentDetailDataSumCustomPrefix (detail, prefix, caption)
-    prefix###sum 'Сумма'###caption = DATA NUMERIC[16,2] (###detail) @@denomination;
+    prefix###sum 'Сумма'###caption = DATA NUMERIC[18,4] (###detail) @@denomination;
 END
 META defineDocumentAbstractDetailDataSumCustomPrefix (detail, prefix, caption)
-    prefix###sum 'Сумма'###caption = ABSTRACT NUMERIC[16,2] (###detail) PERSISTENT @@denomination;
+    prefix###sum 'Сумма'###caption = ABSTRACT NUMERIC[18,4] (###detail) PERSISTENT @@denomination;
 END
 
 META defineDocumentInterfaceDetailDataSumCustomPrefix (detail, prefix, caption)
@@ -883,15 +883,15 @@ META defineDocumentDetailDataSum(object)
 END
 
 META deriveDocumentDetailSumCustomPrefix(detail, prefix, currencyProp, quantityProp)
-    calc###prefix##Sum = ABSTRACT OVERRIDE FIRST NUMERIC[16,2] (###detail);
-    calc###prefix##Sum(###detail detail) += NUMERIC[16,2](round(quantityProp(detail) * prefix###price(detail), currencyProp(detail))); 
+    calc###prefix##Sum = ABSTRACT OVERRIDE FIRST NUMERIC[18,4] (###detail);
+    calc###prefix##Sum(###detail detail) += NUMERIC[18,4](round(quantityProp(detail) * prefix###price(detail), currencyProp(detail))); 
     prefix###sum (###detail detail) <- calc###prefix##Sum(detail)
                     WHEN DO CHANGED(quantityProp(detail)) OR CHANGED (prefix###price(detail)) OR CHANGED(currencyProp(detail));
 END
 
 META deriveDocumentDetailSumCustomRoundPrefix(detail, prefix, currencyProp, quantityProp, roundProp)
-    calc###prefix##Sum = ABSTRACT OVERRIDE FIRST NUMERIC[16,2] (###detail);
-    calc###prefix##Sum(###detail detail) += NUMERIC[16,2](Utils.round(quantityProp(detail) * prefix###price(detail), roundProp(detail))); 
+    calc###prefix##Sum = ABSTRACT OVERRIDE FIRST NUMERIC[18,4] (###detail);
+    calc###prefix##Sum(###detail detail) += NUMERIC[18,4](Utils.round(quantityProp(detail) * prefix###price(detail), roundProp(detail))); 
     prefix###sum (###detail detail) <- calc###prefix##Sum(detail)
                     WHEN DO CHANGED(quantityProp(detail)) OR CHANGED (prefix###price(detail)) OR CHANGED(currencyProp(detail));
 END
@@ -984,10 +984,10 @@ META defineDocumentInterfaceDetailMarkupPrefix (object, prefix, caption)
 END
 
 META defineDocumentDetailMarkupSumCustomPrefix (detail, prefix, caption)
-    prefix###markupSum 'Сумма надбавки'###caption = DATA NUMERIC[16,2] (###detail) @@denomination;
+    prefix###markupSum 'Сумма надбавки'###caption = DATA NUMERIC[18,4] (###detail) @@denomination;
 END
 META defineDocumentAbstractDetailMarkupSumCustomPrefix (detail, prefix, caption)
-    prefix###markupSum 'Сумма надбавки'###caption = ABSTRACT NUMERIC[16,2] (###detail) PERSISTENT @@denomination;
+    prefix###markupSum 'Сумма надбавки'###caption = ABSTRACT NUMERIC[18,4] (###detail) PERSISTENT @@denomination;
 END
 META defineDocumentInterfaceDetailMarkupSumCustomPrefix (detail, prefix, caption)
     @defineDocumentAbstractDetailMarkupSumCustomPrefix(detail, prefix, caption);
