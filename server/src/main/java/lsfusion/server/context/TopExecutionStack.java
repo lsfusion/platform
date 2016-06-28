@@ -67,4 +67,9 @@ public class TopExecutionStack implements NewThreadExecutionStack {
             return false;
         return threadId.equals(((TopExecutionStack)stack).threadId);
     }
+
+    @Override
+    public String toString() {
+        return threadId + "@" + System.identityHashCode(this);
+    }
 }
