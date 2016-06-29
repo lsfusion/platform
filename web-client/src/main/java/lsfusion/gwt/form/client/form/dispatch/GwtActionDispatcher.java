@@ -78,7 +78,6 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
                 }
             } else {
                 if (actionThrowable != null) {
-                    Log.error("Error dispatching gwt client action: ", actionThrowable);
                     throw new RuntimeException(actionThrowable);
                 }
                 postDispatchResponse(response);

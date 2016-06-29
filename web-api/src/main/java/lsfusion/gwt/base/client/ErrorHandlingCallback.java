@@ -5,6 +5,7 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.http.client.RequestTimeoutException;
 import com.google.gwt.user.client.rpc.StatusCodeException;
 import lsfusion.gwt.base.client.ui.DialogBoxHelper;
+import lsfusion.gwt.base.server.LogicsAwareDispatchServlet;
 import lsfusion.gwt.base.shared.InvalidateException;
 import lsfusion.gwt.base.shared.MessageException;
 import lsfusion.gwt.base.shared.actions.NavigatorAction;
@@ -22,12 +23,7 @@ public class ErrorHandlingCallback<T> extends AsyncCallbackEx<T> {
     }
 
     protected void showErrorMessage(final Throwable caught) {
-        if (Log.isDebugEnabled()) {
-            Log.debug("Failure, while performing an action. ", caught);
-        } else {
-            GWT.log("Failure, while performing an action. ", caught);
-        }
-        Log.error("Failure, while performing an action. ", caught);
+        LogicsAwareDispatchServlet.logClientError("Failure, while performing an action. ", caught);
 
         String message = getServerMessage(caught);
         if (message != null) {

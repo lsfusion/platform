@@ -16,6 +16,7 @@ import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.base.client.ErrorHandlingCallback;
 import lsfusion.gwt.base.client.GwtClientUtils;
 import lsfusion.gwt.base.client.ui.DialogBoxHelper;
+import lsfusion.gwt.base.server.LogicsAwareDispatchServlet;
 import lsfusion.gwt.base.shared.actions.BooleanResult;
 import lsfusion.gwt.base.shared.actions.VoidResult;
 import lsfusion.gwt.form.client.dispatch.NavigatorDispatchAsync;
@@ -63,8 +64,7 @@ public class MainFrame implements EntryPoint {
         GWT.setUncaughtExceptionHandler(new GWT.UncaughtExceptionHandler() {
             @Override
             public void onUncaughtException(Throwable t) {
-                GWT.log("Необработанная ошибка в GWT: ", t);
-                Log.error("Необработанная ошибка в GWT: ", t);
+                LogicsAwareDispatchServlet.logClientError("Необработанная ошибка в GWT: ", t);
             }
         });
 
