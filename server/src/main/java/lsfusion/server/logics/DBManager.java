@@ -316,12 +316,12 @@ public class DBManager extends LogicsManager implements InitializingBean {
                         throw new RuntimeException("not supported");
                     }
 
-                    public DataObject getCurrentUser() {
+                    public ObjectValue getCurrentUser() {
                         return new DataObject(systemUserObject, businessLogics.authenticationLM.systemUser);
                     }
                 },
                 new ComputerController() {
-                    public DataObject getCurrentComputer() {
+                    public ObjectValue getCurrentComputer() {
                         return new DataObject(systemComputer, businessLogics.authenticationLM.computer);
                     }
 

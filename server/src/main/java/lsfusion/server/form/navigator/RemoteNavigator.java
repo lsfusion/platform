@@ -307,9 +307,9 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
             return remoteNavigator != null && remoteNavigator.changeCurrentUser(user);
         }
 
-        public DataObject getCurrentUser() {
+        public ObjectValue getCurrentUser() {
             RemoteNavigator remoteNavigator = weakThis.get();
-            return remoteNavigator == null ? null : remoteNavigator.user;
+            return remoteNavigator == null ? NullValue.instance : remoteNavigator.user;
         }
     }
 
@@ -320,9 +320,9 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
             this.weakThis = new WeakReference<>(navigator);
         }
 
-        public DataObject getCurrentComputer() {
+        public ObjectValue getCurrentComputer() {
             RemoteNavigator remoteNavigator = weakThis.get();
-            return remoteNavigator == null ? null : remoteNavigator.computer.getDataObject();
+            return remoteNavigator == null ? NullValue.instance : remoteNavigator.computer;
         }
 
         public boolean isFullClient() {

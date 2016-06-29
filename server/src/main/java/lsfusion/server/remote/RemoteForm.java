@@ -978,7 +978,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     }
 
     public Integer getCurrentUser() {
-        return (Integer) form.session.user.getCurrentUser().object;
+        return (Integer) form.session.user.getCurrentUser().getValue();
     }
 
     String getLogMessage() {
