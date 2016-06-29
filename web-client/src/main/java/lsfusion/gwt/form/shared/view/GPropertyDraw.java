@@ -6,6 +6,7 @@ import lsfusion.gwt.form.client.MainFrame;
 import lsfusion.gwt.form.client.form.ui.GFormController;
 import lsfusion.gwt.form.shared.view.changes.GGroupObjectValue;
 import lsfusion.gwt.form.shared.view.classes.GClass;
+import lsfusion.gwt.form.shared.view.classes.GStringType;
 import lsfusion.gwt.form.shared.view.classes.GType;
 import lsfusion.gwt.form.shared.view.grid.EditManager;
 import lsfusion.gwt.form.shared.view.grid.editor.GridCellEditor;
@@ -318,6 +319,14 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
         } else {
             return baseType.getPreferredPixelHeight(font);
         }
+    }
+
+    public String getPreferredLabelHeight() {
+        return getPreferredLabelPixelHeight() + "px";
+    }
+
+    public int getPreferredLabelPixelHeight() {
+        return new GStringType().getPreferredPixelHeight(font);
     }
 
     public LinkedHashMap<String, String> getContextMenuItems() {

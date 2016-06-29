@@ -112,6 +112,7 @@ public class DataPanelRenderer implements PanelRenderer {
             gridPanel.setWidth(preferredWidth);
         }
 
+        label.getElement().getStyle().setProperty("minHeight", property.getPreferredLabelHeight());
         gridPanel.getElement().getStyle().setProperty("minHeight", preferredHeight);
         gridPanel.getElement().getStyle().setProperty("minWidth", preferredWidth);
         gridPanel.getElement().getStyle().setProperty("maxHeight", preferredHeight);
@@ -140,7 +141,7 @@ public class DataPanelRenderer implements PanelRenderer {
             panel.setChildAlignment(gridPanel, GFlexAlignment.STRETCH);
 
             gridPanel.getElement().getStyle().clearHeight();
-            gridPanel.getElement().getStyle().clearProperty("minHeight");
+            //gridPanel.getElement().getStyle().clearProperty("minHeight");
             gridPanel.getElement().getStyle().clearProperty("maxHeight");
             gridPanel.getElement().getStyle().setPosition(Style.Position.RELATIVE);
 
@@ -179,7 +180,7 @@ public class DataPanelRenderer implements PanelRenderer {
     }
     
     private void setLabelText(String text) {
-        label.setHTML(text.isEmpty() ? SafeHtmlUtils.EMPTY_SAFE_HTML : SafeHtmlUtils.fromString(text)); 
+        label.setHTML(text.isEmpty() ? SafeHtmlUtils.EMPTY_SAFE_HTML : SafeHtmlUtils.fromString(text));
     }
 
     @Override
