@@ -92,8 +92,7 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
     }
 
     protected void handleDispatchException(Throwable t) {
-        GWT.log("Error dispatching ServerResponseResult: ", t);
-        Log.error("Error dispatching ServerResponseResult: ", t);
+        GwtClientUtils.logClientError("Error dispatching ServerResponseResult: ", t);
         DialogBoxHelper.showMessageBox(true, "Error", t.getMessage(), null);
     }
 
