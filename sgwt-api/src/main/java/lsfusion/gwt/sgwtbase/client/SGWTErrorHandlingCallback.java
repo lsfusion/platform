@@ -1,7 +1,6 @@
 package lsfusion.gwt.sgwtbase.client;
 
 import com.allen_sauer.gwt.log.client.Log;
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.http.client.RequestTimeoutException;
 import com.google.gwt.user.client.rpc.StatusCodeException;
 import com.smartgwt.client.util.BooleanCallback;
@@ -9,7 +8,6 @@ import com.smartgwt.client.util.SC;
 import lsfusion.gwt.base.client.AsyncCallbackEx;
 import lsfusion.gwt.base.client.EscapeUtils;
 import lsfusion.gwt.base.client.GwtClientUtils;
-import lsfusion.gwt.base.server.LogicsAwareDispatchServlet;
 import lsfusion.gwt.base.shared.MessageException;
 
 import static lsfusion.gwt.base.client.GwtClientUtils.TIMEOUT_MESSAGE;
@@ -42,7 +40,7 @@ public class SGWTErrorHandlingCallback<T> extends AsyncCallbackEx<T> {
                 return;
             }
         }
-        LogicsAwareDispatchServlet.logClientError("Internal Server Error. ", caught);
+        GwtClientUtils.logClientError("Internal Server Error. ", caught);
         SC.warn(baseMessages.internalServerErrorMessage());
     }
 

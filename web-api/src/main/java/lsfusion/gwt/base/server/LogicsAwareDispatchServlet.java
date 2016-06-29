@@ -195,10 +195,4 @@ public abstract class LogicsAwareDispatchServlet<T extends RemoteLogicsInterface
 
     protected abstract void addHandlers(InstanceActionHandlerRegistry registry);
 
-    public static void logClientError(Object message, Throwable t) {
-        GWT.log(message.toString(), t);
-        if(t instanceof Exception)
-            Log.error(message, (Exception)t);
-        logger.error(message, t);
-    }
 }

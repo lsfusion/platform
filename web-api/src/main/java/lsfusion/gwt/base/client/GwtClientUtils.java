@@ -12,7 +12,9 @@ import com.google.gwt.i18n.client.Dictionary;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.base.client.ui.HasPreferredSize;
+import lsfusion.gwt.base.server.LogicsAwareDispatchServlet;
 import lsfusion.gwt.base.shared.GwtSharedUtils;
+import org.jfree.util.Log;
 
 import java.util.*;
 
@@ -378,5 +380,11 @@ public class GwtClientUtils {
         }
 
         return table;
+    }
+
+    public static void logClientError(Object message, Throwable t) {
+        GWT.log(message.toString(), t);
+        if(t instanceof Exception)
+            Log.error(message, (Exception)t);
     }
 }

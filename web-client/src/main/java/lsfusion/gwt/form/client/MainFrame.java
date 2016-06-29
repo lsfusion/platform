@@ -1,6 +1,5 @@
 package lsfusion.gwt.form.client;
 
-import com.allen_sauer.gwt.log.client.Log;
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
@@ -15,8 +14,6 @@ import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.base.client.ErrorHandlingCallback;
 import lsfusion.gwt.base.client.GwtClientUtils;
-import lsfusion.gwt.base.client.ui.DialogBoxHelper;
-import lsfusion.gwt.base.server.LogicsAwareDispatchServlet;
 import lsfusion.gwt.base.shared.actions.BooleanResult;
 import lsfusion.gwt.base.shared.actions.VoidResult;
 import lsfusion.gwt.form.client.dispatch.NavigatorDispatchAsync;
@@ -64,7 +61,7 @@ public class MainFrame implements EntryPoint {
         GWT.setUncaughtExceptionHandler(new GWT.UncaughtExceptionHandler() {
             @Override
             public void onUncaughtException(Throwable t) {
-                LogicsAwareDispatchServlet.logClientError("Необработанная ошибка в GWT: ", t);
+                GwtClientUtils.logClientError("Необработанная ошибка в GWT: ", t);
             }
         });
 
