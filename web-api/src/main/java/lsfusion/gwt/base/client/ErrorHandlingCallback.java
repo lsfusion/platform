@@ -27,6 +27,7 @@ public class ErrorHandlingCallback<T> extends AsyncCallbackEx<T> {
         } else {
             GWT.log("Failure, while performing an action. ", caught);
         }
+        Log.error("Failure, while performing an action. ", caught);
 
         String message = getServerMessage(caught);
         if (message != null) {
