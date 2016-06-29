@@ -1,5 +1,6 @@
 package lsfusion.gwt.base.client;
 
+import com.allen_sauer.gwt.log.client.Log;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Element;
@@ -14,7 +15,6 @@ import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.base.client.ui.HasPreferredSize;
 import lsfusion.gwt.base.server.LogicsAwareDispatchServlet;
 import lsfusion.gwt.base.shared.GwtSharedUtils;
-import org.jfree.util.Log;
 
 import java.util.*;
 
@@ -382,9 +382,8 @@ public class GwtClientUtils {
         return table;
     }
 
-    public static void logClientError(Object message, Throwable t) {
-        GWT.log(message.toString(), t);
-        if(t instanceof Exception)
-            Log.error(message, (Exception)t);
+    public static void logClientError(String message, Throwable t) {
+        GWT.log(message, t);
+        Log.error(message, t);
     }
 }
