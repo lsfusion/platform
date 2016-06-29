@@ -37,6 +37,7 @@ TABLE messageCustomUser(Message, CustomUser);
 
 pushNotification 'Отправить уведомление пользователю' = ACTION ABSTRACT (CustomUser);
 seekLastMessageInFullChat = ACTION ABSTRACT ();
+markSeenOnChange = ACTION ABSTRACT (Chat);
 
 author 'Автор' = DATA CustomUser (Message);
 nameAuthor 'Автор' (Message message) = name(author(message)) MAXCHARWIDTH 30 PREFCHARWIDTH 30;
@@ -107,7 +108,7 @@ sendMessage 'Написать в чат' (Chat chat, TEXT message, BOOLEAN syste
         pushNotification(user);
     }            
     
-    seekLastMessageInFullChat();
+    markSeenOnChange(chat);
 }
 
 sendMessage 'Отправить' = ACTION ABSTRACT LIST (Chat, CustomUser) EDITKEY 'F3';
@@ -150,13 +151,12 @@ editChatAction 'Редактировать' () = ACTION {
 
 recentVisible  = ABSTRACT BOOLEAN ();
 readonlyFullChat(Chat chat) = readonly(chat) AND recentVisible();
-markSeenOnChange = ACTION ABSTRACT (Chat);
 prevUser() = DATA LOCAL CustomUser();
 
 backgroundUnread 'Цвет' (Chat chat) = RGB(255, 0, 0) IF unreadMessages(chat);
 backgroundUnread 'Цвет' (CustomUser user) = RGB(255, 0, 0) IF unreadMessages(user);
 
-backgroundMessage (Message m) = IF NOT own(m) THEN RGB(200, 244, 248) ELSE IF seenCount(m) < 2 THEN RGB(220, 244, 248) ELSE RGB(240, 244, 248);
+backgroundMessage (Message m) = IF NOT own(m) THEN RGB(255, 255, 255) ELSE IF seenCount(m) < 2 THEN RGB(226, 231, 235) ELSE RGB(240, 244, 248);
 
 FORM fullChat 'Чат'
     OBJECTS c = Chat
