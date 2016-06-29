@@ -64,7 +64,7 @@ public class MainFrame implements EntryPoint {
             @Override
             public void onUncaughtException(Throwable t) {
                 GWT.log("Необработанная ошибка в GWT: ", t);
-                Log.debug("Необработанная ошибка в GWT: ", t);
+                Log.error("Необработанная ошибка в GWT: ", t);
             }
         });
 
