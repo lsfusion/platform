@@ -131,7 +131,7 @@ public abstract class ContextAwarePendingRemoteObject extends PendingRemoteObjec
         if (pausablesExecutor != null)
             pausablesExecutor.shutdown();
 
-        BaseUtils.runLater(15000, cleanThreads(explicit, threads, context));
+        BaseUtils.runLater(Settings.get().getCloseFormDelay(), cleanThreads(explicit, threads, context));
     }
 
     private static Runnable cleanThreads(final boolean explicit, final WeakIdentityHashSet<Thread> threads, final Context context) {

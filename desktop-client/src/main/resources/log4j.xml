@@ -67,10 +67,10 @@
         <priority value="ALL"/>
     </category>
 
-    <!--<category name="RemoteLogger" additivity="false">-->
-        <!--<priority value="INFO"/>-->
-        <!--<appender-ref ref="remotelog"/>-->
-    <!--</category>-->
+    <category name="RemoteLogger" additivity="false">
+        <priority value="INFO"/>
+        <appender-ref ref="remotelog"/>
+    </category>
 
     <category name="InvocationsLogger" additivity="false">
         <!--<priority value="OFF"/>-->
