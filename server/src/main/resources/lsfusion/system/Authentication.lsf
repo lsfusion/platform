@@ -359,6 +359,6 @@ NAVIGATOR {
         NEW reloginLoginUserAction 'Сменить пользователя' ACTION reloginLoginUser[] IMAGE '/images/relogin.png';
         ADD editProfile;
         NEW changePasswordAction 'Сменить пароль' ACTION changePassword[] IMAGE '/images/change_password.png';
-        NEW logOutAction 'Выйти' ACTION reconnect[] IMAGE '/images/logout.png';
+        NEW logOutAction 'Выйти' ACTION restart[] IMAGE '/images/logout.png';
     }
 }
