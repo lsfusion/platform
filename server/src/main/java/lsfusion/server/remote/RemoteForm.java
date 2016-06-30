@@ -868,14 +868,19 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         });
     }
 
-    private ServerResponse prepareRemoteChangesResponse(long requestIndex, List<ClientAction> pendingActions, boolean delayedGetRemoteChanges, boolean delayedHideForm, ExecutionStack stack) {
+    // именно непосредственно перед возвращением результата, иначе closeLater может сработать сильно раньше
+    private ServerResponse returnRemoteChangesResponse(long requestIndex, List<ClientAction> pendingActions, boolean delayedHideForm) {
         if (delayedHideForm) {
             ServerLoggers.remoteLifeLog("FORM DELAYED HIDE : " + this);
             closeLater();
         }
 
+        return new ServerResponse(requestIndex, pendingActions.toArray(new ClientAction[pendingActions.size()]), false);
+    }
+
+    private ServerResponse prepareRemoteChangesResponse(long requestIndex, List<ClientAction> pendingActions, boolean delayedGetRemoteChanges, boolean delayedHideForm, ExecutionStack stack) {
         if (numberOfFormChangesRequests.get() > 1 || delayedGetRemoteChanges) {
-            return new ServerResponse(requestIndex, pendingActions.toArray(new ClientAction[pendingActions.size()]), false);
+            return returnRemoteChangesResponse(requestIndex, pendingActions, delayedHideForm);
         }
 
         byte[] formChanges = getFormChangesByteArray(stack);
@@ -885,7 +890,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
 
         resultActions.addAll(pendingActions);
 
-        return new ServerResponse(requestIndex, resultActions.toArray(new ClientAction[resultActions.size()]), false);
+        return returnRemoteChangesResponse(requestIndex, resultActions, false);
     }
 
     public byte[] getFormChangesByteArray(ExecutionStack stack) {
