@@ -1656,19 +1656,17 @@ newThreadActionDefinitionBody[List<TypedParameter> context, boolean dynamic] ret
 @init {
 	List<LPWithParams> props = new ArrayList<LPWithParams>();
 	List<LP> localProps = new ArrayList<LP>();
-	long ldelay = 0;
-	Long lperiod = null;
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedNewThreadActionProperty($aDB.property, $connExpr.property, ldelay, lperiod);
+		$property = self.addScriptedNewThreadActionProperty($aDB.property, $connExpr.property, $periodExpr.property, $delayExpr.property);
 	}
 }
-	:	'NEWTHREAD' aDB=innerActionDefinitionBody[context, dynamic]
+	:	'NEWTHREAD' aDB=innerActionDefinitionBody[context, dynamic] 
 	    (
-	        ('CONNECTION' connExpr=propertyExpression[context, dynamic])
-	    |   ('SCHEDULE' (period=intLiteral { lperiod = (long)$period.val; })? ('DELAY' delay=intLiteral { ldelay = $delay.val; })? )?
-        )
+	        'CONNECTION' connExpr=propertyExpression[context, dynamic]
+	    |   'SCHEDULE' ('PERIOD' periodExpr=propertyExpression[context, dynamic])? ('DELAY' delayExpr=propertyExpression[context, dynamic])? 
+        )? 
 	;
 
 newExecutorActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]

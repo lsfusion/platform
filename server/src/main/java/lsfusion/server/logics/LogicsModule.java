@@ -757,10 +757,12 @@ public abstract class LogicsModule {
                         caption, listInterfaces, actionImplement, singleApply, noClose, doApply, migrateSessionProps, isNested)));
     }
 
-    protected LAP addNewThreadAProp(AbstractGroup group, String caption, long delay, Long period, Object... params) {
+    protected LAP addNewThreadAProp(AbstractGroup group, String caption, boolean withConnection, boolean hasPeriod, boolean hasDelay, Object... params) {
         ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(getIntNum(params));
         ImList<PropertyInterfaceImplement<PropertyInterface>> readImplements = readImplements(listInterfaces, params);
-        CalcPropertyInterfaceImplement connection = readImplements.size() == 1 ? null : (CalcPropertyInterfaceImplement) readImplements.get(1);
+        CalcPropertyInterfaceImplement connection = withConnection ? (CalcPropertyInterfaceImplement) readImplements.get(1) : null;
+        CalcPropertyInterfaceImplement period = hasPeriod ? (CalcPropertyInterfaceImplement) readImplements.get(1) : null;
+        CalcPropertyInterfaceImplement delay = hasDelay ? (CalcPropertyInterfaceImplement) readImplements.get(hasPeriod ? 2 : 1) : null;
         return addProperty(group, new LAP(new NewThreadActionProperty(caption, listInterfaces, (ActionPropertyMapImplement) readImplements.get(0), period, delay, connection)));
     }
 

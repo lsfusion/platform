@@ -2342,12 +2342,19 @@ public class ScriptingLogicsModule extends LogicsModule {
         return addScriptedJoinAProp(addAProp(ImportDataActionProperty.createProperty(fileProp.property.property.getValueClass(ClassType.valuePolicy), format, this, ids, props)), Collections.singletonList(fileProp));
     }
 
-    public LPWithParams addScriptedNewThreadActionProperty(LPWithParams actionProp, LPWithParams connectionProp, long delay, Long period) throws ScriptingErrorLog.SemanticErrorException {
+    public LPWithParams addScriptedNewThreadActionProperty(LPWithParams actionProp, LPWithParams connectionProp, LPWithParams periodProp, LPWithParams delayProp) throws ScriptingErrorLog.SemanticErrorException {
         List<LPWithParams> propParams = toList(actionProp);
-        if(connectionProp != null)
+        if (periodProp != null) {
+            propParams.add(periodProp);
+        }
+        if (delayProp != null) {
+            propParams.add(delayProp);
+        }
+        if (connectionProp != null) {
             propParams.add(connectionProp);
+        }
         List<Integer> allParams = mergeAllParams(propParams);
-        LAP<?> property = addNewThreadAProp(null, "", delay, period, getParamsPlainList(propParams).toArray());
+        LAP<?> property = addNewThreadAProp(null, "", connectionProp != null, periodProp != null, delayProp != null, getParamsPlainList(propParams).toArray());
         return new LPWithParams(property, allParams);
     }
 
