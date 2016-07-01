@@ -18,18 +18,18 @@ public class NewSessionActionProperty extends AroundAspectActionProperty {
     private final FunctionSet<SessionDataProperty> migrateSessionProperties;
     private final boolean isNested;
     private final boolean singleApply;
-    private final boolean noClose; // переименовать потом в newsql или что-то вроде того
+    private final boolean newSQL; 
     private final boolean doApply;
 
     public <I extends PropertyInterface> NewSessionActionProperty(String caption, ImOrderSet<I> innerInterfaces,
                                                                   ActionPropertyMapImplement<?, I> action, boolean singleApply,
-                                                                  boolean noClose, boolean doApply,
+                                                                  boolean newSQL, boolean doApply,
                                                                   FunctionSet<SessionDataProperty> migrateSessionProperties,
                                                                   boolean isNested) {
         super(caption, innerInterfaces, action);
 
         this.singleApply = singleApply;
-        this.noClose = noClose;
+        this.newSQL = newSQL;
 
         assert !(isNested && !migrateSessionProperties.isEmpty());
 
@@ -66,7 +66,7 @@ public class NewSessionActionProperty extends AroundAspectActionProperty {
 
 
         DataSession newSession;
-        if(noClose) {
+        if(newSQL) {
             SQLSession sql;
             try {
                 sql = context.getDbManager().createSQL();
@@ -92,7 +92,7 @@ public class NewSessionActionProperty extends AroundAspectActionProperty {
     }
 
     protected void afterAspect(FlowResult result, ExecutionContext<PropertyInterface> context, ExecutionContext<PropertyInterface> innerContext) throws SQLException, SQLHandledException {
-        if (!context.getSession().isInTransaction() && !noClose) {
+        if (!context.getSession().isInTransaction() && !newSQL) {
             if (!isNested) {
                 migrateSessionProperties(innerContext.getSession(), context.getSession());
             }
@@ -109,7 +109,7 @@ public class NewSessionActionProperty extends AroundAspectActionProperty {
     }
 
     private void migrateSessionProperties(DataSession migrateFrom, DataSession migrateTo) throws SQLException, SQLHandledException {
-        assert !noClose;
+        assert !newSQL;
         migrateFrom.copyDataTo(migrateTo, migrateSessionProperties);
     }
 
@@ -118,7 +118,7 @@ public class NewSessionActionProperty extends AroundAspectActionProperty {
         try {
             session.close();
         } finally {
-            if(noClose) // тут конечно нюанс, что делать если newSession продолжит жить своей жизнью (скажем NEWSESSION NEWTHREAD, а не наоборот), реализуем потом (по аналогии с NEWSESSION) вместе с NESTED
+            if(newSQL) // тут конечно нюанс, что делать если newSession продолжит жить своей жизнью (скажем NEWSESSION NEWTHREAD, а не наоборот), реализуем потом (по аналогии с NEWSESSION) вместе с NESTED
                 session.sql.close();
         }
     }
