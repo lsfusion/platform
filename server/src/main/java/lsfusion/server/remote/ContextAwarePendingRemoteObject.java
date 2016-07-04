@@ -170,18 +170,22 @@ public abstract class ContextAwarePendingRemoteObject extends PendingRemoteObjec
         return closed;
     }
 
+    public static boolean disableFinalized = true; // временно, проверить проблемы с остановкой сервера
+
     protected void finalize() throws Throwable {
-        ThreadLocalContext.aspectBeforeRmi(this, true);
-        try {
+        if(disableFinalized) {
             try {
-                if(!Settings.get().isDisableFinalized())
-                    shutdown(false);
-            } catch (Throwable ignored) {
+                ThreadLocalContext.aspectBeforeRmi(this, true);
+                try {
+                    if (!Settings.get().isDisableFinalized())
+                        shutdown(false);
+                } catch (Throwable ignored) {
+                } finally {
+                    ThreadLocalContext.aspectAfterRmi();
+                }
             } finally {
                 super.finalize();
             }
-        } finally {
-            ThreadLocalContext.aspectAfterRmi();
         }
     }
 

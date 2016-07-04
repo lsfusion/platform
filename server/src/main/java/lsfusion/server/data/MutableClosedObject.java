@@ -2,6 +2,7 @@ package lsfusion.server.data;
 
 import lsfusion.base.MutableObject;
 import lsfusion.server.ServerLoggers;
+import lsfusion.server.remote.ContextAwarePendingRemoteObject;
 
 import java.sql.SQLException;
 
@@ -55,16 +56,13 @@ public abstract class MutableClosedObject<O> extends MutableObject implements Au
     }
 
     protected void finalize() throws Throwable {
-        try
-        {
-            shutdown(getFinalizeOwner(), false);
-        }
-        catch (SQLException e)
-        {
-        }
-        finally
-        {
-            super.finalize();
+        if(ContextAwarePendingRemoteObject.disableFinalized) {
+            try {
+                shutdown(getFinalizeOwner(), false);
+            } catch (SQLException e) {
+            } finally {
+                super.finalize();
+            }
         }
     }
 }
