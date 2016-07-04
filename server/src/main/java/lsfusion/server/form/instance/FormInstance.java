@@ -314,7 +314,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         environmentIncrement = createEnvironmentIncrement(isModal, isDialog, isAdd, sessionScope.isManageSession(), entity.isReadOnly(), showDrop);
 
         if (!interactive) {
-            endApply(stack);
+            endApply(stack, false);
             this.mapObjects = mapObjects;
         } else {
             this.mapObjects = null;
@@ -1569,13 +1569,13 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     @LogTime
     @ThisMessage
     @AssertSynchronized
-    public FormChanges endApply(ExecutionStack stack) throws SQLException, SQLHandledException {
+    public FormChanges endApply(ExecutionStack stack, boolean formWillBeClosed) throws SQLException, SQLHandledException {
 
         assert interactive;
 
         final MFormChanges result = new MFormChanges();
 
-        if (isClosed()) {
+        if (isClosed() || formWillBeClosed) {
 //            ServerLoggers.assertLog(false, "FORM IS ALREADY CLOSED");
             return result.immutable();
         }

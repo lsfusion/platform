@@ -878,7 +878,13 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         return new ServerResponse(requestIndex, pendingActions.toArray(new ClientAction[pendingActions.size()]), false);
     }
 
+    private boolean delayedHideFormSent;
+
     private ServerResponse prepareRemoteChangesResponse(long requestIndex, List<ClientAction> pendingActions, boolean delayedGetRemoteChanges, boolean delayedHideForm, ExecutionStack stack) {
+        if(delayedHideForm) {
+            delayedHideFormSent = true;
+        }
+
         if (numberOfFormChangesRequests.get() > 1 || delayedGetRemoteChanges) {
             return returnRemoteChangesResponse(requestIndex, pendingActions, delayedHideForm);
         }
@@ -895,7 +901,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
 
     public byte[] getFormChangesByteArray(ExecutionStack stack) {
         try {
-            FormChanges formChanges = form.endApply(stack);
+            FormChanges formChanges = form.endApply(stack, delayedHideFormSent);
 
             if (logger.isTraceEnabled()) {
                 formChanges.logChanges(form, logger);
