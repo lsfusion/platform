@@ -124,14 +124,14 @@ public abstract class ContextAwarePendingRemoteObject extends PendingRemoteObjec
     // явная очистка ресурсов, которые поддерживаются через weak ref'ы
     protected void onExplicitClose() {
         unexport();
+
+        BaseUtils.runLater(Settings.get().getCloseFormDelay(), cleanThreads(true, threads, context));
     }
 
     // все кроме weakRef (onExplicitClose) !!!! ВАЖНО нельзя запускать очистку weakRef ресурсов, так как WeakReference'у уже могут стать null, и ресурсы (например временные таблицы) перейдут другому владельцу, в итоге почистятся ресурсы используемые уже новым объектом
     protected void onFinalClose(final boolean explicit) { // assert synchronized
         if (pausablesExecutor != null)
             pausablesExecutor.shutdown();
-
-        BaseUtils.runLater(Settings.get().getCloseFormDelay(), cleanThreads(explicit, threads, context));
     }
 
     private static Runnable cleanThreads(final boolean explicit, final WeakIdentityHashSet<Thread> threads, final Context context) {
@@ -140,7 +140,6 @@ public abstract class ContextAwarePendingRemoteObject extends PendingRemoteObjec
             public void run() {
                 synchronized (threads) {
                     for (Thread thread : threads) {
-                        ServerLoggers.assertLog(explicit, "THREADS CANNOT BE FOR FINALIZED OBJECT");
                         ServerLoggers.exinfoLog("FORCEFULLY STOPPED : " + thread + '\n' + ExceptionUtils.getStackTrace() + '\n' + ExceptionUtils.getStackTrace(thread.getStackTrace()));
                         try {
                             ThreadUtils.interruptThread(context, thread);
