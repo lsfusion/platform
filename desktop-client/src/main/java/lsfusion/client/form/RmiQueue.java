@@ -85,6 +85,8 @@ public class RmiQueue {
         long reqId = reqIdGen.incrementAndGet();
         try {
             do {
+                if(abandoned.get()) // не вызываем call если уже клиент перестартовывает
+                    throw new RemoteAbandonedException();
                 try {
                     return request.call();
                 } catch (Throwable t) {
