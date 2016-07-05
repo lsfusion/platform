@@ -1961,7 +1961,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
     private class NewDBStructure extends DBStructure<Field> {
 
         public <P extends PropertyInterface> NewDBStructure(DBVersion dbVersion) {
-            version = 22;
+            version = 23;
             this.dbVersion = dbVersion;
 
             tables.putAll(getIndicesMap());
