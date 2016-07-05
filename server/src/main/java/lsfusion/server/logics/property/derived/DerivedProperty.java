@@ -614,7 +614,7 @@ public class DerivedProperty {
         CalcPropertyMapImplement<?, T> distribute = createJoin(group);
 
         if(roundfirst && true) {
-            PartitionProperty<T> orderProperty = new PartitionProperty<T>(caption, PartitionType.DISTR_CUM_PROPORTION, innerInterfaces.getSet(), ListFact.toList(proportion, distribute), partitions, orders, ordersNotNull, false);
+            PartitionProperty<T> orderProperty = new PartitionProperty<T>(caption, PartitionType.DISTR_CUM_PROPORTION(roundlen), innerInterfaces.getSet(), ListFact.toList(proportion, distribute), partitions, orders, ordersNotNull, false);
             return new CalcPropertyMapImplement<PartitionProperty.Interface<T>, T>(orderProperty, orderProperty.getMapInterfaces());
         }
 

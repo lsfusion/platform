@@ -995,7 +995,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
 
     @Override
     protected void onFinalClose(boolean explicit) {
-        navigatorManager.navigatorFinalClosed(getStack(), this); // тут по идее другой connection
+        navigatorManager.navigatorFinalClosed(getStack(), getConnection()); // тут по идее другой connection
 
         super.onFinalClose(explicit);
     }

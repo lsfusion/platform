@@ -166,11 +166,11 @@ public class NavigatorsManager extends LogicsManager implements InitializingBean
         }
     }
 
-    public void navigatorFinalClosed(ExecutionStack stack, RemoteNavigator navigator) {
+    public void navigatorFinalClosed(ExecutionStack stack, DataObject connection) {
         try {
             try (DataSession session = dbManager.createSession()) {
-                if (navigator != null && navigator.getConnection() != null) {
-                    businessLogics.systemEventsLM.connectionStatusConnection.change(businessLogics.systemEventsLM.connectionStatus.getObjectID("disconnectedConnection"), session, navigator.getConnection());
+                if (connection != null) {
+                    businessLogics.systemEventsLM.connectionStatusConnection.change(businessLogics.systemEventsLM.connectionStatus.getObjectID("disconnectedConnection"), session, connection);
                 } else
                     ServerLoggers.assertLog(false, "SHOULD NOT BE");
                 session.apply(businessLogics, stack);
