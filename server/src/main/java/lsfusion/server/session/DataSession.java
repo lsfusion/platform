@@ -1022,7 +1022,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     @LogTime
     @ThisMessage
     private void executeSessionEvent(ExecutionEnvironment env, ExecutionStack stack, @ParamMessage ActionProperty<?> action) throws SQLException, SQLHandledException {
-        if(!sessionEventChangedOld.getProperties().intersect(action.getSessionEventOldDepends()))// оптимизация аналогичная верхней
+        if(noEventsInTransaction || !sessionEventChangedOld.getProperties().intersect(action.getSessionEventOldDepends()))// оптимизация аналогичная верхней
             return;
 
         action.execute(env, stack);
@@ -1031,6 +1031,8 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     @LogTime
     @ThisMessage
     private void executeGlobalEvent(ExecutionEnvironment env, ExecutionStack stack, @ParamMessage ActionProperty<?> action) throws SQLException, SQLHandledException {
+        if(noEventsInTransaction)
+            return;
         boolean hasChanges = false;
         for(SessionCalcProperty property : action.getGlobalEventSessionCalcDepends()) { // оптимизация основанная на отсутствии последействия
             // тут конечно для PREV брать CHANGED, не совсем правильно, так как новое значение может не использоваться вообще в действии, и PREV используется не для определения условия события, а для непосредственно тела
@@ -1854,6 +1856,16 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
     public void setNoCancelInTransaction(boolean noCancelInTransaction) {
         this.noCancelInTransaction = noCancelInTransaction;
+    }
+
+    private boolean noEventsInTransaction;
+
+    public boolean isNoEventsInTransaction() {
+        return noEventsInTransaction;
+    }
+
+    public void setNoEventsInTransaction(boolean noEventsInTransaction) {
+        this.noEventsInTransaction = noEventsInTransaction;
     }
 
     public ApplyFilter applyFilter = ApplyFilter.NO;
