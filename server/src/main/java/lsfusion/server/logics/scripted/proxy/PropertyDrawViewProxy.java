@@ -1,13 +1,8 @@
 package lsfusion.server.logics.scripted.proxy;
 
-import lsfusion.server.classes.DateClass;
-import lsfusion.server.classes.IntegralClass;
-import lsfusion.server.data.type.Type;
 import lsfusion.server.form.view.PropertyDrawView;
 
 import javax.swing.*;
-import java.text.DecimalFormat;
-import java.text.SimpleDateFormat;
 
 public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> {
 
@@ -33,15 +28,6 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
 
     public void setRegexpMessage(String regexpMessage) {
         target.regexpMessage = regexpMessage;
-    }
-
-    public void setPattern(String pattern) {
-        Type type = target.getType();
-        if(type instanceof IntegralClass) {
-            target.format = new DecimalFormat(pattern);
-        } else if(type instanceof DateClass) {
-            target.format = new SimpleDateFormat(pattern);
-        }
     }
 
     public void setMaxValue(long maxValue) {
