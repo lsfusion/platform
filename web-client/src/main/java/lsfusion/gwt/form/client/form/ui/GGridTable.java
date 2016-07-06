@@ -530,7 +530,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
 
     private GridColumn insertGridColumn(int index) {
         GridColumn column = new GridColumn();
-        GGridPropertyTableHeader header = new GGridPropertyTableHeader(this);
+        GGridPropertyTableHeader header = new GGridPropertyTableHeader(this, gridController.getHeaderHeight());
 
         headers.add(index, header);
 

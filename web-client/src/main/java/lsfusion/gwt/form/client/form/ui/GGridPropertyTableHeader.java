@@ -36,8 +36,10 @@ public class GGridPropertyTableHeader extends Header<String> {
     private boolean notNull;
     private boolean hasChangeAction;
 
-    public GGridPropertyTableHeader(GGridPropertyTable table) {
-        this(table, null);
+    private int headerHeight;
+
+    public GGridPropertyTableHeader(GGridPropertyTable table, int headerHeight) {
+        this(table, null, null, headerHeight);
     }
 
     public GGridPropertyTableHeader(GGridPropertyTable table, String caption) {
@@ -45,11 +47,16 @@ public class GGridPropertyTableHeader extends Header<String> {
     }
 
     public GGridPropertyTableHeader(GGridPropertyTable table, String caption, String toolTip) {
+        this(table, caption, toolTip, 0);
+    }
+
+    public GGridPropertyTableHeader(GGridPropertyTable table, String caption, String toolTip, int headerHeight) {
         super(DBLCLICK, MOUSEDOWN, MOUSEMOVE, MOUSEOVER, MOUSEOUT);
 
         this.caption = caption;
         this.table = table;
         this.toolTip = toolTip;
+        this.headerHeight = headerHeight;
     }
 
     public void setCaption(String caption, boolean notNull, boolean hasChangeAction) {
@@ -135,8 +142,9 @@ public class GGridPropertyTableHeader extends Header<String> {
         Boolean sortDir = table.getSortDirection(this);
         String escapedCaption = getEscapedCaption();
 
+        int maxHeight = headerHeight > 0 ? headerHeight : MAX_HEADER_HEIGHT;
         DivElement div = Document.get().createDivElement();
-        div.getStyle().setProperty("maxHeight", MAX_HEADER_HEIGHT, Style.Unit.PX);
+        div.getStyle().setProperty("maxHeight", maxHeight, Style.Unit.PX);
         div.getStyle().setOverflow(Style.Overflow.HIDDEN);
         div.getStyle().setTextAlign(Style.TextAlign.CENTER);
         div.getStyle().setWhiteSpace(Style.WhiteSpace.NOWRAP);

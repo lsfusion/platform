@@ -18,4 +18,8 @@ public class GridViewProxy extends ComponentViewProxy<GridView> {
     public void setQuickSearch(boolean quickSearch) {
         target.setQuickSearch(quickSearch);
     }
+
+    public void setHeaderHeight(int headerHeight) {
+        target.headerHeight = headerHeight;
+    }
 }
