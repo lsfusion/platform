@@ -133,15 +133,8 @@ public class GridTable extends ClientPropertyTable {
     private ThreadLocal<UIAction> threadLocalUIAction = new ThreadLocal<>();
     private ThreadLocal<Boolean> threadLocalIsStopCellEditing = new ThreadLocal<>();
 
-    public GridTable(final GridView igridView, ClientFormController iform, GridUserPreferences[] iuserPreferences) {
+    public GridTable(GridView igridView, ClientFormController iform, GridUserPreferences[] iuserPreferences) {
         super(new GridTableModel());
-
-        tableHeader = new GridTableHeader(columnModel) {
-            @Override
-            public Dimension getPreferredSize() {
-                return new Dimension(columnModel.getTotalColumnWidth(), igridView.getHeaderHeight());
-            }
-        };
 
         form = iform;
         gridController = igridView.getGridController();
@@ -1244,10 +1237,10 @@ public class GridTable extends ClientPropertyTable {
         return model;
     }
 
-    /*@Override
+    @Override
     protected JTableHeader createDefaultTableHeader() {
         return new GridTableHeader(columnModel);
-    }*/
+    }
 
     public void selectProperty(ClientPropertyDraw propertyDraw) {
         if (propertyDraw == null) {
@@ -1737,6 +1730,11 @@ public class GridTable extends ClientPropertyTable {
             int modelIndex = columnModel.getColumn(index).getModelIndex();
 
             return model.getColumnProperty(modelIndex).getTooltipText(getColumnCaption(index));
+        }
+
+        @Override
+        public Dimension getPreferredSize() {
+            return new Dimension(columnModel.getTotalColumnWidth(), 34);
         }
     }
     

@@ -40,10 +40,6 @@ public class GGridController {
         gridView = layoutImpl.createGridView(grid, panel);
     }
 
-    public int getHeaderHeight() {
-        return grid.headerHeight;
-    }
-
     public GGridTable getTable() {
         return table;
     }

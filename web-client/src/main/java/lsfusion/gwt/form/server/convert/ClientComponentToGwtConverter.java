@@ -250,7 +250,6 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         GGrid grid = initGwtComponent(clientGrid, new GGrid());
         grid.groupObject = convertOrCast(clientGrid.groupObject);
         grid.quickSearch = clientGrid.quickSearch;
-        grid.headerHeight = clientGrid.headerHeight;
         return grid;
     }
 
