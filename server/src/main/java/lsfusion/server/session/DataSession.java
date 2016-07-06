@@ -842,7 +842,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     }
 
     public void changeProperty(DataProperty property, PropertyChange<ClassPropertyInterface> change) throws SQLException, SQLHandledException {
-        if (property.getDebugInfo() != null) {
+        if (property.getDebugInfo() != null && property.getDebugInfo().needToCreateDelegate()) {
             ActionPropertyDebugger.getInstance().delegate(this, property, change);
         } else {
             changePropertyImpl(property, change);

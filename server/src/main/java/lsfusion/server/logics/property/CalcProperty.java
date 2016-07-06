@@ -64,8 +64,6 @@ import java.util.concurrent.Callable;
 
 public abstract class CalcProperty<T extends PropertyInterface> extends Property<T> implements MapKeysInterface<T> {
 
-    private CalcPropertyDebugInfo debugInfo;
-
     public static FunctionSet<CalcProperty> getDependsOnSet(final FunctionSet<CalcProperty> check) {
         if(check.isEmpty())
             return check;
@@ -1720,14 +1718,14 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
     }
 
     public CalcPropertyDebugInfo getDebugInfo() {
-        return debugInfo;
+        return (CalcPropertyDebugInfo) debugInfo;
     }
 
     @Override
     public String toString() {
         String string = super.toString();
-        if (commonDebugInfo != null) {
-            string = string + " - " + commonDebugInfo;
+        if (debugInfo != null) {
+            string = string + " - " + debugInfo;
         }
         return string;
     }

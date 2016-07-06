@@ -2511,10 +2511,11 @@ public class ScriptingLogicsModule extends LogicsModule {
         }};
 
     public ActionDebugInfo getEventStackDebugInfo() {
-        if (debugger.isEnabled() && !parser.isInsideNonEnabledMeta()) {
-            return new ActionDebugInfo(getName(), getParser().getGlobalCurrentLineNumber(), getParser().getGlobalPositionInLine(), ActionDelegationType.AFTER_DELEGATE);
+        ActionDebugInfo info = new ActionDebugInfo(getParser().getGlobalDebugInfo(getName(), false), ActionDelegationType.AFTER_DELEGATE);
+        if (!debugger.isEnabled()) {
+            info.setNeedToCreateDelegate(false);
         }
-        return null;
+        return info;
     }
 
     public void addScriptedEvent(LPWithParams whenProp, LPWithParams event, List<LPWithParams> orders, boolean descending, Event baseEvent, List<LPWithParams> noInline, boolean forceInline, ActionDebugInfo debugInfo) throws ScriptingErrorLog.SemanticErrorException {
@@ -2804,51 +2805,34 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public void propertyDefinitionCreated(LP property, int line, int offset) {
-        if (debugger.isEnabled() && !parser.isInsideNonEnabledMeta() && property != null && property.property instanceof CalcProperty) {
-            CalcPropertyDebugInfo debugInfo = new CalcPropertyDebugInfo(getName(), line, offset);
-
-            if (property.property instanceof DataProperty) {
-                debugger.addDelegate(debugInfo);
-            }
-            if (property.property.getSID().equals(lastOpimizedJPropSID)) {
-                // для некоторых не выполняется (к примеру AS)
-//                assert ((CalcProperty) property.property).getDebugInfo() != null;
-            } else {
-                if (((CalcProperty) property.property).getDebugInfo() == null) {
-                    ((CalcProperty) property.property).setDebugInfo(debugInfo);
-                }
-            }
-        }
-
+    public void propertyDefinitionCreated(LP property, DebugInfo info) {
         if (property != null) {
-            DebugInfo di = new DebugInfo(getName(), line, offset);
-            property.property.setCommonDebugInfo(di);
+            boolean needToCreateDelegate = debugger.isEnabled() && info.needToCreateDelegate() && property.property instanceof DataProperty;
+            CalcPropertyDebugInfo newDebugInfo = new CalcPropertyDebugInfo(info, needToCreateDelegate);
+            if (needToCreateDelegate) {
+                debugger.addDelegate(newDebugInfo);
+            }
+            ((CalcProperty)property.property).setDebugInfo(newDebugInfo);
         }
     }
 
-    public void actionPropertyDefinitionBodyCreated(LPWithParams lpWithParams, int line, int offset, boolean modifyContext) throws ScriptingErrorLog.SemanticErrorException {
-        if (debugger.isEnabled() && !parser.isInsideNonEnabledMeta()) {
-
+    public void actionPropertyDefinitionBodyCreated(LPWithParams lpWithParams, DebugInfo startInfo, DebugInfo endInfo, boolean modifyContext) throws ScriptingErrorLog.SemanticErrorException {
+        if (lpWithParams.property != null) {
             checkActionProperty(lpWithParams.property);
 
             //noinspection unchecked
             LAP<PropertyInterface> lAction = (LAP<PropertyInterface>) lpWithParams.property;
-
             ActionProperty property = (ActionProperty) lAction.property;
-//            if (property instanceof ListActionProperty) {
-//                return;
-//            }
             ActionDelegationType delegationType = property.getDelegationType(modifyContext);
-            if(delegationType != null) {
-                ScriptParser parser = getParser();
-                debugger.addDelegate(property, delegationType.getDebugInfo(getName(), line, offset, parser.getGlobalCurrentLineNumber(true), parser.getGlobalPositionInLine(true)));
-            }
-        }
 
-        if (lpWithParams.property != null) {
-            DebugInfo di = new DebugInfo(getName(), line, offset);
-            lpWithParams.property.property.setCommonDebugInfo(di);
+            if (debugger.isEnabled() && startInfo.needToCreateDelegate() && delegationType != null) {
+                ActionDebugInfo typeInfo = delegationType.getDebugInfo(startInfo, endInfo);
+                ActionDebugInfo info = new ActionDebugInfo(new DebugInfo(startInfo.point, typeInfo.point.line, typeInfo.point.offset), typeInfo.delegationType);
+                debugger.addDelegate(info);
+                property.setDebugInfo(info);
+            } else {
+                property.setDebugInfo(new ActionDebugInfo(startInfo, delegationType, false));
+            }
         }
     }
 

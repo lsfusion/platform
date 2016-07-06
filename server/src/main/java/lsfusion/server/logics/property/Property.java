@@ -127,7 +127,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         return result;
     }
 
-    protected DebugInfo commonDebugInfo;
+    protected DebugInfo debugInfo;
     
     public boolean isField() {
         return false;
@@ -504,12 +504,6 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     }
 
     protected ImMap<T, ResolveClassSet> explicitClasses; // без nulls
-
-    public void setCommonDebugInfo(DebugInfo commonDebugInfo) {
-        if (this.commonDebugInfo == null) {
-            this.commonDebugInfo = commonDebugInfo;
-        }
-    }
 
     protected interface Checker<V> {
         boolean checkEquals(V expl, V calc);

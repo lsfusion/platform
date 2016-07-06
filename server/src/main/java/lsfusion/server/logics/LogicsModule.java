@@ -1854,8 +1854,12 @@ public abstract class LogicsModule {
                     DerivedProperty.createIfAction(innerInterfaces, whereImplement, actionProperty, null).property :
                     DerivedProperty.createForAction(innerInterfaces, SetFact.<P>EMPTY(), whereImplement, orders, ordersNotNull, actionProperty, null, false, noInline, forceInline).property;
         
-        if(debugInfo != null)
-            debugger.addDelegate(action, debugInfo);
+        if (debugInfo != null) {
+            if (debugInfo.needToCreateDelegate()) {
+                debugger.addDelegate(debugInfo);
+            }
+            action.setDebugInfo(debugInfo);
+        }
 
 //        action.setStrongUsed(whereImplement.property); // добавить сильную связь, уже не надо поддерживается более общий механизм - смотреть на Session Calc
 //        action.caption = "WHEN " + whereImplement.property + " " + actionProperty;

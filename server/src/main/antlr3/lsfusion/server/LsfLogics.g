@@ -15,7 +15,6 @@ grammar LsfLogics;
 	import lsfusion.interop.FormExportType;
 	import lsfusion.interop.ModalityType;
 	import lsfusion.server.form.instance.FormSessionScope;
-	import lsfusion.server.data.Union;
 	import lsfusion.server.data.expr.query.PartitionType;
 	import lsfusion.server.form.entity.*;
 	import lsfusion.server.form.navigator.NavigatorElement;
@@ -25,8 +24,6 @@ grammar LsfLogics;
 	import lsfusion.server.classes.sets.ResolveClassSet;
 	import lsfusion.server.logics.mutables.Version;
 	import lsfusion.server.logics.linear.LP;
-	import lsfusion.server.logics.linear.LCP;
-	import lsfusion.server.logics.property.PropertyFollows;
 	import lsfusion.server.logics.property.Cycle;
 	import lsfusion.server.logics.property.ImportSourceFormat;
 	import lsfusion.server.logics.scripted.*;
@@ -52,18 +49,15 @@ grammar LsfLogics;
 	import lsfusion.server.logics.property.BooleanDebug;
 	import lsfusion.server.logics.property.PropertyFollowsDebug;
 	import lsfusion.server.logics.debug.ActionDebugInfo;
+	import lsfusion.server.logics.debug.DebugInfo;
 	
 	import javax.mail.Message;
 
 	import lsfusion.server.form.entity.GroupObjectProp;
 
-	import lsfusion.base.col.interfaces.immutable.ImSet;
-
 	import java.util.*;
 	import java.awt.*;
 	import org.antlr.runtime.BitSet;
-	import java.util.List;
-	import java.sql.Date;
 
 	import static java.util.Arrays.asList;
 	import static lsfusion.server.logics.scripted.ScriptingLogicsModule.WindowType.*;
@@ -142,6 +136,14 @@ grammar LsfLogics;
 
 	public boolean inIndexParseState() {
 		return inParseState(ScriptParser.State.INDEX);
+	}
+
+	public DebugInfo getCurrentDebugInfo() {
+		return getCurrentDebugInfo(false);
+	}
+
+	public DebugInfo getCurrentDebugInfo(boolean previous) {
+		return self.getParser().getGlobalDebugInfo(self.getName(), previous);
 	}
 
 	public void setObjectProperty(Object propertyReceiver, String propertyName, Object propertyValue) throws ScriptingErrorLog.SemanticErrorException {
@@ -944,12 +946,11 @@ propertyDeclaration returns [String name, String caption, List<TypedParameter> p
 
 propertyExpression[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
 @init {
-	int line = self.getParser().getGlobalCurrentLineNumber(); 
-	int offset = self.getParser().getGlobalPositionInLine();
+	DebugInfo info = getCurrentDebugInfo(); 
 }
 @after{
     if (inPropParseState()) {
-        self.propertyDefinitionCreated($property.property, line, offset);
+        self.propertyDefinitionCreated($property.property, info);
     }
 }
 	:	pe=ifPE[context, dynamic] { $property = $pe.property; }
@@ -1192,12 +1193,11 @@ expressionFriendlyPD[List<TypedParameter> context, boolean dynamic] returns [LPW
 
 contextIndependentPD[boolean innerPD] returns [LP property, List<ResolveClassSet> signature]
 @init {
-	int line = self.getParser().getGlobalCurrentLineNumber(); 
-	int offset = self.getParser().getGlobalPositionInLine();
+	DebugInfo info = getCurrentDebugInfo();
 }
 @after{
 	if (inPropParseState()) {
-		self.propertyDefinitionCreated($property, line, offset);
+		self.propertyDefinitionCreated($property, info);
 	}
 }
 	: 	dataDef=dataPropertyDefinition[innerPD] { $property = $dataDef.property; $signature = $dataDef.signature; }
@@ -2067,12 +2067,12 @@ innerActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns
 
 modifyContextActionDefinitionBody[List<TypedParameter> context, boolean dynamic, boolean modifyContext] returns [LPWithParams property, List<ResolveClassSet> signature]
 @init {
-	int line = self.getParser().getGlobalCurrentLineNumber(); 
-	int offset = self.getParser().getGlobalPositionInLine();
+	DebugInfo info = getCurrentDebugInfo();
 }
 @after{
 	if (inPropParseState()) {
-		self.actionPropertyDefinitionBodyCreated($property, line, offset, modifyContext);
+		DebugInfo endInfo = getCurrentDebugInfo(true);
+		self.actionPropertyDefinitionBodyCreated($property, info, endInfo, modifyContext);
 	}
 }
 	:	extDB=extendContextActionDB[context, dynamic]	{ $property = $extDB.property; if (inPropParseState()) $signature = self.getClassesFromTypedParams(context); }
