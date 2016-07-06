@@ -2125,6 +2125,13 @@ keepContextActionDB[List<TypedParameter> context, boolean dynamic] returns [LPWi
 contextIndependentActionDB returns [LPWithParams property, List<ResolveClassSet> signature]
 @init {
 	$property = new LPWithParams(null, new ArrayList<Integer>());
+	DebugInfo info = getCurrentDebugInfo();
+}
+@after{
+	if (inPropParseState()) {
+		DebugInfo endInfo = getCurrentDebugInfo(true);
+		self.actionPropertyDefinitionBodyCreated($property, info, endInfo, false);
+	}
 }
 	:	addformADB=addFormActionDefinitionBody { $property.property = $addformADB.property; $signature = $addformADB.signature; }
 	|	editformADB=editFormActionDefinitionBody { $property.property = $editformADB.property; $signature = $editformADB.signature; }
