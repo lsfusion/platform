@@ -134,6 +134,17 @@ onStarted() += ACTION {
     number(DOW d) <- 6 WHERE d == DOW.saturday; 
 }
 
+numberM 'Номер дня недели' = DATA INTEGER (DOW);
+onStarted() += ACTION {
+    numberM(DOW d) <- 0 WHERE d == DOW.monday; 
+    numberM(DOW d) <- 1 WHERE d == DOW.tuesday; 
+    numberM(DOW d) <- 2 WHERE d == DOW.wednesday; 
+    numberM(DOW d) <- 3 WHERE d == DOW.thursday; 
+    numberM(DOW d) <- 4 WHERE d == DOW.friday; 
+    numberM(DOW d) <- 5 WHERE d == DOW.saturday; 
+    numberM(DOW d) <- 6 WHERE d == DOW.sunday; 
+}
+
 FORM DOWs 'Дни недели'
     OBJECTS d = DOW
     PROPERTIES(d) READONLY staticCaption, number
