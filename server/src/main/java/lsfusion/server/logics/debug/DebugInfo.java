@@ -15,24 +15,26 @@ public class DebugInfo {
             this.offset = offset;
             this.isInsideNonEnabledMeta = isInsideNonEnabledMeta;            
         }
+        
+        public boolean needToCreateDelegate() {
+            return !isInsideNonEnabledMeta;
+        }
     }
-    
-    private final String openedMetaCharacter = "\u2195";
-    
-    public DebugPoint point;
+
+    protected DebugPoint point;
     
     private boolean needToCreateDelegate = true;
-    public Integer debugLine = null;
-    public Integer debugOffset = null;
+    private Integer debuggerLine = null;
+    private Integer debuggerOffset = null;
     
-    public DebugInfo(DebugPoint debugPoint) {
+    protected DebugInfo(DebugPoint debugPoint) {
         this.point = debugPoint;
     }
     
-    public DebugInfo(DebugPoint debugPoint, int debugLine, int debugOffset) {
+    protected DebugInfo(DebugPoint debugPoint, int debuggerLine, int debuggerOffset) {
         this(debugPoint);
-        this.debugLine = debugLine;
-        this.debugOffset = debugOffset;
+        this.debuggerLine = debuggerLine;
+        this.debuggerOffset = debuggerOffset;
     }
 
     public Pair<String, Integer> getDebuggerModuleLine() {
@@ -43,40 +45,17 @@ public class DebugInfo {
         return "action_" + getDebuggerLine() + (firstInLine ? "" : "_" + getDebuggerOffset());
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-
-        DebugInfo that = (DebugInfo) o;
-
-        return point.line == that.point.line &&
-                point.offset == that.point.offset &&
-                point.moduleName.equals(that.point.moduleName);
-    }
-
-    @Override
-    public int hashCode() {
-        int result = point.moduleName.hashCode();
-        result = 31 * result + point.line;
-        result = 31 * result + point.offset;
-        return result;
-    }
-
     public int getDebuggerLine() {
-        return debugLine == null ? point.line : debugLine;
+        return debuggerLine == null ? point.line : debuggerLine;
     }
     
     public int getDebuggerOffset() {
-        return debugOffset == null ? point.offset : debugOffset;
+        return debuggerOffset == null ? point.offset : debuggerOffset;
     }   
     
     @Override
     public String toString() {
+        final String openedMetaCharacter = "\u2195";
         String openedMetaSuffix = point.isInsideNonEnabledMeta ? openedMetaCharacter : ""; 
         return point.moduleName + "(" + (point.line + 1) + ":" + (point.offset + 1) + openedMetaSuffix + ")";
     }
@@ -86,6 +65,10 @@ public class DebugInfo {
     }
 
     public boolean needToCreateDelegate() {
-        return needToCreateDelegate && !point.isInsideNonEnabledMeta;    
+        return needToCreateDelegate && point.needToCreateDelegate();    
     } 
+    
+    public String getModuleName() {
+        return point.moduleName;
+    }
 }

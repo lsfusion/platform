@@ -186,6 +186,31 @@ public class ScriptParser {
         return insideNonEnabledMeta;
     }
 
+/*
+    public List<DebugStackLine> getMetaCallsStack(String moduleName, int curParserLineNumber) {
+        List<DebugStackLine> callStack = new ArrayList<>();
+
+        for (int i = 0; i < parsers.size(); i++) {
+            String name = (i == 0 ? moduleName : parsers.get(i).getMetacodeDefinitionModuleName());
+
+            int curLineNumber = curParserLineNumber;
+            if (i+1 < parsers.size()) {
+                curLineNumber = parsers.get(i+1).getLineNumber();
+            }
+            if (i > 0) {
+                curLineNumber += parsers.get(i).getMetacodeDefinitionLineNumber() - 1;
+            }
+
+            String metaCallStr = null;
+            if (i+1 < parsers.size()) {
+                metaCallStr = parsers.get(i+1).getMetacodeCallStr();
+            }
+            callStack.add(new DebugStackLine(name, curLineNumber, metaCallStr));
+        }
+        return callStack;
+    }
+*/
+
     public String getCurrentScriptPath(String moduleName, int lineNumber, String separator) {
         StringBuilder path = new StringBuilder();
 
@@ -212,8 +237,8 @@ public class ScriptParser {
         return path.toString();
     }
 
-    public DebugInfo getGlobalDebugInfo(String moduleName, boolean previous) {
-        return new DebugInfo(new DebugInfo.DebugPoint(moduleName, getGlobalCurrentLineNumber(previous), getGlobalPositionInLine(previous), isInsideNonEnabledMeta()));
+    public DebugInfo.DebugPoint getGlobalDebugPoint(String moduleName, boolean previous) {
+        return new DebugInfo.DebugPoint(moduleName, getGlobalCurrentLineNumber(previous), getGlobalPositionInLine(previous), isInsideNonEnabledMeta());
     }
     
     //0-based

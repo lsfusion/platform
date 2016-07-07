@@ -4,13 +4,18 @@ public class ActionDebugInfo extends DebugInfo {
 
     public final ActionDelegationType delegationType;
 
-    public ActionDebugInfo(DebugInfo info, ActionDelegationType type) {
-        super(info.point, info.getDebuggerLine(), info.getDebuggerOffset());
+    public ActionDebugInfo(DebugInfo.DebugPoint point, int debuggerLine, int debuggerOffset, ActionDelegationType type) {
+        super(point, debuggerLine, debuggerOffset);    
+        delegationType = type;
+    }
+    
+    public ActionDebugInfo(DebugInfo.DebugPoint point, ActionDelegationType type) {
+        super(point);
         delegationType = type;
     }
 
-    public ActionDebugInfo(DebugInfo info, ActionDelegationType type, boolean needToCreateDelegate) {
-        this(info, type);
+    public ActionDebugInfo(DebugInfo.DebugPoint point, ActionDelegationType type, boolean needToCreateDelegate) {
+        this(point, type);
         setNeedToCreateDelegate(needToCreateDelegate);
     }
     

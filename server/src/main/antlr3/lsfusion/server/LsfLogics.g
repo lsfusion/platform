@@ -138,12 +138,12 @@ grammar LsfLogics;
 		return inParseState(ScriptParser.State.INDEX);
 	}
 
-	public DebugInfo getCurrentDebugInfo() {
-		return getCurrentDebugInfo(false);
+	public DebugInfo.DebugPoint getCurrentDebugPoint() {
+		return getCurrentDebugPoint(false);
 	}
 
-	public DebugInfo getCurrentDebugInfo(boolean previous) {
-		return self.getParser().getGlobalDebugInfo(self.getName(), previous);
+	public DebugInfo.DebugPoint getCurrentDebugPoint(boolean previous) {
+		return self.getParser().getGlobalDebugPoint(self.getName(), previous);
 	}
 
 	public void setObjectProperty(Object propertyReceiver, String propertyName, Object propertyValue) throws ScriptingErrorLog.SemanticErrorException {
@@ -946,11 +946,11 @@ propertyDeclaration returns [String name, String caption, List<TypedParameter> p
 
 propertyExpression[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
 @init {
-	DebugInfo info = getCurrentDebugInfo(); 
+	DebugInfo.DebugPoint point = getCurrentDebugPoint(); 
 }
 @after{
     if (inPropParseState()) {
-        self.propertyDefinitionCreated($property.property, info);
+        self.propertyDefinitionCreated($property.property, point);
     }
 }
 	:	pe=ifPE[context, dynamic] { $property = $pe.property; }
@@ -1193,11 +1193,11 @@ expressionFriendlyPD[List<TypedParameter> context, boolean dynamic] returns [LPW
 
 contextIndependentPD[boolean innerPD] returns [LP property, List<ResolveClassSet> signature]
 @init {
-	DebugInfo info = getCurrentDebugInfo();
+	DebugInfo.DebugPoint point = getCurrentDebugPoint();
 }
 @after{
 	if (inPropParseState()) {
-		self.propertyDefinitionCreated($property, info);
+		self.propertyDefinitionCreated($property, point);
 	}
 }
 	: 	dataDef=dataPropertyDefinition[innerPD] { $property = $dataDef.property; $signature = $dataDef.signature; }
@@ -2067,12 +2067,12 @@ innerActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns
 
 modifyContextActionDefinitionBody[List<TypedParameter> context, boolean dynamic, boolean modifyContext] returns [LPWithParams property, List<ResolveClassSet> signature]
 @init {
-	DebugInfo info = getCurrentDebugInfo();
+	DebugInfo.DebugPoint point = getCurrentDebugPoint();
 }
 @after{
 	if (inPropParseState()) {
-		DebugInfo endInfo = getCurrentDebugInfo(true);
-		self.actionPropertyDefinitionBodyCreated($property, info, endInfo, modifyContext);
+		DebugInfo.DebugPoint endPoint = getCurrentDebugPoint(true);
+		self.actionPropertyDefinitionBodyCreated($property, point, endPoint, modifyContext);
 	}
 }
 	:	extDB=extendContextActionDB[context, dynamic]	{ $property = $extDB.property; if (inPropParseState()) $signature = self.getClassesFromTypedParams(context); }
@@ -2125,12 +2125,12 @@ keepContextActionDB[List<TypedParameter> context, boolean dynamic] returns [LPWi
 contextIndependentActionDB returns [LPWithParams property, List<ResolveClassSet> signature]
 @init {
 	$property = new LPWithParams(null, new ArrayList<Integer>());
-	DebugInfo info = getCurrentDebugInfo();
+	DebugInfo.DebugPoint point = getCurrentDebugPoint();
 }
 @after{
 	if (inPropParseState()) {
-		DebugInfo endInfo = getCurrentDebugInfo(true);
-		self.actionPropertyDefinitionBodyCreated($property, info, endInfo, false);
+		DebugInfo.DebugPoint endPoint = getCurrentDebugPoint(true);
+		self.actionPropertyDefinitionBodyCreated($property, point, endPoint, false);
 	}
 }
 	:	addformADB=addFormActionDefinitionBody { $property.property = $addformADB.property; $signature = $addformADB.signature; }

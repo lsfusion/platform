@@ -2511,7 +2511,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         }};
 
     public ActionDebugInfo getEventStackDebugInfo() {
-        ActionDebugInfo info = new ActionDebugInfo(getParser().getGlobalDebugInfo(getName(), false), ActionDelegationType.AFTER_DELEGATE);
+        ActionDebugInfo info = new ActionDebugInfo(getParser().getGlobalDebugPoint(getName(), false), ActionDelegationType.AFTER_DELEGATE);
         if (!debugger.isEnabled()) {
             info.setNeedToCreateDelegate(false);
         }
@@ -2805,18 +2805,18 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public void propertyDefinitionCreated(LP property, DebugInfo info) {
+    public void propertyDefinitionCreated(LP property, DebugInfo.DebugPoint point) {
         if (property != null) {
-            boolean needToCreateDelegate = debugger.isEnabled() && info.needToCreateDelegate() && property.property instanceof DataProperty;
-            CalcPropertyDebugInfo newDebugInfo = new CalcPropertyDebugInfo(info, needToCreateDelegate);
+            boolean needToCreateDelegate = debugger.isEnabled() && !point.needToCreateDelegate() && property.property instanceof DataProperty;
+            CalcPropertyDebugInfo debugInfo = new CalcPropertyDebugInfo(point, needToCreateDelegate);
             if (needToCreateDelegate) {
-                debugger.addDelegate(newDebugInfo);
+                debugger.addDelegate(debugInfo);
             }
-            ((CalcProperty)property.property).setDebugInfo(newDebugInfo);
+            ((CalcProperty)property.property).setDebugInfo(debugInfo);
         }
     }
 
-    public void actionPropertyDefinitionBodyCreated(LPWithParams lpWithParams, DebugInfo startInfo, DebugInfo endInfo, boolean modifyContext) throws ScriptingErrorLog.SemanticErrorException {
+    public void actionPropertyDefinitionBodyCreated(LPWithParams lpWithParams, DebugInfo.DebugPoint startPoint, DebugInfo.DebugPoint endPoint, boolean modifyContext) throws ScriptingErrorLog.SemanticErrorException {
         if (lpWithParams.property != null) {
             checkActionProperty(lpWithParams.property);
 
@@ -2825,13 +2825,13 @@ public class ScriptingLogicsModule extends LogicsModule {
             ActionProperty property = (ActionProperty) lAction.property;
             ActionDelegationType delegationType = property.getDelegationType(modifyContext);
 
-            if (debugger.isEnabled() && startInfo.needToCreateDelegate() && delegationType != null) {
-                ActionDebugInfo typeInfo = delegationType.getDebugInfo(startInfo, endInfo);
-                ActionDebugInfo info = new ActionDebugInfo(new DebugInfo(startInfo.point, typeInfo.point.line, typeInfo.point.offset), typeInfo.delegationType);
+            if (debugger.isEnabled() && startPoint.needToCreateDelegate() && delegationType != null) {
+                DebugInfo.DebugPoint typePoint = delegationType.getDebugPoint(startPoint, endPoint);
+                ActionDebugInfo info = new ActionDebugInfo(startPoint, typePoint.line, typePoint.offset, delegationType);
                 debugger.addDelegate(info);
                 property.setDebugInfo(info);
             } else {
-                property.setDebugInfo(new ActionDebugInfo(startInfo, delegationType, false));
+                property.setDebugInfo(new ActionDebugInfo(startPoint, delegationType, false));
             }
         }
     }

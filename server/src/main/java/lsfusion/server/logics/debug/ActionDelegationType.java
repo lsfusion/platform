@@ -3,11 +3,11 @@ package lsfusion.server.logics.debug;
 public enum ActionDelegationType {
     BEFORE_DELEGATE, IN_DELEGATE, AFTER_DELEGATE;
     
-    public ActionDebugInfo getDebugInfo(DebugInfo startInfo, DebugInfo endInfo) {
+    public DebugInfo.DebugPoint getDebugPoint(DebugInfo.DebugPoint startPoint, DebugInfo.DebugPoint endPoint) {
         if (this == BEFORE_DELEGATE) {
-            return new ActionDebugInfo(endInfo, this);
+            return endPoint;
         } else {
-            return new ActionDebugInfo(startInfo, this);
+            return startPoint;
         }
     }
 
