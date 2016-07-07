@@ -174,7 +174,7 @@ public abstract class ContextAwarePendingRemoteObject extends PendingRemoteObjec
     // также может быть проблема что в aspectBeforeRmi устанавливается контекст, в частности getLogInfo (причем IdentityLazy уже ушел), который может сделать допсылку (правда Weak) на этот объект
 
     protected void finalize() throws Throwable {
-        if(disableFinalized) {
+        if(!disableFinalized) {
             try {
                 ThreadLocalContext.aspectBeforeRmi(this, true);
                 try {

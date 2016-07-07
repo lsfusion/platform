@@ -56,7 +56,7 @@ public abstract class MutableClosedObject<O> extends MutableObject implements Au
     }
 
     protected void finalize() throws Throwable {
-        if(ContextAwarePendingRemoteObject.disableFinalized) {
+        if(!ContextAwarePendingRemoteObject.disableFinalized) {
             try {
                 shutdown(getFinalizeOwner(), false);
             } catch (SQLException e) {
