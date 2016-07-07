@@ -183,7 +183,7 @@ clearApplicationLog () += ACTION NEWSESSION {
 FORM connections 'Журнал подключений'
 
     OBJECTS c=Connection
-    PROPERTIES (c) READONLY hostnameComputer, remoteAddress, userLogin, remoteAddress, osVersion,
+    PROPERTIES (c) READONLY hostnameComputer, remoteAddress, userLogin, osVersion,
                             javaVersion, screenSize, processor, architecture, cores, physicalMemory,
                             totalMemory, maximumMemory, freeMemory, nameConnectionStatus, connectTime,
                             disconnectTime
@@ -318,7 +318,7 @@ FORM pings 'Журнал клиентских приложений'
     FILTERS pingFromTo(c,dFrom,dTo)
     
     OBJECTS cn = Connection
-    PROPERTIES (cn) READONLY hostnameComputer, remoteAddress, userLogin, remoteAddress, osVersion,
+    PROPERTIES (cn) READONLY hostnameComputer, remoteAddress, userLogin, osVersion,
                              javaVersion, screenSize, processor, architecture, cores, physicalMemory,
                              totalMemory, maximumMemory, freeMemory, nameConnectionStatus, connectTime,
                              disconnectTime

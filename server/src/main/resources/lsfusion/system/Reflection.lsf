@@ -356,7 +356,7 @@ FORM properties 'Свойства'
      quantity, notNullQuantity, userLoggable EDITABLE, loggable, stored EDITABLE, isSetNotNull EDITABLE, lastRecalculate
 
     TREE treePropertiesObject tps=PropertyGroup PARENT parent, ps=Property
-    PROPERTIES(tps) READONLY caption, SID, dumb, dumb, dumb, dumb, dumb, parent, number, dumb, dumb, dumb, dumb
+    PROPERTIES(tps) READONLY caption, SID, d1=dumb, d2=dumb, d3=dumb, d4=dumb, d5=dumb, parent, number, d6=dumb, d7=dumb, d8=dumb, d9=dumb
     PROPERTIES(ps) READONLY caption, canonicalName, dbName, return, class, complexity, parent, number, quantity, notNullQuantity, userLoggable EDITABLE, loggable, stored EDITABLE, isSetNotNull EDITABLE
 
     ORDER BY number(p)

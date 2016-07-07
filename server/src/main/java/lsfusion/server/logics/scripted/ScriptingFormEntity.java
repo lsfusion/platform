@@ -274,7 +274,7 @@ public class ScriptingFormEntity {
 
             movePropertyDraw(property, propertyOptions, version);
 
-            setPropertyDrawAlias(alias, property, version);
+            setFinalPropertyDrawSID(property, alias, version);
         }
     }
 
@@ -422,20 +422,17 @@ public class ScriptingFormEntity {
                 mapImpl.mapping.join(groundProperty.mapping));
     }
 
-    private void setPropertyDrawAlias(String alias, PropertyDrawEntity property, Version version) {
-        assert property != null;
-
-        if (alias == null) {
-            return;
+    public void setFinalPropertyDrawSID(PropertyDrawEntity property, String alias, Version version) throws ScriptingErrorLog.SemanticErrorException {
+        String newSID = (alias == null ? property.getSID() : alias);
+        property.setSID(null);
+        try {
+            if (form.getPropertyDraw(newSID, version) != null) {
+                LM.getErrLog().emitAlreadyDefinedPropertyDraw(LM.getParser(), form.getCanonicalName(), newSID);
+            }
+        } catch (ScriptingErrorLog.SemanticErrorException e) {
+            System.err.println(e.getMessage());
         }
-
-        PropertyDrawEntity oldSIDOwner = form.getPropertyDraw(alias, version);
-
-        property.setSID(alias);
-
-        if (oldSIDOwner != null && oldSIDOwner != property) {
-            form.setPropertyDrawSID(oldSIDOwner, alias);
-        }
+        property.setSID(newSID);
     }
 
     public PropertyDrawEntity getPropertyDraw(String sid, Version version) throws ScriptingErrorLog.SemanticErrorException {

@@ -31,7 +31,6 @@ import lsfusion.server.form.view.DefaultFormView;
 import lsfusion.server.form.view.FormView;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.BusinessLogics;
-import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.linear.LP;
@@ -51,8 +50,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-
-import static lsfusion.server.logics.ServerResourceBundle.getString;
 
 public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T> {
     private final static Logger logger = Logger.getLogger(FormEntity.class);
@@ -607,7 +604,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
 
         if (propertyImplement.property.isNamed()) {
             String propertySID = PropertyDrawEntity.createSID(propertyImplement);  
-            setPropertyDrawSID(newPropertyDraw, propertySID);
+            newPropertyDraw.setSID(propertySID);
         }
 
         propertyDraws.add(newPropertyDraw, new FindIndex<PropertyDrawEntity<?>>() {
@@ -642,12 +639,6 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         if (richDesign != null) {
             richDesign.movePropertyDrawTo(property, newNeighbour, isRightNeighbour, version);
         }
-    }
-
-    public void setPropertyDrawSID(PropertyDrawEntity property, String sid) {
-        property.setSID(null);
-//        assert getPropertyDraw(sid) == null; 
-        property.setSID(sid);
     }
 
     public PropertyObjectEntity addPropertyObject(LP property, PropertyObjectInterfaceEntity... objects) {
