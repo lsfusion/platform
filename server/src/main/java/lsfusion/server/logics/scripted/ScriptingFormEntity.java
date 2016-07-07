@@ -19,6 +19,7 @@ import lsfusion.server.form.entity.filter.NotNullFilterEntity;
 import lsfusion.server.form.entity.filter.RegularFilterEntity;
 import lsfusion.server.form.entity.filter.RegularFilterGroupEntity;
 import lsfusion.server.form.instance.FormSessionScope;
+import lsfusion.server.logics.debug.DebugInfo;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.linear.LP;
@@ -226,7 +227,7 @@ public class ScriptingFormEntity {
         }
     }
 
-    public void addScriptedPropertyDraws(List<ScriptingLogicsModule.PropertyUsage> properties, List<String> aliases, List<List<String>> mappings, FormPropertyOptions commonOptions, List<FormPropertyOptions> options, Version version, int lineNumber) throws ScriptingErrorLog.SemanticErrorException {
+    public void addScriptedPropertyDraws(List<ScriptingLogicsModule.PropertyUsage> properties, List<String> aliases, List<List<String>> mappings, FormPropertyOptions commonOptions, List<FormPropertyOptions> options, Version version, DebugInfo.DebugPoint point) throws ScriptingErrorLog.SemanticErrorException {
         assert properties.size() == mappings.size();
 
         boolean reverse = commonOptions.getNeighbourPropertyDraw() != null && commonOptions.isRightNeighbour();
@@ -262,7 +263,7 @@ public class ScriptingFormEntity {
                 MappedProperty prop = getPropertyWithMapping(pUsage, mapping);
 
                 checkPropertyParameters(prop.property, prop.mapping);
-                String formPath = LM.getParser().getCurrentScriptPath(LM.getName(), lineNumber, "\n");
+                String formPath = point.toString();
                 property = form.addPropertyDraw(prop.property, version, formPath, prop.mapping);
             }
             FormPropertyOptions propertyOptions = commonOptions.overrideWith(options.get(i));

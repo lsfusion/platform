@@ -349,11 +349,11 @@ scope {
 }
 @init {
 	boolean initialDeclaration = false;
-	int lineNumber = self.getParser().getCurrentParserLineNumber();
+	DebugInfo.DebugPoint point = getCurrentDebugPoint();
 }
 @after {
 	if (inPropParseState() && initialDeclaration) {
-		self.addScriptedForm($formStatement::form, lineNumber);
+		self.addScriptedForm($formStatement::form, point);
 	}
 }
 	:	(	declaration=formDeclaration { $formStatement::form = $declaration.form; initialDeclaration = true; }
@@ -572,11 +572,11 @@ formPropertiesList
 	List<List<String>> mapping = new ArrayList<List<String>>();
 	FormPropertyOptions commonOptions = null;
 	List<FormPropertyOptions> options = new ArrayList<FormPropertyOptions>();
-	int lineNumber = self.getParser().getCurrentParserLineNumber();
+	DebugInfo.DebugPoint point = getCurrentDebugPoint();	 
 }
 @after {
 	if (inPropParseState()) {
-		$formStatement::form.addScriptedPropertyDraws(properties, aliases, mapping, commonOptions, options, self.getVersion(), lineNumber);
+		$formStatement::form.addScriptedPropertyDraws(properties, aliases, mapping, commonOptions, options, self.getVersion(), point);
 	}
 }
 	:	'PROPERTIES' '(' objects=idList ')' opts=formPropertyOptionsList list=formPropertyUList
@@ -909,12 +909,12 @@ propertyStatement
 	List<TypedParameter> context = new ArrayList<TypedParameter>();
 	List<ResolveClassSet> signature = null; 
 	boolean dynamic = true;
-	int lineNumber = self.getParser().getCurrentParserLineNumber(); 
+	DebugInfo.DebugPoint point = getCurrentDebugPoint();
 }
 @after {
 	if (inPropParseState()) {
 	    if (property != null) // not native
-		    self.setPropertyScriptInfo(property, $text, lineNumber);
+		    self.setPropertyScriptInfo(property, $text, point);
 	}
 }
 	:	declaration=propertyDeclaration { if ($declaration.params != null) { context = $declaration.params; dynamic = false; } }

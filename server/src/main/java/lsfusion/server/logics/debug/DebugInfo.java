@@ -3,6 +3,7 @@ package lsfusion.server.logics.debug;
 import lsfusion.base.Pair;
 
 public class DebugInfo {
+    
     public static class DebugPoint {
         public final String moduleName;
         public final int line;
@@ -18,6 +19,13 @@ public class DebugInfo {
         
         public boolean needToCreateDelegate() {
             return !isInsideNonEnabledMeta;
+        }
+        
+        @Override
+        public String toString() {
+            final String openedMetaCharacter = "\u2195";
+            String openedMetaSuffix = isInsideNonEnabledMeta ? openedMetaCharacter : "";
+            return moduleName + "(" + (line + 1) + ":" + (offset + 1) + openedMetaSuffix + ")";
         }
     }
 
@@ -55,9 +63,7 @@ public class DebugInfo {
     
     @Override
     public String toString() {
-        final String openedMetaCharacter = "\u2195";
-        String openedMetaSuffix = point.isInsideNonEnabledMeta ? openedMetaCharacter : ""; 
-        return point.moduleName + "(" + (point.line + 1) + ":" + (point.offset + 1) + openedMetaSuffix + ")";
+        return point.toString();
     }
 
     public void setNeedToCreateDelegate(boolean needToCreateDelegate) {

@@ -513,9 +513,9 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new ScriptingFormView(view, this);
     }
     
-    public void addScriptedForm(ScriptingFormEntity form, int lineNumber) {
+    public void addScriptedForm(ScriptingFormEntity form, DebugInfo.DebugPoint point) {
         FormEntity formEntity = addFormEntity(form.getForm());
-        formEntity.creationPath = parser.getCurrentScriptPath(getName(), lineNumber, "\n");
+        formEntity.creationPath = point.toString();
         formEntity.finalizeInit(getVersion());
     }
 
@@ -3367,9 +3367,9 @@ public class ScriptingLogicsModule extends LogicsModule {
         return parser.semicolonNeeded();
     }
 
-    public void setPropertyScriptInfo(LP property, String script, int lineNumber) {
+    public void setPropertyScriptInfo(LP property, String script, DebugInfo.DebugPoint point) {
         property.setCreationScript(script);
-        property.setCreationPath(parser.getCurrentScriptPath(getName(), lineNumber, "\n"));
+        property.setCreationPath(point.toString());
     }
 
     private void parseStep(ScriptParser.State state) throws RecognitionException {
