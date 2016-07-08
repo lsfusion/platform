@@ -567,16 +567,16 @@ formObjectDeclaration returns [String name, String className, String caption, Ac
 	
 formPropertiesList
 @init {
-	List<PropertyUsage> properties = new ArrayList<PropertyUsage>();
-	List<String> aliases = new ArrayList<String>();
-	List<List<String>> mapping = new ArrayList<List<String>>();
+	List<PropertyUsage> properties = new ArrayList<>();
+	List<String> aliases = new ArrayList<>();
+	List<List<String>> mapping = new ArrayList<>();
+	List<DebugInfo.DebugPoint> points = new ArrayList<>();
 	FormPropertyOptions commonOptions = null;
-	List<FormPropertyOptions> options = new ArrayList<FormPropertyOptions>();
-	DebugInfo.DebugPoint point = getCurrentDebugPoint();	 
+	List<FormPropertyOptions> options = new ArrayList<>();
 }
 @after {
 	if (inPropParseState()) {
-		$formStatement::form.addScriptedPropertyDraws(properties, aliases, mapping, commonOptions, options, self.getVersion(), point);
+		$formStatement::form.addScriptedPropertyDraws(properties, aliases, mapping, commonOptions, options, self.getVersion(), points);
 	}
 }
 	:	'PROPERTIES' '(' objects=idList ')' opts=formPropertyOptionsList list=formPropertyUList
@@ -586,6 +586,7 @@ formPropertiesList
 			aliases = $list.aliases;
 			mapping = Collections.nCopies(properties.size(), $objects.ids);
 			options = $list.options;
+			points = $list.points;
 		}
 	|	'PROPERTIES' opts=formPropertyOptionsList mappedList=formMappedPropertiesList
 		{
@@ -594,6 +595,7 @@ formPropertiesList
 			aliases = $mappedList.aliases;
 			mapping = $mappedList.mapping;
 			options = $mappedList.options;
+			points = $mappedList.points;
 		}
 	;	
 
@@ -631,15 +633,16 @@ formPropertyDraw returns [PropertyDrawEntity property]
 	|	prop=mappedPropertyDraw { if (inPropParseState()) $property = $formStatement::form.getPropertyDraw($prop.name, $prop.mapping, self.getVersion()); }
 	;
 
-formMappedPropertiesList returns [List<String> aliases, List<PropertyUsage> properties, List<List<String>> mapping, List<FormPropertyOptions> options]
+formMappedPropertiesList returns [List<String> aliases, List<PropertyUsage> properties, List<List<String>> mapping, List<FormPropertyOptions> options, List<DebugInfo.DebugPoint> points]
 @init {
 	$aliases = new ArrayList<String>();
 	$properties = new ArrayList<PropertyUsage>();
 	$mapping = new ArrayList<List<String>>();
 	$options = new ArrayList<FormPropertyOptions>();
+	$points = new ArrayList<DebugInfo.DebugPoint>(); 
 	String alias = null;
 }
-	:	{ alias = null; }
+	:	{ alias = null; $points.add(getCurrentDebugPoint()); }
 		(id=ID '=' { alias = $id.text; })?
 		mappedProp=formMappedProperty opts=formPropertyOptionsList
 		{
@@ -649,7 +652,7 @@ formMappedPropertiesList returns [List<String> aliases, List<PropertyUsage> prop
 			$options.add($opts.options);
 		}
 		(','
-			{ alias = null; }
+			{ alias = null; $points.add(getCurrentDebugPoint()); }
 			(id=ID '=' { alias = $id.text; })?
 			mappedProp=formMappedProperty opts=formPropertyOptionsList
 			{
@@ -716,14 +719,15 @@ mappedPropertyDraw returns [String name, List<String> mapping]
 		')'
 	;
 
-formPropertyUList returns [List<String> aliases, List<PropertyUsage> properties, List<FormPropertyOptions> options]
+formPropertyUList returns [List<String> aliases, List<PropertyUsage> properties, List<FormPropertyOptions> options, List<DebugInfo.DebugPoint> points]
 @init {
 	$aliases = new ArrayList<String>();
 	$properties = new ArrayList<PropertyUsage>();
 	$options = new ArrayList<FormPropertyOptions>();
+	$points = new ArrayList<DebugInfo.DebugPoint>();
 	String alias = null;
 }
-	:	{ alias = null; }
+	:	{ alias = null; $points.add(getCurrentDebugPoint()); }
 		(id=ID '=' { alias = $id.text; })?
 		pu=formPropertyUsage opts=formPropertyOptionsList
 		{
@@ -732,7 +736,7 @@ formPropertyUList returns [List<String> aliases, List<PropertyUsage> properties,
 			$options.add($opts.options);
 		}
 		(','
-			{ alias = null; }
+			{ alias = null; $points.add(getCurrentDebugPoint()); }
 			(id=ID '=' { alias = $id.text; })?
 			pu=formPropertyUsage opts=formPropertyOptionsList
 			{
