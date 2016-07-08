@@ -32,6 +32,8 @@ import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import static lsfusion.base.ApiResourceBundle.getString;
 
@@ -2373,15 +2375,28 @@ public class BaseUtils {
     }
 
     public static void runLater(final int delay, final Runnable runnable) {
-        Thread thread = new Thread("runLater-thread") {
-            @Override
-            public void run() {
-                SystemUtils.sleep(delay);
-                runnable.run();
-            }
-        };
-        thread.setDaemon(true);
-        thread.start();
+
+//        ExecutorService executorService = Executors.newScheduledThreadPool()CachedThreadPool(threadFactory);
+
+        new java.util.Timer(true).schedule(
+                new java.util.TimerTask() {
+                    @Override
+                    public void run() {
+                        runnable.run();
+                    }
+                },
+                delay
+        );
+
+//        Thread thread = new Thread("runLater-thread") {
+//            @Override
+//            public void run() {
+//                SystemUtils.sleep(delay);
+//                runnable.run();
+//            }
+//        };
+//        thread.setDaemon(true);
+//        thread.start();
     }
 
     public static <T> void addToOrderedList(List<T> orderedList, T element, int after, Comparator<T> compare) {

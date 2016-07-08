@@ -1911,7 +1911,7 @@ public class Settings {
         this.subReportTableOptimization = subReportTableOptimization;
     }
 
-    private int closeFormDelay = 600000;
+    private int closeFormDelay = 15000;
 
     public int getCloseFormDelay() {
         return closeFormDelay;
