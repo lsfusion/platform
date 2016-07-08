@@ -172,24 +172,25 @@ META defineNumerated(class)
 END
 
 META defineNumeratedDefault(class, captionV, seriesV)
-    @defineNumerated(class);
     @defineNumeratedDefault(class, captionV, seriesV, );
+END
+
+META defineNumeratedDefault(class, captionV, seriesV, prefix)
+    @defineNumerated(class);
+    @defineNumeratedDefaultPrefix(class, captionV, seriesV, prefix);
 END
 
 GROUP defaultNumerator 'Нумераторы по умолчанию' : public;
 
-META defineNumeratedDefault(class, captionV, seriesV, prefix)
+META defineNumeratedDefaultPrefix(class, captionV, seriesV, prefix)
 
     defaultNumerator##class = DATA Numerator ();
     nameDefaultNumerator##class captionV = name(defaultNumerator##class()) IN defaultNumerator;
 
     numerator(class o) <- defaultNumerator##class() WHEN SET(o IS class);
 
-//    initValueNumeratorObject(object) += prefix###defaultNumerator###class() IF object IS class;
-//    initWhenNumeratorObject(object) += SET(object IS class);
-
     EXTEND FORM defaultNumerators
-        PROPERTIES() nameDefaultNumerator##class
+        PROPERTIES() name##prefix##DefaultNumerator##class = nameDefaultNumerator##class
     ;
     
     loadDefaultNumerators() += ACTION {
