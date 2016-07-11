@@ -25,7 +25,7 @@ public class RemoteExceptionsAspect {
     public Object executeRemoteMethod(ProceedingJoinPoint thisJoinPoint, Object target) throws Throwable {
         try {
             return thisJoinPoint.proceed();
-        } catch (ThreadDeath td) {
+        } catch (ThreadDeath | InterruptedException td) {
             logger.error("Thread '" + Thread.currentThread() + "' was forcefully stopped.");
             throw new RemoteInternalException(1, "Thread was stopped");
         } catch (Throwable throwable) {
