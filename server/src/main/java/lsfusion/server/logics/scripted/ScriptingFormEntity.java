@@ -426,8 +426,9 @@ public class ScriptingFormEntity {
         String newSID = (alias == null ? property.getSID() : alias);
         property.setSID(null);
         try {
-            if (form.getPropertyDraw(newSID, version) != null) {
-                LM.getErrLog().emitAlreadyDefinedPropertyDraw(LM.getParser(), form.getCanonicalName(), newSID);
+            PropertyDrawEntity entity;
+            if ((entity = form.getPropertyDraw(newSID, Version.CURRENT)) != null) {
+                LM.getErrLog().emitAlreadyDefinedPropertyDraw(LM.getParser(), form.getCanonicalName(), newSID, entity.propertyObject.getFormPath());
             }
         } catch (ScriptingErrorLog.SemanticErrorException e) {
             System.err.println(e.getMessage());

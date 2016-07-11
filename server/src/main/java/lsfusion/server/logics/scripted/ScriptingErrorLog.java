@@ -273,8 +273,8 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, format("%s '%s' was already defined in module '%s'", type, name, moduleName));
     }
 
-    public void emitAlreadyDefinedPropertyDraw(ScriptParser parser, String formName, String propertyDrawName) throws SemanticErrorException {
-        emitSimpleError(parser, format("property '%s' in form '%s' was already defined", propertyDrawName, formName));
+    public void emitAlreadyDefinedPropertyDraw(ScriptParser parser, String formName, String propertyDrawName, String where) throws SemanticErrorException {
+        emitSimpleError(parser, format("property '%s' in form '%s' was already defined at %s", propertyDrawName, formName, where));
     }
 
     public void emitNamedParamsError(ScriptParser parser) throws SemanticErrorException {
