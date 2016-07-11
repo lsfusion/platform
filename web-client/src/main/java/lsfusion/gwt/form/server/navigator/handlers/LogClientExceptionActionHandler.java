@@ -13,12 +13,23 @@ import net.customware.gwt.dispatch.server.ExecutionContext;
 import net.customware.gwt.dispatch.shared.DispatchException;
 
 import java.io.IOException;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class LogClientExceptionActionHandler extends SimpleActionHandlerEx<LogClientExceptionAction, VoidResult, RemoteLogicsInterface> implements NavigatorActionHandler {
+    public static final long COUNTER_CLEANER_PERIOD = 3 * 60 * 1000;
+    
     private ConcurrentIdentityWeakHashMap<RemoteNavigatorInterface, Integer> exceptionCounter = MapFact.getGlobalConcurrentIdentityWeakHashMap();
     
     public LogClientExceptionActionHandler(LogicsAwareDispatchServlet<RemoteLogicsInterface> servlet) {
         super(servlet);
+
+        new Timer().schedule(new TimerTask() {
+            @Override
+            public void run() {
+                exceptionCounter.clear();
+            }
+        }, COUNTER_CLEANER_PERIOD, COUNTER_CLEANER_PERIOD);
     }
 
     @Override
