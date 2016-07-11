@@ -55,7 +55,7 @@ public abstract class AbstractConnectionPool implements ConnectionPool {
 
     private final Object lock = new Object();
     private final Map<ExConnection, WeakReference<MutableObject>> usedConnections = MapFact.mAddRemoveMap(); // обычный map так как надо добавлять, remove'ить
-    private final Stack<ExConnection> freeConnections = new Stack<ExConnection>();
+    private final Stack<ExConnection> freeConnections = new Stack<>();
 
     private void checkUsed() throws SQLException {
         synchronized(lock) {
@@ -91,11 +91,7 @@ public abstract class AbstractConnectionPool implements ConnectionPool {
             prepareConnection(newConnection);
             SQLSession.setACID(newConnection, false, (SQLSyntax)this);
             return newConnection;
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        } catch (InstantiationException e) {
-            throw new RuntimeException(e);
-        } catch (IllegalAccessException e) {
+        } catch (ClassNotFoundException | IllegalAccessException | InstantiationException e) {
             throw new RuntimeException(e);
         }
     }
@@ -114,7 +110,7 @@ public abstract class AbstractConnectionPool implements ConnectionPool {
         synchronized(lock) {
             ExConnection freeConnection = freeConnections.isEmpty() ? newExConnection() : freeConnections.pop();
 
-            usedConnections.put(freeConnection, new WeakReference<MutableObject>(object));
+            usedConnections.put(freeConnection, new WeakReference<>(object));
             return freeConnection;
         }
     }

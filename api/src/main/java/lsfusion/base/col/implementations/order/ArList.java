@@ -56,11 +56,11 @@ public class ArList<K> extends AList<K> implements MList<K> {
     }
 
     public ArList() {
-        col = new ArCol<K>();
+        col = new ArCol<>();
     }
 
     public ArList(int size) {
-        col = new ArCol<K>(size);
+        col = new ArCol<>(size);
     }
 
     public ArList(ArCol<K> col) {
@@ -68,7 +68,7 @@ public class ArList<K> extends AList<K> implements MList<K> {
     }
 
     public ArList(ArList<K> list) {
-        col = new ArCol<K>(list.col);
+        col = new ArCol<>(list.col);
     }
 
     public void removeAll() {

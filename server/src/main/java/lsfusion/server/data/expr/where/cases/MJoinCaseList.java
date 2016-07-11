@@ -14,17 +14,17 @@ public class MJoinCaseList<U> extends MCaseList<Join<U>, Join<U>,JoinCase<U>> {
 
     @Override
     public void add(Where where, Join<U> data) {
-        add(new JoinCase<U>(where, data));
+        add(new JoinCase<>(where, data));
     }
 
     @Override
     public Join<U> getFinal() {
         JoinCaseList<U> finalCases;
         if(exclusive)
-            finalCases = new JoinCaseList<U>(immutableSet(), properties);
+            finalCases = new JoinCaseList<>(immutableSet(), properties);
         else
-            finalCases = new JoinCaseList<U>(immutableList(), properties);
-        return new CaseJoin<U>(finalCases);
+            finalCases = new JoinCaseList<>(immutableList(), properties);
+        return new CaseJoin<>(finalCases);
     }
 
 

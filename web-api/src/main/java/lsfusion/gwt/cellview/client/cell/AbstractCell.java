@@ -61,7 +61,7 @@ public abstract class AbstractCell<C> implements Cell<C> {
      */
     public AbstractCell(String... consumedEvents) {
         if (consumedEvents != null && consumedEvents.length > 0) {
-            this.consumedEvents = unmodifiableSet(new HashSet<String>(asList(consumedEvents)));
+            this.consumedEvents = unmodifiableSet(new HashSet<>(asList(consumedEvents)));
         }
     }
 

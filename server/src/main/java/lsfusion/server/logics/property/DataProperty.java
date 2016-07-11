@@ -43,12 +43,12 @@ public abstract class DataProperty extends CalcProperty<ClassPropertyInterface> 
     }
 
     public ClassWhere<Object> calcClassValueWhere(CalcClassType calcType) {
-        return new ClassWhere<Object>(MapFact.<Object, ValueClass>addExcl(IsClassProperty.getMapClasses(interfaces), "value", value), true);
+        return new ClassWhere<>(MapFact.<Object, ValueClass>addExcl(IsClassProperty.getMapClasses(interfaces), "value", value), true);
     }
 
     // перегружаем из-за assertion'а с depends
     public Inferred<ClassPropertyInterface> calcInferInterfaceClasses(ExClassSet commonValue, InferType inferType) {
-        return new Inferred<ClassPropertyInterface>(ExClassSet.toExValue(IsClassProperty.getMapClasses(interfaces)));
+        return new Inferred<>(ExClassSet.toExValue(IsClassProperty.getMapClasses(interfaces)));
     }
     public ExClassSet calcInferValueClass(ImMap<ClassPropertyInterface, ExClassSet> inferred, InferType inferType) {
         return ExClassSet.toExValue(value);
@@ -152,7 +152,7 @@ public abstract class DataProperty extends CalcProperty<ClassPropertyInterface> 
                 removeWhere = removeWhere.or(classProperty.getRemoveWhere(prevExpr, changes));
             }
             if (!removeWhere.isFalse())
-                result = PropertyChange.addNull(result, new PropertyChange<ClassPropertyInterface>(mapKeys, removeWhere, joinValues));
+                result = PropertyChange.addNull(result, new PropertyChange<>(mapKeys, removeWhere, joinValues));
         }
 
         if(eventChange!=null)
@@ -190,11 +190,11 @@ public abstract class DataProperty extends CalcProperty<ClassPropertyInterface> 
     }
 
     public <V extends PropertyInterface> CalcPropertyMapImplement<ClassPropertyInterface, V> getImplement(ImOrderSet<V> list) {
-        return new CalcPropertyMapImplement<ClassPropertyInterface, V>(this, getMapInterfaces(list));
+        return new CalcPropertyMapImplement<>(this, getMapInterfaces(list));
     }
 
     public <V> CalcPropertyRevImplement<ClassPropertyInterface, V> getRevImplement(ImOrderSet<V> list) {
-        return new CalcPropertyRevImplement<ClassPropertyInterface, V>(this, getMapInterfaces(list));
+        return new CalcPropertyRevImplement<>(this, getMapInterfaces(list));
     }
 
     public boolean depends(ImSet<CustomClass> cls) { // оптимизация

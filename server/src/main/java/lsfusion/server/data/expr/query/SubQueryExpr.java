@@ -120,7 +120,7 @@ public class SubQueryExpr extends QueryExpr<KeyExpr, Expr, SubQueryJoin, SubQuer
     }
 
     public static Expr createBase(Expr expr, ImMap<KeyExpr, BaseExpr> group) {
-        Result<ImMap<KeyExpr, BaseExpr>> restGroup = new Result<ImMap<KeyExpr, BaseExpr>>();
+        Result<ImMap<KeyExpr, BaseExpr>> restGroup = new Result<>();
         ImMap<KeyExpr, BaseExpr> translate = group.splitKeys(new GetKeyValue<Boolean, KeyExpr, BaseExpr>() {
             public Boolean getMapValue(KeyExpr key, BaseExpr value) {
                 return value.isValue();

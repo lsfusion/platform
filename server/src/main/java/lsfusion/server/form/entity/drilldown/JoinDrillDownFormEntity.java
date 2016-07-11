@@ -36,7 +36,7 @@ public class JoinDrillDownFormEntity<I extends PropertyInterface> extends DrillD
     protected void setupDrillDownForm() {
         CalcProperty<I> implProperty = property.implement.property;
         if(implProperty.isDrillFull()) {
-            detailsProperties = new ArrayList<PropertyDrawEntity>();
+            detailsProperties = new ArrayList<>();
             Version version = LM.getVersion();
 
             ImMap<I, CalcPropertyInterfaceImplement<JoinProperty.Interface>> implMapping = property.implement.mapping;

@@ -268,7 +268,7 @@ public class PostgreDataAdapter extends DataAdapter {
 
         FileOutputStream logStream = new FileOutputStream(backupLogFilePath);
         try {
-            Map<String, String> env = new HashMap<String, String>(System.getenv());
+            Map<String, String> env = new HashMap<>(System.getenv());
             env.put("LC_MESSAGES", "en_EN");
             env.put("PGPASSWORD", password);
 
@@ -280,9 +280,6 @@ public class PostgreDataAdapter extends DataAdapter {
             
             try {
                 result = executor.execute(commandLine, env);
-            } catch (ExecuteException e) {
-                logger.error("Error while dumping the database : " + commandLine);
-                throw e;
             } catch (IOException e) {
                 logger.error("Error while dumping the database : " + commandLine);
                 throw e;
@@ -437,8 +434,6 @@ public class PostgreDataAdapter extends DataAdapter {
             if (result != 0) {
                 logger.error("Error while killing process : " + result);
             }
-        } catch (ExecuteException e) {
-            logger.error("Error while killing process : " + commandLine);
         } catch (IOException e) {
             logger.error("Error while killing process : " + commandLine);
         }
@@ -723,7 +718,7 @@ public class PostgreDataAdapter extends DataAdapter {
     public void ensureArrayClass(ArrayClass arrayClass) {
     }
 
-    private LRUSVSMap<Object, Boolean> ensuredRecursion = new LRUSVSMap<Object, Boolean>(LRUUtil.G2);
+    private LRUSVSMap<Object, Boolean> ensuredRecursion = new LRUSVSMap<>(LRUUtil.G2);
 
     @Override
     public synchronized void ensureRecursion(Object object) throws SQLException {

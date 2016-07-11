@@ -18,7 +18,7 @@ import java.util.*;
 
 public class ClientExceptionManager {
     private final static Logger logger = Logger.getLogger(ClientExceptionManager.class);
-    private final static List<Throwable> unreportedThrowables = new ArrayList<Throwable>();
+    private final static List<Throwable> unreportedThrowables = new ArrayList<>();
 
     public static void handle(final Throwable e) {
         SwingUtilities.invokeLater(new Runnable() {

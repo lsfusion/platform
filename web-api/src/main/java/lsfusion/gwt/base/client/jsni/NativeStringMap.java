@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.Set;
 
 public class NativeStringMap<K, V> implements Map<K, V> {
-    public static interface NativeMapKeyConverter<T> {
+    public interface NativeMapKeyConverter<T> {
         String getKeyString(T key);
     }
 

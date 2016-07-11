@@ -125,11 +125,11 @@ public class HSet<T> extends AMSet<T> {
     }
 
     public <M> ImValueMap<T, M> mapItValues() {
-        return new HMap<T, M>(this);
+        return new HMap<>(this);
     }
 
     public <M> ImRevValueMap<T, M> mapItRevValues() {
-        return new HMap<T, M>(this);
+        return new HMap<>(this);
     }
 
     public ImSet<T> immutable() {
@@ -142,14 +142,14 @@ public class HSet<T> extends AMSet<T> {
             Object[] array = new Object[size];
             for(int i=0;i<size;i++)
                 array[i] = get(i);
-            return new ArSet<T>(size, array);
+            return new ArSet<>(size, array);
         }
         if(size >= SetFact.useIndexedArrayMin) {
             Object[] array = new Object[size];
             for(int i=0;i<size;i++)
                 array[i] = get(i);
             ArSet.sortArray(size, array);
-            return new ArIndexedSet<T>(size, array);
+            return new ArIndexedSet<>(size, array);
         }
 
         if(indexes.length > size * SetFact.factorNotResize) {
@@ -161,12 +161,12 @@ public class HSet<T> extends AMSet<T> {
     }
 
     public ImSet<T> immutableCopy() {
-        return new HSet<T>(this);
+        return new HSet<>(this);
     }
 
     @Override
     public HMap<T, T> toMap() {
-        return new HMap<T, T>(size, table, table, indexes);
+        return new HMap<>(size, table, table, indexes);
     }
 
     @Override
@@ -176,6 +176,6 @@ public class HSet<T> extends AMSet<T> {
 
     @Override
     public ImOrderSet<T> toOrderSet() {
-        return new HOrderSet<T>(this);
+        return new HOrderSet<>(this);
     }
 }

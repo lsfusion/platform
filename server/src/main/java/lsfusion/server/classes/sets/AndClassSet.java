@@ -22,7 +22,7 @@ public interface AndClassSet {
     Type getType();
     Stat getTypeStat(boolean forJoin); // использование только в Expr typeStat, и административных функциях работы с таблицей
     
-    public final static ArrayInstancer<AndClassSet> arrayInstancer = new ArrayInstancer<AndClassSet>() {
+    ArrayInstancer<AndClassSet> arrayInstancer = new ArrayInstancer<AndClassSet>() {
         public AndClassSet[] newArray(int size) {
             return new AndClassSet[size];
         }

@@ -27,7 +27,7 @@ import java.util.*;
 // используется только в groupJoinWheres, по сути protected класс
 public class GroupJoinsWheres extends DNFWheres<WhereJoins, GroupJoinsWheres.Value, GroupJoinsWheres> implements PackInterface<GroupJoinsWheres> {
 
-    public static enum Type {
+    public enum Type {
         WHEREJOINS, STAT_WITH_WHERE, STAT_ONLY;
         
         public boolean noWhere() {
@@ -126,7 +126,7 @@ public class GroupJoinsWheres extends DNFWheres<WhereJoins, GroupJoinsWheres.Val
         assert !intermediate || isExceededIntermediatePackThreshold();
 
         if(Settings.get().isPackStatBackwardCompatibility() && intermediate && type.isStat()) // !!! НЕПРАВИЛЬНАЯ ОПТИМИЗАЦИЯ, смотри коммент внизу, самый быстрый способ сохранить статистику, проверка на intermediate чтобы не было рекурсии
-            return new GroupJoinsWheres(new StatKeysJoin<K>(getStatKeys(keepStat, keyStat)), where, type);
+            return new GroupJoinsWheres(new StatKeysJoin<>(getStatKeys(keepStat, keyStat)), where, type);
 
         GroupJoinsWheres result = pack(keepStat, keyStat, type.isStat() || intermediate); // savestat нужно для более правильной статистикой, для intermediate тоже важна статистика так как сверху могут добавиться еще and'ы, а значит некоторые node'ы уйти и статистика может потеряться
 //        GroupJoinsWheres result = packMeans(keepStat, keyStat, intermediate);
@@ -355,7 +355,7 @@ public class GroupJoinsWheres extends DNFWheres<WhereJoins, GroupJoinsWheres.Val
         // приоритет увеличение статистики, уменьшение числа элементов (? от изначального или текущего ???
         
         // оборачиваем в c* так как могут начать повторятся
-        PriorityQueue<CMerged> priority = new PriorityQueue<CMerged>();
+        PriorityQueue<CMerged> priority = new PriorityQueue<>();
         Map<SymmPair<CEntry, CEntry>, CMerged> matrix = MapFact.mAddRemoveMap();
         Set<CEntry> current = SetFact.mAddRemoveSet();
         
@@ -363,13 +363,13 @@ public class GroupJoinsWheres extends DNFWheres<WhereJoins, GroupJoinsWheres.Val
         for(int i=0,size=size();i<size;i++) {
             current.add(new COriginal(getKey(i), keepStat, keyStat));
         }
-        List<CEntry> list = new ArrayList<CEntry>(current);
+        List<CEntry> list = new ArrayList<>(current);
         for(int i=0,size=list.size();i<size;i++) {
             CEntry iJoin = list.get(i);
             for(int j=i+1;j<size;j++) {
                 CEntry jJoin = list.get(j);
                 
-                SymmPair<CEntry, CEntry> pair = new SymmPair<CEntry, CEntry>(iJoin, jJoin);
+                SymmPair<CEntry, CEntry> pair = new SymmPair<>(iJoin, jJoin);
                 CMerged cEntry = new CMerged(pair, iJoin.where.or(jJoin.where), keepStat, keyStat, collapseStats);
                 priority.add(cEntry);
                 matrix.put(pair, cEntry);
@@ -400,8 +400,8 @@ public class GroupJoinsWheres extends DNFWheres<WhereJoins, GroupJoinsWheres.Val
             current.remove(entry.original.second);
             
             for(CEntry element : current) {
-                SymmPair<CEntry, CEntry> firstPair = new SymmPair<CEntry, CEntry>(entry.original.first, element);
-                SymmPair<CEntry, CEntry> secondPair = new SymmPair<CEntry, CEntry>(entry.original.second, element);
+                SymmPair<CEntry, CEntry> firstPair = new SymmPair<>(entry.original.first, element);
+                SymmPair<CEntry, CEntry> secondPair = new SymmPair<>(entry.original.second, element);
                 CMerged firstEntry = matrix.remove(firstPair);
                 CMerged secondEntry = matrix.remove(secondPair);
                 priority.remove(firstEntry);
@@ -446,7 +446,7 @@ public class GroupJoinsWheres extends DNFWheres<WhereJoins, GroupJoinsWheres.Val
     }
     
     public <K extends BaseExpr> StatKeys<K> getStatKeys(ImSet<K> keepStat, KeyStat keyStat) {
-        StatKeys<K> result = new StatKeys<K>(keepStat);
+        StatKeys<K> result = new StatKeys<>(keepStat);
         assert !isEmpty();
         for(WhereJoins whereJoins : keyIt())
             result = result.or(whereJoins.getStatKeys(keepStat, keyStat));

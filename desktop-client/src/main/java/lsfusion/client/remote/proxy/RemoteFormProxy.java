@@ -13,7 +13,7 @@ import java.util.concurrent.Callable;
 
 public class RemoteFormProxy extends RemoteObjectProxy<RemoteFormInterface> implements RemoteFormInterface {
 
-    public static final Map<String, byte[]> cachedRichDesign = new HashMap<String, byte[]>();
+    public static final Map<String, byte[]> cachedRichDesign = new HashMap<>();
     public static void dropCaches() {
         cachedRichDesign.clear();
     }

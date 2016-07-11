@@ -1216,7 +1216,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         if(!((CalcProperty)whereImplement.property).noDB())
             whereImplement = whereImplement.mapChanged(IncrementType.SET, ChangeEvent.scope);
 
-        ChangeEvent<T> event = new ChangeEvent<T>(this, valueImplement, whereImplement);
+        ChangeEvent<T> event = new ChangeEvent<>(this, valueImplement, whereImplement);
         // запишем в DataProperty
         for(DataProperty dataProperty : getChangeProps()) {
             if(Settings.get().isCheckUniqueEvent() && dataProperty.event!=null)
@@ -1229,11 +1229,11 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         if(!check || (read(env.getSession().sql, values, env.getModifier(), env.getQueryEnv())!=null) != notNull) {
             ActionPropertyMapImplement<?, T> action = getSetNotNullAction(notNull);
             if(action!=null)
-                action.execute(new ExecutionContext<T>(values , env, stack));
+                action.execute(new ExecutionContext<>(values, env, stack));
         }
     }
     public void setNotNull(ImRevMap<T, KeyExpr> mapKeys, Where where, ExecutionEnvironment env, boolean notNull, ExecutionStack stack) throws SQLException, SQLHandledException {
-        for(ImMap<T, DataObject> row : new Query<T, Object>(mapKeys, where).executeClasses(env).keys())
+        for(ImMap<T, DataObject> row : new Query<>(mapKeys, where).executeClasses(env).keys())
             setNotNull(row, env, stack, notNull, true);
     }
 

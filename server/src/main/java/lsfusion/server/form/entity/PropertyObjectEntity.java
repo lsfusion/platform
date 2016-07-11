@@ -62,7 +62,7 @@ public abstract class PropertyObjectEntity<P extends PropertyInterface, T extend
     }
 
     public Collection<ObjectEntity> getObjectInstances() {
-        Collection<ObjectEntity> result = new ArrayList<ObjectEntity>();
+        Collection<ObjectEntity> result = new ArrayList<>();
         for(PropertyObjectInterfaceEntity object : mapping.valueIt())
             if(object instanceof ObjectEntity)
                 result.add((ObjectEntity) object);
@@ -94,8 +94,8 @@ public abstract class PropertyObjectEntity<P extends PropertyInterface, T extend
 
     public static <I extends PropertyInterface, T extends Property<I>> PropertyObjectEntity<I, ?> create(T property, ImMap<I, ? extends PropertyObjectInterfaceEntity> map, String creationScript, String creationPath) {
         if(property instanceof CalcProperty)
-            return new CalcPropertyObjectEntity<I>((CalcProperty<I>)property, map, creationScript, creationPath);
+            return new CalcPropertyObjectEntity<>((CalcProperty<I>) property, map, creationScript, creationPath);
         else
-            return new ActionPropertyObjectEntity<I>((ActionProperty<I>) property, map, creationScript, creationPath);
+            return new ActionPropertyObjectEntity<>((ActionProperty<I>) property, map, creationScript, creationPath);
     }
 }

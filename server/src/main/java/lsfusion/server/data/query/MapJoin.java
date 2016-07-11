@@ -36,7 +36,7 @@ public class MapJoin<U> extends AbstractJoin<U>  {
     }
 
     public Join<U> translateRemoveValues(MapValuesTranslate translate) {
-        return new MapJoin<U>(translator.mapValues(translate), join);
+        return new MapJoin<>(translator.mapValues(translate), join);
     }
 }
 

@@ -12,7 +12,7 @@ public class ImageClass extends StaticFormatFileClass {
         return "IMAGEFILE";
     }
 
-    private static Collection<ImageClass> instances = new ArrayList<ImageClass>();
+    private static Collection<ImageClass> instances = new ArrayList<>();
 
     public static ImageClass get(boolean multiple, boolean storeName) {
         for (ImageClass instance : instances)

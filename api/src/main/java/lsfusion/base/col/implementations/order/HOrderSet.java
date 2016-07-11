@@ -26,15 +26,15 @@ public class HOrderSet<K> extends AMWrapOrderSet<K, HSet<K>> {
     }
 
     public HOrderSet(HOrderSet<K> orderSet) {
-        super(new HSet<K>(orderSet.wrapSet));
+        super(new HSet<>(orderSet.wrapSet));
     }
 
     public <M> ImOrderValueMap<K, M> mapItOrderValues() {
-        return new HOrderMap<K, M>(this);
+        return new HOrderMap<>(this);
     }
 
     public <M> ImRevValueMap<K, M> mapItOrderRevValues() { // предполагается заполнение в том же порядке
-        return new HMap<K, M>(wrapSet);
+        return new HMap<>(wrapSet);
     }
 
     public ImOrderSet<K> immutableOrder() {
@@ -47,7 +47,7 @@ public class HOrderSet<K> extends AMWrapOrderSet<K, HSet<K>> {
             Object[] array = new Object[wrapSet.size];
             for(int i=0;i<wrapSet.size;i++)
                 array[i] = get(i);
-            return new ArOrderSet<K>(new ArSet<K>(wrapSet.size, array));
+            return new ArOrderSet<>(new ArSet<K>(wrapSet.size, array));
         }
         if(wrapSet.size >= SetFact.useIndexedArrayMin) {
             Object[] array = new Object[wrapSet.size];
@@ -55,7 +55,7 @@ public class HOrderSet<K> extends AMWrapOrderSet<K, HSet<K>> {
                 array[i] = get(i);
             int[] order = new int[wrapSet.size];
             ArSet.sortArray(wrapSet.size, array, order);
-            return new ArOrderIndexedSet<K>(new ArIndexedSet<K>(wrapSet.size, array), order);
+            return new ArOrderIndexedSet<>(new ArIndexedSet<K>(wrapSet.size, array), order);
         }
 
         if(wrapSet.indexes.length > wrapSet.size * SetFact.factorNotResize) {

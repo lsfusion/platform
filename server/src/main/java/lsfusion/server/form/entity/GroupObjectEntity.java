@@ -139,7 +139,7 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
     }
 
     public ClassViewType initClassView = GRID;
-    public List<ClassViewType> banClassView = new ArrayList<ClassViewType>();
+    public List<ClassViewType> banClassView = new ArrayList<>();
     public Integer pageSize;
 
     public CalcPropertyObjectEntity<?> propertyBackground;

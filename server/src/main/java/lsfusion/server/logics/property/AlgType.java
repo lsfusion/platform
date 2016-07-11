@@ -28,20 +28,20 @@ public interface AlgType {
 
     AlgInfoType getAlgInfo();
     
-    public final static ActionWhereType actionWhere = ActionWhereType.CLASSCALC; // нельзя оборачивать на каждом шаге, так как IF (a IS A) { MESSAGE; g[B](a) } начнет выводить B 
+    ActionWhereType actionWhere = ActionWhereType.CLASSCALC; // нельзя оборачивать на каждом шаге, так как IF (a IS A) { MESSAGE; g[B](a) } начнет выводить B 
 
-    public final static boolean useInfer = true; // после разделения на infer / resolve и calculate ветки, использовать старую схему в основном из-за проблем с abstract'ами проблематично 
-    public final static boolean useInferForInfo = true;
-    public final static boolean useClassInfer = useInfer;
-    public final static AlgInfoType defaultType = useInfer ? InferType.PREVBASE : CalcClassType.PREVBASE;
-    public final static AlgType caseCheckType = useInfer ? InferType.PREVSAME : CalcClassType.PREVSAME; // вопрос, так как возможно нужна сильнее логика разгребать
-    public final static AlgInfoType checkType = defaultType;
-    public final static AlgInfoType hintType = CalcType.EXPR.getAlgInfo();
-    public final static AlgInfoType drillType = defaultType;
-    public final static AlgInfoType syncType = defaultType; // тоже желательно совпадать с настройкой для classValueWhere
-    public final static AlgInfoType actionType = defaultType; // компиляция действий assign и for
+    boolean useInfer = true; // после разделения на infer / resolve и calculate ветки, использовать старую схему в основном из-за проблем с abstract'ами проблематично 
+    boolean useInferForInfo = true;
+    boolean useClassInfer = useInfer;
+    AlgInfoType defaultType = useInfer ? InferType.PREVBASE : CalcClassType.PREVBASE;
+    AlgType caseCheckType = useInfer ? InferType.PREVSAME : CalcClassType.PREVSAME; // вопрос, так как возможно нужна сильнее логика разгребать
+    AlgInfoType checkType = defaultType;
+    AlgInfoType hintType = CalcType.EXPR.getAlgInfo();
+    AlgInfoType drillType = defaultType;
+    AlgInfoType syncType = defaultType; // тоже желательно совпадать с настройкой для classValueWhere
+    AlgInfoType actionType = defaultType; // компиляция действий assign и for
 
-    public final static boolean checkExplicitInfer = false;
-    public final static boolean checkInferCalc = false;
+    boolean checkExplicitInfer = false;
+    boolean checkInferCalc = false;
 
 }

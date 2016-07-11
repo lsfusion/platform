@@ -71,9 +71,7 @@ public class ScannerDaemonTask extends AbstractDaemonTask implements Serializabl
                         if (!barcode.isEmpty())
                             eventBus.fireValueChanged(SCANNER_SID, barcode.trim());
                     }
-                } catch (SerialPortException ex) {
-                    throw new RuntimeException(ex);
-                } catch (InterruptedException ex) {
+                } catch (SerialPortException | InterruptedException ex) {
                     throw new RuntimeException(ex);
                 }
             } else if (event.isRXCHAR() && event.getEventValue() > 0) {

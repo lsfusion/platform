@@ -24,7 +24,7 @@ public class NFPropertyImpl<K> extends NFImpl<NFList<K>, K> implements NFPropert
     public NFPropertyImpl(boolean allowVersionFinalRead, Object debugInfo) {
         super(allowVersionFinalRead);
         if(debugInfo != null)
-            this.debugInfo = new WeakReference<Object>(debugInfo);        
+            this.debugInfo = new WeakReference<>(debugInfo);        
     }
 
     public NFPropertyImpl(K changes) {
@@ -32,7 +32,7 @@ public class NFPropertyImpl<K> extends NFImpl<NFList<K>, K> implements NFPropert
     }
 
     protected NFList<K> initMutable() {
-        return new NFListImpl<K>();
+        return new NFListImpl<>();
     }
 
     public K getNF(Version version) {

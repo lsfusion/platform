@@ -10,7 +10,7 @@ public class SingletonOrderMap<K, V> extends AOrderMap<K, V> implements ImOrderV
     private SingletonRevMap<K, V> revMap;
 
     public SingletonOrderMap(K key) {
-        revMap = new SingletonRevMap<K, V>(key);
+        revMap = new SingletonRevMap<>(key);
     }
 
     public SingletonOrderMap(SingletonRevMap<K, V> revMap) {
@@ -18,7 +18,7 @@ public class SingletonOrderMap<K, V> extends AOrderMap<K, V> implements ImOrderV
     }
 
     public SingletonOrderMap(K key, V value) {
-        revMap = new SingletonRevMap<K, V>(key, value);
+        revMap = new SingletonRevMap<>(key, value);
     }
 
     public int size() {
@@ -49,7 +49,7 @@ public class SingletonOrderMap<K, V> extends AOrderMap<K, V> implements ImOrderV
     }
 
     public <M> ImOrderValueMap<K, M> mapItOrderValues() {
-        return new SingletonOrderMap<K, M>(revMap.getKey(0));
+        return new SingletonOrderMap<>(revMap.getKey(0));
     }
 
     @Override

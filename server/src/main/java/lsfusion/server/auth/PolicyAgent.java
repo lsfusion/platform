@@ -5,7 +5,7 @@ import java.util.List;
 
 class PolicyAgent {
 
-    List<SecurityPolicy> securityPolicies = new ArrayList<SecurityPolicy>();
+    List<SecurityPolicy> securityPolicies = new ArrayList<>();
 
     public void addSecurityPolicy(SecurityPolicy policy) {
         securityPolicies.add(policy);

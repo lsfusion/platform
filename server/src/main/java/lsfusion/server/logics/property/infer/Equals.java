@@ -11,7 +11,7 @@ public class Equals<T extends PropertyInterface> extends Compared<T> {
     }
 
     protected <P extends PropertyInterface> Compared<P> create(CalcPropertyInterfaceImplement<P> first, CalcPropertyInterfaceImplement<P> second) {
-        return new Equals<P>(first, second);
+        return new Equals<>(first, second);
     }
 
     public ExClassSet resolveInferred(CalcPropertyInterfaceImplement<T> operand, ImMap<T, ExClassSet> inferred, InferType inferType) {

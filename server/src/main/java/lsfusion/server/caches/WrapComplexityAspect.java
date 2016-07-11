@@ -69,7 +69,7 @@ public class WrapComplexityAspect {
         if(BaseUtils.hashEquals(expr, wrapExpr) && BaseUtils.nullHashEquals(where, changedWhere ? wrapWhere.toWhere() : null))
             return query;
         else {
-            QueryBuilder<T, String> wrappedQuery = new QueryBuilder<T, String>(mapKeys);
+            QueryBuilder<T, String> wrappedQuery = new QueryBuilder<>(mapKeys);
             wrappedQuery.addProperty("value", wrapExpr);
             if(changedWhere)
                 wrappedQuery.addProperty("changed", ValueExpr.get(wrapWhere.toWhere()));

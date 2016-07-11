@@ -83,8 +83,8 @@ public class GridTableModel extends AbstractTableModel {
 
         //разбиваем на группы свойств, которые будут идти чередуясь для каждого ключа из групп в колонках ("шахматка")
         Table<String, List<ClientGroupObject>, Integer> columnGroupsIndices = HashBasedTable.create();
-        List<List<ClientPropertyDraw>> columnGroups = new ArrayList<List<ClientPropertyDraw>>();
-        List<List<ClientGroupObjectValue>> columnGroupsColumnKeys = new ArrayList<List<ClientGroupObjectValue>>();
+        List<List<ClientPropertyDraw>> columnGroups = new ArrayList<>();
+        List<List<ClientGroupObjectValue>> columnGroupsColumnKeys = new ArrayList<>();
         
         for (ClientPropertyDraw property : columnProperties) {
             if (property.columnsName != null && property.columnGroupObjects != null) {
@@ -96,7 +96,7 @@ public class GridTableModel extends AbstractTableModel {
                     columnGroup = columnGroups.get(groupInd);
                 } else {
                     // новая группа свойств
-                    columnGroup = new ArrayList<ClientPropertyDraw>();
+                    columnGroup = new ArrayList<>();
 
                     List<ClientGroupObjectValue> propColumnKeys = mapColumnKeys.get(property);
                     if (propColumnKeys == null) {
@@ -118,8 +118,8 @@ public class GridTableModel extends AbstractTableModel {
             }
         }
 
-        List<ClientPropertyDraw> columnPropsList = new ArrayList<ClientPropertyDraw>();
-        List<ClientGroupObjectValue> columnKeysList = new ArrayList<ClientGroupObjectValue>();
+        List<ClientPropertyDraw> columnPropsList = new ArrayList<>();
+        List<ClientGroupObjectValue> columnKeysList = new ArrayList<>();
         for (int i = 0; i < columnGroups.size(); i++) {
             List<ClientPropertyDraw> columnGroup = columnGroups.get(i);
             List<ClientGroupObjectValue> columnKeys = columnGroupsColumnKeys.get(i);

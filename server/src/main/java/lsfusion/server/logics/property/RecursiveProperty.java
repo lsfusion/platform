@@ -95,8 +95,8 @@ public class RecursiveProperty<T extends PropertyInterface> extends ComplexIncre
     }
 
     protected Where getLogicalIncrementWhere(ImMap<Interface, ? extends Expr> joinImplement, PropertyChanges propChanges) {
-        Result<ImRevMap<KeyExpr, KeyExpr>> mapIterate = new Result<ImRevMap<KeyExpr, KeyExpr>>();
-        Result<ImMap<KeyExpr, Expr>> group = new Result<ImMap<KeyExpr, Expr>>();
+        Result<ImRevMap<KeyExpr, KeyExpr>> mapIterate = new Result<>();
+        Result<ImMap<KeyExpr, Expr>> group = new Result<>();
         ImMap<T, Expr> recursiveKeys = getRecursiveKeys(joinImplement, mapIterate, group);
         
         if(checkPrereadNull(recursiveKeys, CalcType.EXPR, propChanges))
@@ -116,8 +116,8 @@ public class RecursiveProperty<T extends PropertyInterface> extends ComplexIncre
     protected Expr getSumIncrementExpr(ImMap<Interface, ? extends Expr> joinImplement, PropertyChanges propChanges) {
         assert !isLogical();
 
-        Result<ImRevMap<KeyExpr, KeyExpr>> mapIterate = new Result<ImRevMap<KeyExpr, KeyExpr>>();
-        Result<ImMap<KeyExpr, Expr>> group = new Result<ImMap<KeyExpr, Expr>>();
+        Result<ImRevMap<KeyExpr, KeyExpr>> mapIterate = new Result<>();
+        Result<ImMap<KeyExpr, Expr>> group = new Result<>();
         ImMap<T, Expr> recursiveKeys = getRecursiveKeys(joinImplement, mapIterate, group);
 
         if(checkPrereadNull(recursiveKeys, CalcType.EXPR, propChanges))
@@ -148,8 +148,8 @@ public class RecursiveProperty<T extends PropertyInterface> extends ComplexIncre
     }
 
     protected Expr calculateNewExpr(ImMap<Interface, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges propChanges) {
-        Result<ImRevMap<KeyExpr, KeyExpr>> mapIterate = new Result<ImRevMap<KeyExpr, KeyExpr>>();
-        Result<ImMap<KeyExpr, Expr>> group = new Result<ImMap<KeyExpr, Expr>>();
+        Result<ImRevMap<KeyExpr, KeyExpr>> mapIterate = new Result<>();
+        Result<ImMap<KeyExpr, Expr>> group = new Result<>();
         ImMap<T, Expr> recursiveKeys = getRecursiveKeys(joinImplement, mapIterate, group);
 
         if(checkPrereadNull(recursiveKeys, CalcType.EXPR, propChanges))

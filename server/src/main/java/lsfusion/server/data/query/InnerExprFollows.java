@@ -28,7 +28,7 @@ public class InnerExprFollows<K extends OuterContext> extends InnerFollows<K> im
         }
 
         protected OuterContext translate(MapTranslate translator) {
-            return new InnerExprFollows<K>(translator.translateOuterKeys(fields)).getOuter();
+            return new InnerExprFollows<>(translator.translateOuterKeys(fields)).getOuter();
         }
 
         protected int hash(HashContext hash) {

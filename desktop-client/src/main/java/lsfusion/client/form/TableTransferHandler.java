@@ -71,8 +71,8 @@ public class TableTransferHandler extends TransferHandler {
      * should always be consistent with lsfusion.gwt.base.client.GwtClientUtils#getClipboardTable(java.lang.String)
      */
     public static List<List<String>> getClipboardTable(String line) {
-        List<List<String>> table = new ArrayList<List<String>>();
-        List<String> row = new ArrayList<String>();
+        List<List<String>> table = new ArrayList<>();
+        List<String> row = new ArrayList<>();
 
         char[] charline = line.toCharArray();
 
@@ -109,7 +109,7 @@ public class TableTransferHandler extends TransferHandler {
                             row.add(BaseUtils.nullEmpty(cell));
                             if (isRowEnd) {
                                 table.add(row);
-                                row = new ArrayList<String>();
+                                row = new ArrayList<>();
                             }
 
                             start = i;
@@ -125,7 +125,7 @@ public class TableTransferHandler extends TransferHandler {
                 row.add(BaseUtils.nullEmpty(line.substring(start, i)));
                 if (isRowEnd) {
                     table.add(row);
-                    row = new ArrayList<String>();
+                    row = new ArrayList<>();
                 }
                 
                 start = i;

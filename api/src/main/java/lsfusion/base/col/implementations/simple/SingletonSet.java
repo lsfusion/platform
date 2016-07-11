@@ -39,11 +39,11 @@ public class SingletonSet<K> implements ImSet<K>, ImList<K>, ImOrderSet<K> {
     }
 
     public <M> ImValueMap<K, M> mapItValues() {
-        return new SingletonRevMap<K, M>(key);
+        return new SingletonRevMap<>(key);
     }
 
     public <M> ImRevValueMap<K, M> mapItRevValues() {
-        return new SingletonRevMap<K, M>(key);
+        return new SingletonRevMap<>(key);
     }
 
     public boolean equals(Object obj) {
@@ -253,11 +253,11 @@ public class SingletonSet<K> implements ImSet<K>, ImList<K>, ImOrderSet<K> {
     }
 
     public <M> ImOrderValueMap<K, M> mapItOrderValues() {
-        return new SingletonOrderMap<K, M>(key);
+        return new SingletonOrderMap<>(key);
     }
 
     public <M> ImRevValueMap<K, M> mapItOrderRevValues() {
-        return new SingletonRevMap<K, M>(key);
+        return new SingletonRevMap<>(key);
     }
 
     public <M> ImOrderSet<M> mapOrderSetValues(GetValue<M, K> getter) {
@@ -472,7 +472,7 @@ public class SingletonSet<K> implements ImSet<K>, ImList<K>, ImOrderSet<K> {
     }
 
     public <M> ImFilterValueMap<K, M> mapFilterValues() {
-        return new FilterValueMap<K, M>(this.<M>mapItValues());
+        return new FilterValueMap<>(this.<M>mapItValues());
     }
 
     public ImSet<K> filterFn(FunctionSet<K> filter) {

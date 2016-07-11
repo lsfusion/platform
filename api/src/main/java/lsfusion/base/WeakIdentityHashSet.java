@@ -6,7 +6,7 @@ import java.util.Iterator;
 public class WeakIdentityHashSet<E> implements Iterable<E> {
 
     final static Object inSet = 1;
-    WeakIdentityHashMap<E,Object> map = new WeakIdentityHashMap<E,Object>();
+    WeakIdentityHashMap<E,Object> map = new WeakIdentityHashMap<>();
 
     public WeakIdentityHashSet(E element) {
         map.put(element,inSet);

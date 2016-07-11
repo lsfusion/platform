@@ -157,7 +157,7 @@ public abstract class QueryExpr<K extends Expr,I extends OuterContext<I>, J exte
                 return InnerExprFollows.EMPTYEXPR();
 
             ImSet<K> groupKeys = thisObj.group.keys();
-            return new InnerExprFollows<K>(Query.<K, K, K>getClassWhere(getFullWhere(), MapFact.<K, BaseExpr>EMPTY(), groupKeys.toRevMap()), groupKeys);
+            return new InnerExprFollows<>(Query.<K, K, K>getClassWhere(getFullWhere(), MapFact.<K, BaseExpr>EMPTY(), groupKeys.toRevMap()), groupKeys);
         }
 
         protected IC translate(MapTranslate translate) {

@@ -23,7 +23,7 @@ public class ShowDefaultFormsHandler extends SimpleActionHandlerEx<ShowDefaultFo
     public ShowDefaultFormsResult executeEx(ShowDefaultFormsAction action, ExecutionContext context) throws DispatchException, IOException {
         DefaultFormsType dft = servlet.getNavigator().showDefaultForms();
 
-        ArrayList<String> defaultForms = new ArrayList<String>();
+        ArrayList<String> defaultForms = new ArrayList<>();
         if (dft == DefaultFormsType.DEFAULT) {
             defaultForms = (ArrayList<String>) servlet.getNavigator().getDefaultForms();
         }

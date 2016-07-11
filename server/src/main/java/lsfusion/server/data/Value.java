@@ -7,5 +7,5 @@ public interface Value extends ParseValue {
 
     GlobalObject getValueClass();
 
-    public Value removeBig(MAddSet<Value> usedValues);
+    Value removeBig(MAddSet<Value> usedValues);
 }

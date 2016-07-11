@@ -79,7 +79,7 @@ public abstract class ColumnsListBox extends Composite {
     }
 
     public ArrayList<Widget> widgetList() {
-        ArrayList<Widget> widgetList = new ArrayList<Widget>();
+        ArrayList<Widget> widgetList = new ArrayList<>();
         for (int i = 0; i < getItemCount(); i++) {
             widgetList.add(getWidget(i));
         }

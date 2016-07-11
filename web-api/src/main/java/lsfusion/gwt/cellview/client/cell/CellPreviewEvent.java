@@ -32,7 +32,7 @@ public class CellPreviewEvent<T> extends GwtEvent<CellPreviewEvent.Handler<T>> {
      *
      * @param <T> the data type of the {@link lsfusion.gwt.cellview.client.HasData}
      */
-    public static interface Handler<T> extends EventHandler {
+    public interface Handler<T> extends EventHandler {
 
         /**
          * Called when {@link CellPreviewEvent} is fired.
@@ -64,8 +64,8 @@ public class CellPreviewEvent<T> extends GwtEvent<CellPreviewEvent.Handler<T>> {
     public static <T> CellPreviewEvent<T> fire(HasCellPreviewHandlers<T> source,
                                                NativeEvent nativeEvent, HasData<T> display, Cell.Context context, T value,
                                                boolean isCellEditing) {
-        CellPreviewEvent<T> event = new CellPreviewEvent<T>(nativeEvent, display,
-                                                            context, value, isCellEditing);
+        CellPreviewEvent<T> event = new CellPreviewEvent<>(nativeEvent, display,
+                context, value, isCellEditing);
         if (TYPE != null) {
             source.fireEvent(event);
         }
@@ -79,7 +79,7 @@ public class CellPreviewEvent<T> extends GwtEvent<CellPreviewEvent.Handler<T>> {
      */
     public static Type<Handler<?>> getType() {
         if (TYPE == null) {
-            TYPE = new Type<Handler<?>>();
+            TYPE = new Type<>();
         }
         return TYPE;
     }

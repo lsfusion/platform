@@ -32,7 +32,7 @@ public class CustomObjectInstance extends ObjectInstance {
     }
 
     public void setClassListener(CustomClassListener classListener) {
-        this.weakClassListener = new WeakReference<CustomClassListener>(classListener);
+        this.weakClassListener = new WeakReference<>(classListener);
     }
 
     public CustomObjectInstance(ObjectEntity entity, CustomClass baseClass) {

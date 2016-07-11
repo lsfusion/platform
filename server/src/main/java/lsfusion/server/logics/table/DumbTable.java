@@ -22,11 +22,11 @@ public class DumbTable extends GlobalTable {
         key = new KeyField("id", SystemClass.instance);
         keys = SetFact.singletonOrder(key);
 
-        classes = new ClassWhere<KeyField>(key, SystemClass.instance);
+        classes = new ClassWhere<>(key, SystemClass.instance);
     }
 
     public StatKeys<KeyField> getStatKeys() {
-        return new StatKeys<KeyField>(keys.getSet(), Stat.ONE); // throw new RuntimeException("not supported");
+        return new StatKeys<>(keys.getSet(), Stat.ONE); // throw new RuntimeException("not supported");
     }
 
     public ImMap<PropertyField,PropStat> getStatProps() {

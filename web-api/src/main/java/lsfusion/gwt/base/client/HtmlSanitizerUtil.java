@@ -15,14 +15,14 @@ public class HtmlSanitizerUtil implements HtmlSanitizer {
 
     private static final HtmlSanitizerUtil INSTANCE = new HtmlSanitizerUtil();
 
-    private static final Set<String> TAG_WHITELIST = new HashSet<String>(
+    private static final Set<String> TAG_WHITELIST = new HashSet<>(
             Arrays.asList("a", "abbr", "acronym", "address", "area", "b", "big", "blockquote", "br",
-                          "button", "caption", "center", "cite", "code", "col", "colgroup", "dd", "del",
-                          "dfn", "dir", "div", "dl", "dt", "em", "fieldset", "font", "form", "h1", "h2",
-                          "h3", "h4", "h5", "h6", "hr", "i", "img", "input", "ins", "kbd", "label", "legend",
-                          "li", "map", "menu", "ol", "optgroup", "option", "p", "pre", "q", "s", "samp",
-                          "select", "small", "span", "strike", "strong", "style", "sub", "sup", "table", "tbody", "td",
-                          "textarea", "tfoot", "th", "thead", "tr", "tt", "u", "ul", "var"));
+                    "button", "caption", "center", "cite", "code", "col", "colgroup", "dd", "del",
+                    "dfn", "dir", "div", "dl", "dt", "em", "fieldset", "font", "form", "h1", "h2",
+                    "h3", "h4", "h5", "h6", "hr", "i", "img", "input", "ins", "kbd", "label", "legend",
+                    "li", "map", "menu", "ol", "optgroup", "option", "p", "pre", "q", "s", "samp",
+                    "select", "small", "span", "strike", "strong", "style", "sub", "sup", "table", "tbody", "td",
+                    "textarea", "tfoot", "th", "thead", "tr", "tt", "u", "ul", "var"));
 
     /**
      * Return a singleton SimpleHtmlSanitizer instance.

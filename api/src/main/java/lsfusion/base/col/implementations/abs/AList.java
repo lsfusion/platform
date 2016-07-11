@@ -123,7 +123,7 @@ public abstract class AList<K> extends AColObject implements ImList<K> {
     }
 
     public List<K> toJavaList() {
-        List<K> result = new ArrayList<K>();
+        List<K> result = new ArrayList<>();
         for(K element : this)
             result.add(element);
         return result;

@@ -19,7 +19,7 @@ public class SequentialRequestLock {
     private ArrayBlockingQueue requestLock = new ArrayBlockingQueue(1, true);
 
     @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
-    private BlockingMap<Long, Object> sequentialRequestLock = new BlockingHashMap<Long, Object>();
+    private BlockingMap<Long, Object> sequentialRequestLock = new BlockingHashMap<>();
 
     public SequentialRequestLock() {
         initRequestLock();

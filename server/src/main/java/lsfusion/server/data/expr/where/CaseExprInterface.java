@@ -5,7 +5,7 @@ import lsfusion.server.data.where.Where;
 
 public interface CaseExprInterface {
 
-    public abstract void add(Where where, Expr data);
-    public abstract Expr getFinal();
+    void add(Where where, Expr data);
+    Expr getFinal();
 
 }

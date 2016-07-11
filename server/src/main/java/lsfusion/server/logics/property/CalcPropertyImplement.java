@@ -35,7 +35,7 @@ public class CalcPropertyImplement<P extends PropertyInterface, T> extends TwinI
     }
 
     public <L> CalcPropertyImplement<P, L> mapImplement(ImMap<T, L> mapImplement) {
-        return new CalcPropertyImplement<P, L>(property, join(mapImplement));
+        return new CalcPropertyImplement<>(property, join(mapImplement));
     }
 
     public boolean calcTwins(TwinImmutableObject o) {

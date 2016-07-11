@@ -17,7 +17,7 @@ import java.util.Map;
 public class ClientFormLayout extends JPanel {
 
     public interface KeyBinding {
-        public boolean keyPressed(KeyEvent ke);
+        boolean keyPressed(KeyEvent ke);
     }
 
     private final ClientFormController form;
@@ -25,8 +25,8 @@ public class ClientFormLayout extends JPanel {
 
     private FormFocusTraversalPolicy policy;
 
-    private Map<KeyStroke, Map<ClientGroupObject, List<KeyBinding>>> bindings = new HashMap<KeyStroke, Map<ClientGroupObject, List<KeyBinding>>>();
-    private Map<ClientContainer, ClientContainerView> containerViews = new HashMap<ClientContainer, ClientContainerView>();
+    private Map<KeyStroke, Map<ClientGroupObject, List<KeyBinding>>> bindings = new HashMap<>();
+    private Map<ClientContainer, ClientContainerView> containerViews = new HashMap<>();
 
     @SuppressWarnings({"FieldCanBeLocal"})
     private FocusListener focusListener;
@@ -198,13 +198,13 @@ public class ClientFormLayout extends JPanel {
     public void addKeyBinding(KeyStroke ks, ClientGroupObject groupObject, KeyBinding binding) {
         Map<ClientGroupObject, List<KeyBinding>> groupBindings = bindings.get(ks);
         if (groupBindings == null) {
-            groupBindings = new HashMap<ClientGroupObject, List<KeyBinding>>();
+            groupBindings = new HashMap<>();
             bindings.put(ks, groupBindings);
         }
 
         List<KeyBinding> bindings = groupBindings.get(groupObject);
         if (bindings == null) {
-            bindings = new ArrayList<KeyBinding>();
+            bindings = new ArrayList<>();
             groupBindings.put(groupObject, bindings);
         }
 

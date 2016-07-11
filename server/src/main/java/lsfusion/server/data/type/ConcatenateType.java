@@ -38,7 +38,7 @@ public class ConcatenateType extends AbstractType<Object[]> {
     private Type[] types;
     private boolean[] desc;
 
-    private static Collection<ConcatenateType> instances = new ArrayList<ConcatenateType>();
+    private static Collection<ConcatenateType> instances = new ArrayList<>();
 
     public static ConcatenateType get(Type[] types) {
         return get(types, new boolean[types.length]);
@@ -301,7 +301,7 @@ public class ConcatenateType extends AbstractType<Object[]> {
         MList<ImList<AndClassSet>> mClassSets = ListFact.mList(types.length);
         for(int i=0;i<types.length;i++)
             mClassSets.add(i==part? ListFact.singleton(fix) : ((Type<?>)types[i]).getUniversal(baseClass));
-        return new ListCombinations<AndClassSet>(mClassSets.immutableList());
+        return new ListCombinations<>(mClassSets.immutableList());
     }
 
     public ExtInt getCharLength() {

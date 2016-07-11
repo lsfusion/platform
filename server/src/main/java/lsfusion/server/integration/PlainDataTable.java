@@ -23,7 +23,7 @@ public class PlainDataTable<T> implements Iterable<PlainDataTable.Row> {
         this.fields = SetFact.fromJavaOrderSet(fields);
         this.data = data;
 
-        fieldIndex = new HashMap<T, Integer>();
+        fieldIndex = new HashMap<>();
         for (int i = 0; i < fields.size(); i++) {
             fieldIndex.put(fields.get(i), i);
         }

@@ -19,7 +19,7 @@ public class DeferredRunner {
         return instance;
     }
 
-    private final Map<String, Command> commands = new HashMap<String, Command>();
+    private final Map<String, Command> commands = new HashMap<>();
 
     private DeferredRunner() {}
 

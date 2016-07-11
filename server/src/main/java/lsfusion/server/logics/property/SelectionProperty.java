@@ -52,9 +52,9 @@ public class SelectionProperty extends SessionDataProperty {
             map[i] = objects.getValue(i);
         }
         if(po.property instanceof CalcProperty)
-            params[1] = new LCP<ClassPropertyInterface>((CalcProperty<ClassPropertyInterface>) po.property, objects.keyOrderSet());
+            params[1] = new LCP<>((CalcProperty<ClassPropertyInterface>) po.property, objects.keyOrderSet());
         else
-            params[1] = new LAP<ClassPropertyInterface>((ActionProperty<ClassPropertyInterface>) po.property, objects.keyOrderSet()); 
+            params[1] = new LAP<>((ActionProperty<ClassPropertyInterface>) po.property, objects.keyOrderSet()); 
         entity.getNFToDraw(form, version).propertyBackground = form.addPropertyObject(LM.addJProp(LM.and1, params), map);
     }
 

@@ -46,14 +46,14 @@ public class ClassWhere<K> extends AbstractClassWhere<K, ClassWhere<K>> {
         super(where);
     }
 
-    private final static ClassWhere<Object> TRUE = new ClassWhere<Object>(true);
+    private final static ClassWhere<Object> TRUE = new ClassWhere<>(true);
     public static <K> ClassWhere<K> TRUE() {
         return (ClassWhere<K>) TRUE;
     }
     public static <K> ClassWhere<K> STATIC(boolean isTrue) {
         return isTrue ? ClassWhere.<K>TRUE() : ClassWhere.<K>FALSE();
     }
-    private final static ClassWhere<Object> FALSE = new ClassWhere<Object>(false);
+    private final static ClassWhere<Object> FALSE = new ClassWhere<>(false);
     public static <K> ClassWhere<K> FALSE() {
         return (ClassWhere<K>) FALSE;
     }
@@ -70,7 +70,7 @@ public class ClassWhere<K> extends AbstractClassWhere<K, ClassWhere<K>> {
         super(iWheres);
     }
     protected ClassWhere<K> createThis(And<K>[] wheres) {
-        return new ClassWhere<K>(wheres);
+        return new ClassWhere<>(wheres);
     }
 
     public ClassWhere(K key, AndClassSet classes) {
@@ -110,14 +110,14 @@ public class ClassWhere<K> extends AbstractClassWhere<K, ClassWhere<K>> {
     public ClassWhere<K> remove(ImSet<? extends K> keys) {
         ClassWhere<K> result = ClassWhere.FALSE();
         for(And<K> andWhere : wheres)
-            result = result.or(new ClassWhere<K>(andWhere.remove(keys)));
+            result = result.or(new ClassWhere<>(andWhere.remove(keys)));
         return result;
     }
 
     public <T extends K> ClassWhere<T> filterKeys(ImSet<T> keys) {
         ClassWhere<T> result = ClassWhere.FALSE();
         for(And<K> andWhere : wheres)
-            result = result.or(new ClassWhere<T>(andWhere.filterKeys(keys)));
+            result = result.or(new ClassWhere<>(andWhere.filterKeys(keys)));
         return result;
     }
 
@@ -140,14 +140,14 @@ public class ClassWhere<K> extends AbstractClassWhere<K, ClassWhere<K>> {
         And<T>[] remapWheres = new And[wheres.length];
         for(int i=0;i<wheres.length;i++)
             remapWheres[i] = wheres[i].remap(map);
-        return new ClassWhere<T>(remapWheres);
+        return new ClassWhere<>(remapWheres);
     }
 
     public <T> ClassWhere<T> remap(GetValue<T, K> map) {
         And<T>[] remapWheres = new And[wheres.length];
         for(int i=0;i<wheres.length;i++)
             remapWheres[i] = wheres[i].remap(map);
-        return new ClassWhere<T>(remapWheres);
+        return new ClassWhere<>(remapWheres);
     }
 
     private final static AddValue<Object, ClassWhere<Object>> addOr = new SymmAddValue<Object, ClassWhere<Object>>() {
@@ -199,7 +199,7 @@ public class ClassWhere<K> extends AbstractClassWhere<K, ClassWhere<K>> {
     public ClassWhere<K> getBase() {
         ClassWhere<K> result = ClassWhere.FALSE();
         for(And<K> andWhere : wheres)
-            result = result.or(new ClassWhere<K>(andWhere.getBase()));
+            result = result.or(new ClassWhere<>(andWhere.getBase()));
         return result;
     } 
 }

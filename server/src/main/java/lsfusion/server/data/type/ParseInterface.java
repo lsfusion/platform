@@ -12,17 +12,17 @@ public interface ParseInterface {
     boolean isSafeString();
 
     // есди isSafeString
-    public String getString(SQLSyntax syntax, StringBuilder envString, boolean usedRecursion);
+    String getString(SQLSyntax syntax, StringBuilder envString, boolean usedRecursion);
     
     // иначе
-    public void writeParam(PreparedStatement statement, SQLSession.ParamNum paramNum, SQLSyntax syntax) throws SQLException;
+    void writeParam(PreparedStatement statement, SQLSession.ParamNum paramNum, SQLSyntax syntax) throws SQLException;
 
-    public boolean isSafeType();
+    boolean isSafeType();
 
     // если не isSageType
-    public Type getType();
+    Type getType();
 
-    public final static ParseInterface empty = new StringParseInterface() {
+    ParseInterface empty = new StringParseInterface() {
         public boolean isSafeString() {
             return false;
         }

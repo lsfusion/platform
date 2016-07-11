@@ -22,9 +22,9 @@ public class ClientTreeNode<T, C extends ClientTreeNode> extends DefaultMutableT
     public final static int NODE_SONS = 3;
     public final static int SUB_TREE = 4;
 
-    public ArrayList<ClientTreeAction> nodeActions = new ArrayList<ClientTreeAction>();
-    public ArrayList<ClientTreeAction> sonActions = new ArrayList<ClientTreeAction>();
-    public ArrayList<ClientTreeAction> subTreeActions = new ArrayList<ClientTreeAction>();
+    public ArrayList<ClientTreeAction> nodeActions = new ArrayList<>();
+    public ArrayList<ClientTreeAction> sonActions = new ArrayList<>();
+    public ArrayList<ClientTreeAction> subTreeActions = new ArrayList<>();
 
     public ClientTreeNode() {
         super();
@@ -100,9 +100,7 @@ public class ClientTreeNode<T, C extends ClientTreeNode> extends DefaultMutableT
                 public void actionPerformed(ClientTreeActionEvent e) {
                     try {
                         ReflectionUtils.invokeSetter(object, field, processCreatedObject(classes[prm].newInstance(), object));
-                    } catch (InstantiationException e1) {
-                        throw new RuntimeException(e1);
-                    } catch (IllegalAccessException e1) {
+                    } catch (InstantiationException | IllegalAccessException e1) {
                         throw new RuntimeException(e1);
                     }
                 }
@@ -117,9 +115,7 @@ public class ClientTreeNode<T, C extends ClientTreeNode> extends DefaultMutableT
                 public void actionPerformed(ClientTreeActionEvent e) {
                     try {
                         ReflectionUtils.invokeAdder(object, collectionField, processCreatedObject(classes[prm].newInstance(), object));
-                    } catch (InstantiationException e1) {
-                        throw new RuntimeException(e1);
-                    } catch (IllegalAccessException e1) {
+                    } catch (InstantiationException | IllegalAccessException e1) {
                         throw new RuntimeException(e1);
                     }
                 }

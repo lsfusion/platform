@@ -26,7 +26,7 @@ import java.util.regex.Pattern;
 public class NotificationActionProperty extends SystemExplicitActionProperty {
     private final static Logger logger = ServerLoggers.mailLogger;
 
-    private final LinkedHashMap<CalcPropertyMapImplement<?, ClassPropertyInterface>, Message.RecipientType> recipients = new LinkedHashMap<CalcPropertyMapImplement<?, ClassPropertyInterface>, Message.RecipientType>();
+    private final LinkedHashMap<CalcPropertyMapImplement<?, ClassPropertyInterface>, Message.RecipientType> recipients = new LinkedHashMap<>();
 
     private final String subjectNotification;
     private final String textNotification;
@@ -69,7 +69,7 @@ public class NotificationActionProperty extends SystemExplicitActionProperty {
             return;
         }
 
-        Map<String, Message.RecipientType> recipientEmails = new HashMap<String, Message.RecipientType>();
+        Map<String, Message.RecipientType> recipientEmails = new HashMap<>();
 
         if (emailToNotification != null)
             for (String email : emailToNotification.split(";")) {
@@ -114,8 +114,8 @@ public class NotificationActionProperty extends SystemExplicitActionProperty {
                 currentText = currentText.replace("$P{" + replaceProperty.property.getSID() + "(" + m.group(2) + ")}", replacePropertyValue.toString().trim());
         }
 
-        List<EmailSender.AttachmentProperties> attachmentForms = new ArrayList<EmailSender.AttachmentProperties>();
-        Map<ByteArray, String> attachmentFiles = new HashMap<ByteArray, String>();
+        List<EmailSender.AttachmentProperties> attachmentForms = new ArrayList<>();
+        Map<ByteArray, String> attachmentFiles = new HashMap<>();
 
         ObjectValue defaultAccount = emailLM.defaultInboxAccount.readClasses(context.getSession());
 

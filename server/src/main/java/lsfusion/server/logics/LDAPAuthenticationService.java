@@ -28,7 +28,7 @@ public class LDAPAuthenticationService {
         server = server == null ? "localhost" : server.trim();
         port = port == null ? 389 : port;
         
-        Hashtable<String, String> environment = new Hashtable<String, String>();
+        Hashtable<String, String> environment = new Hashtable<>();
 
         String principal = username + (userDNSuffix != null ? userDNSuffix : "");
         
@@ -49,7 +49,7 @@ public class LDAPAuthenticationService {
             String firstName = null;
             String lastName = null;
             String email = null;
-            List<String> groupNames = new ArrayList<String>();
+            List<String> groupNames = new ArrayList<>();
 
             if (baseDN != null) {
                 NamingEnumeration personResults = authContext.search(baseDN, "(userPrincipalName=" + principal + ")", controls);

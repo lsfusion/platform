@@ -2,9 +2,9 @@ package lsfusion.interop.event;
 
 public interface IDaemonTask {
 
-    public void start() throws Exception;
+    void start() throws Exception;
 
-    public void stop();
+    void stop();
 
-    public void setEventBus(EventBus eventBus);
+    void setEventBus(EventBus eventBus);
 }

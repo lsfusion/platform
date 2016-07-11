@@ -13,6 +13,6 @@ public class CalcPropertyClassImplement<P extends PropertyInterface> extends Pro
         CalcProperty<P> createProp = property;
         if(prev && property.noOld())
             createProp = createProp.getOld(PrevScope.DB); 
-        return new LCP<P>(createProp, listInterfaces.mapOrder(mapping.reverse()));
+        return new LCP<>(createProp, listInterfaces.mapOrder(mapping.reverse()));
     }
 }

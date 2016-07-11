@@ -467,7 +467,7 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
 
     protected String safeCastString;
 
-    private LRUSVSMap<Type, Boolean> ensuredSafeCasts = new LRUSVSMap<Type, Boolean>(LRUUtil.G2);
+    private LRUSVSMap<Type, Boolean> ensuredSafeCasts = new LRUSVSMap<>(LRUUtil.G2);
 
     public synchronized void ensureSafeCast(Type type) throws SQLException {
         Boolean ensured = ensuredSafeCasts.get(type);

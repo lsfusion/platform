@@ -442,7 +442,7 @@ public class ExecutorFactory {
 
         public ClosableDaemonThreadFactory(LogicsInstance instance, String threadNamePrefix) {
             super(threadNamePrefix);
-            wLogicsInstance = new WeakReference<LogicsInstance>(instance);
+            wLogicsInstance = new WeakReference<>(instance);
         }
 
         protected Thread newThreadInstance(ThreadGroup group, Runnable r, String name, int stackSize) {

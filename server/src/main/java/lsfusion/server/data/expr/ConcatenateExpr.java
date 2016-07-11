@@ -142,6 +142,6 @@ public class ConcatenateExpr extends VariableClassExpr {
     }
 
     public InnerBaseJoin<?> getBaseJoin() {
-        return new FormulaJoin<Integer>(exprs.toIndexedMap(), true);
+        return new FormulaJoin<>(exprs.toIndexedMap(), true);
     }
 }

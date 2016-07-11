@@ -163,13 +163,13 @@ public abstract class ACol<K> extends AColObject implements ImCol<K> {
     }
 
     public ImList<K> sort(Comparator<K> comparator) {
-        List<K> sortList = new ArrayList<K>(toList().toJavaList());
+        List<K> sortList = new ArrayList<>(toList().toJavaList());
         Collections.sort(sortList, comparator);
         return ListFact.fromJavaList(sortList);
     }
 
     public Collection<K> toJavaCol() {
-        List<K> result = new ArrayList<K>();
+        List<K> result = new ArrayList<>();
         for(K element : this)
             result.add(element);
         return result;

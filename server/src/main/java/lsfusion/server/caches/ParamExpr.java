@@ -56,7 +56,7 @@ public abstract class ParamExpr extends VariableSingleClassExpr implements Inner
     }
 
     public StatKeys<Object> getStatKeys(KeyStat keyStat) {
-        return new StatKeys<Object>(SetFact.EMPTY(), Stat.ALOT);
+        return new StatKeys<>(SetFact.EMPTY(), Stat.ALOT);
 //        return new StatKeys<Object>(SetFact.EMPTY(), keyStat.getKeyStat(this));
     }
 

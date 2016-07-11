@@ -25,15 +25,15 @@ public class CalcPropertyRevImplement<P extends PropertyInterface, T> implements
     }
 
     public static <P extends PropertyInterface, T extends PropertyInterface> CalcPropertyMapImplement<P, T> mapPropertyImplement(CalcPropertyRevImplement<P, T> implement) {
-        return new CalcPropertyMapImplement<P, T>(implement.property, implement.mapping);
+        return new CalcPropertyMapImplement<>(implement.property, implement.mapping);
     }
 
     public <L extends PropertyInterface> CalcPropertyMapImplement<P, L> mapPropertyImplement(ImRevMap<T, L> mapImplement) {
-        return new CalcPropertyMapImplement<P, L>(property, mapping.join(mapImplement));
+        return new CalcPropertyMapImplement<>(property, mapping.join(mapImplement));
     }
 
     public <L> CalcPropertyImplement<P, L> mapImplement(ImMap<T, L> mapImplement) {
-        return new CalcPropertyImplement<P, L>(property, mapping.join(mapImplement));
+        return new CalcPropertyImplement<>(property, mapping.join(mapImplement));
     }
 
     public Expr mapExpr(ImMap<T, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges changes, WhereBuilder changedWhere) {
@@ -53,6 +53,6 @@ public class CalcPropertyRevImplement<P extends PropertyInterface, T> implements
     }
 
     public LCP createLP(ImOrderSet<T> listInterfaces) {
-        return new LCP<P>(property, listInterfaces.mapOrder(mapping.reverse()));
+        return new LCP<>(property, listInterfaces.mapOrder(mapping.reverse()));
     }
 }

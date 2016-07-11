@@ -109,7 +109,7 @@ public class NavigatorElement<T extends BusinessLogics<T>> {
      */
     public Set<NavigatorElement<T>> getChildrenRecursive() {
         //используем Set, чтобы не было повторений
-        Set<NavigatorElement<T>> result = new LinkedHashSet<NavigatorElement<T>>();
+        Set<NavigatorElement<T>> result = new LinkedHashSet<>();
         fillChildrenRecursive(result);
         return result;
     }
@@ -132,8 +132,8 @@ public class NavigatorElement<T extends BusinessLogics<T>> {
         }
 
 
-        List<String> childrenSids = new ArrayList<String>();
-        List<ImOrderMap<NavigatorElement<T>, List<String>>> childrenMaps = new ArrayList<ImOrderMap<NavigatorElement<T>, List<String>>>();
+        List<String> childrenSids = new ArrayList<>();
+        List<ImOrderMap<NavigatorElement<T>, List<String>>> childrenMaps = new ArrayList<>();
         for (NavigatorElement<T> child : getChildrenIt()) {
             ImOrderMap<NavigatorElement<T>, List<String>> childMap = child.getChildrenMap(securityPolicy);
             if (!childMap.isEmpty()) {

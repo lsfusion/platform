@@ -16,7 +16,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class NFMapListImpl<K, V> extends NFImpl<Map<K, NFList<V>>, ImMap<K, ImList<V>>> implements NFMapList<K, V> {
 
     protected Map<K, NFList<V>> initMutable() {
-        return new ConcurrentHashMap<K, NFList<V>>();
+        return new ConcurrentHashMap<>();
     }
 
     public NFMapListImpl() {

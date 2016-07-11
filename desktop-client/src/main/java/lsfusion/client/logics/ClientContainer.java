@@ -28,7 +28,7 @@ public class ClientContainer extends ClientComponent implements AbstractContaine
 
     public int columnLabelsWidth = 0;
 
-    public List<ClientComponent> children = new ArrayList<ClientComponent>();
+    public List<ClientComponent> children = new ArrayList<>();
 
     public ClientContainer() {
     }

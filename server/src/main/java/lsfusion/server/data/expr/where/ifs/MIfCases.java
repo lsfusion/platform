@@ -12,7 +12,7 @@ public class MIfCases implements CaseExprInterface {
     MList<Case<Expr>> cases = ListFact.mList();
 
     public void add(Where where, Expr data) {
-        cases.add(new Case<Expr>(where, data));
+        cases.add(new Case<>(where, data));
     }
 
     public Expr getFinal() {

@@ -41,7 +41,7 @@ public class ReadFormRequestHandler implements HttpRequestHandler {
     @Override
     public void handleRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String canonicalName = request.getParameter(FORM_SID_PARAM);
-        Map<String, String> initialObjects = new HashMap<String, String>();
+        Map<String, String> initialObjects = new HashMap<>();
 
         Enumeration parameterNames = request.getParameterNames();
         while (parameterNames.hasMoreElements()) {
@@ -121,9 +121,7 @@ public class ReadFormRequestHandler implements HttpRequestHandler {
             try {
                 data = ReportGenerator.retrieveReportSources(reportData, null).data;
                 formHierarchy = ReportGenerator.retrieveReportHierarchy(reportData.reportHierarchyData);
-            } catch (IOException e) {
-                Throwables.propagate(e);
-            } catch (ClassNotFoundException e) {
+            } catch (IOException | ClassNotFoundException e) {
                 Throwables.propagate(e);
             }
         }
@@ -203,7 +201,7 @@ public class ReadFormRequestHandler implements HttpRequestHandler {
                         for (List<Object> columnKeys : reportData.getCompositeColumnValues().get(property)) {
                             List<Integer> columnObjects = reportData.getCompositeColumnObjects().get(property);
 
-                            List<Object> cKeys = new ArrayList<Object>();
+                            List<Object> cKeys = new ArrayList<>();
                             for (Integer key : reportData.getCompositeFieldsObjects().get(property)) {
                                 if (columnObjects.contains(key)) {
                                     cKeys.add(columnKeys.get(columnObjects.indexOf(key)));
@@ -229,7 +227,7 @@ public class ReadFormRequestHandler implements HttpRequestHandler {
                     }
                 }
             }
-            Set<String> usedPropertiesSet = new HashSet<String>(usedProperties);
+            Set<String> usedPropertiesSet = new HashSet<>(usedProperties);
             usedPropertiesSet.addAll(reportData.getPropertyNames());
 
             writeDependentObjects(object, keys, indent + "\t", usedPropertiesSet);
@@ -241,7 +239,7 @@ public class ReadFormRequestHandler implements HttpRequestHandler {
 
     private class FormObject {
         public String object;
-        public List<FormObject> dependencies = new ArrayList<FormObject>();
+        public List<FormObject> dependencies = new ArrayList<>();
 
         public FormObject(String obj) {
             object = obj;

@@ -81,9 +81,9 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
     @Override
     public void initProperties() throws RecognitionException {
         // Текущий пользователь
-        currentUser = addProperty(null, new LCP<PropertyInterface>(new CurrentUserFormulaProperty(user)));
+        currentUser = addProperty(null, new LCP<>(new CurrentUserFormulaProperty(user)));
         makePropertyPublic(currentUser, "currentUser", new ArrayList<ResolveClassSet>());
-        currentComputer = addProperty(null, new LCP<PropertyInterface>(new CurrentComputerFormulaProperty(computer)));
+        currentComputer = addProperty(null, new LCP<>(new CurrentComputerFormulaProperty(computer)));
         makePropertyPublic(currentComputer, "currentComputer", new ArrayList<ResolveClassSet>());
 
         super.initProperties();

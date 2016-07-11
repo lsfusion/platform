@@ -56,7 +56,7 @@ public class LAP<T extends PropertyInterface> extends LP<T, ActionProperty<T>> {
     }
 
     public <P extends PropertyInterface> void setEventAction(LogicsModule lm, IncrementType type, Event event, LCP<P> lp, Integer... mapping) {
-        lm.addEventAction(property, new CalcPropertyMapImplement<P, T>(lp.property.getChanged(type, event.getScope()), lp.getRevMap(listInterfaces, mapping)), MapFact.<CalcPropertyInterfaceImplement<T>, Boolean>EMPTYORDER(), false, event, false, null);
+        lm.addEventAction(property, new CalcPropertyMapImplement<>(lp.property.getChanged(type, event.getScope()), lp.getRevMap(listInterfaces, mapping)), MapFact.<CalcPropertyInterfaceImplement<T>, Boolean>EMPTYORDER(), false, event, false, null);
     }
 
     public ValueClass[] getInterfaceClasses() { // obsolete
@@ -64,7 +64,7 @@ public class LAP<T extends PropertyInterface> extends LP<T, ActionProperty<T>> {
     }
 
     public <U extends PropertyInterface> ActionPropertyMapImplement<T, U> getImplement(U... mapping) {
-        return new ActionPropertyMapImplement<T, U>(property, getRevMap(mapping));
+        return new ActionPropertyMapImplement<>(property, getRevMap(mapping));
     }
 
     public <P extends PropertyInterface> void addToContextMenuFor(LP<P, Property<P>> mainProperty) {
@@ -80,7 +80,7 @@ public class LAP<T extends PropertyInterface> extends LP<T, ActionProperty<T>> {
         assert listInterfaces.size() <= mainProperty.listInterfaces.size();
 
         //мэпим входы по порядку, у этого экшна входов может быть меньше
-        ActionPropertyMapImplement<T, P> actionImplement = new ActionPropertyMapImplement<T, P>(property, getRevMap(mainProperty.listInterfaces));
+        ActionPropertyMapImplement<T, P> actionImplement = new ActionPropertyMapImplement<>(property, getRevMap(mainProperty.listInterfaces));
 
         mainProperty.property.setEditAction(actionSID, actionImplement);
     }

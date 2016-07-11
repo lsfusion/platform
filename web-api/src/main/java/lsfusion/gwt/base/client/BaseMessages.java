@@ -76,7 +76,7 @@ public interface BaseMessages extends Messages {
 
     String wrongCaptcha();
 
-    public static class Instance {
+    class Instance {
         private static final BaseMessages instance = (BaseMessages) GWT.create(BaseMessages.class);
 
         public static BaseMessages get() {

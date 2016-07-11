@@ -12,7 +12,7 @@ public class FormFocusTraversalPolicy extends LayoutFocusTraversalPolicy {
     private ArrayList<Component> list;
 
     public FormFocusTraversalPolicy() {
-        list = new ArrayList<Component>();
+        list = new ArrayList<>();
         setComparator(new LayoutComparator());
     }
 

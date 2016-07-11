@@ -16,16 +16,16 @@ import java.util.*;
 import static lsfusion.interop.form.ReportConstants.*;
 
 public class ClientReportData implements JRDataSource {
-    private final List<String> objectNames = new ArrayList<String>();
-    private final List<String> propertyNames = new ArrayList<String>();  
-    private final Map<String, Integer> objects = new HashMap<String,Integer>();
-    private final Map<String, Pair<Integer, Integer>> properties = new HashMap<String, Pair<Integer, Integer>>();
+    private final List<String> objectNames = new ArrayList<>();
+    private final List<String> propertyNames = new ArrayList<>();  
+    private final Map<String, Integer> objects = new HashMap<>();
+    private final Map<String, Pair<Integer, Integer>> properties = new HashMap<>();
 
     private final ListIterator<HashMap<Integer, Object>> iterator;
-    private final List<HashMap<Integer, Object>> keyRows = new ArrayList<HashMap<Integer, Object>>();
+    private final List<HashMap<Integer, Object>> keyRows = new ArrayList<>();
     private HashMap<Integer, Object> currentKeyRow;
     private final Map<Map<Integer, Object>, Map<Pair<Integer, Integer>, Object>> rows =
-            new HashMap<Map<Integer, Object>, Map<Pair<Integer, Integer>, Object>>();
+            new HashMap<>();
 
     private Map<String, List<Integer>> compositeFieldsObjects;
     private Map<String, Map<List<Object>, Object>> compositeObjectValues;
@@ -57,17 +57,17 @@ public class ClientReportData implements JRDataSource {
                     name += footerSuffix;
                 }
                 propertyNames.add(name);
-                properties.put(name, new Pair<Integer, Integer>(type, inStream.readInt()));
+                properties.put(name, new Pair<>(type, inStream.readInt()));
             }
 
             int rowCnt = inStream.readInt();
             for (int i = 0; i < rowCnt; i++) {
-                HashMap<Integer, Object> objectValues = new HashMap<Integer, Object>();
+                HashMap<Integer, Object> objectValues = new HashMap<>();
                 for (String objName : objectNames) {
                     Object objValue = BaseUtils.deserializeObject(inStream);
                     objectValues.put(objects.get(objName), objValue);
                 }
-                Map<Pair<Integer, Integer>, Object> propValues = new HashMap<Pair<Integer, Integer>, Object>();
+                Map<Pair<Integer, Integer>, Object> propValues = new HashMap<>();
                 for (String propName : propertyNames) {
                     Object propValue = BaseUtils.deserializeObject(inStream);
                     propValues.put(properties.get(propName), propValue);
@@ -203,9 +203,9 @@ public class ClientReportData implements JRDataSource {
     }
 
     private Object getCompositeFieldValue(String dataFieldName, String realFieldName, int index) {
-        List<Object> row = new ArrayList<Object>(Collections.nCopies(compositeFieldsObjects.get(dataFieldName).size(), null));
+        List<Object> row = new ArrayList<>(Collections.nCopies(compositeFieldsObjects.get(dataFieldName).size(), null));
 
-        Map<Integer, Integer> pos = new HashMap<Integer, Integer>();
+        Map<Integer, Integer> pos = new HashMap<>();
         int i = 0;
         for (Integer id : compositeFieldsObjects.get(dataFieldName)) {
             pos.put(id, i);
@@ -236,10 +236,10 @@ public class ClientReportData implements JRDataSource {
 
     private Pair<Integer, String> extractFieldData(String id) {
         int markerPos = id.substring(0, id.length() - endMarker.length()).lastIndexOf(beginMarker);
-        if (markerPos == -1) return new Pair<Integer, String>(-1, "");
+        if (markerPos == -1) return new Pair<>(-1, "");
         String indexString = id.substring(markerPos + beginMarker.length(), id.length() - endMarker.length());
         String realFieldName = id.substring(0, markerPos);
-        return new Pair<Integer, String>(Integer.parseInt(indexString), realFieldName);
+        return new Pair<>(Integer.parseInt(indexString), realFieldName);
     }
 }
 

@@ -44,7 +44,7 @@ public class FormReportManager<T extends BusinessLogics<T>, F extends FormInstan
     }
 
     public Map<String, String> getReportPath(final boolean toExcel, final Integer groupId, final FormUserPreferences userPreferences) {
-        Map<String, String> ret = new HashMap<String, String>();
+        Map<String, String> ret = new HashMap<>();
 
         List<String> reportsFileNames = getCustomReportsFileNames(toExcel, groupId);
         if (reportsFileNames != null) {
@@ -71,7 +71,7 @@ public class FormReportManager<T extends BusinessLogics<T>, F extends FormInstan
                  
             }
         } else {
-            Set<Integer> hidedGroupsId = new HashSet<Integer>();
+            Set<Integer> hidedGroupsId = new HashSet<>();
             for (GroupObjectInstance group : form.getGroups()) {
                 if (group.curClassView == ClassViewType.HIDE || groupId != null && groupId != group.getID()) {
                     hidedGroupsId.add(group.getID());
@@ -114,9 +114,9 @@ public class FormReportManager<T extends BusinessLogics<T>, F extends FormInstan
         GroupObjectHierarchy.ReportHierarchy fullReportHierarchy = getReportHierarchy(null);
 
         byte[] reportHierarchyByteArray = getReportHierarchyByteArray(groupReportHierarchy.getReportHierarchyMap());
-        Result<Map<String, LinkedHashSet<List<Object>>>> columnGroupObjects = new Result<Map<String, LinkedHashSet<List<Object>>>>();
+        Result<Map<String, LinkedHashSet<List<Object>>>> columnGroupObjects = new Result<>();
         byte[] reportSourcesByteArray = getReportSourcesByteArray(
-                new ReportSourceGenerator<T>(form, groupReportHierarchy, fullReportHierarchy, getGridGroups(groupId), groupId, userPreferences)
+                new ReportSourceGenerator<>(form, groupReportHierarchy, fullReportHierarchy, getGridGroups(groupId), groupId, userPreferences)
         , columnGroupObjects);
         byte[] reportDesignsByteArray = getReportDesignsByteArray(toExcel, groupId, userPreferences, columnGroupObjects.result);
 
@@ -132,7 +132,7 @@ public class FormReportManager<T extends BusinessLogics<T>, F extends FormInstan
     }
 
     private Set<Integer> getGridGroups(Integer groupId) {
-        Set<Integer> gridGroupsId = new HashSet<Integer>();
+        Set<Integer> gridGroupsId = new HashSet<>();
         for (GroupObjectInstance group : form.getGroups()) {
             if (group.curClassView == ClassViewType.GRID && (groupId == null || groupId == group.getID())) {
                 gridGroupsId.add(group.getID());
@@ -209,7 +209,7 @@ public class FormReportManager<T extends BusinessLogics<T>, F extends FormInstan
             return customDesigns;
         }
 
-        Set<Integer> hidedGroupsId = new HashSet<Integer>();
+        Set<Integer> hidedGroupsId = new HashSet<>();
         for (GroupObjectInstance group : form.getGroups()) {
             if (group.curClassView == ClassViewType.HIDE || groupId != null && groupId != group.getID()) {
                 hidedGroupsId.add(group.getID());
@@ -266,7 +266,7 @@ public class FormReportManager<T extends BusinessLogics<T>, F extends FormInstan
     
     private List<String> getCustomReportsFileNames(boolean toExcel, Integer groupId) {
         try {
-            List<String> result = new ArrayList<String>();
+            List<String> result = new ArrayList<>();
             for (Pair<String, GroupObjectHierarchy.ReportNode> node : getReportNodes(groupId)) {
                 String resourceName = null;
                 if (node.second != null) {
@@ -289,7 +289,7 @@ public class FormReportManager<T extends BusinessLogics<T>, F extends FormInstan
 
     private Map<String, JasperDesign> getCustomReportDesigns(boolean toExcel, Integer groupId) {
         try {
-            Map<String, JasperDesign> designs = new HashMap<String, JasperDesign>();
+            Map<String, JasperDesign> designs = new HashMap<>();
             for (Pair<String, GroupObjectHierarchy.ReportNode> node : getReportNodes(groupId)) {
                 InputStream iStream = getCustomReportInputStream(node.first, node.second, toExcel, groupId);
                 // Если не нашли custom design для xls, пробуем найти обычный
@@ -311,10 +311,10 @@ public class FormReportManager<T extends BusinessLogics<T>, F extends FormInstan
     
     private List<Pair<String, GroupObjectHierarchy.ReportNode>> getReportNodes(Integer groupId) {
         GroupObjectHierarchy.ReportHierarchy hierarchy = getReportHierarchy(groupId);
-        List<Pair<String, GroupObjectHierarchy.ReportNode>> nodes = new ArrayList<Pair<String, GroupObjectHierarchy.ReportNode>>();
+        List<Pair<String, GroupObjectHierarchy.ReportNode>> nodes = new ArrayList<>();
         nodes.add(new Pair<String, GroupObjectHierarchy.ReportNode>(GroupObjectHierarchy.rootNodeName, null));
         for (GroupObjectHierarchy.ReportNode node : hierarchy.getAllNodes()) {
-            nodes.add(new Pair<String, GroupObjectHierarchy.ReportNode>(node.getID(), node));
+            nodes.add(new Pair<>(node.getID(), node));
         }    
         return nodes;
     }

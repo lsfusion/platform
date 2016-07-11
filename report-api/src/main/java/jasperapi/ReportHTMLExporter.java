@@ -164,7 +164,7 @@ public class ReportHTMLExporter extends JRHtmlExporter {
         writer.write(">");
 		writer.write("<p style=\"overflow: hidden; ");
 
-		writer.write("text-indent: " + text.getParagraph().getFirstLineIndent().intValue() + "px; ");
+		writer.write("text-indent: " + text.getParagraph().getFirstLineIndent() + "px; ");
 //		writer.write("margin-left: " + text.getParagraph().getLeftIndent().intValue() + "px; ");
 //		writer.write("margin-right: " + text.getParagraph().getRightIndent().intValue() + "px; ");
 //		writer.write("margin-top: " + text.getParagraph().getSpacingBefore().intValue() + "px; ");

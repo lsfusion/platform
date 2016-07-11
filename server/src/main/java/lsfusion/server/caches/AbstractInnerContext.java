@@ -63,7 +63,7 @@ public abstract class AbstractInnerContext<I extends InnerContext<I>> extends Ab
         }
     }
     private static BaseUtils.HashComponents<ParamExpr> translate(BaseUtils.HashComponents<ParamExpr> components, MapTranslate translator) {
-        return new BaseUtils.HashComponents<ParamExpr>(translator.translateExprKeys(components.map), components.hash);
+        return new BaseUtils.HashComponents<>(translator.translateExprKeys(components.map), components.hash);
     }
     private BaseUtils.HashComponents<ParamExpr> aspectGetInnerComponents(boolean values) {
 //        I from = getFrom();
@@ -93,7 +93,7 @@ public abstract class AbstractInnerContext<I extends InnerContext<I>> extends Ab
     }
 
     public MapTranslate mapInner(I object, boolean values) {
-        Result<MapTranslate> mapTranslate = new Result<MapTranslate>();
+        Result<MapTranslate> mapTranslate = new Result<>();
         if(mapInner(object, values, mapTranslate)!=null)
             return mapTranslate.result;
         else
@@ -119,7 +119,7 @@ public abstract class AbstractInnerContext<I extends InnerContext<I>> extends Ab
         return valueComponents;
     }
     public static BaseUtils.HashComponents<Value> translate(MapTranslate translator, BaseUtils.HashComponents<Value> components) {
-        return new BaseUtils.HashComponents<Value>(translator.translateValuesMapKeys(components.map), components.hash);
+        return new BaseUtils.HashComponents<>(translator.translateValuesMapKeys(components.map), components.hash);
     }
     private BaseUtils.HashComponents<Value> aspectGetValueComponents() {
 //        I from = getFrom();

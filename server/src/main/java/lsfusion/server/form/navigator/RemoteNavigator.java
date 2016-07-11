@@ -105,7 +105,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
 
     private RemotePausableInvocation currentInvocation = null;
     
-    private final WeakIdentityHashSet<RemoteForm> forms = new WeakIdentityHashSet<RemoteForm>();
+    private final WeakIdentityHashSet<RemoteForm> forms = new WeakIdentityHashSet<>();
 
     private static final List<Pair<DataObject, String>> recentlyOpenForms = Collections.synchronizedList(new ArrayList<Pair<DataObject, String>>());
 

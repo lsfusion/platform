@@ -79,7 +79,7 @@ public class AggChangeActionProperty<P extends PropertyInterface> extends Around
             }
 
             ImOrderMap<ImMap<String, DataObject>, ImMap<String, ObjectValue>> values =
-                    new Query<String, String>(MapFact.<String, KeyExpr>EMPTYREV(), MapFact.singleton("value", groupExpr), Where.TRUE).executeClasses(context);
+                    new Query<>(MapFact.<String, KeyExpr>EMPTYREV(), MapFact.singleton("value", groupExpr), Where.TRUE).executeClasses(context);
 
             ObjectValue convertWYSValue = values.singleValue().singleValue();
             return proceed(context.pushUserInput(convertWYSValue));

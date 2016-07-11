@@ -235,8 +235,8 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
 
     private boolean focusable = true;
 
-    private final List<Column<T, ?>> columns = new ArrayList<Column<T, ?>>();
-    private final Map<Column<T, ?>, String> columnWidths = new HashMap<Column<T, ?>, String>();
+    private final List<Column<T, ?>> columns = new ArrayList<>();
+    private final Map<Column<T, ?>, String> columnWidths = new HashMap<>();
 
     private boolean cellWasEditing;
     protected boolean cellIsEditing;
@@ -259,14 +259,14 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
 
     private HeaderBuilder<T> footerBuilder;
     private int nonNullFootersCount = 0;
-    private final List<Header<?>> footers = new ArrayList<Header<?>>();
+    private final List<Header<?>> footers = new ArrayList<>();
 
     /**
      * Indicates that at least one column handles selection.
      */
     private HeaderBuilder<T> headerBuilder;
     private int nonNullHeadersCount = 0;
-    private final List<Header<?>> headers = new ArrayList<Header<?>>();
+    private final List<Header<?>> headers = new ArrayList<>();
 
     /**
      * Indicates that either the headers or footers are dirty, and both should be
@@ -321,7 +321,7 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
 
         initWidget(headerPanel);
 
-        this.state = new State<T>();
+        this.state = new State<>();
 
         this.resources = resources;
         this.style = resources.style();
@@ -368,7 +368,7 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
         }
 
         // Sink events.
-        Set<String> eventTypes = new HashSet<String>();
+        Set<String> eventTypes = new HashSet<>();
         eventTypes.add(BrowserEvents.FOCUS);
         eventTypes.add(BrowserEvents.BLUR);
         eventTypes.add(BrowserEvents.KEYDOWN); // Used for keyboard navigation.
@@ -389,9 +389,9 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
         tableDataContainer = tableData.getElement().getParentElement();
 
         // Set the table builder.
-        tableBuilder = new DefaultDataGridBuilder<T>(this);
-        headerBuilder = new DefaultHeaderBuilder<T>(this, false);
-        footerBuilder = new DefaultHeaderBuilder<T>(this, true);
+        tableBuilder = new DefaultDataGridBuilder<>(this);
+        headerBuilder = new DefaultHeaderBuilder<>(this, false);
+        footerBuilder = new DefaultHeaderBuilder<>(this, true);
 
         // Synchronize the scroll positions of the three tables.
         tableDataScroller.addScrollHandler(new ScrollHandler() {
@@ -408,7 +408,7 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
         });
 
         // Set the keyboard handler.
-        setKeyboardSelectionHandler(new DataGridKeyboardSelectionHandler<T>(this));
+        setKeyboardSelectionHandler(new DataGridKeyboardSelectionHandler<>(this));
     }
 
     public void setRowHeight(int rowHeight) {
@@ -941,7 +941,7 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
         }
 
         // Sink events used by the new column.
-        Set<String> consumedEvents = new HashSet<String>();
+        Set<String> consumedEvents = new HashSet<>();
         {
             Set<String> cellEvents = col.getCell().getConsumedEvents();
             if (cellEvents != null) {
@@ -1689,7 +1689,7 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
 
         // Create the pending state if needed.
         if (pendingState == null) {
-            pendingState = new State<T>(state);
+            pendingState = new State<>(state);
             PendingStateCommand.schedule(this);
         }
 
@@ -1987,7 +1987,7 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
         }
 
         public State(State<T> state) {
-            this(new ArrayList<T>(state.rowData));
+            this(new ArrayList<>(state.rowData));
             this.keyboardSelectedRow = state.getKeyboardSelectedRow();
             this.keyboardSelectedColumn = state.getKeyboardSelectedColumn();
         }
@@ -2020,14 +2020,14 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
 
         private List<Range> createRangesToRedraw() {
             if (rangesToRedraw == null) {
-                rangesToRedraw = new ArrayList<Range>();
+                rangesToRedraw = new ArrayList<>();
             }
             return rangesToRedraw;
         }
 
         private Set<Column> createColumnsToRedraw() {
             if (columnsToRedraw == null) {
-                columnsToRedraw = new HashSet<Column>();
+                columnsToRedraw = new HashSet<>();
             }
             return columnsToRedraw;
         }
@@ -2138,7 +2138,7 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
     private static PendingStateCommand pendingStateCommandStatic;
 
     private static class PendingStateCommand implements Scheduler.ScheduledCommand {
-        private final ArrayList<DataGrid> grids = new ArrayList<DataGrid>();
+        private final ArrayList<DataGrid> grids = new ArrayList<>();
 
         private PendingStateCommand(DataGrid grid) {
             grids.add(grid);

@@ -196,7 +196,7 @@ public class AndWhere extends FormulaWhere<OrObjectWhere> implements AndObjectWh
         if(pair instanceof ObjectWhere) return null;
         AndWhere pairAnd = (AndWhere)pair;
 
-        BaseUtils.Paired<OrObjectWhere> paired = new BaseUtils.Paired<OrObjectWhere>(wheres, pairAnd.wheres, this);
+        BaseUtils.Paired<OrObjectWhere> paired = new BaseUtils.Paired<>(wheres, pairAnd.wheres, this);
         if(paired.common.length > 0) { // нашли пару пошли дальше упрощать
             if(paired.common.length==pairAnd.wheres.length || paired.getDiff1().length==0) // тогда не скобки а следствия пусть followFalse - directMeans устраняют
                 return null;

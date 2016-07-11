@@ -87,7 +87,7 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
             public Stat getMapValue(KeyField value) {
                 return getFieldStat(value, stat);
             }});
-        DistinctKeys<KeyField> distinctKeys = new DistinctKeys<KeyField>(statMap);
+        DistinctKeys<KeyField> distinctKeys = new DistinctKeys<>(statMap);
 
         return StatKeys.createForTable(stat, distinctKeys);
     }
@@ -213,11 +213,11 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
             public AndClassSet getMapValue(KeyField value) {
                 return value.type.getBaseClassSet(baseClass);
             }});
-        classes = new ClassWhere<KeyField>(baseClasses);
+        classes = new ClassWhere<>(baseClasses);
 
         propertyClasses = properties.mapValues(new GetValue<ClassWhere<Field>, PropertyField>() {
             public ClassWhere<Field> getMapValue(PropertyField value) {
-                return new ClassWhere<Field>(MapFact.addExcl(baseClasses, value, value.type.getBaseClassSet(baseClass)));
+                return new ClassWhere<>(MapFact.addExcl(baseClasses, value, value.type.getBaseClassSet(baseClass)));
             }});
     }
 
@@ -238,7 +238,7 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
     }
 
     public ImOrderMap<ImMap<KeyField,DataObject>,ImMap<PropertyField,ObjectValue>> read(SQLSession session, BaseClass baseClass, OperationOwner owner) throws SQLException, SQLHandledException {
-        QueryBuilder<KeyField, PropertyField> query = new QueryBuilder<KeyField, PropertyField>(this);
+        QueryBuilder<KeyField, PropertyField> query = new QueryBuilder<>(this);
         lsfusion.server.data.query.Join<PropertyField> tableJoin = join(query.getMapExprs());
         query.addProperties(tableJoin.getExprs());
         query.and(tableJoin.getWhere());
@@ -246,7 +246,7 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
     }
 
     public void readData(SQLSession session, BaseClass baseClass, OperationOwner owner, boolean noFilesAndLogs, ResultHandler<KeyField, PropertyField> result) throws SQLException, SQLHandledException {
-        QueryBuilder<KeyField, PropertyField> query = new QueryBuilder<KeyField, PropertyField>(this);
+        QueryBuilder<KeyField, PropertyField> query = new QueryBuilder<>(this);
         lsfusion.server.data.query.Join<PropertyField> tableJoin = join(query.getMapExprs());
         ImMap<PropertyField, Expr> exprs = tableJoin.getExprs();
         if(noFilesAndLogs)
@@ -312,7 +312,7 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
             }};
         ImMap<Field, Expr> group = fieldExprs.mapValues(classExpr);
 
-        ImSet<ImMap<Field, ConcreteClass>> readClasses = new Query<Field, Object>(classKeys, GroupExpr.create(group, tableJoin.getWhere(), classKeys).getWhere()).execute(session, owner).keyOrderSet().getSet().mapSetValues(new GetValue<ImMap<Field, ConcreteClass>, ImMap<Field, Object>>() {
+        ImSet<ImMap<Field, ConcreteClass>> readClasses = new Query<>(classKeys, GroupExpr.create(group, tableJoin.getWhere(), classKeys).getWhere()).execute(session, owner).keyOrderSet().getSet().mapSetValues(new GetValue<ImMap<Field, ConcreteClass>, ImMap<Field, Object>>() {
             public ImMap<Field, ConcreteClass> getMapValue(ImMap<Field, Object> value) {
                 return value.filterFnValues(new SFunctionSet<Object>() {
                     public boolean contains(Object element) {
@@ -423,7 +423,7 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
     }
 
     public Query<KeyField, PropertyField> getQuery() {
-        QueryBuilder<KeyField,PropertyField> query = new QueryBuilder<KeyField, PropertyField>(this);
+        QueryBuilder<KeyField,PropertyField> query = new QueryBuilder<>(this);
         lsfusion.server.data.query.Join<PropertyField> join = join(query.getMapExprs());
         query.and(join.getWhere());
         query.addProperties(join.getExprs());
@@ -444,13 +444,13 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
     public lsfusion.server.data.query.Join<PropertyField> join(ImMap<KeyField, ? extends Expr> joinImplement) {
         return new AddPullWheres<KeyField, lsfusion.server.data.query.Join<PropertyField>>() {
             protected MCaseList<lsfusion.server.data.query.Join<PropertyField>, ?, ?> initCaseList(boolean exclusive) {
-                return new MJoinCaseList<PropertyField>(properties, exclusive);
+                return new MJoinCaseList<>(properties, exclusive);
             }
             protected lsfusion.server.data.query.Join<PropertyField> initEmpty() {
-                return new NullJoin<PropertyField>(properties);
+                return new NullJoin<>(properties);
             }
             protected lsfusion.server.data.query.Join<PropertyField> proceedIf(Where ifWhere, lsfusion.server.data.query.Join<PropertyField> resultTrue, lsfusion.server.data.query.Join<PropertyField> resultFalse) {
-                return new IfJoin<PropertyField>(ifWhere, resultTrue, resultFalse);
+                return new IfJoin<>(ifWhere, resultTrue, resultFalse);
             }
 
             protected lsfusion.server.data.query.Join<PropertyField> proceedBase(ImMap<KeyField, BaseExpr> joinBase) {
@@ -508,7 +508,7 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
             if(Settings.get().isDisableInnerFollows())
                 return InnerFollows.EMPTY();
 
-            return new InnerFollows<KeyField>(getClassWhere(), keys.getSet(), Table.this);
+            return new InnerFollows<>(getClassWhere(), keys.getSet(), Table.this);
         }
 
         @TwinLazy

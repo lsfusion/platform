@@ -20,7 +20,7 @@ public abstract class AbstractHashContext<H extends HashObject> extends TwinImmu
 //    private Integer globalHash;
     private Object hashes;
     
-    private final static LRUWSVSMap<AbstractHashContext, HashObject, Integer> cacheHashes = new LRUWSVSMap<AbstractHashContext, HashObject, Integer>(LRUUtil.L1);
+    private final static LRUWSVSMap<AbstractHashContext, HashObject, Integer> cacheHashes = new LRUWSVSMap<>(LRUUtil.L1);
     @ManualLazy
     protected int aspectHash(H hash) {
         if(isComplex()) {

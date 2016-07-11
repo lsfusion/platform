@@ -62,7 +62,7 @@ public class ChangeEvent<C extends PropertyInterface> {
         Expr writeExpr = writeFrom.mapExpr(mapExprs, changes);
 //        if(!isWhereFull())
 //            changeWhere = changeWhere.and(writeExpr.getWhere().or(writeTo.getExpr(mapExprs, changes).getWhere()));
-        return new PropertyChange<C>(mapKeys, changeWhere, writeExpr, joinValues);
+        return new PropertyChange<>(mapKeys, changeWhere, writeExpr, joinValues);
     }
 
     public DataChanges getDataChanges(PropertyChanges changes, ImMap<C, Expr> joinValues) {

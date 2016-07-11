@@ -118,9 +118,9 @@ public class CacheAspect {
     }
 
     static class IdentityInvocationWeakMap {
-        private ReferenceQueue<Object> refQueue = new ReferenceQueue<Object>();
+        private ReferenceQueue<Object> refQueue = new ReferenceQueue<>();
 
-        private Map<IdentityInvocation, Object> map = new HashMap<IdentityInvocation, Object>();
+        private Map<IdentityInvocation, Object> map = new HashMap<>();
 
         public Object get(IdentityInvocation key) {
             expunge();
@@ -202,8 +202,8 @@ public class CacheAspect {
 
     public final static ConcurrentIdentityInvocationWeakMap concurrentLazyIdentityExecute = new ConcurrentIdentityInvocationWeakMap();
     public final static IdentityInvocationWeakMap lazyIdentityExecute = new IdentityInvocationWeakMap();
-    public final static LRUWSASVSMap<Object, Method, Object, Object> commonLruCache = new LRUWSASVSMap<Object, Method, Object, Object>(LRUUtil.G2);
-    public final static LRUWSASVSMap<Object, Method, Object, Object> quickLruCache = new LRUWSASVSMap<Object, Method, Object, Object>(LRUUtil.L1);
+    public final static LRUWSASVSMap<Object, Method, Object, Object> commonLruCache = new LRUWSASVSMap<>(LRUUtil.G2);
+    public final static LRUWSASVSMap<Object, Method, Object, Object> quickLruCache = new LRUWSASVSMap<>(LRUUtil.L1);
 
     private static Object execute(Object target, ProceedingJoinPoint thisJoinPoint, Object[] args, boolean changedArgs) throws Throwable {
         if(changedArgs) {
@@ -215,11 +215,11 @@ public class CacheAspect {
             return thisJoinPoint.proceed();
     }
 
-    public static enum Type {
+    public enum Type {
         SIMPLE, START, STRONG, QUICK
     } 
 
-    private static class Waiting {};
+    private static class Waiting {}
 
     private static boolean disableCaches = false;
 
@@ -357,7 +357,7 @@ public class CacheAspect {
         }
     }
 
-    public final static SoftHashMap<TwinInvocation, Object> lazyTwinExecute = new SoftHashMap<TwinInvocation, Object>();
+    public final static SoftHashMap<TwinInvocation, Object> lazyTwinExecute = new SoftHashMap<>();
 
     private Object lazyTwinExecute(Object object, ProceedingJoinPoint thisJoinPoint, Object[] args) throws Throwable {
         TwinInvocation invoke = new TwinInvocation(object, thisJoinPoint, args);
@@ -378,7 +378,7 @@ public class CacheAspect {
     }
 
     // не synchronized, но не используется
-    public final static SoftHashMap<Object, Object> lazyTwinManualExecute = new SoftHashMap<Object, Object>();
+    public final static SoftHashMap<Object, Object> lazyTwinManualExecute = new SoftHashMap<>();
     private Object lazyTwinManualExecute(Object object, ProceedingJoinPoint thisJoinPoint, Object[] args) throws Throwable {
         Object twin = lazyTwinManualExecute.get(object);
         if(twin==null) {

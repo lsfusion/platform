@@ -140,7 +140,7 @@ public class GGridUserPreferences {
         pageSize = null;
         headerHeight = null;
         hasUserPreferences = false;
-        for (GPropertyDraw property : new HashSet<GPropertyDraw>(columnUserPreferences.keySet())) {
+        for (GPropertyDraw property : new HashSet<>(columnUserPreferences.keySet())) {
             columnUserPreferences.put(property, new GColumnUserPreferences(null, null, null, null, null, null, null));
         }
     }
@@ -169,7 +169,7 @@ public class GGridUserPreferences {
     }
 
     public GGroupObjectUserPreferences convertPreferences() {
-        Map<String, GColumnUserPreferences> columns = new HashMap<String, GColumnUserPreferences>();
+        Map<String, GColumnUserPreferences> columns = new HashMap<>();
         for (Map.Entry<GPropertyDraw, GColumnUserPreferences> entry : columnUserPreferences.entrySet()) {
             columns.put(entry.getKey().sID, entry.getValue());
         }

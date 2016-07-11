@@ -21,7 +21,7 @@ public abstract class SingleSheetImporter {
             AQ = 42, AS = 44, AX = 49;
 
     protected ImportInputTable inputTable;
-    protected OrderedMap<ImportField, Pair<Integer, Integer>> fieldPosition = new OrderedMap<ImportField, Pair<Integer, Integer>>();
+    protected OrderedMap<ImportField, Pair<Integer, Integer>> fieldPosition = new OrderedMap<>();
     protected int currentRow;
 
     public SingleSheetImporter(ImportInputTable inputTable, Object... fields) {
@@ -34,10 +34,10 @@ public abstract class SingleSheetImporter {
                 if (field instanceof ImportField[]) {
                     ImportField[] subFields = (ImportField[]) field;
                     for (int j = 0; j < subFields.length; j++) {
-                        fieldPosition.put(subFields[j], new Pair<Integer, Integer>(column, j));
+                        fieldPosition.put(subFields[j], new Pair<>(column, j));
                     }
                 } else if (field instanceof ImportField) {
-                    fieldPosition.put((ImportField) field, new Pair<Integer, Integer>(column, 0));
+                    fieldPosition.put((ImportField) field, new Pair<>(column, 0));
                 }
                 ++column;
             }
@@ -68,13 +68,13 @@ public abstract class SingleSheetImporter {
 
 
     public ImportTable getTable() throws ParseException, lsfusion.server.data.type.ParseException {
-        List<List<Object>> data = new ArrayList<List<Object>>();
+        List<List<Object>> data = new ArrayList<>();
         currentRow = -1;
 
         for (int i = 0; i < inputTable.rowsCnt(); ++i) {
             if (isCorrectRow(i)) {
                 ++currentRow;
-                List<Object> row = new ArrayList<Object>();
+                List<Object> row = new ArrayList<>();
                 for (Map.Entry<ImportField, Pair<Integer, Integer>> entry : fieldPosition.entrySet()) {
                     ImportField field = entry.getKey();
                     String cellValue = getCellString(field, i, entry.getValue().first);

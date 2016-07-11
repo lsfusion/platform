@@ -20,7 +20,7 @@ public class GPanelController {
 
     private final GFormController form;
 
-    private final Map<GPropertyDraw, GPropertyController> propertyControllers = new HashMap<GPropertyDraw, GPropertyController>();
+    private final Map<GPropertyDraw, GPropertyController> propertyControllers = new HashMap<>();
 
     private Object rowBackground;
     private Object rowForeground;
@@ -150,7 +150,7 @@ public class GPanelController {
         public void update() {
             if (columnsUpdated) {
                 if (renderers == null) {
-                    renderers = new HashMap<GGroupObjectValue, PanelRenderer>();
+                    renderers = new HashMap<>();
                 }
                 if (renderersPanel == null) {
                     renderersPanel = new RenderersPanel();

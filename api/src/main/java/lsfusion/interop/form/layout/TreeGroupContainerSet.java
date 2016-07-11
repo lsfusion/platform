@@ -35,7 +35,7 @@ public class TreeGroupContainerSet <C extends AbstractContainer<C, T>, T extends
         return create(treeGroup, factory, ContainerAdder.<C, T>DEFAULT());
     }
     public static <C extends AbstractContainer<C, T>, T extends AbstractComponent<C, T>> TreeGroupContainerSet<C, T> create(AbstractTreeGroup<C,T> treeGroup, ContainerFactory<C> factory, ContainerAdder<C, T> adder) {
-        TreeGroupContainerSet<C,T> set = new TreeGroupContainerSet<C,T>();
+        TreeGroupContainerSet<C,T> set = new TreeGroupContainerSet<>();
 
         set.treeContainer = factory.createContainer();
         set.treeContainer.setCaption(getString("form.layout.tree"));

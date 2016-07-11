@@ -183,7 +183,7 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
     }
 
     public List<String> getNFStaticObjectsNames(Version version) {
-        List<String> sids = new ArrayList<String>();
+        List<String> sids = new ArrayList<>();
         for (ObjectInfo info : getNFStaticObjectsInfoIt(version)) {
             sids.add(info.name);
         }
@@ -191,7 +191,7 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
     }
 
     public List<String> getNFStaticObjectsCaptions(Version version) {
-        List<String> names = new ArrayList<String>();
+        List<String> names = new ArrayList<>();
         for (ObjectInfo info : getNFStaticObjectsInfoIt(version)) {
             names.add(info.caption);
         }
@@ -199,10 +199,10 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
     }
 
     public Map<DataObject, String> fillIDs(DataSession session, LCP name, LCP staticName, Map<String, ConcreteCustomClass> usedSIds, Set<Integer> usedIds, Map<String, String> sidChanges, Map<DataObject, String> modifiedObjects) throws SQLException, SQLHandledException {
-        Map<DataObject, String> modifiedNames = new HashMap<DataObject, String>();
+        Map<DataObject, String> modifiedNames = new HashMap<>();
 
         // Получаем старые sid и name
-        QueryBuilder<String, String> allClassesQuery = new QueryBuilder<String, String>(SetFact.singleton("key"));
+        QueryBuilder<String, String> allClassesQuery = new QueryBuilder<>(SetFact.singleton("key"));
         Expr key = allClassesQuery.getMapExprs().singleValue();
         Expr sidExpr = staticName.getExpr(session.getModifier(), key);
         allClassesQuery.and(sidExpr.getWhere());
@@ -212,11 +212,11 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
         ImOrderMap<ImMap<String, Object>, ImMap<String, Object>> qResult = allClassesQuery.execute(session.sql, session.env);
 
         // Забрасываем результат запроса в map: sid -> <id, name>
-        Map<String, Pair<Integer, String>> oldClasses = new HashMap<String, Pair<Integer, String>>();
+        Map<String, Pair<Integer, String>> oldClasses = new HashMap<>();
         for (int i = 0, size = qResult.size(); i < size; i++) {
             ImMap<String, Object> resultKey = qResult.getKey(i);
             ImMap<String, Object> resultValue = qResult.getValue(i);
-            oldClasses.put(((String) resultValue.get("sid")).trim(), new Pair<Integer, String>((Integer) resultKey.singleValue(), BaseUtils.nullTrim((String) resultValue.get("name"))));
+            oldClasses.put(((String) resultValue.get("sid")).trim(), new Pair<>((Integer) resultKey.singleValue(), BaseUtils.nullTrim((String) resultValue.get("name"))));
         }
 
         // новый sid -> старый sid

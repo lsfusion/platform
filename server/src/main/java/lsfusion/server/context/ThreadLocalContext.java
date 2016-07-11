@@ -35,8 +35,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ThreadLocalContext {
-    private static final ThreadLocal<Context> context = new ThreadLocal<Context>();
-    public static ConcurrentWeakHashMap<Thread, LogInfo> logInfoMap = new ConcurrentWeakHashMap<Thread, LogInfo>();
+    private static final ThreadLocal<Context> context = new ThreadLocal<>();
+    public static ConcurrentWeakHashMap<Thread, LogInfo> logInfoMap = new ConcurrentWeakHashMap<>();
     public static Context get() { // временно, потом надо private сделать
         return context.get();
     }

@@ -7,7 +7,7 @@ import java.util.ArrayList;
 
 public class MultiAction implements Action {
 
-    ArrayList<Action> actionList = new ArrayList<Action>();
+    ArrayList<Action> actionList = new ArrayList<>();
 
     public void actionPerformed(ActionEvent e) {
         for (Action action : actionList) {

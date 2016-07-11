@@ -29,8 +29,8 @@ public class TableFactory implements FullTablesInterface {
     private static final Logger startLogger = ServerLoggers.startLogger;
 
     private BaseClass baseClass;
-    private Map<Integer, NFOrderSet<ImplementTable>> implementTablesMap = new HashMap<Integer, NFOrderSet<ImplementTable>>();
-    private Map<Integer, List<ImplementTable>> includedTablesMap = new HashMap<Integer, List<ImplementTable>>(); // для решения \ выделения проблем с mutability и детерминированностью, без этого можно было бы implementTablesMap обойтись 
+    private Map<Integer, NFOrderSet<ImplementTable>> implementTablesMap = new HashMap<>();
+    private Map<Integer, List<ImplementTable>> includedTablesMap = new HashMap<>(); // для решения \ выделения проблем с mutability и детерминированностью, без этого можно было бы implementTablesMap обойтись 
 
     public TableFactory(BaseClass baseClass) {
         this.baseClass = baseClass;
@@ -125,7 +125,7 @@ public class TableFactory implements FullTablesInterface {
         int classCount = findItem.size();
         List<ImplementTable> incTables = includedTablesMap.get(classCount);
         if(incTables==null) {
-            incTables = new ArrayList<ImplementTable>();
+            incTables = new ArrayList<>();
             includedTablesMap.put(classCount, incTables);
         }
         for (ImplementTable implementTable : incTables) {
@@ -134,7 +134,7 @@ public class TableFactory implements FullTablesInterface {
         }
 
         // если не найдена таблица, то создаем новую
-        List<ValueClass> valueClasses = new ArrayList<ValueClass>();
+        List<ValueClass> valueClasses = new ArrayList<>();
 
         for (int i = 0; i < classCount; i++) {
             ValueClass valueClass = findItem.getValue(i);
@@ -190,7 +190,7 @@ public class TableFactory implements FullTablesInterface {
 
     @IdentityLazy
     public List<ImplementTable> getImplementTables(ImSet<CustomClass> cls) {
-        List<ImplementTable> result = new ArrayList<ImplementTable>();
+        List<ImplementTable> result = new ArrayList<>();
         for (ImplementTable table : getImplementTables()) {
             if (!table.mapFields.values().toSet().disjoint(cls)) {
                 result.add(table);

@@ -4,7 +4,7 @@ public class InvocationResult {
     public static final InvocationResult PAUSED = new InvocationResult(Status.PAUSED);
     public static final InvocationResult FINISHED = new InvocationResult(Status.FINISHED);
 
-    public static enum Status {
+    public enum Status {
         PAUSED, EXCEPTION_THROWN, FINISHED
     }
 

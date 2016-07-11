@@ -21,7 +21,7 @@ public class ActionPropertyObjectInstance<P extends PropertyInterface> extends P
     }
 
     public ActionPropertyObjectInstance<P> getRemappedPropertyObject(ImMap<? extends PropertyObjectInterfaceInstance, DataObject> mapKeyValues) {
-        return new ActionPropertyObjectInstance<P>(property, remapSkippingEqualsObjectInstances(mapKeyValues));
+        return new ActionPropertyObjectInstance<>(property, remapSkippingEqualsObjectInstances(mapKeyValues));
     }
 
     public FlowResult execute(ExecutionEnvironment env, ExecutionStack stack) throws SQLException, SQLHandledException {
@@ -29,7 +29,7 @@ public class ActionPropertyObjectInstance<P extends PropertyInterface> extends P
     }
 
     public FlowResult execute(ExecutionEnvironment env, ExecutionStack stack, ObjectValue pushValue, DataObject pushAdd, PropertyDrawInstance changingProperty) throws SQLException, SQLHandledException {
-        return env.execute(property, getInterfaceValues(), new FormEnvironment<P>(mapping, changingProperty), pushValue, pushAdd, stack);
+        return env.execute(property, getInterfaceValues(), new FormEnvironment<>(mapping, changingProperty), pushValue, pushAdd, stack);
     }
 
     public CalcPropertyObjectInstance<?> getDrawProperty() {
@@ -38,6 +38,6 @@ public class ActionPropertyObjectInstance<P extends PropertyInterface> extends P
     }
 
     public ActionPropertyValueImplement<P> getValueImplement() {
-        return new ActionPropertyValueImplement<P>(property, getInterfaceValues(), mapping);
+        return new ActionPropertyValueImplement<>(property, getInterfaceValues(), mapping);
     }
 }

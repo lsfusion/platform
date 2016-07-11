@@ -52,7 +52,7 @@ public class ExprStatJoin extends ExprJoin<ExprStatJoin> {
     }
 
     public StatKeys<Integer> getStatKeys(KeyStat keyStat) {
-        return new StatKeys<Integer>(SetFact.singleton(0), getStat());
+        return new StatKeys<>(SetFact.singleton(0), getStat());
     }
 
     protected int hash(HashContext hashContext) {

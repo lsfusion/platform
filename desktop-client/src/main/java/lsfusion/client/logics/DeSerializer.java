@@ -29,10 +29,10 @@ public class DeSerializer {
     public static NavigatorData deserializeListClientNavigatorElementWithChildren(byte[] state) throws IOException {
         DataInputStream inStream = new DataInputStream(new ByteArrayInputStream(state));
 
-        Map<String, ClientNavigatorWindow> windows = new HashMap<String, ClientNavigatorWindow>();
+        Map<String, ClientNavigatorWindow> windows = new HashMap<>();
         List<ClientNavigatorElement> elements = deserializeListClientNavigatorElement(inStream, windows);
 
-        Map<String, ClientNavigatorElement> elementsMap = new HashMap<String, ClientNavigatorElement>();
+        Map<String, ClientNavigatorElement> elementsMap = new HashMap<>();
         for (ClientNavigatorElement element : elements) {
             elementsMap.put(element.getSID(), element);
         }
@@ -58,7 +58,7 @@ public class DeSerializer {
     }
 
     private static List<ClientNavigatorElement> deserializeListClientNavigatorElement(DataInputStream dataStream, Map<String, ClientNavigatorWindow> windows) throws IOException {
-        List<ClientNavigatorElement> listElements = new ArrayList<ClientNavigatorElement>();
+        List<ClientNavigatorElement> listElements = new ArrayList<>();
         int elementsCount = dataStream.readInt();
         for (int i = 0; i < elementsCount; i++) {
             listElements.add(ClientNavigatorElement.deserialize(dataStream, windows));
@@ -67,7 +67,7 @@ public class DeSerializer {
     }
 
     public static List<ClientAbstractWindow> deserializeListClientNavigatorWindow(byte[] state) throws IOException {
-        List<ClientAbstractWindow> windows = new ArrayList<ClientAbstractWindow>();
+        List<ClientAbstractWindow> windows = new ArrayList<>();
         DataInputStream dataStream = new DataInputStream(new ByteArrayInputStream(state));
         for (int i = 0; i < 3; i++) {
             windows.add(new ClientAbstractWindow(dataStream));
@@ -78,7 +78,7 @@ public class DeSerializer {
     public static List<ClientClass> deserializeListClientClass(byte[] state) throws IOException {
 
         DataInputStream dataStream = new DataInputStream(new ByteArrayInputStream(state));
-        List<ClientClass> classes = new ArrayList<ClientClass>();
+        List<ClientClass> classes = new ArrayList<>();
         int count = dataStream.readInt();
         for (int i = 0; i < count; i++)
             classes.add(ClientTypeSerializer.deserializeClientClass(dataStream));

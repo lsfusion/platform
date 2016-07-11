@@ -243,7 +243,7 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
     }
 
     public Where mapWhere(ImMap<KeyExpr, ? extends Expr> map) {
-        return new Query<KeyExpr,Object>(map.keys().toRevMap(),this).join(map).getWhere();
+        return new Query<>(map.keys().toRevMap(), this).join(map).getWhere();
     }
 
     // так как используется в подзапросах еще, и может быть сложным вычислением, можно было бы хранить чисто в течении компиляции запроса
@@ -296,7 +296,7 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
                 exclusive = exclusive && recWhereJoins.second;
                 result = KeyEquals.merge(result, recWhereJoins.first, orderTop);
             }
-            return new Pair<ImCol<GroupJoinsWhere>, Boolean>(result, exclusive);
+            return new Pair<>(result, exclusive);
         }
     }
 
@@ -327,7 +327,7 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
     }
 
     public <K extends BaseExpr> StatKeys<K> getStatKeys(ImSet<K> groups) { // assertion что ключи groups входят в это where
-        StatKeys<K> result = new StatKeys<K>(groups);
+        StatKeys<K> result = new StatKeys<>(groups);
         ImCol<GroupStatWhere<K>> statJoins = getStatJoins(groups, false, GroupStatType.ALL, true);
 //        assert !statJoins.isEmpty();
         for(GroupStatWhere<K> groupJoin : statJoins)
@@ -346,7 +346,7 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
     }
 
     public <K extends Expr> StatKeys<K> getStatExprs(ImSet<K> groups) {
-        StatKeys<K> result = new StatKeys<K>(groups);
+        StatKeys<K> result = new StatKeys<>(groups);
         ImCol<GroupStatWhere<K>> statJoins = getStatJoins(false, groups, GroupStatType.ALL, true);
 //        assert !statJoins.isEmpty();
         for(GroupStatWhere<K> groupJoin : statJoins)

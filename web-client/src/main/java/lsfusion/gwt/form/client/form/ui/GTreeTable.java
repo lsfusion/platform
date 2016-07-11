@@ -34,7 +34,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
 
     private GTreeTableTree tree;
 
-    private List<String> createdFields = new ArrayList<String>();
+    private List<String> createdFields = new ArrayList<>();
 
     private GTreeGridRecord selectedRecord;
 
@@ -308,12 +308,12 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     }
 
     public void saveVisualState() {
-        expandedNodes = new HashSet<GTreeTableNode>();
+        expandedNodes = new HashSet<>();
         expandedNodes.addAll(getExpandedChildren(tree.root));
     }
 
     private List<GTreeTableNode> getExpandedChildren(GTreeTableNode node) {
-        List<GTreeTableNode> exChildren = new ArrayList<GTreeTableNode>();
+        List<GTreeTableNode> exChildren = new ArrayList<>();
         for (GTreeTableNode child : node.getChildren()) {
             if (child.isOpen()) {
                 exChildren.add(child);

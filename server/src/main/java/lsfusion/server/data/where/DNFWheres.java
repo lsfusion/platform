@@ -8,7 +8,7 @@ import lsfusion.base.col.interfaces.mutable.MMap;
 
 public abstract class DNFWheres<M extends DNFWheres.Interface<M>,C,This extends DNFWheres<M,C,This>> extends WrapMap<M,C> {
 
-    public static interface Interface<I extends Interface> {
+    public interface Interface<I extends Interface> {
         I and(I and);
     }
 

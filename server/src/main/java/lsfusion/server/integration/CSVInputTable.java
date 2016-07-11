@@ -14,7 +14,7 @@ import java.util.List;
  */
 
 public class CSVInputTable implements ImportInputTable {
-    private List<List<String>> data = new ArrayList<List<String>>();
+    private List<List<String>> data = new ArrayList<>();
     Object[] columnsToRead;
     boolean readAll = true;
 
@@ -27,7 +27,7 @@ public class CSVInputTable implements ImportInputTable {
         while (true) {
             List<String> row = csvReader.read();
             if (row == null) break;
-            data.add(new ArrayList<String>(row));
+            data.add(new ArrayList<>(row));
         }
     }
 

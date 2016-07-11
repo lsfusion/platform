@@ -20,12 +20,12 @@ public class ReportData {
     private final List<ObjectInstance> keys;
     private final List<Pair<String, PropertyReaderInstance>> properties;
     private final Map<ObjectInstance, Integer> keyToIndex;
-    private final List<List<Object>> keyRows = new ArrayList<List<Object>>();
-    private final List<List<Object>> propRows = new ArrayList<List<Object>>();
+    private final List<List<Object>> keyRows = new ArrayList<>();
+    private final List<List<Object>> propRows = new ArrayList<>();
 
     public ReportData(List<ObjectInstance> keys, List<Pair<String, PropertyReaderInstance>> properties) {
         this.keys = keys;
-        keyToIndex = new HashMap<ObjectInstance, Integer>();
+        keyToIndex = new HashMap<>();
         for (int i = 0; i < keys.size(); i++) {
             keyToIndex.put(keys.get(i), i);
         }

@@ -115,7 +115,7 @@ public abstract class FileClass extends DataClass<byte[]> {
 
     public static List<byte[]> getMultipleFiles(byte[] val) {
 
-        List<byte[]> result = new ArrayList<byte[]>();
+        List<byte[]> result = new ArrayList<>();
 
         ByteArrayInputStream byteInStream = new ByteArrayInputStream(val);
         DataInputStream inStream = new DataInputStream(byteInStream);
@@ -137,7 +137,7 @@ public abstract class FileClass extends DataClass<byte[]> {
 
     public static Map<String, byte[]> getMultipleNamedFiles(byte[] val, boolean multiple) {
 
-        Map<String, byte[]> result = new HashMap<String, byte[]>();
+        Map<String, byte[]> result = new HashMap<>();
 
         ByteArrayInputStream byteInStream = new ByteArrayInputStream(val);
         DataInputStream inStream = new DataInputStream(byteInStream);
@@ -172,7 +172,7 @@ public abstract class FileClass extends DataClass<byte[]> {
 
     public List<byte[]> getFiles(byte[] value) {
         if (value == null)
-            return new ArrayList<byte[]>();
+            return new ArrayList<>();
 
         if (!multiple && this instanceof DynamicFormatFileClass) { // обратная совместимость
             ByteArrayInputStream byteInStream = new ByteArrayInputStream(value);
@@ -193,7 +193,7 @@ public abstract class FileClass extends DataClass<byte[]> {
         if (!storeName)
             throw new RuntimeException("Ошибка: файлы без имени");
         if (value == null)
-            return new HashMap<String, byte[]>();
+            return new HashMap<>();
 
         return getMultipleNamedFiles(value, multiple);
     }

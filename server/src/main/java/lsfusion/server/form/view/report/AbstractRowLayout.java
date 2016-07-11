@@ -38,18 +38,18 @@ public class AbstractRowLayout {
             Collection<List<T>> combinations = SetBuilder.buildSetCombinations(rowNumber-1, elements);
 
             double bestCoeff = Double.MAX_VALUE;
-            List<List<T>> bestRows = new ArrayList<List<T>>();
+            List<List<T>> bestRows = new ArrayList<>();
 
             for (List<T> combination : combinations) {
 
-                List<List<T>> rows = new ArrayList<List<T>>();
+                List<List<T>> rows = new ArrayList<>();
 
-                List<T> currentList = new ArrayList<T>();
+                List<T> currentList = new ArrayList<>();
                 for (T element : elements) {
 
                     if (combination.contains(element)) {
                         rows.add(currentList);
-                        currentList = new ArrayList<T>();
+                        currentList = new ArrayList<>();
                     }
 
                     currentList.add(element);

@@ -19,12 +19,12 @@ public class ArOrderIndexedMap<K, V> extends AMOrderMap<K, V> {
     private int[] order;
 
     public ArOrderIndexedMap(AddValue<K, V> addValue) {
-        arMap = new ArIndexedMap<K, V>(addValue);
+        arMap = new ArIndexedMap<>(addValue);
         order = new int[arMap.size()];
     }
 
     public ArOrderIndexedMap(ArOrderIndexedMap<K, V> orderMap, AddValue<K, V> addValue) {
-        arMap = new ArIndexedMap<K, V>(orderMap.arMap, addValue);
+        arMap = new ArIndexedMap<>(orderMap.arMap, addValue);
         order = orderMap.order.clone();
     }
 
@@ -34,30 +34,30 @@ public class ArOrderIndexedMap<K, V> extends AMOrderMap<K, V> {
     }
 
     public ArOrderIndexedMap(int size, AddValue<K, V> addValue) {
-        arMap = new ArIndexedMap<K, V>(size, addValue);
+        arMap = new ArIndexedMap<>(size, addValue);
         order = new int[size];
     }
 
     // ImValueMap
     public ArOrderIndexedMap(ArOrderIndexedMap<K, ?> orderMap) {
-        arMap = new ArIndexedMap<K, V>(orderMap.arMap);
+        arMap = new ArIndexedMap<>(orderMap.arMap);
         order = orderMap.order.clone();
     }
 
     public ArOrderIndexedMap(ArOrderIndexedSet<K> orderSet) {
-        arMap = new ArIndexedMap<K, V>(orderSet.arSet);
+        arMap = new ArIndexedMap<>(orderSet.arSet);
         order = orderSet.order.clone();
     }
 
 
     public ArOrderIndexedMap(ArOrderIndexedMap<K, V> orderMap, boolean clone) {
-        arMap = new ArIndexedMap<K, V>(orderMap.arMap, clone);
+        arMap = new ArIndexedMap<>(orderMap.arMap, clone);
         order = orderMap.order.clone();
         assert clone;
     }
 
     public MOrderExclMap<K, V> orderCopy() {
-        return new ArOrderIndexedMap<K, V>(this, true);
+        return new ArOrderIndexedMap<>(this, true);
     }
 
     public ImMap<K, V> getMap() {
@@ -89,7 +89,7 @@ public class ArOrderIndexedMap<K, V> extends AMOrderMap<K, V> {
     }
 
     public <M> ImOrderValueMap<K, M> mapItOrderValues() {
-        return new ArOrderIndexedMap<K, M>(this);
+        return new ArOrderIndexedMap<>(this);
     }
 
     public ImOrderMap<K, V> immutableOrder() {
@@ -105,7 +105,7 @@ public class ArOrderIndexedMap<K, V> extends AMOrderMap<K, V> {
                 keys[i] = getKey(i);
                 values[i] = getValue(i);
             }
-            return new ArOrderMap<K, V>(new ArMap<K, V>(arMap.size, keys, values));
+            return new ArOrderMap<>(new ArMap<K, V>(arMap.size, keys, values));
         }
 
         if(arMap.keys.length > arMap.size * SetFact.factorNotResize) {
@@ -122,6 +122,6 @@ public class ArOrderIndexedMap<K, V> extends AMOrderMap<K, V> {
 
     @Override
     public ImOrderSet<K> keyOrderSet() {
-        return new ArOrderIndexedSet<K>(new ArIndexedSet<K>(arMap.size, arMap.keys), order);
+        return new ArOrderIndexedSet<>(new ArIndexedSet<K>(arMap.size, arMap.keys), order);
     }
 }

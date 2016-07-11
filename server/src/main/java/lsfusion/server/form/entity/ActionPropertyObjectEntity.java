@@ -36,14 +36,14 @@ public class ActionPropertyObjectEntity<P extends PropertyInterface> extends Pro
         if(simpleAdd!=null) {
             for(ObjectEntity object : form.getObjects())
                 if (object.baseClass instanceof CustomClass && simpleAdd.isChild((CustomClass) object.baseClass) && object.groupTo.getObjects().size()==1) {
-                    return new Pair<ObjectEntity, Boolean>(object, true);
+                    return new Pair<>(object, true);
                 }
         }
 
         P simpleDelete = property.getSimpleDelete();
         PropertyObjectInterfaceEntity object;
         if(simpleDelete!=null && (object = mapping.get(simpleDelete)) instanceof ObjectEntity && ((ObjectEntity)object).groupTo.getObjects().size()==1) {
-            return new Pair<ObjectEntity, Boolean>((ObjectEntity)object, false);
+            return new Pair<>((ObjectEntity) object, false);
         }
 
         return null;

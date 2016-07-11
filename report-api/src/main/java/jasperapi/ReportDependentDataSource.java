@@ -55,7 +55,7 @@ public class ReportDependentDataSource implements JRDataSource {
             }
 
             if (hasNext && childSources != null) {
-                List<Object> keyValues = new ArrayList<Object>();
+                List<Object> keyValues = new ArrayList<>();
                 for (int i = 0; i < data.getObjectsCount(); i++) {
                     keyValues.add(data.getKeyValueByIndex(i));
                 }

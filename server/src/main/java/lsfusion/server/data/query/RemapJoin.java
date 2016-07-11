@@ -28,6 +28,6 @@ public class RemapJoin<V,MV> extends AbstractJoin<V> {
     }
 
     public Join<V> translateRemoveValues(MapValuesTranslate translate) {
-        return new RemapJoin<V, MV>(join.translateRemoveValues(translate), mapProps);
+        return new RemapJoin<>(join.translateRemoveValues(translate), mapProps);
     }
 }

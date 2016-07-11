@@ -119,7 +119,7 @@ public class DateClass extends DataClass<Date> {
 
     public static DateFormat getDateFormat() {
         DateFormat dateFormat = DateFormat.getDateInstance(DateFormat.SHORT);
-        dateFormat.setTimeZone(SystemUtils.getCurrentTimeZone());  // todo [dale]: Нужно брать таймзону из бизнес-логики
+        dateFormat.setTimeZone(SystemUtils.getCurrentTimeZone());  
         return dateFormat;
     }
 

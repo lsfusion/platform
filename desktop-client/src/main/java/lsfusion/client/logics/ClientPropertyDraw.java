@@ -95,7 +95,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
     public ClientGroupObject groupObject;
     public String columnsName;
-    public List<ClientGroupObject> columnGroupObjects = new ArrayList<ClientGroupObject>();
+    public List<ClientGroupObject> columnGroupObjects = new ArrayList<>();
 
     public boolean autoHide;
     public boolean panelCaptionAfter;
@@ -407,7 +407,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         }
 
         if(inStream.readBoolean()) {
-            addRemove = new Pair<ClientObject, Boolean>(pool.<ClientObject>deserializeObject(inStream), inStream.readBoolean());
+            addRemove = new Pair<>(pool.<ClientObject>deserializeObject(inStream), inStream.readBoolean());
         }
 
         askConfirm = inStream.readBoolean();

@@ -12,7 +12,7 @@ public abstract class GNavigatorController implements GINavigatorController {
     private final FormsController formsController;
 
     private GNavigatorElement root;
-    private LinkedHashMap<GNavigatorWindow, GNavigatorView> views = new LinkedHashMap<GNavigatorWindow, GNavigatorView>();
+    private LinkedHashMap<GNavigatorWindow, GNavigatorView> views = new LinkedHashMap<>();
 
     public GNavigatorController(FormsController formsController) {
         this.formsController = formsController;
@@ -34,7 +34,7 @@ public abstract class GNavigatorController implements GINavigatorController {
 
     @Override
     public void update() {
-        Map<GNavigatorWindow, LinkedHashSet<GNavigatorElement>> result = new HashMap<GNavigatorWindow, LinkedHashSet<GNavigatorElement>>();
+        Map<GNavigatorWindow, LinkedHashSet<GNavigatorElement>> result = new HashMap<>();
 
         for (GNavigatorWindow wind : views.keySet()) {
             result.put(wind, new LinkedHashSet<GNavigatorElement>());
@@ -42,7 +42,7 @@ public abstract class GNavigatorController implements GINavigatorController {
 
         dfsAddElements(root, null, result);
 
-        Map<GAbstractWindow, Boolean> visibleElements = new HashMap<GAbstractWindow, Boolean>();
+        Map<GAbstractWindow, Boolean> visibleElements = new HashMap<>();
         for (Map.Entry<GNavigatorWindow, LinkedHashSet<GNavigatorElement>> entry : result.entrySet()) {
             GNavigatorView view = views.get(entry.getKey());
             if (view != null) {

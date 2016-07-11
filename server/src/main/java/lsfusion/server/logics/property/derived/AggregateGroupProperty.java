@@ -39,7 +39,7 @@ public class AggregateGroupProperty<T extends PropertyInterface> extends CycleGr
 
     // чисто для generics
     private static <T extends PropertyInterface<T>> AggregateGroupProperty<T> create(String caption, CalcPropertyInterfaceImplement<T> and, ImCol<CalcPropertyInterfaceImplement<T>> groupInterfaces, ImSet<T> innerInterfaces, CalcPropertyInterfaceImplement<T> whereProp, T aggrInterface, ImSet<CalcPropertyInterfaceImplement<T>> groupProps) {
-        return new AggregateGroupProperty<T>(caption, and, groupInterfaces, innerInterfaces, whereProp, aggrInterface, groupProps);
+        return new AggregateGroupProperty<>(caption, and, groupInterfaces, innerInterfaces, whereProp, aggrInterface, groupProps);
     }
 
     private AggregateGroupProperty(String caption, CalcPropertyInterfaceImplement<T> and, ImCol<CalcPropertyInterfaceImplement<T>> groupInterfaces, ImSet<T> innerInterfaces, CalcPropertyInterfaceImplement<T> whereProp, T aggrInterface, ImSet<CalcPropertyInterfaceImplement<T>> groupProps) {

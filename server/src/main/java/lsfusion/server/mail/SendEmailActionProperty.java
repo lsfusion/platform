@@ -59,19 +59,19 @@ import static org.apache.commons.lang3.StringUtils.trimToNull;
 public class SendEmailActionProperty extends SystemExplicitActionProperty {
     private final static Logger logger = ServerLoggers.mailLogger;
 
-    public static enum FormStorageType {INLINE, ATTACH}
+    public enum FormStorageType {INLINE, ATTACH}
 
     private CalcPropertyInterfaceImplement<ClassPropertyInterface> fromAddressAccount;
     private CalcPropertyInterfaceImplement<ClassPropertyInterface> subject;
 
-    private List<CalcPropertyInterfaceImplement<ClassPropertyInterface>> recipients = new ArrayList<CalcPropertyInterfaceImplement<ClassPropertyInterface>>();
-    private List<Message.RecipientType> recipientTypes = new ArrayList<Message.RecipientType>();
+    private List<CalcPropertyInterfaceImplement<ClassPropertyInterface>> recipients = new ArrayList<>();
+    private List<Message.RecipientType> recipientTypes = new ArrayList<>();
 
-    private final List<FormEntity> forms = new ArrayList<FormEntity>();
-    private final List<AttachmentFormat> formats = new ArrayList<AttachmentFormat>();
-    private final List<FormStorageType> storageTypes = new ArrayList<FormStorageType>();
-    private final List<Map<ObjectEntity, CalcPropertyInterfaceImplement<ClassPropertyInterface>>> mapObjects = new ArrayList<Map<ObjectEntity, CalcPropertyInterfaceImplement<ClassPropertyInterface>>>();
-    private final List<CalcPropertyInterfaceImplement> attachmentProps = new ArrayList<CalcPropertyInterfaceImplement>();
+    private final List<FormEntity> forms = new ArrayList<>();
+    private final List<AttachmentFormat> formats = new ArrayList<>();
+    private final List<FormStorageType> storageTypes = new ArrayList<>();
+    private final List<Map<ObjectEntity, CalcPropertyInterfaceImplement<ClassPropertyInterface>>> mapObjects = new ArrayList<>();
+    private final List<CalcPropertyInterfaceImplement> attachmentProps = new ArrayList<>();
     private final List<CalcPropertyInterfaceImplement> attachFileNames = new ArrayList<>();
     private final List<CalcPropertyInterfaceImplement> attachFiles = new ArrayList<>();
 
@@ -126,9 +126,9 @@ public class SendEmailActionProperty extends SystemExplicitActionProperty {
         try {
             assert subject != null && fromAddressAccount != null;
 
-            List<EmailSender.AttachmentProperties> attachments = new ArrayList<EmailSender.AttachmentProperties>();
-            List<String> inlineForms = new ArrayList<String>();
-            Map<ByteArray, String> attachmentFiles = new HashMap<ByteArray, String>();
+            List<EmailSender.AttachmentProperties> attachments = new ArrayList<>();
+            List<String> inlineForms = new ArrayList<>();
+            Map<ByteArray, String> attachmentFiles = new HashMap<>();
 
             assert forms.size() == storageTypes.size() && forms.size() == formats.size() && forms.size() == attachmentProps.size() && forms.size() == mapObjects.size();
 
@@ -218,7 +218,7 @@ public class SendEmailActionProperty extends SystemExplicitActionProperty {
 
         Pattern p = Pattern.compile("^([A-Za-z0-9_-]+\\.)*[A-Za-z0-9_-]+@[A-Za-z0-9_-]+(\\.[A-Za-z0-9_-]+)*\\.[A-Za-z]{2,6}$");
 
-        Map<String, Message.RecipientType> recipientEmails = new HashMap<String, Message.RecipientType>();
+        Map<String, Message.RecipientType> recipientEmails = new HashMap<>();
         for (int i = 0; i < recipients.size(); ++i) {
             CalcPropertyInterfaceImplement<ClassPropertyInterface> recipient = recipients.get(i);
             Message.RecipientType recipientType = recipientTypes.get(i);
@@ -283,7 +283,7 @@ public class SendEmailActionProperty extends SystemExplicitActionProperty {
     }
 
     private RemoteForm createReportForm(ExecutionContext context, FormEntity form, Map<ObjectEntity, CalcPropertyInterfaceImplement<ClassPropertyInterface>> objectsImplements) throws SQLException, SQLHandledException {
-        Map<ObjectEntity, ObjectValue> objectValues = new HashMap<ObjectEntity, ObjectValue>();
+        Map<ObjectEntity, ObjectValue> objectValues = new HashMap<>();
         for (Map.Entry<ObjectEntity, CalcPropertyInterfaceImplement<ClassPropertyInterface>> objectImpl : objectsImplements.entrySet())
             objectValues.put(objectImpl.getKey(), objectImpl.getValue().readClasses(context, context.getKeys()));
 

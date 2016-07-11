@@ -71,9 +71,9 @@ public class FormSessionManagerImpl implements FormSessionManager, InitializingB
     }
     
     private List<GGroupObjectUserPreferences> convertUserPreferences(GForm gForm,  List<GroupObjectUserPreferences> groupObjectUserPreferences) {
-        ArrayList<GGroupObjectUserPreferences> gGroupObjectUPList = new ArrayList<GGroupObjectUserPreferences>();
+        ArrayList<GGroupObjectUserPreferences> gGroupObjectUPList = new ArrayList<>();
         for (GroupObjectUserPreferences groupObjectUP : groupObjectUserPreferences) {
-            HashMap<String, GColumnUserPreferences> gColumnUPMap = new HashMap<String, GColumnUserPreferences>();
+            HashMap<String, GColumnUserPreferences> gColumnUPMap = new HashMap<>();
             for (Map.Entry<String, ColumnUserPreferences> entry : groupObjectUP.getColumnUserPreferences().entrySet()) {
                 ColumnUserPreferences columnUP = entry.getValue();
                 gColumnUPMap.put(entry.getKey(), new GColumnUserPreferences(columnUP.userHide, columnUP.userCaption, columnUP.userPattern, columnUP.userWidth, columnUP.userOrder, columnUP.userSort, columnUP.userAscendingSort));

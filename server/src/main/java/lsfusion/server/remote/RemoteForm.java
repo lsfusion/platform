@@ -74,7 +74,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         this.reportManager = new FormReportManager(form);
         this.requestLock = new SequentialRequestLock();
 
-        this.weakRemoteFormListener = new WeakReference<RemoteFormListener>(remoteFormListener);
+        this.weakRemoteFormListener = new WeakReference<>(remoteFormListener);
         if (remoteFormListener != null) {
             remoteFormListener.formCreated(this);
         }
@@ -338,8 +338,8 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, new EExecutionStackRunnable() {
             @Override
             public void run(ExecutionStack stack) throws Exception {
-                List<PropertyDrawInstance> properties = new ArrayList<PropertyDrawInstance>();
-                List<ImMap<ObjectInstance, DataObject>> keys = new ArrayList<ImMap<ObjectInstance, DataObject>>();
+                List<PropertyDrawInstance> properties = new ArrayList<>();
+                List<ImMap<ObjectInstance, DataObject>> keys = new ArrayList<>();
                 for (int i =0; i < propertyIDs.size(); i++) {
                     PropertyDrawInstance<?> property = form.getPropertyDraw(propertyIDs.get(i));
                     properties.add(property);
@@ -364,7 +364,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
             @Override
             public void run(ExecutionStack stack) throws Exception {
                 Map<PropertyDrawInstance, ImOrderMap<ImMap<ObjectInstance, DataObject>, Object>> keysValues
-                        = new HashMap<PropertyDrawInstance, ImOrderMap<ImMap<ObjectInstance, DataObject>, Object>>();
+                        = new HashMap<>();
 
                 if (logger.isTraceEnabled())
                     logger.trace("pasteMultiCellValue Action");
@@ -499,8 +499,8 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         return processRMIRequest(requestIndex, lastReceivedRequestIndex, new EExecutionStackCallable<byte[]>() {
             @Override
             public byte[] call(ExecutionStack stack) throws Exception {
-                List<Map<Integer, List<byte[]>>> inMaps = new ArrayList<Map<Integer, List<byte[]>>>(BaseUtils.toList(groupMap, sumMap, maxMap));
-                List<ImOrderMap<Object, ImList<ImMap<ObjectInstance, DataObject>>>> outMaps = new ArrayList<ImOrderMap<Object, ImList<ImMap<ObjectInstance, DataObject>>>>();
+                List<Map<Integer, List<byte[]>>> inMaps = new ArrayList<>(BaseUtils.toList(groupMap, sumMap, maxMap));
+                List<ImOrderMap<Object, ImList<ImMap<ObjectInstance, DataObject>>>> outMaps = new ArrayList<>();
                 for (Map<Integer, List<byte[]>> one : inMaps) {
                     MOrderExclMap<Object, ImList<ImMap<ObjectInstance, DataObject>>> mOutMap = MapFact.mOrderExclMap(one.size());
                     for (Map.Entry<Integer, List<byte[]>> oneEntry : one.entrySet()) {
@@ -891,7 +891,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
 
         byte[] formChanges = getFormChangesByteArray(stack);
 
-        List<ClientAction> resultActions = new ArrayList<ClientAction>();
+        List<ClientAction> resultActions = new ArrayList<>();
         resultActions.add(new ProcessFormChangesClientAction(requestIndex, formChanges));
 
         resultActions.addAll(pendingActions);

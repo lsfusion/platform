@@ -31,7 +31,7 @@ public class CalcPropertyObjectEntity<P extends PropertyInterface> extends Prope
             public PropertyObjectInterfaceEntity getMapValue(PropertyObjectInterfaceEntity value) {
                 return value.getRemappedEntity(oldObject, newObject, instanceFactory);
             }});
-        return new CalcPropertyObjectEntity<P>(property, nmapping, creationScript, creationPath);
+        return new CalcPropertyObjectEntity<>(property, nmapping, creationScript, creationPath);
     }
 
 }

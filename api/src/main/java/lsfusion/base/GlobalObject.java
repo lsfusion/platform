@@ -7,7 +7,7 @@ import java.util.Comparator;
 // объект Immutable и не подвержен memory leak и соответственно содержит только ссылки на GlobalObject'ы
 public interface GlobalObject {
     
-    Map<GlobalObject, Integer> compareMap = new HashMap<GlobalObject, Integer>();
+    Map<GlobalObject, Integer> compareMap = new HashMap<>();
     Comparator<GlobalObject> comparator = new Comparator<GlobalObject>() {
         private int getCompareInt(GlobalObject concreteClass) {
             synchronized(compareMap) {

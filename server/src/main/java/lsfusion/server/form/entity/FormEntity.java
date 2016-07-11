@@ -327,7 +327,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     }
 
     public List<String> getNFObjectsNamesAndClasses(List<ValueClass> classes, Version version) {
-        List<String> names = new ArrayList<String>();
+        List<String> names = new ArrayList<>();
         classes.clear();
         
         for (GroupObjectEntity group : getNFGroupsIt(version)) {
@@ -510,7 +510,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         ImCol<ImSet<ValueClassWrapper>> classSubsets;
         if (useObjSubsets) {
             MCol<ImSet<ValueClassWrapper>> mClassSubsets = ListFact.mCol();
-            for (ImSet<ValueClassWrapper> set : new Subsets<ValueClassWrapper>(valueClasses)) {
+            for (ImSet<ValueClassWrapper> set : new Subsets<>(valueClasses)) {
                 if (!set.isEmpty()) {
                     mClassSubsets.add(set);
                 }
@@ -520,7 +520,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
             classSubsets = SetFact.singleton(valueClasses);
         }
 
-        List<PropertyDrawEntity> propertyDraws = new ArrayList<PropertyDrawEntity>();
+        List<PropertyDrawEntity> propertyDraws = new ArrayList<>();
 
         ImOrderSet<ValueClassWrapper> orderInterfaces = orderObjects.mapOrder(objectToClass);
         for (PropertyClassImplement implement : group.getProperties(classSubsets, upClasses, version)) {
@@ -598,7 +598,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     }
 
     public <P extends PropertyInterface> PropertyDrawEntity<P> addPropertyDraw(GroupObjectEntity groupObject, PropertyObjectEntity<P, ?> propertyImplement, String formPath, Version version) {
-        final PropertyDrawEntity<P> newPropertyDraw = new PropertyDrawEntity<P>(genID(), propertyImplement, groupObject);
+        final PropertyDrawEntity<P> newPropertyDraw = new PropertyDrawEntity<>(genID(), propertyImplement, groupObject);
 
         propertyImplement.property.proceedDefaultDraw(newPropertyDraw, this, version);
 
@@ -664,10 +664,10 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         }
     }
     public <P extends PropertyInterface> CalcPropertyObjectEntity addPropertyObject(LCP<P> property, ImMap<P, ? extends PropertyObjectInterfaceEntity> objects) {
-        return new CalcPropertyObjectEntity<P>(property.property, objects, property.getCreationScript(), property.getCreationPath());
+        return new CalcPropertyObjectEntity<>(property.property, objects, property.getCreationScript(), property.getCreationPath());
     }
     public <P extends PropertyInterface> ActionPropertyObjectEntity<P> addPropertyObject(LAP<P> property, ImMap<P, ? extends PropertyObjectInterfaceEntity> objects) {
-        return new ActionPropertyObjectEntity<P>(property.property, objects, property.getCreationScript(), property.getCreationPath());
+        return new ActionPropertyObjectEntity<>(property.property, objects, property.getCreationScript(), property.getCreationPath());
     }
 
     public <P extends PropertyInterface> PropertyObjectEntity addPropertyObject(Property<P> property, ImMap<P, ? extends PropertyObjectInterfaceEntity> objects) {
@@ -678,10 +678,10 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         }
     }
     public <P extends PropertyInterface> CalcPropertyObjectEntity addPropertyObject(CalcProperty<P> property, ImMap<P, ? extends PropertyObjectInterfaceEntity> objects) {
-        return new CalcPropertyObjectEntity<P>(property, objects);
+        return new CalcPropertyObjectEntity<>(property, objects);
     }
     public <P extends PropertyInterface> ActionPropertyObjectEntity<P> addPropertyObject(ActionProperty<P> property, ImMap<P, ? extends PropertyObjectInterfaceEntity> objects) {
-        return new ActionPropertyObjectEntity<P>(property, objects);
+        return new ActionPropertyObjectEntity<>(property, objects);
     }
 
     public PropertyDrawEntity<?> getPropertyDraw(int iID) {
@@ -712,7 +712,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     }
 
     public List<PropertyDrawEntity> getPropertyDrawList(LP...properties) {
-        List<PropertyDrawEntity> list = new ArrayList<PropertyDrawEntity>();
+        List<PropertyDrawEntity> list = new ArrayList<>();
         for (LP property : properties) {
             list.add(getPropertyDraw(property));
         }
@@ -1140,7 +1140,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
 
     public List<PropertyDrawEntity> getProperties(AbstractNode group, GroupObjectEntity groupObject) {
 
-        List<PropertyDrawEntity> result = new ArrayList<PropertyDrawEntity>();
+        List<PropertyDrawEntity> result = new ArrayList<>();
 
         for (PropertyDrawEntity property : getPropertyDrawsIt()) {
             if ((groupObject == null || groupObject.equals(property.getToDraw(this))) && group.hasChild(property.propertyObject.property)) {
@@ -1153,7 +1153,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
 
     public List<PropertyDrawEntity> getProperties(Property prop, GroupObjectEntity groupObject) {
 
-        List<PropertyDrawEntity> result = new ArrayList<PropertyDrawEntity>();
+        List<PropertyDrawEntity> result = new ArrayList<>();
 
         for (PropertyDrawEntity property : getPropertyDrawsIt()) {
             if (groupObject.equals(property.getToDraw(this)) && prop.equals(property.propertyObject.property)) {
@@ -1166,7 +1166,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
 
     public List<PropertyDrawEntity> getProperties(Property prop) {
 
-        List<PropertyDrawEntity> result = new ArrayList<PropertyDrawEntity>();
+        List<PropertyDrawEntity> result = new ArrayList<>();
 
         for (PropertyDrawEntity property : getPropertyDrawsIt()) {
             if (prop.equals(property.propertyObject.property)) {
@@ -1179,7 +1179,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
 
     public List<PropertyDrawEntity> getProperties(GroupObjectEntity groupObject) {
 
-        List<PropertyDrawEntity> result = new ArrayList<PropertyDrawEntity>();
+        List<PropertyDrawEntity> result = new ArrayList<>();
 
         for (PropertyDrawEntity property : getPropertyDrawsIt()) {
             if (groupObject.equals(property.getToDraw(this))) {
@@ -1295,7 +1295,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     }
 
     public Collection<ObjectEntity> getObjects() {
-        List<ObjectEntity> objects = new ArrayList<ObjectEntity>();
+        List<ObjectEntity> objects = new ArrayList<>();
         for (GroupObjectEntity group : getGroupsIt())
             for (ObjectEntity object : group.getObjects())
                 objects.add(object);

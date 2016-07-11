@@ -37,7 +37,7 @@ public class ModifyChange<P extends PropertyInterface> extends AbstractValuesCon
 
     @Override
     public ModifyChange<P> translate(MapValuesTranslate mapValues) {
-        return new ModifyChange<P>(change.translateValues(mapValues), preread.translateValues(mapValues), isFinal);
+        return new ModifyChange<>(change.translateValues(mapValues), preread.translateValues(mapValues), isFinal);
     }
 
     @Override
@@ -48,7 +48,7 @@ public class ModifyChange<P extends PropertyInterface> extends AbstractValuesCon
     public ModifyChange<P> add(ModifyChange<P> modify) {
         if(isFinal)
             return this;
-        return new ModifyChange<P>(change.add(modify.change), preread.add(modify.preread), modify.isFinal);
+        return new ModifyChange<>(change.add(modify.change), preread.add(modify.preread), modify.isFinal);
     }
 
     public boolean isEmpty() {

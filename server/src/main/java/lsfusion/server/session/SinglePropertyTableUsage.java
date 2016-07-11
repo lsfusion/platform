@@ -36,13 +36,13 @@ public class SinglePropertyTableUsage<K> extends SessionTableUsage<K, String> {
     }
 
     public ModifyResult modifyRows(SQLSession session, ImRevMap<K, KeyExpr> mapKeys, Expr expr, Where where, BaseClass baseClass, Modify type, QueryEnvironment env, boolean updateClasses) throws SQLException, SQLHandledException {
-        return modifyRows(session, new Query<K, String>(mapKeys, expr, "value", where), baseClass, type, env, updateClasses);
+        return modifyRows(session, new Query<>(mapKeys, expr, "value", where), baseClass, type, env, updateClasses);
     }
 
     public static <P extends PropertyInterface> PropertyChange<P> getChange(SinglePropertyTableUsage<P> table) {
         ImRevMap<P, KeyExpr> mapKeys = table.getMapKeys();
         Join<String> join = table.join(mapKeys);
-        return new PropertyChange<P>(mapKeys, join.getExpr("value"), join.getWhere());
+        return new PropertyChange<>(mapKeys, join.getExpr("value"), join.getWhere());
     }
 
     public <B> ClassWhere<B> getClassWhere(ImRevMap<K, ? extends B> remapKeys, B mapProp) {

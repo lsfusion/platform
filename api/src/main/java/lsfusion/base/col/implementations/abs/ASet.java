@@ -78,7 +78,7 @@ public abstract class ASet<K> extends ACol<K> implements ImSet<K> {
     }
 
     public ImSet<K> remove(final ImSet<? extends K> remove) {  // как правило внутренние, поэтому на disjoint нет смысла проверять
-        return filterFn(new NotFunctionSet<K>((FunctionSet<K>) remove));
+        return filterFn(new NotFunctionSet<>((FunctionSet<K>) remove));
     }
 
     public ImSet<K> removeIncl(final ImSet<? extends K> remove) {  // как правило внутренние, поэтому на disjoint нет смысла проверять
@@ -209,7 +209,7 @@ public abstract class ASet<K> extends ACol<K> implements ImSet<K> {
     }
 
     public ImOrderSet<K> sort() {
-        List<K> sortList = new ArrayList<K>(toJavaSet());
+        List<K> sortList = new ArrayList<>(toJavaSet());
         Collections.sort(BaseUtils.<List<Comparable>>immutableCast(sortList));
         return SetFact.fromJavaOrderSet(sortList);
     }
@@ -326,7 +326,7 @@ public abstract class ASet<K> extends ACol<K> implements ImSet<K> {
     }
 
     public Set<K> toJavaSet() {
-        Set<K> result = new HashSet<K>();
+        Set<K> result = new HashSet<>();
         for(int i=0,size=size();i<size;i++)
             result.add(get(i));
         return result;
@@ -354,7 +354,7 @@ public abstract class ASet<K> extends ACol<K> implements ImSet<K> {
     }
 
     public <M> ImFilterValueMap<K, M> mapFilterValues() {
-        return new FilterValueMap<K, M>(this.<M>mapItValues());
+        return new FilterValueMap<>(this.<M>mapItValues());
     }
 
     @Override

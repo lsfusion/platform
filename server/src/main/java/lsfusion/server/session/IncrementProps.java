@@ -8,7 +8,7 @@ import lsfusion.server.logics.property.PropertyInterface;
 
 public abstract class IncrementProps {
 
-    private WeakIdentityHashSet<OverrideSessionModifier> modifiers = new WeakIdentityHashSet<OverrideSessionModifier>();
+    private WeakIdentityHashSet<OverrideSessionModifier> modifiers = new WeakIdentityHashSet<>();
     public void registerView(OverrideSessionModifier modifier) {
         modifiers.add(modifier);
         modifier.eventDataChanges(getProperties());
@@ -17,7 +17,7 @@ public abstract class IncrementProps {
         modifiers.remove(modifier);
     }
 
-    private WeakIdentityHashSet<OverrideIncrementProps> increments = new WeakIdentityHashSet<OverrideIncrementProps>();
+    private WeakIdentityHashSet<OverrideIncrementProps> increments = new WeakIdentityHashSet<>();
     public void registerView(OverrideIncrementProps modifier) {
         increments.add(modifier);
     }

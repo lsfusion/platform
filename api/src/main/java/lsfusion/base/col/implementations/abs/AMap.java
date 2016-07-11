@@ -344,7 +344,7 @@ public abstract class AMap<K, V> extends AColObject implements ImMap<K, V> {
         if(keys.isEmpty()) // оптимизация
             return this;
 
-        return filterFn(new NotFunctionSet<K>((FunctionSet<K>) keys));
+        return filterFn(new NotFunctionSet<>((FunctionSet<K>) keys));
     }
 
     public <EV extends V> ImMap<K, EV> filterValues(ImSet<EV> values) {
@@ -570,7 +570,7 @@ public abstract class AMap<K, V> extends AColObject implements ImMap<K, V> {
     }
 
     public Map<K, V> toJavaMap() {
-        Map<K, V> result = new HashMap<K, V>();
+        Map<K, V> result = new HashMap<>();
         for(int i=0,size=size();i<size;i++)
             result.put(getKey(i), getValue(i));
         return result;
@@ -610,7 +610,7 @@ public abstract class AMap<K, V> extends AColObject implements ImMap<K, V> {
     }
 
     public <M> ImFilterValueMap<K, M> mapFilterValues() {
-        return new FilterValueMap<K, M>(this.<M>mapItValues());
+        return new FilterValueMap<>(this.<M>mapItValues());
     }
 
     private static final AddValue<Object, ImMap<Object, ImSet<Object>>> addMergeMapSets = new SymmAddValue<Object, ImMap<Object, ImSet<Object>>>() {

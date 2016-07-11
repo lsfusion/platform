@@ -23,8 +23,8 @@ import static lsfusion.client.Main.fusionDir;
 
 public abstract class MainFrame extends JFrame {
 
-    public static interface FormCloseListener {
-        public void formClosed();
+    public interface FormCloseListener {
+        void formClosed();
     }
 
     protected File baseDir;

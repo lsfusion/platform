@@ -25,9 +25,9 @@ public class SetBuilder<T> {
         if(buildSet instanceof List)
             buildList = (List<T>)buildSet;
         else
-            buildList = new ArrayList<T>(buildSet);
+            buildList = new ArrayList<>(buildSet);
 
-        List<List<T>> result = new ArrayList<List<T>>();
+        List<List<T>> result = new ArrayList<>();
         recFillSubSetList(buildList,0,result,new ArrayList<T>());
         return result;
     }
@@ -49,7 +49,7 @@ public class SetBuilder<T> {
 
     public static <T> Collection<List<T>> buildSetCombinations(int count, List<T> listElements) {
 
-        Collection<List<T>> result = new ArrayList<List<T>>();
+        Collection<List<T>> result = new ArrayList<>();
         recBuildSetCombinations(count, listElements, 0, new ArrayList<T>(), result);
         return result;
     }

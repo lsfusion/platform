@@ -38,7 +38,7 @@ public class OldDBNamePolicy implements PropertyDBNamePolicy {
     }
 
     public static String createPropertyDrawSID(String name, PropertyObjectEntity<?, ?> property) {
-        List<String> mapping = new ArrayList<String>();  
+        List<String> mapping = new ArrayList<>();  
         for (PropertyInterface<?> pi : property.property.getOrderInterfaces()) {
             PropertyObjectInterfaceEntity obj = property.mapping.getObject(pi);
             assert obj instanceof ObjectEntity;

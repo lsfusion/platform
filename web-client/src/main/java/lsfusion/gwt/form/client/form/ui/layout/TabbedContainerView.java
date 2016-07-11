@@ -37,7 +37,7 @@ public class TabbedContainerView extends GAbstractContainerView {
 
     protected final TabbedDelegate tabbedDelegate;
 
-    protected final ArrayList<GComponent> visibleChildren = new ArrayList<GComponent>();
+    protected final ArrayList<GComponent> visibleChildren = new ArrayList<>();
 
     protected GComponent currentChild;
 

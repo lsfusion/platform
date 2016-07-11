@@ -37,7 +37,7 @@ public class StatKeys<K> extends TwinImmutableObject {
 //    }
 
     public StatKeys(ImSet<K> allKeys, Stat stat) { // , ExecCost cost
-        this(stat, new DistinctKeys<K>(allKeys.toMap(stat))); // , cost
+        this(stat, new DistinctKeys<>(allKeys.toMap(stat))); // , cost
     }
 
     public StatKeys(Stat rows, DistinctKeys<K> distinct) { // , ExecCost cost
@@ -54,11 +54,11 @@ public class StatKeys<K> extends TwinImmutableObject {
     }
 
     public static <K> StatKeys<K> create(Stat rows, DistinctKeys<K> distinct) { //, ExecCost cost
-        return new StatKeys<K>(distinct.getMax().min(rows), distinct); // , cost
+        return new StatKeys<>(distinct.getMax().min(rows), distinct); // , cost
     }
 
     public StatKeys<K> decrease(final Stat dec) {
-        return new StatKeys<K>(dec, new DistinctKeys<K>(distinct.mapValues(new GetValue<Stat, Stat>() {
+        return new StatKeys<>(dec, new DistinctKeys<>(distinct.mapValues(new GetValue<Stat, Stat>() {
             public Stat getMapValue(Stat value) {
                 return value.min(dec);
             }
@@ -67,11 +67,11 @@ public class StatKeys<K> extends TwinImmutableObject {
 
 
     public <T> StatKeys<T> mapBack(ImMap<T, K> map) {
-        return new StatKeys<T>(rows, distinct.mapBack(map)); // , cost
+        return new StatKeys<>(rows, distinct.mapBack(map)); // , cost
     }
 
     public StatKeys<K> or(StatKeys<K> stat) {
-        return new StatKeys<K>(rows.or(stat.rows), distinct.or(stat.distinct)); // , cost.or(stat.cost)
+        return new StatKeys<>(rows.or(stat.rows), distinct.or(stat.distinct)); // , cost.or(stat.cost)
     }
 
     public static <K extends Expr> int hashOuter(StatKeys<K> statKeys, HashContext hashContext) {
@@ -79,7 +79,7 @@ public class StatKeys<K> extends TwinImmutableObject {
     }
 
     public static <K extends Expr> StatKeys<K> translateOuter(StatKeys<K> statKeys, MapTranslate translator) {
-        return new StatKeys<K>(statKeys.rows, DistinctKeys.translateOuter(statKeys.distinct, translator)); // , statKeys.cost
+        return new StatKeys<>(statKeys.rows, DistinctKeys.translateOuter(statKeys.distinct, translator)); // , statKeys.cost
     }
 
     public boolean calcTwins(TwinImmutableObject o) {

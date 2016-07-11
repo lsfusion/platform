@@ -32,12 +32,12 @@ public class NamespaceElementFinder<T, P> {
     }
     
     public List<FoundItem<T>> findInNamespace(String namespaceName, String name, P param) {
-        List<FoundItem<T>> result = new ArrayList<FoundItem<T>>();
+        List<FoundItem<T>> result = new ArrayList<>();
         for (LogicsModule module : modules) {
             if (namespaceName.equals(module.getNamespace())) {
                 List<T> moduleResult = finder.resolveInModule(module, name, param);
                 for (T element : moduleResult) {
-                    result.add(new FoundItem<T>(element, module));
+                    result.add(new FoundItem<>(element, module));
                 }
             }
         }

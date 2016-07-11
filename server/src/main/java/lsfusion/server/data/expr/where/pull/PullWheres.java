@@ -29,7 +29,7 @@ public abstract class PullWheres<R, K> {
                     ExprCaseList cases = expr.getCases();
                     GetValue<MapCase<K>, ExprCase> mapCases = new GetValue<MapCase<K>, ExprCase>() {
                         public MapCase<K> getMapValue(ExprCase value) {
-                            return new MapCase<K>(value.where, ((ImMap<K, Expr>) map).replaceValue(key, value.data));
+                            return new MapCase<>(value.where, ((ImMap<K, Expr>) map).replaceValue(key, value.data));
                         }};
                     return proceedCases(cases.mapValues(mapCases));
                 }

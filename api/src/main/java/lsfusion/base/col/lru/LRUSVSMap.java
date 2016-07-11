@@ -54,7 +54,7 @@ public class LRUSVSMap<K, V> extends ALRUSMap<LRUSVSMap.AEntry<K, V>, LRUSVSMap.
 
         @Override
         protected AEntry<K, V> createTail() {
-            return new AEntry<K, V>(null, null, null, 0);
+            return new AEntry<>(null, null, null, 0);
         }
 
         public final V get(K key, int hash) {
@@ -82,7 +82,7 @@ public class LRUSVSMap<K, V> extends ALRUSMap<LRUSVSMap.AEntry<K, V>, LRUSVSMap.
                         return oldValue;
                     }
                 }
-                AEntry<K, V> e = new AEntry<K, V>(key, table[i], value, currentTime);
+                AEntry<K, V> e = new AEntry<>(key, table[i], value, currentTime);
 
                 regEntry(e, i);
             } finally {

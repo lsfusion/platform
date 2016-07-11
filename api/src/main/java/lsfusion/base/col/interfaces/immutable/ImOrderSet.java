@@ -29,13 +29,13 @@ public interface ImOrderSet<K> extends ImList<K> {
 
     // фильтрация
 
-    public ImOrderSet<K> filterOrder(FunctionSet<K> filter);
+    ImOrderSet<K> filterOrder(FunctionSet<K> filter);
 
     ImOrderSet<K> filterOrderIncl(ImSet<? extends K> set);
 
     ImOrderSet<K> subOrder(int from, int to);
 
-    public <M> ImOrderValueMap<K, M> mapItOrderValues();
+    <M> ImOrderValueMap<K, M> mapItOrderValues();
     <M> ImRevValueMap<K, M> mapItOrderRevValues(); // предполагается заполнение в том же порядке
 
     <M> ImOrderSet<M> mapOrderSetValues(GetValue<M, K> getter);

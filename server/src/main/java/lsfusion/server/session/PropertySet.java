@@ -51,7 +51,7 @@ public class PropertySet<T extends PropertyInterface> {
 
     @IdentityInstanceLazy
     private Query<T,Expr> getExecuteQuery() {
-        QueryBuilder<T, Expr> query = new QueryBuilder<T, Expr>(mapKeys, getFullWhere());
+        QueryBuilder<T, Expr> query = new QueryBuilder<>(mapKeys, getFullWhere());
         query.addProperties(orders.keys().toMap());
         return query.getQuery();
     }
@@ -61,7 +61,7 @@ public class PropertySet<T extends PropertyInterface> {
                 ListFact.singleton(new ValueExpr(1, ObjectType.idClass).and(getFullWhere())),
                 AggrExpr.fixOrders(orders, mapKeys), ordersNotNull, SetFact.<Expr>EMPTY(), mapKeys.valuesSet().toMap());
 
-        QueryBuilder<T, String> query = new QueryBuilder<T, String>(mapKeys, exprNum.getWhere());
+        QueryBuilder<T, String> query = new QueryBuilder<>(mapKeys, exprNum.getWhere());
         query.addProperty("value", FormulaExpr.createCustomFormula("prm1", baseClass.unknown, exprNum));
         return query.getQuery();
     }
@@ -116,7 +116,7 @@ public class PropertySet<T extends PropertyInterface> {
         if(andWhere.isTrue())
             return this;
 
-        return new PropertySet<T>(mapKeys, where.and(andWhere), orders, ordersNotNull);
+        return new PropertySet<>(mapKeys, where.and(andWhere), orders, ordersNotNull);
     }
 
     public boolean isEmpty() {

@@ -169,7 +169,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         for (ObjectEntity objectInstance : groupObjects.valueIt()) {
             if (objectInstance.baseClass instanceof CustomClass) {
                 ExplicitActionProperty dialogAction = objectInstance.getChangeAction(property);
-                return new ActionPropertyObjectEntity<ClassPropertyInterface>(
+                return new ActionPropertyObjectEntity<>(
                         dialogAction,
                         MapFact.singleton(dialogAction.interfaces.single(), (PropertyObjectInterfaceEntity) objectInstance)
                 );
@@ -196,21 +196,21 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 
     public void setKeyAction(KeyStroke ks, String actionSID) {
         if (keyBindings == null) {
-            keyBindings = new HashMap<KeyStroke, String>();
+            keyBindings = new HashMap<>();
         }
         keyBindings.put(ks, actionSID);
     }
 
     public void setContextMenuAction(String actionSID, String caption) {
         if (contextMenuBindings == null) {
-            contextMenuBindings = new OrderedMap<String, String>();
+            contextMenuBindings = new OrderedMap<>();
         }
         contextMenuBindings.put(actionSID, caption);
     }
 
     public void setEditAction(String actionSID, ActionPropertyObjectEntity<?> editAction) {
         if(editActions==null) {
-            editActions = new HashMap<String, ActionPropertyObjectEntity<?>>();
+            editActions = new HashMap<>();
         }
         editActions.put(actionSID, editAction);
     }
@@ -222,7 +222,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
             return contextMenuBindings;
         }
 
-        OrderedMap<String, String> result = new OrderedMap<String, String>();
+        OrderedMap<String, String> result = new OrderedMap<>();
         for (int i = 0; i < propertyContextMenuBindings.size(); ++i) {
             result.put(propertyContextMenuBindings.getKey(i), propertyContextMenuBindings.getValue(i));
         }
@@ -368,7 +368,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 
     public static String createSID(PropertyObjectEntity<?, ?> property) {
         assert property.property.isNamed();
-        List<String> mapping = new ArrayList<String>();
+        List<String> mapping = new ArrayList<>();
         for (PropertyInterface<?> pi : property.property.getOrderInterfaces()) {
             PropertyObjectInterfaceEntity obj = property.mapping.getObject(pi);
             assert obj instanceof ObjectEntity;

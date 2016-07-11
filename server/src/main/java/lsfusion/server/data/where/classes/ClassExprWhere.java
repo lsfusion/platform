@@ -174,7 +174,7 @@ public class ClassExprWhere extends AbstractClassWhere<VariableSingleClassExpr, 
         if(mResult==null)
             return and;
         else
-            return new And<VariableSingleClassExpr>(mResult.immutable());
+            return new And<>(mResult.immutable());
     }
 
     public ClassExprWhere andEquals(EqualMap equals) {
@@ -208,14 +208,14 @@ public class ClassExprWhere extends AbstractClassWhere<VariableSingleClassExpr, 
                 if(classSet!=null)
                     andTrans.mapValue(i, classSet);
             }
-            transWhere = transWhere.or(new ClassWhere<K>(new And<K>(andTrans.immutableValue())));
+            transWhere = transWhere.or(new ClassWhere<>(new And<>(andTrans.immutableValue())));
         }
         return transWhere;
     }
     public <K> ClassWhere<K> mapClasses(ImRevMap<K, ? extends VariableSingleClassExpr> map) {
         ClassWhere<K> transWhere = ClassWhere.FALSE();
         for(And<VariableSingleClassExpr> andWhere : wheres)
-            transWhere = transWhere.or(new ClassWhere<K>(andWhere.mapBack(map)));
+            transWhere = transWhere.or(new ClassWhere<>(andWhere.mapBack(map)));
         return transWhere;
     }
 
@@ -262,7 +262,7 @@ public class ClassExprWhere extends AbstractClassWhere<VariableSingleClassExpr, 
                 }
             }
             if(!isFalse)
-                transWhere = transWhere.or(new ClassExprWhere(new And<VariableSingleClassExpr>(andTrans.immutable())));
+                transWhere = transWhere.or(new ClassExprWhere(new And<>(andTrans.immutable())));
         }
         return transWhere;
     }
@@ -291,7 +291,7 @@ public class ClassExprWhere extends AbstractClassWhere<VariableSingleClassExpr, 
                 return ClassExprWhere.FALSE;
             }
             protected ClassExprWhere proceedBase(Where data, ImMap<BaseExpr, BaseExpr> outerInner) {
-                Result<ImRevMap<BaseExpr, BaseExpr>> innerOuter = new Result<ImRevMap<BaseExpr, BaseExpr>>();
+                Result<ImRevMap<BaseExpr, BaseExpr>> innerOuter = new Result<>();
                 Where where = Expr.andExprCheck(outerWhere, GroupExpr.getEqualsWhere(GroupExpr.groupMap(outerInner, data.getExprValues(), innerOuter)));
                 return where.getClassWhere().mapBack(innerOuter.result).and(data.and(Expr.getWhere(outerInner)).getClassWhere()); // см. выше
             }

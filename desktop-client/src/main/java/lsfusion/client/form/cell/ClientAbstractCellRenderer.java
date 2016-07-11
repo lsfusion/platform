@@ -67,7 +67,7 @@ public class ClientAbstractCellRenderer extends JComponent implements TableCellR
         return comp;
     }
 
-    private final List<JComponent> renderers = new ArrayList<JComponent>();
+    private final List<JComponent> renderers = new ArrayList<>();
     @Override
     public void updateUI() {
         for (JComponent comp : renderers) {

@@ -156,7 +156,7 @@ public class EmailLogicsModule extends ScriptingLogicsModule{
 
     public LAP<ClassPropertyInterface> addEAProp(AbstractGroup group, String caption, ValueClass[] params, Object[] fromAddressAccount, Object[] subject) {
         SendEmailActionProperty eaProp = new SendEmailActionProperty(caption, params);
-        LAP<ClassPropertyInterface> eaPropLP = addProperty(group, new LAP<ClassPropertyInterface>(eaProp));
+        LAP<ClassPropertyInterface> eaPropLP = addProperty(group, new LAP<>(eaProp));
 
         if (fromAddressAccount != null) {
             eaProp.setFromAddressAccount(readCalcImplements(eaPropLP.listInterfaces, fromAddressAccount).single());
@@ -229,13 +229,13 @@ public class EmailLogicsModule extends ScriptingLogicsModule{
     }
 
     private <P extends PropertyInterface> Map<ObjectEntity, CalcPropertyInterfaceImplement<P>> readObjectImplements(LAP<P> eaProp, Object[] params) {
-        Map<ObjectEntity, CalcPropertyInterfaceImplement<P>> mapObjects = new HashMap<ObjectEntity, CalcPropertyInterfaceImplement<P>>();
+        Map<ObjectEntity, CalcPropertyInterfaceImplement<P>> mapObjects = new HashMap<>();
 
         int i = 0;
         while (i < params.length) {
             ObjectEntity object = (ObjectEntity)params[i];
 
-            ArrayList<Object> objectImplement = new ArrayList<Object>();
+            ArrayList<Object> objectImplement = new ArrayList<>();
             while (++i < params.length && !(params[i] instanceof ObjectEntity)) {
                 objectImplement.add(params[i]);
             }

@@ -10,7 +10,7 @@ public class SingletonOrderSet<K> extends AOrderSet<K> {
     private SingletonSet<K> set;
 
     public SingletonOrderSet(K key) {
-        set = new SingletonSet<K>(key);
+        set = new SingletonSet<>(key);
     }
 
     public SingletonOrderSet(SingletonSet<K> set) {
@@ -31,10 +31,10 @@ public class SingletonOrderSet<K> extends AOrderSet<K> {
     }
 
     public <M> ImOrderValueMap<K, M> mapItOrderValues() {
-        return new SingletonOrderMap<K, M>(set.get(0));
+        return new SingletonOrderMap<>(set.get(0));
     }
 
     public <M> ImRevValueMap<K, M> mapItOrderRevValues() {
-        return new SingletonRevMap<K, M>(set.get(0));
+        return new SingletonRevMap<>(set.get(0));
     }
 }

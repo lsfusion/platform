@@ -29,7 +29,7 @@ public class StatKeysJoin<K extends BaseExpr> extends AbstractOuterContext<StatK
     }
 
     protected StatKeysJoin<K> translate(MapTranslate translator) {
-        return new StatKeysJoin<K>(StatKeys.translateOuter(stat, translator));
+        return new StatKeysJoin<>(StatKeys.translateOuter(stat, translator));
     }
 
     protected int hash(HashContext hash) {

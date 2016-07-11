@@ -95,7 +95,7 @@ public class NFOrderSetImpl<T> extends NFASetImpl<T, NFOrderSetChange<T>, ImOrde
     }
 
     public void move(T element, FindIndex<T> finder, Version version) {
-        addChange(new NFMove<T>(element, finder), version);
+        addChange(new NFMove<>(element, finder), version);
     }
 
     private static class MoveFinder<T> implements FindIndex<T> {
@@ -123,11 +123,11 @@ public class NFOrderSetImpl<T> extends NFASetImpl<T, NFOrderSetChange<T>, ImOrde
         }
     }
     public void move(T element, final T otherElement, final boolean isRightNeighbour, Version version) {
-        move(element, new MoveFinder<T>(otherElement, isRightNeighbour, false), version);
+        move(element, new MoveFinder<>(otherElement, isRightNeighbour, false), version);
     }
 
     public void addIfNotExistsToThenLast(T element, T to, boolean isRightNeighbour, Version version) {
-        add(element, new MoveFinder<T>(to, isRightNeighbour, true), version);        
+        add(element, new MoveFinder<>(to, isRightNeighbour, true), version);        
     }
 
     protected ImSet<T> getFinalSet(ImOrderSet<T> fcol) {

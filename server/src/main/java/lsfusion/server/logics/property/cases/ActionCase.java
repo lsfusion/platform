@@ -16,6 +16,6 @@ public class ActionCase<P extends PropertyInterface> extends Case<P, CalcPropert
     }
     
     public <T extends PropertyInterface> ActionCase<T> map(ImRevMap<P, T> map) {
-        return new ActionCase<T>(where.map(map), implement.map(map));        
+        return new ActionCase<>(where.map(map), implement.map(map));        
     }
 }

@@ -49,7 +49,7 @@ public class MainFrame implements EntryPoint {
     private DefaultFormsController formsController;
 
     public GAbstractWindow formsWindow;
-    public Map<GAbstractWindow, Widget> commonWindows = new LinkedHashMap<GAbstractWindow, Widget>();
+    public Map<GAbstractWindow, Widget> commonWindows = new LinkedHashMap<>();
 
     public GNavigatorActionDispatcher actionDispatcher = new GNavigatorActionDispatcher();
 
@@ -235,7 +235,7 @@ public class MainFrame implements EntryPoint {
                 navigatorController.initializeNavigatorViews(result.navigatorWindows);
                 navigatorController.setRootElement(result.root);
 
-                List<GAbstractWindow> allWindows = new ArrayList<GAbstractWindow>();
+                List<GAbstractWindow> allWindows = new ArrayList<>();
                 allWindows.addAll(result.navigatorWindows);
                 allWindows.addAll(commonWindows.keySet());
 

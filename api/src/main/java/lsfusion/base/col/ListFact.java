@@ -98,7 +98,7 @@ public class ListFact {
     }
     
     public static <K, V> List<Map<K, V>> toJavaMapList(ImOrderSet<ImMap<K, V>> listMap) {
-        List<Map<K, V>> list = new ArrayList<Map<K, V>>();
+        List<Map<K, V>> list = new ArrayList<>();
         for(ImMap<K, V> map : listMap)
             list.add(map.toJavaMap());
         return list;
@@ -108,16 +108,16 @@ public class ListFact {
     // MUTABLE
 
     public static <K> MCol<K> mCol() {
-        return new ArCol<K>();
+        return new ArCol<>();
     }
 
     public static <K> MCol<K> mCol(int size) {
-        return new ArCol<K>(size);
+        return new ArCol<>(size);
     }
 
     public static <K> MCol<K> mCol(ImCol<? extends K> col) {
         if(col instanceof ArCol)
-            return new ArCol<K>((ArCol<K>) col);
+            return new ArCol<>((ArCol<K>) col);
 
         MCol<K> mCol = mCol();
         mCol.addAll(col);
@@ -125,7 +125,7 @@ public class ListFact {
     }
 
     public static <K> MCol<K> mColMax(int size) {
-        return new ArCol<K>(size);
+        return new ArCol<>(size);
     }
 
     public static <K> MCol<K> mColFilter(ImCol<? extends K> col) {
@@ -142,20 +142,20 @@ public class ListFact {
     }
 
     public static <K> MList<K> mList() {
-        return new ArList<K>();
+        return new ArList<>();
     }
 
     public static <K> MList<K> mList(int size) {
-        return new ArList<K>(size);
+        return new ArList<>(size);
     }
 
     public static <K> MList<K> mListMax(int size) {
-        return new ArList<K>(size);
+        return new ArList<>(size);
     }
 
     public static <K> MList<K> mList(ImList<? extends K> list) {
         if(list instanceof ArList)
-            return new ArList<K>((ArList<K>) list);
+            return new ArList<>((ArList<K>) list);
 
         MList<K> mList = mList(list.size());
         mList.addAll(list);
@@ -178,19 +178,19 @@ public class ListFact {
     // map'ы по определению mutable, без явных imutable интерфейсов
 
     public static <K> MAddCol<K> mAddCol() {
-        return new ArCol<K>();
+        return new ArCol<>();
     }
 
     public static <K> MAddCol<K> mAddCol(int size) {
-        return new ArCol<K>(size);
+        return new ArCol<>(size);
     }
 
     public static <K> Collection<K> mAddRemoveCol() {
-        return new ArrayList<K>();
+        return new ArrayList<>();
     }
 
     public static <K> List<K> mAddRemoveList() {
-        return new ArrayList<K>();
+        return new ArrayList<>();
     }
     
     public static <K> void addJavaAll(ImCol<K> list, Collection<K> mList) {

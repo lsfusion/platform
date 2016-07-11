@@ -208,14 +208,14 @@ public class CompiledQuery<K,V> extends ImmutableObject {
 
     public CompiledQuery(final Query<K, V> query, SQLSyntax syntax, ImOrderMap<V, Boolean> orders, LimitOptions limit, SubQueryContext subcontext, boolean noExclusive, boolean noInline, ImMap<V, Type> exCastTypes) {
 
-        Result<ImOrderSet<K>> resultKeyOrder = new Result<ImOrderSet<K>>(); Result<ImOrderSet<V>> resultPropertyOrder = new Result<ImOrderSet<V>>();
+        Result<ImOrderSet<K>> resultKeyOrder = new Result<>(); Result<ImOrderSet<V>> resultPropertyOrder = new Result<>();
 
         keyNames = query.mapKeys.mapRevValues(new GenNameIndex("jkey", ""));
         propertyNames = query.properties.mapRevValues(new GenNameIndex("jprop",""));
         params = SetFact.addExclSet(query.getInnerValues(), query.getInnerStaticValues()).mapRevValues(new GenNameIndex("qwer", "ffd"));
 
         MStaticExecuteEnvironment mEnv = StaticExecuteEnvironmentImpl.mEnv();
-        Result<ExecCost> mBaseCost = new Result<ExecCost>(ExecCost.MIN);
+        Result<ExecCost> mBaseCost = new Result<>(ExecCost.MIN);
         MExclMap<String, SQLQuery> mSubQueries = MapFact.mExclMap();
 
         String select;
@@ -236,7 +236,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
 
         boolean useFJ = syntax.useFJ();
         noExclusive = noExclusive || Settings.get().isNoExclusiveCompile();
-        Result<Boolean> unionAll = new Result<Boolean>();
+        Result<Boolean> unionAll = new Result<>();
         ImCol<GroupJoinsWhere> queryJoins = query.getWhereJoins(!useFJ && !noExclusive, unionAll,
                                 limit.hasLimit() && syntax.orderTopProblem() ? orders.keyOrderSet().mapOrder(query.properties) : SetFact.<Expr>EMPTYORDER());
         boolean union = !useFJ && queryJoins.size() >= 2 && (unionAll.result || !Settings.get().isUseFJInsteadOfUnion());
@@ -265,7 +265,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
             from = "(" + fromString + ") "+alias;
             whereSelect = SetFact.EMPTY();
             String topString = limit.getString();
-            Result<Boolean> needSources = new Result<Boolean>();
+            Result<Boolean> needSources = new Result<>();
             String orderBy = Query.stringOrder(resultPropertyOrder.result, query.mapKeys.size(), compileOrders, propertySelect, syntax, needSources);
             if(needSources.result)
                 select = syntax.getSelect(from, "*",  "", orderBy, "", "", topString);
@@ -287,10 +287,10 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                 whereSelect = SetFact.EMPTY();                
                 areKeyValues = query.mapKeys.keys(); arePropValues = query.properties.keys(); 
             } else {
-                Result<ImMap<K, String>> resultKey = new Result<ImMap<K, String>>(); Result<ImMap<V, String>> resultProperty = new Result<ImMap<V, String>>();
+                Result<ImMap<K, String>> resultKey = new Result<>(); Result<ImMap<V, String>> resultProperty = new Result<>();
                 if(queryJoins.size()==1) { // "простой" запрос
-                    Result<ImCol<String>> resultWhere = new Result<ImCol<String>>(); Result<ImSet<V>> resultOrders = new Result<ImSet<V>>();
-                    Result<ImSet<K>> resultKeyValues = new Result<ImSet<K>>(); Result<ImSet<V>> resultPropValues= new Result<ImSet<V>>();
+                    Result<ImCol<String>> resultWhere = new Result<>(); Result<ImSet<V>> resultOrders = new Result<>();
+                    Result<ImSet<K>> resultKeyValues = new Result<>(); Result<ImSet<V>> resultPropValues= new Result<>();
                     from = fillInnerSelect(query.mapKeys, queryJoins.single(), query.properties, resultKey, resultProperty, resultWhere, params, syntax, subcontext, mEnv, mBaseCost, mSubQueries, resultKeyValues, resultPropValues);
                     whereSelect = resultWhere.result;
                     areKeyValues = resultKeyValues.result; arePropValues = resultPropValues.result;
@@ -342,9 +342,9 @@ public class CompiledQuery<K,V> extends ImmutableObject {
     static class InnerSelect extends CompileSource {
 
         public final Map<KeyExpr,String> keySelect;
-        private Stack<MRevMap<String, String>> stackTranslate = new Stack<MRevMap<String, String>>();
-        private Stack<MSet<KeyExpr>> stackUsedPendingKeys = new Stack<MSet<KeyExpr>>();
-        private Stack<Result<Boolean>> stackUsedOuterPendingJoins = new Stack<Result<Boolean>>();
+        private Stack<MRevMap<String, String>> stackTranslate = new Stack<>();
+        private Stack<MSet<KeyExpr>> stackUsedPendingKeys = new Stack<>();
+        private Stack<Result<Boolean>> stackUsedOuterPendingJoins = new Stack<>();
         private Set<KeyExpr> pending;
 
         void usedJoin(JoinSelect join) {
@@ -393,8 +393,8 @@ public class CompiledQuery<K,V> extends ImmutableObject {
             this.subcontext = subcontext;
             this.whereJoins = whereJoins;
             this.upWheres = upWheres;
-            this.keySelect = new HashMap<KeyExpr, String>(); // сложное рекурсивное заполнение
-            this.pending = new HashSet<KeyExpr>();
+            this.keySelect = new HashMap<>(); // сложное рекурсивное заполнение
+            this.pending = new HashSet<>();
             this.mSubQueries = mSubQueries;
         }
 
@@ -741,16 +741,16 @@ public class CompiledQuery<K,V> extends ImmutableObject {
 
                 Where groupWhere = exprWhere.and(Expr.getWhere(group));
 
-                Result<SQLQuery> empty = new Result<SQLQuery>();
+                Result<SQLQuery> empty = new Result<>();
                 groupWhere = pushWhere(groupWhere, keys, innerJoin.getJoins(), innerJoin.getStatKeys(keyStat), empty);
                 if(groupWhere==null)
                     return empty.result;
 
                 final MStaticExecuteEnvironment mSubEnv = StaticExecuteEnvironmentImpl.mEnv();
-                final Result<ImCol<String>> whereSelect = new Result<ImCol<String>>(); // проверить crossJoin
-                final Result<ImMap<Expr,String>> fromPropertySelect = new Result<ImMap<Expr, String>>();
-                final Result<ImMap<String, SQLQuery>> subQueries = new Result<ImMap<String, SQLQuery>>();
-                final Query<KeyExpr, Expr> query = new Query<KeyExpr, Expr>(keys.toRevMap(), queryExprs.toMap(), groupWhere);
+                final Result<ImCol<String>> whereSelect = new Result<>(); // проверить crossJoin
+                final Result<ImMap<Expr,String>> fromPropertySelect = new Result<>();
+                final Result<ImMap<String, SQLQuery>> subQueries = new Result<>();
+                final Query<KeyExpr, Expr> query = new Query<>(keys.toRevMap(), queryExprs.toMap(), groupWhere);
                 final CompiledQuery<KeyExpr, Expr> compiled = query.compile(new CompileOptions<Expr>(syntax, subcontext));
                 String fromSelect = compiled.fillSelect(new Result<ImMap<KeyExpr, String>>(), fromPropertySelect, whereSelect, subQueries, params, mSubEnv);
 
@@ -817,11 +817,11 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                 }
 
                 MStaticExecuteEnvironment mSubEnv = StaticExecuteEnvironmentImpl.mEnv();
-                Result<ImMap<String,String>> keySelect = new Result<ImMap<String, String>>();
-                Result<ImMap<Expr,String>> fromPropertySelect = new Result<ImMap<Expr, String>>();
-                Result<ImCol<String>> whereSelect = new Result<ImCol<String>>(); // проверить crossJoin
-                Result<ImMap<String, SQLQuery>> subQueries = new Result<ImMap<String, SQLQuery>>();
-                Query<String, Expr> subQuery = new Query<String, Expr>(group, queryExprs.toMap(), fullWhere);
+                Result<ImMap<String,String>> keySelect = new Result<>();
+                Result<ImMap<Expr,String>> fromPropertySelect = new Result<>();
+                Result<ImCol<String>> whereSelect = new Result<>(); // проверить crossJoin
+                Result<ImMap<String, SQLQuery>> subQueries = new Result<>();
+                Query<String, Expr> subQuery = new Query<>(group, queryExprs.toMap(), fullWhere);
                 CompiledQuery<String, Expr> compiledSubQuery = subQuery.compile(new CompileOptions<Expr>(syntax, subcontext));
                 String fromSelect = compiledSubQuery.fillSelect(keySelect, fromPropertySelect, whereSelect, subQueries, params, mSubEnv);
 
@@ -905,17 +905,17 @@ public class CompiledQuery<K,V> extends ImmutableObject {
 
                 Where innerWhere = innerJoin.getWhere();
 
-                Result<SQLQuery> empty = new Result<SQLQuery>();
+                Result<SQLQuery> empty = new Result<>();
                 innerWhere = pushWhere(innerWhere, group.valuesSet(), innerJoin.getJoins(), innerJoin.getStatKeys(keyStat), empty);
                 if(innerWhere==null)
                     return empty.result;
 
                 MStaticExecuteEnvironment mSubEnv = StaticExecuteEnvironmentImpl.mEnv();
-                Result<ImMap<String, String>> keySelect = new Result<ImMap<String, String>>();
-                Result<ImMap<String, String>> propertySelect = new Result<ImMap<String, String>>();
-                Result<ImCol<String>> whereSelect = new Result<ImCol<String>>();
-                Result<ImMap<String, SQLQuery>> subQueries = new Result<ImMap<String, SQLQuery>>();
-                CompiledQuery<String, String> compiledQuery = new Query<String, String>(group, queries, innerWhere).compile(new CompileOptions<String>(syntax, subcontext));
+                Result<ImMap<String, String>> keySelect = new Result<>();
+                Result<ImMap<String, String>> propertySelect = new Result<>();
+                Result<ImCol<String>> whereSelect = new Result<>();
+                Result<ImMap<String, SQLQuery>> subQueries = new Result<>();
+                CompiledQuery<String, String> compiledQuery = new Query<>(group, queries, innerWhere).compile(new CompileOptions<String>(syntax, subcontext));
                 String fromSelect = compiledQuery.fillSelect(keySelect, propertySelect, whereSelect, subQueries, params, mSubEnv);
                 return getSQLQuery("(" + syntax.getSelect(fromSelect, SQLSession.stringExpr(keySelect.result,propertySelect.result),
                     whereSelect.result.toString(" AND "),"","","", "") + ")", compiledQuery.sql.baseCost, subQueries.result, mSubEnv, innerWhere, false);
@@ -942,7 +942,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                             return syntax.getAnyValueFunc() + "(" + value + ")";
                         return value;
                     }});
-                fixedKeySelect = keySelect.filterOrder(new NotFunctionSet<String>(areKeyValues));
+                fixedKeySelect = keySelect.filterOrder(new NotFunctionSet<>(areKeyValues));
             }
             if(fixedKeySelect.isEmpty()) {
                 if(syntax.supportGroupSingleValue())
@@ -967,11 +967,11 @@ public class CompiledQuery<K,V> extends ImmutableObject {
             private String getSelect(ImRevMap<String, KeyExpr> keys, ImMap<String, Expr> props, final ImMap<String, Type> columnTypes, Where where, Result<ImOrderSet<String>> keyOrder, Result<ImOrderSet<String>> propOrder, boolean useRecursionFunction, boolean recursive, ImRevMap<ParseValue, String> params, SubQueryContext subcontext, Result<ExecCost> baseCost, Result<ImMap<String, SQLQuery>> subQueries, final MStaticExecuteEnvironment env) {
                 ImRevMap<String, KeyExpr> itKeys = innerJoin.getMapIterate().mapRevKeys(new GenNameIndex("pv_", ""));
 
-                Result<ImMap<String, String>> keySelect = new Result<ImMap<String, String>>();
-                Result<ImMap<String, String>> propertySelect = new Result<ImMap<String, String>>();
-                Result<ImCol<String>> whereSelect = new Result<ImCol<String>>();
-                Result<ImMap<String, SQLQuery>> innerSubQueries = new Result<ImMap<String, SQLQuery>>();
-                CompiledQuery<String, String> compiledQuery = new Query<String, String>(keys.addRevExcl(itKeys), props, where).compile(new CompileOptions<String>(syntax, subcontext, recursive && !useRecursionFunction));
+                Result<ImMap<String, String>> keySelect = new Result<>();
+                Result<ImMap<String, String>> propertySelect = new Result<>();
+                Result<ImCol<String>> whereSelect = new Result<>();
+                Result<ImMap<String, SQLQuery>> innerSubQueries = new Result<>();
+                CompiledQuery<String, String> compiledQuery = new Query<>(keys.addRevExcl(itKeys), props, where).compile(new CompileOptions<String>(syntax, subcontext, recursive && !useRecursionFunction));
                 String fromSelect = compiledQuery.fillSelect(keySelect, propertySelect, whereSelect, innerSubQueries, params, env);
 
                 ImMap<String, SQLQuery> compiledSubQueries = innerSubQueries.result;
@@ -1050,7 +1050,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
 
                 // проталкивание
                 ImMap<KeyExpr, BaseExpr> staticGroup = innerJoin.getJoins().remove(mapIterate.keys());
-                Result<SQLQuery> empty = new Result<SQLQuery>();
+                Result<SQLQuery> empty = new Result<>();
                 initialWhere = pushWhere(initialWhere, staticGroup.keys(), staticGroup, initialWhere.getStatKeys(staticGroup.keys()), empty);
                 if(initialWhere==null)
                     return empty.result;
@@ -1096,9 +1096,9 @@ public class CompiledQuery<K,V> extends ImmutableObject {
 
                 SubQueryContext pushContext = subcontext.pushRecursion();// чтобы имена не пересекались
                 
-                Result<ImOrderSet<String>> keyOrder = new Result<ImOrderSet<String>>(); Result<ImOrderSet<String>> propOrder = new Result<ImOrderSet<String>>();
+                Result<ImOrderSet<String>> keyOrder = new Result<>(); Result<ImOrderSet<String>> propOrder = new Result<>();
                 Result<ImMap<String, SQLQuery>> rSubQueries = new Result<>();
-                Result<ExecCost> baseCost = new Result<ExecCost>();
+                Result<ExecCost> baseCost = new Result<>();
 
                 // INIT
 
@@ -1372,7 +1372,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
     private static <K,V> String getInnerSelect(ImRevMap<K, KeyExpr> mapKeys, GroupJoinsWhere innerSelect, ImMap<V, Expr> compiledProps, ImRevMap<ParseValue, String> params, ImOrderMap<V, Boolean> orders, LimitOptions limit, SQLSyntax syntax, ImRevMap<K, String> keyNames, ImRevMap<V, String> propertyNames, Result<ImOrderSet<K>> keyOrder, Result<ImOrderSet<V>> propertyOrder, ImMap<V, Type> castTypes, SubQueryContext subcontext, boolean noInline, MStaticExecuteEnvironment env, Result<ExecCost> mBaseCost, MExclMap<String, SQLQuery> mSubQueries) {
         compiledProps = innerSelect.getFullWhere().followTrue(compiledProps, !innerSelect.isComplex());
 
-        Result<ImMap<K,String>> andKeySelect = new Result<ImMap<K, String>>(); Result<ImCol<String>> andWhereSelect = new Result<ImCol<String>>(); Result<ImMap<V,String>> andPropertySelect = new Result<ImMap<V, String>>();
+        Result<ImMap<K,String>> andKeySelect = new Result<>(); Result<ImCol<String>> andWhereSelect = new Result<>(); Result<ImMap<V,String>> andPropertySelect = new Result<>();
         String andFrom = fillInnerSelect(mapKeys, innerSelect, compiledProps, andKeySelect, andPropertySelect, andWhereSelect, params, syntax, subcontext, env, mBaseCost, mSubQueries, null, null);
 
         if(castTypes!=null)
@@ -1528,7 +1528,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
         for(int i=0;i<joinDataWheres.size();i++) {
             JoinData joinData = joinDataWheres.getKey(i);
             String joinName = "join_" + i;
-            Collection<AndJoinQuery> dataAnds = new ArrayList<AndJoinQuery>();
+            Collection<AndJoinQuery> dataAnds = new ArrayList<>();
             for(AndJoinQuery and : getWhereSubSet(joinAnds.get(joinData.getFJGroup()), joinDataWheres.getValue(i))) {
                 Expr joinExpr = joinData.getFJExpr();
                 if(!and.innerSelect.getFullWhere().means(joinExpr.getWhere().not())) { // проверим что не всегда null

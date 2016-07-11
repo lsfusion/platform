@@ -8,11 +8,11 @@ import lsfusion.interop.form.RemoteFormInterface;
 import java.io.IOException;
 
 public interface FormSessionManager {
-    public GForm createForm(String canonicalName, String formSID, RemoteFormInterface remoteForm, Object[] immutableMethods, byte[] firstChanges, LogicsAwareDispatchServlet<RemoteLogicsInterface> servlet) throws IOException;
+    GForm createForm(String canonicalName, String formSID, RemoteFormInterface remoteForm, Object[] immutableMethods, byte[] firstChanges, LogicsAwareDispatchServlet<RemoteLogicsInterface> servlet) throws IOException;
 
-    public FormSessionObject getFormSessionObjectOrNull(String formSessionID);
+    FormSessionObject getFormSessionObjectOrNull(String formSessionID);
 
-    public FormSessionObject getFormSessionObject(String formSessionID);
+    FormSessionObject getFormSessionObject(String formSessionID);
 
-    public FormSessionObject removeFormSessionObject(String formSessionID);
+    FormSessionObject removeFormSessionObject(String formSessionID);
 }

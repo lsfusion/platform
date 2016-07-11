@@ -222,14 +222,14 @@ class CellBasedWidgetImplTrident extends CellBasedWidgetImpl {
   public CellBasedWidgetImplTrident() {
     // Initialize the input types.
     if (inputTypes == null) {
-      inputTypes = new HashSet<String>();
+      inputTypes = new HashSet<>();
       inputTypes.add("select");
       inputTypes.add("input");
       inputTypes.add("textarea");
     }
 
     // Initialize the change event triggers.
-    changeEventTriggers = new HashSet<String>();
+    changeEventTriggers = new HashSet<>();
     changeEventTriggers.add(BrowserEvents.MOUSEUP);
     changeEventTriggers.add(BrowserEvents.MOUSEWHEEL);
   }

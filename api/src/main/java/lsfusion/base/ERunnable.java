@@ -1,5 +1,5 @@
 package lsfusion.base;
 
 public interface ERunnable {
-    public void run() throws Exception;
+    void run() throws Exception;
 }

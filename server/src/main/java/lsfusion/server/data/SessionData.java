@@ -132,11 +132,11 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
 
         assert properties.equals(query.getProperties());
 
-        Result<ImMap<KeyField, DataObject>> keyValues = new Result<ImMap<KeyField, DataObject>>();
-        Result<ImMap<PropertyField, ObjectValue>> propValues = new Result<ImMap<PropertyField, ObjectValue>>();
+        Result<ImMap<KeyField, DataObject>> keyValues = new Result<>();
+        Result<ImMap<PropertyField, ObjectValue>> propValues = new Result<>();
 
         if(!Settings.get().isDisableReadSingleValues()) {
-            Result<IQuery<KeyField, PropertyField>> pullQuery = new Result<IQuery<KeyField, PropertyField>>();
+            Result<IQuery<KeyField, PropertyField>> pullQuery = new Result<>();
             SessionRows singleResult = readSingleValues(session, baseClass, env, query, pullQuery, keyValues, propValues, new ResultSingleValues<SessionRows>() {
                 public SessionRows empty() {
                     return new SessionRows(keys, properties);
@@ -164,8 +164,8 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
         // нужно прочитать то что записано
         if(table.count > SessionRows.MAX_ROWS) {
             if(!Settings.get().isDisableReadSingleValues()) { // чтение singleValues
-                Result<ImMap<KeyField, Object>> actualKeyValues = new Result<ImMap<KeyField, Object>>(); Result<DistinctKeys<KeyField>> statKeys = new Result<DistinctKeys<KeyField>>();
-                Result<ImMap<PropertyField, Object>> actualPropValues = new Result<ImMap<PropertyField, Object>>(); Result<ImMap<PropertyField, PropStat>> statProps = new Result<ImMap<PropertyField, PropStat>>();
+                Result<ImMap<KeyField, Object>> actualKeyValues = new Result<>(); Result<DistinctKeys<KeyField>> statKeys = new Result<>();
+                Result<ImMap<PropertyField, Object>> actualPropValues = new Result<>(); Result<ImMap<PropertyField, PropStat>> statProps = new Result<>();
                 session.readSingleValues(table, actualKeyValues, actualPropValues, statKeys, statProps, opOwner);
                 keyValues.set(baseClass.getDataObjects(session, actualKeyValues.result, table.classes.getCommonClasses(actualKeyValues.result.keys()), opOwner).addExcl(keyValues.result));
                 final ImMap<PropertyField,ClassWhere<Field>> fPropertyClasses = table.propertyClasses;
@@ -197,7 +197,7 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
                 return pullQuery.<Field>getClassWhere(SetFact.singleton(value));
             }});
         ClassWhere<KeyField> classes = pullQuery.<KeyField>getClassWhere(SetFact.<PropertyField>EMPTY());
-        return new Pair<ClassWhere<KeyField>, ImMap<PropertyField, ClassWhere<Field>>>(classes, propertyClasses);
+        return new Pair<>(classes, propertyClasses);
     }
 
     public SessionData rewrite(SQLSession session, IQuery<KeyField, PropertyField> query, BaseClass baseClass, QueryEnvironment env, TableOwner owner, boolean updateClasses) throws SQLException, SQLHandledException {
@@ -235,7 +235,7 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
                 return singleResult;
         }
 
-        QueryBuilder<KeyField, PropertyField> modifyQuery = new QueryBuilder<KeyField, PropertyField>(query.getMapKeys());
+        QueryBuilder<KeyField, PropertyField> modifyQuery = new QueryBuilder<>(query.getMapKeys());
         final Join<PropertyField> prevJoin = join(modifyQuery.getMapExprs());
 
         final Where prevWhere = prevJoin.getWhere();

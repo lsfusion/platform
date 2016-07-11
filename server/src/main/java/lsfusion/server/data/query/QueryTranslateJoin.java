@@ -32,6 +32,6 @@ public class QueryTranslateJoin<U> extends AbstractJoin<U> {
     }
 
     public Join<U> translateRemoveValues(MapValuesTranslate translate) {
-        return new QueryTranslateJoin<U>(translator.translateRemoveValues(translate), join.translateRemoveValues(translate));
+        return new QueryTranslateJoin<>(translator.translateRemoveValues(translate), join.translateRemoveValues(translate));
     }
 }

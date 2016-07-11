@@ -6,19 +6,19 @@ import static java.lang.System.identityHashCode;
 import static lsfusion.base.BaseUtils.compareInts;
 
 public interface LifecycleListener {
-    public static int LOGICS_ORDER = 100;
-    public static int SYSTEM_ORDER = 200;
-    public static int DBMANAGER_ORDER = SYSTEM_ORDER + 100;
-    public static int SECURITYMANAGER_ORDER = SYSTEM_ORDER + 200;
-    public static int RMIMANAGER_ORDER = SYSTEM_ORDER + 300;
-    public static int BLLOADER_ORDER = SYSTEM_ORDER + 400;
+    int LOGICS_ORDER = 100;
+    int SYSTEM_ORDER = 200;
+    int DBMANAGER_ORDER = SYSTEM_ORDER + 100;
+    int SECURITYMANAGER_ORDER = SYSTEM_ORDER + 200;
+    int RMIMANAGER_ORDER = SYSTEM_ORDER + 300;
+    int BLLOADER_ORDER = SYSTEM_ORDER + 400;
 
     //более высокий order ради onStarted
-    public static int HIGH_DAEMON_ORDER = 8000;
-    public static int REFLECTION_ORDER = 9000;
-    public static int DAEMON_ORDER = 10000;
+    int HIGH_DAEMON_ORDER = 8000;
+    int REFLECTION_ORDER = 9000;
+    int DAEMON_ORDER = 10000;
 
-    public static final Comparator<LifecycleListener> ORDER_COMPARATOR = new Comparator<LifecycleListener>() {
+    Comparator<LifecycleListener> ORDER_COMPARATOR = new Comparator<LifecycleListener>() {
         @Override
         public int compare(LifecycleListener o1, LifecycleListener o2) {
             int p1 = o1.getOrder();

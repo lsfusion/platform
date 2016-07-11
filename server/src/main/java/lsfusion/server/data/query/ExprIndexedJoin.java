@@ -54,13 +54,13 @@ public class ExprIndexedJoin extends ExprJoin<ExprIndexedJoin> {
 
     public StatKeys<Integer> getStatKeys(KeyStat keyStat) {
         if(not)
-            return new StatKeys<Integer>(SetFact.<Integer>EMPTY(), Stat.ONE);
+            return new StatKeys<>(SetFact.<Integer>EMPTY(), Stat.ONE);
         else {
             if (compare.equals(Compare.EQUALS) && !givesNoKeys()) { // если не дает ключей, нельзя уменьшать статистику, так как паковка может съесть другие join'ы и тогда будет висячий ключ
                 assert false; // так как !compare.equals(Compare.EQUALS)
-                return new StatKeys<Integer>(SetFact.singleton(0), Stat.ONE);
+                return new StatKeys<>(SetFact.singleton(0), Stat.ONE);
             } else
-                return new StatKeys<Integer>(SetFact.singleton(0), baseExpr.getTypeStat(keyStat, true));
+                return new StatKeys<>(SetFact.singleton(0), baseExpr.getTypeStat(keyStat, true));
         }
     }
 

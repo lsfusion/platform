@@ -82,15 +82,15 @@ public class ArMap<K, V> extends AMRevMap<K, V> {
     }
 
     public <M> ImValueMap<K, M> mapItValues() {
-        return new ArMap<K, M>(this);
+        return new ArMap<>(this);
     }
 
     public <M> ImRevValueMap<K, M> mapItRevValues() {
-        return new ArMap<K, M>(this);
+        return new ArMap<>(this);
     }
 
     protected MExclMap<K, V> copy() {
-        return new ArMap<K,V>(this, true);
+        return new ArMap<>(this, true);
     }
 
     private void resize(int length) {
@@ -135,27 +135,27 @@ public class ArMap<K, V> extends AMRevMap<K, V> {
 
         // упорядочиваем Set
         ArSet.sortArray(size, keys, values);
-        return new ArIndexedMap<K, V>(size, keys, values);
+        return new ArIndexedMap<>(size, keys, values);
     }
 
     @Override
     public ImRevMap<V, K> reverse() {
-        return new ArMap<V, K>(size, values, keys);
+        return new ArMap<>(size, values, keys);
     }
 
     @Override
     public ImOrderMap<K, V> toOrderMap() {
-        return new ArOrderMap<K, V>(this);
+        return new ArOrderMap<>(this);
     }
 
     @Override
     public ImSet<K> keys() {
-        return new ArSet<K>(size, keys);
+        return new ArSet<>(size, keys);
     }
 
     @Override
     public ImCol<V> values() {
-        return new ArCol<V>(size, values);
+        return new ArCol<>(size, values);
     }
 
     private ImMap<K, V> merge(int mgSize, Object[] mgKeys, Object[] mgValues, AddValue<K, V> add) {
@@ -197,11 +197,11 @@ public class ArMap<K, V> extends AMRevMap<K, V> {
         }
 
         if(size < SetFact.useArrayMax)
-            return new ArMap<K, V>(r, rKeys, rValues);
+            return new ArMap<>(r, rKeys, rValues);
 
         // упорядочиваем Set
         ArSet.sortArray(r, rKeys, rValues);
-        return new ArIndexedMap<K, V>(r, rKeys, rValues);
+        return new ArIndexedMap<>(r, rKeys, rValues);
 
     }
 
@@ -213,7 +213,7 @@ public class ArMap<K, V> extends AMRevMap<K, V> {
 
         ImMap<K, V> result;
         if(map.size() <= SetFact.useIndexedAddInsteadOfMerge) {
-            ArMap<K, V> mResult = new ArMap<K, V>(this, add);
+            ArMap<K, V> mResult = new ArMap<>(this, add);
             if(!mResult.addAll(map))
                 result = null;
             else

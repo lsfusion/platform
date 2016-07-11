@@ -17,7 +17,7 @@ public class RMITimeoutSocketFactory extends ZipSocketFactory implements Compres
 
     private final int timeout;
 
-    private transient final WeakLinkedHashSet<CountZipSocket> sockets = new WeakLinkedHashSet<CountZipSocket>();
+    private transient final WeakLinkedHashSet<CountZipSocket> sockets = new WeakLinkedHashSet<>();
 
     public transient long inSum;
     public transient long outSum;

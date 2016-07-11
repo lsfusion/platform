@@ -31,7 +31,7 @@ public class JoinCaseList<U> extends CaseList<Join<U>, Join<U>,JoinCase<U>> {
     }
 
     public JoinCaseList(Where where,Join<U> join) {
-        this(SetFact.<JoinCase<U>>singleton(new JoinCase<U>(where, join)), join.getProperties());
+        this(SetFact.<JoinCase<U>>singleton(new JoinCase<>(where, join)), join.getProperties());
     }
 
     public Where getWhere() {
@@ -46,13 +46,13 @@ public class JoinCaseList<U> extends CaseList<Join<U>, Join<U>,JoinCase<U>> {
         final MapTranslate translator = translate.mapKeys();
         GetValue<JoinCase<U>, JoinCase<U>> transCase = new GetValue<JoinCase<U>, JoinCase<U>>() {
             public JoinCase<U> getMapValue(JoinCase<U> exprCase) {
-                return new JoinCase<U>(exprCase.where.translateOuter(translator), exprCase.data.translateRemoveValues(translate));
+                return new JoinCase<>(exprCase.where.translateOuter(translator), exprCase.data.translateRemoveValues(translate));
             }
         };
 
         if(exclusive)
-            return new JoinCaseList<U>(((ImSet<JoinCase<U>>)list).mapSetValues(transCase), properties);
+            return new JoinCaseList<>(((ImSet<JoinCase<U>>) list).mapSetValues(transCase), properties);
         else
-            return new JoinCaseList<U>(((ImList<JoinCase<U>>)list).mapListValues(transCase), properties);
+            return new JoinCaseList<>(((ImList<JoinCase<U>>) list).mapListValues(transCase), properties);
     }
 }

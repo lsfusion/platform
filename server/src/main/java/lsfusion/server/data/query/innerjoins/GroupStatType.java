@@ -24,14 +24,14 @@ public enum GroupStatType {
         MMap<Pair<KeyEqual, StatKeys<K>>, Where> mMapWhere = MapFact.mMap(AbstractWhere.<Pair<KeyEqual, StatKeys<K>>>addOr());
         for(ImCol<GroupStatWhere<K>> statJoins : statJoinsList)
             for(GroupStatWhere<K> statJoin : statJoins)
-                mMapWhere.add(new Pair<KeyEqual, StatKeys<K>>(statJoin.keyEqual,
+                mMapWhere.add(new Pair<>(statJoin.keyEqual,
                         statJoin.stats), noWhere ? Where.TRUE : statJoin.where);
         ImMap<Pair<KeyEqual, StatKeys<K>>, Where> mapWhere = mMapWhere.immutable();
 
         MExclSet<GroupStatWhere<K>> mResult = SetFact.mExclSet(mapWhere.size());
         for(int i=0,size=mapWhere.size();i<size;i++) { // возвращаем результат
             Pair<KeyEqual, StatKeys<K>> map = mapWhere.getKey(i);
-            mResult.exclAdd(new GroupStatWhere<K>(map.first, map.second, mapWhere.getValue(i)));
+            mResult.exclAdd(new GroupStatWhere<>(map.first, map.second, mapWhere.getValue(i)));
         }
         return mResult.immutable();
     }
@@ -52,7 +52,7 @@ public enum GroupStatType {
         MExclSet<GroupStatWhere<K>> mResult = SetFact.mExclSet(mapWhere.size());
         for(int i=0,size=mapWhere.size();i<size;i++) { // возвращаем результат
             KeyEqual keys = mapWhere.getKey(i);
-            mResult.exclAdd(new GroupStatWhere<K>(keys, mapStats.get(keys), keyEquals != null ? keyEquals.get(keys) : mapWhere.getValue(i)));
+            mResult.exclAdd(new GroupStatWhere<>(keys, mapStats.get(keys), keyEquals != null ? keyEquals.get(keys) : mapWhere.getValue(i)));
         }
         return mResult.immutable();
 
@@ -95,7 +95,7 @@ public enum GroupStatType {
                     GroupStatWhere<K> where = i.next();
                     if(where.keyEqual.equals(join.keyEqual) && where.stats.equals(join.stats)) {
                         i.remove();
-                        join = new GroupStatWhere<K>(join.keyEqual, join.stats, join.where.or(where.where));
+                        join = new GroupStatWhere<>(join.keyEqual, join.stats, join.where.or(where.where));
                         break;
                     }
                 }
@@ -105,7 +105,7 @@ public enum GroupStatType {
                     GroupStatWhere<K> where = i.next();
                     if(where.keyEqual.equals(join.keyEqual)) {
                         i.remove();
-                        join = new GroupStatWhere<K>(join.keyEqual, join.stats.or(where.stats), join.where.or(where.where));
+                        join = new GroupStatWhere<>(join.keyEqual, join.stats.or(where.stats), join.where.or(where.where));
                         break;
                     }
                 }

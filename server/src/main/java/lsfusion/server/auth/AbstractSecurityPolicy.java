@@ -8,8 +8,8 @@ import java.util.Set;
 
 public class AbstractSecurityPolicy<T> {
 
-    private Set<T> permitted = new HashSet<T>();
-    private Set<T> denied = new HashSet<T>();
+    private Set<T> permitted = new HashSet<>();
+    private Set<T> denied = new HashSet<>();
 
     public boolean replaceMode = false;
     public Boolean defaultPermission;

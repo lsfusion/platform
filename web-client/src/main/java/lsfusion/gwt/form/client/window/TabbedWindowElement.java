@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class TabbedWindowElement extends WindowElement {
-    private List<WindowElement> children = new ArrayList<WindowElement>();
+    private List<WindowElement> children = new ArrayList<>();
 
     private TabLayoutPanel tabPanel = new TabLayoutPanel(21, Style.Unit.PX);
 

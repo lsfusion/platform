@@ -49,7 +49,7 @@ public class OverrideSessionModifier extends SessionModifier {
         return BaseUtils.max(override.getMaxCount(property), modifier.getMaxCount(property));
     }
 
-    private static LRUWWVSMap<OverrideSessionModifier, CalcProperty, Boolean> pushHint = new LRUWWVSMap<OverrideSessionModifier, CalcProperty, Boolean>(LRUUtil.L2);
+    private static LRUWWVSMap<OverrideSessionModifier, CalcProperty, Boolean> pushHint = new LRUWWVSMap<>(LRUUtil.L2);
     @ManualLazy
     private boolean pushHint(CalcProperty property) { // частый вызов из-за кэширования хинтов, уже нет так как отрезается проверкой на complex
         Boolean result = pushHint.get(this, property);
@@ -223,7 +223,7 @@ public class OverrideSessionModifier extends SessionModifier {
     protected <P extends PropertyInterface> ModifyChange<P> calculateModifyChange(CalcProperty<P> property, PrereadRows<P> preread, FunctionSet<CalcProperty> overrided) {
         PropertyChange<P> overrideChange = override.getPropertyChange(property);
         if(overrideChange!=null)
-            return new ModifyChange<P>(overrideChange, true);
+            return new ModifyChange<>(overrideChange, true);
         return modifier.getModifyChange(property, preread, merge(overrided, CalcProperty.getDependsOnSet(override.getProperties()), forceDisableHintIncrement));
     }
 

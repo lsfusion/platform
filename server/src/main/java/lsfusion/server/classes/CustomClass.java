@@ -171,7 +171,7 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
         return (ConcreteCustomClass) cls;
     }
 
-    private final static LRUWSVSMap<CustomClass, CustomClass, ImSet<CustomClass>> cacheChilds = new LRUWSVSMap<CustomClass, CustomClass, ImSet<CustomClass>>(LRUUtil.G2);
+    private final static LRUWSVSMap<CustomClass, CustomClass, ImSet<CustomClass>> cacheChilds = new LRUWSVSMap<>(LRUUtil.G2);
 
     public void fillParents(MSet<CustomClass> parentSet) {
         if (parentSet.add(this)) return;
@@ -274,7 +274,7 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
             Version version = LM.getVersion();
 
             baseClassForm = getListForm(LM).form;
-            List<FormEntity> childrenList = new ArrayList<FormEntity>();
+            List<FormEntity> childrenList = new ArrayList<>();
             for (CustomClass child : getChildrenIt()) {
                 FormEntity childForm = child.getBaseClassForm(LM);
                 if (childForm.getNFParent(version) == null)

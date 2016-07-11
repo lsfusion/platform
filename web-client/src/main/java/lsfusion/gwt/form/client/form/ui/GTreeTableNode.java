@@ -21,7 +21,7 @@ public class GTreeTableNode {
     public GTreeTableNode(GGroupObject group, GGroupObjectValue key) {
         this.group = group;
         this.key = key;
-        children = new ArrayList<GTreeTableNode>();
+        children = new ArrayList<>();
     }
 
     public GGroupObject getGroup() {

@@ -56,7 +56,7 @@ public class LRUWSASVSMap<W, K, E, V> extends ALRUKWMap<W, LRUWSASVSMap.AEntry<W
 
         @Override
         protected AEntry<W, K, E, V> createTail() {
-            return new AEntry<W, K, E, V>(weakTail(), null, null, refQueue, null, -1, null, 0);
+            return new AEntry<>(weakTail(), null, null, refQueue, null, -1, null, 0);
         }
 
         public final V get(W wKey, K sKey, E[] eKey, int hash) {
@@ -84,7 +84,7 @@ public class LRUWSASVSMap<W, K, E, V> extends ALRUKWMap<W, LRUWSASVSMap.AEntry<W
                         return oldValue;
                     }
                 }
-                AEntry<W, K, E, V> e = new AEntry<W, K, E, V>(wKey, sKey, eKey, refQueue, table[i], hash, value, currentTime);
+                AEntry<W, K, E, V> e = new AEntry<>(wKey, sKey, eKey, refQueue, table[i], hash, value, currentTime);
 
                 regEntry(e, i);
             } finally {

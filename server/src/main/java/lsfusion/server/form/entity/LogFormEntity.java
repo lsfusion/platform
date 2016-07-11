@@ -118,7 +118,7 @@ public class LogFormEntity<T extends BusinessLogics<T>> extends FormEntity<T> {
                 JoinProperty<?> jProp = new JoinProperty(impl.property.caption,
                         listInterfaces, mapCalcImplement(lpMainProp, readCalcImplements(listInterfaces, params)));
                 jProp.inheritFixedCharWidth(impl.property);
-                LCP<?> ljProp = new LCP<JoinProperty.Interface>(jProp, listInterfaces);
+                LCP<?> ljProp = new LCP<>(jProp, listInterfaces);
                 addPropertyDraw(ljProp, version, entities);
             }
         }

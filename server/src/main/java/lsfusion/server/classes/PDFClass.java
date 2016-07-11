@@ -12,7 +12,7 @@ public class PDFClass extends StaticFormatFileClass {
         return "PDFFILE";
     }
 
-    private static Collection<PDFClass> instances = new ArrayList<PDFClass>();
+    private static Collection<PDFClass> instances = new ArrayList<>();
 
     public static PDFClass get(boolean multiple, boolean storeName) {
         for (PDFClass instance : instances)

@@ -19,7 +19,7 @@ public class ImportMDBIterator extends ImportIterator {
     public List<String> nextRow() {
         if (rowMapIterator.hasNext()) {
             List<String> row = rowMapIterator.next();
-            List<String> listRow = new ArrayList<String>();
+            List<String> listRow = new ArrayList<>();
             for (Integer column : sourceColumns) {
                 listRow.add(row.get(column));
             }

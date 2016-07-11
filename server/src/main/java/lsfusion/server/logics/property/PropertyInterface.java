@@ -126,7 +126,7 @@ public class PropertyInterface<P extends PropertyInterface<P>> extends IdentityO
     }
 
     public Inferred<P> mapInferInterfaceClasses(ExClassSet commonValue, InferType inferType) {
-        return new Inferred<P>((P) this, commonValue);
+        return new Inferred<>((P) this, commonValue);
     }
     public ExClassSet mapInferValueClass(ImMap<P, ExClassSet> inferred, InferType inferType) {
         return inferred.get((P)this);

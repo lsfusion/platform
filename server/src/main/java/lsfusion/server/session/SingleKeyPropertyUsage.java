@@ -48,7 +48,7 @@ public class SingleKeyPropertyUsage extends SinglePropertyTableUsage<String> {
     public static <P extends PropertyInterface> PropertyChange<P> getChange(SingleKeyPropertyUsage table, P propertyInterface) {
         ImRevMap<String, KeyExpr> mapKeys = table.getMapKeys();
         Join<String> join = table.join(mapKeys);
-        return new PropertyChange<P>(MapFact.singletonRev(propertyInterface, mapKeys.singleValue()), join.getExpr("value"), join.getWhere());
+        return new PropertyChange<>(MapFact.singletonRev(propertyInterface, mapKeys.singleValue()), join.getExpr("value"), join.getWhere());
     }
 
     public ClassChange getChange() {

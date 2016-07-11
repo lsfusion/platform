@@ -125,39 +125,40 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
             ImMap<K, AndClassSet> result = map.merge(where2.map, AbstractClassWhere.<K>addAnd()); // так быстрее этот участок кода выполняется, ОЧЕНЬ много раз
             if(result==null)
                 return null;
-            return new And<K>(result);
+            return new And<>(result);
         }
 
         public <T> And<T> remap(ImRevMap<K, ? extends T> remap) {
-            return new And<T>((ImMap<T,AndClassSet>) remap.rightCrossJoin(map));
+            return new And<>((ImMap<T, AndClassSet>) remap.rightCrossJoin(map));
         }
         public <T> And<T> remap(GetValue<T, K> remap) {
-            return new And<T>((ImMap<T,AndClassSet>) map.mapKeys(remap));
+            return new And<>((ImMap<T, AndClassSet>) map.mapKeys(remap));
         }
         public <T> And<T> innerRemap(ImRevMap<K, ? extends T> remap) {
-            return new And<T>((ImMap<T,AndClassSet>) remap.innerCrossJoin(map));
+            return new And<>((ImMap<T, AndClassSet>) remap.innerCrossJoin(map));
         }
         public <T> And<T> mapBack(ImRevMap<T, ? extends K> remap) {
-            return new And<T>(((ImRevMap<T, K>)remap).join(map));
+            return new And<>(((ImRevMap<T, K>) remap).join(map));
         }
 
         public And<K> remove(ImSet<? extends K> keys) {
-            return new And<K>(map.remove(keys));
+            return new And<>(map.remove(keys));
         }
 
         public And<K> getBase() {
-            return new And<K>(map.mapValues(new GetValue<AndClassSet, AndClassSet>() {
+            return new And<>(map.mapValues(new GetValue<AndClassSet, AndClassSet>() {
                 public AndClassSet getMapValue(AndClassSet value) {
                     return value.getOr().getCommonClass().getBaseClass().getUpSet();
-                }}));
+                }
+            }));
         }
 
         public <T extends K> And<T> filterKeys(ImSet<T> keys) {
-            return new And<T>(map.filter(keys));
+            return new And<>(map.filter(keys));
         }
 
         public <T extends K> And<T> filterInclKeys(ImSet<T> keys) {
-            return new And<T>(map.filterIncl(keys));
+            return new And<>(map.filterIncl(keys));
         }
 
         protected boolean containsAll(AndClassSet who, AndClassSet what) {
@@ -180,7 +181,7 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
             AndClassSet[][] ands = new AndClassSet[orderAnd.size()][];
             for(int i=0;i<orderAnd.size();i++)
                 ands[i] = orderAnd.getValue(i).getAnd();
-            ArrayCombinations<AndClassSet> combs = new ArrayCombinations<AndClassSet>(ands, AndClassSet.arrayInstancer);
+            ArrayCombinations<AndClassSet> combs = new ArrayCombinations<>(ands, AndClassSet.arrayInstancer);
             if(combs.max==1) {
                 if(where.meansFrom(this, true)) // тут вопрос надо ли implicit кастить, но раньше работало так
                     return new And[0];
@@ -189,7 +190,7 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
             }
             And<K>[] keep = new And[combs.max]; int k=0;
             for(AndClassSet[] comb : combs) {
-                And<K> and = new And<K>(orderAnd.replaceValues(comb).getMap());
+                And<K> and = new And<>(orderAnd.replaceValues(comb).getMap());
                 if(!where.meansFrom(and, true)) // тут вопрос надо ли implicit кастить, но раньше работало так
                     keep[k++] = and;
             }
@@ -201,7 +202,7 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
     }
 
     protected And<K> createMap(ImMap<K, AndClassSet> map) {
-        return new And<K>(map);
+        return new And<>(map);
     }
 
     protected AndClassSet addMapValue(AndClassSet value1, AndClassSet value2) {
@@ -233,11 +234,11 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
     }
 
     protected AbstractClassWhere(K key, AndClassSet classes) {
-        super(new And<K>(key,classes));
+        super(new And<>(key, classes));
     }
 
     protected AbstractClassWhere(ImMap<K,? extends AndClassSet> map) {
-        super(new And<K>((ImMap<K, AndClassSet>) map));
+        super(new And<>((ImMap<K, AndClassSet>) map));
     }
 
     public boolean isTrue() {
@@ -354,7 +355,7 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
             else {
                 KNF<K>[] knfs = new KNF[wheres.length];
                 for (int i = 0; i < wheres.length; i++)
-                    knfs[i] = new KNF<K>(KNF.toOr(wheres[i]));
+                    knfs[i] = new KNF<>(KNF.toOr(wheres[i]));
 
                 for(int p=0;p<wheres.length-1;p++) {
                     // сначала ищем наиболее похожие
@@ -363,7 +364,7 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
                         if(knfs[i] != null) {
                             for(int j=i+1;j<knfs.length;j++)
                                 if(knfs[j] != null) {
-                                    BaseUtils.Paired<Or<K>> paired = new BaseUtils.Paired<Or<K>>(knfs[i].wheres, knfs[j].wheres, KNF.<K>instancer());
+                                    BaseUtils.Paired<Or<K>> paired = new BaseUtils.Paired<>(knfs[i].wheres, knfs[j].wheres, KNF.<K>instancer());
                                     if(max == null || paired.common.length > max.common.length) {
                                         max = paired; lm = i; rm = j;
                                     }
@@ -395,7 +396,7 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
 
         protected Or<K> intersect(Or<K> where2) {
             if(size()>where2.size()) return where2.intersect(this);
-            return new Or<K>(map.merge(where2.map, OrObjectClassSet.<K>addOr())); // так быстрее этот участок кода выполняется, ОЧЕНЬ много раз
+            return new Or<>(map.merge(where2.map, OrObjectClassSet.<K>addOr())); // так быстрее этот участок кода выполняется, ОЧЕНЬ много раз
         }
 
         public boolean meansFrom(And<K> where, boolean implicitCast) {
@@ -439,7 +440,7 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
         
 
         protected KNF<K> createThis(Or<K>[] wheres) {
-            return new KNF<K>(wheres);
+            return new KNF<>(wheres);
         }
 
         // теоретически таже логика что и для and'ов потому как все элементы независимы и соответственно все равно, что and, что or
@@ -452,7 +453,7 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
         }
 
         protected Or<K> createMap(ImMap<K, OrClassSet> map) {
-            return new Or<K>(map);
+            return new Or<>(map);
         }
 
         protected OrClassSet addMapValue(OrClassSet value1, OrClassSet value2) {
@@ -463,20 +464,20 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
             int size = map.size();
             Or<K>[] toOr = new Or[size];
             for(int j=0;j<size;j++)
-                toOr[j] = new Or<K>(map.getKey(j),map.getValue(j).getOr());
+                toOr[j] = new Or<>(map.getKey(j), map.getValue(j).getOr());
             return toOr;
         }
 
         private static <K> KNF<K> orPairs(BaseUtils.Paired<Or<K>> paired) {
             // алгоритм такой : надо до выполнения самого or'а, выцепим "скобки" (единичные or'ы) тогда можно assert'ить что скобки можно просто прицепить и ни одна из этих скобок не будет следовать
-            KNF<K> and = new KNF<K>(paired.getDiff1()).intersect(new KNF<K>(paired.getDiff2()));
+            KNF<K> and = new KNF<>(paired.getDiff1()).intersect(new KNF<>(paired.getDiff2()));
             if(paired.common.length==0)
                 return and;
             assert and.checkMerge(paired.common);
             Or<K>[] merged = new Or[and.wheres.length + paired.common.length];
             System.arraycopy(paired.common,0,merged,0,paired.common.length);
             System.arraycopy(and.wheres,0,merged,paired.common.length,and.wheres.length);
-            return new KNF<K>(merged);
+            return new KNF<>(merged);
         }
 
         // проверяет что можно тупо слить

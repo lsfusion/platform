@@ -1597,7 +1597,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         QueryEnvironment queryEnv = getQueryEnv();
 
         // если изменились данные, применяем изменения
-        Result<ChangedData> mChangedProps = new Result<ChangedData>(ChangedData.EMPTY);  // так как могут еще измениться свойства созданные при помощи операторов форм
+        Result<ChangedData> mChangedProps = new Result<>(ChangedData.EMPTY);  // так как могут еще измениться свойства созданные при помощи операторов форм
         updateData(mChangedProps, stack);
 
         GroupObjectValue updateGroupObject = null; // так как текущий groupObject идет относительно treeGroup, а не group

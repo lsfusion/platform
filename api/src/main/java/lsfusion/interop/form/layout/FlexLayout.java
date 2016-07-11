@@ -22,7 +22,7 @@ public class FlexLayout extends CachableLayout<FlexConstraints> {
         this.vertical = vertical;
         this.alignment = alignment;
 
-        this.constraintsMap = new HashMap<Component, FlexConstraints>();
+        this.constraintsMap = new HashMap<>();
     }
 
     @Override

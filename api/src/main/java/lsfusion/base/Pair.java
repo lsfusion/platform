@@ -12,7 +12,7 @@ public class Pair<Class1, Class2> {
 
     // чтобы короче ситнаксис был
     public static <Class1,Class2> Pair<Class1,Class2> create(Class1 first, Class2 second) {
-        return new Pair<Class1, Class2>(first, second);
+        return new Pair<>(first, second);
     }
 
     public String toString() { return "(" + first.toString() + "," + second.toString() + ")"; }

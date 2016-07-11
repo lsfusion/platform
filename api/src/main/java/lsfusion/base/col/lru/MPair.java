@@ -14,7 +14,7 @@ public class MPair<Class1, Class2> {
 
     // чтобы короче ситнаксис был
     public static <Class1,Class2> MPair<Class1,Class2> create(Class1 first, Class2 second) {
-        return new MPair<Class1, Class2>(first, second);
+        return new MPair<>(first, second);
     }
 
     public String toString() { return "(" + first.toString() + "," + second.toString() + ")"; }

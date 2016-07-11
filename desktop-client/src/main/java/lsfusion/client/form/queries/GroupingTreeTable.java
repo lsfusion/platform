@@ -170,10 +170,10 @@ public class GroupingTreeTable extends JXTreeTable {
         List<ClientPropertyDraw> columnProperties;
         java.util.List<String> columnNames;
         java.util.List<Map<java.util.List<Object>, java.util.List<Object>>> sources;
-        Map<SortableTreeTableNode, java.util.List<Object>> values = new OrderedMap<SortableTreeTableNode, java.util.List<Object>>();
+        Map<SortableTreeTableNode, java.util.List<Object>> values = new OrderedMap<>();
         int keyColumnsQuantity = 0;
 
-        public LinkedHashMap<Integer, Boolean> sortedColumns = new LinkedHashMap<Integer, Boolean>(); //column - ascending
+        public LinkedHashMap<Integer, Boolean> sortedColumns = new LinkedHashMap<>(); //column - ascending
         
         public GroupingTreeTableModel(int keyColumnsQuantity, List<ClientPropertyDraw> columnProperties, List<String> columnNames, List<Map<List<Object>, List<Object>>> values) {
             super();
@@ -232,7 +232,7 @@ public class GroupingTreeTable extends JXTreeTable {
             Map<java.util.List<Object>, java.util.List<Object>> map = sources.get(index);
             for (java.util.List<Object> keys : map.keySet()) {
                 if (parentKeys == null || containsAll(parentKeys, keys)) {
-                    java.util.List<Object> row = new ArrayList<Object>();
+                    java.util.List<Object> row = new ArrayList<>();
                     row.addAll(keys);
                     for (int i = 0; i < keyColumnsQuantity - keys.size(); i++) {
                         row.add(null);
@@ -241,7 +241,7 @@ public class GroupingTreeTable extends JXTreeTable {
                     SortableTreeTableNode node = new SortableTreeTableNode(index + 1, true);
                     parentNode.add(node);
                     
-                    List<Object> convertedRow = new ArrayList<Object>();
+                    List<Object> convertedRow = new ArrayList<>();
                     for (Object value : row) {
                         Object convertedValue = value;
 

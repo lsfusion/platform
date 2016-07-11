@@ -314,8 +314,8 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
         HSet<Compare> less;
 
         Compare() {
-            greater = new HSet<Compare>();
-            less = new HSet<Compare>();
+            greater = new HSet<>();
+            less = new HSet<>();
             greater.add(this);
             less.add(this);
         }

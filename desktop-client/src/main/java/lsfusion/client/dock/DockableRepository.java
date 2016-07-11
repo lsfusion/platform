@@ -13,7 +13,7 @@ public class DockableRepository {
     /**
      * the formsList in this repository
      */
-    private List<String> formsList = new ArrayList<String>();
+    private List<String> formsList = new ArrayList<>();
 
     /**
      * Writes the formsList of this repository into <code>out</code>.
@@ -62,6 +62,6 @@ public class DockableRepository {
     }
 
     public List<String> getFormsList() {
-        return new ArrayList<String>(formsList);
+        return new ArrayList<>(formsList);
     }
 }

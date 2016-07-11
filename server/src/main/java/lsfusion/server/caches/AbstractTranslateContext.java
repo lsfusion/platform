@@ -73,8 +73,8 @@ public abstract class AbstractTranslateContext<T, M extends MapObject, H extends
         translated = true;
     }
 
-    private final static LRUWVWSMap<AbstractTranslateContext, MapObject, AbstractTranslateContext> transFrom = new LRUWVWSMap<AbstractTranslateContext, MapObject, AbstractTranslateContext>(LRUUtil.L2);
-    private final static LRUWSVSMap<MapObject, AbstractTranslateContext, AbstractTranslateContext> transCache = new LRUWSVSMap<MapObject, AbstractTranslateContext, AbstractTranslateContext>(LRUUtil.L2);
+    private final static LRUWVWSMap<AbstractTranslateContext, MapObject, AbstractTranslateContext> transFrom = new LRUWVWSMap<>(LRUUtil.L2);
+    private final static LRUWSVSMap<MapObject, AbstractTranslateContext, AbstractTranslateContext> transCache = new LRUWSVSMap<>(LRUUtil.L2);
     
     protected abstract T aspectContextTranslate(M translator);
     @ManualLazy

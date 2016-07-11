@@ -253,7 +253,7 @@ public class CaseExpr extends Expr {
     }
 
     public Set<BaseExpr> getBaseExprs() {
-        Set<BaseExpr> result = new HashSet<BaseExpr>();
+        Set<BaseExpr> result = new HashSet<>();
         for(ExprCase exprCase : cases)
             result.addAll(exprCase.data.getBaseExprs());
         return result;

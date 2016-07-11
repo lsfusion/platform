@@ -23,7 +23,7 @@ public class FormDispatchAsync {
 
     private int nextRequestIndex = 0;
 
-    private final LinkedList<QueuedAction> q = new LinkedList<QueuedAction>();
+    private final LinkedList<QueuedAction> q = new LinkedList<>();
 
     //отдельный флаг закрытой формы нужен, чтобы не посылать случайных запросов в закрытую форму (в частности changePageSize)
     private boolean formClosed = false;

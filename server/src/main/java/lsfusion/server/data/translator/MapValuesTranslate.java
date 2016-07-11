@@ -33,9 +33,9 @@ public interface MapValuesTranslate extends MapObject {
 
     boolean assertValuesContains(ImSet<? extends Value> values);
 
-    public MapValuesTranslate reverse();
+    MapValuesTranslate reverse();
 
     boolean identityValues(ImSet<? extends Value> values);
 
-    public HashValues getHashValues();
+    HashValues getHashValues();
 }

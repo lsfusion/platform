@@ -112,7 +112,7 @@ public class ConcatenateClassSet implements ConcreteClass, ValueClassSet  { // Ð
         AndClassSet[][] ands = new AndClassSet[classes.length][];
         for(int i=0;i<classes.length;i++)
             ands[i] = classes[i].getAnd();
-        ArrayCombinations<AndClassSet> combs = new ArrayCombinations<AndClassSet>(ands, AndClassSet.arrayInstancer);
+        ArrayCombinations<AndClassSet> combs = new ArrayCombinations<>(ands, AndClassSet.arrayInstancer);
         if(combs.max==1)
             return new AndClassSet[]{this};
         AndClassSet[] result = new AndClassSet[combs.max]; int k=0;

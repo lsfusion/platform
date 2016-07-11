@@ -59,7 +59,7 @@ public class GShowTypeView extends ResizableHorizontalPanel {
     }
 
     public void setBanClassViews(List<String> banClassViewNames) {
-        List<GClassViewType> banClassViews = new ArrayList<GClassViewType>();
+        List<GClassViewType> banClassViews = new ArrayList<>();
         for (String banClassViewName : banClassViewNames) {
             banClassViews.add(GClassViewType.valueOf(banClassViewName));
         }

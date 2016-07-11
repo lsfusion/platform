@@ -14,15 +14,15 @@ import java.util.concurrent.ConcurrentHashMap;
 public class NFFact {
     
     public static <K> NFOrderSet<K> orderSet() {
-        return new NFOrderSetImpl<K>();
+        return new NFOrderSetImpl<>();
     }
 
     public static <K> NFOrderSet<K> orderSet(boolean allowVersionFinalRead) {
-        return new NFOrderSetImpl<K>(allowVersionFinalRead);
+        return new NFOrderSetImpl<>(allowVersionFinalRead);
     }
 
     public static <K> NFOrderSet<K> simpleOrderSet(ImOrderSet<K> orderSet) {
-        return new NFSimpleOrderSetImpl<K>(orderSet);
+        return new NFSimpleOrderSetImpl<>(orderSet);
     }
 
     public static <K> NFOrderSet<K> simpleOrderSet() {
@@ -30,15 +30,15 @@ public class NFFact {
     }
     
     public static <K, V> Map<K, V> simpleMap(Map<K, V> map) {
-        return new ConcurrentHashMap<K, V>(map);
+        return new ConcurrentHashMap<>(map);
     }
 
     public static <K> NFList<K> list() {
-        return new NFListImpl<K>();
+        return new NFListImpl<>();
     }
     
     public static <K> NFList<K> finalList(ImList<K> list) {
-        return new NFListImpl<K>(list);
+        return new NFListImpl<>(list);
     }
 
     public static <K> NFList<K> finalList(List<K> list) {
@@ -46,7 +46,7 @@ public class NFFact {
     }
 
     public static <K> NFOrderSet<K> finalOrderSet(ImOrderSet<K> list) {
-        return new NFOrderSetImpl<K>(list);
+        return new NFOrderSetImpl<>(list);
     }
 
     public static <K> NFOrderSet<K> finalOrderSet(List<K> list) {
@@ -54,7 +54,7 @@ public class NFFact {
     }
 
     public static <K> NFSet<K> finalSet(ImSet<K> set) {
-        return new NFSetImpl<K>(set); 
+        return new NFSetImpl<>(set); 
     }
     
     public static <K> NFSet<K> finalSet(Set<K> set) {
@@ -62,37 +62,37 @@ public class NFFact {
     }
 
     public static <K> NFSet<K> set() {
-        return new NFSetImpl<K>();
+        return new NFSetImpl<>();
     }
     
     public static <K, V> NFOrderMap<K, V> orderMap() {
-        return new NFOrderMapImpl<K, V>();
+        return new NFOrderMapImpl<>();
     }
 
     public static <K, V> NFOrderMap<K, V> finalOrderMap(ImOrderMap<K, V> map) {
-        return new NFOrderMapImpl<K, V>(map);
+        return new NFOrderMapImpl<>(map);
     }
 
     public static <K, V> NFMapList<K, V> mapList() {
-        return new NFMapListImpl<K, V>();
+        return new NFMapListImpl<>();
     }
 
     public static <K, V> NFMapList<K, V> finalMapList(ImMap<K, ImList<V>> map) {
-        return new NFMapListImpl<K, V>(map);
+        return new NFMapListImpl<>(map);
     }
 
     public static <K> NFProperty<K> property() {
-        return new NFPropertyImpl<K>();
+        return new NFPropertyImpl<>();
     }
 
     public static <K> NFProperty<K> property(boolean allowVersionFinalRead) {
         return property(allowVersionFinalRead, null);
     }
     public static <K> NFProperty<K> property(boolean allowVersionFinalRead, Object debugInfo) {
-        return new NFPropertyImpl<K>(allowVersionFinalRead, debugInfo);
+        return new NFPropertyImpl<>(allowVersionFinalRead, debugInfo);
     }
 
     public static <K> NFProperty<K> finalProperty(K key) {
-        return new NFPropertyImpl<K>(key);                
+        return new NFPropertyImpl<>(key);                
     }
 }

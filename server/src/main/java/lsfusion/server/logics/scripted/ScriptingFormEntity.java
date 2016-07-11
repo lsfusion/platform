@@ -58,7 +58,7 @@ public class ScriptingFormEntity {
     }
 
     public List<GroupObjectEntity> addScriptingGroupObjects(List<ScriptingGroupObject> groupObjects, Version version) throws ScriptingErrorLog.SemanticErrorException {
-        List<GroupObjectEntity> groups = new ArrayList<GroupObjectEntity>();
+        List<GroupObjectEntity> groups = new ArrayList<>();
         for (ScriptingGroupObject groupObject : groupObjects) {
             GroupObjectEntity groupObj = new GroupObjectEntity(form.genID());
 
@@ -125,7 +125,7 @@ public class ScriptingFormEntity {
             if (properties != null) {
                 GroupObjectEntity groupObj = groups.get(groupObjects.indexOf(groupObject));
 
-                List<CalcPropertyObjectEntity> propertyObjects = new ArrayList<CalcPropertyObjectEntity>();
+                List<CalcPropertyObjectEntity> propertyObjects = new ArrayList<>();
                 for (ScriptingLogicsModule.PropertyUsage pUsage : properties) {
                     if (pUsage.name != null) {
                         LCP property = (LCP) findLP(pUsage, groupObj);
@@ -198,7 +198,7 @@ public class ScriptingFormEntity {
     }
 
     public List<GroupObjectEntity> getGroupObjectsList(List<String> mapping, Version version) throws ScriptingErrorLog.SemanticErrorException {
-        List<GroupObjectEntity> groupObjects = new ArrayList<GroupObjectEntity>();
+        List<GroupObjectEntity> groupObjects = new ArrayList<>();
         for (String groupName : mapping) {
             GroupObjectEntity groupObject = form.getNFGroupObject(groupName, version);
             if (groupObject == null) {
@@ -416,7 +416,7 @@ public class ScriptingFormEntity {
         LCP<C> defaultColorProp = back ? LM.baseLM.defaultOverrideBackgroundColor : LM.baseLM.defaultOverrideForegroundColor;
         CalcPropertyMapImplement<P, P> groupImplement = groundProperty.property.getImplement();
         CalcPropertyMapImplement<?, P> mapImpl = DerivedProperty.createAnd(groundProperty.property.interfaces,
-                new CalcPropertyMapImplement<C, P>(defaultColorProp.property, MapFact.<C, P>EMPTYREV()), groupImplement);
+                new CalcPropertyMapImplement<>(defaultColorProp.property, MapFact.<C, P>EMPTYREV()), groupImplement);
         return new CalcPropertyObjectEntity(
                 mapImpl.property,
                 mapImpl.mapping.join(groundProperty.mapping));
@@ -624,9 +624,9 @@ public class ScriptingFormEntity {
     }
 
     public List<ScriptingLogicsModule.TypedParameter> getTypedObjectsNames(Version version) {
-        List<ValueClass> classes = new ArrayList<ValueClass>();
+        List<ValueClass> classes = new ArrayList<>();
         List<String> objNames = form.getNFObjectsNamesAndClasses(classes, version);
-        List<ScriptingLogicsModule.TypedParameter> typedObjects = new ArrayList<ScriptingLogicsModule.TypedParameter>();
+        List<ScriptingLogicsModule.TypedParameter> typedObjects = new ArrayList<>();
         for (int i = 0; i < classes.size(); ++i) {
             typedObjects.add(LM.new TypedParameter(classes.get(i), objNames.get(i)));
         }

@@ -33,7 +33,7 @@ public class ExClassSet extends TwinImmutableObject {
         ImMap<T, ResolveClassSet> exClasses2 = ExClassSet.fromEx(classes2);
 
         if(ignoreAbstracts) {
-            return new ClassWhere<T>(ResolveUpClassSet.toAnd(exClasses2)).meansCompatible(new ClassWhere<T>(ResolveUpClassSet.toAnd(exClasses1)));
+            return new ClassWhere<>(ResolveUpClassSet.toAnd(exClasses2)).meansCompatible(new ClassWhere<>(ResolveUpClassSet.toAnd(exClasses1)));
         } else {
             ImOrderSet<T> orderKeys = keys.toOrderSet();
             List<ResolveClassSet> listClasses = orderKeys.mapListValues(exClasses1.fnGetValue()).toJavaList();

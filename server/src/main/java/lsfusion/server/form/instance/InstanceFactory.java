@@ -96,7 +96,7 @@ public class InstanceFactory {
     public <P extends PropertyInterface> CalcPropertyObjectInstance<P> getInstance(CalcPropertyObjectEntity<P> entity) {
 
         if (!propertyObjectInstances.containsKey(entity))
-            propertyObjectInstances.exclAdd(entity, new CalcPropertyObjectInstance<P>(entity.property, getInstanceMap(entity)));
+            propertyObjectInstances.exclAdd(entity, new CalcPropertyObjectInstance<>(entity.property, getInstanceMap(entity)));
 
         return (CalcPropertyObjectInstance<P>) propertyObjectInstances.get(entity);
     }
@@ -111,7 +111,7 @@ public class InstanceFactory {
     public <T, P extends PropertyInterface> ImMap<T, CalcPropertyRevImplement<P, ObjectInstance>> getInstance(ImMap<T, CalcPropertyRevImplement<P, ObjectEntity>> entities) {
         return entities.mapValues(new GetValue<CalcPropertyRevImplement<P, ObjectInstance>, CalcPropertyRevImplement<P, ObjectEntity>>() {
             public CalcPropertyRevImplement<P, ObjectInstance> getMapValue(CalcPropertyRevImplement<P, ObjectEntity> entity) {
-                return new CalcPropertyRevImplement<P, ObjectInstance>(entity.property, getInstanceMap(entity));
+                return new CalcPropertyRevImplement<>(entity.property, getInstanceMap(entity));
             }});
     }
 
@@ -126,7 +126,7 @@ public class InstanceFactory {
     public <P extends PropertyInterface> ActionPropertyObjectInstance<P> getInstance(ActionPropertyObjectEntity<P> entity) {
 
         if (!propertyObjectInstances.containsKey(entity))
-            propertyObjectInstances.exclAdd(entity, new ActionPropertyObjectInstance<P>(entity.property, getInstanceMap(entity)));
+            propertyObjectInstances.exclAdd(entity, new ActionPropertyObjectInstance<>(entity.property, getInstanceMap(entity)));
 
         return (ActionPropertyObjectInstance<P>) propertyObjectInstances.get(entity);
     }
@@ -140,7 +140,7 @@ public class InstanceFactory {
                 }
             });
 
-            propertyDrawInstances.exclAdd(entity, new PropertyDrawInstance<T>(
+            propertyDrawInstances.exclAdd(entity, new PropertyDrawInstance<>(
                     entity,
                     getInstance(entity.propertyObject),
                     getInstance(entity.toDraw),
@@ -160,15 +160,15 @@ public class InstanceFactory {
     public DataObject connection;
 
     public <P extends PropertyInterface> FilterInstance getInstance(CompareFilterEntity<P> entity) {
-        return new CompareFilterInstance<P>(getInstance(entity.property), entity.compare, entity.value.getInstance(this), entity.resolveAdd);
+        return new CompareFilterInstance<>(getInstance(entity.property), entity.compare, entity.value.getInstance(this), entity.resolveAdd);
     }
 
     public <P extends PropertyInterface> FilterInstance getInstance(IsClassFilterEntity<P> entity) {
-        return new IsClassFilterInstance<P>(getInstance(entity.property), entity.isClass, entity.resolveAdd);
+        return new IsClassFilterInstance<>(getInstance(entity.property), entity.isClass, entity.resolveAdd);
     }
 
     public <P extends PropertyInterface> FilterInstance getInstance(NotNullFilterEntity<P> entity) {
-        return new NotNullFilterInstance<P>(getInstance(entity.property), entity.checkChange, entity.resolveAdd);
+        return new NotNullFilterInstance<>(getInstance(entity.property), entity.checkChange, entity.resolveAdd);
     }
 
     public FilterInstance getInstance(NotFilterEntity entity) {

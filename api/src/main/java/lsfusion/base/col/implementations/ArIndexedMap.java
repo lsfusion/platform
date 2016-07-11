@@ -82,11 +82,11 @@ public class ArIndexedMap<K, V> extends AMRevMap<K, V> {
     }
 
     public <M> ImValueMap<K, M> mapItValues() {
-        return new ArIndexedMap<K, M>(this);
+        return new ArIndexedMap<>(this);
     }
 
     public <M> ImRevValueMap<K, M> mapItRevValues() {
-        return new ArIndexedMap<K, M>(this);
+        return new ArIndexedMap<>(this);
     }
 
     public ImMap<K, V> immutable() {
@@ -98,13 +98,13 @@ public class ArIndexedMap<K, V> extends AMRevMap<K, V> {
             resize(size);
 
         if(size < SetFact.useArrayMax)
-            return new ArMap<K, V>(size, keys, values);
+            return new ArMap<>(size, keys, values);
 
         return this;
     }
 
     protected MExclMap<K, V> copy() {
-        return new ArIndexedMap<K,V>(this, true);
+        return new ArIndexedMap<>(this, true);
     }
 
     public static int findIndex(Object key, int size, Object[] keys) {
@@ -297,7 +297,7 @@ public class ArIndexedMap<K, V> extends AMRevMap<K, V> {
         }
 
 //        assert sorted(r, rKeys);
-        return new ArIndexedMap<K, V>(r, rKeys, rValues);
+        return new ArIndexedMap<>(r, rKeys, rValues);
     }
     
     private static boolean sorted(int size, Object[] array) {
@@ -315,7 +315,7 @@ public class ArIndexedMap<K, V> extends AMRevMap<K, V> {
 
         ArIndexedMap<K, V> result;
         if(map.size() <= SetFact.useIndexedAddInsteadOfMerge) {
-            result = new ArIndexedMap<K, V>(this, add);
+            result = new ArIndexedMap<>(this, add);
             if(!result.addAll(map))
                 result = null;
         } else {
@@ -348,17 +348,17 @@ public class ArIndexedMap<K, V> extends AMRevMap<K, V> {
 
     @Override
     public ImOrderMap<K, V> toOrderMap() {
-        return new ArOrderIndexedMap<K, V>(this, ArSet.genOrder(size));
+        return new ArOrderIndexedMap<>(this, ArSet.genOrder(size));
     }
 
     @Override
     public ImSet<K> keys() {
-        return new ArIndexedSet<K>(size, keys);
+        return new ArIndexedSet<>(size, keys);
     }
 
     @Override
     public ImCol<V> values() {
-        return new ArCol<V>(size, values);
+        return new ArCol<>(size, values);
     }
 
     // копия с merge

@@ -56,7 +56,7 @@ public class IsClassProperty extends AggregateProperty<ClassPropertyInterface> {
                 cacheClasses.exclAdd(multiClasses, classImplement.mapImplement(classes));
                 return classImplement;
             } else
-                return new CalcPropertyRevImplement<P, T>(implement.property, MapFact.mapValues(implement.mapping, classes));
+                return new CalcPropertyRevImplement<>(implement.property, MapFact.mapValues(implement.mapping, classes));
         }
     }
 
@@ -66,7 +66,7 @@ public class IsClassProperty extends AggregateProperty<ClassPropertyInterface> {
 
     public static <T> CalcPropertyRevImplement<?, T> getProperty(ValueClass valueClass, T map) {
         IsClassProperty classProperty = valueClass.getProperty();
-        return new CalcPropertyRevImplement<ClassPropertyInterface, T>(classProperty, MapFact.singletonRev(classProperty.interfaces.single(), map));
+        return new CalcPropertyRevImplement<>(classProperty, MapFact.singletonRev(classProperty.interfaces.single(), map));
     }
 
     public static CalcPropertyMapImplement<?, ClassPropertyInterface> getProperty(ImSet<ClassPropertyInterface> interfaces) {
@@ -138,7 +138,7 @@ public class IsClassProperty extends AggregateProperty<ClassPropertyInterface> {
 
     @Override
     public ClassWhere<Object> calcClassValueWhere(CalcClassType type) {
-        return new ClassWhere<Object>(MapFact.<Object, ValueClass>addExcl(IsClassProperty.getMapClasses(interfaces), "value", LogicalClass.instance), true);
+        return new ClassWhere<>(MapFact.<Object, ValueClass>addExcl(IsClassProperty.getMapClasses(interfaces), "value", LogicalClass.instance), true);
     }
 
     public ValueClass getInterfaceClass() {
@@ -157,7 +157,7 @@ public class IsClassProperty extends AggregateProperty<ClassPropertyInterface> {
         ValueClass valueClass = getInterfaceClass();
         if(valueClass instanceof ConcreteCustomClass) {
             ActionProperty<PropertyInterface> changeClassAction = (notNull ? (ConcreteCustomClass) valueClass : ((ConcreteCustomClass) valueClass).getBaseClass().unknown).getChangeClassAction();
-            return new ActionPropertyMapImplement<PropertyInterface, ClassPropertyInterface>(changeClassAction, MapFact.singletonRev(changeClassAction.interfaces.single(), interfaces.single()));
+            return new ActionPropertyMapImplement<>(changeClassAction, MapFact.singletonRev(changeClassAction.interfaces.single(), interfaces.single()));
         }
         return null;
     }
@@ -171,7 +171,7 @@ public class IsClassProperty extends AggregateProperty<ClassPropertyInterface> {
     }
 
     public Inferred<ClassPropertyInterface> calcInferInterfaceClasses(ExClassSet commonValue, InferType inferType) { // calcClassValueWhere - начинает какой-то ерундой страдать, разбивая условия на is'ы чтобы уменьшить кол-во таблиц
-        return new Inferred<ClassPropertyInterface>(ExClassSet.toExValue(IsClassProperty.getMapClasses(interfaces)));
+        return new Inferred<>(ExClassSet.toExValue(IsClassProperty.getMapClasses(interfaces)));
     }
 
     public ExClassSet calcInferValueClass(ImMap<ClassPropertyInterface, ExClassSet> inferred, InferType inferType) {

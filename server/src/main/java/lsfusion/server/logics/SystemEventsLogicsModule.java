@@ -91,7 +91,7 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
     public LCP pingComputerDateTimeFromDateTimeTo;
     public LCP minTotalMemoryComputerDateTimeFromDateTimeTo;
     public LCP maxTotalMemoryComputerDateTimeFromDateTimeTo;
-    public LCP minUsedMemoryComputerDateTimeFromDateTimeTo;;
+    public LCP minUsedMemoryComputerDateTimeFromDateTimeTo;
     public LCP maxUsedMemoryComputerDateTimeFromDateTimeTo;
 
     public LAP onClientStarted;

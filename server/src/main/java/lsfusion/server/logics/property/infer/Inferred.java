@@ -32,7 +32,7 @@ public class Inferred<T extends PropertyInterface> {
         
         ImMap<T, ExClassSet> result = params;
         for(Compared<T> compare : compared) {
-            ImMap<T, ExClassSet> recInferred = new Inferred<T>(result, new NotNull<T>(result.keys()), compared.removeIncl(compare)).finishEx(inferType); // вообще говоря not null не правильный, но это ни на что не влияет
+            ImMap<T, ExClassSet> recInferred = new Inferred<>(result, new NotNull<>(result.keys()), compared.removeIncl(compare)).finishEx(inferType); // вообще говоря not null не правильный, но это ни на что не влияет
             // вызываем infer без этого compare чтобы предотвратить рекурсию
             ExClassSet classSet = ExClassSet.op(compare.resolveInferred(compare.first, recInferred, inferType), compare.resolveInferred(compare.second, recInferred, inferType), false);
             ResolveClassSet vSet = null;
@@ -52,10 +52,11 @@ public class Inferred<T extends PropertyInterface> {
     }
     
     private static <T> ImMap<T, ExClassSet> overrideClasses(ImMap<T, ExClassSet> oldClasses, ImMap<T, ExClassSet> newClasses) {
-        return oldClasses.filterFnValues(new NotFunctionSet<ExClassSet>(new SFunctionSet<ExClassSet>() {
+        return oldClasses.filterFnValues(new NotFunctionSet<>(new SFunctionSet<ExClassSet>() {
             public boolean contains(ExClassSet element) {
                 return ExClassSet.fromEx(element) instanceof DataClass;
-            }})).override(newClasses.removeNulls());
+            }
+        })).override(newClasses.removeNulls());
     }
     public ImMap<T, ExClassSet> finishEx(InferType inferType) {
         ImMap<T, ExClassSet> result = getParams(inferType);
@@ -89,7 +90,7 @@ public class Inferred<T extends PropertyInterface> {
 
     // внутренний конструктор для верхнего конструктора
     private Inferred(ImMap<T, ExClassSet> params, ImSet<Compared<T>> compared) {
-        this(params, params == null ? null : new NotNull<T>(params.keys()), compared);
+        this(params, params == null ? null : new NotNull<>(params.keys()), compared);
     }
 
     public Inferred(ImMap<T, ExClassSet> params, NotNull<T> notNull, ImSet<Compared<T>> compared) {
@@ -105,7 +106,7 @@ public class Inferred<T extends PropertyInterface> {
             notNotNull = null;
             notCompared = SetFact.EMPTY();
         }
-        return new Inferred<T>(params, notNull, compared, notParams, notNotNull, notCompared);
+        return new Inferred<>(params, notNull, compared, notParams, notNotNull, notCompared);
     }
 
     public Inferred(ImMap<T, ExClassSet> params, NotNull<T> notNull, ImSet<Compared<T>> compared, ImMap<T, ExClassSet> notParams, NotNull<T> notNotNull, ImSet<Compared<T>> notCompared) {
@@ -123,7 +124,7 @@ public class Inferred<T extends PropertyInterface> {
     }
     
     public Inferred<T> not() {
-        return new Inferred<T>(this, true);
+        return new Inferred<>(this, true);
     }
 
     private Inferred() {
@@ -135,7 +136,7 @@ public class Inferred<T extends PropertyInterface> {
     }
     
     public static <T extends PropertyInterface> Inferred<T> create(Compared<T> compare, InferType inferType, boolean not) {
-        Inferred<T> result = new Inferred<T>(compare);
+        Inferred<T> result = new Inferred<>(compare);
         if(not)
             result = result.not();
         return result.and(compare.inferResolved(compare.first, null, inferType), inferType).and(compare.inferResolved(compare.second, null, inferType), inferType);
@@ -168,10 +169,10 @@ public class Inferred<T extends PropertyInterface> {
     }
 
     private static <T extends PropertyInterface> Pair<ImMap<T, ExClassSet>, ImSet<Compared<T>>> or(ImMap<T, ExClassSet> params1, ImSet<Compared<T>> compared1, ImMap<T, ExClassSet> params2, ImSet<Compared<T>> compared2, InferType inferType) {
-        Result<ImSet<Compared<T>>> rest1 = new Result<ImSet<Compared<T>>>();
-        Result<ImSet<Compared<T>>> rest2 = new Result<ImSet<Compared<T>>>();
+        Result<ImSet<Compared<T>>> rest1 = new Result<>();
+        Result<ImSet<Compared<T>>> rest2 = new Result<>();
         ImSet<Compared<T>> common = compared1.split(compared2, rest1, rest2);
-        return new Pair<ImMap<T, ExClassSet>, ImSet<Compared<T>>>(opParams(applyCompared(params1, rest1.result, inferType), applyCompared(params2, rest2.result, inferType), true), common);
+        return new Pair<>(opParams(applyCompared(params1, rest1.result, inferType), applyCompared(params2, rest2.result, inferType), true), common);
     }
 
     private static <T extends PropertyInterface> NotNull<T> opNotNull(NotNull<T> notNull1, NotNull<T> notNull2, boolean or) {
@@ -206,12 +207,12 @@ public class Inferred<T extends PropertyInterface> {
     }
 
     public <P extends PropertyInterface> Inferred<P> map(ImRevMap<T, P> mapping) {
-        return new Inferred<P>(MapFact.nullCrossJoin(params, mapping), NotNull.nullMapRev(notNull, mapping), Compared.map(compared, mapping), MapFact.nullCrossJoin(notParams, mapping), NotNull.nullMapRev(notNotNull, mapping), Compared.map(notCompared, mapping));
+        return new Inferred<>(MapFact.nullCrossJoin(params, mapping), NotNull.nullMapRev(notNull, mapping), Compared.map(compared, mapping), MapFact.nullCrossJoin(notParams, mapping), NotNull.nullMapRev(notNotNull, mapping), Compared.map(notCompared, mapping));
     }
     
     private static <T extends PropertyInterface> Pair<ImMap<T, ExClassSet>, ImSet<Compared<T>>> applyCompared(ImSet<T> set, ImSet<Compared<T>> compared, ImMap<T, ExClassSet> params, InferType inferType) {
         ImSet<Compared<T>> mixed = Compared.mixed(compared, set);
-        return new Pair<ImMap<T, ExClassSet>, ImSet<Compared<T>>>(applyCompared(params, mixed, inferType), compared.removeIncl(mixed));
+        return new Pair<>(applyCompared(params, mixed, inferType), compared.removeIncl(mixed));
     }
     
     public Inferred<T> applyCompared(ImSet<T> set, InferType inferType) {
@@ -221,14 +222,14 @@ public class Inferred<T extends PropertyInterface> {
     }
 
     public Inferred<T> remove(ImSet<T> remove) {
-        return new Inferred<T>(MapFact.nullRemove(params, remove), NotNull.nullRemove(notNull, remove), Compared.remove(compared, remove), MapFact.nullRemove(notParams, remove), NotNull.nullRemove(notNotNull, remove), Compared.remove(notCompared, remove));
+        return new Inferred<>(MapFact.nullRemove(params, remove), NotNull.nullRemove(notNull, remove), Compared.remove(compared, remove), MapFact.nullRemove(notParams, remove), NotNull.nullRemove(notNotNull, remove), Compared.remove(notCompared, remove));
     }
     public Inferred<T> keep(ImSet<T> keep) {
-        return new Inferred<T>(MapFact.nullFilter(params, keep), NotNull.nullFilter(notNull, keep), Compared.keep(compared, keep), MapFact.nullFilter(notParams, keep), NotNull.nullFilter(notNotNull, keep), Compared.keep(notCompared, keep));
+        return new Inferred<>(MapFact.nullFilter(params, keep), NotNull.nullFilter(notNull, keep), Compared.keep(compared, keep), MapFact.nullFilter(notParams, keep), NotNull.nullFilter(notNotNull, keep), Compared.keep(notCompared, keep));
     }
 
     public Inferred<T> orAny() { // или null или any
-        return new Inferred<T>(params == null ? MapFact.<T, ExClassSet>EMPTY() : params.mapValues(new GetValue<ExClassSet, ExClassSet>() {
+        return new Inferred<>(params == null ? MapFact.<T, ExClassSet>EMPTY() : params.mapValues(new GetValue<ExClassSet, ExClassSet>() {
             @Override
             public ExClassSet getMapValue(ExClassSet value) {
                 return ExClassSet.orAny(value);
@@ -271,6 +272,6 @@ public class Inferred<T extends PropertyInterface> {
         });
     }
     public Inferred<T> getBase(InferType inferType) {
-        return new Inferred<T>(getBase(getParams(inferType)), notNull, SetFact.<Compared<T>>EMPTY(), getBase(getNotParams(inferType)), notNotNull, SetFact.<Compared<T>>EMPTY());
+        return new Inferred<>(getBase(getParams(inferType)), notNull, SetFact.<Compared<T>>EMPTY(), getBase(getNotParams(inferType)), notNotNull, SetFact.<Compared<T>>EMPTY());
     }
 }

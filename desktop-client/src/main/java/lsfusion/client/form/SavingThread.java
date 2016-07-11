@@ -32,9 +32,7 @@ public class SavingThread extends Thread {
                     }
                 }
                 Thread.sleep(3000);
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (InterruptedException e) {
+            } catch (IOException | InterruptedException e) {
                 e.printStackTrace();
             }
         }

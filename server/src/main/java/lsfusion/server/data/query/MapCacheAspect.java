@@ -84,7 +84,7 @@ public class MapCacheAspect {
         }
 
         protected JoinImplement<K> translate(MapTranslate translate) {
-            return new JoinImplement<K>(translate.translate(exprs), mapValues.mapTrans(translate.mapValues()));
+            return new JoinImplement<>(translate.translate(exprs), mapValues.mapTrans(translate.mapValues()));
         }
 
         public boolean equalsInner(JoinImplement<K> object) {
@@ -92,10 +92,10 @@ public class MapCacheAspect {
         }
     }
     
-    public static enum Type {
+    public enum Type {
         JOIN, DATACHANGES, QUERY, JOINEXPR, INCCHANGE, READSAVE, AUTOHINT
     }
-    private static LRUWSSVSMap<Object, Integer, Type, MAddCol<CacheResult>> mapCaches = new LRUWSSVSMap<Object, Integer, Type, MAddCol<CacheResult>>(LRUUtil.G2);
+    private static LRUWSSVSMap<Object, Integer, Type, MAddCol<CacheResult>> mapCaches = new LRUWSSVSMap<>(LRUUtil.G2);
     public static <K extends ValuesContext, V extends TranslateValues> MAddCol<CacheResult<K, V>> getCachedCol(Object object, Integer mapParamHash, Type type) {
         MAddCol<CacheResult> cacheCol = mapCaches.get(object, mapParamHash, type);
         if(cacheCol == null) {
@@ -124,7 +124,7 @@ public class MapCacheAspect {
 //        assert BaseUtils.onlyObjects(joinExprs.keySet()); он вообщем то не нужен, так как hashCaches хранится для Query, а он уже хранит K
         assert ((QueryCacheAspect.QueryCacheInterface)query).getCacheTwin() == query;
 
-        JoinImplement<K> joinImplement = new JoinImplement<K>(joinExprs,joinValues);
+        JoinImplement<K> joinImplement = new JoinImplement<>(joinExprs, joinValues);
 
         MAddCol<CacheResult<JoinImplement<K>, Join<V>>> hashCaches = getCachedCol(query, joinImplement.getInnerComponents(true).hash, MapCacheAspect.Type.JOIN);
         synchronized(hashCaches) {
@@ -134,7 +134,7 @@ public class MapCacheAspect {
                     // здесь не все values нужно докинуть их из контекста (ключи по идее все)
                     logger.debug("join cached");
                     incrementHit(CacheType.JOIN);
-                    return new MapJoin<V>(translator,cache.result);
+                    return new MapJoin<>(translator, cache.result);
                 }
             }
             incrementMissed(CacheType.JOIN);
@@ -147,15 +147,15 @@ public class MapCacheAspect {
             ImRevMap<Value, Value> bigValues = AbstractValuesContext.getBigValues(joinImplement.getContextValues());
             if(bigValues == null) {
                 Join<V> join = (Join<V>) thisJoinPoint.proceed();
-                hashCaches.add(new CacheResult<JoinImplement<K>, Join<V>>(joinImplement, join));
+                hashCaches.add(new CacheResult<>(joinImplement, join));
                 return join;
             } else { // для предотвращения утечки памяти, bigvalues - работа с транслированными объектами, а в конце трансляция назад
                 JoinImplement<K> cacheImplement = joinImplement.translateInner(new RemapValuesTranslator(bigValues));
 
                 Join<V> join = (Join<V>) thisJoinPoint.proceed(new Object[]{query, cacheImplement.exprs, cacheImplement.mapValues});
-                hashCaches.add(new CacheResult<JoinImplement<K>, Join<V>>(cacheImplement, join));
+                hashCaches.add(new CacheResult<>(cacheImplement, join));
 
-                return new MapJoin<V>((MapTranslate)new RemapValuesTranslator(bigValues.reverse()), join);
+                return new MapJoin<>((MapTranslate) new RemapValuesTranslator(bigValues.reverse()), join);
             }
         }
     }
@@ -252,7 +252,7 @@ public class MapCacheAspect {
         }
 
         protected DataChangesInterfaceImplement<P> translate(MapTranslate translator) {
-            return new DataChangesInterfaceImplement<P>(this, translator);
+            return new DataChangesInterfaceImplement<>(this, translator);
         }
     }
 
@@ -266,7 +266,7 @@ public class MapCacheAspect {
         }
 
         public DataChangesResult<P> translateValues(MapValuesTranslate translate) {
-            return new DataChangesResult<P>(changes.translateValues(translate), where==null?null:where.translateOuter(translate.mapKeys()));
+            return new DataChangesResult<>(changes.translateValues(translate), where == null ? null : where.translateOuter(translate.mapKeys()));
         }
 
         public boolean calcTwins(TwinImmutableObject o) {
@@ -280,7 +280,7 @@ public class MapCacheAspect {
 
     public <K extends PropertyInterface> DataChanges getDataChanges(CalcProperty<K> property, PropertyChange<K> change, WhereBuilder changedWheres, PropertyChanges propChanges, ProceedingJoinPoint thisJoinPoint) throws Throwable {
 
-        DataChangesInterfaceImplement<K> implement = new DataChangesInterfaceImplement<K>(property,change,propChanges,changedWheres!=null);
+        DataChangesInterfaceImplement<K> implement = new DataChangesInterfaceImplement<>(property, change, propChanges, changedWheres != null);
 
         MAddCol<CacheResult<DataChangesInterfaceImplement, DataChangesResult>> hashCaches = getCachedCol(property, implement.getInnerComponents(true).hash, MapCacheAspect.Type.DATACHANGES);
         synchronized(hashCaches) {
@@ -309,10 +309,10 @@ public class MapCacheAspect {
     public static <I extends ValuesContext<I>, R extends TranslateValues<R>> void cacheNoBig(I implement, MAddCol<CacheResult<I, R>> hashCaches, R result) {
         ImRevMap<Value, Value> bigValues = AbstractValuesContext.getBigValues(implement.getContextValues());
         if(bigValues == null) // если нет больших значений просто записываем
-            hashCaches.add(new CacheResult<I, R>(implement, result));
+            hashCaches.add(new CacheResult<>(implement, result));
         else { // bigvalues - работа со старыми объектами, а сохранение транслированных
             MapValuesTranslator removeBig = new RemapValuesTranslator(bigValues);
-            hashCaches.add(new CacheResult<I, R>(implement.translateRemoveValues(removeBig), result.translateRemoveValues(removeBig)));
+            hashCaches.add(new CacheResult<>(implement.translateRemoveValues(removeBig), result.translateRemoveValues(removeBig)));
         }
     }
 
@@ -324,7 +324,7 @@ public class MapCacheAspect {
         return getDataChanges(property, change, changedWhere, propChanges, thisJoinPoint);
     }
 
-    private static interface CalcTypeImplement<This extends ValuesContext<This>> extends ValuesContext<This> {
+    private interface CalcTypeImplement<This extends ValuesContext<This>> extends ValuesContext<This> {
         CalcType getCalcType();
     }
     
@@ -372,7 +372,7 @@ public class MapCacheAspect {
         }
 
         protected QueryInterfaceImplement<K> translate(MapValuesTranslate translator) {
-            return new QueryInterfaceImplement<K>(this, translator);
+            return new QueryInterfaceImplement<>(this, translator);
         }
     }
 
@@ -386,7 +386,7 @@ public class MapCacheAspect {
 
         property.cached = true;
 
-        QueryInterfaceImplement<K> implement = new QueryInterfaceImplement<K>(property,calcType,propChanges,queryType,interfaceValues);
+        QueryInterfaceImplement<K> implement = new QueryInterfaceImplement<>(property, calcType, propChanges, queryType, interfaceValues);
 
         ValuesContext query = null;
         ValuesContext cacheQuery = null;
@@ -480,7 +480,7 @@ public class MapCacheAspect {
         }
 
         public JoinExprInterfaceImplement<P> translate(MapTranslate translator) {
-            return new JoinExprInterfaceImplement<P>(this, translator);
+            return new JoinExprInterfaceImplement<>(this, translator);
         }
     }
 
@@ -518,7 +518,7 @@ public class MapCacheAspect {
 
         property.cached = true;
 
-        JoinExprInterfaceImplement<K> implement = new JoinExprInterfaceImplement<K>(property,joinExprs,calcType,propChanges,changedWheres!=null);
+        JoinExprInterfaceImplement<K> implement = new JoinExprInterfaceImplement<>(property, joinExprs, calcType, propChanges, changedWheres != null);
 
         MAddCol<CacheResult<JoinExprInterfaceImplement, ExprResult>> hashCaches = getCachedCol(property, implement.getInnerComponents(true).hash, MapCacheAspect.Type.JOINEXPR);
         synchronized(hashCaches) {

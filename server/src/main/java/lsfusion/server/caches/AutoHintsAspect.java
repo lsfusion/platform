@@ -44,8 +44,8 @@ import static lsfusion.base.BaseUtils.max;
 @Aspect
 public class AutoHintsAspect {
 
-    public static ThreadLocal<SessionModifier> catchAutoHint = new ThreadLocal<SessionModifier>();
-    public static ThreadLocal<Boolean> catchNotFirst = new ThreadLocal<Boolean>();
+    public static ThreadLocal<SessionModifier> catchAutoHint = new ThreadLocal<>();
+    public static ThreadLocal<Boolean> catchNotFirst = new ThreadLocal<>();
 
     public static ThreadLocal<Integer> catchDisabledRepeat = new ThreadLocal<>();
     public static void pushDisabledRepeat() {
@@ -96,7 +96,7 @@ public class AutoHintsAspect {
                     }
                 }
                 if(result!=0)
-                    mvUsedHints.mapValue(i, Byte.valueOf(result));
+                    mvUsedHints.mapValue(i, result);
 
                 ValuesContext cachePreread = modifier.cacheAllowPrereadValues(dependProperty);
                 if(cachePreread!=null)
@@ -138,7 +138,7 @@ public class AutoHintsAspect {
         }
 
         public AutoHintImplement<P> translate(MapTranslate translator) {
-            return new AutoHintImplement<P>(this, translator);
+            return new AutoHintImplement<>(this, translator);
         }
     }
 
@@ -146,7 +146,7 @@ public class AutoHintsAspect {
         if(!Settings.get().isDisableAutoHints() && modifier instanceof SessionModifier) { // && property.hasChanges(modifier) иначе в рекурсию уходит при changeModifier'е, надо было бы внутрь перенести
             SessionModifier sessionModifier = (SessionModifier) modifier;
 
-            Result<Hint> resultHint = new Result<Hint>();
+            Result<Hint> resultHint = new Result<>();
             Object result = proceedCached(thisJoinPoint, property, joinImplement, sessionModifier, resultHint);
             if(result!=null || isDisabledRepeat())
                 return result;
@@ -173,7 +173,7 @@ public class AutoHintsAspect {
         if(Settings.get().isDisableAutoHintCaches())
             return proceed(thisJoinPoint, sessionModifier, resultHint);
 
-        AutoHintImplement<P> implement = new AutoHintImplement<P>(property, joinImplement, sessionModifier);
+        AutoHintImplement<P> implement = new AutoHintImplement<>(property, joinImplement, sessionModifier);
         MAddCol<MapCacheAspect.CacheResult<AutoHintImplement,Hint>> hashCaches = MapCacheAspect.getCachedCol(property, implement.getInnerComponents(true).hash, MapCacheAspect.Type.AUTOHINT);
         synchronized(hashCaches) {
             Hint cacheHint = null;

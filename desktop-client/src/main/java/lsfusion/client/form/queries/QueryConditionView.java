@@ -57,7 +57,7 @@ public class QueryConditionView extends JPanel implements FilterValueListener {
 
         setLayout(new BorderLayout());
 
-        Vector<ClientPropertyDraw> sources = new Vector<ClientPropertyDraw>();
+        Vector<ClientPropertyDraw> sources = new Vector<>();
         sources.addAll(logicsSupplier.getGroupObjectProperties());
 
         propertyView = new QueryConditionComboBox(sources);
@@ -97,7 +97,7 @@ public class QueryConditionView extends JPanel implements FilterValueListener {
             }
         });
 
-        valueViews = new HashMap<ClientFilterValue, FilterValueView>();
+        valueViews = new HashMap<>();
 
         ClientDataFilterValue dataValue = new ClientDataFilterValue();
         DataFilterValueView dataView = new DataFilterValueView(this, dataValue, filter.property, logicsSupplier) {

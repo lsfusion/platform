@@ -21,7 +21,7 @@ public class SetPausableLogUserActionProperty extends ScriptingActionProperty {
 
     @Override
     protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
-        List<Object> params = new ArrayList<Object>();
+        List<Object> params = new ArrayList<>();
         for (ClassPropertyInterface classPropertyInterface : context.getKeys().keys()) {
             params.add(context.getKeyObject(classPropertyInterface));
         }

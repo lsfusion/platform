@@ -26,7 +26,7 @@ public class SetUserFiltersHandler extends ServerResponseActionHandler<SetUserFi
     public ServerResponseResult executeEx(SetUserFilters action, ExecutionContext context) throws DispatchException, IOException {
         FormSessionObject form = getFormSessionObject(action.formSessionID);
 
-        List<byte[]> filters = new ArrayList<byte[]>();
+        List<byte[]> filters = new ArrayList<>();
         for (GPropertyFilterDTO filter : action.filters) {
             ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
             DataOutputStream outStream = new DataOutputStream(byteStream);

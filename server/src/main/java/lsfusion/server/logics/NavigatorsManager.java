@@ -47,7 +47,7 @@ public class NavigatorsManager extends LogicsManager implements InitializingBean
 //    private ScheduledExecutorService executor;
 
     // synchronize'ся везде
-    private final WeakIdentityHashSet<RemoteNavigator> navigators = new WeakIdentityHashSet<RemoteNavigator>();
+    private final WeakIdentityHashSet<RemoteNavigator> navigators = new WeakIdentityHashSet<>();
 
     private AtomicBoolean removeExpiredScheduled = new AtomicBoolean(false);
 

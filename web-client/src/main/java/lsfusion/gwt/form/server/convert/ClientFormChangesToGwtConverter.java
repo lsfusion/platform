@@ -57,7 +57,7 @@ public class ClientFormChangesToGwtConverter extends ObjectConverter {
         dto.gridObjects = new ArrayList[changes.gridObjects.size()];
         i = 0;
         for (Map.Entry<ClientGroupObject, List<ClientGroupObjectValue>> entry : changes.gridObjects.entrySet()) {
-            ArrayList<GGroupObjectValue> keys = new ArrayList<GGroupObjectValue>();
+            ArrayList<GGroupObjectValue> keys = new ArrayList<>();
 
             for (ClientGroupObjectValue keyValue : entry.getValue()) {
                 GGroupObjectValue groupObjectValue = convertOrCast(keyValue, blProvider);
@@ -72,7 +72,7 @@ public class ClientFormChangesToGwtConverter extends ObjectConverter {
         dto.parentObjects = new ArrayList[changes.parentObjects.size()];
         i = 0;
         for (Map.Entry<ClientGroupObject, List<ClientGroupObjectValue>> entry : changes.parentObjects.entrySet()) {
-            ArrayList<GGroupObjectValue> keys = new ArrayList<GGroupObjectValue>();
+            ArrayList<GGroupObjectValue> keys = new ArrayList<>();
 
             for (ClientGroupObjectValue keyValue : entry.getValue()) {
                 GGroupObjectValue groupObjectValue = convertOrCast(keyValue, blProvider);
@@ -87,7 +87,7 @@ public class ClientFormChangesToGwtConverter extends ObjectConverter {
         dto.expandables = new HashMap[changes.expandables.size()];
         i = 0;
         for (Map.Entry<ClientGroupObject, Map<ClientGroupObjectValue, Boolean>> entry : changes.expandables.entrySet()) {
-            HashMap<GGroupObjectValue, Boolean> expandables = new HashMap<GGroupObjectValue, Boolean>();
+            HashMap<GGroupObjectValue, Boolean> expandables = new HashMap<>();
             for (Map.Entry<ClientGroupObjectValue, Boolean> expandable : entry.getValue().entrySet()) {
                 GGroupObjectValue groupObjectValue = convertOrCast(expandable.getKey(), blProvider);
                 expandables.put(groupObjectValue, expandable.getValue());
@@ -100,7 +100,7 @@ public class ClientFormChangesToGwtConverter extends ObjectConverter {
         dto.propertiesValues = new HashMap[changes.properties.size()];
         i = 0;
         for (Map.Entry<ClientPropertyReader, Map<ClientGroupObjectValue, Object>> entry : changes.properties.entrySet()) {
-            HashMap<GGroupObjectValue, Object> propValues = new HashMap<GGroupObjectValue, Object>();
+            HashMap<GGroupObjectValue, Object> propValues = new HashMap<>();
             ClientPropertyReader reader = entry.getKey();
             for (Map.Entry<ClientGroupObjectValue, Object> clientValues : entry.getValue().entrySet()) {
                 GGroupObjectValue groupObjectValue = convertOrCast(clientValues.getKey(), blProvider);

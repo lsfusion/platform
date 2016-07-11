@@ -159,7 +159,7 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
     }
 
     private Pair<Object, PropertyType> addProperty(Object property, OrderInstance pObject, PropertyType type, Modifier modifier, boolean inParent, Join<Pair<Object, PropertyType>> parentJoin, QueryBuilder<ObjectInstance, Pair<Object, PropertyType>> newQuery, MExclMap<Pair<Object, PropertyType>, Type> mTypes) throws SQLException, SQLHandledException {
-        Pair<Object, PropertyType> propertyObject = new Pair<Object, PropertyType>(property, type);
+        Pair<Object, PropertyType> propertyObject = new Pair<>(property, type);
         newQuery.addProperty(propertyObject, inParent ? parentJoin.getExpr(propertyObject) : pObject.getExpr(newQuery.getMapExprs(), modifier));
         mTypes.exclAdd(propertyObject, pObject.getType());
         return propertyObject;

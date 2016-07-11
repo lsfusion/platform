@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ServerAgent extends RemoteObject implements RemoteServerAgentInterface {
-    private final List<String> exportNames = new ArrayList<String>();
+    private final List<String> exportNames = new ArrayList<>();
 
     public ServerAgent(final int exportPort) throws RemoteException {
         super(exportPort, true);

@@ -52,7 +52,7 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K>, TableOwner {
     public static <K, V, P extends PropertyInterface> PropertyChange<P> getChange(SessionTableUsage<K, V> table, ImRevMap<P, K> map, V value) {
         ImRevMap<K, KeyExpr> mapKeys = table.getMapKeys();
         Join<V> join = table.join(mapKeys);
-        return new PropertyChange<P>(map.join(mapKeys), join.getExpr(value), join.getWhere());
+        return new PropertyChange<>(map.join(mapKeys), join.getExpr(value), join.getWhere());
     }
 
     public static <K> ImRevMap<KeyField, K> genKeys(ImOrderSet<K> keys, final Type.Getter<K> keyType) {
@@ -93,7 +93,7 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K>, TableOwner {
     }
 
     public Join<V> join(ImMap<K, ? extends Expr> joinImplement) {
-        return new RemapJoin<V, PropertyField>(table.join(mapKeys.join(joinImplement)), mapProps.reverse());
+        return new RemapJoin<>(table.join(mapKeys.join(joinImplement)), mapProps.reverse());
     }
 
     public Where getWhere(ImMap<K, ? extends Expr> mapExprs) {
@@ -111,7 +111,7 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K>, TableOwner {
     }
 
     public ModifyResult modifyRecord(SQLSession session, ImMap<K, DataObject> keyObjects, ImMap<V, ObjectValue> propertyObjects, Modify type, OperationOwner owner) throws SQLException, SQLHandledException {
-        Result<Boolean> changed = new Result<Boolean>();
+        Result<Boolean> changed = new Result<>();
         return aspectModify(table.modifyRecord(session, mapKeys.join(keyObjects), mapProps.join(propertyObjects), type, this, owner, changed), changed.result);
     }
 
@@ -136,7 +136,7 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K>, TableOwner {
 
     // добавляет ряды которых не было в таблице, или modify'ит
     public ModifyResult modifyRows(SQLSession session, IQuery<K, V> query, BaseClass baseClass, Modify type, QueryEnvironment env, boolean updateClasses) throws SQLException, SQLHandledException {
-        Result<Boolean> changed = new Result<Boolean>();
+        Result<Boolean> changed = new Result<>();
         return aspectModify(table.modifyRows(session, query.map(mapKeys, type == Modify.DELETE ? MapFact.<PropertyField, V>EMPTYREV() : mapProps), baseClass, type, env, this, changed, updateClasses), changed.result);
     }
     // оптимизационная штука
@@ -174,7 +174,7 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K>, TableOwner {
     }
 
     public ImOrderMap<ImMap<K, Object>, ImMap<V, Object>> read(ImMap<K, DataObject> mapValues, SQLSession session, QueryEnvironment env, ImOrderMap<V, Boolean> orders) throws SQLException, SQLHandledException {
-        QueryBuilder<K, V> query = new QueryBuilder<K,V>(mapKeys.valuesSet(), mapValues);
+        QueryBuilder<K, V> query = new QueryBuilder<>(mapKeys.valuesSet(), mapValues);
         Join<V> tableJoin = join(query.getMapExprs());
         query.addProperties(tableJoin.getExprs());
         query.and(tableJoin.getWhere());
@@ -185,7 +185,7 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K>, TableOwner {
         ImRevMap<K, KeyExpr> mapKeys = getMapKeys();
         KeyExpr key = new KeyExpr("key");
         Expr groupExpr = GroupExpr.create(MapFact.singleton("key", join(mapKeys).getExpr(prop)), ValueExpr.TRUE, GroupType.ANY, MapFact.<String, Expr>singleton("key", key));
-        return new Query<String, Object>(MapFact.singletonRev("key", key), groupExpr.getWhere()).execute(session, owner).keyOrderSet().getSet().mapSetValues(new GetValue<Object, ImMap<String, Object>>() {
+        return new Query<>(MapFact.singletonRev("key", key), groupExpr.getWhere()).execute(session, owner).keyOrderSet().getSet().mapSetValues(new GetValue<Object, ImMap<String, Object>>() {
             public Object getMapValue(ImMap<String, Object> value) {
                 return value.singleValue();
             }});
@@ -193,13 +193,13 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K>, TableOwner {
 
     public <B> ClassWhere<B> getClassWhere(V property, ImRevMap<K, ? extends B> remapKeys, B mapProp) {
         ClassWhere<Field> classWhere = table.getClassWhere(getField(property));
-        return new ClassWhere<B>(classWhere,
+        return new ClassWhere<>(classWhere,
                 MapFact.addRevExcl(mapKeys.join(remapKeys),
                         mapProps.rightJoin(MapFact.singletonRev(property, mapProp))));
     }
 
     public <B> ClassWhere<B> getClassWhere(ImRevMap<K, B> remapKeys) {
-        return new ClassWhere<B>(table.getClassWhere(), mapKeys.join(remapKeys));
+        return new ClassWhere<>(table.getClassWhere(), mapKeys.join(remapKeys));
     }
 
 

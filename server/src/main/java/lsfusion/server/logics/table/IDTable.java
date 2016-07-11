@@ -39,10 +39,10 @@ public class IDTable extends GlobalTable {
         value = new PropertyField("value", SystemClass.instance);
         properties = SetFact.singleton(value);
 
-        classes = new ClassWhere<KeyField>(key, SystemClass.instance);
+        classes = new ClassWhere<>(key, SystemClass.instance);
 
         ImMap<Field, SystemClass> valueClasses = MapFact.toMap(key, SystemClass.instance, value, SystemClass.instance);
-        propertyClasses = MapFact.singleton(value,new ClassWhere<Field>(valueClasses));
+        propertyClasses = MapFact.singleton(value, new ClassWhere<>(valueClasses));
     }
 
     public final static int OBJECT = 1;
@@ -55,7 +55,7 @@ public class IDTable extends GlobalTable {
 
     @IdentityInstanceLazy
     private Query<KeyField, PropertyField> getGenerateQuery(int idType) {
-        QueryBuilder<KeyField, PropertyField> query = new QueryBuilder<KeyField, PropertyField>(this, MapFact.singleton(key, new DataObject(idType, SystemClass.instance)));
+        QueryBuilder<KeyField, PropertyField> query = new QueryBuilder<>(this, MapFact.singleton(key, new DataObject(idType, SystemClass.instance)));
         lsfusion.server.data.query.Join<PropertyField> joinTable = join(query.getMapExprs());
         query.and(joinTable.getWhere());
         query.addProperty(value, joinTable.getExpr(value));
@@ -66,7 +66,7 @@ public class IDTable extends GlobalTable {
     {
         ImMap<Integer, Integer> counters = getCounters();
         for(int i=0,size=counters.size();i<size;i++)
-            ids.add(counters.getKey(i), new Pair<Integer, Integer>(0, -1));
+            ids.add(counters.getKey(i), new Pair<>(0, -1));
     }
     
     public int generateID(SQLSession dataSession, int idType) throws SQLException {
@@ -86,7 +86,7 @@ public class IDTable extends GlobalTable {
             }
             result = freeID++;
 
-            ids.add(idType, new Pair<Integer, Integer>(freeID, maxReservedID));
+            ids.add(idType, new Pair<>(freeID, maxReservedID));
         }
 
         return result;
@@ -101,25 +101,25 @@ public class IDTable extends GlobalTable {
             Pair<Integer, Integer> fromPoolIDs;
             int fromPool = maxReservedID - freeID + 1;
             if(fromPool >= count) {
-                fromPoolIDs = new Pair<Integer, Integer>(freeID, count);
+                fromPoolIDs = new Pair<>(freeID, count);
                 freeID += count;
 
-                ids.add(idType, new Pair<Integer, Integer>(freeID, maxReservedID));
+                ids.add(idType, new Pair<>(freeID, maxReservedID));
                 return new Pair[]{fromPoolIDs};
             } else
-                fromPoolIDs = new Pair<Integer, Integer>(freeID, fromPool);
+                fromPoolIDs = new Pair<>(freeID, fromPool);
 
             int rest = count - fromPool;
             assert rest > 0;
 
             int newReserved = rest + Settings.get().getReserveIDStep();
             int newID = reserveIDs(newReserved, dataSession, idType);
-            Pair<Integer, Integer> genPoolIDs = new Pair<Integer, Integer>(newID, rest);
+            Pair<Integer, Integer> genPoolIDs = new Pair<>(newID, rest);
 
             maxReservedID = newID + newReserved - 1;
             freeID = newID + rest;
 
-            ids.add(idType, new Pair<Integer, Integer>(freeID, maxReservedID));
+            ids.add(idType, new Pair<>(freeID, maxReservedID));
             if(fromPool > 0)
                 return new Pair[] {fromPoolIDs, genPoolIDs};
             return new Pair[] {genPoolIDs};
@@ -138,7 +138,7 @@ public class IDTable extends GlobalTable {
 
             freeID = (Integer) getGenerateQuery(idType).execute(dataSession, OperationOwner.unknown).singleValue().get(value) + 1; // замещаем
 
-            QueryBuilder<KeyField, PropertyField> updateQuery = new QueryBuilder<KeyField, PropertyField>(this, MapFact.singleton(key, new DataObject(idType, SystemClass.instance)));
+            QueryBuilder<KeyField, PropertyField> updateQuery = new QueryBuilder<>(this, MapFact.singleton(key, new DataObject(idType, SystemClass.instance)));
             updateQuery.addProperty(value, new ValueExpr(freeID + count - 1, SystemClass.instance));
             dataSession.updateRecords(new ModifyQuery(this, updateQuery.getQuery(), OperationOwner.unknown, TableOwner.global));
 

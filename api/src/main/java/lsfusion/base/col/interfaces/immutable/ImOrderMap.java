@@ -33,7 +33,7 @@ public interface ImOrderMap<K,V> {
     
     ImOrderMap<K, V> reverseOrder();
 
-    public ImOrderMap<K, V> removeOrderNulls();
+    ImOrderMap<K, V> removeOrderNulls();
 
     <G> ImMap<G, ImOrderMap<K, V>> groupOrder(BaseUtils.Group<G, K> getter);
     ImOrderMap<V, ImOrderSet<K>> groupOrderValues();
@@ -64,11 +64,11 @@ public interface ImOrderMap<K,V> {
 
     <M> ImOrderMap<M, V> mapMergeItOrderKeys(GetValue<M, K> getter); // с последействием
 
-    public <M> ImOrderMap<K,M> mapOrderValues(GetIndex<M> getter);
-    public <M> ImOrderMap<K,M> mapOrderValues(GetValue<M, V> getter);
-    public <M> ImOrderMap<K,M> mapOrderValues(GetKeyValue<M,K, V> getter);
-    public <M> ImOrderMap<K,M> mapOrderValues(GetStaticValue<M> getter);
-    public <M> ImOrderMap<M, V> mapOrderKeys(GetValue<M, K> getter);
+    <M> ImOrderMap<K,M> mapOrderValues(GetIndex<M> getter);
+    <M> ImOrderMap<K,M> mapOrderValues(GetValue<M, V> getter);
+    <M> ImOrderMap<K,M> mapOrderValues(GetKeyValue<M, K, V> getter);
+    <M> ImOrderMap<K,M> mapOrderValues(GetStaticValue<M> getter);
+    <M> ImOrderMap<M, V> mapOrderKeys(GetValue<M, K> getter);
     <MK, MV> ImOrderMap<MK,MV> mapOrderKeyValues(GetKeyValue<MK, K, V> getterKey, GetValue<MV, V> getterValue);
     <MK, MV> ImOrderMap<MK,MV> mapOrderKeyValues(GetValue<MK, K> getterKey, GetValue<MV, V> getterValue);
 
@@ -76,11 +76,11 @@ public interface ImOrderMap<K,V> {
 
     <M> ImList<M> mapListValues(GetValue<M, V> getter);
 
-    public <M> ImOrderMap<M, V> mapMergeOrderKeys(GetValue<M, K> getter);
+    <M> ImOrderMap<M, V> mapMergeOrderKeys(GetValue<M, K> getter);
 
-    public <M, E1 extends Exception, E2 extends Exception> ImOrderMap<M, V> mapOrderKeysEx(GetExValue<M, K, E1, E2> getter) throws E1, E2;
-    public <M, E1 extends Exception, E2 extends Exception> ImOrderMap<M, V> mapMergeOrderKeysEx(GetExValue<M, K, E1, E2> getter) throws E1, E2;
+    <M, E1 extends Exception, E2 extends Exception> ImOrderMap<M, V> mapOrderKeysEx(GetExValue<M, K, E1, E2> getter) throws E1, E2;
+    <M, E1 extends Exception, E2 extends Exception> ImOrderMap<M, V> mapMergeOrderKeysEx(GetExValue<M, K, E1, E2> getter) throws E1, E2;
     
     boolean starts(ImSet<K> set);
-    public ImOrderMap<K,V> moveStart(ImSet<K> col);
+    ImOrderMap<K,V> moveStart(ImSet<K> col);
 }

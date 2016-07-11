@@ -32,8 +32,8 @@ public class CaseUnionDrillDownFormEntity<I extends PropertyInterface> extends D
     protected void setupDrillDownForm() {
         Version version = LM.getVersion();
         
-        propProperties = new ArrayList<PropertyDrawEntity>();
-        whereProperties = new ArrayList<PropertyDrawEntity>();
+        propProperties = new ArrayList<>();
+        whereProperties = new ArrayList<>();
 
         ImList<CalcCase<UnionProperty.Interface>> cases = property.getCases();
 

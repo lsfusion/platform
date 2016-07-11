@@ -341,10 +341,10 @@ public abstract class GUserPreferencesDialog extends GResizableModalWindow {
     }
 
     private void savePressed(boolean forAllUsers) {
-        Map<GPropertyDraw, Map<Boolean, Integer>> userSortDirections = new HashMap<GPropertyDraw, Map<Boolean, Integer>>();
+        Map<GPropertyDraw, Map<Boolean, Integer>> userSortDirections = new HashMap<>();
         int i = 0;
         for (Map.Entry<Map<GPropertyDraw, GGroupObjectValue>, Boolean> entry : grid.getOrderDirections().entrySet()) {
-            HashMap<Boolean, Integer> dirs = new HashMap<Boolean, Integer>();
+            HashMap<Boolean, Integer> dirs = new HashMap<>();
             dirs.put(entry.getValue(), i);
             userSortDirections.put(entry.getKey().keySet().iterator().next(), dirs);
             i++;

@@ -41,12 +41,12 @@ public class ClientForm extends ContextIdentityObject implements LogicsSupplier,
 
     public ClientContainer mainContainer;
 
-    public List<ClientTreeGroup> treeGroups = new ArrayList<ClientTreeGroup>();
-    public List<ClientGroupObject> groupObjects = new ArrayList<ClientGroupObject>();
-    public List<ClientPropertyDraw> propertyDraws = new ArrayList<ClientPropertyDraw>();
+    public List<ClientTreeGroup> treeGroups = new ArrayList<>();
+    public List<ClientGroupObject> groupObjects = new ArrayList<>();
+    public List<ClientPropertyDraw> propertyDraws = new ArrayList<>();
 
-    public OrderedMap<ClientPropertyDraw, Boolean> defaultOrders = new OrderedMap<ClientPropertyDraw, Boolean>();
-    public List<ClientRegularFilterGroup> regularFilterGroups = new ArrayList<ClientRegularFilterGroup>();
+    public OrderedMap<ClientPropertyDraw, Boolean> defaultOrders = new OrderedMap<>();
+    public List<ClientRegularFilterGroup> regularFilterGroups = new ArrayList<>();
 
     public ClientForm() {
     }
@@ -62,7 +62,7 @@ public class ClientForm extends ContextIdentityObject implements LogicsSupplier,
     }
 
     public List<ClientObject> getObjects() {
-        ArrayList<ClientObject> objects = new ArrayList<ClientObject>();
+        ArrayList<ClientObject> objects = new ArrayList<>();
         for (ClientGroupObject groupObject : groupObjects) {
             for (ClientObject object : groupObject.objects) {
                 objects.add(object);
@@ -130,7 +130,7 @@ public class ClientForm extends ContextIdentityObject implements LogicsSupplier,
 
     private Map<Integer, ClientPropertyDraw> getIDProps() {
         if (idProps == null) {
-            idProps = new HashMap<Integer, ClientPropertyDraw>();
+            idProps = new HashMap<>();
             for (ClientPropertyDraw property : propertyDraws) {
                 idProps.put(property.getID(), property);
             }
@@ -174,7 +174,7 @@ public class ClientForm extends ContextIdentityObject implements LogicsSupplier,
     }
 
     public OrderedMap<ClientPropertyDraw, Boolean> getDefaultOrders(ClientGroupObject group) {
-        OrderedMap<ClientPropertyDraw, Boolean> result = new OrderedMap<ClientPropertyDraw, Boolean>();
+        OrderedMap<ClientPropertyDraw, Boolean> result = new OrderedMap<>();
         for (Map.Entry<ClientPropertyDraw, Boolean> entry : defaultOrders.entrySet()) {
             if (BaseUtils.nullEquals(entry.getKey().groupObject, group)) {
                 result.put(entry.getKey(), entry.getValue());
@@ -211,7 +211,7 @@ public class ClientForm extends ContextIdentityObject implements LogicsSupplier,
         propertyDraws = pool.deserializeList(inStream);
         regularFilterGroups = pool.deserializeList(inStream);
 
-        defaultOrders = new OrderedMap<ClientPropertyDraw, Boolean>();
+        defaultOrders = new OrderedMap<>();
         int orderCount = inStream.readInt();
         for (int i = 0; i < orderCount; i++) {
             ClientPropertyDraw order = pool.deserializeObject(inStream);

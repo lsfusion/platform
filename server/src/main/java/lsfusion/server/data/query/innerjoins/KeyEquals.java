@@ -63,8 +63,8 @@ public class KeyEquals extends WrapMap<KeyEqual, Where> {
                 Where where2 = joins.getValue(i2);
 
                 // сначала определяем общие ключи
-                Result<ImMap<ParamExpr, BaseExpr>> diffEq1 = new Result<ImMap<ParamExpr, BaseExpr>>();
-                Result<ImMap<ParamExpr, BaseExpr>> diffEq2 = new Result<ImMap<ParamExpr, BaseExpr>>();
+                Result<ImMap<ParamExpr, BaseExpr>> diffEq1 = new Result<>();
+                Result<ImMap<ParamExpr, BaseExpr>> diffEq2 = new Result<>();
                 ImMap<ParamExpr, BaseExpr> sameEq1 = eq1.keyExprs.splitKeys(eq2.keyExprs.keys(), diffEq1);
                 ImMap<ParamExpr, BaseExpr> sameEq2 = eq2.keyExprs.splitKeys(eq1.keyExprs.keys(), diffEq2);
 
@@ -118,7 +118,7 @@ public class KeyEquals extends WrapMap<KeyEqual, Where> {
 
                 ImMap<ParamExpr, Expr> mergeKeys = mergeSame.addExcl(cleanEq1.addExcl(cleanEq2));
 
-                Result<ImMap<ParamExpr, Expr>> notBaseExprs = new Result<ImMap<ParamExpr, Expr>>();
+                Result<ImMap<ParamExpr, Expr>> notBaseExprs = new Result<>();
                 ImMap<ParamExpr, BaseExpr> andEq = BaseUtils.immutableCast(mergeKeys.splitKeys(new GetKeyValue<Boolean, ParamExpr, Expr>() {
                     public Boolean getMapValue(ParamExpr key, Expr value) {
                         return value instanceof BaseExpr;
@@ -196,11 +196,11 @@ public class KeyEquals extends WrapMap<KeyEqual, Where> {
     public <K extends BaseExpr> Pair<ImCol<GroupJoinsWhere>, Boolean> getWhereJoins(boolean tryExclusive, ImSet<K> keepStat, ImOrderSet<Expr> orderTop) {
         ImCol<GroupJoinsWhere> whereJoins = getWhereJoins(keepStat, orderTop, GroupJoinsWheres.Type.WHEREJOINS);
         if(!tryExclusive || whereJoins.size()<=1 || whereJoins.size() > Settings.get().getLimitExclusiveCount())
-            return new Pair<ImCol<GroupJoinsWhere>, Boolean>(whereJoins, whereJoins.size()<=1);
+            return new Pair<>(whereJoins, whereJoins.size() <= 1);
         ImList<GroupJoinsWhere> sortedWhereJoins = GroupWhere.sort(whereJoins);
         long sortedComplexity = getComplexity(sortedWhereJoins);
         if(sortedComplexity > Settings.get().getLimitExclusiveComplexity())
-            return new Pair<ImCol<GroupJoinsWhere>, Boolean>(whereJoins, false);
+            return new Pair<>(whereJoins, false);
 
         // если сложность превышает порог - просто andNot'им верхние
         if(sortedWhereJoins.size() > Settings.get().getLimitExclusiveSimpleCount() || sortedComplexity > Settings.get().getLimitExclusiveSimpleComplexity()) {
@@ -210,18 +210,18 @@ public class KeyEquals extends WrapMap<KeyEqual, Where> {
                 exclJoins.add(new GroupJoinsWhere(whereJoin.keyEqual, whereJoin.joins, whereJoin.upWheres, whereJoin.where.and(prevWhere.not()), orderTop));
                 prevWhere.or(whereJoin.getFullWhere());
             }
-            return new Pair<ImCol<GroupJoinsWhere>, Boolean>(exclJoins.immutableCol(), true);
+            return new Pair<>(exclJoins.immutableCol(), true);
         } else { // иначе запускаем рекурсию
             GroupJoinsWhere firstJoin = sortedWhereJoins.iterator().next();
             Pair<ImCol<GroupJoinsWhere>, Boolean> recWhereJoins = getWhere().and(firstJoin.getFullWhere().not()).getWhereJoins(true, keepStat, orderTop);
-            return new Pair<ImCol<GroupJoinsWhere>, Boolean>(merge(recWhereJoins.first, firstJoin, orderTop), recWhereJoins.second); // assert что keyEquals.getWhere тоже самое что this только упрощенное транслятором
+            return new Pair<>(merge(recWhereJoins.first, firstJoin, orderTop), recWhereJoins.second); // assert что keyEquals.getWhere тоже самое что this только упрощенное транслятором
         }
     }
 
     public <K extends BaseExpr> ImCol<GroupStatWhere<K>> getStatJoins(final ImSet<K> keepStat, boolean noWhere) {
         return getWhereJoins(keepStat, SetFact.<Expr>EMPTYORDER(), noWhere ? GroupJoinsWheres.Type.STAT_ONLY : GroupJoinsWheres.Type.STAT_WITH_WHERE).mapColValues(new GetValue<GroupStatWhere<K>, GroupJoinsWhere>() {
             public GroupStatWhere<K> getMapValue(GroupJoinsWhere whereJoin) {
-                return new GroupStatWhere<K>(whereJoin.keyEqual, whereJoin.getStatKeys(keepStat), whereJoin.where);
+                return new GroupStatWhere<>(whereJoin.keyEqual, whereJoin.getStatKeys(keepStat), whereJoin.where);
             }
         });
     }
@@ -240,7 +240,7 @@ public class KeyEquals extends WrapMap<KeyEqual, Where> {
             for(GroupStatWhere<K> statJoin : sortedStatJoins) {
                 Where statExclWhere = statJoin.where.and(prevWhere.translateQuery(statJoin.keyEqual.getTranslator()).not());
                 if(!statExclWhere.isFalse()) { // потому как не рекурсия, могут быть ситуации когда становится false, или появляется несколько keyEqual
-                    exclJoins.add(new GroupStatWhere<K>(statJoin.keyEqual, statJoin.stats, statExclWhere));
+                    exclJoins.add(new GroupStatWhere<>(statJoin.keyEqual, statJoin.stats, statExclWhere));
                     prevWhere = prevWhere.or(statJoin.getFullWhere());
                 }
             }

@@ -11,7 +11,7 @@ public class Relationed<T extends PropertyInterface> extends Compared<T> {
     }
 
     protected <P extends PropertyInterface> Compared<P> create(CalcPropertyInterfaceImplement<P> first, CalcPropertyInterfaceImplement<P> second) {
-        return new Relationed<P>(first, second);
+        return new Relationed<>(first, second);
     }
 
     public ExClassSet resolveInferred(CalcPropertyInterfaceImplement<T> operand, ImMap<T, ExClassSet> inferred, InferType inferType) {

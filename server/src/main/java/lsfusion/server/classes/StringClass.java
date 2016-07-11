@@ -23,7 +23,7 @@ import static lsfusion.base.BaseUtils.cmp;
 
 public class StringClass extends DataClass {
 
-    private final static Collection<StringClass> strings = new ArrayList<StringClass>();
+    private final static Collection<StringClass> strings = new ArrayList<>();
 
     public final static StringClass text = getv(ExtInt.UNLIMITED);
     public final static StringClass richText = get(false, false, true, ExtInt.UNLIMITED);

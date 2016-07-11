@@ -151,7 +151,7 @@ public class RecursiveExpr extends QueryExpr<KeyExpr, RecursiveExpr.Query, Recur
     }
 
     public static Expr createBase(final ImRevMap<KeyExpr, KeyExpr> mapIterate, Expr initial, Expr step, boolean cyclePossible, ImMap<KeyExpr, BaseExpr> group) {
-        Result<ImMap<KeyExpr,BaseExpr>> restGroup = new Result<ImMap<KeyExpr, BaseExpr>>();
+        Result<ImMap<KeyExpr,BaseExpr>> restGroup = new Result<>();
         ImMap<KeyExpr, BaseExpr> translate = group.splitKeys(new GetKeyValue<Boolean, KeyExpr, BaseExpr>() {
             public Boolean getMapValue(KeyExpr key, BaseExpr value) {
                 return value.isValue() && !mapIterate.containsKey(key);

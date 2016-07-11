@@ -41,21 +41,21 @@ public class MapContextIterable implements Iterable<MapTranslate> {
                 if(valueIterator.hasNext())
                     mapValues = valueIterator.next();
             } else {
-                valueIterator = new EmptyIterator<MapValuesTranslate>();
+                valueIterator = new EmptyIterator<>();
                 ImSet<Value> innerValues = from.getInnerValues();
                 if(innerValues.equals(to.getInnerValues())) // если контексты не совпадают то сразу вываливаемся
                     mapValues = MapValuesTranslator.noTranslate(innerValues);
             }
 
             if(mapValues==null) {
-                keysIterator = new EmptyIterator<ImRevMap<ParamExpr, ParamExpr>>();
+                keysIterator = new EmptyIterator<>();
                 return;
             }
 
             keyPairs = new KeyPairs(from.getInnerComponents(values).map,to.getInnerComponents(values).map);
             keysIterator = keyPairs.iterator();
             if(!keysIterator.hasNext())
-                valueIterator = new EmptyIterator<MapValuesTranslate>();
+                valueIterator = new EmptyIterator<>();
         }
 
         public boolean hasNext() {

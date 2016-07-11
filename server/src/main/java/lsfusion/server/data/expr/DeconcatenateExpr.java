@@ -121,6 +121,6 @@ public class DeconcatenateExpr extends SingleClassExpr {
     }
 
     public InnerBaseJoin<?> getBaseJoin() {
-        return new FormulaJoin<Integer>(MapFact.singleton(0, expr), true); // хотя наверное можно и false
+        return new FormulaJoin<>(MapFact.singleton(0, expr), true); // хотя наверное можно и false
     }
 }

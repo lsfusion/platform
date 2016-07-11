@@ -25,7 +25,7 @@ public class CustomStaticFormatFileClass extends StaticFormatFileClass {
         return get(multiple, storeName, description, extensions.split(" "));
     }
 
-    private static List<CustomStaticFormatFileClass> instances = new ArrayList<CustomStaticFormatFileClass>();
+    private static List<CustomStaticFormatFileClass> instances = new ArrayList<>();
 
     public static CustomStaticFormatFileClass get(boolean multiple, boolean storeName, String description, String[] extensions) {
         for(CustomStaticFormatFileClass instance : instances)

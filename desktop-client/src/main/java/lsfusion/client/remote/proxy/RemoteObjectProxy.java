@@ -26,7 +26,7 @@ public abstract class RemoteObjectProxy<T extends PendingRemoteInterface> implem
 
     protected final T target;
 
-    private final Map<Object, Object> properties = new HashMap<Object, Object>();
+    private final Map<Object, Object> properties = new HashMap<>();
 
     private long startCall = 0;
 
@@ -164,7 +164,7 @@ public abstract class RemoteObjectProxy<T extends PendingRemoteInterface> implem
     }
 
     protected static List<MethodInvocation> getImmutableMethodInvocations(Class clazz) {
-        List<MethodInvocation> invocations = new ArrayList<MethodInvocation>();
+        List<MethodInvocation> invocations = new ArrayList<>();
         for (Method method : clazz.getMethods()) {
             if (method.getAnnotation(ImmutableMethod.class) == null) {
                 continue;

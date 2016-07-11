@@ -13,7 +13,7 @@ import java.util.Map;
 
 public class ClientExternalScreen {
 
-    private static Map<Integer, ClientExternalScreen> screens = new HashMap<Integer, ClientExternalScreen>();
+    private static Map<Integer, ClientExternalScreen> screens = new HashMap<>();
     public static ClientExternalScreen getScreen(int screenID) {
         ClientExternalScreen screen = screens.get(screenID);
         if (screen == null) {
@@ -54,7 +54,7 @@ public class ClientExternalScreen {
         this.screen = screen;
     }
 
-    private transient Map<Integer, Map<ExternalScreenComponent, ExternalScreenConstraints>> components = new HashMap<Integer, Map<ExternalScreenComponent, ExternalScreenConstraints>>();
+    private transient Map<Integer, Map<ExternalScreenComponent, ExternalScreenConstraints>> components = new HashMap<>();
 
     public void add(int formID, ExternalScreenComponent comp, ExternalScreenConstraints cons) {
         if (!components.containsKey(formID)) {

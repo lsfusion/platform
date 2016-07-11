@@ -22,15 +22,15 @@ public class ArOrderSet<K> extends AMWrapOrderSet<K, ArSet<K>> {
     }
 
     public ArOrderSet(ArOrderSet<K> orderSet) {
-        super(new ArSet<K>(orderSet.wrapSet));
+        super(new ArSet<>(orderSet.wrapSet));
     }
 
     public <M> ImOrderValueMap<K, M> mapItOrderValues() {
-        return new ArOrderMap<K, M>(this);
+        return new ArOrderMap<>(this);
     }
 
     public <M> ImRevValueMap<K, M> mapItOrderRevValues() { // предполагается заполнение в том же порядке
-        return new ArMap<K, M>(wrapSet);
+        return new ArMap<>(wrapSet);
     }
 
     public ImOrderSet<K> immutableOrder() {
@@ -51,6 +51,6 @@ public class ArOrderSet<K> extends AMWrapOrderSet<K, ArSet<K>> {
         // упорядочиваем Set
         int[] order = new int[wrapSet.size];
         ArSet.sortArray(wrapSet.size, wrapSet.array, order);
-        return new ArOrderIndexedSet<K>(new ArIndexedSet<K>(wrapSet.size, wrapSet.array), order);
+        return new ArOrderIndexedSet<>(new ArIndexedSet<K>(wrapSet.size, wrapSet.array), order);
     }
 }

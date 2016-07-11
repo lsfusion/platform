@@ -44,7 +44,7 @@ public abstract class ColumnsContainerView<P extends Panel> extends GAbstractCon
             panel.add(column);
 
             columns[i] = column;
-            columnsChildren[i] = new ArrayList<GComponent>();
+            columnsChildren[i] = new ArrayList<>();
         }
         panel.getElement().getStyle().setOverflow(Style.Overflow.HIDDEN);
 

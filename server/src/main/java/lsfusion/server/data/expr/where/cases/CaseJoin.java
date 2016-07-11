@@ -17,7 +17,7 @@ public class CaseJoin<U> extends AbstractJoin<U> {
     }
 
     public CaseJoin(Where where, Join<U> join) {
-        this(new JoinCaseList<U>(where, join));
+        this(new JoinCaseList<>(where, join));
     }
 
     @IdentityLazy
@@ -35,6 +35,6 @@ public class CaseJoin<U> extends AbstractJoin<U> {
     }
 
     public Join<U> translateRemoveValues(MapValuesTranslate translate) {
-        return new CaseJoin<U>(cases.translateRemoveValues(translate));
+        return new CaseJoin<>(cases.translateRemoveValues(translate));
     }
 }

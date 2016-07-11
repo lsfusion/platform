@@ -84,7 +84,7 @@ public class SetActionProperty<P extends PropertyInterface, W extends PropertyIn
                 Expr fromExpr = writeFrom.mapExpr(PropertyChange.simplifyExprs(innerExprs, exprWhere), context.getModifier());
                 ImMap<P, DataObject> writeInnerValues = DataObject.onlyDataObjects(writeTo.mapping.innerJoin(innerValues));
                 if(writeInnerValues!=null)
-                    context.getEnv().change(writeTo.property, new PropertyChange<P>(writeInnerValues, writeTo.mapping.rightJoin(innerKeys), // нет FormEnvironment так как заведомо не action
+                    context.getEnv().change(writeTo.property, new PropertyChange<>(writeInnerValues, writeTo.mapping.rightJoin(innerKeys), // нет FormEnvironment так как заведомо не action
                             fromExpr, exprWhere));
                 else
                     proceedNullException();

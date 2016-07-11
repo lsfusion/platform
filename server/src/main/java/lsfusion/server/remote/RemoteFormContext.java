@@ -50,7 +50,7 @@ public class RemoteFormContext<T extends BusinessLogics<T>, F extends FormInstan
     @Override
     public RemoteForm createRemoteForm(FormInstance formInstance, ExecutionStack stack) {
         try {
-            return new RemoteForm<T, FormInstance<T>>(formInstance, form.getExportPort(), form.getRemoteFormListener(), stack);
+            return new RemoteForm<>(formInstance, form.getExportPort(), form.getRemoteFormListener(), stack);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

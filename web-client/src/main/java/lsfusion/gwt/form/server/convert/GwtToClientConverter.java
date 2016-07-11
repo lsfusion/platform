@@ -114,8 +114,8 @@ public class GwtToClientConverter extends ObjectConverter {
     
     @Converter(from = GFormUserPreferences.class)
     public FormUserPreferences convertFormUserPreferences(GFormUserPreferences gprefs) {
-        java.util.List<GroupObjectUserPreferences> generalPrefs = new ArrayList<GroupObjectUserPreferences>();
-        java.util.List<GroupObjectUserPreferences> userPrefs = new ArrayList<GroupObjectUserPreferences>();
+        java.util.List<GroupObjectUserPreferences> generalPrefs = new ArrayList<>();
+        java.util.List<GroupObjectUserPreferences> userPrefs = new ArrayList<>();
         for (GGroupObjectUserPreferences prefs : gprefs.getGroupObjectGeneralPreferencesList()) {
             generalPrefs.add(convertGroupObjectPreferences(prefs));
         }
@@ -127,7 +127,7 @@ public class GwtToClientConverter extends ObjectConverter {
     
     @Converter(from = GGroupObjectUserPreferences.class)
     public GroupObjectUserPreferences convertGroupObjectPreferences(GGroupObjectUserPreferences gprefs) {
-        Map<String, ColumnUserPreferences> columnUPs = new HashMap<String, ColumnUserPreferences>();
+        Map<String, ColumnUserPreferences> columnUPs = new HashMap<>();
         for (Map.Entry<String, GColumnUserPreferences> entry : gprefs.getColumnUserPreferences().entrySet()) {
             columnUPs.put(entry.getKey(), convertColumnPreferences(entry.getValue()));
         }

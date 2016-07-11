@@ -89,7 +89,7 @@ public class QueryBuilder<K, V> {
     }
 
     public Query<K, V> getQuery() {
-        return new Query<K, V>(mapKeys, mProperties.immutable(), where);
+        return new Query<>(mapKeys, mProperties.immutable(), where);
     }
 
     public ImOrderMap<ImMap<K, Object>, ImMap<V, Object>> execute(SQLSession session, OperationOwner owner) throws SQLException, SQLHandledException {

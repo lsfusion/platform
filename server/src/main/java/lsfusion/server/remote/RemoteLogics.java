@@ -248,7 +248,7 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     }
 
     protected List<String> getExtraUserRoleNames(String username) {
-        return new ArrayList<String>();
+        return new ArrayList<>();
     }
 
     protected Integer getUserByEmail(DataSession session, String email) throws SQLException, SQLHandledException {

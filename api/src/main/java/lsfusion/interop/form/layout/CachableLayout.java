@@ -161,6 +161,6 @@ public abstract class CachableLayout<C> implements LayoutManager2, Serializable 
     }
 
     public interface ComponentSizeGetter {
-        public Dimension get(Component child);
+        Dimension get(Component child);
     }
 }

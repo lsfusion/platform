@@ -19,8 +19,8 @@ public class ClientNavigatorElement {
     
     public String caption;
     
-    public List<ClientNavigatorElement> parents = new ArrayList<ClientNavigatorElement>();
-    public List<ClientNavigatorElement> children = new ArrayList<ClientNavigatorElement>();
+    public List<ClientNavigatorElement> parents = new ArrayList<>();
+    public List<ClientNavigatorElement> children = new ArrayList<>();
     public SerializableImageIconHolder image;
     public String imageFileName;
 

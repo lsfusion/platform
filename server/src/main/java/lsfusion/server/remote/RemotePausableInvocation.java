@@ -36,7 +36,7 @@ public abstract class RemotePausableInvocation extends PausableInvocation<Server
 
     private ServerResponse invocationResult = null;
 
-    protected List<ClientAction> delayedActions = new ArrayList<ClientAction>();
+    protected List<ClientAction> delayedActions = new ArrayList<>();
 
     protected MessageClientAction delayedMessageAction = null; 
     protected boolean delayedGetRemoteChanges = false;

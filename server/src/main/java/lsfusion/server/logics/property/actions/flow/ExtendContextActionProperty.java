@@ -40,7 +40,7 @@ public abstract class ExtendContextActionProperty<I extends PropertyInterface> e
     protected abstract CalcPropertyMapImplement<?, I> calcGroupWhereProperty();
 
     public ActionPropertyMapImplement<PropertyInterface, I> getMapImplement() {
-        return new ActionPropertyMapImplement<PropertyInterface, I>(this, mapInterfaces);
+        return new ActionPropertyMapImplement<>(this, mapInterfaces);
     }
 
     @Override

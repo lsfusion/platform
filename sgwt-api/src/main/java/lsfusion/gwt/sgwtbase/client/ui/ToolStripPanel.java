@@ -113,7 +113,7 @@ public class ToolStripPanel extends ToolStrip {
         selectItem.setWidth(130);
         selectItem.setShowTitle(false);
 
-        LinkedHashMap<String, String> valueMap = new LinkedHashMap<String, String>();
+        LinkedHashMap<String, String> valueMap = new LinkedHashMap<>();
         for (int i = 0; i < locales.length; ++i) {
             valueMap.put(locales[i], localesDescriptions[i]);
         }

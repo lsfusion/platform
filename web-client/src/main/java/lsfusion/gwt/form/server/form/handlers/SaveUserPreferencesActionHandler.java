@@ -28,7 +28,7 @@ public class SaveUserPreferencesActionHandler extends ServerResponseActionHandle
         FormSessionObject form = getFormSessionObject(action.formSessionID);
         GGroupObjectUserPreferences gGroupObjectUP = action.groupObjectUserPreferences;
         
-        HashMap<String, ColumnUserPreferences> columnUPMap = new HashMap<String, ColumnUserPreferences>();
+        HashMap<String, ColumnUserPreferences> columnUPMap = new HashMap<>();
         for (Map.Entry<String, GColumnUserPreferences> entry : gGroupObjectUP.getColumnUserPreferences().entrySet()) {
             GColumnUserPreferences gColumnUP = entry.getValue();
             columnUPMap.put(entry.getKey(), new ColumnUserPreferences(gColumnUP.userHide, gColumnUP.userCaption, gColumnUP.userPattern, gColumnUP.userWidth, gColumnUP.userOrder, gColumnUP.userSort, gColumnUP.userAscendingSort));

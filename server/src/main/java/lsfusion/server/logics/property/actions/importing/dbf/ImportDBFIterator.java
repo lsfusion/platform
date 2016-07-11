@@ -30,7 +30,7 @@ public class ImportDBFIterator extends ImportIterator {
     public List<String> nextRow() {
         try {
             dbf.read();
-            List<String> listRow = new ArrayList<String>();
+            List<String> listRow = new ArrayList<>();
             for (Integer column : sourceColumns) {
                 ValueClass valueClass = properties.get(sourceColumns.indexOf(column)).property.getValueClass(ClassType.valuePolicy);
                 boolean isDate = valueClass instanceof DateClass;

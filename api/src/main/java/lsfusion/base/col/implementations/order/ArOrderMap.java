@@ -12,7 +12,7 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.ImOrderValueMap;
 public class ArOrderMap<K, V> extends AMWrapOrderMap<K, V, ArMap<K, V>> {
 
     public ArOrderMap(AddValue<K, V> addValue) {
-        super(new ArMap<K, V>(addValue));
+        super(new ArMap<>(addValue));
     }
 
     public ArOrderMap(ArMap<K, V> wrapMap) {
@@ -20,11 +20,11 @@ public class ArOrderMap<K, V> extends AMWrapOrderMap<K, V, ArMap<K, V>> {
     }
 
     public ArOrderMap(ArOrderMap<K, V> orderMap, AddValue<K, V> addValue) {
-        super(new ArMap<K, V>(orderMap.wrapMap, addValue));
+        super(new ArMap<>(orderMap.wrapMap, addValue));
     }
 
     public ArOrderMap(int size, AddValue<K, V> addValue) {
-        super(new ArMap<K, V>(size, addValue));
+        super(new ArMap<>(size, addValue));
     }
 
     // ImValueMap
@@ -33,12 +33,12 @@ public class ArOrderMap<K, V> extends AMWrapOrderMap<K, V, ArMap<K, V>> {
     }
 
     public ArOrderMap(ArOrderMap<K, V> orderMap, boolean clone) {
-        super(new ArMap<K, V>(orderMap.wrapMap, clone));
+        super(new ArMap<>(orderMap.wrapMap, clone));
         assert clone;
     }
 
     public MOrderExclMap<K, V> orderCopy() {
-        return new ArOrderMap<K, V>(this, true);
+        return new ArOrderMap<>(this, true);
     }
 
     public ArOrderMap(ArOrderSet<K> orderSet) {
@@ -46,7 +46,7 @@ public class ArOrderMap<K, V> extends AMWrapOrderMap<K, V, ArMap<K, V>> {
     }
 
     public <M> ImOrderValueMap<K, M> mapItOrderValues() {
-        return new ArOrderMap<K, M>(this);
+        return new ArOrderMap<>(this);
     }
 
     public ImOrderMap<K, V> immutableOrder() {
@@ -70,16 +70,16 @@ public class ArOrderMap<K, V> extends AMWrapOrderMap<K, V, ArMap<K, V>> {
         // упорядочиваем Set
         int[] order = new int[wrapMap.size];
         ArSet.sortArray(wrapMap.size, wrapMap.keys, wrapMap.values, order);
-        return new ArOrderIndexedMap<K, V>(new ArIndexedMap<K, V>(wrapMap.size, wrapMap.keys, wrapMap.values), order);
+        return new ArOrderIndexedMap<>(new ArIndexedMap<K, V>(wrapMap.size, wrapMap.keys, wrapMap.values), order);
     }
 
     @Override
     public ImOrderSet<K> keyOrderSet() {
-        return new ArOrderSet<K>(new ArSet<K>(wrapMap.size, wrapMap.keys));
+        return new ArOrderSet<>(new ArSet<K>(wrapMap.size, wrapMap.keys));
     }
 
     @Override
     public ImList<V> valuesList() {
-        return new ArList<V>(new ArCol<V>(wrapMap.size, wrapMap.values));
+        return new ArList<>(new ArCol<V>(wrapMap.size, wrapMap.values));
     }
 }

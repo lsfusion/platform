@@ -299,7 +299,7 @@ public class PropertyDrawView extends ComponentView {
             return null;
         }
 
-        OrderedMap<String, String> contextMenuItems = new OrderedMap<String, String>();
+        OrderedMap<String, String> contextMenuItems = new OrderedMap<>();
         for (int i = 0; i < contextMenuBindings.size(); ++i) {
             String actionSID = contextMenuBindings.getKey(i);
             String caption = contextMenuBindings.getValue(i);

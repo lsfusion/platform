@@ -96,11 +96,11 @@ public class OnChangeProperty<T extends PropertyInterface,P extends PropertyInte
     public static <T extends PropertyInterface, P extends PropertyInterface> ImOrderSet<Interface<T, P>> getInterfaces(CalcProperty<T> onChange, CalcProperty<P> toChange) {
         return onChange.getOrderInterfaces().mapOrderSetValues(new GetValue<Interface<T, P>, T>() {
             public Interface<T, P> getMapValue(T value) {
-                return new KeyOnInterface<T, P>(value);
+                return new KeyOnInterface<>(value);
             }
         }).addOrderExcl(toChange.getOrderInterfaces().mapOrderSetValues(new GetValue<Interface<T, P>, P>() {
             public Interface<T, P> getMapValue(P value) {
-                return new KeyToInterface<T, P>(value);
+                return new KeyToInterface<>(value);
             }
         })).addOrderExcl(new ValueInterface<T, P>(toChange));
     }
@@ -138,6 +138,6 @@ public class OnChangeProperty<T extends PropertyInterface,P extends PropertyInte
             public PropertyObjectInterfaceEntity getMapValue(Interface<T, P> value) {
                 return value.getInterface(mapOnValues, mapToValues, valueObject);
             }});
-        return new CalcPropertyObjectEntity<Interface<T, P>>(this,interfaceImplement);
+        return new CalcPropertyObjectEntity<>(this, interfaceImplement);
     }
 }

@@ -111,7 +111,7 @@ public class ObjectType extends AbstractType<Integer> {
         if(objectClassSet.isEmpty())
             return baseClass.unknown;
 
-        QueryBuilder<Object,String> query = new QueryBuilder<Object,String>(MapFact.<Object, KeyExpr>EMPTYREV());
+        QueryBuilder<Object,String> query = new QueryBuilder<>(MapFact.<Object, KeyExpr>EMPTYREV());
         ImRevMap<ObjectClassField,ObjectValueClassSet> readTables = objectClassSet.getObjectClassFields();
         CaseExprInterface mCases = Expr.newCases(true, readTables.size()); // именно так а не через classExpr и т.п. чтобы не соптимизировалось, и не убрало вообще запрос к таблице
         for(int i=0,size=readTables.size();i<size;i++) {

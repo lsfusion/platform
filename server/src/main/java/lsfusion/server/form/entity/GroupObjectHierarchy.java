@@ -20,9 +20,9 @@ public class GroupObjectHierarchy {
 
     /// dependencies должны содержать зависимости, образующие лес (набор деревьев)
     public GroupObjectHierarchy(ImOrderSet<GroupObjectEntity> groupObjects, Map<GroupObjectEntity, List<GroupObjectEntity>> depends) {
-        groups = new ArrayList<GroupObjectEntity>(groupObjects.toJavaList());
-        dependencies = new HashMap<GroupObjectEntity, List<GroupObjectEntity>>(depends);
-        markedGroups = new HashSet<GroupObjectEntity>();
+        groups = new ArrayList<>(groupObjects.toJavaList());
+        dependencies = new HashMap<>(depends);
+        markedGroups = new HashSet<>();
         for (GroupObjectEntity group : groups) {
             if (!dependencies.containsKey(group) || dependencies.get(group) == null) {
                 dependencies.put(group, new ArrayList<GroupObjectEntity>());
@@ -32,9 +32,9 @@ public class GroupObjectHierarchy {
     }
 
     public GroupObjectHierarchy() {
-        groups = new ArrayList<GroupObjectEntity>();
-        dependencies = new HashMap<GroupObjectEntity, List<GroupObjectEntity>>();
-        markedGroups = new HashSet<GroupObjectEntity>();
+        groups = new ArrayList<>();
+        dependencies = new HashMap<>();
+        markedGroups = new HashSet<>();
     }
 
     public void addDependency(GroupObjectEntity a, GroupObjectEntity b) {
@@ -82,7 +82,7 @@ public class GroupObjectHierarchy {
     }
 
     private List<GroupObjectEntity> getRootNodes() {
-        List<GroupObjectEntity> roots = new ArrayList<GroupObjectEntity>();
+        List<GroupObjectEntity> roots = new ArrayList<>();
         Map<GroupObjectEntity, Integer> inputDegree = getInputDegrees();
         for (Map.Entry<GroupObjectEntity, Integer> entry : inputDegree.entrySet()) {
             if (entry.getValue() == 0) {
@@ -93,7 +93,7 @@ public class GroupObjectHierarchy {
     }
 
     private Map<GroupObjectEntity, Integer> getInputDegrees() {
-        Map<GroupObjectEntity, Integer> degrees = new HashMap<GroupObjectEntity, Integer>();
+        Map<GroupObjectEntity, Integer> degrees = new HashMap<>();
         for (GroupObjectEntity object : groups) {
             degrees.put(object, 0);
         }
@@ -107,8 +107,8 @@ public class GroupObjectHierarchy {
 
     /// Проверка на отсутствие циклов с помощью breadth-first search
     private boolean isValidForest(Map<GroupObjectEntity, List<GroupObjectEntity>> dependencies) {
-        Set<GroupObjectEntity> was = new HashSet<GroupObjectEntity>();
-        Queue<GroupObjectEntity> queue = new ArrayDeque<GroupObjectEntity>();
+        Set<GroupObjectEntity> was = new HashSet<>();
+        Queue<GroupObjectEntity> queue = new ArrayDeque<>();
         List<GroupObjectEntity> roots = getRootNodes();
         for (GroupObjectEntity obj : roots) {
             queue.add(obj);
@@ -152,7 +152,7 @@ public class GroupObjectHierarchy {
         }
 
         private ReportNode(List<GroupObjectEntity> groups) {
-            this.groups = new ArrayList<GroupObjectEntity>(groups);
+            this.groups = new ArrayList<>(groups);
         }
 
         public String getID() {
@@ -161,7 +161,7 @@ public class GroupObjectHierarchy {
         }
 
         public List<GroupObjectEntity> getGroupList() {
-            return new ArrayList<GroupObjectEntity>(groups);
+            return new ArrayList<>(groups);
         }
 
         private void merge(ReportNode obj) {
@@ -193,7 +193,7 @@ public class GroupObjectHierarchy {
 
     /// Для отчета по одной группе оставляем от всей иерархии только путь от нужной нам группы до корневой вершины
     public ReportHierarchy createSingleGroupReportHierarchy(int groupId) {
-        Map<GroupObjectEntity, GroupObjectEntity> parents = new HashMap<GroupObjectEntity, GroupObjectEntity>();
+        Map<GroupObjectEntity, GroupObjectEntity> parents = new HashMap<>();
         GroupObjectEntity targetGroup = null;
         for (GroupObjectEntity parentGroup : groups) {
             for (GroupObjectEntity childGroup : dependencies.get(parentGroup)) {
@@ -204,12 +204,12 @@ public class GroupObjectHierarchy {
             }
         }
 
-        List<GroupObjectEntity> remainGroups = new ArrayList<GroupObjectEntity>();
+        List<GroupObjectEntity> remainGroups = new ArrayList<>();
         while (targetGroup != null) {
             remainGroups.add(targetGroup);
             targetGroup = parents.get(targetGroup);
         }
-        Map<GroupObjectEntity, List<GroupObjectEntity>> remainDependencies = new HashMap<GroupObjectEntity, List<GroupObjectEntity>>();
+        Map<GroupObjectEntity, List<GroupObjectEntity>> remainDependencies = new HashMap<>();
         for (GroupObjectEntity group : remainGroups) {
             remainDependencies.put(group, BaseUtils.filterList(dependencies.get(group), remainGroups));
         }
@@ -217,9 +217,9 @@ public class GroupObjectHierarchy {
     }
 
     public static class ReportHierarchy {
-        private List<ReportNode> reportNodes = new ArrayList<ReportNode>();
-        private Map<ReportNode, List<ReportNode>> dependencies = new HashMap<ReportNode, List<ReportNode>>();
-        private Map<GroupObjectEntity, ReportNode> groupToReportNode = new HashMap<GroupObjectEntity, ReportNode>();
+        private List<ReportNode> reportNodes = new ArrayList<>();
+        private Map<ReportNode, List<ReportNode>> dependencies = new HashMap<>();
+        private Map<GroupObjectEntity, ReportNode> groupToReportNode = new HashMap<>();
 
         public ReportHierarchy(List<GroupObjectEntity> groupObjects, Map<GroupObjectEntity, List<GroupObjectEntity>> depends,
                                Set<GroupObjectEntity> markedGroups) {
@@ -245,8 +245,8 @@ public class GroupObjectHierarchy {
         }
 
         public List<ReportNode> getRootNodes() {
-            List<ReportNode> roots = new ArrayList<ReportNode>();
-            Set<ReportNode> dependentNodes = new HashSet<ReportNode>();
+            List<ReportNode> roots = new ArrayList<>();
+            Set<ReportNode> dependentNodes = new HashSet<>();
                 
             for (Map.Entry<ReportNode, List<ReportNode>> entry : dependencies.entrySet()) {
                 for (ReportNode node : entry.getValue()) {
@@ -263,11 +263,11 @@ public class GroupObjectHierarchy {
         }
 
         public Collection<ReportNode> getAllNodes() {
-            return new ArrayList<ReportNode>(reportNodes);
+            return new ArrayList<>(reportNodes);
         }
 
         public List<ReportNode> getChildNodes(ReportNode parent) {
-            return new ArrayList<ReportNode>(dependencies.get(parent));
+            return new ArrayList<>(dependencies.get(parent));
         }
 
         public ReportNode getParentNode(ReportNode node) {
@@ -327,16 +327,16 @@ public class GroupObjectHierarchy {
         }
 
         public Map<String, List<String>> getReportHierarchyMap() {
-            Map<String, List<String>> res = new HashMap<String, List<String>>();
+            Map<String, List<String>> res = new HashMap<>();
             for (Map.Entry<ReportNode, List<ReportNode>> parentNode : dependencies.entrySet()) {
                 String parentID = parentNode.getKey().getID();
-                List<String> childIDs = new ArrayList<String>();
+                List<String> childIDs = new ArrayList<>();
                 for (ReportNode child : parentNode.getValue()) {
                     childIDs.add(child.getID());
                 }
                 res.put(parentID, childIDs);
             }
-            List<String> rootIDs = new ArrayList<String>();
+            List<String> rootIDs = new ArrayList<>();
             for (ReportNode node : getRootNodes()) {
                 rootIDs.add(node.getID());
             }

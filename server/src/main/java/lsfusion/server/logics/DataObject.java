@@ -230,7 +230,7 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
     }
 
     public <K> ClassWhere<K> getClassWhere(K key) {
-        return new ClassWhere<K>(key, objectClass);
+        return new ClassWhere<>(key, objectClass);
     }
 
     @Override

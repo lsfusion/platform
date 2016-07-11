@@ -120,7 +120,7 @@ public class ChangedProperty<T extends PropertyInterface> extends SessionCalcPro
             default:
                 return null;
         }
-        return new PropertyChange<T>(mapKeys, ValueExpr.get(where), Where.TRUE);
+        return new PropertyChange<>(mapKeys, ValueExpr.get(where), Where.TRUE);
     }
 
     @Override

@@ -26,7 +26,7 @@ public interface Where extends SourceJoin<Where>, OuterContext<Where>, KeyType, 
 
     Where followFalse(CheckWhere falseWhere, boolean pack, FollowChange change); // protected
 
-    static enum FollowType { // protected
+    enum FollowType { // protected
         WIDE,NARROW,DIFF,EQUALS;
 
         public FollowType or(FollowType or) {
@@ -38,7 +38,7 @@ public interface Where extends SourceJoin<Where>, OuterContext<Where>, KeyType, 
         }
     }
 
-    static class FollowChange { // protected
+    class FollowChange { // protected
 
         public FollowType type = FollowType.EQUALS;
         void not() {
@@ -75,8 +75,8 @@ public interface Where extends SourceJoin<Where>, OuterContext<Where>, KeyType, 
     ImMap<BaseExpr, BaseExpr> getNotExprValues();
     ImMap<BaseExpr, BaseExpr> getOnlyExprValues();
 
-    static String TRUE_STRING = "1=1";
-    static String FALSE_STRING = "1<>1";
+    String TRUE_STRING = "1=1";
+    String FALSE_STRING = "1<>1";
 
     // ДОПОЛНИТЕЛЬНЫЕ ИНТЕРФЕЙСЫ
 
@@ -94,12 +94,12 @@ public interface Where extends SourceJoin<Where>, OuterContext<Where>, KeyType, 
     <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(ImSet<K> keepStat, KeyStat keyStat, ImOrderSet<Expr> orderTop, GroupJoinsWheres.Type type);
     MeanClassWheres groupMeanClassWheres(boolean useNots);
 
-    abstract public ClassExprWhere getClassWhere();
+    ClassExprWhere getClassWhere();
 
     int getHeight();
 
-    static Where TRUE = new AndWhere();
-    static Where FALSE = new OrWhere();
+    Where TRUE = new AndWhere();
+    Where FALSE = new OrWhere();
 
     Where translateQuery(QueryTranslator translator);
 

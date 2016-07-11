@@ -74,7 +74,7 @@ public class CycleGroupProperty<I extends PropertyInterface, P extends PropertyI
         if(toChange!=null) {
             ImRevMap<P,KeyExpr> toChangeKeys = toChange.getMapKeys();
             Expr resultExpr = getChangeExpr(change, propChanges, toChangeKeys);
-            DataChanges dataChanges = toChange.getDataChanges(new PropertyChange<P>(toChangeKeys,resultExpr,resultExpr.getWhere().or(getNullWhere(change, propChanges, toChangeKeys))), propChanges);
+            DataChanges dataChanges = toChange.getDataChanges(new PropertyChange<>(toChangeKeys, resultExpr, resultExpr.getWhere().or(getNullWhere(change, propChanges, toChangeKeys))), propChanges);
             if(changedWhere!=null) {
                 if (Settings.get().isCalculateGroupDataChanged())
                     getExpr(change.getMapExprs(), dataChanges.add(propChanges), changedWhere);

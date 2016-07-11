@@ -27,7 +27,7 @@ public class ActionPropertyValueImplement<T extends PropertyInterface> extends A
     }
 
     public void execute(ExecutionEnvironment session, ExecutionStack stack) throws SQLException, SQLHandledException {
-        property.execute(mapping, session, stack, mapObjects == null ? null : new FormEnvironment<T>(mapObjects, null));
+        property.execute(mapping, session, stack, mapObjects == null ? null : new FormEnvironment<>(mapObjects, null));
     }
     
     public ActionPropertyValueImplement<T> updateCurrentClasses(final DataSession session) throws SQLException, SQLHandledException {
@@ -43,6 +43,6 @@ public class ActionPropertyValueImplement<T extends PropertyInterface> extends A
             updatedMapObjects = mUpdateMapObjects.immutableValue();
         }
 
-        return new ActionPropertyValueImplement<T>(property, session.updateCurrentClasses(mapping), updatedMapObjects);
+        return new ActionPropertyValueImplement<>(property, session.updateCurrentClasses(mapping), updatedMapObjects);
     }
 }

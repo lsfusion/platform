@@ -9,10 +9,10 @@ import java.util.*;
 
 public class SplitWindowElement extends WindowElement {
     // with visibility
-    private HashMap<WindowElement, Boolean> children = new HashMap<WindowElement, Boolean>();
+    private HashMap<WindowElement, Boolean> children = new HashMap<>();
 
     // храним вместе с порядком и направлением, чтобы знать, куда вставлять элемент при его видимости
-    protected LinkedHashMap<WindowElement, DockLayoutPanel.Direction> windowDirections = new LinkedHashMap<WindowElement, DockLayoutPanel.Direction>();
+    protected LinkedHashMap<WindowElement, DockLayoutPanel.Direction> windowDirections = new LinkedHashMap<>();
 
     private SplitLayoutPanel splitPanel = new SplitLayoutPanel();
 
@@ -46,7 +46,7 @@ public class SplitWindowElement extends WindowElement {
     @Override
     public Widget initializeView() {
         // рекурсивно начинаем заполнять пространство окна
-        fillWithChildren(new ArrayList<WindowElement>(children.keySet()), x, y, width, height);
+        fillWithChildren(new ArrayList<>(children.keySet()), x, y, width, height);
         initialWidth = Window.getClientWidth() / 100 * width;
         initialHeight = Window.getClientHeight() / 100 * height;
         return splitPanel;
@@ -57,7 +57,7 @@ public class SplitWindowElement extends WindowElement {
             return;
         }
 
-        List<WindowElement> windowsLeft = new ArrayList<WindowElement>(leftToPut);
+        List<WindowElement> windowsLeft = new ArrayList<>(leftToPut);
         for (WindowElement window : leftToPut) {
             if (windowsLeft.size() == 1) {
                 splitPanel.add(windowsLeft.get(0).initializeView());
@@ -135,7 +135,7 @@ public class SplitWindowElement extends WindowElement {
         // vertical
         for (int i = 0; i < windows.size() - 1; i++) {
             WindowElement first = windows.get(i);
-            List<WindowElement> inOneLine = new ArrayList<WindowElement>(Arrays.asList(first));
+            List<WindowElement> inOneLine = new ArrayList<>(Arrays.asList(first));
             for (int j = i + 1; j < windows.size(); j++) {
                 WindowElement second = windows.get(j);
                 if (first.x == second.x && first.width == second.width && first.y != second.y) {
@@ -158,7 +158,7 @@ public class SplitWindowElement extends WindowElement {
         if (splitWindow == null) {
             for (int i = 0; i < windows.size() - 1; i++) {
                 WindowElement first = windows.get(i);
-                List<WindowElement> inOneLine = new ArrayList<WindowElement>(Arrays.asList(first));
+                List<WindowElement> inOneLine = new ArrayList<>(Arrays.asList(first));
                 for (int j = i + 1; j < windows.size(); j++) {
                     WindowElement second = windows.get(j);
                     if (first.y == second.y && first.height == second.height && first.x != second.x) {
@@ -190,7 +190,7 @@ public class SplitWindowElement extends WindowElement {
     private List<WindowElement> findLineFilling(List<WindowElement> windows, boolean vertical, int dimension) {
         // здесь подразумевается, что все найденные окна одной ширины/высоты, расположены в один ряд без наложений и пробелов
         int sum = 0;
-        List<WindowElement> result = new ArrayList<WindowElement>();
+        List<WindowElement> result = new ArrayList<>();
 
         for (WindowElement window : windows) {
             sum += vertical ? window.height : window.width;
@@ -248,7 +248,7 @@ public class SplitWindowElement extends WindowElement {
     private void redraw() {
         splitPanel.clear();
         
-        ArrayList<WindowElement> visibleWindows = new ArrayList<WindowElement>();
+        ArrayList<WindowElement> visibleWindows = new ArrayList<>();
         for (WindowElement window : windowDirections.keySet()) {
             if (children.get(window)) {
                 visibleWindows.add(window);

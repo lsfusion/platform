@@ -12,7 +12,7 @@ public class LRUWVWSMap<K, W, V> extends ALRUKWMap<MPair<K, W>, LRUWVWSMap.AEntr
         super(expireStrategy);
     }
 
-    public static interface Value<W, V> {
+    public interface Value<W, V> {
         W getLRUKey();
         V getLRUValue();
     }
@@ -71,7 +71,7 @@ public class LRUWVWSMap<K, W, V> extends ALRUKWMap<MPair<K, W>, LRUWVWSMap.AEntr
 
         @Override
         protected AEntry<K, W, V> createTail() {
-            return new AEntry<K, W, V>(new MPair<K, W>(null, null), refQueue, null, -1, null, 0);
+            return new AEntry<>(new MPair<K, W>(null, null), refQueue, null, -1, null, 0);
         }
 
         public final Value<W, V> get(K key, int hash) {
@@ -104,7 +104,7 @@ public class LRUWVWSMap<K, W, V> extends ALRUKWMap<MPair<K, W>, LRUWVWSMap.AEntr
                         return oldValue;
                     }
                 }
-                AEntry<K, W, V> e = new AEntry<K, W, V>(key, wValue, refQueue, table[i], hash, value, currentTime);
+                AEntry<K, W, V> e = new AEntry<>(key, wValue, refQueue, table[i], hash, value, currentTime);
 
                 regEntry(e, i);
             } finally {
@@ -127,7 +127,7 @@ public class LRUWVWSMap<K, W, V> extends ALRUKWMap<MPair<K, W>, LRUWVWSMap.AEntr
         }
 
         AEntry(K key, W weak, ReferenceQueue<MPair<K, W>> refQueue, AEntry<K, W, V> n, int hash, V value, int t) {
-            this(new MPair<K, W>(key, weak), refQueue, n, hash, value, t);
+            this(new MPair<>(key, weak), refQueue, n, hash, value, t);
         }
 
         @Override

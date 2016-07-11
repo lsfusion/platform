@@ -90,7 +90,7 @@ abstract public class GroupProperty<I extends PropertyInterface> extends Complex
             return Inferred.FALSE();
 
         ImMap<Interface<I>, CalcPropertyInterfaceImplement<I>> mapInterfaces = getMapInterfaces();
-        return new Inferred<Interface<I>>(mapInterfaces.mapValues(new GetValue<ExClassSet, CalcPropertyInterfaceImplement<I>>() {
+        return new Inferred<>(mapInterfaces.mapValues(new GetValue<ExClassSet, CalcPropertyInterfaceImplement<I>>() {
             public ExClassSet getMapValue(CalcPropertyInterfaceImplement<I> value) {
                 return ExClassSet.toNotNull(value.mapInferValueClass(innerInferred, inferType));
             }
@@ -227,7 +227,7 @@ abstract public class GroupProperty<I extends PropertyInterface> extends Complex
     private static <I extends PropertyInterface> ImOrderSet<Interface<I>> getTempInterfaces(ImList<? extends CalcPropertyInterfaceImplement<I>> interfaceImplements) {
         MOrderExclSet<Interface<I>> mResult = SetFact.mOrderExclSet(interfaceImplements.size());
         for (int i = 0, size = interfaceImplements.size(); i < size; i++)
-            mResult.exclAdd(new Interface<I>(i, interfaceImplements.get(i)));
+            mResult.exclAdd(new Interface<>(i, interfaceImplements.get(i)));
         return mResult.immutableOrder();
     }
     
@@ -235,7 +235,7 @@ abstract public class GroupProperty<I extends PropertyInterface> extends Complex
         return ((ImCol<CalcPropertyInterfaceImplement<I>>) interfaceImplements).mapColSetValues(
                 new GetIndexValue<Interface<I>, CalcPropertyInterfaceImplement<I>>() {
                     public Interface<I> getMapValue(int i, CalcPropertyInterfaceImplement<I> value) {
-                        return new Interface<I>(i, value);
+                        return new Interface<>(i, value);
                     }
                 }).toOrderSet();
     }

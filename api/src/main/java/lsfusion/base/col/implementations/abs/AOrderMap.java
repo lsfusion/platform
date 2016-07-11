@@ -232,7 +232,7 @@ public abstract class AOrderMap<K, V> extends AColObject implements ImOrderMap<K
         if(keys.isEmpty()) // оптимизация
             return this;
 
-        return filterOrder(new NotFunctionSet<K>((FunctionSet<K>) keys));
+        return filterOrder(new NotFunctionSet<>((FunctionSet<K>) keys));
     }
     public ImOrderMap<K, V> removeOrderIncl(ImSet<? extends K> keys) {
         return removeOrder(keys);

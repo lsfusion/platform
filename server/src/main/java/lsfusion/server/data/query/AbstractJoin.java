@@ -14,9 +14,9 @@ public abstract class AbstractJoin<U> extends ImmutableObject implements Join<U>
 
     public static <U> Join<U> and(Join<U> join, Where where) {
         if(Expr.useCasesCount <= 1)
-            return new CaseJoin<U>(where, join);
+            return new CaseJoin<>(where, join);
         else
-            return new IfJoin<U>(where, join);
+            return new IfJoin<>(where, join);
     }
 
     public Join<U> and(Where where) {
@@ -36,7 +36,7 @@ public abstract class AbstractJoin<U> extends ImmutableObject implements Join<U>
     }
 
     public static <U> Join<U> translateValues(Join<U> join, MapValuesTranslate translate) {
-        return new MapJoin<U>(translate, join);
+        return new MapJoin<>(translate, join);
     }
     public Join<U> translateValues(MapValuesTranslate translate) {
         return translateValues(this, translate);

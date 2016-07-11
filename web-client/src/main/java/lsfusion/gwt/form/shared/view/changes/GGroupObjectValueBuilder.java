@@ -7,7 +7,7 @@ import java.util.TreeMap;
 
 public class GGroupObjectValueBuilder {
 
-    private final TreeMap<Integer, Object> key = new TreeMap<Integer, Object>();
+    private final TreeMap<Integer, Object> key = new TreeMap<>();
 
     public GGroupObjectValueBuilder() {
     }

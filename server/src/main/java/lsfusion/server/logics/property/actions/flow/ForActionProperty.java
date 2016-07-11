@@ -158,7 +158,7 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
             if (!rows.isEmpty()) {
                 execElse = false;
             }
-            RowUpdateIterate<I> rowUpdate = new RowUpdateIterate<I>(rows);
+            RowUpdateIterate<I> rowUpdate = new RowUpdateIterate<>(rows);
             context.pushUpdate(rowUpdate);
             ProgressStackItem stackItem = ThreadLocalContext.pushProgressMessage(ExecutionStackAspect.getProgressBarLastActionString(), 0, rowUpdate.rows.size());
             try {
@@ -221,7 +221,7 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
             }
         });
 
-        return new PropertySet<I>(innerKeys, where, orderExprs, ordersNotNull).executeClasses(context.getEnv());
+        return new PropertySet<>(innerKeys, where, orderExprs, ordersNotNull).executeClasses(context.getEnv());
     }
 
     protected CalcPropertyMapImplement<?, I> calcGroupWhereProperty() {
@@ -442,7 +442,7 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
         return type != ChangeFlowType.BREAK && super.hasFlow(type);
     }
 
-    public static interface PushFor<PI extends PropertyInterface, I extends PropertyInterface> {
+    public interface PushFor<PI extends PropertyInterface, I extends PropertyInterface> {
         ActionPropertyMapImplement<?, I> push(ImSet<I> context, CalcPropertyMapImplement<?, I> where, ImOrderMap<CalcPropertyInterfaceImplement<I>, Boolean> orders, boolean ordersNotNull, ImRevMap<PI, I> mapInnerInterfaces);
     }
 
@@ -453,7 +453,7 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
         assert mapInterfaces.keys().equals(mapping.keys());
 
         // сначала and'им where и push, получаем интерфейсы I + push (T)
-        Result<ImRevMap<T, PropertyInterface>> mapPushInterfaces = new Result<ImRevMap<T, PropertyInterface>>(); Result<ImRevMap<I, PropertyInterface>> mapInnerInterfaces = new Result<ImRevMap<I, PropertyInterface>>();
+        Result<ImRevMap<T, PropertyInterface>> mapPushInterfaces = new Result<>(); Result<ImRevMap<I, PropertyInterface>> mapInnerInterfaces = new Result<>();
         createCommon(mapping.valuesSet().merge(push.mapping.valuesSet()), innerInterfaces, mapping.crossJoin(mapInterfaces), mapPushInterfaces, mapInnerInterfaces);
 
         CalcPropertyMapImplement<?, PropertyInterface> mapPush = push.map(mapPushInterfaces.result);

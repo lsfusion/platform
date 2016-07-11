@@ -64,7 +64,7 @@ public class AndFormulaProperty extends FormulaProperty<AndFormulaProperty.Inter
 
     @Override
     public Inferred<Interface> calcInferInterfaceClasses(final ExClassSet commonValue, InferType inferType) {
-        return new Inferred<Interface>(interfaces.mapValues(new GetValue<ExClassSet, Interface>() {
+        return new Inferred<>(interfaces.mapValues(new GetValue<ExClassSet, Interface>() {
             @Override
             public ExClassSet getMapValue(Interface value) {
                 return value == objectInterface ? commonValue : null;

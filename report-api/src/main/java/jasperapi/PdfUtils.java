@@ -21,9 +21,7 @@ public class PdfUtils {
                 Field fld = reader.getClass().getDeclaredField("ownerPasswordUsed");
                 fld.setAccessible(true);
                 fld.setBoolean(reader, true);
-            } catch (NoSuchFieldException e) {
-                e.printStackTrace();
-            } catch (IllegalAccessException e) {
+            } catch (NoSuchFieldException | IllegalAccessException e) {
                 e.printStackTrace();
             }
         }

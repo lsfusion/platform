@@ -18,7 +18,7 @@ public class GContainer extends GComponent {
     public int columns;
     public int columnLabelsWidth;
 
-    public ArrayList<GComponent> children = new ArrayList<GComponent>();
+    public ArrayList<GComponent> children = new ArrayList<>();
 
     @Override
     public String toString() {
@@ -52,7 +52,7 @@ public class GContainer extends GComponent {
     }
 
     public List<GGrid> getAllGrids() {
-        List<GGrid> grids = new ArrayList<GGrid>();
+        List<GGrid> grids = new ArrayList<>();
         for (GComponent child : children) {
             if (child instanceof GGrid) {
                 grids.add((GGrid) child);
@@ -64,7 +64,7 @@ public class GContainer extends GComponent {
     }
 
     public List<GTreeGroup> getAllTreeGrids() {
-        List<GTreeGroup> grids = new ArrayList<GTreeGroup>();
+        List<GTreeGroup> grids = new ArrayList<>();
         for (GComponent child : children) {
             if (child instanceof GTreeGroup) {
                 grids.add((GTreeGroup) child);
@@ -76,7 +76,7 @@ public class GContainer extends GComponent {
     }
 
     public List<GPropertyDraw> getAllPropertyDraws() {
-        List<GPropertyDraw> draws = new ArrayList<GPropertyDraw>();
+        List<GPropertyDraw> draws = new ArrayList<>();
         for (GComponent child : children) {
             if (child instanceof GPropertyDraw) {
                 draws.add((GPropertyDraw) child);

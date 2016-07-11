@@ -271,7 +271,7 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
             Expr groupExpr = GroupExpr.create(MapFact.singleton(0, implement.property.getExpr(MapFact.singleton(implement.property.interfaces.single(), keyExpr), propChanges)),
                     keyExpr, keyExpr.isUpClass(implementSingle.property.getValueClass(ClassType.editPolicy)), GroupType.ANY, MapFact.singleton(0, change.expr));
             return implementSingle.mapDataChanges(
-                    new PropertyChange<Interface>(change, groupExpr), changedWhere, propChanges);
+                    new PropertyChange<>(change, groupExpr), changedWhere, propChanges);
         }
 
         return super.calculateDataChanges(change, changedWhere, propChanges);
@@ -310,7 +310,7 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
 
                 ImOrderSet<Interface> listInterfaces = getOrderInterfaces();
                 AggChangeActionProperty<T> aggChangeActionProperty =
-                        new AggChangeActionProperty<T>("sys", listInterfaces, aggProp, aggClass, changeActionImplement);
+                        new AggChangeActionProperty<>("sys", listInterfaces, aggProp, aggClass, changeActionImplement);
                 return aggChangeActionProperty.getImplement(listInterfaces);
             } else {
                 // тут вообще надо что=то типа с join'ить (assertion что filterProperty с одним интерфейсом)

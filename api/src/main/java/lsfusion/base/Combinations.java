@@ -8,8 +8,8 @@ public class Combinations<T,V> implements Iterable<Map<T,V>> {
         return new CombinationIterator();
     }
 
-    List<T> from = new ArrayList<T>();
-    List<List<V>> to = new ArrayList<List<V>>();
+    List<T> from = new ArrayList<>();
+    List<List<V>> to = new ArrayList<>();
     public Combinations(Map<T, List<V>> map) {
         for(Map.Entry<T,List<V>> entry : map.entrySet()) {
             from.add(entry.getKey());
@@ -39,7 +39,7 @@ public class Combinations<T,V> implements Iterable<Map<T,V>> {
 
         public Map<T, V> next() {
 
-            Map<T,V> next = new HashMap<T,V>();
+            Map<T,V> next = new HashMap<>();
             for(int i=0;i<size;i++)
                 next.put(from.get(i),to.get(i).get(nums[i]));
 

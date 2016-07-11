@@ -45,8 +45,8 @@ public abstract class DataGridHeaderBuilder<T> implements HeaderBuilder<T> {
      * given the value.
      */
     private static class TwoWayHashMap<K, V> {
-        private final Map<K, V> keyToValue = new HashMap<K, V>();
-        private final Map<V, K> valueToKey = new HashMap<V, K>();
+        private final Map<K, V> keyToValue = new HashMap<>();
+        private final Map<V, K> valueToKey = new HashMap<>();
 
         void clear() {
             keyToValue.clear();
@@ -80,7 +80,7 @@ public abstract class DataGridHeaderBuilder<T> implements HeaderBuilder<T> {
     protected final HeaderDelegate delegate;
 
     // The following fields are reset on every build.
-    private final TwoWayHashMap<String, Header<?>> idToHeaderMap = new TwoWayHashMap<String, Header<?>>();
+    private final TwoWayHashMap<String, Header<?>> idToHeaderMap = new TwoWayHashMap<>();
 
     /**
      * Create a new DefaultHeaderBuilder for the header of footer section.

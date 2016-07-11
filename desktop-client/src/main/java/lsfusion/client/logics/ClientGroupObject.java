@@ -30,14 +30,14 @@ public class ClientGroupObject extends IdentityObject implements ClientIdentityS
     public int pageSize = -1;
     public boolean needVerticalScroll;
 
-    public List<ClassViewType> banClassView = new ArrayList<ClassViewType>();
+    public List<ClassViewType> banClassView = new ArrayList<>();
 
     public ClientGrid grid;
     public ClientShowType showType;
     public ClientToolbar toolbar;
     public ClientFilter filter;
 
-    public List<ClientObject> objects = new ArrayList<ClientObject>();
+    public List<ClientObject> objects = new ArrayList<>();
 
     public RowBackgroundReader rowBackgroundReader = new RowBackgroundReader();
     public RowForegroundReader rowForegroundReader = new RowForegroundReader();
@@ -63,7 +63,7 @@ public class ClientGroupObject extends IdentityObject implements ClientIdentityS
     }
 
     public static List<ClientObject> getObjects(List<ClientGroupObject> groups) {
-        List<ClientObject> result = new ArrayList<ClientObject>();
+        List<ClientObject> result = new ArrayList<>();
         for (ClientGroupObject group : groups)
             result.addAll(group.objects);
         return result;
@@ -143,12 +143,12 @@ public class ClientGroupObject extends IdentityObject implements ClientIdentityS
 
     public static List<ClientGroupObjectValue> mergeGroupValues(OrderedMap<ClientGroupObject, List<ClientGroupObjectValue>> groupColumnKeys) {
         //находим декартово произведение ключей колонок
-        List<ClientGroupObjectValue> propColumnKeys = new ArrayList<ClientGroupObjectValue>();
+        List<ClientGroupObjectValue> propColumnKeys = new ArrayList<>();
         propColumnKeys.add(ClientGroupObjectValue.EMPTY);
         for (Map.Entry<ClientGroupObject, List<ClientGroupObjectValue>> entry : groupColumnKeys.entrySet()) {
             List<ClientGroupObjectValue> groupObjectKeys = entry.getValue();
 
-            List<ClientGroupObjectValue> newPropColumnKeys = new ArrayList<ClientGroupObjectValue>();
+            List<ClientGroupObjectValue> newPropColumnKeys = new ArrayList<>();
             for (ClientGroupObjectValue propColumnKey : propColumnKeys) {
                 for (ClientGroupObjectValue groupObjectKey : groupObjectKeys) {
                     newPropColumnKeys.add(new ClientGroupObjectValue(propColumnKey, groupObjectKey));
@@ -173,7 +173,7 @@ public class ClientGroupObject extends IdentityObject implements ClientIdentityS
         return BaseUtils.last(upTreeGroups);
     }
 
-    public List<ClientGroupObject> upTreeGroups = new ArrayList<ClientGroupObject>();
+    public List<ClientGroupObject> upTreeGroups = new ArrayList<>();
 
     public List<ClientGroupObject> getUpTreeGroups() {
         return BaseUtils.add(upTreeGroups, this);

@@ -162,7 +162,7 @@ public class TreeGroupController extends AbstractGroupObjectController {
     public List<ClientPropertyDraw> getGroupObjectProperties() {
         ClientGroupObject currentGroupObject = getSelectedGroupObject();
 
-        ArrayList<ClientPropertyDraw> properties = new ArrayList<ClientPropertyDraw>();
+        ArrayList<ClientPropertyDraw> properties = new ArrayList<>();
         for (ClientPropertyDraw property : getPropertyDraws()) {
             if (currentGroupObject != null && currentGroupObject.equals(property.groupObject)) {
                 properties.add(property);

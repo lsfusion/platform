@@ -91,7 +91,7 @@ public class SumGroupProperty<I extends PropertyInterface> extends AddGroupPrope
             // создаем распределяющее свойство от этого, moidfier который меняет это свойство на PropertyChange, получаем значение распределяющего и условие на изменение
             // зацепит лишние changed'ы как и в MaxChangeExpr и иже с ними но пока забьем
 
-            Result<ImRevMap<I, KeyExpr>> mapKeys = new Result<ImRevMap<I, KeyExpr>>(); Result<ImMap<I, Expr>> mapValueKeys = new Result<ImMap<I, Expr>>();
+            Result<ImRevMap<I, KeyExpr>> mapKeys = new Result<>(); Result<ImMap<I, Expr>> mapValueKeys = new Result<>();
             Where valueWhere = getGroupKeys(propertyChange, mapKeys, mapValueKeys);
 
             PropertyChanges mapChanges = new PropertyChanges(nullImplement.property, propertyChange.mapChange(nullImplement.mapping));

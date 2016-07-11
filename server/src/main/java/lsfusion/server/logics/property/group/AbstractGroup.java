@@ -115,13 +115,13 @@ public class AbstractGroup extends AbstractNode {
     }
 
     public List<AbstractGroup> getParentGroups() {
-        List<AbstractGroup> result = new ArrayList<AbstractGroup>();
+        List<AbstractGroup> result = new ArrayList<>();
         result.add(this);
         for (AbstractNode child : getChildrenListIt()) {
             if (child instanceof AbstractGroup) {
                 result.add((AbstractGroup) child);
             }
-            List<AbstractGroup> childGroups = new ArrayList<AbstractGroup>();
+            List<AbstractGroup> childGroups = new ArrayList<>();
             childGroups = child.fillGroups(childGroups);
             for (AbstractGroup c : childGroups) {
                 if (!c.getChildren().isEmpty()) {

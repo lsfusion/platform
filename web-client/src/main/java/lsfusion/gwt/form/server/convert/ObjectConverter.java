@@ -11,7 +11,7 @@ import java.util.List;
 
 public class ObjectConverter {
 
-    private final HashMap<Class, List<Method>> converterMethods = new HashMap<Class, List<Method>>();
+    private final HashMap<Class, List<Method>> converterMethods = new HashMap<>();
 
     public ObjectConverter() {
         for (Method converterMethod : this.getClass().getDeclaredMethods()) {
@@ -20,7 +20,7 @@ public class ObjectConverter {
                 Class<?> fromClass = annotation.from();
                 List<Method> methodList = converterMethods.get(fromClass);
                 if (methodList == null) {
-                    methodList = new ArrayList<Method>();
+                    methodList = new ArrayList<>();
                     converterMethods.put(fromClass, methodList);
                 }
 

@@ -14,7 +14,7 @@ public interface MainFrameMessages extends Messages {
 
     String cancel();
 
-    public static class Instance {
+    class Instance {
         private static final MainFrameMessages instance = (MainFrameMessages) GWT.create(MainFrameMessages.class);
 
         public static MainFrameMessages get() {

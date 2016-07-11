@@ -210,7 +210,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
     }
     
     public ExecutionContext<P> override() { // для дебаггера
-        return new ExecutionContext<P>(keys, pushedUserInput, pushedAddObject, env, executorService, form, stack);
+        return new ExecutionContext<>(keys, pushedUserInput, pushedAddObject, env, executorService, form, stack);
     }
 
     public void setParamsToInterfaces(ImRevMap<String, P> paramsToInterfaces) {
@@ -467,19 +467,19 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
     }
 
     public ExecutionContext<P> override(ExecutionEnvironment newEnv) {
-        return new ExecutionContext<P>(keys, pushedUserInput, pushedAddObject, newEnv, executorService, form, stack);
+        return new ExecutionContext<>(keys, pushedUserInput, pushedAddObject, newEnv, executorService, form, stack);
     }
 
     public ExecutionContext<P> override(ScheduledExecutorService newExecutorService) {
-        return new ExecutionContext<P>(keys, pushedUserInput, pushedAddObject, env, newExecutorService, form, stack);
+        return new ExecutionContext<>(keys, pushedUserInput, pushedAddObject, env, newExecutorService, form, stack);
     }
 
     public ExecutionContext<P> override(ExecutionEnvironment newEnv, ExecutionStack stack) {
-        return new ExecutionContext<P>(keys, pushedUserInput, pushedAddObject, newEnv, executorService, form, stack);
+        return new ExecutionContext<>(keys, pushedUserInput, pushedAddObject, newEnv, executorService, form, stack);
     }
 
     public ExecutionContext<P> override(ExecutionStack stack) {
-        return new ExecutionContext<P>(keys, pushedUserInput, pushedAddObject, env, executorService, form, stack);
+        return new ExecutionContext<>(keys, pushedUserInput, pushedAddObject, env, executorService, form, stack);
     }
 
     public <T extends PropertyInterface> ExecutionContext<T> override(ImMap<T, ? extends ObjectValue> keys, ImMap<T, ? extends CalcPropertyInterfaceImplement<P>> mapInterfaces) {
@@ -499,7 +499,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
     }
 
     public <T extends PropertyInterface> ExecutionContext<T> override(ImMap<T, ? extends ObjectValue> keys, FormEnvironment<T> form, ObjectValue pushedUserInput) {
-        return new ExecutionContext<T>(keys, pushedUserInput, pushedAddObject, env, executorService, form, stack);
+        return new ExecutionContext<>(keys, pushedUserInput, pushedAddObject, env, executorService, form, stack);
     }
 
     public QueryEnvironment getQueryEnv() {

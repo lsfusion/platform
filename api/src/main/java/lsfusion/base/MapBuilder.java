@@ -8,7 +8,7 @@ class MapBuilder {
 
     private static <T> void recBuildPermutations(Collection<T> col, List<T> cur, Collection<List<T>> result) {
 
-        if (cur.size() == col.size()) { result.add(new ArrayList<T>(cur)); return; }
+        if (cur.size() == col.size()) { result.add(new ArrayList<>(cur)); return; }
 
         for (T element : col) {
             if (!cur.contains(element)) {
@@ -21,7 +21,7 @@ class MapBuilder {
 
     public static <T> Collection<List<T>> buildPermutations(Collection<T> col) {
 
-        Collection<List<T>> result = new ArrayList<List<T>>();
+        Collection<List<T>> result = new ArrayList<>();
         recBuildPermutations(col, new ArrayList<T>(), result);
         return result;
     }

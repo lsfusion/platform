@@ -149,13 +149,13 @@ public class StaticExecuteEnvironmentImpl extends TwinImmutableObject implements
     public void addNeedAggOrder(GroupType groupType, ImList<Type> types) {
         assert !finalized;
 
-        groupAggOrders = groupAggOrders.merge(new Pair<GroupType, ImList<Type>>(groupType, types));
+        groupAggOrders = groupAggOrders.merge(new Pair<>(groupType, types));
     }
 
     public void addNeedTypeFunc(TypeFunc typeFunc, Type type) {
         assert !finalized;
 
-        typeFuncs = typeFuncs.merge(new Pair<TypeFunc, Type>(typeFunc, type));
+        typeFuncs = typeFuncs.merge(new Pair<>(typeFunc, type));
     }
 
     public StaticExecuteEnvironment finish() {
@@ -260,11 +260,11 @@ public class StaticExecuteEnvironmentImpl extends TwinImmutableObject implements
         }
 
         public void addNeedAggOrder(GroupType groupType, ImList<Type> types) {
-            assert groupAggOrders.contains(new Pair<GroupType, ImList<Type>>(groupType, types));
+            assert groupAggOrders.contains(new Pair<>(groupType, types));
         }
 
         public void addNeedTypeFunc(TypeFunc groupType, Type type) {
-            assert typeFuncs.contains(new Pair<TypeFunc, Type>(groupType, type));
+            assert typeFuncs.contains(new Pair<>(groupType, type));
         }
     };
     public EnsureTypeEnvironment getEnsureTypes() {

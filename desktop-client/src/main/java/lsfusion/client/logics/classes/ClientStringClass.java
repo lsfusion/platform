@@ -56,7 +56,7 @@ public class ClientStringClass extends ClientDataClass {
         return CONTAINS;
     }
 
-    public final static Map<Pair<Boolean, Boolean>, ClientTypeClass> types = new HashMap<Pair<Boolean, Boolean>, ClientTypeClass>();
+    public final static Map<Pair<Boolean, Boolean>, ClientTypeClass> types = new HashMap<>();
 
 
     private String minimumMask;
@@ -88,7 +88,7 @@ public class ClientStringClass extends ClientDataClass {
     }
     
     public static ClientTypeClass getTypeClass(boolean blankPadded, boolean caseInsensitive, boolean rich) {
-        Pair<Boolean, Boolean> type = new Pair<Boolean, Boolean>(blankPadded, caseInsensitive);
+        Pair<Boolean, Boolean> type = new Pair<>(blankPadded, caseInsensitive);
         ClientTypeClass typeClass = types.get(type);
         if(typeClass == null) {
             typeClass = new ClientStringTypeClass(blankPadded, caseInsensitive, rich);

@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.logging.*;
 
 public class ClientLoggingManager {
-    private List<Handler> handlers = new ArrayList<Handler>();
+    private List<Handler> handlers = new ArrayList<>();
 
     private static ClientLoggingManager instance = new ClientLoggingManager();
 

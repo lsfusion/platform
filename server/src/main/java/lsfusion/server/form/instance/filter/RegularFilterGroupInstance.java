@@ -19,7 +19,7 @@ public class RegularFilterGroupInstance implements Serializable {
         this.entity = entity;
     }
 
-    public List<RegularFilterInstance> filters = new ArrayList<RegularFilterInstance>();
+    public List<RegularFilterInstance> filters = new ArrayList<>();
     public void addFilter(RegularFilterInstance filter) {
         filters.add(filter);
     }
