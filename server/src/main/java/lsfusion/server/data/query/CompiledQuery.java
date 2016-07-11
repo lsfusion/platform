@@ -584,6 +584,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
             }
 
             public String getSource() {
+                assert source.equals(innerJoin.getQueryName(InnerSelect.this));
                 return source;
             }
 
