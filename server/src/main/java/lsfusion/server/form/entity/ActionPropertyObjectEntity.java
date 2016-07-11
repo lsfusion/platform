@@ -16,11 +16,11 @@ public class ActionPropertyObjectEntity<P extends PropertyInterface> extends Pro
     }
 
     public ActionPropertyObjectEntity(ActionProperty<P> property, ImMap<P, ? extends PropertyObjectInterfaceEntity> mapping) {
-        this(property, mapping, null, null, null);
+        this(property, mapping, null, null);
     }
 
-    public ActionPropertyObjectEntity(ActionProperty<P> property, ImMap<P, ? extends PropertyObjectInterfaceEntity> mapping, String creationScript, String creationPath, String formPath) {
-        super(property, (ImMap<P,PropertyObjectInterfaceEntity>) mapping, creationScript, creationPath, formPath);
+    public ActionPropertyObjectEntity(ActionProperty<P> property, ImMap<P, ? extends PropertyObjectInterfaceEntity> mapping, String creationScript, String creationPath) {
+        super(property, (ImMap<P,PropertyObjectInterfaceEntity>) mapping, creationScript, creationPath);
     }
 
     public ActionPropertyObjectInstance<P> getInstance(InstanceFactory instanceFactory) {

@@ -59,6 +59,8 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     public ClassViewType forceViewType = null;
     public String eventID = null;
 
+    private String formPath;
+    
     // предполагается что propertyObject ссылается на все (хотя и не обязательно)
     public String columnsName;
     public Object columnGroupObjects = SetFact.mOrderExclSet();
@@ -324,7 +326,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 
     @Override
     public String toString() {
-        return propertyObject.toString();
+        return (formPath == null ? "" : formPath) + " property:" + propertyObject.toString();
     }
 
     public GroupObjectEntity getToDraw(FormEntity form) {
@@ -373,5 +375,13 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
             mapping.add(((ObjectEntity) obj).getSID());
         }
         return createSID(property.property.getName(), mapping);
+    }
+
+    public String getFormPath() {
+        return formPath;
+    }
+
+    public void setFormPath(String formPath) {
+        this.formPath = formPath;
     }
 }

@@ -564,7 +564,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     }
 
     public <P extends PropertyInterface> PropertyDrawEntity addPropertyDraw(LP<P, ?> property, GroupObjectEntity groupObject, Version version, String formPath, PropertyObjectInterfaceEntity... objects) {
-        return addPropertyDraw(groupObject, property.createObjectEntity(formPath, objects), version);
+        return addPropertyDraw(groupObject, property.createObjectEntity(objects), formPath, version);
     }
 
     public GroupObjectEntity getNFApplyObject(Collection<ObjectEntity> objects, Version version) {
@@ -594,10 +594,10 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     }
 
     public <I extends PropertyInterface, P extends Property<I>> PropertyDrawEntity<I> addPropertyDraw(P property, ImMap<I, ? extends PropertyObjectInterfaceEntity> mapping, Version version) {
-        return addPropertyDraw(null, PropertyObjectEntity.create(property, mapping, null, null, null), version);
+        return addPropertyDraw(null, PropertyObjectEntity.create(property, mapping, null, null), null, version);
     }
 
-    public <P extends PropertyInterface> PropertyDrawEntity<P> addPropertyDraw(GroupObjectEntity groupObject, PropertyObjectEntity<P, ?> propertyImplement, Version version) {
+    public <P extends PropertyInterface> PropertyDrawEntity<P> addPropertyDraw(GroupObjectEntity groupObject, PropertyObjectEntity<P, ?> propertyImplement, String formPath, Version version) {
         final PropertyDrawEntity<P> newPropertyDraw = new PropertyDrawEntity<P>(genID(), propertyImplement, groupObject);
 
         propertyImplement.property.proceedDefaultDraw(newPropertyDraw, this, version);
@@ -622,6 +622,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
                 return ind + 1;
             }
         }, version);
+        newPropertyDraw.setFormPath(formPath);
         return newPropertyDraw;
     }
 
@@ -663,10 +664,10 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         }
     }
     public <P extends PropertyInterface> CalcPropertyObjectEntity addPropertyObject(LCP<P> property, ImMap<P, ? extends PropertyObjectInterfaceEntity> objects) {
-        return new CalcPropertyObjectEntity<P>(property.property, objects, property.getCreationScript(), property.getCreationPath(), null);
+        return new CalcPropertyObjectEntity<P>(property.property, objects, property.getCreationScript(), property.getCreationPath());
     }
     public <P extends PropertyInterface> ActionPropertyObjectEntity<P> addPropertyObject(LAP<P> property, ImMap<P, ? extends PropertyObjectInterfaceEntity> objects) {
-        return new ActionPropertyObjectEntity<P>(property.property, objects, property.getCreationScript(), property.getCreationPath(), null);
+        return new ActionPropertyObjectEntity<P>(property.property, objects, property.getCreationScript(), property.getCreationPath());
     }
 
     public <P extends PropertyInterface> PropertyObjectEntity addPropertyObject(Property<P> property, ImMap<P, ? extends PropertyObjectInterfaceEntity> objects) {

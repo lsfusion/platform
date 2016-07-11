@@ -269,7 +269,7 @@ public class PropertyDrawView extends ComponentView {
 
         pool.writeString(outStream, entity.propertyObject.getCreationScript());
         pool.writeString(outStream, entity.propertyObject.getCreationPath());
-        pool.writeString(outStream, entity.propertyObject.getFormPath());
+        pool.writeString(outStream, entity.getFormPath());
 
         pool.writeString(outStream, entity.getMouseBinding());
 

@@ -428,7 +428,7 @@ public class ScriptingFormEntity {
         try {
             PropertyDrawEntity drawEntity;
             if ((drawEntity = form.getPropertyDraw(newSID, Version.CURRENT)) != null) {
-                LM.getErrLog().emitAlreadyDefinedPropertyDraw(LM.getParser(), form.getCanonicalName(), newSID, drawEntity.propertyObject.getFormPath());
+                LM.getErrLog().emitAlreadyDefinedPropertyDraw(LM.getParser(), form.getCanonicalName(), newSID, drawEntity.getFormPath());
             }
         } catch (ScriptingErrorLog.SemanticErrorException e) {
             System.err.println(e.getMessage());

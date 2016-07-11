@@ -23,7 +23,6 @@ public abstract class PropertyObjectEntity<P extends PropertyInterface, T extend
         //нужен для десериализации
         creationScript = null;
         creationPath = null;
-        formPath = null;
     }
 
     public String toString() {
@@ -39,15 +38,14 @@ public abstract class PropertyObjectEntity<P extends PropertyInterface, T extend
     }
 
     public PropertyObjectEntity(T property, ImMap<P, PropertyObjectInterfaceEntity> mapping) {
-        this(property, mapping, null, null, null);
+        this(property, mapping, null, null);
     }
 
-    public PropertyObjectEntity(T property, ImMap<P, PropertyObjectInterfaceEntity> mapping, String creationScript, String creationPath, String formPath) {
+    public PropertyObjectEntity(T property, ImMap<P, PropertyObjectInterfaceEntity> mapping, String creationScript, String creationPath) {
         this.property = property;
         this.mapping = mapping;
         this.creationScript = creationScript==null ? null : creationScript.substring(0, Math.min(10000, creationScript.length()));
         this.creationPath = creationPath;
-        this.formPath = formPath;
     }
 
     public GroupObjectEntity getApplyObject(ImOrderSet<GroupObjectEntity> groupList) {
@@ -85,7 +83,6 @@ public abstract class PropertyObjectEntity<P extends PropertyInterface, T extend
 
     protected final String creationScript;
     protected final String creationPath;
-    protected final String formPath;
 
     public String getCreationScript() {
         return creationScript;
@@ -95,14 +92,10 @@ public abstract class PropertyObjectEntity<P extends PropertyInterface, T extend
         return creationPath;
     }
 
-    public String getFormPath() {
-        return formPath;
-    }
-
-    public static <I extends PropertyInterface, T extends Property<I>> PropertyObjectEntity<I, ?> create(T property, ImMap<I, ? extends PropertyObjectInterfaceEntity> map, String creationScript, String creationPath, String formPath) {
+    public static <I extends PropertyInterface, T extends Property<I>> PropertyObjectEntity<I, ?> create(T property, ImMap<I, ? extends PropertyObjectInterfaceEntity> map, String creationScript, String creationPath) {
         if(property instanceof CalcProperty)
-            return new CalcPropertyObjectEntity<I>((CalcProperty<I>)property, map, creationScript, creationPath, formPath);
+            return new CalcPropertyObjectEntity<I>((CalcProperty<I>)property, map, creationScript, creationPath);
         else
-            return new ActionPropertyObjectEntity<I>((ActionProperty<I>) property, map, creationScript, creationPath, formPath);
+            return new ActionPropertyObjectEntity<I>((ActionProperty<I>) property, map, creationScript, creationPath);
     }
 }
