@@ -35,7 +35,7 @@
         <com.jcraft.version>0.1.53</com.jcraft.version>
         <com.healthmarketscience.version>2.0.4</com.healthmarketscience.version>
         <netty.version>3.2.1.Final</netty.version>
-        <postgresql.version>9.4.1207</postgresql.version>
+        <postgresql.version>9.4.1208.jre7</postgresql.version>
         <jasper.version>6.2.0</jasper.version>
         <jasper.htmlcomponent.version>6.2.0</jasper.htmlcomponent.version>
         <ecj.version>4.4</ecj.version>
