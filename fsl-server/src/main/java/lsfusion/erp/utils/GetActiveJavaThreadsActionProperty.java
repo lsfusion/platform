@@ -33,9 +33,7 @@ public class GetActiveJavaThreadsActionProperty extends ScriptingActionProperty 
 
             getActiveJavaThreads(context);
 
-        } catch (SQLHandledException e) {
-            throw Throwables.propagate(e);
-        } catch (ScriptingErrorLog.SemanticErrorException e) {
+        } catch (SQLHandledException | ScriptingErrorLog.SemanticErrorException e) {
             throw Throwables.propagate(e);
         }
 

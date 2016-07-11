@@ -28,9 +28,7 @@ public class KillActiveTaskActionProperty extends ScriptingActionProperty {
 
         try {
             getActiveTasksFromDatabase(context);
-        } catch (ScriptingErrorLog.SemanticErrorException e) {
-            throw Throwables.propagate(e);
-        } catch (SQLHandledException e) {
+        } catch (ScriptingErrorLog.SemanticErrorException | SQLHandledException e) {
             throw Throwables.propagate(e);
         }
 

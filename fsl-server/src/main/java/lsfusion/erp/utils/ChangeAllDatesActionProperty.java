@@ -40,7 +40,7 @@ public class ChangeAllDatesActionProperty extends ScriptingActionProperty {
                 KeyExpr propertyExpr = new KeyExpr("property");
 
                 ImRevMap<Object, KeyExpr> keys = MapFact.singletonRev((Object) "property", propertyExpr);
-                QueryBuilder<Object, Object> query = new QueryBuilder<Object, Object>(keys);
+                QueryBuilder<Object, Object> query = new QueryBuilder<>(keys);
                 query.addProperty("dbName", findProperty("dbName[Property]").getExpr(propertyExpr));
                 query.addProperty("return", findProperty("return[Property]").getExpr(propertyExpr));
                 query.addProperty("tableSID", findProperty("tableSID[Property]").getExpr(propertyExpr));
@@ -62,7 +62,7 @@ public class ChangeAllDatesActionProperty extends ScriptingActionProperty {
                 KeyExpr tableKeyExpr = new KeyExpr("tableKey");
 
                 ImRevMap<Object, KeyExpr> tableKeyKeys = MapFact.singletonRev((Object) "tableKey", tableKeyExpr);
-                QueryBuilder<Object, Object> tableKeyQuery = new QueryBuilder<Object, Object>(tableKeyKeys);
+                QueryBuilder<Object, Object> tableKeyQuery = new QueryBuilder<>(tableKeyKeys);
                 tableKeyQuery.addProperty("classSID", findProperty("classSID[TableKey]").getExpr(tableKeyExpr));
                 tableKeyQuery.addProperty("name", findProperty("name[TableKey]").getExpr(tableKeyExpr));
                 tableKeyQuery.addProperty("sidTable", findProperty("sidTable[TableKey]").getExpr(tableKeyExpr));

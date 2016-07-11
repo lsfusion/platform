@@ -78,9 +78,7 @@ public class TranslateActionProperty extends ScriptingActionProperty {
                 }
             }
 
-        } catch (ScriptingErrorLog.SemanticErrorException ignored) {
-        } catch (MalformedURLException ignored) {
-        } catch (FileNotFoundException ignored) {
+        } catch (ScriptingErrorLog.SemanticErrorException | MalformedURLException ignored) {
         } catch (IOException ignored) {
         }
 

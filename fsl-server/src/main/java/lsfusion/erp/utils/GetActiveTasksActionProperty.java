@@ -22,9 +22,7 @@ public class GetActiveTasksActionProperty extends GetTasksActionProperty {
             
             getTasksFromDatabase(context, true); 
 
-        } catch (SQLHandledException e) {
-            throw Throwables.propagate(e);
-        } catch (ScriptingErrorLog.SemanticErrorException e) {
+        } catch (SQLHandledException | ScriptingErrorLog.SemanticErrorException e) {
             throw Throwables.propagate(e);
         }
 
