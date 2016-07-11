@@ -41,7 +41,9 @@ import lsfusion.server.form.instance.listener.FocusListener;
 import lsfusion.server.form.instance.listener.RemoteFormListener;
 import lsfusion.server.logics.*;
 import lsfusion.server.logics.SecurityManager;
-import lsfusion.server.logics.property.*;
+import lsfusion.server.logics.property.ActionProperty;
+import lsfusion.server.logics.property.CalcProperty;
+import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.remote.ContextAwarePendingRemoteObject;
 import lsfusion.server.remote.RemoteForm;
 import lsfusion.server.remote.RemoteLoggerAspect;
@@ -225,6 +227,11 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
 
     public void logClientException(String title, String hostname, Throwable t) {
         String time = new SimpleDateFormat().format(Calendar.getInstance().getTime());
+        
+        if (hostname == null) { // считается, что Web                                                
+            hostname = ThreadLocalContext.get().getLogInfo().hostnameComputer;
+        }
+        
         logger.error(title + " at '" + time + "' from '" + hostname + "': ", t);
         try {
             businessLogics.systemEventsLM.logException(businessLogics, getStack(), t, this.user, hostname, true);

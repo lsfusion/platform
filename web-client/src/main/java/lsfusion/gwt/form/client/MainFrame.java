@@ -12,7 +12,6 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RootLayoutPanel;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.base.client.ErrorHandlingCallback;
 import lsfusion.gwt.base.client.GwtClientUtils;
 import lsfusion.gwt.base.shared.actions.BooleanResult;
 import lsfusion.gwt.base.shared.actions.VoidResult;
@@ -24,10 +23,8 @@ import lsfusion.gwt.form.client.form.ui.dialog.WindowHiddenHandler;
 import lsfusion.gwt.form.client.log.GLog;
 import lsfusion.gwt.form.client.navigator.GNavigatorAction;
 import lsfusion.gwt.form.client.navigator.GNavigatorController;
-import lsfusion.gwt.base.client.ui.DialogBoxHelper;
 import lsfusion.gwt.form.client.window.WindowsController;
 import lsfusion.gwt.form.shared.actions.form.ServerResponseResult;
-import lsfusion.gwt.form.shared.actions.navigator.SetCurrentForm;
 import lsfusion.gwt.form.shared.actions.navigator.*;
 import lsfusion.gwt.form.shared.view.GDefaultFormsType;
 import lsfusion.gwt.form.shared.view.actions.GFormAction;
@@ -62,7 +59,7 @@ public class MainFrame implements EntryPoint {
         GWT.setUncaughtExceptionHandler(new GWT.UncaughtExceptionHandler() {
             @Override
             public void onUncaughtException(Throwable t) {
-                GwtClientUtils.logClientError("Необработанная ошибка в GWT: ", t);
+                GExceptionManager.logClientError("Необработанная ошибка в GWT: ", t);
             }
         });
 
@@ -184,6 +181,8 @@ public class MainFrame implements EntryPoint {
                 return isShouldRepeatPingRequest();
             }
         }, 1000);
+
+        GExceptionManager.flushUnreportedThrowables();
     }
     
     private void setShouldRepeatPingRequest(boolean shouldRepeatPingRequest) {

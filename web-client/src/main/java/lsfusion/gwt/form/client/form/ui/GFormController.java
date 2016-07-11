@@ -14,7 +14,6 @@ import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.base.client.Dimension;
-import lsfusion.gwt.base.client.ErrorHandlingCallback;
 import lsfusion.gwt.base.client.GwtClientUtils;
 import lsfusion.gwt.base.client.WrapperAsyncCallbackEx;
 import lsfusion.gwt.base.client.jsni.Function2;

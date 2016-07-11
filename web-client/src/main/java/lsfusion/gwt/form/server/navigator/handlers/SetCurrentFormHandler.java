@@ -1,8 +1,9 @@
-package lsfusion.gwt.form.server.form.handlers;
+package lsfusion.gwt.form.server.navigator.handlers;
 
 import lsfusion.gwt.base.server.dispatch.NavigatorActionHandler;
 import lsfusion.gwt.base.shared.actions.VoidResult;
 import lsfusion.gwt.form.server.FormDispatchServlet;
+import lsfusion.gwt.form.server.form.handlers.FormActionHandler;
 import lsfusion.gwt.form.shared.actions.navigator.SetCurrentForm;
 import net.customware.gwt.dispatch.server.ExecutionContext;
 import net.customware.gwt.dispatch.shared.DispatchException;

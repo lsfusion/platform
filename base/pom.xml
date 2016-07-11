@@ -83,8 +83,8 @@
         <gwt.version>2.7.0-patched-1</gwt.version>
 
         <smartgwt.version>3.0p</smartgwt.version>
-        <gwt.log.version>3.3.0</gwt.log.version>
-        <gwt.dnd.version>3.3.0</gwt.dnd.version>
+        <gwt.log.version>3.3.2</gwt.log.version>
+        <gwt.dnd.version>3.3.4</gwt.dnd.version>
         <gin.version>2.1.2</gin.version>
         <gwt.dispatch.version>1.2.0</gwt.dispatch.version>
         <gwt.platform.version>1.2.1</gwt.platform.version>

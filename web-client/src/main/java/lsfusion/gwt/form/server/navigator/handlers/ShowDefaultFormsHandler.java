@@ -1,4 +1,4 @@
-package lsfusion.gwt.form.server.form.handlers;
+package lsfusion.gwt.form.server.navigator.handlers;
 
 import lsfusion.base.DefaultFormsType;
 import lsfusion.gwt.base.server.LogicsAwareDispatchServlet;

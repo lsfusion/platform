@@ -9,21 +9,21 @@ import com.smartgwt.client.widgets.Label;
 import com.smartgwt.client.widgets.form.fields.events.ClickEvent;
 import com.smartgwt.client.widgets.form.fields.events.ClickHandler;
 import com.smartgwt.client.widgets.layout.VLayout;
-import net.customware.gwt.dispatch.client.DefaultExceptionHandler;
-import net.customware.gwt.dispatch.client.standard.StandardDispatchAsync;
-import net.customware.gwt.dispatch.shared.general.StringResult;
-import lsfusion.gwt.base.client.ErrorHandlingCallback;
 import lsfusion.gwt.base.client.GwtClientUtils;
+import lsfusion.gwt.base.shared.MessageException;
+import lsfusion.gwt.base.shared.actions.VoidResult;
 import lsfusion.gwt.login.shared.actions.AddUser;
+import lsfusion.gwt.login.shared.actions.RemindPassword;
+import lsfusion.gwt.sgwtbase.client.SGWTErrorHandlingCallback;
 import lsfusion.gwt.sgwtbase.client.ui.CenterLayout;
-import lsfusion.gwt.sgwtbase.client.ui.register.RegisterBox;
 import lsfusion.gwt.sgwtbase.client.ui.ToolStripPanel;
 import lsfusion.gwt.sgwtbase.client.ui.login.LoginBox;
 import lsfusion.gwt.sgwtbase.client.ui.login.SpringLoginBoxUiHandlers;
-import lsfusion.gwt.base.shared.MessageException;
-import lsfusion.gwt.base.shared.actions.VoidResult;
-import lsfusion.gwt.login.shared.actions.RemindPassword;
+import lsfusion.gwt.sgwtbase.client.ui.register.RegisterBox;
 import lsfusion.gwt.sgwtbase.client.ui.register.RegisterBoxUiHandlers;
+import net.customware.gwt.dispatch.client.DefaultExceptionHandler;
+import net.customware.gwt.dispatch.client.standard.StandardDispatchAsync;
+import net.customware.gwt.dispatch.shared.general.StringResult;
 
 public class LoginFrame extends VLayout implements EntryPoint {
     private static final LoginFrameMessages messages = LoginFrameMessages.Instance.get();
@@ -109,7 +109,7 @@ public class LoginFrame extends VLayout implements EntryPoint {
         public void register() {
             loginService.execute(new AddUser(registerBox.getUsername(), registerBox.getEmail(), registerBox.getPassword(),
                     registerBox.getFirstName(), registerBox.getLastName(), registerBox.getCaptchaText(), registerBox.getCaptchaSalt()),
-                    new ErrorHandlingCallback<StringResult>() {
+                    new SGWTErrorHandlingCallback<StringResult>() {
                 @Override
                 public void success(StringResult result) {
                     if (result.get() == null) {
