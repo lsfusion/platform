@@ -39,6 +39,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
     public ArrayList<GGroupObject> columnGroupObjects;
 
     public GType baseType;
+    public String pattern;
     public GClass returnClass;
 
     public GType changeWYSType;
@@ -129,14 +130,14 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
             return null;
         }
         try {
-            return changeWYSType.parseString(s);
+            return changeWYSType.parseString(s, pattern);
         } catch (ParseException pe) {
             return null;
         }
     }
 
     public Object parseBaseValue(String s) throws ParseException {
-        return baseType.parseString(s);
+        return baseType.parseString(s, pattern);
     }
 
     public boolean canUsePasteValueForRendering() {
@@ -265,7 +266,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
         if (minimumWidth != -1) {
             return minimumWidth;
         } else {
-            return baseType.getMinimumPixelWidth(minimumCharWidth, font != null ? font : parentFont);
+            return baseType.getMinimumPixelWidth(minimumCharWidth, font != null ? font : parentFont, pattern);
         }
     }
 
@@ -289,7 +290,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
         if (maximumWidth != -1) {
             return maximumWidth;
         } else {
-            return baseType.getMaximumPixelWidth(maximumCharWidth, font);
+            return baseType.getMaximumPixelWidth(maximumCharWidth, font, pattern);
         }
     }
 
@@ -305,7 +306,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
         if (preferredWidth != -1) {
             return preferredWidth;
         } else {
-            return baseType.getPreferredPixelWidth(preferredCharWidth, font);
+            return baseType.getPreferredPixelWidth(preferredCharWidth, font, pattern);
         }
     }
 

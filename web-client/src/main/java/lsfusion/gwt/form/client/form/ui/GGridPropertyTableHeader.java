@@ -69,6 +69,10 @@ public class GGridPropertyTableHeader extends Header<String> {
         this.toolTip = toolTip;
     }
 
+    public void setHeaderHeight(int headerHeight) {
+        this.headerHeight = headerHeight;
+    }
+
     @Override
     public void onBrowserEvent(Element target, NativeEvent event) {
         String eventType = event.getType();

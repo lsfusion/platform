@@ -107,6 +107,9 @@ captionShow 'Показ свойства для пользователя' (Prope
 columnCaption 'Заголовок свойства для пользователя' = DATA VARSTRING[100] (PropertyDraw, CustomUser);
 columnCaption 'Заголовок свойства' = DATA VARSTRING[100] (PropertyDraw);
 
+columnPattern 'Маска свойства для пользователя' = DATA VARSTRING[100] (PropertyDraw, CustomUser);
+columnPattern 'Маска свойства' = DATA VARSTRING[100] (PropertyDraw);
+
 columnWidth 'Ширина для пользователя' = DATA INTEGER (PropertyDraw, CustomUser);
 columnWidth 'Ширина' = DATA INTEGER (PropertyDraw);
 
@@ -138,6 +141,9 @@ isFontItalic 'Курсивный шрифт' = DATA BOOLEAN (GroupObject);
 
 pageSize 'Размер страницы для пользователя'= DATA INTEGER (GroupObject, CustomUser);
 pageSize 'Размер шрифта' = DATA INTEGER (GroupObject);
+
+headerHeight 'Высота заголовков для пользователя'= DATA INTEGER (GroupObject, CustomUser);
+headerHeight 'Высота заголовков' = DATA INTEGER (GroupObject);
 
 CLASS Table 'Таблица';
 TABLE tables (Table);
@@ -301,8 +307,8 @@ FORM forms 'Формы'
     PROPERTIES(u) SELECTOR firstName, lastName, login
 
     OBJECTS g=GroupObject
-    PROPERTIES(g) sid READONLY, fontSize, isFontBold, isFontItalic, pageSize, hasUserPreferences
-    PROPERTIES(g,u) fontSize, isFontBold, isFontItalic, pageSize, hasUserPreferences
+    PROPERTIES(g) sid READONLY, fontSize, isFontBold, isFontItalic, pageSize, headerHeight, hasUserPreferences
+    PROPERTIES(g,u) fontSize, isFontBold, isFontItalic, pageSize, headerHeight, hasUserPreferences
     
     OBJECTS fg=FormGrouping
     PROPERTIES(fg) name, itemQuantity
@@ -314,6 +320,8 @@ FORM forms 'Формы'
     PROPERTIES(p,u) captionShow
     PROPERTIES(p) columnCaption
     PROPERTIES(p,u) columnCaption
+    PROPERTIES(p) columnPattern
+    PROPERTIES(p,u) columnPattern
     PROPERTIES(p) columnWidth
     PROPERTIES(p,u) columnWidth
     PROPERTIES(p) columnOrder

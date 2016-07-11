@@ -30,7 +30,7 @@ public class GStringType extends GDataType {
     }
 
     @Override
-    public Object parseString(String s) throws ParseException {
+    public Object parseString(String s, String pattern) throws ParseException {
         return s;
     }
 
@@ -40,14 +40,14 @@ public class GStringType extends GDataType {
     }
 
     @Override
-    public int getMinimumPixelWidth(int minimumCharWidth, GFont font) {
-        int minCharWidth = getMinimumCharWidth(minimumCharWidth);
+    public int getMinimumPixelWidth(int minimumCharWidth, GFont font, String pattern) {
+        int minCharWidth = getMinimumCharWidth(minimumCharWidth, pattern);
         return minCharWidth * GFontMetrics.getZeroSymbolWidth(font == null || font.size == null ? null : font) + 8;
     }
 
     @Override
-    public int getPreferredPixelWidth(int preferredCharWidth, GFont font) {
-        int prefCharWidth = getPreferredCharWidth(preferredCharWidth);
+    public int getPreferredPixelWidth(int preferredCharWidth, GFont font, String pattern) {
+        int prefCharWidth = getPreferredCharWidth(preferredCharWidth, pattern);
         return prefCharWidth * GFontMetrics.getZeroSymbolWidth(font == null || font.size == null ? null : font) + 8;
     }
 
@@ -102,21 +102,21 @@ public class GStringType extends GDataType {
     }
 
     @Override
-    public String getMinimumMask() {
+    public String getMinimumMask(String pattern) {
         return minimumMask;
     }
 
-    public String getPreferredMask() {
+    public String getPreferredMask(String pattern) {
         return preferredMask;
     }
 
     @Override
-    public int getMinimumCharWidth(int definedMinimumCharWidth) {
+    public int getMinimumCharWidth(int definedMinimumCharWidth, String pattern) {
         return definedMinimumCharWidth > 0 ? definedMinimumCharWidth : minimumMask.length();
     }
 
     @Override
-    public int getPreferredCharWidth(int definedPreferredCharWidth) {
+    public int getPreferredCharWidth(int definedPreferredCharWidth, String pattern) {
         return definedPreferredCharWidth > 0 ? definedPreferredCharWidth : preferredMask.length();
     }
 

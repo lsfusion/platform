@@ -44,6 +44,10 @@ public class GGridController {
         return grid.headerHeight;
     }
 
+    public void setHeaderHeight(int headerHeight) {
+        grid.headerHeight = headerHeight;
+    }
+
     public GGridTable getTable() {
         return table;
     }

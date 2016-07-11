@@ -12,20 +12,20 @@ public abstract class GDataType extends GType implements GClass {
         return false;
     }
 
-    public String getMinimumMask() {
-        return getPreferredMask();
+    public String getMinimumMask(String pattern) {
+        return getPreferredMask(pattern);
     }
 
-    public abstract String getPreferredMask();
+    public abstract String getPreferredMask(String pattern);
 
     @Override
-    public int getMinimumPixelWidth(int minimumCharWidth, GFont font) {
-        int minCharWidth = getMinimumCharWidth(minimumCharWidth);
+    public int getMinimumPixelWidth(int minimumCharWidth, GFont font, String pattern) {
+        int minCharWidth = getMinimumCharWidth(minimumCharWidth, pattern);
         return minCharWidth * GFontMetrics.getZeroSymbolWidth(font == null || font.size == null? null : font) + 8;
     }
 
     @Override
-    public int getMaximumPixelWidth(int maximumCharWidth, GFont font) {
+    public int getMaximumPixelWidth(int maximumCharWidth, GFont font, String pattern) {
         if (maximumCharWidth != 0) {
             return maximumCharWidth * GFontMetrics.getZeroSymbolWidth(font == null || font.size == null ? null : font) + 8;
         } else {
@@ -34,17 +34,17 @@ public abstract class GDataType extends GType implements GClass {
     }
 
     @Override
-    public int getPreferredPixelWidth(int preferredCharWidth, GFont font) {
-        int prefCharWidth = getPreferredCharWidth(preferredCharWidth);
+    public int getPreferredPixelWidth(int preferredCharWidth, GFont font, String pattern) {
+        int prefCharWidth = getPreferredCharWidth(preferredCharWidth, pattern);
         return prefCharWidth * GFontMetrics.getZeroSymbolWidth(font == null || font.size == null ? null : font) + 8;
     }
 
-    public int getMinimumCharWidth(int definedMinimumCharWidth) {
-        return (definedMinimumCharWidth > 0 ? definedMinimumCharWidth : getMinimumMask().length());
+    public int getMinimumCharWidth(int definedMinimumCharWidth, String pattern) {
+        return (definedMinimumCharWidth > 0 ? definedMinimumCharWidth : getMinimumMask(pattern).length());
     }
 
-    public int getPreferredCharWidth(int definedPreferredCharWidth) {
-        return (definedPreferredCharWidth > 0 ? definedPreferredCharWidth : getPreferredMask().length());
+    public int getPreferredCharWidth(int definedPreferredCharWidth, String pattern) {
+        return (definedPreferredCharWidth > 0 ? definedPreferredCharWidth : getPreferredMask(pattern).length());
     }
 
     @Override

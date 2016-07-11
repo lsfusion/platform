@@ -35,6 +35,7 @@ public abstract class ColumnsDualListBox extends AbsolutePanel {
             @Override
             public void singleclicked() {
                 setColumnCaptionBoxText(left, true);
+                setColumnPatternBoxText(left, true);
             }
 
             @Override
@@ -47,6 +48,7 @@ public abstract class ColumnsDualListBox extends AbsolutePanel {
             @Override
             public void singleclicked() {
                 setColumnCaptionBoxText(right, true);
+                setColumnPatternBoxText(right, true);
             }
 
             @Override
@@ -152,17 +154,35 @@ public abstract class ColumnsDualListBox extends AbsolutePanel {
         if(selectedWidget != null)
             setColumnCaptionBoxText(selectedWidget.getUserCaption(ignoreDefault));
     }
+
+    protected void setColumnPatternBoxText(ColumnsListBox list, boolean ignoreDefault) {
+        PropertyLabel selectedWidget = getSelectedWidget(list);
+        if(selectedWidget != null)
+            setColumnPatternBoxText(selectedWidget.getUserPattern(ignoreDefault));
+    }
     
     public abstract void setColumnCaptionBoxText(String text);
-    
+
+    public abstract void setColumnPatternBoxText(String text);
+
     public void columnCaptionBoxTextChanged(String columnCaption) {
         PropertyLabel propertyLabel = getSelectedWidget(left);
         if (propertyLabel == null) {
             propertyLabel = getSelectedWidget(right);    
         }
         if (propertyLabel != null) {
-            propertyLabel.setText(columnCaption);
-            propertyLabel.setUserCaption(columnCaption);
+            propertyLabel.setText(columnCaption != null && !columnCaption.isEmpty() ? columnCaption : propertyLabel.getPropertyItem().property.getNotEmptyCaption());
+            propertyLabel.setUserCaption(columnCaption != null && !columnCaption.isEmpty() ? columnCaption : null);
+        }
+    }
+
+    public void columnPatternBoxTextChanged(String columnPattern) {
+        PropertyLabel propertyLabel = getSelectedWidget(left);
+        if (propertyLabel == null) {
+            propertyLabel = getSelectedWidget(right);
+        }
+        if (propertyLabel != null) {
+            propertyLabel.setUserPattern(columnPattern != null && !columnPattern.isEmpty() ? columnPattern : null);
         }
     }
 

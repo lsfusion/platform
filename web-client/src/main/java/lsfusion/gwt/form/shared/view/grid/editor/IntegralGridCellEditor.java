@@ -40,7 +40,7 @@ public class IntegralGridCellEditor extends TextBasedGridCellEditor {
             return null;
         } else {
             inputText = inputText.replace(" ", "").replace(UNBREAKABLE_SPACE, "");
-            return (!onCommit && "-".equals(inputText)) ? true : type.parseString(inputText);
+            return (!onCommit && "-".equals(inputText)) ? true : type.parseString(inputText, property.pattern);
         }
     }
 }

@@ -1,6 +1,7 @@
 package lsfusion.client.form.editor;
 
 import lsfusion.interop.ComponentDesign;
+import org.apache.commons.lang.StringUtils;
 
 import javax.swing.*;
 import javax.swing.text.DefaultFormatterFactory;
@@ -12,10 +13,10 @@ import java.text.NumberFormat;
 import java.text.ParseException;
 
 public class DoublePropertyEditor extends TextFieldPropertyEditor {
-
-    public DoublePropertyEditor(Object value, Long maxValue, NumberFormat format, ComponentDesign design, Class formatterValueClass) {
+    DecimalFormat df = null;
+    public DoublePropertyEditor(Object value, Long maxValue, NumberFormat format, ComponentDesign design, Class formatterValueClass, final boolean hasMask) {
         super(design);
-        final DecimalFormat df = (DecimalFormat) format;
+        df = (DecimalFormat) format;
         final boolean isGroupSeparatorDot = df.getDecimalFormatSymbols().getGroupingSeparator() == '.';
         final char separator = df.getDecimalFormatSymbols().getDecimalSeparator();
 
@@ -31,8 +32,17 @@ public class DoublePropertyEditor extends TextFieldPropertyEditor {
                     lastTextEndsWithSeparator = false;
                 }
                 if (minusZeroText == null) {
-                    for (int i = 0; i < lastZero; i++) {
+                    int minFractionDigits = df.getMinimumFractionDigits();
+                    int currentFractionDigits = countFractionDigits(result);
+                    if(hasMask && result != null) {
+                        while (minFractionDigits < currentFractionDigits) {
+                            result = result.substring(0, result.length() - 1);
+                            currentFractionDigits--;
+                        }
+                    }
+                    while(lastZero > currentFractionDigits) {
                         result += '0';
+                        currentFractionDigits++;
                     }
                 }
                 return result;
@@ -56,6 +66,17 @@ public class DoublePropertyEditor extends TextFieldPropertyEditor {
                     lastTextEndsWithSeparator = false;
                 }
                 return super.stringToValue(text);
+            }
+
+            private int countFractionDigits(String text) {
+                int count = 0;
+                if(text.indexOf(separator) > -1) {
+                    while (!text.endsWith(String.valueOf(separator))) {
+                        text = text.substring(0, text.length() - 1);
+                        count++;
+                    }
+                }
+                return count;
             }
         };
 
@@ -87,5 +108,43 @@ public class DoublePropertyEditor extends TextFieldPropertyEditor {
                 e.printStackTrace();
             }
         }
+    }
+
+
+    @Override
+    public void replaceSelection(String content) {
+        if (getSelectedText() == null) {
+            String text = getText();
+            if (content.equals("-")) {
+                if (text.startsWith("-")) {
+                    setSingleSelection(0);
+                    content = "";
+                } else {
+                    setText("-" + text);
+                    return;
+                }
+            } else {
+                if (StringUtils.isNumeric(content)) {
+                    //проверяем, не превышен ли лимит символов до/после запятой
+                    int currentPosition = getCaret().getDot();
+                    char separator = df.getDecimalFormatSymbols().getDecimalSeparator();
+                    int separatorPosition = text.indexOf(separator);
+                    String[] split = text.replace(String.valueOf(df.getDecimalFormatSymbols().getGroupingSeparator()), "").split(String.valueOf(separator));
+                    if (currentPosition <= separatorPosition || separatorPosition == -1) {
+                        if (df.getMaximumIntegerDigits() <= split[0].length())
+                            setSingleSelection(currentPosition - (currentPosition == separatorPosition || currentPosition == text.length() ? 1 : 0));
+                    } else {
+                        if (split.length > 1 && df.getMaximumFractionDigits() <= split[1].length())
+                            setSingleSelection(currentPosition - (currentPosition == text.length() ? 1 : 0));
+                    }
+                }
+            }
+        }
+        super.replaceSelection(content);
+    }
+
+    private void setSingleSelection(int start) {
+        setSelectionStart(start);
+        setSelectionEnd(start + 1);
     }
 }

@@ -20,12 +20,12 @@ public class GNumericType extends GDoubleType {
     public GNumericType(int length, int precision) {
         this.length = length;
         this.precision = precision;
-        formatPattern = getPattern();
+        defaultPattern = getPattern();
     }
 
     @Override
     public GridCellRenderer createGridCellRenderer(GPropertyDraw property) {
-        return new NumberGridCellRenderer(property, getFormat());
+        return new NumberGridCellRenderer(property, getFormat(property.pattern));
     }
     
     private String getPattern() {
@@ -42,12 +42,12 @@ public class GNumericType extends GDoubleType {
 
     @Override
     public GridCellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty) {
-        return new NumericGridCellEditor(this, editManager, editProperty, getFormat());
+        return new NumericGridCellEditor(this, editManager, editProperty, getFormat(editProperty.pattern));
     }
 
     @Override
-    public Object parseString(String s) throws ParseException {
-        Double toDouble = parseToDouble(s); // сперва проверим, конвертится ли строка в число вообще 
+    public Object parseString(String s, String pattern) throws ParseException {
+        Double toDouble = parseToDouble(s, pattern); // сперва проверим, конвертится ли строка в число вообще
 
         String decimalSeparator = LocaleInfo.getCurrentLocale().getNumberConstants().decimalSeparator(); // а затем посчитаем цифры
         

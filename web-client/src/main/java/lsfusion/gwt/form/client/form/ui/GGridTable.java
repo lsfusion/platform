@@ -29,6 +29,9 @@ import lsfusion.gwt.form.shared.view.classes.GObjectType;
 import lsfusion.gwt.form.shared.view.grid.EditEvent;
 import lsfusion.gwt.form.shared.view.grid.GridEditableCell;
 import lsfusion.gwt.form.shared.view.grid.editor.TextBasedGridCellEditor;
+import lsfusion.gwt.form.shared.view.grid.renderer.DateGridCellRenderer;
+import lsfusion.gwt.form.shared.view.grid.renderer.GridCellRenderer;
+import lsfusion.gwt.form.shared.view.grid.renderer.NumberGridCellRenderer;
 
 import java.util.*;
 
@@ -102,6 +105,11 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
         }
         if (font == null) {
             font = gridController.getFont();
+        }
+
+        Integer headerHeight = currentGridPreferences.headerHeight;
+        if(headerHeight != null && headerHeight != 0) {
+            gridController.setHeaderHeight(headerHeight);
         }
 
         keyboardSelectionHandler =  new GridTableKeyboardSelectionHandler(this);
@@ -364,6 +372,19 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
                 GGridPropertyTableHeader header = headers.get(i);
                 header.setCaption(columnCaption, property.notNull, property.hasChangeAction);
                 header.setToolTip(property.getTooltipText(columnCaption));
+
+                if(currentGridPreferences.headerHeight != null)
+                    header.setHeaderHeight(currentGridPreferences.headerHeight);
+
+                property.pattern = getUserPattern(property);
+                GridCellRenderer renderer = property.getGridCellRenderer();
+                if(renderer != null && property.pattern != null) {
+                    if (renderer instanceof DateGridCellRenderer) {
+                        ((DateGridCellRenderer) renderer).setFormat(property.pattern);
+                    } else if (renderer instanceof NumberGridCellRenderer) {
+                        ((NumberGridCellRenderer) renderer).setFormat(property.pattern);
+                    }
+                }
 
                 putToColumnsMap(newColumnsMap, property, columnKey, column);
 
@@ -1045,6 +1066,10 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
     public String getUserCaption(GPropertyDraw property) {
         return currentGridPreferences.getUserCaption(property);
     }
+
+    public String getUserPattern(GPropertyDraw property) {
+        return currentGridPreferences.getUserPattern(property);
+    }
     
     public Integer getUserWidth(GPropertyDraw property) {
         return currentGridPreferences.getUserWidth(property);
@@ -1065,6 +1090,10 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
     public void setUserPageSize(Integer pageSize) {
         currentGridPreferences.pageSize = pageSize;
     }
+
+    public void setUserHeaderHeight(Integer headerHeight) {
+        currentGridPreferences.headerHeight = headerHeight;
+    }
     
     public void setUserFont(GFont userFont) {
         currentGridPreferences.font = userFont;
@@ -1074,8 +1103,8 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
         currentGridPreferences.setUserHide(property, userHide);
     }
 
-    public void setUserCaption(GPropertyDraw property, String caption) {
-        currentGridPreferences.setUserCaption(property, caption);
+    public void setColumnSettings(GPropertyDraw property, String caption, String pattern, Integer order, Boolean hide) {
+        currentGridPreferences.setColumnSettings(property, caption, pattern, order, hide);
     }
     
     public void setUserWidth(GPropertyDraw property, Integer userWidth) {

@@ -25,8 +25,16 @@ public class PropertyLabel extends Label {
     public String getUserCaption(boolean ignoreDefault) {
         return propertyItem.getUserCaption(ignoreDefault);
     }
+
+    public String getUserPattern(boolean ignoreDefault) {
+        return propertyItem.getUserPattern(ignoreDefault);
+    }
     
     public void setUserCaption(String userCaption) {
         propertyItem.setUserCaption(userCaption);
+    }
+
+    public void setUserPattern(String userPattern) {
+        propertyItem.setUserPattern(userPattern);
     }
 }

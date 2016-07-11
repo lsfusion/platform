@@ -24,17 +24,17 @@ public class GObjectType extends GType {
     }
 
     @Override
-    public int getMinimumPixelWidth(int minimumCharWidth, GFont font) {
+    public int getMinimumPixelWidth(int minimumCharWidth, GFont font, String pattern) {
         return 50;
     }
 
     @Override
-    public int getMaximumPixelWidth(int maximumCharWidth, GFont font) {
-        return getPreferredPixelWidth(maximumCharWidth, font);
+    public int getMaximumPixelWidth(int maximumCharWidth, GFont font, String pattern) {
+        return getPreferredPixelWidth(maximumCharWidth, font, pattern);
     }
 
     @Override
-    public int getPreferredPixelWidth(int preferredCharWidth, GFont font) {
+    public int getPreferredPixelWidth(int preferredCharWidth, GFont font, String pattern) {
         return 50;
     }
 
@@ -49,7 +49,7 @@ public class GObjectType extends GType {
     }
 
     @Override
-    public Object parseString(String s) throws ParseException {
+    public Object parseString(String s, String pattern) throws ParseException {
         throw new ParseException("Object class doesn't support conversion from string", 0);
     }
 

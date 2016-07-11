@@ -10,14 +10,16 @@ public class GroupObjectUserPreferences implements Serializable {
     public String groupObjectSID;
     public FontInfo fontInfo;
     public Integer pageSize;
+    public Integer headerHeight;
     public boolean hasUserPreferences;
 
     public GroupObjectUserPreferences(Map<String, ColumnUserPreferences> columnUserPreferences, String groupObjectSID,
-                                      FontInfo fontInfo, Integer pageSize, boolean hasUserPreferences) {
+                                      FontInfo fontInfo, Integer pageSize, Integer headerHeight, boolean hasUserPreferences) {
         this.columnUserPreferences = columnUserPreferences;
         this.groupObjectSID = groupObjectSID;
         this.fontInfo = fontInfo;
         this.pageSize = pageSize;
+        this.headerHeight = headerHeight;
         this.hasUserPreferences = hasUserPreferences;
     }
 

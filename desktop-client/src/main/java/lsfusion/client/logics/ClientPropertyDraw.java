@@ -7,10 +7,7 @@ import lsfusion.client.Main;
 import lsfusion.client.SwingUtils;
 import lsfusion.client.form.*;
 import lsfusion.client.form.cell.PanelView;
-import lsfusion.client.logics.classes.ClientClass;
-import lsfusion.client.logics.classes.ClientStringClass;
-import lsfusion.client.logics.classes.ClientType;
-import lsfusion.client.logics.classes.ClientTypeSerializer;
+import lsfusion.client.logics.classes.*;
 import lsfusion.client.serialization.ClientIdentitySerializable;
 import lsfusion.client.serialization.ClientSerializationPool;
 import lsfusion.interop.PropertyEditType;
@@ -23,8 +20,7 @@ import java.awt.*;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.text.Format;
-import java.text.ParseException;
+import java.text.*;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -240,6 +236,42 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public Format getFormat() {
         if (format == null) {
             return baseType.getDefaultFormat();
+        } else {
+            return mergeFormats(format, baseType.getDefaultFormat());
+        }
+    }
+
+    public boolean hasMask() {
+        return format != null;
+    }
+
+    public String getFormatPattern() {
+        if (format != null) {
+            if (format instanceof DecimalFormat)
+                return ((DecimalFormat) format).toPattern();
+            else if (format instanceof SimpleDateFormat)
+                return ((SimpleDateFormat) format).toPattern();
+        }
+        return null;
+    }
+
+    public Format setFormat(String pattern) {
+        if (pattern != null) {
+            if (baseType instanceof ClientIntegralClass) {
+                format = mergeFormats(new DecimalFormat(pattern), baseType.getDefaultFormat());
+            } else if (baseType instanceof ClientDateClass) {
+                format = new SimpleDateFormat(pattern);
+            }
+            return format;
+        }
+        return null;
+    }
+
+    private Format mergeFormats(Format format, Format defaultFormat) {
+        if(baseType instanceof ClientIntegralClass) {
+            ((DecimalFormat) format).setParseIntegerOnly(((NumberFormat)defaultFormat).isParseIntegerOnly());
+            ((DecimalFormat) format).setMaximumIntegerDigits(((NumberFormat)defaultFormat).getMaximumIntegerDigits());
+            ((DecimalFormat) format).setGroupingUsed(((NumberFormat)defaultFormat).isGroupingUsed());
         }
         return format;
     }

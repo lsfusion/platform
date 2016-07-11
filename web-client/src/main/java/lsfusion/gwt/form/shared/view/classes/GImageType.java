@@ -12,7 +12,7 @@ public class GImageType extends GFileType {
     }
 
     @Override
-    public int getMaximumPixelWidth(int maximumCharWidth, GFont font) {
+    public int getMaximumPixelWidth(int maximumCharWidth, GFont font, String pattern) {
         return Integer.MAX_VALUE;
     }
 

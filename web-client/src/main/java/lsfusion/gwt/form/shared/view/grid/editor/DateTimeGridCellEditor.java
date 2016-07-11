@@ -39,6 +39,6 @@ public class DateTimeGridCellEditor extends DateGridCellEditor {
     }
 
     protected Timestamp parseString(String value) throws ParseException {
-        return GDateTimeType.instance.parseString(value);
+        return GDateTimeType.instance.parseString(value, property.pattern);
     }
 }

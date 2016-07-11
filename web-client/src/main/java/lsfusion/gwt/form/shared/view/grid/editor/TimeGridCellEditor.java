@@ -30,7 +30,7 @@ public class TimeGridCellEditor extends TextBasedGridCellEditor {
 
     @Override
     protected GTimeDTO tryParseInputText(String inputText, boolean onCommit) throws ParseException {
-        return GTimeType.instance.parseString(inputText);
+        return GTimeType.instance.parseString(inputText, property.pattern);
     }
 
     @Override

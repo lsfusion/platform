@@ -30,7 +30,7 @@ public abstract class GFileType extends GDataType {
     }
 
     @Override
-    public String getPreferredMask() {
+    public String getPreferredMask(String pattern) {
         return "1234567";
     }
 
@@ -40,7 +40,7 @@ public abstract class GFileType extends GDataType {
     }
 
     @Override
-    public Object parseString(String s) throws ParseException {
+    public Object parseString(String s, String pattern) throws ParseException {
         throw new ParseException("File class doesn't support conversion from string", 0);
     }
 
@@ -55,12 +55,12 @@ public abstract class GFileType extends GDataType {
     }
 
     @Override
-    public int getMinimumPixelWidth(int minimumCharWidth, GFont font) {
+    public int getMinimumPixelWidth(int minimumCharWidth, GFont font, String pattern) {
         return 18;
     }
 
     @Override
-    public int getPreferredPixelWidth(int preferredCharWidth, GFont font) {
+    public int getPreferredPixelWidth(int preferredCharWidth, GFont font, String pattern) {
         return 18;
     }
 }

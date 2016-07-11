@@ -13,21 +13,21 @@ import java.text.ParseException;
 public class GDoubleType extends GIntegralType {
     public static GDoubleType instance = new GDoubleType();
 
-    protected String formatPattern = "#,###.##########";
+    protected String defaultPattern = "#,###.##########";
 
     @Override
     public GridCellRenderer createGridCellRenderer(GPropertyDraw property) {
-        return new DoubleGridCellRenderer(property, getFormat());
+        return new DoubleGridCellRenderer(property, getFormat(property.pattern));
     }
 
     @Override
     public GridCellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty) {
-        return new DoubleGridCellEditor(editManager, editProperty, getFormat());
+        return new DoubleGridCellEditor(editManager, editProperty, getFormat(editProperty.pattern));
     }
 
     @Override
-    public Object parseString(String s) throws ParseException {
-        return parseToDouble(s);
+    public Object parseString(String s, String pattern) throws ParseException {
+        return parseToDouble(s, pattern);
     }
 
     @Override
@@ -36,7 +36,7 @@ public class GDoubleType extends GIntegralType {
     }
     
     @Override
-    public NumberFormat getFormat() {
-        return NumberFormat.getFormat(formatPattern);
+    public NumberFormat getFormat(String pattern) {
+        return NumberFormat.getFormat(pattern != null ? pattern : defaultPattern);
     }
 }

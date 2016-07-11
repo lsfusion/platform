@@ -8,6 +8,7 @@ public class GGroupObjectUserPreferences implements Serializable {
     private String groupObjectSID;
     private GFont font;
     private Integer pageSize;
+    private Integer headerHeight;
     private  boolean hasUserPreferences;
 
     @SuppressWarnings("UnusedDeclaration")
@@ -15,11 +16,12 @@ public class GGroupObjectUserPreferences implements Serializable {
     }
 
     public GGroupObjectUserPreferences(Map<String, GColumnUserPreferences> columnUserPreferences,
-                                      String groupObjectSID, GFont font, Integer pageSize, boolean hasUserPreferences) {
+                                      String groupObjectSID, GFont font, Integer pageSize, Integer headerHeight, boolean hasUserPreferences) {
         this.columnUserPreferences = columnUserPreferences;
         this.groupObjectSID = groupObjectSID;
         this.font = font;
         this.pageSize = pageSize;
+        this.headerHeight = headerHeight;
         this.hasUserPreferences = hasUserPreferences;
     }
 
@@ -37,6 +39,10 @@ public class GGroupObjectUserPreferences implements Serializable {
     
     public Integer getPageSize() {
         return pageSize;
+    }
+
+    public Integer getHeaderHeight() {
+        return headerHeight;
     }
     
     public boolean hasUserPreferences() {

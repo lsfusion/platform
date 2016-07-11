@@ -30,13 +30,13 @@ public class GTimeType extends GDataType {
     }
 
     @Override
-    public GTimeDTO parseString(String value) throws ParseException {
+    public GTimeDTO parseString(String value, String pattern) throws ParseException {
         return value.isEmpty() ? null : GTimeDTO.fromDate(parseDate(value, getDefaultTimeFormat(), getDefaultTimeShortFormat()));
     }
 
     @Override
-    public String getPreferredMask() {
-        return "00:00:00";
+    public String getPreferredMask(String pattern) {
+        return pattern != null ? pattern : "00:00:00";
     }
 
     @Override

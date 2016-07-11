@@ -1091,7 +1091,7 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
         redraw();
     }
 
-    private void refreshColumnsAndRedraw() {
+    public void refreshColumnsAndRedraw() {
         columnsChanged = true;
         redraw();
     }

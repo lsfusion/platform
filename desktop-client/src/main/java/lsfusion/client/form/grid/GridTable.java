@@ -5,11 +5,9 @@ import com.sun.java.swing.plaf.windows.WindowsTableHeaderUI;
 import lsfusion.base.Pair;
 import lsfusion.client.Main;
 import lsfusion.client.SwingUtils;
-import lsfusion.client.form.ClientFormController;
-import lsfusion.client.form.ClientPropertyTable;
-import lsfusion.client.form.GroupObjectController;
-import lsfusion.client.form.RmiQueue;
+import lsfusion.client.form.*;
 import lsfusion.client.form.layout.ClientFormLayout;
+import lsfusion.client.form.renderer.LabelPropertyRenderer;
 import lsfusion.client.form.sort.MultiLineHeaderRenderer;
 import lsfusion.client.form.sort.TableSortableHeaderManager;
 import lsfusion.client.logics.ClientForm;
@@ -38,6 +36,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.rmi.RemoteException;
+import java.text.Format;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.*;
@@ -311,6 +310,10 @@ public class GridTable extends ClientPropertyTable {
         initializeActionMap();
     }
 
+    public void setHeaderHeight(Integer headerHeight) {
+        gridController.setHeaderHeight(headerHeight);
+    }
+
     private boolean isEditOnSingleClick(int row, int col) {
         return getProperty(row, col).editOnSingleClick;
     }
@@ -518,6 +521,14 @@ public class GridTable extends ClientPropertyTable {
             
             column.setHeaderValue(getColumnCaption(i));
 
+            Format format = cell.setFormat(getColumnPattern(i));
+            if(format != null) {
+                PropertyRenderer renderer = cell.getRendererComponent();
+                if(renderer instanceof LabelPropertyRenderer) {
+                    ((LabelPropertyRenderer) renderer).setFormat(format);
+                }
+            }
+
             rowHeight = max(rowHeight, cell.getPreferredHeight(this));
 
             hasFocusableCells |= cell.focusable == null || cell.focusable;
@@ -561,6 +572,10 @@ public class GridTable extends ClientPropertyTable {
         ClientPropertyDraw cell = model.getColumnProperty(column);
         String userCaption = getUserCaption(cell);
         return userCaption != null ? userCaption : model.getColumnName(column);   
+    }
+
+    private String getColumnPattern(int column) {
+        return getUserPattern(model.getColumnProperty(column));
     }
 
     private void adjustSelection() {
@@ -1505,6 +1520,10 @@ public class GridTable extends ClientPropertyTable {
     public Integer getUserPageSize() {
         return currentGridPreferences.pageSize;
     }
+
+    public Integer getUserHeaderHeight() {
+        return currentGridPreferences.headerHeight;
+    }
     
     public Boolean getUserHide(ClientPropertyDraw property) {
         return currentGridPreferences.getUserHide(property);
@@ -1512,6 +1531,10 @@ public class GridTable extends ClientPropertyTable {
 
     public String getUserCaption(ClientPropertyDraw property) {
         return currentGridPreferences.getUserCaption(property);
+    }
+
+    public String getUserPattern(ClientPropertyDraw property) {
+        return currentGridPreferences.getUserPattern(property);
     }
     
     public Integer getUserWidth(ClientPropertyDraw property) {
@@ -1537,13 +1560,25 @@ public class GridTable extends ClientPropertyTable {
     public void setUserPageSize(Integer userPageSize) {
         currentGridPreferences.pageSize = userPageSize;
     }
+
+    public void setUserHeaderHeight(Integer userHeaderHeight) {
+        currentGridPreferences.headerHeight = userHeaderHeight;
+    }
     
     public void setUserHide(ClientPropertyDraw property, Boolean userHide) {
         currentGridPreferences.setUserHide(property, userHide);
     }
 
+    public void setUserColumnSettings(ClientPropertyDraw property, String userCaption, String userPattern, int userOrder, Boolean userHide) {
+        currentGridPreferences.setUserColumnsSettings(property, userCaption, userPattern, userOrder, userHide);
+    }
+
     public void setUserCaption(ClientPropertyDraw property, String userCaption) {
         currentGridPreferences.setUserCaption(property, userCaption);
+    }
+
+    public void setUserPattern(ClientPropertyDraw property, String userPattern) {
+        currentGridPreferences.setUserPattern(property, userPattern);
     }
     
     public void setUserWidth(ClientPropertyDraw property, Integer userWidth) {
