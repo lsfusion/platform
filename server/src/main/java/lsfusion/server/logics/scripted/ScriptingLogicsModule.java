@@ -34,7 +34,6 @@ import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.form.entity.*;
 import lsfusion.server.form.instance.FormSessionScope;
-import lsfusion.server.form.navigator.DefaultIcon;
 import lsfusion.server.form.navigator.NavigatorElement;
 import lsfusion.server.form.view.ComponentView;
 import lsfusion.server.form.view.FormView;
@@ -513,9 +512,9 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new ScriptingFormView(view, this);
     }
     
-    public void addScriptedForm(ScriptingFormEntity form, DebugInfo.DebugPoint point) {
+    public void addScriptedForm(ScriptingFormEntity form, int lineNumber) {
         FormEntity formEntity = addFormEntity(form.getForm());
-        formEntity.creationPath = point.toString();
+        formEntity.creationPath = parser.getCurrentScriptPath(getName(), lineNumber, "\n");
         formEntity.finalizeInit(getVersion());
     }
 
@@ -2342,19 +2341,12 @@ public class ScriptingLogicsModule extends LogicsModule {
         return addScriptedJoinAProp(addAProp(ImportDataActionProperty.createProperty(fileProp.property.property.getValueClass(ClassType.valuePolicy), format, this, ids, props)), Collections.singletonList(fileProp));
     }
 
-    public LPWithParams addScriptedNewThreadActionProperty(LPWithParams actionProp, LPWithParams connectionProp, LPWithParams periodProp, LPWithParams delayProp) throws ScriptingErrorLog.SemanticErrorException {
+    public LPWithParams addScriptedNewThreadActionProperty(LPWithParams actionProp, LPWithParams connectionProp, long delay, Long period) throws ScriptingErrorLog.SemanticErrorException {
         List<LPWithParams> propParams = toList(actionProp);
-        if (periodProp != null) {
-            propParams.add(periodProp);
-        }
-        if (delayProp != null) {
-            propParams.add(delayProp);
-        }
-        if (connectionProp != null) {
+        if(connectionProp != null)
             propParams.add(connectionProp);
-        }
         List<Integer> allParams = mergeAllParams(propParams);
-        LAP<?> property = addNewThreadAProp(null, "", connectionProp != null, periodProp != null, delayProp != null, getParamsPlainList(propParams).toArray());
+        LAP<?> property = addNewThreadAProp(null, "", delay, period, getParamsPlainList(propParams).toArray());
         return new LPWithParams(property, allParams);
     }
 
@@ -2511,11 +2503,10 @@ public class ScriptingLogicsModule extends LogicsModule {
         }};
 
     public ActionDebugInfo getEventStackDebugInfo() {
-        ActionDebugInfo info = new ActionDebugInfo(getParser().getGlobalDebugPoint(getName(), false), ActionDelegationType.AFTER_DELEGATE);
-        if (!debugger.isEnabled()) {
-            info.setNeedToCreateDelegate(false);
+        if (debugger.isEnabled() && !parser.isInsideNonEnabledMeta()) {
+            return new ActionDebugInfo(getName(), getParser().getGlobalCurrentLineNumber(), getParser().getGlobalPositionInLine(), ActionDelegationType.AFTER_DELEGATE);
         }
-        return info;
+        return null;
     }
 
     public void addScriptedEvent(LPWithParams whenProp, LPWithParams event, List<LPWithParams> orders, boolean descending, Event baseEvent, List<LPWithParams> noInline, boolean forceInline, ActionDebugInfo debugInfo) throws ScriptingErrorLog.SemanticErrorException {
@@ -2747,13 +2738,6 @@ public class ScriptingLogicsModule extends LogicsModule {
         
         if (options.imagePath != null) {
             element.setImage(options.imagePath);
-        } else if (element.defaultIcon != null) {
-            NavigatorElement root = baseLM.findNavigatorElement("root");
-            if (root != null && parent != null && root.equals(parent)) {
-                element.setImage(element.defaultIcon == DefaultIcon.ACTION ? "/images/actionTop.png" :
-                        element.defaultIcon == DefaultIcon.OPEN ? "/images/openTop.png" : "/images/formTop.png");
-            }
-            element.defaultIcon = null;
         }
         
         if (parent != null && (adding || options.position != InsertPosition.IN)) {
@@ -2805,34 +2789,51 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public void propertyDefinitionCreated(LP property, DebugInfo.DebugPoint point) {
-        if (property != null) {
-            boolean needToCreateDelegate = debugger.isEnabled() && !point.needToCreateDelegate() && property.property instanceof DataProperty;
-            CalcPropertyDebugInfo debugInfo = new CalcPropertyDebugInfo(point, needToCreateDelegate);
-            if (needToCreateDelegate) {
+    public void propertyDefinitionCreated(LP property, int line, int offset) {
+        if (debugger.isEnabled() && !parser.isInsideNonEnabledMeta() && property != null && property.property instanceof CalcProperty) {
+            CalcPropertyDebugInfo debugInfo = new CalcPropertyDebugInfo(getName(), line, offset);
+
+            if (property.property instanceof DataProperty) {
                 debugger.addDelegate(debugInfo);
             }
-            ((CalcProperty)property.property).setDebugInfo(debugInfo);
+            if (property.property.getSID().equals(lastOpimizedJPropSID)) {
+                // для некоторых не выполняется (к примеру AS)
+//                assert ((CalcProperty) property.property).getDebugInfo() != null;
+            } else {
+                if (((CalcProperty) property.property).getDebugInfo() == null) {
+                    ((CalcProperty) property.property).setDebugInfo(debugInfo);
+                }
+            }
+        }
+
+        if (property != null) {
+            DebugInfo di = new DebugInfo(getName(), line, offset);
+            property.property.setCommonDebugInfo(di);
         }
     }
 
-    public void actionPropertyDefinitionBodyCreated(LPWithParams lpWithParams, DebugInfo.DebugPoint startPoint, DebugInfo.DebugPoint endPoint, boolean modifyContext) throws ScriptingErrorLog.SemanticErrorException {
-        if (lpWithParams.property != null) {
+    public void actionPropertyDefinitionBodyCreated(LPWithParams lpWithParams, int line, int offset, boolean modifyContext) throws ScriptingErrorLog.SemanticErrorException {
+        if (debugger.isEnabled() && !parser.isInsideNonEnabledMeta()) {
+
             checkActionProperty(lpWithParams.property);
 
             //noinspection unchecked
             LAP<PropertyInterface> lAction = (LAP<PropertyInterface>) lpWithParams.property;
-            ActionProperty property = (ActionProperty) lAction.property;
-            ActionDelegationType delegationType = property.getDelegationType(modifyContext);
 
-            if (debugger.isEnabled() && startPoint.needToCreateDelegate() && delegationType != null) {
-                DebugInfo.DebugPoint typePoint = delegationType.getDebugPoint(startPoint, endPoint);
-                ActionDebugInfo info = new ActionDebugInfo(startPoint, typePoint.line, typePoint.offset, delegationType);
-                debugger.addDelegate(info);
-                property.setDebugInfo(info);
-            } else {
-                property.setDebugInfo(new ActionDebugInfo(startPoint, delegationType, false));
+            ActionProperty property = (ActionProperty) lAction.property;
+//            if (property instanceof ListActionProperty) {
+//                return;
+//            }
+            ActionDelegationType delegationType = property.getDelegationType(modifyContext);
+            if(delegationType != null) {
+                ScriptParser parser = getParser();
+                debugger.addDelegate(property, delegationType.getDebugInfo(getName(), line, offset, parser.getGlobalCurrentLineNumber(true), parser.getGlobalPositionInLine(true)));
             }
+        }
+
+        if (lpWithParams.property != null) {
+            DebugInfo di = new DebugInfo(getName(), line, offset);
+            lpWithParams.property.property.setCommonDebugInfo(di);
         }
     }
 
@@ -3367,9 +3368,9 @@ public class ScriptingLogicsModule extends LogicsModule {
         return parser.semicolonNeeded();
     }
 
-    public void setPropertyScriptInfo(LP property, String script, DebugInfo.DebugPoint point) {
+    public void setPropertyScriptInfo(LP property, String script, int lineNumber) {
         property.setCreationScript(script);
-        property.setCreationPath(point.toString());
+        property.setCreationPath(parser.getCurrentScriptPath(getName(), lineNumber, "\n"));
     }
 
     private void parseStep(ScriptParser.State state) throws RecognitionException {

@@ -64,7 +64,7 @@ public class PartitionProperty<T extends PropertyInterface> extends SimpleIncrem
     private static <T extends PropertyInterface> ImOrderSet<Interface<T>> getInterfaces(ImSet<T> innerInterfaces) {
         return innerInterfaces.mapColSetValues(new GetIndexValue<Interface<T>, T>() {
             public Interface<T> getMapValue(int i, T value) {
-                return new Interface<>(i, value);
+                return new Interface<T>(i, value);
             }}).toOrderSet();
     }
 
@@ -131,7 +131,7 @@ public class PartitionProperty<T extends PropertyInterface> extends SimpleIncrem
     
     protected Expr calculateExpr(ImMap<Interface<T>, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere) {
 
-        Result<ImMap<KeyExpr, Expr>> mapExprs = new Result<>();
+        Result<ImMap<KeyExpr, Expr>> mapExprs = new Result<ImMap<KeyExpr, Expr>>();
         ImMap<T, ? extends Expr> mapKeys = getGroupKeys(joinImplement, mapExprs);
         
         if(checkPrereadNull(mapKeys, calcType, propChanges))

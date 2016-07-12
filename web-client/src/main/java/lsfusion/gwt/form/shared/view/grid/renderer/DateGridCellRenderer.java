@@ -12,19 +12,15 @@ import lsfusion.gwt.form.shared.view.changes.dto.GTimeDTO;
 import java.util.Date;
 
 public class DateGridCellRenderer extends TextBasedGridCellRenderer<Object> {
-    private DateTimeFormat format;
+    private final DateTimeFormat format;
 
-    public DateGridCellRenderer(GPropertyDraw property, String pattern) {
-        this(property, GwtSharedUtils.getDateFormat(pattern));
+    public DateGridCellRenderer(GPropertyDraw property) {
+        this(property, GwtSharedUtils.getDefaultDateFormat());
     }
 
     public DateGridCellRenderer(GPropertyDraw property, DateTimeFormat format) {
         super(property, Style.TextAlign.RIGHT);
         this.format = format;
-    }
-
-    public void setFormat(String pattern) {
-        this.format = GwtSharedUtils.getDateFormat(pattern);
     }
 
     @Override

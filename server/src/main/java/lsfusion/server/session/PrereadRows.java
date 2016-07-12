@@ -22,7 +22,7 @@ import lsfusion.server.logics.property.PropertyInterface;
 
 public class PrereadRows<P extends PropertyInterface> extends AbstractValuesContext<PrereadRows<P>> {
 
-    private final static PrereadRows<PropertyInterface> EMPTY = new PrereadRows<>(MapFact.<Expr, ObjectValue>EMPTY(), MapFact.<ImMap<PropertyInterface, Expr>, Pair<ObjectValue, Boolean>>EMPTY());
+    private final static PrereadRows<PropertyInterface> EMPTY = new PrereadRows<PropertyInterface>(MapFact.<Expr, ObjectValue>EMPTY(), MapFact.<ImMap<PropertyInterface, Expr>, Pair<ObjectValue, Boolean>>EMPTY());
     public static <P extends PropertyInterface> PrereadRows<P> EMPTY() {
         return (PrereadRows<P>) EMPTY;
     }
@@ -41,24 +41,20 @@ public class PrereadRows<P extends PropertyInterface> extends AbstractValuesCont
 
     protected PrereadRows<P> translate(final MapValuesTranslate translator) {
         final MapTranslate mapTranslate = translator.mapKeys();
-        return new PrereadRows<>(readParams.mapKeyValues(new GetValue<Expr, Expr>() {
+        return new PrereadRows<P>(readParams.mapKeyValues(new GetValue<Expr, Expr>() {
             public Expr getMapValue(Expr value) {
                 return value.translateOuter(mapTranslate);
-            }
-        }, new GetValue<ObjectValue, ObjectValue>() {
-            public ObjectValue getMapValue(ObjectValue value) {
-                return ((ObjectValue<?>) value).translateValues(translator);
-            }
-        }),
+            }}, new GetValue<ObjectValue, ObjectValue>() {
+              public ObjectValue getMapValue(ObjectValue value) {
+                  return ((ObjectValue<?>)value).translateValues(translator);
+              }}),
                 readValues.mapKeyValues(new GetValue<ImMap<P, Expr>, ImMap<P, Expr>>() {
-                    public ImMap<P, Expr> getMapValue(ImMap<P, Expr> value) {
-                        return mapTranslate.translate(value);
-                    }
-                }, new GetValue<Pair<ObjectValue, Boolean>, Pair<ObjectValue, Boolean>>() {
-                    public Pair<ObjectValue, Boolean> getMapValue(Pair<ObjectValue, Boolean> value) {
-                        return new Pair<>((ObjectValue) value.first.translateValues(translator), value.second);
-                    }
-                }));
+            public ImMap<P, Expr> getMapValue(ImMap<P, Expr> value) {
+                return mapTranslate.translate(value);
+            }}, new GetValue<Pair<ObjectValue, Boolean>, Pair<ObjectValue, Boolean>>() {
+            public Pair<ObjectValue, Boolean> getMapValue(Pair<ObjectValue, Boolean> value) {
+                return new Pair<ObjectValue, Boolean>((ObjectValue) value.first.translateValues(translator), value.second);
+            }}));
     }
 
     public ImSet<Value> getValues() {
@@ -101,7 +97,7 @@ public class PrereadRows<P extends PropertyInterface> extends AbstractValuesCont
             return rows;
         if(rows.isEmpty()) // оптимизация
             return this;
-        return new PrereadRows<>(readParams.override(rows.readParams), readValues.override(rows.readValues));
+        return new PrereadRows<P>(readParams.override(rows.readParams), readValues.override(rows.readValues));
     }
 
     public PrereadRows<P> addExcl(PrereadRows<P> rows) {
@@ -109,7 +105,7 @@ public class PrereadRows<P extends PropertyInterface> extends AbstractValuesCont
             return rows;
         if(rows.isEmpty()) // оптимизация
             return this;
-        return new PrereadRows<>(readParams.addExcl(rows.readParams), readValues.addExcl(rows.readValues));
+        return new PrereadRows<P>(readParams.addExcl(rows.readParams), readValues.addExcl(rows.readValues));
     }
 
     @Override

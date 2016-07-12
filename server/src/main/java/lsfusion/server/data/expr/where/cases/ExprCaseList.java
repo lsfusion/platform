@@ -48,8 +48,8 @@ public class ExprCaseList extends CaseList<Expr, Expr, ExprCase> {
 
     public <K> MapCaseList<K> mapValues(GetValue<MapCase<K>, ExprCase> mapValue) {
         if(exclusive)
-            return new MapCaseList<>(((ImSet<ExprCase>) list).mapSetValues(mapValue));
+            return new MapCaseList<K>(((ImSet<ExprCase>)list).mapSetValues(mapValue));
         else
-            return new MapCaseList<>(((ImList<ExprCase>) list).mapListValues(mapValue));
+            return new MapCaseList<K>(((ImList<ExprCase>)list).mapListValues(mapValue));
     }
 }

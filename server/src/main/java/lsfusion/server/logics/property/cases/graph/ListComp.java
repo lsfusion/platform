@@ -45,7 +45,7 @@ public class ListComp<T> implements NodeListComp<T> {
         assert !comps.isEmpty();
         
         if(comps.size() > 1)
-            return new ListComp<>(comps);
+            return new ListComp<T>(comps);
         return comps.single();
     } 
 }

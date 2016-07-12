@@ -333,7 +333,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     public void initProperties() throws RecognitionException {
         Version version = getVersion();
 
-        objectClass = addProperty(null, new LCP<>(baseClass.getObjectClassProperty()));
+        objectClass = addProperty(null, new LCP<ClassPropertyInterface>(baseClass.getObjectClassProperty()));
         makePropertyPublic(objectClass, "objectClass", Collections.<ResolveClassSet>nCopies(1, null));
         random = addRMProp("Random");
         makePropertyPublic(random, "random", Arrays.<ResolveClassSet>asList());
@@ -369,10 +369,10 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         // Константы
         vtrue = addCProp(LogicalClass.instance, true);
         vzero = addCProp(DoubleClass.instance, 0);
-        vnull = addProperty((AbstractGroup) null, new LCP<>(NullValueProperty.instance));
+        vnull = addProperty((AbstractGroup) null, new LCP<PropertyInterface>(NullValueProperty.instance));
 
         if(ActionPropertyDebugger.getInstance().isEnabled()) {
-            watch = addProperty((AbstractGroup) null, new LAP<>(WatchActionProperty.instance));
+            watch = addProperty((AbstractGroup) null, new LAP<ClassPropertyInterface>(WatchActionProperty.instance));
             makePropertyPublic(watch, "watch");
         }
 
@@ -446,7 +446,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
 
     @IdentityStrongLazy
     public <P extends PropertyInterface> PropertyFormEntity<T> getLogForm(CalcProperty<P> property) {
-        PropertyFormEntity<T> form = new PropertyFormEntity<>(this, property, recognizeGroup);
+        PropertyFormEntity<T> form = new PropertyFormEntity<T>(this, property, recognizeGroup);
         addFormEntity(form);
         return form;
     }
@@ -456,7 +456,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     }
 
     public abstract class MapClassesPropertySet<K, V extends CalcProperty> extends PropertySet {
-        protected final LinkedHashMap<K, V> properties = new LinkedHashMap<>();
+        protected final LinkedHashMap<K, V> properties = new LinkedHashMap<K, V>();
 
         @Override
         public ImOrderSet<Property> getProperties() {
@@ -613,7 +613,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     @Override
     @IdentityStrongLazy
     public LCP is(ValueClass valueClass) {
-        return addProperty(null, new LCP<>(valueClass.getProperty()));
+        return addProperty(null, new LCP<ClassPropertyInterface>(valueClass.getProperty()));
     }
     @Override
     @IdentityStrongLazy
@@ -626,20 +626,20 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     @Override
     @IdentityStrongLazy
     public LCP not() {
-        return addProperty(null, new LCP<>(NotFormulaProperty.instance));
+        return addProperty(null, new LCP<PropertyInterface>(NotFormulaProperty.instance));
     }
 
     @Override
     @IdentityStrongLazy
     protected <T extends PropertyInterface> LCP addCProp(StaticClass valueClass, Object value) {
         CalcPropertyRevImplement<T, Integer> implement = (CalcPropertyRevImplement<T, Integer>) DerivedProperty.createCProp("sys", valueClass, value, MapFact.<Integer, ValueClass>EMPTY());
-        return addProperty(null, false, new LCP<>(implement.property, ListFact.fromIndexedMap(implement.mapping.reverse())));
+        return addProperty(null, false, new LCP<T>(implement.property, ListFact.fromIndexedMap(implement.mapping.reverse())));
     }
 
     @Override
     @IdentityStrongLazy
     protected <P extends PropertyInterface> LCP addCastProp(DataClass castClass) {
-        return addProperty(null, new LCP<>(new FormulaImplProperty("castTo" + castClass.toString(), 1, new CastFormulaImpl(castClass))));
+        return addProperty(null, new LCP<FormulaImplProperty.Interface>(new FormulaImplProperty("castTo" + castClass.toString(), 1, new CastFormulaImpl(castClass))));
     }
 
     @Override
@@ -685,14 +685,14 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     @Override
     @IdentityStrongLazy
     public <T extends PropertyInterface> LCP<T> addOldProp(LCP<T> lp, PrevScope scope) {
-        return addProperty(null, new LCP<>(lp.property.getOld(scope), lp.listInterfaces));
+        return addProperty(null, new LCP<T>(lp.property.getOld(scope), lp.listInterfaces));
     }
 
     @Override
     @IdentityStrongLazy
     public <T extends PropertyInterface> LCP<T> addCHProp(LCP<T> lp, IncrementType type, PrevScope scope) {
         addOldProp(lp, scope); // регистрируем старое значение в списке свойств
-        return addProperty(null, new LCP<>(lp.property.getChanged(type, scope), lp.listInterfaces));
+        return addProperty(null, new LCP<T>(lp.property.getChanged(type, scope), lp.listInterfaces));
     }
 
     @Override

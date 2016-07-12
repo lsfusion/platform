@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 public class GGroupObject implements Serializable {
-    public List<GObject> objects = new ArrayList<>();
+    public List<GObject> objects = new ArrayList<GObject>();
 
     public GGrid grid;
     public GShowType showType;
@@ -26,7 +26,7 @@ public class GGroupObject implements Serializable {
 
     public boolean isRecursive;
     public GTreeGroup parent;
-    public List<GGroupObject> upTreeGroups = new ArrayList<>();
+    public List<GGroupObject> upTreeGroups = new ArrayList<GGroupObject>();
 
     public GRowBackgroundReader rowBackgroundReader;
     public GRowForegroundReader rowForegroundReader;
@@ -66,7 +66,7 @@ public class GGroupObject implements Serializable {
     }
 
     public List<GGroupObject> getUpTreeGroups() {
-        ArrayList<GGroupObject> result = new ArrayList<>(upTreeGroups);
+        ArrayList<GGroupObject> result = new ArrayList<GGroupObject>(upTreeGroups);
         result.add(this);
         return result;
     }
@@ -86,12 +86,12 @@ public class GGroupObject implements Serializable {
         }
 
         //находим декартово произведение ключей колонок
-        ArrayList<GGroupObjectValueBuilder> propColumnKeys = new ArrayList<>();
+        ArrayList<GGroupObjectValueBuilder> propColumnKeys = new ArrayList<GGroupObjectValueBuilder>();
         propColumnKeys.add(new GGroupObjectValueBuilder());
         for (Map.Entry<GGroupObject, List<GGroupObjectValue>> entry : groupColumnKeys.entrySet()) {
             List<GGroupObjectValue> groupObjectKeys = entry.getValue();
 
-            ArrayList<GGroupObjectValueBuilder> newPropColumnKeys = new ArrayList<>();
+            ArrayList<GGroupObjectValueBuilder> newPropColumnKeys = new ArrayList<GGroupObjectValueBuilder>();
             for (GGroupObjectValueBuilder propColumnKey : propColumnKeys) {
                 for (GGroupObjectValue groupObjectKey : groupObjectKeys) {
                     newPropColumnKeys.add(new GGroupObjectValueBuilder(propColumnKey).putAll(groupObjectKey));
@@ -100,7 +100,7 @@ public class GGroupObject implements Serializable {
             propColumnKeys = newPropColumnKeys;
         }
 
-        ArrayList<GGroupObjectValue> result = new ArrayList<>();
+        ArrayList<GGroupObjectValue> result = new ArrayList<GGroupObjectValue>();
         for (GGroupObjectValueBuilder builder : propColumnKeys) {
             result.add(builder.toGroupObjectValue());
         }

@@ -321,7 +321,7 @@ public class ClientFormController implements AsyncListener {
                         columnPreferences.put(property, entry.getValue());
                     }
                 }
-                return new GridUserPreferences(groupObject, columnPreferences, groupPreferences.fontInfo, groupPreferences.pageSize, groupPreferences.headerHeight, groupPreferences.hasUserPreferences);
+                return new GridUserPreferences(groupObject, columnPreferences, groupPreferences.fontInfo, groupPreferences.pageSize, groupPreferences.hasUserPreferences);
             }
         }
         return null;

@@ -40,11 +40,11 @@ public class ArSet<K> extends AMSet<K> {
     }
 
     public <M> ImValueMap<K, M> mapItValues() {
-        return new ArMap<>(this);
+        return new ArMap<K, M>(this);
     }
 
     public <M> ImRevValueMap<K, M> mapItRevValues() {
-        return new ArMap<>(this);
+        return new ArMap<K, M>(this);
     }
 
     @Override
@@ -61,7 +61,7 @@ public class ArSet<K> extends AMSet<K> {
     }
 
     public ImSet<K> immutableCopy() {
-        return new ArSet<>(this);
+        return new ArSet<K>(this);
     }
 
     /*
@@ -259,12 +259,12 @@ public class ArSet<K> extends AMSet<K> {
 
         // упорядочиваем Set
         sortArray(size, array);
-        return new ArIndexedSet<>(size, array);
+        return new ArIndexedSet<K>(size, array);
     }
 
     @Override
     public ArMap<K, K> toMap() {
-        return new ArMap<>(size, array, array);
+        return new ArMap<K, K>(size, array, array);
     }
 
     @Override
@@ -274,6 +274,6 @@ public class ArSet<K> extends AMSet<K> {
 
     @Override
     public ImOrderSet<K> toOrderSet() {
-        return new ArOrderSet<>(this);
+        return new ArOrderSet<K>(this);
     }
 }

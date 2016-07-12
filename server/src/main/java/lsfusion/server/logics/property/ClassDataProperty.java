@@ -49,7 +49,7 @@ public class ClassDataProperty extends CalcProperty<ClassPropertyInterface> impl
     }
 
     public ClassWhere<Object> calcClassValueWhere(CalcClassType calcType) {
-        return new ClassWhere<>(MapFact.<Object, AndClassSet>toMap(interfaces.single(), set, "value", set.getBaseClass().objectClass));
+        return new ClassWhere<Object>(MapFact.<Object, AndClassSet>toMap(interfaces.single(), set, "value", set.getBaseClass().objectClass));
     }
 
     public Table.Join.Expr getInconsistentExpr(Expr expr) {
@@ -58,7 +58,7 @@ public class ClassDataProperty extends CalcProperty<ClassPropertyInterface> impl
     
     public void dropInconsistentClasses(SQLSession session, BaseClass baseClass, KeyExpr key, Where where, OperationOwner owner) throws SQLException, SQLHandledException {
         Table table = baseClass.getInconsistentTable(mapTable.table);
-        session.modifyRecords(new ModifyQuery(table, new Query<>(MapFact.singletonRev(table.keys.single(), key), MapFact.singleton(field, Expr.NULL), where), owner, TableOwner.global));
+        session.modifyRecords(new ModifyQuery(table, new Query<KeyField, PropertyField>(MapFact.singletonRev(table.keys.single(), key), MapFact.singleton(field, Expr.NULL), where), owner, TableOwner.global));
     }
 
     public Table.Join.Expr getStoredExpr(Expr expr) {

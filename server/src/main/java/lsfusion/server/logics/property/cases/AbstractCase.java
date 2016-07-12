@@ -61,7 +61,7 @@ public abstract class AbstractCase<P extends PropertyInterface, W extends CalcPr
         return ((CalcPropertyMapImplement<?, P>) aCase.where).mapClassWhere(ClassType.casePolicy);
     }
     
-    private interface AbstractWrapper<P extends PropertyInterface, W extends CalcPropertyInterfaceImplement<P>,
+    private static interface AbstractWrapper<P extends PropertyInterface, W extends CalcPropertyInterfaceImplement<P>,
             M extends PropertyInterfaceImplement<P>, F extends Case<P, W, M>> {
         
         F proceedSet(ImSet<F> elements);
@@ -73,7 +73,7 @@ public abstract class AbstractCase<P extends PropertyInterface, W extends CalcPr
             M extends PropertyInterfaceImplement<P>, F extends Case<P, W, M>, A extends AbstractCase<P, W, M>> FinalizeResult<F> finalizeCases(NFList<A> cases, GetValue<F, A> translator, final AbstractWrapper<P, W, M, F> wrapper, final GetValue<Graph<F>, M> abstractReader, boolean hasImplicit, boolean explicitExclusive) {
         ImList<A> list = cases.getList();
         if(!hasImplicit) {
-            return new FinalizeResult<>(list.mapListValues(translator), explicitExclusive, null);
+            return new FinalizeResult<F>(list.mapListValues(translator), explicitExclusive, null);
         }
 
         Comparator<A> priorityComparator = new Comparator<A>() {
@@ -112,7 +112,7 @@ public abstract class AbstractCase<P extends PropertyInterface, W extends CalcPr
         Graph<A> pregraph = Graph.create(set, priorityComparator); // построение графа из компаратора
 
         // 0. преобразовываем граф в final + если node'ы совпадают, то если есть между ними ребро, оставляем исходящую вершину, иначе кидаем ambiguous identical
-        Result<Pair<A, A>> ambiguous = new Result<>();
+        Result<Pair<A, A>> ambiguous = new Result<Pair<A, A>>();
         Graph<F> graph = pregraph.translate(set.mapValues(translator), ambiguous);
         if(graph == null)
             throw new RuntimeException("Ambiguous identical implementation");
@@ -134,9 +134,9 @@ public abstract class AbstractCase<P extends PropertyInterface, W extends CalcPr
         });
 
         // 1. "очистка" графа - удаление избыточных вершин, or'я классы всех вершин которые следуют если полностью следует - убираем !!!
-        Queue<F> queue = new ArrayDeque<>();
-        Set<F> wasInQueue = new HashSet<>();
-        Map<F, ClassWhere<P>> upClasses = new HashMap<>();
+        Queue<F> queue = new ArrayDeque<F>();
+        Set<F> wasInQueue = new HashSet<F>();
+        Map<F, ClassWhere<P>> upClasses = new HashMap<F, ClassWhere<P>>();
 
         for(F upNode : graph.getZeroInNodes()) {
             queue.add(upNode);
@@ -202,7 +202,7 @@ public abstract class AbstractCase<P extends PropertyInterface, W extends CalcPr
             }});
         
         // 2. "проверка ambigious" - берем 2 реализации B и C, compare(B, C) == 0, берем все x такие что compare(X, B) > 0, и compare(X, C) > 0 объединяем их классы и смотрим что он включает B AND C
-        List<F> nodes = new ArrayList<>(graph.getNodes().toJavaSet());
+        List<F> nodes = new ArrayList<F>(graph.getNodes().toJavaSet());
         for(int i = 0, size = nodes.size(); i < size; i++) {
             F a = nodes.get(i);
             for (int j = i + 1; j < size; j++) {
@@ -249,19 +249,19 @@ public abstract class AbstractCase<P extends PropertyInterface, W extends CalcPr
             }
 
             public Pair<ImList<F>, Boolean> proceedNode(F element) {
-                return new Pair<>(ListFact.singleton(element), true);
+                return new Pair<ImList<F>, Boolean>(ListFact.singleton(element), true);
             }
 
             public Pair<ImList<F>, Boolean> proceedSet(ImSet<F> elements) {
-                return new Pair<>(elements.toList(), true);
+                return new Pair<ImList<F>, Boolean>(elements.toList(), true);
             }
 
             public Pair<ImList<F>, Boolean> proceedList(ImList<F> elements) {
-                return new Pair<>(elements, false);
+                return new Pair<ImList<F>, Boolean>(elements, false);
             }
         });
         
-        return new FinalizeResult<>(compResult.first, compResult.second, graph);
+        return new FinalizeResult<F>(compResult.first, compResult.second, graph);
     }
 
     private static <P extends PropertyInterface> int compare(ClassWhere<P> where1, ClassWhere<P> where2) {
@@ -287,17 +287,17 @@ public abstract class AbstractCase<P extends PropertyInterface, W extends CalcPr
     }
     
     private static <P extends PropertyInterface> ActionCase<P> createInnerActionCase(ImSet<P> interfaces, ImList<ActionCase<P>> cases, boolean isExclusive) {
-        return new ActionCase<>(createUnionWhere(interfaces, cases, isExclusive), DerivedProperty.createCaseAction(interfaces, isExclusive, cases));
+        return new ActionCase<P>(createUnionWhere(interfaces, cases, isExclusive), DerivedProperty.createCaseAction(interfaces, isExclusive, cases));
     }
 
     private static <P extends PropertyInterface> CalcCase<P> createInnerCalcCase(ImSet<P> interfaces, ImList<CalcCase<P>> cases, boolean isExclusive) {
-        return new CalcCase<>(createUnionWhere(interfaces, cases, isExclusive), DerivedProperty.createUnion(interfaces, isExclusive, cases));
+        return new CalcCase<P>(createUnionWhere(interfaces, cases, isExclusive), DerivedProperty.createUnion(interfaces, isExclusive, cases));
     }
     
     public static <P extends PropertyInterface> FinalizeResult<ActionCase<P>> finalizeActionCases(final ImSet<P> interfaces, NFList<AbstractActionCase<P>> cases, boolean hasImplicit, boolean explicitExclusiveness) {
         return finalizeCases(cases, new GetValue<ActionCase<P>, AbstractActionCase<P>>() {
             public ActionCase<P> getMapValue(AbstractActionCase<P> value) {
-                return new ActionCase<>(value);
+                return new ActionCase<P>(value);
             }
         }, new AbstractWrapper<P, CalcPropertyMapImplement<?, P>, ActionPropertyMapImplement<?, P>, ActionCase<P>>() {
             public ActionCase<P> proceedSet(ImSet<ActionCase<P>> elements) {
@@ -317,7 +317,7 @@ public abstract class AbstractCase<P extends PropertyInterface, W extends CalcPr
     public static <P extends PropertyInterface> FinalizeResult<CalcCase<P>> finalizeCalcCases(final ImSet<P> interfaces, NFList<AbstractCalcCase<P>> cases, boolean hasImplicit, boolean explicitExclusiveness) {
         return finalizeCases(cases, new GetValue<CalcCase<P>, AbstractCalcCase<P>>() {
             public CalcCase<P> getMapValue(AbstractCalcCase<P> value) {
-                return new CalcCase<>(value);
+                return new CalcCase<P>(value);
             }
         }, new AbstractWrapper<P, CalcPropertyInterfaceImplement<P>, CalcPropertyInterfaceImplement<P>, CalcCase<P>>() {
             public CalcCase<P> proceedSet(ImSet<CalcCase<P>> elements) {

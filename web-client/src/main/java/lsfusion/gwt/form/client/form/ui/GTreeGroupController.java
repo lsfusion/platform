@@ -247,7 +247,7 @@ public class GTreeGroupController extends GAbstractGroupObjectController {
     public List<GPropertyDraw> getGroupObjectProperties() {
         GGroupObject currentGroupObject = getSelectedGroupObject();
 
-        ArrayList<GPropertyDraw> properties = new ArrayList<>();
+        ArrayList<GPropertyDraw> properties = new ArrayList<GPropertyDraw>();
         for (GPropertyDraw property : formController.getPropertyDraws()) {
             if (currentGroupObject != null && currentGroupObject.equals(property.groupObject)) {
                 properties.add(property);

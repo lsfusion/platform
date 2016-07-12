@@ -68,7 +68,7 @@ public class AlignAction extends HTMLTextEditAction {
 
         //String pkg = getClass().getPackage().getName();
         putValue(NAME, (ALIGNMENT_NAMES[al]));
-        putValue(MNEMONIC_KEY, MNEMS[al]);
+        putValue(MNEMONIC_KEY, new Integer(MNEMS[al]));
 
         putValue(SMALL_ICON, UIUtils.getIcon(UIUtils.X16, IMGS[al]));
         putValue(ActionManager.BUTTON_TYPE, ActionManager.BUTTON_TYPE_VALUE_RADIO);

@@ -10,8 +10,8 @@ import java.awt.event.MouseEvent;
 import java.util.*;
 
 public class EditBindingMap {
-    private Map<KeyStroke, String> keyBindingMap = new HashMap<>();
-    private LinkedHashMap<String, String> contextMenuBindingMap = new LinkedHashMap<>();
+    private Map<KeyStroke, String> keyBindingMap = new HashMap<KeyStroke, String>();
+    private LinkedHashMap<String, String> contextMenuBindingMap = new LinkedHashMap<String, String>();
 
     //пока одно значение, возможно в будущем расширится до мэпа (типа клик, дабл клик и т. д.)
     private String mouseBinding;
@@ -95,7 +95,7 @@ public class EditBindingMap {
         return actionSID;
     }
 
-    public interface EditEventFilter {
-        boolean accept(EventObject e);
+    public static interface EditEventFilter {
+        public boolean accept(EventObject e);
     }
 }

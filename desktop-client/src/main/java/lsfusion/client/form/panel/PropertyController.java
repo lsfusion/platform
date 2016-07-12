@@ -125,7 +125,7 @@ public class PropertyController {
 
     void update(Color rowBackground, Color rowForeground) {
         if (views == null) {
-            views = new HashMap<>();
+            views = new HashMap<ClientGroupObjectValue, PanelView>();
         }
 
         List<ClientGroupObjectValue> columnKeys = this.columnKeys != null ? this.columnKeys : ClientGroupObjectValue.SINGLE_EMPTY_KEY_LIST;

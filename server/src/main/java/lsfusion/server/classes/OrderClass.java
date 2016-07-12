@@ -37,7 +37,7 @@ public class OrderClass extends DataClass<Object> implements FormulaUnionImpl {
     private final ImList<Type> types; // типы придется в явную хранить, так как выводить их из expr'ов не всегда получится (могут быть NULL'ы) и тогда непонятно к чему cast'ить
     private final ImList<Boolean> desc;
 
-    private final static Collection<OrderClass> orders = new ArrayList<>();
+    private final static Collection<OrderClass> orders = new ArrayList<OrderClass>();
     public synchronized static OrderClass get(ImList<Type> types, ImList<Boolean> desc) {
         for(OrderClass order : orders)
             if(BaseUtils.hashEquals(order.types, types) && BaseUtils.hashEquals(order.desc, desc))

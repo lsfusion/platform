@@ -13,11 +13,11 @@ public class TaskBlockingQueue<E extends Task.PriorityRunnable> extends Abstract
     private final PriorityQueue<E> qLeastEstimated;
     private final ReentrantLock lock = new ReentrantLock(true);
     private final Condition notEmpty = lock.newCondition();
-    private TreeSet<E> polled = new TreeSet<>();
+    private TreeSet<E> polled = new TreeSet<E>();
 
     public TaskBlockingQueue() {
-        qDiameter = new PriorityQueue<>();
-        qLeastEstimated = new PriorityQueue<>(11, Task.leastEstimated);
+        qDiameter = new PriorityQueue<E>();
+        qLeastEstimated = new PriorityQueue<E>(11, Task.leastEstimated);
     }
 
     public boolean add(E e) {

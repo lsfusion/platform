@@ -33,8 +33,6 @@ public class ServerLoggers {
 
     public static final Logger sqlConflictLogger = Logger.getLogger("SQLConflictLogger");
 
-    public static final Logger sqlConnectionLogger = Logger.getLogger("SQLConnectionLogger");
-
     public static final Logger lruLogger = Logger.getLogger("LRULogger");
 
     public static final Logger allocatedBytesLogger = Logger.getLogger("AllocatedBytesLogger");

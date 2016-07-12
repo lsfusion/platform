@@ -98,7 +98,7 @@ public class BusinessLogicsBootstrap {
             logger.info("Server has stopped...");
 
             if(enableDumpThreadsOnClose) {
-                final Result<Integer> ticker = new Result<>(0);
+                final Result<Integer> ticker = new Result<Integer>(0);
                 // форсируем выход в отдельном потоке
                 final Thread dump = new Thread("Dump closing threads...") {
                     @Override

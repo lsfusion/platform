@@ -24,21 +24,21 @@ public class GColorType extends GDataType {
     }
 
     @Override
-    public String getPreferredMask(String pattern) {
+    public String getPreferredMask() {
         return "";
     }
 
     @Override
-    public int getMinimumPixelWidth(int minimumCharWidth, GFont font, String pattern) {
+    public int getMinimumPixelWidth(int minimumCharWidth, GFont font) {
         return 40;
     }
 
-    public int getPreferredPixelWidth(int preferredCharWidth, GFont font, String pattern) {
+    public int getPreferredPixelWidth(int preferredCharWidth, GFont font) {
         return 40;
     }
 
     @Override
-    public Object parseString(String s, String pattern) throws ParseException {
+    public Object parseString(String s) throws ParseException {
         throw new ParseException("Color class doesn't support conversion from string", 0);
     }
 

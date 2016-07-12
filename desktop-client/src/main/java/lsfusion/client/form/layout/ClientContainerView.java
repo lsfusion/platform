@@ -6,15 +6,15 @@ import javax.swing.*;
 import java.awt.*;
 
 public interface ClientContainerView {
-    void add(ClientComponent child, Component view);
-    void remove(ClientComponent child);
+    public void add(ClientComponent child, Component view);
+    public void remove(ClientComponent child);
 
-    boolean hasChild(ClientComponent child);
-    int getChildrenCount();
-    ClientComponent getChild(int index);
-    Component getChildView(int index);
+    public boolean hasChild(ClientComponent child);
+    public int getChildrenCount();
+    public ClientComponent getChild(int index);
+    public Component getChildView(int index);
 
-    JComponent getView();
+    public JComponent getView();
 
-    void updateLayout();
+    public void updateLayout();
 }

@@ -73,6 +73,6 @@ public class CompileOptions<V> extends TwinImmutableObject {
     public <MV> CompileOptions<MV> map(ImRevMap<V, MV> map) {
         if(castTypes == null)
             return (CompileOptions<MV>) this;
-        return new CompileOptions<>(syntax, limit, subcontext, recursive, noInline, map.crossJoin(castTypes));
+        return new CompileOptions<MV>(syntax, limit, subcontext, recursive, noInline, map.crossJoin(castTypes));
     }
 }

@@ -222,19 +222,18 @@ abstract public class Expr extends AbstractSourceJoin<Expr> {
     public void checkInfiniteKeys() {
         ImSet<KeyExpr> keys = BaseUtils.immutableCast(getOuterKeys());
 
-        Result<ImSet<KeyExpr>> keyRest = new Result<>();
+        Result<ImSet<KeyExpr>> keyRest = new Result<ImSet<KeyExpr>>();
         ImSet<KeyExpr> keyValues = keys.split(new SFunctionSet<KeyExpr>() {
             public boolean contains(KeyExpr key) {
                 return key.getType(getWhere()) instanceof DataClass;
             }
         }, keyRest);
 
-        new Query<>(keyRest.result.toRevMap(),
-                translateQuery(new PartialQueryTranslator(keyValues.mapValues(new GetValue<Expr, KeyExpr>() {
-                    public Expr getMapValue(KeyExpr key) {
-                        return ((DataClass) key.getType(getWhere())).getDefaultExpr();
-                    }
-                }), true)).getWhere()).compile(new CompileOptions<>(PostgreDataAdapter.debugSyntax));
+        new Query<KeyExpr,Object>(keyRest.result.toRevMap(),
+                     translateQuery(new PartialQueryTranslator(keyValues.mapValues(new GetValue<Expr, KeyExpr>() {
+                         public Expr getMapValue(KeyExpr key) {
+                             return ((DataClass)key.getType(getWhere())).getDefaultExpr();
+                         }}), true)).getWhere()).compile(new CompileOptions<Object>(PostgreDataAdapter.debugSyntax));
     }
 
     public static <K> ImMap<K, ObjectValue> readValues(SQLSession session, BaseClass baseClass, ImMap<K,Expr> mapExprs, QueryEnvironment env) throws SQLException, SQLHandledException { // assert что в mapExprs только values
@@ -254,7 +253,7 @@ abstract public class Expr extends AbstractSourceJoin<Expr> {
         if(mapExprValues.isEmpty()) // чисто для оптимизации чтобы лишний раз executeClasses не вызывать
             return mapValues;
         else
-            return mapValues.addExcl(new Query<>(MapFact.<Object, KeyExpr>EMPTYREV(), mapExprValues, Where.TRUE).executeClasses(session, env, baseClass).singleValue());
+            return mapValues.addExcl(new Query<Object, K>(MapFact.<Object, KeyExpr>EMPTYREV(), mapExprValues, Where.TRUE).executeClasses(session, env, baseClass).singleValue());
     }
 
     public abstract Where getBaseWhere();

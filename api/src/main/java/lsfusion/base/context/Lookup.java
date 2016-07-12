@@ -55,12 +55,12 @@ public class Lookup {
 
     private WeakIdentityHashSet<LookupResultChangeListener> getPropertyListeners(String name) {
         if (name == null) {
-            return new WeakIdentityHashSet<>();
+            return new WeakIdentityHashSet<LookupResultChangeListener>();
         }
 
         WeakIdentityHashSet<LookupResultChangeListener> mp = listeners.get(name);
         if (mp == null) {
-            mp = new WeakIdentityHashSet<>();
+            mp = new WeakIdentityHashSet<LookupResultChangeListener>();
             listeners.put(name, mp);
         }
         
@@ -75,7 +75,7 @@ public class Lookup {
         getPropertyListeners(name).remove(listener);
     }
 
-    public interface LookupResultChangeListener {
-        void resultChanged(String name, Object oldValue, Object newValue);
+    public static interface LookupResultChangeListener {
+        public void resultChanged(String name, Object oldValue, Object newValue);
     }
 }

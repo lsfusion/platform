@@ -18,16 +18,16 @@ import java.sql.SQLException;
 
 public interface SessionChanges {
 
-    void restart(boolean cancel, FunctionSet<SessionDataProperty> keep) throws SQLException, SQLHandledException;
+    public void restart(boolean cancel, FunctionSet<SessionDataProperty> keep) throws SQLException, SQLHandledException;
 
-    void changeClass(DataObject change, ConcreteObjectClass toClass) throws SQLException, SQLHandledException;
+    public void changeClass(DataObject change, ConcreteObjectClass toClass) throws SQLException, SQLHandledException;
 
-    void changeProperty(DataProperty property, PropertyChange<ClassPropertyInterface> keys) throws SQLException, SQLHandledException;
+    public void changeProperty(DataProperty property, PropertyChange<ClassPropertyInterface> keys) throws SQLException, SQLHandledException;
 
-    ConcreteClass getCurrentClass(DataObject value) throws SQLException, SQLHandledException;
+    public ConcreteClass getCurrentClass(DataObject value) throws SQLException, SQLHandledException;
 
-    DataObject getDataObject(ValueClass valueClass, Object value) throws SQLException, SQLHandledException;
+    public DataObject getDataObject(ValueClass valueClass, Object value) throws SQLException, SQLHandledException;
 
     // узнает список изменений произошедших без него
-    ChangedData update(FormInstance<?> toUpdate) throws SQLException;
+    public ChangedData update(FormInstance<?> toUpdate) throws SQLException;
 }

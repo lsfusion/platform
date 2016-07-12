@@ -17,7 +17,7 @@ public class ViewProxyUtil {
         ConvertUtils.register(new KeyStrokeConverter(), KeyStroke.class);
     }
 
-    private static final SoftHashMap<Object, ViewProxy> viewProxies = new SoftHashMap<>();
+    private static final SoftHashMap<Object, ViewProxy> viewProxies = new SoftHashMap<Object, ViewProxy>();
 
     /**
      * not thread-safe

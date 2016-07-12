@@ -4,20 +4,20 @@ import java.util.*;
 
 public class SortedGroupSet<C extends Comparable<C>,T extends GroupInterface<C>> implements Iterable<T> {
 
-    private SortedMap<C,Set<T>> groups = new TreeMap<>();
+    private SortedMap<C,Set<T>> groups = new TreeMap<C, Set<T>>();
 
     public SortedGroupSet() {
     }
 
     public SortedGroupSet(SortedGroupSet<C,T> set) {
-        groups = new TreeMap<>(set.groups);
+        groups = new TreeMap<C,Set<T>>(set.groups);
     }
 
     public void add(T item) {
         C group = item.group();
         Set<T> groupItems = groups.get(group);
         if(groupItems==null) {
-            groupItems = new HashSet<>();
+            groupItems = new HashSet<T>();
             groups.put(group,groupItems);
         }
         groupItems.add(item);
@@ -30,7 +30,7 @@ public class SortedGroupSet<C extends Comparable<C>,T extends GroupInterface<C>>
 
         private ItemIterator() {
             groupIterator = groups.values().iterator();
-            itemIterator = new EmptyIterator<>();
+            itemIterator = new EmptyIterator<T>();
         }
 
         public boolean hasNext() {
@@ -56,7 +56,7 @@ public class SortedGroupSet<C extends Comparable<C>,T extends GroupInterface<C>>
         for(Map.Entry<C,Set<T>> group : set.groups.entrySet()) {
             Set<T> groupItems = groups.get(group.getKey());
             if(groupItems==null) {
-                groupItems = new HashSet<>();
+                groupItems = new HashSet<T>();
                 groups.put(group.getKey(),groupItems);
             }
             groupItems.addAll(group.getValue());

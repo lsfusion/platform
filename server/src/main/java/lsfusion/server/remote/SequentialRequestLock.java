@@ -1,8 +1,6 @@
 package lsfusion.server.remote;
 
 import com.google.common.base.Throwables;
-import lsfusion.interop.exceptions.RemoteInterruptedException;
-import lsfusion.interop.exceptions.RemoteServerException;
 import lsfusion.server.ServerLoggers;
 import org.apache.log4j.Logger;
 import org.thavam.util.concurrent.BlockingHashMap;
@@ -19,7 +17,7 @@ public class SequentialRequestLock {
     private ArrayBlockingQueue requestLock = new ArrayBlockingQueue(1, true);
 
     @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
-    private BlockingMap<Long, Object> sequentialRequestLock = new BlockingHashMap<>();
+    private BlockingMap<Long, Object> sequentialRequestLock = new BlockingHashMap<Long, Object>();
 
     public SequentialRequestLock() {
         initRequestLock();
@@ -30,7 +28,7 @@ public class SequentialRequestLock {
             sequentialRequestLock.offer(0L, LOCK_OBJECT);
             requestLock.put(LOCK_OBJECT);
         } catch (InterruptedException e) {
-            throw new RemoteInterruptedException(e);
+            Throwables.propagate(e);
         }
     }
 
@@ -43,7 +41,7 @@ public class SequentialRequestLock {
             requestLock.take();
             ServerLoggers.pausableLog("Acquired request lock for " + ownerSID + " for request #" + requestIndex);
         } catch (InterruptedException e) {
-            throw new RemoteInterruptedException(e);
+            Throwables.propagate(e);
         }
     }
 
@@ -56,7 +54,7 @@ public class SequentialRequestLock {
             }
             ServerLoggers.pausableLog("Released request lock for " + ownerSID + " for request #" + requestIndex);
         } catch (InterruptedException e) {
-            throw new RemoteInterruptedException(e);
+            Throwables.propagate(e);
         }
     }
 

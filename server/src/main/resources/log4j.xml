@@ -129,22 +129,6 @@
         </layout>
     </appender>
 
-    <appender name="sqlconnectionlog" class="org.apache.log4j.rolling.RollingFileAppender">
-        <param name="encoding" value="UTF-8" />
-        <rollingPolicy class="org.apache.log4j.rolling.FixedWindowRollingPolicy">
-            <param name="minIndex" value="1"/>
-            <param name="maxIndex" value="9"/>
-            <param name="activeFileName" value="logs/sqlconnection.log"/>
-            <param name="fileNamePattern" value="logs/sqlconnection-%i.log.zip"/>
-        </rollingPolicy>
-        <triggeringPolicy class="org.apache.log4j.rolling.SizeBasedTriggeringPolicy">
-            <param name="maxFileSize" value="10485760"/> <!-- 10MB -->
-        </triggeringPolicy>
-        <layout class="org.apache.log4j.EnhancedPatternLayout">
-            <param name="ConversionPattern" value="%d{DATE} %X{client} - %X{computer} - %X{remoteAddress} %5p %c{1} - %m%n%throwable{1000}"/>
-        </layout>
-    </appender>
-
     <appender name="sqladjustlog" class="org.apache.log4j.rolling.RollingFileAppender">
         <param name="encoding" value="UTF-8" />
         <rollingPolicy class="org.apache.log4j.rolling.FixedWindowRollingPolicy">
@@ -459,11 +443,6 @@
     <category name="SQLConflictLogger" additivity="false">
         <priority value="INFO"/>
         <appender-ref ref="sqlconflictlog"/>
-    </category>
-
-    <category name="SQLConnectionLogger" additivity="false">
-        <priority value="INFO"/>
-        <appender-ref ref="sqlconnectionlog"/>
     </category>
 
     <category name="LRULogger" additivity="false">

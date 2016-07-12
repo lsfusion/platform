@@ -41,11 +41,11 @@ public class ArIndexedSet<K> extends AMSet<K> {
     }
 
     public <M> ImValueMap<K, M> mapItValues() {
-        return new ArIndexedMap<>(this);
+        return new ArIndexedMap<K, M>(this);
     }
 
     public <M> ImRevValueMap<K, M> mapItRevValues() {
-        return new ArIndexedMap<>(this);
+        return new ArIndexedMap<K, M>(this);
     }
 
     @Override
@@ -76,17 +76,17 @@ public class ArIndexedSet<K> extends AMSet<K> {
         }
 
         if(size < SetFact.useArrayMax)
-            return new ArSet<>(size, array);
+            return new ArSet<K>(size, array);
 
         return this;
     }
 
     public ImSet<K> immutableCopy() {
-        return new ArIndexedSet<>(this);
+        return new ArIndexedSet<K>(this);
     }
 
     public ArIndexedMap<K, K> toMap() {
-        return new ArIndexedMap<>(size, array, array);
+        return new ArIndexedMap<K, K>(size, array, array);
     }
 
     public ImRevMap<K, K> toRevMap() {
@@ -94,6 +94,6 @@ public class ArIndexedSet<K> extends AMSet<K> {
     }
 
     public ImOrderSet<K> toOrderSet() {
-        return new ArOrderIndexedSet<>(this, ArSet.genOrder(size));
+        return new ArOrderIndexedSet<K>(this, ArSet.genOrder(size));
     }
 }

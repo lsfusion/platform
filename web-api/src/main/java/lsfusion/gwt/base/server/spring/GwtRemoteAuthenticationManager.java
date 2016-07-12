@@ -21,7 +21,7 @@ public class GwtRemoteAuthenticationManager implements RemoteAuthenticationManag
     @Override
     public Collection<GrantedAuthority> attemptAuthentication(String username, String password) throws RemoteAuthenticationException {
         try {
-            List<GrantedAuthority> result = new ArrayList<>();
+            List<GrantedAuthority> result = new ArrayList<GrantedAuthority>();
             List<String> roles = businessLogicProvider.getLogics().authenticateUser(username, password);
             for (String role : roles) {
                 result.add(new GrantedAuthorityImpl(role));

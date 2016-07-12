@@ -15,6 +15,7 @@ grammar LsfLogics;
 	import lsfusion.interop.FormExportType;
 	import lsfusion.interop.ModalityType;
 	import lsfusion.server.form.instance.FormSessionScope;
+	import lsfusion.server.data.Union;
 	import lsfusion.server.data.expr.query.PartitionType;
 	import lsfusion.server.form.entity.*;
 	import lsfusion.server.form.navigator.NavigatorElement;
@@ -24,6 +25,8 @@ grammar LsfLogics;
 	import lsfusion.server.classes.sets.ResolveClassSet;
 	import lsfusion.server.logics.mutables.Version;
 	import lsfusion.server.logics.linear.LP;
+	import lsfusion.server.logics.linear.LCP;
+	import lsfusion.server.logics.property.PropertyFollows;
 	import lsfusion.server.logics.property.Cycle;
 	import lsfusion.server.logics.property.ImportSourceFormat;
 	import lsfusion.server.logics.scripted.*;
@@ -49,15 +52,18 @@ grammar LsfLogics;
 	import lsfusion.server.logics.property.BooleanDebug;
 	import lsfusion.server.logics.property.PropertyFollowsDebug;
 	import lsfusion.server.logics.debug.ActionDebugInfo;
-	import lsfusion.server.logics.debug.DebugInfo;
 	
 	import javax.mail.Message;
 
 	import lsfusion.server.form.entity.GroupObjectProp;
 
+	import lsfusion.base.col.interfaces.immutable.ImSet;
+
 	import java.util.*;
 	import java.awt.*;
 	import org.antlr.runtime.BitSet;
+	import java.util.List;
+	import java.sql.Date;
 
 	import static java.util.Arrays.asList;
 	import static lsfusion.server.logics.scripted.ScriptingLogicsModule.WindowType.*;
@@ -136,14 +142,6 @@ grammar LsfLogics;
 
 	public boolean inIndexParseState() {
 		return inParseState(ScriptParser.State.INDEX);
-	}
-
-	public DebugInfo.DebugPoint getCurrentDebugPoint() {
-		return getCurrentDebugPoint(false);
-	}
-
-	public DebugInfo.DebugPoint getCurrentDebugPoint(boolean previous) {
-		return self.getParser().getGlobalDebugPoint(self.getName(), previous);
 	}
 
 	public void setObjectProperty(Object propertyReceiver, String propertyName, Object propertyValue) throws ScriptingErrorLog.SemanticErrorException {
@@ -349,11 +347,11 @@ scope {
 }
 @init {
 	boolean initialDeclaration = false;
-	DebugInfo.DebugPoint point = getCurrentDebugPoint();
+	int lineNumber = self.getParser().getCurrentParserLineNumber();
 }
 @after {
 	if (inPropParseState() && initialDeclaration) {
-		self.addScriptedForm($formStatement::form, point);
+		self.addScriptedForm($formStatement::form, lineNumber);
 	}
 }
 	:	(	declaration=formDeclaration { $formStatement::form = $declaration.form; initialDeclaration = true; }
@@ -567,16 +565,16 @@ formObjectDeclaration returns [String name, String className, String caption, Ac
 	
 formPropertiesList
 @init {
-	List<PropertyUsage> properties = new ArrayList<>();
-	List<String> aliases = new ArrayList<>();
-	List<List<String>> mapping = new ArrayList<>();
-	List<DebugInfo.DebugPoint> points = new ArrayList<>();
+	List<PropertyUsage> properties = new ArrayList<PropertyUsage>();
+	List<String> aliases = new ArrayList<String>();
+	List<List<String>> mapping = new ArrayList<List<String>>();
 	FormPropertyOptions commonOptions = null;
-	List<FormPropertyOptions> options = new ArrayList<>();
+	List<FormPropertyOptions> options = new ArrayList<FormPropertyOptions>();
+	int lineNumber = self.getParser().getCurrentParserLineNumber();
 }
 @after {
 	if (inPropParseState()) {
-		$formStatement::form.addScriptedPropertyDraws(properties, aliases, mapping, commonOptions, options, self.getVersion(), points);
+		$formStatement::form.addScriptedPropertyDraws(properties, aliases, mapping, commonOptions, options, self.getVersion(), lineNumber);
 	}
 }
 	:	'PROPERTIES' '(' objects=idList ')' opts=formPropertyOptionsList list=formPropertyUList
@@ -586,7 +584,6 @@ formPropertiesList
 			aliases = $list.aliases;
 			mapping = Collections.nCopies(properties.size(), $objects.ids);
 			options = $list.options;
-			points = $list.points;
 		}
 	|	'PROPERTIES' opts=formPropertyOptionsList mappedList=formMappedPropertiesList
 		{
@@ -595,7 +592,6 @@ formPropertiesList
 			aliases = $mappedList.aliases;
 			mapping = $mappedList.mapping;
 			options = $mappedList.options;
-			points = $mappedList.points;
 		}
 	;	
 
@@ -633,16 +629,15 @@ formPropertyDraw returns [PropertyDrawEntity property]
 	|	prop=mappedPropertyDraw { if (inPropParseState()) $property = $formStatement::form.getPropertyDraw($prop.name, $prop.mapping, self.getVersion()); }
 	;
 
-formMappedPropertiesList returns [List<String> aliases, List<PropertyUsage> properties, List<List<String>> mapping, List<FormPropertyOptions> options, List<DebugInfo.DebugPoint> points]
+formMappedPropertiesList returns [List<String> aliases, List<PropertyUsage> properties, List<List<String>> mapping, List<FormPropertyOptions> options]
 @init {
 	$aliases = new ArrayList<String>();
 	$properties = new ArrayList<PropertyUsage>();
 	$mapping = new ArrayList<List<String>>();
 	$options = new ArrayList<FormPropertyOptions>();
-	$points = new ArrayList<DebugInfo.DebugPoint>(); 
 	String alias = null;
 }
-	:	{ alias = null; $points.add(getCurrentDebugPoint()); }
+	:	{ alias = null; }
 		(id=ID '=' { alias = $id.text; })?
 		mappedProp=formMappedProperty opts=formPropertyOptionsList
 		{
@@ -652,7 +647,7 @@ formMappedPropertiesList returns [List<String> aliases, List<PropertyUsage> prop
 			$options.add($opts.options);
 		}
 		(','
-			{ alias = null; $points.add(getCurrentDebugPoint()); }
+			{ alias = null; }
 			(id=ID '=' { alias = $id.text; })?
 			mappedProp=formMappedProperty opts=formPropertyOptionsList
 			{
@@ -719,15 +714,14 @@ mappedPropertyDraw returns [String name, List<String> mapping]
 		')'
 	;
 
-formPropertyUList returns [List<String> aliases, List<PropertyUsage> properties, List<FormPropertyOptions> options, List<DebugInfo.DebugPoint> points]
+formPropertyUList returns [List<String> aliases, List<PropertyUsage> properties, List<FormPropertyOptions> options]
 @init {
 	$aliases = new ArrayList<String>();
 	$properties = new ArrayList<PropertyUsage>();
 	$options = new ArrayList<FormPropertyOptions>();
-	$points = new ArrayList<DebugInfo.DebugPoint>();
 	String alias = null;
 }
-	:	{ alias = null; $points.add(getCurrentDebugPoint()); }
+	:	{ alias = null; }
 		(id=ID '=' { alias = $id.text; })?
 		pu=formPropertyUsage opts=formPropertyOptionsList
 		{
@@ -736,7 +730,7 @@ formPropertyUList returns [List<String> aliases, List<PropertyUsage> properties,
 			$options.add($opts.options);
 		}
 		(','
-			{ alias = null; $points.add(getCurrentDebugPoint()); }
+			{ alias = null; }
 			(id=ID '=' { alias = $id.text; })?
 			pu=formPropertyUsage opts=formPropertyOptionsList
 			{
@@ -913,12 +907,12 @@ propertyStatement
 	List<TypedParameter> context = new ArrayList<TypedParameter>();
 	List<ResolveClassSet> signature = null; 
 	boolean dynamic = true;
-	DebugInfo.DebugPoint point = getCurrentDebugPoint();
+	int lineNumber = self.getParser().getCurrentParserLineNumber(); 
 }
 @after {
 	if (inPropParseState()) {
 	    if (property != null) // not native
-		    self.setPropertyScriptInfo(property, $text, point);
+		    self.setPropertyScriptInfo(property, $text, lineNumber);
 	}
 }
 	:	declaration=propertyDeclaration { if ($declaration.params != null) { context = $declaration.params; dynamic = false; } }
@@ -950,11 +944,12 @@ propertyDeclaration returns [String name, String caption, List<TypedParameter> p
 
 propertyExpression[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
 @init {
-	DebugInfo.DebugPoint point = getCurrentDebugPoint(); 
+	int line = self.getParser().getGlobalCurrentLineNumber(); 
+	int offset = self.getParser().getGlobalPositionInLine();
 }
 @after{
     if (inPropParseState()) {
-        self.propertyDefinitionCreated($property.property, point);
+        self.propertyDefinitionCreated($property.property, line, offset);
     }
 }
 	:	pe=ifPE[context, dynamic] { $property = $pe.property; }
@@ -1197,11 +1192,12 @@ expressionFriendlyPD[List<TypedParameter> context, boolean dynamic] returns [LPW
 
 contextIndependentPD[boolean innerPD] returns [LP property, List<ResolveClassSet> signature]
 @init {
-	DebugInfo.DebugPoint point = getCurrentDebugPoint();
+	int line = self.getParser().getGlobalCurrentLineNumber(); 
+	int offset = self.getParser().getGlobalPositionInLine();
 }
 @after{
 	if (inPropParseState()) {
-		self.propertyDefinitionCreated($property, point);
+		self.propertyDefinitionCreated($property, line, offset);
 	}
 }
 	: 	dataDef=dataPropertyDefinition[innerPD] { $property = $dataDef.property; $signature = $dataDef.signature; }
@@ -1660,17 +1656,19 @@ newThreadActionDefinitionBody[List<TypedParameter> context, boolean dynamic] ret
 @init {
 	List<LPWithParams> props = new ArrayList<LPWithParams>();
 	List<LP> localProps = new ArrayList<LP>();
+	long ldelay = 0;
+	Long lperiod = null;
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedNewThreadActionProperty($aDB.property, $connExpr.property, $periodExpr.property, $delayExpr.property);
+		$property = self.addScriptedNewThreadActionProperty($aDB.property, $connExpr.property, ldelay, lperiod);
 	}
 }
-	:	'NEWTHREAD' aDB=innerActionDefinitionBody[context, dynamic] 
+	:	'NEWTHREAD' aDB=innerActionDefinitionBody[context, dynamic]
 	    (
-	        'CONNECTION' connExpr=propertyExpression[context, dynamic]
-	    |   'SCHEDULE' ('PERIOD' periodExpr=propertyExpression[context, dynamic])? ('DELAY' delayExpr=propertyExpression[context, dynamic])? 
-        )? 
+	        ('CONNECTION' connExpr=propertyExpression[context, dynamic])
+	    |   ('SCHEDULE' (period=intLiteral { lperiod = (long)$period.val; })? ('DELAY' delay=intLiteral { ldelay = $delay.val; })? )?
+        )
 	;
 
 newExecutorActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
@@ -2071,12 +2069,12 @@ innerActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns
 
 modifyContextActionDefinitionBody[List<TypedParameter> context, boolean dynamic, boolean modifyContext] returns [LPWithParams property, List<ResolveClassSet> signature]
 @init {
-	DebugInfo.DebugPoint point = getCurrentDebugPoint();
+	int line = self.getParser().getGlobalCurrentLineNumber(); 
+	int offset = self.getParser().getGlobalPositionInLine();
 }
 @after{
 	if (inPropParseState()) {
-		DebugInfo.DebugPoint endPoint = getCurrentDebugPoint(true);
-		self.actionPropertyDefinitionBodyCreated($property, point, endPoint, modifyContext);
+		self.actionPropertyDefinitionBodyCreated($property, line, offset, modifyContext);
 	}
 }
 	:	extDB=extendContextActionDB[context, dynamic]	{ $property = $extDB.property; if (inPropParseState()) $signature = self.getClassesFromTypedParams(context); }
@@ -2129,13 +2127,6 @@ keepContextActionDB[List<TypedParameter> context, boolean dynamic] returns [LPWi
 contextIndependentActionDB returns [LPWithParams property, List<ResolveClassSet> signature]
 @init {
 	$property = new LPWithParams(null, new ArrayList<Integer>());
-	DebugInfo.DebugPoint point = getCurrentDebugPoint();
-}
-@after{
-	if (inPropParseState()) {
-		DebugInfo.DebugPoint endPoint = getCurrentDebugPoint(true);
-		self.actionPropertyDefinitionBodyCreated($property, point, endPoint, false);
-	}
 }
 	:	addformADB=addFormActionDefinitionBody { $property.property = $addformADB.property; $signature = $addformADB.signature; }
 	|	editformADB=editFormActionDefinitionBody { $property.property = $editformADB.property; $signature = $editformADB.signature; }

@@ -218,7 +218,7 @@ public class DefaultFormView extends FormView {
         if (groupObject.size() == 1) {
             groupSet.getGridContainer().addFirst(groupObject.get(0).classChooser, version);
         } else if (groupObject.size() > 1) {
-            List<ContainerView> containers = new ArrayList<>();
+            List<ContainerView> containers = new ArrayList<ContainerView>();
             for (int i = 0; i < groupObject.size() - 1; i++) {
                 ContainerView container = createContainer(version);
                 container.setType(ContainerType.HORIZONTAL_SPLIT_PANE);

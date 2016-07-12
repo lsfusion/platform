@@ -16,8 +16,8 @@ public abstract class AbstractClientContainerView implements ClientContainerView
     protected final ClientFormLayout formLayout;
     protected final ClientContainer container;
 
-    protected final List<ClientComponent> children = new ArrayList<>();
-    protected final List<Component> childrenViews = new ArrayList<>();
+    protected final List<ClientComponent> children = new ArrayList<ClientComponent>();
+    protected final List<Component> childrenViews = new ArrayList<Component>();
 
     public AbstractClientContainerView(ClientFormLayout formLayout, ClientContainer container) {
         this.formLayout = formLayout;

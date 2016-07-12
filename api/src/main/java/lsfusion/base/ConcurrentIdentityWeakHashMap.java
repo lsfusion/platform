@@ -155,7 +155,7 @@ public final class ConcurrentIdentityWeakHashMap<K, V> extends AbstractMap<K, V>
                 ReferenceQueue<Object> refQueue) {
             this.hash = hash;
             this.next = next;
-            this.keyRef = new WeakKeyReference<>(key, hash, refQueue);
+            this.keyRef = new WeakKeyReference<K>(key, hash, refQueue);
             this.valueRef = value;
         }
 
@@ -289,7 +289,7 @@ public final class ConcurrentIdentityWeakHashMap<K, V> extends AbstractMap<K, V>
         void setTable(HashEntry<K, V>[] newTable) {
             threshold = (int) (newTable.length * loadFactor);
             table = newTable;
-            refQueue = new ReferenceQueue<>();
+            refQueue = new ReferenceQueue<Object>();
         }
 
         /**
@@ -302,7 +302,7 @@ public final class ConcurrentIdentityWeakHashMap<K, V> extends AbstractMap<K, V>
 
         HashEntry<K, V> newHashEntry(
                 K key, int hash, HashEntry<K, V> next, V value) {
-            return new HashEntry<>(
+            return new HashEntry<K, V>(
                     key, hash, next, value, refQueue);
         }
 
@@ -592,7 +592,7 @@ public final class ConcurrentIdentityWeakHashMap<K, V> extends AbstractMap<K, V>
                     ++ modCount;
                     // replace the reference queue to avoid unnecessary stale
                     // cleanups
-                    refQueue = new ReferenceQueue<>();
+                    refQueue = new ReferenceQueue<Object>();
                     count = 0; // write-volatile
                 } finally {
                     unlock();
@@ -653,7 +653,7 @@ public final class ConcurrentIdentityWeakHashMap<K, V> extends AbstractMap<K, V>
         }
 
         for (int i = 0; i < this.segments.length; ++ i) {
-            this.segments[i] = new Segment<>(cap, loadFactor);
+            this.segments[i] = new Segment<K, V>(cap, loadFactor);
         }
     }
 

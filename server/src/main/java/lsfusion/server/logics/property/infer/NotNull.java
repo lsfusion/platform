@@ -32,7 +32,7 @@ public class NotNull<T> extends AddIntersectSet<ImSet<T>, NotNull<T>> {
     }
 
     protected NotNull<T> createThis(ImSet<T>[] wheres) {
-        return new NotNull<>(wheres);
+        return new NotNull<T>(wheres);
     }
 
     protected ImSet<T>[] newArray(int size) {
@@ -56,7 +56,7 @@ public class NotNull<T> extends AddIntersectSet<ImSet<T>, NotNull<T>> {
         for (int i = 0; i < wheres.length; i++) {
             result[i] = wheres[i].mapRev(mapping);
         }
-        return new NotNull<>(result);
+        return new NotNull<V>(result);
     }
     
     public static <K, V> NotNull<V> nullMapRev(NotNull<K> map, ImRevMap<K, V> mapping) {
@@ -66,7 +66,7 @@ public class NotNull<T> extends AddIntersectSet<ImSet<T>, NotNull<T>> {
     public NotNull<T> remove(ImSet<? extends T> remove) {
         NotNull<T> result = NotNull.FALSE();
         for(ImSet<T> where : wheres)
-            result = result.add(new NotNull<>(where.remove(remove)));
+            result = result.add(new NotNull<T>(where.remove(remove)));
         return result;
     }
 
@@ -77,7 +77,7 @@ public class NotNull<T> extends AddIntersectSet<ImSet<T>, NotNull<T>> {
     public NotNull<T> filter(ImSet<? extends T> set) {
         NotNull<T> result = NotNull.FALSE();
         for(ImSet<T> where : wheres)
-            result = result.add(new NotNull<>(where.filter(set)));
+            result = result.add(new NotNull<T>(where.filter(set)));
         return result;
     }
 

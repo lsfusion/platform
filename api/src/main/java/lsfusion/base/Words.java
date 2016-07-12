@@ -30,7 +30,7 @@ public class Words {
             {"девять ", "девять ", "девятнадцать ", "девяносто ", "девятьсот "}
     };
 
-    private static final HashMap<String, String[]> decimalPostfix = new HashMap<>();
+    private static final HashMap<String, String[]> decimalPostfix = new HashMap<String, String[]>();
 
     static {
         decimalPostfix.put(("EUR"), new String[]{"евро ", "евро ", "евро "});
@@ -44,7 +44,7 @@ public class Words {
         decimalPostfix.put(("number"), new String[]{"целая ", "целых ", "целых "});
     }
 
-    private static final HashMap<String, String[]> fractalPostfix = new HashMap<>();
+    private static final HashMap<String, String[]> fractalPostfix = new HashMap<String, String[]>();
 
     static {
         fractalPostfix.put("EUR2", new String[]{"евроцент ", "евроцента ", "евроцентов "});
@@ -62,7 +62,7 @@ public class Words {
         fractalPostfix.put("number6", new String[]{"миллионная ", "миллионных ", "миллионных "});
     }
 
-    private static final HashMap<String, Boolean> sexMap = new HashMap<>(); //true - female, false - male
+    private static final HashMap<String, Boolean> sexMap = new HashMap<String, Boolean>(); //true - female, false - male
 
     static {
         sexMap.put(("EUR"), false);
@@ -87,7 +87,7 @@ public class Words {
         sexMap.put(("number4"), true);
     }
 
-    private static final HashMap<String, Integer> numOfDigitsMap = new HashMap<>(); //true - female, false - male
+    private static final HashMap<String, Integer> numOfDigitsMap = new HashMap<String, Integer>(); //true - female, false - male
 
     static {
         numOfDigitsMap.put(("EUR"), 2);

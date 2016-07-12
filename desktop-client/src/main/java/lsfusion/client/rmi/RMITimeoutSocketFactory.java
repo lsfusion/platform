@@ -17,7 +17,7 @@ public class RMITimeoutSocketFactory extends ZipSocketFactory implements Compres
 
     private final int timeout;
 
-    private transient final WeakLinkedHashSet<CountZipSocket> sockets = new WeakLinkedHashSet<>();
+    private transient final WeakLinkedHashSet<CountZipSocket> sockets = new WeakLinkedHashSet<CountZipSocket>();
 
     public transient long inSum;
     public transient long outSum;
@@ -50,6 +50,14 @@ public class RMITimeoutSocketFactory extends ZipSocketFactory implements Compres
 
     public void bytesWritten(long out) {
         outSum += out;
+    }
+
+    public void closeHangingSockets() {
+        for (CountZipSocket socket : sockets) {
+            if (socket != null) {
+                socket.closeIfHung();
+            }
+        }
     }
 
     @Override

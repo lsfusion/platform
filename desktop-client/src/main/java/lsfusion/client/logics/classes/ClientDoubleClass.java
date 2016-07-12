@@ -56,7 +56,7 @@ public class ClientDoubleClass extends ClientIntegralClass implements ClientType
     }
 
     public PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property) {
-        return new DoublePropertyEditor(value, property.maxValue, (NumberFormat) property.getFormat(), property.design, Double.class, property.hasMask());
+        return new DoublePropertyEditor(value, property.maxValue, (NumberFormat) property.getFormat(), property.design, Double.class);
     }
 
     @Override

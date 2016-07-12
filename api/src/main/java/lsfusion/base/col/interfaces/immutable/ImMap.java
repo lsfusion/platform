@@ -36,7 +36,7 @@ public interface ImMap<K, V> {
     V getObject(Object key);
     boolean containsKey(K key);
     boolean containsValue(V value);
-    boolean containsNull();
+    public boolean containsNull();
 
     boolean identity();
 
@@ -77,14 +77,14 @@ public interface ImMap<K, V> {
 
     // replaces
 
-    ImMap<K, V> replaceValues(V value);
-    ImMap<K, V> override(K key, V value);
-    ImMap<K, V> replaceValue(K key, V value);
+    public ImMap<K, V> replaceValues(V value);
+    public ImMap<K, V> override(K key, V value);
+    public ImMap<K, V> replaceValue(K key, V value);
     ImMap<K, V> replaceValues(ImMap<? extends V, ? extends V> map);
     ImMap<K,V> override(ImMap<? extends K,? extends V> map); // перекрываем this, значениями из map, replace в BaseUtils !!! тут важно разделить те которые добавляют и нет
 
-    <M> ImValueMap<K,M> mapItValues();
-    <M> ImRevValueMap<K,M> mapItRevValues();
+    public <M> ImValueMap<K,M> mapItValues();
+    public <M> ImRevValueMap<K,M> mapItRevValues();
 
     <M> ImMap<K,M> mapItValues(GetValue<M,V> getter); // с последействием
     <M> ImMap<K,M> mapItValues(GetKeyValue<M,K,V> getter); // с последействием

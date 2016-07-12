@@ -171,7 +171,7 @@ public class HMap<K, V> extends AMRevMap<K, V> {
                 keys[i] = getKey(i);
                 values[i] = getValue(i);
             }
-            return new ArMap<>(size, keys, values);
+            return new ArMap<K, V>(size, keys, values);
         }
         if(size >= SetFact.useIndexedArrayMin) {
             Object[] keys = new Object[size];
@@ -181,7 +181,7 @@ public class HMap<K, V> extends AMRevMap<K, V> {
                 values[i] = getValue(i);
             }
             ArSet.sortArray(size, keys, values);
-            return new ArIndexedMap<>(size, keys, values);
+            return new ArIndexedMap<K, V>(size, keys, values);
         }
 
         if(indexes.length > size * SetFact.factorNotResize) {
@@ -193,7 +193,7 @@ public class HMap<K, V> extends AMRevMap<K, V> {
     }
 
     protected MExclMap<K, V> copy() {
-        return new HMap<>(this, true);
+        return new HMap<K, V>(this, true);
     }
 
     public void mapValue(int i, V value) {
@@ -202,20 +202,20 @@ public class HMap<K, V> extends AMRevMap<K, V> {
     }
 
     public <M> ImValueMap<K, M> mapItValues() {
-        return new HMap<>(this);
+        return new HMap<K, M>(this);
     }
 
     public <M> ImRevValueMap<K, M> mapItRevValues() {
-        return new HMap<>(this);
+        return new HMap<K, M>(this);
     }
 
     @Override
     public ImOrderMap<K, V> toOrderMap() {
-        return new HOrderMap<>(this);
+        return new HOrderMap<K, V>(this);
     }
 
     @Override
     public HSet<K> keys() {
-        return new HSet<>(size, table, indexes);
+        return new HSet<K>(size, table, indexes);
     }
 }

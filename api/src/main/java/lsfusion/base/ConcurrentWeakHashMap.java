@@ -260,7 +260,7 @@ public class ConcurrentWeakHashMap<K, V> extends AbstractMap<K, V>
         final HashEntry<K,V> next;
 
         HashEntry(K key, int hash, HashEntry<K,V> next, V value, ReferenceQueue<K> refQueue) {
-            this.keyRef = new WeakKeyReference<>(key, hash, refQueue);
+            this.keyRef = new WeakKeyReference<K>(key, hash, refQueue);
             this.hash = hash;
             this.next = next;
             this.value = value;
@@ -375,7 +375,7 @@ public class ConcurrentWeakHashMap<K, V> extends AbstractMap<K, V>
         void setTable(HashEntry<K,V>[] newTable) {
             threshold = (int)(newTable.length * loadFactor);
             table = newTable;
-            refQueue = new ReferenceQueue<>();
+            refQueue = new ReferenceQueue<K>();
         }
 
         /**
@@ -516,7 +516,7 @@ public class ConcurrentWeakHashMap<K, V> extends AbstractMap<K, V>
                 else {
                     oldValue = null;
                     ++modCount;
-                    tab[index] = new HashEntry<>(key, hash, first, value, refQueue);
+                    tab[index] = new HashEntry<K,V>(key, hash, first, value, refQueue);
                     count = c; // write-volatile
                 }
                 return oldValue;
@@ -586,7 +586,7 @@ public class ConcurrentWeakHashMap<K, V> extends AbstractMap<K, V>
                             }
                             int k = p.hash & sizeMask;
                             HashEntry<K,V> n = newTable[k];
-                            newTable[k] = new HashEntry<>(key, p.hash, n, p.value, refQueue);
+                            newTable[k] = new HashEntry<K,V>(key, p.hash, n, p.value, refQueue);
                         }
                     }
                 }
@@ -630,8 +630,8 @@ public class ConcurrentWeakHashMap<K, V> extends AbstractMap<K, V>
                                 continue;
                             }
 
-                            newFirst = new HashEntry<>(pKey, p.hash,
-                                    newFirst, p.value, refQueue);
+                            newFirst = new HashEntry<K,V>(pKey, p.hash,
+                                                          newFirst, p.value, refQueue);
                         }
                         tab[index] = newFirst;
                         count = c; // write-volatile
@@ -660,7 +660,7 @@ public class ConcurrentWeakHashMap<K, V> extends AbstractMap<K, V>
                         tab[i] = null;
                     ++modCount;
                     // replace the reference queue to avoid unnecessary stale cleanups
-                    refQueue = new ReferenceQueue<>();
+                    refQueue = new ReferenceQueue<K>();
                     count = 0; // write-volatile
                 } finally {
                     unlock();
@@ -718,7 +718,7 @@ public class ConcurrentWeakHashMap<K, V> extends AbstractMap<K, V>
             cap <<= 1;
 
         for (int i = 0; i < this.segments.length; ++i)
-            this.segments[i] = new Segment<>(cap, loadFactor);
+            this.segments[i] = new Segment<K,V>(cap, loadFactor);
     }
 
     /**

@@ -110,6 +110,15 @@ public class ConnectionLostManager {
         return connectionLost.get();
     }
 
+    public static void forceDisconnect(String message) {
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                Main.restart();
+            }
+        });
+    }
+
     public static void blockIfHasFailed() {
         SwingUtils.assertDispatchThread();
 
@@ -135,11 +144,11 @@ public class ConnectionLostManager {
         RmiQueue.notifyEdtSyncBlocker();
     }
     
-    private static final ConcurrentHashMap<Long, List<NonFatalHandledRemoteException>> failedNotFatalHandledRequests = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<Long, List<NonFatalHandledRemoteException>> failedNotFatalHandledRequests = new ConcurrentHashMap<Long, List<NonFatalHandledRemoteException>>();
     public static void addFailedRmiRequest(RemoteException remote, long reqId) {
         List<NonFatalHandledRemoteException> exceptions = failedNotFatalHandledRequests.get(reqId);
         if(exceptions == null) {
-            exceptions = new ArrayList<>();
+            exceptions = new ArrayList<NonFatalHandledRemoteException>();
             failedNotFatalHandledRequests.put(reqId, exceptions);
         }
         exceptions.add(new NonFatalHandledRemoteException(remote, reqId)); // !! важно создавать здесь чтобы релевантный stack trace был
@@ -153,7 +162,7 @@ public class ConnectionLostManager {
                     Map<Pair<String, Long>, Collection<NonFatalHandledRemoteException>> group;
                         group = BaseUtils.group(new BaseUtils.Group<Pair<String, Long>, NonFatalHandledRemoteException>() {
                             public Pair<String, Long> group(NonFatalHandledRemoteException key) {
-                                return new Pair<>(key.getMessage() + ExceptionUtils.getStackTraceString(key), key.reqId);
+                                return new Pair<String, Long>(key.getMessage() + ExceptionUtils.getStackTraceString(key), key.reqId);
                             }
                         }, flushExceptions);
 
@@ -181,7 +190,7 @@ public class ConnectionLostManager {
         return failedRequests.get() > 0;
     }
 
-    private static WeakIdentityHashSet<RmiQueue> rmiQueues = new WeakIdentityHashSet<>();
+    private static WeakIdentityHashSet<RmiQueue> rmiQueues = new WeakIdentityHashSet<RmiQueue>();
     public static void registerRmiQueue(RmiQueue rmiQueue) {
         SwingUtils.assertDispatchThread();
         rmiQueues.add(rmiQueue);

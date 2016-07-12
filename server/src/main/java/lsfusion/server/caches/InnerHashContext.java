@@ -9,12 +9,12 @@ import lsfusion.server.data.Value;
 // только с интерфейсом хэширования, нужен в группировках на "стыке" внешнего и внутреннего контекста 
 public interface InnerHashContext {
 
-    int hashInner(HashContext hashContext);
+    public abstract int hashInner(HashContext hashContext);
 
-    ImSet<ParamExpr> getInnerKeys();
-    ImSet<Value> getInnerValues();
+    public abstract ImSet<ParamExpr> getInnerKeys();
+    public abstract ImSet<Value> getInnerValues();
 
     // строит hash с точностью до перестановок
-    int hashValues(HashValues hashValues);
-    BaseUtils.HashComponents<ParamExpr> getComponents(final HashValues hashValues);
+    public int hashValues(HashValues hashValues);
+    public BaseUtils.HashComponents<ParamExpr> getComponents(final HashValues hashValues);
 }

@@ -107,9 +107,6 @@ captionShow 'Показ свойства для пользователя' (Prope
 columnCaption 'Заголовок свойства для пользователя' = DATA VARSTRING[100] (PropertyDraw, CustomUser);
 columnCaption 'Заголовок свойства' = DATA VARSTRING[100] (PropertyDraw);
 
-columnPattern 'Маска свойства для пользователя' = DATA VARSTRING[100] (PropertyDraw, CustomUser);
-columnPattern 'Маска свойства' = DATA VARSTRING[100] (PropertyDraw);
-
 columnWidth 'Ширина для пользователя' = DATA INTEGER (PropertyDraw, CustomUser);
 columnWidth 'Ширина' = DATA INTEGER (PropertyDraw);
 
@@ -141,9 +138,6 @@ isFontItalic 'Курсивный шрифт' = DATA BOOLEAN (GroupObject);
 
 pageSize 'Размер страницы для пользователя'= DATA INTEGER (GroupObject, CustomUser);
 pageSize 'Размер шрифта' = DATA INTEGER (GroupObject);
-
-headerHeight 'Высота заголовков для пользователя'= DATA INTEGER (GroupObject, CustomUser);
-headerHeight 'Высота заголовков' = DATA INTEGER (GroupObject);
 
 CLASS Table 'Таблица';
 TABLE tables (Table);
@@ -307,8 +301,8 @@ FORM forms 'Формы'
     PROPERTIES(u) SELECTOR firstName, lastName, login
 
     OBJECTS g=GroupObject
-    PROPERTIES(g) sid READONLY, fontSize, isFontBold, isFontItalic, pageSize, headerHeight, hasUserPreferences
-    PROPERTIES(g,u) fontSize, isFontBold, isFontItalic, pageSize, headerHeight, hasUserPreferences
+    PROPERTIES(g) sid READONLY, fontSize, isFontBold, isFontItalic, pageSize, hasUserPreferences
+    PROPERTIES(g,u) fontSize, isFontBold, isFontItalic, pageSize, hasUserPreferences
     
     OBJECTS fg=FormGrouping
     PROPERTIES(fg) name, itemQuantity
@@ -320,8 +314,6 @@ FORM forms 'Формы'
     PROPERTIES(p,u) captionShow
     PROPERTIES(p) columnCaption
     PROPERTIES(p,u) columnCaption
-    PROPERTIES(p) columnPattern
-    PROPERTIES(p,u) columnPattern
     PROPERTIES(p) columnWidth
     PROPERTIES(p,u) columnWidth
     PROPERTIES(p) columnOrder
@@ -360,11 +352,10 @@ dumb (PropertyGroup pg) = ' ' IF pg IS PropertyGroup;
 
 FORM properties 'Свойства'
     OBJECTS p=Property
-    PROPERTIES(p) READONLY caption, canonicalName, dbName, annotation, tableSID, return, class, complexity, parent, number,
-     quantity, notNullQuantity, userLoggable EDITABLE, loggable, stored EDITABLE, isSetNotNull EDITABLE, lastRecalculate
+    PROPERTIES(p) READONLY caption, canonicalName, dbName, annotation, tableSID, return, class, complexity, parent, number, quantity, notNullQuantity, userLoggable EDITABLE, loggable, stored EDITABLE, isSetNotNull EDITABLE
 
     TREE treePropertiesObject tps=PropertyGroup PARENT parent, ps=Property
-    PROPERTIES(tps) READONLY caption, SID, d1=dumb, d2=dumb, d3=dumb, d4=dumb, d5=dumb, parent, number, d6=dumb, d7=dumb, d8=dumb, d9=dumb
+    PROPERTIES(tps) READONLY caption, SID, dumb, dumb, dumb, dumb, dumb, parent, number, dumb, dumb, dumb, dumb
     PROPERTIES(ps) READONLY caption, canonicalName, dbName, return, class, complexity, parent, number, quantity, notNullQuantity, userLoggable EDITABLE, loggable, stored EDITABLE, isSetNotNull EDITABLE
 
     ORDER BY number(p)

@@ -55,7 +55,7 @@ public abstract class ALRUMap<E extends ALRUMap.AEntry<E>, S extends ALRUMap.ASe
     protected abstract S[] createSegments(int size);
     protected abstract S createSegment(int cap, float loadFactor);
     
-    static final WeakIdentityHashSet<ALRUMap> allMaps = new WeakIdentityHashSet<>(); 
+    static final WeakIdentityHashSet<ALRUMap> allMaps = new WeakIdentityHashSet<ALRUMap>(); 
 
     public ALRUMap(int initialCapacity, float loadFactor, int concurrencyLevel, Strategy expireStrategy) {
         if (initialCapacity < 0)
@@ -425,7 +425,7 @@ public abstract class ALRUMap<E extends ALRUMap.AEntry<E>, S extends ALRUMap.ASe
     }
 
 
-    interface AEntry<E extends AEntry<E>> {
+    static abstract interface AEntry<E extends AEntry<E>> {
         E getNext();
 
         void setNext(E next);

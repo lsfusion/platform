@@ -5,7 +5,7 @@ import java.util.*;
 public class WeakLinkedHashSet<L> implements Iterable<L> {
 
     private int maxIndex = 0;
-    private WeakHashMap<L, Integer> map = new WeakHashMap<>();
+    private WeakHashMap<L, Integer> map = new WeakHashMap<L, Integer>();
 
     public synchronized void add(L item) {
         if(!map.containsKey(item))
@@ -13,7 +13,7 @@ public class WeakLinkedHashSet<L> implements Iterable<L> {
     }
 
     public synchronized Iterator<L> iterator() {
-        SortedMap<Integer, L> list = new TreeMap<>();
+        SortedMap<Integer, L> list = new TreeMap<Integer, L>();
         for(Map.Entry<L,Integer> entry : map.entrySet())
             list.put(entry.getValue(), entry.getKey());
         return list.values().iterator();

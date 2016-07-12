@@ -7,7 +7,7 @@ import lsfusion.gwt.form.shared.view.window.GAbstractWindow;
 import java.util.*;
 
 public abstract class WindowsController extends SplitLayoutPanel {
-    private Map<GAbstractWindow, WindowElement> windowElementsMapping = new HashMap<>();
+    private Map<GAbstractWindow, WindowElement> windowElementsMapping = new HashMap<GAbstractWindow, WindowElement>();
 
     private boolean fullScreenMode;
 
@@ -29,10 +29,10 @@ public abstract class WindowsController extends SplitLayoutPanel {
     }
 
     private void initializeNodes(List<GAbstractWindow> windows, WindowNode rootNode) {
-        List<WindowNode> nodes = new ArrayList<>();
+        List<WindowNode> nodes = new ArrayList<WindowNode>();
 
         // все окна с одинаковыми координатами складываем в табы
-        Set<GAbstractWindow> allInTabs = new HashSet<>();
+        Set<GAbstractWindow> allInTabs = new HashSet<GAbstractWindow>();
         for (int i = 0; i < windows.size(); i++) {
             GAbstractWindow first = windows.get(i);
             Set<GAbstractWindow> tabChildren = null;
@@ -42,7 +42,7 @@ public abstract class WindowsController extends SplitLayoutPanel {
                     GAbstractWindow second = windows.get(j);
                     if (first.x == second.x && first.y == second.y && first.width == second.width && first.height == second.height) {
                         if (tabChildren == null) {
-                            tabChildren = new LinkedHashSet<>();
+                            tabChildren = new LinkedHashSet<GAbstractWindow>();
                             tabChildren.add(first);
                             allInTabs.add(first);
                         }
@@ -69,7 +69,7 @@ public abstract class WindowsController extends SplitLayoutPanel {
         // устанавливаем родительские связи
         for (int i = 0; i < nodes.size(); i++) {
             WindowNode node = nodes.get(i);
-            List<WindowNode> newChildren = new ArrayList<>();
+            List<WindowNode> newChildren = new ArrayList<WindowNode>();
             for (int j = 0; j < nodes.size(); j++) {
                 if (i != j) {
                     WindowNode node2 = nodes.get(j);
@@ -104,7 +104,7 @@ public abstract class WindowsController extends SplitLayoutPanel {
 
         // ещё одно формирование табов: если у окна есть потомки, но с разными координатами, т.е. не в табах,
         // то это окно идёт в таб-панель. другим табом будут его потомки, сложенные в промежуточный контейнер
-        for (WindowNode childNode : new ArrayList<>(rootNode.children)) {
+        for (WindowNode childNode : new ArrayList<WindowNode>(rootNode.children)) {
             createTabsIfNecessary(childNode);
         }
     }
@@ -117,7 +117,7 @@ public abstract class WindowsController extends SplitLayoutPanel {
             parent.removeChild(node);
             node.setParent(tabWindow);
             WindowNode midNode = new WindowNode(node.x, node.y, node.width, node.height);
-            for (WindowNode child : new ArrayList<>(node.children)) {
+            for (WindowNode child : new ArrayList<WindowNode>(node.children)) {
                 node.removeChild(child);
                 child.setParent(midNode);
 
@@ -189,7 +189,7 @@ public abstract class WindowsController extends SplitLayoutPanel {
     private class WindowNode {
         private GAbstractWindow window;
         private WindowNode parent;
-        private List<WindowNode> children = new ArrayList<>();
+        private List<WindowNode> children = new ArrayList<WindowNode>();
 
         public boolean isTabbed = false;
 

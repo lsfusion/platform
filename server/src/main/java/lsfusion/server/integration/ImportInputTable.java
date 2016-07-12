@@ -9,13 +9,13 @@ import java.text.ParseException;
  */
 
 public interface ImportInputTable {
-    String getCellString(int row, int column);
+    public String getCellString(int row, int column);
 
-    String getCellString(ImportField field, int row, int column) throws ParseException;
+    public String getCellString(ImportField field, int row, int column) throws ParseException;
 
-    int rowsCnt();
+    public int rowsCnt();
 
-    int columnsCnt();
+    public int columnsCnt();
 
 
 }

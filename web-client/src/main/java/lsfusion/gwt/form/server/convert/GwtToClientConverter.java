@@ -114,8 +114,8 @@ public class GwtToClientConverter extends ObjectConverter {
     
     @Converter(from = GFormUserPreferences.class)
     public FormUserPreferences convertFormUserPreferences(GFormUserPreferences gprefs) {
-        java.util.List<GroupObjectUserPreferences> generalPrefs = new ArrayList<>();
-        java.util.List<GroupObjectUserPreferences> userPrefs = new ArrayList<>();
+        java.util.List<GroupObjectUserPreferences> generalPrefs = new ArrayList<GroupObjectUserPreferences>();
+        java.util.List<GroupObjectUserPreferences> userPrefs = new ArrayList<GroupObjectUserPreferences>();
         for (GGroupObjectUserPreferences prefs : gprefs.getGroupObjectGeneralPreferencesList()) {
             generalPrefs.add(convertGroupObjectPreferences(prefs));
         }
@@ -127,15 +127,15 @@ public class GwtToClientConverter extends ObjectConverter {
     
     @Converter(from = GGroupObjectUserPreferences.class)
     public GroupObjectUserPreferences convertGroupObjectPreferences(GGroupObjectUserPreferences gprefs) {
-        Map<String, ColumnUserPreferences> columnUPs = new HashMap<>();
+        Map<String, ColumnUserPreferences> columnUPs = new HashMap<String, ColumnUserPreferences>();
         for (Map.Entry<String, GColumnUserPreferences> entry : gprefs.getColumnUserPreferences().entrySet()) {
             columnUPs.put(entry.getKey(), convertColumnPreferences(entry.getValue()));
         }
-        return new GroupObjectUserPreferences(columnUPs, gprefs.getGroupObjectSID(), convertFont(gprefs.getFont()), gprefs.getPageSize(), gprefs.getHeaderHeight(), gprefs.hasUserPreferences());
+        return new GroupObjectUserPreferences(columnUPs, gprefs.getGroupObjectSID(), convertFont(gprefs.getFont()), gprefs.getPageSize(), gprefs.hasUserPreferences());        
     }
     
     @Converter(from = GColumnUserPreferences.class)
     public ColumnUserPreferences convertColumnPreferences(GColumnUserPreferences gprefs) {
-        return new ColumnUserPreferences(gprefs.userHide, gprefs.userCaption, gprefs.userPattern, gprefs.userWidth, gprefs.userOrder, gprefs.userSort, gprefs.userAscendingSort);
+        return new ColumnUserPreferences(gprefs.userHide, gprefs.userCaption, gprefs.userWidth, gprefs.userOrder, gprefs.userSort, gprefs.userAscendingSort);
     }
 }

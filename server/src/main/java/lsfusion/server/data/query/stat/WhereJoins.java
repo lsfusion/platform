@@ -64,7 +64,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         return orderTopCount;
     }
 
-    private final static LRUWVSMap<WhereJoin, ImSet<WhereJoin>> cacheAllChildren = new LRUWVSMap<>(LRUUtil.L1);
+    private final static LRUWVSMap<WhereJoin, ImSet<WhereJoin>> cacheAllChildren = new LRUWVSMap<WhereJoin, ImSet<WhereJoin>>(LRUUtil.L1);
 
     public static ImSet<WhereJoin> getAllChildren(WhereJoin where) {
         ImSet<WhereJoin> result = cacheAllChildren.get(where);
@@ -75,7 +75,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         return result;
     }
 
-    private final static LRUWSSVSMap<WhereJoins, ImSet, KeyStat, StatKeys> cacheCompileStatKeys = new LRUWSSVSMap<>(LRUUtil.L1);
+    private final static LRUWSSVSMap<WhereJoins, ImSet, KeyStat, StatKeys> cacheCompileStatKeys = new LRUWSSVSMap<WhereJoins, ImSet, KeyStat, StatKeys>(LRUUtil.L1);
     // можно было бы локальный кэш как и сверху сделать, но также как и для children будет сильно мусорить в алгоритме
     public <K extends BaseExpr> StatKeys<K> getCompileStatKeys(ImSet<K> groups, KeyStat keyStat) {
         StatKeys result = cacheCompileStatKeys.get(this, groups, keyStat);
@@ -262,11 +262,10 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
             tableCosts.set(new ExecCost(tableStat));
         }
 
-        DistinctKeys<K> distinct = new DistinctKeys<>(groups.mapValues(new GetValue<Stat, K>() {
+        DistinctKeys<K> distinct = new DistinctKeys<K>(groups.mapValues(new GetValue<Stat, K>() {
             public Stat getMapValue(K value) { // для groups, берем min(из статистики значения, статистики его join'а)
                 return getPropStat(value, joinStats, exprStats).min(finalStat);
-            }
-        }));
+            }}));
         return StatKeys.create(finalStat, distinct); // возвращаем min(суммы groups, расчитанного результата)
     }
 
@@ -303,7 +302,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
                 Stat min = keys.min(values);
                 if(min.less(stat)) { // если нашли новый минимум про старый забываем
                     unbalancedEdge = edge;
-                    unbalancedStat = new Pair<>(keys, values);
+                    unbalancedStat = new Pair<Stat, Stat>(keys, values);
                     stat = min;
                     if(currentStat !=null && stat.equals(currentStat)) // оптимизация, так как меньше уже быть не может
                         break;
@@ -321,7 +320,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
                             Set<Edge> bExprEdges = balancedEdges.getValue(j);
                             Stat bStat = balancedStats.get(bExpr);
 
-                            List<Pair<Edge, Edge>> mergeEdges = new ArrayList<>();
+                            List<Pair<Edge, Edge>> mergeEdges = new ArrayList<Pair<Edge, Edge>>();
                             Iterator<Edge> it = exprEdges.iterator();
                             while(it.hasNext()) {
                                 Edge exprEdge = it.next();
@@ -339,7 +338,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
                                 }
                                 if(found) {
                                     it.remove();
-                                    mergeEdges.add(new Pair<>(exprEdge, bExprEdge));
+                                    mergeEdges.add(new Pair<Edge, Edge>(exprEdge, bExprEdge));
                                 }
                             }
 
@@ -438,7 +437,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
 
     private <K extends BaseExpr> void buildEdgesExprsJoins(ImSet<K> groups, KeyStat keyStat, Set<Edge> edges, Set<BaseExpr> exprs, Set<BaseJoin> joins) {
         // собираем все ребра и вершины
-        Queue<BaseJoin> queue = new LinkedList<>();
+        Queue<BaseJoin> queue = new LinkedList<BaseJoin>();
         for(WhereJoin valueJoin : wheres) {
             queue.add(valueJoin);
             joins.add(valueJoin);
@@ -515,7 +514,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
     }
 
     private Stat getMSTCost(MAddMap<BaseJoin, Stat> joinStats, MAddExclMap<BaseExpr, Set<Edge>> balancedEdges, MAddExclMap<BaseExpr, Stat> balancedStats) {
-        UndirectedGraph<BaseJoin> graph = new UndirectedGraph<>();
+        UndirectedGraph<BaseJoin> graph = new UndirectedGraph<BaseJoin>();
         BaseJoin root = ValueJoin.instance; // чтобы создать связность
         graph.addNode(root);
         for(int i=0,size=joinStats.size();i<size;i++) {
@@ -538,7 +537,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
     private Stat getMSTExCost(MAddMap<BaseJoin, Stat> joinStats, MAddExclMap<BaseExpr, Set<Edge>> balancedEdges, MAddExclMap<BaseExpr, Stat> balancedStats) {
         int nodes = 0; int edges = 0;
 
-        SpanningTreeWithBlackjack<BaseJoin> graph = new SpanningTreeWithBlackjack<>();
+        SpanningTreeWithBlackjack<BaseJoin> graph = new SpanningTreeWithBlackjack<BaseJoin>();
         for(int i=0,size=joinStats.size();i<size;i++) {
             BaseJoin node = joinStats.getKey(i);
             graph.addNode(node, node.getJoins().isEmpty() ? 0 : joinStats.getValue(i).getWeight());
@@ -586,7 +585,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
     // proceeded - из какой вершины в какую можно пройти и вершина через которую надо идти
     private Pair<Integer, ImSet<Edge>> recBuildMT(ImOrderSet<BaseJoin> order, ImMap<BaseJoin, ImSet<Edge>> edgesOuts, final MAddExclMap<BaseExpr, Stat> balancedStats, Set<Edge> removedEdges, int removedStat, Map<BaseJoin, ImMap<BaseJoin, Edge>> currentTree, int currentIndex, Pair<Integer, ImSet<Edge>> currentMin) {
         if(currentIndex >= order.size()) {
-            return new Pair<>(removedStat, SetFact.fromJavaSet(removedEdges));
+            return new Pair<Integer, ImSet<Edge>>(removedStat, SetFact.fromJavaSet(removedEdges));
         }
         
         BaseJoin currentNode = order.get(currentIndex);
@@ -728,7 +727,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         Arrays.sort(cloned, orderComplexity);
         current = BaseUtils.toList(cloned);
 
-        Result<Stat> rows = new Result<>();
+        Result<Stat> rows = new Result<Stat>();
         Stat resultStat = getStatKeys(groups, rows, stat).rows;
         if(resultStat.lessEquals(currentJoinStat) && rows.result.lessEquals(currentStat)) {
             currentJoinStat = resultStat; currentStat = rows.result;
@@ -739,10 +738,10 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         while(it < current.size()) {
             WhereJoin<?, ?> reduceJoin = current.get(it);
 
-            List<WhereJoin> reduced = new ArrayList<>(current);
+            List<WhereJoin> reduced = new ArrayList<WhereJoin>(current);
             reduced.remove(it);
 
-            Result<ImMap<InnerJoin, Where>> reduceFollowUpWheres = new Result<>();
+            Result<ImMap<InnerJoin, Where>> reduceFollowUpWheres = new Result<ImMap<InnerJoin, Where>>();
             for(InnerJoin joinFollow : reduceJoin.getJoinFollows(reduceFollowUpWheres, null).it()) { // пытаемся заменить reduceJoin, на его joinFollows
                 boolean found = false;
                 for(WhereJoin andJoin : reduced)
@@ -757,7 +756,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
             }
 
             WhereJoins reducedJoins = new WhereJoins(reduced.toArray(new WhereJoin[reduced.size()]));
-            rows = new Result<>();
+            rows = new Result<Stat>();
             Stat reducedStat = reducedJoins.getStatKeys(groups, rows, stat).rows;
 //            assert !reducedJoins.getStatKeys(groups, stat).rows.less(resultStat.rows); // вообще это не правильный assertion, потому как если уходит ключ статистика может уменьшиться
             if(reducedStat.lessEquals(currentJoinStat) && rows.result.lessEquals(currentStat)) { // сколько сгруппировать надо
@@ -782,7 +781,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         MExclSet<WhereJoin> mKeepWheres = SetFact.mExclSetMax(wheres.length); // массивы
         for(WhereJoin whereJoin : wheres) {
             WhereJoins removeJoins;
-            Result<ImMap<WhereJoin, Where>> removeUpWheres = new Result<>();
+            Result<ImMap<WhereJoin, Where>> removeUpWheres = new Result<ImMap<WhereJoin, Where>>();
 
             boolean remove = BaseUtils.hashEquals(removeJoin, whereJoin);
             InnerJoins joinFollows = null; Result<ImMap<InnerJoin, Where>> joinUpWheres = null;
@@ -796,8 +795,8 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
                     remove = true;
             }
             if(!remove) {
-                Result<ImSet<UnionJoin>> unionJoins = new Result<>();
-                joinUpWheres = new Result<>();
+                Result<ImSet<UnionJoin>> unionJoins = new Result<ImSet<UnionJoin>>();
+                joinUpWheres = new Result<ImMap<InnerJoin, Where>>();
                 joinFollows = whereJoin.getJoinFollows(joinUpWheres, unionJoins);
                 for(UnionJoin unionJoin : unionJoins.result) // без этой проверки может бесконечно проталкивать
                     if(unionJoin.depends(removeJoin)) {
@@ -851,7 +850,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         // joinKeys из skipJoin.getJoins()
 
         assert joinMap.equals(skipJoin.getJoins().filterIncl(joinMap.keys()));
-        Result<ImMap<WhereJoin, Where>> upFitWheres = new Result<>();
+        Result<ImMap<WhereJoin, Where>> upFitWheres = new Result<ImMap<WhereJoin, Where>>();
         WhereJoins removedJoins = removeJoin(skipJoin, upWheres, upFitWheres);
         if(removedJoins==null) {
             removedJoins = this;
@@ -947,7 +946,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
     }
 
     private <K extends Expr> PushJoinResult<K> getPushJoins(ImMap<K, BaseExpr> joinMap, KeyStat keyStat, Stat currentStat, Stat currentJoinStat, ImMap<WhereJoin, Where> upWheres) {
-        return new PushJoinResult<>(getPushJoins(joinMap.values().toSet(), upWheres, keyStat, currentStat, currentJoinStat), joinMap);
+        return new PushJoinResult<K>(getPushJoins(joinMap.values().toSet(), upWheres, keyStat, currentStat, currentJoinStat), joinMap);
     }
 
     private <K extends Expr, T extends Expr> PushJoinResult<K> getNewPushJoins(ImMap<K, BaseExpr> innerOuter, KeyStat keyStat, Stat innerRows, StatKeys<K> innerKeys, ImMap<WhereJoin, Where> upWheres, Stat baseStat) {
@@ -962,14 +961,14 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         }
         ImRevMap<K, BaseExpr> revInnerOuter = mRevOuterInner.immutable().toRevExclMap().reverse();
         if(revInnerOuter.size() != innerOuter.size())
-            innerKeys = new StatKeys<>(innerKeys.rows, new DistinctKeys<>(innerKeys.distinct.filterIncl(revInnerOuter.keys())));
+            innerKeys = new StatKeys<K>(innerKeys.rows, new DistinctKeys<K>(innerKeys.distinct.filterIncl(revInnerOuter.keys())));
 
         // считаем начальную итерацию, вырезаем WhereJoins которые "входят" в group
         final ImSet<ParamExpr> keepKeys = SetFact.<ParamExpr>EMPTY();
         Comparator<PushElement> comparator = getComparator(keepKeys);
         final ImSet<PushGroup<K>> groups = revInnerOuter.mapSetValues(new GetKeyValue<PushGroup<K>, K, BaseExpr>() {
             public PushGroup<K> getMapValue(K key, BaseExpr value) {
-                return new PushGroup<>(key, value);
+                return new PushGroup<K>(key, value);
             }});
         List<PushElement> newPriority = new ArrayList<>();
         MExclSet<PushElement> mNewElements = SetFact.<PushElement>mExclSet(groups);
@@ -977,7 +976,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         for(PushGroup<K> group : groups)
             BaseUtils.addToOrderedList(newPriority, group, 0, comparator);
         addJoins(Arrays.asList(wheres), upWheres, comparator, newPriority, groups, mNewElements, mNewJoins, null);
-        final PushIteration<K> initialIteration = new PushIteration<>(mNewElements.immutable(), mNewJoins.immutable(), revInnerOuter, keepKeys, newPriority);
+        final PushIteration<K> initialIteration = new PushIteration<K>(mNewElements.immutable(), mNewJoins.immutable(), revInnerOuter, keepKeys, newPriority);
 
         // перебираем
         Result<BestResult> rBest = new Result<BestResult>(new BaseStat(baseStat));
@@ -993,7 +992,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
                 PushJoin join = (PushJoin)element;
                 bestUpWheres.add(join.join, join.upWhere);
             }
-        return new PushJoinResult<>(new PushResult(best.runStat, best.joins.toList().toJavaList(), bestUpWheres), best.innerOuter);
+        return new PushJoinResult<K>(new PushResult(best.runStat, best.joins.toList().toJavaList(), bestUpWheres), best.innerOuter);
     }
 
     private static abstract class PushElement {
@@ -1266,7 +1265,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
             for(PushElement validateElement : validateElements)
                 BaseUtils.addToOrderedList(newPriority, validateElement, 0, comparator);
 
-            return new PushIteration<>(elements, joins, innerOuter, newKeepKeys, newPriority);
+            return new PushIteration<K>(elements, joins, innerOuter, newKeepKeys, newPriority);
         }
 
         private boolean checkPriority(List<PushElement> priority, Comparator<PushElement> comparator) {
@@ -1438,9 +1437,9 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
                 }
             }
 
-        Result<BaseExpr> newNotNull = new Result<>();
+        Result<BaseExpr> newNotNull = new Result<BaseExpr>();
         MAddMap<BaseExpr, Boolean> proceedNotNulls = MapFact.mAddOverrideMap();
-        Result<ExecCost> mTableCosts = new Result<>();
+        Result<ExecCost> mTableCosts = new Result<ExecCost>();
         Stat baseStat = getStatKeys(keys, null, keyStat, newNotNull, proceedNotNulls, mTableCosts).rows;
 
         ExecCost baseCost = mTableCosts.result;

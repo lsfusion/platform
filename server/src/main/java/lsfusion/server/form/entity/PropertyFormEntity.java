@@ -39,7 +39,7 @@ public class PropertyFormEntity<T extends BusinessLogics<T>> extends FormEntity<
 //            addPropertyDraw(LM.objectValue, false, object);
 //        }
 
-        addFixedFilter(new NotNullFilterEntity<>(new CalcPropertyObjectEntity<>(property, mapObjects)), version);
+        addFixedFilter(new NotNullFilterEntity<P>(new CalcPropertyObjectEntity<P>(property, mapObjects)), version);
 
         finalizeInit(version);
     }

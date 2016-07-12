@@ -61,7 +61,7 @@ public class GroupObjectContainerSet<C extends AbstractContainer<C, T>, T extend
     }
     public static <C extends AbstractContainer<C, T>, T extends AbstractComponent<C, T>> GroupObjectContainerSet<C, T> create(AbstractGroupObject<T> group, ContainerFactory<C> factory, ContainerAdder<C, T> adder) {
 
-        GroupObjectContainerSet<C, T> set = new GroupObjectContainerSet<>();
+        GroupObjectContainerSet<C, T> set = new GroupObjectContainerSet<C, T>();
 
         set.groupContainer = factory.createContainer(); // контейнер всей группы
         set.groupContainer.setCaption(group.getCaption());

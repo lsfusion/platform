@@ -12,7 +12,7 @@ public class ExportFileClientAction extends ExecuteClientAction {
 
     public ExportFileClientAction(String fileName, String fileText, String charsetName) {
         try {
-            files = new HashMap<>();
+            files = new HashMap<String, byte[]>();
             if (charsetName != null) {
                 files.put(fileName, fileText.getBytes(charsetName));
             } else {
@@ -24,7 +24,7 @@ public class ExportFileClientAction extends ExecuteClientAction {
     }
 
     public ExportFileClientAction(String fileName, byte[] file) {
-        files = new HashMap<>();
+        files = new HashMap<String, byte[]>();
         files.put(fileName, file);
     }
 

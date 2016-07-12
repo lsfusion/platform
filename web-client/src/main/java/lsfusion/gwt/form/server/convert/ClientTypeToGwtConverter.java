@@ -71,7 +71,7 @@ public class ClientTypeToGwtConverter extends ObjectConverter {
         fileClass.multiple = clientFileClass.multiple;
         fileClass.storeName = clientFileClass.storeName;
         if (clientFileClass.getExtensions() != null) {
-            fileClass.extensions = new ArrayList<>();
+            fileClass.extensions = new ArrayList<String>();
             MimetypesFileTypeMap mimeMap;
             try {
                 mimeMap = new MimetypesFileTypeMap(FileUtils.APP_FOLDER_URL + "/WEB-INF/mimetypes");
@@ -81,7 +81,7 @@ public class ClientTypeToGwtConverter extends ObjectConverter {
             for (int i = 0; i < clientFileClass.getExtensions().length; i++) {
                 String ext = clientFileClass.getExtensions()[i];
                 if (ext != null && !ext.isEmpty() && !ext.equals("*.*") && !ext.equals("*")) {
-                    fileClass.extensions.add(mimeMap.getContentType("idleName." + ext.toLowerCase()));
+                    fileClass.extensions.add(mimeMap.getContentType("idleName." + ext));
                 } else {
                     fileClass.extensions.add(ext);
                 }
@@ -144,7 +144,7 @@ public class ClientTypeToGwtConverter extends ObjectConverter {
 
     @Converter(from = ClientObjectClass.class)
     public GObjectClass convertObjectClass(ClientObjectClass clientClass) {
-        ArrayList<GObjectClass> children = new ArrayList<>();
+        ArrayList<GObjectClass> children = new ArrayList<GObjectClass>();
         for (ClientObjectClass child : clientClass.getChildren()) {
             children.add(convertObjectClass(child));
         }

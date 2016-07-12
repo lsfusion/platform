@@ -60,12 +60,12 @@ public abstract class GroupingDialog extends JDialog {
     private GridTable initialTable;
     private GridTableModel initialTableModel;
 
-    private Map<Pair<ClientPropertyDraw, ClientGroupObjectValue>, JCheckBox> groupChecks = new LinkedHashMap<>();
-    private Map<Pair<ClientPropertyDraw, ClientGroupObjectValue>, JSpinner> groupSpinners = new LinkedHashMap<>();
-    private Map<Pair<ClientPropertyDraw, ClientGroupObjectValue>, JCheckBox> groupPivotChecks = new LinkedHashMap<>();
+    private Map<Pair<ClientPropertyDraw, ClientGroupObjectValue>, JCheckBox> groupChecks = new LinkedHashMap<Pair<ClientPropertyDraw, ClientGroupObjectValue>, JCheckBox>();
+    private Map<Pair<ClientPropertyDraw, ClientGroupObjectValue>, JSpinner> groupSpinners = new LinkedHashMap<Pair<ClientPropertyDraw, ClientGroupObjectValue>, JSpinner>();
+    private Map<Pair<ClientPropertyDraw, ClientGroupObjectValue>, JCheckBox> groupPivotChecks = new LinkedHashMap<Pair<ClientPropertyDraw, ClientGroupObjectValue>, JCheckBox>();
     private JCheckBox quantityCheck;
-    private Map<Pair<ClientPropertyDraw, ClientGroupObjectValue>, JCheckBox> sumChecks = new LinkedHashMap<>();
-    private Map<Pair<ClientPropertyDraw, ClientGroupObjectValue>, JCheckBox> maxChecks = new LinkedHashMap<>();
+    private Map<Pair<ClientPropertyDraw, ClientGroupObjectValue>, JCheckBox> sumChecks = new LinkedHashMap<Pair<ClientPropertyDraw, ClientGroupObjectValue>, JCheckBox>();
+    private Map<Pair<ClientPropertyDraw, ClientGroupObjectValue>, JCheckBox> maxChecks = new LinkedHashMap<Pair<ClientPropertyDraw, ClientGroupObjectValue>, JCheckBox>();
     
     private JButton removeCurrentGroupingButton = new JButton(getString("form.queries.grouping.remove.grouping"));
     
@@ -411,10 +411,10 @@ public abstract class GroupingDialog extends JDialog {
     }
 
     public List<Map<Integer, List<byte[]>>> getSelectedGroupLevels() {
-        List<Map<Integer, List<byte[]>>> selectedGroupProperties = new ArrayList<>();
-        List<Integer> level = new ArrayList<>();
+        List<Map<Integer, List<byte[]>>> selectedGroupProperties = new ArrayList<Map<Integer, List<byte[]>>>();
+        List<Integer> level = new ArrayList<Integer>();
         for (int k = 1; k <= getMaxSpinnerValue(); k++) {
-            List<Integer> newLevel = new ArrayList<>(level);
+            List<Integer> newLevel = new ArrayList<Integer>(level);
             int i = 0;
             for (JSpinner spinner : groupSpinners.values()) {
                 if (spinner.isVisible() && (((Integer) spinner.getValue() == k))) {
@@ -422,14 +422,14 @@ public abstract class GroupingDialog extends JDialog {
                 }
                 i++;
             }
-            level = new ArrayList<>(newLevel);
+            level = new ArrayList<Integer>(newLevel);
 
-            Map<Integer, List<byte[]>> groupLevel = new OrderedMap<>();
+            Map<Integer, List<byte[]>> groupLevel = new OrderedMap<Integer, List<byte[]>>();
             for (Integer index : newLevel) {
                 ClientPropertyDraw property = initialTableModel.getColumnProperty(index);
                 List<byte[]> list = groupLevel.get(property.getID());
                 if (list == null) {
-                    list = new ArrayList<>();
+                    list = new ArrayList<byte[]>();
                 }
                 list.add(initialTableModel.getColumnKey(index).serialize());
                 groupLevel.put(property.getID(), list);
@@ -440,7 +440,7 @@ public abstract class GroupingDialog extends JDialog {
     }
 
     public Map<Integer, List<byte[]>> getSelectedSumMap() {
-        Map<Integer, List<byte[]>> selectedSumMap = new LinkedHashMap<>();
+        Map<Integer, List<byte[]>> selectedSumMap = new LinkedHashMap<Integer, List<byte[]>>();
         if (quantityCheck.isSelected()) {
             selectedSumMap.put(RECORD_QUANTITY_ID, null);
         }
@@ -449,7 +449,7 @@ public abstract class GroupingDialog extends JDialog {
                 int propertyID = entry.getKey().first.getID();
                 List<byte[]> list = selectedSumMap.get(propertyID);
                 if (list == null) {
-                    list = new ArrayList<>();
+                    list = new ArrayList<byte[]>();
                 }
                 list.add(entry.getKey().second.serialize());
                 selectedSumMap.put(propertyID, list);
@@ -460,7 +460,7 @@ public abstract class GroupingDialog extends JDialog {
     }
 
     public LinkedHashMap<Integer, Boolean> getSelectedPivotColumns() {
-        LinkedHashMap<Integer, Boolean> selectedPivotColumns = new LinkedHashMap<>();
+        LinkedHashMap<Integer, Boolean> selectedPivotColumns = new LinkedHashMap<Integer, Boolean>();
         for (Map.Entry<Pair<ClientPropertyDraw, ClientGroupObjectValue>, JSpinner> spinner : groupSpinners.entrySet()) {
             if (spinner.getValue().isVisible()) {
                 selectedPivotColumns.put((Integer)spinner.getValue().getValue(), groupPivotChecks.get(spinner.getKey()).isSelected());
@@ -488,13 +488,13 @@ public abstract class GroupingDialog extends JDialog {
     }
 
     public Map<Integer, List<byte[]>> getSelectedMaxMap() {
-        Map<Integer, List<byte[]>> selectedMaxMap = new LinkedHashMap<>();
+        Map<Integer, List<byte[]>> selectedMaxMap = new LinkedHashMap<Integer, List<byte[]>>();
         for (Map.Entry<Pair<ClientPropertyDraw, ClientGroupObjectValue>, JCheckBox> entry : maxChecks.entrySet()) {
             if (entry.getValue().isSelected()) {
                 int propertyID = entry.getKey().first.getID();
                 List<byte[]> list = selectedMaxMap.get(propertyID);
                 if (list == null) {
-                    list = new ArrayList<>();
+                    list = new ArrayList<byte[]>();
                 }
                 list.add(entry.getKey().second.serialize());
                 selectedMaxMap.put(propertyID, list);
@@ -551,12 +551,12 @@ public abstract class GroupingDialog extends JDialog {
                     quantityCheck.setSelected(true);
                 }
                 
-                List<Pair<Integer, Pair<ClientPropertyDraw, ClientGroupObjectValue>>> orders = new ArrayList<>(); 
+                List<Pair<Integer, Pair<ClientPropertyDraw, ClientGroupObjectValue>>> orders = new ArrayList<Pair<Integer, Pair<ClientPropertyDraw, ClientGroupObjectValue>>>(); 
                 for (FormGrouping.PropertyGrouping propGrouping : grouping.propertyGroupings) {
                     for (Map.Entry<Pair<ClientPropertyDraw, ClientGroupObjectValue>, JCheckBox> checkEntry : groupChecks.entrySet()) {
                         if (checkEntry.getKey().first.getSID().equals(propGrouping.propertySID)) {
                             if (propGrouping.groupingOrder != null) {
-                                orders.add(new Pair<>(propGrouping.groupingOrder, checkEntry.getKey()));        
+                                orders.add(new Pair<Integer, Pair<ClientPropertyDraw, ClientGroupObjectValue>>(propGrouping.groupingOrder, checkEntry.getKey()));        
                             }
                             if (propGrouping.pivot != null && propGrouping.pivot) {
                                 groupPivotChecks.get(checkEntry.getKey()).setSelected(true);
@@ -591,8 +591,8 @@ public abstract class GroupingDialog extends JDialog {
     }
 
     public void update(List<Map<List<Object>, List<Object>>> values) {
-        List<ClientPropertyDraw> columnProperties = new ArrayList<>();
-        List<String> names = new ArrayList<>();
+        List<ClientPropertyDraw> columnProperties = new ArrayList<ClientPropertyDraw>();
+        List<String> names = new ArrayList<String>();
         
         int lastLevelColumnCount = 0;
         for (int i = 1; i <= getMaxSpinnerValue(); i++) {
@@ -637,7 +637,7 @@ public abstract class GroupingDialog extends JDialog {
     private void createExpandButtons() {
         expandButtonsPanel.removeAll();
         expandButtonsPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
-        final List<JButton> buttons = new ArrayList<>();
+        final List<JButton> buttons = new ArrayList<JButton>();
         for (int i = 0; i <= treeTable.getLevelCount() - 1; i++) {
             JButton button = new JButton("" + i);
             if (i == 0) {
@@ -994,7 +994,7 @@ public abstract class GroupingDialog extends JDialog {
     }
     
     private void saveByName(String name) {
-        List<FormGrouping.PropertyGrouping> props = new ArrayList<>();
+        List<FormGrouping.PropertyGrouping> props = new ArrayList<FormGrouping.PropertyGrouping>();
         FormGrouping grouping = new FormGrouping(name, initialTable.getGroupObject().getSID(), quantityCheck.isSelected() ? true : null, null);
         for (Map.Entry<Pair<ClientPropertyDraw, ClientGroupObjectValue>, JSpinner> entry : groupSpinners.entrySet()) {
             Integer order = entry.getValue().isVisible() ? (Integer) entry.getValue().getValue() : null;

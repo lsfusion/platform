@@ -129,9 +129,9 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         protected <P extends PropertyInterface> ModifyChange<P> calculateModifyChange(CalcProperty<P> property, PrereadRows<P> preread, FunctionSet<CalcProperty> overrided) {
             PropertyChange<P> propertyChange = getPropertyChange(property);
             if(propertyChange!=null)
-                return new ModifyChange<>(propertyChange, false);
+                return new ModifyChange<P>(propertyChange, false);
             if(!preread.isEmpty())
-                return new ModifyChange<>(property.getNoChange(), preread, false);
+                return new ModifyChange<P>(property.getNoChange(), preread, false);
             return null;
         }
 
@@ -176,13 +176,13 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             assert sessionEventChangedOld.isEmpty(); // в транзакции никаких сессионных event'ов быть не может
 //            assert applyModifier.getHintProps().isEmpty(); // равно как и хинт'ов, не факт, потому как транзакция не сразу создается
 
-            add = new HashSet<>(DataSession.this.add);
-            remove = new HashSet<>(DataSession.this.remove);
-            usedOldClases = new HashSet<>(DataSession.this.usedOldClasses);
-            usedNewClases = new HashSet<>(DataSession.this.usedNewClasses);
-            singleAdd = new HashMap<>(DataSession.this.singleAdd);
-            singleRemove = new HashMap<>(DataSession.this.singleRemove);
-            newClasses = new HashMap<>(DataSession.this.newClasses);
+            add = new HashSet<CustomClass>(DataSession.this.add);
+            remove = new HashSet<CustomClass>(DataSession.this.remove);
+            usedOldClases = new HashSet<ConcreteObjectClass>(DataSession.this.usedOldClasses);
+            usedNewClases = new HashSet<ConcreteObjectClass>(DataSession.this.usedNewClasses);
+            singleAdd = new HashMap<CustomClass, DataObject>(DataSession.this.singleAdd);
+            singleRemove = new HashMap<CustomClass, DataObject>(DataSession.this.singleRemove);
+            newClasses = new HashMap<DataObject, ConcreteObjectClass>(DataSession.this.newClasses);
 
             data = SessionTableUsage.saveData(DataSession.this.data);
             if(DataSession.this.news!=null)
@@ -354,7 +354,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 /*            Where oldClass = keyExpr.isClass(property.set); // в общем то оптимизация (чтобы например не делать usedOldClasses)
             where = where.and(oldClass.or(newClass));*/
 
-            return new PropertyChange<>(mapKeys, // на не null меняем только тех кто подходит по классу
+            return new PropertyChange<ClassPropertyInterface>(mapKeys, // на не null меняем только тех кто подходит по классу
                     newClassExpr.and(newClass), where);
         }
         return null;
@@ -399,7 +399,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                         removeWhere = hadClass.and(join.getWhere().and(hasClass.not())); 
                     changedWhere = changedWhere.or(removeWhere); // был класс и изменился, но не на новый
                 }
-                return new PropertyChange<>(mapKeys, changeExpr, changedWhere);
+                return new PropertyChange<ClassPropertyInterface>(mapKeys, changeExpr, changedWhere);
             }
         }
         return null;
@@ -448,13 +448,13 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     }
 
     // формы, для которых с момента последнего update уже был restart, соотвественно в значениях - изменения от посл. update (prev) до посл. apply
-    public WeakIdentityHashMap<FormInstance, UpdateChanges> appliedChanges = new WeakIdentityHashMap<>();
+    public WeakIdentityHashMap<FormInstance, UpdateChanges> appliedChanges = new WeakIdentityHashMap<FormInstance, UpdateChanges>();
 
     // формы для которых с момента последнего update не было restart, соответственно в значениях - изменения от посл. update (prev) до посл. изменения
-    public WeakIdentityHashMap<FormInstance, UpdateChanges> incrementChanges = new WeakIdentityHashMap<>();
+    public WeakIdentityHashMap<FormInstance, UpdateChanges> incrementChanges = new WeakIdentityHashMap<FormInstance, UpdateChanges>();
 
     // assert что те же формы что и в increment, соответственно в значениях - изменения от посл. apply до посл. update (prev)
-    public WeakIdentityHashMap<FormInstance, UpdateChanges> updateChanges = new WeakIdentityHashMap<>();
+    public WeakIdentityHashMap<FormInstance, UpdateChanges> updateChanges = new WeakIdentityHashMap<FormInstance, UpdateChanges>();
 
     public final BaseClass baseClass;
     public final ConcreteCustomClass sessionClass;
@@ -559,8 +559,8 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
         assert appliedChanges.disjointKeys(cancel ? updateChanges : incrementChanges);
         appliedChanges.putAll(cancel?updateChanges:incrementChanges);
-        incrementChanges = new WeakIdentityHashMap<>();
-        updateChanges = new WeakIdentityHashMap<>();
+        incrementChanges = new WeakIdentityHashMap<FormInstance, UpdateChanges>();
+        updateChanges = new WeakIdentityHashMap<FormInstance, UpdateChanges>();
 
         dropTables(keep);
         add.clear();
@@ -607,7 +607,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     private static Pair<Integer, Integer>[] toZeroBased(Pair<Integer, Integer>[] shifts) {
         Pair<Integer, Integer>[] result = new Pair[shifts.length];
         for(int i=0;i<shifts.length;i++)
-            result[i] = new Pair<>(shifts[i].first - 1, shifts[i].second);
+            result[i] = new Pair<Integer, Integer>(shifts[i].first - 1, shifts[i].second);
         return result;
     }
 
@@ -624,7 +624,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         try {
             final Query<T, String> query = set.getAddQuery(baseClass); // query, который генерит номера записей (one-based)
             // сначала закидываем в таблицу set с номерами рядов (!!! нужно гарантировать однозначность)
-            table = new SinglePropertyTableUsage<>(query.getMapKeys().keys().toOrderSet(), new Type.Getter<T>() {
+            table = new SinglePropertyTableUsage<T>(query.getMapKeys().keys().toOrderSet(), new Type.Getter<T>() {
                 public Type getType(T key) {
                     return query.getKeyType(key);
                 }
@@ -842,7 +842,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     }
 
     public void changeProperty(DataProperty property, PropertyChange<ClassPropertyInterface> change) throws SQLException, SQLHandledException {
-        if (property.getDebugInfo() != null && property.getDebugInfo().needToCreateDelegate()) {
+        if (property.getDebugInfo() != null) {
             ActionPropertyDebugger.getInstance().delegate(this, property, change);
         } else {
             changePropertyImpl(property, change);
@@ -915,7 +915,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         updateProperties(changes, sourceChanged ? FullFunctionSet.<CalcProperty>instance() : SetFact.<CalcProperty>EMPTY());
     }
 
-    private final ThreadLocal<Boolean> changedFlag = new ThreadLocal<>();
+    private final ThreadLocal<Boolean> changedFlag = new ThreadLocal<Boolean>();
     private void registerChange(ImSet<? extends CalcProperty> changes) { // debug метод
         if(changedFlag.get() != null) {
             ServerLoggers.assertLog(changes != null && ((ImSet<CalcProperty>)changes).filterFn(new SFunctionSet<CalcProperty>() {
@@ -1120,7 +1120,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         return "";
     }
     
-    public interface RunExclusiveness {
+    public static interface RunExclusiveness {
         void run(Query<String, String> query) throws SQLException, SQLHandledException;
     }
 
@@ -1142,14 +1142,13 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             public Integer group(ObjectClassField key) {
                 return tables.indexOf(key) % threshold;
             }}).values()) {
-            SingleKeyTableUsage<String> table = new SingleKeyTableUsage<>(ObjectType.instance, SetFact.toOrderExclSet("sum", "agg"), new Type.Getter<String>() {
+            SingleKeyTableUsage<String> table = new SingleKeyTableUsage<String>(ObjectType.instance, SetFact.toOrderExclSet("sum", "agg"), new Type.Getter<String>() {
                 public Type getType(String key) {
                     return key.equals("sum") ? ValueExpr.COUNTCLASS : StringClass.getv(false, ExtInt.UNLIMITED);
-                }
-            });
+                }});
             Expr sumExpr = IsClassExpr.create(key, group, IsClassType.SUMCONSISTENT);
             Expr aggExpr = IsClassExpr.create(key, group, IsClassType.AGGCONSISTENT);
-            table.writeRows(sql, new Query<>(MapFact.singletonRev("key", key), MapFact.toMap("sum", sumExpr, "agg", aggExpr), sumExpr.getWhere()), baseClass, DataSession.emptyEnv(OperationOwner.unknown), SessionTable.nonead);
+            table.writeRows(sql, new Query<String,String>(MapFact.singletonRev("key", key), MapFact.toMap("sum", sumExpr, "agg", aggExpr), sumExpr.getWhere()), baseClass, DataSession.emptyEnv(OperationOwner.unknown), SessionTable.nonead);
 
             Join<String> tableJoin = table.join(key);
             mSum.add(tableJoin.getExpr("sum"), 1);
@@ -1161,7 +1160,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         // FormulaUnionExpr.create(new StringAggConcatenateFormulaImpl(","), mAgg.immutableList()) , "value",
         Expr sumExpr = mSum.getExpr();
         Expr aggExpr = FormulaUnionExpr.create(new StringAggConcatenateFormulaImpl(","), mAgg.immutableList());
-        run.run(new Query<>(MapFact.singletonRev("key", key), sumExpr.compare(ValueExpr.COUNT, Compare.GREATER), MapFact.<String, DataObject>EMPTY(),
+        run.run(new Query<String,String>(MapFact.singletonRev("key", key), sumExpr.compare(ValueExpr.COUNT, Compare.GREATER), MapFact.<String, DataObject>EMPTY(),
                 MapFact.toMap("sum", sumExpr, "agg", aggExpr)));
 
         for(SingleKeyTableUsage<String> usedTable : usedTables.it())
@@ -1249,7 +1248,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         } else
             propExprs = MapFact.EMPTY();
 
-        return new Query<>(mapKeys, propExprs, where);
+        return new Query<KeyField, Object>(mapKeys, propExprs, where);
     }
 
     public static void recalculateTableClasses(ImplementTable table, SQLSession sql, BaseClass baseClass) throws SQLException, SQLHandledException {
@@ -1429,7 +1428,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
         protected <P extends PropertyInterface> ModifyChange<P> calculateModifyChange(CalcProperty<P> property, PrereadRows<P> preread, FunctionSet<CalcProperty> overrided) {
             if(!preread.isEmpty())
-                return new ModifyChange<>(property.getNoChange(), preread, false);
+                return new ModifyChange<P>(property.getNoChange(), preread, false);
             return null;
         }
 
@@ -1533,7 +1532,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         }
     }
 
-    private OrderedMap<CalcProperty, SinglePropertyTableUsage> pendingSingleTables = new OrderedMap<>();
+    private OrderedMap<CalcProperty, SinglePropertyTableUsage> pendingSingleTables = new OrderedMap<CalcProperty, SinglePropertyTableUsage>();
     boolean flush = false;
 
     private FunctionSet<CalcProperty> neededProps = null;
@@ -1576,7 +1575,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                 SinglePropertyTableUsage<T> prevTable = pendingSingle.getValue();
     
                 ImRevMap<T, KeyExpr> mapKeys = property.getMapKeys();
-                SinglePropertyTableUsage<T> newTable = property.readChangeTable(sql, new PropertyChange<>(mapKeys, property.getExpr(mapKeys), prevTable.join(mapKeys).getWhere()), baseClass, env);
+                SinglePropertyTableUsage<T> newTable = property.readChangeTable(sql, new PropertyChange<T>(mapKeys, property.getExpr(mapKeys), prevTable.join(mapKeys).getWhere()), baseClass, env);
                 try {
                     savePropertyChanges(property, prevTable); // записываем старые изменения
                 } finally {
@@ -1608,7 +1607,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     }
 
     private <K,V> void savePropertyChanges(Table implementTable, ImMap<V, CalcProperty> props, ImRevMap<K, KeyField> mapKeys, SessionTableUsage<K, V> changeTable, boolean onlyNotNull) throws SQLException, SQLHandledException {
-        QueryBuilder<KeyField, PropertyField> modifyQuery = new QueryBuilder<>(implementTable);
+        QueryBuilder<KeyField, PropertyField> modifyQuery = new QueryBuilder<KeyField, PropertyField>(implementTable);
         Join<V> join = changeTable.join(mapKeys.join(modifyQuery.getMapExprs()));
         
 /*        Where reupdateWhere = null;
@@ -1693,7 +1692,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         if (parentSession != null) {
             assert !isInTransaction() && !isInSessionEvent();
 
-            NotFunctionSet<SessionDataProperty> notKeepProps = new NotFunctionSet<>(keepProps);
+            NotFunctionSet<SessionDataProperty> notKeepProps = new NotFunctionSet<SessionDataProperty>(keepProps);
             copyDataTo(parentSession, false, notKeepProps); // те которые не keep не копируем наверх, более того копируем их обратно как при не вложенной newSession
             parentSession.copyDataTo(this, notKeepProps);
 
@@ -1802,7 +1801,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         }
     }
 
-    private WeakIdentityHashMap<FormInstance, Object> activeForms = new WeakIdentityHashMap<>();
+    private WeakIdentityHashMap<FormInstance, Object> activeForms = new WeakIdentityHashMap<FormInstance, Object>();
     public void registerForm(FormInstance form) throws SQLException, SQLHandledException {
         synchronized (closeLock) {
             activeForms.put(form, true);
@@ -1874,7 +1873,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         this.applyFilter = applyFilter;
     }
     
-    private List<Runnable> rollbackInfo = new ArrayList<>(); 
+    private List<Runnable> rollbackInfo = new ArrayList<Runnable>(); 
     public void addRollbackInfo(Runnable run) {
         assert isInTransaction();
         
@@ -1967,7 +1966,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
         // проводим "мини-паковку", то есть удаляем все записи, у которых ключем является удаляемый объект
         for(ImplementTable table : BL.LM.tableFactory.getImplementTables(fromJavaSet(remove))) {
-            QueryBuilder<KeyField, PropertyField> query = new QueryBuilder<>(table);
+            QueryBuilder<KeyField, PropertyField> query = new QueryBuilder<KeyField, PropertyField>(table);
             Where removeWhere = Where.FALSE;
             for (int i = 0, size = table.mapFields.size(); i < size; i++) {
                 try {
@@ -2055,12 +2054,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
     public final QueryEnvironment env = new QueryEnvironment() {
         public ParseInterface getSQLUser() {
-            ObjectValue currentUser = user.getCurrentUser();
-            if (currentUser instanceof DataObject) {
-                return new TypeObject(((DataObject) currentUser).object, ObjectType.instance);
-            } else {
-                return ((NullValue) currentUser).getParse(ObjectType.instance);
-            }
+            return new TypeObject(user.getCurrentUser().object, ObjectType.instance);
         }
 
         public OperationOwner getOpOwner() {
@@ -2076,12 +2070,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         }
 
         public ParseInterface getSQLComputer() {
-            ObjectValue currentComputer = computer.getCurrentComputer();
-            if (currentComputer instanceof DataObject) {
-                return new TypeObject(((DataObject) currentComputer).object, ObjectType.instance);
-            } else {
-                return ((NullValue) currentComputer).getParse(ObjectType.instance);
-            }
+            return new TypeObject(computer.getCurrentComputer().object, ObjectType.instance);
         }
 
         public ParseInterface getSQLForm() {
@@ -2234,7 +2223,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                     mChangedBack.keep(changeClass);
             }
         }
-        return checkChanged ? new Pair<>(
+        return checkChanged ? new Pair<ImSet<CustomClass>, ImSet<CustomClass>>(
                 thisChanged.remove(SetFact.<CustomClass>imFilter(mNotChanged, thisChanged)), SetFact.<CustomClass>imFilter(mChangedBack, thisChanged)) : null;
     }
 
@@ -2303,7 +2292,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         }
     }
     public void dropSessionChanges(ImSet<SessionDataProperty> props) throws SQLException, SQLHandledException {
-        dropChanges(props.filterFn(new NotFunctionSet<>(recursiveUsed)));
+        dropChanges(props.filterFn(new NotFunctionSet<SessionDataProperty>(recursiveUsed)));
     }
     public void dropChanges(Iterable<SessionDataProperty> props) throws SQLException, SQLHandledException {
         for (SessionDataProperty prop : props) { // recursiveUsed не drop'аем
@@ -2473,7 +2462,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     public <P extends PropertyInterface> SessionTableUsage<KeyField, CalcProperty> readSave(ImplementTable table, ImSet<CalcProperty> properties, Modifier modifier) throws SQLException, SQLHandledException {
         // подготовили - теперь надо сохранить в курсор и записать классы
         SessionTableUsage<KeyField, CalcProperty> changeTable =
-                new SessionTableUsage<>(table.keys, properties.toOrderSet(), Field.<KeyField>typeGetter(),
+                new SessionTableUsage<KeyField, CalcProperty>(table.keys, properties.toOrderSet(), Field.<KeyField>typeGetter(),
                         new Type.Getter<CalcProperty>() {
                             public Type getType(CalcProperty key) {
                                 return key.getType();

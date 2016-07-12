@@ -17,7 +17,7 @@ public abstract class FilterEntity implements Instantiable<FilterInstance> {
     public abstract FilterEntity getRemappedFilter(ObjectEntity oldObject, ObjectEntity newObject, InstanceFactory instanceFactory);
 
     public Set<ObjectEntity> getObjects() {
-        Set<ObjectEntity> objects = new HashSet<>();
+        Set<ObjectEntity> objects = new HashSet<ObjectEntity>();
         fillObjects(objects);
         return objects;
     }

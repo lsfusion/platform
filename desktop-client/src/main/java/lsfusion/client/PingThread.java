@@ -46,7 +46,7 @@ public class PingThread extends Thread {
     public PingThread(ClientCallBackInterface remoteClient) {
         this.period = StartupProperties.pullMessagesPeriod;
         this.remoteClient = remoteClient;
-        clientProcessor = new ClientCallBackProcessor();
+        clientProcessor = new ClientCallBackProcessor(remoteClient);
         setDaemon(true);
     }
 

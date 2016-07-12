@@ -22,7 +22,7 @@ public class StringConcatenateProperty extends FormulaImplProperty {
     @Override
     public Inferred<Interface> calcInferInterfaceClasses(ExClassSet commonValue, InferType inferType) {
         if (commonValue != null) {
-            return new Inferred<>(ExClassSet.toEx(interfaces.mapValues(new GetStaticValue<ResolveClassSet>() {
+            return new Inferred<Interface>(ExClassSet.toEx(interfaces.mapValues(new GetStaticValue<ResolveClassSet>() {
                 public ResolveClassSet getMapValue() {
                     return StringClass.get(0); // немного бред но ладно
                 }

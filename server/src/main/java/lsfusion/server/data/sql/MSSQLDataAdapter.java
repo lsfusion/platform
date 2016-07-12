@@ -205,7 +205,7 @@ public class MSSQLDataAdapter extends DataAdapter {
         for(String single : command.split(separator + "GO" + separator))
             executeEnsure(single);
         
-        ensureDTL(new Pair<>("LSFUtils", IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream("/sql/mssql/Utils.cs"))), false, ListFact.<Type>EMPTY());
+        ensureDTL(new Pair<String, String>("LSFUtils", IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream("/sql/mssql/Utils.cs"))), false, ListFact.<Type>EMPTY());
 
         ensureConcType(ConcatenateType.get(new Type[]{DateClass.instance, ObjectType.instance}));
 
@@ -502,7 +502,7 @@ public class MSSQLDataAdapter extends DataAdapter {
         properties.put("ser.read", read.toString());
         properties.put("ser.write", write.toString());
 
-        ensureDTL(new Pair<>(aggName, stringResolver.replacePlaceholders(parse.code, properties)), false, types);
+        ensureDTL(new Pair<String, String>(aggName, stringResolver.replacePlaceholders(parse.code, properties)), false, types);
 
         ensuredGroupAggOrders.exclAdd(groupAggOrder, true);
     }
@@ -691,7 +691,7 @@ public class MSSQLDataAdapter extends DataAdapter {
         properties.put("type.name", typeName);
         properties.put("maxbyte.size", ""+concType.getDotNetSize());
 
-        return new Pair<>(typeName, stringResolver.replacePlaceholders(concTypeString, properties));
+        return new Pair<String, String>(typeName, stringResolver.replacePlaceholders(concTypeString, properties));
     }
 
     @Override
@@ -704,9 +704,9 @@ public class MSSQLDataAdapter extends DataAdapter {
 //    }
     
     public void ensureDTL(Pair<String, String> source, boolean toTempDb, ImList<Type> types) throws SQLException {
-        Set<String> refs = new HashSet<>();
-        List<String> creates = new ArrayList<>();
-        List<String> drops = new ArrayList<>();
+        Set<String> refs = new HashSet<String>();
+        List<String> creates = new ArrayList<String>();
+        List<String> drops = new ArrayList<String>();
         Pair<String, String> code = split(source, refs, creates, drops);
 
         ensureDTL(toTempDb, getTypesSources(types, refs).addList(code), refs, creates, drops);
@@ -742,7 +742,7 @@ public class MSSQLDataAdapter extends DataAdapter {
             sb.append(split[i]);
             sb.append(separator);
         }
-        return new Pair<>(source.first, sb.toString());
+        return new Pair<String, String>(source.first, sb.toString());
     }
 
     private synchronized void upload(String assemblyName, List<String> creates, List<String> drops, byte[] compiled, boolean toTempDb) throws SQLException {
@@ -976,7 +976,7 @@ public class MSSQLDataAdapter extends DataAdapter {
         properties.put("type.name", typeName);
         properties.put("aggr.name", getArrayAggName(typeName));
 
-        return new Pair<>(typeName, stringResolver.replacePlaceholders(arrayClassString, properties));
+        return new Pair<String, String>(typeName, stringResolver.replacePlaceholders(arrayClassString, properties));
     }
 
     @Override
@@ -1035,7 +1035,7 @@ public class MSSQLDataAdapter extends DataAdapter {
         return true;
     }
 
-    private LRUSVSMap<Object, Boolean> ensuredRecursion = new LRUSVSMap<>(LRUUtil.G2);
+    private LRUSVSMap<Object, Boolean> ensuredRecursion = new LRUSVSMap<Object, Boolean>(LRUUtil.G2);
     
     @Override
     public synchronized void ensureRecursion(Object object) throws SQLException {

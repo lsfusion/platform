@@ -65,7 +65,7 @@ public class SQLTemporaryPool {
         for(String matchTable : matchTables) // ищем нужную таблицу
             if(!used.containsKey(matchTable)) { // если не используется
                 assert !used.containsKey(matchTable);
-                used.put(matchTable, new WeakReference<>(owner));
+                used.put(matchTable, new WeakReference<TableOwner>(owner));
 //                session.truncate(matchTable); // удаляем старые данные
 //                if(session.getCount(matchTable, opOwner) != 0) {
 //                    ServerLoggers.assertLog(false, "TEMPORARY TABLE NOT EMPTY");
@@ -82,7 +82,7 @@ public class SQLTemporaryPool {
         CacheStats.incrementMissed(CacheStats.CacheType.TEMP_TABLE);
         String table = getTableName(counter);
         assert !used.containsKey(table);
-        used.put(table, new WeakReference<>(owner)); // до всех sql, см. выше
+        used.put(table, new WeakReference<TableOwner>(owner)); // до всех sql, см. выше
         session.createTemporaryTable(table, keys, properties, opOwner);
         counter++;
         //        SQLSession.addUsed(table, owner, used, usedStacks);

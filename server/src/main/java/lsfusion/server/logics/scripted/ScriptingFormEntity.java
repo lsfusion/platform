@@ -19,7 +19,6 @@ import lsfusion.server.form.entity.filter.NotNullFilterEntity;
 import lsfusion.server.form.entity.filter.RegularFilterEntity;
 import lsfusion.server.form.entity.filter.RegularFilterGroupEntity;
 import lsfusion.server.form.instance.FormSessionScope;
-import lsfusion.server.logics.debug.DebugInfo;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.linear.LP;
@@ -58,7 +57,7 @@ public class ScriptingFormEntity {
     }
 
     public List<GroupObjectEntity> addScriptingGroupObjects(List<ScriptingGroupObject> groupObjects, Version version) throws ScriptingErrorLog.SemanticErrorException {
-        List<GroupObjectEntity> groups = new ArrayList<>();
+        List<GroupObjectEntity> groups = new ArrayList<GroupObjectEntity>();
         for (ScriptingGroupObject groupObject : groupObjects) {
             GroupObjectEntity groupObj = new GroupObjectEntity(form.genID());
 
@@ -125,7 +124,7 @@ public class ScriptingFormEntity {
             if (properties != null) {
                 GroupObjectEntity groupObj = groups.get(groupObjects.indexOf(groupObject));
 
-                List<CalcPropertyObjectEntity> propertyObjects = new ArrayList<>();
+                List<CalcPropertyObjectEntity> propertyObjects = new ArrayList<CalcPropertyObjectEntity>();
                 for (ScriptingLogicsModule.PropertyUsage pUsage : properties) {
                     if (pUsage.name != null) {
                         LCP property = (LCP) findLP(pUsage, groupObj);
@@ -198,7 +197,7 @@ public class ScriptingFormEntity {
     }
 
     public List<GroupObjectEntity> getGroupObjectsList(List<String> mapping, Version version) throws ScriptingErrorLog.SemanticErrorException {
-        List<GroupObjectEntity> groupObjects = new ArrayList<>();
+        List<GroupObjectEntity> groupObjects = new ArrayList<GroupObjectEntity>();
         for (String groupName : mapping) {
             GroupObjectEntity groupObject = form.getNFGroupObject(groupName, version);
             if (groupObject == null) {
@@ -227,7 +226,7 @@ public class ScriptingFormEntity {
         }
     }
 
-    public void addScriptedPropertyDraws(List<ScriptingLogicsModule.PropertyUsage> properties, List<String> aliases, List<List<String>> mappings, FormPropertyOptions commonOptions, List<FormPropertyOptions> options, Version version, List<DebugInfo.DebugPoint> points) throws ScriptingErrorLog.SemanticErrorException {
+    public void addScriptedPropertyDraws(List<ScriptingLogicsModule.PropertyUsage> properties, List<String> aliases, List<List<String>> mappings, FormPropertyOptions commonOptions, List<FormPropertyOptions> options, Version version, int lineNumber) throws ScriptingErrorLog.SemanticErrorException {
         assert properties.size() == mappings.size();
 
         boolean reverse = commonOptions.getNeighbourPropertyDraw() != null && commonOptions.isRightNeighbour();
@@ -263,7 +262,7 @@ public class ScriptingFormEntity {
                 MappedProperty prop = getPropertyWithMapping(pUsage, mapping);
 
                 checkPropertyParameters(prop.property, prop.mapping);
-                String formPath = points.get(i).toString();
+                String formPath = LM.getParser().getCurrentScriptPath(LM.getName(), lineNumber, "\n");
                 property = form.addPropertyDraw(prop.property, version, formPath, prop.mapping);
             }
             FormPropertyOptions propertyOptions = commonOptions.overrideWith(options.get(i));
@@ -274,7 +273,7 @@ public class ScriptingFormEntity {
 
             movePropertyDraw(property, propertyOptions, version);
 
-            setFinalPropertyDrawSID(property, alias);
+            setPropertyDrawAlias(alias, property, version);
         }
     }
 
@@ -416,24 +415,26 @@ public class ScriptingFormEntity {
         LCP<C> defaultColorProp = back ? LM.baseLM.defaultOverrideBackgroundColor : LM.baseLM.defaultOverrideForegroundColor;
         CalcPropertyMapImplement<P, P> groupImplement = groundProperty.property.getImplement();
         CalcPropertyMapImplement<?, P> mapImpl = DerivedProperty.createAnd(groundProperty.property.interfaces,
-                new CalcPropertyMapImplement<>(defaultColorProp.property, MapFact.<C, P>EMPTYREV()), groupImplement);
+                new CalcPropertyMapImplement<C, P>(defaultColorProp.property, MapFact.<C, P>EMPTYREV()), groupImplement);
         return new CalcPropertyObjectEntity(
                 mapImpl.property,
                 mapImpl.mapping.join(groundProperty.mapping));
     }
 
-    public void setFinalPropertyDrawSID(PropertyDrawEntity property, String alias) throws ScriptingErrorLog.SemanticErrorException {
-        String newSID = (alias == null ? property.getSID() : alias);
-        property.setSID(null);
-        try {
-            PropertyDrawEntity drawEntity;
-            if ((drawEntity = form.getPropertyDraw(newSID, Version.CURRENT)) != null) {
-                LM.getErrLog().emitAlreadyDefinedPropertyDraw(LM.getParser(), form.getCanonicalName(), newSID, drawEntity.getFormPath());
-            }
-        } catch (ScriptingErrorLog.SemanticErrorException e) {
-            System.err.println(e.getMessage());
+    private void setPropertyDrawAlias(String alias, PropertyDrawEntity property, Version version) {
+        assert property != null;
+
+        if (alias == null) {
+            return;
         }
-        property.setSID(newSID);
+
+        PropertyDrawEntity oldSIDOwner = form.getPropertyDraw(alias, version);
+
+        property.setSID(alias);
+
+        if (oldSIDOwner != null && oldSIDOwner != property) {
+            form.setPropertyDrawSID(oldSIDOwner, alias);
+        }
     }
 
     public PropertyDrawEntity getPropertyDraw(String sid, Version version) throws ScriptingErrorLog.SemanticErrorException {
@@ -624,9 +625,9 @@ public class ScriptingFormEntity {
     }
 
     public List<ScriptingLogicsModule.TypedParameter> getTypedObjectsNames(Version version) {
-        List<ValueClass> classes = new ArrayList<>();
+        List<ValueClass> classes = new ArrayList<ValueClass>();
         List<String> objNames = form.getNFObjectsNamesAndClasses(classes, version);
-        List<ScriptingLogicsModule.TypedParameter> typedObjects = new ArrayList<>();
+        List<ScriptingLogicsModule.TypedParameter> typedObjects = new ArrayList<ScriptingLogicsModule.TypedParameter>();
         for (int i = 0; i < classes.size(); ++i) {
             typedObjects.add(LM.new TypedParameter(classes.get(i), objNames.get(i)));
         }

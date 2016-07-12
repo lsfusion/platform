@@ -23,7 +23,7 @@ public class SetExecEnvUserActionProperty extends ScriptingActionProperty {
 
     @Override
     protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
-        List<Object> params = new ArrayList<>();
+        List<Object> params = new ArrayList<Object>();
         for (ClassPropertyInterface classPropertyInterface : context.getKeys().keys()) {
             params.add(context.getKeyObject(classPropertyInterface));
         }

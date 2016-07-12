@@ -12,7 +12,7 @@ public class DynamicFormatFileClass extends FileClass {
         return "CustomClass"; // для обратной совместимости такое название
     }
 
-    private static Collection<DynamicFormatFileClass> instances = new ArrayList<>();
+    private static Collection<DynamicFormatFileClass> instances = new ArrayList<DynamicFormatFileClass>();
 
     public static DynamicFormatFileClass get(boolean multiple, boolean storeName) {
         for (DynamicFormatFileClass instance : instances)

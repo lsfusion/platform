@@ -54,7 +54,7 @@ public abstract class CellBasedWidgetImpl {
   final Set<String> focusableTypes;
 
   CellBasedWidgetImpl() {
-    focusableTypes = new HashSet<>();
+    focusableTypes = new HashSet<String>();
     focusableTypes.add("select");
     focusableTypes.add("input");
     focusableTypes.add("textarea");

@@ -68,7 +68,7 @@ public class NFListImpl<T> extends NFAColImpl<T, NFListChange<T>, ImList<T>> imp
     }
 
     public void addFirst(T element, Version version) {
-        addChange(new NFAddFirstList<>(element), version);
+        addChange(new NFAddFirstList<T>(element), version);
     }
 
     public static <T> void add(boolean isLast, NFList<T> list, T element, Version version) {

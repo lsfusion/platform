@@ -23,10 +23,10 @@ public abstract class NFChangeImpl<T, CH, F> extends NFImpl<TreeMap<Version, MLi
     }
 
     protected TreeMap<Version, MList<CH>> initMutable() {
-        return new TreeMap<>();
+        return new TreeMap<Version, MList<CH>>();
     }
 
-    protected interface ChangeProcessor<T, CH> {
+    protected static interface ChangeProcessor<T, CH> {
         void proceed(CH change);
     }
     
@@ -63,6 +63,6 @@ public abstract class NFChangeImpl<T, CH, F> extends NFImpl<TreeMap<Version, MLi
     }
 
     public void add(T element, Version version) {
-        addChange((CH) new NFAdd<>(element), version);
+        addChange((CH)new NFAdd<T>(element), version);
     }
 }

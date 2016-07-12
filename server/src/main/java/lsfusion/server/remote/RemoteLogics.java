@@ -188,7 +188,7 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
 
     @Override
     public Integer getApiVersion() throws RemoteException {
-        return 13;
+        return 10;
     }
 
     public GUIPreferences getGUIPreferences() throws RemoteException {
@@ -248,7 +248,7 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     }
 
     protected List<String> getExtraUserRoleNames(String username) {
-        return new ArrayList<>();
+        return new ArrayList<String>();
     }
 
     protected Integer getUserByEmail(DataSession session, String email) throws SQLException, SQLHandledException {

@@ -121,7 +121,7 @@ public class NumericClass extends IntegralClass<BigDecimal> {
         return get((byte)length, (byte)precision);
     }
 
-    private static Collection<NumericClass> instances = new ArrayList<>();
+    private static Collection<NumericClass> instances = new ArrayList<NumericClass>();
 
     @NFStaticLazy
     public static NumericClass get(byte length, byte precision) {

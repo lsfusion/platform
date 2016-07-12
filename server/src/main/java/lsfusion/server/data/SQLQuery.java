@@ -177,7 +177,7 @@ public class SQLQuery extends SQLCommand<ResultHandler<String, String>> {
 
     public String readSelect(SQLSession session, DynamicExecuteEnvironment queryExecEnv, ImMap<String, ParseInterface> queryParams, int transactTimeout, OperationOwner owner) throws SQLException, SQLHandledException {
         // выведем на экран
-        ReadAllResultHandler<String, String> handler = new ReadAllResultHandler<>();
+        ReadAllResultHandler<String, String> handler = new ReadAllResultHandler<String, String>();
         session.executeSelect(this, queryExecEnv, owner, queryParams, transactTimeout, handler);
         ImOrderMap<ImMap<String, Object>, ImMap<String, Object>> result = handler.terminate();
 
@@ -285,7 +285,7 @@ public class SQLQuery extends SQLCommand<ResultHandler<String, String>> {
     }
 
     public MaterializedQuery materialize(final SQLSession session, final DynamicExecuteEnvironment subQueryExecEnv, final OperationOwner owner, final ImMap<SQLQuery, MaterializedQuery> materializedQueries, final ImMap<String, ParseInterface> queryParams, final int transactTimeout) throws SQLException, SQLHandledException {
-        Result<Integer> actual = new Result<>();
+        Result<Integer> actual = new Result<Integer>();
         final MaterializedQuery.Owner tableOwner = new MaterializedQuery.Owner();
 
         final ImOrderSet<String> keys = keyReaders.keys().toOrderSet();
@@ -314,7 +314,7 @@ public class SQLQuery extends SQLCommand<ResultHandler<String, String>> {
 
     private static SQLExecute getExecute(SQLDML dml, ImMap<String, ParseInterface> queryParams, DynamicExecuteEnvironment queryExecEnv, ImMap<SQLQuery, MaterializedQuery> materializedQueries, PureTimeInterface pureTime, int transactTimeout, OperationOwner owner, TableOwner tableOwner, RegisterChange registerChange) {
         if(queryExecEnv instanceof AdjustMaterializedExecuteEnvironment)
-            return new SQLExecute<>(dml, queryParams, (AdjustMaterializedExecuteEnvironment) queryExecEnv, materializedQueries, pureTime, transactTimeout, owner, tableOwner, registerChange);
+            return new SQLExecute<ImMap<SQLQuery, MaterializedQuery>, AdjustMaterializedExecuteEnvironment.Snapshot>(dml, queryParams, (AdjustMaterializedExecuteEnvironment)queryExecEnv, materializedQueries, pureTime, transactTimeout, owner, tableOwner, registerChange);
         return new SQLExecute(dml, queryParams, queryExecEnv, transactTimeout, owner, tableOwner, registerChange);
     }
 

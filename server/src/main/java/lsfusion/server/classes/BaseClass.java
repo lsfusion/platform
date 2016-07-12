@@ -85,8 +85,8 @@ public class BaseClass extends AbstractCustomClass {
         ImSet<CustomClass> allClasses = getAllClasses().remove(SetFact.singleton(objectClass));
 
         // сначала обрабатываем baseClass.objectClass чтобы классы
-        List<String> sidClasses = new ArrayList<>();
-        List<String> nameClasses = new ArrayList<>();
+        List<String> sidClasses = new ArrayList<String>();
+        List<String> nameClasses = new ArrayList<String>();
         for(CustomClass customClass : allClasses)
             if(customClass instanceof ConcreteCustomClass) {
                 sidClasses.add(customClass.getSID());
@@ -96,8 +96,8 @@ public class BaseClass extends AbstractCustomClass {
     }
 
     public void fillIDs(DataSession session, LCP staticCaption, LCP staticName, Map<String, String> sidChanges, Map<String, String> objectSIDChanges) throws SQLException, SQLHandledException {
-        Map<String, ConcreteCustomClass> usedSIds = new HashMap<>();
-        Set<Integer> usedIds = new HashSet<>();
+        Map<String, ConcreteCustomClass> usedSIds = new HashMap<String, ConcreteCustomClass>();
+        Set<Integer> usedIds = new HashSet<Integer>();
 
         // baseClass'у и baseClass.objectClass'у нужны ID сразу потому как учавствуют в addObject
         ID = 0;
@@ -112,7 +112,7 @@ public class BaseClass extends AbstractCustomClass {
         usedSIds.put(objectClass.sID, objectClass);
         usedIds.add(objectClass.ID);
 
-        Map<DataObject, String> modifiedSIDs = new HashMap<>();
+        Map<DataObject, String> modifiedSIDs = new HashMap<DataObject, String>();
         Map<DataObject, String> modifiedNames = objectClass.fillIDs(session, staticCaption, staticName, usedSIds, usedIds, sidChanges, modifiedSIDs);
 
         Set<CustomClass> allClasses = getAllChildren().toJavaSet();
@@ -200,7 +200,7 @@ public class BaseClass extends AbstractCustomClass {
     @IdentityLazy
     public Pair<KeyExpr, Expr> getSubQuery(ImSet<ObjectClassField> classTables, IsClassType type) {
         KeyExpr keyExpr = new KeyExpr("isSetClass");
-        return new Pair<>(keyExpr, IsClassExpr.getTableExpr(keyExpr, classTables, IsClassExpr.subqueryThreshold, type));
+        return new Pair<KeyExpr, Expr>(keyExpr, IsClassExpr.getTableExpr(keyExpr, classTables, IsClassExpr.subqueryThreshold, type));
     }
     @IdentityStrongLazy
     public Table getInconsistentTable(ImplementTable table) {

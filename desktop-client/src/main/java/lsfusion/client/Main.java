@@ -548,6 +548,10 @@ public class Main {
         return remoteLogics.generateID();
     }
 
+    public static void closeHangingSockets() {
+        rmiSocketFactory.closeHangingSockets();
+    }
+
     public interface ModuleFactory {
         MainFrame initFrame(RemoteNavigatorInterface remoteNavigator) throws IOException;
 

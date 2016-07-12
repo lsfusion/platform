@@ -26,12 +26,12 @@ public class GActionType extends GDataType {
     }
 
     @Override
-    public int getMaximumPixelWidth(int maximumCharWidth, GFont font, String pattern) {
-        return getPreferredPixelWidth(maximumCharWidth, font, pattern);
+    public int getMaximumPixelWidth(int maximumCharWidth, GFont font) {
+        return getPreferredPixelWidth(maximumCharWidth, font);
     }
 
     @Override
-    public Object parseString(String s, String pattern) throws ParseException {
+    public Object parseString(String s) throws ParseException {
         throw new ParseException("Action class doesn't support conversion from string", 0);
     }
 
@@ -42,7 +42,7 @@ public class GActionType extends GDataType {
     }
 
     @Override
-    public String getPreferredMask(String pattern) {
+    public String getPreferredMask() {
         return "1234567";
     }
 

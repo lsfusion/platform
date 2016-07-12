@@ -54,7 +54,7 @@ public abstract class GAbstractGroupObjectController implements GGroupObjectLogi
             filter = new GFilterController(this) {
                 @Override
                 public void remoteApplyQuery() {
-                    changeFilter(new ArrayList<>(getConditions()));
+                    changeFilter(new ArrayList<GPropertyFilter>(getConditions()));
                 }
 
                 @Override

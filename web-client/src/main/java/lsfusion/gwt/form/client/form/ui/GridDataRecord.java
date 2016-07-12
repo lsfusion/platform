@@ -99,28 +99,28 @@ public class GridDataRecord {
 
     private HashMap<Object, Object> createValues() {
         if (values == null) {
-            values = new HashMap<>();
+            values = new HashMap<Object, Object>();
         }
         return values;
     }
 
     private HashMap<Integer, String> createBackgrounds() {
         if (backgrounds == null) {
-            backgrounds = new HashMap<>();
+            backgrounds = new HashMap<Integer, String>();
         }
         return backgrounds;
     }
 
     private HashMap<Integer, String> createForegrounds() {
         if (foregrounds == null) {
-            foregrounds = new HashMap<>();
+            foregrounds = new HashMap<Integer, String>();
         }
         return foregrounds;
     }
 
     private HashMap<Integer, Boolean> createReadOnlys() {
         if (readOnlys == null) {
-            readOnlys = new HashMap<>();
+            readOnlys = new HashMap<Integer, Boolean>();
         }
         return readOnlys;
     }

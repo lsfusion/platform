@@ -35,11 +35,11 @@ public abstract class GType implements Serializable {
         return GCompare.EQUALS;
     }
 
-    public abstract int getMinimumPixelWidth(int minimumCharWidth, GFont font, String pattern);
-    public abstract int getMaximumPixelWidth(int maximumCharWidth, GFont font, String pattern);
-    public abstract int getPreferredPixelWidth(int preferredCharWidth, GFont font, String pattern);
+    public abstract int getMinimumPixelWidth(int minimumCharWidth, GFont font);
+    public abstract int getMaximumPixelWidth(int maximumCharWidth, GFont font);
+    public abstract int getPreferredPixelWidth(int preferredCharWidth, GFont font);
     public abstract GCompare[] getFilterCompares();
-    public abstract Object parseString(String s, String pattern) throws ParseException;
+    public abstract Object parseString(String s) throws ParseException;
 
     public int getMinimumPixelHeight(GFont font) {
         return font == null || font.size == null ? 16 : GFontMetrics.getSymbolHeight(font);

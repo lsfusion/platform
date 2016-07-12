@@ -2,9 +2,9 @@ package lsfusion.server.form.instance;
 
 public interface PropertyReaderInstance {
 
-    CalcPropertyObjectInstance getPropertyObjectInstance();
+    public CalcPropertyObjectInstance getPropertyObjectInstance();
 
-    byte getTypeID();
+    public byte getTypeID();
 
-    int getID(); // ID в рамках Type
+    public int getID(); // ID в рамках Type
 }

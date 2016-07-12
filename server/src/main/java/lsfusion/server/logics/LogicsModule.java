@@ -742,27 +742,25 @@ public abstract class LogicsModule {
     
     // ------------------- NEWSESSION ----------------- //
 
-    protected LAP addNewSessionAProp(AbstractGroup group, String caption, LAP action, boolean doApply, boolean singleApply, boolean newSQL, boolean isNested) {
-        return addNewSessionAProp(group, caption, action, isNested, doApply, singleApply, newSQL, SetFact.<SessionDataProperty>EMPTY());
+    protected LAP addNewSessionAProp(AbstractGroup group, String caption, LAP action, boolean doApply, boolean singleApply, boolean noClose, boolean isNested) {
+        return addNewSessionAProp(group, caption, action, isNested, doApply, singleApply, noClose, SetFact.<SessionDataProperty>EMPTY());
     }
     
     protected LAP addNewSessionAProp(AbstractGroup group, String caption,
-                                     LAP action, boolean isNested, boolean doApply, boolean singleApply, boolean newSQL,
+                                     LAP action, boolean isNested, boolean doApply, boolean singleApply, boolean noClose,
                                      FunctionSet<SessionDataProperty> migrateSessionProps) {
         ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(action.listInterfaces.size());
         ActionPropertyMapImplement<?, PropertyInterface> actionImplement = mapActionListImplement(action, listInterfaces);
 
         return addProperty(group, new LAP(
                 new NewSessionActionProperty(
-                        caption, listInterfaces, actionImplement, singleApply, newSQL, doApply, migrateSessionProps, isNested)));
+                        caption, listInterfaces, actionImplement, singleApply, noClose, doApply, migrateSessionProps, isNested)));
     }
 
-    protected LAP addNewThreadAProp(AbstractGroup group, String caption, boolean withConnection, boolean hasPeriod, boolean hasDelay, Object... params) {
+    protected LAP addNewThreadAProp(AbstractGroup group, String caption, long delay, Long period, Object... params) {
         ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(getIntNum(params));
         ImList<PropertyInterfaceImplement<PropertyInterface>> readImplements = readImplements(listInterfaces, params);
-        CalcPropertyInterfaceImplement connection = withConnection ? (CalcPropertyInterfaceImplement) readImplements.get(1) : null;
-        CalcPropertyInterfaceImplement period = hasPeriod ? (CalcPropertyInterfaceImplement) readImplements.get(1) : null;
-        CalcPropertyInterfaceImplement delay = hasDelay ? (CalcPropertyInterfaceImplement) readImplements.get(hasPeriod ? 2 : 1) : null;
+        CalcPropertyInterfaceImplement connection = readImplements.size() == 1 ? null : (CalcPropertyInterfaceImplement) readImplements.get(1);
         return addProperty(group, new LAP(new NewThreadActionProperty(caption, listInterfaces, (ActionPropertyMapImplement) readImplements.get(0), period, delay, connection)));
     }
 
@@ -1854,12 +1852,8 @@ public abstract class LogicsModule {
                     DerivedProperty.createIfAction(innerInterfaces, whereImplement, actionProperty, null).property :
                     DerivedProperty.createForAction(innerInterfaces, SetFact.<P>EMPTY(), whereImplement, orders, ordersNotNull, actionProperty, null, false, noInline, forceInline).property;
         
-        if (debugInfo != null) {
-            if (debugInfo.needToCreateDelegate()) {
-                debugger.addDelegate(debugInfo);
-            }
-            action.setDebugInfo(debugInfo);
-        }
+        if(debugInfo != null)
+            debugger.addDelegate(action, debugInfo);
 
 //        action.setStrongUsed(whereImplement.property); // добавить сильную связь, уже не надо поддерживается более общий механизм - смотреть на Session Calc
 //        action.caption = "WHEN " + whereImplement.property + " " + actionProperty;

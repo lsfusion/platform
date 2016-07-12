@@ -21,7 +21,7 @@ import java.util.Map;
 
 public class EDIInputTable implements ImportInputTable {
     protected DataObject supplier;
-    protected List<List<String>> data = new ArrayList<>();
+    protected List<List<String>> data = new ArrayList<List<String>>();
     protected InputSource inputSource;
     protected EDIReader parser;
     protected ContentHandler handler;
@@ -51,7 +51,9 @@ public class EDIInputTable implements ImportInputTable {
                 parser.setContentHandler(handler);
                 parser.parse(inputSource);
             }
-        } catch (IOException | SAXException e) {
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (SAXException e) {
             e.printStackTrace();
         }
     }
@@ -73,7 +75,7 @@ public class EDIInputTable implements ImportInputTable {
     }
 
     abstract protected class ScanningHandler extends DefaultHandler {
-        protected Map<String, String> row = new HashMap<>();
+        protected Map<String, String> row = new HashMap<String, String>();
         protected String[] columns;
         protected String docType = null;
         protected String requiredDocType;
@@ -97,12 +99,12 @@ public class EDIInputTable implements ImportInputTable {
 
         public void addRow() {
             if (!row.isEmpty()) {
-                List<String> single = new ArrayList<>();
+                List<String> single = new ArrayList<String>();
                 for (String column : columns) {
                     single.add(row.get(column) == null ? "" : row.get(column));
                 }
                 data.add(single);
-                row = new HashMap<>();
+                row = new HashMap<String, String>();
             }
         }
 
@@ -115,7 +117,9 @@ public class EDIInputTable implements ImportInputTable {
             try {
                 parser.getTokenizer().ungetToken();
                 return parser.getTokenizer().nextCompositeElement();
-            } catch (IOException | EDISyntaxException e) {
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (EDISyntaxException e) {
                 e.printStackTrace();
             }
             return null;

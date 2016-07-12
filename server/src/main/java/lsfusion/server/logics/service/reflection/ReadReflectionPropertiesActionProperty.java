@@ -86,7 +86,7 @@ public class ReadReflectionPropertiesActionProperty extends ScriptingActionPrope
         KeyExpr reflectionPropertyExpr = new KeyExpr("reflectionProperty");
         ImRevMap<Object, KeyExpr> reflectionPropertyKeys = MapFact.singletonRev((Object) "reflectionProperty", reflectionPropertyExpr);
 
-        QueryBuilder<Object, Object> reflectionPropertyQuery = new QueryBuilder<>(reflectionPropertyKeys);
+        QueryBuilder<Object, Object> reflectionPropertyQuery = new QueryBuilder<Object, Object>(reflectionPropertyKeys);
         reflectionPropertyQuery.addProperty("nameReflectionProperty", findProperty("name[ReflectionProperty]").getExpr(reflectionPropertyExpr));
         reflectionPropertyQuery.addProperty("baseValueReflectionProperty", findProperty("baseValue[ReflectionProperty]").getExpr(reflectionPropertyExpr));
         reflectionPropertyQuery.and(findProperty("name[ReflectionProperty]").getExpr(reflectionPropertyExpr).getWhere());

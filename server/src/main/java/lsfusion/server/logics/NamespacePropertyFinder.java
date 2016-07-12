@@ -23,7 +23,7 @@ public class NamespacePropertyFinder extends NamespaceElementFinder<LP<?, ?>, Li
     
     static public List<FoundItem<LP<?, ?>>> filterFoundProperties(List<FoundItem<LP<?, ?>>> result) {
         int cnt = result.size();
-        List<FoundItem<LP<?, ?>>> finalResult = new ArrayList<>();
+        List<FoundItem<LP<?, ?>>> finalResult = new ArrayList<FoundItem<LP<?, ?>>>();
         for (int i = 0; i < cnt; i++) {
             LP<?, ?> iProp = result.get(i).value;
             List<ResolveClassSet> iParams = result.get(i).module.propClasses.get(iProp);

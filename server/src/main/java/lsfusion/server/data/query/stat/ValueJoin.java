@@ -20,7 +20,7 @@ public class ValueJoin implements InnerBaseJoin<Object> {
     }
 
     public StatKeys<Object> getStatKeys(KeyStat keyStat) {
-        return new StatKeys<>(SetFact.<Object>EMPTY(), Stat.ONE);
+        return new StatKeys<Object>(SetFact.<Object>EMPTY(), Stat.ONE);
     }
 
     public ImSet<NotNullExprInterface> getExprFollows(boolean includeInnerWithoutNotNull, boolean recursive) {

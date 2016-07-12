@@ -22,7 +22,7 @@ public class GroupStatWhere<K> extends GroupWhere {
     public static <K, V> ImCol<GroupStatWhere<V>> mapBack(ImCol<GroupStatWhere<K>> col, final ImMap<V,K> map) {
         return col.mapColValues(new GetValue<GroupStatWhere<V>, GroupStatWhere<K>>() {
             public GroupStatWhere<V> getMapValue(GroupStatWhere<K> group) {
-                return new GroupStatWhere<>(group.keyEqual, group.stats.mapBack(map), group.where);
+                return new GroupStatWhere<V>(group.keyEqual, group.stats.mapBack(map), group.where);
             }});
     }
 

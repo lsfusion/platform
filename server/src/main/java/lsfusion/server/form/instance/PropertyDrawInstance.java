@@ -130,7 +130,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
     public class HiddenReaderInstance implements PropertyReaderInstance {
 
         public CalcPropertyObjectInstance getPropertyObjectInstance() {
-            return new CalcPropertyObjectInstance<>(NullValueProperty.instance, MapFact.<PropertyInterface, ObjectInstance>EMPTY());
+            return new CalcPropertyObjectInstance<PropertyInterface>(NullValueProperty.instance, MapFact.<PropertyInterface, ObjectInstance>EMPTY());
         }
 
         public byte getTypeID() {

@@ -253,7 +253,7 @@ public class AdjustMaterializedExecuteEnvironment extends DynamicExecuteEnvironm
         }
         private final int size;
         private final boolean hasTooLongKeys;
-        private Set<Node> children = new HashSet<>();
+        private Set<Node> children = new HashSet<Node>();
 
         private Integer priority = null;
     }
@@ -320,7 +320,7 @@ public class AdjustMaterializedExecuteEnvironment extends DynamicExecuteEnvironm
                 }
             };
 
-            PriorityQueue<Node> priority = new PriorityQueue<>(nodes.size(), comparator);
+            PriorityQueue<Node> priority = new PriorityQueue<Node>(nodes.size(), comparator);
             addNodes(nodes.values(), priorityCalc, priority);
 
             MOrderSet<SQLQuery> mNextQueries = SetFact.mOrderSet();

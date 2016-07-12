@@ -75,8 +75,4 @@ public class GridView extends JPanel {
     public GridTable getTable() {
         return gridTable;
     }
-
-    public int getHeaderHeight() {
-        return grid.getHeaderHeight();
-    }
 }

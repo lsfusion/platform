@@ -134,7 +134,7 @@ public class LogicsInstanceContext extends AbstractContext {
         int rCount = data.size() + 1;
         int cCount = titles.size();
 
-        ArrayList<List<String>> all = new ArrayList<>();
+        ArrayList<List<String>> all = new ArrayList<List<String>>();
         all.add(titles);
         all.addAll(data);
 

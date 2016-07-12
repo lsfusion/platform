@@ -34,13 +34,13 @@ public class SetFact {
     public static <T> ImSet<T> singleton(T element) {
 //        if(element instanceof ImmutableObject)
 //            return BaseUtils.immutableCast(element);
-        return new SingletonSet<>(element);
+        return new SingletonSet<T>(element);
     }
 
     public static <T> ImOrderSet<T> singletonOrder(T element) {
 //        if(element instanceof ImmutableObject)
 //            return BaseUtils.immutableCast(element);
-        return new SingletonSet<>(element);
+        return new SingletonSet<T>(element);
 //        return new SingletonOrderSet<T>(element);
     }
 
@@ -173,18 +173,18 @@ public class SetFact {
     // MUTABLE
 
     public static <K> MSet<K> mSet() {
-        return new HSet<>();
+        return new HSet<K>();
     }
 
     public static <K> MSet<K> mSetMax(int size) {
         if(size < useArrayMax)
-            return new ArSet<>(size);
-        return new HSet<>(size);
+            return new ArSet<K>(size);
+        return new HSet<K>(size);
     }
 
     public static <K> MSet<K> mSet(ImSet<? extends K> set) {
         if(set instanceof HSet)
-            return new HSet<>((HSet<K>) set);
+            return new HSet<K>((HSet<K>)set);
         else {
             MSet<K> mSet = mSet();
             mSet.addAll(set);
@@ -200,7 +200,7 @@ public class SetFact {
     // exclusive
 
     public static <K> MExclSet<K> mExclSet() {
-        return new HSet<>();
+        return new HSet<K>();
     }
 
     public static <K> MExclSet<K> mExclSet(int size) {
@@ -209,13 +209,13 @@ public class SetFact {
 
     public static <K> MExclSet<K> mExclSetMax(int size) {
         if(size<useArrayMax || size >= useIndexedArrayMin) // если слишком мало или много элементов используем массивы
-            return new ArSet<>(size);
-        return new HSet<>(size);
+            return new ArSet<K>(size);
+        return new HSet<K>(size);
     }
 
     public static <K> MExclSet<K> mExclSet(ImSet<? extends K> set) {
         if(set instanceof HSet)
-            return new HSet<>((HSet<K>) set);
+            return new HSet<K>((HSet<K>)set);
 
         MExclSet<K> mSet = mExclSet();
         mSet.exclAddAll(set);
@@ -225,10 +225,10 @@ public class SetFact {
     public static <K> MFilterSet<K> mFilter(ImSet<K> set) {  // assert что в том же порядке
         int size = set.size();
         if(set instanceof ArIndexedSet)
-            return new ArIndexedSet<>(size);
+            return new ArIndexedSet<K>(size);
         if(size < useArrayMax)
-            return new ArSet<>(size);
-        return new HSet<>(size);
+            return new ArSet<K>(size);
+        return new HSet<K>(size);
     }
     public static <K> ImSet<K> imFilter(MFilterSet<K> mResult, ImSet<K> set) {
         ImSet<K> result = mResult.immutable();
@@ -242,10 +242,10 @@ public class SetFact {
     public static <K, V> MFilterSet<K> mFilter(ImMap<K, V> set) { // assert что в правильном порядке
         int size = set.size();
         if(set instanceof ArIndexedMap)
-            return new ArIndexedSet<>(size);
+            return new ArIndexedSet<K>(size);
         if(size < useArrayMax)
-            return new ArSet<>(size);
-        return new HSet<>(size);
+            return new ArSet<K>(size);
+        return new HSet<K>(size);
     }
     public static <K, V> ImSet<K> imFilter(MFilterSet<K> mResult, ImMap<K, V> set) {
         ImSet<K> result = mResult.immutable();
@@ -259,12 +259,12 @@ public class SetFact {
     // order
 
     public static <K> MOrderSet<K> mOrderSet() {
-        return new HOrderSet<>();
+        return new HOrderSet<K>();
     }
 
     public static <K> MOrderSet<K> mOrderSet(ImOrderSet<? extends K> set) {
         if(set instanceof HOrderSet)
-            return new HOrderSet<>((HOrderSet<K>) set);
+            return new HOrderSet<K>((HOrderSet<K>)set);
 
         MOrderSet<K> mSet = SetFact.mOrderSet();
         mSet.addAll(set);
@@ -277,17 +277,17 @@ public class SetFact {
 
     public static <K> MOrderSet<K> mOrderSetMax(int size) {
         if(size<useArrayMax)
-            return new ArOrderSet<>(size);
-        return new HOrderSet<>(size);
+            return new ArOrderSet<K>(size);
+        return new HOrderSet<K>(size);
     }
 
     public static <K> MOrderExclSet<K> mOrderExclSet() {
-        return new HOrderSet<>();
+        return new HOrderSet<K>();
     }
 
     public static <K> MOrderExclSet<K> mOrderExclSet(ImOrderSet<? extends K> set) {
         if(set instanceof HOrderSet)
-            return new HOrderSet<>((HOrderSet<K>) set);
+            return new HOrderSet<K>((HOrderSet<K>)set);
 
         MOrderExclSet<K> mSet = SetFact.mOrderExclSet();
         mSet.exclAddAll(set);
@@ -300,8 +300,8 @@ public class SetFact {
 
     public static <K> MOrderExclSet<K> mOrderExclSetMax(int size) {
         if(size<useArrayMax || size >= useIndexedArrayMin) // если слишком мало или много элементов используем массивы
-            return new ArOrderSet<>(size);
-        return new HOrderSet<>(size);
+            return new ArOrderSet<K>(size);
+        return new HOrderSet<K>(size);
     }
 
     public static <K> MOrderFilterSet<K> mOrderFilter(ImOrderSet<K> filter) { // assert что в том же порядке
@@ -309,8 +309,8 @@ public class SetFact {
 //        if(filter instanceof ArOrderIndexedSet) keep сложнее поддерживать
 //            return new ArOrderIndexedSet<K>(size);
         if(size < useArrayMax || size >= useIndexedArrayMin)
-            return new ArOrderSet<>(size);
-        return new HOrderSet<>(size);
+            return new ArOrderSet<K>(size);
+        return new HOrderSet<K>(size);
     }
     public static <K> ImOrderSet<K> imOrderFilter(MOrderFilterSet<K> mResult, ImOrderSet<K> filter) {
         ImOrderSet<K> result = mResult.immutableOrder();
@@ -325,8 +325,8 @@ public class SetFact {
 //        if(filter instanceof ArOrderIndexedMap) keep сложнее поддерживать
 //            return new ArOrderIndexedSet<K>(size);
         if(size < useArrayMax ||  size >= useIndexedArrayMin)
-            return new ArOrderSet<>(size);
-        return new HOrderSet<>(size);
+            return new ArOrderSet<K>(size);
+        return new HOrderSet<K>(size);
     }
     public static <K, V> ImOrderSet<K> imOrderFilter(MOrderFilterSet<K> mResult, ImOrderMap<K, V> filter) {
         ImOrderSet<K> result = mResult.immutableOrder();
@@ -341,12 +341,12 @@ public class SetFact {
     // map'ы по определению mutable, без явных imutable интерфейсов
 
     public static <K> MAddSet<K> mAddSet() {
-        return new HSet<>();
+        return new HSet<K>();
     }
 
     public static <K> MAddSet<K> mAddSet(ImSet<? extends K> set) {
         if(set instanceof HSet)
-            return new HSet<>((HSet<K>) set);
+            return new HSet<K>((HSet<K>)set);
 
         MAddSet<K> mResult = mAddSet();
         mResult.addAll(set);
@@ -354,15 +354,15 @@ public class SetFact {
     }
 
     public static <K> Set<K> mAddRemoveSet() {
-        return new HashSet<>();
+        return new HashSet<K>();
     }
 
     public static <K> List<K> mAddRemoveOrderSet() {
-        return new ArrayList<>();
+        return new ArrayList<K>();
     }
 
     public static <T> Set<T> mAddRemoveSet(ImSet<? extends T> set) {
-        Set<T> result = new HashSet<>();
+        Set<T> result = new HashSet<T>();
         for(int i=0,size=set.size();i<size;i++)
             result.add(set.get(i));
         return result;

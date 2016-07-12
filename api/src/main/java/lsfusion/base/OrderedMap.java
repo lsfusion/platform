@@ -33,14 +33,14 @@ public class OrderedMap<K,V> extends LinkedHashMap<K,V> {
     }
 
     public OrderedMap<K,V> reverse() {
-        OrderedMap<K,V> result = new OrderedMap<>();
+        OrderedMap<K,V> result = new OrderedMap<K,V>();
         result.reverse(entrySet().iterator());
         return result;
     }
 
 
     public OrderedMap<K,V> moveStart(Collection<K> col) {
-        OrderedMap<K,V> result = new OrderedMap<>();
+        OrderedMap<K,V> result = new OrderedMap<K,V>();
         for(Map.Entry<K,V> entry : entrySet())
             if(col.contains(entry.getKey()))
                 result.put(entry.getKey(),entry.getValue());
@@ -51,7 +51,7 @@ public class OrderedMap<K,V> extends LinkedHashMap<K,V> {
     }
 
     public <M> OrderedMap<M,V> map(Map<K,M> map) {
-        OrderedMap<M,V> result = new OrderedMap<>();
+        OrderedMap<M,V> result = new OrderedMap<M,V>();
         for(Map.Entry<K,V> entry : entrySet())
             result.put(map.get(entry.getKey()),entry.getValue());
         return result;
@@ -121,7 +121,7 @@ public class OrderedMap<K,V> extends LinkedHashMap<K,V> {
     }
 
     public List<K> keyList() {
-        return new ArrayList<>(keySet()); 
+        return new ArrayList<K>(keySet()); 
     }
 
     public V getValue(int index) {

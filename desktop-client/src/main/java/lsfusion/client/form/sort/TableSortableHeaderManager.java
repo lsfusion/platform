@@ -89,7 +89,7 @@ public abstract class TableSortableHeaderManager<T> extends MouseAdapter {
         }
     }
 
-    private final Map<T, Boolean> orderDirections = new OrderedMap<>();
+    private final Map<T, Boolean> orderDirections = new OrderedMap<T, Boolean>();
 
     public Map<T, Boolean> getOrderDirections() {
         return orderDirections;

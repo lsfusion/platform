@@ -1,8 +1,8 @@
 package lsfusion.gwt.form.client.form.dispatch;
 
 import com.allen_sauer.gwt.log.client.Log;
+import lsfusion.gwt.base.client.ErrorHandlingCallback;
 import lsfusion.gwt.base.client.ui.DialogBoxHelper;
-import lsfusion.gwt.form.client.ErrorHandlingCallback;
 import lsfusion.gwt.form.client.form.ui.GFormController;
 import lsfusion.gwt.form.shared.actions.form.ServerResponseResult;
 import lsfusion.gwt.form.shared.view.GEditBindingMap;

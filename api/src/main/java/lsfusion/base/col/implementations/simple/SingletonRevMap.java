@@ -63,21 +63,21 @@ public class SingletonRevMap<K, V> extends ARevMap<K, V> implements ImValueMap<K
     }
 
     public <M> ImValueMap<K, M> mapItValues() {
-        return new SingletonRevMap<>(key);
+        return new SingletonRevMap<K, M>(key);
     }
 
     public <M> ImRevValueMap<K, M> mapItRevValues() {
-        return new SingletonRevMap<>(key);
+        return new SingletonRevMap<K, M>(key);
     }
 
     @Override
     public ImOrderMap<K, V> toOrderMap() {
-        return new SingletonOrderMap<>(this);
+        return new SingletonOrderMap<K, V>(this);
     }
 
     @Override
     public ImRevMap<V, K> reverse() {
-        return new SingletonRevMap<>(value, key);
+        return new SingletonRevMap<V, K>(value, key);
     }
 
     @Override

@@ -269,7 +269,7 @@ public class PropertyDrawView extends ComponentView {
 
         pool.writeString(outStream, entity.propertyObject.getCreationScript());
         pool.writeString(outStream, entity.propertyObject.getCreationPath());
-        pool.writeString(outStream, entity.getFormPath());
+        pool.writeString(outStream, entity.propertyObject.getFormPath());
 
         pool.writeString(outStream, entity.getMouseBinding());
 
@@ -299,7 +299,7 @@ public class PropertyDrawView extends ComponentView {
             return null;
         }
 
-        OrderedMap<String, String> contextMenuItems = new OrderedMap<>();
+        OrderedMap<String, String> contextMenuItems = new OrderedMap<String, String>();
         for (int i = 0; i < contextMenuBindings.size(); ++i) {
             String actionSID = contextMenuBindings.getKey(i);
             String caption = contextMenuBindings.getValue(i);

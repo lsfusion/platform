@@ -90,8 +90,6 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
 
     public LCP columnCaptionPropertyDrawCustomUser;
     public LCP columnCaptionPropertyDraw;
-    public LCP columnPatternPropertyDrawCustomUser;
-    public LCP columnPatternPropertyDraw;
     public LCP columnWidthPropertyDrawCustomUser;
     public LCP columnWidthPropertyDraw;
     public LCP columnOrderPropertyDrawCustomUser;
@@ -111,8 +109,6 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
     public LCP isFontItalicGroupObjectCustomUser;
     public LCP pageSizeGroupObject;
     public LCP pageSizeGroupObjectCustomUser;
-    public LCP headerHeightGroupObject;
-    public LCP headerHeightGroupObjectCustomUser;
     
     public LCP nameFormGrouping;
     public LCP itemQuantityFormGrouping;
@@ -273,9 +269,6 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
 
         columnCaptionPropertyDrawCustomUser = findProperty("columnCaption[PropertyDraw,CustomUser]");
         columnCaptionPropertyDraw = findProperty("columnCaption[PropertyDraw]");
-
-        columnPatternPropertyDrawCustomUser = findProperty("columnPattern[PropertyDraw,CustomUser]");
-        columnPatternPropertyDraw = findProperty("columnPattern[PropertyDraw]");
         
         columnWidthPropertyDrawCustomUser = findProperty("columnWidth[PropertyDraw,CustomUser]");
         columnWidthPropertyDraw = findProperty("columnWidth[PropertyDraw]");
@@ -304,9 +297,6 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
 
         pageSizeGroupObjectCustomUser = findProperty("pageSize[GroupObject,CustomUser]");
         pageSizeGroupObject = findProperty("pageSize[GroupObject]");
-
-        headerHeightGroupObjectCustomUser = findProperty("headerHeight[GroupObject,CustomUser]");
-        headerHeightGroupObject = findProperty("headerHeight[GroupObject]");
 
         // группировки
         nameFormGrouping = findProperty("name[FormGrouping]");

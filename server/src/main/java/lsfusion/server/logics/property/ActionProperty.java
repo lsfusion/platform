@@ -43,6 +43,8 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
     //просто для быстрого доступа
     private static final ActionPropertyDebugger debugger = ActionPropertyDebugger.getInstance();
 
+    private ActionDebugInfo debugInfo;
+
     private boolean newDebugStack; // только для "top-level" action
     private ParamDebugInfo<P> paramInfo; // только для "top-level" action
 
@@ -70,7 +72,7 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
     }
     
     public ActionDebugInfo getDebugInfo() {
-        return (ActionDebugInfo) debugInfo;
+        return debugInfo;
     }
 
     public void setNewDebugStack(boolean newDebugStack) {
@@ -218,8 +220,8 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
     @IdentityLazy
     private ImSet<Pair<String, Integer>> getInnerDebugActions() {
         MSet<Pair<String, Integer>> result = SetFact.mSet();
-        if (debugInfo != null && debugInfo.needToCreateDelegate()) {
-            result.add(debugInfo.getDebuggerModuleLine());
+        if (debugInfo != null) {
+            result.add(new Pair<>(debugInfo.moduleName, debugInfo.line));
         }
         for (ActionProperty actionProperty : getDependActions()) {
             result.addAll(actionProperty.getInnerDebugActions());
@@ -232,8 +234,8 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
         MSet<Pair<String, Integer>> result = SetFact.mSet();
         for (CalcProperty property : getChangeProps()) {
             CalcPropertyDebugInfo debugInfo = property.getDebugInfo();
-            if (debugInfo != null && debugInfo.needToCreateDelegate()) {
-                result.add(debugInfo.getDebuggerModuleLine());
+            if (debugInfo != null) {
+                result.add(new Pair<>(debugInfo.moduleName, debugInfo.line));
             }
         }
         return result.immutable();
@@ -373,8 +375,8 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
     @Override
     public String toString() {
         String result = super.toString();
-        if(debugInfo != null)
-           result += ":" + debugInfo;
+        if(commonDebugInfo != null)
+           result += ":" + commonDebugInfo;
         return result;
     }
 
@@ -393,7 +395,7 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
             context = context.override();
             context.setLocals(debugLocals);
         }
-        if (debugInfo != null && debugger.isEnabled() && debugInfo.needToCreateDelegate()) {
+        if (debugInfo != null) {
             return debugger.delegate(this, context);
         } else {
             return executeImpl(context);

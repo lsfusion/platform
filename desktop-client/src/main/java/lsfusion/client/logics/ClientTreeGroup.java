@@ -15,7 +15,7 @@ import java.util.List;
 
 public class ClientTreeGroup extends ClientComponent implements ClientIdentitySerializable, AbstractTreeGroup<ClientContainer, ClientComponent> {
 
-    public List<ClientGroupObject> groups = new ArrayList<>();
+    public List<ClientGroupObject> groups = new ArrayList<ClientGroupObject>();
 
     public ClientToolbar toolbar;
     public ClientFilter filter;
@@ -72,7 +72,7 @@ public class ClientTreeGroup extends ClientComponent implements ClientIdentitySe
         
         expandOnClick = inStream.readBoolean();
 
-        List<ClientGroupObject> upGroups = new ArrayList<>();
+        List<ClientGroupObject> upGroups = new ArrayList<ClientGroupObject>();
         for (ClientGroupObject group : groups) {
             group.upTreeGroups.addAll(upGroups);
             upGroups.add(group);

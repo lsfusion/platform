@@ -52,7 +52,7 @@ public class ClientTree extends JTree {
         Enumeration<TreePath> paths = getExpandedDescendants(new TreePath(treeModel.getRoot()));
         final Set<TreePath> expanded = paths == null
                 ? new HashSet<TreePath>()
-                : new HashSet<>(Collections.list(paths));
+                : new HashSet<TreePath>(Collections.list(paths));
         final TreePath selectionPath = getSelectionPath();
 
         setModel(newModel);
@@ -178,7 +178,7 @@ public class ClientTree extends JTree {
     private ArrayList<ClientTreeAction> getActions(TreePath path) {
         ClientTreeNode node = ClientTree.getNode(path);
 
-        ArrayList<ClientTreeAction> result = new ArrayList<>();
+        ArrayList<ClientTreeAction> result = new ArrayList<ClientTreeAction>();
 
         if (node != null) {
             int cnt = path.getPathCount();

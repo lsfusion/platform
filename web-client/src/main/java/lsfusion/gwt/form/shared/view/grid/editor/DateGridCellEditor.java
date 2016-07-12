@@ -131,6 +131,6 @@ public class DateGridCellEditor extends PopupBasedGridCellEditor {
     }
 
     protected Object parseString(String value) throws ParseException {
-        return GDateType.instance.parseString(value, property.pattern);
+        return GDateType.instance.parseString(value);
     }
 }

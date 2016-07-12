@@ -22,11 +22,11 @@ public class FormEnvironment<P extends PropertyInterface> {
     }
     
     public <T extends PropertyInterface> FormEnvironment<T> mapJoin(ImMap<T, ? extends CalcPropertyInterfaceImplement<P>> map) {
-        return new FormEnvironment<>(MapFact.nullInnerJoin(map, mapObjects), changingDrawInstance);
+        return new FormEnvironment<T>(MapFact.nullInnerJoin(map, mapObjects), changingDrawInstance);
     }
 
     public <T extends PropertyInterface> FormEnvironment<T> map(ImRevMap<T, P> map) {
-        return new FormEnvironment<>(MapFact.nullInnerJoin(map, mapObjects), changingDrawInstance);
+        return new FormEnvironment<T>(MapFact.nullInnerJoin(map, mapObjects), changingDrawInstance);
     }
 
     public PropertyDrawInstance getChangingDrawInstance() {

@@ -8,7 +8,7 @@ public abstract class TwinImmutableObject<T extends TwinImmutableObject> extends
 
     protected abstract boolean calcTwins(TwinImmutableObject o);
     
-    private static LRUWWVSMap<TwinImmutableObject, TwinImmutableObject, Boolean> cacheTwins = new LRUWWVSMap<>(LRUUtil.G1);    
+    private static LRUWWVSMap<TwinImmutableObject, TwinImmutableObject, Boolean> cacheTwins = new LRUWWVSMap<TwinImmutableObject, TwinImmutableObject, Boolean>(LRUUtil.G1);    
     protected boolean twins(TwinImmutableObject o) {
         TwinImmutableObject c1 = this;
         TwinImmutableObject c2 = o; 

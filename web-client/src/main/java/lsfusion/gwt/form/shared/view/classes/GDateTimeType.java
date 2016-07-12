@@ -28,7 +28,7 @@ public class GDateTimeType extends GDataType {
     }
 
     @Override
-    public Timestamp parseString(String value, String pattern) throws ParseException {
+    public Timestamp parseString(String value) throws ParseException {
         if (value.isEmpty()) {
             return null;
         }
@@ -37,8 +37,8 @@ public class GDateTimeType extends GDataType {
     }
 
     @Override
-    public String getPreferredMask(String pattern) {
-        return pattern != null ? pattern : "01.01.2001 00:00:00";
+    public String getPreferredMask() {
+        return "01.01.2001 00:00:00";
     }
 
     @Override

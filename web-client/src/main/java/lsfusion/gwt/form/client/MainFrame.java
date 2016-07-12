@@ -12,6 +12,7 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RootLayoutPanel;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.base.client.ErrorHandlingCallback;
 import lsfusion.gwt.base.client.GwtClientUtils;
 import lsfusion.gwt.base.shared.actions.BooleanResult;
 import lsfusion.gwt.base.shared.actions.VoidResult;
@@ -23,8 +24,10 @@ import lsfusion.gwt.form.client.form.ui.dialog.WindowHiddenHandler;
 import lsfusion.gwt.form.client.log.GLog;
 import lsfusion.gwt.form.client.navigator.GNavigatorAction;
 import lsfusion.gwt.form.client.navigator.GNavigatorController;
+import lsfusion.gwt.base.client.ui.DialogBoxHelper;
 import lsfusion.gwt.form.client.window.WindowsController;
 import lsfusion.gwt.form.shared.actions.form.ServerResponseResult;
+import lsfusion.gwt.form.shared.actions.navigator.SetCurrentForm;
 import lsfusion.gwt.form.shared.actions.navigator.*;
 import lsfusion.gwt.form.shared.view.GDefaultFormsType;
 import lsfusion.gwt.form.shared.view.actions.GFormAction;
@@ -49,7 +52,7 @@ public class MainFrame implements EntryPoint {
     private DefaultFormsController formsController;
 
     public GAbstractWindow formsWindow;
-    public Map<GAbstractWindow, Widget> commonWindows = new LinkedHashMap<>();
+    public Map<GAbstractWindow, Widget> commonWindows = new LinkedHashMap<GAbstractWindow, Widget>();
 
     public GNavigatorActionDispatcher actionDispatcher = new GNavigatorActionDispatcher();
 
@@ -59,7 +62,7 @@ public class MainFrame implements EntryPoint {
         GWT.setUncaughtExceptionHandler(new GWT.UncaughtExceptionHandler() {
             @Override
             public void onUncaughtException(Throwable t) {
-                GExceptionManager.logClientError("Необработанная ошибка в GWT: ", t);
+                GwtClientUtils.logClientError("Необработанная ошибка в GWT: ", t);
             }
         });
 
@@ -158,16 +161,30 @@ public class MainFrame implements EntryPoint {
                     public void success(ClientMessageResult result) {
                         setShouldRepeatPingRequest(true);
                         super.success(result);
-                        for (Integer idNotification : result.notificationList) {
-                            GFormController form = result.currentForm == null ? null : formsController.getForm(result.currentForm);
-                            if (form != null)
-                                try {
-                                    form.executeNotificationAction(idNotification);
-                                } catch (IOException e) {
-                                    GWT.log(e.getMessage());
+                        if(result.restart) {
+                            DialogBoxHelper.showConfirmBox("Остановка сервера", "Сервер будет остановлен через 5 минут!\n" +
+                                    "Сохраните текущую работу и выйдите из приложения.\n" +
+                                    "Если вы выполняете работу, которая не может быть прервана, нажмите нет.",
+                                    false, new DialogBoxHelper.CloseCallback() {
+                                @Override
+                                public void closed(DialogBoxHelper.OptionType chosenOption) {
+                                    if (chosenOption == DialogBoxHelper.OptionType.NO) {
+                                        dispatcher.execute(new ClientResponse(1), null);
+                                    }
                                 }
-                            else {
-                                formsController.executeNotificationAction(String.valueOf(idNotification), 2);
+                            });
+                        } else {
+                            for(Integer idNotification : result.notificationList) {
+                                GFormController form = result.currentForm == null ? null : formsController.getForm(result.currentForm);
+                                if (form != null)
+                                    try {
+                                        form.executeNotificationAction(idNotification);
+                                    } catch (IOException e) {
+                                        GWT.log(e.getMessage());
+                                    }
+                                else {
+                                    formsController.executeNotificationAction(String.valueOf(idNotification), 2);
+                                }
                             }
                         }
                     }
@@ -181,8 +198,6 @@ public class MainFrame implements EntryPoint {
                 return isShouldRepeatPingRequest();
             }
         }, 1000);
-
-        GExceptionManager.flushUnreportedThrowables();
     }
     
     private void setShouldRepeatPingRequest(boolean shouldRepeatPingRequest) {
@@ -235,7 +250,7 @@ public class MainFrame implements EntryPoint {
                 navigatorController.initializeNavigatorViews(result.navigatorWindows);
                 navigatorController.setRootElement(result.root);
 
-                List<GAbstractWindow> allWindows = new ArrayList<>();
+                List<GAbstractWindow> allWindows = new ArrayList<GAbstractWindow>();
                 allWindows.addAll(result.navigatorWindows);
                 allWindows.addAll(commonWindows.keySet());
 

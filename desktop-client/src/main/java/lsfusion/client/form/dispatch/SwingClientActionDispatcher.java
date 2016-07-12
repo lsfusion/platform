@@ -212,7 +212,9 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
 
             return new RuntimeClientActionResult(output, error);
 
-        } catch (IOException | InterruptedException e) {
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
     }
@@ -244,6 +246,8 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
 
             return new ImportFileClientActionResult(true, action.charsetName == null ? new String(fileContent) : new String(fileContent, action.charsetName));
 
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -444,13 +448,7 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
     }
 
     public void execute(LogOutClientAction action) {
-        if (action.restart) {
-            if (action.reconnect)
-                Main.reconnect();
-            else
-                Main.restart();
-        } else
-            Main.shutdown();
+        Main.restart();
     }
 
     @Override

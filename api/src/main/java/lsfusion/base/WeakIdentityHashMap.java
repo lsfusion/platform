@@ -10,22 +10,22 @@ import java.util.Map;
 public class WeakIdentityHashMap<K, V> {
     public WeakIdentityHashMap() {}
 
-    private Map<WeakReference<K>, V> map = new HashMap<>();
-    private ReferenceQueue<K> refQueue = new ReferenceQueue<>();
+    private Map<WeakReference<K>, V> map = new HashMap<WeakReference<K>, V>();
+    private ReferenceQueue<K> refQueue = new ReferenceQueue<K>();
 
     public V get(K key) {
         expunge();
-        return map.get(new IdentityWeakReference<>(key));
+        return map.get(new IdentityWeakReference<K>(key));
     }
     
     public boolean containsKey(K key) {
         expunge();
-        return map.containsKey(new IdentityWeakReference<>(key));
+        return map.containsKey(new IdentityWeakReference<K>(key));
     } 
 
     public V put(K key, V value) {
         expunge();
-        return map.put(new IdentityWeakReference<>(key, refQueue), value);
+        return map.put(new IdentityWeakReference<K>(key, refQueue), value);
     }
 
     public void putAll(WeakIdentityHashMap<K, V> weak) {
@@ -34,7 +34,7 @@ public class WeakIdentityHashMap<K, V> {
 
     public V remove(K key) {
         expunge();
-        return map.remove(new IdentityWeakReference<>(key));
+        return map.remove(new IdentityWeakReference<K>(key));
     }
 
     public int size() {
@@ -121,7 +121,7 @@ public class WeakIdentityHashMap<K, V> {
                 return keysIterator();
             }
         };
-    }
+    };
 
     public Iterator<Pair<K, V>> entryIterator() {
         expunge();
@@ -136,7 +136,7 @@ public class WeakIdentityHashMap<K, V> {
                         if(key == null)
                             next = null;
                         else
-                            next = new Pair<>(key, itNext.getValue());
+                            next = new Pair<K, V>(key, itNext.getValue());
                     }
                     else
                         return false;

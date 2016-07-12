@@ -106,7 +106,7 @@ public abstract class AbstractValuesContext<U extends ValuesContext<U>> extends 
         return valueComponents;
     }
     private static BaseUtils.HashComponents<Value> translate(BaseUtils.HashComponents<Value> components, MapValuesTranslate translator) {
-        return new BaseUtils.HashComponents<>(translator.translateValuesMapKeys(components.map), components.hash);
+        return new BaseUtils.HashComponents<Value>(translator.translateValuesMapKeys(components.map), components.hash);
     }
     private BaseUtils.HashComponents<Value> aspectGetValueComponents() {
 //        U from = getFrom();

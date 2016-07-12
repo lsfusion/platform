@@ -22,25 +22,17 @@ import java.util.concurrent.TimeUnit;
 
 public class NewThreadActionProperty extends AroundAspectActionProperty {
 
-    private CalcPropertyInterfaceImplement<PropertyInterface> periodProp;
-    private CalcPropertyInterfaceImplement<PropertyInterface> delayProp;
+    private Long repeat;
+    private long delay;
     private CalcPropertyInterfaceImplement<PropertyInterface> connectionProp;
 
-    public <I extends PropertyInterface> NewThreadActionProperty(String caption, ImOrderSet<I> innerInterfaces, 
-                                                                 ActionPropertyMapImplement<?, I> action, 
-                                                                 CalcPropertyInterfaceImplement<I> period, 
-                                                                 CalcPropertyInterfaceImplement<I> delay, 
-                                                                 CalcPropertyInterfaceImplement<I> connection) {
+    public <I extends PropertyInterface> NewThreadActionProperty(String caption, ImOrderSet<I> innerInterfaces, ActionPropertyMapImplement<?, I> action, Long repeat, long delay, CalcPropertyInterfaceImplement connection) {
         super(caption, innerInterfaces, action);
+        this.repeat = repeat;
+        this.delay = delay;
 
-        ImRevMap<I, PropertyInterface> mapInterfaces = getMapInterfaces(innerInterfaces).reverse();
-        if (period != null) {
-            this.periodProp = period.map(mapInterfaces);            
-        }
-        if (delay != null) {
-            this.delayProp = delay.map(mapInterfaces);
-        }
         if(connection != null) {
+            ImRevMap<I, PropertyInterface> mapInterfaces = getMapInterfaces(innerInterfaces).reverse();
             this.connectionProp = connection.map(mapInterfaces);
         }
     }
@@ -78,14 +70,6 @@ public class NewThreadActionProperty extends AroundAspectActionProperty {
             if(connectionObject instanceof DataObject)
                 context.getNavigatorsManager().pushNotificationCustomUser((DataObject) connectionObject, run);
         } else {
-            Long delay = 0L, period = null;
-            if (delayProp != null) {
-                delay = ((Number) delayProp.read(context, context.getKeys())).longValue();
-            }
-            if (periodProp != null) {
-                period = ((Number) periodProp.read(context, context.getKeys())).longValue();
-            }
-            
             Runnable runContext = new Runnable() {
                 public void run() {
                     run.run(null, ThreadLocalContext.getStack());
@@ -93,11 +77,11 @@ public class NewThreadActionProperty extends AroundAspectActionProperty {
             };
             boolean externalExecutor = context.getExecutorService() != null;
             ScheduledExecutorService executor = externalExecutor ? context.getExecutorService() : ExecutorFactory.createNewThreadService(context);
-            if (period != null)
-                executor.scheduleAtFixedRate(runContext, delay, period, TimeUnit.MILLISECONDS);
+            if (repeat != null)
+                executor.scheduleAtFixedRate(runContext, delay, repeat, TimeUnit.MILLISECONDS);
             else
                 executor.schedule(runContext, delay, TimeUnit.MILLISECONDS);
-            if (!externalExecutor && period == null)
+            if (!externalExecutor)
                 executor.shutdown();
         }
         return FlowResult.FINISH;

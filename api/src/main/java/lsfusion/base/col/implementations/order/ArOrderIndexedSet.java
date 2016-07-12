@@ -17,7 +17,7 @@ public class ArOrderIndexedSet<K> extends AMOrderSet<K> {
     public int[] order;
 
     public ArOrderIndexedSet(int size) {
-        arSet = new ArIndexedSet<>(size);
+        arSet = new ArIndexedSet<K>(size);
         order = new int[size];
     }
 
@@ -46,11 +46,11 @@ public class ArOrderIndexedSet<K> extends AMOrderSet<K> {
         throw new UnsupportedOperationException();
     }
     public <M> ImOrderValueMap<K, M> mapItOrderValues() {
-        return new ArOrderIndexedMap<>(this);
+        return new ArOrderIndexedMap<K, M>(this);
     }
 
     private class RevMap<V> implements ImRevValueMap<K, V> {
-        private ArIndexedMap<K, V> result = new ArIndexedMap<>(arSet);
+        private ArIndexedMap<K, V> result = new ArIndexedMap<K, V>(arSet);
 
         public void mapValue(int i, V value) {
             result.mapValue(order[i], value);
@@ -61,7 +61,7 @@ public class ArOrderIndexedSet<K> extends AMOrderSet<K> {
         }
     }
     public <M> ImRevValueMap<K, M> mapItOrderRevValues() {
-        return new RevMap<>();
+        return new RevMap<M>();
     }
 
     public ImOrderSet<K> immutableOrder() {
@@ -74,7 +74,7 @@ public class ArOrderIndexedSet<K> extends AMOrderSet<K> {
             Object[] orderArray = new Object[arSet.size];
             for(int i=0;i<arSet.size;i++)
                 orderArray[i] = get(i);
-            return new ArOrderSet<>(new ArSet<K>(arSet.size, orderArray));
+            return new ArOrderSet<K>(new ArSet<K>(arSet.size, orderArray));
         }
 
         if(arSet.array.length > arSet.size * SetFact.factorNotResize) {

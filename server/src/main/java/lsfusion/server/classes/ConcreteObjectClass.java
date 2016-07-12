@@ -6,8 +6,8 @@ import lsfusion.server.logics.ObjectValue;
 
 public interface ConcreteObjectClass extends ConcreteClass,ObjectClass,ObjectClassSet {
 
-    void getDiffSet(ConcreteObjectClass diffClass, MSet<CustomClass> mAddClasses, MSet<CustomClass> mRemoveClasses);
+    public abstract void getDiffSet(ConcreteObjectClass diffClass, MSet<CustomClass> mAddClasses, MSet<CustomClass> mRemoveClasses);
 
-    ObjectValue getClassObject();
+    public abstract ObjectValue getClassObject();
 
 }

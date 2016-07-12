@@ -28,12 +28,12 @@ public class SaveUserPreferencesActionHandler extends ServerResponseActionHandle
         FormSessionObject form = getFormSessionObject(action.formSessionID);
         GGroupObjectUserPreferences gGroupObjectUP = action.groupObjectUserPreferences;
         
-        HashMap<String, ColumnUserPreferences> columnUPMap = new HashMap<>();
+        HashMap<String, ColumnUserPreferences> columnUPMap = new HashMap<String, ColumnUserPreferences>();
         for (Map.Entry<String, GColumnUserPreferences> entry : gGroupObjectUP.getColumnUserPreferences().entrySet()) {
             GColumnUserPreferences gColumnUP = entry.getValue();
-            columnUPMap.put(entry.getKey(), new ColumnUserPreferences(gColumnUP.userHide, gColumnUP.userCaption, gColumnUP.userPattern, gColumnUP.userWidth, gColumnUP.userOrder, gColumnUP.userSort, gColumnUP.userAscendingSort));
+            columnUPMap.put(entry.getKey(), new ColumnUserPreferences(gColumnUP.userHide, gColumnUP.userCaption, gColumnUP.userWidth, gColumnUP.userOrder, gColumnUP.userSort, gColumnUP.userAscendingSort));
         }
-        GroupObjectUserPreferences groupObjectUP = new GroupObjectUserPreferences(columnUPMap, gGroupObjectUP.getGroupObjectSID(), gwtConverter.convertFont(gGroupObjectUP.getFont()), gGroupObjectUP.getPageSize(), gGroupObjectUP.getHeaderHeight(), gGroupObjectUP.hasUserPreferences());
+        GroupObjectUserPreferences groupObjectUP = new GroupObjectUserPreferences(columnUPMap, gGroupObjectUP.getGroupObjectSID(), gwtConverter.convertFont(gGroupObjectUP.getFont()), gGroupObjectUP.getPageSize(), gGroupObjectUP.hasUserPreferences());
 
         return getServerResponseResult(form, form.remoteForm.saveUserPreferences(action.requestIndex, -1, groupObjectUP, action.forAllUsers, action.completeOverride));
     }

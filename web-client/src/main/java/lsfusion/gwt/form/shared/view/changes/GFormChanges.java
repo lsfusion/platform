@@ -13,16 +13,16 @@ import java.util.HashMap;
 import java.util.HashSet;
 
 public class GFormChanges {
-    public final HashMap<GGroupObject, GClassViewType> classViews = new HashMap<>();
-    public final HashMap<GGroupObject, GGroupObjectValue> objects = new HashMap<>();
-    public final HashMap<GGroupObject, ArrayList<GGroupObjectValue>> gridObjects = new HashMap<>();
-    public final HashMap<GGroupObject, ArrayList<GGroupObjectValue>> parentObjects = new HashMap<>();
-    public final HashMap<GGroupObject, HashMap<GGroupObjectValue, Boolean>> expandables = new HashMap<>();
-    public final HashMap<GPropertyReader, HashMap<GGroupObjectValue, Object>> properties = new HashMap<>();
-    public final HashSet<GPropertyReader> panelProperties = new HashSet<>();
-    public final HashSet<GPropertyDraw> dropProperties = new HashSet<>();
+    public final HashMap<GGroupObject, GClassViewType> classViews = new HashMap<GGroupObject, GClassViewType>();
+    public final HashMap<GGroupObject, GGroupObjectValue> objects = new HashMap<GGroupObject, GGroupObjectValue>();
+    public final HashMap<GGroupObject, ArrayList<GGroupObjectValue>> gridObjects = new HashMap<GGroupObject, ArrayList<GGroupObjectValue>>();
+    public final HashMap<GGroupObject, ArrayList<GGroupObjectValue>> parentObjects = new HashMap<GGroupObject, ArrayList<GGroupObjectValue>>();
+    public final HashMap<GGroupObject, HashMap<GGroupObjectValue, Boolean>> expandables = new HashMap<GGroupObject, HashMap<GGroupObjectValue, Boolean>>();
+    public final HashMap<GPropertyReader, HashMap<GGroupObjectValue, Object>> properties = new HashMap<GPropertyReader, HashMap<GGroupObjectValue, Object>>();
+    public final HashSet<GPropertyReader> panelProperties = new HashSet<GPropertyReader>();
+    public final HashSet<GPropertyDraw> dropProperties = new HashSet<GPropertyDraw>();
 
-    public final HashSet<GPropertyDraw> updateProperties = new HashSet<>();
+    public final HashSet<GPropertyDraw> updateProperties = new HashSet<GPropertyDraw>();
 
     public static GFormChanges remap(GForm form, GFormChangesDTO dto) {
         GFormChanges remapped = new GFormChanges();

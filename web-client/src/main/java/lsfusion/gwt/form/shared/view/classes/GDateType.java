@@ -13,7 +13,7 @@ import lsfusion.gwt.form.shared.view.grid.renderer.GridCellRenderer;
 import java.text.ParseException;
 import java.util.Date;
 
-import static lsfusion.gwt.base.shared.GwtSharedUtils.getDateFormat;
+import static lsfusion.gwt.base.shared.GwtSharedUtils.getDefaultDateFormat;
 
 public class GDateType extends GDataType {
 
@@ -25,18 +25,18 @@ public class GDateType extends GDataType {
     }
 
     @Override
-    public GDateDTO parseString(String value, String pattern) throws ParseException {
-        return value.isEmpty() ? null : GDateDTO.fromDate(parseDate(value, getDateFormat(pattern)));
+    public GDateDTO parseString(String value) throws ParseException {
+        return value.isEmpty() ? null : GDateDTO.fromDate(parseDate(value, getDefaultDateFormat()));
     }
 
     @Override
     public GridCellRenderer createGridCellRenderer(GPropertyDraw property) {
-        return new DateGridCellRenderer(property, property.pattern);
+        return new DateGridCellRenderer(property);
     }
 
     @Override
-    public String getPreferredMask(String pattern) {
-        return pattern != null ? pattern : "01.01.01";
+    public String getPreferredMask() {
+        return "01.01.01";
     }
 
     @Override

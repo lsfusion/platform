@@ -154,9 +154,9 @@ public class CaseUnionProperty extends IncrementUnionProperty {
         ImList<Pair<Expr, Expr>> caseExprs = cases.mapListValues(new GetValue<Pair<Expr, Expr>, CalcCase<Interface>>() {
             public Pair<Expr, Expr> getMapValue(CalcCase<Interface> value) {
                 if(checkPrereadNull(value, joinImplement, calcType, propChanges))
-                    return new Pair<>(Expr.NULL, Expr.NULL);
+                    return new Pair<Expr, Expr>(Expr.NULL, Expr.NULL);
                     
-                return new Pair<>(
+                return new Pair<Expr, Expr>(
                         value.where.mapExpr(joinImplement, calcType, propChanges, changedWhere),
                         value.implement.mapExpr(joinImplement, calcType, propChanges, changedWhere));
             }});
@@ -177,13 +177,13 @@ public class CaseUnionProperty extends IncrementUnionProperty {
         ImList<Pair<Pair<Expr, Where>, Pair<Expr, Where>>> caseExprs = cases.mapListValues(new GetValue<Pair<Pair<Expr, Where>, Pair<Expr, Where>>, CalcCase<Interface>>() {
             public Pair<Pair<Expr, Where>, Pair<Expr, Where>> getMapValue(CalcCase<Interface> propCase) {
                 if(checkPrereadNull(propCase, joinImplement, CalcType.EXPR, propChanges))
-                    return new Pair<>(new Pair<>(Expr.NULL, Where.FALSE), new Pair<>(Expr.NULL, Where.FALSE));
+                    return new Pair<Pair<Expr, Where>, Pair<Expr, Where>>(new Pair<Expr, Where>(Expr.NULL, Where.FALSE), new Pair<Expr, Where>(Expr.NULL, Where.FALSE));
 
                 WhereBuilder changedWhereCase = new WhereBuilder();
                 WhereBuilder changedExprCase = new WhereBuilder();
-                return new Pair<>(
-                        new Pair<>(propCase.where.mapExpr(joinImplement, propChanges, changedWhereCase), changedWhereCase.toWhere()),
-                        new Pair<>(propCase.implement.mapExpr(joinImplement, propChanges, changedExprCase), changedExprCase.toWhere()));
+                return new Pair<Pair<Expr, Where>, Pair<Expr, Where>>(
+                        new Pair<Expr, Where>(propCase.where.mapExpr(joinImplement, propChanges, changedWhereCase), changedWhereCase.toWhere()),
+                        new Pair<Expr, Where>(propCase.implement.mapExpr(joinImplement, propChanges, changedExprCase), changedExprCase.toWhere()));
             }});
 
         int size=cases.size();
@@ -257,7 +257,7 @@ public class CaseUnionProperty extends IncrementUnionProperty {
 
 
     public void addImplicitCase(CalcPropertyMapImplement<?, Interface> property, List<ResolveClassSet> signature, boolean sameNamespace, Version version) {
-        addAbstractCase(new ImplicitCalcCase<>(property, signature, sameNamespace), version);
+        addAbstractCase(new ImplicitCalcCase<Interface>(property, signature, sameNamespace), version);
     }
 
     private Object cases;
@@ -306,7 +306,7 @@ public class CaseUnionProperty extends IncrementUnionProperty {
         cases = NFFact.list();
         this.isLast = isLast;
 
-        classValueWhere = new ClassWhere<>(MapFact.<Object, ValueClass>addExcl(interfaceClasses, "value", valueClass), true);
+        classValueWhere = new ClassWhere<Object>(MapFact.<Object, ValueClass>addExcl(interfaceClasses, "value", valueClass), true);
     }
 
     public void addCase(CalcPropertyInterfaceImplement<Interface> where, CalcPropertyInterfaceImplement<Interface> property, Version version) {
@@ -373,7 +373,7 @@ public class CaseUnionProperty extends IncrementUnionProperty {
     @Override
     public Inferred<Interface> calcInferInterfaceClasses(final ExClassSet commonValue, final InferType inferType) {
         if(isAbstract())
-            return new Inferred<>(classValueWhere.getCommonExClasses(interfaces)); // чтобы рекурсии не было
+            return new Inferred<Interface>(classValueWhere.getCommonExClasses(interfaces)); // чтобы рекурсии не было
         
         return op(getCases().mapListValues(new GetValue<Inferred<Interface>, CalcCase<Interface>>() {
             public Inferred<Interface> getMapValue(CalcCase<Interface> aCase) {

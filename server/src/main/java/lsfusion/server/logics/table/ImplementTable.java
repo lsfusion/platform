@@ -105,7 +105,7 @@ public class ImplementTable extends GlobalTable { // последний инте
             }});
         parents = NFFact.orderSet();
 
-        classes = classes.or(new ClassWhere<>(mapFields, true));
+        classes = classes.or(new ClassWhere<KeyField>(mapFields,true));
     }
 
     public <P extends PropertyInterface> IQuery<KeyField, CalcProperty> getReadSaveQuery(ImSet<CalcProperty> properties, Modifier modifier) {
@@ -113,7 +113,7 @@ public class ImplementTable extends GlobalTable { // последний инте
     }
 
     public <P extends PropertyInterface> IQuery<KeyField, CalcProperty> getReadSaveQuery(ImSet<CalcProperty> properties, PropertyChanges propertyChanges) {
-        QueryBuilder<KeyField, CalcProperty> changesQuery = new QueryBuilder<>(this);
+        QueryBuilder<KeyField, CalcProperty> changesQuery = new QueryBuilder<KeyField, CalcProperty>(this);
         WhereBuilder changedWhere = new WhereBuilder();
         for (CalcProperty<P> property : properties)
             changesQuery.addProperty(property, property.getIncrementExpr(property.mapTable.mapKeys.join(changesQuery.getMapExprs()), propertyChanges, changedWhere));
@@ -122,7 +122,7 @@ public class ImplementTable extends GlobalTable { // последний инте
     }
 
     public void moveColumn(SQLSession sql, PropertyField field, Table prevTable, ImMap<KeyField, KeyField> mapFields, PropertyField prevField) throws SQLException, SQLHandledException {
-        QueryBuilder<KeyField, PropertyField> moveColumn = new QueryBuilder<>(this);
+        QueryBuilder<KeyField, PropertyField> moveColumn = new QueryBuilder<KeyField, PropertyField>(this);
         Expr moveExpr = prevTable.join(mapFields.join(moveColumn.getMapExprs())).getExpr(prevField);
         moveColumn.addProperty(field, moveExpr);
         moveColumn.and(moveExpr.getWhere());
@@ -258,7 +258,7 @@ public class ImplementTable extends GlobalTable { // последний инте
         return true;
     }
 
-    private interface MapTableType {
+    private static interface MapTableType {
         boolean skipParents(ImplementTable table);
         boolean skipResult(ImplementTable table);
         boolean onlyFirstParent(ImplementTable table);
@@ -332,7 +332,7 @@ public class ImplementTable extends GlobalTable { // последний инте
         public boolean onlyFirstParent(ImplementTable table) {
             return false;
         }
-    }
+    };
 
     public <T> MapKeysTable<T> getSingleMapTable(ImMap<T, ValueClass> findItem, boolean included) {
         ImSet<MapKeysTable<T>> tables = getMapTables(findItem, included ? findIncludedTable : findTable);
@@ -355,7 +355,7 @@ public class ImplementTable extends GlobalTable { // последний инте
     }
 
     public <T> ImSet<MapKeysTable<T>> getMapTables(ImMap<T, ValueClass> findItem, MapTableType type) {
-        Result<ImRevMap<T,KeyField>> mapCompare = new Result<>();
+        Result<ImRevMap<T,KeyField>> mapCompare = new Result<ImRevMap<T, KeyField>>();
         int relation = compare(findItem,mapCompare);
         // если внизу или отличается то не туда явно зашли
         if(relation==COMPARE_DOWN || relation==COMPARE_DIFF) return SetFact.EMPTY();
@@ -377,15 +377,15 @@ public class ImplementTable extends GlobalTable { // последний инте
 
         if(type.skipResult(this)) return SetFact.EMPTY();
 
-        return SetFact.singleton(new MapKeysTable<>(this, mapCompare.result));
+        return SetFact.singleton(new MapKeysTable<T>(this,mapCompare.result));
     }
 
     public <T> MapKeysTable<T> getMapKeysTable(ImMap<T, ValueClass> classes) {
-        Result<ImRevMap<T,KeyField>> mapCompare = new Result<>();
+        Result<ImRevMap<T,KeyField>> mapCompare = new Result<ImRevMap<T, KeyField>>();
         int relation = compare(classes, mapCompare);
         if(relation==COMPARE_DOWN || relation==COMPARE_DIFF)
             return null;
-        return new MapKeysTable<>(this, mapCompare.result);
+        return new MapKeysTable<T>(this,mapCompare.result);
     }
 
     void fillSet(MSet<ImplementTable> tableImplements) {
@@ -409,7 +409,7 @@ public class ImplementTable extends GlobalTable { // последний инте
     }
 
     public Object readCount(DataSession session, Where where) throws SQLException, SQLHandledException {
-        QueryBuilder<Object, Object> query = new QueryBuilder<>(SetFact.EMPTY());
+        QueryBuilder<Object, Object> query = new QueryBuilder<Object, Object>(SetFact.EMPTY());
         ValueExpr one = new ValueExpr(1, IntegerClass.instance);
         query.addProperty("count", GroupExpr.create(MapFact.<Integer, Expr>EMPTY(), one,
                 where, GroupType.SUM, MapFact.<Integer, Expr>EMPTY()));

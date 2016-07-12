@@ -34,7 +34,7 @@ public class GetNavigatorInfoHandler extends SimpleActionHandlerEx<GetNavigatorI
 
         GNavigatorElement root = converter.convertOrCast(navigatorData.root);
 
-        ArrayList<GNavigatorWindow> navigatorWindows = new ArrayList<>();
+        ArrayList<GNavigatorWindow> navigatorWindows = new ArrayList<GNavigatorWindow>();
         for (ClientNavigatorWindow window : navigatorData.windows.values()) {
             GNavigatorWindow gWindow = converter.convertOrCast(window);
             navigatorWindows.add(gWindow);
@@ -42,7 +42,7 @@ public class GetNavigatorInfoHandler extends SimpleActionHandlerEx<GetNavigatorI
 
         //getting common windows
         List<ClientAbstractWindow> clientWindows = DeSerializer.deserializeListClientNavigatorWindow(servlet.getNavigator().getCommonWindows());
-        List<GAbstractWindow> windows = new ArrayList<>();
+        List<GAbstractWindow> windows = new ArrayList<GAbstractWindow>();
         for (ClientAbstractWindow clientWindow : clientWindows) {
             windows.add((GAbstractWindow) converter.convertOrCast(clientWindow));
         }

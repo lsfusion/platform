@@ -9,6 +9,7 @@ import com.google.gwt.event.dom.client.ScrollEvent;
 import com.google.gwt.event.dom.client.ScrollHandler;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.base.client.ErrorHandlingCallback;
 import lsfusion.gwt.base.client.jsni.Function;
 import lsfusion.gwt.base.client.jsni.NativeHashMap;
 import lsfusion.gwt.base.client.ui.DialogBoxHelper;
@@ -19,7 +20,6 @@ import lsfusion.gwt.cellview.client.DataGrid;
 import lsfusion.gwt.cellview.client.KeyboardRowChangedEvent;
 import lsfusion.gwt.cellview.client.cell.Cell;
 import lsfusion.gwt.cellview.client.cell.CellPreviewEvent;
-import lsfusion.gwt.form.client.ErrorHandlingCallback;
 import lsfusion.gwt.form.client.form.ui.toolbar.preferences.GGridUserPreferences;
 import lsfusion.gwt.form.shared.actions.form.ServerResponseResult;
 import lsfusion.gwt.form.shared.view.*;
@@ -29,9 +29,6 @@ import lsfusion.gwt.form.shared.view.classes.GObjectType;
 import lsfusion.gwt.form.shared.view.grid.EditEvent;
 import lsfusion.gwt.form.shared.view.grid.GridEditableCell;
 import lsfusion.gwt.form.shared.view.grid.editor.TextBasedGridCellEditor;
-import lsfusion.gwt.form.shared.view.grid.renderer.DateGridCellRenderer;
-import lsfusion.gwt.form.shared.view.grid.renderer.GridCellRenderer;
-import lsfusion.gwt.form.shared.view.grid.renderer.NumberGridCellRenderer;
 
 import java.util.*;
 
@@ -105,11 +102,6 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
         }
         if (font == null) {
             font = gridController.getFont();
-        }
-
-        Integer headerHeight = currentGridPreferences.headerHeight;
-        if(headerHeight != null && headerHeight != 0) {
-            gridController.setHeaderHeight(headerHeight);
         }
 
         keyboardSelectionHandler =  new GridTableKeyboardSelectionHandler(this);
@@ -373,19 +365,6 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
                 header.setCaption(columnCaption, property.notNull, property.hasChangeAction);
                 header.setToolTip(property.getTooltipText(columnCaption));
 
-                if(currentGridPreferences.headerHeight != null)
-                    header.setHeaderHeight(currentGridPreferences.headerHeight);
-
-                property.pattern = getUserPattern(property);
-                GridCellRenderer renderer = property.getGridCellRenderer();
-                if(renderer != null && property.pattern != null) {
-                    if (renderer instanceof DateGridCellRenderer) {
-                        ((DateGridCellRenderer) renderer).setFormat(property.pattern);
-                    } else if (renderer instanceof NumberGridCellRenderer) {
-                        ((NumberGridCellRenderer) renderer).setFormat(property.pattern);
-                    }
-                }
-
                 putToColumnsMap(newColumnsMap, property, columnKey, column);
 
                 rowHeight = Math.max(rowHeight, columnMinimumHeight);
@@ -551,7 +530,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
 
     private GridColumn insertGridColumn(int index) {
         GridColumn column = new GridColumn();
-        GGridPropertyTableHeader header = new GGridPropertyTableHeader(this, gridController.getHeaderHeight());
+        GGridPropertyTableHeader header = new GGridPropertyTableHeader(this);
 
         headers.add(index, header);
 
@@ -1066,10 +1045,6 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
     public String getUserCaption(GPropertyDraw property) {
         return currentGridPreferences.getUserCaption(property);
     }
-
-    public String getUserPattern(GPropertyDraw property) {
-        return currentGridPreferences.getUserPattern(property);
-    }
     
     public Integer getUserWidth(GPropertyDraw property) {
         return currentGridPreferences.getUserWidth(property);
@@ -1090,10 +1065,6 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
     public void setUserPageSize(Integer pageSize) {
         currentGridPreferences.pageSize = pageSize;
     }
-
-    public void setUserHeaderHeight(Integer headerHeight) {
-        currentGridPreferences.headerHeight = headerHeight;
-    }
     
     public void setUserFont(GFont userFont) {
         currentGridPreferences.font = userFont;
@@ -1103,8 +1074,8 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
         currentGridPreferences.setUserHide(property, userHide);
     }
 
-    public void setColumnSettings(GPropertyDraw property, String caption, String pattern, Integer order, Boolean hide) {
-        currentGridPreferences.setColumnSettings(property, caption, pattern, order, hide);
+    public void setUserCaption(GPropertyDraw property, String caption) {
+        currentGridPreferences.setUserCaption(property, caption);
     }
     
     public void setUserWidth(GPropertyDraw property, Integer userWidth) {

@@ -134,7 +134,7 @@ public class LogicsInstance implements InitializingBean {
             return;
         }
 
-        customObjects = new HashMap<>();
+        customObjects = new HashMap<Class, Object>();
         for (Object obj : objects) {
             if (obj == null) {
                 throw new NullPointerException("Custom object can't be null");

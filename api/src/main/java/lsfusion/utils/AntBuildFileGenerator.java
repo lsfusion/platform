@@ -39,7 +39,7 @@ public class AntBuildFileGenerator {
             "    </target>\n" +
             "\n";
 
-    private static Set<String> webModulesWithGWT = new HashSet<>(Arrays.asList("web-client", "paas-web"));
+    private static Set<String> webModulesWithGWT = new HashSet<String>(Arrays.asList("web-client", "paas-web"));
 
     public static void main(String[] args) {
         try {

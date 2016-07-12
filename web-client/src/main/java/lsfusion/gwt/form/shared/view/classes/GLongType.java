@@ -16,12 +16,12 @@ public class GLongType extends GIntegralType {
     }
 
     @Override
-    public Long parseString(String s, String pattern) throws ParseException {
-        return parseToDouble(s, pattern).longValue();
+    public Long parseString(String s) throws ParseException {
+        return parseToDouble(s).longValue();
     }
 
     @Override
-    public String getPreferredMask(String pattern) {
+    public String getPreferredMask() {
         return "9 999 999 999 999 999 999";
     }
 

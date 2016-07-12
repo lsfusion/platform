@@ -13,7 +13,7 @@ import java.util.Set;
 public class KeyController {
     private final GridTable table;
     public boolean isRecording = false;
-    private Map<ClientGroupObjectValue, Map<Pair<ClientPropertyDraw, ClientGroupObjectValue>, Object>> values = new LinkedHashMap<>();
+    private Map<ClientGroupObjectValue, Map<Pair<ClientPropertyDraw, ClientGroupObjectValue>, Object>> values = new LinkedHashMap<ClientGroupObjectValue, Map<Pair<ClientPropertyDraw, ClientGroupObjectValue>, Object>>();
 
     public KeyController(GridTable table) {
         this.table = table;
@@ -47,7 +47,7 @@ public class KeyController {
     }
 
     public static Map<Pair<ClientPropertyDraw, ClientGroupObjectValue>, Object> getRowData(GridTable table, int rowIndex) {
-        Map<Pair<ClientPropertyDraw, ClientGroupObjectValue>, Object> map = new HashMap<>();
+        Map<Pair<ClientPropertyDraw, ClientGroupObjectValue>, Object> map = new HashMap<Pair<ClientPropertyDraw, ClientGroupObjectValue>, Object>();
         for (Pair<ClientPropertyDraw, ClientGroupObjectValue> propertyColumn : table.getVisibleProperties()) {
             map.put(propertyColumn, table.getValueAt(rowIndex, table.getModel().getPropertyIndex(propertyColumn.first, propertyColumn.second)));
         }
@@ -62,7 +62,7 @@ public class KeyController {
             int start = values.isEmpty() ? previousRow : table.getRowKeys().indexOf(BaseUtils.lastSetElement(values.keySet()));
             start = down ? start + 1 : start - 1;
 
-            Map<ClientGroupObjectValue, Map<Pair<ClientPropertyDraw, ClientGroupObjectValue>, Object>> segment = new LinkedHashMap<>();
+            Map<ClientGroupObjectValue, Map<Pair<ClientPropertyDraw, ClientGroupObjectValue>, Object>> segment = new LinkedHashMap<ClientGroupObjectValue, Map<Pair<ClientPropertyDraw, ClientGroupObjectValue>, Object>>();
             for (int i = start; (down && i <= index) || (!down && i >= index); i = (down ? i + 1 : i - 1)) {
                 segment.put(table.getRowKeys().get(i), getRowData(table, i));
             }
@@ -95,7 +95,7 @@ public class KeyController {
                 for (ClientGroupObjectValue key : primary.keySet()) {
                     secondary.remove(key);
                 }
-                Map<ClientGroupObjectValue, Map<Pair<ClientPropertyDraw, ClientGroupObjectValue>, Object>> tmp = new LinkedHashMap<>();
+                Map<ClientGroupObjectValue, Map<Pair<ClientPropertyDraw, ClientGroupObjectValue>, Object>> tmp = new LinkedHashMap<ClientGroupObjectValue, Map<Pair<ClientPropertyDraw, ClientGroupObjectValue>, Object>>();
                 tmp.put(primary.keySet().iterator().next(), primary.values().iterator().next());
                 tmp.putAll(secondary);
                 primary = tmp;

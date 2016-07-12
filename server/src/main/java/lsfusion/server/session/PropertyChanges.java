@@ -59,7 +59,7 @@ public class PropertyChanges extends AbstractValuesContext<PropertyChanges> {
     public final static PropertyChanges EMPTY = new PropertyChanges();
 
     public <T extends PropertyInterface> PropertyChanges(CalcProperty<T> property, PropertyChange<T> change) {
-        this(property, new ModifyChange<>(change, true));
+        this(property, new ModifyChange<T>(change, true));
     }
 
     public <T extends PropertyInterface> PropertyChanges(CalcProperty<T> property, ModifyChange<T> change) {

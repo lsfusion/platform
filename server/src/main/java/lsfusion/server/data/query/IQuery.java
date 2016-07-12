@@ -53,7 +53,7 @@ public abstract class IQuery<K,V> extends AbstractInnerContext<IQuery<K, V>> imp
     public abstract ImOrderMap<V, CompileOrder> getCompileOrders(ImOrderMap<V, Boolean> orders);
 
     public ImOrderMap<ImMap<K, Object>, ImMap<V, Object>> executeSQL(SQLSession session, ImOrderMap<V, Boolean> orders, int selectTop, QueryEnvironment env) throws SQLException, SQLHandledException {
-        ReadAllResultHandler<K, V> result = new ReadAllResultHandler<>();
+        ReadAllResultHandler<K, V> result = new ReadAllResultHandler<K, V>();
         executeSQL(session, orders, selectTop, env, result);
         return result.terminate();
     }
@@ -123,7 +123,7 @@ public abstract class IQuery<K,V> extends AbstractInnerContext<IQuery<K, V>> imp
         }
         
         public <MK, MV> PullValues<MK, MV> map(ImRevMap<MK, K> mapKeys, ImRevMap<MV, V> mapProps, MapValuesTranslate mapValues) {
-            return new PullValues<>(query.map(mapKeys.filterNotValuesRev(pullKeys.keys()), mapProps.filterNotValuesRev(pullProps.keys()), mapValues.filter(query.getInnerValues())),
+            return new PullValues<MK, MV>(query.map(mapKeys.filterNotValuesRev(pullKeys.keys()), mapProps.filterNotValuesRev(pullProps.keys()), mapValues.filter(query.getInnerValues())),
                     mapKeys.rightJoin(mapValues.mapKeys().translate(pullKeys)),
                     mapProps.rightJoin(mapValues.mapKeys().translate(pullProps)));
         }

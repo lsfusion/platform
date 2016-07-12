@@ -58,7 +58,7 @@ public abstract class GroupingButton extends ToolbarGridButton {
                                     Map<Integer, List<byte[]>> maxMap = dialog.getSelectedMaxMap();
                                     boolean onlyNotNull = dialog.onlyNotNull();
 
-                                    List<Map<List<Object>, List<Object>>> result = new ArrayList<>();
+                                    List<Map<List<Object>, List<Object>>> result = new ArrayList<Map<List<Object>, List<Object>>>();
 
                                     for (Map<Integer, List<byte[]>> level : dialog.getSelectedGroupLevels()) {
                                         if (!level.isEmpty()) {

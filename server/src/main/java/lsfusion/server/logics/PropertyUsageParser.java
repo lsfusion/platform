@@ -83,6 +83,8 @@ public class PropertyUsageParser extends AbstractPropertyNameParser {
                     throw new ParseException("Parse error");
                 }
                 return result;
+            } catch (ParseInnerException e) {
+                throw new ParseException(e.getMessage());
             } catch (RuntimeException re) {
                 throw new ParseException(re.getMessage());
             }
@@ -91,7 +93,7 @@ public class PropertyUsageParser extends AbstractPropertyNameParser {
     }
 
     private List<ResolveClassSet> parseClassList() {
-        List<ResolveClassSet> result = new ArrayList<>();
+        List<ResolveClassSet> result = new ArrayList<ResolveClassSet>();
         while (pos < len) {
             if (isNext(PropertyCanonicalNameUtils.UNKNOWNCLASS)) {
                 checkNext(PropertyCanonicalNameUtils.UNKNOWNCLASS);

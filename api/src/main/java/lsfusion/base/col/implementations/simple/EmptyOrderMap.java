@@ -8,7 +8,7 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.ImOrderValueMap;
 
 public class EmptyOrderMap<K, V> extends AOrderMap<K, V> implements ImOrderValueMap<K, V> {
 
-    private final static EmptyOrderMap<Object, Object> instance = new EmptyOrderMap<>();
+    private final static EmptyOrderMap<Object, Object> instance = new EmptyOrderMap<Object, Object>();
     public static <K,V> EmptyOrderMap<K, V> INSTANCE() {
         return (EmptyOrderMap<K, V>) instance;
     }

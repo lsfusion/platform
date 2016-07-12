@@ -199,7 +199,7 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
         return calculateStackPreferredSize(this.iterator(), isVertical());
     }
 
-    public enum Justify {
+    public static enum Justify {
         LEADING, CENTER, TRAILING
     }
 

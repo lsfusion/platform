@@ -177,6 +177,10 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, "can't create keystroke from string '" + ksLiteral + "'");
     }
 
+    public void emitWindowOrientationNotSpecified(ScriptParser parser, String sid) throws SemanticErrorException {
+        emitSimpleError(parser, "orientation (VERTICAL or HORIZONTAL) isn't specified for window '" + sid + "'");
+    }
+
     public void emitWindowPositionNotSpecified(ScriptParser parser, String sid) throws SemanticErrorException {
         emitSimpleError(parser, "position ( POSITION(x, y, width, height) ) isn't specified for window '" + sid + "'");
     }
@@ -253,6 +257,14 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, "constrained property is always NULL");
     }
 
+    public void emitLeftSideMustBeAProperty(ScriptParser parser) throws SemanticErrorException {
+        emitSimpleError(parser, "left side of SET action must be a property");
+    }
+
+    public void emitMustBeAnActionCall(ScriptParser parser) throws SemanticErrorException {
+        emitSimpleError(parser, "can't use parameter here, must be an action call");
+    }
+
     public void emitAlreadyDefinedError(ScriptParser parser, String type, String name) throws SemanticErrorException {
         emitSimpleError(parser, format("%s '%s' was already defined", type, name));
     }
@@ -261,12 +273,20 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, format("%s '%s' was already defined in module '%s'", type, name, moduleName));
     }
 
-    public void emitAlreadyDefinedPropertyDraw(ScriptParser parser, String formName, String propertyDrawName, String oldPosition) throws SemanticErrorException {
-        emitSimpleError(parser, format("property '%s' in form '%s' was already defined at %s", propertyDrawName, formName, oldPosition));
-    }
-
     public void emitNamedParamsError(ScriptParser parser) throws SemanticErrorException {
         emitSimpleError(parser, "number of named parameters should be equal to actual number of parameters");
+    }
+
+    public void emitActionParamTypesError(ScriptParser parser) throws SemanticErrorException {
+        emitSimpleError(parser, "action parameters lists have different classes for same parameter");
+    }
+    
+    public void emitCasePropWhenParamMissingInThenParams(ScriptParser parser) throws SemanticErrorException {
+        emitSimpleError(parser, "WHEN expressions should only have parameters used in THEN expressions");
+    }
+
+    public void emitCasePropDiffThenParamsCountError(ScriptParser parser) throws SemanticErrorException {
+        emitSimpleError(parser, "all THEN expressions in case property should have same number of arguments");
     }
 
     public void emitFormulaReturnClassError(ScriptParser parser) throws SemanticErrorException {
@@ -279,6 +299,10 @@ public class ScriptingErrorLog {
 
     public void emitIncompatibleTypes(ScriptParser parser, String propType) throws SemanticErrorException {
         emitSimpleError(parser, format("%s's arguments' types don't match", propType));
+    }
+
+    public void emitCaptionNotSpecifiedError(ScriptParser parser, String name) throws SemanticErrorException {
+        emitSimpleError(parser, format("caption wasn't specified for '%s' element", name));
     }
 
     public void emitMetaCodeNotEndedError(ScriptParser parser, String name) throws SemanticErrorException {

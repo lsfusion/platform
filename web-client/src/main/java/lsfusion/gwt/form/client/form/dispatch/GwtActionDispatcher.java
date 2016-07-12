@@ -1,11 +1,12 @@
 package lsfusion.gwt.form.client.form.dispatch;
 
+import com.allen_sauer.gwt.log.client.Log;
+import com.google.gwt.core.shared.GWT;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import lsfusion.gwt.base.client.ErrorHandlingCallback;
 import lsfusion.gwt.base.client.GwtClientUtils;
 import lsfusion.gwt.base.client.ui.DialogBoxHelper;
-import lsfusion.gwt.form.client.ErrorHandlingCallback;
-import lsfusion.gwt.form.client.GExceptionManager;
 import lsfusion.gwt.form.client.log.GLog;
 import lsfusion.gwt.form.shared.actions.form.ServerResponseResult;
 import lsfusion.gwt.form.shared.view.actions.*;
@@ -91,7 +92,7 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
     }
 
     protected void handleDispatchException(Throwable t) {
-        GExceptionManager.logClientError("Error dispatching ServerResponseResult: ", t);
+        GwtClientUtils.logClientError("Error dispatching ServerResponseResult: ", t);
         DialogBoxHelper.showMessageBox(true, "Error", t.getMessage(), null);
     }
 

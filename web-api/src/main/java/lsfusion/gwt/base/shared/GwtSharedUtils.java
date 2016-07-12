@@ -52,10 +52,6 @@ public class GwtSharedUtils {
         return sb.toString();
     }
 
-    public static DateTimeFormat getDateFormat(String pattern) {
-        return pattern != null ? DateTimeFormat.getFormat(pattern) : getDefaultDateFormat();
-    }
-
     public static DateTimeFormat getDefaultDateFormat() {
         return DateTimeFormat.getFormat(DateTimeFormat.PredefinedFormat.DATE_SHORT);
     }

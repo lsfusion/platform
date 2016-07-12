@@ -62,9 +62,9 @@ public class CompareFormulaProperty extends ValueFormulaProperty<CompareFormulaP
     public <T extends PropertyInterface> Inferred<T> inferJoinInterfaceClasses(CalcPropertyInterfaceImplement<T> operator1, CalcPropertyInterfaceImplement<T> operator2, InferType inferType) {
         Compared<T> compared;
         if(this.compare == Compare.EQUALS || this.compare == Compare.NOT_EQUALS)
-            compared = new Equals<>(operator1, operator2);
+            compared = new Equals<T>(operator1, operator2);
         else
-            compared = new Relationed<>(operator1, operator2);
+            compared = new Relationed<T>(operator1, operator2);
         return Inferred.create(compared, inferType, this.compare == Compare.NOT_EQUALS);
     }
 }

@@ -8,7 +8,7 @@ import static lsfusion.base.BaseUtils.nullEquals;
 
 public class EventBus implements Serializable {
 
-    private WeakHashMap<ValueEventListener, String> listeners = new WeakHashMap<>();
+    private WeakHashMap<ValueEventListener, String> listeners = new WeakHashMap<ValueEventListener, String>();
 
     public synchronized void addListener(ValueEventListener listener, String eventID) {
         listeners.put(listener, eventID);

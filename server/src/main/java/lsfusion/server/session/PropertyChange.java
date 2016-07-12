@@ -146,11 +146,11 @@ public class PropertyChange<T extends PropertyInterface> extends AbstractInnerCo
         if(andWhere.isTrue())
             return this;
 
-        return new PropertyChange<>(mapValues, mapKeys, expr, where.and(andWhere));
+        return new PropertyChange<T>(mapValues, mapKeys, expr, where.and(andWhere));
     }
 
     public <P extends PropertyInterface> PropertyChange<P> mapChange(ImRevMap<P, T> mapping) {
-        return new PropertyChange<>(mapping.rightJoin(mapValues), mapping.rightJoin(mapKeys), expr, where);
+        return new PropertyChange<P>(mapping.rightJoin(mapValues), mapping.rightJoin(mapKeys),expr,where);
     }
 
     public boolean isEmpty() {
@@ -168,7 +168,7 @@ public class PropertyChange<T extends PropertyInterface> extends AbstractInnerCo
         if(mapValues.isEmpty()) {
             // assert что addJoin.getWhere() не пересекается с where, в общем случае что по пересекаемым они совпадают
             Join<String> addJoin = change.join(mapKeys);
-            return new PropertyChange<>(mapKeys, expr.ifElse(where, addJoin.getExpr("value")), where.or(addJoin.getWhere()));
+            return new PropertyChange<T>(mapKeys, expr.ifElse(where, addJoin.getExpr("value")), where.or(addJoin.getWhere()));
         } else {
             ImRevMap<T, KeyExpr> addKeys = getFullMapKeys(mapKeys, mapValues); // тут по хорошему надо искать общие и потом частично join'ить
             
@@ -176,7 +176,7 @@ public class PropertyChange<T extends PropertyInterface> extends AbstractInnerCo
             Join<String> addJoin = change.join(addKeys);
 
             Where thisWhere = thisJoin.getWhere();
-            return new PropertyChange<>(addKeys, thisJoin.getExpr("value").ifElse(thisWhere, addJoin.getExpr("value")), thisWhere.or(addJoin.getWhere()));
+            return new PropertyChange<T>(addKeys, thisJoin.getExpr("value").ifElse(thisWhere, addJoin.getExpr("value")), thisWhere.or(addJoin.getWhere()));
         }
     }
     
@@ -208,7 +208,7 @@ public class PropertyChange<T extends PropertyInterface> extends AbstractInnerCo
     public Pair<ImMap<T, DataObject>, ObjectValue> getSimple() {
         ObjectValue exprValue;
         if(mapKeys.isEmpty() && where.isTrue() && (exprValue = expr.getObjectValue())!=null)
-            return new Pair<>(mapValues, exprValue);
+            return new Pair<ImMap<T, DataObject>, ObjectValue>(mapValues, exprValue);
         return null;
     }
 
@@ -238,7 +238,7 @@ public class PropertyChange<T extends PropertyInterface> extends AbstractInnerCo
 
     @IdentityInstanceLazy
     public IQuery<T,String> getQuery() { // важно потому как aspect может на IQuery изменить
-        return new Query<>(getFullMapKeys(mapKeys, mapValues), where, mapValues, MapFact.singleton("value", expr)); // через query для кэша
+        return new Query<T, String>(getFullMapKeys(mapKeys, mapValues), where, mapValues, MapFact.singleton("value", expr)); // через query для кэша
    }
 
     protected boolean isComplex() {
@@ -254,7 +254,7 @@ public class PropertyChange<T extends PropertyInterface> extends AbstractInnerCo
     }
 
     protected PropertyChange<T> translate(MapTranslate translator) {
-        return new PropertyChange<>(translator.translateDataObjects(mapValues), translator.translateRevValues(mapKeys), expr.translateOuter(translator), where.translateOuter(translator));
+        return new PropertyChange<T>(translator.translateDataObjects(mapValues), translator.translateRevValues(mapKeys),expr.translateOuter(translator),where.translateOuter(translator));
     }
 
     protected long calculateComplexity(boolean outer) {
@@ -263,7 +263,7 @@ public class PropertyChange<T extends PropertyInterface> extends AbstractInnerCo
     @Override
     public PropertyChange<T> calculatePack() {
         Where packWhere = where.pack();
-        return new PropertyChange<>(mapValues, mapKeys, expr.followFalse(packWhere.not(), true), packWhere);
+        return new PropertyChange<T>(mapValues, mapKeys, expr.followFalse(packWhere.not(), true), packWhere);
     }
 
     public Expr getExpr(ImMap<T, ? extends Expr> joinImplement, WhereBuilder where) {
@@ -299,12 +299,12 @@ public class PropertyChange<T extends PropertyInterface> extends AbstractInnerCo
     }
 
     public static <K> NoPropertyTableUsage<K> materializeWhere(DataSession session, final ImRevMap<K, KeyExpr> mapKeys, final Where where) throws SQLException, SQLHandledException {
-        NoPropertyTableUsage<K> result = new NoPropertyTableUsage<>(mapKeys.keys().toOrderSet(), new Type.Getter<K>() {
+        NoPropertyTableUsage<K> result = new NoPropertyTableUsage<K>(mapKeys.keys().toOrderSet(), new Type.Getter<K>() {
             public Type getType(K key) {
                 return where.getKeyType(mapKeys.get(key));
             }
         });
-        result.writeRows(session.sql, new Query<>(mapKeys, where), session.baseClass, session.env, SessionTable.matExprLocalQuery);
+        result.writeRows(session.sql, new Query<K, Object>(mapKeys, where), session.baseClass, session.env, SessionTable.matExprLocalQuery);
         return result;
     }
 

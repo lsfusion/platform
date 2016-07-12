@@ -48,7 +48,7 @@ public class EmailSender {
     String smtpHost;
     String smtpPort;
     String fromAddress;
-    Map<String, Message.RecipientType> emails = new HashMap<>();
+    Map<String, Message.RecipientType> emails = new HashMap<String, Message.RecipientType>();
 
     public static class AttachmentProperties {
         public String fileName;

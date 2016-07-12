@@ -27,7 +27,7 @@ public abstract class Task {
             return Task.compareTo(o2.getBaseComplexity(), o1.getBaseComplexity(), o2, o1);
         }
     };
-    public Map<Task, Object> dependsFrom = new HashMap<>();
+    public Map<Task, Object> dependsFrom = new HashMap<Task, Object>();
     protected Integer dependsToProceed;
     protected long dependComplexity;
     protected boolean finalizedComplexity;

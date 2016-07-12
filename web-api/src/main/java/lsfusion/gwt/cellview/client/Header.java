@@ -36,7 +36,7 @@ public abstract class Header<H> {
 
     public Header(String... consumedEvents) {
         if (consumedEvents != null && consumedEvents.length > 0) {
-            this.consumedEvents = unmodifiableSet(new HashSet<>(asList(consumedEvents)));
+            this.consumedEvents = unmodifiableSet(new HashSet<String>(asList(consumedEvents)));
         }
     }
 

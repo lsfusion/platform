@@ -24,11 +24,11 @@ public class NotFormulaProperty extends FormulaProperty<PropertyInterface> {
     }
     
     public <T> CalcPropertyImplement<PropertyInterface , T> getImplement(T map) {
-        return new CalcPropertyImplement<>(this, MapFact.singleton(interfaces.single(), map));
+        return new CalcPropertyImplement<PropertyInterface, T>(this, MapFact.singleton(interfaces.single(), map));
     }
 
     @Override
     public Inferred<PropertyInterface> calcInferInterfaceClasses(ExClassSet commonValue, InferType inferType) {
-        return new Inferred<>(MapFact.<PropertyInterface, ExClassSet>EMPTY());
+        return new Inferred<PropertyInterface>(MapFact.<PropertyInterface, ExClassSet>EMPTY());
     }
 }

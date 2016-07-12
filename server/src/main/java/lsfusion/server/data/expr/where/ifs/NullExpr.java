@@ -113,7 +113,7 @@ public class NullExpr extends Expr {
     }
 
     public Set<BaseExpr> getBaseExprs() {
-        return new HashSet<>();
+        return new HashSet<BaseExpr>();
     }
 
     public ObjectValue getObjectValue() {

@@ -53,8 +53,8 @@ public abstract class AbstractDataGridBuilder<T> implements CellTableBuilder<T> 
     /**
      * A mapping of unique cell IDs to the cell.
      */
-    private final Map<String, HasCell<T, ?>> idToCellMap = new HashMap<>();
-    private final Map<HasCell<T, ?>, String> cellToIdMap = new HashMap<>();
+    private final Map<String, HasCell<T, ?>> idToCellMap = new HashMap<String, HasCell<T, ?>>();
+    private final Map<HasCell<T, ?>, String> cellToIdMap = new HashMap<HasCell<T, ?>, String>();
 
     /**
      * Construct a new table builder.

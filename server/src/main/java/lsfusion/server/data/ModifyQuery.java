@@ -46,7 +46,7 @@ public class ModifyQuery {
         String update;
         String setString;
         ImCol<String> whereSelect;
-        final CompiledQuery<KeyField, PropertyField> changeCompile = change.compile(new CompileOptions<>(syntax, table.getPropTypes()));
+        final CompiledQuery<KeyField, PropertyField> changeCompile = change.compile(new CompileOptions<PropertyField>(syntax, table.getPropTypes()));
 
         switch(updateModel) {
             case 2:
@@ -58,8 +58,8 @@ public class ModifyQuery {
                         return table.getName(syntax)+"."+key.getName(syntax) +"="+ changeCompile.keySelect.get(key);
                     }}));
 
-                Result<ImOrderSet<KeyField>> keyOrder = new Result<>();
-                Result<ImOrderSet<PropertyField>> propertyOrder = new Result<>();
+                Result<ImOrderSet<KeyField>> keyOrder = new Result<ImOrderSet<KeyField>>();
+                Result<ImOrderSet<PropertyField>> propertyOrder = new Result<ImOrderSet<PropertyField>>();
                 String selectString = syntax.getSelect(fromSelect, SQLSession.stringExpr(
                         SQLSession.mapNames(changeCompile.keySelect,changeCompile.keyNames,keyOrder),
                         SQLSession.mapNames(changeCompile.propertySelect,changeCompile.propertyNames,propertyOrder)),
@@ -165,7 +165,7 @@ public class ModifyQuery {
 
     public Query<KeyField, PropertyField> getInsertLeftQuery(boolean updateProps, boolean insertOnlyNotNull) {
         // делаем для этого еще один запрос
-        QueryBuilder<KeyField, PropertyField> leftKeysQuery = new QueryBuilder<>(change.getMapKeys());
+        QueryBuilder<KeyField, PropertyField> leftKeysQuery = new QueryBuilder<KeyField, PropertyField>(change.getMapKeys());
 
         Where onlyNotNull = Where.FALSE;
         if(updateProps || insertOnlyNotNull)
@@ -186,7 +186,7 @@ public class ModifyQuery {
     }
 
     public static SQLExecute getInsertSelect(String name, IQuery<KeyField, PropertyField> query, QueryEnvironment env, TableOwner owner, SQLSyntax syntax, SQLSessionUserProvider userProvider, Table table, RegisterChange change) {
-        CompiledQuery<KeyField, PropertyField> changeCompile = query.compile(new CompileOptions<>(syntax, table != null ? table.getPropTypes() : null));
+        CompiledQuery<KeyField, PropertyField> changeCompile = query.compile(new CompileOptions<PropertyField>(syntax, table != null ? table.getPropTypes() : null));
 
         SQLDML dml = changeCompile.sql.getInsertDML(name, changeCompile.keyOrder, changeCompile.propertyOrder, true, changeCompile.keyOrder.mapOrder(changeCompile.keyNames), changeCompile.propertyOrder.mapOrder(changeCompile.propertyNames), syntax);
         return new SQLExecute(dml, changeCompile.getQueryParams(env), changeCompile.getQueryExecEnv(userProvider), env.getTransactTimeout(), env.getOpOwner(), owner, change);

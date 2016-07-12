@@ -8,7 +8,7 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
 
 public class EmptyRevMap<K, V> extends ARevMap<K, V> implements ImValueMap<K, V>, ImRevValueMap<K, V> {
 
-    private final static EmptyRevMap<Object, Object> instance = new EmptyRevMap<>();
+    private final static EmptyRevMap<Object, Object> instance = new EmptyRevMap<Object, Object>();
     public static <K,V> EmptyRevMap<K, V> INSTANCE() {
         return (EmptyRevMap<K, V>) instance;
     }

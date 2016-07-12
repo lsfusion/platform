@@ -7,7 +7,7 @@ import com.google.gwt.event.shared.HasHandlers;
 
 public class KeyboardRowChangedEvent extends GwtEvent<KeyboardRowChangedEvent.Handler> {
 
-    public interface Handler extends EventHandler {
+    public static interface Handler extends EventHandler {
         void onKeyboardRowChanged(KeyboardRowChangedEvent event);
     }
 
@@ -26,7 +26,7 @@ public class KeyboardRowChangedEvent extends GwtEvent<KeyboardRowChangedEvent.Ha
 
     public static Type<KeyboardRowChangedEvent.Handler> getType() {
         if (TYPE == null) {
-            TYPE = new Type<>();
+            TYPE = new Type<KeyboardRowChangedEvent.Handler>();
         }
         return TYPE;
     }

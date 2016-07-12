@@ -15,7 +15,7 @@ import java.sql.*;
 
 public interface SQLSyntax {
 
-    String NULL = "NULL";
+    final static String NULL = "NULL";
 
     boolean allowViews();
 

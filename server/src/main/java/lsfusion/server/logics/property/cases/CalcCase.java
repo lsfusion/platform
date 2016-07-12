@@ -21,6 +21,6 @@ public class CalcCase<T extends PropertyInterface> extends Case<T, CalcPropertyI
     }
 
     public <P extends PropertyInterface> CalcCase<P> map(ImRevMap<T, P> map) {
-        return new CalcCase<>(where.map(map), implement.map(map));
+        return new CalcCase<P>(where.map(map), implement.map(map));
     }
 }

@@ -63,12 +63,12 @@ public class UnionJoin extends CalculateJoin<Integer> {
 
     private List<BaseExpr> getCommonExprs() {
 
-        Set<BaseExpr> baseExprs = new HashSet<>();
+        Set<BaseExpr> baseExprs = new HashSet<BaseExpr>();
         for(Expr expr : exprs)
             baseExprs.addAll(expr.getBaseExprs());
 
         if(baseExprs.size()==1)
-            return new ArrayList<>(baseExprs);
+            return new ArrayList<BaseExpr>(baseExprs);
 
         MOrderExclMap<BaseExpr, MSet<BaseExpr>> mOrderedExprs = MapFact.mOrderExclMap();
         for(BaseExpr baseExpr : baseExprs)
@@ -76,7 +76,7 @@ public class UnionJoin extends CalculateJoin<Integer> {
         ImOrderMap<BaseExpr,ImSet<BaseExpr>> orderedExprs = MapFact.immutable(mOrderedExprs);
 
         MAddMap<BaseExpr, ImSet<BaseExpr>> found = MapFact.mAddExclMapMax(orderedExprs.size());
-        List<BaseExpr> result = new ArrayList<>();
+        List<BaseExpr> result = new ArrayList<BaseExpr>();
         for(int i=orderedExprs.size()-1;i>=0;i--) { // бежим с конца
             BaseExpr baseExpr = orderedExprs.getKey(i);
             ImSet<BaseExpr> orderBaseExprs = orderedExprs.getValue(i);
@@ -105,7 +105,7 @@ public class UnionJoin extends CalculateJoin<Integer> {
     }
     
     public static boolean depends(OuterContext context, final QueryJoin dependJoin) {
-        final Result<Boolean> depends = new Result<>(false);
+        final Result<Boolean> depends = new Result<Boolean>(false);
         context.enumerate(new ExprEnumerator() {
             public Boolean enumerate(OuterContext join) {
                 if(join instanceof QueryExpr && BaseUtils.hashEquals(((QueryExpr) join).getInnerJoin(), dependJoin)) {

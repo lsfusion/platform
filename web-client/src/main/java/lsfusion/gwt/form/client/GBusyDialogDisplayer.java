@@ -2,7 +2,8 @@ package lsfusion.gwt.form.client;
 
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.user.client.Timer;
-import com.google.gwt.user.client.ui.PopupPanel;
+import com.google.gwt.user.client.ui.*;
+import lsfusion.gwt.base.client.ErrorHandlingCallback;
 import lsfusion.gwt.base.shared.actions.ListResult;
 import lsfusion.gwt.form.client.form.ServerMessageProvider;
 

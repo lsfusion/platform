@@ -12,7 +12,7 @@ public class WordClass extends StaticFormatFileClass {
         return "WORDFILE";
     }
 
-    private static Collection<WordClass> instances = new ArrayList<>();
+    private static Collection<WordClass> instances = new ArrayList<WordClass>();
 
     public static WordClass get(boolean multiple, boolean storeName) {
         for (WordClass instance : instances)

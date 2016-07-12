@@ -30,7 +30,7 @@ public class UnionDrillDownFormEntity<I extends PropertyInterface, P extends Cal
     protected void setupDrillDownForm() {
         Version version = LM.getVersion();
         
-        operandProperties = new ArrayList<>();
+        operandProperties = new ArrayList<PropertyDrawEntity>();
 
         ImCol<CalcPropertyInterfaceImplement<UnionProperty.Interface>> operands = property.getOperands();
 

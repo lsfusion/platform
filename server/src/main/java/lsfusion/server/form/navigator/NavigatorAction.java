@@ -9,7 +9,7 @@ public class NavigatorAction<T extends BusinessLogics<T>> extends NavigatorEleme
 
     public NavigatorAction(NavigatorElement<T> parent, String canonicalName, String caption, String icon, Version version) {
         super(parent, canonicalName, caption, icon, version);
-        setImage(icon != null ? icon : "/images/action.png", icon != null ? null : DefaultIcon.ACTION);
+        setImage(icon != null ? icon : "/images/action.png");
     }
 
     @Override

@@ -73,7 +73,7 @@ public abstract class AOrderSet<K> extends AList<K> implements ImOrderSet<K> {
     }
 
     public ImOrderSet<K> removeOrder(ImSet<? extends K> ks) {
-        return filterOrder(new NotFunctionSet<>((FunctionSet<K>) ks));
+        return filterOrder(new NotFunctionSet<K>((FunctionSet<K>) ks));
     }
 
     public ImOrderSet<K> removeOrderIncl(K remove) {

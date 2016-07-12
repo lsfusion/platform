@@ -183,7 +183,7 @@ public class SessionDataTable extends SessionData<SessionDataTable> {
     }
 
     private ClassWhere<KeyField> getKeyValueClasses() {
-        return new ClassWhere<>(DataObject.getMapDataClasses(keyValues));
+        return new ClassWhere<KeyField>(DataObject.getMapDataClasses(keyValues));
     }
 
     public ClassWhere<KeyField> getClassWhere() {

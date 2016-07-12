@@ -93,19 +93,7 @@ connectDate 'Дата подключения' (Connection c) = DATE(connectTime(
 disconnectTime 'Время отключения' = DATA DATETIME (Connection);
 disconnectTime (Connection connection) <- currentDateTime() WHEN SET(connectionStatus(connection) == ConnectionStatus.disconnectedConnection);
 
-reconnect 'Переподключить' (CustomUser user) = ACTION {
-    FOR user(Connection conn) == user AND connectionStatus(conn) == ConnectionStatus.connectedConnection DO {
-            NEWSESSION { NEWTHREAD reconnect() CONNECTION conn; }
-        }
-} CONFIRM;
-
-shutdown 'Отключить' (CustomUser user) = ACTION {
-    FOR user(Connection conn) == user AND connectionStatus(conn) == ConnectionStatus.connectedConnection DO {
-            NEWSESSION { NEWTHREAD shutdown() CONNECTION conn; }
-        }
-} CONFIRM;
-
-EXTEND FORM customUsers PROPERTIES(u) reconnect, shutdown;
+disconnect 'Отключить' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.DisconnectActionProperty' (Connection); 
 
 @defineLog (Connection, 'подключений', log, connectDate);
 
@@ -183,7 +171,7 @@ clearApplicationLog () += ACTION NEWSESSION {
 FORM connections 'Журнал подключений'
 
     OBJECTS c=Connection
-    PROPERTIES (c) READONLY hostnameComputer, remoteAddress, userLogin, osVersion,
+    PROPERTIES (c) READONLY hostnameComputer, remoteAddress, userLogin, remoteAddress, osVersion,
                             javaVersion, screenSize, processor, architecture, cores, physicalMemory,
                             totalMemory, maximumMemory, freeMemory, nameConnectionStatus, connectTime,
                             disconnectTime
@@ -318,7 +306,7 @@ FORM pings 'Журнал клиентских приложений'
     FILTERS pingFromTo(c,dFrom,dTo)
     
     OBJECTS cn = Connection
-    PROPERTIES (cn) READONLY hostnameComputer, remoteAddress, userLogin, osVersion,
+    PROPERTIES (cn) READONLY hostnameComputer, remoteAddress, userLogin, remoteAddress, osVersion,
                              javaVersion, screenSize, processor, architecture, cores, physicalMemory,
                              totalMemory, maximumMemory, freeMemory, nameConnectionStatus, connectTime,
                              disconnectTime

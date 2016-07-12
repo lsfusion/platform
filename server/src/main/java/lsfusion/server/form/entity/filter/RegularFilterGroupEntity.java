@@ -60,7 +60,7 @@ public class RegularFilterGroupEntity extends IdentityObject {
     }
 
     public GroupObjectEntity getToDraw(FormEntity form) {
-        Set<ObjectEntity> groupObjects = new HashSet<>();
+        Set<ObjectEntity> groupObjects = new HashSet<ObjectEntity>();
 
         // ищем самый нижний GroupObjectInstance, к которому применяется фильтр
         for (RegularFilterEntity regFilter : getFiltersList()) {
@@ -71,7 +71,7 @@ public class RegularFilterGroupEntity extends IdentityObject {
     }
 
     public GroupObjectEntity getNFToDraw(FormEntity form, Version version) {
-        Set<ObjectEntity> groupObjects = new HashSet<>();
+        Set<ObjectEntity> groupObjects = new HashSet<ObjectEntity>();
 
         // ищем самый нижний GroupObjectInstance, к которому применяется фильтр
         for (RegularFilterEntity regFilter : filters.getNFOrderSet(version)) {

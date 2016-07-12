@@ -56,7 +56,7 @@ public class XorUnionProperty extends IncrementUnionProperty {
         ImList<Pair<Expr, Where>> operandExprs = operands.mapListValues(new GetValue<Pair<Expr, Where>, CalcPropertyInterfaceImplement<Interface>>() { // до непосредственно вычисления, для хинтов
             public Pair<Expr, Where> getMapValue(CalcPropertyInterfaceImplement<Interface> key) {
                 WhereBuilder changedOperandWhere = new WhereBuilder();
-                return new Pair<>(key.mapExpr(joinImplement, propChanges, changedOperandWhere), changedOperandWhere.toWhere());
+                return new Pair<Expr, Where>(key.mapExpr(joinImplement, propChanges, changedOperandWhere), changedOperandWhere.toWhere());
             }
         });
 
@@ -94,7 +94,7 @@ public class XorUnionProperty extends IncrementUnionProperty {
                 if(siblingOperand!=operand)
                     siblingWhere = siblingWhere.xor(siblingOperand.mapExpr(change.getMapExprs(), propChanges).getWhere());
             WhereBuilder operandWhere = new WhereBuilder();
-            result = result.add(operand.mapDataChanges(new PropertyChange<>(change, ValueExpr.get(change.expr.getWhere().xor(siblingWhere))), operandWhere, propChanges));
+            result = result.add(operand.mapDataChanges(new PropertyChange<Interface>(change, ValueExpr.get(change.expr.getWhere().xor(siblingWhere))), operandWhere, propChanges));
             change = change.and(operandWhere.toWhere().not());
             if(changedWhere!=null) changedWhere.add(operandWhere.toWhere());
         }

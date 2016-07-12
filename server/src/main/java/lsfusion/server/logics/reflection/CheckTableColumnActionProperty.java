@@ -36,7 +36,7 @@ public class CheckTableColumnActionProperty extends ScriptingActionProperty {
         final ObjectValue propertyObject = context.getBL().reflectionLM.propertyTableColumn.readClasses(context, tableColumnObject);
         final String propertyCanonicalName = (String) context.getBL().reflectionLM.canonicalNameProperty.read(context, propertyObject);
 
-        final Result<String> message = new Result<>();
+        final Result<String> message = new Result<String>();
         ServiceDBActionProperty.run(context, new RunService() {
             public void run(SQLSession session, boolean isolatedTransaction) throws SQLException, SQLHandledException {
                 message.set(context.getDbManager().checkAggregationTableColumn(session, propertyCanonicalName.trim()));

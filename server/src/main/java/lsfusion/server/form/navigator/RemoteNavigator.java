@@ -14,6 +14,7 @@ import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.form.RemoteFormInterface;
 import lsfusion.interop.form.ServerResponse;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
+import lsfusion.interop.remote.CallbackMessage;
 import lsfusion.server.EnvStackRunnable;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
@@ -41,9 +42,7 @@ import lsfusion.server.form.instance.listener.FocusListener;
 import lsfusion.server.form.instance.listener.RemoteFormListener;
 import lsfusion.server.logics.*;
 import lsfusion.server.logics.SecurityManager;
-import lsfusion.server.logics.property.ActionProperty;
-import lsfusion.server.logics.property.CalcProperty;
-import lsfusion.server.logics.property.ClassPropertyInterface;
+import lsfusion.server.logics.property.*;
 import lsfusion.server.remote.ContextAwarePendingRemoteObject;
 import lsfusion.server.remote.RemoteForm;
 import lsfusion.server.remote.RemoteLoggerAspect;
@@ -105,7 +104,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
 
     private RemotePausableInvocation currentInvocation = null;
     
-    private final WeakIdentityHashSet<RemoteForm> forms = new WeakIdentityHashSet<>();
+    private final WeakIdentityHashSet<RemoteForm> forms = new WeakIdentityHashSet<RemoteForm>();
 
     private static final List<Pair<DataObject, String>> recentlyOpenForms = Collections.synchronizedList(new ArrayList<Pair<DataObject, String>>());
 
@@ -227,11 +226,6 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
 
     public void logClientException(String title, String hostname, Throwable t) {
         String time = new SimpleDateFormat().format(Calendar.getInstance().getTime());
-        
-        if (hostname == null) { // считается, что Web                                                
-            hostname = ThreadLocalContext.get().getLogInfo().hostnameComputer;
-        }
-        
         logger.error(title + " at '" + time + "' from '" + hostname + "': ", t);
         try {
             businessLogics.systemEventsLM.logException(businessLogics, getStack(), t, this.user, hostname, true);
@@ -314,9 +308,9 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
             return remoteNavigator != null && remoteNavigator.changeCurrentUser(user);
         }
 
-        public ObjectValue getCurrentUser() {
+        public DataObject getCurrentUser() {
             RemoteNavigator remoteNavigator = weakThis.get();
-            return remoteNavigator == null ? NullValue.instance : remoteNavigator.user;
+            return remoteNavigator == null ? null : remoteNavigator.user;
         }
     }
 
@@ -327,9 +321,9 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
             this.weakThis = new WeakReference<>(navigator);
         }
 
-        public ObjectValue getCurrentComputer() {
+        public DataObject getCurrentComputer() {
             RemoteNavigator remoteNavigator = weakThis.get();
-            return remoteNavigator == null ? NullValue.instance : remoteNavigator.computer;
+            return remoteNavigator == null ? null : remoteNavigator.computer.getDataObject();
         }
 
         public boolean isFullClient() {
@@ -680,6 +674,23 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
 
     public synchronized ClientCallBackController getClientCallBack() throws RemoteException {
         return client;
+    }
+
+    public boolean isRestartAllowed() {
+        return client.isRestartAllowed();
+    }
+
+    public synchronized void notifyServerRestart() throws RemoteException {
+        client.notifyServerRestart();
+    }
+
+    public synchronized void disconnect(CallbackMessage message) {
+        if(client != null)
+            client.disconnect(message);
+    }
+
+    public void notifyServerRestartCanceled() throws RemoteException {
+        client.notifyServerRestartCanceled();
     }
 
     public void pushNotification(EnvStackRunnable run) throws RemoteException {

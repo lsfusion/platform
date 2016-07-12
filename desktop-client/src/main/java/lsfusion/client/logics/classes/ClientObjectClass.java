@@ -87,7 +87,7 @@ public class ClientObjectClass extends ClientClass {
         String sID = inStream.readUTF();
 
         int count = inStream.readInt();
-        List<ClientObjectClass> children = new ArrayList<>();
+        List<ClientObjectClass> children = new ArrayList<ClientObjectClass>();
         for (int i = 0; i < count; i++) {
             children.add(ClientTypeSerializer.deserializeClientObjectClass(inStream));
         }

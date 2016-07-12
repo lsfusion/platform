@@ -163,7 +163,7 @@ public class Query<K,V> extends IQuery<K,V> {
         if(joinKeys==null)
             return joinExprs(joinImplement, mapValues);
         else
-            return new MapJoin<>(new MapTranslator(BaseUtils.<ImRevMap<ParamExpr, ParamExpr>>immutableCast(mapKeys.crossJoin(joinKeys)), mapValues), getJoin());
+            return new MapJoin<V>(new MapTranslator(BaseUtils.<ImRevMap<ParamExpr, ParamExpr>>immutableCast(mapKeys.crossJoin(joinKeys)), mapValues), getJoin());
     }
 
     @ContextTwin
@@ -173,10 +173,10 @@ public class Query<K,V> extends IQuery<K,V> {
         Join<V> join = getJoin();
 
         // сначала map'им значения
-        join = new MapJoin<>(mapValues, join);
+        join = new MapJoin<V>(mapValues, join);
 
         // затем делаем подстановку
-        join = new QueryTranslateJoin<>(new QueryTranslator(mapKeys.crossJoin(joinImplement)), join);
+        join = new QueryTranslateJoin<V>(new QueryTranslator(mapKeys.crossJoin(joinImplement)), join);
 
         // затем закидываем Where что все implement не null
         join = join.and(Expr.getWhere(joinImplement));
@@ -232,7 +232,7 @@ public class Query<K,V> extends IQuery<K,V> {
 
     @ContextTwin
     public IQuery<K,V> calculatePack() {
-        return new Query<>(this, true);
+        return new Query<K,V>(this, true);
     }
 
     protected long calculateComplexity(boolean outer) {
@@ -293,9 +293,9 @@ public class Query<K,V> extends IQuery<K,V> {
 
         ImMap<V, Expr> pullProps = pullValues(transProps, transWhere);
         if(pullKeys.isEmpty() && pullProps.isEmpty())
-            return new PullValues<>(this);
+            return new PullValues<K, V>(this);
 
-        return new PullValues<>(new Query<>(mapKeys.removeRev(pullKeys.keys()),
+        return new PullValues<K, V>(new Query<K,V>(mapKeys.removeRev(pullKeys.keys()),
                 transProps.remove(pullProps.keys()), transWhere), pullKeys, pullProps);
     }
 
@@ -303,7 +303,7 @@ public class Query<K,V> extends IQuery<K,V> {
     @Pack
     @StackMessage("message.core.query.compile")
     public CompiledQuery<K, V> compile(ImOrderMap<V, Boolean> orders, CompileOptions<V> options) {
-        return new CompiledQuery<>(this, options.syntax, orders, options.limit, options.subcontext, options.recursive, options.noInline, options.castTypes);
+        return new CompiledQuery<K,V>(this, options.syntax, orders, options.limit, options.subcontext, options.recursive, options.noInline, options.castTypes);
     }
 
     @IdentityLazy
@@ -440,7 +440,7 @@ public class Query<K,V> extends IQuery<K,V> {
                 return new Object();
             }});
 
-        Query<K, Object> orderQuery = new Query<>(mapKeys, MapFact.addExcl(properties, orderObjects), where);
+        Query<K, Object> orderQuery = new Query<K, Object>(mapKeys, MapFact.addExcl(properties, orderObjects), where);
         ImOrderMap<Object, Boolean> orderProperties = ((ImOrderMap<Expr, Boolean>)orders).map(orderObjects.reverse());
 
         return orderQuery.executeClasses(session, orderProperties, 0, baseClass, env).mapOrderValues(new GetValue<ImMap<V, ObjectValue>, ImMap<Object, ObjectValue>>() {
@@ -493,7 +493,7 @@ public class Query<K,V> extends IQuery<K,V> {
         final ImMap<V, Pair<Expr, ClassReader>> propExprReaders = props.mapValues(new GetValue<Pair<Expr, ClassReader>, V>() {
             public Pair<Expr, ClassReader> getMapValue(V prop) {
                 Expr expr = classQuery.first.getExpr(prop);
-                return new Pair<>(expr, expr.getReader(keyType));
+                return new Pair<Expr, ClassReader>(expr, expr.getReader(keyType));
             }});
         
         return rows.mapOrderKeyValues(new GetKeyValue<ImMap<K, DataObject>, ImMap<K, Object>, ImMap<Object, Object>>() {
@@ -526,7 +526,7 @@ public class Query<K,V> extends IQuery<K,V> {
             expr.getReader(where).prepareClassesQuery(expr, where, mReadExprs, baseClass);
         ImSet<Expr> readExprs = mReadExprs.immutable();
         final ImRevMap<Expr, Object> objects = BaseUtils.generateObjects(readExprs);
-        return new Pair<IQuery<K, Object>, ImRevMap<Expr, Object>>(new Query<>(mapKeys, MapFact.addExcl(properties, objects.reverse().mapValues(new GetValue<Expr, Expr>() {
+        return new Pair<IQuery<K, Object>, ImRevMap<Expr, Object>>(new Query<K, Object>(mapKeys, MapFact.addExcl(properties, objects.reverse().mapValues(new GetValue<Expr, Expr>() {
             public Expr getMapValue(Expr value) {
                 return value.classExpr(baseClass);
             }
@@ -640,7 +640,7 @@ public class Query<K,V> extends IQuery<K,V> {
     private MultiParamsContext<K,V> multiParamsContext;
     public MultiParamsContext<K,V> getMultiParamsContext() {
         if(multiParamsContext==null)
-            multiParamsContext = new MultiParamsContext<>(this);
+            multiParamsContext = new MultiParamsContext<K,V>(this);
         return multiParamsContext;
     }
 
@@ -649,10 +649,10 @@ public class Query<K,V> extends IQuery<K,V> {
     }
 
     public MapQuery<K, V, ?, ?> translateMap(MapValuesTranslate translate) {
-        return new MapQuery<>(this, properties.keys().toRevMap(), mapKeys.keys().toRevMap(), translate);
+        return new MapQuery<K,V,K,V>(this, properties.keys().toRevMap(), mapKeys.keys().toRevMap(), translate);
     }
     public Query<K, V> translateQuery(MapTranslate translate) {
-        return new Query<>(translate.translateRevValues(mapKeys), translate.translate(properties), where.translateOuter(translate));
+        return new Query<K,V>(translate.translateRevValues(mapKeys), translate.translate(properties), where.translateOuter(translate));
     }
 
     public boolean equalsInner(Query<K, V> object) { // нужно проверить что совпадут
@@ -668,7 +668,7 @@ public class Query<K,V> extends IQuery<K,V> {
     }
 
     public <RMK, RMV> IQuery<RMK, RMV> map(ImRevMap<RMK, K> remapKeys, ImRevMap<RMV, V> remapProps, MapValuesTranslate translate) {
-        return new MapQuery<>(this, remapProps, remapKeys, translate);
+        return new MapQuery<RMK, RMV, K, V>(this, remapProps, remapKeys, translate);
     }
 }
 

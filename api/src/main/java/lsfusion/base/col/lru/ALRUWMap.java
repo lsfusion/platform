@@ -18,7 +18,7 @@ public abstract class ALRUWMap<W, E extends ALRUWMap.AEntry<W, E>, S extends ALR
     
     abstract class ASegment extends ALRUMap<E, S>.ASegment {
         
-        protected ReferenceQueue<W> refQueue = new ReferenceQueue<>();
+        protected ReferenceQueue<W> refQueue = new ReferenceQueue<W>();
         
         protected ASegment(int initialCapacity, float loadFactor) {
             super(initialCapacity, loadFactor);

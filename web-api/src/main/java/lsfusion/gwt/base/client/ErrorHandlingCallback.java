@@ -1,9 +1,7 @@
-package lsfusion.gwt.form.client;
+package lsfusion.gwt.base.client;
 
 import com.google.gwt.http.client.RequestTimeoutException;
 import com.google.gwt.user.client.rpc.StatusCodeException;
-import lsfusion.gwt.base.client.AsyncCallbackEx;
-import lsfusion.gwt.base.client.GwtClientUtils;
 import lsfusion.gwt.base.client.ui.DialogBoxHelper;
 import lsfusion.gwt.base.shared.InvalidateException;
 import lsfusion.gwt.base.shared.MessageException;
@@ -22,7 +20,7 @@ public class ErrorHandlingCallback<T> extends AsyncCallbackEx<T> {
     }
 
     protected void showErrorMessage(final Throwable caught) {
-        GExceptionManager.logClientError("Failure, while performing an action. ", caught);
+        GwtClientUtils.logClientError("Failure, while performing an action. ", caught);
 
         String message = getServerMessage(caught);
         if (message != null) {

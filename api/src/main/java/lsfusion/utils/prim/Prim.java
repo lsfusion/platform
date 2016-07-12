@@ -12,16 +12,16 @@ public final class Prim {
      */
     public static <T> UndirectedGraph<T> mst(UndirectedGraph<T> graph) {
         /* The Fibonacci heap we'll use to select nodes efficiently. */
-        FibonacciHeap<T> pq = new FibonacciHeap<>();
+        FibonacciHeap<T> pq = new FibonacciHeap<T>();
 
         /* This Fibonacci heap hands back internal handles to the nodes it
          * stores.  This map will associate each node with its entry in the
          * Fibonacci heap.
          */
-        Map<T, FibonacciHeap.Entry<T>> entries = new HashMap<>();
+        Map<T, FibonacciHeap.Entry<T>> entries = new HashMap<T, FibonacciHeap.Entry<T>>();
 
         /* The graph which will hold the resulting MST. */
-        UndirectedGraph<T> result = new UndirectedGraph<>();
+        UndirectedGraph<T> result = new UndirectedGraph<T>();
 
         /* As an edge case, if the graph is empty, just hand back the empty
          * graph.
@@ -153,4 +153,4 @@ public final class Prim {
             // Case 4 handled implicitly by doing nothing.
         }
     }
-}
+};

@@ -471,7 +471,7 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
 
     public List<PropertyDrawView> getProperties(AbstractNode group, GroupObjectEntity groupObject) {
 
-        List<PropertyDrawView> result = new ArrayList<>();
+        List<PropertyDrawView> result = new ArrayList<PropertyDrawView>();
 
         for (PropertyDrawView property : getPropertiesList()) {
             if ((groupObject==null || groupObject.equals(property.entity.getToDraw(entity))) && group.hasChild(property.entity.propertyObject.property)) {
@@ -484,7 +484,7 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
 
     public List<PropertyDrawView> getProperties(Property prop, GroupObjectEntity groupObject) {
 
-        List<PropertyDrawView> result = new ArrayList<>();
+        List<PropertyDrawView> result = new ArrayList<PropertyDrawView>();
 
         for (PropertyDrawView property : getPropertiesList()) {
             if (groupObject.equals(property.entity.getToDraw(entity)) && prop.equals(property.entity.propertyObject.property)) {
@@ -497,7 +497,7 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
 
     public List<PropertyDrawView> getProperties(Property prop) {
 
-        List<PropertyDrawView> result = new ArrayList<>();
+        List<PropertyDrawView> result = new ArrayList<PropertyDrawView>();
 
         for (PropertyDrawView property : getPropertiesIt()) {
             if (prop.equals(property.entity.propertyObject.property)) {
@@ -510,7 +510,7 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
 
     public List<PropertyDrawView> getProperties(GroupObjectEntity groupObject) {
 
-        List<PropertyDrawView> result = new ArrayList<>();
+        List<PropertyDrawView> result = new ArrayList<PropertyDrawView>();
 
         for (PropertyDrawView property : getPropertiesIt()) {
             if (groupObject.equals(property.entity.getToDraw(entity))) {

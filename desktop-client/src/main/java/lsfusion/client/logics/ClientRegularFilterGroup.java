@@ -12,7 +12,7 @@ import java.util.List;
 
 public class ClientRegularFilterGroup extends ClientComponent {
 
-    public List<ClientRegularFilter> filters = new ArrayList<>();
+    public List<ClientRegularFilter> filters = new ArrayList<ClientRegularFilter>();
 
     public int defaultFilterIndex = -1;
 

@@ -174,19 +174,19 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
 
     private FilterInstance combineUserFilters(MOrderSet<FilterInstance> filterSet) {
         FilterInstance comboFilter = null;
-        List<List<FilterInstance>> organizedFilters = new ArrayList<>();
-        List<FilterInstance> orFilters = new ArrayList<>();
+        List<List<FilterInstance>> organizedFilters = new ArrayList<List<FilterInstance>>();
+        List<FilterInstance> orFilters = new ArrayList<FilterInstance>();
         for (FilterInstance filter : filterSet.immutableOrder()) {
             orFilters.add(filter);
             if (filter.junction) {
                 organizedFilters.add(orFilters);
-                orFilters = new ArrayList<>();
+                orFilters = new ArrayList<FilterInstance>();
             }
         }
         if (!orFilters.isEmpty())
             organizedFilters.add(orFilters);
 
-        List<FilterInstance> ands = new ArrayList<>();
+        List<FilterInstance> ands = new ArrayList<FilterInstance>();
         for (List<FilterInstance> ors : organizedFilters) {
             FilterInstance filt = null;
             for (FilterInstance filter : ors) {
@@ -226,7 +226,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
         updated |= UPDATED_FILTER;
     }
 
-    private Set<FilterInstance> regularFilters = new HashSet<>();
+    private Set<FilterInstance> regularFilters = new HashSet<FilterInstance>();
     public void addRegularFilter(FilterInstance filter) {
         regularFilters.add(filter);
 
@@ -241,7 +241,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
         updated |= UPDATED_FILTER;
     }
 
-    private Set<FilterInstance> tempFilters = new HashSet<>();
+    private Set<FilterInstance> tempFilters = new HashSet<FilterInstance>();
     public void clearTempFilters() {
         tempFilters.clear();
 
@@ -558,7 +558,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
             }
         });
 
-        return new Query<>(mapKeys, mPropertyExprs.immutable(), getWhere(mapKeys, modifier, reallyChanged).and(expandWhere)).
+        return new Query<ObjectInstance, Object>(mapKeys, mPropertyExprs.immutable(), getWhere(mapKeys, modifier, reallyChanged).and(expandWhere)).
                     executeClasses(session, env, baseClass, orderExprs);
     }
 
@@ -683,7 +683,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
         CalcPropertyRevImplement<ClassPropertyInterface, ObjectInstance> filterProperty = props.get(GroupObjectProp.FILTER);
         if(updateFilters && filterProperty!=null) { // изменились фильтры, надо обновить свойства созданные при помощи соответствующих операторов форм
             ImRevMap<ObjectInstance, KeyExpr> mapKeys = getMapKeys();
-            environmentIncrement.add(filterProperty.property, new PropertyChange<>(filterProperty.mapping.join(mapKeys), ValueExpr.TRUE, getWhere(mapKeys, modifier, reallyChanged)));
+            environmentIncrement.add(filterProperty.property, new PropertyChange<ClassPropertyInterface>(filterProperty.mapping.join(mapKeys), ValueExpr.TRUE, getWhere(mapKeys, modifier, reallyChanged)));
 
             changedProps.set(changedProps.result.merge(new ChangedData(SetFact.singleton((CalcProperty)filterProperty.property), false)));
         }
@@ -747,7 +747,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
                     public Type getMapValue(OrderInstance value) {
                         return value.getType();
                     }}), orderExprs.valuesList());
-                change = new PropertyChange<>(orderProperty.mapping.join(mapKeys), FormulaUnionExpr.create(orderClass, orderExprs.keyOrderSet()));
+                change = new PropertyChange<ClassPropertyInterface>(orderProperty.mapping.join(mapKeys), FormulaUnionExpr.create(orderClass, orderExprs.keyOrderSet()));
             }
             environmentIncrement.add(orderProperty.property, change);
 
@@ -944,8 +944,8 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
     private void updateViewProperty(ExecutionEnvironment execEnv, ImMap<ObjectInstance, DataObject> keys) throws SQLException, SQLHandledException {
         CalcPropertyRevImplement<ClassPropertyInterface, ObjectInstance> viewProperty = props.get(GroupObjectProp.VIEW);
         if(viewProperty != null) {
-            updateViewProperty(execEnv, viewProperty, keys.isEmpty() ? new PropertyChange<>(viewProperty.property.getMapKeys(), ValueExpr.TRUE, Where.FALSE) :
-                    new PropertyChange<>(ValueExpr.TRUE, viewProperty.mapping.join(keys)));
+            updateViewProperty(execEnv, viewProperty, keys.isEmpty() ? new PropertyChange<ClassPropertyInterface>(viewProperty.property.getMapKeys(), ValueExpr.TRUE, Where.FALSE) : 
+                    new PropertyChange<ClassPropertyInterface>(ValueExpr.TRUE, viewProperty.mapping.join(keys)));
         }
     }
     
@@ -953,7 +953,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
         CalcPropertyRevImplement<ClassPropertyInterface, ObjectInstance> viewProperty = props.get(GroupObjectProp.VIEW);
         if(viewProperty != null) {
             ImRevMap<ObjectInstance, KeyExpr> mapKeys = getMapKeys();
-            updateViewProperty(execEnv, viewProperty, new PropertyChange<>(viewProperty.mapping.join(mapKeys), ValueExpr.TRUE, keyTable1.join(mapKeys).getWhere()));
+            updateViewProperty(execEnv, viewProperty, new PropertyChange<ClassPropertyInterface>(viewProperty.mapping.join(mapKeys), ValueExpr.TRUE, keyTable1.join(mapKeys).getWhere()));
         }
     }
 
@@ -1084,7 +1084,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
                 }
             }
 
-            return new Query<>(mapKeys, orderExprs, getWhere(mapKeys, modifier, reallyChanged).and(orderWhere)).
+            return new Query<ObjectInstance, OrderInstance>(mapKeys, orderExprs, getWhere(mapKeys, modifier, reallyChanged).and(orderWhere)).
                         executeClasses(session, down ? orders : Query.reverseOrder(orders), readSize, baseClass, env);
         }
 
@@ -1096,7 +1096,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
             if (result.size() == 0)
                 result = new SeekObjects(values, !end).executeOrders(session, env, modifier, baseClass, 1, end, reallyChanged);
             if (result.size() > 0)
-                return new Pair<>(result.singleKey(), result.singleValue());
+                return new Pair<ImMap<ObjectInstance, DataObject>, ImMap<OrderInstance, ObjectValue>>(result.singleKey(), result.singleValue());
             else
                 return null;
         }
@@ -1119,7 +1119,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
     }
 
     public NoPropertyTableUsage<ObjectInstance> createKeyTable() {
-        return new NoPropertyTableUsage<>(GroupObjectInstance.getOrderObjects(getOrderUpTreeGroups()), new Type.Getter<ObjectInstance>() {
+        return new NoPropertyTableUsage<ObjectInstance>(GroupObjectInstance.getOrderObjects(getOrderUpTreeGroups()), new Type.Getter<ObjectInstance>() {
             public Type getType(ObjectInstance key) {
                 return key.getType();
             }

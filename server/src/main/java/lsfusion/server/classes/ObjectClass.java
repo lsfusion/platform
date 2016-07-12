@@ -4,7 +4,7 @@ import lsfusion.server.logics.property.ActionProperty;
 
 public interface ObjectClass extends RemoteClass {
 
-    ActionProperty getChangeClassAction();
+    public ActionProperty getChangeClassAction();
 
-    BaseClass getBaseClass();
+    public BaseClass getBaseClass();
 }

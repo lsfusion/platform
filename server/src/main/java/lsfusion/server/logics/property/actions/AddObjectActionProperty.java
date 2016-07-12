@@ -118,7 +118,7 @@ public class AddObjectActionProperty<T extends PropertyInterface, I extends Prop
         try {
             PropertyChange<I> resultChange;
             if(where==null) // оптимизация, один объект добавляем
-                resultChange = new PropertyChange<>(context.addObject(readClass));
+                resultChange = new PropertyChange<I>(context.addObject(readClass));
             else {
                 if(result!=null)
                     session.dropChanges((DataProperty) result.property);
@@ -135,7 +135,7 @@ public class AddObjectActionProperty<T extends PropertyInterface, I extends Prop
                     }
                 });
     
-                addedTable = context.addObjects(readClass, new PropertySet<>(innerKeys, exprWhere, orderExprs, ordersNotNull));
+                addedTable = context.addObjects(readClass, new PropertySet<I>(innerKeys, exprWhere, orderExprs, ordersNotNull));
                 resultChange = SinglePropertyTableUsage.getChange(addedTable);
             }
     

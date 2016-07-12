@@ -78,11 +78,11 @@ public class ActionPropertyDebugger implements DebuggerService {
 
     private final MAddMap<Pair<String, Integer>, DebugInfo> firstInLineDelegates = MapFact.mAddMap(new SymmAddValue<Pair<String, Integer>, DebugInfo>() {
         public DebugInfo addValue(Pair<String, Integer> key, DebugInfo prevValue, DebugInfo newValue) {
-            return newValue.getDebuggerOffset() > prevValue.getDebuggerOffset() ? prevValue : newValue;
+            return newValue.offset > prevValue.offset ? prevValue : newValue;
         }
     });
     public boolean isDebugFirstInLine(DebugInfo debugInfo) {
-        return BaseUtils.hashEquals(firstInLineDelegates.get(debugInfo.getDebuggerModuleLine()), debugInfo);
+        return BaseUtils.hashEquals(firstInLineDelegates.get(debugInfo.getModuleLine()), debugInfo);
     }
 
     //в Java есть ограничение на количество имён в файле (~65000), поэтому нельзя всё впихнуть в один файл
@@ -108,14 +108,22 @@ public class ActionPropertyDebugger implements DebuggerService {
         return SetFact.fromJavaSet(delegates).group(new BaseUtils.Group<String, DebugInfo>() {
             @Override
             public String group(DebugInfo key) {
-                return key.getModuleName();
+                return key.moduleName;
             }
         });
     }
 
-    public synchronized <P extends PropertyInterface> void addDelegate(DebugInfo debugInfo) {
+    public synchronized <P extends PropertyInterface> void addDelegate(ActionProperty<P> property, ActionDebugInfo debugInfo) {
+        property.setDebugInfo(debugInfo);
+
         delegates.add(debugInfo);
-        firstInLineDelegates.add(debugInfo.getDebuggerModuleLine(), debugInfo);
+
+        firstInLineDelegates.add(debugInfo.getModuleLine(), debugInfo);
+    }
+
+    public synchronized <P extends PropertyInterface> void addDelegate(CalcPropertyDebugInfo debugInfo) {
+        delegates.add(debugInfo);
+        firstInLineDelegates.add(debugInfo.getModuleLine(), debugInfo);
     }
 
     public synchronized <P extends PropertyInterface> void setNewDebugStack(ActionProperty<P> property) {
@@ -216,7 +224,7 @@ public class ActionPropertyDebugger implements DebuggerService {
     }
 
     private String getMethodName(DebugInfo info) {
-        return info.getDebuggerMethodName(isDebugFirstInLine(info));
+        return info.getMethodName(isDebugFirstInLine(info));
     }
 
     public <P extends PropertyInterface> FlowResult delegate(ActionProperty<P> action, ExecutionContext<P> context) throws SQLException, SQLHandledException {
@@ -226,7 +234,7 @@ public class ActionPropertyDebugger implements DebuggerService {
             throw new IllegalStateException("Shouldn't happen: debug isn't enabled");
         }
 
-        Class<?> delegatesHolderClass = delegatesHolderClasses.get(debugInfo.getModuleName());
+        Class<?> delegatesHolderClass = delegatesHolderClasses.get(debugInfo.moduleName);
         if (delegatesHolderClass == null)
             return action.executeImpl(context);
 
@@ -264,7 +272,7 @@ public class ActionPropertyDebugger implements DebuggerService {
             throw new IllegalStateException("Shouldn't happen: debug isn't enabled");
         }
 
-        Class<?> delegatesHolderClass = delegatesHolderClasses.get(debugInfo.getModuleName());
+        Class<?> delegatesHolderClass = delegatesHolderClasses.get(debugInfo.moduleName);
         if (delegatesHolderClass != null) {
             try {
                 Method method = delegatesHolderClass.getMethod(getMethodName(debugInfo), DataSession.class, CalcProperty.class, PropertyChange.class);

@@ -11,11 +11,11 @@
     <groupId>lsfusion.platform</groupId>
     <artifactId>base</artifactId>
     <packaging>pom</packaging>
-    <version>1.2.3-SNAPSHOT</version>
+    <version>1.2.2</version>
     <name>Base</name>
 
     <properties>
-        <lsfusion.version>1.2.3-SNAPSHOT</lsfusion.version>
+        <lsfusion.version>1.2.2</lsfusion.version>
 
         <junit.version>4.10</junit.version>
         <log4j.version>1.2.16</log4j.version>
@@ -29,13 +29,13 @@
         <commons.logging.version>1.1</commons.logging.version>
         <commons.daemon.version>1.0.5</commons.daemon.version>
         <commons.exec.version>1.1</commons.exec.version>
-        <google.guava.version>19.0</google.guava.version>
+        <google.guava.version>13.0.1</google.guava.version>
         <jdom.version>1.1</jdom.version>
         <commons.net.version>3.3</commons.net.version>
         <com.jcraft.version>0.1.53</com.jcraft.version>
         <com.healthmarketscience.version>2.0.4</com.healthmarketscience.version>
         <netty.version>3.2.1.Final</netty.version>
-        <postgresql.version>9.4.1208.jre7</postgresql.version>
+        <postgresql.version>9.4-1200-jdbc4-patched-2</postgresql.version>
         <jasper.version>6.2.0</jasper.version>
         <jasper.htmlcomponent.version>6.2.0</jasper.htmlcomponent.version>
         <ecj.version>4.4</ecj.version>
@@ -67,7 +67,7 @@
         <jnlp.api.version>7.0</jnlp.api.version>
         <ojdbc14.version>11.2.0.4</ojdbc14.version>
         <janino.version>2.7.8</janino.version>
-
+        
         <spring.version>3.0.5.RELEASE</spring.version>
         <aspectj.version>1.8.5</aspectj.version>
 
@@ -83,8 +83,8 @@
         <gwt.version>2.7.0-patched-1</gwt.version>
 
         <smartgwt.version>3.0p</smartgwt.version>
-        <gwt.log.version>3.3.2</gwt.log.version>
-        <gwt.dnd.version>3.3.4</gwt.dnd.version>
+        <gwt.log.version>3.3.0</gwt.log.version>
+        <gwt.dnd.version>3.3.0</gwt.dnd.version>
         <gin.version>2.1.2</gin.version>
         <gwt.dispatch.version>1.2.0</gwt.dispatch.version>
         <gwt.platform.version>1.2.1</gwt.platform.version>
@@ -594,4 +594,8 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
+
+  <scm>
+    <developerConnection>scm:svn:svn://server/lsfusion/build/tags/platform-1.2.2/base</developerConnection>
+  </scm>
 </project>

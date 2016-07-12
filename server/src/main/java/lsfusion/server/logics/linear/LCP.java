@@ -177,14 +177,14 @@ public class LCP<T extends PropertyInterface> extends LP<T, CalcProperty<T>> {
     }
 
     public <U> CalcPropertyImplement<T, U> getMapping(U... mapping) {
-        return new CalcPropertyImplement<>(property, getMap(mapping));
+        return new CalcPropertyImplement<T, U>(property, getMap(mapping));
     }
     public <U extends PropertyInterface> CalcPropertyMapImplement<T, U> getImplement(U... mapping) {
-        return new CalcPropertyMapImplement<>(property, getRevMap(mapping));
+        return new CalcPropertyMapImplement<T, U>(property, getRevMap(mapping));
     }
 
     public PropertyChange<T> getChange(Expr expr, Where where, KeyExpr... keys) {
-        return new PropertyChange<>(getRevMap(keys), expr, where);
+        return new PropertyChange<T>(getRevMap(keys), expr, where);
     }
 
     public void setAutoset(boolean autoset) {
@@ -201,11 +201,11 @@ public class LCP<T extends PropertyInterface> extends LP<T, CalcProperty<T>> {
     }
 
     public <A extends PropertyInterface> void setEditAction(String editActionSID, LAP<A> editAction) {
-        property.setEditAction(editActionSID, new ActionPropertyMapImplement<>(editAction.property, editAction.getRevMap(listInterfaces)));
+        property.setEditAction(editActionSID, new ActionPropertyMapImplement<A, T>(editAction.property, editAction.getRevMap(listInterfaces)));
     }
     
     public LCP<T> getOld() {
-        return new LCP<>(property.getOld(PrevScope.DB), listInterfaces);
+        return new LCP<T>(property.getOld(PrevScope.DB), listInterfaces);
     }
     
     public ResolveClassSet getResolveClassSet(List<ResolveClassSet> classes) {

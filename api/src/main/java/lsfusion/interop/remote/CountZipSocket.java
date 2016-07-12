@@ -72,6 +72,16 @@ public class CountZipSocket extends Socket {
         return out;
     }
 
+    public synchronized void closeIfHung() {
+        if (in != null && in.hangs) {
+            try {
+                close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
     @Override
     public synchronized void close() throws IOException {
         super.close();

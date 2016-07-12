@@ -34,7 +34,7 @@ public class ColumnsClientContainerView extends AbstractClientContainerView {
             panel.add(column, FlexConstraints.leading_self);
 
             columns[i] = column;
-            columnsChildren[i] = new ArrayList<>();
+            columnsChildren[i] = new ArrayList<ClientComponent>();
         }
 
         container.design.designComponent(panel);

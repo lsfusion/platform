@@ -7,7 +7,7 @@ import java.util.*;
 public class IncrementDependency {
 
     private int maxIndex = 0;
-    private WeakHashMap<IncrementView, Integer> viewOrders = new WeakHashMap<>();
+    private WeakHashMap<IncrementView, Integer> viewOrders = new WeakHashMap<IncrementView, Integer>();
     private void registerViewOrder(IncrementView viewOrder) {
         viewOrders.put(viewOrder, maxIndex++);
     }
@@ -15,18 +15,18 @@ public class IncrementDependency {
         viewOrders.remove(viewOrder);
     }
 
-    private final Map<String, WeakHashMap<IncrementView, WeakIdentityHashSet<Object>>> mapViewObjects = new HashMap<>();
+    private final Map<String, WeakHashMap<IncrementView, WeakIdentityHashSet<Object>>> mapViewObjects = new HashMap<String, WeakHashMap<IncrementView, WeakIdentityHashSet<Object>>>();
 
     public void add(Object object, String field, IncrementView view) {
         WeakHashMap<IncrementView, WeakIdentityHashSet<Object>> viewObjects = mapViewObjects.get(field);
         if(viewObjects==null) {
-            viewObjects = new WeakHashMap<>();
+            viewObjects = new WeakHashMap<IncrementView, WeakIdentityHashSet<Object>>();
             mapViewObjects.put(field, viewObjects);
         }
 
         WeakIdentityHashSet<Object> objects = viewObjects.get(view);
         if(objects==null) {
-            objects = new WeakIdentityHashSet<>();
+            objects = new WeakIdentityHashSet<Object>();
             viewObjects.put(view, objects);
         }
 
@@ -50,11 +50,11 @@ public class IncrementDependency {
         }
     }
 
-    private final Map<String, WeakIdentityHashSet<IncrementView>> mapViews = new HashMap<>();
+    private final Map<String, WeakIdentityHashSet<IncrementView>> mapViews = new HashMap<String, WeakIdentityHashSet<IncrementView>>();
     public void add(String field, IncrementView view) {
         WeakIdentityHashSet<IncrementView> views = mapViews.get(field);
         if(views==null) {
-            views = new WeakIdentityHashSet<>();
+            views = new WeakIdentityHashSet<IncrementView>();
             mapViews.put(field, views);
         }
 
@@ -92,7 +92,7 @@ public class IncrementDependency {
 
     // метод который должен вызываться из setter'ов, add'
     public void update(Object object, String field) {
-        SortedMap<Integer, IncrementView> views = new TreeMap<>();
+        SortedMap<Integer, IncrementView> views = new TreeMap<Integer, IncrementView>();
         
         // обновляем прямые подписки
         WeakHashMap<IncrementView, WeakIdentityHashSet<Object>> fieldViewObjects = mapViewObjects.get(field);

@@ -9,7 +9,7 @@ import static lsfusion.server.lifecycle.LifecycleEvent.*;
 public class LifecycleManager {
     private final Object listenersLock = new Object();
 
-    private final Set<LifecycleListener> listeners = new TreeSet<>(LifecycleListener.ORDER_COMPARATOR);
+    private final Set<LifecycleListener> listeners = new TreeSet<LifecycleListener>(LifecycleListener.ORDER_COMPARATOR);
 
     public LifecycleManager(LifecycleListener... listeners) {
         addLifecycleListeners(listeners);

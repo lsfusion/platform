@@ -13,11 +13,11 @@ import static lsfusion.base.ApiResourceBundle.getString;
 
 public abstract class SerializationPool<C> {
     private Map<Integer, Class<? extends CustomSerializable<? extends SerializationPool<C>>>> idToClass
-            = new HashMap<>();
+            = new HashMap<Integer, Class<? extends CustomSerializable<? extends SerializationPool<C>>>>();
     private Map<Class<? extends CustomSerializable<? extends SerializationPool<C>>>, Integer> classToId
-            = new HashMap<>();
+            = new HashMap<Class<? extends CustomSerializable<? extends SerializationPool<C>>>, Integer>();
 
-    private Map<Long, CustomSerializable> objects = new HashMap<>();
+    private Map<Long, CustomSerializable> objects = new HashMap<Long, CustomSerializable>();
 
     public C context;
     public ApplicationContext appContext;
@@ -94,7 +94,7 @@ public abstract class SerializationPool<C> {
 
     public <K extends CustomSerializable<? extends SerializationPool<C>>,
             V extends CustomSerializable<? extends SerializationPool<C>>> Map<K, V> deserializeMap(DataInputStream inStream) throws IOException {
-        HashMap<K, V> result = new HashMap<>();
+        HashMap<K, V> result = new HashMap<K, V>();
 
         int size = inStream.readInt();
         for (int i = 0; i < size; ++i) {

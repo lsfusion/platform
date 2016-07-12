@@ -132,17 +132,17 @@ public abstract class GroupSingleTask<T> extends GroupProgramTask {
             Pair<List<Task>, Long> depCalc = calcFullDiameter(depend.getKey(), marks, overMap, stopTask);
             long depDiam = depCalc.second + depend.getValue();
             if (depDiam > current.second) {
-                current = new Pair<>(depCalc.first, depDiam);
+                current = new Pair<List<Task>, Long>(depCalc.first, depDiam);
             }
         }
-        current = new Pair<>(BaseUtils.add(current.first, currentTask), current.second);
+        current = new Pair<List<Task>, Long>(BaseUtils.add(current.first, currentTask), current.second);
         marks.put(currentTask, current);
         return current;
     }
 
     public void run() {
         if (isGraph()) {
-            Map<Task, Map<Task, Long>> overMap = new HashMap<>();
+            Map<Task, Map<Task, Long>> overMap = new HashMap<Task, Map<Task, Long>>();
             markDiameters(preTask, overMap, this);
 //            Pair<List<Task>, Long> maxPath = calcFullDiameter(preTask, new HashMap<Task, Pair<List<Task>, Long>>(), overMap, this);
 //            System.out.println(maxPath);
@@ -192,9 +192,9 @@ public abstract class GroupSingleTask<T> extends GroupProgramTask {
             return;
         }
 
-        Map<Task, PairTask> marks = new HashMap<>();
+        Map<Task, PairTask> marks = new HashMap<Task, PairTask>();
         markDiametersForTask(currentTask, new PairTask(), marks, stopTask);
-        Map<Task, Long> critical = new HashMap<>();
+        Map<Task, Long> critical = new HashMap<Task, Long>();
         for (Map.Entry<Task, PairTask> entry : marks.entrySet()) {
             PairTask pairTask = entry.getValue();
             long tasksToDo = getTotalRuntime(pairTask.tasksToDo);
@@ -227,7 +227,7 @@ public abstract class GroupSingleTask<T> extends GroupProgramTask {
         public long diameter;
 
         private PairTask() {
-            tasksToDo = new HashSet<>();
+            tasksToDo = new HashSet<Task>();
             diameter = 0;
         }
 

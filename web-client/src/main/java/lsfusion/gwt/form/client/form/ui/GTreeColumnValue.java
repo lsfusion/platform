@@ -7,7 +7,7 @@ public class GTreeColumnValue {
     private int level;
     private Boolean open;
     private String sID;
-    private Map<Integer, Boolean> lastInLevelMap = new HashMap<>();
+    private Map<Integer, Boolean> lastInLevelMap = new HashMap<Integer, Boolean>();
 
     public GTreeColumnValue(int level, String sID) {
         this.level = level;
@@ -43,7 +43,7 @@ public class GTreeColumnValue {
     }
 
     public void setLastInLevelMap(Map<Integer, Boolean> lastInLevelMap) {
-        this.lastInLevelMap = new HashMap<>(lastInLevelMap);
+        this.lastInLevelMap = new HashMap<Integer, Boolean>(lastInLevelMap);
     }
 
     public void addLastInLevel(int level, boolean last) {

@@ -140,7 +140,7 @@ public class ResizableWidgetCollection implements ResizeHandler,
     /**
      * A hash map of the resizable widgets this collection is checking.
      */
-    private Map<ResizableWidget, ResizableWidgetInfo> widgets = new HashMap<>();
+    private Map<ResizableWidget, ResizableWidgetInfo> widgets = new HashMap<ResizableWidget, ResizableWidgetInfo>();
 
     /**
      * The current window height.

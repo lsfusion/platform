@@ -75,7 +75,7 @@ public interface Cell<C> {
     /**
      * Contains information about the context of the Cell.
      */
-    class Context {
+    public static class Context {
 
         private final int column;
         private final int index;

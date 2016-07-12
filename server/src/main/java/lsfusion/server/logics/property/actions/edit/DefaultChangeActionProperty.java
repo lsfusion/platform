@@ -39,7 +39,7 @@ public class DefaultChangeActionProperty<P extends PropertyInterface> extends Sy
         assert filterProperty==null || filterProperty.interfaces.size()==1;
         assert listInterfaces.size() == property.interfaces.size();
 
-        this.implement = new CalcPropertyMapImplement<>(property, getMapInterfaces(listInterfaces).reverse());
+        this.implement = new CalcPropertyMapImplement<P, ClassPropertyInterface>(property, getMapInterfaces(listInterfaces).reverse());
         this.editActionSID = editActionSID;
         this.filterProperty = filterProperty;
     }

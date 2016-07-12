@@ -32,7 +32,7 @@ import java.util.Set;
 // поддерживает hint'ы, есть информация о сессии
 public abstract class SessionModifier implements Modifier {
 
-    private WeakIdentityHashSet<OverrideSessionModifier> views = new WeakIdentityHashSet<>();
+    private WeakIdentityHashSet<OverrideSessionModifier> views = new WeakIdentityHashSet<OverrideSessionModifier>();
     public void registerView(OverrideSessionModifier modifier) { // protected
         views.add(modifier);
         modifier.eventDataChanges(getPropertyChanges().getProperties());
@@ -138,11 +138,11 @@ public abstract class SessionModifier implements Modifier {
     }
 
     private CalcProperty readProperty;
-    private Set<CalcProperty> prereadProps = new HashSet<>();
+    private Set<CalcProperty> prereadProps = new HashSet<CalcProperty>();
 
     // hint'ы хранит
     private TableProps increment = new TableProps();
-    private Map<CalcProperty, PrereadRows> preread = new HashMap<>();
+    private Map<CalcProperty, PrereadRows> preread = new HashMap<CalcProperty, PrereadRows>();
     private ImSet<CalcProperty> getPrereadProps() {
         return SetFact.fromJavaSet(preread.keySet());
     }
@@ -307,7 +307,7 @@ public abstract class SessionModifier implements Modifier {
             else
                 readValues = MapFact.EMPTY();
 
-            PrereadRows<P> readRows = new PrereadRows<>(readedParamValues, readValues);
+            PrereadRows<P> readRows = new PrereadRows<P>(readedParamValues, readValues);
             if(prereadRows != null)
                 readRows = prereadRows.addExcl(readRows);
 
@@ -346,7 +346,7 @@ public abstract class SessionModifier implements Modifier {
                 change = increment.getPropertyChange(property);
 
             if(change!=null)
-                return new ModifyChange<>(change, preread, true);
+                return new ModifyChange<P>(change, preread, true);
         }
 
         return calculateModifyChange(property, preread, disableHint);

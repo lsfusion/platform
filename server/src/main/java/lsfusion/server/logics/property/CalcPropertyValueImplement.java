@@ -20,7 +20,7 @@ public class CalcPropertyValueImplement<P extends PropertyInterface> extends Cal
     }
 
     public PropertyChange<P> getPropertyChange(Expr expr) throws SQLException {
-        return new PropertyChange<>(expr, mapping);
+        return new PropertyChange<P>(expr, mapping);
     }
 
     public boolean canBeChanged(Modifier modifier) throws SQLException {

@@ -45,6 +45,6 @@ public class SetComp<T> implements NodeSetComp<T> {
     public static <T> Comp<T> create(ImSet<NodeListComp<T>> comps) {
         if(comps.size() == 1)
             return comps.single();
-        return new SetComp<>(comps);
+        return new SetComp<T>(comps);
     }
 }

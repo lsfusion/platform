@@ -85,7 +85,7 @@ public abstract class FilterInstance implements Updated {
     }
 
     public <X extends PropertyInterface> Set<CalcPropertyValueImplement<?>> getResolveChangeProperties(CalcProperty<X> toChange) {
-        return new HashSet<>();
+        return new HashSet<CalcPropertyValueImplement<?>>();
     }
 
 }

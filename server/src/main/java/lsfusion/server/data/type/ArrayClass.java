@@ -57,13 +57,13 @@ public class ArrayClass<T> extends DataClass<T[]> {
         statement.setArray(num, statement.getConnection().createArrayOf(type.getDB(syntax, null), (Object[]) value)); // not tested
     }
 
-    private static Collection<ArrayClass> arrays = new ArrayList<>();
+    private static Collection<ArrayClass> arrays = new ArrayList<ArrayClass>();
 
     public static <T extends Type> ArrayClass<T> get(Type<T> type) {
         for(ArrayClass array : arrays)
             if(array.type.equals(type))
                 return array;
-        ArrayClass<T> array = new ArrayClass<>(type);
+        ArrayClass<T> array = new ArrayClass<T>(type);
         arrays.add(array);
 //        DataClass.storeClass(array.getObjectSID(), array);
         return array;

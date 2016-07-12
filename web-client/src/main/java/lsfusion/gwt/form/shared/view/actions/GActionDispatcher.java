@@ -1,41 +1,41 @@
 package lsfusion.gwt.form.shared.view.actions;
 
 public interface GActionDispatcher {
-    void execute(GFormAction action);
+    public void execute(GFormAction action);
 
-    void execute(GReportAction action);
+    public void execute(GReportAction action);
 
-    void execute(GRunOpenReportAction action);
+    public void execute(GRunOpenReportAction action);
 
-    Object execute(GChooseClassAction action);
+    public Object execute(GChooseClassAction action);
 
-    void execute(GMessageAction action);
+    public void execute(GMessageAction action);
 
-    int execute(GConfirmAction action);
+    public int execute(GConfirmAction action);
 
-    void execute(GLogMessageAction action);
+    public void execute(GLogMessageAction action);
 
-    void execute(GHideFormAction action);
+    public void execute(GHideFormAction action);
 
-    void execute(GProcessFormChangesAction action);
+    public void execute(GProcessFormChangesAction action);
 
-    Object execute(GRequestUserInputAction action);
+    public Object execute(GRequestUserInputAction action);
 
-    void execute(GUpdateEditValueAction action);
+    public void execute(GUpdateEditValueAction action);
 
-    void execute(GLogOutAction action);
+    public void execute(GLogOutAction action);
 
-    void execute(GOpenUriAction action);
+    public void execute(GOpenUriAction action);
 
-    void execute(GEditNotPerformedAction action);
+    public void execute(GEditNotPerformedAction action);
 
-    void execute(GAsyncGetRemoteChangesAction action);
+    public void execute(GAsyncGetRemoteChangesAction action);
 
-    void execute(GOpenFileAction action);
+    public void execute(GOpenFileAction action);
 
-    void execute(GExportFileAction action);
+    public void execute(GExportFileAction action);
     
-    void execute(GFocusAction action);
+    public void execute(GFocusAction action);
 
-    void execute(GActivateTabAction action);
+    public void execute(GActivateTabAction action);
 }

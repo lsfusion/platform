@@ -14,28 +14,28 @@ public interface ImSet<T> extends FunctionSet<T>, ImCol<T> {
     boolean disjoint(ImSet<? extends T> col);
     boolean containsAll(ImSet<? extends T> wheres);
 
-    <G> ImMap<G, ImSet<T>> group(BaseUtils.Group<G, T> getter);
+    public <G> ImMap<G, ImSet<T>> group(BaseUtils.Group<G, T> getter);
 
-    <V> ImCol<V> map(ImMap<T, ? extends V> map);
-    <EV> ImSet<EV> mapRev(ImRevMap<T, EV> map);
+    public <V> ImCol<V> map(ImMap<T, ? extends V> map);
+    public <EV> ImSet<EV> mapRev(ImRevMap<T, EV> map);
 
-    ImSet<T> merge(ImSet<? extends T> merge);
-    ImSet<T> merge(T element);
-    ImSet<T> addExcl(ImSet<? extends T> merge);
-    ImSet<T> addExcl(T element);
+    public ImSet<T> merge(ImSet<? extends T> merge);
+    public ImSet<T> merge(T element);
+    public ImSet<T> addExcl(ImSet<? extends T> merge);
+    public ImSet<T> addExcl(T element);
 
     // фильтрация
 
     <M> ImFilterValueMap<T, M> mapFilterValues();
 
-    ImSet<T> filterFn(FunctionSet<T> filter);
-    ImSet<T> split(FunctionSet<T> filter, Result<ImSet<T>> rest);
-    ImSet<T> split(ImSet<T> filter, Result<ImSet<T>> rest, Result<ImSet<T>> restSplit);
+    public ImSet<T> filterFn(FunctionSet<T> filter);
+    public ImSet<T> split(FunctionSet<T> filter, Result<ImSet<T>> rest);
+    public ImSet<T> split(ImSet<T> filter, Result<ImSet<T>> rest, Result<ImSet<T>> restSplit);
 
-    ImSet<T> filter(ImSet<? extends T> filter);
+    public ImSet<T> filter(ImSet<? extends T> filter);
     ImSet<T> remove(ImSet<? extends T> remove);
     ImSet<T> removeIncl(ImSet<? extends T> remove);
-    ImSet<T> removeIncl(T element);
+    public ImSet<T> removeIncl(T element);
 
     <V> ImMap<T, V> toMap(V value);
     ImMap<T, T> toMap();

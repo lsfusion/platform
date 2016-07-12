@@ -5,13 +5,11 @@ import lsfusion.gwt.form.shared.view.GPropertyDraw;
 public class PropertyListItem {
     public GPropertyDraw property;
     private String userCaption;
-    private String userPattern;
     Boolean inGrid; // false - panel, null - hidden through showIf
 
-    public PropertyListItem(GPropertyDraw property, String userCaption, String userPattern, Boolean inGrid) {
+    public PropertyListItem(GPropertyDraw property, String userCaption, Boolean inGrid) {
         this.property = property;
         this.userCaption = userCaption;
-        this.userPattern = userPattern;
         this.inGrid = inGrid;
     }
 
@@ -19,16 +17,8 @@ public class PropertyListItem {
         return userCaption != null ? userCaption : (ignoreDefault ? null : property.getNotEmptyCaption());
     }
 
-    public String getUserPattern(boolean ignoreDefault) {
-        return userPattern != null ? userPattern : null;
-    }
-
     public void setUserCaption(String userCaption) {
         this.userCaption = userCaption;
-    }
-
-    public void setUserPattern(String userPattern) {
-        this.userPattern = userPattern;
     }
 
     @Override

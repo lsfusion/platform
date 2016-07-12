@@ -37,7 +37,7 @@ public class NFOrderMapImpl<K, V> extends NFChangeImpl<Pair<K, V>, NFAdd<Pair<K,
     }
 
     public void add(K key, V value, Version version) {
-        addChange(new NFAdd<>(new Pair<>(key, value)), version);
+        addChange(new NFAdd<Pair<K, V>>(new Pair<K, V>(key, value)), version);
     }
 
     @Override

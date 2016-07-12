@@ -59,8 +59,6 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     public ClassViewType forceViewType = null;
     public String eventID = null;
 
-    private String formPath;
-    
     // предполагается что propertyObject ссылается на все (хотя и не обязательно)
     public String columnsName;
     public Object columnGroupObjects = SetFact.mOrderExclSet();
@@ -169,7 +167,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         for (ObjectEntity objectInstance : groupObjects.valueIt()) {
             if (objectInstance.baseClass instanceof CustomClass) {
                 ExplicitActionProperty dialogAction = objectInstance.getChangeAction(property);
-                return new ActionPropertyObjectEntity<>(
+                return new ActionPropertyObjectEntity<ClassPropertyInterface>(
                         dialogAction,
                         MapFact.singleton(dialogAction.interfaces.single(), (PropertyObjectInterfaceEntity) objectInstance)
                 );
@@ -196,21 +194,21 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 
     public void setKeyAction(KeyStroke ks, String actionSID) {
         if (keyBindings == null) {
-            keyBindings = new HashMap<>();
+            keyBindings = new HashMap<KeyStroke, String>();
         }
         keyBindings.put(ks, actionSID);
     }
 
     public void setContextMenuAction(String actionSID, String caption) {
         if (contextMenuBindings == null) {
-            contextMenuBindings = new OrderedMap<>();
+            contextMenuBindings = new OrderedMap<String, String>();
         }
         contextMenuBindings.put(actionSID, caption);
     }
 
     public void setEditAction(String actionSID, ActionPropertyObjectEntity<?> editAction) {
         if(editActions==null) {
-            editActions = new HashMap<>();
+            editActions = new HashMap<String, ActionPropertyObjectEntity<?>>();
         }
         editActions.put(actionSID, editAction);
     }
@@ -222,7 +220,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
             return contextMenuBindings;
         }
 
-        OrderedMap<String, String> result = new OrderedMap<>();
+        OrderedMap<String, String> result = new OrderedMap<String, String>();
         for (int i = 0; i < propertyContextMenuBindings.size(); ++i) {
             result.put(propertyContextMenuBindings.getKey(i), propertyContextMenuBindings.getValue(i));
         }
@@ -326,7 +324,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 
     @Override
     public String toString() {
-        return (formPath == null ? "" : formPath) + " property:" + propertyObject.toString();
+        return propertyObject.toString();
     }
 
     public GroupObjectEntity getToDraw(FormEntity form) {
@@ -368,20 +366,12 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 
     public static String createSID(PropertyObjectEntity<?, ?> property) {
         assert property.property.isNamed();
-        List<String> mapping = new ArrayList<>();
+        List<String> mapping = new ArrayList<String>();
         for (PropertyInterface<?> pi : property.property.getOrderInterfaces()) {
             PropertyObjectInterfaceEntity obj = property.mapping.getObject(pi);
             assert obj instanceof ObjectEntity;
             mapping.add(((ObjectEntity) obj).getSID());
         }
         return createSID(property.property.getName(), mapping);
-    }
-
-    public String getFormPath() {
-        return formPath;
-    }
-
-    public void setFormPath(String formPath) {
-        this.formPath = formPath;
     }
 }

@@ -25,10 +25,6 @@ public abstract class LabelPropertyRenderer extends JLabel implements PropertyRe
         }
     }
 
-    public void setFormat(Format format) {
-        this.format = format;
-    }
-
     void setSelected(boolean isSelected, boolean hasFocus) {
         drawBackground(isSelected, hasFocus);
         drawBorder(isSelected, hasFocus);

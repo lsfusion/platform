@@ -1,10 +1,10 @@
 package lsfusion.server.form.navigator;
 
-import lsfusion.server.logics.ObjectValue;
+import lsfusion.server.logics.DataObject;
 
 public interface ComputerController {
 
-    ObjectValue getCurrentComputer();
+    DataObject getCurrentComputer();
 
     boolean isFullClient();
 }

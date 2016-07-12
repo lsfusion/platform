@@ -32,7 +32,7 @@ import static lsfusion.client.ClientResourceBundle.getString;
 
 public class SwingUtils {
 
-    private static Map<String, Icon> icons = new HashMap<>();
+    private static Map<String, Icon> icons = new HashMap<String, Icon>();
 
     public static void addFocusTraversalKey(Component comp, int id, KeyStroke key) {
         Set keys = comp.getFocusTraversalKeys(id);
@@ -102,7 +102,7 @@ public class SwingUtils {
         });
     }
 
-    private final static WeakHashMap<String, SingleActionTimer> timers = new WeakHashMap<>();
+    private final static WeakHashMap<String, SingleActionTimer> timers = new WeakHashMap<String, SingleActionTimer>();
 
     public static void invokeLaterSingleAction(final String actionID, final ActionListener actionListener, int delay) {
         stopSingleAction(actionID, false);

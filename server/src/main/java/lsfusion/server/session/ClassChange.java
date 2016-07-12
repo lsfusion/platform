@@ -75,9 +75,9 @@ public class ClassChange extends ImmutableObject {
     @IdentityLazy
     public Query<String, String> getQuery() {
         if(keyValue != null)
-            return new Query<>(MapFact.singletonRev("key", new KeyExpr("key")), Where.TRUE, MapFact.singleton("key", keyValue), MapFact.singleton("value", propValue.getExpr()));
+            return new Query<String, String>(MapFact.singletonRev("key", new KeyExpr("key")), Where.TRUE, MapFact.singleton("key", keyValue), MapFact.singleton("value", propValue.getExpr()));
         else
-            return new Query<>(MapFact.singletonRev("key", key), expr, "value", where);
+            return new Query<String, String>(MapFact.singletonRev("key", key), expr, "value", where);
     }
 
     public Join<String> join(Expr expr) {

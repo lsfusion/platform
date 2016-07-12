@@ -35,7 +35,7 @@ public class ActionPropertyMapImplement<P extends PropertyInterface, T extends P
     }
 
     public <K extends PropertyInterface> ActionPropertyMapImplement<P, K> map(ImRevMap<T, K> remap) {
-        return new ActionPropertyMapImplement<>(property, mapping.join(remap));
+        return new ActionPropertyMapImplement<P, K>(property, mapping.join(remap));
     }
 
     public <L extends PropertyInterface> void mapEventAction(LogicsModule lm, CalcPropertyMapImplement<L, T> where, Event event, boolean resolve, ActionDebugInfo debugInfo) {
@@ -43,7 +43,7 @@ public class ActionPropertyMapImplement<P extends PropertyInterface, T extends P
     }
 
     public ActionPropertyObjectEntity<P> mapObjects(ImMap<T, ? extends PropertyObjectInterfaceEntity> mapObjects) {
-        return new ActionPropertyObjectEntity<>(property, mapping.join(mapObjects));
+        return new ActionPropertyObjectEntity<P>(property, mapping.join(mapObjects));
     }
 
     public CalcPropertyMapImplement<?, T> mapWhereProperty() {
@@ -55,7 +55,7 @@ public class ActionPropertyMapImplement<P extends PropertyInterface, T extends P
     }
 
     public LAP<P> createLP(ImOrderSet<T> listInterfaces) {
-        return new LAP<>(property, listInterfaces.mapOrder(mapping.reverse()));
+        return new LAP<P>(property, listInterfaces.mapOrder(mapping.reverse()));
     }
 
     public FlowResult execute(ExecutionContext<T> context) throws SQLException, SQLHandledException {
@@ -96,7 +96,7 @@ public class ActionPropertyMapImplement<P extends PropertyInterface, T extends P
     }
 
     public ActionPropertyValueImplement<P> getValueImplement(ImMap<T, ? extends ObjectValue> mapObjects) {
-        return new ActionPropertyValueImplement<>(property, mapping.join(mapObjects), null);
+        return new ActionPropertyValueImplement<P>(property, mapping.join(mapObjects), null);
     }
 
     public Graph<ActionCase<T>> mapAbstractGraph() {

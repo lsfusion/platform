@@ -92,7 +92,7 @@ public class BaseUtils {
     }
 
     public static <K, E, V> Map<K, V> join(Map<K, ? extends E> map, Map<E, V> joinMap) {
-        Map<K, V> result = new HashMap<>();
+        Map<K, V> result = new HashMap<K, V>();
         for (Map.Entry<K, ? extends E> entry : map.entrySet())
             result.put(entry.getKey(), joinMap.get(entry.getValue()));
         return result;
@@ -100,7 +100,7 @@ public class BaseUtils {
 
     // есть баг
     public static <K, E> Map<K, E> joinKeep(Map<K, ? extends E> map, Map<E, E> joinMap) {
-        Map<K, E> result = new HashMap<>();
+        Map<K, E> result = new HashMap<K, E>();
         for (Map.Entry<K, ? extends E> entry : map.entrySet()) {
             E value = entry.getValue();
             E joinValue = joinMap.get(value);
@@ -122,42 +122,42 @@ public class BaseUtils {
     }
 
     public static <K, E, V> List<Map<K, V>> joinCol(Map<K, ? extends E> map, Collection<Map<E, V>> list) {
-        List<Map<K, V>> result = new ArrayList<>();
+        List<Map<K, V>> result = new ArrayList<Map<K, V>>();
         for (Map<E, V> joinMap : list)
             result.add(BaseUtils.join(map, joinMap));
         return result;
     }
 
     public static <K, V> List<V> mapList(List<? extends K> list, ImMap<K, ? extends V> map) {
-        List<V> result = new ArrayList<>();
+        List<V> result = new ArrayList<V>();
         for (K element : list)
             result.add(map.get(element));
         return result;
     }
 
     public static <K, V> OrderedMap<K, V> mapOrder(List<? extends K> list, Map<K, ? extends V> map) {
-        OrderedMap<K, V> result = new OrderedMap<>();
+        OrderedMap<K, V> result = new OrderedMap<K, V>();
         for (K element : list)
             result.put(element, map.get(element));
         return result;
     }
 
     public static <K, E, V> OrderedMap<V, E> mapOrder(OrderedMap<K, E> list, Map<K, ? extends V> map) { // map предполагается reversed
-        OrderedMap<V, E> result = new OrderedMap<>();
+        OrderedMap<V, E> result = new OrderedMap<V, E>();
         for (Map.Entry<K, E> entry : list.entrySet())
             result.put(map.get(entry.getKey()), entry.getValue());
         return result;
     }
 
     public static <K, V> Set<V> mapSet(Set<K> set, Map<K, ? extends V> map) { // map предполагается reversed
-        Set<V> result = new HashSet<>();
+        Set<V> result = new HashSet<V>();
         for (K element : set)
             result.add(map.get(element));
         return result;
     }
 
     public static <K, E, V> Map<K, V> innerJoin(Map<K, ? extends E> map, Map<? extends E, V> joinMap) {
-        Map<K, V> result = new HashMap<>();
+        Map<K, V> result = new HashMap<K, V>();
         for (Map.Entry<K, ? extends E> entry : map.entrySet()) {
             V joinValue = joinMap.get(entry.getValue());
             if (joinValue != null) result.put(entry.getKey(), joinValue);
@@ -170,7 +170,7 @@ public class BaseUtils {
     }
 
     public static <K, E, V> OrderedMap<K, V> innerJoin(OrderedMap<K, E> map, Map<E, V> joinMap) {
-        OrderedMap<K, V> result = new OrderedMap<>();
+        OrderedMap<K, V> result = new OrderedMap<K, V>();
         for (Map.Entry<K, E> entry : map.entrySet()) {
             V joinValue = joinMap.get(entry.getValue());
             if (joinValue != null) result.put(entry.getKey(), joinValue);
@@ -179,7 +179,7 @@ public class BaseUtils {
     }
 
     public static <K, V, F> Map<K, F> filterValues(Map<K, V> map, Collection<F> values) {
-        Map<K, F> result = new HashMap<>();
+        Map<K, F> result = new HashMap<K, F>();
         for (Map.Entry<K, V> entry : map.entrySet())
             if (values.contains(entry.getValue()))
                 result.put(entry.getKey(), (F) entry.getValue());
@@ -188,7 +188,7 @@ public class BaseUtils {
 
     // необходимо чтобы пересоздавал объект !!! потому как на вход идут mutable'ы
     public static <K, V> Collection<K> filterValues(Map<K, V> map, V value) {
-        Collection<K> result = new ArrayList<>();
+        Collection<K> result = new ArrayList<K>();
         for (Map.Entry<K, V> entry : map.entrySet())
             if (value.equals(entry.getValue()))
                 result.add(entry.getKey());
@@ -197,7 +197,7 @@ public class BaseUtils {
 
 
     public static <BK, K extends BK, V> Map<K, V> filterKeys(Map<BK, V> map, Iterable<? extends K> keys) {
-        Map<K, V> result = new HashMap<>();
+        Map<K, V> result = new HashMap<K, V>();
         for (K key : keys) {
             V value = map.get(key);
             if (value != null) result.put(key, value);
@@ -206,7 +206,7 @@ public class BaseUtils {
     }
 
     public static <BK, K extends BK, V> Map<K, V> filterKeys(Map<BK, V> map, FunctionSet<K> filter, Class<K> aClass) {
-        Map<K, V> result = new HashMap<>();
+        Map<K, V> result = new HashMap<K, V>();
         for (Map.Entry<BK, V> entry : map.entrySet()) {
             if (aClass.isInstance(entry.getKey())) {
                 K key = (K) entry.getKey();
@@ -219,7 +219,7 @@ public class BaseUtils {
     }
 
     public static <BK, K extends BK, V> Map<K, V> filterKeys(Iterable<BK> keys, Map<K, V> map) {
-        Map<K, V> result = new HashMap<>();
+        Map<K, V> result = new HashMap<K, V>();
         for (BK key : keys) {
             V value = map.get(key);
             if (value != null) result.put((K) key, value);
@@ -228,7 +228,7 @@ public class BaseUtils {
     }
 
     public static <BK, K extends BK, V> Map<K, V> filterInclKeys(Map<BK, V> map, Iterable<? extends K> keys) {
-        Map<K, V> result = new HashMap<>();
+        Map<K, V> result = new HashMap<K, V>();
         for (K key : keys) {
             V value = map.get(key);
             assert value!=null;
@@ -241,12 +241,12 @@ public class BaseUtils {
     public static <K, V, CV extends V> Map<K, CV> filterClass(Map<K, V> map, Class<CV> cvClass) {
         for (Map.Entry<K, V> entry : map.entrySet())
             if (!cvClass.isInstance(entry.getValue()))
-                return new HashMap<>();
+                return new HashMap<K, CV>();
         return (Map<K, CV>) (Map<K, ? extends V>) map;
     }
 
     public static <K, V> Map<K, V> filterNotKeys(Map<K, V> map, Collection<? extends K> keys) {
-        Map<K, V> result = new HashMap<>();
+        Map<K, V> result = new HashMap<K, V>();
         for (Map.Entry<K, V> entry : map.entrySet()) {
             if (!keys.contains(entry.getKey()))
                 result.put(entry.getKey(), entry.getValue());
@@ -255,7 +255,7 @@ public class BaseUtils {
     }
 
     public static <K, T extends K, V> Map<K, V> filterNotKeys(Map<K, V> map, FunctionSet<T> keys, Class<T> aClass) {
-        Map<K, V> result = new HashMap<>();
+        Map<K, V> result = new HashMap<K, V>();
         for (Map.Entry<K, V> entry : map.entrySet()) {
             if (!aClass.isInstance(entry.getKey()) || !((FunctionSet<K>) keys).contains(entry.getKey()))
                 result.put(entry.getKey(), entry.getValue());
@@ -264,7 +264,7 @@ public class BaseUtils {
     }
 
     public static <K, V> Map<K, V> filterNotValues(Map<K, V> map, Collection<? extends V> values) {
-        Map<K, V> result = new HashMap<>();
+        Map<K, V> result = new HashMap<K, V>();
         for (Map.Entry<K, V> entry : map.entrySet()) {
             if (!values.contains(entry.getValue()))
                 result.put(entry.getKey(), entry.getValue());
@@ -273,7 +273,7 @@ public class BaseUtils {
     }
 
     public static <BK, K extends BK> Collection<K> filter(Collection<K> col, Collection<BK> filter) {
-        List<K> result = new ArrayList<>();
+        List<K> result = new ArrayList<K>();
         for (K element : col)
             if (filter.contains(element))
                 result.add(element);
@@ -281,7 +281,7 @@ public class BaseUtils {
     }
 
     public static <K> List<K> filterList(List<K> list, ImSet<K> filter) {
-        List<K> result = new ArrayList<>();
+        List<K> result = new ArrayList<K>();
         for (K element : list)
             if (filter.contains(element))
                 result.add(element);
@@ -289,7 +289,7 @@ public class BaseUtils {
     }
 
     public static <K> List<K> filterList(List<K> list, Collection<K> filter) {
-        List<K> result = new ArrayList<>();
+        List<K> result = new ArrayList<K>();
         for (K element : list)
             if (filter.contains(element))
                 result.add(element);
@@ -297,7 +297,7 @@ public class BaseUtils {
     }
 
     public static <K> List<K> filterNotList(List<K> list, Collection<K> filter) {
-        List<K> result = new ArrayList<>();
+        List<K> result = new ArrayList<K>();
         for (K element : list)
             if (!filter.contains(element))
                 result.add(element);
@@ -305,7 +305,7 @@ public class BaseUtils {
     }
 
     public static <K> Set<K> filterSet(Set<K> set, Collection<K> filter) {
-        Set<K> result = new HashSet<>();
+        Set<K> result = new HashSet<K>();
         for (K element : filter)
             if (set.contains(element))
                 result.add(element);
@@ -313,7 +313,7 @@ public class BaseUtils {
     }
 
     public static <K> Set<K> filterNotSet(Set<K> set, Collection<K> filter) {
-        Set<K> result = new HashSet<>();
+        Set<K> result = new HashSet<K>();
         for (K element : set)
             if (!filter.contains(element))
                 result.add(element);
@@ -321,7 +321,7 @@ public class BaseUtils {
     }
 
     public static <BK, K extends BK> Collection<K> filterNot(Collection<K> col, Collection<BK> filter) {
-        List<K> result = new ArrayList<>();
+        List<K> result = new ArrayList<K>();
         for (K element : col)
             if (!filter.contains(element))
                 result.add(element);
@@ -329,7 +329,7 @@ public class BaseUtils {
     }
 
     public static <BK, K extends BK, V> Map<K, V> splitKeys(Map<BK, V> map, HSet<K> keys, Map<BK, V> rest) {
-        Map<K, V> result = new HashMap<>();
+        Map<K, V> result = new HashMap<K, V>();
         for (Map.Entry<BK, V> entry : map.entrySet())
             if (keys.contains((K) entry.getKey()))
                 result.put((K) entry.getKey(), entry.getValue());
@@ -339,7 +339,7 @@ public class BaseUtils {
     }
 
     public static <BV, V extends BV, K> Map<K, V> splitValues(Map<K, BV> map, Collection<V> keys, Map<K, BV> rest) {
-        Map<K, V> result = new HashMap<>();
+        Map<K, V> result = new HashMap<K, V>();
         for (Map.Entry<K, BV> entry : map.entrySet())
             if (keys.contains(entry.getValue()))
                 result.put(entry.getKey(), (V) entry.getValue());
@@ -351,7 +351,7 @@ public class BaseUtils {
     public static <K, V> Map<K, V> mergeEquals(Map<K, V> full, Map<K, V> part) {
         assert full.keySet().containsAll(part.keySet());
 
-        Map<K, V> result = new HashMap<>();
+        Map<K, V> result = new HashMap<K, V>();
         for (Map.Entry<K, V> partEntry : part.entrySet())
             if (full.get(partEntry.getKey()).equals(partEntry.getValue()))
                 result.put(partEntry.getKey(), partEntry.getValue());
@@ -363,7 +363,7 @@ public class BaseUtils {
     }
 
     public static <K, V> Map<V, K> reverse(Map<K, V> map, boolean ignoreUnique) {
-        Map<V, K> result = new HashMap<>();
+        Map<V, K> result = new HashMap<V, K>();
         for (Map.Entry<K, V> entry : map.entrySet()) {
             assert ignoreUnique || !result.containsKey(entry.getValue());
             result.put(entry.getValue(), entry.getKey());
@@ -396,7 +396,7 @@ public class BaseUtils {
     }
 
     public static <K, T, VA, VB> Map<T, VA> splitInnerJoin(Map<T, K> mapTo, Map<K, VA> map1, Map<K, VB> map2, Map<T, VB> res2) {
-        Map<T, VA> res1 = new HashMap<>();
+        Map<T, VA> res1 = new HashMap<T, VA>();
         for (Map.Entry<T, K> map : mapTo.entrySet()) {
             VA value1 = map1.get(map.getValue());
             if (value1 != null)
@@ -408,7 +408,7 @@ public class BaseUtils {
     }
 
     public static <K> Collection<K> join(Collection<K> col1, Collection<K> col2) {
-        Set<K> result = new HashSet<>(col1);
+        Set<K> result = new HashSet<K>(col1);
         result.addAll(col2);
         return result;
     }
@@ -420,14 +420,14 @@ public class BaseUtils {
     }
 
     public static <K> Map<K, K> toMap(Set<K> collection) {
-        Map<K, K> result = new HashMap<>();
+        Map<K, K> result = new HashMap<K, K>();
         for (K object : collection)
             result.put(object, object);
         return result;
     }
 
     public static <K> Map<K, K> toMap(Collection<K> collection) {
-        Map<K, K> result = new HashMap<>();
+        Map<K, K> result = new HashMap<K, K>();
         for (K object : collection)
             result.put(object, object);
         return result;
@@ -435,49 +435,49 @@ public class BaseUtils {
 
     public static <K, V> Map<K, V> toMap(List<K> from, List<V> to) {
         assert from.size() == to.size();
-        Map<K, V> result = new HashMap<>();
+        Map<K, V> result = new HashMap<K, V>();
         for (int i = 0; i < from.size(); i++)
             result.put(from.get(i), to.get(i));
         return result;
     }
 
     public static <K> Map<Object, K> toObjectMap(Set<K> collection) {
-        Map<Object, K> result = new HashMap<>();
+        Map<Object, K> result = new HashMap<Object, K>();
         for (K object : collection)
             result.put(new Object(), object);
         return result;
     }
 
     public static <K, V> Map<K, V> toMap(Collection<K> collection, V value) {
-        Map<K, V> result = new HashMap<>();
+        Map<K, V> result = new HashMap<K, V>();
         for (K object : collection)
             result.put(object, value);
         return result;
     }
 
     public static <K> Map<Integer, K> toMap(List<K> list) {
-        Map<Integer, K> result = new HashMap<>();
+        Map<Integer, K> result = new HashMap<Integer, K>();
         for (int i = 0; i < list.size(); i++)
             result.put(i, list.get(i));
         return result;
     }
 
     public static <K, V> OrderedMap<K, V> toOrderedMap(List<? extends K> list, V value) {
-        OrderedMap<K, V> result = new OrderedMap<>();
+        OrderedMap<K, V> result = new OrderedMap<K, V>();
         for (K element : list)
             result.put(element, value);
         return result;
     }
 
     public static <K> Map<Integer, K> toMap(K[] list) {
-        Map<Integer, K> result = new HashMap<>();
+        Map<Integer, K> result = new HashMap<Integer, K>();
         for (int i = 0; i < list.length; i++)
             result.put(i, list[i]);
         return result;
     }
 
     public static <K> List<K> toList(Map<Integer, K> map) {
-        List<K> result = new ArrayList<>();
+        List<K> result = new ArrayList<K>();
         for (int i = 0; i < map.size(); i++)
             result.add(map.get(i));
         return result;
@@ -724,7 +724,7 @@ public class BaseUtils {
     }
 
     public static <K, V> Map<K, V> removeKeys(Map<K, V> map, Collection<K> remove) {
-        Map<K, V> removeMap = new HashMap<>();
+        Map<K, V> removeMap = new HashMap<K, V>();
         for (Map.Entry<K, V> property : map.entrySet())
             if (!remove.contains(property.getKey()))
                 removeMap.put(property.getKey(), property.getValue());
@@ -732,7 +732,7 @@ public class BaseUtils {
     }
 
     public static <K, V> Map<K, V> removeKey(Map<K, V> map, K remove) {
-        Map<K, V> removeMap = new HashMap<>();
+        Map<K, V> removeMap = new HashMap<K, V>();
         for (Map.Entry<K, V> property : map.entrySet())
             if (!property.getKey().equals(remove))
                 removeMap.put(property.getKey(), property.getValue());
@@ -740,56 +740,56 @@ public class BaseUtils {
     }
 
     public static <K> Collection<K> add(Collection<? extends K> col, K add) {
-        Collection<K> result = new ArrayList<>(col);
+        Collection<K> result = new ArrayList<K>(col);
         result.add(add);
         return result;
     }
 
     public static <K> Set<K> addSet(Set<? extends K> col, K add) {
-        Set<K> result = new HashSet<>(col);
+        Set<K> result = new HashSet<K>(col);
         result.add(add);
         return result;
     }
 
     public static <K> List<K> add(List<K> col, K add) {
-        ArrayList<K> result = new ArrayList<>(col);
+        ArrayList<K> result = new ArrayList<K>(col);
         result.add(add);
         return result;
     }
 
     public static <K, V> Map<K, V> add(Map<? extends K, ? extends V> map, K add, V addValue) {
-        Map<K, V> result = new HashMap<>(map);
+        Map<K, V> result = new HashMap<K, V>(map);
         result.put(add, addValue);
         return result;
     }
 
     public static <K> List<K> add(K add, List<? extends K> col) {
-        ArrayList<K> result = new ArrayList<>();
+        ArrayList<K> result = new ArrayList<K>();
         result.add(add);
         result.addAll(col);
         return result;
     }
 
     public static <K> Collection<K> remove(Collection<? extends K> set, Collection<? extends K> remove) {
-        Collection<K> result = new ArrayList<>(set);
+        Collection<K> result = new ArrayList<K>(set);
         result.removeAll(remove);
         return result;
     }
 
     public static <K> Collection<K> remove(Collection<? extends K> set, K remove) {
-        Collection<K> result = new ArrayList<>(set);
+        Collection<K> result = new ArrayList<K>(set);
         result.remove(remove);
         return result;
     }
 
     public static <K> Set<K> removeSet(Set<? extends K> set, Collection<? extends K> remove) {
-        Set<K> result = new HashSet<>(set);
+        Set<K> result = new HashSet<K>(set);
         result.removeAll(remove);
         return result;
     }
 
     public static <K> List<K> removeList(List<K> list, Collection<K> remove) {
-        List<K> removeList = new ArrayList<>();
+        List<K> removeList = new ArrayList<K>();
         for (K property : list)
             if (!remove.contains(property))
                 removeList.add(property);
@@ -863,7 +863,7 @@ public class BaseUtils {
     }
 
     public static <B, K1 extends B, K2 extends B, V> Map<K1, V> replace(Map<K1, ? extends V> map1, Map<K2, ? extends V> map2) {
-        Map<K1, V> result = new HashMap<>(map1);
+        Map<K1, V> result = new HashMap<K1, V>(map1);
         for (Map.Entry<K1, V> entry : result.entrySet()) {
             V value2 = map2.get(entry.getKey());
             if (value2 != null)
@@ -873,7 +873,7 @@ public class BaseUtils {
     }
 
     public static <B, K1 extends B, K2 extends B, V> Map<K1, V> replaceValues(Map<K1, ? extends V> map1, Map<? extends V, ? extends V> map2) {
-        Map<K1, V> result = new HashMap<>(map1);
+        Map<K1, V> result = new HashMap<K1, V>(map1);
         for (Map.Entry<K1, V> entry : result.entrySet()) {
             V value2 = map2.get(entry.getValue());
             if (value2 != null)
@@ -883,7 +883,7 @@ public class BaseUtils {
     }
 
     public static <K, V> Map<K, V> replace(Map<K, ? extends V> map, K key, V value) {
-        Map<K, V> result = new HashMap<>(map);
+        Map<K, V> result = new HashMap<K, V>(map);
         result.put(key, value);
         return result;
     }
@@ -922,7 +922,7 @@ public class BaseUtils {
     }
 
     public static <B, K1 extends B, K2 extends B> List<B> addList(K1 item, List<K2> list) {
-        List<B> result = new ArrayList<>();
+        List<B> result = new ArrayList<B>();
         result.add(item);
         result.addAll(list);
         return result;
@@ -935,7 +935,7 @@ public class BaseUtils {
     }
 
     public static <B> List<B> mergeLists(List<B>... lists) {
-        List<B> result = new ArrayList<>();
+        List<B> result = new ArrayList<B>();
         for (List<B> list : lists) {
             result.addAll(list);
         }
@@ -958,7 +958,7 @@ public class BaseUtils {
 
     // строит декартово произведение нескольких упорядоченных множеств
     public static <T> List<List<T>> cartesianProduct(List<List<T>> data) {
-        LinkedList<List<T>> queue = new LinkedList<>();
+        LinkedList<List<T>> queue = new LinkedList<List<T>>();
         queue.add(new ArrayList<T>());
         final int tupleSize = data.size();
         while (!queue.isEmpty()) {
@@ -968,7 +968,7 @@ public class BaseUtils {
             List<T> queueItem = queue.removeFirst();
             final int currentTupleSize = queueItem.size();
             for (T item : data.get(currentTupleSize)) {
-                List<T> newItem = new ArrayList<>(queueItem);
+                List<T> newItem = new ArrayList<T>(queueItem);
                 newItem.add(item);
                 queue.addLast(newItem);
             }
@@ -1043,7 +1043,7 @@ public class BaseUtils {
     }
 
     public static <T> Set<T> toSet(T... array) {
-        return new HashSet<>(Arrays.asList(array));
+        return new HashSet<T>(Arrays.asList(array));
     }
 
     public static <T> T getRandom(List<T> list, Random randomizer) {
@@ -1059,7 +1059,7 @@ public class BaseUtils {
     }
 
     public static <T, K> OrderedMap<T, K> orderMap(Map<T, K> map, Iterable<T> list) {
-        OrderedMap<T, K> result = new OrderedMap<>();
+        OrderedMap<T, K> result = new OrderedMap<T, K>();
         for (T element : list) {
             K value = map.get(element);
             if (value != null)
@@ -1069,7 +1069,7 @@ public class BaseUtils {
     }
 
     public static <BT, T extends BT> List<T> orderList(Set<T> map, Iterable<BT> list) {
-        List<T> result = new ArrayList<>();
+        List<T> result = new ArrayList<T>();
         for (BT element : list)
             if (map.contains(element))
                 result.add((T) element);
@@ -1077,13 +1077,13 @@ public class BaseUtils {
     }
 
     public static <K, V> OrderedMap<K, V> mergeOrders(OrderedMap<K, V> map1, OrderedMap<K, V> map2) {
-        OrderedMap<K, V> result = new OrderedMap<>(map1);
+        OrderedMap<K, V> result = new OrderedMap<K, V>(map1);
         result.putAll(map2);
         return result;
     }
 
     public static <V> Map<V, V> mergeMaps(Map<V, V>[] maps) {
-        Map<V, V> result = new HashMap<>();
+        Map<V, V> result = new HashMap<V, V>();
         for (Map<V, V> map : maps)
             result.putAll(map);
         return result;
@@ -1170,13 +1170,13 @@ public class BaseUtils {
     }
 
     public static <G, K> Map<G, Collection<K>> group(Group<G, K> getter, Iterable<K> keys) {
-        Map<G, Collection<K>> result = new HashMap<>();
+        Map<G, Collection<K>> result = new HashMap<G, Collection<K>>();
         for (K key : keys) {
             G group = getter.group(key);
             if (group != null) {
                 Collection<K> groupList = result.get(group);
                 if (groupList == null) {
-                    groupList = new ArrayList<>();
+                    groupList = new ArrayList<K>();
                     result.put(group, groupList);
                 }
                 groupList.add(key);
@@ -1186,13 +1186,13 @@ public class BaseUtils {
     }
 
     public static <G, K> Map<G, List<K>> groupList(Group<G, K> getter, List<K> keys) {
-        Map<G, List<K>> result = new HashMap<>();
+        Map<G, List<K>> result = new HashMap<G, List<K>>();
         for (K key : keys) {
             G group = getter.group(key);
             if (group != null) {
                 List<K> groupList = result.get(group);
                 if (groupList == null) {
-                    groupList = new ArrayList<>();
+                    groupList = new ArrayList<K>();
                     result.put(group, groupList);
                 }
                 groupList.add(key);
@@ -1202,13 +1202,13 @@ public class BaseUtils {
     }
 
     public static <G, K> Map<G, Set<K>> groupSet(Group<G, K> getter, Collection<K> keys) { // assert что keys - set
-        Map<G, Set<K>> result = new HashMap<>();
+        Map<G, Set<K>> result = new HashMap<G, Set<K>>();
         for (K key : keys) {
             G group = getter.group(key);
             if (group != null) {
                 Set<K> groupSet = result.get(group);
                 if (groupSet == null) {
-                    groupSet = new HashSet<>();
+                    groupSet = new HashSet<K>();
                     result.put(group, groupSet);
                 }
                 groupSet.add(key);
@@ -1250,13 +1250,13 @@ public class BaseUtils {
     }
 
     public static <G, K> SortedMap<G, Set<K>> groupSortedSet(Group<G, K> getter, Collection<K> keys, Comparator<? super G> comparator) { // вообще assert что set
-        SortedMap<G, Set<K>> result = new TreeMap<>(comparator);
+        SortedMap<G, Set<K>> result = new TreeMap<G, Set<K>>(comparator);
         for (K key : keys) {
             G group = getter.group(key);
             if (group != null) {
                 Set<K> groupSet = result.get(group);
                 if (groupSet == null) {
-                    groupSet = new HashSet<>();
+                    groupSet = new HashSet<K>();
                     result.put(group, groupSet);
                 }
                 groupSet.add(key);
@@ -1278,7 +1278,7 @@ public class BaseUtils {
     }
 
     public static <K> Map<K, Integer> multiSet(Collection<K> col) {
-        Map<K, Integer> result = new HashMap<>();
+        Map<K, Integer> result = new HashMap<K, Integer>();
         for (K element : col) {
             Integer quantity = result.get(element);
             result.put(element, quantity == null ? 1 : quantity + 1);
@@ -1397,7 +1397,7 @@ public class BaseUtils {
     }
 
     public static <K> Map<K, String> mapString(Collection<K> col) {
-        Map<K, String> result = new HashMap<>();
+        Map<K, String> result = new HashMap<K, String>();
         for (K element : col)
             result.put(element, element.toString());
         return result;
@@ -1481,11 +1481,11 @@ public class BaseUtils {
     }
 
     public static <T> T[] addElement(T[] array, T element, Class<T> elementClass) {
-        return addElement(array, element, new GenericTypeInstancer<>(elementClass));
+        return addElement(array, element, new GenericTypeInstancer<T>(elementClass));
     }
 
     public static <T> T[] addElement(T element, T[] array, Class<T> elementClass) {
-        return addElement(element, array, new GenericTypeInstancer<>(elementClass));
+        return addElement(element, array, new GenericTypeInstancer<T>(elementClass));
     }
 
     public static <T> T[] addElement(T[] array, T element, ArrayInstancer<T> instancer) {
@@ -1603,11 +1603,11 @@ public class BaseUtils {
     }
 
     public static <K> List<K> reverse(List<K> col) {
-        return reverseThis(new ArrayList<>(col));
+        return reverseThis(new ArrayList<K>(col));
     }
 
     public static <K> List<K> toList(Iterable<K> col) {
-        List<K> result = new ArrayList<>();
+        List<K> result = new ArrayList<K>();
         for (K element : col)
             result.add(element);
         return result;
@@ -1668,27 +1668,27 @@ public class BaseUtils {
 
         Iterator<K> it1 = col1.iterator();
         Iterator<V> it2 = col2.iterator();
-        Map<K, V> result = new HashMap<>();
+        Map<K, V> result = new HashMap<K, V>();
         while (it1.hasNext())
             result.put(it1.next(), it2.next());
         return result;
     }
 
     public static <K> List<K> toList(K... elements) {
-        List<K> list = new ArrayList<>();
+        List<K> list = new ArrayList<K>();
         Collections.addAll(list, elements);
         return list;
     }
 
     public static <K> List<Boolean> toBooleanList(boolean... elements) {
-        List<Boolean> list = new ArrayList<>();
+        List<Boolean> list = new ArrayList<Boolean>();
         for (boolean element : elements)
             list.add(element);
         return list;
     }
 
     public static <K> List<K> toListNoNull(K... elements) {
-        List<K> list = new ArrayList<>();
+        List<K> list = new ArrayList<K>();
         for (K element : elements)
             if (element != null)
                 list.add(element);
@@ -1785,7 +1785,7 @@ public class BaseUtils {
     }
 
     public static <K> List<K> copyTreeChildren(List children) {
-        List<K> result = new ArrayList<>();
+        List<K> result = new ArrayList<K>();
         if (children != null)
             for (Object child : children)
                 result.add((K) child);
@@ -1825,7 +1825,7 @@ public class BaseUtils {
         }
     }
 
-    public interface HashInterface<K, C> {
+    public static interface HashInterface<K, C> {
 
         ImMap<K, C> getParams(); // важно чтобы для C был статичный компаратор
 
@@ -1837,7 +1837,7 @@ public class BaseUtils {
 
         final ImMap<K, C> classParams = hashInterface.getParams();
         if (classParams.size() == 0)
-            return new HashComponents<>(MapFact.<K, GlobalObject>EMPTY(), hashInterface.hashParams(MapFact.<K, GlobalObject>EMPTY()));
+            return new HashComponents<K>(MapFact.<K, GlobalObject>EMPTY(), hashInterface.hashParams(MapFact.<K, GlobalObject>EMPTY()));
 
         MMap<K, GlobalObject> mComponents = MapFact.mMap(classParams, MapFact.<K, GlobalObject>override());
 
@@ -1856,7 +1856,7 @@ public class BaseUtils {
                 for (K key : freeKeys) {
                     MMap<K, GlobalObject> mMergedComponents = MapFact.mMap(classParams, MapFact.<K, GlobalObject>override()); // замещаем базовые ъэши - новыми
                     mMergedComponents.addAll(mComponents.immutableCopy());
-                    mMergedComponents.add(key, new HashClass<>(groupClass, compHash));
+                    mMergedComponents.add(key, new HashClass<C>(groupClass, compHash));
 
                     int hash = hashInterface.hashParams(mMergedComponents.immutable());
                     if (hash < minHash) { // сбрасываем минимальные ключи
@@ -1870,7 +1870,7 @@ public class BaseUtils {
                 ImSet<K> minKeys = SetFact.imFilter(mMinKeys, freeKeys);
 
                 for (K key : minKeys)
-                    mComponents.add(key, new HashClass<>(groupClass, compHash));
+                    mComponents.add(key, new HashClass<C>(groupClass, compHash));
 
                 resultHash = resultHash * 31 + minHash;
 
@@ -1887,7 +1887,7 @@ public class BaseUtils {
         if (freeKeys.size() == 1) // если остался один объект то финальный хэш не учтен (для оптимизации)
             resultHash = resultHash * 31 + hashInterface.hashParams(components);
 
-        return new HashComponents<>(components, resultHash);
+        return new HashComponents<K>(components, resultHash);
     }
 
     public static boolean onlyObjects(Iterable<?> col) {
@@ -2238,7 +2238,7 @@ public class BaseUtils {
     }
 
     public static List<Integer> consecutiveList(int i, int is) {
-        List<Integer> result = new ArrayList<>();
+        List<Integer> result = new ArrayList<Integer>();
         for (int j = 0; j < i; j++)
             result.add(j + is);
         return result;
@@ -2249,7 +2249,7 @@ public class BaseUtils {
     }
 
     public static <K> List<K> sort(Collection<K> col, Comparator<K> comparator) {
-        List<K> list = new ArrayList<>(col);
+        List<K> list = new ArrayList<K>(col);
         Collections.sort(list, comparator);
         return list;
     }
@@ -2268,7 +2268,7 @@ public class BaseUtils {
             return set1;
 //        if(set1 instanceof ImSet && set2 instanceof ImSet)
 //            return ((ImSet<K>)set1).merge((ImSet<K>)set2);
-        return new MergeFunctionSet<>(set1, set2);
+        return new MergeFunctionSet<K>(set1, set2);
     }
 
     public static <K> boolean containsAll(FunctionSet<K> set1, ImSet<K> set2) {
@@ -2491,7 +2491,7 @@ public class BaseUtils {
     }
 
     public static <T> Iterable<T> sort(Iterable<T> it, Comparator<T> comparator) {
-        List<T> list = new ArrayList<>();
+        List<T> list = new ArrayList<T>();
         for (T element : it) {
             list.add(element);
         }
@@ -2503,11 +2503,11 @@ public class BaseUtils {
         FIRST, CLOSEST, COMMON
     }
 
-    public interface ChildrenInterface<T> {
+    public static interface ChildrenInterface<T> {
         Iterable<T> getChildrenIt(T element);
     }
 
-    public interface ExChildrenInterface<T> extends ChildrenInterface<T> {
+    public static interface ExChildrenInterface<T> extends ChildrenInterface<T> {
         ImSet<T> getAllChildren(T element); // оптимизация, чтобы кэширование включать
     }
 

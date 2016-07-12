@@ -21,7 +21,7 @@ public class CheckAggregationsActionProperty extends ScriptingActionProperty {
 
     @Override
     public void executeCustom(final ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
-        final Result<String> message = new Result<>();
+        final Result<String> message = new Result<String>();
         ServiceDBActionProperty.run(context, new RunService() {
             @Override
             public void run(SQLSession session, boolean isolatedTransaction) throws SQLException, SQLHandledException {

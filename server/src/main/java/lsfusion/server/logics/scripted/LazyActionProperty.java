@@ -34,7 +34,7 @@ public class LazyActionProperty extends SystemExplicitActionProperty {
             evaluatedProperty = context.getBL().LM.addDDAProp(sourceProperty);
         }
 
-        List<DataObject> dataObjects  = new ArrayList<>();
+        List<DataObject> dataObjects  = new ArrayList<DataObject>();
 
         for(ClassPropertyInterface entry : interfaces)
             dataObjects.add(context.getDataKeyValue(entry));

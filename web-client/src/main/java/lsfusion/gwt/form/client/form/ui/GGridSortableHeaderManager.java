@@ -11,7 +11,7 @@ import java.util.Map;
 public abstract class GGridSortableHeaderManager<T> {
     private GGridPropertyTable table;
     private boolean ignoreFirstColumn;
-    private LinkedHashMap<T, Boolean> orderDirections = new LinkedHashMap<>();
+    private LinkedHashMap<T, Boolean> orderDirections = new LinkedHashMap<T, Boolean>();
 
     public GGridSortableHeaderManager(GGridPropertyTable table, boolean ignoreFirstColumn) {
         this.table = table;

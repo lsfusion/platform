@@ -72,9 +72,9 @@ public class MaxChangeProperty<T extends PropertyInterface,P extends PropertyInt
     public static <P extends PropertyInterface> ImOrderSet<Interface<P>> getInterfaces(CalcProperty<P> property) {
         return property.getOrderInterfaces().mapOrderSetValues(new GetValue<Interface<P>, P>() {
             public Interface<P> getMapValue(P value) {
-                return new KeyInterface<>(value);
+                return new KeyInterface<P>(value);
             }
-        }).addOrderExcl(new ValueInterface<>(property));
+        }).addOrderExcl(new ValueInterface<P>(property));
     }
 
     public MaxChangeProperty(CalcProperty<T> onChange, CalcProperty<P> toChange) {
@@ -104,6 +104,6 @@ public class MaxChangeProperty<T extends PropertyInterface,P extends PropertyInt
             public PropertyObjectInterfaceEntity getMapValue(Interface<P> value) {
                 return value.getInterface(mapValues, valueObject);
             }});
-        return new CalcPropertyObjectEntity<>(this, interfaceImplement);
+        return new CalcPropertyObjectEntity<Interface<P>>(this,interfaceImplement);
     }
 }

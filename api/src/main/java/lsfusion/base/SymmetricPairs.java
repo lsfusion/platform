@@ -14,6 +14,6 @@ public class SymmetricPairs<T> extends Pairs<T,T> {
         ImSet<T> sameList = SetFact.filter(from, to);
         ImSet<T> diffFrom = SetFact.remove(from, sameList);
         ImSet<T> diffTo = SetFact.remove(to, sameList);
-        return new SymmetricPairs<>(sameList.toOrderSet().addOrderExcl(diffFrom.toOrderSet()), sameList.toOrderSet().addOrderExcl(diffTo.toOrderSet()));
+        return new SymmetricPairs<T>(sameList.toOrderSet().addOrderExcl(diffFrom.toOrderSet()), sameList.toOrderSet().addOrderExcl(diffTo.toOrderSet()));
     }
 }

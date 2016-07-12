@@ -23,9 +23,9 @@ public class PasteExternalTableHandler extends ServerResponseActionHandler<Paste
 
     @Override
     public ServerResponseResult executeEx(PasteExternalTable action, ExecutionContext context) throws DispatchException, IOException {
-        List<List<byte[]>> values = new ArrayList<>();
+        List<List<byte[]>> values = new ArrayList<List<byte[]>>();
         for (List<Object> gRowValues : action.values) {
-            List<byte[]> rowValues = new ArrayList<>();
+            List<byte[]> rowValues = new ArrayList<byte[]>();
 
             for (Object gRowValue : gRowValues) {
                 Object oCell = gwtConverter.convertOrCast(gRowValue, servlet.getBLProvider());
@@ -35,7 +35,7 @@ public class PasteExternalTableHandler extends ServerResponseActionHandler<Paste
             values.add(rowValues);
         }
 
-        List<byte[]> columnKeys = new ArrayList<>();
+        List<byte[]> columnKeys = new ArrayList<byte[]>();
         for (int i = 0; i < action.columnKeys.size(); i++) {
             columnKeys.add((byte[]) gwtConverter.convertOrCast(action.columnKeys.get(i)));
         }

@@ -226,10 +226,10 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
 
     public String getExprSource(final CompileSource source, SubQueryContext subcontext) {
 
-        final Result<ImMap<Expr,String>> fromPropertySelect = new Result<>();
-        Result<ImCol<String>> fromWhereSelect = new Result<>(); // проверить crossJoin
-        Result<ImMap<String, SQLQuery>> subQueries = new Result<>();
-        lsfusion.server.data.query.Query<KeyExpr,Expr> subQuery = new lsfusion.server.data.query.Query<>(getInner().getQueryKeys().toRevMap(),
+        final Result<ImMap<Expr,String>> fromPropertySelect = new Result<ImMap<Expr, String>>();
+        Result<ImCol<String>> fromWhereSelect = new Result<ImCol<String>>(); // проверить crossJoin
+        Result<ImMap<String, SQLQuery>> subQueries = new Result<ImMap<String, SQLQuery>>();
+        lsfusion.server.data.query.Query<KeyExpr,Expr> subQuery = new lsfusion.server.data.query.Query<KeyExpr,Expr>(getInner().getQueryKeys().toRevMap(),
                 group.keys().addExcl(query.getExprs()).toMap(), getInner().getFullWhere());
         CompiledQuery<KeyExpr, Expr> compiled = subQuery.compile(new CompileOptions<Expr>(source.syntax, subcontext));
         String fromSelect = compiled.fillSelect(new Result<ImMap<KeyExpr, String>>(), fromPropertySelect, fromWhereSelect, subQueries, source.params, null);
@@ -248,7 +248,7 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
         StatKeys<Expr> statKeys;
         Where queryWhere = query.getWhere();
         if(query.type.hasAdd()) {
-            statKeys = new StatKeys<>(group.keys());
+            statKeys = new StatKeys<Expr>(group.keys());
             ImCol<GroupStatWhere<Expr>> splitJoins = getSplitJoins(queryWhere, query.type, getRevGroup().reverse(), true);
             assert !splitJoins.isEmpty();
             for(GroupStatWhere<Expr> join : splitJoins)
@@ -284,7 +284,7 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
 
 
     private Collection<ClassExprWhere> packNoChange = ListFact.mAddRemoveCol(); // потому как remove нужен
-    private static final LRUWSVSMap<GroupExpr, ClassExprWhere, Expr> packClassExprs = new LRUWSVSMap<>(LRUUtil.L2);
+    private static final LRUWSVSMap<GroupExpr, ClassExprWhere, Expr> packClassExprs = new LRUWSVSMap<GroupExpr, ClassExprWhere, Expr>(LRUUtil.L2);
 
     @ManualLazy
     @Override
@@ -422,7 +422,7 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
 
     // если translateOuter или packFollowFalse, на самом деле тоже самое что сверху, но иначе придется кучу generics'ов сделать
     private static Expr createOuterGroupBase(ImMap<Expr, BaseExpr> innerOuter, Query query, ImMap<BaseExpr, BaseExpr> outerExprValues, boolean pack) {
-        Result<ImRevMap<BaseExpr, Expr>> outerInner = new Result<>();
+        Result<ImRevMap<BaseExpr, Expr>> outerInner = new Result<ImRevMap<BaseExpr, Expr>>();
         ImList<Pair<Expr, Expr>> equals = groupMap(innerOuter, outerExprValues, outerInner);
         query = query.and(getEqualsWhere(equals));
         // assert что EqualsWhere - это Collection<BaseExpr,BaseExpr>
@@ -465,7 +465,7 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
                 else
                     exprValue = exprValues.getObject(outerExpr.first); // ищем EXPRVALUE
                 if(exprValue!=null)
-                    mEquals.add(new Pair<>(exprValue, outerExpr.second));
+                    mEquals.add(new Pair<Expr,A>(exprValue, outerExpr.second));
                 else
                     mGrouped.exclAdd(outerExpr.first, outerExpr.second);
             } else
@@ -486,7 +486,7 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
                             }
 
                             public Pair<BaseExpr, T> next() {
-                                return new Pair<>(outer.get(inner.getKey(i)), inner.getValue(i++));
+                                return new Pair<BaseExpr, T>(outer.get(inner.getKey(i)), inner.getValue(i++));
                             }
 
                             public void remove() {
@@ -510,7 +510,7 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
                     }
 
                     public Pair<B, A> next() {
-                        return new Pair<>(map.getValue(index), map.getKey(index++));
+                        return new Pair<B, A>(map.getValue(index), map.getKey(index++));
                     }
 
                     public void remove() {
@@ -519,14 +519,14 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
                 };
             }
         };
-        Result<ImMap<B, A>> castReserved = new Result<>();
+        Result<ImMap<B, A>> castReserved = new Result<ImMap<B, A>>();
         ImList<Pair<Expr, A>> result = groupMap(iterable, exprValues, castReserved);
         reversed.set(castReserved.result.toRevExclMap()); // так, иначе пришлось бы сильно с классами мудится
         return result;
     }
 
     private static <K, I extends Expr> Expr createOuterBase(ImMap<K, I> inner, Query query, ImMap<K, BaseExpr> outer) {
-        Result<ImMap<BaseExpr, I>> outerInner = new Result<>();
+        Result<ImMap<BaseExpr, I>> outerInner = new Result<ImMap<BaseExpr, I>>();
         query = query.and(groupMapValues(inner, outer, outerInner));
         return createInner(outerInner.result, query, false);
     }
@@ -626,7 +626,7 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
     private static Expr createInnerBase(ImMap<BaseExpr, Expr> outerInner, Query query, boolean pack, Query splitQuery) {
         Where fullWhere = getFullWhere(query, outerInner);
 
-        Result<ImRevMap<Expr, BaseExpr>> innerOuter = new Result<>();
+        Result<ImRevMap<Expr, BaseExpr>> innerOuter = new Result<ImRevMap<Expr, BaseExpr>>();
         Where equalsWhere = getEqualsWhere(groupMap(outerInner, fullWhere.getExprValues(), innerOuter));
 
         // вытащим not'ы
@@ -661,7 +661,7 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
     private static Expr createHandleKeys(ImRevMap<Expr, BaseExpr> innerOuter, Query query) {
 
         // NOGROUP - проверяем если по всем ключам группируется, значит это никакая не группировка
-        Result<ImRevMap<Expr, BaseExpr>> compares = new Result<>();
+        Result<ImRevMap<Expr, BaseExpr>> compares = new Result<ImRevMap<Expr, BaseExpr>>();
         ImSet<KeyExpr> keys = getKeys(query, innerOuter);
         ImRevMap<KeyExpr, BaseExpr> groupKeys = MapFact.splitRevKeys(innerOuter, keys, compares);
         if(groupKeys.size()==keys.size()) {
@@ -674,7 +674,7 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
 
         // FREEKEYS - отрезаем свободные ключи (которые есть только в группировке) и создаем выражение
         Where freeWhere = Where.TRUE;
-        Result<ImRevMap<KeyExpr, BaseExpr>> freeKeys = new Result<>();
+        Result<ImRevMap<KeyExpr, BaseExpr>> freeKeys = new Result<ImRevMap<KeyExpr, BaseExpr>>();
         ImRevMap<KeyExpr, BaseExpr> usedKeys = groupKeys.splitRevKeys(getKeys(query, compares.result), freeKeys);
         ImRevMap<Expr, BaseExpr> group = innerOuter;
         if(freeKeys.result.size()>0) {

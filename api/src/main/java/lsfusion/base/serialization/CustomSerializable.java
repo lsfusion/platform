@@ -5,6 +5,6 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 
 public interface CustomSerializable<P extends SerializationPool> {
-    void customSerialize(P pool, DataOutputStream outStream, String serializationType) throws IOException;
-    void customDeserialize(P pool, DataInputStream inStream) throws IOException;
+    public void customSerialize(P pool, DataOutputStream outStream, String serializationType) throws IOException;
+    public void customDeserialize(P pool, DataInputStream inStream) throws IOException;
 }

@@ -13,13 +13,13 @@ import java.util.*;
 public class GTreeTableTree {
     private GForm form;
 
-    private final Map<GGroupObject, Set<GTreeTableNode>> groupNodes = new HashMap<>();
-    public ArrayList<GPropertyDraw> properties = new ArrayList<>();
-    public final List<GPropertyDraw> columnProperties = new ArrayList<>();
+    private final Map<GGroupObject, Set<GTreeTableNode>> groupNodes = new HashMap<GGroupObject, Set<GTreeTableNode>>();
+    public ArrayList<GPropertyDraw> properties = new ArrayList<GPropertyDraw>();
+    public final List<GPropertyDraw> columnProperties = new ArrayList<GPropertyDraw>();
 
-    public HashMap<GPropertyDraw, Map<GGroupObjectValue, Object>> values = new HashMap<>();
-    public HashMap<GPropertyDraw, Map<GGroupObjectValue, Object>> readOnly = new HashMap<>();
-    public HashMap<GGroupObject, List<GPropertyDraw>> groupPropsMap = new HashMap<>();
+    public HashMap<GPropertyDraw, Map<GGroupObjectValue, Object>> values = new HashMap<GPropertyDraw, Map<GGroupObjectValue, Object>>();
+    public HashMap<GPropertyDraw, Map<GGroupObjectValue, Object>> readOnly = new HashMap<GPropertyDraw, Map<GGroupObjectValue, Object>>();
+    public HashMap<GGroupObject, List<GPropertyDraw>> groupPropsMap = new HashMap<GGroupObject, List<GPropertyDraw>>();
 
     public GTreeTableNode root;
 
@@ -36,7 +36,7 @@ public class GTreeTableTree {
 
             List<GPropertyDraw> groupProperties = groupPropsMap.get(group);
             if (groupProperties == null) {
-                groupProperties = new ArrayList<>();
+                groupProperties = new ArrayList<GPropertyDraw>();
                 groupPropsMap.put(group, groupProperties);
             }
             int gins = GwtSharedUtils.relativePosition(property, properties, groupProperties);
@@ -66,7 +66,7 @@ public class GTreeTableTree {
     }
 
     public void setKeys(GGroupObject group, ArrayList<GGroupObjectValue> keys, ArrayList<GGroupObjectValue> parents, Map<GGroupObjectValue, Boolean> expandable) {
-        Map<GGroupObjectValue, List<GGroupObjectValue>> childTree = new HashMap<>();
+        Map<GGroupObjectValue, List<GGroupObjectValue>> childTree = new HashMap<GGroupObjectValue, List<GGroupObjectValue>>();
 
         for (int i = 0; i < keys.size(); i++) {
             GGroupObjectValue key = keys.get(i);
@@ -80,7 +80,7 @@ public class GTreeTableTree {
 
             List<GGroupObjectValue> children = childTree.get(parentPath);
             if (children == null) {
-                children = new ArrayList<>();
+                children = new ArrayList<GGroupObjectValue>();
                 childTree.put(parentPath, children);
             }
             children.add(key);
@@ -94,17 +94,17 @@ public class GTreeTableTree {
     void synchronize(GTreeTableNode parent, GGroupObject syncGroup, Map<GGroupObjectValue, List<GGroupObjectValue>> tree, Map<GGroupObjectValue, Boolean> expandables) {
         List<GGroupObjectValue> syncChilds = tree.get(parent.getKey());
         if (syncChilds == null) {
-            syncChilds = new ArrayList<>();
+            syncChilds = new ArrayList<GGroupObjectValue>();
         }
 
         if (hasOnlyExpandningNodeAsChild(parent)) {
             parent.getChild(0).removeFromParent();
         }
 
-        List<GTreeTableNode> allChildren = new ArrayList<>();
+        List<GTreeTableNode> allChildren = new ArrayList<GTreeTableNode>();
         GTreeTableNode[] thisGroupChildren = new GTreeTableNode[syncChilds.size()];
 
-        for (GTreeTableNode child : new ArrayList<>(parent.getChildren())) {
+        for (GTreeTableNode child : new ArrayList<GTreeTableNode>(parent.getChildren())) {
 
             if (child.getGroup().equals(syncGroup)) {
                 int index = syncChilds.indexOf(child.getKey());
@@ -159,7 +159,7 @@ public class GTreeTableTree {
     }
 
     private void removeList(List<GTreeTableNode> children) {
-        for (GTreeTableNode child : new ArrayList<>(children)) {
+        for (GTreeTableNode child : new ArrayList<GTreeTableNode>(children)) {
             child.removeFromParent();
         }
     }
@@ -185,7 +185,7 @@ public class GTreeTableTree {
 
         Set<GTreeTableNode> nodes = groupNodes.get(group);
         if (nodes == null) {
-            nodes = new HashSet<>();
+            nodes = new HashSet<GTreeTableNode>();
             groupNodes.put(group, nodes);
         }
         return nodes;
@@ -204,7 +204,7 @@ public class GTreeTableTree {
 
     public ArrayList<GTreeGridRecord> getUpdatedRecords() {
         nodeCounter = 0;
-        ArrayList<GTreeGridRecord> result = new ArrayList<>();
+        ArrayList<GTreeGridRecord> result = new ArrayList<GTreeGridRecord>();
         if (!hasOnlyExpandningNodeAsChild(root)) {
             result.addAll(getNodeChildrenRecords(root, 0, null));
         }
@@ -212,9 +212,9 @@ public class GTreeTableTree {
     }
 
     private List<GTreeGridRecord> getNodeChildrenRecords(GTreeTableNode node, int level, GTreeColumnValue parentValue) {
-        List<GTreeGridRecord> result = new ArrayList<>();
+        List<GTreeGridRecord> result = new ArrayList<GTreeGridRecord>();
         for (GTreeTableNode child : node.getChildren()) {
-            HashMap<GPropertyDraw, Object> valueMap = new HashMap<>();
+            HashMap<GPropertyDraw, Object> valueMap = new HashMap<GPropertyDraw, Object>();
             for (int i = 0; i < columnProperties.size(); i++) {
                 GPropertyDraw property = getProperty(child.getGroup(), i);
                 if (property != null) {

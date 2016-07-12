@@ -15,26 +15,23 @@ public class GridUserPreferences {
     public Map<ClientPropertyDraw, ColumnUserPreferences> columnUserPreferences;
     public FontInfo fontInfo;
     public Integer pageSize;
-    public Integer headerHeight;
     public ClientGroupObject groupObject;
     private Boolean hasUserPreferences;
     
     public GridUserPreferences(ClientGroupObject groupObject) {
-        this(groupObject, new HashMap<ClientPropertyDraw, ColumnUserPreferences>(), null, null, null, null);
+        this(groupObject, new HashMap<ClientPropertyDraw, ColumnUserPreferences>(), null, null, null);
     }
     
-    public GridUserPreferences(ClientGroupObject groupObject, Map<ClientPropertyDraw, ColumnUserPreferences> columnUserPreferences,
-                               FontInfo fontInfo, Integer pageSize, Integer headerHeight, Boolean hasUserPreferences) {
+    public GridUserPreferences(ClientGroupObject groupObject, Map<ClientPropertyDraw, ColumnUserPreferences> columnUserPreferences, FontInfo fontInfo, Integer pageSize, Boolean hasUserPreferences) {
         this.groupObject = groupObject;
         this.columnUserPreferences = columnUserPreferences;
         this.fontInfo = fontInfo;
         this.pageSize = pageSize;
-        this.headerHeight = headerHeight;
         this.hasUserPreferences = hasUserPreferences;
     }
     
     public GridUserPreferences(GridUserPreferences prefs) {
-        this(prefs.groupObject, new HashMap<ClientPropertyDraw, ColumnUserPreferences>(), prefs.fontInfo, prefs.pageSize, prefs.headerHeight, prefs.hasUserPreferences);
+        this(prefs.groupObject, new HashMap<ClientPropertyDraw, ColumnUserPreferences>(), prefs.fontInfo, prefs.pageSize, prefs.hasUserPreferences);
         
         for (Map.Entry<ClientPropertyDraw, ColumnUserPreferences> entry : prefs.columnUserPreferences.entrySet()) {
             columnUserPreferences.put(entry.getKey(), new ColumnUserPreferences(entry.getValue()));
@@ -57,11 +54,6 @@ public class GridUserPreferences {
     public String getUserCaption(ClientPropertyDraw property) {
         ColumnUserPreferences prefs = ensureColumnPreferences(property);
         return prefs.userCaption;
-    }
-
-    public String getUserPattern(ClientPropertyDraw property) {
-        ColumnUserPreferences prefs = ensureColumnPreferences(property);
-        return prefs.userPattern;
     }
     
     public Integer getUserWidth(ClientPropertyDraw property) {
@@ -87,15 +79,11 @@ public class GridUserPreferences {
     public Integer getPageSize() {
         return pageSize;
     }
-
-    public Integer getHeaderHeight() {
-        return headerHeight;
-    }
     
     private ColumnUserPreferences ensureColumnPreferences(ClientPropertyDraw property) {
         ColumnUserPreferences prefs = columnUserPreferences.get(property);
         if (prefs == null) {
-            prefs = new ColumnUserPreferences(null, null, null, null, null, null, null);
+            prefs = new ColumnUserPreferences(null, null, null, null, null, null);
             columnUserPreferences.put(property, prefs);
         }
         return prefs;
@@ -109,19 +97,6 @@ public class GridUserPreferences {
     public void setUserCaption(ClientPropertyDraw property, String userCaption) {
         ColumnUserPreferences prefs = ensureColumnPreferences(property);
         prefs.userCaption = userCaption;
-    }
-
-    public void setUserPattern(ClientPropertyDraw property, String userPattern) {
-        ColumnUserPreferences prefs = ensureColumnPreferences(property);
-        prefs.userPattern = userPattern;
-    }
-
-    public void setUserColumnsSettings(ClientPropertyDraw property, String userCaption, String userPattern, Integer userOrder, Boolean userHide) {
-        ColumnUserPreferences prefs = ensureColumnPreferences(property);
-        prefs.userCaption = userCaption;
-        prefs.userPattern = userPattern;
-        prefs.userOrder = userOrder;
-        prefs.userHide = userHide;
     }
     
     public void setUserWidth(ClientPropertyDraw property, Integer userWidth) {
@@ -147,10 +122,9 @@ public class GridUserPreferences {
     public void resetPreferences() {
         fontInfo = new FontInfo(null, -1, false, false);
         pageSize = null;
-        headerHeight = null;
         hasUserPreferences = false;
-        for (ClientPropertyDraw property : new HashSet<>(columnUserPreferences.keySet())) {
-            columnUserPreferences.put(property, new ColumnUserPreferences(null, null, null, null, null, null, null));
+        for (ClientPropertyDraw property : new HashSet<ClientPropertyDraw>(columnUserPreferences.keySet())) {
+            columnUserPreferences.put(property, new ColumnUserPreferences(null, null, null, null, null, null));
         }
     }
 
@@ -178,10 +152,10 @@ public class GridUserPreferences {
     }
     
     public GroupObjectUserPreferences convertPreferences() {
-        Map<String, ColumnUserPreferences> columns = new HashMap<>();
+        Map<String, ColumnUserPreferences> columns = new HashMap<String, ColumnUserPreferences>();
         for (Map.Entry<ClientPropertyDraw, ColumnUserPreferences> entry : columnUserPreferences.entrySet()) {
             columns.put(entry.getKey().getSID(), entry.getValue());
         }
-        return new GroupObjectUserPreferences(columns, groupObject.getSID(), fontInfo, pageSize, headerHeight, hasUserPreferences());
+        return new GroupObjectUserPreferences(columns, groupObject.getSID(), fontInfo, pageSize, hasUserPreferences());
     }
 }

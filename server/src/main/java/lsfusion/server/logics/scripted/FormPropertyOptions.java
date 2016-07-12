@@ -158,7 +158,7 @@ public class FormPropertyOptions {
     public void addEditAction(String actionSID, ActionPropertyObjectEntity action) {
         if (action != null) {
             if (editActions == null) {
-                editActions = new HashMap<>();
+                editActions = new HashMap<String, ActionPropertyObjectEntity>();
             }
             editActions.put(actionSID, action);
         }
@@ -166,7 +166,7 @@ public class FormPropertyOptions {
 
     public void addContextMenuBinding(String actionSID, String caption) {
         if (contextMenuBindings == null) {
-            contextMenuBindings = new OrderedMap<>();
+            contextMenuBindings = new OrderedMap<String, String>();
         }
         contextMenuBindings.put(actionSID, caption);
     }

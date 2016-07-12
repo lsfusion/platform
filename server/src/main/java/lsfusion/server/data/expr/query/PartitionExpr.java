@@ -179,7 +179,7 @@ public class PartitionExpr extends AggrExpr<KeyExpr, PartitionType, PartitionExp
 
     protected static Expr createBase(ImMap<KeyExpr, BaseExpr> group, Query query) {
         // проверим если в group есть ключи которые ссылаются на ValueExpr и они есть в partition'е - убираем их из partition'а
-        Result<ImMap<KeyExpr, BaseExpr>> restGroup = new Result<>();
+        Result<ImMap<KeyExpr, BaseExpr>> restGroup = new Result<ImMap<KeyExpr, BaseExpr>>();
         final Query fQuery = query;
         ImMap<KeyExpr, BaseExpr> translate = group.splitKeys(new GetKeyValue<Boolean, KeyExpr, BaseExpr>() {
             public Boolean getMapValue(KeyExpr key, BaseExpr value) {
@@ -201,7 +201,7 @@ public class PartitionExpr extends AggrExpr<KeyExpr, PartitionType, PartitionExp
     private static Expr createKeyEqual(ImMap<KeyExpr, BaseExpr> group, Query query) {
         final KeyEqual keyEqual = query.getWhere().getKeyEquals().getSingle();
         if(!keyEqual.isEmpty()) {
-            Result<ImMap<KeyExpr,BaseExpr>> restGroup = new Result<>();
+            Result<ImMap<KeyExpr,BaseExpr>> restGroup = new Result<ImMap<KeyExpr, BaseExpr>>();
             Where keyWhere = CompareWhere.compare(group.splitKeys(new SFunctionSet<KeyExpr>() {
                 public boolean contains(KeyExpr element) {
                     return keyEqual.keyExprs.containsKey(element);

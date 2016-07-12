@@ -62,11 +62,10 @@ public class ConcatenateProperty extends FormulaProperty<ConcatenateProperty.Int
     @Override
     public Inferred<Interface> calcInferInterfaceClasses(final ExClassSet commonValue, InferType inferType) {
         if(commonValue!=null) {
-            return new Inferred<>(getOrderInterfaces().mapOrderValues(new GetIndex<ExClassSet>() {
+            return new Inferred<Interface>(getOrderInterfaces().mapOrderValues(new GetIndex<ExClassSet>() {
                 public ExClassSet getMapValue(int i) {
                     return getPart(i, commonValue);
-                }
-            }));
+                }}));
         }
         return super.calcInferInterfaceClasses(commonValue, inferType);
     }

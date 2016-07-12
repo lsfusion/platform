@@ -1,5 +1,6 @@
 package lsfusion.gwt.base.server;
 
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.server.rpc.SerializationPolicy;
 import com.google.gwt.user.server.rpc.SerializationPolicyLoader;
 import lsfusion.gwt.base.server.dispatch.SecuredAction;
@@ -21,6 +22,7 @@ import net.customware.gwt.dispatch.shared.Action;
 import net.customware.gwt.dispatch.shared.DispatchException;
 import net.customware.gwt.dispatch.shared.Result;
 import org.apache.log4j.Logger;
+import org.jfree.util.Log;
 import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -156,7 +158,7 @@ public abstract class LogicsAwareDispatchServlet<T extends RemoteLogicsInterface
             throw new MessageException("Внутренняя ошибка сервера: " + e.getMessage());
         } catch (Throwable e) {
             logger.error("Ошибка в LogicsAwareDispatchServlet.execute: ", e);
-            throw new MessageException("Внутренняя ошибка сервера.", e);
+            throw new MessageException("Внутренняя ошибка сервера.");
         }
     }
 

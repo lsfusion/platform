@@ -22,8 +22,8 @@ public abstract class GAbstractContainerView {
     protected final GContainer container;
     protected Widget view;
 
-    protected final List<GComponent> children = new ArrayList<>();
-    protected final List<Widget> childrenViews = new ArrayList<>();
+    protected final List<GComponent> children = new ArrayList<GComponent>();
+    protected final List<Widget> childrenViews = new ArrayList<Widget>();
 
     protected GAbstractContainerView(GContainer container) {
         this.container = container;

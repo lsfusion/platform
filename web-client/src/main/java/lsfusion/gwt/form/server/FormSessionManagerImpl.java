@@ -71,12 +71,12 @@ public class FormSessionManagerImpl implements FormSessionManager, InitializingB
     }
     
     private List<GGroupObjectUserPreferences> convertUserPreferences(GForm gForm,  List<GroupObjectUserPreferences> groupObjectUserPreferences) {
-        ArrayList<GGroupObjectUserPreferences> gGroupObjectUPList = new ArrayList<>();
+        ArrayList<GGroupObjectUserPreferences> gGroupObjectUPList = new ArrayList<GGroupObjectUserPreferences>();
         for (GroupObjectUserPreferences groupObjectUP : groupObjectUserPreferences) {
-            HashMap<String, GColumnUserPreferences> gColumnUPMap = new HashMap<>();
+            HashMap<String, GColumnUserPreferences> gColumnUPMap = new HashMap<String, GColumnUserPreferences>();
             for (Map.Entry<String, ColumnUserPreferences> entry : groupObjectUP.getColumnUserPreferences().entrySet()) {
                 ColumnUserPreferences columnUP = entry.getValue();
-                gColumnUPMap.put(entry.getKey(), new GColumnUserPreferences(columnUP.userHide, columnUP.userCaption, columnUP.userPattern, columnUP.userWidth, columnUP.userOrder, columnUP.userSort, columnUP.userAscendingSort));
+                gColumnUPMap.put(entry.getKey(), new GColumnUserPreferences(columnUP.userHide, columnUP.userCaption, columnUP.userWidth, columnUP.userOrder, columnUP.userSort, columnUP.userAscendingSort));
             }
             GFont userFont = convertFont(groupObjectUP.fontInfo);
             GGroupObject groupObj = gForm.getGroupObject(groupObjectUP.groupObjectSID);
@@ -91,7 +91,7 @@ public class FormSessionManagerImpl implements FormSessionManager, InitializingB
                 }
                 userFont.family = GFont.DEFAULT_FONT_FAMILY;
             }
-            gGroupObjectUPList.add(new GGroupObjectUserPreferences(gColumnUPMap, groupObjectUP.groupObjectSID, userFont, groupObjectUP.pageSize, groupObjectUP.headerHeight, groupObjectUP.hasUserPreferences));
+            gGroupObjectUPList.add(new GGroupObjectUserPreferences(gColumnUPMap, groupObjectUP.groupObjectSID, userFont, groupObjectUP.pageSize, groupObjectUP.hasUserPreferences));
             gForm.addFont(userFont); // добавляем к используемым шрифтам с целью подготовить FontMetrics
         }
         return gGroupObjectUPList;

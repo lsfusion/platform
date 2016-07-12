@@ -30,13 +30,13 @@ public class ClientFormChanges {
 
     public ClientFormChanges(DataInputStream inStream, ClientForm clientForm) throws IOException {
 
-        classViews = new HashMap<>();
+        classViews = new HashMap<ClientGroupObject, ClassViewType>();
         int count = inStream.readInt();
         for (int i = 0; i < count; i++) {
             classViews.put(clientForm.getGroupObject(inStream.readInt()), ClassViewType.values()[inStream.readInt()]);
         }
 
-        objects = new HashMap<>();
+        objects = new HashMap<ClientGroupObject, ClientGroupObjectValue>();
         count = inStream.readInt();
         for (int i = 0; i < count; i++) {
             ClientGroupObject clientGroupObject = clientForm.getGroupObject(inStream.readInt());
@@ -46,11 +46,11 @@ public class ClientFormChanges {
         gridObjects = readGridObjectsMap(inStream, clientForm);
         parentObjects = readGridObjectsMap(inStream, clientForm);
 
-        expandables = new HashMap<>();
+        expandables = new HashMap<ClientGroupObject, Map<ClientGroupObjectValue, Boolean>>();
         count = inStream.readInt();
         for (int i = 0; i < count; ++i) {
             ClientGroupObject groupObject = clientForm.getGroupObject(inStream.readInt());
-            Map<ClientGroupObjectValue, Boolean> groupExpandables = new HashMap<>();
+            Map<ClientGroupObjectValue, Boolean> groupExpandables = new HashMap<ClientGroupObjectValue, Boolean>();
             int cnt = inStream.readInt();
             for (int j = 0; j < cnt; ++j) {
                 ClientGroupObjectValue key = new ClientGroupObjectValue(inStream, clientForm);
@@ -61,13 +61,13 @@ public class ClientFormChanges {
             expandables.put(groupObject, groupExpandables);
         }
 
-        properties = new HashMap<>();
+        properties = new HashMap<ClientPropertyReader, Map<ClientGroupObjectValue, Object>>();
         count = inStream.readInt();
         for (int i = 0; i < count; i++) {
 
             ClientPropertyReader clientPropertyRead = deserializePropertyReader(clientForm, inStream);
 
-            Map<ClientGroupObjectValue, Object> propertyValues = new HashMap<>();
+            Map<ClientGroupObjectValue, Object> propertyValues = new HashMap<ClientGroupObjectValue, Object>();
             int mapCount = inStream.readInt();
             for (int j = 0; j < mapCount; j++) {
                 propertyValues.put(new ClientGroupObjectValue(inStream, clientForm), BaseUtils.deserializeObject(inStream));
@@ -76,17 +76,17 @@ public class ClientFormChanges {
             properties.put(clientPropertyRead, propertyValues);
         }
 
-        updateProperties = new HashSet<>();
+        updateProperties = new HashSet<ClientPropertyDraw>();
 
         //PanelProperties
-        panelProperties = new HashSet<>();
+        panelProperties = new HashSet<ClientPropertyDraw>();
         count = inStream.readInt();
         for (int i = 0; i < count; i++) {
             panelProperties.add(clientForm.getProperty(inStream.readInt()));
         }
 
         //DropProperties
-        dropProperties = new HashSet<>();
+        dropProperties = new HashSet<ClientPropertyDraw>();
         count = inStream.readInt();
         for (int i = 0; i < count; i++) {
             dropProperties.add(clientForm.getProperty(inStream.readInt()));
@@ -119,12 +119,12 @@ public class ClientFormChanges {
     }
 
     private Map<ClientGroupObject, List<ClientGroupObjectValue>> readGridObjectsMap(DataInputStream inStream, ClientForm clientForm) throws IOException {
-        Map<ClientGroupObject, List<ClientGroupObjectValue>> gridObjects = new HashMap<>();
+        Map<ClientGroupObject, List<ClientGroupObjectValue>> gridObjects = new HashMap<ClientGroupObject, List<ClientGroupObjectValue>>();
         int count = inStream.readInt();
         for (int i = 0; i < count; i++) {
             ClientGroupObject clientGroupObject = clientForm.getGroupObject(inStream.readInt());
 
-            List<ClientGroupObjectValue> clientGridObjects = new ArrayList<>();
+            List<ClientGroupObjectValue> clientGridObjects = new ArrayList<ClientGroupObjectValue>();
             int listCount = inStream.readInt();
             for (int j = 0; j < listCount; j++) {
                 clientGridObjects.add(new ClientGroupObjectValue(inStream, clientForm));

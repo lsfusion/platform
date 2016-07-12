@@ -102,7 +102,7 @@ public abstract class GroupPairs<G,O,I> implements Iterable<I>  {
 
     public Iterator<I> iterator() {
         if(map1.size()!=map2.size()) // чтобы в classSet только в одну сторону проверять
-            return new EmptyIterator<>();
+            return new EmptyIterator<I>();
 
         ImSet<O>[] group1 = new ImSet[map1.size()]; int groups = 0;
         ImSet<O>[] group2 = new ImSet[group1.length];
@@ -110,7 +110,7 @@ public abstract class GroupPairs<G,O,I> implements Iterable<I>  {
             ImSet<O> classSet2 = map2.get(map1.getKey(i));
             ImSet<O> classSet1 = map1.getValue(i);
             if(classSet2==null || classSet1.size()!=classSet2.size())
-                return new EmptyIterator<>();
+                return new EmptyIterator<I>();
             group1[groups] = classSet1;
             group2[groups++] = classSet2;
         }

@@ -17,7 +17,7 @@ import static lsfusion.gwt.base.client.GwtClientUtils.stopPropagation;
 
 public class GTreeNavigatorView extends GNavigatorView {
     private NavigatorTree tree;
-    private List<GNavigatorElement> openElements = new ArrayList<>();
+    private List<GNavigatorElement> openElements = new ArrayList<GNavigatorElement>();
 
     public GTreeNavigatorView(GTreeNavigatorWindow window, GINavigatorController navigatorController) {
         super(window, navigatorController);
@@ -58,7 +58,7 @@ public class GTreeNavigatorView extends GNavigatorView {
 
     @Override
     public void refresh(Set<GNavigatorElement> newElements) {
-        openElements = new ArrayList<>();
+        openElements = new ArrayList<GNavigatorElement>();
 
         for (Iterator<TreeItem> iterator = tree.treeItemIterator(); iterator.hasNext();) {
             TreeNavigatorItem node = (TreeNavigatorItem) iterator.next();

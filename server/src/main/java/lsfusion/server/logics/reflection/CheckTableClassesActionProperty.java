@@ -35,7 +35,7 @@ public class CheckTableClassesActionProperty extends ScriptingActionProperty {
         DataObject tableObject = context.getDataKeyValue(tableInterface);
         final String tableName = (String) context.getBL().reflectionLM.sidTable.read(context, tableObject);
 
-        final Result<String> message = new Result<>();
+        final Result<String> message = new Result<String>();
         ServiceDBActionProperty.run(context, new RunService() {
             public void run(SQLSession session, boolean isolatedTransaction) throws SQLException, SQLHandledException {
                 message.set(context.getDbManager().checkTableClasses(session, tableName.trim(), isolatedTransaction));

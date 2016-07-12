@@ -16,16 +16,16 @@ import java.util.*;
 import java.util.List;
 
 class GroupTreeTableModel extends DefaultTreeTableModel {
-    private final Map<ClientGroupObject, Set<TreeGroupNode>> groupNodes = new HashMap<>();
-    public final List<ClientPropertyDraw> properties = new ArrayList<>();
-    public final List<ClientPropertyDraw> columnProperties = new ArrayList<>();
-    public final Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> values = new HashMap<>();
-    public final Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> readOnly = new HashMap<>();
-    public final Map<ClientGroupObject, List<ClientPropertyDraw>> groupPropsMap = new HashMap<>();
-    private Map<ClientGroupObjectValue, Object> rowBackground = new HashMap<>();
-    private Map<ClientGroupObjectValue, Object> rowForeground = new HashMap<>();
-    private Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> cellBackgroundValues = new HashMap<>();
-    private Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> cellForegroundValues = new HashMap<>();
+    private final Map<ClientGroupObject, Set<TreeGroupNode>> groupNodes = new HashMap<ClientGroupObject, Set<TreeGroupNode>>();
+    public final List<ClientPropertyDraw> properties = new ArrayList<ClientPropertyDraw>();
+    public final List<ClientPropertyDraw> columnProperties = new ArrayList<ClientPropertyDraw>();
+    public final Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> values = new HashMap<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>>();
+    public final Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> readOnly = new HashMap<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>>();
+    public final Map<ClientGroupObject, List<ClientPropertyDraw>> groupPropsMap = new HashMap<ClientGroupObject, List<ClientPropertyDraw>>();
+    private Map<ClientGroupObjectValue, Object> rowBackground = new HashMap<ClientGroupObjectValue, Object>();
+    private Map<ClientGroupObjectValue, Object> rowForeground = new HashMap<ClientGroupObjectValue, Object>();
+    private Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> cellBackgroundValues = new HashMap<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>>();
+    private Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> cellForegroundValues = new HashMap<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>>();
 
     private final ClientFormController form;
     private final boolean plainTreeMode;
@@ -182,7 +182,7 @@ class GroupTreeTableModel extends DefaultTreeTableModel {
 
         Set<TreeGroupNode> nodes = groupNodes.get(group);
         if (nodes == null) {
-            nodes = new HashSet<>();
+            nodes = new HashSet<TreeGroupNode>();
             groupNodes.put(group, nodes);
         }
         return nodes;
@@ -190,7 +190,7 @@ class GroupTreeTableModel extends DefaultTreeTableModel {
 
     public void updateKeys(ClientGroupObject group, List<ClientGroupObjectValue> keys, List<ClientGroupObjectValue> parents, Map<ClientGroupObjectValue, Boolean> expandables) {
         // приводим переданную структуру в нормальную - child -> parent
-        OrderedMap<ClientGroupObjectValue, ClientGroupObjectValue> parentTree = new OrderedMap<>();
+        OrderedMap<ClientGroupObjectValue, ClientGroupObjectValue> parentTree = new OrderedMap<ClientGroupObjectValue, ClientGroupObjectValue>();
         for (int i = 0; i < keys.size(); i++) {
             ClientGroupObjectValue key = keys.get(i);
 
@@ -212,7 +212,7 @@ class GroupTreeTableModel extends DefaultTreeTableModel {
                      Map<ClientGroupObjectValue, Boolean> expandables) {
         List<ClientGroupObjectValue> syncChilds = tree.get(parent.key);
         if (syncChilds == null) {
-            syncChilds = new ArrayList<>();
+            syncChilds = new ArrayList<ClientGroupObjectValue>();
         }
 
         if (parent.hasOnlyExpandningNodeAsChild()) {
@@ -220,7 +220,7 @@ class GroupTreeTableModel extends DefaultTreeTableModel {
             parent.removeFirstChild();
         }
 
-        List<TreeGroupNode> allChildren = new ArrayList<>();
+        List<TreeGroupNode> allChildren = new ArrayList<TreeGroupNode>();
         TreeGroupNode[] thisGroupChildren = new TreeGroupNode[syncChilds.size()];
 
         for (TreeGroupNode child : BaseUtils.<TreeGroupNode>copyTreeChildren(parent.getChildren())) {
@@ -320,7 +320,7 @@ class GroupTreeTableModel extends DefaultTreeTableModel {
 
             List<ClientPropertyDraw> groupProperties = groupPropsMap.get(group);
             if (groupProperties == null) {
-                groupProperties = new ArrayList<>();
+                groupProperties = new ArrayList<ClientPropertyDraw>();
                 groupPropsMap.put(group, groupProperties);
             }
             int gins = BaseUtils.relativePosition(property, properties, groupProperties);

@@ -11,26 +11,23 @@ public class GGridUserPreferences {
     private Map<GPropertyDraw, GColumnUserPreferences> columnUserPreferences;
     public GFont font;
     public Integer pageSize;
-    public Integer headerHeight;
     public GGroupObject groupObject;
     private Boolean hasUserPreferences;
 
     public GGridUserPreferences(GGroupObject groupObject) {
-        this(groupObject, new HashMap<GPropertyDraw, GColumnUserPreferences>(), null, null, null, null);
+        this(groupObject, new HashMap<GPropertyDraw, GColumnUserPreferences>(), null, null, null);
     }
 
-    public GGridUserPreferences(GGroupObject groupObject, Map<GPropertyDraw, GColumnUserPreferences> columnUserPreferences, GFont font, Integer pageSize,
-                                Integer headerHeight, Boolean hasUserPreferences) {
+    public GGridUserPreferences(GGroupObject groupObject, Map<GPropertyDraw, GColumnUserPreferences> columnUserPreferences, GFont font, Integer pageSize, Boolean hasUserPreferences) {
         this.groupObject = groupObject;
         this.columnUserPreferences = columnUserPreferences;
         this.font = font;
         this.pageSize = pageSize;
-        this.headerHeight = headerHeight;
         this.hasUserPreferences = hasUserPreferences;
     }
 
     public GGridUserPreferences(GGridUserPreferences prefs) {
-        this(prefs.groupObject, new HashMap<GPropertyDraw, GColumnUserPreferences>(), prefs.font, prefs.pageSize, prefs.headerHeight, prefs.hasUserPreferences);
+        this(prefs.groupObject, new HashMap<GPropertyDraw, GColumnUserPreferences>(), prefs.font, prefs.pageSize, prefs.hasUserPreferences);
 
         for (Map.Entry<GPropertyDraw, GColumnUserPreferences> entry : prefs.columnUserPreferences.entrySet()) {
             columnUserPreferences.put(entry.getKey(), new GColumnUserPreferences(entry.getValue()));
@@ -58,12 +55,7 @@ public class GGridUserPreferences {
         GColumnUserPreferences prefs = ensureColumnPreferences(property);
         return prefs.userCaption;
     }
-
-    public String getUserPattern(GPropertyDraw property) {
-        GColumnUserPreferences prefs = ensureColumnPreferences(property);
-        return prefs.userPattern;
-    }
-
+    
     public Integer getUserWidth(GPropertyDraw property) {
         GColumnUserPreferences prefs = ensureColumnPreferences(property);
         return prefs.userWidth;
@@ -87,7 +79,7 @@ public class GGridUserPreferences {
     private GColumnUserPreferences ensureColumnPreferences(GPropertyDraw property) {
         GColumnUserPreferences prefs = columnUserPreferences.get(property);
         if (prefs == null) {
-            prefs = new GColumnUserPreferences(null, null, null, null, null, null, null);
+            prefs = new GColumnUserPreferences(null, null, null, null, null, null);
             columnUserPreferences.put(property, prefs);
         }
         return prefs;
@@ -98,14 +90,11 @@ public class GGridUserPreferences {
         prefs.userHide = userHide;
     }
 
-    public void setColumnSettings(GPropertyDraw property, String userCaption, String userPattern, Integer userOrder, Boolean userHide) {
+    public void setUserCaption(GPropertyDraw property, String userCaption) {
         GColumnUserPreferences prefs = ensureColumnPreferences(property);
         prefs.userCaption = userCaption;
-        prefs.userPattern = userPattern;
-        prefs.userOrder = userOrder;
-        prefs.userHide = userHide;
     }
-
+    
     public void setUserWidth(GPropertyDraw property, Integer userWidth) {
         GColumnUserPreferences prefs = ensureColumnPreferences(property);
         prefs.userWidth = userWidth;
@@ -132,16 +121,15 @@ public class GGridUserPreferences {
     }
 
     public void resetPreferences(GPropertyDraw property) {
-        columnUserPreferences.put(property, new GColumnUserPreferences(null, null, null, null, null, null, null));
+        columnUserPreferences.put(property, new GColumnUserPreferences(null, null, null, null, null, null));
     }
 
     public void resetPreferences() {
         font = new GFont(null, -1, false, false);
         pageSize = null;
-        headerHeight = null;
         hasUserPreferences = false;
-        for (GPropertyDraw property : new HashSet<>(columnUserPreferences.keySet())) {
-            columnUserPreferences.put(property, new GColumnUserPreferences(null, null, null, null, null, null, null));
+        for (GPropertyDraw property : new HashSet<GPropertyDraw>(columnUserPreferences.keySet())) {
+            columnUserPreferences.put(property, new GColumnUserPreferences(null, null, null, null, null, null));
         }
     }
 
@@ -169,10 +157,10 @@ public class GGridUserPreferences {
     }
 
     public GGroupObjectUserPreferences convertPreferences() {
-        Map<String, GColumnUserPreferences> columns = new HashMap<>();
+        Map<String, GColumnUserPreferences> columns = new HashMap<String, GColumnUserPreferences>();
         for (Map.Entry<GPropertyDraw, GColumnUserPreferences> entry : columnUserPreferences.entrySet()) {
             columns.put(entry.getKey().sID, entry.getValue());
         }
-        return new GGroupObjectUserPreferences(columns, groupObject.getSID(), font, pageSize, headerHeight, hasUserPreferences());
+        return new GGroupObjectUserPreferences(columns, groupObject.getSID(), font, pageSize, hasUserPreferences());
     }
 }

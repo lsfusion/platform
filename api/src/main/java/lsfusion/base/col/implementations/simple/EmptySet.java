@@ -6,7 +6,7 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
 
 public class EmptySet<K> extends ASet<K> {
 
-    private final static EmptySet<Object> instance = new EmptySet<>();
+    private final static EmptySet<Object> instance = new EmptySet<Object>();
     public static <K> EmptySet<K> INSTANCE() {
         return (EmptySet<K>) instance;
     }

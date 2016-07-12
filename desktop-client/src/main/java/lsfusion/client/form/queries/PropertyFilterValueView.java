@@ -18,7 +18,7 @@ public class PropertyFilterValueView extends FilterValueView {
 
         filterValue = ifilterValue;
 
-        JComboBox propertyView = new QueryConditionComboBox(new Vector<>(logicsSupplier.getPropertyDraws()));
+        JComboBox propertyView = new QueryConditionComboBox(new Vector<ClientPropertyDraw>(logicsSupplier.getPropertyDraws()));
 
         filterValue.property = (ClientPropertyDraw) propertyView.getSelectedItem();
 

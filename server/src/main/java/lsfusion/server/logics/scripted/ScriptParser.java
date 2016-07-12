@@ -1,9 +1,8 @@
 package lsfusion.server.logics.scripted;
 
+import org.antlr.runtime.*;
 import lsfusion.server.LsfLogicsLexer;
 import lsfusion.server.LsfLogicsParser;
-import lsfusion.server.logics.debug.DebugInfo;
-import org.antlr.runtime.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,27 +19,16 @@ public class ScriptParser {
 
     private State currentState = null;
     private Stack<ParserInfo> parsers = new Stack<>();
-
-    /** Количество строк в развернутых метакодах во всем файле выше. Используется для определения номера строки
-     * в файле с развернутыми метакодами в случае, если на самом деле метакоды свернуты      */
+    
     private int globalExpandedLines = 0;
-    
-    /** Количество строк в развернутых полностью метакодах выше по стеку. Например, при использовании нескольких 
-     * метакодов на одном уровне. Считается внутри метакода, если мы сейчас не внутри метакода, то равно 0  */ 
-    private int currentExpandedLines = 0;
-    
-    /** Суммируются относительные позиции развернутых метакодов выше по стеку. Определяется общий сдвиг парсящихся 
-     * сейчас метакодов  */
-    private int currentExpansionLine = 0;
+    private int globalExpansionLine = 0;
     
     private ScriptingErrorLog errLog;
 
-    /** Определяет парсится ли сейчас код "развернутого" в IDE метакода. Проверяется, чтобы задать специальный state парсера, 
-     * чтобы ничего не выполнялось при этом парсинге. */
+    // Определяет парсится ли сейчас код "развернутого" в IDE метакода. Проверяется, чтобы задать специальный state парсера, чтобы ничего не выполнялось при этом парсинге. 
     private boolean insideGeneratedMeta = false;
     
-    /** Определяет интерпретируется ли сейчас код сформированный "неразвернутым" в IDE метакодом. Если равен true, 
-     * то не нужно создавать делегаты для отладчика */
+    // Определяет интерпретируется ли сейчас код сформированный "неразвернутым" в IDE метакодом. Если равен true, то не нужно создавать делегаты для отладчика
     private boolean insideNonEnabledMeta = false;
     
     public ScriptParser(ScriptingErrorLog errLog) {
@@ -58,7 +46,6 @@ public class ScriptParser {
         lexer.parseState = state;
 
         globalExpandedLines = 0;
-        currentExpandedLines = 0;
         currentState = state;
         parsers.push(new ParserInfo(parser, null, null, 0));
         if (state == State.PRE) {
@@ -80,8 +67,10 @@ public class ScriptParser {
         parser.self = LM;
         parser.parseState = insideGeneratedMeta ? State.GENMETA : currentState;
 
-        //lineNumber is 1-based
-        currentExpansionLine += lineNumber - 1;
+        if (!insideNonEnabledMeta) {
+            //lineNumber is 1-based
+            globalExpansionLine += lineNumber - 1;
+        }
         
         ParserInfo lastParser = new ParserInfo(parser, metaCode, callString, lineNumber);
         
@@ -93,23 +82,19 @@ public class ScriptParser {
         parser.metaCodeParsingStatement();
         parsers.pop();
 
-        int codeLinesCnt = 0;
-        if (!insideGeneratedMeta && parser.parseState == State.PROP) {
-            codeLinesCnt = linesCount(code);
-            globalExpandedLines += codeLinesCnt - 1;
-        }
-        
         if (parsers.size() == 1) {
-            currentExpandedLines = 0;
-        } else if (!insideGeneratedMeta && parser.parseState == State.PROP) {
-            currentExpandedLines += codeLinesCnt - 1; 
+            globalExpandedLines = 0;
+        } else if (!insideGeneratedMeta && !insideNonEnabledMeta && parser.parseState == State.PROP) {
+            globalExpandedLines += linesCount(code) - 1; 
         }
 
         if (!enabledMeta && parsers.size() == 1) {
             insideNonEnabledMeta = false;
         }
 
-        currentExpansionLine -= lineNumber - 1;
+        if (!insideNonEnabledMeta) {
+            globalExpansionLine -= lineNumber - 1;
+        }
     }
     
     private int linesCount(String code) {
@@ -212,43 +197,37 @@ public class ScriptParser {
         return path.toString();
     }
 
-    public DebugInfo.DebugPoint getGlobalDebugPoint(String moduleName, boolean previous) {
-        return new DebugInfo.DebugPoint(moduleName, getGlobalCurrentLineNumber(previous), getGlobalPositionInLine(previous), isInsideNonEnabledMeta());
-    }
-    
     //0-based
+    public int getGlobalCurrentLineNumber() {
+        return getGlobalCurrentLineNumber(false);
+    }
     public int getGlobalCurrentLineNumber(boolean previous) {
-        if (isInsideNonEnabledMeta()) {
-            return globalExpandedLines + currentExpansionLine + getCurrentParserLineNumber(previous) - 1;
-        } else {
-            return currentExpandedLines + currentExpansionLine + getCurrentParserLineNumber(previous) - 1;
-        }
+        return globalExpandedLines + globalExpansionLine + getCurrentParserLineNumber(previous) - 1;
+    }
+    public int getGlobalPositionInLine() {
+        return getGlobalPositionInLine(false);
+    }
+    public int getGlobalPositionInLine(boolean previous) {
+        return getCurrentParserPositionInLine(previous);
     }
 
     public int getCurrentParserLineNumber() {
         return getCurrentParserLineNumber(false);
     }
-    
-    private int getCurrentParserLineNumber(boolean previous) {
+    public int getCurrentParserLineNumber(boolean previous) {
         return getLineNumber(parsers.lastElement().getParser(), previous);
-    }
-
-    private int getLineNumber(Parser parser, boolean previous) {
-        Token token = getToken(parser, previous);
-        return token.getLine();
-    }
-
-
-    public int getGlobalPositionInLine(boolean previous) {
-        return getCurrentParserPositionInLine(previous);
     }
 
     public int getCurrentParserPositionInLine() {
         return getCurrentParserPositionInLine(false);
     }
-    
-    private int getCurrentParserPositionInLine(boolean previous) {
+    public int getCurrentParserPositionInLine(boolean previous) {
         return getPositionInLine(parsers.lastElement().getParser(), previous);
+    }
+
+    private int getLineNumber(Parser parser, boolean previous) {
+        Token token = getToken(parser, previous);
+        return token.getLine();
     }
 
     private int getPositionInLine(Parser parser, boolean previous) {

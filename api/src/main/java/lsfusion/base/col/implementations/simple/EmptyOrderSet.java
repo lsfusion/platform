@@ -8,7 +8,7 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.ImRevValueMap;
 
 public class EmptyOrderSet<K> extends AOrderSet<K> {
 
-    private final static EmptyOrderSet<Object> instance = new EmptyOrderSet<>();
+    private final static EmptyOrderSet<Object> instance = new EmptyOrderSet<Object>();
     public static <K> EmptyOrderSet<K> INSTANCE() {
         return (EmptyOrderSet<K>) instance;
     }

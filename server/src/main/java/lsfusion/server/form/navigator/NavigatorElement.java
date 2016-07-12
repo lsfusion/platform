@@ -31,7 +31,6 @@ public class NavigatorElement<T extends BusinessLogics<T>> {
     public static final String FORM_ANONYMOUS_SID_PREFIX = "_FORM_";
     
     private ImageIcon image;
-    public DefaultIcon defaultIcon;
 
     public String caption = "";
 
@@ -48,7 +47,7 @@ public class NavigatorElement<T extends BusinessLogics<T>> {
         this.ID = BaseLogicsModule.generateStaticNewID();
         this.caption = caption;
 
-        setImage(icon != null ? icon : "/images/open.png", icon != null ? null : DefaultIcon.OPEN);
+        setImage(icon != null ? icon : "/images/open.png");
 
         if (parent != null) {
             setParent(parent, version);
@@ -109,7 +108,7 @@ public class NavigatorElement<T extends BusinessLogics<T>> {
      */
     public Set<NavigatorElement<T>> getChildrenRecursive() {
         //используем Set, чтобы не было повторений
-        Set<NavigatorElement<T>> result = new LinkedHashSet<>();
+        Set<NavigatorElement<T>> result = new LinkedHashSet<NavigatorElement<T>>();
         fillChildrenRecursive(result);
         return result;
     }
@@ -132,8 +131,8 @@ public class NavigatorElement<T extends BusinessLogics<T>> {
         }
 
 
-        List<String> childrenSids = new ArrayList<>();
-        List<ImOrderMap<NavigatorElement<T>, List<String>>> childrenMaps = new ArrayList<>();
+        List<String> childrenSids = new ArrayList<String>();
+        List<ImOrderMap<NavigatorElement<T>, List<String>>> childrenMaps = new ArrayList<ImOrderMap<NavigatorElement<T>, List<String>>>();
         for (NavigatorElement<T> child : getChildrenIt()) {
             ImOrderMap<NavigatorElement<T>, List<String>> childMap = child.getChildrenMap(securityPolicy);
             if (!childMap.isEmpty()) {
@@ -234,12 +233,7 @@ public class NavigatorElement<T extends BusinessLogics<T>> {
     }
 
     public void setImage(String icon) {
-        setImage(icon, null);
-    }
-
-    public void setImage(String icon, DefaultIcon defaultIcon) {
-        this.image = new ImageIcon(NavigatorElement.class.getResource(icon), icon.lastIndexOf("/") == -1 ? icon : icon.substring(icon.lastIndexOf("/") + 1));
-        this.defaultIcon = defaultIcon;
+        image = new ImageIcon(NavigatorElement.class.getResource(icon), icon.lastIndexOf("/") == -1 ? icon : icon.substring(icon.lastIndexOf("/") + 1));
     }
 
     public ImageIcon getImage() {

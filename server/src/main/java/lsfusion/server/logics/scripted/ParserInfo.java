@@ -10,11 +10,8 @@ import org.antlr.runtime.Parser;
 
 public class ParserInfo {
     private Parser parser;
-    // Информация об объявлении метакода (META metaCode), который мы сейчас парсим   
     private String metacodeDefinitionModuleName = null;
     private int metacodeDefinitionLineNumber;
-    
-    // Информация об использовании метакода (@metaCode), который мы парсим
     private String metacodeCallStr;
     private int lineNumber;
 

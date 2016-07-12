@@ -154,7 +154,7 @@ public abstract class AbstractOuterContext<T extends OuterContext<T>> extends Ab
     }
 
     public boolean hasUnionExpr() {
-        final Result<Boolean> has = new Result<>(false);
+        final Result<Boolean> has = new Result<Boolean>(false);
         enumerate(new ExprEnumerator() {
             public Boolean enumerate(OuterContext join) {
                 if(join instanceof UnionExpr) {

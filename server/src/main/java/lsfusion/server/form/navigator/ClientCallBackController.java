@@ -15,6 +15,7 @@ public class ClientCallBackController extends RemoteObject implements ClientCall
 
     private final List<LifecycleMessage> messages = new ArrayList<>();
     private final UsageTracker usageTracker;
+    private Boolean deniedRestart = null;
 
     public ClientCallBackController(int port, String caption, UsageTracker usageTracker) throws RemoteException {
         super(port, true);
@@ -22,8 +23,34 @@ public class ClientCallBackController extends RemoteObject implements ClientCall
         this.usageTracker = usageTracker;
     }
 
+    public synchronized void disconnect(CallbackMessage message) {
+        addMessage(new ClientCallbackMessage(message));
+    }
+
+    public synchronized void notifyServerRestart() {
+        deniedRestart = false;
+        addMessage(new ClientCallbackMessage(CallbackMessage.SERVER_RESTARTING));
+    }
+
+    public synchronized void notifyServerRestartCanceled() {
+        deniedRestart = null;
+    }
+
+    public synchronized void denyRestart() {
+        deniedRestart = true;
+    }
+
+    public synchronized boolean isRestartAllowed() {
+        //если не спрашивали, либо если отказался
+        return deniedRestart != null && !deniedRestart;
+    }
+
     public synchronized void pushMessage(Integer idNotification) {
-        messages.add(new PushMessage(idNotification));
+        addMessage(new PushMessage(idNotification));
+    }
+
+    public synchronized void addMessage(LifecycleMessage message) {
+        messages.add(message);
     }
 
     public synchronized List<LifecycleMessage> pullMessages() {

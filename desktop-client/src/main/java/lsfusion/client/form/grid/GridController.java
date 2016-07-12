@@ -62,16 +62,8 @@ public class GridController {
             else
                 table.setFont(table.getFont().deriveFont(userFont.getStyle(), userFont.fontSize));
         }
-
-        Integer headerHeight = table.getUserHeaderHeight();
-        if(headerHeight != null)
-            clientGrid.setHeaderHeight(headerHeight);
     }
-
-    public void setHeaderHeight(Integer headerHeight) {
-        clientGrid.setHeaderHeight(headerHeight == null ? 0 : headerHeight);
-    }
-
+    
     public boolean containsProperty(ClientPropertyDraw property) {
         return table.containsProperty(property);
     }

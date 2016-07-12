@@ -29,7 +29,7 @@ public class TabbedClientContainerView extends AbstractClientContainerView {
     private final JPanel hiddenHolderPanel;
     private final TabbedPane tabbedPane;
 
-    private final List<ClientComponent> visibleChildren = new ArrayList<>();
+    private final List<ClientComponent> visibleChildren = new ArrayList<ClientComponent>();
 
     private ClientComponent currentChild;
 

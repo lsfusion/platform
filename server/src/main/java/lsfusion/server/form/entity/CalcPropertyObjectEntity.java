@@ -14,11 +14,11 @@ public class CalcPropertyObjectEntity<P extends PropertyInterface> extends Prope
     }
 
     public CalcPropertyObjectEntity(CalcProperty<P> property, ImMap<P, ? extends PropertyObjectInterfaceEntity> mapping) {
-        super(property, (ImMap<P,PropertyObjectInterfaceEntity>) mapping, null, null);
+        super(property, (ImMap<P,PropertyObjectInterfaceEntity>) mapping, null, null, null);
     }
 
-    public CalcPropertyObjectEntity(CalcProperty<P> property, ImMap<P, ? extends PropertyObjectInterfaceEntity> mapping, String creationScript, String creationPath) {
-        super(property, (ImMap<P,PropertyObjectInterfaceEntity>) mapping, creationScript, creationPath);
+    public CalcPropertyObjectEntity(CalcProperty<P> property, ImMap<P, ? extends PropertyObjectInterfaceEntity> mapping, String creationScript, String creationPath, String formPath) {
+        super(property, (ImMap<P,PropertyObjectInterfaceEntity>) mapping, creationScript, creationPath, formPath);
     }
 
     @Override
@@ -31,7 +31,7 @@ public class CalcPropertyObjectEntity<P extends PropertyInterface> extends Prope
             public PropertyObjectInterfaceEntity getMapValue(PropertyObjectInterfaceEntity value) {
                 return value.getRemappedEntity(oldObject, newObject, instanceFactory);
             }});
-        return new CalcPropertyObjectEntity<>(property, nmapping, creationScript, creationPath);
+        return new CalcPropertyObjectEntity<P>(property, nmapping, creationScript, creationPath, formPath);
     }
 
 }

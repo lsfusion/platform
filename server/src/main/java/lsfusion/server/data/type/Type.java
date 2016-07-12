@@ -19,11 +19,11 @@ public interface Type<T> extends ClassReader<T>, FunctionType {
 
     boolean useIndexedJoin();
 
-    interface Getter<K> {
+    public static interface Getter<K> {
         Type getType(K key);
     }
 
-    Object getInfiniteValue(boolean min);
+    public Object getInfiniteValue(boolean min);
 
     Object castValue(Object object, Type type, SQLSyntax syntax);
     String getCast(String value, SQLSyntax syntax, TypeEnvironment typeEnv); // как правило нужен, чтобы указать СУБД класс, а не реально прокастить 

@@ -46,17 +46,17 @@ public class QueryCacheAspect {
 
     static <K,V,CK,CV> MapQuery<CK,CV,K,V> cacheTwinQuery(Query<K,V> cache, Query<CK,CV> query) {
 
-        Result<MapTranslate> translator = new Result<>();
+        Result<MapTranslate> translator = new Result<MapTranslate>();
         Query.MultiParamsContext<?, ?> multiParams = cache.getMultiParamsContext().mapInner(query.getMultiParamsContext(), true, translator);
         if(multiParams!=null) {
             Query<K,V> mapCache = (Query<K, V>)multiParams.getQuery();
             ImRevMap<CV,V> mapProps = MapFact.mapValues(query.properties, mapCache.properties);
-            return new MapQuery<>(cache, mapProps, query.mapKeys.crossValuesRev(mapCache.mapKeys), translator.result.mapValues());
+            return new MapQuery<CK,CV,K,V>(cache, mapProps, query.mapKeys.crossValuesRev(mapCache.mapKeys),translator.result.mapValues());
         }
         return null;
     }
 
-    final static LRUSVSMap<Integer, MAddCol<Query>> hashTwins = new LRUSVSMap<>(LRUUtil.G2);
+    final static LRUSVSMap<Integer, MAddCol<Query>> hashTwins = new LRUSVSMap<Integer, MAddCol<Query>>(LRUUtil.G2);
 
     <K,V> IQuery<K,V> cacheTwin(Query<K,V> query) throws Throwable {
         IQuery<K, V> result = ((QueryCacheInterface)query).getCacheTwin();
@@ -83,7 +83,7 @@ public class QueryCacheAspect {
             }
             logger.debug("not cached");
             CacheStats.incrementMissed(CacheStats.CacheType.QUERY);
-            Result<Query> cache = new Result<>();
+            Result<Query> cache = new Result<Query>();
             result = cacheNoBigTwin(query, cache);
             ((QueryCacheInterface)cache.result).setCacheTwin(cache.result);
             hashCaches.add(cache.result);
@@ -103,14 +103,14 @@ public class QueryCacheAspect {
             ImRevMap<K,Object> genKeys = BaseUtils.generateObjects(query.mapKeys.keys());
             ImRevMap<V,Object> genProps = BaseUtils.generateObjects(query.properties.keys());
 
-            Query<Object, Object> cache = new Query<>(genKeys.crossJoin(query.mapKeys), genProps.crossJoin(query.properties), query.where);
+            Query<Object, Object> cache = new Query<Object, Object>(genKeys.crossJoin(query.mapKeys), genProps.crossJoin(query.properties), query.where);
 
             if(bigValues!=null) // bigvalues - работа с транслированными объектами, а в конце трансляция назад
                 cache = cache.translateQuery(new RemapValuesTranslator(bigValues));
 
             cacheTwin.set(cache);
 
-            return new MapQuery<>(cache, genProps, genKeys,
+            return new MapQuery<K, V, Object, Object>(cache, genProps, genKeys,
                     bigValues == null ? MapValuesTranslator.noTranslate(contextValues) : new RemapValuesTranslator(bigValues.reverse()));
         }
     }

@@ -20,7 +20,7 @@ class ObjectFilterValueView extends FilterValueView {
 
         filterValue = ifilterValue;
 
-        objectView = new QueryConditionComboBox(new Vector<>(logicsSupplier.getObjects()));
+        objectView = new QueryConditionComboBox(new Vector<ClientObject>(logicsSupplier.getObjects()));
 
         filterValue.object = (ClientObject) objectView.getSelectedItem();
 

@@ -11,10 +11,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class GFontMetrics {
-    private static final HashMap<MetricsCallback, Integer> calculationsInProgress = new HashMap<>();
+    private static final HashMap<MetricsCallback, Integer> calculationsInProgress = new HashMap<MetricsCallback, Integer>();
 
     // все шрифты, с которыми приходилось работать на клиенте
-    private static final HashMap<GFont, FontMeasure> calculatedFonts = new HashMap<>();
+    private static final HashMap<GFont, FontMeasure> calculatedFonts = new HashMap<GFont, FontMeasure>();
 
     private static boolean isCalculated(GFont font) {
         return calculatedFonts.containsKey(font);

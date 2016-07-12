@@ -36,16 +36,16 @@ public class CaseActionProperty extends ListCaseActionProperty {
             ifProp = DerivedProperty.createNot(ifProp);
 
         MList<ActionCase<I>> mCases = ListFact.mListMax(2);
-        mCases.add(new ActionCase<>(ifProp, trueAction));
+        mCases.add(new ActionCase<I>(ifProp, trueAction));
         if(falseAction != null)
-            mCases.add(new ActionCase<>(DerivedProperty.<I>createTrue(), falseAction));
+            mCases.add(new ActionCase<I>(DerivedProperty.<I>createTrue(), falseAction));
         return new CaseActionProperty(caption, false, innerInterfaces, mCases.immutableList());
     }
 
     public void addCase(CalcPropertyMapImplement<?, PropertyInterface> where, ActionPropertyMapImplement<?, PropertyInterface> action, Version version) {
         assert type == AbstractType.CASE;
 
-        ExplicitActionCase<PropertyInterface> aCase = new ExplicitActionCase<>(where, action);
+        ExplicitActionCase<PropertyInterface> aCase = new ExplicitActionCase<PropertyInterface>(where, action);
         addAbstractCase(aCase, version);
 
         addWhereCase(aCase.where, aCase.implement, version);
@@ -67,9 +67,9 @@ public class CaseActionProperty extends ListCaseActionProperty {
         CalcPropertyMapImplement<?, PropertyInterface> where =  action.mapWhereProperty();
         ExplicitActionCase<PropertyInterface> addCase;
         if(type == AbstractType.CASE)
-            addCase = new ExplicitActionCase<>((CalcPropertyMapImplement<?, PropertyInterface>) where.mapClassProperty(), action, signature);
+            addCase = new ExplicitActionCase<PropertyInterface>((CalcPropertyMapImplement<?,PropertyInterface>) where.mapClassProperty(), action, signature);
         else
-            addCase = new ExplicitActionCase<>(where, action);
+            addCase = new ExplicitActionCase<PropertyInterface>(where, action);
         addAbstractCase(addCase, version);
 
         addWhereOperand(addCase.implement, signature, version);
@@ -83,7 +83,7 @@ public class CaseActionProperty extends ListCaseActionProperty {
         this(caption, isExclusive, innerInterfaces, impls.<ActionCase<I>>mapListValues(new GetValue<ActionCase<I>, ActionPropertyMapImplement>() {
             @Override
             public ActionCase<I> getMapValue(ActionPropertyMapImplement value) {
-                return new ActionCase<>((CalcPropertyMapImplement) value.mapWhereProperty().mapClassProperty(), value);
+                return new ActionCase<I>((CalcPropertyMapImplement)value.mapWhereProperty().mapClassProperty(), value);
             }
         }));
     }
@@ -111,7 +111,7 @@ public class CaseActionProperty extends ListCaseActionProperty {
     protected CalcPropertyMapImplement<?, PropertyInterface> calcCaseWhereProperty() {
         ImList<CalcCase<PropertyInterface>> listWheres = getCases().mapListValues(new GetValue<CalcCase<PropertyInterface>, ActionCase<PropertyInterface>>() {
             public CalcCase<PropertyInterface> getMapValue(ActionCase<PropertyInterface> value) {
-                return new CalcCase<>(value.where, value.implement.mapCalcWhereProperty());
+                return new CalcCase<PropertyInterface>(value.where, value.implement.mapCalcWhereProperty());
             }});
         return DerivedProperty.createUnion(interfaces, isExclusive, listWheres);
     }

@@ -29,11 +29,11 @@ public class CalcPropertyObjectInstance<P extends PropertyInterface> extends Pro
     }
 
     public CalcPropertyObjectInstance<P> getRemappedPropertyObject(ImMap<? extends PropertyObjectInterfaceInstance, DataObject> mapKeyValues) {
-        return new CalcPropertyObjectInstance<>(property, remapSkippingEqualsObjectInstances(mapKeyValues));
+        return new CalcPropertyObjectInstance<P>(property, remapSkippingEqualsObjectInstances(mapKeyValues));
     }
 
     public CalcPropertyValueImplement<P> getValueImplement() {
-        return new CalcPropertyValueImplement<>(property, getInterfaceValues());
+        return new CalcPropertyValueImplement<P>(property, getInterfaceValues());
     }
 
     public Object read(FormInstance formInstance) throws SQLException, SQLHandledException {

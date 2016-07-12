@@ -14,22 +14,22 @@ public abstract class GIntegralType extends GDataType {
         return new NumberGridCellRenderer(property);
     }
 
-    protected Double parseToDouble(String s, String pattern) throws ParseException {
+    protected Double parseToDouble(String s) throws ParseException {
         assert s != null;
         try {
-            return getFormat(pattern).parse(s);
+            return getFormat().parse(s);
         } catch (NumberFormatException e) {
             throw new ParseException("string " + s + "can not be converted to double", 0);
         }
     }
 
     @Override
-    public String getMinimumMask(String pattern) {
+    public String getMinimumMask() {
         return "9 999 999";
     }
 
     @Override
-    public String getPreferredMask(String pattern) {
+    public String getPreferredMask() {
         return "99 999 999";
     }
 
@@ -38,7 +38,7 @@ public abstract class GIntegralType extends GDataType {
         return GEditBindingMap.numberEventFilter;
     }
 
-    public NumberFormat getFormat(String pattern) {
+    public NumberFormat getFormat() {
         return NumberFormat.getDecimalFormat();
     }
 }

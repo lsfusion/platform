@@ -63,7 +63,7 @@ public abstract class ClientFormTreeTable extends JXTreeTable implements TableTr
     }
 
     public interface NodeProccessor {
-        void processPath(TreePath nodePath);
+        public void processPath(TreePath nodePath);
     }
 
     public void enumerateNodesDepthFirst(NodeProccessor nodeProccessor) {

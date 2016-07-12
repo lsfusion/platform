@@ -44,7 +44,9 @@ public final class ReconnectWorker extends SwingWorker<RemoteLogicsLoaderInterfa
             publish(attempts++);
             try {
                 return (RemoteLogicsLoaderInterface)RMIUtils.rmiLookup(serverHost, serverPort, serverDB, "RemoteLogicsLoader", Main.rmiSocketFactory);
-            } catch (ConnectException | NotBoundException | NoSuchObjectException ignore) {
+            } catch (ConnectException ignore) {
+            } catch (NoSuchObjectException ignore) {
+            } catch (NotBoundException ignore) {
             }
 
             if (remoteLoader != null) {

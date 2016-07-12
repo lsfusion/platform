@@ -8,7 +8,7 @@ import java.util.List;
 import static lsfusion.interop.AbstractWindowType.*;
 
 public abstract class ClientNavigatorWindow extends ClientAbstractWindow {
-    public List<ClientNavigatorElement> elements = new ArrayList<>();
+    public List<ClientNavigatorElement> elements = new ArrayList<ClientNavigatorElement>();
 
     public int type;
     public boolean drawRoot;

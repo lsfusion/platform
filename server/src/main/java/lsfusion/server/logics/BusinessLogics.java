@@ -184,6 +184,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
                 getDbManager().ensureLogLevel();
                 
                 new TaskRunner(this).runTask(initTask, startLogger);
+            } catch (ScriptParsingException e) {
+                throw e;
             } catch (RuntimeException re) {
                 throw re;
             } catch (Exception e) {

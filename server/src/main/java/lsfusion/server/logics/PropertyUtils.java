@@ -24,7 +24,7 @@ public class PropertyUtils {
     }
 
     public static ValueClass[] getValueClasses(LAP<?>[] dataProperties, int[][] mapInterfaces, boolean allowMissingInterfaces) {
-        Map<Integer, ValueClass> mapClasses = new HashMap<>(); // deprecated этот метод скоро уйдет
+        Map<Integer, ValueClass> mapClasses = new HashMap<Integer, ValueClass>(); // deprecated этот метод скоро уйдет
         for (int i = 0; i < dataProperties.length; ++i) {
             LAP<?> dataProperty = dataProperties[i];
 
@@ -154,11 +154,11 @@ public class PropertyUtils {
     }
 
     public static <P extends PropertyInterface> ActionPropertyImplement<P, CalcPropertyInterfaceImplement<P>> mapActionImplement(LAP<P> property, ImList<CalcPropertyInterfaceImplement<P>> propImpl) {
-        return new ActionPropertyImplement<>(property.property, getMapping(property, propImpl));
+        return new ActionPropertyImplement<P, CalcPropertyInterfaceImplement<P>>(property.property, getMapping(property, propImpl));
     }
 
     public static <T extends PropertyInterface, P extends PropertyInterface> CalcPropertyImplement<T, CalcPropertyInterfaceImplement<P>> mapCalcImplement(LCP<T> property, ImList<CalcPropertyInterfaceImplement<P>> propImpl) {
-        return new CalcPropertyImplement<>(property.property, getMapping(property, propImpl));
+        return new CalcPropertyImplement<T, CalcPropertyInterfaceImplement<P>>(property.property, getMapping(property, propImpl));
     }
 
     private static <T extends PropertyInterface, P extends PropertyInterface> ImMap<T, CalcPropertyInterfaceImplement<P>> getMapping(LP<T, ?> property, ImList<CalcPropertyInterfaceImplement<P>> propImpl) {
@@ -226,9 +226,9 @@ public class PropertyUtils {
                 }});
 
             if(lp.property instanceof ActionProperty)
-                return new ActionPropertyMapImplement<>((ActionProperty<P>) lp.property, mapping);
+                return new ActionPropertyMapImplement<P, T>((ActionProperty<P>) lp.property, mapping);
             else
-                return new CalcPropertyMapImplement<>((CalcProperty<P>) lp.property, mapping);
+                return new CalcPropertyMapImplement<P, T>((CalcProperty<P>) lp.property, mapping);
         }
 
         <T> CalcPropertyObjectInterfaceImplement<T> mapObject(final ImOrderSet<T> interfaces) {

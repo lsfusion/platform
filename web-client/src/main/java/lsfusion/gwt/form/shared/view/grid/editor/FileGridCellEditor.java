@@ -47,9 +47,9 @@ public class FileGridCellEditor extends DialogBasedGridCellEditor {
     protected Widget createComponent(EditEvent editEvent, Cell.Context context, Element parent, Object oldValue) {
         final VerticalPanel progressBarPanel = new VerticalPanel();
         progressBarPanel.setWidth("100%");
-        final LinkedHashMap<String, FileUploadStatusPanel> fileStatusPanels = new LinkedHashMap<>();
-        filePrefixes = new LinkedHashMap<>();
-        fileNames = new HashMap<>();
+        final LinkedHashMap<String, FileUploadStatusPanel> fileStatusPanels = new LinkedHashMap<String, FileUploadStatusPanel>();
+        filePrefixes = new LinkedHashMap<String, String>();
+        fileNames = new HashMap<String, String>();
 
         newVersionUploader = new Uploader();
 
@@ -247,7 +247,7 @@ public class FileGridCellEditor extends DialogBasedGridCellEditor {
         okButton.addClickHandler(new ClickHandler() {
             @Override
             public void onClick(ClickEvent event) {
-                ArrayList<String> fileSIDS = new ArrayList<>();
+                ArrayList<String> fileSIDS = new ArrayList<String>();
                 for (String id : filePrefixes.keySet()) {
                     fileSIDS.add(filePrefixes.get(id) + "_" + fileNames.get(id));
                 }

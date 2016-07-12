@@ -100,7 +100,7 @@ public class PropertyCanonicalNameParser extends AbstractPropertyNameParser {
     }
 
     private List<ResolveClassSet> parseAndClassSetList(boolean isSignature) {
-        List<ResolveClassSet> result = new ArrayList<>();
+        List<ResolveClassSet> result = new ArrayList<ResolveClassSet>();
         while (pos < len) {
             if (isSignature && isNext(PropertyCanonicalNameUtils.UNKNOWNCLASS)) {
                 checkNext(PropertyCanonicalNameUtils.UNKNOWNCLASS);
@@ -153,7 +153,7 @@ public class PropertyCanonicalNameParser extends AbstractPropertyNameParser {
     }
 
     private ImSet<ConcreteCustomClass> parseCustomClassList() {
-        List<ConcreteCustomClass> classes = new ArrayList<>();
+        List<ConcreteCustomClass> classes = new ArrayList<ConcreteCustomClass>();
         while (pos < len) {
             ConcreteCustomClass cls = (ConcreteCustomClass) parseCustomClass();
             classes.add(cls);
@@ -162,13 +162,13 @@ public class PropertyCanonicalNameParser extends AbstractPropertyNameParser {
             }
             checkNext(",");
         }
-        return new ArIndexedSet<>(classes.size(), classes.toArray(new ConcreteCustomClass[classes.size()]));
+        return new ArIndexedSet<ConcreteCustomClass>(classes.size(), classes.toArray(new ConcreteCustomClass[classes.size()]));
     }
 
     private ResolveUpClassSet parseUpClassSet() {
         if (isNext(ClassCanonicalNameUtils.UpClassSetNameLBracket)) {
             checkNext(ClassCanonicalNameUtils.UpClassSetNameLBracket);
-            List<CustomClass> classes = new ArrayList<>();
+            List<CustomClass> classes = new ArrayList<CustomClass>();
             while (!isNext(ClassCanonicalNameUtils.UpClassSetNameRBracket)) {
                 classes.add(parseCustomClass());
                 if (!isNext(ClassCanonicalNameUtils.UpClassSetNameRBracket)) {

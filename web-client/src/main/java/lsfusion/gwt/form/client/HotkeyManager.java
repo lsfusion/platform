@@ -21,10 +21,10 @@ import static lsfusion.gwt.base.shared.GwtSharedUtils.putToDoubleMap;
 
 public class HotkeyManager {
     public interface Binding {
-        boolean onKeyPress(NativeEvent event, GKeyStroke key);
+        public boolean onKeyPress(NativeEvent event, GKeyStroke key);
     }
 
-    private final HashMap<GKeyStroke, HashMap<GGroupObject, List<Binding>>> bindings = new HashMap<>();
+    private final HashMap<GKeyStroke, HashMap<GGroupObject, List<Binding>>> bindings = new HashMap<GKeyStroke, HashMap<GGroupObject, List<Binding>>>();
 
     public void install(Widget rootWidget) {
         rootWidget.addDomHandler(new KeyDownHandler() {
@@ -40,7 +40,7 @@ public class HotkeyManager {
 
         List<Binding> groupBindings = getFromDoubleMap(bindings, key, groupObject);
         if (groupBindings == null) {
-            groupBindings = new ArrayList<>();
+            groupBindings = new ArrayList<Binding>();
             putToDoubleMap(bindings, key, groupObject, groupBindings);
         }
 

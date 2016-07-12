@@ -23,7 +23,7 @@ public class ActionPropertyImplement<P extends PropertyInterface, T> extends Twi
     }
 
     public <L> ActionPropertyImplement<P, L> mapImplement(ImMap<T, L> mapImplement) {
-        return new ActionPropertyImplement<>(property, mapping.join(mapImplement));
+        return new ActionPropertyImplement<P, L>(property, mapping.join(mapImplement));
     }
 
     public boolean calcTwins(TwinImmutableObject o) {

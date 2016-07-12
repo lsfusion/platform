@@ -35,7 +35,7 @@ public class FormContainerSet <C extends AbstractContainer<C, T>, T extends Abst
 
     public static <C extends AbstractContainer<C, T>, T extends AbstractComponent<C, T>, F extends AbstractFunction<C,T>> FormContainerSet<C,T> fillContainers(AbstractForm<C,T> form, ContainerFactory<C> contFactory, ContainerAdder<C, T> adder) {
 
-        FormContainerSet<C,T> set = new FormContainerSet<>();
+        FormContainerSet<C,T> set = new FormContainerSet<C,T>();
 
         set.mainContainer = form.getMainContainer();
         set.mainContainer.setType(ContainerType.CONTAINERV);

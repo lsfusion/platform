@@ -70,7 +70,7 @@ public class Graph<T> {
     }
 
     public Graph<T> filterGraph(FunctionSet<T> filter)  {
-        return new Graph<>(filter(edgesOut, filter), filter(edgesIn, filter));
+        return new Graph<T>(filter(edgesOut, filter), filter(edgesIn, filter));
     }
 
     private boolean checkGraph() {
@@ -133,8 +133,8 @@ public class Graph<T> {
         if(collapsedInEdges.intersect(collapsedOutEdges))
             return this;
 
-        return new Graph<>(removedEdgesOut.addExcl(element, collapsedOutEdges.addExcl(element)), // itself 
-                removedEdgesIn.addExcl(element, collapsedInEdges.addExcl(element))); // itself
+        return new Graph<T>(removedEdgesOut.addExcl(element, collapsedOutEdges.addExcl(element)), // itself 
+                    removedEdgesIn.addExcl(element, collapsedInEdges.addExcl(element))); // itself
     }
     
     private ImCol<Graph<T>> split() {
@@ -157,7 +157,7 @@ public class Graph<T> {
 
     private Graph<T> getCompGraph(T node) {
         ImSet<T> compNodes = getCompNodes(node);
-        return new Graph<>(edgesOut.filterIncl(compNodes), edgesIn.filterIncl(compNodes));
+        return new Graph<T>(edgesOut.filterIncl(compNodes), edgesIn.filterIncl(compNodes));
     }
 
     private ImSet<T> getCompNodes(T node) {
@@ -169,7 +169,7 @@ public class Graph<T> {
     }
 
     private Graph<T> removeNodes(final ImSet<T> set) {
-        return new Graph<>(edgesOut.remove(set).mapValues(new GetValue<ImSet<T>, ImSet<T>>() {
+        return new Graph<T>(edgesOut.remove(set).mapValues(new GetValue<ImSet<T>, ImSet<T>>() {
             public ImSet<T> getMapValue(ImSet<T> value) {
                 return value.remove(set);
             }
@@ -191,7 +191,7 @@ public class Graph<T> {
 
             ImList<NodeSetComp<T>> graphResult = ListFact.add(zeroNodes.mapSetValues(new GetValue<NodeComp<T>, T>() {
                 public NodeComp<T> getMapValue(T value) {
-                    return new NodeComp<>(value);
+                    return new NodeComp<T>(value);
                 }
             }).toList(), recGraphComp.getList());
             mResult.exclAddAll(ListComp.create(graphResult).getSet());
@@ -216,15 +216,13 @@ public class Graph<T> {
                 return removed;
             }
         };
-        return new Graph<>(edgesOut.removeIncl(element).mapValues(substitute).addExcl(graph.edgesOut.mapValues(new GetValue<ImSet<T>, ImSet<T>>() {
-            public ImSet<T> getMapValue(ImSet<T> value) {
-                return value.addExcl(elementOut);
-            }
-        })), edgesIn.removeIncl(element).mapValues(substitute).addExcl(graph.edgesIn.mapValues(new GetValue<ImSet<T>, ImSet<T>>() {
-            public ImSet<T> getMapValue(ImSet<T> value) {
-                return value.addExcl(elementIn);
-            }
-        })));
+        return new Graph<T>(edgesOut.removeIncl(element).mapValues(substitute).addExcl(graph.edgesOut.mapValues(new GetValue<ImSet<T>, ImSet<T>>() {
+                                public ImSet<T> getMapValue(ImSet<T> value) {
+                                    return value.addExcl(elementOut);
+                        }})), edgesIn.removeIncl(element).mapValues(substitute).addExcl(graph.edgesIn.mapValues(new GetValue<ImSet<T>, ImSet<T>>() {
+                                public ImSet<T> getMapValue(ImSet<T> value) {
+                                    return value.addExcl(elementIn);
+                        }})));
     }
     
     public Graph<T> cleanNodes(final FunctionSet<Pair<T, T>> set) {
@@ -232,31 +230,27 @@ public class Graph<T> {
             public ImSet<T> getMapValue(final T key, ImSet<T> value) {
                 return value.filterFn(new SFunctionSet<T>() {
                     public boolean contains(T element) {
-                        return !set.contains(new Pair<>(key, element));
+                        return !set.contains(new Pair<T, T>(key, element));
                     }
                 });
             }};
-        return new Graph<>(edgesOut.mapValues(adjustSet), edgesIn.mapValues(adjustSet));
+        return new Graph<T>(edgesOut.mapValues(adjustSet), edgesIn.mapValues(adjustSet));
     }
 
     public static <T> Graph<T> create(final ImSet<T> set, final Comparator<T> comparator) {
-        return new Graph<>(set.mapValues(new GetValue<ImSet<T>, T>() {
+        return new Graph<T>(set.mapValues(new GetValue<ImSet<T>, T>() {
             public ImSet<T> getMapValue(final T value) {
                 return set.filterFn(new SFunctionSet<T>() {
                     public boolean contains(T element) {
                         return value == element || comparator.compare(value, element) > 0; // itself
-                    }
-                });
-            }
-        }), set.mapValues(new GetValue<ImSet<T>, T>() {
+                    }});
+            }}), set.mapValues(new GetValue<ImSet<T>, T>() {
             public ImSet<T> getMapValue(final T value) {
                 return set.filterFn(new SFunctionSet<T>() {
                     public boolean contains(T element) {
                         return value == element || comparator.compare(value, element) < 0; // itself
-                    }
-                });
-            }
-        }));
+                    }});
+            }}));
         
     }
 
@@ -302,7 +296,7 @@ public class Graph<T> {
                 for(T sibling : nodes) {
                     if(!depends(node, sibling)) {
                         if(!depends(sibling, node)) {
-                            ambiguous.set(new Pair<>(node, sibling));
+                            ambiguous.set(new Pair<T, T>(node, sibling));
                             return null;
                         }
                         found = false;
@@ -328,6 +322,6 @@ public class Graph<T> {
             public ImSet<M> getMapValue(ImSet<T> value) {
                 return value.mapSetValues(map);
             }};
-        return new Graph<>(edgesOut.mapKeyValues(map, mapSets), edgesIn.mapKeyValues(map, mapSets));
+        return new Graph<M>(edgesOut.mapKeyValues(map, mapSets), edgesIn.mapKeyValues(map, mapSets));
     }
 }

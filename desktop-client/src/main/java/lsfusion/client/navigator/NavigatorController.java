@@ -11,8 +11,8 @@ import java.util.Map;
 
 public class NavigatorController implements INavigatorController {
     private final ClientNavigator mainNavigator;
-    private final LinkedHashMap<ClientNavigatorWindow, NavigatorView> views = new LinkedHashMap<>();
-    private final Map<JComponent, SingleCDockable> docks = new HashMap<>();
+    private final LinkedHashMap<ClientNavigatorWindow, NavigatorView> views = new LinkedHashMap<ClientNavigatorWindow, NavigatorView>();
+    private final Map<JComponent, SingleCDockable> docks = new HashMap<JComponent, SingleCDockable>();
 
     public NavigatorController(ClientNavigator mainNavigator) {
         this.mainNavigator = mainNavigator;
@@ -27,7 +27,7 @@ public class NavigatorController implements INavigatorController {
     }
 
     public void update() {
-        Map<ClientNavigatorWindow, LinkedHashSet<ClientNavigatorElement>> result = new HashMap<>();
+        Map<ClientNavigatorWindow, LinkedHashSet<ClientNavigatorElement>> result = new HashMap<ClientNavigatorWindow, LinkedHashSet<ClientNavigatorElement>>();
 
         for (ClientNavigatorWindow wind : mainNavigator.windows.values()) {
             result.put(wind, new LinkedHashSet<ClientNavigatorElement>());
@@ -49,7 +49,7 @@ public class NavigatorController implements INavigatorController {
     }
 
     public LinkedHashMap<ClientNavigatorWindow, JComponent> getWindowsViews() {
-        LinkedHashMap<ClientNavigatorWindow, JComponent> av = new LinkedHashMap<>();
+        LinkedHashMap<ClientNavigatorWindow, JComponent> av = new LinkedHashMap<ClientNavigatorWindow, JComponent>();
         for (Map.Entry<ClientNavigatorWindow, NavigatorView> entry : views.entrySet()) {
             av.put(entry.getKey(), entry.getValue().getView());
         }

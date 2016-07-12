@@ -47,7 +47,7 @@ public class FormGroupHierarchyCreator {
     }
 
     private static Set<GroupObjectEntity> getGroupsByObjects(Collection<ObjectEntity> objects) {
-        Set<GroupObjectEntity> groupsSet = new HashSet<>();
+        Set<GroupObjectEntity> groupsSet = new HashSet<GroupObjectEntity>();
         for (ObjectEntity object : objects) {
             groupsSet.add(object.groupTo);
         }
@@ -118,7 +118,7 @@ public class FormGroupHierarchyCreator {
     }
 
     private Map<GroupObjectEntity, Set<GroupObjectEntity>> createNewGraph() {
-        Map<GroupObjectEntity, Set<GroupObjectEntity>> graph = new HashMap<>();
+        Map<GroupObjectEntity, Set<GroupObjectEntity>> graph = new HashMap<GroupObjectEntity, Set<GroupObjectEntity>>();
         for (GroupObjectEntity group : getFormGroupsIt()) {
             graph.put(group, new HashSet<GroupObjectEntity>());
         }
@@ -163,7 +163,7 @@ public class FormGroupHierarchyCreator {
                 if (parents[groupIndex] == -1) {
                     parents[groupIndex] = parentIndex;
                 } else {
-                    List<Integer> visited = new ArrayList<>();
+                    List<Integer> visited = new ArrayList<Integer>();
                     int i1 = parents[groupIndex];
                     int i2 = parentIndex;
                     while (parents[i1] != parents[i2]) {
@@ -211,10 +211,10 @@ public class FormGroupHierarchyCreator {
         Map<GroupObjectEntity, Set<GroupObjectEntity>> graph = createNewGraph();
         addDependenciesToGraph(graph);
         graph = formForest(graph);
-        Map<GroupObjectEntity, List<GroupObjectEntity>> dependencies = new HashMap<>();
+        Map<GroupObjectEntity, List<GroupObjectEntity>> dependencies = new HashMap<GroupObjectEntity, List<GroupObjectEntity>>();
         ImOrderSet<GroupObjectEntity> groups = getFormGroupsList();
         for (Map.Entry<GroupObjectEntity, Set<GroupObjectEntity>> entry : graph.entrySet()) {
-            List<GroupObjectEntity> edges = new ArrayList<>();
+            List<GroupObjectEntity> edges = new ArrayList<GroupObjectEntity>();
             for (GroupObjectEntity group : groups) {
                 if (entry.getValue().contains(group)) {
                     edges.add(group);

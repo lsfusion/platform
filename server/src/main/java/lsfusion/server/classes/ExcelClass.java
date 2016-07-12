@@ -15,7 +15,7 @@ public class ExcelClass extends StaticFormatFileClass {
         return "EXCELFILE";
     }
 
-    private static Collection<ExcelClass> instances = new ArrayList<>();
+    private static Collection<ExcelClass> instances = new ArrayList<ExcelClass>();
 
     public static ExcelClass get(boolean multiple, boolean storeName) {
         for (ExcelClass instance : instances)

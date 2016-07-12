@@ -23,11 +23,11 @@ public class GForm implements Serializable {
     public int autoRefresh;
 
     public GContainer mainContainer;
-    public ArrayList<GTreeGroup> treeGroups = new ArrayList<>();
-    public ArrayList<GGroupObject> groupObjects = new ArrayList<>();
-    public ArrayList<GPropertyDraw> propertyDraws = new ArrayList<>();
-    public ArrayList<GRegularFilterGroup> regularFilterGroups = new ArrayList<>();
-    public LinkedHashMap<GPropertyDraw, Boolean> defaultOrders = new LinkedHashMap<>();
+    public ArrayList<GTreeGroup> treeGroups = new ArrayList<GTreeGroup>();
+    public ArrayList<GGroupObject> groupObjects = new ArrayList<GGroupObject>();
+    public ArrayList<GPropertyDraw> propertyDraws = new ArrayList<GPropertyDraw>();
+    public ArrayList<GRegularFilterGroup> regularFilterGroups = new ArrayList<GRegularFilterGroup>();
+    public LinkedHashMap<GPropertyDraw, Boolean> defaultOrders = new LinkedHashMap<GPropertyDraw, Boolean>();
 
     private transient HashMap<Integer, GPropertyDraw> idProps;
     private transient HashMap<Integer, GObject> idObjects;
@@ -35,7 +35,7 @@ public class GForm implements Serializable {
     public GFormChangesDTO initialFormChanges;
     public GFormUserPreferences userPreferences;
 
-    public ArrayList<GFont> usedFonts = new ArrayList<>();
+    public ArrayList<GFont> usedFonts = new ArrayList<GFont>();
     
     public GGroupObject getGroupObject(int id) {
         for (GGroupObject groupObject : groupObjects) {
@@ -58,7 +58,7 @@ public class GForm implements Serializable {
     public GObject getObject(int id) {
         GObject obj;
         if (idObjects == null) {
-            idObjects = new HashMap<>();
+            idObjects = new HashMap<Integer, GObject>();
             obj = null;
         } else {
             obj = idObjects.get(id);
@@ -82,7 +82,7 @@ public class GForm implements Serializable {
     public GPropertyDraw getProperty(int id) {
         GPropertyDraw prop;
         if (idProps == null) {
-            idProps = new HashMap<>();
+            idProps = new HashMap<Integer, GPropertyDraw>();
             prop = null;
         } else {
             prop = idProps.get(id);
@@ -109,7 +109,7 @@ public class GForm implements Serializable {
     }
 
     public LinkedHashMap<GPropertyDraw, Boolean> getDefaultOrders(GGroupObject group) {
-        LinkedHashMap<GPropertyDraw, Boolean> result = new LinkedHashMap<>();
+        LinkedHashMap<GPropertyDraw, Boolean> result = new LinkedHashMap<GPropertyDraw, Boolean>();
         for (Map.Entry<GPropertyDraw, Boolean> entry : defaultOrders.entrySet()) {
             if (GwtSharedUtils.nullEquals(entry.getKey().groupObject, group)) {
                 result.put(entry.getKey(), entry.getValue());

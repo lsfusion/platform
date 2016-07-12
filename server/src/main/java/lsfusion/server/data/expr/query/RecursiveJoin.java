@@ -138,7 +138,7 @@ public class RecursiveJoin extends QueryJoin<KeyExpr, RecursiveJoin.Query, Recur
             return InnerExprFollows.EMPTYEXPR();
 
         ImSet<KeyExpr> groupKeys = group.keys();
-        return new InnerExprFollows<>(getClassWhere().get(groupKeys.toRevMap()), groupKeys);
+        return new InnerExprFollows<KeyExpr>(getClassWhere().get(groupKeys.toRevMap()), groupKeys);
     }
 
     public StatKeys<KeyExpr> getStatKeys() {
@@ -207,7 +207,7 @@ public class RecursiveJoin extends QueryJoin<KeyExpr, RecursiveJoin.Query, Recur
         RecursiveTable recTable = new RecursiveTable(name, recKeys.keys(), recProps.valuesSet(),
                 classWhere.mapClasses(recKeys), statKeys.mapBack(recKeys));
 
-        return new RemapJoin<>(recTable.join(recKeys.join(getFullMapIterate())), recProps); // mapp'им на предыдушие ключи
+        return new RemapJoin<String, PropertyField>(recTable.join(recKeys.join(getFullMapIterate())), recProps); // mapp'им на предыдушие ключи
     }
 
     public ImRevMap<String, KeyExpr> genKeyNames() {

@@ -59,6 +59,8 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
     public LCP screenSizeConnection;
     public LCP<PropertyInterface> connectionStatusConnection;
     public LCP connectTimeConnection;
+    public LCP disconnectTimeConnection;
+    public LAP disconnectConnection;
 
     public LCP currentConnection;
 
@@ -91,7 +93,7 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
     public LCP pingComputerDateTimeFromDateTimeTo;
     public LCP minTotalMemoryComputerDateTimeFromDateTimeTo;
     public LCP maxTotalMemoryComputerDateTimeFromDateTimeTo;
-    public LCP minUsedMemoryComputerDateTimeFromDateTimeTo;
+    public LCP minUsedMemoryComputerDateTimeFromDateTimeTo;;
     public LCP maxUsedMemoryComputerDateTimeFromDateTimeTo;
 
     public LAP onClientStarted;
@@ -143,6 +145,8 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
         connectionStatusConnection = (LCP<PropertyInterface>) findProperty("connectionStatus[Connection]");
 
         connectTimeConnection = findProperty("connectTime[Connection]");
+        disconnectConnection = findAction("disconnect[Connection]");
+        //addIfAProp(baseGroup, "Отключить", true, findProperty("disconnectTimeConnection"), 1, disconnectConnection, 1);
 
         // Логирование старта сервера
         computerLaunch = findProperty("computer[Launch]");

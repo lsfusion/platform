@@ -15,7 +15,7 @@ public class PanelController {
     private final ClientFormController form;
     private final ClientFormLayout formLayout;
 
-    private final Map<ClientPropertyDraw, PropertyController> propertyControllers = new HashMap<>();
+    private final Map<ClientPropertyDraw, PropertyController> propertyControllers = new HashMap<ClientPropertyDraw, PropertyController>();
 
     private Color rowBackground;
     private Color rowForeground;

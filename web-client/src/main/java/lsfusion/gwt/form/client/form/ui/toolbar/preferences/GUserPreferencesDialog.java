@@ -3,11 +3,11 @@ package lsfusion.gwt.form.client.form.ui.toolbar.preferences;
 import com.allen_sauer.gwt.dnd.client.DragHandlerAdapter;
 import com.google.gwt.event.dom.client.*;
 import com.google.gwt.user.client.ui.*;
+import lsfusion.gwt.base.client.ErrorHandlingCallback;
 import lsfusion.gwt.base.client.GwtClientUtils;
 import lsfusion.gwt.base.client.ui.DialogBoxHelper;
 import lsfusion.gwt.base.client.ui.FlexPanel;
 import lsfusion.gwt.base.client.ui.GFlexAlignment;
-import lsfusion.gwt.form.client.ErrorHandlingCallback;
 import lsfusion.gwt.form.client.MainFrame;
 import lsfusion.gwt.form.client.form.ui.GCaptionPanel;
 import lsfusion.gwt.form.client.form.ui.GGridTable;
@@ -35,13 +35,11 @@ public abstract class GUserPreferencesDialog extends GResizableModalWindow {
 
     private ColumnsDualListBox columnsDualListBox;
     private TextBox pageSizeBox;
-    private TextBox headerHeightBox;
     private TextBox sizeBox;
     private CheckBox boldBox;
     private CheckBox italicBox;
 
     private TextBox columnCaptionBox;
-    private TextBox columnPatternBox;
 
     public GUserPreferencesDialog(GGridTable grid, GGroupObjectController groupController, boolean canBeSaved) {
         super("Настройка таблицы");
@@ -59,10 +57,6 @@ public abstract class GUserPreferencesDialog extends GResizableModalWindow {
             public void setColumnCaptionBoxText(String text) {
                 columnCaptionBox.setText(text);
             }
-            @Override
-            public void setColumnPatternBoxText(String pattern) {
-                columnPatternBox.setText(pattern);
-            }
         };
         columnsDualListBox.getDragController().addDragHandler(new DragHandlerAdapter());
         columnsDualListBox.addStyleName(CSS_USER_PREFERENCES_DUAL_LIST);
@@ -78,32 +72,25 @@ public abstract class GUserPreferencesDialog extends GResizableModalWindow {
         pageSizeBox = new TextBox();
         pageSizeBox.addStyleName("userPreferencesFontSizeTextBox");
 
-        Label headerHeightLabel = new Label("Высота заголовков: ");
-        headerHeightBox = new TextBox();
-        headerHeightBox.addStyleName("userPreferencesFontSizeTextBox");
-
         FlexPanel pageSizePanel = new FlexPanel();
         pageSizePanel.add(pageSizeLabel, GFlexAlignment.CENTER);
         pageSizePanel.add(pageSizeBox, GFlexAlignment.CENTER);
 
-        FlexPanel headerHeightPanel = new FlexPanel();
-        headerHeightPanel.add(headerHeightLabel, GFlexAlignment.CENTER);
-        headerHeightPanel.add(headerHeightBox, GFlexAlignment.CENTER);
-
-        HorizontalPanel gridSettingsPanel = new HorizontalPanel();
-        gridSettingsPanel.add(pageSizePanel);
-        gridSettingsPanel.add(headerHeightPanel);
-        preferencesPanel.add(new GCaptionPanel("Общие настройки таблицы", gridSettingsPanel));
+        GCaptionPanel pageSizeSettingsPanel = new GCaptionPanel("Настройки размера страницы", pageSizePanel);
+        preferencesPanel.add(pageSizeSettingsPanel);
 
         preferencesPanel.add(GwtClientUtils.createVerticalStrut(5));
         
         // column caption settings        
         columnCaptionBox = new TextBox();
-        columnCaptionBox.addStyleName("userPreferencesColumnTextBox");
+        columnCaptionBox.addStyleName("userPreferencesColumnCaptionTextBox");
         columnCaptionBox.addChangeHandler(new ChangeHandler() {
             @Override
             public void onChange(ChangeEvent changeEvent) {
-                columnsDualListBox.columnCaptionBoxTextChanged(columnCaptionBox.getText());
+                String columnCaption = columnCaptionBox.getText();
+                if (!columnCaption.isEmpty()) {
+                    columnsDualListBox.columnCaptionBoxTextChanged(columnCaption);
+                }
             }
         });
 
@@ -111,26 +98,8 @@ public abstract class GUserPreferencesDialog extends GResizableModalWindow {
         columnCaptionPanel.add(new Label("Заголовок колонки: "), GFlexAlignment.CENTER);
         columnCaptionPanel.add(columnCaptionBox, GFlexAlignment.CENTER);
 
-        // column pattern settings
-        columnPatternBox = new TextBox();
-        columnPatternBox.addStyleName("userPreferencesColumnTextBox");
-        columnPatternBox.addChangeHandler(new ChangeHandler() {
-            @Override
-            public void onChange(ChangeEvent changeEvent) {
-                columnsDualListBox.columnPatternBoxTextChanged(columnPatternBox.getText());
-            }
-        });
-
-        FlexPanel columnPatternPanel = new FlexPanel();
-        columnPatternPanel.add(new Label("Маска колонки: "), GFlexAlignment.CENTER);
-        columnPatternPanel.add(columnPatternBox, GFlexAlignment.CENTER);
-
-        VerticalPanel columnPanel = new VerticalPanel();
-        columnPanel.add(columnCaptionPanel);
-        columnPanel.add(columnPatternPanel);
-
-        GCaptionPanel columnSettingsPanel = new GCaptionPanel("Настройки выбранной колонки", columnPanel);
-        preferencesPanel.add(columnSettingsPanel);
+        GCaptionPanel columnCaptionSettingsPanel = new GCaptionPanel("Настройки выбранной колонки", columnCaptionPanel);
+        preferencesPanel.add(columnCaptionSettingsPanel);
         
         preferencesPanel.add(GwtClientUtils.createVerticalStrut(5));
         
@@ -271,15 +240,16 @@ public abstract class GUserPreferencesDialog extends GResizableModalWindow {
     private void okPressed() {
         for (Widget label : columnsDualListBox.getVisibleWidgets()) {
             PropertyListItem property = ((PropertyLabel) label).getPropertyItem();
-            grid.setColumnSettings(property.property, property.getUserCaption(true), property.getUserPattern(true),
-                    columnsDualListBox.getVisibleIndex(label), false);
+            grid.setUserCaption(property.property, property.getUserCaption(true));
+            grid.setUserOrder(property.property, columnsDualListBox.getVisibleIndex(label));
+            grid.setUserHide(property.property, false);
         }
 
         for (Widget label : columnsDualListBox.getInvisibleWidgets()) {
             PropertyListItem property = ((PropertyLabel) label).getPropertyItem();
-            grid.setColumnSettings(property.property, property.getUserCaption(true), property.getUserPattern(true),
-                    columnsDualListBox.getVisibleCount() + columnsDualListBox.getInvisibleIndex(label), true);
-
+            grid.setUserCaption(property.property, property.getUserCaption(true));
+            grid.setUserOrder(property.property, columnsDualListBox.getVisibleCount() + columnsDualListBox.getInvisibleIndex(label));
+            grid.setUserHide(property.property, true);
         }
 
         GFont userFont = getUserFont();
@@ -288,12 +258,9 @@ public abstract class GUserPreferencesDialog extends GResizableModalWindow {
         
         Integer userPageSize = getUserPageSize();
         grid.setUserPageSize(userPageSize);
-
-        grid.setUserHeaderHeight(getUserHeaderHeight());
-        grid.refreshColumnsAndRedraw();
-
+        
         grid.setHasUserPreferences(true);
-
+        
         grid.columnsPreferencesChanged();
 
         hide();
@@ -321,16 +288,6 @@ public abstract class GUserPreferencesDialog extends GResizableModalWindow {
         return pageSize != 0 ? pageSize : null;
     }
 
-    private Integer getUserHeaderHeight() {
-        Integer headerHeight;
-        try {
-            headerHeight = Integer.parseInt(headerHeightBox.getValue());
-        } catch(NumberFormatException e) {
-            return null;
-        }
-        return headerHeight != 0 ? headerHeight : null;
-    }
-
     private GFont getInitialFont() {
         GFont designFont = grid.getDesignFont();
         return designFont == null ? new GFont(grid.font != null ? grid.font.family : DEFAULT_FONT_FAMILY, GFont.DEFAULT_FONT_SIZE, false, false) : designFont;
@@ -341,10 +298,10 @@ public abstract class GUserPreferencesDialog extends GResizableModalWindow {
     }
 
     private void savePressed(boolean forAllUsers) {
-        Map<GPropertyDraw, Map<Boolean, Integer>> userSortDirections = new HashMap<>();
+        Map<GPropertyDraw, Map<Boolean, Integer>> userSortDirections = new HashMap<GPropertyDraw, Map<Boolean, Integer>>();
         int i = 0;
         for (Map.Entry<Map<GPropertyDraw, GGroupObjectValue>, Boolean> entry : grid.getOrderDirections().entrySet()) {
-            HashMap<Boolean, Integer> dirs = new HashMap<>();
+            HashMap<Boolean, Integer> dirs = new HashMap<Boolean, Integer>();
             dirs.put(entry.getValue(), i);
             userSortDirections.put(entry.getKey().keySet().iterator().next(), dirs);
             i++;
@@ -366,9 +323,6 @@ public abstract class GUserPreferencesDialog extends GResizableModalWindow {
         
         Integer userPageSize = getUserPageSize();
         grid.setUserPageSize(userPageSize);
-
-        grid.setUserHeaderHeight(getUserHeaderHeight());
-        grid.refreshColumnsAndRedraw();
         
         grid.saveCurrentPreferences(forAllUsers, createSaveCallback("Сохранение настроек успешно завершено"));
     }
@@ -376,7 +330,9 @@ public abstract class GUserPreferencesDialog extends GResizableModalWindow {
     private void refreshPropertyUserPreferences(PropertyListItem property, boolean hide, int propertyOrder, Map<Boolean, Integer> userSortDirections) {
         Boolean sortDirection = userSortDirections != null ? userSortDirections.keySet().iterator().next() : null;
         Integer sortIndex = userSortDirections != null ? userSortDirections.values().iterator().next() : null;
-        grid.setColumnSettings(property.property, property.getUserCaption(true), property.getUserPattern(true), propertyOrder, hide);
+        grid.setUserCaption(property.property, property.getUserCaption(true));
+        grid.setUserHide(property.property, hide);
+        grid.setUserOrder(property.property, propertyOrder);
         grid.setUserSort(property.property, sortDirection != null ? sortIndex : null);
         grid.setUserAscendingSort(property.property, sortDirection);
     }
@@ -396,13 +352,11 @@ public abstract class GUserPreferencesDialog extends GResizableModalWindow {
         columnsDualListBox.clearLists();
 
         for (GPropertyDraw property : orderedVisibleProperties) {
-            columnsDualListBox.addVisible(new PropertyListItem(property, currentPreferences.getUserCaption(property),
-                    currentPreferences.getUserPattern(property), getPropertyState(property)));
+            columnsDualListBox.addVisible(new PropertyListItem(property, currentPreferences.getUserCaption(property), getPropertyState(property)));
         }
         for (GPropertyDraw property : groupController.getGroupObjectProperties()) {
             if (!orderedVisibleProperties.contains(property)) {
-                columnsDualListBox.addInvisible(new PropertyListItem(property, currentPreferences.getUserCaption(property),
-                        currentPreferences.getUserPattern(property), getPropertyState(property)));
+                columnsDualListBox.addInvisible(new PropertyListItem(property, currentPreferences.getUserCaption(property), getPropertyState(property)));
             }
         }
 
@@ -412,9 +366,6 @@ public abstract class GUserPreferencesDialog extends GResizableModalWindow {
 
         Integer currentPageSize = currentPreferences.pageSize;
         pageSizeBox.setValue(currentPageSize == null ? "" : String.valueOf(currentPageSize));
-
-        Integer currentHeaderHeight = currentPreferences.headerHeight;
-        headerHeightBox.setValue(currentHeaderHeight == null ? "" : String.valueOf(currentHeaderHeight));
     }
     
     private GFont mergeFont() {
