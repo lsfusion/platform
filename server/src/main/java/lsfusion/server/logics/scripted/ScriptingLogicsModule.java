@@ -2807,7 +2807,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public void propertyDefinitionCreated(LP property, DebugInfo.DebugPoint point) {
         if (property != null) {
-            boolean needToCreateDelegate = debugger.isEnabled() && !point.needToCreateDelegate() && property.property instanceof DataProperty;
+            boolean needToCreateDelegate = debugger.isEnabled() && point.needToCreateDelegate() && property.property instanceof DataProperty;
             CalcPropertyDebugInfo debugInfo = new CalcPropertyDebugInfo(point, needToCreateDelegate);
             if (needToCreateDelegate) {
                 debugger.addDelegate(debugInfo);
