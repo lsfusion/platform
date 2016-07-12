@@ -40,11 +40,8 @@ public class IOUtils {
     }
 
     public static byte[] getFileBytes(File file) throws IOException {
-        InputStream in = new FileInputStream(file);
-        try {
+        try (InputStream in = new FileInputStream(file)) {
             return readBytesFromStream(in);
-        } finally {
-            in.close();
         }
     }
 
@@ -57,11 +54,8 @@ public class IOUtils {
             file.getParentFile().mkdirs();
         }
 
-        OutputStream out = new FileOutputStream(file);
-        try {
+        try (OutputStream out = new FileOutputStream(file)) {
             out.write(array, off, len);
-        } finally {
-            out.close();
         }
     }
 

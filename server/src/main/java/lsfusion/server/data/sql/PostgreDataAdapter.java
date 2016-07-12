@@ -266,8 +266,7 @@ public class PostgreDataAdapter extends DataAdapter {
         commandLine.addArgument(dataBase);
 
 
-        FileOutputStream logStream = new FileOutputStream(backupLogFilePath);
-        try {
+        try (FileOutputStream logStream = new FileOutputStream(backupLogFilePath)) {
             Map<String, String> env = new HashMap<>(System.getenv());
             env.put("LC_MESSAGES", "en_EN");
             env.put("PGPASSWORD", password);
@@ -277,7 +276,7 @@ public class PostgreDataAdapter extends DataAdapter {
             executor.setExitValue(0);
 
             int result;
-            
+
             try {
                 result = executor.execute(commandLine, env);
             } catch (IOException e) {
@@ -288,8 +287,6 @@ public class PostgreDataAdapter extends DataAdapter {
             if (result != 0) {
                 throw new IOException("Error executing pg_dump - process returned code: " + result);
             }
-        } finally {
-            logStream.close();
         }
 
         return backupFilePath;

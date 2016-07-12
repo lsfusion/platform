@@ -1,13 +1,14 @@
 package lsfusion.base.col;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.ImmutableObject;
-import lsfusion.base.col.implementations.*;
+import lsfusion.base.col.implementations.ArIndexedMap;
+import lsfusion.base.col.implementations.ArIndexedSet;
+import lsfusion.base.col.implementations.ArSet;
+import lsfusion.base.col.implementations.HSet;
 import lsfusion.base.col.implementations.order.ArOrderSet;
 import lsfusion.base.col.implementations.order.HOrderSet;
 import lsfusion.base.col.implementations.simple.EmptyOrderSet;
 import lsfusion.base.col.implementations.simple.EmptySet;
-import lsfusion.base.col.implementations.simple.SingletonOrderSet;
 import lsfusion.base.col.implementations.simple.SingletonSet;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.*;
@@ -46,8 +47,7 @@ public class SetFact {
 
     public static <T> ImSet<T> toSet(T... elements) {
         MSet<T> mSet = SetFact.mSetMax(elements.length);
-        for(int i=0;i<elements.length;i++)
-            mSet.add(elements[i]);
+        for (T element : elements) mSet.add(element);
         return mSet.immutable();
     }
 

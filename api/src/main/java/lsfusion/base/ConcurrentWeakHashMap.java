@@ -267,7 +267,7 @@ public class ConcurrentWeakHashMap<K, V> extends AbstractMap<K, V>
         }
 
         @SuppressWarnings("unchecked")
-        static final <K,V> HashEntry<K,V>[] newArray(int i) {
+        static <K,V> HashEntry<K,V>[] newArray(int i) {
             return new HashEntry[i];
         }
     }
@@ -364,7 +364,7 @@ public class ConcurrentWeakHashMap<K, V> extends AbstractMap<K, V>
         }
 
         @SuppressWarnings("unchecked")
-        static final <K,V> Segment<K,V>[] newArray(int i) {
+        static <K,V> Segment<K,V>[] newArray(int i) {
             return new Segment[i];
         }
 
@@ -848,12 +848,9 @@ public class ConcurrentWeakHashMap<K, V> extends AbstractMap<K, V>
         }
         if (check != sum) { // Resort to locking all segments
             sum = 0;
-            for (int i = 0; i < segments.length; ++i)
-                segments[i].lock();
-            for (int i = 0; i < segments.length; ++i)
-                sum += segments[i].count;
-            for (int i = 0; i < segments.length; ++i)
-                segments[i].unlock();
+            for (Segment<K, V> segment : segments) segment.lock();
+            for (Segment<K, V> segment : segments) sum += segment.count;
+            for (Segment<K, V> segment : segments) segment.unlock();
         }
         if (sum > Integer.MAX_VALUE)
             return Integer.MAX_VALUE;
@@ -935,19 +932,17 @@ public class ConcurrentWeakHashMap<K, V> extends AbstractMap<K, V>
                 return false;
         }
         // Resort to locking all segments
-        for (int i = 0; i < segments.length; ++i)
-            segments[i].lock();
+        for (Segment<K, V> segment : segments) segment.lock();
         boolean found = false;
         try {
-            for (int i = 0; i < segments.length; ++i) {
-                if (segments[i].containsValue(value)) {
+            for (Segment<K, V> segment : segments) {
+                if (segment.containsValue(value)) {
                     found = true;
                     break;
                 }
             }
         } finally {
-            for (int i = 0; i < segments.length; ++i)
-                segments[i].unlock();
+            for (Segment<K, V> segment : segments) segment.unlock();
         }
         return found;
     }
@@ -1073,8 +1068,7 @@ public class ConcurrentWeakHashMap<K, V> extends AbstractMap<K, V>
      * Removes all of the mappings from this map.
      */
     public void clear() {
-        for (int i = 0; i < segments.length; ++i)
-            segments[i].clear();
+        for (Segment<K, V> segment : segments) segment.clear();
     }
 
     /**
@@ -1425,13 +1419,12 @@ public class ConcurrentWeakHashMap<K, V> extends AbstractMap<K, V>
     private void writeObject(java.io.ObjectOutputStream s) throws IOException  {
         s.defaultWriteObject();
 
-        for (int k = 0; k < segments.length; ++k) {
-            Segment<K,V> seg = segments[k];
+        for (Segment<K, V> seg : segments) {
             seg.lock();
             try {
-                HashEntry<K,V>[] tab = seg.table;
+                HashEntry<K, V>[] tab = seg.table;
                 for (int i = 0; i < tab.length; ++i) {
-                    for (HashEntry<K,V> e = tab[i]; e != null; e = e.next) {
+                    for (HashEntry<K, V> e = tab[i]; e != null; e = e.next) {
                         K key = e.keyRef.get();
                         if (key == null) // Skip GC'd keys
                             continue;
@@ -1459,8 +1452,8 @@ public class ConcurrentWeakHashMap<K, V> extends AbstractMap<K, V>
         s.defaultReadObject();
 
         // Initialize each segment to be minimally sized, and let grow.
-        for (int i = 0; i < segments.length; ++i) {
-            segments[i].setTable(new HashEntry[1]);
+        for (Segment<K, V> segment : segments) {
+            segment.setTable(new HashEntry[1]);
         }
 
         // Read the keys and values, and put the mappings in the table

@@ -219,7 +219,7 @@ public class GwtSharedUtils {
 
     public static String stringFormat(final String format, final String... args) {
         String[] split = format.split("%s");
-        final StringBuffer msg = new StringBuffer();
+        final StringBuilder msg = new StringBuilder();
         for (int pos = 0; pos < split.length - 1; pos++) {
             msg.append(split[pos]);
             msg.append(args[pos]);

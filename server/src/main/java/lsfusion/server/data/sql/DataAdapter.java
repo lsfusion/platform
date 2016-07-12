@@ -406,14 +406,11 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
     protected Connection ensureConnection;
 
     protected void executeEnsure(String command) throws SQLException {
-        Statement statement = ensureConnection.createStatement();
-//        statement.setQueryTimeout(1);
-        try {
+        //        statement.setQueryTimeout(1);
+        try (Statement statement = ensureConnection.createStatement()) {
             statement.execute(command);
-        } catch(SQLException e) {
+        } catch (SQLException e) {
             ServerLoggers.sqlSuppLog(e);
-        } finally {
-            statement.close();
         }
     }
 

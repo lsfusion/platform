@@ -124,7 +124,6 @@ public class SQLQuery extends SQLCommand<ResultHandler<String, String>> {
 
     @Override
     public void execute(PreparedStatement statement, ResultHandler<String, String> handler, SQLSession session) throws SQLException {
-        final ResultSet result = statement.executeQuery();
 
         SQLSyntax syntax = session.syntax;
 
@@ -134,27 +133,27 @@ public class SQLQuery extends SQLCommand<ResultHandler<String, String>> {
         int rowSize = 0;
         boolean isNoQueryLimit = session.isNoQueryLimit();
 
-        try {
+        try (ResultSet result = statement.executeQuery()) {
             handler.start();
 
-            while(result.next()) {
+            while (result.next()) {
                 ImValueMap<String, Object> mRowKeys = keyReaders.mapItValues(); // потому как exception есть
-                for(int i=0,size=keyReaders.size();i<size;i++)
+                for (int i = 0, size = keyReaders.size(); i < size; i++)
                     mRowKeys.mapValue(i, keyReaders.getValue(i).read(result, syntax, keyReaders.getKey(i)));
                 ImValueMap<String, Object> mRowProperties = propertyReaders.mapItValues(); // потому как exception есть
-                for(int i=0,size=propertyReaders.size();i<size;i++)
+                for (int i = 0, size = propertyReaders.size(); i < size; i++)
                     mRowProperties.mapValue(i, propertyReaders.getValue(i).read(result, syntax, propertyReaders.getKey(i)));
                 handler.proceed(mRowKeys.immutableValue(), mRowProperties.immutableValue());
 
-                if(!isNoQueryLimit && handler.hasQueryLimit() && rowCount++ > pessLimit) {
-                    if(adjLimit == 0) {
+                if (!isNoQueryLimit && handler.hasQueryLimit() && rowCount++ > pessLimit) {
+                    if (adjLimit == 0) {
                         rowSize = calculateRowSize(keyReaders, propertyReaders, handler.getPrevResults());
                         adjLimit = BaseUtils.max(getMemoryLimit() / rowSize, pessLimit);
 
                         ServerLoggers.exinfoLog("LARGE QUERY LIMIT " + adjLimit + " SIZE " + rowSize + " " + statement.toString());
                     }
-                    if(rowCount > adjLimit) {
-                        while(result.next()) {
+                    if (rowCount > adjLimit) {
+                        while (result.next()) {
                             rowCount++;
                         }
                         Throwables.propagate(new SQLTooLargeQueryException(rowCount, adjLimit, rowSize));
@@ -162,12 +161,10 @@ public class SQLQuery extends SQLCommand<ResultHandler<String, String>> {
                 }
             }
 
-            if(adjLimit > 0)
+            if (adjLimit > 0)
                 ServerLoggers.exInfoLogger.info("LARGE QUERY ROWS COUNT " + rowCount);
 
             handler.finish();
-        } finally {
-            result.close();
         }
     }
 

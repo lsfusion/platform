@@ -10,18 +10,18 @@ public class DoubleFilter extends DocumentFilter {
                              String string, AttributeSet attr)
             throws BadLocationException {
 
-        StringBuffer buffer = new StringBuffer(string);
-        for (int i = buffer.length() - 1; i >= 0; i--) {
-            char ch = buffer.charAt(i);
+        StringBuilder builder = new StringBuilder(string);
+        for (int i = builder.length() - 1; i >= 0; i--) {
+            char ch = builder.charAt(i);
             if (!Character.isDigit(ch) && !(ch == '-') && !(ch == '.')) {
                 if (ch == ',') {
-                    buffer.replace(i, i+1, ".");
+                    builder.replace(i, i+1, ".");
                 } else {
-                    buffer.deleteCharAt(i);
+                    builder.deleteCharAt(i);
                 }
             }
         }
-        super.insertString(fb, offset, buffer.toString(), attr);
+        super.insertString(fb, offset, builder.toString(), attr);
     }
 
     @Override

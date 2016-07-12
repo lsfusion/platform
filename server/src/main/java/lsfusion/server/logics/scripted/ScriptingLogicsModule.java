@@ -1288,8 +1288,8 @@ public class ScriptingLogicsModule extends LogicsModule {
             }
         }
 
-        for (int a = 0; a < attachFileNames.size(); a++) {
-            CalcPropertyInterfaceImplement<ClassPropertyInterface> attachFileName = attachFileNames.get(a) != null ? allImplements.get(i++) : null;
+        for (LPWithParams fileName : attachFileNames) {
+            CalcPropertyInterfaceImplement<ClassPropertyInterface> attachFileName = fileName != null ? allImplements.get(i++) : null;
             eaProp.addAttachmentFile(attachFileName, allImplements.get(i++));
         }
 

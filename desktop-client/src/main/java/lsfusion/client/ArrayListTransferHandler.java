@@ -129,8 +129,8 @@ public class ArrayListTransferHandler extends TransferHandler {
             return false;
         }
 
-        for (int i = 0; i < flavors.length; i++) {
-            if (flavors[i].equals(localArrayListFlavor)) {
+        for (DataFlavor flavor : flavors) {
+            if (flavor.equals(localArrayListFlavor)) {
                 return true;
             }
         }
@@ -142,8 +142,8 @@ public class ArrayListTransferHandler extends TransferHandler {
             return false;
         }
 
-        for (int i = 0; i < flavors.length; i++) {
-            if (flavors[i].equals(serialArrayListFlavor)) {
+        for (DataFlavor flavor : flavors) {
+            if (flavor.equals(serialArrayListFlavor)) {
                 return true;
             }
         }

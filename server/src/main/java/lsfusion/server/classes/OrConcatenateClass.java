@@ -67,8 +67,8 @@ public class OrConcatenateClass extends AbstractClassWhere<Integer,OrConcatenate
 
     @Override
     public boolean isEmpty() {
-        for (int j = 0; j < wheres.length; j++)
-            if(wheres[j].isEmpty())
+        for (And<Integer> where : wheres)
+            if (where.isEmpty())
                 return true;
         return false;
     }

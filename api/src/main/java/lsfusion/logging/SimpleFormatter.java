@@ -9,7 +9,7 @@ public class SimpleFormatter extends Formatter {
     private String lineSeparator = System.getProperty("line.separator");
 
     public synchronized String format(LogRecord record) {
-	StringBuffer sb = new StringBuffer();
+	StringBuilder sb = new StringBuilder();
 
 	if (record.getSourceClassName() != null) {
 	    sb.append(record.getSourceClassName());

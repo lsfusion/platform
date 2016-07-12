@@ -1173,8 +1173,7 @@ public abstract class LogicsModule {
                 for (CalcProperty property : overridePersist)
                     addProperty(null, true, new LCP(property));
             } else
-                for (int i = 0; i < result.length; i++)
-                    addPersistent(result[i]);
+                for (LCP lcp : result) addPersistent(lcp);
         }
 
         return result;
