@@ -1012,11 +1012,15 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                 inSessionEvent = false;
             }
 
-            // закидываем старые изменения
-            for(CalcProperty changedOld : sessionEventChangedOld.getProperties()) // assert что только old'ы
-                updateNotChangedOld.put((OldProperty)changedOld, true);
-            sessionEventChangedOld.clear(sql, getOwner());
+            dropSessionEventChangedOld();
         }
+    }
+
+    private void dropSessionEventChangedOld() throws SQLException {
+        // закидываем старые изменения
+        for(CalcProperty changedOld : sessionEventChangedOld.getProperties()) // assert что только old'ы
+            updateNotChangedOld.put((OldProperty)changedOld, true);
+        sessionEventChangedOld.clear(sql, getOwner());
     }
 
     @LogTime
@@ -2287,7 +2291,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             other.cleanIsDataChangedProperty();
         }
 
-        other.updateSessionEvents(getChangedProps()); // не совсем чисто, так как в верхней сессии могут быть еще локальные события, которые не отработали, поэтому во
+        other.dropSessionEventChangedOld(); // так как сессия копируется, два раза события нельзя выполнять
     }
 
     // assertion что для sessionData уже adjustKeep выполнился
