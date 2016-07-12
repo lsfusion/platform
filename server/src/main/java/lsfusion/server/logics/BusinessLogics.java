@@ -1553,13 +1553,21 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         return new Graph<>(mEdgesIn.immutable());
     }
 
+    public AggregateProperty getAggregateStoredProperty(String propertyCanonicalName) {
+        for (Property property : getStoredProperties()) {
+            if (property instanceof AggregateProperty && propertyCanonicalName.equals(property.getCanonicalName()))
+                return (AggregateProperty) property;
+        }
+        return null;
+    }
+
     // используется не в task'ах
-    public List<AggregateProperty> getAggregateStoredProperties() {
+    public List<AggregateProperty> getAggregateStoredProperties(boolean ignoreCheck) {
         List<AggregateProperty> result = new ArrayList<>();
         try (final DataSession dataSession = getDbManager().createSession()) {
             for (Property property : getStoredProperties())
                 if (property instanceof AggregateProperty) {
-                    boolean recalculate = reflectionLM.notRecalculateTableColumn.read(dataSession, reflectionLM.tableColumnSID.readClasses(dataSession, new DataObject(property.getDBName()))) == null;
+                    boolean recalculate = ignoreCheck || reflectionLM.notRecalculateTableColumn.read(dataSession, reflectionLM.tableColumnSID.readClasses(dataSession, new DataObject(property.getDBName()))) == null;
                     if(recalculate)
                         result.add((AggregateProperty) property);
                 }

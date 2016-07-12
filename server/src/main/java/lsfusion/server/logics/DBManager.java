@@ -1050,7 +1050,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
     }
 
     public String checkAggregations(SQLSession session) throws SQLException, SQLHandledException {
-        List<AggregateProperty> checkProperties = businessLogics.getAggregateStoredProperties();
+        List<AggregateProperty> checkProperties = businessLogics.getAggregateStoredProperties(false);
         String message = "";
         for (int i = 0; i < checkProperties.size(); i++) {
             AggregateProperty property = checkProperties.get(i);
@@ -1109,15 +1109,12 @@ public class DBManager extends LogicsManager implements InitializingBean {
 //    }
 //
     public String checkAggregationTableColumn(SQLSession session, String propertyCanonicalName) throws SQLException, SQLHandledException {
-        for (CalcProperty property : businessLogics.getAggregateStoredProperties())
-            if (propertyCanonicalName.equals(property.getCanonicalName())) {
-                return ((AggregateProperty) property).checkAggregation(session, LM.baseClass);
-            }
-        return null;
+        CalcProperty property = businessLogics.getAggregateStoredProperty(propertyCanonicalName);
+        return property != null ? ((AggregateProperty) property).checkAggregation(session, LM.baseClass) : null;
     }
 
     public String recalculateAggregations(ExecutionStack stack, SQLSession session, boolean isolatedTransaction) throws SQLException, SQLHandledException {
-        return recalculateAggregations(stack, session, businessLogics.getAggregateStoredProperties(), isolatedTransaction, serviceLogger);
+        return recalculateAggregations(stack, session, businessLogics.getAggregateStoredProperties(false), isolatedTransaction, serviceLogger);
     }
 
     public void ensureLogLevel() {
@@ -1224,10 +1221,9 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
 
     public void recalculateAggregationTableColumn(DataSession dataSession, SQLSession session, String propertyCanonicalName, boolean isolatedTransaction) throws SQLException, SQLHandledException {
-        for (AggregateProperty property : businessLogics.getAggregateStoredProperties())
-            if (propertyCanonicalName.equals(property.getCanonicalName())) {
-                runAggregationRecalculation(dataSession, session, property, isolatedTransaction);
-            }
+        AggregateProperty property = businessLogics.getAggregateStoredProperty(propertyCanonicalName);
+        if (property != null)
+            runAggregationRecalculation(dataSession, session, property, isolatedTransaction);
     }
 
     private void runAggregationRecalculation(final DataSession dataSession, SQLSession session, final AggregateProperty aggregateProperty, boolean isolatedTransaction) throws SQLException, SQLHandledException {
@@ -1259,9 +1255,11 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
 
         if (dependents) {
-            for (AggregateProperty prop : businessLogics.getAggregateStoredProperties()) {
+            for (AggregateProperty prop : businessLogics.getAggregateStoredProperties(true)) {
                 if (prop != property && !calculated.contains(prop) && CalcProperty.depends(prop, (CalcProperty) property)) {
-                    recalculateAggregationWithDependenciesTableColumn(dataSession, session, prop, isolatedTransaction, calculated, true);
+                    boolean recalculate = reflectionLM.notRecalculateTableColumn.read(dataSession, reflectionLM.tableColumnSID.readClasses(dataSession, new DataObject(property.getDBName()))) == null;
+                    if(recalculate)
+                        recalculateAggregationWithDependenciesTableColumn(dataSession, session, prop, isolatedTransaction, calculated, true);
                 }
             }
         }

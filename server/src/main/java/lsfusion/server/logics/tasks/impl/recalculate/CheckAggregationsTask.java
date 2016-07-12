@@ -25,7 +25,7 @@ public class CheckAggregationsTask extends GroupPropertiesSingleTask<AggregatePr
     @Override
     protected List<AggregateProperty> getElements() {
         checkContext();
-        return getBL().getAggregateStoredProperties();
+        return getBL().getAggregateStoredProperties(false);
     }
 
     @Override
