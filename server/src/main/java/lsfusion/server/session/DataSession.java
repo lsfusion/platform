@@ -1693,6 +1693,8 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         if (parentSession != null) {
             assert !isInTransaction() && !isInSessionEvent();
 
+            executeSessionEvents(form, stack);
+
             NotFunctionSet<SessionDataProperty> notKeepProps = new NotFunctionSet<>(keepProps);
             copyDataTo(parentSession, false, notKeepProps); // те которые не keep не копируем наверх, более того копируем их обратно как при не вложенной newSession
             parentSession.copyDataTo(this, notKeepProps);
@@ -2285,7 +2287,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             other.cleanIsDataChangedProperty();
         }
 
-        other.updateSessionEvents(getChangedProps());
+        other.updateSessionEvents(getChangedProps()); // не совсем чисто, так как в верхней сессии могут быть еще локальные события, которые не отработали, поэтому во
     }
 
     // assertion что для sessionData уже adjustKeep выполнился

@@ -77,6 +77,8 @@ public class NewSessionActionProperty extends AroundAspectActionProperty {
         } else {
             newSession = session.createSession();
             if (isNested) {
+                session.executeSessionEvents(context.getFormInstance(), context.stack);
+
                 newSession.setParentSession(session);
             } else {
                 migrateSessionProperties(session, newSession);
