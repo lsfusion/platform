@@ -980,6 +980,13 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         sessionEventChangedOld.add(old, old.property.readChangeTable(sql, getModifier(), baseClass, getQueryEnv()));
     }
 
+    private void updateSessionEventNotChangedOld(ExecutionEnvironment env) throws SQLException, SQLHandledException {
+        // обновляем прямо перед началом локального события, чтобы не заботиться о clearHints и других изменениях между локальными событиями
+        for(Map.Entry<OldProperty, Boolean> old : updateNotChangedOld.entrySet())
+            updateSessionEventNotChangedOld(env, old.getKey(), old.getValue());
+        updateNotChangedOld = new HashMap<>();
+    }
+
     private void updateSessionEventNotChangedOld(ExecutionEnvironment env, OldProperty<PropertyInterface> changedOld, boolean dataChanged) throws SQLException, SQLHandledException {
         sessionEventNotChangedOld.add(changedOld, changedOld.property.getIncrementChange(env.getModifier()), dataChanged);
     }
@@ -995,10 +1002,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
             ExecutionEnvironment env = (form != null ? form : this);
 
-            // обновляем прямо перед началом локального события, чтобы не заботиться о clearHints и других изменениях между локальными событиями
-            for(Map.Entry<OldProperty, Boolean> old : updateNotChangedOld.entrySet())
-                updateSessionEventNotChangedOld(env, old.getKey(), old.getValue());
-            updateNotChangedOld = new HashMap<>();
+            updateSessionEventNotChangedOld(env);
 
             inSessionEvent = true;
 
