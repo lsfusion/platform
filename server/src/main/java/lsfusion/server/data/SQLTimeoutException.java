@@ -15,7 +15,7 @@ public class SQLTimeoutException extends SQLHandledException {
     }
 
     public String toString() {
-        return "TIMEOUT" + (isTransactTimeout ? " MAX" : "");
+        return "TIMEOUT" + (isTransactTimeout ? " MAX" : "") + " " + type;
     }
 
     public static String ADJUSTTRANSTIMEOUT = "tt";
