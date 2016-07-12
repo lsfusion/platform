@@ -2806,13 +2806,16 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public void propertyDefinitionCreated(LP property, DebugInfo.DebugPoint point) {
-        if (property != null) {
-            boolean needToCreateDelegate = debugger.isEnabled() && point.needToCreateDelegate() && property.property instanceof DataProperty;
-            CalcPropertyDebugInfo debugInfo = new CalcPropertyDebugInfo(point, needToCreateDelegate);
-            if (needToCreateDelegate) {
-                debugger.addDelegate(debugInfo);
+        if (property != null && property.property instanceof CalcProperty) {
+            CalcProperty calcProp = (CalcProperty)property.property; 
+            boolean needToCreateDelegate = debugger.isEnabled() && point.needToCreateDelegate() && calcProp instanceof DataProperty;
+            if (calcProp.getDebugInfo() == null) { // при использовании в propertyExpression оптимизированных join свойств, не нужно им переустанавливать DebugInfo
+                CalcPropertyDebugInfo debugInfo = new CalcPropertyDebugInfo(point, needToCreateDelegate);
+                if (needToCreateDelegate) {
+                    debugger.addDelegate(debugInfo);
+                }
+                calcProp.setDebugInfo(debugInfo);
             }
-            ((CalcProperty)property.property).setDebugInfo(debugInfo);
         }
     }
 
