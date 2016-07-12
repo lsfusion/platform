@@ -2284,6 +2284,8 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         if (cleanIsDataChangedProp) {
             other.cleanIsDataChangedProperty();
         }
+
+        other.updateSessionEvents(getChangedProps());
     }
 
     // assertion что для sessionData уже adjustKeep выполнился
