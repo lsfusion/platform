@@ -49,7 +49,9 @@ import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.Event;
 import lsfusion.server.logics.property.actions.*;
 import lsfusion.server.logics.property.actions.file.FileActionType;
+import lsfusion.server.logics.property.actions.flow.BreakActionProperty;
 import lsfusion.server.logics.property.actions.flow.ListCaseActionProperty;
+import lsfusion.server.logics.property.actions.flow.ReturnActionProperty;
 import lsfusion.server.logics.property.actions.importing.ImportDataActionProperty;
 import lsfusion.server.logics.property.actions.importing.csv.ImportCSVDataActionProperty;
 import lsfusion.server.logics.property.actions.importing.xml.ImportXMLDataActionProperty;
@@ -1822,7 +1824,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public LPWithParams getTerminalFlowActionProperty(boolean isBreak) {
-        return new LPWithParams(isBreak ? baseLM.flowBreak : baseLM.flowReturn, new ArrayList<Integer>());
+        return new LPWithParams(isBreak ? new LAP(new BreakActionProperty()) : new LAP(new ReturnActionProperty()), new ArrayList<Integer>());
     }
 
     private List<Object> getCoeffParamsPlainList(List<LPWithParams> mappedPropsList, Integer[] coeffs) {

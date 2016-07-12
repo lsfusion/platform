@@ -33,8 +33,6 @@ import lsfusion.server.logics.mutables.NFLazy;
 import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.actions.FormAddObjectActionProperty;
-import lsfusion.server.logics.property.actions.flow.BreakActionProperty;
-import lsfusion.server.logics.property.actions.flow.ReturnActionProperty;
 import lsfusion.server.logics.property.derived.DerivedProperty;
 import lsfusion.server.logics.property.group.AbstractGroup;
 import lsfusion.server.logics.property.group.PropertySet;
@@ -337,10 +335,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         makePropertyPublic(objectClass, "objectClass", Collections.<ResolveClassSet>nCopies(1, null));
         random = addRMProp("Random");
         makePropertyPublic(random, "random", Arrays.<ResolveClassSet>asList());
-
-        // только через операторы 
-        flowBreak = addProperty(null, new LAP(new BreakActionProperty()));
-        flowReturn = addProperty(null, new LAP(new ReturnActionProperty()));
 
         // Множества свойств
         objectValue = new ObjectValuePropertySet();
