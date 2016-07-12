@@ -152,6 +152,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
             Integer sqlProcessId = SQLSession.getSQLProcessId(processId);
             if(sqlProcessId != null) {
                 SQLSession cancelSession = SQLSession.getSQLSession(sqlProcessId);
+                ServerLoggers.exinfoLog("SQL SESSION INTERRUPT " + cancelSession + " IN " + sqlSession);
                 if (cancelSession != null)
                     cancelSession.setForcedCancel(interrupt);
                 sqlSession.executeDDL(((DataAdapter) sqlSession.syntax).getCancelActiveTaskQuery(sqlProcessId));
