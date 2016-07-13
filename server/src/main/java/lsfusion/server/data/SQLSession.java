@@ -661,6 +661,14 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
             addIndex(table, BaseUtils.<ImOrderSet<Field>>immutableCast(keys).subOrder(i, keys.size()).toOrderMap(true), logger);
     }
 
+    public void checkExtraIndices(SQLSession threadLocalSQL, Table table, ImOrderSet<KeyField> keys, Logger logger) throws SQLException {
+        for(int i=1;i<keys.size();i++) {
+            ImOrderMap<Field, Boolean> fields = BaseUtils.<ImOrderSet<Field>>immutableCast(keys).subOrder(i, keys.size()).toOrderMap(true);
+            if (!threadLocalSQL.checkIndex(table, fields, false) && !threadLocalSQL.checkIndex(table, fields, true))
+                addIndex(table, fields, logger);
+        }
+    }
+
     private String getConstraintName(String table) {
         return syntax.getConstraintName("PK_" + table);
     }
@@ -723,15 +731,28 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     }
 
     public boolean checkIndex(Table table, ImOrderSet<KeyField> keyFields, ImOrderSet<Field> fields, boolean order) throws SQLException {
+        return checkIndex(table, getOrderFields(keyFields, order, fields), false);
+     }
+
+    public boolean checkIndex(Table table, ImOrderMap<Field, Boolean> fields, boolean old) throws SQLException {
         //in Postgres 9.5 will be 'create index if not exists'
         boolean exists = true;
         try {
-            executeDDL("SELECT 'public." + getIndexName(table, syntax, getOrderFields(keyFields, order, fields)) + "'::regclass");
+            executeDDL("SELECT 'public." + (old ? getOldIndexName(table, fields.mapOrderKeys(Field.nameGetter()), syntax) : getIndexName(table, syntax, fields)) + "'::regclass");
         } catch (SQLException e) {
             exists = false;
         }
         return exists;
-     }
+    }
+
+    public void addConstraint(Table table) throws SQLException {
+        try {
+            executeDDL("DO $$ BEGIN ALTER TABLE " + table.getName() + " ADD " + getConstraintDeclare(table.getName(), table.keys, syntax) +
+            "; EXCEPTION WHEN others THEN /* ignore duplicates */ END; $$;");
+        } catch(Exception e) {
+            logger.error(e);
+        }
+    }
 
     public void addIndex(Table table, ImOrderMap<Field, Boolean> fields, Logger logger) throws SQLException {
         String columns = fields.toString(new GetKeyValue<String, Field, Boolean>() {

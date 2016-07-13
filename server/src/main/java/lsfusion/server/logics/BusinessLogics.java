@@ -1891,11 +1891,16 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     public void checkIndices(SQLSession session) throws SQLException, SQLHandledException {
         session.startTransaction(DBManager.START_TIL, OperationOwner.unknown);
         try {
-            for (Map.Entry<Table, Map<List<Field>, Boolean>> mapIndex : getDbManager().getIndicesMap().entrySet())
+            for (Map.Entry<Table, Map<List<Field>, Boolean>> mapIndex : getDbManager().getIndicesMap().entrySet()) {
+                Table table = mapIndex.getKey();
                 for (Map.Entry<List<Field>, Boolean> index : mapIndex.getValue().entrySet()) {
-                    if (!getDbManager().getThreadLocalSql().checkIndex(mapIndex.getKey(), mapIndex.getKey().keys, SetFact.fromJavaOrderSet(index.getKey()), index.getValue()))
-                        session.addIndex(mapIndex.getKey(), mapIndex.getKey().keys, SetFact.fromJavaOrderSet(index.getKey()), index.getValue(), sqlLogger);
+                    ImOrderSet<Field> fields = SetFact.fromJavaOrderSet(index.getKey());
+                    if (!getDbManager().getThreadLocalSql().checkIndex(table, table.keys, fields, index.getValue()))
+                        session.addIndex(table, table.keys, fields, index.getValue(), sqlLogger);
+                    session.addConstraint(table);
                 }
+                session.checkExtraIndices(getDbManager().getThreadLocalSql(), table, table.keys, sqlLogger);
+            }
             session.commitTransaction();
         } catch (Exception e) {
             session.rollbackTransaction();
