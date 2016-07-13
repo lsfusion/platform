@@ -55,6 +55,7 @@ public class PropertyDrawView extends ComponentView {
     public boolean drawAsync = false;
 
     public Format format;
+    public String pattern;
 
     public Boolean focusable;
 
@@ -155,6 +156,8 @@ public class PropertyDrawView extends ComponentView {
             reportField.footerClass = java.lang.String.class;
         }
 
+        reportField.pattern = pattern;
+        
         if (!getType().fillReportDrawField(reportField)) {
             return null;
         }

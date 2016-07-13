@@ -42,6 +42,7 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
         } else if(type instanceof DateClass) {
             target.format = new SimpleDateFormat(pattern);
         }
+        target.pattern = pattern;
     }
 
     public void setMaxValue(long maxValue) {

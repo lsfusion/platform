@@ -329,6 +329,7 @@ public class ReportDesignGenerator {
         dataField.setPositionType(PositionTypeEnum.FLOAT);
         dataField.setBlankWhenNull(true);
         dataField.setKey(reportField.columnGroupName);
+        dataField.setPattern(reportField.pattern);
 
         layout.add(reportField, captionField, dataField);
     }
