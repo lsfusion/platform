@@ -1,6 +1,6 @@
 set BUILD_DIR=%~dp0
 
-call mvn dependency:purge-local-repository -DsnapshotsOnly=true -DreResolve=false
+call mvn dependency:purge-local-repository -DsnapshotsOnly=true -DreResolve=false -P assemble
 
 cd ../../erp
 call mvn dependency:purge-local-repository -DsnapshotsOnly=true -DreResolve=false
