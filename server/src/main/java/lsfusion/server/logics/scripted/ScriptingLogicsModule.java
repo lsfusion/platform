@@ -861,9 +861,11 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public void makeLoggable(LP property, Boolean isLoggable) {
-        if (isLoggable != null && isLoggable && property != null)
-            ((LCP)property).makeLoggable(this, BL.systemEventsLM);
+    public void makeLoggable(LP property, Boolean isLoggable) throws ScriptingErrorLog.SemanticErrorException {
+        if (isLoggable != null && isLoggable && property != null) {
+            checkCalculationProperty(property);
+            ((LCP) property).makeLoggable(this, BL.systemEventsLM);
+        }
     }
 
     public void setEchoSymbols(LP property) {

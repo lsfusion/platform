@@ -1851,8 +1851,8 @@ asEditActionSetting [LP property]
 	:	(   'ASONCHANGE' { editActionSID = ServerResponse.CHANGE; }
 		|   'ASONCHANGEWYS' { editActionSID = ServerResponse.CHANGE_WYS; }
 		|   'ASONEDIT' { editActionSID = ServerResponse.EDIT_OBJECT; }
-        	)
-	        usage = propertyUsage 
+       	)
+        usage = propertyUsage 
 	;
 
 toolbarSetting [LP property]
@@ -2789,12 +2789,12 @@ followsClause[List<TypedParameter> context] returns [LPWithParams prop, Event ev
 @init {
     $debug = self.getEventStackDebugInfo();
 }
-    :   expr = propertyExpression[context, false] 
-        ('RESOLVE' 
-        	('LEFT' {$pfollows.add(new PropertyFollowsDebug(true, self.getEventStackDebugInfo()));})?
-        	('RIGHT' {$pfollows.add(new PropertyFollowsDebug(false, self.getEventStackDebugInfo()));})?
-                et=baseEvent { $event = $et.event; } 
-        )? { $prop = $expr.property; }
+    :	expr = propertyExpression[context, false] 
+		('RESOLVE' 
+			('LEFT' {$pfollows.add(new PropertyFollowsDebug(true, self.getEventStackDebugInfo()));})?
+			('RIGHT' {$pfollows.add(new PropertyFollowsDebug(false, self.getEventStackDebugInfo()));})?
+			et=baseEvent { $event = $et.event; } 
+		)? { $prop = $expr.property; }
 ;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -3008,12 +3008,12 @@ singleParameterIndex[List<TypedParameter> context, boolean dynamic] returns [LPW
 	;
 
 singleParameterIndexList[List<TypedParameter> context, boolean dynamic] returns [List<LPWithParams> props]
-    @init {
-    	props = new ArrayList<LPWithParams>();
-    }
-    	:	(first=singleParameterIndex[context, dynamic] { props.add($first.property); }
-    		(',' next=singleParameterIndex[context, dynamic] { props.add($next.property); })*)?
-    	;
+@init {
+	props = new ArrayList<LPWithParams>();
+}
+	:	(first=singleParameterIndex[context, dynamic] { props.add($first.property); }
+		(',' next=singleParameterIndex[context, dynamic] { props.add($next.property); })*)?
+	;
 
 
 mappedPropertyOrSimpleExprParam[List<TypedParameter> context] returns [LPWithParams property]
