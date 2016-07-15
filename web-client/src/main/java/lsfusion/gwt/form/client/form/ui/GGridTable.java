@@ -20,6 +20,7 @@ import lsfusion.gwt.cellview.client.KeyboardRowChangedEvent;
 import lsfusion.gwt.cellview.client.cell.Cell;
 import lsfusion.gwt.cellview.client.cell.CellPreviewEvent;
 import lsfusion.gwt.form.client.ErrorHandlingCallback;
+import lsfusion.gwt.form.client.HotkeyManager;
 import lsfusion.gwt.form.client.form.ui.toolbar.preferences.GGridUserPreferences;
 import lsfusion.gwt.form.shared.actions.form.ServerResponseResult;
 import lsfusion.gwt.form.shared.view.*;
@@ -39,6 +40,7 @@ import static java.lang.Boolean.TRUE;
 import static java.lang.Math.min;
 import static java.lang.String.valueOf;
 import static java.util.Collections.singleton;
+import static lsfusion.gwt.base.client.GwtClientUtils.isShowing;
 import static lsfusion.gwt.base.shared.GwtSharedUtils.*;
 
 public class GGridTable extends GGridPropertyTable<GridDataRecord> {
@@ -78,7 +80,6 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
     private GGridUserPreferences generalGridPreferences;
     private GGridUserPreferences userGridPreferences;
     private GGridUserPreferences currentGridPreferences;
-    GFormController formController;
 
     private int nextColumnID = 0;
 
@@ -91,7 +92,6 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
     public GGridTable(GFormController iform, GGroupObjectController igroupController, GGridController gridController, GGridUserPreferences[] iuserPreferences) {
         super(iform, null);
 
-        this.formController = iform;
         this.groupObjectController = igroupController;
         this.groupObject = igroupController.groupObject;
         this.gridController = gridController;
@@ -307,6 +307,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
                 List<GGroupObjectValue> columnKeys = columnGroupsColumnKeys.get(i);
                 
                 if (columnGroup.size() == 1) {
+                    //noinspection Duplicates
                     for (GPropertyDraw property : columnGroup) {
                         //showIfs.get() вынесен из двойного цикла
                         Map<GGroupObjectValue, Object> propShowIfs = showIfs.get(property);
@@ -318,6 +319,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
                         }
                     }
                 } else {
+                    //noinspection Duplicates
                     for (GGroupObjectValue columnKey : columnKeys) {
                         for (GPropertyDraw property : columnGroup) {
                             Map<GGroupObjectValue, Object> propShowIfs = showIfs.get(property);
@@ -355,7 +357,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
                 setColumnWidth(column, columnMinimumWidth  + "px");
 
                 //дублирование логики изменения captions для оптимизации
-                String columnCaption = null;
+                String columnCaption;
                 Map<GGroupObjectValue, Object> propCaptions = propertyCaptions.get(property);
                 columnCaption = getUserCaption(property);
                 if(columnCaption == null) {
@@ -450,7 +452,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
             for (int i = 0; i < columnProperties.size(); ++i) {
                 GPropertyDraw property = columnProperties.get(i);
 
-                String columnCaption = null;
+                String columnCaption;
                 Map<GGroupObjectValue, Object> propCaptions = propertyCaptions.get(property);
                 if (propCaptions != null) {
                     columnCaption = property.getDynamicCaption(propCaptions.get(columnKeysList.get(i)));
@@ -642,6 +644,20 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
 
         int newColumnIndex = GwtSharedUtils.relativePosition(property, form.getPropertyDraws(), properties);
         properties.add(newColumnIndex, property);
+        
+        if (property.editKey != null) {
+            form.addHotkeyBinding(property.groupObject, property.editKey, new HotkeyManager.Binding() {
+                @Override
+                public boolean onKeyPress(NativeEvent event, GKeyStroke key) {
+                    if (!form.isEditing() && isShowing(GGridTable.this)) {
+                        selectProperty(property); // редактирование сразу по индексу не захотело работать. поэтому сначала выделяем ячейку
+                        editCellAt(getKeyboardSelectedRow(), getKeyboardSelectedColumn(), GEditBindingMap.CHANGE);
+                        return true;
+                    }
+                    return false;
+                }
+            });
+        }
 
         columnsUpdated = true;
     }
@@ -978,7 +994,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
         currentGridPreferences.resetPreferences();
 
         if (forAllUsers) {
-            formController.blockingConfirm("Сбросить также индивидуальные настройки пользователей?", "Сброс настроек", false, 0, 0, new DialogBoxHelper.CloseCallback() {
+            form.blockingConfirm("Сбросить также индивидуальные настройки пользователей?", "Сброс настроек", false, 0, 0, new DialogBoxHelper.CloseCallback() {
                 @Override
                 public void closed(DialogBoxHelper.OptionType chosenOption) {
                     form.saveUserPreferences(currentGridPreferences, true, chosenOption == DialogBoxHelper.OptionType.YES, new ErrorHandlingCallback<ServerResponseResult>() {
