@@ -32,8 +32,18 @@ public class DoublePropertyEditor extends TextFieldPropertyEditor {
                     lastTextEndsWithSeparator = false;
                 }
                 if (minusZeroText == null) {
-                    for (int i = 0; i < lastZero; i++) {
+                    int minFractionDigits = df.getMinimumFractionDigits();
+                    int currentFractionDigits = countFractionDigits(result, false);
+                    if(hasMask && result != null) {
+                        while (minFractionDigits < currentFractionDigits) {
+                            result = result.substring(0, result.length() - 1);
+                            currentFractionDigits--;
+                        }
+                    }
+                    int currentFractionZeroDigits = countFractionDigits(result, true);
+                    while(lastZero > currentFractionZeroDigits) {
                         result += '0';
+                        currentFractionZeroDigits++;
                     }
                 }
                 return result;
@@ -59,10 +69,10 @@ public class DoublePropertyEditor extends TextFieldPropertyEditor {
                 return super.stringToValue(text);
             }
 
-            private int countFractionDigits(String text) {
+            private int countFractionDigits(String text, boolean onlyZero) {
                 int count = 0;
                 if(text.indexOf(separator) > -1) {
-                    while (!text.endsWith(String.valueOf(separator))) {
+                    while (!text.endsWith(String.valueOf(separator)) &&(!onlyZero ||text.endsWith("0"))) {
                         text = text.substring(0, text.length() - 1);
                         count++;
                     }
