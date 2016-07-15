@@ -212,8 +212,7 @@ public class GwtSharedUtils {
         if (date instanceof java.sql.Date)
             return (java.sql.Date) date;
         else {
-            java.sql.Date sqlDate = new java.sql.Date(date.getTime());
-            return sqlDate;
+            return new java.sql.Date(date.getTime());
         }
     }
 

@@ -89,10 +89,7 @@ public class DateClass extends DataClass<Date> {
 
     @Override
     public Date read(ResultSet set, SQLSyntax syntax, String name) throws SQLException {
-//        Date read = super.read(set, syntax, name);
-        Date date = set.getDate(name);
-//        assert BaseUtils.hashEquals(read, date);
-        return date;
+        return set.getDate(name);
     }
 
     public void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax) throws SQLException {

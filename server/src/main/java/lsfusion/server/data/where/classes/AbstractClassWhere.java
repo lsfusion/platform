@@ -291,11 +291,11 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
 
     protected boolean meansFrom(And<K> andFrom, boolean implicitCast) {
         if(knf==null) {
-            Object[][] mwheres = new Object[wheres.length][]; AndClassSet[][] msets=new AndClassSet[wheres.length][]; int[] mnums=new int[wheres.length]; int mnum=0;
+            int mnum=0;
             // берем все перестановки из means, and'им их и проверяем на means всех элементов, сделаем в лоб потому как Combinations слишком громоздкий
             for(And<K> where : wheres) { // бежим по всем операндам
                 int size = where.size();
-                Object[] keys = new Object[size]; AndClassSet[] sets = new AndClassSet[size]; int num=0;
+                int num=0;
                 for(int i=0;i<size;i++) { // бежим по всем элементам
                     K key = where.getKey(i); AndClassSet set = where.getValue(i); AndClassSet fromSet;
                     if((fromSet=andFrom.getPartial(key))==null || fromSet.and(set).isEmpty()) { // если в from'е нету или не пересекаются не интересует
@@ -303,15 +303,13 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
                         break;
                     } else
                         if(!set.containsAll(fromSet, implicitCast)) { // если не следует
-                            keys[num]=key; sets[num++]=set;
+                            num++;
                         }
                 }
                 if(num==0)
                     return true;
                 if(num>0) {
-                    mwheres[mnum] = keys;
-                    msets[mnum] = sets;
-                    mnums[mnum++] = num;
+                    mnum++;
                 }
             }
 
@@ -322,28 +320,6 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
         boolean result = getKNF().meansFrom(andFrom, implicitCast);
 //        assert result == getPrevKNF().meansFrom(andFrom);
         return result;
-
-/*        // погнали перестановки
-        int[] nums = new int[mnum];
-        while(true) {
-//            ThisAnd next = createThisAnd();
-            Or<K> or = new Or<K>();
-            for(int j=0;j<mnum;j++)
-                or.add((K)mwheres[j][nums[j]],msets[j][nums[j]].getOr());
-            // здесь не так здесь надо проверять каждый на хоть один из этого
-            if(!or.meansFrom(andFrom))
-                return false;
-
-            int i = 0; // переходим к следующей комбинации
-            while(i<mnum && nums[i]==mnums[i]-1) {
-                nums[i] = 0;
-                i++;
-            }
-            if(i==mnum)
-                return true;
-            else
-                nums[i]++;
-        }*/
     }
 
     private KNF<K> knf;

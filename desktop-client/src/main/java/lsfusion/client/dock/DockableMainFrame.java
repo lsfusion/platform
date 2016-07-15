@@ -425,9 +425,7 @@ public class DockableMainFrame extends MainFrame {
     }
 
     private JMenu createOptionsMenu() {
-        JMenu menu = new JMenu(getString("layout.menu.options"));
-
-        return menu;
+        return new JMenu(getString("layout.menu.options"));
     }
 
     private JMenu createHelpMenu() {

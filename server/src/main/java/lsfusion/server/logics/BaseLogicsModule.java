@@ -43,7 +43,6 @@ import org.antlr.runtime.RecognitionException;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 
@@ -334,7 +333,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         objectClass = addProperty(null, new LCP<>(baseClass.getObjectClassProperty()));
         makePropertyPublic(objectClass, "objectClass", Collections.<ResolveClassSet>nCopies(1, null));
         random = addRMProp("Random");
-        makePropertyPublic(random, "random", Arrays.<ResolveClassSet>asList());
+        makePropertyPublic(random, "random", Collections.<ResolveClassSet>emptyList());
 
         // Множества свойств
         objectValue = new ObjectValuePropertySet();
@@ -527,7 +526,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
             if (valueClass instanceof StringClass || valueClass instanceof NumericClass) {
                 name = name + valueClass.getSID();
             }
-            property.setCanonicalName(getNamespace(), name, Arrays.asList(valueClass.getResolveSet()), property.getOrderInterfaces(), getDBNamePolicy());
+            property.setCanonicalName(getNamespace(), name, Collections.singletonList(valueClass.getResolveSet()), property.getOrderInterfaces(), getDBNamePolicy());
             setParent(property, version);
             return property;
         }

@@ -4,8 +4,10 @@ import lsfusion.base.BaseUtils;
 import oracle.jdbc.driver.OracleConnection;
 import oracle.jdbc.driver.OracleDriver;
 
-import java.sql.*;
-import java.util.Locale;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.sql.Types;
 import java.util.Properties;
 
 class OracleDataAdapter extends DataAdapter {
@@ -39,7 +41,7 @@ class OracleDataAdapter extends DataAdapter {
         return true;
     }
 
-    public OracleDataAdapter(String database, String server, String userID, String password, String instance) throws Exception, SQLException, InstantiationException, IllegalAccessException {
+    public OracleDataAdapter(String database, String server, String userID, String password, String instance) throws Exception {
         super(database, server, instance, userID, password, null, false);
     }
 
@@ -73,9 +75,7 @@ class OracleDataAdapter extends DataAdapter {
 //        ods.setURL("jdbc:oracle:thin:@localhost:1521");
 //        return (OracleConnection)ods.getConnection();
 
-        OracleConnection newConnection =
-                (OracleConnection) DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521", props);
-        return newConnection;
+        return (OracleConnection) DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521", props);
     }
     
     public void ensureDB(boolean cleanDB) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {

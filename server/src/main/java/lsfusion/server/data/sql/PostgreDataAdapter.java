@@ -65,7 +65,7 @@ public class PostgreDataAdapter extends DataAdapter {
         this.dumpDir = dumpDir;
     }
 
-    public void ensureDB(boolean cleanDB) throws Exception, SQLException, InstantiationException, IllegalAccessException {
+    public void ensureDB(boolean cleanDB) throws Exception {
 
         Connection connect = null;
         while(connect == null) {

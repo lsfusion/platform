@@ -933,8 +933,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     public static Buffer fifo = BufferUtils.synchronizedBuffer(new CircularFifoBuffer(1000000));
     public static void outFifo() throws IOException {
         String filename = "e:\\out.txt";
-        BufferedWriter outputWriter = null;
-        outputWriter = new BufferedWriter(new FileWriter(filename));
+        BufferedWriter outputWriter = new BufferedWriter(new FileWriter(filename));
         for (Object ff : fifo) {
             outputWriter.write(ff+"");
             outputWriter.newLine();
@@ -985,8 +984,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     public static String getCurrentTimeStamp() {
         SimpleDateFormat sdfDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");//dd/MM/yyyy
         Date now = new Date();
-        String strDate = sdfDate.format(now);
-        return strDate;
+        return sdfDate.format(now);
     }
     
     private void removeUnusedTemporaryTables(boolean force, OperationOwner opOwner) throws SQLException {

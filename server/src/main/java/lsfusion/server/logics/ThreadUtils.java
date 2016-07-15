@@ -1,6 +1,5 @@
 package lsfusion.server.logics;
 
-import lsfusion.base.ReflectionUtils;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.Settings;
@@ -13,7 +12,6 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
 import java.sql.SQLException;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
 
@@ -70,7 +68,7 @@ public class ThreadUtils {
             final ThreadGroup root = getRootThreadGroup();
             final ThreadMXBean thbean = ManagementFactory.getThreadMXBean();
             int nAlloc = thbean.getThreadCount();
-            int n = 0;
+            int n;
             Thread[] threads;
             do {
                 nAlloc *= 2;

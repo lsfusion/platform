@@ -171,7 +171,7 @@ public final class LoginAction {
         } catch (CancellationException ce) {
             return CANCELED;
         } catch (UnknownHostException e) {
-            System.out.println(e.getCause());
+            e.printStackTrace();
             return HOST_NAME_ERROR;
         } catch (RemoteInternalException e) {
             e.printStackTrace();

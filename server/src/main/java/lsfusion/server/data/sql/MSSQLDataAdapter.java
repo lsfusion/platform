@@ -44,7 +44,7 @@ import java.util.*;
 
 public class MSSQLDataAdapter extends DataAdapter {
 
-    public MSSQLDataAdapter(String database, String server, String userID, String password, String instance) throws Exception, SQLException, InstantiationException, IllegalAccessException {
+    public MSSQLDataAdapter(String database, String server, String userID, String password, String instance) throws Exception {
         super(database, server, instance, userID, password, null, false);
     }
 
@@ -782,7 +782,7 @@ public class MSSQLDataAdapter extends DataAdapter {
     }
 
     private void writeIntLE(DataOutputStream out, int v) throws IOException {
-        out.write((v >>>  0) & 0xFF);
+        out.write((v       ) & 0xFF);
         out.write((v >>>  8) & 0xFF);
         out.write((v >>> 16) & 0xFF);
         out.write((v >>> 24) & 0xFF);
