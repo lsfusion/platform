@@ -20,7 +20,8 @@ abstract public class ClientIntegralClass extends ClientDataClass {
 
     public static final EditEventFilter numberEditEventFilter = new EditEventFilter() {
         public boolean accept(EventObject e) {
-            return isSuitableNumberEditEvent(e);
+            // e = null, когда editCellAt() вызывается программно. фиксил начало редактирования по editKey
+            return e == null || isSuitableNumberEditEvent(e);
         }
     };
 
