@@ -330,7 +330,7 @@ public class ScriptingErrorLog {
     }
 
     public void emitNotCalculationPropertyError(ScriptParser parser) throws SemanticErrorException {
-        emitSimpleError(parser, "should be a property here, not action");
+        emitSimpleError(parser, "should be a property here");
     }
 
     public void emitNotSessionOrLocalPropertyError(ScriptParser parser) throws SemanticErrorException {

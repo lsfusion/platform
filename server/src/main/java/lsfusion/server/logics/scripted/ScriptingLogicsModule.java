@@ -581,8 +581,10 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         List<ResolveClassSet> signature = getClassesFromTypedParams(context);
         if (abstractLP instanceof LCP) {
+            checkCalculationProperty(implement.property);
             addImplementationToAbstractProp(abstractPropUsage.name, (LCP) abstractLP, signature, when != null, params);
         } else {
+            checkActionProperty(implement.property);
             addImplementationToAbstractAction(abstractPropUsage.name, (LAP) abstractLP, signature, when != null, params);
         }
     }
@@ -2279,8 +2281,6 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     private LCP addStaticClassConst(String name) throws ScriptingErrorLog.SemanticErrorException {
-        Version version = getVersion();
-
         int pointPos = name.lastIndexOf('.');
         assert pointPos > 0;
 
