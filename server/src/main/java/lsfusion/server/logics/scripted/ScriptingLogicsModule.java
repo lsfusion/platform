@@ -2579,11 +2579,14 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public LPWithParams findIndexProp(PropertyUsage toPropertyUsage, List<LPWithParams> toPropertyMapping, List<TypedParameter> context) throws ScriptingErrorLog.SemanticErrorException {
         LP toPropertyLP = findJoinMainProp(toPropertyUsage, toPropertyMapping, context);
-        // assert что все параметры, то есть property.null'ы и соответственно только integer'ы
         return new LPWithParams(toPropertyLP, getParamsAssertList(toPropertyMapping));
     }
     
-    public void addScriptedIndex(List<TypedParameter> params, List<LPWithParams> lps) {
+    public void addScriptedIndex(List<TypedParameter> params, List<LPWithParams> lps) throws ScriptingErrorLog.SemanticErrorException {
+        checkIndexNecessaryProperty(lps);
+        checkStoredProperties(lps);
+        checkDistinctParametersList(lps);
+        checkIndexNumberOfParameters(params.size(), lps);
         ImOrderSet<String> keyNames = ListFact.fromJavaList(params).toOrderExclSet().mapOrderSetValues(new GetValue<String, TypedParameter>() {
             public String getMapValue(TypedParameter value) {
                 return value.paramName;
@@ -3140,13 +3143,19 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    private void checkDistinctParameters(List<String> params) throws ScriptingErrorLog.SemanticErrorException {
-        Set<String> paramsSet = new HashSet<>(params);
+    private <T> void checkDistinctParameters(List<T> params) throws ScriptingErrorLog.SemanticErrorException {
+        Set<T> paramsSet = new HashSet<>(params);
         if (paramsSet.size() < params.size()) {
             errLog.emitDistinctParamNamesError(parser);
         }
     }
 
+    private void checkDistinctParametersList(List<LPWithParams> lps) throws ScriptingErrorLog.SemanticErrorException {
+        for (LPWithParams lp : lps) {
+            checkDistinctParameters(lp.usedParams);
+        }
+    }    
+    
     private void checkMetaCodeParamCount(MetaCodeFragment code, int paramCnt) throws ScriptingErrorLog.SemanticErrorException {
         if (code.parameters.size() != paramCnt) {
             errLog.emitParamCountError(parser, code.parameters.size(), paramCnt);
@@ -3241,12 +3250,61 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public void checkNecessaryProperty(LPWithParams property) throws ScriptingErrorLog.SemanticErrorException {
+    public void checkIndexNecessaryProperty(LPWithParams property) throws ScriptingErrorLog.SemanticErrorException {
         if (property.property == null) {
             errLog.emitNecessaryPropertyError(parser);
         }
     }
 
+    public void checkIndexNecessaryProperty(List<LPWithParams> lps) throws ScriptingErrorLog.SemanticErrorException {
+        boolean hasProperty = false;
+        for (LPWithParams lp : lps) {
+            if (lp.property != null) {
+                hasProperty = true;
+                break;
+            }
+        }
+        if (!hasProperty) {
+            errLog.emitIndexWithoutPropertyError(parser);
+        }
+    }
+
+    public void checkStoredProperties(List<LPWithParams> lps) throws ScriptingErrorLog.SemanticErrorException {
+        ImplementTable table = null;
+        String firstPropertyName = null;
+        for (LPWithParams lp : lps) {
+            if (lp.property != null) {
+                checkCalculationProperty(lp.property);
+                CalcProperty<?> calcProperty = (CalcProperty<?>) lp.property.property;
+                if (!calcProperty.isStored()) {
+                    errLog.emitShouldBeStoredError(parser, calcProperty.getName());
+                }
+                if (table == null) {
+                    table = calcProperty.mapTable.table;
+                    firstPropertyName = calcProperty.getName();
+                } else if (table != calcProperty.mapTable.table) {
+                    errLog.emitIndexPropertiesDifferentTablesError(parser, firstPropertyName, calcProperty.getName());
+                }
+            }
+        }
+    } 
+    
+    public void checkIndexNumberOfParameters(int paramsCount, List<LPWithParams> lps) throws ScriptingErrorLog.SemanticErrorException {
+        int paramsInProp = -1;
+        for (LPWithParams lp : lps) {
+            if (lp.property != null) {
+                if (paramsInProp == -1) {
+                    paramsInProp = lp.usedParams.size();
+                } else if (lp.usedParams.size() != paramsInProp){
+                    errLog.emitIndexPropertiesNonEqualParamsCountError(parser);    
+                }
+            }
+        }
+        if (paramsCount != paramsInProp) {
+            errLog.emitIndexParametersError(parser);
+        }
+    }
+    
     public void checkDeconcatenateIndex(LPWithParams property, int index) throws ScriptingErrorLog.SemanticErrorException {
         Type propType = property.property.property.getType();
         if (propType instanceof ConcatenateType) {

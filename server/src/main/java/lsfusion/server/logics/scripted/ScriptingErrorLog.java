@@ -508,6 +508,26 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, "WHEN ... THEN block should be used only with CASE abstract");
     }
     
+    public void emitIndexWithoutPropertyError(ScriptParser parser) throws SemanticErrorException {
+        emitSimpleError(parser, "index should contain at least one property");
+    }
+    
+    public void emitIndexPropertiesNonEqualParamsCountError(ScriptParser parser) throws SemanticErrorException {
+        emitSimpleError(parser, "properties in INDEX statement should have the same number of parameters");    
+    }
+
+    public void emitIndexParametersError(ScriptParser parser) throws SemanticErrorException {
+        emitSimpleError(parser, "all parameters that can be found in INDEX statement should be passed to every property in INDEX statement");
+    }
+     
+    public void emitShouldBeStoredError(ScriptParser parser, String propertyName) throws SemanticErrorException {
+        emitSimpleError(parser, format("property '%s' should be persistent", propertyName));
+    }
+
+    public void emitIndexPropertiesDifferentTablesError(ScriptParser parser, String firstPropName, String secondPropName) throws SemanticErrorException {
+        emitSimpleError(parser, format("properties '%s' and '%s' should be in one table to create index", firstPropName, secondPropName));
+    }
+    
     public void emitPropertyWithParamsExpected(ScriptParser parser, String property, String paramClasses) throws SemanticErrorException {
         emitSimpleError(parser, format("Expected property with (%s) param classes: %s", paramClasses, property));
     }
