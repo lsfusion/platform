@@ -56,6 +56,8 @@ public class Scheduler extends MonitorServer implements InitializingBean {
     private BusinessLogics BL;
     private DBManager dbManager;
 
+    private Map<Integer, List<ScheduledFuture>> futuresMap = new HashMap<>();
+
     public Scheduler() {
     }
 
@@ -119,6 +121,55 @@ public class Scheduler extends MonitorServer implements InitializingBean {
         return logicsInstance;
     }
 
+    public void setupScheduledTask(DataSession session, DataObject scheduledTaskObject, String nameScheduledTask) throws SQLException, ScriptingErrorLog.SemanticErrorException, SQLHandledException {
+        if (daemonTasksExecutor != null) {
+            Integer scheduledTaskId = (Integer) scheduledTaskObject.getValue();
+            List<ScheduledFuture> futures = futuresMap.remove(scheduledTaskId);
+            if (futures != null) {
+                schedulerLogger.info("Stopped scheduler task: " + nameScheduledTask);
+                for (ScheduledFuture future : futures) {
+                    future.cancel(true);
+                }
+            }
+
+            if(BL.schedulerLM.activeScheduledTask.read(session, scheduledTaskObject) != null) {
+                Time timeFrom = (Time) BL.schedulerLM.timeFromScheduledTask.read(session, scheduledTaskObject);
+                Time timeTo = (Time) BL.schedulerLM.timeToScheduledTask.read(session, scheduledTaskObject);
+                String daysOfWeek = (String) BL.schedulerLM.daysOfWeekScheduledTask.read(session, scheduledTaskObject);
+                String daysOfMonth = (String) BL.schedulerLM.daysOfMonthScheduledTask.read(session, scheduledTaskObject);
+                boolean runAtStart = BL.schedulerLM.runAtStartScheduledTask.read(session, scheduledTaskObject) != null;
+                Timestamp startDate = (Timestamp) BL.schedulerLM.startDateScheduledTask.read(session, scheduledTaskObject);
+                Integer period = (Integer) BL.schedulerLM.periodScheduledTask.read(session, scheduledTaskObject);
+                Object schedulerStartType = BL.schedulerLM.schedulerStartTypeScheduledTask.read(session, scheduledTaskObject);
+                Object afterFinish = ((ConcreteCustomClass) BL.schedulerLM.findClass("SchedulerStartType")).getDataObject("afterFinish").object;
+                boolean fixedDelay = afterFinish.equals(schedulerStartType);
+
+                if (startDate != null) {
+                    schedulerLogger.info("Scheduled scheduler task: " + nameScheduledTask);
+                    SchedulerTask task = new SchedulerTask(nameScheduledTask, readUserSchedulerTask(session, session.getModifier(), scheduledTaskObject, nameScheduledTask,
+                            timeFrom, timeTo, daysOfWeek, daysOfMonth), scheduledTaskId, runAtStart, startDate, period, fixedDelay);
+                    futures = task.schedule(daemonTasksExecutor);
+                    futuresMap.put(scheduledTaskId, futures);
+                }
+            }
+        }
+    }
+
+    public void executeScheduledTask(DataSession session, DataObject scheduledTaskObject, String nameScheduledTask) throws SQLException, ScriptingErrorLog.SemanticErrorException, SQLHandledException {
+        if (daemonTasksExecutor != null) {
+            Integer scheduledTaskId = (Integer) scheduledTaskObject.getValue();
+            List<ScheduledFuture> futures = futuresMap.get(scheduledTaskId);
+            if (futures == null)
+                futures = new ArrayList<>();
+
+            schedulerLogger.info("Execute scheduler task: " + nameScheduledTask);
+            SchedulerTask task = new SchedulerTask(nameScheduledTask, readUserSchedulerTask(session, session.getModifier(), scheduledTaskObject, nameScheduledTask,
+                    null, null, null, null), scheduledTaskId, true, null, 0, false);
+            futures.add(task.execute(daemonTasksExecutor));
+            futuresMap.put(scheduledTaskId, futures);
+        }
+    }
+
     public void setupScheduledTasks(DataSession session) throws SQLException, ScriptingErrorLog.SemanticErrorException, SQLHandledException {
 
         if (daemonTasksExecutor != null)
@@ -130,8 +181,13 @@ public class Scheduler extends MonitorServer implements InitializingBean {
         fillSystemScheduledTasks(tasks);
         fillUserScheduledTasks(session, tasks);
 
-        for(SchedulerTask task : tasks)
-            task.schedule(daemonTasksExecutor);
+        for (SchedulerTask task : tasks) {
+            List<ScheduledFuture> futures = futuresMap.get(task.scheduledTaskId);
+            if (futures == null)
+                futures = new ArrayList<>();
+            futures.addAll(task.schedule(daemonTasksExecutor));
+            futuresMap.put(task.scheduledTaskId, futures);
+        }
     }
 
     private void fillSystemScheduledTasks(List<SchedulerTask> tasks) throws SQLException, SQLHandledException, ScriptingErrorLog.SemanticErrorException {
@@ -140,7 +196,7 @@ public class Scheduler extends MonitorServer implements InitializingBean {
             public void run(ExecutionStack stack) throws Exception {
                 changeCurrentDate(stack);
             }
-        }, true, Settings.get().getCheckCurrentDate(), true, "Changing current date"));
+        }, -1, true, Settings.get().getCheckCurrentDate(), true, "Changing current date"));
         tasks.addAll(BL.getSystemTasks(this));
     }
 
@@ -168,7 +224,8 @@ public class Scheduler extends MonitorServer implements InitializingBean {
         for (int i = 0, size = scheduledTaskResult.size(); i < size; i++) {
             ImMap<Object, Object> key = scheduledTaskResult.getKey(i);
             ImMap<Object, Object> value = scheduledTaskResult.getValue(i);
-            DataObject currentScheduledTaskObject = new DataObject(key.getValue(0), BL.schedulerLM.scheduledTask);
+            Integer scheduledTaskId = (Integer) key.getValue(0);
+            DataObject currentScheduledTaskObject = new DataObject(scheduledTaskId, BL.schedulerLM.scheduledTask);
             String nameScheduledTask = trim((String) value.get("nameScheduledTask"));
             Boolean runAtStart = value.get("runAtStartScheduledTask") != null;
             Timestamp startDate = (Timestamp) value.get("startDateScheduledTask");
@@ -185,72 +242,79 @@ public class Scheduler extends MonitorServer implements InitializingBean {
             Set<String> daysOfMonth = daysOfMonthScheduledTask == null ? new HashSet<>() : new HashSet(Arrays.asList(daysOfMonthScheduledTask.split(",| ")));
             daysOfMonth.remove("");
 
-            KeyExpr scheduledTaskDetailExpr = new KeyExpr("scheduledTaskDetail");
-            ImRevMap<Object, KeyExpr> scheduledTaskDetailKeys = MapFact.<Object, KeyExpr>singletonRev("scheduledTaskDetail", scheduledTaskDetailExpr);
-
-            QueryBuilder<Object, Object> scheduledTaskDetailQuery = new QueryBuilder<>(scheduledTaskDetailKeys);
-            scheduledTaskDetailQuery.addProperty("canonicalNamePropertyScheduledTaskDetail", BL.schedulerLM.canonicalNamePropertyScheduledTaskDetail.getExpr(modifier, scheduledTaskDetailExpr));
-            scheduledTaskDetailQuery.addProperty("ignoreExceptionsScheduledTaskDetail", BL.schedulerLM.ignoreExceptionsScheduledTaskDetail.getExpr(modifier, scheduledTaskDetailExpr));
-            scheduledTaskDetailQuery.addProperty("orderScheduledTaskDetail", BL.schedulerLM.orderScheduledTaskDetail.getExpr(modifier, scheduledTaskDetailExpr));
-            scheduledTaskDetailQuery.addProperty("scriptScheduledTaskDetail", BL.schedulerLM.scriptScheduledTaskDetail.getExpr(modifier, scheduledTaskDetailExpr));
-            scheduledTaskDetailQuery.addProperty("timeoutScheduledTaskDetail", BL.schedulerLM.timeoutScheduledTaskDetail.getExpr(modifier, scheduledTaskDetailExpr));
-            scheduledTaskDetailQuery.addProperty("parameterScheduledTaskDetail", BL.schedulerLM.parameterScheduledTaskDetail.getExpr(modifier, scheduledTaskDetailExpr));
-            scheduledTaskDetailQuery.and(BL.schedulerLM.activeScheduledTaskDetail.getExpr(modifier, scheduledTaskDetailExpr).getWhere());
-            scheduledTaskDetailQuery.and(BL.schedulerLM.scheduledTaskScheduledTaskDetail.getExpr(modifier, scheduledTaskDetailExpr).compare(currentScheduledTaskObject, Compare.EQUALS));
-
-            TreeMap<Integer, ScheduledTaskDetail> propertySIDMap = new TreeMap<>();
-            ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> propertyResult = scheduledTaskDetailQuery.execute(session);
-            int defaultOrder = propertyResult.size() + 100;
-            for (ImMap<Object, Object> propertyValues : propertyResult.valueIt()) {
-                String canonicalName = (String) propertyValues.get("canonicalNamePropertyScheduledTaskDetail");
-                String script = (String) propertyValues.get("scriptScheduledTaskDetail");
-                if(script != null && !script.isEmpty())
-                    script = String.format("run() = ACTION {%s;\n};", script);
-                boolean ignoreExceptions = propertyValues.get("ignoreExceptionsScheduledTaskDetail") != null;
-                Integer timeout = (Integer) propertyValues.get("timeoutScheduledTaskDetail");
-                String parameter = (String) propertyValues.get("parameterScheduledTaskDetail");
-                List<String> params = new ArrayList<>();
-                if(parameter != null) {
-                    for(String param : parameter.split(","))
-                        params.add(param);
-                }
-                Integer orderProperty = (Integer) propertyValues.get("orderScheduledTaskDetail");
-                if (canonicalName != null || script != null) {
-                    if (orderProperty == null) {
-                        orderProperty = defaultOrder;
-                        defaultOrder++;
-                    }
-                    LAP lap = script == null ? (LAP) BL.findProperty(canonicalName.trim()) : BL.schedulerLM.evalScript;
-                    if(lap != null)
-                        propertySIDMap.put(orderProperty, new ScheduledTaskDetail(lap, script, ignoreExceptions, timeout, params));
-                }
-            }
-
-            UserSchedulerTask task = new UserSchedulerTask(nameScheduledTask, currentScheduledTaskObject, propertySIDMap, timeFrom, timeTo, daysOfWeek, daysOfMonth);
             if(startDate != null)
-                tasks.add(new SchedulerTask(nameScheduledTask, task, runAtStart, startDate, period, fixedDelay));
+                tasks.add(new SchedulerTask(nameScheduledTask, readUserSchedulerTask(session, modifier, currentScheduledTaskObject, nameScheduledTask, timeFrom, timeTo,
+                    daysOfWeekScheduledTask, daysOfMonthScheduledTask), scheduledTaskId, runAtStart, startDate, period, fixedDelay));
         }
+    }
+
+    private UserSchedulerTask readUserSchedulerTask(DataSession session, Modifier modifier, DataObject scheduledTaskObject, String nameScheduledTask,
+                                                    Time timeFrom, Time timeTo, String daysOfWeekScheduledTask, String daysOfMonthScheduledTask) throws SQLException, SQLHandledException {
+        KeyExpr scheduledTaskDetailExpr = new KeyExpr("scheduledTaskDetail");
+        ImRevMap<Object, KeyExpr> scheduledTaskDetailKeys = MapFact.<Object, KeyExpr>singletonRev("scheduledTaskDetail", scheduledTaskDetailExpr);
+
+        QueryBuilder<Object, Object> scheduledTaskDetailQuery = new QueryBuilder<>(scheduledTaskDetailKeys);
+        scheduledTaskDetailQuery.addProperty("canonicalNameProperty", BL.schedulerLM.canonicalNamePropertyScheduledTaskDetail.getExpr(modifier, scheduledTaskDetailExpr));
+        scheduledTaskDetailQuery.addProperty("ignoreExceptions", BL.schedulerLM.ignoreExceptionsScheduledTaskDetail.getExpr(modifier, scheduledTaskDetailExpr));
+        scheduledTaskDetailQuery.addProperty("order", BL.schedulerLM.orderScheduledTaskDetail.getExpr(modifier, scheduledTaskDetailExpr));
+        scheduledTaskDetailQuery.addProperty("script", BL.schedulerLM.scriptScheduledTaskDetail.getExpr(modifier, scheduledTaskDetailExpr));
+        scheduledTaskDetailQuery.addProperty("timeout", BL.schedulerLM.timeoutScheduledTaskDetail.getExpr(modifier, scheduledTaskDetailExpr));
+        scheduledTaskDetailQuery.addProperty("parameter", BL.schedulerLM.parameterScheduledTaskDetail.getExpr(modifier, scheduledTaskDetailExpr));
+        scheduledTaskDetailQuery.and(BL.schedulerLM.activeScheduledTaskDetail.getExpr(modifier, scheduledTaskDetailExpr).getWhere());
+        scheduledTaskDetailQuery.and(BL.schedulerLM.scheduledTaskScheduledTaskDetail.getExpr(modifier, scheduledTaskDetailExpr).compare(scheduledTaskObject, Compare.EQUALS));
+
+        TreeMap<Integer, ScheduledTaskDetail> propertySIDMap = new TreeMap<>();
+        ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> propertyResult = scheduledTaskDetailQuery.execute(session);
+        int defaultOrder = propertyResult.size() + 100;
+        for (ImMap<Object, Object> propertyValues : propertyResult.valueIt()) {
+            String canonicalName = (String) propertyValues.get("canonicalNameProperty");
+            String script = (String) propertyValues.get("script");
+            if(script != null && !script.isEmpty())
+                script = String.format("run() = ACTION {%s;\n};", script);
+            boolean ignoreExceptions = propertyValues.get("ignoreExceptions") != null;
+            Integer timeout = (Integer) propertyValues.get("timeout");
+            String parameter = (String) propertyValues.get("parameter");
+            List<String> params = new ArrayList<>();
+            if(parameter != null)
+                Collections.addAll(params, parameter.split(","));
+            Integer orderProperty = (Integer) propertyValues.get("order");
+            if (canonicalName != null || script != null) {
+                if (orderProperty == null) {
+                    orderProperty = defaultOrder;
+                    defaultOrder++;
+                }
+                LAP lap = script == null ? (LAP) BL.findProperty(canonicalName.trim()) : BL.schedulerLM.evalScript;
+                if(lap != null)
+                    propertySIDMap.put(orderProperty, new ScheduledTaskDetail(lap, script, ignoreExceptions, timeout, params));
+            }
+        }
+        Set<String> daysOfWeek = daysOfWeekScheduledTask == null ? new HashSet<>() : new HashSet(Arrays.asList(daysOfWeekScheduledTask.split(",| ")));
+        daysOfWeek.remove("");
+        Set<String> daysOfMonth = daysOfMonthScheduledTask == null ? new HashSet<>() : new HashSet(Arrays.asList(daysOfMonthScheduledTask.split(",| ")));
+        daysOfMonth.remove("");
+        return new UserSchedulerTask(nameScheduledTask, scheduledTaskObject, propertySIDMap, timeFrom, timeTo, daysOfWeek, daysOfMonth);
     }
 
     public class SystemSchedulerTask extends SchedulerTask {
 
-        public SystemSchedulerTask(final EExecutionStackRunnable task, boolean runAtStart, Integer period, boolean fixedDelay, String name) {
-            super(name, task, runAtStart, null, period, fixedDelay);
+        public SystemSchedulerTask(final EExecutionStackRunnable task, Integer scheduledTaskId, boolean runAtStart, Integer period, boolean fixedDelay, String name) {
+            super(name, task, scheduledTaskId, runAtStart, null, period, fixedDelay);
         }
     }
 
     public SchedulerTask createSystemTask(EExecutionStackRunnable task, boolean runAtStart, Integer period, boolean fixedDelay, String name) {
-        return new SystemSchedulerTask(task, runAtStart, period, fixedDelay, name);
+        return new SystemSchedulerTask(task, -1, runAtStart, period, fixedDelay, name);
     }
 
     public class SchedulerTask {
+        private final Integer scheduledTaskId;
         private final boolean runAtStart;
         private final Timestamp startDate;
         private final Integer period;
         private final boolean fixedDelay;
         private final Runnable task;
 
-        public SchedulerTask(final String name, final EExecutionStackRunnable task, boolean runAtStart, Timestamp startDate, Integer period, boolean fixedDelay) {
+        public SchedulerTask(final String name, final EExecutionStackRunnable task, Integer scheduledTaskId, boolean runAtStart, Timestamp startDate, Integer period, boolean fixedDelay) {
             this.task = new Runnable() {
                 public void run() {
                     schedulerLogger.info("Started running scheduler task - " + name);
@@ -263,6 +327,7 @@ public class Scheduler extends MonitorServer implements InitializingBean {
                     }
                 }
             };
+            this.scheduledTaskId = scheduledTaskId;
             this.runAtStart = runAtStart;
             this.startDate = startDate;
             this.period = period;
@@ -270,9 +335,14 @@ public class Scheduler extends MonitorServer implements InitializingBean {
             assert startDate != null || period != null;
         }
 
-        public void schedule(ScheduledExecutorService service) {
+        public ScheduledFuture execute(ScheduledExecutorService service) {
+            return service.schedule(task, 0, TimeUnit.MILLISECONDS);
+        }
+
+        public List<ScheduledFuture> schedule(ScheduledExecutorService service) {
+            List<ScheduledFuture> scheduledFutureList = new ArrayList<>();
             if (runAtStart) {
-                service.schedule(task, 0, TimeUnit.MILLISECONDS);
+                scheduledFutureList.add(service.schedule(task, 0, TimeUnit.MILLISECONDS));
             }
             Long start = null;
             if (startDate != null)
@@ -294,15 +364,16 @@ public class Scheduler extends MonitorServer implements InitializingBean {
                         delay = 0L;
                 }
                 if (fixedDelay)
-                    service.scheduleWithFixedDelay(task, delay, longPeriod, TimeUnit.MILLISECONDS);
+                    scheduledFutureList.add(service.scheduleWithFixedDelay(task, delay, longPeriod, TimeUnit.MILLISECONDS));
                 else
-                    service.scheduleAtFixedRate(task, delay, longPeriod, TimeUnit.MILLISECONDS);
+                    scheduledFutureList.add(service.scheduleAtFixedRate(task, delay, longPeriod, TimeUnit.MILLISECONDS));
             } else {
                 assert start != null;
                 if (start > currentTime) {
-                    service.schedule(task, start - currentTime, TimeUnit.MILLISECONDS);
+                    scheduledFutureList.add(service.schedule(task, start - currentTime, TimeUnit.MILLISECONDS));
                 }
             }
+            return scheduledFutureList;
         }
     }
 

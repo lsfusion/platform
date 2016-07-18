@@ -1,4 +1,4 @@
-package lsfusion.server;
+package lsfusion.server.scheduler;
 
 import com.google.common.base.Throwables;
 import lsfusion.server.data.SQLHandledException;

@@ -81,12 +81,12 @@ date 'Время'= DATA DATETIME (ScheduledClientTaskLog);
 
 isMessages 'Сообщения' (ScheduledTaskLog stl)= TRUE IF [=GROUP SUM 1 IF message(ScheduledClientTaskLog stcl) BY scheduledTaskLog(stcl)](stl) AND NOT exceptionOccurred(stl);
 
-stopScheduler 'Остановить планировщик' = ACTION CUSTOM 'lsfusion.server.StopSchedulerActionProperty' ();
+stopScheduler 'Остановить планировщик' = ACTION CUSTOM 'lsfusion.server.scheduler.StopSchedulerActionProperty' ();
 stopSchedulerApply 'Остановить планировщик' = ACTION {
     stopScheduler();
     apply();
 }
-runSetupScheduler 'Запустить планировщик' = ACTION CUSTOM 'lsfusion.server.SetupSchedulerActionProperty' ();
+runSetupScheduler 'Запустить планировщик' = ACTION CUSTOM 'lsfusion.server.scheduler.SetupSchedulerActionProperty' ();
 runSetupSchedulerApply 'Запустить планировщик' = ACTION {
     runSetupScheduler();
     apply();
@@ -98,8 +98,8 @@ onStarted() += ACTION runSetupScheduler();
 
 scriptText 'Скрипт' () = DATA LOCAL TEXT ();
 evalScript 'Выполнить скрипт' () = ACTION EVAL scriptText();
-
-changedScheduler () = GROUP SUM 1 IF (((CHANGED (runAtStart(ScheduledTask t)) OR CHANGED (startDate(t)) OR CHANGED (timeFrom(t)) 
+                                         
+changedSchedulerTask (ScheduledTask t) = GROUP SUM 1 IF (((CHANGED (runAtStart(ScheduledTask t)) OR CHANGED (startDate(t)) OR CHANGED (timeFrom(t)) 
                                          OR CHANGED (timeTo(t)) OR CHANGED (period(t)) OR CHANGED (daysOfMonth(t))
                                          OR CHANGED (schedulerStartType(t)) OR CHANGED (schedulerStartType(t))) AND active(t)
                                          OR CHANGED (active(t))) OR
@@ -107,16 +107,18 @@ changedScheduler () = GROUP SUM 1 IF (((CHANGED (runAtStart(ScheduledTask t)) OR
                                          OR CHANGED (scheduledTask(td)) OR CHANGED (property(td)) 
                                          OR CHANGED (ignoreExceptions(td)) OR CHANGED (timeout(td)) OR CHANGED (parameter(td)))
                                          AND active(scheduledTask(td))) OR 
-                                                CHANGED(in(DOW dow, t))) AND isStartedScheduler() AND t IS ScheduledTask AND td IS ScheduledTaskDetail AND dow IS DOW;
-                                         ;
-WHEN changedScheduler() DO EXEC runSetupScheduler();
-WHEN DROPPED (ScheduledTaskDetail td IS ScheduledTaskDetail) IF PREV(active(td)) AND isStartedScheduler() DO EXEC runSetupScheduler();
+                                                CHANGED(in(DOW dow, t))) AND isStartedScheduler() AND t IS ScheduledTask AND td IS ScheduledTaskDetail AND dow IS DOW BY t;
+                                                
+executeScheduledTask 'Выполнить задание' = ACTION CUSTOM 'lsfusion.server.scheduler.ExecuteScheduledTaskActionProperty' (ScheduledTask) CONFIRM;                                                                                                                                 
+setupScheduledTask 'Перезапустить задание' = ACTION CUSTOM 'lsfusion.server.scheduler.SetupScheduledTaskActionProperty' (ScheduledTask);                                         
+WHEN changedSchedulerTask(ScheduledTask t) DO EXEC setupScheduledTask(t);
+WHEN DROPPED (ScheduledTaskDetail td IS ScheduledTaskDetail) IF PREV(active(td)) AND isStartedScheduler() DO EXEC setupScheduledTask(scheduledTask(td));
            
 FORM scheduledTask 'Планировщик'
 
     OBJECTS t=ScheduledTask
     PROPERTIES (t) active, name, timeFrom, timeTo, startDate, period,
-                    nameSchedulerStartType, runAtStart, daysOfMonth FORCE PANEL
+                    nameSchedulerStartType, runAtStart, daysOfMonth FORCE PANEL, executeScheduledTask, setupScheduledTask
     PROPERTIES (t) ADDOBJ, DELETESESSION
          
     OBJECTS td=ScheduledTaskDetail
@@ -125,7 +127,7 @@ FORM scheduledTask 'Планировщик'
                     returnProperty, timeout, script FORCE PANEL
     PROPERTIES (td) ADDOBJ, DELETESESSION
     
-    OBJECTS tl=ScheduledTaskLog
+    OBJECTS tl=ScheduledTaskLog LAST
     PROPERTIES (tl) READONLY property, result, exceptionOccurred, isMessages, date
     
     FILTERGROUP stlFilters 
