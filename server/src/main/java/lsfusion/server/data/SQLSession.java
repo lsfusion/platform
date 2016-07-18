@@ -871,8 +871,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     // по большому счету от sessionTablesCount можно отказаться (правда TRUNCATE не возвращает количество записей)
     private final Map<String, Integer> sessionTablesCount = MapFact.mAddRemoveMap(); // lockRead
 
-    public int getSessionTablesCountAll() throws SQLException { // assertLock
-        assert calcSessionTablesCountAll() == totalSessionTablesCount;
+    public int getSessionTablesCountAll(boolean lockedWrite) throws SQLException { // assertLock
+        assert !lockedWrite || calcSessionTablesCountAll() == totalSessionTablesCount; // если не lockedwrite то может отличаться количество, так как может пройти изменение, но не делаться registerChange
         return totalSessionTablesCount;
     }
 
@@ -2873,15 +2873,15 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         runLockReadOperation(new SQLRunnable() { // assertLock
             public void run() throws SQLException, SQLHandledException {
                 Result<String> description = new Result<>(null);
-                usedConnections.add(new ConnectionUsage(SQLSession.this, getScore(readDescription ? description : null), description.result));
+                usedConnections.add(new ConnectionUsage(SQLSession.this, getScore(readDescription ? description : null, false), description.result));
             }
         });
     }
 
-    private double getScore(Result<String> description) throws SQLException {
+    private double getScore(Result<String> description, boolean lockedWrite) throws SQLException {
         Settings settings = Settings.get();
 
-        int usedTablesSize = getSessionTablesCountAll();
+        int usedTablesSize = getSessionTablesCountAll(lockedWrite);
 
         long currentTime = System.currentTimeMillis();
         long timeStarted = (currentTime - privateConnection.timeStarted);
@@ -2925,7 +2925,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
             boolean locked = tryLockWrite(owner);
             try {
                 Result<String> description = new Result<>();
-                if(!locked || isClosed() || privateConnection == null || score > getScore(description)) { // double check - score упал
+                if(!locked || isClosed() || privateConnection == null || score > getScore(description, true)) { // double check - score упал
                     notUsedConnections.put(connectionPool, newConnection); // если не использовали возвращаем
                     noError = true;
                     return false;
