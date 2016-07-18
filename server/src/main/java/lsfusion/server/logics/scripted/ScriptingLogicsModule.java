@@ -3250,7 +3250,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public void checkIndexNecessaryProperty(LPWithParams property) throws ScriptingErrorLog.SemanticErrorException {
+    public void checkNecessaryProperty(LPWithParams property) throws ScriptingErrorLog.SemanticErrorException {
         if (property.property == null) {
             errLog.emitNecessaryPropertyError(parser);
         }
