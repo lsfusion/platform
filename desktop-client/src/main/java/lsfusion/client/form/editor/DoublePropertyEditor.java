@@ -6,6 +6,7 @@ import org.apache.commons.lang.StringUtils;
 import javax.swing.*;
 import javax.swing.text.DefaultFormatterFactory;
 import javax.swing.text.NumberFormatter;
+import java.awt.event.ActionEvent;
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
@@ -109,8 +110,35 @@ public class DoublePropertyEditor extends TextFieldPropertyEditor {
                 e.printStackTrace();
             }
         }
+
+        if(hasMask) {
+            ActionMap actionMap = getActionMap();
+            actionMap.put("delete-previous", new BackspaceAction(actionMap.get("delete-previous")));
+        }
     }
 
+    //курсор перескакивает через decimalSeparator при удалении
+    class BackspaceAction extends AbstractAction {
+        Action defaultAction;
+        public BackspaceAction(Action defaultAction) {
+            this.defaultAction = defaultAction;
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            if(defaultAction != null)
+                defaultAction.actionPerformed(e);
+
+            String text = getText();
+            if(text != null) {
+                int currentPosition = getCaret().getDot();
+                char separator = df.getDecimalFormatSymbols().getDecimalSeparator();
+                int separatorPosition = text.indexOf(separator);
+                if (separatorPosition >= 0 && separatorPosition == currentPosition - 1)
+                    getCaret().setDot(currentPosition - 1);
+            }
+        }
+    }
 
     @Override
     public void replaceSelection(String content) {
