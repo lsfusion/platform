@@ -111,40 +111,69 @@ public class DoublePropertyEditor extends TextFieldPropertyEditor {
             }
         }
 
-        if(hasMask) {
-            ActionMap actionMap = getActionMap();
-            actionMap.put("delete-previous", new BackspaceAction(actionMap.get("delete-previous")));
-        }
+        ActionMap actionMap = getActionMap();
+        actionMap.put("delete-previous", new MoveCaretAction(actionMap.get("delete-previous"), hasMask, false));
+        actionMap.put("delete-next", new MoveCaretAction(actionMap.get("delete-next"), hasMask, true));
+
     }
 
     //курсор перескакивает через decimalSeparator при удалении
-    class BackspaceAction extends AbstractAction {
+    class MoveCaretAction extends AbstractAction {
         Action defaultAction;
-        public BackspaceAction(Action defaultAction) {
+        boolean hasMask;
+        boolean forward;
+        public MoveCaretAction(Action defaultAction, boolean hasMask, boolean forward) {
             this.defaultAction = defaultAction;
+            this.hasMask = hasMask;
+            this.forward = forward;
         }
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            //проверяем, не справа ли мы от decimalSeparator. Если да, смещаемся влево и игнорируем событие
-            //иначе событие происходит и делаем проверку снова, чтобы перепрыгнуть через decimalSeparator
-            if (!backspace()) {
-                if (defaultAction != null) {
-                    defaultAction.actionPerformed(e);
+            if (hasMask) {
+                //проверяем, не справа(backspace)/слева(delete) ли мы от decimalSeparator. Если да, смещаемся влево(backspace)/вправо(delete) и игнорируем событие
+                //иначе событие происходит и делаем проверку снова, чтобы перепрыгнуть через decimalSeparator.
+                if (!moveCaret()) {
+                    if (defaultAction != null) {
+                        defaultAction.actionPerformed(e);
+                    }
+                    moveCaret();
                 }
-                backspace();
+            } else {
+                //проверяем, не пытаемся ли мы удалить decimalSeparator. Если да, то проверяем, не наступит ли в результате удаления переполнения.
+                if (!checkOverflow()) {
+                    if (defaultAction != null)
+                        defaultAction.actionPerformed(e);
+                }
             }
         }
 
-        private boolean backspace() {
+        private boolean moveCaret() {
             String text = getText();
             if (text != null) {
                 int currentPosition = getCaret().getDot();
                 char separator = df.getDecimalFormatSymbols().getDecimalSeparator();
                 int separatorPosition = text.indexOf(separator);
-                if (separatorPosition >= 0 && separatorPosition == currentPosition - 1) {
-                    getCaret().setDot(currentPosition - 1);
+                if (separatorPosition >= 0 && separatorPosition == currentPosition + (forward ? 0 : -1)) {
+                    getCaret().setDot(currentPosition + (forward ? 1 : -1));
                     return true;
+                }
+            }
+            return false;
+        }
+
+        private boolean checkOverflow() {
+            String text = getText();
+            if (text != null) {
+                int currentPosition = getCaret().getDot();
+                char separator = df.getDecimalFormatSymbols().getDecimalSeparator();
+                char groupingSeparator = df.getDecimalFormatSymbols().getGroupingSeparator();
+                int separatorPosition = text.indexOf(separator);
+                if (separatorPosition >= 0 && separatorPosition == currentPosition + (forward ? 0 : -1)) {
+                    int length = text.replace(String.valueOf(groupingSeparator), "").replace(String.valueOf(separator), "").length();
+                    if (length > df.getMaximumIntegerDigits()) {
+                        return true;
+                    }
                 }
             }
             return false;
