@@ -198,7 +198,7 @@ public class DoublePropertyEditor extends TextFieldPropertyEditor {
                     int currentPosition = getCaret().getDot();
                     char separator = df.getDecimalFormatSymbols().getDecimalSeparator();
                     int separatorPosition = text.indexOf(separator);
-                    String[] split = text.replace(String.valueOf(df.getDecimalFormatSymbols().getGroupingSeparator()), "").split(String.valueOf(separator));
+                    String[] split = text.replace(String.valueOf(df.getDecimalFormatSymbols().getGroupingSeparator()), "").replace("-", "").split(String.valueOf(separator));
                     if (currentPosition <= separatorPosition || separatorPosition == -1) {
                         if (df.getMaximumIntegerDigits() <= split[0].length())
                             setSingleSelection(currentPosition - (currentPosition == separatorPosition || currentPosition == text.length() ? 1 : 0));
