@@ -126,17 +126,28 @@ public class DoublePropertyEditor extends TextFieldPropertyEditor {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            if(defaultAction != null)
-                defaultAction.actionPerformed(e);
+            //проверяем, не справа ли мы от decimalSeparator. Если да, смещаемся влево и игнорируем событие
+            //иначе событие происходит и делаем проверку снова, чтобы перепрыгнуть через decimalSeparator
+            if (!backspace()) {
+                if (defaultAction != null) {
+                    defaultAction.actionPerformed(e);
+                }
+                backspace();
+            }
+        }
 
+        private boolean backspace() {
             String text = getText();
-            if(text != null) {
+            if (text != null) {
                 int currentPosition = getCaret().getDot();
                 char separator = df.getDecimalFormatSymbols().getDecimalSeparator();
                 int separatorPosition = text.indexOf(separator);
-                if (separatorPosition >= 0 && separatorPosition == currentPosition - 1)
+                if (separatorPosition >= 0 && separatorPosition == currentPosition - 1) {
                     getCaret().setDot(currentPosition - 1);
+                    return true;
+                }
             }
+            return false;
         }
     }
 
