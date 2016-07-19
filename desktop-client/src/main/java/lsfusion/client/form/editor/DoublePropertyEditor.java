@@ -170,7 +170,7 @@ public class DoublePropertyEditor extends TextFieldPropertyEditor {
                 char groupingSeparator = df.getDecimalFormatSymbols().getGroupingSeparator();
                 int separatorPosition = text.indexOf(separator);
                 if (separatorPosition >= 0 && separatorPosition == currentPosition + (forward ? 0 : -1)) {
-                    int length = text.replace(String.valueOf(groupingSeparator), "").replace(String.valueOf(separator), "").length();
+                    int length = text.replace(String.valueOf(groupingSeparator), "").replace(String.valueOf(separator), "").replace("-", "").length();
                     if (length > df.getMaximumIntegerDigits()) {
                         return true;
                     }
