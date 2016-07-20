@@ -3226,7 +3226,6 @@ componentStatementBody [ComponentView parentComponent]
 	:	'{'
 		(	setObjectPropertyStatement[parentComponent]
 		|	setupComponentStatement
-		|	setupGroupObjectStatement
 		|	newComponentStatement[parentComponent]
 		|	moveComponentStatement[parentComponent]
 		|	removeComponentStatement
@@ -3238,26 +3237,6 @@ componentStatementBody [ComponentView parentComponent]
 
 setupComponentStatement
 	:	comp=componentSelector componentStatementBody[$comp.component]
-	;
-
-setupGroupObjectStatement
-@init {
-	GroupObjectView groupObject = null;
-}
-	:	'GROUP'
-		'('
-			ID
-			{
-				if (inPropParseState()) {
-					groupObject = $designStatement::design.getGroupObject($ID.text, self.getVersion());
-				}
-			}
-		')'
-		'{'
-			( setObjectPropertyStatement[groupObject]
-			| emptyStatement
-			)*
-		'}'
 	;
 
 newComponentStatement[ComponentView parentComponent]
