@@ -130,30 +130,33 @@ public final class Log {
 
         provideErrorFeedback();
 
-        JPanel messagePanel = new JPanel(new BorderLayout(10, 10));
+        JPanel messagePanel = new JPanel();
+        messagePanel.setLayout(new BoxLayout(messagePanel, BoxLayout.Y_AXIS));
         messagePanel.add(new JLabel(toHtml(message)), BorderLayout.NORTH);
         if (data != null) {
             messagePanel.add(new JScrollPane(createDataTable(titles, data)), BorderLayout.CENTER);
         }
 
-        JPanel line = new JPanel();
-        line.setPreferredSize(new Dimension(10, 2));
-        line.setBackground(Color.GRAY);
-
         JTextArea taErrorText = new JTextArea(trace, 7, 60);
         taErrorText.setFont(new Font("Tahoma", Font.PLAIN, 12));
         taErrorText.setForeground(Color.RED);
 
+        JPanel textWithLine = new JPanel();
+        textWithLine.setLayout(new BorderLayout(10, 10));
+        textWithLine.add(new JSeparator());
+        textWithLine.add(new JScrollPane(taErrorText));
+
         final JPanel south = new JPanel();
         south.setLayout(new BoxLayout(south, BoxLayout.Y_AXIS));
         south.setVisible(false);
-        south.add(line);
-        south.add(new JLabel(" "));
-        south.add(new JScrollPane(taErrorText));
+        south.add(Box.createVerticalStrut(10));
 
-        JPanel mainPanel = new JPanel(new BorderLayout(10, 10));
-        mainPanel.add(messagePanel, BorderLayout.CENTER);
-        mainPanel.add(south, BorderLayout.SOUTH);
+        south.add(textWithLine);
+
+        JPanel mainPanel = new JPanel();
+        mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
+        mainPanel.add(messagePanel);
+        mainPanel.add(south);
 
         String opt[];
         if (trace.length() > 0) {
@@ -170,6 +173,7 @@ public final class Log {
         final JDialog dialog = new JDialog(Main.frame, Main.getMainTitle(), Dialog.ModalityType.APPLICATION_MODAL);
         dialog.setContentPane(optionPane);
         dialog.pack();
+        dialog.setMinimumSize(dialog.getPreferredSize());
 
         optionPane.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent e) {
@@ -178,8 +182,9 @@ public final class Log {
                     dialog.dispose();
                 } else if (value.equals(getString("client.more"))) {
                     south.setVisible(!south.isVisible());
-                    dialog.pack();
                     optionPane.setValue(JOptionPane.UNINITIALIZED_VALUE);
+                    dialog.setMinimumSize(dialog.getPreferredSize());
+                    dialog.pack();
                 }
             }
         });
