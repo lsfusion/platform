@@ -813,7 +813,7 @@ formEventDeclaration returns [ActionPropertyObjectEntity action, Object type]
 }
 	:	'ON'
 		(	'OK' 	 { $type = FormEventType.OK; }
-		|	'APPLY' ('BEFORE' { before = true; } | 'AFTER' { before = true; } ) { $type = before ? FormEventType.BEFOREAPPLY : FormEventType.AFTERAPPLY; }
+		|	'APPLY' ('BEFORE' { before = true; } | 'AFTER' { before = false; }) { $type = before ? FormEventType.BEFOREAPPLY : FormEventType.AFTERAPPLY; }
 		|	'CLOSE'	 { $type = FormEventType.CLOSE; }
 		|	'INIT'	 { $type = FormEventType.INIT; }
 		|	'CANCEL' { $type = FormEventType.CANCEL; }
