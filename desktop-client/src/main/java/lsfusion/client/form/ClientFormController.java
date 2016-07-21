@@ -959,6 +959,11 @@ public class ClientFormController implements AsyncListener {
                     protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
                         return remoteForm.executeEditAction(requestIndex, lastReceivedRequestIndex, property.getID(), fullCurrentKey, actionSID);
                     }
+
+                    @Override
+                    protected void onResponseGetFailed(long requestIndex) throws Exception {
+                        processServerResponse(new ServerResponse(requestIndex, new ClientAction[0], true));
+                    }
                 });
         return result == null ? ServerResponse.EMPTY : result;
     }

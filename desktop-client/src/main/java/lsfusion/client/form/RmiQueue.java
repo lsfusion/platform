@@ -431,7 +431,11 @@ public class RmiQueue {
                 logger.debug("Executing RmiFutureCallback: " + request);
             }
 
-            request.onResponse(get());
+            try {
+                request.onResponse(get());
+            } catch (Exception e) {
+                request.onResponseGetFailed();
+            }
         }
     }
 
