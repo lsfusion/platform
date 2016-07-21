@@ -34,7 +34,7 @@ CodeMirror.defineMode("fusion", function(config, parserConfig) {
                            "ROUND RTF SAVEFILE SELECTOR SESSION SET SETCHANGED SHORTCUT SHOW SHOWDROP " +
                            "SHOWIF SINGLE SHEET SCHEDULE SPLITH SPLITV STEP STRETCH STRICT STRUCT SUBJECT " +
                            "SUM TAB TABBED TABLE TEXTHALIGN TEXTVALIGN THEN THREADS TIME TO TODRAW " +
-                           "TOOLBAR TOP TRAILING TREE TRUE UNGROUP UPDATE VALIGN " +
+                           "TOOLBAR TOP TRAILING TREE TRUE UNGROUP UPDATE VALIGN VALUE " +
                            "VERTICAL WHEN WHERE WHILE WINDOW WORDFILE WRITE XLS XLSX XML XOR YES");
 
     var isOperatorChar = /[+\-*&%=<>!?|@#]/;
