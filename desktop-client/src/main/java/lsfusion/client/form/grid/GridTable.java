@@ -1761,6 +1761,7 @@ public class GridTable extends ClientPropertyTable {
     private class GridTableHeader extends JTableHeader {
         public GridTableHeader(TableColumnModel columnModel) {
             super(columnModel);
+            setReorderingAllowed(false);
         }
 
         @Override

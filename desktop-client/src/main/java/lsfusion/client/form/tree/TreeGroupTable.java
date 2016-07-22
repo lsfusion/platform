@@ -944,13 +944,15 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
 
     @Override
     protected JTableHeader createDefaultTableHeader() {
-        return new JXTableHeader(columnModel) {
+        JXTableHeader jxTableHeader = new JXTableHeader(columnModel) {
             @Override
             public Dimension getPreferredSize() {
                 Dimension pref = super.getPreferredSize();
                 return new Dimension(pref.width, 34);
             }
         };
+        jxTableHeader.setReorderingAllowed(false);
+        return jxTableHeader;
     }
 
     private class ChangeObjectEvent extends AWTEvent implements ActiveEvent {
