@@ -59,7 +59,7 @@
         <blocking.map.version>1.0-patched</blocking.map.version>
         <antlr.version>3.5.2</antlr.version>
         <supercsv.version>1.52</supercsv.version>
-        <edireader.version>4.7.3</edireader.version>
+        <edireader.version>4.7.3.1</edireader.version>
         <jna.version>3.2.3</jna.version>
         <stax.version>1.2.0</stax.version>
         <shef.version>0.5</shef.version>
@@ -185,7 +185,7 @@
                 <version>${com.jcraft.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.healthmarketscience</groupId>
+                <groupId>com.healthmarketscience.jackcess</groupId>
                 <artifactId>jackcess</artifactId>
                 <version>${com.healthmarketscience.version}</version>
             </dependency>
@@ -337,7 +337,7 @@
                 <version>${supercsv.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.berryworks.edireader</groupId>
+                <groupId>com.berryworks</groupId>
                 <artifactId>edireader</artifactId>
                 <version>${edireader.version}</version>
             </dependency>

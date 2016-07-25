@@ -125,7 +125,7 @@
             <artifactId>commons-daemon</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.berryworks.edireader</groupId>
+            <groupId>com.berryworks</groupId>
             <artifactId>edireader</artifactId>
         </dependency>
         <dependency>
@@ -169,7 +169,7 @@
             <artifactId>jsch</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.healthmarketscience</groupId>
+            <groupId>com.healthmarketscience.jackcess</groupId>
             <artifactId>jackcess</artifactId>
         </dependency>
         <dependency>
