@@ -156,7 +156,7 @@ public abstract class AbstractContext implements Context {
                     isAdd, sessionScope,
                     checkOnOk, showDrop, interactive, contextFilters, initFilterProperty, pullProps, readonly);
         } finally {
-            if (newSession != session) // временный хак, когда уйдет SessionScope тогда и он уйдет
+            if (newSession != session) // временный хак, когда уйдет SessionScope тогда и он уйдет, по сути тоже try with resources
                 newSession.close();
         }
     }

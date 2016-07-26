@@ -1035,19 +1035,19 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
 
     // будем считать что если unreferenced \ finalized то форма точно также должна закрыться ???
     @Override
-    protected void onExplicitClose() {
+    protected void onExplicitClose(boolean syncedOnClient) {
         RemoteFormListener listener = getRemoteFormListener();
         if (listener != null) {
             listener.formExplicitClosed(this);
         }
 
         try {
-            form.close();
+            form.explicitClose(syncedOnClient);
         } catch (Throwable t) {
             ServerLoggers.sqlSuppLog(t);
         }
 
-        super.onExplicitClose();
+        super.onExplicitClose(syncedOnClient);
     }
 
     @Override

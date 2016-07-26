@@ -1296,17 +1296,10 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     }
 
     @Override
-    protected void onExplicitClose(Object o) throws SQLException {
+    protected void onExplicitClose(Object o, boolean syncedOnClient) throws SQLException {
         assert o == null;
 
-        for (GroupObjectInstance group : getGroups()) {
-            OperationOwner owner = session.getOwner();
-            if (group.keyTable != null)
-                group.keyTable.drop(session.sql, owner);
-            if (group.expandTable != null)
-                group.expandTable.drop(session.sql, owner);
-        }
-        session.unregisterForm(this); // важно после, так как сессия может закрыться
+        session.unregisterForm(this, syncedOnClient); // важно после, так как сессия может закрыться
     }
 
     @Override
@@ -2292,6 +2285,11 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
     public void formRefresh() throws SQLException, SQLHandledException {
         refreshData();
+    }
+
+    @Override
+    public void explicitClose(boolean syncedOnClient) throws SQLException {
+        super.explicitClose(syncedOnClient);
     }
 
     @Override

@@ -376,5 +376,10 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     public String getSID() {
         return "logics";
     }
+
+    @Override
+    protected boolean isUnreferencedSyncedClient() { // если ушли все ссылки считаем синхронизированным, так как клиент уже ни к чему обращаться не может
+        return true;
+    }
 }
 

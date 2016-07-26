@@ -91,38 +91,44 @@ public abstract class ContextAwarePendingRemoteObject extends PendingRemoteObjec
     }
 
     public void closeLater() {
-        BaseUtils.runLater(Settings.get().getCloseFormDelay(), new Runnable() { // тут надо бы на ContextAwareDaemonThreadFactory переделать
-            @Override
-            public void run() {
-                ThreadLocalContext.aspectBeforeRmi(ContextAwarePendingRemoteObject.this, true);
-                try {
-                    explicitClose();
-                } finally {
-                    ThreadLocalContext.aspectAfterRmi();
+        if(!Settings.get().isDisableAsyncClose()) {
+            BaseUtils.runLater(Settings.get().getCloseFormDelay(), new Runnable() { // тут надо бы на ContextAwareDaemonThreadFactory переделать
+                @Override
+                public void run() {
+                    ThreadLocalContext.aspectBeforeRmi(ContextAwarePendingRemoteObject.this, true);
+                    try {
+                        explicitClose(false);
+                    } finally {
+                        ThreadLocalContext.aspectAfterRmi();
+                    }
                 }
-            }
-        });
+            });
+        }
     }
 
     public abstract String getSID();
 
-    public void explicitClose() { // потом надо переминовать в close, но тогда close надо переименовывать и повышать версию интерфейса
-        shutdown(true);
+    public void explicitClose(boolean syncedOnClient) { // потом надо переминовать в close, но тогда close надо переименовывать и повышать версию интерфейса
+        shutdown(true, syncedOnClient);
+    }
+
+    protected boolean isUnreferencedSyncedClient() {
+        return false;
     }
 
     @Override
     public void unreferenced() {
         ThreadLocalContext.aspectBeforeRmi(this, true);
         try {
-            if(!Settings.get().isDisableUnreferenced())
-                shutdown(true);
+            if(!Settings.get().isDisableAsyncClose())
+                shutdown(true, isUnreferencedSyncedClient());
         } finally {
             ThreadLocalContext.aspectAfterRmi();
         }
     }
 
     // явная очистка ресурсов, которые поддерживаются через weak ref'ы
-    protected void onExplicitClose() {
+    protected void onExplicitClose(boolean syncedOnClient) {
         unexport();
 
         BaseUtils.runLater(Settings.get().getCloseFormDelay(), cleanThreads(true, threads, context));
@@ -153,7 +159,7 @@ public abstract class ContextAwarePendingRemoteObject extends PendingRemoteObjec
     }
 
     private boolean closed;
-    private synchronized void shutdown(boolean explicit) {  // по идее assert synchronized но может быть проблема так как unreferenced и explicitClose могут быть вместе
+    private synchronized void shutdown(boolean explicit, boolean syncedOnClient) {  // по идее assert synchronized но может быть проблема так как unreferenced и explicitClose могут быть вместе
         if(closed) {
 //            if (explicit) // много вариантов когда закрывается несколько раз explicit, unreferenced + close, * + forceDisconnect
 //                ServerLoggers.assertLog(false, "REMOTE OBJECT ALREADY CLOSED " + this);
@@ -161,7 +167,7 @@ public abstract class ContextAwarePendingRemoteObject extends PendingRemoteObjec
         }
         ServerLoggers.remoteLifeLog("REMOTE OBJECT CLOSE " + this);
         if (explicit)
-            onExplicitClose();
+            onExplicitClose(syncedOnClient);
         onFinalClose(explicit);
         closed = true;
     }
@@ -179,7 +185,7 @@ public abstract class ContextAwarePendingRemoteObject extends PendingRemoteObjec
                 ThreadLocalContext.aspectBeforeRmi(this, true);
                 try {
                     if (!Settings.get().isDisableFinalized())
-                        shutdown(false);
+                        shutdown(false, false);
                 } catch (Throwable ignored) {
                 } finally {
                     ThreadLocalContext.aspectAfterRmi();

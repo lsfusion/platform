@@ -1921,14 +1921,15 @@ public class Settings {
         this.closeFormDelay = closeFormDelay;
     }
 
-    private boolean disableUnreferenced = true; // проблема в том что DataSession не синхронизирована (assertion, что синхронизация обеспечивается модальностью вызовов), а unreferenced нарушает этот assertion (и непонятно как ее обойти, да и не понятно имеет ли смысл)
+    private boolean disableAsyncClose = false; // проблема в том что DataSession не синхронизирована (assertion, что синхронизация обеспечивается модальностью вызовов), а unreferenced нарушает этот assertion (и непонятно как ее обойти, да и не понятно имеет ли смысл)
+    // та же проблема по идее с unreferenced
 
-    public boolean isDisableUnreferenced() {
-        return disableUnreferenced;
+    public boolean isDisableAsyncClose() {
+        return disableAsyncClose;
     }
 
-    public void setDisableUnreferenced(boolean disableUnreferenced) {
-        this.disableUnreferenced = disableUnreferenced;
+    public void setDisableAsyncClose(boolean disableAsyncClose) {
+        this.disableAsyncClose = disableAsyncClose;
     }
 
     private boolean disableFinalized = false; // есть вопрос с синхронизацией explicitClose FormInstance

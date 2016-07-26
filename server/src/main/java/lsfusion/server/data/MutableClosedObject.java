@@ -10,30 +10,42 @@ import java.sql.SQLException;
 public abstract class MutableClosedObject<O> extends MutableObject implements AutoCloseable {
 
     private boolean closed;
-    @AssertSynchronized
-    protected void explicitClose(O owner) throws SQLException {
+    protected void explicitClose(O owner, boolean syncedOnClient) throws SQLException {
         ServerLoggers.assertLog(!closed, "ALREADY CLOSED " + this);
-        shutdown(owner, true);
+        if(syncedOnClient)
+            syncedShutdown(owner, true);
+        else
+            shutdown(owner, true, false);
     }
-    
+
+    @AssertSynchronized
+    // чисто для assertion'а
+    protected void syncedShutdown(O owner, boolean explicit) throws SQLException {
+        shutdown(owner, explicit, true);
+    }
+
     protected boolean isClosed() {
         return closed;
     }
 
     protected void explicitClose() throws SQLException { // explicitClose чтобы не пересекаться с AutoClosable
-        explicitClose(getDefaultExplicitOwner());
+        explicitClose(true);
+    }
+
+    protected void explicitClose(boolean syncedOnClient) throws SQLException {
+        explicitClose(getDefaultExplicitOwner(), syncedOnClient);
     }
 
     @Override
-    public void close() throws SQLException { // не использовать напряму
+    public void close() throws SQLException { // в общем случае пытается закрыть, а не закрывает объект
         explicitClose();
     }
 
-    private void shutdown(O owner, boolean explicit) throws SQLException {
+    private void shutdown(O owner, boolean explicit, boolean syncedOnClient) throws SQLException {
         if(closed)
             return;
         if(explicit)
-            onExplicitClose(owner);
+            onExplicitClose(owner, syncedOnClient);
         onFinalClose(owner);
         closed = true;
     }
@@ -48,7 +60,7 @@ public abstract class MutableClosedObject<O> extends MutableObject implements Au
     }
     
     // явная очистка ресурсов, которые поддерживаются через weak ref'ы
-    protected void onExplicitClose(O owner) throws SQLException {
+    protected void onExplicitClose(O owner, boolean syncedOnClient) throws SQLException {
     }
 
     // все кроме weakRef (onExplicitClose)  !!!! ВАЖНО нельзя запускать очистку weakRef ресурсов, так как WeakReference'у уже могут стать null, и ресурсы (например временные таблицы) перейдут другому владельцу, в итоге почистятся ресурсы используемые уже новым объектом
@@ -58,7 +70,7 @@ public abstract class MutableClosedObject<O> extends MutableObject implements Au
     protected void finalize() throws Throwable {
         if(!ContextAwarePendingRemoteObject.disableFinalized) {
             try {
-                shutdown(getFinalizeOwner(), false);
+                shutdown(getFinalizeOwner(), false, false);
             } catch (SQLException e) {
             } finally {
                 super.finalize();

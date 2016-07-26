@@ -37,6 +37,7 @@ import lsfusion.server.data.type.*;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.form.instance.ChangedData;
 import lsfusion.server.form.instance.FormInstance;
+import lsfusion.server.form.instance.GroupObjectInstance;
 import lsfusion.server.form.instance.PropertyObjectInterfaceInstance;
 import lsfusion.server.form.navigator.*;
 import lsfusion.server.logics.*;
@@ -49,6 +50,7 @@ import lsfusion.server.logics.table.ImplementTable;
 import lsfusion.server.stack.*;
 
 import javax.swing.*;
+import java.lang.ref.WeakReference;
 import java.sql.SQLException;
 import java.util.*;
 
@@ -416,7 +418,9 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     public final SQLSession idSession;
     
     @Override
-    protected void onExplicitClose(Object o) throws SQLException {
+    protected void onExplicitClose(Object o, boolean syncedOnClient) throws SQLException {
+        assert syncedOnClient; // через tryClose идет, поэтому можно считать что тоже синхронизирован
+
         assert o == null;
         
 //        SQLSession.fifo.add("DC " + getOwner() + SQLSession.getCurrentTimeStamp() + " " + this + '\n' + ExceptionUtils.getStackTrace());
@@ -1823,20 +1827,43 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
         updateSessionEvents(getChangedProps());
     }
-    public void unregisterForm(FormInstance<?> form) throws SQLException {
-        for(SessionModifier modifier : form.modifiers.values())
-            modifier.clean(sql, getOwner());
 
-        changes.unregisterForm(form);
-        incrementChanges.remove(form);
-        appliedChanges.remove(form);
-        updateChanges.remove(form);
+    public void unregisterForm(FormInstance<?> form, boolean syncedOnClient) throws SQLException {
+        changes.unregisterForm(form); // synced
 
         dropFormCaches();
 
+        final WeakReference<FormInstance> wForm = new WeakReference<FormInstance>(form);
+        ExceptionRunnable<SQLException> cleaner = new ExceptionRunnable<SQLException>() {
+            @Override
+            public void run() throws SQLException {
+                FormInstance<?> form = wForm.get();
+                if(form == null) // уже все очистилось само
+                    return;
+
+                OperationOwner owner = getOwner();
+                for (GroupObjectInstance group : form.getGroups()) {
+                    if (group.keyTable != null)
+                        group.keyTable.drop(sql, owner);
+                    if (group.expandTable != null)
+                        group.expandTable.drop(sql, owner);
+                }
+
+                for(SessionModifier modifier : form.modifiers.values())
+                    modifier.clean(sql, owner);
+
+                incrementChanges.remove(form);
+                appliedChanges.remove(form);
+                updateChanges.remove(form);
+            }
+        };
+
         synchronized (closeLock) {
             activeForms.remove(form);
-            tryClose();
+
+            pendingCleaners.add(cleaner);
+
+            tryClose(syncedOnClient);
         }
     }
     private void dropFormCaches() throws SQLException {
@@ -2533,13 +2560,23 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         synchronized (closeLock) {
             threadCount--;
 
-            tryClose();
+            tryClose(true);
         }
 //        threads.remove(Thread.currentThread());
     }
 
-    public boolean tryClose() throws SQLException { // assert synchronized
-        if(threadCount == 0 && activeForms.isEmpty()) { // не осталось владельцев - закрываем
+    // необходимо, так как чистка ресурсов может быть асинхронной (closeLater, unreferenced)
+    private WeakIdentityHashSet<ExceptionRunnable<SQLException>> pendingCleaners = new WeakIdentityHashSet<>();
+
+    public boolean tryClose(boolean syncedOnClient) throws SQLException { // assert synchronized
+        boolean noOwners = threadCount == 0 && activeForms.isEmpty();
+        if(noOwners || syncedOnClient) { // AssertSynchronized со всеми остальными методами DataSession
+            for(ExceptionRunnable<SQLException> pendingCleaner : pendingCleaners)
+                pendingCleaner.run();
+            pendingCleaners.clear();
+        }
+
+        if(noOwners) { // не осталось владельцев - закрываем
             explicitClose();
             return true;
         }

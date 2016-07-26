@@ -118,7 +118,7 @@ public class NewSessionActionProperty extends AroundAspectActionProperty {
     protected void finallyAspect(ExecutionContext<PropertyInterface> context, ExecutionContext<PropertyInterface> innerContext) throws SQLException, SQLHandledException {
         DataSession session = innerContext.getSession();
         try {
-            session.close();
+            session.close(); // по сути и есть аналог try with resources ()
         } finally {
             if(newSQL) // тут конечно нюанс, что делать если newSession продолжит жить своей жизнью (скажем NEWSESSION NEWTHREAD, а не наоборот), реализуем потом (по аналогии с NEWSESSION) вместе с NESTED
                 session.sql.close();

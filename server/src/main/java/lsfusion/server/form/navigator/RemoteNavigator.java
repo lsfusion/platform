@@ -849,7 +849,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
     }
 
     public synchronized void close() throws RemoteException {
-        explicitClose();
+        explicitClose(true);
     }
 
     // обмен изменениями между сессиями в рамках одного подключения
@@ -981,10 +981,11 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
     }
 
     @Override
-    protected void onExplicitClose() {
+    protected void onExplicitClose(boolean syncedOnClient) {
+        assert syncedOnClient; // пока нет случаев когда это не так
         synchronized (forms) {
             for (RemoteForm form : forms.copy()) { // copy так как идет formClosed и соответственно будет ConcurrentModificationException
-                form.explicitClose();
+                form.explicitClose(syncedOnClient);
             }
         }
 
@@ -997,7 +998,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
             ServerLoggers.sqlSuppLog(t);
         }
 
-        super.onExplicitClose();
+        super.onExplicitClose(syncedOnClient);
     }
 
     @Override
@@ -1005,5 +1006,10 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         navigatorManager.navigatorFinalClosed(getStack(), getConnection()); // тут по идее другой connection
 
         super.onFinalClose(explicit);
+    }
+
+    @Override
+    protected boolean isUnreferencedSyncedClient() { // если ушли все ссылки считаем синхронизированным, так как клиент уже ни к чему обращаться не может
+        return true;
     }
 }

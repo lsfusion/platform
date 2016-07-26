@@ -2479,7 +2479,9 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     }
     
     @Override
-    protected void onExplicitClose(OperationOwner owner) throws SQLException {
+    protected void onExplicitClose(OperationOwner owner, boolean syncedOnClient) throws SQLException {
+        assert syncedOnClient; // предполагается что весь SQLSession синхронизирован
+
         lockWrite(owner);
         temporaryTablesLock.lock();
 
