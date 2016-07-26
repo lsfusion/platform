@@ -896,7 +896,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
 
         resultActions.addAll(pendingActions);
 
-        return returnRemoteChangesResponse(requestIndex, resultActions, false);
+        return returnRemoteChangesResponse(requestIndex, resultActions, delayedHideForm);
     }
 
     public byte[] getFormChangesByteArray(ExecutionStack stack) {
