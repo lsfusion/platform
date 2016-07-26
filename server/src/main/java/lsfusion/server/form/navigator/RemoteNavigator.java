@@ -367,7 +367,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
 
         public ObjectValue getCurrentConnection() {
             RemoteNavigator remoteNavigator = weakThis.get();
-            return remoteNavigator == null ? NullValue.instance : remoteNavigator.connection;
+            return remoteNavigator == null  || remoteNavigator.connection == null ? NullValue.instance : remoteNavigator.connection;
         }
     }
 
