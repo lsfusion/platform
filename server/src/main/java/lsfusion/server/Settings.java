@@ -234,7 +234,7 @@ public class Settings {
 
     private boolean groupByTables = true; //для recalculate
 
-    private int threadAllocatedMemoryPeriod = 180000; //every 3 minutes
+    private int threadAllocatedMemoryPeriod = 180; //every 3 minutes
 
     private boolean readAllocatedBytes = true;
 
