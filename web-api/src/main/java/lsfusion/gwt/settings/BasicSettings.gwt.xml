@@ -21,6 +21,11 @@
 
     <!-- выключить обфускацию стилей -->
     <!--<set-configuration-property name="CssResource.style" value="pretty" />-->
+    
+    <!-- частичная деобфускация: сохраняются имена классов и номера строк. делалось для читабельности стека ошибок -->
+    <set-property name="compiler.stackMode" value="emulated" />
+    <set-configuration-property name="compiler.emulatedStack.recordLineNumbers" value="true"/>
+    <set-configuration-property name="compiler.emulatedStack.recordFileNames" value="true"/>
 
     <!--Super Dev Mode doesn't like <script> tags. We have some in Uploader. Adding this just to ignore errors.-->
     <set-configuration-property name='xsiframe.failIfScriptTag' value='FALSE'/>
