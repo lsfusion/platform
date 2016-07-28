@@ -1711,10 +1711,10 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public LPWithParams addScriptedTryAProp(LPWithParams tryAction, LPWithParams finallyAction) {
         List<LPWithParams> propParams = new ArrayList<>();
-        if(tryAction != null)
-            propParams.add(tryAction);
-        if (finallyAction != null)
+        propParams.add(tryAction);
+        if (finallyAction != null) {
             propParams.add(finallyAction);
+        }
         
         List<Integer> allParams = mergeAllParams(propParams);
         LP result = addTryAProp(null, "", getParamsPlainList(propParams).toArray());

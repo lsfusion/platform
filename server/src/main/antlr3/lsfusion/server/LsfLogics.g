@@ -2575,7 +2575,9 @@ tryActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [
 	}
 }
 	:	'TRY' tryADB=innerActionDefinitionBody[context, dynamic] 
-		('FINALLY' finallyADB=innerActionDefinitionBody[context, dynamic])?
+		(	'FINALLY' finallyADB=innerActionDefinitionBody[context, dynamic]
+		|	('CATCH')?
+		)
 	;
 
 ifActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
