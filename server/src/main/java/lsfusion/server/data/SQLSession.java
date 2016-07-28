@@ -406,6 +406,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
 
     private void checkClosed() {
         ServerLoggers.assertLog(!isClosed(), "SQL SESSION IS ALREADY CLOSED " + this);
+        if(isClosed())
+            throw new RuntimeException("Sql session is already closed"); // иначе может начать работать в чужом connection'е
     }
 
     private void unlockRead() {
