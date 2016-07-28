@@ -380,7 +380,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
 
                 property.pattern = getUserPattern(property);
                 GridCellRenderer renderer = property.getGridCellRenderer();
-                if(renderer != null && property.pattern != null) {
+                if(renderer != null) {
                     if (renderer instanceof DateGridCellRenderer) {
                         ((DateGridCellRenderer) renderer).setFormat(property.pattern);
                     } else if (renderer instanceof NumberGridCellRenderer) {

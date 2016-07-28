@@ -24,7 +24,8 @@ public class DateGridCellRenderer extends TextBasedGridCellRenderer<Object> {
     }
 
     public void setFormat(String pattern) {
-        this.format = GwtSharedUtils.getDateFormat(pattern);
+        if(pattern != null)
+            this.format = GwtSharedUtils.getDateFormat(pattern);
     }
 
     @Override

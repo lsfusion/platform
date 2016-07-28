@@ -337,6 +337,8 @@ public abstract class GUserPreferencesDialog extends GResizableModalWindow {
     }
 
     private void resetPressed(boolean forAllUsers) {
+        columnCaptionBox.setText(null);
+        columnPatternBox.setText(null);
         grid.resetPreferences(forAllUsers, createSaveCallback("Сброс настроек успешно завершен"));
     }
 

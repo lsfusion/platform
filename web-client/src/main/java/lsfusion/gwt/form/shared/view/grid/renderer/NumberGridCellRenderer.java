@@ -19,7 +19,7 @@ public class NumberGridCellRenderer extends TextBasedGridCellRenderer<Number> {
     }
 
     public void setFormat(String pattern) {
-        this.format = NumberFormat.getFormat(pattern);
+        this.format = pattern != null ? NumberFormat.getFormat(pattern) : NumberFormat.getDecimalFormat();
     }
 
     @Override
