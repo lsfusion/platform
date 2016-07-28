@@ -256,7 +256,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     }
 
     public Format setFormat(String pattern) {
-        if (pattern != null) {
+        if (pattern != null && !pattern.isEmpty()) {
             if (baseType instanceof ClientIntegralClass) {
                 format = mergeFormats(new DecimalFormat(pattern), baseType.getDefaultFormat());
             } else if (baseType instanceof ClientDateClass) {

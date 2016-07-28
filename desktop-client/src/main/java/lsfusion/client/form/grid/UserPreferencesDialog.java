@@ -291,10 +291,10 @@ public abstract class UserPreferencesDialog extends JDialog {
 
             public void updateColumnName() {
                 if(invisibleList.getSelectedValue() == null && visibleList.getSelectedValue() != null) {
-                    setSelectedItemCaption(visibleList, columnCaptionField.getText().isEmpty() ? getSelectedItemDefaultCaption(visibleList) :  columnCaptionField.getText());
+                    setSelectedItemCaption(visibleList, columnCaptionField.getText().isEmpty() ? getSelectedItemDefaultCaption(visibleList) :  columnCaptionField.getText(), columnCaptionField.getText());
                     visibleList.update(visibleList.getGraphics());
                 } else if(visibleList.getSelectedValue() == null && invisibleList.getSelectedValue() != null) {
-                    setSelectedItemCaption(invisibleList, columnCaptionField.getText().isEmpty() ? getSelectedItemDefaultCaption(invisibleList) :  columnCaptionField.getText());
+                    setSelectedItemCaption(invisibleList, columnCaptionField.getText().isEmpty() ? getSelectedItemDefaultCaption(invisibleList) :  columnCaptionField.getText(), columnCaptionField.getText());
                     invisibleList.update(invisibleList.getGraphics());
                 }
             }
@@ -528,6 +528,8 @@ public abstract class UserPreferencesDialog extends JDialog {
                 completeReset = true;
             }
         }
+        columnCaptionField.setText(null);
+        columnPatternField.setText(null);
         initialTable.resetPreferences(forAllUsers, completeReset, saveSuccessCallback, saveFailureCallback);
     }
     
@@ -653,22 +655,24 @@ public abstract class UserPreferencesDialog extends JDialog {
         return item == null ? null : item.getDefaultCaption();
     }
 
-    private void setSelectedItemCaption(JList list, String caption) {
+    private void setSelectedItemCaption(JList list, String caption, String userCaption) {
         PropertyListItem item = (PropertyListItem) list.getSelectedValue();
         if(item != null && caption != null) {
             initialTable.setUserCaption(item.property, caption);
-            item.setUserCaption(caption);
+            item.setUserCaption(userCaption == null || userCaption.isEmpty() ? null : userCaption);
         }
     }
 
     private String getSelectedItemPattern(JList list) {
         PropertyListItem item = (PropertyListItem) list.getSelectedValue();
-        return item == null ? null : item.getUserPattern(true);
+        String pattern = item == null ? null : item.getUserPattern(true);
+        return pattern == null || pattern.isEmpty() ? null : pattern;
     }
 
     private void setSelectedItemPattern(JList list, String pattern) {
         PropertyListItem item = (PropertyListItem) list.getSelectedValue();
         if(item != null && pattern != null) {
+            pattern = pattern.isEmpty() ? null : pattern;
             initialTable.setUserPattern(item.property, pattern);
             item.setUserPattern(pattern);
         }

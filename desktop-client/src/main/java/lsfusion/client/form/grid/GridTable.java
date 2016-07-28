@@ -522,11 +522,9 @@ public class GridTable extends ClientPropertyTable {
             column.setHeaderValue(getColumnCaption(i));
 
             Format format = cell.setFormat(getColumnPattern(i));
-            if(format != null) {
-                PropertyRenderer renderer = cell.getRendererComponent();
-                if(renderer instanceof LabelPropertyRenderer) {
-                    ((LabelPropertyRenderer) renderer).setFormat(format);
-                }
+            PropertyRenderer renderer = cell.getRendererComponent();
+            if (renderer instanceof LabelPropertyRenderer) {
+                ((LabelPropertyRenderer) renderer).setFormat(format);
             }
 
             rowHeight = max(rowHeight, cell.getPreferredHeight(this));
