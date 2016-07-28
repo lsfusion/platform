@@ -262,9 +262,10 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
             } else if (baseType instanceof ClientDateClass) {
                 format = new SimpleDateFormat(pattern);
             }
-            return format;
+        } else {
+            format = null;
         }
-        return null;
+        return format;
     }
 
     private Format mergeFormats(Format format, Format defaultFormat) {
