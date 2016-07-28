@@ -442,6 +442,7 @@ public class Main {
         ConnectionLostManager.invalidate();
 
         //даём немного времени на обработку текущих событий
+        Log.log("Shutdown");
         Timer timer = new Timer(1000, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -456,6 +457,7 @@ public class Main {
             @Override
             public void run() {
                 //убиваемся, если через 5 секунд ещё не вышли
+                Log.log("Close thread");
                 removeSingleInstanceListener();
                 SystemUtils.sleep(5000);
                 System.exit(0);
@@ -481,6 +483,7 @@ public class Main {
         LoginAction.getInstance().setAutoLogin(reconnect);
 
         //даём немного времени на обработку текущих событий
+        Log.log("Restart : " + reconnect);
         Timer timer = new Timer(1000, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -514,6 +517,7 @@ public class Main {
 
     private static void clean() {
 
+        Log.log("Clean");
         try {
             if(remoteNavigator != null)
                 remoteNavigator.close();

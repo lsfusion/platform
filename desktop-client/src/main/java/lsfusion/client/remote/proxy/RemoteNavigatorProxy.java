@@ -73,7 +73,9 @@ public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface> extends Re
     }
 
     public void close() throws RemoteException {
+        logRemoteMethodStartCall("close");
         target.close();
+        logRemoteMethodEndCall("close", "");
     }
 
     public ClientCallBackInterface getClientCallBack() throws RemoteException {

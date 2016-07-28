@@ -20,8 +20,12 @@ import java.util.List;
 import static lsfusion.client.ClientResourceBundle.getString;
 
 public final class Log {
-    static Logger logger = ClientLoggers.clientLogger;
-    
+    public static Logger logger = ClientLoggers.clientLogger;
+
+    public static void log(String message) {
+        logger.info(message + '\n' + ExceptionUtils.getStackTrace());
+    }
+
     private static String text = "";
 
     private static WeakReference<LogPanel> logPanelRef = new WeakReference<>(null);
