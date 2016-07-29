@@ -26,7 +26,7 @@ public abstract class LabelPropertyRenderer extends JLabel implements PropertyRe
     }
 
     public void setFormat(Format format) {
-        this.format = format != null || property == null ? format : property.baseType.getDefaultFormat();
+        this.format = format != null || property == null ? format : property.getFormat();
     }
 
     void setSelected(boolean isSelected, boolean hasFocus) {
