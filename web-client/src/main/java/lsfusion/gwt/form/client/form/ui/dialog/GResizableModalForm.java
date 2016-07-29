@@ -80,7 +80,7 @@ public class GResizableModalForm extends GResizableModalWindow {
     }
 
     private void initialFormChangesReceived() {
-        if (initFilterEvent != null) {
+        if (initFilterEvent != null && initFilterEvent instanceof NativeEditEvent) {
             NativeEvent event = ((NativeEditEvent) initFilterEvent).getNativeEvent();
             if (GKeyStroke.isPossibleStartFilteringEvent(event) && !GKeyStroke.isSpaceKeyEvent(event)) {
                 form.getInitialFilterProperty(new ErrorHandlingCallback<NumberResult>() {
