@@ -10,11 +10,11 @@ import lsfusion.interop.exceptions.RemoteServerException;
 import lsfusion.server.classes.AbstractCustomClass;
 import lsfusion.server.classes.ConcreteCustomClass;
 import lsfusion.server.classes.sets.ResolveClassSet;
+import lsfusion.server.context.ExecutionStack;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.CurrentConnectionFormulaProperty;
-import lsfusion.server.context.ExecutionStack;
 import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 import lsfusion.server.session.DataSession;
@@ -33,6 +33,7 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
 
     public AbstractCustomClass exception;
     public ConcreteCustomClass clientException;
+    public ConcreteCustomClass webClientException;
     public ConcreteCustomClass remoteServerException;
     public ConcreteCustomClass fatalHandledRemoteException;
     public ConcreteCustomClass nonFatalHandledRemoteException;
@@ -107,6 +108,7 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
         super.initClasses();
 
         clientException = (ConcreteCustomClass) findClass("ClientException");
+        webClientException = (ConcreteCustomClass) findClass("WebClientException");
         remoteServerException = (ConcreteCustomClass) findClass("RemoteServerException");
         fatalHandledRemoteException = (ConcreteCustomClass) findClass("FatalHandledException");
         nonFatalHandledRemoteException = (ConcreteCustomClass) findClass("NonFatalHandledException");
@@ -183,7 +185,7 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
         onClientStarted = findAction("onClientStarted[]");
     }
 
-    public void logException(BusinessLogics bl, ExecutionStack stack, Throwable t, DataObject user, String clientName, boolean client) throws SQLException, SQLHandledException {
+    public void logException(BusinessLogics bl, ExecutionStack stack, Throwable t, DataObject user, String clientName, boolean client, boolean web) throws SQLException, SQLHandledException {
         @SuppressWarnings("ThrowableResultOfMethodCallIgnored")
         String message = Throwables.getRootCause(t).getLocalizedMessage();
         String errorType = t.getClass().getName();
@@ -211,8 +213,10 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
                     }
 
                     reqIdHandledException.change(handled.reqId, session, exceptionObject);
+                } else if (web) {
+                    exceptionObject = session.addObject(webClientException);
                 } else {
-                    exceptionObject = session.addObject(clientException);
+                    exceptionObject = session.addObject(clientException);    
                 }
                 clientClientException.change(clientName, session, exceptionObject);
                 if(user != null) {

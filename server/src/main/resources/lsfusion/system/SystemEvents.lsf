@@ -4,6 +4,7 @@ REQUIRE System, Reflection, Time, Service;
 
 CLASS ABSTRACT Exception 'Исключение';
 CLASS ClientException 'Исключение на клиенте' : Exception;
+CLASS WebClientException 'Исключение на web-клиенте' : ClientException;
 CLASS RemoteServerException 'Исключение на сервере (от клиента)' : ClientException;
 CLASS ABSTRACT RemoteClientException 'Исключение связи' : ClientException;
 CLASS UnhandledException 'Необработанное исключение связи' : RemoteClientException;
@@ -32,6 +33,7 @@ foregroundNonFatal(NonFatalHandledException e) = IF e IS NonFatalHandledExceptio
 backgroundNonFatal(ClientException e) = CASE 
             WHEN e IS RemoteClientException THEN RGB(240, 255, 255)
             WHEN e IS RemoteServerException THEN RGB(255, 240, 255)
+            WHEN e IS WebClientException THEN RGB(255, 255, 210)            
             WHEN e IS ClientException THEN RGB(255, 255, 240);            
 
 @defineLog (Exception, 'ошибок', log, fromDate);

@@ -228,13 +228,15 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
     public void logClientException(String title, String hostname, Throwable t) {
         String time = new SimpleDateFormat().format(Calendar.getInstance().getTime());
         
-        if (hostname == null) { // считается, что Web                                                
-            hostname = ThreadLocalContext.get().getLogInfo().hostnameComputer;
+        boolean web = false;
+        if (hostname == null) { // считается, что Web
+            web = true;
+            hostname = ThreadLocalContext.get().getLogInfo().hostnameComputer + " - web";
         }
         
         logger.error(title + " at '" + time + "' from '" + hostname + "': ", t);
         try {
-            businessLogics.systemEventsLM.logException(businessLogics, getStack(), t, this.user, hostname, true);
+            businessLogics.systemEventsLM.logException(businessLogics, getStack(), t, this.user, hostname, true, web);
         } catch (SQLException | SQLHandledException e) {
             throw Throwables.propagate(e);
         }
