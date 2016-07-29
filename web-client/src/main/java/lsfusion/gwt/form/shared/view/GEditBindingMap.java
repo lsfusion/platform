@@ -121,15 +121,17 @@ public class GEditBindingMap implements Serializable {
     }
 
     public static String getPropertyEditActionSID(EditEvent e, GPropertyDraw property, GEditBindingMap overrideMap) {
-        EditEventFilter eventFilter = property.changeType == null ? null : property.changeType.getEditEventFilter();
-
         String actionSID = null;
-        if (property.editBindingMap != null) {
-            actionSID = property.editBindingMap.getAction(e, eventFilter, property.hasEditObjectAction);
-        }
+        if (property != null) {
+            EditEventFilter eventFilter = property.changeType == null ? null : property.changeType.getEditEventFilter();
 
-        if (actionSID == null) {
-            actionSID = overrideMap.getAction(e, eventFilter, property.hasEditObjectAction);
+            if (property.editBindingMap != null) {
+                actionSID = property.editBindingMap.getAction(e, eventFilter, property.hasEditObjectAction);
+            }
+
+            if (actionSID == null) {
+                actionSID = overrideMap.getAction(e, eventFilter, property.hasEditObjectAction);
+            }
         }
         return actionSID;
     }
