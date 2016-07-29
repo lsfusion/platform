@@ -713,17 +713,19 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
            * not contain a cell so the selection handler and keyboard handler have a
            * chance to act.
            */
-            T value = getRowValue(row);
+            if (isRowWithinBounds(row)) {
+                T value = getRowValue(row);
 
-            Context context = new Context(row, col, value);
-            CellPreviewEvent<T> previewEvent = CellPreviewEvent.fire(this, event, this, context, value, cellIsEditing);
+                Context context = new Context(row, col, value);
+                CellPreviewEvent<T> previewEvent = CellPreviewEvent.fire(this, event, this, context, value, cellIsEditing);
 
-            // Pass the event to the cell.
-            if (cellParent != null && !previewEvent.isCanceled()) {
-                HasCell<T, ?> column;
-                column = tableBuilder.getColumn(context, value, cellParent);
-                if (column != null) {
-                    fireEventToCell(event, eventType, cellParent, value, context, column);
+                // Pass the event to the cell.
+                if (cellParent != null && !previewEvent.isCanceled()) {
+                    HasCell<T, ?> column;
+                    column = tableBuilder.getColumn(context, value, cellParent);
+                    if (column != null) {
+                        fireEventToCell(event, eventType, cellParent, value, context, column);
+                    }
                 }
             }
         }
