@@ -1747,10 +1747,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public LPWithParams addScriptedApplyAProp(LPWithParams action, boolean singleApply, List<PropertyUsage> keepSessionProps, boolean keepAllSessionProps, boolean serializable) 
             throws ScriptingErrorLog.SemanticErrorException {
-        List<LPWithParams> propParams = new ArrayList<>();
-        if (action != null) {
-            propParams.add(action);
-        }
+        List<LPWithParams> propParams = Collections.singletonList(action);
 
         LP result = addApplyAProp(null, "", (action != null && action.property instanceof LAP) ? (LAP) action.property : null, singleApply,
                 getMigrateProps(keepSessionProps, keepAllSessionProps), serializable);

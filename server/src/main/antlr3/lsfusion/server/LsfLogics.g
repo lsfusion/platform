@@ -2167,16 +2167,17 @@ formActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns 
 }
 	:	'FORM' formName=compoundID 
 		('OBJECTS' list=formActionObjectList[context, dynamic] { objects = $list.objects; mapping = $list.exprs; })?
-		('CONTEXTFILTER' objName=ID '=' contextPropertyExpr=propertyExpression[context, dynamic] { contextObjectName = $objName.text; contextProperty = $contextPropertyExpr.property; })?
-		(initFilter = initFilterDefinition { initFilterPropertyMapping = $initFilter.mapping; initFilterPropertyName = $initFilter.propName; })?
-		('MANAGESESSION' { sessionScope = FormSessionScope.MANAGESESSION; })?
-		(modality = modalityTypeLiteral { modalityType = $modality.val; })?
-		('CHECK' { checkOnOk = true; })?
-		('SHOWDROP' { showDrop = true; })?
-		('NOCANCEL' { noCancel = true; })?
-		(print = formPrintTypeLiteral { printType = $print.val; })?
-		(export = formExportTypeLiteral { exportType = $export.val; })?
-		('READONLY' { readOnly = true; })?
+		(	'CONTEXTFILTER' objName=ID '=' contextPropertyExpr=propertyExpression[context, dynamic] { contextObjectName = $objName.text; contextProperty = $contextPropertyExpr.property; }
+		|	initFilter = initFilterDefinition { initFilterPropertyMapping = $initFilter.mapping; initFilterPropertyName = $initFilter.propName; }
+		|	'MANAGESESSION' { sessionScope = FormSessionScope.MANAGESESSION; }
+		|	modality = modalityTypeLiteral { modalityType = $modality.val; }
+		|	'CHECK' { checkOnOk = true; }
+		|	'SHOWDROP' { showDrop = true; }
+		|	'NOCANCEL' { noCancel = true; }
+		|	print = formPrintTypeLiteral { printType = $print.val; }
+		|	export = formExportTypeLiteral { exportType = $export.val; }
+		|	'READONLY' { readOnly = true; }
+		)*
 	;
 
 initFilterDefinition returns [String propName, List<String> mapping]
