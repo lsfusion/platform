@@ -147,9 +147,9 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
             }
         });
 
-        navigatorManager.navigatorCreated(stack, this, navigatorInfo);
-
         finalizeInit(stack, SyncType.NOSYNC);
+
+        navigatorManager.navigatorCreated(stack, this, navigatorInfo);
     }
 
     public boolean isFullClient() {
@@ -170,7 +170,10 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         return false;
     }
 
-    public void updateEnvironmentProperty(CalcProperty property, ObjectValue value) throws SQLException {
+    public synchronized void updateEnvironmentProperty(CalcProperty property, ObjectValue value) throws SQLException {
+        if(isClosed())
+            return;
+
         for (DataSession session : sessions)
             session.updateProperties(SetFact.singleton(property), true); // редко используется поэтому все равно
     }
@@ -684,7 +687,10 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         return client;
     }
 
-    public void pushNotification(EnvStackRunnable run) throws RemoteException {
+    public synchronized void pushNotification(EnvStackRunnable run) throws RemoteException {
+        if(isClosed())
+            return;
+
         client.pushMessage(notificationsMap.putNotification(run));
     }
 
@@ -985,13 +991,18 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
     @Override
     protected void onExplicitClose(boolean syncedOnClient) {
         assert syncedOnClient; // пока нет случаев когда это не так
-        synchronized (forms) {
-            for (RemoteForm form : forms.copy()) { // copy так как идет formClosed и соответственно будет ConcurrentModificationException
-                form.explicitClose(syncedOnClient);
-            }
-        }
 
-        navigatorManager.navigatorExplicitClosed(this);
+        while(true) { // нужны в том числе закрывающиеся формы, чтобы гарантировать, что все формы закроются до закрытия соединения
+            Set<RemoteForm> formsSnap;
+            synchronized (forms) {
+                formsSnap = forms.copy();
+                if(formsSnap.isEmpty())
+                    break; // считаем что когда навигатор закрывается новые создаваться не могут
+            }
+            for(RemoteForm form : formsSnap)
+                if(form != null)
+                    form.explicitClose(syncedOnClient);
+        }
 
         try {
             ThreadLocalContext.assureRmi(this);
@@ -1001,13 +1012,15 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         }
 
         super.onExplicitClose(syncedOnClient);
+
+        navigatorManager.navigatorExplicitClosed(this);
     }
 
     @Override
     protected void onFinalClose(boolean explicit) {
-        navigatorManager.navigatorFinalClosed(getStack(), getConnection()); // тут по идее другой connection
-
         super.onFinalClose(explicit);
+
+        navigatorManager.navigatorFinalClosed(getStack(), getConnection()); // тут по идее другой connection
     }
 
     @Override

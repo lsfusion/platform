@@ -20,6 +20,10 @@ import org.springframework.util.Assert;
 
 import java.rmi.RemoteException;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static lsfusion.server.logics.ServerResourceBundle.getString;
@@ -194,15 +198,15 @@ public class NavigatorsManager extends LogicsManager implements InitializingBean
 //    }
 
     public void updateEnvironmentProperty(CalcProperty property, ObjectValue value) throws SQLException {
-        synchronized (navigators) {
-            for (RemoteNavigator remoteNavigator : navigators) {
-                remoteNavigator.updateEnvironmentProperty(property, value);
-            }
+        synchronized (navigators) { // могут быть закрывающиеся навигаторы, проверка с синхронизацией внутри вызова
+            for (RemoteNavigator remoteNavigator : navigators)
+                if (remoteNavigator != null)
+                    remoteNavigator.updateEnvironmentProperty(property, value);
         }
     }
 
     public void pushNotificationCustomUser(DataObject connectionObject, EnvStackRunnable run) {
-        synchronized (navigators) {
+        synchronized (navigators) { // могут быть закрывающиеся навигаторы, проверка с синхронизацией внутри вызова
             boolean found = false;
             for (RemoteNavigator navigator : navigators) {
                 if(navigator != null) {
@@ -215,7 +219,7 @@ public class NavigatorsManager extends LogicsManager implements InitializingBean
                                 ServerLoggers.assertLog(false, "Two RemoteNavigators with same connection");
                         }
                     } catch (RemoteException e) {
-                            logger.error(getString("logics.server.remote.exception.on.push.action"), e);
+                        logger.error(getString("logics.server.remote.exception.on.push.action"), e);
                     }
                 }
             }

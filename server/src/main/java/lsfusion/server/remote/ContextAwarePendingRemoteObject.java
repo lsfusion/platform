@@ -172,7 +172,7 @@ public abstract class ContextAwarePendingRemoteObject extends PendingRemoteObjec
         closed = true;
     }
 
-    public boolean isClosed() {
+    public boolean isClosed() { // в том числе используется как isClosing
         return closed;
     }
 

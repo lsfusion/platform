@@ -75,11 +75,11 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         this.requestLock = new SequentialRequestLock();
 
         this.weakRemoteFormListener = new WeakReference<>(remoteFormListener);
+        finalizeInit(upStack, form.isModal() ? SyncType.SYNC : SyncType.NOSYNC);
+
         if (remoteFormListener != null) {
             remoteFormListener.formCreated(this);
         }
-
-        finalizeInit(upStack, form.isModal() ? SyncType.SYNC : SyncType.NOSYNC);
     }
 
     public RemoteFormListener getRemoteFormListener() {
@@ -1036,11 +1036,6 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     // будем считать что если unreferenced \ finalized то форма точно также должна закрыться ???
     @Override
     protected void onExplicitClose(boolean syncedOnClient) {
-        RemoteFormListener listener = getRemoteFormListener();
-        if (listener != null) {
-            listener.formExplicitClosed(this);
-        }
-
         try {
             form.explicitClose(syncedOnClient);
         } catch (Throwable t) {
@@ -1048,15 +1043,21 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         }
 
         super.onExplicitClose(syncedOnClient);
+
+        // важно делать после, чтобы закрытие navigator'а (а значит и sql conection'а) было после того как закрылись все формы
+        RemoteFormListener listener = getRemoteFormListener();
+        if (listener != null) {
+            listener.formExplicitClosed(this);
+        }
     }
 
     @Override
     protected void onFinalClose(boolean explicit) {
+        super.onFinalClose(explicit);
+
         RemoteFormListener listener = getRemoteFormListener();
         if (listener != null) {
             listener.formFinalClosed(this);
         }
-
-        super.onFinalClose(explicit);
     }
 }
