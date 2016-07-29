@@ -86,6 +86,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     private transient PropertyRenderer renderer;
 
     protected Format format;
+    private Format defaultFormat;
 
     public boolean checkEquals;
 
@@ -262,9 +263,10 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
             } else if (baseType instanceof ClientDateClass) {
                 format = new SimpleDateFormat(pattern);
             }
-            return format;
+        } else {
+            format = defaultFormat;
         }
-        return null;
+        return format;
     }
 
     private Format mergeFormats(Format format, Format defaultFormat) {
@@ -382,6 +384,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         drawAsync = inStream.readBoolean();
 
         format = pool.readObject(inStream);
+        defaultFormat = format;
 
         focusable = pool.readObject(inStream);
         editType = PropertyEditType.deserialize(inStream.readByte());

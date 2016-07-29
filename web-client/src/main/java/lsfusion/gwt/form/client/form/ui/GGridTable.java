@@ -378,13 +378,14 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
                 if(currentGridPreferences.headerHeight != null)
                     header.setHeaderHeight(currentGridPreferences.headerHeight);
 
-                property.pattern = getUserPattern(property);
+                String pattern = getUserPattern(property);
                 GridCellRenderer renderer = property.getGridCellRenderer();
                 if(renderer != null) {
+                    property.setPattern(pattern);
                     if (renderer instanceof DateGridCellRenderer) {
-                        ((DateGridCellRenderer) renderer).setFormat(property.pattern);
+                        ((DateGridCellRenderer) renderer).setFormat(pattern);
                     } else if (renderer instanceof NumberGridCellRenderer) {
-                        ((NumberGridCellRenderer) renderer).setFormat(property.pattern);
+                        ((NumberGridCellRenderer) renderer).setFormat(pattern);
                     }
                 }
 

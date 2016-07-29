@@ -40,6 +40,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
 
     public GType baseType;
     public String pattern;
+    public String defaultPattern;
     public GClass returnClass;
 
     public GType changeWYSType;
@@ -123,6 +124,10 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
 
     public GridCellEditor createValueCellEdtor(EditManager editManager) {
         return baseType.createValueCellEditor(editManager, this);
+    }
+
+    public void setPattern(String pattern) {
+        this.pattern = pattern != null ? pattern : defaultPattern;
     }
 
     public Object parseChangeValueOrNull(String s) {
