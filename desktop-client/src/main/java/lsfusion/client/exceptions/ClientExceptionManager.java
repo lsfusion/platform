@@ -49,7 +49,7 @@ public class ClientExceptionManager {
         });
     }
 
-    private static Throwable getRemoteExceptionCause(Throwable e) {
+    public static Throwable getRemoteExceptionCause(Throwable e) {
         for (Throwable ex = e; ex != null && ex != ex.getCause(); ex = ex.getCause()) {
             if (ex instanceof RemoteException || ex instanceof RemoteServerException || ex instanceof RemoteClientException || ex instanceof RemoteAbandonedException) {                
                 assert !(ex instanceof RemoteClientException) || ex instanceof FatalHandledRemoteException;  

@@ -304,4 +304,12 @@ public class RemoteFormProxy extends RemoteObjectProxy<RemoteFormInterface> impl
         logRemoteMethodEndCall("throwInServerInvocation", result);
         return result;
     }
+
+    @Override
+    public boolean isInServerInvocation(long requestIndex) throws RemoteException {
+        logRemoteMethodStartCall("isInServerInvocation");
+        boolean result = target.isInServerInvocation(requestIndex);
+        logRemoteMethodEndCall("isInServerInvocation", result);
+        return result;
+    }
 }

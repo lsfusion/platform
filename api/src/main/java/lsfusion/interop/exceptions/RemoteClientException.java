@@ -3,7 +3,7 @@ package lsfusion.interop.exceptions;
 import java.rmi.RemoteException;
 
 // ошибка связи
-public class RemoteClientException extends RuntimeException {
+public abstract class RemoteClientException extends RuntimeException {
 
     public final RemoteException cause;
     

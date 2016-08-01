@@ -23,6 +23,8 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
+import static lsfusion.client.exceptions.ClientExceptionManager.getRemoteExceptionCause;
+
 public class RmiQueue {
     private static final Logger logger = ClientLoggers.invocationLogger;
 
@@ -431,11 +433,18 @@ public class RmiQueue {
                 logger.debug("Executing RmiFutureCallback: " + request);
             }
 
+            boolean failed = false;
+            T result = null;
             try {
-                request.onResponse(get());
+                result = get();
             } catch (Exception e) {
-                request.onResponseGetFailed();
+                if(getRemoteExceptionCause(e) == null) {
+                    request.onResponseGetFailed(e);
+                    failed = true;
+                }
             }
+            if(!failed)
+                request.onResponse(result);
         }
     }
 

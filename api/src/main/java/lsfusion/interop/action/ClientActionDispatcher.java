@@ -54,4 +54,6 @@ public interface ClientActionDispatcher {
     void execute(LogOutClientAction action);
     
     void execute(FocusClientAction action);
+
+    void execute(ExceptionClientAction action);
 }

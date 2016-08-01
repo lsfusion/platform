@@ -2,7 +2,7 @@ package lsfusion.interop.exceptions;
 
 import java.rmi.RemoteException;
 
-public class HandledRemoteException extends RemoteClientException {
+public abstract class HandledRemoteException extends RemoteClientException {
 
     public final long reqId;
     
