@@ -109,7 +109,7 @@ sendMessage 'Написать в чат' (Chat chat, TEXT message, BOOLEAN syste
     markSeenOnChange(chat);
 }
 
-sendMessage 'Отправить' = ACTION ABSTRACT LIST (Chat, CustomUser) EDITKEY 'F3';
+sendMessage 'Отправить' = ACTION ABSTRACT LIST (Chat, CustomUser) EDITKEY 'ctrl ENTER';
 
 restartServer() += ACTION { sendMessage(chat('system'), 'Сервер будет остановлен через 5 минут!\nСохраните текущую работу и выйдите из приложения.', TRUE); }
 
@@ -305,7 +305,7 @@ replyChat 'Ответить' (Chat c, Message m) = ACTION {
 
 replyChat 'Ответить' (Message m) = ACTION { 
     replyChat(chat(m), m);
-};
+} EDITKEY 'ctrl ENTER';
 
 openChat 'Перейти в чат' (Chat c, Message m) = ACTION {
     markSeenMessages(currentUser());
