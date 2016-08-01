@@ -16,14 +16,9 @@ readonly 'Только чтение' = DATA BOOLEAN (Chat, CustomUser);
 readonly 'Только чтение' (Chat c) = readonly(c, currentUser());
 
 dataName 'Имя' = DATA VARISTRING[100] (Chat);
-concatName (Chat chat) =  GROUP CONCAT name(CustomUser user), ',' IF in(chat, user) AND NOT user ==currentUser() BY chat;
-name 'Имя' (Chat chat) = (OVERRIDE [=GROUP CONCAT name(CustomUser user), ',' IF in(chat, user) AND NOT user ==currentUser() BY chat](chat), dataName(chat)) MINCHARWIDTH 15 PREFCHARWIDTH 30;
-
-setInChat(Chat chat) = ACTION {
-    FOR(name(User u)) DO {
-        in(chat, u) <- TRUE;
-    }
-}
+nameOrLogin 'Пользователь' (CustomUser user) = OVERRIDE login(user), name(user);
+concatName (Chat chat) =  GROUP CONCAT nameOrLogin(CustomUser user), ',' IF in(chat, user) AND NOT user == currentUser() BY chat;
+name 'Имя' (Chat chat) = (OVERRIDE [=GROUP CONCAT nameOrLogin(CustomUser user), ',' IF in(chat, user) AND (NOT isDialog(chat) OR NOT user == currentUser()) BY chat](chat), dataName(chat)) MINCHARWIDTH 15 PREFCHARWIDTH 30;
 
 CLASS MessageStatus {
     sent 'Отправлено',
@@ -40,7 +35,7 @@ seekLastMessageInFullChat = ACTION ABSTRACT ();
 markSeenOnChange = ACTION ABSTRACT (Chat);
 
 author 'Автор' = DATA CustomUser (Message);
-nameAuthor 'Автор' (Message message) = name(author(message)) MAXCHARWIDTH 30 PREFCHARWIDTH 30;
+nameAuthor 'Автор' (Message message) = nameOrLogin(author(message)) MAXCHARWIDTH 30 PREFCHARWIDTH 30;
 text 'Текст' = DATA TEXT (Message) MINCHARWIDTH 50;
 dateTime 'Время' = DATA DATETIME (Message) MAXCHARWIDTH 30 PREFCHARWIDTH 30;
 system 'Системное' = DATA BOOLEAN (Message);
@@ -70,12 +65,15 @@ onStarted() += ACTION {
     LOCAL systemChat = Chat();
     systemChat() <- chat('system');
     IF NOT systemChat() THEN {
-        ADDOBJ Chat;
-        systemChat() <- addedObject();
-        id(c) <- 'system';
-        dataName(c) <- 'Все'; 
+        FOR ADDOBJ c = Chat DO {
+            id(c) <- 'system';
+            dataName(c) <- 'Все'; 
+            FOR(nameOrLogin(User u)) DO {
+                in(c, u) <- TRUE;
+            }
+            systemChat() <- c;
+        }
     }
-    setInChat(systemChat());
     
     FOR system(Message m) DO {
         status(m, CustomUser u) <- MessageStatus.seen;
@@ -136,7 +134,7 @@ FORM editChat 'Чат'
     PROPERTIES (c) name
     
     OBJECTS u = CustomUser
-    PROPERTIES(u) name
+    PROPERTIES(u) nameOrLogin
     PROPERTIES(c,u) TODRAW u in, readonly 
     
     FILTERGROUP in FILTER 'Включены в чат' in(c,u)          
@@ -169,7 +167,7 @@ FORM fullChat 'Чат'
     EVENTS ON CLOSE markSeenOnChange(c)
 
     OBJECTS u = CustomUser
-    PROPERTIES(u) name, unreadMessages BACKGROUND backgroundUnread(u) 
+    PROPERTIES(u) nameOrLogin, unreadMessages BACKGROUND backgroundUnread(u) 
     
     EVENTS ON INIT seekChat(u)
     EVENTS ON CHANGE u seekChat(u)
@@ -199,7 +197,7 @@ DESIGN fullChat {
        
                 NEW contacts {
                     caption = 'Контакты';
-                    MOVE u.box { caption = 'Контакты'; PROPERTY(name(u)) { caption = 'Пользователь'; }}
+                    MOVE u.box { caption = 'Контакты'; }
                 }
                 NEW recent {
                     caption = 'Чаты';
