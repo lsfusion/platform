@@ -247,8 +247,8 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     private Transaction applyTransaction; // restore point
     private boolean isInTransaction;
 
-    private void startTransaction(BusinessLogics<?> BL, Map<String, Integer> attemptCountMap) throws SQLException, SQLHandledException {
-        sql.startTransaction(DBManager.getCurrentTIL(), getOwner(), attemptCountMap);
+    private void startTransaction(BusinessLogics<?> BL, Map<String, Integer> attemptCountMap, boolean deadLockPriority) throws SQLException, SQLHandledException {
+        sql.startTransaction(DBManager.getCurrentTIL(), getOwner(), attemptCountMap, deadLockPriority);
         isInTransaction = true;
         if(applyFilter == ApplyFilter.ONLY_DATA)
             onlyDataModifier = new OverrideSessionModifier(new IncrementChangeProps(BL.getDataChangeEvents()), applyModifier);
@@ -1750,15 +1750,15 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         // очистим, так как в транзакции уже другой механизм используется, и старые increment'ы будут мешать
         dataModifier.clearHints(sql, getOwner());
 
-        return transactApply(BL, stack, interaction, new HashMap<String, Integer>(), 0, applyActions, keepProps);
+        return transactApply(BL, stack, interaction, new HashMap<String, Integer>(), 0, applyActions, keepProps, false);
     }
 
     private boolean transactApply(BusinessLogics<?> BL, ExecutionStack stack,
                                   UserInteraction interaction,
                                   Map<String, Integer> attemptCountMap, int autoAttemptCount,
-                                  ImOrderSet<ActionPropertyValueImplement> applyActions, FunctionSet<SessionDataProperty> keepProps) throws SQLException, SQLHandledException {
+                                  ImOrderSet<ActionPropertyValueImplement> applyActions, FunctionSet<SessionDataProperty> keepProps, boolean deadLockPriority) throws SQLException, SQLHandledException {
 //        assert !isInTransaction();
-        startTransaction(BL, attemptCountMap);
+        startTransaction(BL, attemptCountMap, deadLockPriority);
 
         try {
             return recursiveApply(applyActions, BL, stack, keepProps);
@@ -1771,15 +1771,16 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                 
             if(t instanceof SQLHandledException && ((SQLHandledException)t).repeatApply(sql, getOwner(), SQLSession.getAttemptCountSum(attemptCountMap))) { // update conflict или deadlock или timeout - пробуем еще раз
                 boolean noTimeout = false;
+                Settings settings = Settings.get();
                 if(t instanceof SQLTimeoutException && ((SQLTimeoutException)t).isTransactTimeout()) {
                     if(interaction == null) {
                         autoAttemptCount++;
-                        if(autoAttemptCount > Settings.get().getApplyAutoAttemptCountLimit()) {
+                        if(autoAttemptCount > settings.getApplyAutoAttemptCountLimit()) {
                             ThreadLocalContext.delayUserInteraction(new LogMessageClientAction(getString("logics.server.apply.timeout.canceled"), true));                            
                             return false;
                         }
                     } else {
-                        int option = (Integer)interaction.requestUserInteraction(new ConfirmClientAction("lsFusion",getString("logics.server.restart.transaction"), true, Settings.get().getDialogTransactionTimeout(), JOptionPane.CANCEL_OPTION));
+                        int option = (Integer)interaction.requestUserInteraction(new ConfirmClientAction("lsFusion",getString("logics.server.restart.transaction"), true, settings.getDialogTransactionTimeout(), JOptionPane.CANCEL_OPTION));
                         if(option == JOptionPane.CANCEL_OPTION)
                             return false;
                         if(option == JOptionPane.YES_OPTION)
@@ -1787,14 +1788,26 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                     }
                 }
 
+                // update conflicts
                 if(t instanceof SQLConflictException) {
                     Integer attempts = attemptCountMap.get(((SQLConflictException) t).getDescription(true));
-                    if(attempts != null && attempts >= Settings.get().getConflictSleepThreshold())
+                    if(attempts != null && attempts >= settings.getConflictSleepThreshold())
                         try {
-                            Thread.sleep(attempts * Settings.get().getConflictSleepTimeCoeff() * 1000);
+                            ServerLoggers.sqlHandLogger.info("Sleep started after conflict updates : " + attempts);
+                            Thread.sleep(attempts * settings.getConflictSleepTimeCoeff() * 1000);
+                            ServerLoggers.sqlHandLogger.info("Sleep ended after conflict updates : " + attempts);
                         } catch (InterruptedException e) {
                             ThreadUtils.interruptThread(sql, Thread.currentThread()); // тут SQL
                         }
+                }
+
+                // dead locks
+                if(t instanceof SQLConflictException) {
+                    Integer attempts = attemptCountMap.get(((SQLConflictException) t).getDescription(false));
+                    if(attempts != null && attempts >= settings.getDeadLockThreshold()) {
+                        deadLockPriority = true;
+                        ServerLoggers.sqlHandLogger.info("Using deterministic dead-lock : " + attempts + ", " + deadLockPriority);
+                    }
                 }
 
                 if(noTimeout)
@@ -1802,7 +1815,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                     
                 try {
                     SQLSession.incAttemptCount(attemptCountMap, ((SQLHandledException) t).getDescription(true));
-                    return transactApply(BL, stack, interaction, attemptCountMap, autoAttemptCount, applyActions, keepProps);
+                    return transactApply(BL, stack, interaction, attemptCountMap, autoAttemptCount, applyActions, keepProps, deadLockPriority);
                 } finally {
                     if(noTimeout)
                         sql.popNoTransactTimeout();

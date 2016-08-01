@@ -1118,4 +1118,9 @@ public class MSSQLDataAdapter extends DataAdapter {
     public boolean supportsNoCount() {
         return true;
     }
+
+    @Override
+    public String getDeadlockPriority(Long priority) {
+        return "SET DEADLOCK_PRIORITY " + (priority != null ? BaseUtils.min(priority, 10) : "NORMAL");
+    }
 }

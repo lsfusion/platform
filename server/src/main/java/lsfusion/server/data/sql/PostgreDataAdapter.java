@@ -774,4 +774,9 @@ public class PostgreDataAdapter extends DataAdapter {
             result = "SET default_statistics_target=" +tempStatisticsTarget + ";" + result + ";SET default_statistics_target=DEFAULT";
         return result;
     }
+
+    @Override
+    public String getDeadlockPriority(Long priority) {
+        return "SET LOCAL deadlock_timeout to " + (priority != null ? ("'" + Math.round(BaseUtils.pow(2.0, priority) * 1000.0) + "ms'") : "DEFAULT");
+    }
 }

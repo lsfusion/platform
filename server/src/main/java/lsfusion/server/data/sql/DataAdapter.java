@@ -727,4 +727,9 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
     public String getAnalyze(String table) {
         return "ANALYZE " + table;
     }
+
+    @Override
+    public String getDeadlockPriority(Long priority) {
+        throw new UnsupportedOperationException();
+    }
 }

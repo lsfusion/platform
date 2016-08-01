@@ -329,4 +329,8 @@ public class SQLQuery extends SQLCommand<ResultHandler<String, String>> {
         }
         return result;
     }
+
+    public boolean isDML() {
+        return false;
+    }
 }

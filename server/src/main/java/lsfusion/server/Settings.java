@@ -1776,6 +1776,16 @@ public class Settings {
         this.conflictSleepTimeCoeff = conflictSleepTimeCoeff;
     }
 
+    private int deadLockThreshold = 0; // после какой попытки начинать управлять deadLock приоритетом
+
+    public int getDeadLockThreshold() {
+        return deadLockThreshold;
+    }
+
+    public void setDeadLockThreshold(int deadLockThreshold) {
+        this.deadLockThreshold = deadLockThreshold;
+    }
+
     // блок average - "нормальные" значения для запроса \ соединения
     private int queryLengthAverageMax = 10000; // 10 кб
     private int queryTimeAverageMax = 10000; // 10 секунд

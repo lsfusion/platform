@@ -116,4 +116,6 @@ public abstract class SQLCommand<H> extends TwinImmutableObject<SQLCommand<H>> {
     public boolean useVolatileStats() {
         return command.length() > Settings.get().getCommandLengthVolatileStats();
     }
+
+    public abstract boolean isDML();
 }

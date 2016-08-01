@@ -7,7 +7,6 @@ import lsfusion.server.data.expr.formula.SQLSyntaxType;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.query.CompileOrder;
 import lsfusion.server.data.query.MStaticExecuteEnvironment;
-import lsfusion.server.data.query.StaticExecuteEnvironment;
 import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.type.*;
 
@@ -232,6 +231,8 @@ public interface SQLSyntax {
     boolean hasNullWhereEstimateProblem(); // проблема при A LEFT JOIN B WHERE B.f IS NULL, где в A очень много записей в B очень мало, СУБД сначала join'ит их, а потом применяет selectivity f
 
     boolean hasTransactionSavepointProblem();
+
+    String getDeadlockPriority(Long priority);
 
     String getAnalyze(String table);
 }

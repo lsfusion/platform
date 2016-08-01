@@ -40,4 +40,9 @@ public class SQLDML extends SQLCommand<SQLDML.Handler> {
     public void afterExecute(Handler handler) {
         handler.afterProceed();
     }
+
+    @Override
+    public boolean isDML() {
+        return true;
+    }
 }

@@ -492,10 +492,10 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     }
 
     public void startTransaction(int isolationLevel, OperationOwner owner) throws SQLException, SQLHandledException {
-        startTransaction(isolationLevel, owner, new HashMap<String, Integer>());
+        startTransaction(isolationLevel, owner, new HashMap<String, Integer>(), false);
     }
 
-    public void startTransaction(int isolationLevel, OperationOwner owner, Map<String, Integer> attemptCountMap) throws SQLException, SQLHandledException {
+    public void startTransaction(int isolationLevel, OperationOwner owner, Map<String, Integer> attemptCountMap, boolean useDeadLockPriority) throws SQLException, SQLHandledException {
         lockWrite(owner);
         startTransaction = System.currentTimeMillis();
         this.attemptCountMap = attemptCountMap;
@@ -514,6 +514,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
                 }
                 setACID(privateConnection.sql, true, syntax);
 
+                this.useDeadLockPriority = useDeadLockPriority;
             }
         } catch (SQLException e) {
             throw ExceptionUtils.propagate(handle(e, "START TRANSACTION", privateConnection), SQLException.class, SQLHandledException.class);
@@ -526,7 +527,13 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         assert isInTransaction();
         runSuppressed(new SQLRunnable() {
             public void run() throws SQLException {
-                if(--inTransaction == 0) {
+                if(inTransaction == 1) {
+                    if(useDeadLockPriority) {
+                        if(deadLockPriority != null)
+                            setDeadLockPriority(privateConnection, owner, null);
+                        useDeadLockPriority = false;
+                    }
+
                     setACID(privateConnection.sql, false, syntax);
                     if(prevIsolation != null) {
                         privateConnection.sql.setTransactionIsolation(prevIsolation);
@@ -541,6 +548,12 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
                 if(Settings.get().isApplyVolatileStats())
                     popVolatileStats(owner);
             }}, firstException);
+
+        runSuppressed(new SQLRunnable() {
+                          public void run() throws SQLException {
+                              inTransaction--;
+                          }
+                      }, firstException);
 
         runSuppressed(new SQLRunnable() {
             public void run() throws SQLException {
@@ -1168,6 +1181,29 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         Statement statement = createSingleStatement(connection.sql);
         try {
             statement.execute("SET enable_nestloop=" + (on ? "on" : "off"));
+        } catch (SQLException e) {
+            logger.error(statement.toString());
+            throw e;
+        } finally {
+            statement.close();
+        }
+    }
+
+    private boolean useDeadLockPriority;
+    private Long deadLockPriority;
+    public void setDeadLockPriority(ExConnection connection, OperationOwner owner, Long deadLockPriority) throws SQLException {
+        assert isInTransaction();
+        assert useDeadLockPriority;
+
+        if(problemInTransaction != null) { // если возникла проблема в транзакции ругнется
+            assert deadLockPriority == null;
+            return;
+        }
+
+        this.deadLockPriority = deadLockPriority;
+        Statement statement = createSingleStatement(connection.sql);
+        try {
+            statement.execute(syntax.getDeadlockPriority(deadLockPriority));
         } catch (SQLException e) {
             logger.error(statement.toString());
             throw e;
@@ -1845,6 +1881,17 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
             lockConnection(snapEnv.needConnectionLock(), owner);
 
             snapEnv.beforeStatement(this, connection, string, owner);
+
+            if(useDeadLockPriority && command.isDML()) {
+                assert isInTransaction();
+
+                int secondsFromStart = getSecondsFromTransactStart();
+                if(secondsFromStart > 0) {
+                    long currentPriority = Math.round(Math.log(secondsFromStart) / Math.log(2.0));
+                    if (deadLockPriority == null || deadLockPriority < currentPriority) // оптимизация
+                        setDeadLockPriority(connection, owner, currentPriority); // предполагается, что deadLockPriority очистит endTransaction
+                }
+            }
 
             if(isInTransaction() && syntax.hasTransactionSavepointProblem()) {
                 Integer count;

@@ -32,4 +32,9 @@ public class SQLAnalyze extends SQLCommand<SQLDML.Handler> {
     public void afterExecute(SQLDML.Handler handler) {
         handler.afterProceed();
     }
+
+    @Override
+    public boolean isDML() {
+        return dml;
+    }
 }
