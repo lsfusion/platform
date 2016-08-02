@@ -91,19 +91,25 @@ public abstract class ContextAwarePendingRemoteObject extends PendingRemoteObjec
     }
 
     public void closeLater() {
-        if(!Settings.get().isDisableAsyncClose()) {
-            BaseUtils.runLater(Settings.get().getCloseFormDelay(), new Runnable() { // тут надо бы на ContextAwareDaemonThreadFactory переделать
-                @Override
+        if(!Settings.get().isDisableAsyncClose())
+            runLater(new Runnable() {
                 public void run() {
-                    ThreadLocalContext.aspectBeforeRmi(ContextAwarePendingRemoteObject.this, true);
-                    try {
-                        explicitClose(false);
-                    } finally {
-                        ThreadLocalContext.aspectAfterRmi();
-                    }
+                    explicitClose(false);
                 }
             });
-        }
+    }
+
+    public void runLater(final Runnable runnable) {
+        BaseUtils.runLater(Settings.get().getCloseFormDelay(), new Runnable() { // тут надо бы на ContextAwareDaemonThreadFactory переделать
+            public void run() {
+                ThreadLocalContext.aspectBeforeRmi(ContextAwarePendingRemoteObject.this, true);
+                try {
+                    runnable.run();
+                } finally {
+                    ThreadLocalContext.aspectAfterRmi();
+                }
+            }
+        });
     }
 
     public abstract String getSID();
@@ -127,11 +133,16 @@ public abstract class ContextAwarePendingRemoteObject extends PendingRemoteObjec
         }
     }
 
+    // static должен быть по хорошему чтобы не зависали ссылки
+    protected Runnable getAfterCleanThreadsRunnable() {
+        return null;
+    }
+
     // явная очистка ресурсов, которые поддерживаются через weak ref'ы
     protected void onExplicitClose(boolean syncedOnClient) {
         unexport();
 
-        BaseUtils.runLater(Settings.get().getCloseFormDelay(), cleanThreads(true, threads, context));
+        runLater(cleanThreads());
     }
 
     // все кроме weakRef (onExplicitClose) !!!! ВАЖНО нельзя запускать очистку weakRef ресурсов, так как WeakReference'у уже могут стать null, и ресурсы (например временные таблицы) перейдут другому владельцу, в итоге почистятся ресурсы используемые уже новым объектом
@@ -140,7 +151,7 @@ public abstract class ContextAwarePendingRemoteObject extends PendingRemoteObjec
             pausablesExecutor.shutdown();
     }
 
-    private static Runnable cleanThreads(final boolean explicit, final WeakIdentityHashSet<Thread> threads, final Context context) {
+    private Runnable cleanThreads() {
         return new Runnable() {
             @Override
             public void run() {
@@ -151,9 +162,14 @@ public abstract class ContextAwarePendingRemoteObject extends PendingRemoteObjec
                             ThreadUtils.interruptThread(context, thread);
                         } catch (SQLException | SQLHandledException ignored) {
                             ServerLoggers.sqlSuppLog(ignored);
+                        } catch (Throwable t) {
+                            ServerLoggers.sqlSuppLog(t); // пока сюда же выведем
                         }
                     }
                 }
+                Runnable runnable = getAfterCleanThreadsRunnable();
+                if(runnable != null)
+                    runLater(runnable);
             }
         };
     }

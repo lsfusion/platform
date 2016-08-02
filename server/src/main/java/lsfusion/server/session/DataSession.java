@@ -1688,6 +1688,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         return count;
     }
 
+    @AssertSynchronized
     public boolean apply(final BusinessLogics<?> BL, FormInstance form, ExecutionStack stack, UserInteraction interaction,
                          ImOrderSet<ActionPropertyValueImplement> applyActions, FunctionSet<SessionDataProperty> keepProps) throws SQLException, SQLHandledException {
         if(!hasChanges() && applyActions.isEmpty())
@@ -2294,6 +2295,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             dataChange.drop(sql, getOwner());
     }
 
+    @AssertSynchronized
     private ModifyResult aspectChangeProperty(final DataProperty property, PropertyChange<ClassPropertyInterface> change) throws SQLException, SQLHandledException {
         checkTransaction();
 

@@ -1004,16 +1004,23 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
                     form.explicitClose(syncedOnClient);
         }
 
-        try {
-            ThreadLocalContext.assureRmi(this);
-            sql.close();
-        } catch (Throwable t) {
-            ServerLoggers.sqlSuppLog(t);
-        }
-
         super.onExplicitClose(syncedOnClient);
 
         navigatorManager.navigatorExplicitClosed(this);
+    }
+
+    protected Runnable getAfterCleanThreadsRunnable() { // даем время на очистку потоков, чтобы например unregisterThreadStack при interrupt'е не получал sql session is already closed
+        return new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    ThreadLocalContext.assureRmi(RemoteNavigator.this);
+                    sql.close();
+                } catch (Throwable t) {
+                    ServerLoggers.sqlSuppLog(t);
+                }
+            }
+        };
     }
 
     @Override
