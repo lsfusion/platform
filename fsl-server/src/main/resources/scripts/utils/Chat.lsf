@@ -134,7 +134,7 @@ FORM editChat 'Чат'
     PROPERTIES (c) name
     
     OBJECTS u = CustomUser
-    PROPERTIES(u) nameOrLogin
+    PROPERTIES(u) login, name
     PROPERTIES(c,u) TODRAW u in, readonly 
     
     FILTERGROUP in FILTER 'Включены в чат' in(c,u)          
@@ -149,12 +149,38 @@ editChatAction 'Редактировать' () = ACTION {
 
 recentVisible  = ABSTRACT BOOLEAN ();
 readonlyFullChat(Chat chat) = readonly(chat) AND recentVisible();
-prevUser() = DATA LOCAL CustomUser();
+prevUser() = DATA LOCAL NESTED CustomUser();
 
 backgroundUnread 'Цвет' (Chat chat) = RGB(255, 0, 0) IF unreadMessages(chat);
 backgroundUnread 'Цвет' (CustomUser user) = RGB(255, 0, 0) IF unreadMessages(user);
 
-backgroundMessage (Message m) = IF NOT own(m) THEN RGB(255, 255, 255) ELSE IF seenCount(m) < 2 THEN RGB(226, 231, 235) ELSE RGB(240, 244, 248);
+backgroundMessage (Message m) = IF NOT own(m) THEN RGB(255, 255, 255) ELSE IF seenCount(m) < 2 THEN RGB(247, 247, 247) ELSE RGB(240, 244, 248);
+
+markSeenMessages (CustomUser user) = ACTION {
+    FOR in(chat(Message m)) AND status(m, user) == MessageStatus.delivered DO {
+        status(m, user) <- MessageStatus.seen;
+    }
+};
+
+markSeenOnChangeMessages (Chat chat, CustomUser user) = ACTION {
+    LOCAL needApply = BOOLEAN();
+    FOR in(chat) AND chat(Message m) == chat AND (status(m, user) == MessageStatus.sent OR status(m, user) == MessageStatus.delivered) DO {
+        status(m, user) <- MessageStatus.seen;
+        needApply() <- TRUE;
+    }
+    IF needApply() THEN {
+        APPLY NESTED defaultNewMessage[], chatNewMessage[Chat] {};
+    }
+};
+
+markSeenOnChange(Chat c) += ACTION {
+    markSeenOnChangeMessages(c, currentUser());
+    seekLastMessageInFullChat();
+};
+
+markSeenOnChange(Message m) = ACTION { 
+    markSeenOnChangeMessages(chat(m), currentUser());
+};
 
 FORM fullChat 'Чат'
     OBJECTS c = Chat
@@ -167,7 +193,7 @@ FORM fullChat 'Чат'
     EVENTS ON CLOSE markSeenOnChange(c)
 
     OBJECTS u = CustomUser
-    PROPERTIES(u) nameOrLogin, unreadMessages BACKGROUND backgroundUnread(u) 
+    PROPERTIES(u) login, name, unreadMessages BACKGROUND backgroundUnread(u) 
     
     EVENTS ON INIT seekChat(u)
     EVENTS ON CHANGE u seekChat(u)
@@ -178,10 +204,10 @@ FORM fullChat 'Чат'
     
     OBJECTS m = Message LAST
     PROPERTIES(m) READONLY BACKGROUND backgroundMessage(m) nameAuthor, text, dateTime
+    
+    EVENTS ON CHANGE m markSeenOnChange(m)    
         
     FILTERS in(c), chat(m) == c AND (NOT chatNotFound() OR recentVisible()), status(m, currentUser())
-    
-
     
     DIALOG Chat OBJECT c
 ;
@@ -259,33 +285,6 @@ deliveredNotificationAction(CustomUser user) += ACTION {
         status(m, user) <- MessageStatus.delivered;
     }
 }
-
-markSeenMessages (CustomUser user) = ACTION {
-    FOR in(chat(Message m)) AND status(m, user) == MessageStatus.delivered DO {
-        status(m, user) <- MessageStatus.seen;
-    }
-};
-
-markSeenOnChangeMessages (Chat chat, CustomUser user) = ACTION {
-    LOCAL needApply = BOOLEAN();
-    FOR in(chat) AND (status(Message m, user) == MessageStatus.sent OR status(m, user) == MessageStatus.delivered) DO {
-        status(m, user) <- MessageStatus.seen;
-        needApply() <- TRUE;
-    }
-    IF needApply() THEN {
-        APPLY NESTED defaultNewMessage[], chatNewMessage[Chat] {};
-    }
-};
-
-markSeenOnChange(Chat c) += ACTION {
-    markSeenOnChangeMessages(c, currentUser());
-    seekLastMessageInFullChat();
-};
-
-markSeenOnChange(Message m) = ACTION { 
-    markSeenOnChangeMessages(chat(m), currentUser());
-};
-
 
 closeChat 'Закрыть' = ACTION { 
     markSeenMessages(currentUser());
@@ -404,6 +403,8 @@ seekChat(CustomUser user) += ACTION {
     } ELSE {
         chatNotFound() <- NULL;
         SEEK fullChat.c chat();
+        SEEK LAST fullChat.m NULL;
+        markSeenOnChange(chat());
     }
     prevUser() <- user;
 }
