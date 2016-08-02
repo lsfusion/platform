@@ -30,6 +30,7 @@ import lsfusion.server.form.navigator.SQLSessionUserProvider;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
+import lsfusion.server.session.SessionTableUsage;
 import lsfusion.server.stack.ExecutionStackAspect;
 import lsfusion.server.stack.ParamMessage;
 import lsfusion.server.stack.StackMessage;
@@ -522,7 +523,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         }
     }
 
-    private void endTransaction(final OperationOwner owner) throws SQLException {
+    private void endTransaction(final OperationOwner owner, boolean rollback) throws SQLException {
         Result<Throwable> firstException = new Result<>();
 
         assert isInTransaction();
@@ -619,7 +620,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
 
         runSuppressed(new SQLRunnable() {
             public void run() throws SQLException {
-                endTransaction(owner);
+                endTransaction(owner, true);
             }}, firstException);
 
         finishExceptions(firstException);
@@ -637,7 +638,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
             privateConnection.sql.commit();
 //        fifo.add("CMT"  + getCurrentTimeStamp() + " " + this + " " + ExecutionStackAspect.getExStackTrace());
 
-        endTransaction(owner);
+        endTransaction(owner, false);
     }
 
     // удостоверивается что таблица есть
@@ -1022,6 +1023,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
             }
         }
     }
+
+//    private final Map<String, String> lastOwner = new HashMap<String, String>();
 
     public void returnTemporaryTable(final SessionTable table, TableOwner owner, final OperationOwner opOwner) throws SQLException {
         lockedReturnTemporaryTable(table.getName(), owner, opOwner);
@@ -2275,6 +2278,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     public void truncateSession(String table, OperationOwner owner, TableOwner tableOwner) throws SQLException {
         checkTableOwner(table, tableOwner);
 
+//        lastOwner.put(table, tableOwner instanceof SessionTableUsage ? ((SessionTableUsage) tableOwner).stack + '\n' + ExceptionUtils.getStackTrace(): null);
         truncate(syntax.getSessionTableName(table), owner, register(table, tableOwner, TableChange.REMOVE));
     }
 

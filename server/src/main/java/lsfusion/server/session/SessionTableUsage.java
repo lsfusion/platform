@@ -1,6 +1,7 @@
 package lsfusion.server.session;
 
 import lsfusion.base.BaseUtils;
+import lsfusion.base.ExceptionUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.Result;
 import lsfusion.base.col.MapFact;
@@ -76,7 +77,11 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K>, TableOwner {
         mapProps = genProps(properties, propertyType);
 
         table = new SessionRows(keys.mapOrder(mapKeys.reverse()), mapProps.keys());
+
+//        stack = ExceptionUtils.getStackTrace();
     }
+
+//    public String stack;
 
     public SessionTableUsage(SQLSession sql, final Query<K,V> query, BaseClass baseClass, QueryEnvironment env,
                              final ImMap<K, Type> keyTypes, final ImMap<V, Type> propertyTypes) throws SQLException, SQLHandledException { // здесь порядок особо не важен, так как assert что getUsage'а не будет

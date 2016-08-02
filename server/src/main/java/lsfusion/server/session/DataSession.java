@@ -1842,15 +1842,26 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         updateSessionEvents(getChangedProps());
     }
 
-    public void unregisterForm(FormInstance<?> form, boolean syncedOnClient) throws SQLException {
+    private interface Cleaner extends ExceptionRunnable<SQLException> {
+        boolean canBeCleaned();
+    }
+
+    public void unregisterForm(FormInstance<?> form, final boolean syncedOnClient) throws SQLException {
         changes.unregisterForm(form); // synced
 
         dropFormCaches();
 
         final WeakReference<FormInstance> wForm = new WeakReference<FormInstance>(form);
-        ExceptionRunnable<SQLException> cleaner = new ExceptionRunnable<SQLException>() {
+        Cleaner cleaner = new Cleaner() {
+            @Override
+            public boolean canBeCleaned() {
+                return syncedOnClient || !isInTransaction(); // нельзя чистить в транзакции, так как изменения могут rollback'ся, а rollDrop некому делать
+            }
+
             @Override
             public void run() throws SQLException {
+                assert canBeCleaned();
+
                 FormInstance<?> form = wForm.get();
                 if(form == null) // уже все очистилось само
                     return;
@@ -2581,17 +2592,23 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     }
 
     // необходимо, так как чистка ресурсов может быть асинхронной (closeLater, unreferenced)
-    private WeakIdentityHashSet<ExceptionRunnable<SQLException>> pendingCleaners = new WeakIdentityHashSet<>();
+    private WeakIdentityHashSet<Cleaner> pendingCleaners = new WeakIdentityHashSet<>();
 
-    public boolean tryClose(boolean syncedOnClient) throws SQLException { // assert synchronized
+    public boolean tryClose(boolean syncedOnClient) throws SQLException { // assert closedLock
         boolean noOwners = threadCount == 0 && activeForms.isEmpty();
         if(noOwners || syncedOnClient) { // AssertSynchronized со всеми остальными методами DataSession
-            for(ExceptionRunnable<SQLException> pendingCleaner : pendingCleaners)
-                pendingCleaner.run();
-            pendingCleaners.clear();
+            WeakIdentityHashSet<Cleaner> restCleaners = new WeakIdentityHashSet<>();
+            for(Cleaner pendingCleaner : pendingCleaners) {
+                if (noOwners || pendingCleaner.canBeCleaned()) // вообще assert что когда не осталось owner'ов можно очищать ресурсы
+                    pendingCleaner.run();
+                else
+                    restCleaners.add(pendingCleaner);
+            }
+            pendingCleaners = restCleaners;
         }
 
         if(noOwners) { // не осталось владельцев - закрываем
+            assert pendingCleaners.isEmpty();
             explicitClose();
             return true;
         }
