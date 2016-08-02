@@ -6,6 +6,7 @@ import lsfusion.client.StartupProperties;
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
 import java.awt.*;
+import java.math.BigDecimal;
 import java.text.NumberFormat;
 
 public abstract class CalculateSumButton extends ToolbarGridButton {
@@ -43,6 +44,8 @@ public abstract class CalculateSumButton extends ToolbarGridButton {
 
     public String format(Object number) {
         NumberFormat nf = NumberFormat.getNumberInstance();
+        if(number instanceof BigDecimal)
+            nf.setMaximumFractionDigits(((BigDecimal) number).scale());
         if (StartupProperties.dotSeparator)
             return nf.format(number).replace(',', '.');
         else
