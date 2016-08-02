@@ -2182,8 +2182,8 @@ formActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns 
 
 initFilterDefinition returns [String propName, List<String> mapping]
 	:	'INITFILTER'
-		(  pname=ID { $propName = $pname.text; }
-	    	|  mappedProp=mappedPropertyDraw { $propName = $mappedProp.name; $mapping = $mappedProp.mapping; }
+		(	pname=ID { $propName = $pname.text; }
+	    |	mappedProp=mappedPropertyDraw { $propName = $mappedProp.name; $mapping = $mappedProp.mapping; }
 		)
 	;
 
@@ -2346,7 +2346,7 @@ messageActionDefinitionBody[List<TypedParameter> context, boolean dynamic] retur
 	}
 }
 	:	'MESSAGE'
-	    ('NO WAIT' { noWait = true; } )?
+	    (('NO WAIT' | 'NOWAIT') { noWait = true; })?
 	    pe=propertyExpression[context, dynamic]
 	;
 
