@@ -30,9 +30,9 @@ CLASS Message 'Сообщение';
 TABLE message(Message);
 TABLE messageCustomUser(Message, CustomUser);
 
-pushNotification 'Отправить уведомление пользователю' = ACTION ABSTRACT (CustomUser);
-seekLastMessageInFullChat = ACTION ABSTRACT ();
-markSeenOnChange = ACTION ABSTRACT (Chat);
+pushNotification 'Отправить уведомление пользователю' = ACTION ABSTRACT LIST (CustomUser, BOOLEAN);
+seekLastMessageInFullChat = ACTION ABSTRACT LIST ();
+markSeenOnChange = ACTION ABSTRACT LIST (Chat);
 
 author 'Автор' = DATA CustomUser (Message);
 nameAuthor 'Автор' (Message message) = nameOrLogin(author(message)) MAXCHARWIDTH 30 PREFCHARWIDTH 30;
@@ -80,9 +80,21 @@ onStarted() += ACTION {
     }
 }
 
-setSeenMessageUser(Message m, CustomUser user) = ACTION {
-    status(m, user) <- MessageStatus.seen;
+setSeenMessageUser(Message m, CustomUser user, BOOLEAN system) = ACTION {
+    status(m, user) <- IF system THEN MessageStatus.sent ELSE MessageStatus.seen;
 }
+
+markSeenOnChangeMessages (Chat chat, CustomUser user) = ACTION {
+    LOCAL needApply = BOOLEAN();
+    FOR in(chat) AND chat(Message m) == chat AND (status(m, user) == MessageStatus.sent OR status(m, user) == MessageStatus.delivered) DO {
+        status(m, user) <- MessageStatus.seen;
+        needApply() <- TRUE;
+    }
+    IF needApply() THEN {
+        APPLY NESTED defaultNewMessage[], chatNewMessage[Chat] {};
+    }
+};
+
 sendMessage 'Написать в чат' (Chat chat, TEXT message, BOOLEAN system) = ACTION {
     FOR ADDOBJ m = Message DO {
         chat(m) <- chat;
@@ -95,18 +107,20 @@ sendMessage 'Написать в чат' (Chat chat, TEXT message, BOOLEAN syste
         ELSE
             chatNewMessage(chat) <- NULL; 
         
-        setSeenMessageUser(m, currentUser());
+        setSeenMessageUser(m, currentUser(), system);
         FOR in(chat, CustomUser user) AND user != currentUser() DO {
             status(m, user) <- MessageStatus.sent;
         }            
     }
     APPLY NESTED defaultNewMessage[], chatNewMessage[Chat] {};
     
-    FOR in(chat, CustomUser user) AND user != currentUser() DO {
-        pushNotification(user);
+    FOR in(chat, CustomUser user) AND (user != currentUser() OR system) DO {
+        pushNotification(user, system);
     }            
     
-    markSeenOnChange(chat);
+    IF NOT system THEN
+        markSeenOnChangeMessages(chat, currentUser());
+    seekLastMessageInFullChat();
 }
 
 sendMessage 'Отправить' = ACTION ABSTRACT LIST (Chat, CustomUser) EDITKEY 'ctrl ENTER';
@@ -162,17 +176,6 @@ markSeenMessages (CustomUser user) = ACTION {
     }
 };
 
-markSeenOnChangeMessages (Chat chat, CustomUser user) = ACTION {
-    LOCAL needApply = BOOLEAN();
-    FOR in(chat) AND chat(Message m) == chat AND (status(m, user) == MessageStatus.sent OR status(m, user) == MessageStatus.delivered) DO {
-        status(m, user) <- MessageStatus.seen;
-        needApply() <- TRUE;
-    }
-    IF needApply() THEN {
-        APPLY NESTED defaultNewMessage[], chatNewMessage[Chat] {};
-    }
-};
-
 markSeenOnChange(Chat c) += ACTION {
     markSeenOnChangeMessages(c, currentUser());
     seekLastMessageInFullChat();
@@ -193,7 +196,7 @@ FORM fullChat 'Чат'
     EVENTS ON CLOSE markSeenOnChange(c)
 
     OBJECTS u = CustomUser
-    PROPERTIES(u) login, name, unreadMessages BACKGROUND backgroundUnread(u) 
+    PROPERTIES(u) login, name, lastActivity, unreadMessages BACKGROUND backgroundUnread(u) 
     
     EVENTS ON INIT seekChat(u)
     EVENTS ON CHANGE u seekChat(u)
@@ -351,10 +354,9 @@ DESIGN shortChat {
     }      
 }  
 
-pushAction() = ACTION {
+pushAction(BOOLEAN system) = ACTION {
     ACTIVE FORM fullChat;
-    IF isActiveForm() THEN {
-        //markSeenMessages(currentUser());
+    IF isActiveForm() AND NOT system THEN {
         APPLY NESTED defaultNewMessage[], chatNewMessage[Chat] {};
         seekLastMessageInFullChat();
         formRefresh();
@@ -377,11 +379,11 @@ seekLastMessageInFullChat() += ACTION {
     SEEK LAST fullChat.m NULL;
 }
 
-pushNotification (CustomUser user) += ACTION {
-    FOR user(Connection conn) == user AND connectionStatus(conn) == ConnectionStatus.connectedConnection DO {
-        NEWSESSION { NEWTHREAD pushAction() CONNECTION conn; }
-    }    
-};
+pushNotification (CustomUser user, BOOLEAN system) += ACTION {
+    FOR user(Connection conn) == user AND connectionStatus(conn) == ConnectionStatus.connectedConnection AND conn != currentConnection() DO {
+        NEWSESSION { NEWTHREAD pushAction(system AS BOOLEAN) CONNECTION conn; }
+    }
+}
 
 recentVisible() += ACTIVE TAB recent FORM fullChat;
 sendMessage(Chat chat, CustomUser user) += ACTION {
