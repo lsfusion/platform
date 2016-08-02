@@ -1023,7 +1023,7 @@ META defineDocumentInterfaceHeaderProperty (object, property, caption)
 END
 
 META defineDocumentDetailProperty(object, detail, property, caption)
-    property caption (###detail detail) = property(object(detail)) PERSISTENT;
+    property caption (###detail detail) = property(object(detail));
 END
 META defineDocumentInterfaceDetailProperty(object, detail, property, caption)
     @defineDocumentDetailProperty(object, detail, property, caption);
