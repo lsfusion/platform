@@ -492,10 +492,10 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     }
 
     public void startTransaction(int isolationLevel, OperationOwner owner) throws SQLException, SQLHandledException {
-        startTransaction(isolationLevel, owner, new HashMap<String, Integer>(), false);
+        startTransaction(isolationLevel, owner, new HashMap<String, Integer>(), false, 0);
     }
 
-    public void startTransaction(int isolationLevel, OperationOwner owner, Map<String, Integer> attemptCountMap, boolean useDeadLockPriority) throws SQLException, SQLHandledException {
+    public void startTransaction(int isolationLevel, OperationOwner owner, Map<String, Integer> attemptCountMap, boolean useDeadLockPriority, long applyStartTime) throws SQLException, SQLHandledException {
         lockWrite(owner);
         startTransaction = System.currentTimeMillis();
         this.attemptCountMap = attemptCountMap;
@@ -515,6 +515,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
                 setACID(privateConnection.sql, true, syntax);
 
                 this.useDeadLockPriority = useDeadLockPriority;
+                this.applyStartTime = applyStartTime;
             }
         } catch (SQLException e) {
             throw ExceptionUtils.propagate(handle(e, "START TRANSACTION", privateConnection), SQLException.class, SQLHandledException.class);
@@ -533,6 +534,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
                             setDeadLockPriority(privateConnection, owner, null);
                         useDeadLockPriority = false;
                     }
+                    applyStartTime = 0;
 
                     setACID(privateConnection.sql, false, syntax);
                     if(prevIsolation != null) {
@@ -1190,6 +1192,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     }
 
     private boolean useDeadLockPriority;
+    private long applyStartTime;
     private Long deadLockPriority;
     public void setDeadLockPriority(ExConnection connection, OperationOwner owner, Long deadLockPriority) throws SQLException {
         assert isInTransaction();
@@ -1885,9 +1888,15 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
             if(useDeadLockPriority && command.isDML()) {
                 assert isInTransaction();
 
-                int secondsFromStart = getSecondsFromTransactStart();
-                if(secondsFromStart > 0) {
-                    long currentPriority = Math.round(Math.log(secondsFromStart) / Math.log(2.0));
+                // время со старта транзакции + половину времени предыдущих попыток
+                // 1-е чтобы у старых транзакций был больший приоритет, 2-е чтобы скажем в postgres deadlock timeout постепенно увеличивался, так как по его истечении больше проверок на deadlock не происходит, и жертвой будет опять таки старая транзнакция (этот же подход позволяет увеличивать у всех участников deadlock постепенно timeout пока одна из транзакций не пройдет)
+                long millisScore = System.currentTimeMillis() - transStartTime;
+                if(syntax.useFailedTimeInDeadlockPriority())
+                    millisScore += (transStartTime - applyStartTime) / 2;
+
+                long secondsScore = millisScore / 1000;
+                if(secondsScore > 0) {
+                    long currentPriority = Math.round(Math.log(secondsScore) / Math.log(2.0));
                     if (deadLockPriority == null || deadLockPriority < currentPriority) // оптимизация
                         setDeadLockPriority(connection, owner, currentPriority); // предполагается, что deadLockPriority очистит endTransaction
                 }

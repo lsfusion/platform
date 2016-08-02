@@ -779,4 +779,9 @@ public class PostgreDataAdapter extends DataAdapter {
     public String getDeadlockPriority(Long priority) {
         return "SET LOCAL deadlock_timeout to " + (priority != null ? ("'" + Math.round(BaseUtils.pow(2.0, priority) * 1000.0) + "ms'") : "DEFAULT");
     }
+
+    @Override
+    public boolean useFailedTimeInDeadlockPriority() {
+        return true;
+    }
 }

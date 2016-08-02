@@ -247,8 +247,8 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     private Transaction applyTransaction; // restore point
     private boolean isInTransaction;
 
-    private void startTransaction(BusinessLogics<?> BL, Map<String, Integer> attemptCountMap, boolean deadLockPriority) throws SQLException, SQLHandledException {
-        sql.startTransaction(DBManager.getCurrentTIL(), getOwner(), attemptCountMap, deadLockPriority);
+    private void startTransaction(BusinessLogics<?> BL, Map<String, Integer> attemptCountMap, boolean deadLockPriority, long applyStartTime) throws SQLException, SQLHandledException {
+        sql.startTransaction(DBManager.getCurrentTIL(), getOwner(), attemptCountMap, deadLockPriority, applyStartTime);
         isInTransaction = true;
         if(applyFilter == ApplyFilter.ONLY_DATA)
             onlyDataModifier = new OverrideSessionModifier(new IncrementChangeProps(BL.getDataChangeEvents()), applyModifier);
@@ -1751,15 +1751,15 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         // очистим, так как в транзакции уже другой механизм используется, и старые increment'ы будут мешать
         dataModifier.clearHints(sql, getOwner());
 
-        return transactApply(BL, stack, interaction, new HashMap<String, Integer>(), 0, applyActions, keepProps, false);
+        return transactApply(BL, stack, interaction, new HashMap<String, Integer>(), 0, applyActions, keepProps, false, System.currentTimeMillis());
     }
 
     private boolean transactApply(BusinessLogics<?> BL, ExecutionStack stack,
                                   UserInteraction interaction,
                                   Map<String, Integer> attemptCountMap, int autoAttemptCount,
-                                  ImOrderSet<ActionPropertyValueImplement> applyActions, FunctionSet<SessionDataProperty> keepProps, boolean deadLockPriority) throws SQLException, SQLHandledException {
+                                  ImOrderSet<ActionPropertyValueImplement> applyActions, FunctionSet<SessionDataProperty> keepProps, boolean deadLockPriority, long applyStartTime) throws SQLException, SQLHandledException {
 //        assert !isInTransaction();
-        startTransaction(BL, attemptCountMap, deadLockPriority);
+        startTransaction(BL, attemptCountMap, deadLockPriority, applyStartTime);
 
         try {
             return recursiveApply(applyActions, BL, stack, keepProps);
@@ -1816,7 +1816,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                     
                 try {
                     SQLSession.incAttemptCount(attemptCountMap, ((SQLHandledException) t).getDescription(true));
-                    return transactApply(BL, stack, interaction, attemptCountMap, autoAttemptCount, applyActions, keepProps, deadLockPriority);
+                    return transactApply(BL, stack, interaction, attemptCountMap, autoAttemptCount, applyActions, keepProps, deadLockPriority, applyStartTime);
                 } finally {
                     if(noTimeout)
                         sql.popNoTransactTimeout();

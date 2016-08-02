@@ -233,6 +233,7 @@ public interface SQLSyntax {
     boolean hasTransactionSavepointProblem();
 
     String getDeadlockPriority(Long priority);
+    boolean useFailedTimeInDeadlockPriority();
 
     String getAnalyze(String table);
 }

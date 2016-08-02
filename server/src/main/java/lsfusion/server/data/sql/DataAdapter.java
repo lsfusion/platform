@@ -732,4 +732,9 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
     public String getDeadlockPriority(Long priority) {
         throw new UnsupportedOperationException();
     }
+
+    @Override
+    public boolean useFailedTimeInDeadlockPriority() {
+        return false;
+    }
 }
