@@ -52,10 +52,10 @@ editable (Message message) = NOT readonly(message);
 own(Message message) = author(message) == currentUser();
 seenCount(Message message) = GROUP SUM 1 IF status(message, CustomUser user) == MessageStatus.seen BY message;
  
-unreadMessages 'Непрочитанных' (chat, user) = GROUP SUM 1 IF (NOT status(Message message, CustomUser user) == MessageStatus.seen) AND (author(message) != user) BY chat(message), user;
+unreadMessages 'Непрочитанных' (chat, user) = GROUP SUM 1 IF (status(Message message, CustomUser user) == MessageStatus.sent OR status(message, user) == MessageStatus.delivered) AND (author(message) != user) BY chat(message), user;
 unreadMessages'Непрочитанных' (Chat chat) = unreadMessages(chat, currentUser()) MAXCHARWIDTH 10 PREFCHARWIDTH 10;
 unreadMessages 'Непрочитанных' (CustomUser user) = unreadMessages(chatIn(user, currentUser()), currentUser()) MAXCHARWIDTH 10 PREFCHARWIDTH 10;
-//sumUnreadMessages 'Всего непрочитанных' (CustomUser user) = GROUP SUM unreadMessages(Chat chat, CustomUser user) IF in(chat, user) BY user;
+sumUnreadMessages 'Всего непрочитанных' (CustomUser user) = GROUP SUM unreadMessages(Chat chat, CustomUser user) IF in(chat, user) BY user;
 
 chatNotFound = DATA LOCAL BOOLEAN ();
 defaultNewMessage 'Новое сообщение' = DATA LOCAL TEXT ();
@@ -364,10 +364,10 @@ DESIGN shortChat {
     }      
 }  
 
-//afterClientStarted() += ACTION {
-//    IF sumUnreadMessages(currentUser()) > 0 THEN
-//        FORM shortChat MODAL;
-//}
+onClientStarted() += ACTION {
+    IF sumUnreadMessages(currentUser()) > 0 THEN
+        FORM shortChat MODAL;
+}
 
 pushAction(BOOLEAN system) = ACTION {
     ACTIVE FORM fullChat;
