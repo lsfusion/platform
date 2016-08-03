@@ -217,8 +217,6 @@ public class Main {
                     frame = module.initFrame(remoteNavigator);
                     logger.info("After init frame");
 
-                    ((DockableMainFrame) frame).executeAction("SystemEvents.onClientStarted[]", 0);
-
                     remoteNavigator.setUpdateTime(pullMessagesPeriod);
 
                     frame.addWindowListener(
@@ -245,6 +243,8 @@ public class Main {
                     }
 
                     busyDialog = remoteLogics.isBusyDialog() || remoteNavigator.isBusyDialog();
+
+                    ((DockableMainFrame) frame).executeAction("SystemEvents.onClientStarted[]", 0);
 
                 } catch (Exception e) {
                     closeSplashScreen();
