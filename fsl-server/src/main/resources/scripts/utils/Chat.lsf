@@ -69,7 +69,7 @@ onStarted() += ACTION {
         FOR ADDOBJ c = Chat DO {
             id(c) <- 'system';
             dataName(c) <- 'Все'; 
-            FOR(nameOrLogin(User u)) DO {
+            FOR(login(User u) AND lastActivity(u)) DO {
                 in(c, u) <- TRUE;
             }
             systemChat() <- c;
@@ -169,6 +169,11 @@ prevUser() = DATA LOCAL NESTED CustomUser();
 backgroundUnread 'Цвет' (Chat chat) = RGB(255, 0, 0) IF unreadMessages(chat);
 backgroundUnread 'Цвет' (CustomUser user) = RGB(255, 0, 0) IF unreadMessages(user);
 
+online (CustomUser user) = subtractSeconds(lastActivity(user), currentDateTime()) < 300;
+away (CustomUser user) = subtractSeconds(lastActivity(user), currentDateTime()) < 3600;
+
+backgroundUser (CustomUser user) = IF online(user) THEN RGB(0, 255, 0) ELSE IF away(user) THEN RGB(255, 255, 0);
+
 backgroundMessage (Message m) = IF NOT own(m) THEN RGB(255, 255, 255) ELSE IF seenCount(m) < 2 THEN RGB(247, 247, 247) ELSE RGB(240, 244, 248);
 
 markSeenMessages (CustomUser user) = ACTION {
@@ -197,12 +202,14 @@ FORM fullChat 'Чат'
     EVENTS ON CLOSE markSeenOnChange(c)
 
     OBJECTS u = CustomUser
-    PROPERTIES(u) login READONLY, name, lastActivity READONLY, unreadMessages BACKGROUND backgroundUnread(u) 
+    PROPERTIES(u) login READONLY, name, lastActivity READONLY BACKGROUND backgroundUser(u), unreadMessages BACKGROUND backgroundUnread(u) 
     
     EVENTS ON INIT seekChat(u)
     EVENTS ON CHANGE u seekChat(u)
     
-    FILTERS u != currentUser()
+    FILTERGROUP in FILTER 'Только активные' away(u)  
+    FILTERS u != currentUser(), login(u), lastActivity(u)
+    ORDER BY lastActivity(u) DESC
     
     PROPERTIES(c, u) FORCE PANEL sendMessage
     
@@ -363,7 +370,7 @@ DESIGN shortChat {
 pushAction(BOOLEAN system) = ACTION {
     ACTIVE FORM fullChat;
     IF isActiveForm() AND NOT system THEN {
-        APPLY NESTED defaultNewMessage[], chatNewMessage[Chat] {};
+        //APPLY NESTED defaultNewMessage[], chatNewMessage[Chat] {};
         seekLastMessageInFullChat();
         formRefresh();
     }
