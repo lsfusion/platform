@@ -1951,4 +1951,14 @@ public class Settings {
     public void setDisableFinalized(boolean disableFinalized) {
         this.disableFinalized = disableFinalized;
     }
+
+    private boolean checkSessionCount = false;
+
+    public boolean isCheckSessionCount() {
+        return checkSessionCount;
+    }
+
+    public void setCheckSessionCount(boolean checkSessionCount) {
+        this.checkSessionCount = checkSessionCount;
+    }
 }

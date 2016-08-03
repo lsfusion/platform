@@ -72,7 +72,7 @@ public class SQLTemporaryPool {
 //                    session.truncateSession(matchTable, opOwner, TableOwner.none);
 //                }
                 // падает, когда происходит, создание таблицы за пределами транзакции, затем внутри делается drop, и не делается rollDrop - зависли хинты (си. clearHints), или асинхронно кто-то влазит в транзакцию
-                assert session.getSessionCount(matchTable, opOwner) == 0; // !!! после used потому как выполняет sql, и например может выполнится tryCommon который вернет privateConnection
+                ServerLoggers.assertLog(!Settings.get().isCheckSessionCount() || session.getSessionCount(matchTable, opOwner) == 0, "SESSION TABLE SHOULD BE EMPTY AT CACHE"); // !!! после used потому как выполняет sql, и например может выполнится tryCommon который вернет privateConnection
 //                SQLSession.addUsed(matchTable, owner, used, usedStacks);
                 isNew.set(false);
                 CacheStats.incrementHit(CacheStats.CacheType.TEMP_TABLE);

@@ -890,7 +890,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     private final Map<String, Integer> sessionTablesCount = MapFact.mAddRemoveMap(); // lockRead
 
     public int getSessionTablesCountAll(boolean lockedWrite) throws SQLException { // assertLock
-        assert !lockedWrite || calcSessionTablesCountAll() == totalSessionTablesCount; // если не lockedwrite то может отличаться количество, так как может пройти изменение, но не делаться registerChange
+        ServerLoggers.assertLog(!lockedWrite || (!Settings.get().isCheckSessionCount() || calcSessionTablesCountAll() == totalSessionTablesCount), "TABLE COUNT ON SQL AND APP SERVER SHOULD MATCH"); // если не lockedwrite то может отличаться количество, так как может пройти изменение, но не делаться registerChange
         return totalSessionTablesCount;
     }
 
@@ -989,7 +989,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
                 privateConnection.temporary.fillData(this, fill, count, actual, table, opOwner);
             } catch (Throwable t) {
                 returnTemporaryTable(table, owner, opOwner, t instanceof SQLTimeoutException || fill.canBeNotEmptyIfFailed()); // вернем таблицу, если не смогли ее заполнить, truncate при timeoutе потому как в остальных случаях и так должна быть пустая (строго говоря с timeout'ом это тоже перестраховка)
-                try { ServerLoggers.assertLog(problemInTransaction != null || getSessionCount(table, opOwner) == 0, "TEMPORARY TABLE AFTER FILL NOT EMPTY"); } catch (Throwable i) { ServerLoggers.sqlSuppLog(i); }
+                try { ServerLoggers.assertLog(problemInTransaction != null || (!Settings.get().isCheckSessionCount() || getSessionCount(table, opOwner) == 0), "TEMPORARY TABLE AFTER FILL NOT EMPTY"); } catch (Throwable i) { ServerLoggers.sqlSuppLog(i); }
                 throw ExceptionUtils.propagate(t, SQLException.class, SQLHandledException.class);
             }
         } finally {
