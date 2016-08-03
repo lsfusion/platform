@@ -197,7 +197,7 @@ FORM fullChat 'Чат'
     EVENTS ON CLOSE markSeenOnChange(c)
 
     OBJECTS u = CustomUser
-    PROPERTIES(u) login READONLY, name, lastActivity, unreadMessages BACKGROUND backgroundUnread(u) 
+    PROPERTIES(u) login READONLY, name, lastActivity READONLY, unreadMessages BACKGROUND backgroundUnread(u) 
     
     EVENTS ON INIT seekChat(u)
     EVENTS ON CHANGE u seekChat(u)
