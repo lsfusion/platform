@@ -115,9 +115,11 @@ sendMessage 'Написать в чат' (Chat chat, TEXT message, BOOLEAN syste
     }
     APPLY NESTED defaultNewMessage[], chatNewMessage[Chat] {};
     
-    FOR in(chat, CustomUser user) AND (user != currentUser() OR system) DO {
-        pushNotification(user, system);
-    }            
+    NEWSESSION NEWTHREAD {
+        FOR in(chat, CustomUser user) AND (user != currentUser() OR system) DO {
+            pushNotification(user, system);
+        }          
+    }
     
     IF NOT system THEN
         markSeenOnChangeMessages(chat, currentUser());
