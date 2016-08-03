@@ -87,13 +87,18 @@ countConnection 'Кол-во подключений' = GROUP SUM 1 BY user(Conne
 CONSTRAINT DROPPED(CustomUser u IS CustomUser) AND PREV(countConnection(u))
     MESSAGE 'Запрещено удалять пользователей, которые подключались к системе';
 
-connectionStatus 'Статус подключения' =  DATA ConnectionStatus (Connection);
+connectionStatus 'Статус подключения' =  DATA ConnectionStatus (Connection) INDEXED;
+INDEX user(Connection c), connectionStatus(c);
 nameConnectionStatus 'Статус подключения' (Connection connection) = staticCaption(connectionStatus(connection));
 
 connectTime 'Время подключения' = DATA DATETIME (Connection);
 connectDate 'Дата подключения' (Connection c) = DATE(connectTime(c));
 disconnectTime 'Время отключения' = DATA DATETIME (Connection);
 disconnectTime (Connection connection) <- currentDateTime() WHEN SET(connectionStatus(connection) == ConnectionStatus.disconnectedConnection);
+
+onStarted() += ACTION {
+    connectionStatus(connection) <- ConnectionStatus.disconnectedConnection WHERE connectionStatus(connection) == ConnectionStatus.connectedConnection;
+}
 
 reconnect 'Переподключить' (CustomUser user) = ACTION {
     FOR user(Connection conn) == user AND connectionStatus(conn) == ConnectionStatus.connectedConnection DO {
