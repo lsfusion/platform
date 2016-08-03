@@ -44,7 +44,7 @@ captionStatus 'Статус' (Message message, CustomUser user) = staticCaption(
 captionStatus 'Статус' (Message message) = captionStatus(message, currentUser());
 chat = DATA Chat (Message);
 nameChat 'Чат' (Message message) = name(chat(message)) MINCHARWIDTH 30 PREFCHARWIDTH 30;
-nameShortChat 'Чат' (Message message) = nameChat(message) + ' [' + nameAuthor(message) + ']' MINCHARWIDTH 15 PREFCHARWIDTH 30;
+nameShortChat 'Чат' (Message message) = IF isDialog(chat(message)) THEN nameChat(message) ELSE (nameChat(message) + ' [' + nameAuthor(message) + ']') MINCHARWIDTH 15 PREFCHARWIDTH 30;
 
 readonly (Message message) = readonly(chat(message));
 editable (Message message) = NOT readonly(message);
@@ -55,6 +55,7 @@ seenCount(Message message) = GROUP SUM 1 IF status(message, CustomUser user) == 
 unreadMessages 'Непрочитанных' (chat, user) = GROUP SUM 1 IF (NOT status(Message message, CustomUser user) == MessageStatus.seen) AND (author(message) != user) BY chat(message), user;
 unreadMessages'Непрочитанных' (Chat chat) = unreadMessages(chat, currentUser()) MAXCHARWIDTH 10 PREFCHARWIDTH 10;
 unreadMessages 'Непрочитанных' (CustomUser user) = unreadMessages(chatIn(user, currentUser()), currentUser()) MAXCHARWIDTH 10 PREFCHARWIDTH 10;
+//sumUnreadMessages 'Всего непрочитанных' (CustomUser user) = GROUP SUM unreadMessages(Chat chat, CustomUser user) IF in(chat, user) BY user;
 
 chatNotFound = DATA LOCAL BOOLEAN ();
 defaultNewMessage 'Новое сообщение' = DATA LOCAL TEXT ();
@@ -148,7 +149,7 @@ FORM editChat 'Чат'
     PROPERTIES (c) name
     
     OBJECTS u = CustomUser
-    PROPERTIES(u) login, name
+    PROPERTIES(u) login READONLY, name
     PROPERTIES(c,u) TODRAW u in, readonly 
     
     FILTERGROUP in FILTER 'Включены в чат' in(c,u)          
@@ -196,7 +197,7 @@ FORM fullChat 'Чат'
     EVENTS ON CLOSE markSeenOnChange(c)
 
     OBJECTS u = CustomUser
-    PROPERTIES(u) login, name, lastActivity, unreadMessages BACKGROUND backgroundUnread(u) 
+    PROPERTIES(u) login READONLY, name, lastActivity, unreadMessages BACKGROUND backgroundUnread(u) 
     
     EVENTS ON INIT seekChat(u)
     EVENTS ON CHANGE u seekChat(u)
@@ -353,6 +354,11 @@ DESIGN shortChat {
         REMOVE functions.box;
     }      
 }  
+
+//afterClientStarted() += ACTION {
+//    IF sumUnreadMessages(currentUser()) > 0 THEN
+//        FORM shortChat MODAL;
+//}
 
 pushAction(BOOLEAN system) = ACTION {
     ACTIVE FORM fullChat;
