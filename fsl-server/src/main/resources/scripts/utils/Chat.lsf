@@ -298,7 +298,7 @@ sendMessage 'Написать пользователю' (CustomUser user) = ACTI
             in(chat, currentUser) <- TRUE WHERE currentUser == currentUser();
             newMessage(chat) <- defaultNewMessage();
             sendMessage(chat);
-            SEEK fullChat.c chat;
+            SEEK fullChat.c = chat;
         } 
     } ELSE sendMessage(chat());
 }
@@ -339,8 +339,8 @@ openChat 'Перейти в чат' (Chat c, Message m) = ACTION {
     FORM fullChat DOCKED;
     NEWSESSION { NEWTHREAD {
         ACTIVATE TAB recent FORM fullChat;
-        SEEK fullChat.c chat(m);
-        SEEK LAST fullChat.m NULL;
+        SEEK fullChat.c = chat(m);
+        SEEK LAST fullChat.m;
         newMessage(c) <-reply(m);
     } CONNECTION currentConnection(); }
     APPLY NESTED newMessage[Chat], reply[Message] {};
@@ -399,7 +399,7 @@ pushAction(BOOLEAN system, BOOLEAN notificate) = ACTION {
         ACTIVE FORM shortChat;
         IF isActiveForm() THEN {
             formRefresh();
-            SEEK LAST shortChat.m NULL;
+            SEEK LAST shortChat.m;
         } 
         ELSE {
             IF system OR notificate THEN {
@@ -412,7 +412,7 @@ pushAction(BOOLEAN system, BOOLEAN notificate) = ACTION {
 }
 
 seekLastMessageInFullChat() += ACTION {
-    SEEK LAST fullChat.m NULL;
+    SEEK LAST fullChat.m;
 }
 
 pushNotification (CustomUser user, BOOLEAN system, BOOLEAN notificate) += ACTION {
@@ -440,8 +440,8 @@ seekChat(CustomUser user) += ACTION {
         markSeenOnChange(chatIn(prevUser(), currentUser()));
     } ELSE {
         chatNotFound() <- NULL;
-        SEEK fullChat.c chat();
-        SEEK LAST fullChat.m NULL;
+        SEEK fullChat.c = chat();
+        SEEK LAST fullChat.m;
         markSeenOnChange(chat());
     }
     prevUser() <- user;
