@@ -30,7 +30,7 @@ CLASS Message 'Сообщение';
 TABLE message(Message);
 TABLE messageCustomUser(Message, CustomUser);
 
-pushNotification 'Отправить уведомление пользователю' = ACTION ABSTRACT LIST (CustomUser, BOOLEAN);
+pushNotification 'Отправить уведомление пользователю' = ACTION ABSTRACT LIST (CustomUser, BOOLEAN, BOOLEAN);
 seekLastMessageInFullChat = ACTION ABSTRACT LIST ();
 markSeenOnChange = ACTION ABSTRACT LIST (Chat);
 
@@ -61,6 +61,7 @@ chatNotFound = DATA LOCAL BOOLEAN ();
 defaultNewMessage 'Новое сообщение' = DATA LOCAL TEXT ();
 chatNewMessage 'Новое сообщение' = DATA LOCAL TEXT (Chat);
 newMessage 'Новое сообщение' (Chat chat) = DATA LOCAL TEXT (Chat);
+notificate 'С уведомлением' = DATA LOCAL NESTED BOOLEAN (Chat);
 
 onStarted() += ACTION {
     LOCAL systemChat = Chat();
@@ -117,7 +118,7 @@ sendMessage 'Написать в чат' (Chat chat, TEXT message, BOOLEAN syste
     
     NEWSESSION NEWTHREAD {
         FOR in(chat, CustomUser user) AND (user != currentUser() OR system) DO {
-            pushNotification(user, system);
+            pushNotification(user, system, notificate(chat));
         }          
     }
     
@@ -151,7 +152,7 @@ FORM editChat 'Чат'
     PROPERTIES (c) name
     
     OBJECTS u = CustomUser
-    PROPERTIES(u) login READONLY, name
+    PROPERTIES(u) READONLY login, name
     PROPERTIES(c,u) TODRAW u in, readonly 
     
     FILTERGROUP in FILTER 'Включены в чат' in(c,u)          
@@ -197,14 +198,14 @@ FORM fullChat 'Чат'
     OBJECTS c = Chat
     PROPERTIES(c) READONLY name ON SHORTCUT editChatAction(), unreadMessages BACKGROUND backgroundUnread(c)
     PROPERTIES(c) FORCE PANEL TOOLBAR ADDFORM
-    PROPERTIES(c) newMessage READONLYIF readonlyFullChat(c) FORCE PANEL ON CHANGE saveNewMessage(c)
+    PROPERTIES(c) READONLYIF readonlyFullChat(c) FORCE PANEL newMessage ON CHANGE saveNewMessage(c), notificate
     
     EVENTS ON INIT markSeenOnChange(c)
     EVENTS ON CHANGE c markSeenOnChange(c)
     EVENTS ON CLOSE markSeenOnChange(c)
 
     OBJECTS u = CustomUser
-    PROPERTIES(u) login READONLY, name, lastActivity READONLY BACKGROUND backgroundUser(u), unreadMessages BACKGROUND backgroundUnread(u) 
+    PROPERTIES(u) READONLY login, name, lastActivity BACKGROUND backgroundUser(u), unreadMessages BACKGROUND backgroundUnread(u) 
     
     EVENTS ON INIT seekChat(u)
     EVENTS ON CHANGE u seekChat(u)
@@ -260,9 +261,21 @@ DESIGN fullChat {
                     MOVE PROPERTY(newMessage(c)) {
                         fill = 1; 
                         panelCaptionAbove = TRUE;
-                    }           
-                    MOVE PROPERTY(sendMessage(c, u)) {
-                        font = 'bold 24';
+                    }   
+                                                  
+                    NEW bottomSend {
+                        align = STRETCH ;
+                        type = CONTAINERH;
+                        MOVE PROPERTY(sendMessage(c, u)) {                           
+                            font = 'bold 24';
+                        }
+                        NEW notificate {
+                            fill = 1;
+                            MOVE PROPERTY(notificate(c)) {
+                                font = 'bold 24';
+                                alignment = TRAILING;
+                            }
+                        }
                     }
                 }
             }            
@@ -306,10 +319,12 @@ closeChat 'Закрыть' = ACTION {
 }
 
 reply 'Ответ' = DATA LOCAL TEXT (Message);
+notificate 'С уведомлением' = DATA LOCAL BOOLEAN (Message); 
 replyChat 'Ответить' (Chat c, Message m) = ACTION {
     IF(reply(m)) THEN {
         markSeenMessages(currentUser());
         newMessage(c) <- reply(m);
+        notificate(c) <- notificate(m);
         sendMessage(chat(m));
         formClose();
     }
@@ -339,7 +354,7 @@ openChat 'Перейти в чат' (Message m) = ACTION {
 FORM shortChat 'Новое сообщение' DOCKEDMODAL
 OBJECTS m = Message LAST
 PROPERTIES(m) READONLY nameShortChat, text, dateTime
-PROPERTIES(m) FORCE PANEL reply READONLYIF readonly(m), replyChat SHOWIF editable(m), openChat
+PROPERTIES(m) FORCE PANEL reply READONLYIF readonly(m), replyChat SHOWIF editable(m), notificate SHOWIF editable(m), openChat
 PROPERTIES() closeChat
 FILTERS in(chat(m)), status(m, currentUser()), status(m, currentUser()) != MessageStatus.seen
 EVENTS ON CLOSE markSeenOnChange(m)
@@ -355,10 +370,15 @@ DESIGN shortChat {
             fill = 0.3;
         }
         NEW buttons {
+            align = STRETCH;
             type = CONTAINERH;
             MOVE PROPERTY(replyChat(m));
             MOVE PROPERTY(openChat(m));
             MOVE PROPERTY(closeChat());
+            NEW notificate {
+                fill = 1;
+                MOVE PROPERTY(notificate(m)) { alignment = TRAILING; };
+            }
         }
         REMOVE functions.box;
     }      
@@ -369,10 +389,9 @@ onClientStarted() += ACTION {
         FORM shortChat MODAL;
 }
 
-pushAction(BOOLEAN system) = ACTION {
+pushAction(BOOLEAN system, BOOLEAN notificate) = ACTION {
     ACTIVE FORM fullChat;
     IF isActiveForm() AND NOT system THEN {
-        //APPLY NESTED defaultNewMessage[], chatNewMessage[Chat] {};
         seekLastMessageInFullChat();
         formRefresh();
     }
@@ -383,8 +402,10 @@ pushAction(BOOLEAN system) = ACTION {
             SEEK LAST shortChat.m NULL;
         } 
         ELSE {
-            NEWSESSION {
-                FORM shortChat MODAL;
+            IF system OR notificate THEN {
+                NEWSESSION {
+                    FORM shortChat MODAL;
+                }
             }
         }
     }
@@ -394,9 +415,9 @@ seekLastMessageInFullChat() += ACTION {
     SEEK LAST fullChat.m NULL;
 }
 
-pushNotification (CustomUser user, BOOLEAN system) += ACTION {
+pushNotification (CustomUser user, BOOLEAN system, BOOLEAN notificate) += ACTION {
     FOR user(Connection conn) == user AND connectionStatus(conn) == ConnectionStatus.connectedConnection AND conn != currentConnection() DO {
-        NEWSESSION { NEWTHREAD pushAction(system AS BOOLEAN) CONNECTION conn; }
+        NEWSESSION { NEWTHREAD pushAction(system AS BOOLEAN, notificate AS BOOLEAN) CONNECTION conn; }
     }
 }
 
