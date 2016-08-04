@@ -2591,7 +2591,7 @@ tryActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [
 }
 	:	'TRY' tryADB=innerActionDefinitionBody[context, dynamic] 
 		(	'FINALLY' finallyADB=innerActionDefinitionBody[context, dynamic]
-		|	('CATCH')?
+		|	'CATCH'
 		)
 	;
 
