@@ -1321,15 +1321,18 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     }
 
     public void forceChangeObject(ObjectInstance object, ObjectValue value) throws SQLException, SQLHandledException {
+        forceChangeObject(object, value, false);
+    }
 
+    public void forceChangeObject(ObjectInstance object, ObjectValue value, boolean last) throws SQLException, SQLHandledException {
         if (object instanceof DataObjectInstance && !(value instanceof DataObject))
             object.changeValue(session, ((DataObjectInstance) object).getBaseClass().getDefaultObjectValue());
         else
             object.changeValue(session, value);
 
-        object.groupTo.addSeek(object, value, false);
+        object.groupTo.addSeek(object, value, last);
     }
-
+    
     public void forceChangeObject(ValueClass cls, ObjectValue value) throws SQLException, SQLHandledException {
 
         for (ObjectInstance object : getObjects()) {
@@ -1346,13 +1349,17 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         return false;
     }
     
-    // todo : временная затычка
     public void seekObject(ObjectInstance object, ObjectValue value) throws SQLException, SQLHandledException {
+        seekObject(object, value, false);
+    }
+    
+    // todo : временная затычка
+    public void seekObject(ObjectInstance object, ObjectValue value, boolean last) throws SQLException, SQLHandledException {
 
         if (hasEventActions()) { // дебилизм конечно но пока так
-            forceChangeObject(object, value);
+            forceChangeObject(object, value, last);
         } else {
-            object.groupTo.addSeek(object, value, false);
+            object.groupTo.addSeek(object, value, last);
         }
     }
 

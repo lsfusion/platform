@@ -1515,48 +1515,64 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LPWithParams(asyncLAP, asyncProp.usedParams);
     }
 
-    public LPWithParams addScriptedObjectSeekProp(String name, LPWithParams seekProp) throws ScriptingErrorLog.SemanticErrorException {
-        int pointPos = name.lastIndexOf('.');
+    private FormEntity getFormFromSeekObjectName(String formObjectName) throws ScriptingErrorLog.SemanticErrorException {
+        int pointPos = formObjectName.lastIndexOf('.');
         assert pointPos > 0;
 
-        String formName = name.substring(0, pointPos);
-        String objectName = name.substring(pointPos+1);
+        String formName = formObjectName.substring(0, pointPos);
+        return findForm(formName);
+    }
 
-        FormEntity form = findForm(formName);
-        if(form == null) {
-            errLog.emitNotFoundError(parser, "form", formName);
-        }
+    private ObjectEntity getSeekObject(FormEntity form, String formObjectName) throws ScriptingErrorLog.SemanticErrorException {
+        return form.getNFObject(getSeekObjectName(formObjectName), getVersion());
+    }
 
-        ObjectEntity object = form.getNFObject(objectName, getVersion());
+    private GroupObjectEntity getSeekGroupObject(FormEntity form, String formObjectName) throws ScriptingErrorLog.SemanticErrorException {
+        return form.getNFGroupObject(getSeekObjectName(formObjectName), getVersion());
+    }
+
+    private String getSeekObjectName(String formObjectName) {
+        int pointPos = formObjectName.lastIndexOf('.');
+        assert pointPos > 0;
+
+        return formObjectName.substring(pointPos + 1);
+    }
+
+    public LPWithParams addScriptedObjectSeekProp(String name, LPWithParams seekProp, boolean last) throws ScriptingErrorLog.SemanticErrorException {
+        FormEntity form = getFormFromSeekObjectName(name);
+        ObjectEntity object = getSeekObject(form, name);
+        
         if (object != null) {
             List<Object> resultParams = getParamsPlainList(singletonList(seekProp));
-            LAP lap = addOSAProp(object, resultParams.toArray());
+            LAP lap = addOSAProp(object, last, resultParams.toArray());
             return new LPWithParams(lap, seekProp.usedParams);
         } else {
-            errLog.emitNotFoundError(parser, "оbject", objectName);
+            errLog.emitObjectNotFoundError(parser, getSeekObjectName(name));
             return null;
         }
     }
 
-    public LPWithParams addScriptedGroupObjectSeekProp(String name, LPWithParams seekProp, boolean last) throws ScriptingErrorLog.SemanticErrorException {
-        int pointPos = name.lastIndexOf('.');
-        assert pointPos > 0;
-
-        String formName = name.substring(0, pointPos);
-        String objectName = name.substring(pointPos+1);
-
-        FormEntity form = findForm(formName);
-        if(form == null) {
-            errLog.emitNotFoundError(parser, "form", formName);
+    public LPWithParams addScriptedGroupObjectSeekProp(String name, List<String> objNames, List<LPWithParams> values, boolean last) throws ScriptingErrorLog.SemanticErrorException {
+        FormEntity form = getFormFromSeekObjectName(name);
+        GroupObjectEntity groupObject = getSeekGroupObject(form, name);
+        
+        List<ObjectEntity> objects = new ArrayList<>();
+        if (objNames != null) {
+            for (String objName : objNames) {
+                ObjectEntity obj = form.getNFObject(objName, getVersion());
+                if (obj == null) {
+                    errLog.emitObjectNotFoundError(parser, objName);
+                }
+                objects.add(obj);
+            }
         }
-
-        GroupObjectEntity groupObject = form.getNFGroupObject(objectName, getVersion());
+        
         if (groupObject != null) {
-            List<Object> resultParams = getParamsPlainList(singletonList(seekProp));
-            LAP lap = addGOSAProp(groupObject, last, resultParams.toArray());
-            return new LPWithParams(lap, seekProp.usedParams);
+            List<Object> resultParams = getParamsPlainList(values);
+            LAP lap = addGOSAProp(groupObject, objects, last, resultParams.toArray());
+            return new LPWithParams(lap, mergeAllParams(values));
         } else {
-            errLog.emitNotFoundError(parser, "оbject", objectName);
+            errLog.emitNotFoundError(parser, "group оbject", getSeekObjectName(name));
             return null;
         }
     }

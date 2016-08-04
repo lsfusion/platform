@@ -20,6 +20,7 @@ import java.sql.SQLException;
 public class SeekActionProperty extends ScriptingActionProperty {
 
     private final ObjectEntity object;
+    private boolean last = false;
 
     @SuppressWarnings("UnusedDeclaration")
     public SeekActionProperty(BaseLogicsModule lm, ValueClass... classes) {
@@ -27,11 +28,16 @@ public class SeekActionProperty extends ScriptingActionProperty {
 
         object = null;
     }
-
+    
     public SeekActionProperty(ScriptingLogicsModule lm, ObjectEntity object) {
+        this(lm, object, false);    
+    }
+    
+    public SeekActionProperty(ScriptingLogicsModule lm, ObjectEntity object, boolean last) {
         super(lm, "Найти объект (" + object.caption + ")", object.baseClass);
 
         this.object = object;
+        this.last = last;
     }
 
     @Override
@@ -65,7 +71,13 @@ public class SeekActionProperty extends ScriptingActionProperty {
             }
         }
 
-        for (ObjectInstance object : objects)
-            form.seekObject(object, value);
+        boolean firstObject = true;
+        for (ObjectInstance object : objects) {
+            if (firstObject) {
+                object.groupTo.seek(last);
+                firstObject = false;
+            }
+            form.seekObject(object, value, last);
+        }
     }
 }

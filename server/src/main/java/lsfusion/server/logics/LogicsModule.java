@@ -1754,31 +1754,35 @@ public abstract class LogicsModule {
         return addProperty(null, new LCP<>(filterProperty.property, groupObject.getOrderObjects().mapOrder(filterProperty.mapping.reverse())));
     }
     
-    protected LAP addOSAProp(ObjectEntity object, Object... params) {
-        return addOSAProp(null, "", object, params);
+    protected LAP addOSAProp(ObjectEntity object, boolean last, Object... params) {
+        return addOSAProp(null, "", object, last, params);
     }
 
-    protected LAP addOSAProp(AbstractGroup group, String caption, ObjectEntity object, Object... params) {
-        return addJoinAProp(group, caption, addOSAProp(object), params);
+    protected LAP addOSAProp(AbstractGroup group, String caption, ObjectEntity object, boolean last, Object... params) {
+        return addJoinAProp(group, caption, addOSAProp(object, last), params);
     }
 
     @IdentityStrongLazy // для ID
-    public LAP addOSAProp(ObjectEntity object) {
-        SeekActionProperty seekProperty = new SeekActionProperty((ScriptingLogicsModule)this, object);
+    public LAP addOSAProp(ObjectEntity object, boolean last) {
+        SeekActionProperty seekProperty = new SeekActionProperty((ScriptingLogicsModule)this, object, last);
         return addProperty(null, new LAP<>(seekProperty));
     }
 
-    protected LAP addGOSAProp(GroupObjectEntity object, boolean last, Object... params) {
-        return addGOSAProp(null, "", object, last, params);
+    protected LAP addGOSAProp(GroupObjectEntity object, List<ObjectEntity> objects, boolean last, Object... params) {
+        return addGOSAProp(null, "", object, objects, last, params);
     }
 
-    protected LAP addGOSAProp(AbstractGroup group, String caption, GroupObjectEntity object, boolean last, Object... params) {
-        return addJoinAProp(group, caption, addGOSAProp(object, last), params);
+    protected LAP addGOSAProp(AbstractGroup group, String caption, GroupObjectEntity object, List<ObjectEntity> objects, boolean last, Object... params) {
+        return addJoinAProp(group, caption, addGOSAProp(object, objects, last), params);
     }
 
     @IdentityStrongLazy // для ID
-    public LAP addGOSAProp(GroupObjectEntity object, boolean last) {
-        SeekGroupObjectActionProperty seekProperty = new SeekGroupObjectActionProperty((ScriptingLogicsModule)this, object, last);
+    public LAP addGOSAProp(GroupObjectEntity object, List<ObjectEntity> objects, boolean last) {
+        List<ValueClass> objectClasses = new ArrayList<>();
+        for (ObjectEntity obj : objects) {
+            objectClasses.add(obj.baseClass);
+        }
+        SeekGroupObjectActionProperty seekProperty = new SeekGroupObjectActionProperty((ScriptingLogicsModule)this, object, objects, last, objectClasses.toArray(new ValueClass[objectClasses.size()]));
         return addProperty(null, new LAP<>(seekProperty));
     }
 

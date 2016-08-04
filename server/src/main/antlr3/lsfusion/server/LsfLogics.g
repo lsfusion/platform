@@ -1604,7 +1604,7 @@ filterPropertyDefinition returns [LP property, List<ResolveClassSet> signature]
 	}
 }
 	:	('FILTER' { prop = GroupObjectProp.FILTER; } | 'ORDER' { prop = GroupObjectProp.ORDER; } | 'VIEW' { prop = GroupObjectProp.VIEW; } )
-		gobj=groupObjectID
+		gobj=formGroupObjectID
 	;
 
 readActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
@@ -2187,9 +2187,13 @@ initFilterDefinition returns [String propName, List<String> mapping]
 		)
 	;
 
-formActionObjectList[List<TypedParameter> context, boolean dynamic] returns [List<String> objects = new ArrayList<String>(), List<LPWithParams> exprs = new ArrayList<LPWithParams>()]
-	:	objName=ID { $objects.add($objName.text); } '=' expr=propertyExpression[context, dynamic] { $exprs.add($expr.property); } 
-		(',' objName=ID { $objects.add($objName.text); } '=' expr=propertyExpression[context, dynamic] { $exprs.add($expr.property); })*
+formActionObjectList[List<TypedParameter> context, boolean dynamic] returns [List<String> objects, List<LPWithParams> exprs]
+	:	list=idEqualPEList[context, dynamic] { $objects = $list.ids; $exprs = $list.exprs; }
+	;
+
+idEqualPEList[List<TypedParameter> context, boolean dynamic] returns [List<String> ids = new ArrayList<String>(), List<LPWithParams> exprs = new ArrayList<LPWithParams>()]
+	:	id=ID { $ids.add($id.text); } '=' expr=propertyExpression[context, dynamic] { $exprs.add($expr.property); } 
+		(',' id=ID { $ids.add($id.text); } '=' expr=propertyExpression[context, dynamic] { $exprs.add($expr.property); })*
 	;
 	
 customActionDefinitionBody returns [LP property, List<ResolveClassSet> signature]
@@ -2361,15 +2365,24 @@ asyncUpdateActionDefinitionBody[List<TypedParameter> context, boolean dynamic] r
 
 seekObjectActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
 @init {
-	Boolean last = null;
+	boolean last = false;
+	List<String> objNames = new ArrayList<>();
+	List<LPWithParams> lps = new ArrayList<>(); 
 }
 @after {
 	if (inPropParseState()) {
-		$property = last == null ? self.addScriptedObjectSeekProp($gobj.sid, $pe.property)
-		                         : self.addScriptedGroupObjectSeekProp($gobj.sid, $pe.property, last);
+		$property = obj != null ? self.addScriptedObjectSeekProp($obj.sid, $pe.property, last)
+		                        : self.addScriptedGroupObjectSeekProp($gobj.sid, objNames, lps, last);
 	}
 }
-	:	'SEEK' ('FIRST' { last = false; } | 'LAST' {last = true; })? gobj=groupObjectID pe=propertyExpression[context, dynamic]
+	:	'SEEK' ('FIRST' | 'LAST' {last = true; })? 
+		(	obj=formObjectID '=' pe=propertyExpression[context, dynamic]
+		|	gobj=formGroupObjectID ('OBJECTS' list=seekObjectsList[context, dynamic] { objNames = $list.objects; lps = $list.values; })?
+		)
+	;
+
+seekObjectsList[List<TypedParameter> context, boolean dynamic] returns [List<String> objects, List<LPWithParams> values] 
+	:	list=idEqualPEList[context, dynamic] { $objects = $list.ids; $values = $list.exprs; }
 	;
 
 fileActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
@@ -3642,7 +3655,11 @@ staticObjectID returns [String sid]
 	:	(namespacePart=ID '.')? classPart=ID '.' namePart=ID { $sid = ($namespacePart != null ? $namespacePart.text + '.' : "") + $classPart.text + '.' + $namePart.text; }
 	;
 
-groupObjectID returns [String sid]
+formGroupObjectID returns [String sid]
+    :	(namespacePart=ID '.')? formPart=ID '.' namePart=ID { $sid = ($namespacePart != null ? $namespacePart.text + '.' : "") + $formPart.text + '.' + $namePart.text; }
+    ;
+
+formObjectID returns [String sid]
     :	(namespacePart=ID '.')? formPart=ID '.' namePart=ID { $sid = ($namespacePart != null ? $namespacePart.text + '.' : "") + $formPart.text + '.' + $namePart.text; }
     ;
 
