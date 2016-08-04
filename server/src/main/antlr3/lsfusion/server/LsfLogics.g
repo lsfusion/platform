@@ -1349,10 +1349,11 @@ abstractPropertyDefinition returns [LP property, List<ResolveClassSet> signature
 }
 	:	'ABSTRACT'
 		(
-			(('CASE' { type = CaseUnionProperty.Type.CASE; isExclusive = false; }
-			|	'MULTI'	{ type = CaseUnionProperty.Type.MULTI; isExclusive = true; }) (opt=abstractExclusiveOverrideOption { isExclusive = $opt.isExclusive; isLast = $opt.isLast;})?)
-		|   (('VALUE')? 'OVERRIDE' { type = CaseUnionProperty.Type.VALUE; isExclusive = false; } (acopt=abstractCaseAddOption { isLast = $acopt.isLast; } )?)
-		|	('VALUE')? 'EXCLUSIVE'{ type = CaseUnionProperty.Type.VALUE; isExclusive = true; }
+			(	'CASE' { type = CaseUnionProperty.Type.CASE; isExclusive = false; }
+			|	'MULTI'	{ type = CaseUnionProperty.Type.MULTI; isExclusive = true; } 
+			|   'VALUE' { type = CaseUnionProperty.Type.VALUE; isExclusive = false; } 
+			)
+			(opt=abstractExclusiveOverrideOption { isExclusive = $opt.isExclusive; isLast = $opt.isLast;})?
 		)?
 		('CHECKED' { isChecked = true; })?
 		returnClass=classId
