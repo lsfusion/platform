@@ -2351,7 +2351,7 @@ messageActionDefinitionBody[List<TypedParameter> context, boolean dynamic] retur
 	}
 }
 	:	'MESSAGE'
-	    (('NO WAIT' | 'NOWAIT') { noWait = true; })?
+	    ('NOWAIT' { noWait = true; })?
 	    pe=propertyExpression[context, dynamic]
 	;
 
