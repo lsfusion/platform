@@ -1562,6 +1562,8 @@ public class ScriptingLogicsModule extends LogicsModule {
                 ObjectEntity obj = form.getNFObject(objName, getVersion());
                 if (obj == null) {
                     errLog.emitObjectNotFoundError(parser, objName);
+                } else if (obj.groupTo != groupObject) {
+                    errLog.emitObjectOfGroupObjectError(parser, obj.getSID(), groupObject.getSID());                    
                 }
                 objects.add(obj);
             }

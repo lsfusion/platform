@@ -528,8 +528,12 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, format("properties '%s' and '%s' should be in one table to create index", firstPropName, secondPropName));
     }
     
+    public void emitObjectOfGroupObjectError(ScriptParser parser, String objName, String groupObjName) throws SemanticErrorException {
+        emitSimpleError(parser, format("group object '%s' does not contain object '%s'", groupObjName, objName));
+    }
+    
     public void emitPropertyWithParamsExpected(ScriptParser parser, String property, String paramClasses) throws SemanticErrorException {
-        emitSimpleError(parser, format("Expected property with (%s) param classes: %s", paramClasses, property));
+        emitSimpleError(parser, format("expected property with (%s) param classes: %s", paramClasses, property));
     }
 
     public void emitSimpleError(ScriptParser parser, String message) throws SemanticErrorException {
