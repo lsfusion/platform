@@ -1623,10 +1623,10 @@ readActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns 
 writeActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedWriteActionProperty($expr.property, $pUsage.propUsage);
+		$property = self.addScriptedWriteActionProperty($expr.property, $fromExpr.property);
 	}
 }
-	:	'WRITE' expr=propertyExpression[context, dynamic] 'FROM' pUsage=propertyUsage
+	:	'WRITE' expr=propertyExpression[context, dynamic] 'FROM' fromExpr=propertyExpression[context, dynamic]
 	;
 
 importActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]

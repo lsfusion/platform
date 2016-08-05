@@ -2351,9 +2351,9 @@ public class ScriptingLogicsModule extends LogicsModule {
                 movePathProp == null ? Collections.singletonList(sourcePathProp) : Lists.newArrayList(sourcePathProp, movePathProp));
     }
 
-    public LPWithParams addScriptedWriteActionProperty(LPWithParams sourcePathProp, PropertyUsage propUsage) throws ScriptingErrorLog.SemanticErrorException {
-        LCP<?> sourceProp = (LCP<?>) findLPByPropertyUsage(propUsage);
-        return addScriptedJoinAProp(addAProp(new WriteActionProperty(this, sourcePathProp.property.property.getValueClass(ClassType.valuePolicy), sourceProp)), Collections.singletonList(sourcePathProp));
+    public LPWithParams addScriptedWriteActionProperty(LPWithParams sourcePathProp, LPWithParams sourceProp) throws ScriptingErrorLog.SemanticErrorException {
+        checkCalculationProperty(sourceProp.property);
+        return addScriptedJoinAProp(addAProp(new WriteActionProperty(this, sourcePathProp.property.property.getValueClass(ClassType.valuePolicy), (LCP)sourceProp.property)), Collections.singletonList(sourcePathProp));
     }
 
     public LPWithParams addScriptedImportActionProperty(ImportSourceFormat format, LPWithParams fileProp, List<String> ids, List<PropertyUsage> propUsages) throws ScriptingErrorLog.SemanticErrorException {
