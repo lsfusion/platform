@@ -13,6 +13,7 @@ import lsfusion.server.logics.ServerResourceBundle;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingErrorLog;
+import lsfusion.server.session.DataSession;
 import org.apache.log4j.Logger;
 
 import javax.activation.DataHandler;
@@ -268,7 +269,7 @@ public class EmailSender {
         sendMail(context, message, subject);
     }
 
-    private void sendMail(final ExecutionContext context, final SMTPMessage message, final String subject) throws ScriptingErrorLog.SemanticErrorException {
+    private void sendMail(ExecutionContext context, final SMTPMessage message, final String subject) throws ScriptingErrorLog.SemanticErrorException {
         final LCP emailSent = context == null ? null : context.getBL().emailLM.findProperty("emailSent[]");
 
         ScheduledExecutorService executor = ExecutorFactory.createNewThreadService(context);
@@ -313,7 +314,9 @@ public class EmailSender {
                 } finally {
                     try {
                         if (emailSent != null) {
-                            emailSent.change(send ? true : null, context.getSession());
+                            try (DataSession session = ThreadLocalContext.getDbManager().createSession()){
+                                emailSent.change(send ? true : null, session);
+                            }
                         }
                     } catch (Exception e) {
                         logger.error("emailSent writing error", e);
