@@ -1717,21 +1717,22 @@ nonEmptyPropertyUsageListWithIds returns [List<String> ids, List<PropertyUsage> 
 	;
 
 propertyUsageWithId returns [String id = null, PropertyUsage propUsage]
-	:	(
-			pid=ID '=' { $id = $pid.text; }
-		|	sLiteral = stringLiteral '=' { $id = $sLiteral.val; } 
+	:	pu=propertyUsage { $propUsage = $pu.propUsage; }
+		(	'='
+			(	pid=ID { $id = $pid.text; }
+			|	sLiteral=stringLiteral { $id = $sLiteral.val; } 
+			)
 		)? 
-		pu=propertyUsage { $propUsage = $pu.propUsage; }
 	;
 
 importSourceFormat [List<TypedParameter> context, boolean dynamic] returns [ImportSourceFormat format, LPWithParams sheet, String separator, boolean noHeader, String charset, boolean attr]
-	: 'XLS' { $format = ImportSourceFormat.XLS; } ('SHEET' sheetProperty = propertyExpression[context, dynamic] { $sheet = $sheetProperty.property; })?
-	| 'XLSX' { $format = ImportSourceFormat.XLSX; } ('SHEET' sheetProperty = propertyExpression[context, dynamic] { $sheet = $sheetProperty.property; })?
-	| 'DBF'  { $format = ImportSourceFormat.DBF; }
-	| 'CSV'  { $format = ImportSourceFormat.CSV; } (separatorVal = stringLiteral { $separator = $separatorVal.val; })? ('NOHEADER' { $noHeader = true; })? ('CHARSET' charsetVal = stringLiteral { $charset = $charsetVal.val; })?
-	| 'XML'  { $format = ImportSourceFormat.XML; } ('ATTR' { $attr = true; })?
-	| 'JDBC' { $format = ImportSourceFormat.JDBC; }
-	| 'MDB'  { $format = ImportSourceFormat.MDB; }
+	:	'XLS' 	{ $format = ImportSourceFormat.XLS; } ('SHEET' sheetProperty = propertyExpression[context, dynamic] { $sheet = $sheetProperty.property; })?
+	|	'XLSX'	{ $format = ImportSourceFormat.XLSX; } ('SHEET' sheetProperty = propertyExpression[context, dynamic] { $sheet = $sheetProperty.property; })?
+	|	'DBF'	{ $format = ImportSourceFormat.DBF; }
+	|	'CSV'	{ $format = ImportSourceFormat.CSV; } (separatorVal = stringLiteral { $separator = $separatorVal.val; })? ('NOHEADER' { $noHeader = true; })? ('CHARSET' charsetVal = stringLiteral { $charset = $charsetVal.val; })?
+	|	'XML'	{ $format = ImportSourceFormat.XML; } ('ATTR' { $attr = true; })?
+	|	'JDBC'	{ $format = ImportSourceFormat.JDBC; }
+	|	'MDB'	{ $format = ImportSourceFormat.MDB; }
 	;
 
 typePropertyDefinition returns [LP property] 
