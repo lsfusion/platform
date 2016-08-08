@@ -35,6 +35,7 @@ import lsfusion.server.logics.*;
 import lsfusion.server.logics.debug.DebugInfo;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LP;
+import lsfusion.server.logics.mutables.NFLazy;
 import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.actions.edit.DefaultChangeActionProperty;
 import lsfusion.server.logics.property.group.AbstractGroup;
@@ -217,6 +218,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         ((MMap<KeyStroke, String>)keyBindings).add(ks, actionSID);
     }
 
+    @NFLazy
     public void setContextMenuAction(String actionSID, String caption) {
         if (contextMenuBindings == null || contextMenuBindings instanceof EmptyOrderMap) {
             contextMenuBindings = MapFact.mOrderMap(MapFact.override());
@@ -224,6 +226,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         ((MOrderMap<String, String>)contextMenuBindings).add(actionSID, caption);
     }
 
+    @NFLazy
     public void setEditAction(String editActionSID, ActionPropertyMapImplement<?, T> editActionImplement) {
         if (editActions == null || editActions instanceof EmptyRevMap) {
             editActions = MapFact.mMap(MapFact.override());
