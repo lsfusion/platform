@@ -52,7 +52,7 @@ public abstract class ExtendContextActionProperty<I extends PropertyInterface> e
         FlowResult result = executeExtend(context, innerKeys, innerValues, innerExprs);
         if(result == FlowResult.THROWS)
             throw new RuntimeException("Thread has been interrupted by user");
-        return FlowResult.FINISH;
+        return result;
     }
 
     protected abstract FlowResult executeExtend(ExecutionContext<PropertyInterface> context, ImRevMap<I, KeyExpr> innerKeys, ImMap<I, ? extends ObjectValue> innerValues, ImMap<I, Expr> innerExprs) throws SQLException, SQLHandledException;
