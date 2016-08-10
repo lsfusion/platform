@@ -143,15 +143,18 @@ public abstract class RemoteObjectProxy<T extends PendingRemoteInterface> implem
 
     protected void logRemoteMethodEndCall(String methodName, Object result) {
         if (logger.isInfoEnabled()) {
-            ByteArrayOutputStream outStream = new ByteArrayOutputStream();
-            try {
-                new ObjectOutputStream(outStream).writeObject(result);
+            try (ContentLengthOutputStream outStream = new ContentLengthOutputStream(new ByteArrayOutputStream(), 128)) {
+                try {
+                    new ObjectOutputStream(outStream).writeObject(result);
+                } catch (ContentLengthException ignored) {
+                    //suppress
+                }
+                logger.info(
+                        String.format("Remote method called (time: %1$d ms.; result size: %2$s): %3$s.%4$s",
+                                System.currentTimeMillis() - startCall, outStream.size(), this.getClass().getSimpleName(), methodName));
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-            logger.info(
-                    String.format("Remote method called (time: %1$d ms.; result size: %2$d): %3$s.%4$s",
-                            System.currentTimeMillis() - startCall, outStream.size(), this.getClass().getSimpleName(), methodName));
         }
     }
 
