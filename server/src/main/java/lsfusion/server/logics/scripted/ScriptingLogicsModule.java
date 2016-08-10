@@ -2399,9 +2399,20 @@ public class ScriptingLogicsModule extends LogicsModule {
         return props;
     }
 
-    public LPWithParams addScriptedImportExcelActionProperty(ImportSourceFormat format, LPWithParams fileProp, List<String> ids, List<PropertyUsage> propUsages, LPWithParams sheetIndex) throws ScriptingErrorLog.SemanticErrorException {
+    public LPWithParams addScriptedImportExcelActionProperty(ImportSourceFormat format, LPWithParams fileProp, List<String> ids, List<PropertyUsage> propUsages, List<TypedParameter> context, LPWithParams sheetIndex) throws ScriptingErrorLog.SemanticErrorException {
         List<LCP> props = getProperties(propUsages);
-        ValueClass sheetIndexValueClass = sheetIndex == null ? null : sheetIndex.property.property.getValueClass(ClassType.valuePolicy);
+        ValueClass sheetIndexValueClass = null;
+        if (sheetIndex != null) {
+            if (sheetIndex.property == null) {
+                TypedParameter param = context.get(sheetIndex.usedParams.get(0));
+                sheetIndexValueClass = param.cls;
+            } else {
+                sheetIndexValueClass = sheetIndex.property.property.getValueClass(ClassType.valuePolicy);
+            }
+            if (!(sheetIndexValueClass instanceof IntClass)) {
+                errLog.emitImportNonIntegralSheetError(parser);
+            }
+        }
         return addScriptedJoinAProp(addAProp(ImportDataActionProperty.createExcelProperty(fileProp.property.property.getValueClass(ClassType.valuePolicy),
                 format, this, ids, props, sheetIndexValueClass)), sheetIndex == null ? Collections.singletonList(fileProp) : Lists.newArrayList(fileProp, sheetIndex));
     }

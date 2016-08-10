@@ -532,6 +532,10 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, format("group object '%s' does not contain object '%s'", groupObjName, objName));
     }
     
+    public void emitImportNonIntegralSheetError(ScriptParser parser) throws SemanticErrorException {
+        emitSimpleError(parser, "Sheet index should have INTEGER or LONG value");
+    } 
+    
     public void emitPropertyWithParamsExpected(ScriptParser parser, String property, String paramClasses) throws SemanticErrorException {
         emitSimpleError(parser, format("expected property with (%s) param classes: %s", paramClasses, property));
     }
