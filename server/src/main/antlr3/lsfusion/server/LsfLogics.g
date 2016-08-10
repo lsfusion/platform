@@ -1642,7 +1642,7 @@ importActionDefinitionBody[List<TypedParameter> context, boolean dynamic] return
 @after {
 	if (inPropParseState()) {
 		if($type.format == ImportSourceFormat.XLS || $type.format == ImportSourceFormat.XLSX)
-			$property = self.addScriptedImportExcelActionProperty($type.format, $expr.property, $plist.ids, $plist.propUsages, sheet);
+			$property = self.addScriptedImportExcelActionProperty($type.format, $expr.property, $plist.ids, $plist.propUsages, $context, sheet);
 		else if($type.format == ImportSourceFormat.CSV)
         	$property = self.addScriptedImportCSVActionProperty($expr.property, $plist.ids, $plist.propUsages, separator, noHeader, charset);
         else if($type.format == ImportSourceFormat.XML)
@@ -2023,6 +2023,7 @@ onEditEventSetting [LP property, List<TypedParameter> context]
 	    (   'CHANGE' { type = ServerResponse.CHANGE; }
 	    |   'CHANGEWYS' { type = ServerResponse.CHANGE_WYS; }
 	    |   'EDIT' { type = ServerResponse.EDIT_OBJECT; }
+	    |	'GROUPCHANGE' { type = ServerResponse.GROUP_CHANGE; }
 	    )
 		action=topContextDependentActionDefinitionBody[context, false, false]
 	;
