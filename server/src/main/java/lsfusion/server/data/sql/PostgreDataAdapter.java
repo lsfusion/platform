@@ -784,4 +784,9 @@ public class PostgreDataAdapter extends DataAdapter {
     public boolean useFailedTimeInDeadlockPriority() {
         return true;
     }
+
+    @Override
+    public int getFloatingDivisionProblem() {
+        return 16;
+    }
 }

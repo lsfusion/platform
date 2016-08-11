@@ -51,11 +51,11 @@ public class NumericClass extends IntegralClass<BigDecimal> {
         outStream.writeInt(precision);
     }
 
-    int getWhole() {
+    public int getWhole() {
         return length-precision;
     }
 
-    int getPrecision() {
+    public int getPrecision() {
         return precision;
     }
 

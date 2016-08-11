@@ -32,11 +32,11 @@ public class DoubleClass extends IntegralClass<Double> {
         return Data.DOUBLE;
     }
 
-    int getWhole() {
+    public int getWhole() {
         return 99999;
     }
 
-    int getPrecision() {
+    public int getPrecision() {
         return 99999;
     }
 

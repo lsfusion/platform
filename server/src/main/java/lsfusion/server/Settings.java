@@ -1412,6 +1412,16 @@ public class Settings {
         this.explainThreshold = explainThreshold;
     }
 
+    private boolean useCastDivisionOperands = false;
+
+    public boolean isUseCastDivisionOperands() {
+        return useCastDivisionOperands;
+    }
+
+    public void setUseCastDivisionOperands(boolean useCastDivisionOperands) {
+        this.useCastDivisionOperands = useCastDivisionOperands;
+    }
+
     private boolean useSafeDivision = true;
 
     public boolean isUseSafeDivision() {

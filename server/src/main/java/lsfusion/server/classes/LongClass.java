@@ -35,11 +35,11 @@ public class LongClass extends IntClass<Long> {
         return Data.LONG;
     }
 
-    int getWhole() {
+    public int getWhole() {
         return 10;
     }
 
-    int getPrecision() {
+    public int getPrecision() {
         return 0;
     }
 

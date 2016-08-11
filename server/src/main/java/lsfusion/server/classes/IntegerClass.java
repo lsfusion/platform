@@ -32,11 +32,11 @@ public class IntegerClass extends IntClass<Integer> {
         return Data.INTEGER;
     }
 
-    int getWhole() {
+    public int getWhole() {
         return 10;
     }
 
-    int getPrecision() {
+    public int getPrecision() {
         return 0;
     }
 

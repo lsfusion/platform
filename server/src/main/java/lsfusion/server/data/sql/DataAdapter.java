@@ -737,4 +737,9 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
     public boolean useFailedTimeInDeadlockPriority() {
         return false;
     }
+
+    @Override
+    public int getFloatingDivisionProblem() {
+        return -1;
+    }
 }

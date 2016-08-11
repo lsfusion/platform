@@ -97,8 +97,9 @@ public class ActionPropertyDebugger implements DebuggerService {
                 Registry registry = LocateRegistry.createRegistry(port);
                 registry.bind("lsfDebuggerService", stub);
             }
-        } catch (Exception e) {
-            Throwables.propagate(e);
+        } catch (Throwable t) {
+            logger.error("Cannot start LSF debugger", t);
+//            Throwables.propagate(e);
         }
     } //singleton
 

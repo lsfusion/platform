@@ -41,8 +41,8 @@ public abstract class IntegralClass<T extends Number> extends DataClass<T> {
         return read(obj.doubleValue() / 2);
     }
 
-    abstract int getWhole();
-    abstract int getPrecision();
+    public abstract int getWhole();
+    public abstract int getPrecision();
 
     public IntegralClass getCompatible(DataClass compClass, boolean or) {
         if(!(compClass instanceof IntegralClass)) return null;

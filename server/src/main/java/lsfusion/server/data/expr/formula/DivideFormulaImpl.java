@@ -35,11 +35,25 @@ public class DivideFormulaImpl extends ScaleFormulaImpl {
             super(DivideTypeConversion.instance);
         }
 
+        private static boolean hasDivisionProblem(DataClass type, int scaleProblem) {
+            return type != null && type instanceof IntegralClass && ((IntegralClass) type).getPrecision() > scaleProblem;
+        }
+
         public String getSource(DataClass type1, DataClass type2, String src1, String src2, SQLSyntax syntax, MStaticExecuteEnvironment env, boolean isToString) {
             Type type = conversion.getType(type1, type2);
             if (type != null || isToString) {
+                Settings settings = Settings.get();
+                int scaleProblem;
+                if(settings.isUseCastDivisionOperands() && (scaleProblem = syntax.getFloatingDivisionProblem()) >= 0) {
+                    if(hasDivisionProblem(type1,scaleProblem)) // если может быть больше scaleProblem - в явную прокастим
+                        src1 = type1.getCast(src1, syntax, env);
+
+                    if(hasDivisionProblem(type2, scaleProblem))
+                        src2 = type2.getCast(src1, syntax, env);
+                }
+
                 String source;
-                if(Settings.get().isUseSafeDivision() && !isToString) {
+                if(settings.isUseSafeDivision() && !isToString) {
                     source = "(" + src1 + "/" + syntax.getNotZero(src2, type, env) + ")";
                 } else {
                     source = "(" + src1 + "/" + src2 + ")";

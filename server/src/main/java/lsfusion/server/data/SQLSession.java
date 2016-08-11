@@ -1630,6 +1630,9 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         if(tableChange == TableChange.UPDATE)
             return;
 
+        if(tableOwner == TableOwner.debug)
+            return;
+
         if(Settings.get().isDisableRegisterChanges())
             return;
 
