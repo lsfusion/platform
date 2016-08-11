@@ -22,7 +22,6 @@ import lsfusion.server.form.view.DefaultFormView;
 import lsfusion.server.form.view.PropertyDrawView;
 import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.ActionPropertyMapImplement;
-import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.logics.property.actions.ExplicitActionProperty;
@@ -366,10 +365,10 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         return sidBuilder.toString();        
     }
 
-    public static String createSID(PropertyObjectEntity<?, ?> property) {
+    public static <P extends PropertyInterface> String createSID(PropertyObjectEntity<?, ?> property, ImOrderSet<P> interfaces) {
         assert property.property.isNamed();
         List<String> mapping = new ArrayList<>();
-        for (PropertyInterface<?> pi : property.property.getOrderInterfaces()) {
+        for (P pi : interfaces) {
             PropertyObjectInterfaceEntity obj = property.mapping.getObject(pi);
             assert obj instanceof ObjectEntity;
             mapping.add(((ObjectEntity) obj).getSID());

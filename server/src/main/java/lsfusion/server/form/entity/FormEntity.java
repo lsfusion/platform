@@ -564,7 +564,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     }
 
     public <P extends PropertyInterface> PropertyDrawEntity addPropertyDraw(LP<P, ?> property, GroupObjectEntity groupObject, Version version, String formPath, PropertyObjectInterfaceEntity... objects) {
-        return addPropertyDraw(groupObject, property.createObjectEntity(objects), formPath, version);
+        return addPropertyDraw(groupObject, property.createObjectEntity(objects), formPath, property.listInterfaces, version);
     }
 
     public GroupObjectEntity getNFApplyObject(Collection<ObjectEntity> objects, Version version) {
@@ -594,16 +594,17 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     }
 
     public <I extends PropertyInterface, P extends Property<I>> PropertyDrawEntity<I> addPropertyDraw(P property, ImMap<I, ? extends PropertyObjectInterfaceEntity> mapping, Version version) {
-        return addPropertyDraw(null, PropertyObjectEntity.create(property, mapping, null, null), null, version);
+        PropertyObjectEntity<I, ?> entity = PropertyObjectEntity.create(property, mapping, null, null);
+        return addPropertyDraw(null, entity, null, entity.property.getOrderInterfaces(), version);
     }
 
-    public <P extends PropertyInterface> PropertyDrawEntity<P> addPropertyDraw(GroupObjectEntity groupObject, PropertyObjectEntity<P, ?> propertyImplement, String formPath, Version version) {
+    public <P extends PropertyInterface> PropertyDrawEntity<P> addPropertyDraw(GroupObjectEntity groupObject, PropertyObjectEntity<P, ?> propertyImplement, String formPath, ImOrderSet<P> interfaces, Version version) {
         final PropertyDrawEntity<P> newPropertyDraw = new PropertyDrawEntity<>(genID(), propertyImplement, groupObject);
 
         propertyImplement.property.proceedDefaultDraw(newPropertyDraw, this, version);
 
         if (propertyImplement.property.isNamed()) {
-            String propertySID = PropertyDrawEntity.createSID(propertyImplement);  
+            String propertySID = PropertyDrawEntity.createSID(propertyImplement, interfaces);  
             newPropertyDraw.setSID(propertySID);
         }
 
