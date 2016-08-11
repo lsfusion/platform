@@ -764,7 +764,12 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             changedOldClasses = mChangeOldClasses.immutable(); changedNewClasses = mChangeNewClasses.immutable();
     
             updateChanges = getClassChanges(addClasses, removeClasses, changedOldClasses, changedNewClasses);
-    
+
+            if(needSessionEventMaterialize(changeTable, updateChanges)) {
+                changeTable = change.materialize(sql, baseClass, env); // materialize'им изменение
+                change = changeTable.getChange();
+            }
+
             updateSessionEvents(updateChanges);
 
             updateSourceChanges = aspectChangeClass(addClasses, removeClasses, changedOldClasses, changedNewClasses, change, changeTable);
@@ -859,13 +864,15 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         ImSet<DataProperty> updateChanges;
         ModifyResult changed;
         try {
+            updateChanges = SetFact.singleton(property);
+
             if(neededProps!=null && property.isStored() && property.event==null) { // если транзакция, нет change event'а, singleApply'им
                 assert isInTransaction();
     
                 changeTable = splitApplySingleStored(property, property.readFixChangeTable(sql, change, baseClass, getQueryEnv()), ThreadLocalContext.getBusinessLogics());
                 change = SinglePropertyTableUsage.getChange(changeTable);
             } else {
-                if(change.needMaterialize()) {
+                if(change.needMaterialize() || needSessionEventMaterialize(changeTable, updateChanges)) {
                     changeTable = change.materialize(property, sql, baseClass, getQueryEnv());
                     change = SinglePropertyTableUsage.getChange(changeTable);
                 }
@@ -874,8 +881,6 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                     return;
             }
 
-            updateChanges = SetFact.singleton(property);
-    
             updateSessionEvents(updateChanges);
     
             changed = aspectChangeProperty(property, change);
@@ -953,6 +958,15 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     private boolean inSessionEvent;
     private OverrideSessionModifier sessionEventModifier = new OverrideSessionModifier(new OverrideIncrementProps(sessionEventChangedOld, sessionEventNotChangedOld), false, dataModifier);
 
+    public boolean needSessionEventMaterialize(SessionTableUsage tableUsage, ImSet<? extends CalcProperty> changes) {
+        if(tableUsage == null && isInSessionEvent()) { // если таблица не материализована, и мы в сессионном событии, то есть может измениться sessionEventModifier и drop'уть таблицы, которые используются в изменении
+            assert !isInTransaction();
+            for(OldProperty<PropertyInterface> old : getSessionEventOldDepends())
+                if (!sessionEventChangedOld.contains(old) && CalcProperty.depends(old.property, changes)) // если влияет на old из сессионного event'а и еще не читалось
+                    return true;
+        }
+        return false;
+    }
     public <P extends PropertyInterface> void updateSessionEvents(ImSet<? extends CalcProperty> changes) throws SQLException, SQLHandledException {
         if(!isInTransaction())
             for(OldProperty<PropertyInterface> old : getSessionEventOldDepends()) {
