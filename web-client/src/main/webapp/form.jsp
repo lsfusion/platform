@@ -60,7 +60,7 @@
                 <div class="loadingIndicator">
                     <img id="loadingGif" src="images/loading.gif" width="16" height="16"/>
                     lsFusion<br/>
-                    <span id="loadingMsg">Загрузка...</span>
+                    <span id="loadingMsg">Loading...</span>
                 </div>
             </div>
         </div>
