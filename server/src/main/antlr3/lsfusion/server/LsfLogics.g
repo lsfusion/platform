@@ -620,9 +620,7 @@ formPropertyOptionsList returns [FormPropertyOptions options]
 		|	'BEFORE' pdraw=formPropertyDraw { $options.setNeighbourPropertyDraw($pdraw.property, $pdraw.text); $options.setNeighbourType(false); }
 		|	'AFTER'  pdraw=formPropertyDraw { $options.setNeighbourPropertyDraw($pdraw.property, $pdraw.text); $options.setNeighbourType(true); }
 		|	'QUICKFILTER' pdraw=formPropertyDraw { $options.setQuickFilterPropertyDraw($pdraw.property); }
-		|	'ON' 'EDIT' prop=formActionPropertyObject { $options.addEditAction(ServerResponse.EDIT_OBJECT, $prop.action); }
-		|	'ON' 'CHANGE' prop=formActionPropertyObject { $options.addEditAction(ServerResponse.CHANGE, $prop.action); }
-		|	'ON' 'CHANGEWYS' prop=formActionPropertyObject { $options.addEditAction(ServerResponse.CHANGE_WYS, $prop.action); }
+		|	'ON' et=formEventType prop=formActionPropertyObject { $options.addEditAction($et.type, $prop.action); }
 		|	'ON' 'SHORTCUT' (c=stringLiteral)? prop=formActionPropertyObject { $options.addContextMenuEditAction($c.val, $prop.action); }
 		|	'EVENTID' id=stringLiteral { $options.setEventId($id.val); }
 		)*
@@ -1805,7 +1803,6 @@ propertyOptions[LP property, String propertyName, String caption, List<TypedPara
 		|	'NOHINT' { noHint = true; }
 		|	'TABLE' tbl = compoundID { table = $tbl.sid; }
 		|	shortcutSetting [property, caption != null ? caption : propertyName]
-		|	asEditActionSetting [property]
 		|	toolbarSetting [property]
 		|	fixedCharWidthSetting [property]
 		|	minCharWidthSetting [property]
@@ -1826,6 +1823,7 @@ propertyOptions[LP property, String propertyName, String caption, List<TypedPara
 		    		notNullEvent = $s.event; 
 			}	
 		|	onEditEventSetting [property, context]
+		|	asonEditActionSetting [property]
 		|	eventIdSetting [property]
 		|   '@@' ann = ID { annotation = $ann.text; }
 		)*
@@ -1841,20 +1839,16 @@ shortcutSetting [LP property, String caption]
 	:	'SHORTCUT' usage = propertyUsage 
 	;
 
-asEditActionSetting [LP property]
+asonEditActionSetting [LP property]
 @init {
 	String editActionSID = null;
 }
 @after {
 	if (inPropParseState()) {
-		self.setAsEditActionFor(property, editActionSID, $usage.propUsage);
+		self.setAsEditActionFor(property, $et.type, $usage.propUsage);
 	}
 }
-	:	(   'ASONCHANGE' { editActionSID = ServerResponse.CHANGE; }
-		|   'ASONCHANGEWYS' { editActionSID = ServerResponse.CHANGE_WYS; }
-		|   'ASONEDIT' { editActionSID = ServerResponse.EDIT_OBJECT; }
-       	)
-        usage = propertyUsage 
+	:	'ASON' et=formEventType usage=propertyUsage 
 	;
 
 toolbarSetting [LP property]
@@ -2011,21 +2005,20 @@ notNullDeleteSetting returns [ActionDebugInfo debugInfo]
 	;
 
 onEditEventSetting [LP property, List<TypedParameter> context]
-@init {
-	String type = null;
-}
 @after {
 	if (inPropParseState()) {
-		self.setScriptedEditAction(property, type, $action.property);
+		self.setScriptedEditAction(property, $et.type, $action.property);
 	}
 }
-	:	'ON'
-	    (   'CHANGE' { type = ServerResponse.CHANGE; }
-	    |   'CHANGEWYS' { type = ServerResponse.CHANGE_WYS; }
-	    |   'EDIT' { type = ServerResponse.EDIT_OBJECT; }
-	    |	'GROUPCHANGE' { type = ServerResponse.GROUP_CHANGE; }
-	    )
+	:	'ON' et=formEventType 
 		action=topContextDependentActionDefinitionBody[context, false, false]
+	;
+
+formEventType returns [String type]
+	:	'CHANGE' { $type = ServerResponse.CHANGE; }
+	|	'CHANGEWYS' { $type = ServerResponse.CHANGE_WYS; }
+	|	'EDIT' { $type = ServerResponse.EDIT_OBJECT; }
+	|	'GROUPCHANGE' { $type = ServerResponse.GROUP_CHANGE; }
 	;
 
 eventIdSetting [LP property]
