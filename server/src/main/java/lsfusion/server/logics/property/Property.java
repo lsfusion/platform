@@ -180,8 +180,20 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
 
     public final ImSet<T> interfaces;
     private final ImOrderSet<T> orderInterfaces;
-    public ImOrderSet<T> getOrderInterfaces() {
+    protected ImOrderSet<T> getOrderInterfaces() {
         return orderInterfaces;
+    }
+
+    public int getInterfaceCount() {
+        return interfaces.size();
+    }
+    
+    public ImOrderSet<T> getReflectionOrderInterfaces() {
+        return orderInterfaces;
+    }
+    
+    public ImOrderSet<T> getFriendlyPropertyOrderInterfaces() { 
+        return orderInterfaces; 
     }
 
     public static Modifier defaultModifier = new Modifier() {

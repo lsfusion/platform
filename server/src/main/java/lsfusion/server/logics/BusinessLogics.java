@@ -950,7 +950,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
 
             //добавляем в контекстное меню пункт для показа формы
             property.setContextMenuAction(property.getSID(), formActionProperty.caption);
-            property.setEditAction(property.getSID(), formActionProperty.getImplement(property.getOrderInterfaces()));
+            property.setEditAction(property.getSID(), formActionProperty.getImplement(property.getReflectionOrderInterfaces()));
             formActionProperty.checkReadOnly = false;
         }
     }

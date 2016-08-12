@@ -1,14 +1,7 @@
 package lsfusion.server.logics;
 
-import lsfusion.server.classes.sets.AndClassSet;
 import lsfusion.server.classes.sets.ResolveClassSet;
-import lsfusion.server.form.entity.ObjectEntity;
-import lsfusion.server.form.entity.PropertyDrawEntity;
-import lsfusion.server.form.entity.PropertyObjectEntity;
-import lsfusion.server.form.entity.PropertyObjectInterfaceEntity;
-import lsfusion.server.logics.property.PropertyInterface;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -35,15 +28,5 @@ public class OldDBNamePolicy implements PropertyDBNamePolicy {
             sid = sid.substring(0, bracketPos);
         }
         return sid;
-    }
-
-    public static String createPropertyDrawSID(String name, PropertyObjectEntity<?, ?> property) {
-        List<String> mapping = new ArrayList<>();  
-        for (PropertyInterface<?> pi : property.property.getOrderInterfaces()) {
-            PropertyObjectInterfaceEntity obj = property.mapping.getObject(pi);
-            assert obj instanceof ObjectEntity;
-            mapping.add(((ObjectEntity) obj).getSID());
-        }
-        return PropertyDrawEntity.createSID(name, mapping);
     }
 }

@@ -505,7 +505,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
 
         @Override
         protected ImOrderSet<?> getPropertyInterfaces(ObjectValueProperty property, ValueClass[] valueClasses) {
-            return SetFact.singletonOrder(property.getOrderInterfaces().get(0));
+            return SetFact.singletonOrder(property.interfaces.get(0));
         }
 
         @Override
@@ -526,7 +526,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
             if (valueClass instanceof StringClass || valueClass instanceof NumericClass) {
                 name = name + valueClass.getSID();
             }
-            property.setCanonicalName(getNamespace(), name, Collections.singletonList(valueClass.getResolveSet()), property.getOrderInterfaces(), getDBNamePolicy());
+            property.setCanonicalName(getNamespace(), name, Collections.singletonList(valueClass.getResolveSet()), SetFact.singletonOrder(property.interfaces.get(0)), getDBNamePolicy());
             setParent(property, version);
             return property;
         }

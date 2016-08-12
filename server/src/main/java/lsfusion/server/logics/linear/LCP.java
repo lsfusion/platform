@@ -27,7 +27,6 @@ import lsfusion.server.session.PropertyChange;
 import java.sql.SQLException;
 import java.util.List;
 
-import static lsfusion.server.logics.PropertyUtils.mapCalcImplement;
 import static lsfusion.server.logics.PropertyUtils.readCalcImplements;
 
 public class LCP<T extends PropertyInterface> extends LP<T, CalcProperty<T>> {

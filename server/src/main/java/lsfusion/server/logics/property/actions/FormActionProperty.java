@@ -82,7 +82,7 @@ public class FormActionProperty extends SystemExplicitActionProperty {
 
         if (contextProperty != null) {
             ImMap<PropertyInterface, ValueClass> interfaceClasses = contextProperty.getInterfaceClasses(ClassType.formPolicy);
-            ImOrderSet<PropertyInterface> propInterfaces = contextProperty.getOrderInterfaces();
+            ImOrderSet<PropertyInterface> propInterfaces = contextProperty.getFriendlyPropertyOrderInterfaces();
             for (int i = 0; i < propInterfaces.size(); ++i) {
                 valueClasses[objects.length + i] = interfaceClasses.get(propInterfaces.get(i));
             }

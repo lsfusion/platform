@@ -1475,7 +1475,7 @@ public abstract class LogicsModule {
             ActionProperty formProperty = drillDownFormProperty.property;
             formProperty.checkReadOnly = false;
             property.setContextMenuAction(formProperty.getSID(), formProperty.caption);
-            property.setEditAction(formProperty.getSID(), formProperty.getImplement(property.getOrderInterfaces()));
+            property.setEditAction(formProperty.getSID(), formProperty.getImplement(property.getReflectionOrderInterfaces()));
         }
     }
     
@@ -1484,7 +1484,7 @@ public abstract class LogicsModule {
     }
 
     public LAP<?> addDDAProp(LCP property) {
-        assert property.property.getOrderInterfaces().equals(property.listInterfaces);
+        assert property.property.getReflectionOrderInterfaces().equals(property.listInterfaces);
         if (property.property instanceof CalcProperty && ((CalcProperty) property.property).supportsDrillDown())
             return addDDAProp((CalcProperty) property.property);
         else 
