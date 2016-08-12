@@ -1860,6 +1860,8 @@ public abstract class LogicsModule {
         if (debugInfo != null) {
             if (debugInfo.needToCreateDelegate()) {
                 debugger.addDelegate(debugInfo);
+
+                debugger.setNewDebugStack(action);
             }
             action.setDebugInfo(debugInfo);
         }

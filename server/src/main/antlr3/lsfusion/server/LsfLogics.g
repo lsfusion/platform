@@ -2138,6 +2138,8 @@ contextIndependentActionDB returns [LPWithParams property, List<ResolveClassSet>
 	if (inPropParseState()) {
 		DebugInfo.DebugPoint endPoint = getCurrentDebugPoint(true);
 		self.actionPropertyDefinitionBodyCreated($property, point, endPoint, false);
+
+        self.topContextActionPropertyDefinitionBodyCreated($property);
 	}
 }
 	:	addformADB=addFormActionDefinitionBody { $property.property = $addformADB.property; $signature = $addformADB.signature; }

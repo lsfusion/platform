@@ -1412,7 +1412,7 @@ public class Settings {
         this.explainThreshold = explainThreshold;
     }
 
-    private boolean useCastDivisionOperands = false;
+    private boolean useCastDivisionOperands = true;
 
     public boolean isUseCastDivisionOperands() {
         return useCastDivisionOperands;
