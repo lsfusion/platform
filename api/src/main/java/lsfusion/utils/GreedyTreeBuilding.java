@@ -1,5 +1,7 @@
 package lsfusion.utils;
 
+import lsfusion.base.BaseUtils;
+
 import java.util.*;
 
 /**
@@ -592,7 +594,7 @@ public class GreedyTreeBuilding<V, C extends Comparable<C>, E extends GreedyTree
             nextEdge = getMinimumEdge(deletedNodes);
             assert nextEdge != null;
             joinNodes(nextEdge, deletedNodes, functor);
-        } while (nextEdge.getFrom().initialVertex != vertex && nextEdge.getTo().initialVertex != vertex);
+        } while (!BaseUtils.hashEquals(nextEdge.getFrom().initialVertex, vertex) && !BaseUtils.hashEquals(nextEdge.getTo().initialVertex, vertex));
 
         return treeNodes.get(treeNodes.size() - 1);
     }
@@ -604,7 +606,7 @@ public class GreedyTreeBuilding<V, C extends Comparable<C>, E extends GreedyTree
         ComputationResult<V, C> result;
         do {
             TreeNode<V, C> startNode;
-            if (rootTreeNode.left.node.getVertex() == vertex) {
+            if (BaseUtils.hashEquals(rootTreeNode.left.node.getVertex(), vertex)) {
                 startNode = rootTreeNode.right;
             } else {
                 startNode = rootTreeNode.left;
