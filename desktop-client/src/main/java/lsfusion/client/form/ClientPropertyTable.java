@@ -262,7 +262,8 @@ public abstract class ClientPropertyTable extends JTable implements TableTransfe
     @Override
     public synchronized void addMouseListener(MouseListener listener) {
         //подменяем стандартный MouseListener
-        if (listener != null && "javax.swing.plaf.basic.BasicTableUI$Handler".equals(listener.getClass().getName())) {
+        if (listener != null && ("javax.swing.plaf.basic.BasicTableUI$Handler".equals(listener.getClass().getName()) ||
+                "com.apple.laf.AquaTableUI$MouseInputHandler".equals(listener.getClass().getName()))) {
             listener = new ClientPropertyTableUIHandler(this);
         }
         super.addMouseListener(listener);
