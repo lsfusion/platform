@@ -109,6 +109,7 @@ public class NavigatorsManager extends LogicsManager implements InitializingBean
             User user;
             try (DataSession session = dbManager.createSession()) {
                 user = securityManager.authenticateUser(session, navigatorInfo.login, navigatorInfo.password, stack);
+                session.apply(businessLogics, stack);
             }
 
 //            if (reuseSession) {
