@@ -49,7 +49,7 @@ public class DivideFormulaImpl extends ScaleFormulaImpl {
                         src1 = type1.getCast(src1, syntax, env);
 
                     if(hasDivisionProblem(type2, scaleProblem))
-                        src2 = type2.getCast(src1, syntax, env);
+                        src2 = type2.getCast(src2, syntax, env);
                 }
 
                 String source;
