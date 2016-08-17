@@ -6,13 +6,13 @@ import lsfusion.gwt.base.client.ui.ResizableHorizontalPanel;
 import lsfusion.gwt.form.client.MainFrameMessages;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
 
+import java.math.BigDecimal;
+
 public abstract class GCalculateSumButton extends GToolbarButton {
     private static final MainFrameMessages messages = MainFrameMessages.Instance.get();
-    private NumberFormat format;
 
     public GCalculateSumButton() {
         super("sum.png", messages.formQueriesCalculateSum());
-        format = NumberFormat.getDecimalFormat();
     }
 
     public void showPopup(Number result, GPropertyDraw property) {
@@ -29,6 +29,9 @@ public abstract class GCalculateSumButton extends GToolbarButton {
             TextBox valueBox = new TextBox();
             valueBox.addStyleName("popup-sumBox");
             panel.add(valueBox);
+            NumberFormat format = NumberFormat.getDecimalFormat();
+            if(result instanceof BigDecimal)
+                format.overrideFractionDigits(0, ((BigDecimal)result).scale());
             valueBox.setValue(format.format(result));
             panel.setCellVerticalAlignment(text, HasAlignment.ALIGN_MIDDLE);
         }
