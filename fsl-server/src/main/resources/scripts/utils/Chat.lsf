@@ -52,6 +52,8 @@ editable (Message message) = NOT readonly(message);
 own(Message message) = author(message) == currentUser();
 seenCount(Message message) = GROUP SUM 1 IF status(message, CustomUser user) == MessageStatus.seen BY message;
  
+countMessages 'Кол-во сообщений' (chat) = GROUP SUM 1 IF text(Message message) AND chat(message) == Chat chat BY chat;
+isEmpty(Chat chat) = NOT countMessages(chat); 
 unreadMessages 'Непрочитанных' (chat, user) = GROUP SUM 1 IF (status(Message message, CustomUser user) == MessageStatus.sent OR status(message, user) == MessageStatus.delivered) AND (author(message) != user) BY chat(message), user;
 unreadMessages'Непрочитанных' (Chat chat) = unreadMessages(chat, currentUser()) MAXCHARWIDTH 10 PREFCHARWIDTH 10;
 unreadMessages 'Непрочитанных' (CustomUser user) = unreadMessages(chatIn(user, currentUser()), currentUser()) MAXCHARWIDTH 10 PREFCHARWIDTH 10;
@@ -147,7 +149,15 @@ saveNewMessage(Chat c) = ACTION {
     
 }  
   
-FORM editChat 'Чат'
+includeUserInChat (CustomUser u, Chat c) = ACTION {
+    in(c, u) <- TRUE;
+}    
+  
+includeCurrentUserInChat (Chat c) = ACTION {
+    includeUserInChat(currentUser(), c);
+}
+ 
+FORM addChat 'Создать чат'
     OBJECTS c = Chat FIXED PANEL
     PROPERTIES (c) name
     
@@ -157,7 +167,20 @@ FORM editChat 'Чат'
     
     FILTERGROUP in FILTER 'Включены в чат' in(c,u)          
 
+    EVENTS ON CHANGE c includeCurrentUserInChat(c)
+
     EDIT Chat OBJECT c
+;  
+  
+FORM editChat 'Чат'
+    OBJECTS c = Chat FIXED PANEL
+    PROPERTIES (c) name
+    
+    OBJECTS u = CustomUser
+    PROPERTIES(u) READONLY login, name
+    PROPERTIES(c,u) TODRAW u in, readonly 
+    
+    FILTERGROUP in FILTER 'Включены в чат' in(c,u)
 ;  
 
 editChatAction 'Редактировать' () = ACTION {
@@ -197,7 +220,7 @@ markSeenOnChange(Message m) = ACTION {
 FORM fullChat 'Чат'
     OBJECTS c = Chat
     PROPERTIES(c) READONLY name ON SHORTCUT editChatAction(), unreadMessages BACKGROUND backgroundUnread(c)
-    PROPERTIES(c) FORCE PANEL TOOLBAR ADDFORM
+    PROPERTIES(c) FORCE PANEL TOOLBAR ADDFORM, DELETE SHOWIF isEmpty(c)
     PROPERTIES(c) READONLYIF readonlyFullChat(c) FORCE PANEL newMessage ON CHANGE saveNewMessage(c), notificate
     
     EVENTS ON INIT markSeenOnChange(c)
