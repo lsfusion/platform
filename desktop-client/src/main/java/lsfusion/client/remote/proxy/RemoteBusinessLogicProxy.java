@@ -3,7 +3,7 @@ package lsfusion.client.remote.proxy;
 import lsfusion.base.NavigatorInfo;
 import lsfusion.interop.GUIPreferences;
 import lsfusion.interop.RemoteLogicsInterface;
-import lsfusion.interop.TimePreferencies;
+import lsfusion.interop.LocalePreferences;
 import lsfusion.interop.VMOptions;
 import lsfusion.interop.event.IDaemonTask;
 import lsfusion.interop.form.screen.ExternalScreen;
@@ -42,26 +42,10 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface> extends R
     }
 
     @Override
-    public TimePreferencies getTimePreferencies() throws RemoteException {
-        logRemoteMethodStartCall("getTimePreferencies");
-        TimePreferencies result = target.getTimePreferencies();
-        logRemoteMethodEndCall("getTimePreferencies", result);
-        return result;
-    }
-
-    @Override
-    public String getUserCountry() throws RemoteException {
-        logRemoteMethodStartCall("getUserCountry");
-        String result = target.getUserCountry();
-        logRemoteMethodEndCall("getUserCountry", result);
-        return result;
-    }
-
-    @Override
-    public String getUserLanguage() throws RemoteException {
-        logRemoteMethodStartCall("getUserLanguage");
-        String result = target.getUserLanguage();
-        logRemoteMethodEndCall("getUserLanguage", result);
+    public LocalePreferences getDefaultLocalePreferences() throws RemoteException {
+        logRemoteMethodStartCall("getDefaultLocalePreferences");
+        LocalePreferences result = target.getDefaultLocalePreferences();
+        logRemoteMethodEndCall("getDefaultLocalePreferences", result);
         return result;
     }
 

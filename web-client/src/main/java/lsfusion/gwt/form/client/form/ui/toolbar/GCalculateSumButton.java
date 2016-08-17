@@ -3,13 +3,15 @@ package lsfusion.gwt.form.client.form.ui.toolbar;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.base.client.ui.ResizableHorizontalPanel;
+import lsfusion.gwt.form.client.MainFrameMessages;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
 
 public abstract class GCalculateSumButton extends GToolbarButton {
+    private static final MainFrameMessages messages = MainFrameMessages.Instance.get();
     private NumberFormat format;
 
     public GCalculateSumButton() {
-        super("sum.png", "Посчитать сумму");
+        super("sum.png", messages.formQueriesCalculateSum());
         format = NumberFormat.getDecimalFormat();
     }
 
@@ -19,8 +21,8 @@ public abstract class GCalculateSumButton extends GToolbarButton {
 
         ResizableHorizontalPanel panel = new ResizableHorizontalPanel();
         Label text = new Label(result == null
-                ? "Невозможно посчитать сумму [" + property.caption + "]"
-                : "Сумма [" + property.caption + "]: ");
+                ? messages.formQueriesUnableToCalculateSum() + " [" + property.caption + "]"
+                : messages.formQueriesSumResult() + " [" + property.caption + "]: ");
         panel.add(text);
 
         if (result != null) {

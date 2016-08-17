@@ -3,6 +3,7 @@ package lsfusion.gwt.form.client.form.ui;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import lsfusion.gwt.base.client.GwtClientUtils;
+import lsfusion.gwt.form.client.MainFrameMessages;
 import lsfusion.gwt.form.client.form.ui.toolbar.GCalculateSumButton;
 import lsfusion.gwt.form.client.form.ui.toolbar.GCountQuantityButton;
 import lsfusion.gwt.form.client.form.ui.toolbar.GToolbarButton;
@@ -21,6 +22,7 @@ import static lsfusion.gwt.base.client.GwtClientUtils.isShowing;
 import static lsfusion.gwt.form.shared.view.GClassViewType.GRID;
 
 public class GGroupObjectController extends GAbstractGroupObjectController {
+    private final MainFrameMessages messages = MainFrameMessages.Instance.get();
     public GGroupObject groupObject;
 
     private GGridController grid;
@@ -62,7 +64,7 @@ public class GGroupObjectController extends GAbstractGroupObjectController {
         }
 
         if (groupObject.toolbar.showGroupChange) {
-            addToToolbar(new GToolbarButton("groupchange.png", "Групповая корректировка (F12)") {
+            addToToolbar(new GToolbarButton("groupchange.png", messages.formGridGroupGroupChange() + " (F12)") {
                 @Override
                 public void addListener() {
                     addClickHandler(new ClickHandler() {
@@ -114,7 +116,7 @@ public class GGroupObjectController extends GAbstractGroupObjectController {
         }
 
         if (groupObject.toolbar.showPrintGroup) {
-            addToToolbar(new GToolbarButton("reportbw.png", "Распечатать таблицу") {
+            addToToolbar(new GToolbarButton("reportbw.png", messages.formGridPrintGrid()) {
                 @Override
                 public void addListener() {
                     addClickHandler(new ClickHandler() {
@@ -128,7 +130,7 @@ public class GGroupObjectController extends GAbstractGroupObjectController {
         }
 
         if (groupObject.toolbar.showPrintGroupXls) {
-            addToToolbar(new GToolbarButton("excelbw.png", "Экспорт в xls") {
+            addToToolbar(new GToolbarButton("excelbw.png", messages.formGridExportToXls()) {
                 @Override
                 public void addListener() {
                     addClickHandler(new ClickHandler() {

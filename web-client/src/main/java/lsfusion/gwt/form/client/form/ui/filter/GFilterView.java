@@ -8,6 +8,7 @@ import com.google.gwt.user.client.ui.FlowPanel;
 import lsfusion.gwt.base.client.GwtClientUtils;
 import lsfusion.gwt.base.client.ui.ResizableFocusPanel;
 import lsfusion.gwt.base.client.ui.ResizableVerticalPanel;
+import lsfusion.gwt.form.client.MainFrameMessages;
 import lsfusion.gwt.form.client.form.ui.toolbar.GToolbarButton;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
 import lsfusion.gwt.form.shared.view.filter.GPropertyFilter;
@@ -19,6 +20,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class GFilterView extends ResizableFocusPanel implements GFilterConditionView.UIHandler {
+    private static final MainFrameMessages messages = MainFrameMessages.Instance.get();
     private static final String ADD_CONDITION = "filtadd.png";
     private static final String APPLY = "filt.png";
 
@@ -37,7 +39,7 @@ public class GFilterView extends ResizableFocusPanel implements GFilterCondition
         setWidget(filterContainer);
         addStyleName("noOutline");
 
-        applyButton = new GToolbarButton(APPLY, "Применить отбор") {
+        applyButton = new GToolbarButton(APPLY, messages.formQueriesFilterApply()) {
             @Override
             public void addListener() {
                 addClickHandler(new ClickHandler() {
@@ -50,7 +52,7 @@ public class GFilterView extends ResizableFocusPanel implements GFilterCondition
         };
         applyButton.addStyleName("flowPanelChildLeftAlign");
 
-        GToolbarButton addConditionButton = new GToolbarButton(ADD_CONDITION, "Добавить условие (alt + F2)") {
+        GToolbarButton addConditionButton = new GToolbarButton(ADD_CONDITION, messages.formQueriesFilterAddCondition() + " (alt + F2)") {
             @Override
             public void addListener() {
                 addClickHandler(new ClickHandler() {

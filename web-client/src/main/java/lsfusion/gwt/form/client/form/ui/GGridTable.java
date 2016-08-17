@@ -21,6 +21,7 @@ import lsfusion.gwt.cellview.client.cell.Cell;
 import lsfusion.gwt.cellview.client.cell.CellPreviewEvent;
 import lsfusion.gwt.form.client.ErrorHandlingCallback;
 import lsfusion.gwt.form.client.HotkeyManager;
+import lsfusion.gwt.form.client.MainFrameMessages;
 import lsfusion.gwt.form.client.form.ui.toolbar.preferences.GGridUserPreferences;
 import lsfusion.gwt.form.shared.actions.form.ServerResponseResult;
 import lsfusion.gwt.form.shared.view.*;
@@ -44,6 +45,7 @@ import static lsfusion.gwt.base.client.GwtClientUtils.isShowing;
 import static lsfusion.gwt.base.shared.GwtSharedUtils.*;
 
 public class GGridTable extends GGridPropertyTable<GridDataRecord> {
+    private static final MainFrameMessages messages = MainFrameMessages.Instance.get();
     private static final double QUICK_SEARCH_MAX_DELAY = 2000;
 
     private ArrayList<GPropertyDraw> columnProperties = new ArrayList<>();
@@ -845,7 +847,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
         boolean singleC = table.size() == 1 && tableColumns == 1;
 
         if (!singleC) {
-            DialogBoxHelper.showConfirmBox("lsFusion", "Вы уверены, что хотите изменить значения нескольких ячеек?", false, new DialogBoxHelper.CloseCallback() {
+            DialogBoxHelper.showConfirmBox("lsFusion", messages.formGridSureToPasteMultivalue(), false, new DialogBoxHelper.CloseCallback() {
                 @Override
                 public void closed(DialogBoxHelper.OptionType chosenOption) {
                     if (chosenOption == DialogBoxHelper.OptionType.YES) {
@@ -995,7 +997,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
         currentGridPreferences.resetPreferences();
 
         if (forAllUsers) {
-            form.blockingConfirm("Сбросить также индивидуальные настройки пользователей?", "Сброс настроек", false, 0, 0, new DialogBoxHelper.CloseCallback() {
+            form.blockingConfirm(messages.formGridPreferencesCompleteReset(), messages.formGridPreferencesCompleteResetHeader(), false, 0, 0, new DialogBoxHelper.CloseCallback() {
                 @Override
                 public void closed(DialogBoxHelper.OptionType chosenOption) {
                     form.saveUserPreferences(currentGridPreferences, true, chosenOption == DialogBoxHelper.OptionType.YES, new ErrorHandlingCallback<ServerResponseResult>() {

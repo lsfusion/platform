@@ -8,7 +8,7 @@
         <meta http-equiv="cache-control" content="no-store, no-cache, must-revalidate"/>
         <meta http-equiv="Pragma" content="no-store, no-cache"/>
         <meta http-equiv="Expires" content="0"/>
-        <meta name="gwt:property" content="locale=<%=ServerUtils.getLocaleLanguage()%>">
+        <meta name="gwt:property" content="locale=<%=ServerUtils.getLocaleLanguage(request.getCookies())%>">
 
         <link rel="shortcut icon" href="favicon.ico" />
         

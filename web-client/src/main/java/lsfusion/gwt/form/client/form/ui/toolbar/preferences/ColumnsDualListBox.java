@@ -4,11 +4,13 @@ import com.allen_sauer.gwt.dnd.client.DragController;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.*;
+import lsfusion.gwt.form.client.MainFrameMessages;
 import lsfusion.gwt.form.client.form.ui.GCaptionPanel;
 
 import java.util.ArrayList;
 
 public abstract class ColumnsDualListBox extends AbsolutePanel {
+    private static final MainFrameMessages messages = MainFrameMessages.Instance.get();
     private static final String CSS_DUAL_LIST_BUTTONS_CONTAINER = "dualListButtonsContainer";
     private static final String CSS_DUAL_LIST_CONTAINER = "dualListContainer";
 
@@ -58,7 +60,7 @@ public abstract class ColumnsDualListBox extends AbsolutePanel {
         };
 
         ColumnsListContainer leftFocusPanel = new ColumnsListContainer(left);
-        GCaptionPanel leftColumns = new GCaptionPanel("Отображаемые колонки", leftFocusPanel);
+        GCaptionPanel leftColumns = new GCaptionPanel(messages.formGridPreferencesDisplayedColumns(), leftFocusPanel);
         leftColumns.setSize("100%", "100%");
         horizontalPanel.add(leftColumns);
         horizontalPanel.setCellHeight(leftColumns, "100%");
@@ -68,7 +70,7 @@ public abstract class ColumnsDualListBox extends AbsolutePanel {
         horizontalPanel.setCellWidth(verticalPanel, "6em");
 
         ColumnsListContainer rightFocusPanel = new ColumnsListContainer(right);
-        GCaptionPanel rightColumns = new GCaptionPanel("Спрятанные колонки", rightFocusPanel);
+        GCaptionPanel rightColumns = new GCaptionPanel(messages.formGridPreferencesHiddenColumns(), rightFocusPanel);
         rightColumns.setSize("100%", "100%");
         horizontalPanel.add(rightColumns);
         horizontalPanel.setCellHeight(rightColumns, "100%");

@@ -5,6 +5,7 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Button;
 import lsfusion.gwt.base.client.Dimension;
 import lsfusion.gwt.base.client.ui.ResizableHorizontalPanel;
+import lsfusion.gwt.form.client.MainFrameMessages;
 import lsfusion.gwt.form.client.form.ui.layout.GFormLayout;
 import lsfusion.gwt.form.client.form.ui.toolbar.GToolbarButton;
 import lsfusion.gwt.form.shared.view.GClassViewType;
@@ -16,6 +17,7 @@ import java.util.List;
 import static lsfusion.gwt.base.client.GwtClientUtils.getOffsetSize;
 
 public class GShowTypeView extends ResizableHorizontalPanel {
+    private static final MainFrameMessages messages = MainFrameMessages.Instance.get();
     private Button gridButton;
     private Button panelButton;
     private Button hideButton;
@@ -29,9 +31,9 @@ public class GShowTypeView extends ResizableHorizontalPanel {
         form = iform;
         groupObject = igroupObject;
 
-        add(gridButton = createShowTypeButton("view_grid.png", GClassViewType.GRID, "Таблица"));
-        add(panelButton = createShowTypeButton("view_panel.png", GClassViewType.PANEL, "Панель"));
-        add(hideButton = createShowTypeButton("view_hide.png", GClassViewType.HIDE, "Скрыть"));
+        add(gridButton = createShowTypeButton("view_grid.png", GClassViewType.GRID, messages.grid()));
+        add(panelButton = createShowTypeButton("view_panel.png", GClassViewType.PANEL, messages.panel()));
+        add(hideButton = createShowTypeButton("view_hide.png", GClassViewType.HIDE, messages.hide()));
     }
 
     private Button createShowTypeButton(String imagePath, final GClassViewType newClassView, String tooltipText) {

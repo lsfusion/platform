@@ -190,13 +190,6 @@ public class Main {
                         return;
                     }
 
-                    String country = remoteLogics.getUserCountry();
-                    String language = remoteLogics.getUserLanguage();
-                    if (country != null && language != null) {
-                        Locale.setDefault(new Locale(language, country));
-                        ClientResourceBundle.clientResourceBundle = ResourceBundle.getBundle("ClientResourceBundle"); // чтобы подставлялась нужная локаль
-                    }
-
                     GUIPreferences prefs = remoteLogics.getGUIPreferences();
                     logicsName = prefs.logicsName;
                     logicsDisplayName = prefs.logicsDisplayName;
@@ -204,11 +197,25 @@ public class Main {
                     logicsLogo = prefs.logicsLogo;
                     hideMenu = prefs.hideMenu;
 
-                    setupTimePreferences();
-
                     remoteNavigator = loginAction.getRemoteNavigator();
-                    computerId = loginAction.getComputerId();
 
+                    LocalePreferences defaultPreferences = remoteLogics.getDefaultLocalePreferences();
+                    LocalePreferences userPreferences = remoteNavigator.getLocalePreferences();
+                    if(defaultPreferences != null && userPreferences != null) {
+                        String country = userPreferences.country == null && !userPreferences.useClientLocale ? defaultPreferences.country : userPreferences.country;
+                        String language = userPreferences.language == null && !userPreferences.useClientLocale ? defaultPreferences.language : userPreferences.language;
+                        String timeZone = userPreferences.timeZone == null && !userPreferences.useClientLocale ? defaultPreferences.timeZone : userPreferences.timeZone;
+                        Integer twoDigitYearStart = userPreferences.twoDigitYearStart == null && !userPreferences.useClientLocale ? defaultPreferences.twoDigitYearStart : userPreferences.twoDigitYearStart;
+
+                        if (country != null && language != null) {
+                            Locale.setDefault(new Locale(language, country));
+                            ClientResourceBundle.clientResourceBundle = ResourceBundle.getBundle("ClientResourceBundle"); // чтобы подставлялась нужная локаль
+                        }
+
+                        setupTimePreferences(timeZone, twoDigitYearStart);
+                    }
+
+                    computerId = loginAction.getComputerId();
                     configurationAccessAllowed = remoteNavigator.isConfigurationAccessAllowed();
 
                     startSplashScreen();
@@ -256,17 +263,16 @@ public class Main {
         });
     }
 
-    private static void setupTimePreferences() throws RemoteException {
-        TimePreferencies timePreferencies = remoteLogics.getTimePreferencies();
-        
-        TimeZone timeZone = TimeZone.getTimeZone(timePreferencies.userTimeZone);
+    private static void setupTimePreferences(String userTimeZone, Integer twoDigitYearStart) throws RemoteException {
+
+        TimeZone timeZone = userTimeZone == null ? null : TimeZone.getTimeZone(userTimeZone);
         if (timeZone != null) {
             TimeZone.setDefault(timeZone);
         }
 
         Date twoDigitYearStartDate = null;
-        if (timePreferencies.twoDigitYearStart != null) {
-            GregorianCalendar c = new GregorianCalendar(timePreferencies.twoDigitYearStart, 0, 1);
+        if (twoDigitYearStart != null) {
+            GregorianCalendar c = new GregorianCalendar(twoDigitYearStart, 0, 1);
             twoDigitYearStartDate = c.getTime();
         }
         

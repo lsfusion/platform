@@ -4,6 +4,7 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DialogBox;
+import lsfusion.gwt.form.client.MainFrameMessages;
 import lsfusion.gwt.form.client.form.ui.toolbar.GToolbarButton;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
 import lsfusion.gwt.form.shared.view.filter.GPropertyFilter;
@@ -15,9 +16,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public abstract class GFilterController {
+    private static final MainFrameMessages messages = MainFrameMessages.Instance.get();
     private static final String ADD_FILTER = "filtadd.png";
     private static final String EXPAND = "expand.png";
-    private static final String FILTER_BUTTON_TOOLTIP_TEXT = "Отбор (F2)";
+    private static final String FILTER_BUTTON_TOOLTIP_TEXT = messages.formQueriesFilter() + " (F2)";
 
     private ImageButton toolbarButton;
     private GFilterView filterView;
@@ -129,7 +131,7 @@ public abstract class GFilterController {
                 break;
             case COLLAPSED:
                 toolbarButtonIconPath = EXPAND;
-                toolbarButton.setTitle("Развернуть окно отбора");
+                toolbarButton.setTitle(messages.expandFilterWindow());
                 if (state != State.HIDDEN) {
                     toolbarButton.getElement().getStyle().setProperty("background", "#A2FFA2");
                 }

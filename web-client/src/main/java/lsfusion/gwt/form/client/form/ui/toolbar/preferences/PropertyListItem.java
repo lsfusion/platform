@@ -1,8 +1,10 @@
 package lsfusion.gwt.form.client.form.ui.toolbar.preferences;
 
+import lsfusion.gwt.form.client.MainFrameMessages;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
 
 public class PropertyListItem {
+    private static final MainFrameMessages messages = MainFrameMessages.Instance.get();
     public GPropertyDraw property;
     private String userCaption;
     private String userPattern;
@@ -35,9 +37,9 @@ public class PropertyListItem {
     public String toString() {
         String result = getUserCaption(false);
         if (inGrid == null) {
-            result += " (не отображается)";
+            result += " (" + messages.formGridPreferencesPropertyNotShown() + ")";
         } else if (!inGrid) {
-            result += " (в панели)";
+            result += " (" + messages.formGridPreferencesPropertyInPanel() + ")";
         }
         return result;
     }

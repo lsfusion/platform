@@ -4,6 +4,7 @@ import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import javax.servlet.http.Cookie;
 import java.util.Locale;
 
 public class ServerUtils {
@@ -27,5 +28,15 @@ public class ServerUtils {
             return DEFAULT_LOCALE_LANGUAGE;
         }
         return language;
+    }
+
+    public static String getLocaleLanguage(Cookie[] cookies) {
+        String locale = null;
+        for(Cookie cookie : cookies) {
+            if(cookie.getName().equals("GWT_LOCALE")) {
+                locale = cookie.getValue();
+            }
+        }
+        return locale != null ? locale : getLocaleLanguage();
     }
 }

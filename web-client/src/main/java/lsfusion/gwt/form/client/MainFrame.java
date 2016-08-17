@@ -6,6 +6,7 @@ import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.logical.shared.ResizeEvent;
 import com.google.gwt.event.logical.shared.ResizeHandler;
+import com.google.gwt.user.client.Cookies;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Label;
@@ -31,18 +32,18 @@ import lsfusion.gwt.form.shared.view.actions.GFormAction;
 import lsfusion.gwt.form.shared.view.window.GAbstractWindow;
 import lsfusion.gwt.form.shared.view.window.GModalityType;
 import lsfusion.gwt.form.shared.view.window.GNavigatorWindow;
+import net.customware.gwt.dispatch.shared.general.StringResult;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class MainFrame implements EntryPoint {
+    private static final MainFrameMessages messages = MainFrameMessages.Instance.get();
     private final NavigatorDispatchAsync dispatcher = NavigatorDispatchAsync.Instance.get();
     public static boolean configurationAccessAllowed;
     public static boolean forbidDuplicateForms;
     public static boolean isBusyDialog;
+    public static String localeCookieName = "GWT_LOCALE";
 
     private GNavigatorController navigatorController;
     private WindowsController windowsController;
@@ -56,10 +57,19 @@ public class MainFrame implements EntryPoint {
     private Boolean shouldRepeatPingRequest = true;
     
     public void onModuleLoad() {
+
+        dispatcher.execute(new GetLocaleAction(), new ErrorHandlingCallback<StringResult>() {
+            @Override
+            public void success(StringResult result) {
+                setLocale(result.get());
+
+            }
+        });
+
         GWT.setUncaughtExceptionHandler(new GWT.UncaughtExceptionHandler() {
             @Override
             public void onUncaughtException(Throwable t) {
-                GExceptionManager.logClientError("Необработанная ошибка в GWT: ", t);
+                GExceptionManager.logClientError(messages.uncaughtGWTException() + ": ", t);
             }
         });
 
@@ -183,6 +193,14 @@ public class MainFrame implements EntryPoint {
         }, 1000);
 
         GExceptionManager.flushUnreportedThrowables();
+    }
+
+    private void setLocale(String newLocale) {
+        String oldLocale = Cookies.getCookie(localeCookieName);
+        if(oldLocale == null || !oldLocale.equals(newLocale)) {
+            Cookies.setCookie(localeCookieName, newLocale);
+            Window.Location.reload();
+        }
     }
     
     private void setShouldRepeatPingRequest(boolean shouldRepeatPingRequest) {

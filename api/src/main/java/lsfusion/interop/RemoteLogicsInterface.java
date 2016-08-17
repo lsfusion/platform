@@ -18,11 +18,7 @@ public interface RemoteLogicsInterface extends PendingRemoteInterface {
     
     GUIPreferences getGUIPreferences() throws RemoteException;
     
-    TimePreferencies getTimePreferencies() throws RemoteException;
-
-    String getUserCountry() throws RemoteException;
-
-    String getUserLanguage() throws RemoteException;
+    LocalePreferences getDefaultLocalePreferences() throws RemoteException;
 
     RemoteNavigatorInterface createNavigator(boolean isFullClient, NavigatorInfo navigatorInfo, boolean forceCreateNew) throws RemoteException;
 

@@ -2,6 +2,7 @@ package lsfusion.client.remote.proxy;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.DefaultFormsType;
+import lsfusion.interop.LocalePreferences;
 import lsfusion.interop.form.RemoteFormInterface;
 import lsfusion.interop.form.ServerResponse;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
@@ -171,6 +172,11 @@ public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface> extends Re
     @Override
     public boolean isBusyDialog() throws RemoteException {
         return target.isBusyDialog();
+    }
+
+    @Override
+    public LocalePreferences getLocalePreferences() throws RemoteException {
+        return target.getLocalePreferences();
     }
 
     @Override

@@ -9,6 +9,7 @@ import lsfusion.gwt.base.client.ui.FlexPanel;
 import lsfusion.gwt.base.client.ui.GFlexAlignment;
 import lsfusion.gwt.form.client.ErrorHandlingCallback;
 import lsfusion.gwt.form.client.MainFrame;
+import lsfusion.gwt.form.client.MainFrameMessages;
 import lsfusion.gwt.form.client.form.ui.GCaptionPanel;
 import lsfusion.gwt.form.client.form.ui.GGridTable;
 import lsfusion.gwt.form.client.form.ui.GGroupObjectController;
@@ -26,6 +27,7 @@ import static lsfusion.gwt.form.shared.view.GFont.DEFAULT_FONT_FAMILY;
 import static lsfusion.gwt.form.shared.view.GFont.DEFAULT_FONT_SIZE;
 
 public abstract class GUserPreferencesDialog extends GResizableModalWindow {
+    private static final MainFrameMessages messages = MainFrameMessages.Instance.get();
     private static final String CSS_USER_PREFERENCES_DUAL_LIST = "userPreferencesDualList";
 
     private GGroupObjectController groupController;
@@ -44,7 +46,7 @@ public abstract class GUserPreferencesDialog extends GResizableModalWindow {
     private TextBox columnPatternBox;
 
     public GUserPreferencesDialog(GGridTable grid, GGroupObjectController groupController, boolean canBeSaved) {
-        super("Настройка таблицы");
+        super(messages.formGridPreferences());
 
         this.groupController = groupController;
 
@@ -74,11 +76,11 @@ public abstract class GUserPreferencesDialog extends GResizableModalWindow {
 
         //page size settings
 
-        Label pageSizeLabel = new Label("Размер страницы: ");
+        Label pageSizeLabel = new Label(messages.formGridPreferencesPageSize() + ": ");
         pageSizeBox = new TextBox();
         pageSizeBox.addStyleName("userPreferencesFontSizeTextBox");
 
-        Label headerHeightLabel = new Label("Высота заголовков: ");
+        Label headerHeightLabel = new Label(messages.formGridPreferencesHeaderHeight() + ": ");
         headerHeightBox = new TextBox();
         headerHeightBox.addStyleName("userPreferencesFontSizeTextBox");
 
@@ -93,7 +95,7 @@ public abstract class GUserPreferencesDialog extends GResizableModalWindow {
         HorizontalPanel gridSettingsPanel = new HorizontalPanel();
         gridSettingsPanel.add(pageSizePanel);
         gridSettingsPanel.add(headerHeightPanel);
-        preferencesPanel.add(new GCaptionPanel("Общие настройки таблицы", gridSettingsPanel));
+        preferencesPanel.add(new GCaptionPanel(messages.formGridPreferencesGridSettings(), gridSettingsPanel));
 
         preferencesPanel.add(GwtClientUtils.createVerticalStrut(5));
         
@@ -108,7 +110,7 @@ public abstract class GUserPreferencesDialog extends GResizableModalWindow {
         });
 
         FlexPanel columnCaptionPanel = new FlexPanel();
-        columnCaptionPanel.add(new Label("Заголовок колонки: "), GFlexAlignment.CENTER);
+        columnCaptionPanel.add(new Label(messages.formGridPreferencesColumnCaption() + ": "), GFlexAlignment.CENTER);
         columnCaptionPanel.add(columnCaptionBox, GFlexAlignment.CENTER);
 
         // column pattern settings
@@ -122,25 +124,25 @@ public abstract class GUserPreferencesDialog extends GResizableModalWindow {
         });
 
         FlexPanel columnPatternPanel = new FlexPanel();
-        columnPatternPanel.add(new Label("Маска колонки: "), GFlexAlignment.CENTER);
+        columnPatternPanel.add(new Label(messages.formGridPreferencesColumnPattern() + ": "), GFlexAlignment.CENTER);
         columnPatternPanel.add(columnPatternBox, GFlexAlignment.CENTER);
 
         VerticalPanel columnPanel = new VerticalPanel();
         columnPanel.add(columnCaptionPanel);
         columnPanel.add(columnPatternPanel);
 
-        GCaptionPanel columnSettingsPanel = new GCaptionPanel("Настройки выбранной колонки", columnPanel);
+        GCaptionPanel columnSettingsPanel = new GCaptionPanel(messages.formGridPreferencesSelectedColumnSettings(), columnPanel);
         preferencesPanel.add(columnSettingsPanel);
         
         preferencesPanel.add(GwtClientUtils.createVerticalStrut(5));
         
         // font settings
-        Label sizeLabel = new Label("Размер: ");
+        Label sizeLabel = new Label(messages.formGridPreferencesFontSize() + ": ");
         sizeBox = new TextBox();
         sizeBox.addStyleName("userPreferencesFontSizeTextBox");
 
-        boldBox = new CheckBox("Полужирный");
-        italicBox = new CheckBox("Курсив");
+        boldBox = new CheckBox(messages.formGridPreferencesFontStyleBold());
+        italicBox = new CheckBox(messages.formGridPreferencesFontStyleItalic());
 
         FlexPanel fontPanel = new FlexPanel(FlexPanel.Justify.CENTER);
         fontPanel.add(sizeLabel, GFlexAlignment.CENTER);
@@ -150,7 +152,7 @@ public abstract class GUserPreferencesDialog extends GResizableModalWindow {
         fontPanel.add(GwtClientUtils.createHorizontalStrut(3));
         fontPanel.add(italicBox, GFlexAlignment.CENTER);
 
-        GCaptionPanel fontSettingsPanel = new GCaptionPanel("Настройки шрифта", fontPanel);
+        GCaptionPanel fontSettingsPanel = new GCaptionPanel(messages.formGridPreferencesFontSettings(), fontPanel);
         preferencesPanel.add(fontSettingsPanel);
 
         preferencesPanel.add(GwtClientUtils.createVerticalStrut(5));
@@ -158,7 +160,7 @@ public abstract class GUserPreferencesDialog extends GResizableModalWindow {
         //save/reset buttons
         HorizontalPanel saveResetButtons = new HorizontalPanel();
 
-        Button saveForUserButton = new Button("Сохранить настройки");
+        Button saveForUserButton = new Button(messages.formGridPreferencesSaveSettings());
         saveForUserButton.setWidth("15em");
         saveForUserButton.addClickHandler(new ClickHandler() {
             @Override
@@ -166,7 +168,7 @@ public abstract class GUserPreferencesDialog extends GResizableModalWindow {
                 savePressed(false);
             }
         });
-        Button resetForUserButton = new Button("Сбросить настройки");
+        Button resetForUserButton = new Button(messages.formGridPreferencesResetSettings());
         resetForUserButton.setWidth("15em");
         resetForUserButton.addClickHandler(new ClickHandler() {
             @Override
@@ -177,12 +179,12 @@ public abstract class GUserPreferencesDialog extends GResizableModalWindow {
         VerticalPanel currentUserButtons = new VerticalPanel();
         currentUserButtons.add(saveForUserButton);
         currentUserButtons.add(resetForUserButton);
-        GCaptionPanel titledPanel = new GCaptionPanel("Для текущего пользователя", currentUserButtons);
+        GCaptionPanel titledPanel = new GCaptionPanel(messages.formGridPreferencesForUser(), currentUserButtons);
         titledPanel.setSize("100%", "100%");
         saveResetButtons.add(titledPanel);
 
         if (MainFrame.configurationAccessAllowed) {
-            Button saveButton = new Button("Сохранить настройки");
+            Button saveButton = new Button(messages.formGridPreferencesSaveSettings());
             saveButton.setWidth("15em");
             saveButton.addClickHandler(new ClickHandler() {
                 @Override
@@ -190,7 +192,7 @@ public abstract class GUserPreferencesDialog extends GResizableModalWindow {
                     savePressed(true);
                 }
             });
-            Button resetButton = new Button("Сбросить настройки");
+            Button resetButton = new Button(messages.formGridPreferencesResetSettings());
             resetButton.setWidth("15em");
             resetButton.addClickHandler(new ClickHandler() {
                 @Override
@@ -202,7 +204,7 @@ public abstract class GUserPreferencesDialog extends GResizableModalWindow {
             allUsersButtons.add(saveButton);
             allUsersButtons.add(resetButton);
 
-            titledPanel = new GCaptionPanel("Для всех пользователей", allUsersButtons);
+            titledPanel = new GCaptionPanel(messages.formGridPreferencesForAllUsers(), allUsersButtons);
             titledPanel.setSize("100%", "100%");
             saveResetButtons.add(titledPanel);
         }
@@ -216,7 +218,7 @@ public abstract class GUserPreferencesDialog extends GResizableModalWindow {
         }
 
         // ok/cancel buttons
-        Button okButton = new Button("OK");
+        Button okButton = new Button(messages.ok());
         okButton.setWidth("6em");
         okButton.addClickHandler(new ClickHandler() {
             @Override
@@ -225,7 +227,7 @@ public abstract class GUserPreferencesDialog extends GResizableModalWindow {
             }
         });
 
-        Button cancelButton = new Button("Отмена");
+        Button cancelButton = new Button(messages.formGridPreferencesCancel());
         cancelButton.setWidth("6em");
         cancelButton.addClickHandler(new ClickHandler() {
             @Override
@@ -339,7 +341,7 @@ public abstract class GUserPreferencesDialog extends GResizableModalWindow {
     private void resetPressed(boolean forAllUsers) {
         columnCaptionBox.setText(null);
         columnPatternBox.setText(null);
-        grid.resetPreferences(forAllUsers, createSaveCallback("Сброс настроек успешно завершен"));
+        grid.resetPreferences(forAllUsers, createSaveCallback(messages.formGridPreferencesResetSettingsSuccessfullyComplete()));
     }
 
     private void savePressed(boolean forAllUsers) {
@@ -372,7 +374,7 @@ public abstract class GUserPreferencesDialog extends GResizableModalWindow {
         grid.setUserHeaderHeight(getUserHeaderHeight());
         grid.refreshColumnsAndRedraw();
         
-        grid.saveCurrentPreferences(forAllUsers, createSaveCallback("Сохранение настроек успешно завершено"));
+        grid.saveCurrentPreferences(forAllUsers, createSaveCallback(messages.formGridPreferencesSaveSettingsSuccessfullyComplete()));
     }
 
     private void refreshPropertyUserPreferences(PropertyListItem property, boolean hide, int propertyOrder, Map<Boolean, Integer> userSortDirections) {
@@ -438,7 +440,7 @@ public abstract class GUserPreferencesDialog extends GResizableModalWindow {
                 grid.font = font;
                 grid.columnsPreferencesChanged();
                 preferencesChanged();
-                DialogBoxHelper.showMessageBox(false, "Изменение настроек", successMessageText, null);
+                DialogBoxHelper.showMessageBox(false, messages.formGridPreferencesChange(), successMessageText, null);
             }
 
             @Override
