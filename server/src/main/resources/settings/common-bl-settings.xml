@@ -42,7 +42,7 @@
                 <entry key="disablePrereadValues" value="${settings.disablePrereadValues:}"/>
                 <entry key="disableSumGroupNotZero" value="${settings.disableSumGroupNotZero:}"/>
                 <entry key="usedChangesCacheLimit" value="${settings.usedChangesCacheLimit:}"/>
-                <entry key="locale" value="${settings.locale:}"/>
+                <entry key="locale" value="${user.language:}"/>
                 <entry key="splitIncrementApply" value="${settings.splitIncrementApply:}"/>
                 <entry key="statDegree" value="${settings.statDegree:}"/>
                 <entry key="barcodeLength" value="${settings.barcodeLength:}"/>
