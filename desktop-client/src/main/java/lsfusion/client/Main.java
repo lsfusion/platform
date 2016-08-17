@@ -251,7 +251,7 @@ public class Main {
 
                     busyDialog = remoteLogics.isBusyDialog() || remoteNavigator.isBusyDialog();
 
-                    ((DockableMainFrame) frame).executeAction("SystemEvents.onClientStarted[]", 0);
+                    ((DockableMainFrame) frame).executeAction("SystemEvents.onClientStarted[]", 0, null);
 
                 } catch (Exception e) {
                     closeSplashScreen();
@@ -501,12 +501,17 @@ public class Main {
         timer.start();
     }
 
-    public static void executeNotificationAction(Integer idNotification) {
+    public static void executeNotificationAction(final Integer idNotification) {
         try {
             if (currentForm != null)
                 currentForm.executeNotificationAction(idNotification);
             else
-                ((DockableMainFrame) frame).executeAction(String.valueOf(idNotification), 2);
+                ((DockableMainFrame) frame).executeAction(String.valueOf(idNotification), 2, new Runnable() {
+                    @Override
+                    public void run() {
+                        executeNotificationAction(idNotification);
+                    }
+                });
         } catch (IOException e) {
             logger.error("Error executing notification action: ", e);
         }

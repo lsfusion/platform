@@ -16,6 +16,7 @@ import bibliothek.gui.dock.facile.menu.SubmenuPiece;
 import bibliothek.gui.dock.support.menu.SeparatingMenuPiece;
 import com.google.common.base.Throwables;
 import lsfusion.base.DefaultFormsType;
+import lsfusion.base.ERunnable;
 import lsfusion.client.*;
 import lsfusion.client.form.ClientFormController;
 import lsfusion.client.form.dispatch.ClientNavigatorActionDispatcher;
@@ -28,6 +29,7 @@ import lsfusion.interop.form.ReportGenerationData;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
 import net.sf.jasperreports.engine.JRException;
 import org.apache.log4j.Logger;
+import org.jboss.netty.util.internal.NonReentrantLock;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -57,6 +59,8 @@ public class DockableMainFrame extends MainFrame {
 
     private final NavigatorController navigatorController;
     private final ClientNavigator mainNavigator;
+
+    private NonReentrantLock lock = new NonReentrantLock();
 
     public DockableMainFrame(RemoteNavigatorInterface remoteNavigator) throws IOException {
         super(remoteNavigator);
@@ -104,18 +108,42 @@ public class DockableMainFrame extends MainFrame {
     }
 
     private void executeNavigatorAction(ClientNavigatorAction action) {
-        try {
-            actionDispatcher.dispatchResponse(remoteNavigator.executeNavigatorAction(action.getSID(), 1));
-        } catch (IOException e) {
-            throw new RuntimeException(getString("errors.error.executing.action"), e);
+        executeAction(action.getSID(), 1, null);
+    }
+
+    public void executeAction(final String actionSID, final int type, final Runnable action) {
+        if (action != null) {
+            if (lock.tryLock()) {
+                tryExecuteNavigatorAction(actionSID, type);
+            } else {
+                SwingUtils.invokeLater(new ERunnable() {
+                    @Override
+                    public void run() throws Exception {
+                        Timer timer = new Timer(1000, new ActionListener() {
+                            @Override
+                            public void actionPerformed(ActionEvent e) {
+                                action.run();
+                            }
+                        });
+                        timer.setRepeats(false);
+                        timer.start();
+                    }
+                });
+            }
+        } else {
+            lock.lock();
+            tryExecuteNavigatorAction(actionSID, type);
         }
     }
 
-    public void executeAction(String actionSID, int type) {
+
+    private void tryExecuteNavigatorAction(String actionSID, int type) {
         try {
             actionDispatcher.dispatchResponse(remoteNavigator.executeNavigatorAction(actionSID, type));
         } catch (IOException e) {
             throw new RuntimeException(getString("errors.error.executing.action"), e);
+        } finally {
+            lock.unlock();
         }
     }
 
