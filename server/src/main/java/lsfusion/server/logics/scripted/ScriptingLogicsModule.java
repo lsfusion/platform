@@ -639,12 +639,6 @@ public class ScriptingLogicsModule extends LogicsModule {
         if (index < 0 && paramName.startsWith("$")) {
             if (param.cls != null) {
                 errLog.emitParamClassNonDeclarationError(parser, paramName);
-            }
-            if (Character.isDigit(paramName.charAt(1))) {
-                index = Integer.parseInt(paramName.substring(1)) - 1;
-                if (index < 0 || !dynamic && context != null && index >= context.size()) {
-                    errLog.emitFormulaParamIndexError(parser, index + 1, context == null ? 0 : context.size());
-                }
             } else if (!insideRecursion) {
                 errLog.emitRecursiveParamsOutideRecursionError(parser, paramName);
             } else if (indexOf(context, paramName.substring(1)) < 0) {
@@ -1423,13 +1417,13 @@ public class ScriptingLogicsModule extends LogicsModule {
     public LPWithParams addScriptedRequestUserInputAProp(String typeId, String chosenKey, LPWithParams action) throws ScriptingErrorLog.SemanticErrorException {
         Type requestValueType = getPredefinedType(typeId);
 
-        LPWithParams prop;
+        LPWithParams prop = null;
         if (action == null) {
             if (!(requestValueType instanceof DataClass)) {
                 errLog.emitRequestUserInputDataTypeError(parser, typeId);
+            } else {
+                prop = new LPWithParams(addRequestUserDataAProp(null, "", (DataClass) requestValueType), new ArrayList<Integer>());
             }
-
-            prop = new LPWithParams(addRequestUserDataAProp(null, "", (DataClass) requestValueType), new ArrayList<Integer>());
         } else {
             prop = new LPWithParams(addRequestUserInputAProp(null, "", (LAP<?>) action.property, requestValueType, chosenKey), newArrayList(action.usedParams));
         }
