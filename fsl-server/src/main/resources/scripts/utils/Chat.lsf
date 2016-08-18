@@ -33,11 +33,14 @@ TABLE messageCustomUser(Message, CustomUser);
 pushNotification 'Отправить уведомление пользователю' = ACTION ABSTRACT LIST (CustomUser, BOOLEAN, BOOLEAN);
 seekLastMessageInFullChat = ACTION ABSTRACT LIST ();
 markSeenOnChange = ACTION ABSTRACT LIST (Chat);
+editMessage 'Редактировать сообщение' (Chat c, Message m) = ACTION ABSTRACT LIST (Chat, Message);
 
 author 'Автор' = DATA CustomUser (Message);
 nameAuthor 'Автор' (Message message) = nameOrLogin(author(message)) MAXCHARWIDTH 30 PREFCHARWIDTH 30;
 text 'Текст' = DATA TEXT (Message) MINCHARWIDTH 50;
 dateTime 'Время' = DATA DATETIME (Message) MAXCHARWIDTH 30 PREFCHARWIDTH 30;
+lastEditDateTime 'Время редактирования' = DATA DATETIME (Message) MAXCHARWIDTH 30 PREFCHARWIDTH 30;
+showText 'Текст' (Message m) = IF lastEditDateTime(m) THEN text(m) + '\n\n' + 'Изменено: ' + TEXT(lastEditDateTime(m)) ELSE text(m);
 system 'Системное' = DATA BOOLEAN (Message);
 status 'Статус' = DATA MessageStatus (Message, CustomUser);
 captionStatus 'Статус' (Message message, CustomUser user) = staticCaption(status(message, user));
@@ -46,11 +49,13 @@ chat = DATA Chat (Message);
 nameChat 'Чат' (Message message) = name(chat(message)) MINCHARWIDTH 30 PREFCHARWIDTH 30;
 nameShortChat 'Чат' (Message message) = IF isDialog(chat(message)) THEN nameChat(message) ELSE (nameChat(message) + ' [' + nameAuthor(message) + ']') MINCHARWIDTH 15 PREFCHARWIDTH 30;
 
-readonly (Message message) = readonly(chat(message));
-editable (Message message) = NOT readonly(message);
+readonly (Message m) = readonly(chat(m));
+editable (Message m) = NOT readonly(m);
 
-own(Message message) = author(message) == currentUser();
-seenCount(Message message) = GROUP SUM 1 IF status(message, CustomUser user) == MessageStatus.seen BY message;
+own(Message m) = author(m) == currentUser();
+seenCount(Message m) = GROUP SUM 1 IF status(m, CustomUser user) == MessageStatus.seen BY m;
+deliveredCount(Message m) = GROUP SUM 1 IF status(m, CustomUser user) == MessageStatus.delivered BY m;
+status 'Статус' (Message m) = IF own(m) THEN ISTRING[10](staticCaption(IF seenCount(m) > 1 THEN MessageStatus.seen ELSE IF deliveredCount(m) > 0 THEN MessageStatus.delivered ELSE MessageStatus.sent)) ELSE '' MAXCHARWIDTH 10 PREFCHARWIDTH 10;
  
 countMessages 'Кол-во сообщений' (chat) = GROUP SUM 1 IF text(Message message) AND chat(message) == Chat chat BY chat;
 isEmpty(Chat chat) = NOT countMessages(chat); 
@@ -60,9 +65,11 @@ unreadMessages 'Непрочитанных' (CustomUser user) = unreadMessages(c
 sumUnreadMessages 'Всего непрочитанных' (CustomUser user) = GROUP SUM unreadMessages(Chat chat, CustomUser user) IF in(chat, user) BY user;
 
 chatNotFound = DATA LOCAL BOOLEAN ();
-defaultNewMessage 'Новое сообщение' = DATA LOCAL TEXT ();
-chatNewMessage 'Новое сообщение' = DATA LOCAL TEXT (Chat);
+defaultNewMessage 'Новое сообщение' = DATA LOCAL NESTED TEXT ();
+chatNewMessage 'Новое сообщение' = DATA LOCAL NESTED TEXT (Chat);
 newMessage 'Новое сообщение' (Chat chat) = DATA LOCAL TEXT (Chat);
+editingMessage 'Редактируемое сообщение' (Chat chat) = DATA LOCAL Message(Chat);
+noEditingMessage (Chat chat) = NOT editingMessage(chat);
 notificate 'С уведомлением' = DATA LOCAL NESTED BOOLEAN (Chat);
 
 onStarted() += ACTION {
@@ -95,9 +102,22 @@ markSeenOnChangeMessages (Chat chat, CustomUser user) = ACTION {
         needApply() <- TRUE;
     }
     IF needApply() THEN {
-        APPLY NESTED defaultNewMessage[], chatNewMessage[Chat] {};
+        apply();
     }
 };
+
+editMessageText (Message m, TEXT text) = ACTION {
+    lastEditDateTime(m) <- currentDateTime();
+    text(m) <- text;
+}
+
+stopEditing(Chat c) = ACTION {
+    IF editingMessage(c) THEN {
+    editingMessage(c) <- NULL;
+    chatNewMessage(c) <- NULL;
+    newMessage(c) <- NULL;
+    }
+}
 
 sendMessage 'Написать в чат' (Chat chat, TEXT message, BOOLEAN system) = ACTION {
     FOR ADDOBJ m = Message DO {
@@ -116,7 +136,7 @@ sendMessage 'Написать в чат' (Chat chat, TEXT message, BOOLEAN syste
             status(m, user) <- MessageStatus.sent;
         }            
     }
-    APPLY NESTED defaultNewMessage[], chatNewMessage[Chat] {};
+    apply();
     
     NEWSESSION NEWTHREAD {
         FOR in(chat, CustomUser user) AND (user != currentUser() OR system) DO {
@@ -130,6 +150,7 @@ sendMessage 'Написать в чат' (Chat chat, TEXT message, BOOLEAN syste
 }
 
 sendMessage 'Отправить' = ACTION ABSTRACT LIST (Chat, CustomUser) EDITKEY 'ctrl ENTER';
+saveMessage 'Сохранить' = ACTION ABSTRACT LIST (Chat) EDITKEY 'ctrl ENTER';
 
 restartServer() += ACTION { sendMessage(chat('system'), 'Сервер будет остановлен через 5 минут!\nСохраните текущую работу и выйдите из приложения.', TRUE); }
 
@@ -180,7 +201,7 @@ FORM editChat 'Чат'
     PROPERTIES(u) READONLY login, name
     PROPERTIES(c,u) TODRAW u in, readonly 
     
-    FILTERGROUP in FILTER 'Включены в чат' in(c,u)
+    FILTERGROUP in FILTER 'Включены в чат' in(c,u) DEFAULT
 ;  
 
 editChatAction 'Редактировать' () = ACTION {
@@ -217,6 +238,15 @@ markSeenOnChange(Message m) = ACTION {
     markSeenOnChangeMessages(chat(m), currentUser());
 };
 
+deleteMessage 'Удалить сообщение' (Message m) = ACTION {
+    IF own(m) THEN {
+        IF subtractSeconds(dateTime(m), currentDateTime()) < 3600 THEN {
+            DELETE m;
+            apply();
+        } ELSE MESSAGE 'Запрещено удалять сообщения старше часа';
+    } ELSE MESSAGE 'Запрещено удалять чужие сообщения';
+}
+
 FORM fullChat 'Чат'
     OBJECTS c = Chat
     PROPERTIES(c) READONLY name ON SHORTCUT editChatAction(), unreadMessages BACKGROUND backgroundUnread(c)
@@ -224,7 +254,7 @@ FORM fullChat 'Чат'
     PROPERTIES(c) READONLYIF readonlyFullChat(c) FORCE PANEL newMessage ON CHANGE saveNewMessage(c), notificate
     
     EVENTS ON INIT markSeenOnChange(c)
-    EVENTS ON CHANGE c markSeenOnChange(c)
+    EVENTS ON CHANGE c markSeenOnChange(c), ON CHANGE c stopEditing(c)
     EVENTS ON CLOSE markSeenOnChange(c)
 
     OBJECTS u = CustomUser
@@ -237,12 +267,13 @@ FORM fullChat 'Чат'
     FILTERS u != currentUser(), login(u), lastActivity(u)
     ORDER BY lastActivity(u) DESC
     
-    PROPERTIES(c, u) FORCE PANEL sendMessage
+    PROPERTIES(c, u) FORCE PANEL sendMessage SHOWIF noEditingMessage(c)
+    PROPERTIES(c) FORCE PANEL saveMessage SHOWIF editingMessage(c)
     
     OBJECTS m = Message LAST
-    PROPERTIES(m) READONLY BACKGROUND backgroundMessage(m) nameAuthor, text, dateTime
+    PROPERTIES(m) READONLY BACKGROUND backgroundMessage(m) nameAuthor, showText ON SHORTCUT editMessage(c, m) ON SHORTCUT deleteMessage(m), status, dateTime
     
-    EVENTS ON CHANGE m markSeenOnChange(m)    
+    EVENTS ON CHANGE m markSeenOnChange(m), ON CHANGE m stopEditing(c)
         
     FILTERS in(c), chat(m) == c AND (NOT chatNotFound() OR recentVisible()), status(m, currentUser())
     
@@ -273,7 +304,7 @@ DESIGN fullChat {
                 fill = 0.7;
                 MOVE m.box { 
                     fill = 0.8; 
-                    PROPERTY(text(m)) {
+                    PROPERTY(showText(m)) {
                         minimumWidth = 300;
                     }                       
                 }
@@ -292,6 +323,9 @@ DESIGN fullChat {
                         MOVE PROPERTY(sendMessage(c, u)) {                           
                             font = 'bold 24';
                         }
+                        MOVE PROPERTY(saveMessage(c)) {                           
+                            font = 'bold 24';
+                        }
                         NEW notificate {
                             fill = 1;
                             MOVE PROPERTY(notificate(c)) {
@@ -305,6 +339,16 @@ DESIGN fullChat {
         }
         MOVE functions.box;
     }           
+}
+
+editMessage (Chat c, Message m) += ACTION {
+    IF own(m) THEN {
+        IF subtractSeconds(dateTime(m), currentDateTime()) < 3600 THEN {
+            newMessage(c) <- text(m);
+            editingMessage(c) <- m;
+            FOCUS fullChat.newMessage(c);
+        } ELSE MESSAGE 'Запрещено редактировать сообщения старше часа';
+    } ELSE MESSAGE 'Запрещено редактировать чужие сообщения';
 }
 
 sendMessage 'Написать в чат' (Chat chat) = ACTION {
@@ -326,6 +370,13 @@ sendMessage 'Написать пользователю' (CustomUser user) = ACTI
     } ELSE sendMessage(chat());
 }
 
+saveMessage(Chat c) += ACTION {
+    IF editingMessage(c) THEN {
+        editMessageText(editingMessage(c), chatNewMessage(c));
+        chatNewMessage(c) <- NULL;
+        apply();
+    }
+} 
 
 //----------------------------SHORT CHAT----------------------------//
 
@@ -376,7 +427,7 @@ openChat 'Перейти в чат' (Message m) = ACTION {
 
 FORM shortChat 'Новое сообщение' DOCKEDMODAL
 OBJECTS m = Message LAST
-PROPERTIES(m) READONLY nameShortChat, text, dateTime
+PROPERTIES(m) READONLY nameShortChat, showText, dateTime
 PROPERTIES(m) FORCE PANEL reply READONLYIF readonly(m), replyChat SHOWIF editable(m), notificate SHOWIF editable(m), openChat
 PROPERTIES() closeChat
 FILTERS in(chat(m)), status(m, currentUser()), status(m, currentUser()) != MessageStatus.seen
@@ -408,8 +459,11 @@ DESIGN shortChat {
 }  
 
 onClientStarted() += ACTION {
-    IF sumUnreadMessages(currentUser()) > 0 THEN
+    IF sumUnreadMessages(currentUser()) > 0 THEN {
+        deliveredNotificationAction(currentUser());
+        apply();
         FORM shortChat MODAL;
+    }
 }
 
 pushAction(BOOLEAN system, BOOLEAN notificate) = ACTION {
