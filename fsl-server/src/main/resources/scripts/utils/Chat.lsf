@@ -61,6 +61,9 @@ status 'Статус' (Message m) = IF own(m) THEN ISTRING[10](staticCaption(IF 
  
 countMessages 'Кол-во сообщений' (chat) = GROUP SUM 1 IF text(Message message) AND chat(message) == Chat chat BY chat;
 isEmpty(Chat c) = NOT countMessages(c); 
+lastMessageDateTime 'Последнее сообщение' (Chat c) = GROUP LAST dateTime(Message m) IF chat(m) == Chat c BY c;
+lastMessageDateTime 'Последнее сообщение' (CustomUser u) = lastMessageDateTime(chatIn(u, currentUser()));
+
 unreadMessages 'Непрочитанных' (chat, user) = GROUP SUM 1 IF (status(Message message, CustomUser user) == MessageStatus.sent OR status(message, user) == MessageStatus.delivered) AND (author(message) != user) BY chat(message), user;
 unreadMessages'Непрочитанных' (Chat chat) = unreadMessages(chat, currentUser()) MAXCHARWIDTH 10 PREFCHARWIDTH 10;
 unreadMessages 'Непрочитанных' (CustomUser user) = unreadMessages(chatIn(user, currentUser()), currentUser()) MAXCHARWIDTH 10 PREFCHARWIDTH 10;
@@ -255,23 +258,24 @@ deleteMessage 'Удалить сообщение' (Message m) = ACTION {
 
 FORM fullChat 'Чат'
     OBJECTS c = Chat
-    PROPERTIES(c) READONLY name ON SHORTCUT editChatAction(c), unreadMessages BACKGROUND backgroundUnread(c)
+    PROPERTIES(c) READONLY name ON SHORTCUT editChatAction(c), lastMessageDateTime, unreadMessages BACKGROUND backgroundUnread(c)
     PROPERTIES(c) FORCE PANEL TOOLBAR ADDFORM, DELETE SHOWIF isEmpty(c)
     PROPERTIES(c) READONLYIF readonlyFullChat(c) FORCE PANEL newMessage ON CHANGE saveNewMessage(c), notificate
     
     EVENTS ON INIT markSeenOnChange(c)
     EVENTS ON CHANGE c markSeenOnChange(c), ON CHANGE c stopEditing(c)
     EVENTS ON CLOSE markSeenOnChange(c)
-
+    ORDER BY lastMessageDateTime(c) DESC
+    
     OBJECTS u = CustomUser
-    PROPERTIES(u) READONLY login, name, lastActivity BACKGROUND backgroundUser(u), unreadMessages BACKGROUND backgroundUnread(u) 
+    PROPERTIES(u) READONLY BACKGROUND backgroundUser(u) login, name, lastMessageDateTime , unreadMessages BACKGROUND backgroundUnread(u) 
     
     EVENTS ON INIT seekChat(u)
     EVENTS ON CHANGE u seekChat(u)
     
     FILTERGROUP in FILTER 'Только активные' away(u)  
     FILTERS u != currentUser(), login(u), lastActivity(u)
-    ORDER BY lastActivity(u) DESC
+    ORDER BY lastMessageDateTime(u) DESC
     
     PROPERTIES(c, u) FORCE PANEL sendMessage SHOWIF noEditingMessage(c)
     PROPERTIES(c) FORCE PANEL saveMessage SHOWIF editingMessage(c)
