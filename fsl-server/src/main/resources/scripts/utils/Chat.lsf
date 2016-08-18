@@ -6,10 +6,13 @@ CLASS Chat 'Чат';
 TABLE chat(Chat);
 TABLE chatCustomUser(Chat, CustomUser);
 
+EXTEND CLASS UserRole : Chat;
+
 @defineExternalizable(chat, VARSTRING[100]);
 
 in 'Вкл.' = DATA BOOLEAN (Chat, CustomUser);
-in (Chat c) = in(c, currentUser()); 
+overIn 'Вкл.' (Chat c, CustomUser u) = IF c IS UserRole THEN has(u,c) ELSE in(c,u);  
+in (Chat c) = overIn(c, currentUser()); 
 isDialog(Chat chat) = [=GROUP SUM 1 IF in(chat, CustomUser user) BY chat](chat) == 2;
 chatIn(user1, user2) = GROUP MAX Chat chat IF in(chat, CustomUser user1) AND in(chat, CustomUser user2) AND isDialog(chat) BY user1, user2;
 readonly 'Только чтение' = DATA BOOLEAN (Chat, CustomUser);
@@ -17,8 +20,7 @@ readonly 'Только чтение' (Chat c) = readonly(c, currentUser());
 
 dataName 'Имя' = DATA VARISTRING[100] (Chat);
 nameOrLogin 'Пользователь' (CustomUser user) = OVERRIDE login(user), name(user);
-concatName (Chat chat) =  GROUP CONCAT nameOrLogin(CustomUser user), ',' IF in(chat, user) AND NOT user == currentUser() BY chat;
-name 'Имя' (Chat chat) = (OVERRIDE [=GROUP CONCAT nameOrLogin(CustomUser user), ',' IF in(chat, user) AND (NOT isDialog(chat) OR NOT user == currentUser()) BY chat](chat), dataName(chat)) MINCHARWIDTH 15 PREFCHARWIDTH 30;
+name 'Имя' (Chat chat) = (OVERRIDE IF chat IS UserRole THEN 'Роль: ' + Security.name(chat) ELSE [=GROUP CONCAT nameOrLogin(CustomUser user), ',' IF in(chat, user) AND (NOT isDialog(chat) OR NOT user == currentUser()) BY chat](chat), dataName(chat)) MINCHARWIDTH 15 PREFCHARWIDTH 30;
 
 CLASS MessageStatus {
     sent 'Отправлено',
@@ -58,17 +60,17 @@ deliveredCount(Message m) = GROUP SUM 1 IF status(m, CustomUser user) == Message
 status 'Статус' (Message m) = IF own(m) THEN ISTRING[10](staticCaption(IF seenCount(m) > 1 THEN MessageStatus.seen ELSE IF deliveredCount(m) > 0 THEN MessageStatus.delivered ELSE MessageStatus.sent)) ELSE '' MAXCHARWIDTH 10 PREFCHARWIDTH 10;
  
 countMessages 'Кол-во сообщений' (chat) = GROUP SUM 1 IF text(Message message) AND chat(message) == Chat chat BY chat;
-isEmpty(Chat chat) = NOT countMessages(chat); 
+isEmpty(Chat c) = NOT countMessages(c); 
 unreadMessages 'Непрочитанных' (chat, user) = GROUP SUM 1 IF (status(Message message, CustomUser user) == MessageStatus.sent OR status(message, user) == MessageStatus.delivered) AND (author(message) != user) BY chat(message), user;
 unreadMessages'Непрочитанных' (Chat chat) = unreadMessages(chat, currentUser()) MAXCHARWIDTH 10 PREFCHARWIDTH 10;
 unreadMessages 'Непрочитанных' (CustomUser user) = unreadMessages(chatIn(user, currentUser()), currentUser()) MAXCHARWIDTH 10 PREFCHARWIDTH 10;
-sumUnreadMessages 'Всего непрочитанных' (CustomUser user) = GROUP SUM unreadMessages(Chat chat, CustomUser user) IF in(chat, user) BY user;
+sumUnreadMessages 'Всего непрочитанных' (CustomUser user) = GROUP SUM unreadMessages(Chat chat, CustomUser user) IF overIn(chat, user) BY user;
 
 chatNotFound = DATA LOCAL BOOLEAN ();
 defaultNewMessage 'Новое сообщение' = DATA LOCAL NESTED TEXT ();
 chatNewMessage 'Новое сообщение' = DATA LOCAL NESTED TEXT (Chat);
-newMessage 'Новое сообщение' (Chat chat) = DATA LOCAL TEXT (Chat);
-editingMessage 'Редактируемое сообщение' (Chat chat) = DATA LOCAL Message(Chat);
+newMessage 'Новое сообщение' = DATA LOCAL TEXT (Chat);
+editingMessage 'Редактируемое сообщение' = DATA LOCAL Message(Chat);
 noEditingMessage (Chat chat) = NOT editingMessage(chat);
 notificate 'С уведомлением' = DATA LOCAL NESTED BOOLEAN (Chat);
 
@@ -132,14 +134,14 @@ sendMessage 'Написать в чат' (Chat chat, TEXT message, BOOLEAN syste
             chatNewMessage(chat) <- NULL; 
         
         setSeenMessageUser(m, currentUser(), system);
-        FOR in(chat, CustomUser user) AND user != currentUser() DO {
+        FOR overIn(chat, CustomUser user) AND user != currentUser() DO {
             status(m, user) <- MessageStatus.sent;
         }            
     }
     apply();
     
     NEWSESSION NEWTHREAD {
-        FOR in(chat, CustomUser user) AND (user != currentUser() OR system) DO {
+        FOR overIn(chat, CustomUser user) AND (user != currentUser() OR system) DO {
             pushNotification(user, system, notificate(chat));
         }          
     }
@@ -204,9 +206,13 @@ FORM editChat 'Чат'
     FILTERGROUP in FILTER 'Включены в чат' in(c,u) DEFAULT
 ;  
 
-editChatAction 'Редактировать' () = ACTION {
-    FORM editChat MODAL;
+editChatAction 'Редактировать' (Chat c) = ACTION {
+    IF c IS UserRole THEN 
+        MESSAGE 'Запрещено редактировать чат для роли!'
+    ELSE
+        FORM editChat MODAL;
 }
+
 //----------------------------FULL CHAT----------------------------//
 
 recentVisible  = ABSTRACT BOOLEAN ();
@@ -243,13 +249,13 @@ deleteMessage 'Удалить сообщение' (Message m) = ACTION {
         IF subtractSeconds(dateTime(m), currentDateTime()) < 3600 THEN {
             DELETE m;
             apply();
-        } ELSE MESSAGE 'Запрещено удалять сообщения старше часа';
-    } ELSE MESSAGE 'Запрещено удалять чужие сообщения';
+        } ELSE MESSAGE 'Запрещено удалять сообщения старше часа!';
+    } ELSE MESSAGE 'Запрещено удалять чужие сообщения!';
 }
 
 FORM fullChat 'Чат'
     OBJECTS c = Chat
-    PROPERTIES(c) READONLY name ON SHORTCUT editChatAction(), unreadMessages BACKGROUND backgroundUnread(c)
+    PROPERTIES(c) READONLY name ON SHORTCUT editChatAction(c), unreadMessages BACKGROUND backgroundUnread(c)
     PROPERTIES(c) FORCE PANEL TOOLBAR ADDFORM, DELETE SHOWIF isEmpty(c)
     PROPERTIES(c) READONLYIF readonlyFullChat(c) FORCE PANEL newMessage ON CHANGE saveNewMessage(c), notificate
     
@@ -347,8 +353,8 @@ editMessage (Chat c, Message m) += ACTION {
             newMessage(c) <- text(m);
             editingMessage(c) <- m;
             FOCUS fullChat.newMessage(c);
-        } ELSE MESSAGE 'Запрещено редактировать сообщения старше часа';
-    } ELSE MESSAGE 'Запрещено редактировать чужие сообщения';
+        } ELSE MESSAGE 'Запрещено редактировать сообщения старше часа!';
+    } ELSE MESSAGE 'Запрещено редактировать чужие сообщения!';
 }
 
 sendMessage 'Написать в чат' (Chat chat) = ACTION {
@@ -501,11 +507,6 @@ pushNotification (CustomUser user, BOOLEAN system, BOOLEAN notificate) += ACTION
 recentVisible() += ACTIVE TAB recent FORM fullChat;
 sendMessage(Chat chat, CustomUser user) += ACTION {
     IF recentVisible() THEN sendMessage(chat) ELSE sendMessage(user);
-}
-
-fillChat(Chat chat, CustomUser user) = ACTION {
-    in(chat, user) <- TRUE;
-    in(chat, currentUser) <- TRUE WHERE currentUser == currentUser();
 }
 
 seekChat(CustomUser user) += ACTION {
