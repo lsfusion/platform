@@ -325,8 +325,8 @@ public class GreedyTreeBuilding<V, C extends Comparable<C>, E extends GreedyTree
                 if (nextEdge.hasLowerBoundCost) {
                     C oldCost = nextEdge.getCost();
                     C cost = functor.calculate(nextEdge.getFrom(), nextEdge.getTo(), nextEdge.simpleEdges);
+                    nextEdge.setCost(cost, false);
                     if (oldCost.compareTo(cost) < 0) {
-                        nextEdge.setCost(cost, false);
                         queue.add(nextEdge);
                         continue;
                     }
