@@ -63,7 +63,7 @@ openAttachment 'Открыть вложение' (Message m) = ACTION {
 } IMAGE 'open.png';
 
 editedText (Message m) = 'Изменено: ' + TEXT(lastEditDateTime(m));
-showText 'Текст' (Message m) = (IF text(m) THEN text(m) ELSE '') + (IF lastEditDateTime(m) THEN '\n\n' + editedText(m));
+showText 'Текст' (Message m) = (IF text(m) THEN text(m) ELSE '') + (IF lastEditDateTime(m) THEN '\n\n' + editedText(m) ELSE '');
 
 readonly (Message m) = readonly(chat(m));
 editable (Message m) = NOT readonly(m);
