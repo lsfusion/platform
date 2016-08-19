@@ -819,7 +819,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
         if (property != null && !property.isReadOnly() && !(property.baseType instanceof GObjectType)) {
             GridDataRecord rowRecord = (GridDataRecord) context.getRowValue();
             GridColumn column = (GridColumn) getColumn(context.getColumn());
-            return !rowRecord.isReadonly(column.columnID);
+            return column != null && !rowRecord.isReadonly(column.columnID);
         }
         return false;
     }
