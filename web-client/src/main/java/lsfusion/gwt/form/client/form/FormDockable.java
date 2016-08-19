@@ -197,7 +197,7 @@ final class FormDockable {
             TooltipManager.registerWidget(this, new TooltipManager.TooltipHelper() {
                 @Override
                 public String getTooltip() {
-                    return form.getForm().getTooltip();
+                    return form != null ? form.getForm().getTooltip() : "";
                 }
 
                 @Override

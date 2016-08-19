@@ -35,7 +35,10 @@ import lsfusion.gwt.form.shared.view.window.GNavigatorWindow;
 import net.customware.gwt.dispatch.shared.general.StringResult;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 public class MainFrame implements EntryPoint {
     private static final MainFrameMessages messages = MainFrameMessages.Instance.get();
@@ -54,7 +57,7 @@ public class MainFrame implements EntryPoint {
 
     public GNavigatorActionDispatcher actionDispatcher = new GNavigatorActionDispatcher();
 
-    private Boolean shouldRepeatPingRequest = true;
+    private static Boolean shouldRepeatPingRequest = true;
     
     public void onModuleLoad() {
 
@@ -163,32 +166,35 @@ public class MainFrame implements EntryPoint {
         Scheduler.get().scheduleFixedDelay(new Scheduler.RepeatingCommand() {
             @Override
             public boolean execute() {
-                dispatcher.execute(new ClientMessage(), new ErrorHandlingCallback<ClientMessageResult>() {
-                    @Override
-                    public void success(ClientMessageResult result) {
-                        setShouldRepeatPingRequest(true);
-                        super.success(result);
-                        for (Integer idNotification : result.notificationList) {
-                            GFormController form = result.currentForm == null ? null : formsController.getForm(result.currentForm);
-                            if (form != null)
-                                try {
-                                    form.executeNotificationAction(idNotification);
-                                } catch (IOException e) {
-                                    GWT.log(e.getMessage());
+                if (shouldRepeatPingRequest) {
+                    setShouldRepeatPingRequest(false);
+                    dispatcher.execute(new ClientMessage(), new ErrorHandlingCallback<ClientMessageResult>() {
+                        @Override
+                        public void success(ClientMessageResult result) {
+                            setShouldRepeatPingRequest(true);
+                            super.success(result);
+                            for (Integer idNotification : result.notificationList) {
+                                GFormController form = result.currentForm == null ? null : formsController.getForm(result.currentForm);
+                                if (form != null)
+                                    try {
+                                        form.executeNotificationAction(idNotification);
+                                    } catch (IOException e) {
+                                        GWT.log(e.getMessage());
+                                    }
+                                else {
+                                    formsController.executeNotificationAction(String.valueOf(idNotification), 2);
                                 }
-                            else {
-                                formsController.executeNotificationAction(String.valueOf(idNotification), 2);
                             }
                         }
-                    }
 
-                    @Override
-                    public void failure(Throwable caught) {
-                        setShouldRepeatPingRequest(false);
-                        super.failure(caught);
-                    }
-                });
-                return isShouldRepeatPingRequest();
+                        @Override
+                        public void failure(Throwable caught) {
+                            setShouldRepeatPingRequest(true);
+                            super.failure(caught);
+                        }
+                    });
+                }
+                return true;
             }
         }, 1000);
 
@@ -203,8 +209,8 @@ public class MainFrame implements EntryPoint {
         }
     }
     
-    private void setShouldRepeatPingRequest(boolean shouldRepeatPingRequest) {
-        this.shouldRepeatPingRequest = shouldRepeatPingRequest;
+    public static void setShouldRepeatPingRequest(boolean ishouldRepeatPingRequest) {
+        shouldRepeatPingRequest = ishouldRepeatPingRequest;
     }
     
     private boolean isShouldRepeatPingRequest() {

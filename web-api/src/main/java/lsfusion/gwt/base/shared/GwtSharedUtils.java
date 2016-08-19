@@ -179,6 +179,22 @@ public class GwtSharedUtils {
         public abstract G group(K key);
     }
 
+    public static <G, K> Map<G, Collection<K>> group(Group<G, K> getter, Iterable<K> keys) {
+        Map<G, Collection<K>> result = new HashMap<>();
+        for (K key : keys) {
+            G group = getter.group(key);
+            if (group != null) {
+                Collection<K> groupList = result.get(group);
+                if (groupList == null) {
+                    groupList = new ArrayList<>();
+                    result.put(group, groupList);
+                }
+                groupList.add(key);
+            }
+        }
+        return result;
+    }
+
     public static <G, K> Map<G, List<K>> groupList(Group<G, K> getter, List<K> keys) {
         Map<G, List<K>> result = new HashMap<>();
         for (K key : keys) {

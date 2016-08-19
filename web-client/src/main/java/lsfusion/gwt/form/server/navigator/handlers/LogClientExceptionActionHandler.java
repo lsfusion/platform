@@ -10,6 +10,7 @@ import lsfusion.gwt.base.server.dispatch.SimpleActionHandlerEx;
 import lsfusion.gwt.base.shared.actions.VoidResult;
 import lsfusion.gwt.form.shared.actions.navigator.LogClientExceptionAction;
 import lsfusion.interop.RemoteLogicsInterface;
+import lsfusion.interop.exceptions.NonFatalHandledRemoteException;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
 import net.customware.gwt.dispatch.server.ExecutionContext;
 import net.customware.gwt.dispatch.shared.DispatchException;
@@ -18,6 +19,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.rmi.RemoteException;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -47,6 +49,14 @@ public class LogClientExceptionActionHandler extends SimpleActionHandlerEx<LogCl
         Integer count = exceptionCounter.get(navigator);
         if (count == null || count < 20) {
             Throwable throwable = new Throwable(action.throwable.toString());
+
+            if (action.nonFatal) {
+                RemoteException remoteException = new RemoteException(action.throwable.toString());
+                remoteException.setStackTrace(new StackTraceElement[]{});
+                throwable = new NonFatalHandledRemoteException(remoteException, action.reqId);
+                ((NonFatalHandledRemoteException) throwable).count = action.count;
+            }
+            
             throwable.setStackTrace(action.throwable.getStackTrace());
             
             deobfuscator.deobfuscateStackTrace(throwable, servlet.getRequest().getHeader(RpcRequestBuilder.STRONG_NAME_HEADER));
