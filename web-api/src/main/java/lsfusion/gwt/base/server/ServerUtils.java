@@ -32,9 +32,11 @@ public class ServerUtils {
 
     public static String getLocaleLanguage(Cookie[] cookies) {
         String locale = null;
-        for(Cookie cookie : cookies) {
-            if(cookie.getName().equals("GWT_LOCALE")) {
-                locale = cookie.getValue();
+        if(cookies != null) {
+            for (Cookie cookie : cookies) {
+                if (cookie.getName().equals("GWT_LOCALE")) {
+                    locale = cookie.getValue();
+                }
             }
         }
         return locale != null ? locale : getLocaleLanguage();
