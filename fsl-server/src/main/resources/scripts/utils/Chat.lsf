@@ -38,11 +38,11 @@ markSeenOnChange = ACTION ABSTRACT LIST (Chat);
 editMessage 'Редактировать сообщение' (Chat c, Message m) = ACTION ABSTRACT LIST (Chat, Message);
 
 author 'Автор' = DATA CustomUser (Message);
-nameAuthor 'Автор' (Message message) = nameOrLogin(author(message)) MAXCHARWIDTH 30 PREFCHARWIDTH 30;
+nameAuthor 'Автор' (Message m) = nameOrLogin(author(m)) MAXCHARWIDTH 30 PREFCHARWIDTH 30;
+own(Message m) = author(m) == currentUser();
 text 'Текст' = DATA TEXT (Message) MINCHARWIDTH 50;
 dateTime 'Время' = DATA DATETIME (Message) MAXCHARWIDTH 30 PREFCHARWIDTH 30;
 lastEditDateTime 'Время редактирования' = DATA DATETIME (Message) MAXCHARWIDTH 30 PREFCHARWIDTH 30;
-showText 'Текст' (Message m) = IF lastEditDateTime(m) THEN text(m) + '\n\n' + 'Изменено: ' + TEXT(lastEditDateTime(m)) ELSE text(m);
 system 'Системное' = DATA BOOLEAN (Message);
 status 'Статус' = DATA MessageStatus (Message, CustomUser);
 captionStatus 'Статус' (Message message, CustomUser user) = staticCaption(status(message, user));
@@ -51,10 +51,23 @@ chat = DATA Chat (Message);
 nameChat 'Чат' (Message message) = name(chat(message)) MINCHARWIDTH 30 PREFCHARWIDTH 30;
 nameShortChat 'Чат' (Message message) = IF isDialog(chat(message)) THEN nameChat(message) ELSE (nameChat(message) + ' [' + nameAuthor(message) + ']') MINCHARWIDTH 15 PREFCHARWIDTH 30;
 
+attachment 'Вложение' = DATA CUSTOMFILE (Message);
+hasAttachment 'Вл.' (Message m) = IF attachment(m) THEN TRUE MAXCHARWIDTH 1 PREFCHARWIDTH 1;
+loadAttachment 'Прикрепить вложение' (Message m) = ACTION LOADFILE attachment(m);
+openAttachment 'Открыть вложение' (Message m) = ACTION {
+    IF attachment(m) THEN {
+        OPENFILE attachment(m);
+    } ELSE {
+        MESSAGE 'Вложение отсутствует!';
+    }
+} IMAGE 'open.png';
+
+editedText (Message m) = 'Изменено: ' + TEXT(lastEditDateTime(m));
+showText 'Текст' (Message m) = (IF text(m) THEN text(m) ELSE '') + (IF lastEditDateTime(m) THEN '\n\n' + editedText(m));
+
 readonly (Message m) = readonly(chat(m));
 editable (Message m) = NOT readonly(m);
 
-own(Message m) = author(m) == currentUser();
 seenCount(Message m) = GROUP SUM 1 IF status(m, CustomUser user) == MessageStatus.seen BY m;
 deliveredCount(Message m) = GROUP SUM 1 IF status(m, CustomUser user) == MessageStatus.delivered BY m;
 status 'Статус' (Message m) = IF own(m) THEN ISTRING[10](staticCaption(IF seenCount(m) > 1 THEN MessageStatus.seen ELSE IF deliveredCount(m) > 0 THEN MessageStatus.delivered ELSE MessageStatus.sent)) ELSE '' MAXCHARWIDTH 10 PREFCHARWIDTH 10;
@@ -76,6 +89,12 @@ newMessage 'Новое сообщение' = DATA LOCAL TEXT (Chat);
 editingMessage 'Редактируемое сообщение' = DATA LOCAL Message(Chat);
 noEditingMessage (Chat chat) = NOT editingMessage(chat);
 notificate 'С уведомлением' = DATA LOCAL NESTED BOOLEAN (Chat);
+
+attachment 'Вложение' = DATA LOCAL NESTED CUSTOMFILE (Chat);
+loadAttachment 'Прикрепить вложение' (Chat c) = ACTION LOADFILE attachment(c);
+deleteAttachment 'Удалить вложение' (Chat c) = ACTION { attachment(c) <- NULL; } IMAGE 'delete.png';
+showLoadAttachment (Chat c) = NOT attachment(c);
+showDeleteAttachment (Chat c) = attachment(c);
 
 onStarted() += ACTION {
     LOCAL systemChat = Chat();
@@ -111,9 +130,10 @@ markSeenOnChangeMessages (Chat chat, CustomUser user) = ACTION {
     }
 };
 
-editMessageText (Message m, TEXT text) = ACTION {
+editMessageText (Message m, Chat c) = ACTION {
     lastEditDateTime(m) <- currentDateTime();
-    text(m) <- text;
+    text(m) <- newMessage(c);
+    attachment(m) <- attachment(c);
 }
 
 stopEditing(Chat c) = ACTION {
@@ -121,6 +141,7 @@ stopEditing(Chat c) = ACTION {
     editingMessage(c) <- NULL;
     chatNewMessage(c) <- NULL;
     newMessage(c) <- NULL;
+    attachment(c) <- NULL;
     }
 }
 
@@ -131,6 +152,8 @@ sendMessage 'Написать в чат' (Chat chat, TEXT message, BOOLEAN syste
         author(m) <- currentUser();
         system(m) <- system;
         text(m) <- message;
+        attachment(m) <- attachment(chat);
+        attachment(chat) <- NULL;
         IF chatNotFound() THEN
             defaultNewMessage() <- NULL
         ELSE
@@ -260,7 +283,8 @@ FORM fullChat 'Чат'
     OBJECTS c = Chat
     PROPERTIES(c) READONLY name ON SHORTCUT editChatAction(c), lastMessageDateTime, unreadMessages BACKGROUND backgroundUnread(c)
     PROPERTIES(c) FORCE PANEL TOOLBAR ADDFORM, DELETE SHOWIF isEmpty(c)
-    PROPERTIES(c) READONLYIF readonlyFullChat(c) FORCE PANEL newMessage ON CHANGE saveNewMessage(c), notificate
+    PROPERTIES(c) READONLYIF readonlyFullChat(c) FORCE PANEL newMessage ON CHANGE saveNewMessage(c), notificate, 
+                  loadAttachment SHOWIF showLoadAttachment(c), deleteAttachment SHOWIF showDeleteAttachment(c)
     
     EVENTS ON INIT markSeenOnChange(c)
     EVENTS ON CHANGE c markSeenOnChange(c), ON CHANGE c stopEditing(c)
@@ -281,7 +305,8 @@ FORM fullChat 'Чат'
     PROPERTIES(c) FORCE PANEL saveMessage SHOWIF editingMessage(c)
     
     OBJECTS m = Message LAST
-    PROPERTIES(m) READONLY BACKGROUND backgroundMessage(m) nameAuthor, showText ON SHORTCUT editMessage(c, m) ON SHORTCUT deleteMessage(m), status, dateTime
+    PROPERTIES(m) READONLY BACKGROUND backgroundMessage(m) nameAuthor, showText ON SHORTCUT editMessage(c, m) ON SHORTCUT deleteMessage(m) 
+                  ON SHORTCUT openAttachment(m), hasAttachment, status, dateTime, openAttachment SHOWIF attachment(m) TOOLBAR EDITABLE
     
     EVENTS ON CHANGE m markSeenOnChange(m), ON CHANGE m stopEditing(c)
         
@@ -336,6 +361,16 @@ DESIGN fullChat {
                         MOVE PROPERTY(saveMessage(c)) {                           
                             font = 'bold 24';
                         }
+                        NEW loadAttachment {
+                            fill = 1;
+                            MOVE PROPERTY(loadAttachment(c)) {
+                            }
+                        }
+                        NEW deleteAttachment {
+                            fill = 1;
+                            MOVE PROPERTY(deleteAttachment(c)) {
+                            }
+                        }
                         NEW notificate {
                             fill = 1;
                             MOVE PROPERTY(notificate(c)) {
@@ -356,13 +391,14 @@ editMessage (Chat c, Message m) += ACTION {
         IF subtractSeconds(dateTime(m), currentDateTime()) < 3600 THEN {
             newMessage(c) <- text(m);
             editingMessage(c) <- m;
+            attachment(c) <- attachment(m);
             FOCUS fullChat.newMessage(c);
         } ELSE MESSAGE 'Запрещено редактировать сообщения старше часа!';
     } ELSE MESSAGE 'Запрещено редактировать чужие сообщения!';
 }
 
 sendMessage 'Написать в чат' (Chat chat) = ACTION {
-    IF newMessage(chat) THEN
+    IF newMessage(chat) OR attachment(chat) THEN
         sendMessage(chat, newMessage(chat), NULL);
 }
 
@@ -382,8 +418,9 @@ sendMessage 'Написать пользователю' (CustomUser user) = ACTI
 
 saveMessage(Chat c) += ACTION {
     IF editingMessage(c) THEN {
-        editMessageText(editingMessage(c), chatNewMessage(c));
+        editMessageText(editingMessage(c), c);
         chatNewMessage(c) <- NULL;
+        attachment(c) <- NULL;
         apply();
     }
 } 
