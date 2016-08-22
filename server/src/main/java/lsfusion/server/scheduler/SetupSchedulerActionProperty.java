@@ -27,7 +27,8 @@ public class SetupSchedulerActionProperty extends ScriptingActionProperty {
             if (isServer) {
                 ServerLoggers.startLogger.info("Starting Scheduler");
                 Scheduler scheduler = context.getLogicsInstance().getCustomObject(Scheduler.class);
-                scheduler.setupScheduledTasks(context.getSession());
+                Integer threadCount = (Integer) findProperty("threadCountScheduler[]").read(context);
+                scheduler.setupScheduledTasks(context.getSession(), threadCount);
             } else {
                 context.delayUserInteraction(new MessageClientAction("Scheduler disabled, change serverComputer() to enable", "Scheduler disabled"));
             }

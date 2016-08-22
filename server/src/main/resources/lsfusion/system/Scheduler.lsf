@@ -94,6 +94,8 @@ runSetupSchedulerApply 'Запустить планировщик' = ACTION {
 isStartedScheduler 'Запущен'  = DATA BOOLEAN ();
 isStoppedScheduler 'Остановлен' () = NOT isStartedScheduler();
 
+threadCountScheduler 'Кол-во потоков' = DATA INTEGER ();
+
 onStarted() += ACTION runSetupScheduler();
 
 scriptText 'Скрипт' () = DATA LOCAL TEXT ();
@@ -115,6 +117,8 @@ WHEN changedSchedulerTask(ScheduledTask t) DO EXEC setupScheduledTask(t);
 WHEN DROPPED (ScheduledTaskDetail td IS ScheduledTaskDetail) IF PREV(active(td)) AND isStartedScheduler() DO EXEC setupScheduledTask(scheduledTask(td));
            
 FORM scheduledTask 'Планировщик'
+
+    PROPERTIES() threadCountScheduler
 
     OBJECTS t=ScheduledTask
     PROPERTIES (t) active, name, timeFrom, timeTo, startDate, period,
@@ -185,6 +189,10 @@ DESIGN scheduledTask {
                 }
                 MOVE PROPERTY(daysOfMonth(t));
             }        
+            NEW settingsContainer {
+                caption = 'Настройки планировщика';
+                MOVE PROPERTY(threadCountScheduler());
+            }
         }
     }
     NEW bottom {

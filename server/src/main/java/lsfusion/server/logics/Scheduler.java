@@ -170,12 +170,12 @@ public class Scheduler extends MonitorServer implements InitializingBean {
         }
     }
 
-    public void setupScheduledTasks(DataSession session) throws SQLException, ScriptingErrorLog.SemanticErrorException, SQLHandledException {
+    public void setupScheduledTasks(DataSession session, Integer threadCount) throws SQLException, ScriptingErrorLog.SemanticErrorException, SQLHandledException {
 
         if (daemonTasksExecutor != null)
             daemonTasksExecutor.shutdownNow();
 
-        daemonTasksExecutor = ExecutorFactory.createMonitorScheduledThreadService(5, this);
+        daemonTasksExecutor = ExecutorFactory.createMonitorScheduledThreadService(threadCount != null ? threadCount : 5, this);
 
         List<SchedulerTask> tasks = new ArrayList<>();
         fillSystemScheduledTasks(tasks);
