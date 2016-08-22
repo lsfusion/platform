@@ -46,7 +46,9 @@ public class GExceptionManager {
     }
     
     private static SerializableThrowable toSerializable(Throwable t) {
-        Throwable originalT = (t instanceof UmbrellaException || t instanceof com.google.web.bindery.event.shared.UmbrellaException) ? t.getCause() : t;
+        Throwable originalT = (t instanceof UmbrellaException 
+                || t instanceof com.google.web.bindery.event.shared.UmbrellaException 
+                || t instanceof RuntimeException) ? t.getCause() : t;
         SerializableThrowable st = new SerializableThrowable(originalT.getClass().getName(), originalT.getMessage());
         StackTraceElement[] stackTrace;
         if (t instanceof MessageException && ((MessageException) t).myTrace != null) {
