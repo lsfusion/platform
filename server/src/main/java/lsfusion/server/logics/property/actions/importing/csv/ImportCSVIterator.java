@@ -17,7 +17,7 @@ public class ImportCSVIterator extends ImportIterator {
         this.separator = separator;
 
         ByteArrayInputStream inputStream = new ByteArrayInputStream(file);
-        scanner = charset == null ? new Scanner(inputStream) : new Scanner(inputStream, charset);
+        scanner = charset == null ? new Scanner(inputStream, "UTF-8") : new Scanner(inputStream, charset);
         
         if(!noHeader) {
             scanner.nextLine();
