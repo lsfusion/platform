@@ -21,6 +21,7 @@ import lsfusion.gwt.form.shared.view.grid.NativeEditEvent;
 import lsfusion.gwt.form.shared.view.grid.editor.GridCellEditor;
 import lsfusion.gwt.form.shared.view.grid.renderer.GridCellRenderer;
 
+import java.text.ParseException;
 import java.util.Arrays;
 
 import static com.google.gwt.dom.client.BrowserEvents.*;
@@ -210,8 +211,12 @@ public class GDataFilterValueViewTable extends DataGrid implements EditManager {
             Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
                 @Override
                 public void execute() {
-                    renderDom(context, parentElement, value);
-                    valueView.valueChanged(value);
+                    Object objValue = null;
+                    try {
+                        objValue = property.baseType.parseString(value, property.pattern);
+                    } catch (ParseException ignored) {}
+                    renderDom(context, parentElement, objValue);
+                    valueView.valueChanged(objValue);
                 }
             });
         }
