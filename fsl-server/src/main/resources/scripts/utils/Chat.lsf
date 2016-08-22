@@ -92,7 +92,7 @@ notificate 'С уведомлением' = DATA LOCAL NESTED BOOLEAN (Chat);
 
 attachment 'Вложение' = DATA LOCAL NESTED CUSTOMFILE (Chat);
 loadAttachment 'Прикрепить вложение' (Chat c) = ACTION LOADFILE attachment(c);
-deleteAttachment 'Удалить вложение' (Chat c) = ACTION { attachment(c) <- NULL; } IMAGE 'delete.png';
+deleteAttachment 'Удалить вложение' (Chat c) = ACTION { attachment(c) <- NULL; } IMAGE 'deleteChat.png';
 showLoadAttachment (Chat c) = NOT attachment(c);
 showDeleteAttachment (Chat c) = attachment(c);
 
