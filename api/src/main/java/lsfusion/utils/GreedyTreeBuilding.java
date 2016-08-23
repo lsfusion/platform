@@ -294,26 +294,30 @@ public class GreedyTreeBuilding<V, C extends Comparable<C>, E extends GreedyTree
             for (E edge : adjList.get(i)) {
                 int fromIndex = vertexIndex.get(edge.getFrom());
                 int toIndex = vertexIndex.get(edge.getTo());
-                EdgeLinkedList<E> simpleEdges = new EdgeLinkedList<>();
+                EdgeLinkedList<E> simpleEdges; 
+                if (adjMatrix.get(fromIndex).get(toIndex) != null) {
+                    simpleEdges = adjMatrix.get(fromIndex).get(toIndex).simpleEdges;    
+                } else {
+                    simpleEdges = new EdgeLinkedList<>();
+                    ComplexEdge<V, C, E> newEdge = new ComplexEdge<>(nodes.get(fromIndex), nodes.get(toIndex), simpleEdges, null, true);
+                    adjMatrix.get(fromIndex).set(toIndex, newEdge);
+                    adjMatrix.get(toIndex).set(fromIndex, newEdge);
+                }
                 simpleEdges.addEdge(edge);
-                C edgeCost = functor.calculateLowerBound(nodes.get(fromIndex), nodes.get(toIndex), simpleEdges);
-                ComplexEdge<V, C, E> newEdge = new ComplexEdge<>(nodes.get(fromIndex), nodes.get(toIndex), simpleEdges, edgeCost, true);
-                
-                adjMatrix.get(fromIndex).set(toIndex, newEdge);
-                adjMatrix.get(toIndex).set(fromIndex, newEdge);
-                queue.add(newEdge);
             }
         }
 
         for (int i = 0; i < vertexCnt; ++i) {
             for (int j = i+1; j < vertexCnt; ++j) {
-                if (adjMatrix.get(i).get(j) == null) {
-                    C edgeCost = functor.calculateLowerBound(nodes.get(i), nodes.get(j), new LinkedList<E>());
-                    ComplexEdge<V, C, E> newEdge = new ComplexEdge<>(nodes.get(i), nodes.get(j), new EdgeLinkedList<E>(), edgeCost, true);
-                    adjMatrix.get(i).set(j, newEdge);
-                    adjMatrix.get(j).set(i, newEdge);
-                    queue.add(newEdge);
+                ComplexEdge<V, C, E> complexEdge = adjMatrix.get(i).get(j);
+                if (complexEdge == null) {
+                    complexEdge = new ComplexEdge<>(nodes.get(i), nodes.get(j), new EdgeLinkedList<E>(), null, true);
+                    adjMatrix.get(i).set(j, complexEdge);
+                    adjMatrix.get(j).set(i, complexEdge);
                 }
+                C edgeCost = functor.calculateLowerBound(nodes.get(i), nodes.get(j), complexEdge.simpleEdges);
+                complexEdge.setCost(edgeCost, true);
+                queue.add(complexEdge);
             }
         }
     }
