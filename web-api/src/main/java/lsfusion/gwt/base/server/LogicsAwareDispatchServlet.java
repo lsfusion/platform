@@ -6,10 +6,12 @@ import lsfusion.gwt.base.server.dispatch.SecuredAction;
 import lsfusion.gwt.base.server.exceptions.RemoteDispatchException;
 import lsfusion.gwt.base.server.exceptions.RemoteFormDispatchException;
 import lsfusion.gwt.base.server.exceptions.RemoteNavigatorDispatchException;
+import lsfusion.gwt.base.server.exceptions.RemoteRetryException;
 import lsfusion.gwt.base.server.spring.BusinessLogicsProvider;
 import lsfusion.gwt.base.server.spring.NavigatorProvider;
 import lsfusion.gwt.base.shared.InvalidateException;
 import lsfusion.gwt.base.shared.MessageException;
+import lsfusion.gwt.base.shared.RetryException;
 import lsfusion.interop.RemoteLogicsInterface;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
 import net.customware.gwt.dispatch.server.DefaultActionHandlerRegistry;
@@ -151,6 +153,9 @@ public abstract class LogicsAwareDispatchServlet<T extends RemoteLogicsInterface
                 blProvider.invalidate();
                 throw new InvalidateException(action, "Внутренняя ошибка сервера. Попробуйте перезагрузить страницу.");
             }
+        } catch (RemoteRetryException e) {
+            logger.error("Ошибка в LogicsAwareDispatchServlet.execute: ", e);
+            throw new RetryException(e.getMessage(), e.maxTries);
         } catch (MessageException e) {
             logger.error("Ошибка в LogicsAwareDispatchServlet.execute: ", e);
             throw new MessageException("Внутренняя ошибка сервера: " + e.getMessage());
