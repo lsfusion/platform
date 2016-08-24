@@ -219,10 +219,14 @@ public abstract class AbstractContext implements Context {
         TimedMessageStack timedMessageStack = actionMessageStackMap.get(thread);
         if (timedMessageStack == null) {
             timedMessageStack = new TimedMessageStack(new MessageStack());
+            //важно заполнять time до добавления в map из-за многопоточности
+            timedMessageStack.time = System.currentTimeMillis();
+            timedMessageStack.messageStack.push(stackItem);
             actionMessageStackMap.put(thread, timedMessageStack);
+        } else {
+            timedMessageStack.time = System.currentTimeMillis();
+            timedMessageStack.messageStack.push(stackItem);
         }
-        timedMessageStack.time = System.currentTimeMillis();
-        timedMessageStack.messageStack.push(stackItem);
     }
 
     public void popActionMessage(ExecutionStackItem stackItem) {
