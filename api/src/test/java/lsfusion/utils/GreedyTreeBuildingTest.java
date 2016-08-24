@@ -1,13 +1,10 @@
 package lsfusion.utils;
 
-import lsfusion.utils.GreedyTreeBuilding.CalculateCost;
-import lsfusion.utils.GreedyTreeBuilding.Edge;
-import lsfusion.utils.GreedyTreeBuilding.Node;
-import lsfusion.utils.GreedyTreeBuilding.TreeNode;
+import lsfusion.utils.GreedyTreeBuilding.*;
 import org.junit.Test;
 
 import static junit.framework.Assert.assertEquals;
-import static lsfusion.utils.GreedyTreeBuilding.drawTree;
+import static lsfusion.utils.GreedyTreeBuilding.*;
     
 public class GreedyTreeBuildingTest {
     private static class WeightedEdge<T> extends GreedyTreeBuilding.SimpleEdge<T> {
@@ -19,6 +16,15 @@ public class GreedyTreeBuildingTest {
         }
     }
 
+    TreeCutComparator<Integer> cutComparator = new TreeCutComparator<Integer>() {
+        @Override
+        public int compare(Integer a, Integer b) {
+            if (a < b) return -1;
+            if (a > b) return 1;
+            return 0;
+        }
+    };
+    
     @Test
     public void test1() {
         GreedyTreeBuilding<Integer, Integer, WeightedEdge<Integer>> algo = new GreedyTreeBuilding<>();
@@ -57,7 +63,7 @@ public class GreedyTreeBuildingTest {
         assertEquals(res.node.getCost().intValue(), 15);
         TreeNode<Integer, Integer> res2 = algo.computeDP(func);
         assertEquals(res2.node.getCost().intValue(), 15);
-        TreeNode<Integer, Integer> res3 = algo.computeWithVertex(num[4], func);
+        TreeNode<Integer, Integer> res3 = algo.computeWithVertex(num[4], func, cutComparator);
         assertEquals(res3.node.getCost().intValue(), 4);
 
         System.out.println(res.node.getCost());
@@ -111,7 +117,7 @@ public class GreedyTreeBuildingTest {
         assertEquals(res.node.getCost().intValue(), 2);
         TreeNode<Integer, Integer> res2 = algo.computeDP(func);
         assertEquals(res2.node.getCost().intValue(), 2);
-        TreeNode<Integer, Integer> res3 = algo.computeWithVertex(num[4], func);
+        TreeNode<Integer, Integer> res3 = algo.computeWithVertex(num[4], func, cutComparator);
         assertEquals(res3.node.getCost().intValue(), 2);
 
         System.out.println(res.node.getCost());

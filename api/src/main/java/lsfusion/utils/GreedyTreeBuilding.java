@@ -544,7 +544,8 @@ public class GreedyTreeBuilding<V, C extends Comparable<C>, E extends GreedyTree
         }
     }
     
-    private void traverseCut(TreeNode<V, C> curNode, TreeNode<V, C> startNode, ComputationResult<V, C> result, CalculateCost<V, C, E> functor) {
+    private void traverseCut(TreeNode<V, C> curNode, TreeNode<V, C> startNode, ComputationResult<V, C> result, 
+                             CalculateCost<V, C, E> functor, TreeCutComparator<C> cutComparator) {
         boolean goDeeper = true;
         if (curNode != startNode) {
             TreeNode<V, C> parentNode = curNode.parent;
@@ -553,7 +554,7 @@ public class GreedyTreeBuilding<V, C extends Comparable<C>, E extends GreedyTree
             squeezeTree(parentNode.parent, parentNode, siblingNode);
             C treeCost = countTreeCost(siblingNode, functor);
             int cutTreeSize = treeSize(curNode);
-            if (treeCost.compareTo(result.cost) < 0 || treeCost.compareTo(result.cost) == 0 && result.cutVertexCount < cutTreeSize) {
+            if (cutComparator.compare(treeCost, result.cost) < 0 || cutComparator.compare(treeCost, result.cost) == 0 && result.cutVertexCount < cutTreeSize) {
                 result.cost = treeCost;
                 result.cutNode = curNode;
                 result.cutVertexCount = cutTreeSize;
@@ -563,10 +564,10 @@ public class GreedyTreeBuilding<V, C extends Comparable<C>, E extends GreedyTree
         }
         if (goDeeper) {
             if (curNode.left != null) {
-                traverseCut(curNode.left, startNode, result, functor);
+                traverseCut(curNode.left, startNode, result, functor, cutComparator);
             }
             if (curNode.right != null) {
-                traverseCut(curNode.right, startNode, result, functor);
+                traverseCut(curNode.right, startNode, result, functor, cutComparator);
             }
         }
     }
@@ -625,7 +626,11 @@ public class GreedyTreeBuilding<V, C extends Comparable<C>, E extends GreedyTree
         return treeNodes.get(treeNodes.size() - 1);
     }
     
-    public TreeNode<V, C> computeWithVertex(V vertex, CalculateCost<V, C, E> functor) {
+    public interface TreeCutComparator<C> {
+        int compare(C a, C b); 
+    }
+    
+    public TreeNode<V, C> computeWithVertex(V vertex, CalculateCost<V, C, E> functor, TreeCutComparator<C> cutComparator) {
         TreeNode<V, C> rootTreeNode = computePartialGreedy(vertex, functor);
         
         C bestCost = rootTreeNode.node.getCost();
@@ -639,7 +644,7 @@ public class GreedyTreeBuilding<V, C extends Comparable<C>, E extends GreedyTree
             }
 
             result = new ComputationResult<>(bestCost, 0, null);
-            traverseCut(startNode, startNode, result, functor);
+            traverseCut(startNode, startNode, result, functor, cutComparator);
             if (result.cutNode != null) {
                 createTreeWithCut(result.cutNode, functor);
             }
