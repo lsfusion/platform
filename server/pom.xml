@@ -3,7 +3,7 @@
     <parent>
         <groupId>lsfusion.platform</groupId>
         <artifactId>base</artifactId>
-        <version>1.2.3-SNAPSHOT</version>
+        <version>1.2.4-SNAPSHOT</version>
         <relativePath>../base/pom.xml</relativePath>
     </parent>
     <artifactId>server</artifactId>

@@ -11,11 +11,11 @@
     <groupId>lsfusion.platform</groupId>
     <artifactId>logics</artifactId>
     <packaging>pom</packaging>
-    <version>1.2.3-SNAPSHOT</version>
+    <version>1.2.4-SNAPSHOT</version>
     <name>Logics</name>
 
     <properties>
-        <lsfusion.version>1.2.3-SNAPSHOT</lsfusion.version>
+        <lsfusion.version>1.2.4-SNAPSHOT</lsfusion.version>
         <assemble.mainClass>lsfusion.server.logics.BusinessLogicsBootstrap</assemble.mainClass>
         <assemble.finalName>lsfusion-server-${project.version}</assemble.finalName>
     </properties>
