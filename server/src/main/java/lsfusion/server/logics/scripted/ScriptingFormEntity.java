@@ -425,9 +425,13 @@ public class ScriptingFormEntity {
     public void setFinalPropertyDrawSID(PropertyDrawEntity property, String alias) throws ScriptingErrorLog.SemanticErrorException {
         String newSID = (alias == null ? property.getSID() : alias);
         property.setSID(null);
-        PropertyDrawEntity drawEntity;
-        if ((drawEntity = form.getPropertyDraw(newSID, Version.CURRENT)) != null) {
-            LM.getErrLog().emitAlreadyDefinedPropertyDraw(LM.getParser(), form.getCanonicalName(), newSID, drawEntity.getFormPath());
+        try {
+            PropertyDrawEntity drawEntity;
+            if ((drawEntity = form.getPropertyDraw(newSID, Version.CURRENT)) != null) {
+                LM.getErrLog().emitAlreadyDefinedPropertyDraw(LM.getParser(), form.getCanonicalName(), newSID, drawEntity.getFormPath());
+            }
+        } catch (ScriptingErrorLog.SemanticErrorException e) {
+            System.err.println(e.getMessage());
         }
         property.setSID(newSID);
     }

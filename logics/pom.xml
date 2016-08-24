@@ -11,11 +11,11 @@
     <groupId>lsfusion.platform</groupId>
     <artifactId>logics</artifactId>
     <packaging>pom</packaging>
-    <version>1.2.4-SNAPSHOT</version>
+    <version>1.2.3</version>
     <name>Logics</name>
 
     <properties>
-        <lsfusion.version>1.2.4-SNAPSHOT</lsfusion.version>
+        <lsfusion.version>1.2.3</lsfusion.version>
         <assemble.mainClass>lsfusion.server.logics.BusinessLogicsBootstrap</assemble.mainClass>
         <assemble.finalName>lsfusion-server-${project.version}</assemble.finalName>
     </properties>
@@ -50,7 +50,7 @@
             </dependencies>
         </profile>
     </profiles>
-    
+
     <build>
         <plugins>
             <plugin>
@@ -76,4 +76,8 @@
             <version>${lsfusion.version}</version>
         </dependency>
     </dependencies>
+
+  <scm>
+    <developerConnection>scm:svn:svn://server/lsfusion/build/tags/platform-1.2.3/logics</developerConnection>
+  </scm>
 </project>

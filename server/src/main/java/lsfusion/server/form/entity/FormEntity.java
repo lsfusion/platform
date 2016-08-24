@@ -595,7 +595,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
 
     public <I extends PropertyInterface, P extends Property<I>> PropertyDrawEntity<I> addPropertyDraw(P property, ImMap<I, ? extends PropertyObjectInterfaceEntity> mapping, Version version) {
         PropertyObjectEntity<I, ?> entity = PropertyObjectEntity.create(property, mapping, null, null);
-        return addPropertyDraw(null, entity, null, entity.property.getReflectionOrderInterfaces(), version);
+        return addPropertyDraw(null, entity, null, entity.property.getOrderInterfaces(), version);
     }
 
     public <P extends PropertyInterface> PropertyDrawEntity<P> addPropertyDraw(GroupObjectEntity groupObject, PropertyObjectEntity<P, ?> propertyImplement, String formPath, ImOrderSet<P> interfaces, Version version) {

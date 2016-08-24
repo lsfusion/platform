@@ -8,7 +8,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Created by DAle on 09.07.2014
+ * Created by DAle on 09.07.2014.
  */
 
 public abstract class AbstractPropertyNameParser {

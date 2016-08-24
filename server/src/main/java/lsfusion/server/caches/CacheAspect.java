@@ -236,8 +236,8 @@ public class CacheAspect {
 //            }
 
             final IdentityInvocationWeakMap lazyIdentityExecute = concurrentLazyIdentityExecute.segmentFor(target);
-            Object result;
-            IdentityInvocation invocation;
+            Object result = null;
+            IdentityInvocation invocation = null;
 
             synchronized (lazyIdentityExecute) {
                 invocation = new IdentityInvocation(lazyIdentityExecute.getRefQueue(), target, thisJoinPoint, args);

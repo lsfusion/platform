@@ -228,13 +228,14 @@ public class GwtSharedUtils {
         if (date instanceof java.sql.Date)
             return (java.sql.Date) date;
         else {
-            return new java.sql.Date(date.getTime());
+            java.sql.Date sqlDate = new java.sql.Date(date.getTime());
+            return sqlDate;
         }
     }
 
     public static String stringFormat(final String format, final String... args) {
         String[] split = format.split("%s");
-        final StringBuilder msg = new StringBuilder();
+        final StringBuffer msg = new StringBuffer();
         for (int pos = 0; pos < split.length - 1; pos++) {
             msg.append(split[pos]);
             msg.append(args[pos]);

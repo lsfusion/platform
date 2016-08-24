@@ -10,11 +10,13 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.classes.DataClass;
 import lsfusion.server.classes.LogicalClass;
 import lsfusion.server.classes.ValueClass;
+import lsfusion.server.classes.sets.AndClassSet;
 import lsfusion.server.classes.sets.ResolveClassSet;
 import lsfusion.server.classes.sets.ResolveUpClassSet;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.logics.LogicsModule;
+import lsfusion.server.logics.property.PropertyInterface;
 
 import java.util.List;
 
@@ -73,10 +75,10 @@ public class ExClassSet extends TwinImmutableObject {
     
     // маркер, если решим перейти на другую схему (когда нужно при NULL значении в Join или Order идти (см. orAny) идти на or, а не and)
     public static final ExClassSet NULL = null;   
-    public static ExClassSet notNull(ExClassSet set) {
+    public static final ExClassSet notNull(ExClassSet set) {
         return null;
     }
-    public static ExClassSet toNotNull(ExClassSet set) { // преобразование, там где сейчас по умолчанию notNull - Group By, Compare
+    public static final ExClassSet toNotNull(ExClassSet set) { // преобразование, там где сейчас по умолчанию notNull - Group By, Compare
         return set;
     }
 
@@ -92,7 +94,7 @@ public class ExClassSet extends TwinImmutableObject {
         this(classSet, null, orAny);
     }
 
-    public static ExClassSet removeValues(ExClassSet set) {
+    public static final ExClassSet removeValues(ExClassSet set) {
         if(set == null || set.values == null)
             return set;
         return new ExClassSet(set.classSet, set.orAny);

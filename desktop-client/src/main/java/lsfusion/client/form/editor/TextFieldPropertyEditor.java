@@ -30,7 +30,9 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
         addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                tableEditor.stopCellEditing();
+                if (!tableEditor.stopCellEditing()) {
+                    return;
+                }
             }
         });
 

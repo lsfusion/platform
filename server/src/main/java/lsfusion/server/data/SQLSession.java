@@ -57,6 +57,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static lsfusion.server.ServerLoggers.explainLogger;
+import static lsfusion.server.logics.ServerResourceBundle.getString;
 
 public class SQLSession extends MutableClosedObject<OperationOwner> {
     private PreparedStatement executingStatement;
@@ -679,14 +680,6 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
             addIndex(table, BaseUtils.<ImOrderSet<Field>>immutableCast(keys).subOrder(i, keys.size()).toOrderMap(true), logger);
     }
 
-    public void checkExtraIndices(SQLSession threadLocalSQL, Table table, ImOrderSet<KeyField> keys, Logger logger) throws SQLException {
-        for(int i=1;i<keys.size();i++) {
-            ImOrderMap<Field, Boolean> fields = BaseUtils.<ImOrderSet<Field>>immutableCast(keys).subOrder(i, keys.size()).toOrderMap(true);
-            if (!threadLocalSQL.checkIndex(table, fields, false) && !threadLocalSQL.checkIndex(table, fields, true))
-                addIndex(table, fields, logger);
-        }
-    }
-
     private String getConstraintName(String table) {
         return syntax.getConstraintName("PK_" + table);
     }
@@ -749,28 +742,15 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     }
 
     public boolean checkIndex(Table table, ImOrderSet<KeyField> keyFields, ImOrderSet<Field> fields, boolean order) throws SQLException {
-        return checkIndex(table, getOrderFields(keyFields, order, fields), false);
-     }
-
-    public boolean checkIndex(Table table, ImOrderMap<Field, Boolean> fields, boolean old) throws SQLException {
         //in Postgres 9.5 will be 'create index if not exists'
         boolean exists = true;
         try {
-            executeDDL("SELECT 'public." + (old ? getOldIndexName(table, fields.mapOrderKeys(Field.nameGetter()), syntax) : getIndexName(table, syntax, fields)) + "'::regclass");
+            executeDDL("SELECT 'public." + getIndexName(table, syntax, getOrderFields(keyFields, order, fields)) + "'::regclass");
         } catch (SQLException e) {
             exists = false;
         }
         return exists;
-    }
-
-    public void addConstraint(Table table) throws SQLException {
-        try {
-            executeDDL("DO $$ BEGIN ALTER TABLE " + table.getName() + " ADD " + getConstraintDeclare(table.getName(), table.keys, syntax) +
-            "; EXCEPTION WHEN others THEN /* ignore duplicates */ END; $$;");
-        } catch(Exception e) {
-            logger.error(e);
-        }
-    }
+     }
 
     public void addIndex(Table table, ImOrderMap<Field, Boolean> fields, Logger logger) throws SQLException {
         String columns = fields.toString(new GetKeyValue<String, Field, Boolean>() {
@@ -951,7 +931,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     public static Buffer fifo = BufferUtils.synchronizedBuffer(new CircularFifoBuffer(1000000));
     public static void outFifo() throws IOException {
         String filename = "e:\\out.txt";
-        BufferedWriter outputWriter = new BufferedWriter(new FileWriter(filename));
+        BufferedWriter outputWriter = null;
+        outputWriter = new BufferedWriter(new FileWriter(filename));
         for (Object ff : fifo) {
             outputWriter.write(ff+"");
             outputWriter.newLine();
@@ -1002,7 +983,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     public static String getCurrentTimeStamp() {
         SimpleDateFormat sdfDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");//dd/MM/yyyy
         Date now = new Date();
-        return sdfDate.format(now);
+        String strDate = sdfDate.format(now);
+        return strDate;
     }
     
     private void removeUnusedTemporaryTables(boolean force, OperationOwner opOwner) throws SQLException {
@@ -1418,78 +1400,82 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     // Postgres - иногда может быть большое время планирования, но пока проблема была локальная на других базах не повторялась
     public int executeExplain(PreparedStatement statement, boolean noAnalyze, boolean dml) throws SQLException {
         long l = System.currentTimeMillis();
+        ResultSet result = statement.executeQuery();
         long actualTime = System.currentTimeMillis() - l;
         Integer rows = null;
-        try (ResultSet result = statement.executeQuery()) {
+        try {
             int thr = Settings.get().getExplainThreshold();
-            int i = 0;
+            int i=0;
             String row = null;
             String prevRow = null;
             List<String> out = new ArrayList<>();
-            while (result.next()) {
+            while(result.next()) {
                 prevRow = row;
                 row = (String) result.getObject("QUERY PLAN");
 
                 Pattern pt = Pattern.compile(" rows=((\\d)+) ");
                 Matcher matcher = pt.matcher(row);
-                long est = 0;
-                long act = -1;
-                int m = 0;
-                while (matcher.find()) {
-                    if (m == 0)
+                long est=0;
+                long act=-1;
+                int m=0;
+                while(matcher.find()) {
+                    if(m==0)
                         est = safeValueOf(matcher.group(1));
-                    if (m == 1) { // 2-е соответствие
+                    if(m==1) { // 2-е соответствие
                         act = safeValueOf(matcher.group(1));
                         break;
                     }
                     m++;
                 }
 
-                if (!noAnalyze && dml && (i == 1 || i == 2) && rows == null && act >= 0) // второй ряд (первый почему то всегда 0) или 3-й (так как 2-й может быть Buffers:)
-                    rows = (int) act;
+                if(!noAnalyze && dml && (i==1 || i==2) && rows == null &&  act>=0) // второй ряд (первый почему то всегда 0) или 3-й (так как 2-й может быть Buffers:)
+                    rows = (int)act;
                 i++;
 
                 Pattern tpt = Pattern.compile("actual time=(((\\d)+)[.]((\\d)+))[.][.](((\\d)+)[.]((\\d)+))");
                 matcher = tpt.matcher(row);
                 double rtime = 0.0; // never executed
-                if (matcher.find()) {
+                if(matcher.find()) {
                     rtime = Double.valueOf(matcher.group(6));
                 }
 
                 String mark = "";
-                double diff = ((double) act) / ((double) est);
-                if (act > 500) {
-                    if (diff > 4)
+                double diff = ((double)act)/((double)est);
+                if(act > 500) {
+                    if(diff > 4)
                         mark += "G";
-                    else if (diff < 0.25)
+                    else if(diff < 0.25)
                         mark += "L";
-                    if (rtime > thr * 10)
+                    if(rtime > thr * 10)
                         mark += "T";
-                } else if (rtime > thr)
+                }
+                else if(rtime > thr)
                     mark += "t";
                 out.add(BaseUtils.padr(mark, 2) + row);
             }
-
-            if (row != null) {
+            
+            if(row != null) {
                 Double rtime = getTime("Total runtime: (((\\d)+)[.]((\\d)+))", row);
                 Double ptime = null;
-                if (rtime == null) { // >= 9.4
+                if(rtime == null) { // >= 9.4
                     rtime = getTime("Execution time: (((\\d)+)[.]((\\d)+))", row);
-                    if (prevRow != null)
+                    if(prevRow != null)
                         ptime = getTime("Planning time: (((\\d)+)[.]((\\d)+))", prevRow);
                 }
                 double ttime = BaseUtils.nullAdd(rtime, ptime);
-                if (noAnalyze || thr == 0 || ttime >= thr) {
+                if(noAnalyze || thr==0 || ttime >= thr) {
                     explainLogger.info(statement.toString() + " disabled nested loop : " + isDisabledNestLoop + " actual time : " + actualTime);
                     explainLogger.info(ExecutionStackAspect.getStackString());
-                    if (Settings.get().isExplainJavaStack())
+                    if(Settings.get().isExplainJavaStack())
                         explainLogger.info(ExceptionUtils.getStackTrace());
-                    for (String outRow : out)
+                    for(String outRow : out)
                         explainLogger.info(outRow);
                 } //else {
-                //  explainLogger.info(rtime);
+                  //  explainLogger.info(rtime);
                 //}
             }
+        } finally {
+            result.close();
         }
 
         if(rows==null)
@@ -1712,8 +1698,11 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     
     public void debugExecute(String select) throws SQLException {
         ExConnection connection = getConnection();
-        try (Statement statement = connection.sql.createStatement()) {
+        Statement statement = connection.sql.createStatement();
+        try {
             statement.execute(select);
+        } finally {
+            statement.close(); 
         }
     }
 
@@ -2387,19 +2376,20 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
 
             statement = createSingleStatement(connection.sql);
 
-            try (ResultSet result = statement.executeQuery(select)) {
+            ResultSet result = statement.executeQuery(select);
+            try {
                 boolean next = result.next();
                 assert next;
-
+                
                 int totalCnt = readInt(result.getObject(getCnt("")));
-                if (tableKeys.size() > 1) {
+                if(tableKeys.size() > 1) {
                     ImFilterValueMap<KeyField, Object> mKeyValues = tableKeys.mapFilterValues();
                     ImFilterValueMap<KeyField, Stat> mStatKeys = tableKeys.mapFilterValues();
-                    for (int i = 0, size = tableKeys.size(); i < size; i++) {
+                    for(int i=0,size=tableKeys.size();i<size;i++) {
                         KeyField tableKey = tableKeys.get(i);
                         String fieldName = tableKey.getName();
                         int cnt = readInt(result.getObject(getCntDist(fieldName)));
-                        if (cnt == 1)
+                        if(cnt == 1)
                             mKeyValues.mapValue(i, tableKey.type.read(result, syntax, fieldName));
                         mStatKeys.mapValue(i, new Stat(cnt));
                     }
@@ -2410,13 +2400,13 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
 
                 ImFilterValueMap<PropertyField, Object> mvPropValues = table.properties.mapFilterValues();
                 ImFilterValueMap<PropertyField, PropStat> mvStatProps = table.properties.mapFilterValues();
-                for (int i = 0, size = table.properties.size(); i < size; i++) {
+                for(int i=0,size=table.properties.size();i<size;i++) {
                     PropertyField tableProperty = table.properties.get(i);
                     String fieldName = tableProperty.getName();
                     int cntDistinct = readInt(result.getObject(getCntDist(fieldName)));
-                    if (cntDistinct == 0)
+                    if(cntDistinct==0)
                         mvPropValues.mapValue(i, null);
-                    if (cntDistinct == 1 && totalCnt == readInt(result.getObject(getCnt(fieldName))))
+                    if(cntDistinct==1 && totalCnt==readInt(result.getObject(getCnt(fieldName))))
                         mvPropValues.mapValue(i, tableProperty.type.read(result, syntax, fieldName));
                     mvStatProps.mapValue(i, new PropStat(new Stat(cntDistinct)));
                 }
@@ -2424,6 +2414,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
                 statProps.set(mvStatProps.immutableValue());
 
                 assert !result.next();
+            } finally {
+                result.close();
             }
         } catch (Throwable e) {
             logger.error(statement == null ? "PREPARING STATEMENT" : statement.toString() + " " + e.getMessage());

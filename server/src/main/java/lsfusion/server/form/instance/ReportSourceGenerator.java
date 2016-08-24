@@ -251,7 +251,7 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
             GroupObjectInstance applyGroup = property.propertyObject.getApplyObject();
             // Отдельно рассматриваем случай свойства без параметров
             if (((applyGroup == null || property.toDraw == applyGroup) && property.toDraw != null && filterGroups.contains(property.toDraw) && validForGroupReports(property)) ||  
-                (property.toDraw == null && applyGroup == null && property.propertyObject.property instanceof CalcProperty && property.propertyObject.property.getInterfaceCount() == 0)) {
+                (property.toDraw == null && applyGroup == null && property.propertyObject.property instanceof CalcProperty && property.propertyObject.property.getOrderInterfaces().isEmpty())) {
                 boolean add = true;
                 
                 if (userPreferences != null && property.toDraw != null) {

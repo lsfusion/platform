@@ -950,7 +950,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
 
             //добавляем в контекстное меню пункт для показа формы
             property.setContextMenuAction(property.getSID(), formActionProperty.caption);
-            property.setEditAction(property.getSID(), formActionProperty.getImplement(property.getReflectionOrderInterfaces()));
+            property.setEditAction(property.getSID(), formActionProperty.getImplement(property.getOrderInterfaces()));
             formActionProperty.checkReadOnly = false;
         }
     }
@@ -1891,16 +1891,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     public void checkIndices(SQLSession session) throws SQLException, SQLHandledException {
         session.startTransaction(DBManager.START_TIL, OperationOwner.unknown);
         try {
-            for (Map.Entry<Table, Map<List<Field>, Boolean>> mapIndex : getDbManager().getIndicesMap().entrySet()) {
-                Table table = mapIndex.getKey();
+            for (Map.Entry<Table, Map<List<Field>, Boolean>> mapIndex : getDbManager().getIndicesMap().entrySet())
                 for (Map.Entry<List<Field>, Boolean> index : mapIndex.getValue().entrySet()) {
-                    ImOrderSet<Field> fields = SetFact.fromJavaOrderSet(index.getKey());
-                    if (!getDbManager().getThreadLocalSql().checkIndex(table, table.keys, fields, index.getValue()))
-                        session.addIndex(table, table.keys, fields, index.getValue(), sqlLogger);
-                    session.addConstraint(table);
+                    if (!getDbManager().getThreadLocalSql().checkIndex(mapIndex.getKey(), mapIndex.getKey().keys, SetFact.fromJavaOrderSet(index.getKey()), index.getValue()))
+                        session.addIndex(mapIndex.getKey(), mapIndex.getKey().keys, SetFact.fromJavaOrderSet(index.getKey()), index.getValue(), sqlLogger);
                 }
-                session.checkExtraIndices(getDbManager().getThreadLocalSql(), table, table.keys, sqlLogger);
-            }
             session.commitTransaction();
         } catch (Exception e) {
             session.rollbackTransaction();

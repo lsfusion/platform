@@ -19,6 +19,7 @@ import java.awt.*;
 import java.io.*;
 import java.lang.reflect.Array;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -31,6 +32,8 @@ import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import static lsfusion.base.ApiResourceBundle.getString;
 
@@ -2085,7 +2088,7 @@ public class BaseUtils {
         ByteArrayOutputStream byteOutStream = new ByteArrayOutputStream();
         DataOutputStream outStream = new DataOutputStream(byteOutStream);
 
-        byte result[];
+        byte result[] = null;
         try {
             if (multiple)
                 outStream.writeInt(files.length);
@@ -2156,7 +2159,7 @@ public class BaseUtils {
         ByteArrayOutputStream byteOutStream = new ByteArrayOutputStream();
         DataOutputStream outStream = new DataOutputStream(byteOutStream);
 
-        byte result[];
+        byte result[] = null;
         try {
             outStream.writeInt(files.length);
             for (byte[] file : files) {

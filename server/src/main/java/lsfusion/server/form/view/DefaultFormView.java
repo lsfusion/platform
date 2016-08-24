@@ -263,7 +263,7 @@ public class DefaultFormView extends FormView {
         GroupObjectView groupObjectView = mgroupObjects.get(groupObject);
 
         if (groupObjectView != null && propertyDraw.entity.isDrawToToolbar()) {
-            ContainerView propertyContainer;
+            ContainerView propertyContainer = null;
             if (groupObject.treeGroup != null) {
                 propertyContainer = getToolbarPropsContainer(mtreeGroups.get(groupObject.treeGroup));
             } else {

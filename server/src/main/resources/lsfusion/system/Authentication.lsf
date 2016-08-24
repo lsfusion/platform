@@ -101,12 +101,6 @@ userDNSuffixLDAP 'Суффикс для User DN' = DATA VARSTRING[100] ();
 useBusyDialogCustom 'Показывать BusyDialog' = DATA BOOLEAN (CustomUser);
 useBusyDialog () = useBusyDialogCustom[CustomUser](currentUser());
 
-language 'Язык локали' =  DATA VARSTRING[3] (CustomUser);
-country 'Страна локали' =  DATA VARSTRING[3] (CustomUser);
-timeZone 'Часовой пояс' =  DATA VARSTRING[30] (CustomUser);
-twoDigitYearStart 'Первый год двумя цифрами' =  DATA INTEGER (CustomUser);
-useClientLocale 'Использовать локаль клиента' =  DATA BOOLEAN (CustomUser);
-
 deliveredNotificationAction = ACTION ABSTRACT LIST (CustomUser);
 
 locked = DATA User (Object);
@@ -140,8 +134,7 @@ FORM customUser 'Пользователь'
     OBJECTS u=CustomUser FIXED PANEL
     PROPERTIES(u) firstName, lastName, login,
     sha256Password ON CHANGE changeSHA256Password(u), email,
-    forbidChangePassword, forbidEditProfile, isLocked, lastActivity, ignorePrintTypeCustom, useBusyDialogCustom,
-    language, country, timeZone, twoDigitYearStart, useClientLocale
+    forbidChangePassword, forbidEditProfile, isLocked, lastActivity, ignorePrintTypeCustom, useBusyDialogCustom
 
     EDIT CustomUser OBJECT u
 ;
@@ -163,8 +156,7 @@ DESIGN customUser {
 FORM customUsers 'Пользователи'
     OBJECTS u=CustomUser
     PROPERTIES(u) READONLY name[Contact], login, email
-    PROPERTIES(u) forbidChangePassword, forbidEditProfile, useBusyDialogCustom, 
-                  language, country, timeZone, twoDigitYearStart, useClientLocale, isLocked READONLY,
+    PROPERTIES(u) forbidChangePassword, forbidEditProfile, useBusyDialogCustom, isLocked READONLY,
                   lastActivity, ADDFORM, EDITFORM FORCE PANEL, DELETE FORCE PANEL TOOLBAR
 
     PROPERTIES() useLDAP, serverLDAP, portLDAP, baseDNLDAP, userDNSuffixLDAP, minHashLength

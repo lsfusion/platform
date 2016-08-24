@@ -1,7 +1,5 @@
 package lsfusion.utils;
 
-import lsfusion.base.BaseUtils;
-
 import java.util.*;
 
 /**
@@ -44,8 +42,7 @@ public class GreedyTreeBuilding<V, C extends Comparable<C>, E extends GreedyTree
     }
     
     public interface CalculateCost<V, C extends Comparable<C>, E extends GreedyTreeBuilding.Edge<V>> {
-        C calculate(Node<V, C> a, Node<V, C> b, Iterable<E> edges);
-        C calculateLowerBound(Node<V, C> a, Node<V, C> b, Iterable<E> edges);
+        C calculate(Node<V, C> a, Node<V, C> b, Iterable<E> edges); 
     }
     
     
@@ -107,28 +104,21 @@ public class GreedyTreeBuilding<V, C extends Comparable<C>, E extends GreedyTree
     
     /** Ребро изменяющегося графа, являющееся объединением ребер исходного графа */ 
     static class ComplexEdge<V, C extends Comparable<C>, E extends Edge<V>> implements Edge<Node<V, C>>, Comparable<ComplexEdge<V, C, E>> {
-        private C cost;
-        private boolean hasLowerBoundCost;
+        private final C cost;
         private final Node<V, C> from;
         private final Node<V, C> to;
         private EdgeLinkedList<E> simpleEdges;
         
-        public ComplexEdge(Node<V, C> from, Node<V, C> to, EdgeLinkedList<E> simpleEdges, C cost, boolean hasLowerBoundCost) {
+        public ComplexEdge(Node<V, C> from, Node<V, C> to, EdgeLinkedList<E> simpleEdges, C cost) {
             this.from = from;
             this.to = to;
             this.cost = cost;
-            this.hasLowerBoundCost = hasLowerBoundCost;
             this.simpleEdges = simpleEdges;
         }
-
+        
         @Override
         public int compareTo(ComplexEdge<V, C, E> o) {
-            int compareResult = cost.compareTo(o.getCost());
-            if (compareResult == 0) {
-                if (!hasLowerBoundCost && o.hasLowerBoundCost) return -1;
-                if (hasLowerBoundCost && !o.hasLowerBoundCost) return 1;
-            }
-            return compareResult;
+            return cost.compareTo(o.getCost());
         }
 
         @Override
@@ -143,11 +133,6 @@ public class GreedyTreeBuilding<V, C extends Comparable<C>, E extends GreedyTree
 
         public C getCost() {
             return cost;
-        }
-        
-        public void setCost(C cost, boolean isLowerBoundCost) {
-            this.cost = cost;
-            this.hasLowerBoundCost = isLowerBoundCost;
         }
         
         public EdgeLinkedList<E> mergeSimpleEdges(ComplexEdge<V, C, E> otherEdge) {
@@ -294,47 +279,34 @@ public class GreedyTreeBuilding<V, C extends Comparable<C>, E extends GreedyTree
             for (E edge : adjList.get(i)) {
                 int fromIndex = vertexIndex.get(edge.getFrom());
                 int toIndex = vertexIndex.get(edge.getTo());
-                EdgeLinkedList<E> simpleEdges; 
-                if (adjMatrix.get(fromIndex).get(toIndex) != null) {
-                    simpleEdges = adjMatrix.get(fromIndex).get(toIndex).simpleEdges;    
-                } else {
-                    simpleEdges = new EdgeLinkedList<>();
-                    ComplexEdge<V, C, E> newEdge = new ComplexEdge<>(nodes.get(fromIndex), nodes.get(toIndex), simpleEdges, null, true);
-                    adjMatrix.get(fromIndex).set(toIndex, newEdge);
-                    adjMatrix.get(toIndex).set(fromIndex, newEdge);
-                }
+                EdgeLinkedList<E> simpleEdges = new EdgeLinkedList<>();
                 simpleEdges.addEdge(edge);
+                C edgeCost = functor.calculate(nodes.get(fromIndex), nodes.get(toIndex), simpleEdges);
+                ComplexEdge<V, C, E> newEdge = new ComplexEdge<>(nodes.get(fromIndex), nodes.get(toIndex), simpleEdges, edgeCost);
+                
+                adjMatrix.get(fromIndex).set(toIndex, newEdge);
+                adjMatrix.get(toIndex).set(fromIndex, newEdge);
+                queue.add(newEdge);
             }
         }
 
         for (int i = 0; i < vertexCnt; ++i) {
             for (int j = i+1; j < vertexCnt; ++j) {
-                ComplexEdge<V, C, E> complexEdge = adjMatrix.get(i).get(j);
-                if (complexEdge == null) {
-                    complexEdge = new ComplexEdge<>(nodes.get(i), nodes.get(j), new EdgeLinkedList<E>(), null, true);
-                    adjMatrix.get(i).set(j, complexEdge);
-                    adjMatrix.get(j).set(i, complexEdge);
+                if (adjMatrix.get(i).get(j) == null) {
+                    C edgeCost = functor.calculate(nodes.get(i), nodes.get(j), new LinkedList<E>());
+                    ComplexEdge<V, C, E> newEdge = new ComplexEdge<>(nodes.get(i), nodes.get(j), new EdgeLinkedList<E>(), edgeCost);
+                    adjMatrix.get(i).set(j, newEdge);
+                    adjMatrix.get(j).set(i, newEdge);
+                    queue.add(newEdge);
                 }
-                C edgeCost = functor.calculateLowerBound(nodes.get(i), nodes.get(j), complexEdge.simpleEdges);
-                complexEdge.setCost(edgeCost, true);
-                queue.add(complexEdge);
             }
         }
     }
 
-    private ComplexEdge<V, C, E> getMinimumEdge(Set<Node<V, C>> deleted, CalculateCost<V, C, E> functor) {
+    private ComplexEdge<V, C, E> getMinimumEdge(Set<Node<V, C>> deleted) {
         while (!queue.isEmpty()) {
             ComplexEdge<V, C, E> nextEdge = queue.poll();
             if (!deleted.contains(nextEdge.getFrom()) && !deleted.contains(nextEdge.getTo())) {
-                if (nextEdge.hasLowerBoundCost) {
-                    C oldCost = nextEdge.getCost();
-                    C cost = functor.calculate(nextEdge.getFrom(), nextEdge.getTo(), nextEdge.simpleEdges);
-                    nextEdge.setCost(cost, false);
-                    if (oldCost.compareTo(cost) < 0) {
-                        queue.add(nextEdge);
-                        continue;
-                    }
-                } 
                 return nextEdge;
             }
         } 
@@ -369,8 +341,8 @@ public class GreedyTreeBuilding<V, C extends Comparable<C>, E extends GreedyTree
         for (int i = 0; i < nodeCnt; ++i) {
             if (i != fromIndex && i != toIndex && !deleted.contains(nodes.get(i))) {
                 EdgeLinkedList<E> edges = adjMatrix.get(fromIndex).get(i).mergeSimpleEdges(adjMatrix.get(toIndex).get(i));
-                C cost = functor.calculateLowerBound(newTreeNode.node, nodes.get(i), edges);
-                ComplexEdge<V, C, E> newEdge = new ComplexEdge<>(newTreeNode.node, nodes.get(i), edges, cost, true);
+                C cost = functor.calculate(newTreeNode.node, nodes.get(i), edges);
+                ComplexEdge<V, C, E> newEdge = new ComplexEdge<>(newTreeNode.node, nodes.get(i), edges, cost);
                 adjMatrix.get(newIndex).set(i, newEdge);
                 adjMatrix.get(i).add(newEdge);
                 queue.add(newEdge);
@@ -387,7 +359,7 @@ public class GreedyTreeBuilding<V, C extends Comparable<C>, E extends GreedyTree
         
         Set<Node<V, C>> deletedNodes = new HashSet<>();
         for (int i = 0; i + 1 < vertices.size(); ++i) {
-            ComplexEdge<V, C, E> nextEdge = getMinimumEdge(deletedNodes, functor);
+            ComplexEdge<V, C, E> nextEdge = getMinimumEdge(deletedNodes);
             assert nextEdge != null;
            
             joinNodes(nextEdge, deletedNodes, functor);
@@ -544,8 +516,7 @@ public class GreedyTreeBuilding<V, C extends Comparable<C>, E extends GreedyTree
         }
     }
     
-    private void traverseCut(TreeNode<V, C> curNode, TreeNode<V, C> startNode, ComputationResult<V, C> result, 
-                             CalculateCost<V, C, E> functor, TreeCutComparator<C> cutComparator) {
+    private void traverseCut(TreeNode<V, C> curNode, TreeNode<V, C> startNode, ComputationResult<V, C> result, CalculateCost<V, C, E> functor) {
         boolean goDeeper = true;
         if (curNode != startNode) {
             TreeNode<V, C> parentNode = curNode.parent;
@@ -554,7 +525,7 @@ public class GreedyTreeBuilding<V, C extends Comparable<C>, E extends GreedyTree
             squeezeTree(parentNode.parent, parentNode, siblingNode);
             C treeCost = countTreeCost(siblingNode, functor);
             int cutTreeSize = treeSize(curNode);
-            if (cutComparator.compare(treeCost, result.cost) < 0 || cutComparator.compare(treeCost, result.cost) == 0 && result.cutVertexCount < cutTreeSize) {
+            if (treeCost.compareTo(result.cost) < 0 || treeCost.compareTo(result.cost) == 0 && result.cutVertexCount < cutTreeSize) {
                 result.cost = treeCost;
                 result.cutNode = curNode;
                 result.cutVertexCount = cutTreeSize;
@@ -564,10 +535,10 @@ public class GreedyTreeBuilding<V, C extends Comparable<C>, E extends GreedyTree
         }
         if (goDeeper) {
             if (curNode.left != null) {
-                traverseCut(curNode.left, startNode, result, functor, cutComparator);
+                traverseCut(curNode.left, startNode, result, functor);
             }
             if (curNode.right != null) {
-                traverseCut(curNode.right, startNode, result, functor, cutComparator);
+                traverseCut(curNode.right, startNode, result, functor);
             }
         }
     }
@@ -618,33 +589,29 @@ public class GreedyTreeBuilding<V, C extends Comparable<C>, E extends GreedyTree
         ComplexEdge<V, C, E> nextEdge;
         Set<Node<V, C>> deletedNodes = new HashSet<>();
         do {
-            nextEdge = getMinimumEdge(deletedNodes, functor);
+            nextEdge = getMinimumEdge(deletedNodes);
             assert nextEdge != null;
             joinNodes(nextEdge, deletedNodes, functor);
-        } while (!BaseUtils.nullHashEquals(nextEdge.getFrom().initialVertex, vertex) && !BaseUtils.nullHashEquals(nextEdge.getTo().initialVertex, vertex));
+        } while (nextEdge.getFrom().initialVertex != vertex && nextEdge.getTo().initialVertex != vertex);
 
         return treeNodes.get(treeNodes.size() - 1);
     }
     
-    public interface TreeCutComparator<C> {
-        int compare(C a, C b); 
-    }
-    
-    public TreeNode<V, C> computeWithVertex(V vertex, CalculateCost<V, C, E> functor, TreeCutComparator<C> cutComparator) {
+    public TreeNode<V, C> computeWithVertex(V vertex, CalculateCost<V, C, E> functor) {
         TreeNode<V, C> rootTreeNode = computePartialGreedy(vertex, functor);
         
         C bestCost = rootTreeNode.node.getCost();
         ComputationResult<V, C> result;
         do {
             TreeNode<V, C> startNode;
-            if (BaseUtils.nullHashEquals(rootTreeNode.left.node.getVertex(), vertex)) {
+            if (rootTreeNode.left.node.getVertex() == vertex) {
                 startNode = rootTreeNode.right;
             } else {
                 startNode = rootTreeNode.left;
             }
 
             result = new ComputationResult<>(bestCost, 0, null);
-            traverseCut(startNode, startNode, result, functor, cutComparator);
+            traverseCut(startNode, startNode, result, functor);
             if (result.cutNode != null) {
                 createTreeWithCut(result.cutNode, functor);
             }
@@ -666,5 +633,100 @@ public class GreedyTreeBuilding<V, C extends Comparable<C>, E extends GreedyTree
     public static void drawTree(TreeNode node) {
         innerDrawTree(node);
         System.out.println();
+    }
+    
+    private static class WeightedEdge<T> extends SimpleEdge<T> {
+        int w;
+        
+        public WeightedEdge(T from, T to, int weight) {
+            super(from, to);
+            w = weight;
+        }
+    }
+    
+    public static void test1() {
+        GreedyTreeBuilding<Integer, Integer, WeightedEdge<Integer>> algo = new GreedyTreeBuilding<>();
+        int cnt = 5;
+        Integer[] num = {0, 1, 2, 3, 4}; 
+        
+        for (int i = 0; i < cnt; ++i) {
+            algo.addVertex(num[i], 0);
+        }
+        
+        algo.addEdge(new WeightedEdge<>(num[0], num[1], 5));
+        algo.addEdge(new WeightedEdge<>(num[0], num[2], 10));
+        algo.addEdge(new WeightedEdge<>(num[1], num[2], 6));
+        algo.addEdge(new WeightedEdge<>(num[1], num[3], 4));
+        algo.addEdge(new WeightedEdge<>(num[2], num[3], 2));
+        algo.addEdge(new WeightedEdge<>(num[2], num[4], 5));
+        algo.addEdge(new WeightedEdge<>(num[3], num[4], 4));
+        
+        CalculateCost<Integer, Integer, WeightedEdge<Integer>> func = new CalculateCost<Integer, Integer, WeightedEdge<Integer>>() {
+            @Override
+            public Integer calculate(Node<Integer, Integer> a, Node<Integer, Integer> b, Iterable<WeightedEdge<Integer>> edges) {
+                assert a != null && b != null;
+                if (!edges.iterator().hasNext()) return 100;
+                int minw = 100;
+                for (Edge<Integer> e : edges) minw = Math.min(minw, ((WeightedEdge<Integer>)e).w);
+                return a.getCost() + b.getCost() + minw;
+            }
+        }; 
+        
+        TreeNode<Integer, Integer> res = algo.compute(func);
+        TreeNode<Integer, Integer> res2 = algo.computeDP(func);
+        TreeNode<Integer, Integer> res3 = algo.computeWithVertex(num[4], func);  
+        
+        System.out.println("!!!!!!! " + res.node.getCost());
+        drawTree(res);
+        System.out.println("!!!!!!! " + res2.node.getCost());
+        drawTree(res2);
+        System.out.println("!!!!!!! " + res3.node.getCost());
+        drawTree(res3);
+    }
+
+    public static void test2() {
+        GreedyTreeBuilding<Integer, Integer, WeightedEdge<Integer>> algo = new GreedyTreeBuilding<>();
+        int cnt = 8;
+        Integer[] num = {0, 1, 2, 3, 4, 5, 6, 7};
+
+        for (int i = 0; i < cnt; ++i) {
+            algo.addVertex(num[i], 0);
+        }
+
+        algo.addEdge(new WeightedEdge<>(num[0], num[1], 10));
+        algo.addEdge(new WeightedEdge<>(num[0], num[2], 5));
+        algo.addEdge(new WeightedEdge<>(num[1], num[2], 10));
+        algo.addEdge(new WeightedEdge<>(num[1], num[3], 2));
+        algo.addEdge(new WeightedEdge<>(num[1], num[4], 7));
+        algo.addEdge(new WeightedEdge<>(num[2], num[3], 10));
+        algo.addEdge(new WeightedEdge<>(num[2], num[4], 4));
+        algo.addEdge(new WeightedEdge<>(num[3], num[5], 6));
+        algo.addEdge(new WeightedEdge<>(num[3], num[7], 7));
+        algo.addEdge(new WeightedEdge<>(num[4], num[5], 3));
+        algo.addEdge(new WeightedEdge<>(num[4], num[6], 7));
+        algo.addEdge(new WeightedEdge<>(num[5], num[6], 5));
+        algo.addEdge(new WeightedEdge<>(num[5], num[7], 3));
+
+        CalculateCost<Integer, Integer, WeightedEdge<Integer>> func = new CalculateCost<Integer, Integer, WeightedEdge<Integer>>() {
+            @Override
+            public Integer calculate(Node<Integer, Integer> a, Node<Integer, Integer> b, Iterable<WeightedEdge<Integer>> edges) {
+                assert a != null && b != null;
+                if (!edges.iterator().hasNext()) return 100;
+                int minw = 100;
+                for (Edge<Integer> e : edges) minw = Math.min(minw, ((WeightedEdge<Integer>)e).w);
+                return Math.min(Math.min(a.isInner() ? a.getCost() : 100, b.isInner() ? b.getCost() : 100), minw);
+            }
+        };
+
+        TreeNode<Integer, Integer> res = algo.compute(func);
+        TreeNode<Integer, Integer> res2 = algo.computeDP(func);
+        TreeNode<Integer, Integer> res3 = algo.computeWithVertex(num[4], func);
+
+        System.out.println("!!!!!!! " + res.node.getCost());
+        drawTree(res);
+        System.out.println("!!!!!!! " + res2.node.getCost());
+        drawTree(res2);
+        System.out.println("!!!!!!! " + res3.node.getCost());
+        drawTree(res3);
     }
 }

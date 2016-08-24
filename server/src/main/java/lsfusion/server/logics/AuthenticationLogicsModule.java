@@ -58,12 +58,6 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
 
     public LCP useBusyDialog;
 
-    public LCP languageCustomUser;
-    public LCP countryCustomUser;
-    public LCP timeZoneCustomUser;
-    public LCP twoDigitYearStartCustomUser;
-    public LCP useClientLocaleCustomUser;
-
     public LAP deliveredNotificationAction;
 
     public LAP generateLoginPassword;
@@ -126,12 +120,6 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
         userDNSuffixLDAP =  findProperty("userDNSuffixLDAP[]");
 
         useBusyDialog = findProperty("useBusyDialog[]");
-
-        languageCustomUser = findProperty("language[CustomUser]");
-        countryCustomUser = findProperty("country[CustomUser]");
-        timeZoneCustomUser = findProperty("timeZone[CustomUser]");
-        twoDigitYearStartCustomUser = findProperty("twoDigitYearStart[CustomUser]");
-        useClientLocaleCustomUser = findProperty("useClientLocale[CustomUser]");
 
         deliveredNotificationAction = findAction("deliveredNotificationAction[CustomUser]");
 

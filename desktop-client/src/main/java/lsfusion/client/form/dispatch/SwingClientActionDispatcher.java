@@ -457,8 +457,4 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
     public void execute(FocusClientAction action) {
         //do nothing by default
     }
-
-    public void execute(ExceptionClientAction action) {
-        throw new RuntimeException(action.e);
-    }
 }

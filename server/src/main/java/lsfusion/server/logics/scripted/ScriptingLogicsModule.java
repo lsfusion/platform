@@ -581,10 +581,8 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         List<ResolveClassSet> signature = getClassesFromTypedParams(context);
         if (abstractLP instanceof LCP) {
-            checkCalculationProperty(implement.property);
             addImplementationToAbstractProp(abstractPropUsage.name, (LCP) abstractLP, signature, when != null, params);
         } else {
-            checkActionProperty(implement.property);
             addImplementationToAbstractAction(abstractPropUsage.name, (LAP) abstractLP, signature, when != null, params);
         }
     }
@@ -639,6 +637,12 @@ public class ScriptingLogicsModule extends LogicsModule {
         if (index < 0 && paramName.startsWith("$")) {
             if (param.cls != null) {
                 errLog.emitParamClassNonDeclarationError(parser, paramName);
+            }
+            if (Character.isDigit(paramName.charAt(1))) {
+                index = Integer.parseInt(paramName.substring(1)) - 1;
+                if (index < 0 || !dynamic && context != null && index >= context.size()) {
+                    errLog.emitFormulaParamIndexError(parser, index + 1, context == null ? 0 : context.size());
+                }
             } else if (!insideRecursion) {
                 errLog.emitRecursiveParamsOutideRecursionError(parser, paramName);
             } else if (indexOf(context, paramName.substring(1)) < 0) {
@@ -857,11 +861,9 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public void makeLoggable(LP property, Boolean isLoggable) throws ScriptingErrorLog.SemanticErrorException {
-        if (isLoggable != null && isLoggable && property != null) {
-            checkCalculationProperty(property);
-            ((LCP) property).makeLoggable(this, BL.systemEventsLM);
-        }
+    public void makeLoggable(LP property, Boolean isLoggable) {
+        if (isLoggable != null && isLoggable && property != null)
+            ((LCP)property).makeLoggable(this, BL.systemEventsLM);
     }
 
     public void setEchoSymbols(LP property) {
@@ -1288,8 +1290,8 @@ public class ScriptingLogicsModule extends LogicsModule {
             }
         }
 
-        for (LPWithParams fileName : attachFileNames) {
-            CalcPropertyInterfaceImplement<ClassPropertyInterface> attachFileName = fileName != null ? allImplements.get(i++) : null;
+        for (int a = 0; a < attachFileNames.size(); a++) {
+            CalcPropertyInterfaceImplement<ClassPropertyInterface> attachFileName = attachFileNames.get(a) != null ? allImplements.get(i++) : null;
             eaProp.addAttachmentFile(attachFileName, allImplements.get(i++));
         }
 
@@ -1417,13 +1419,13 @@ public class ScriptingLogicsModule extends LogicsModule {
     public LPWithParams addScriptedRequestUserInputAProp(String typeId, String chosenKey, LPWithParams action) throws ScriptingErrorLog.SemanticErrorException {
         Type requestValueType = getPredefinedType(typeId);
 
-        LPWithParams prop = null;
+        LPWithParams prop;
         if (action == null) {
             if (!(requestValueType instanceof DataClass)) {
                 errLog.emitRequestUserInputDataTypeError(parser, typeId);
-            } else {
-                prop = new LPWithParams(addRequestUserDataAProp(null, "", (DataClass) requestValueType), new ArrayList<Integer>());
             }
+
+            prop = new LPWithParams(addRequestUserDataAProp(null, "", (DataClass) requestValueType), new ArrayList<Integer>());
         } else {
             prop = new LPWithParams(addRequestUserInputAProp(null, "", (LAP<?>) action.property, requestValueType, chosenKey), newArrayList(action.usedParams));
         }
@@ -1556,8 +1558,6 @@ public class ScriptingLogicsModule extends LogicsModule {
                 ObjectEntity obj = form.getNFObject(objName, getVersion());
                 if (obj == null) {
                     errLog.emitObjectNotFoundError(parser, objName);
-                } else if (obj.groupTo != groupObject) {
-                    errLog.emitObjectOfGroupObjectError(parser, obj.getSID(), groupObject.getSID());                    
                 }
                 objects.add(obj);
             }
@@ -2290,6 +2290,8 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     private LCP addStaticClassConst(String name) throws ScriptingErrorLog.SemanticErrorException {
+        Version version = getVersion();
+
         int pointPos = name.lastIndexOf('.');
         assert pointPos > 0;
 
@@ -2599,14 +2601,11 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public LPWithParams findIndexProp(PropertyUsage toPropertyUsage, List<LPWithParams> toPropertyMapping, List<TypedParameter> context) throws ScriptingErrorLog.SemanticErrorException {
         LP toPropertyLP = findJoinMainProp(toPropertyUsage, toPropertyMapping, context);
+        // assert что все параметры, то есть property.null'ы и соответственно только integer'ы
         return new LPWithParams(toPropertyLP, getParamsAssertList(toPropertyMapping));
     }
     
-    public void addScriptedIndex(List<TypedParameter> params, List<LPWithParams> lps) throws ScriptingErrorLog.SemanticErrorException {
-        checkIndexNecessaryProperty(lps);
-        checkStoredProperties(lps);
-        checkDistinctParametersList(lps);
-        checkIndexNumberOfParameters(params.size(), lps);
+    public void addScriptedIndex(List<TypedParameter> params, List<LPWithParams> lps) {
         ImOrderSet<String> keyNames = ListFact.fromJavaList(params).toOrderExclSet().mapOrderSetValues(new GetValue<String, TypedParameter>() {
             public String getMapValue(TypedParameter value) {
                 return value.paramName;
@@ -3163,19 +3162,13 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    private <T> void checkDistinctParameters(List<T> params) throws ScriptingErrorLog.SemanticErrorException {
-        Set<T> paramsSet = new HashSet<>(params);
+    private void checkDistinctParameters(List<String> params) throws ScriptingErrorLog.SemanticErrorException {
+        Set<String> paramsSet = new HashSet<>(params);
         if (paramsSet.size() < params.size()) {
             errLog.emitDistinctParamNamesError(parser);
         }
     }
 
-    private void checkDistinctParametersList(List<LPWithParams> lps) throws ScriptingErrorLog.SemanticErrorException {
-        for (LPWithParams lp : lps) {
-            checkDistinctParameters(lp.usedParams);
-        }
-    }    
-    
     private void checkMetaCodeParamCount(MetaCodeFragment code, int paramCnt) throws ScriptingErrorLog.SemanticErrorException {
         if (code.parameters.size() != paramCnt) {
             errLog.emitParamCountError(parser, code.parameters.size(), paramCnt);
@@ -3276,55 +3269,6 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public void checkIndexNecessaryProperty(List<LPWithParams> lps) throws ScriptingErrorLog.SemanticErrorException {
-        boolean hasProperty = false;
-        for (LPWithParams lp : lps) {
-            if (lp.property != null) {
-                hasProperty = true;
-                break;
-            }
-        }
-        if (!hasProperty) {
-            errLog.emitIndexWithoutPropertyError(parser);
-        }
-    }
-
-    public void checkStoredProperties(List<LPWithParams> lps) throws ScriptingErrorLog.SemanticErrorException {
-        ImplementTable table = null;
-        String firstPropertyName = null;
-        for (LPWithParams lp : lps) {
-            if (lp.property != null) {
-                checkCalculationProperty(lp.property);
-                CalcProperty<?> calcProperty = (CalcProperty<?>) lp.property.property;
-                if (!calcProperty.isStored()) {
-                    errLog.emitShouldBeStoredError(parser, calcProperty.getName());
-                }
-                if (table == null) {
-                    table = calcProperty.mapTable.table;
-                    firstPropertyName = calcProperty.getName();
-                } else if (table != calcProperty.mapTable.table) {
-                    errLog.emitIndexPropertiesDifferentTablesError(parser, firstPropertyName, calcProperty.getName());
-                }
-            }
-        }
-    } 
-    
-    public void checkIndexNumberOfParameters(int paramsCount, List<LPWithParams> lps) throws ScriptingErrorLog.SemanticErrorException {
-        int paramsInProp = -1;
-        for (LPWithParams lp : lps) {
-            if (lp.property != null) {
-                if (paramsInProp == -1) {
-                    paramsInProp = lp.usedParams.size();
-                } else if (lp.usedParams.size() != paramsInProp){
-                    errLog.emitIndexPropertiesNonEqualParamsCountError(parser);    
-                }
-            }
-        }
-        if (paramsCount != paramsInProp) {
-            errLog.emitIndexParametersError(parser);
-        }
-    }
-    
     public void checkDeconcatenateIndex(LPWithParams property, int index) throws ScriptingErrorLog.SemanticErrorException {
         Type propType = property.property.property.getType();
         if (propType instanceof ConcatenateType) {

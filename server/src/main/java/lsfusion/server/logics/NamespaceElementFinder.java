@@ -1,10 +1,11 @@
 package lsfusion.server.logics;
 
-import java.util.ArrayList;
-import java.util.List;
+import lsfusion.server.logics.scripted.ScriptingErrorLog;
+
+import java.util.*;
 
 /**
- * Created by DAle on 09.04.14
+ * Created by DAle on 09.04.14.
  */
 
 public class NamespaceElementFinder<T, P> {

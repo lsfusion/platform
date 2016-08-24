@@ -289,7 +289,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
             } else {
                 Result<ImMap<K, String>> resultKey = new Result<>(); Result<ImMap<V, String>> resultProperty = new Result<>();
                 if(queryJoins.size()==1) { // "простой" запрос
-                    Result<ImCol<String>> resultWhere = new Result<>(); 
+                    Result<ImCol<String>> resultWhere = new Result<>(); Result<ImSet<V>> resultOrders = new Result<>();
                     Result<ImSet<K>> resultKeyValues = new Result<>(); Result<ImSet<V>> resultPropValues= new Result<>();
                     from = fillInnerSelect(query.mapKeys, queryJoins.single(), query.properties, resultKey, resultProperty, resultWhere, params, syntax, subcontext, mEnv, mBaseCost, mSubQueries, resultKeyValues, resultPropValues);
                     whereSelect = resultWhere.result;
@@ -692,7 +692,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
             
             protected Where pushWhere(Where groupWhere, ImSet<KeyExpr> keys, ImMap<K, BaseExpr> innerJoins, StatKeys<K> statKeys, Result<SQLQuery> empty) {
                 Where fullWhere = groupWhere;
-                Where pushWhere;
+                Where pushWhere = null;
                 if((pushWhere = whereJoins.getGroupPushWhere(innerJoins, upWheres, innerJoin, keyStat, fullWhere, statKeys))!=null) // проталкивание предиката
                     fullWhere = fullWhere.and(pushWhere);
                 if(isEmptySelect(fullWhere, keys)) { // может быть когда проталкивается верхнее условие, а внутри есть NOT оно же

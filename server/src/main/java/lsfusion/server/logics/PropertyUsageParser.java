@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by DAle on 09.07.2014
+ * Created by DAle on 09.07.2014.
  */
 
 public class PropertyUsageParser extends AbstractPropertyNameParser {

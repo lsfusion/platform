@@ -2,13 +2,11 @@ package lsfusion.gwt.form.client.form.ui.toolbar.preferences;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import lsfusion.gwt.form.client.MainFrameMessages;
 import lsfusion.gwt.form.client.form.ui.GGridTable;
 import lsfusion.gwt.form.client.form.ui.GGroupObjectController;
 import lsfusion.gwt.form.client.form.ui.toolbar.GToolbarButton;
 
 public class GUserPreferencesButton extends GToolbarButton {
-    private final MainFrameMessages messages = MainFrameMessages.Instance.get();
     private static final String PREFERENCES_SAVED_ICON = "userPreferencesSaved.png";
     private static final String PREFERENCES_UNSAVED_ICON = "userPreferences.png";
 
@@ -42,13 +40,13 @@ public class GUserPreferencesButton extends GToolbarButton {
     }
 
     private void updateTooltip() {
-        String tooltip = messages.formGridPreferences() + " (";
+        String tooltip = "Настройки таблицы (";
         if (table.userPreferencesSaved()) {
-            tooltip += messages.formGridPreferencesSavedForCurrentUser();
+            tooltip += "Сохранены для текущего пользователя";
         } else if (table.generalPreferencesSaved()) {
-            tooltip += messages.formGridPreferencesSavedForAllUsers();
+            tooltip += "Сохранены для всех пользователей";
         } else {
-            tooltip += messages.formGridPreferencesNotSaved();
+            tooltip += "Не сохранены";
         }
 
         setTitle(tooltip + ")");

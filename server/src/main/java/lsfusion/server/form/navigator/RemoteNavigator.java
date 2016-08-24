@@ -10,7 +10,6 @@ import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
-import lsfusion.interop.LocalePreferences;
 import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.form.RemoteFormInterface;
 import lsfusion.interop.form.ServerResponse;
@@ -232,15 +231,13 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
     public void logClientException(String title, String hostname, Throwable t) {
         String time = new SimpleDateFormat().format(Calendar.getInstance().getTime());
         
-        boolean web = false;
-        if (hostname == null) { // считается, что Web
-            web = true;
-            hostname = ThreadLocalContext.get().getLogInfo().hostnameComputer + " - web";
+        if (hostname == null) { // считается, что Web                                                
+            hostname = ThreadLocalContext.get().getLogInfo().hostnameComputer;
         }
         
         logger.error(title + " at '" + time + "' from '" + hostname + "': ", t);
         try {
-            businessLogics.systemEventsLM.logException(businessLogics, getStack(), t, this.user, hostname, true, web);
+            businessLogics.systemEventsLM.logException(businessLogics, getStack(), t, this.user, hostname, true);
         } catch (SQLException | SQLHandledException e) {
             throw Throwables.propagate(e);
         }
@@ -373,7 +370,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
 
         public ObjectValue getCurrentConnection() {
             RemoteNavigator remoteNavigator = weakThis.get();
-            return remoteNavigator == null  || remoteNavigator.connection == null ? NullValue.instance : remoteNavigator.connection;
+            return remoteNavigator == null ? NullValue.instance : remoteNavigator.connection;
         }
     }
 
@@ -478,23 +475,6 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         } catch (SQLException | SQLHandledException ignored) {
         }
         return useBusyDialog;
-    }
-
-    public LocalePreferences getLocalePreferences() throws RemoteException {
-        String language = null;
-        String country = null;
-        String timeZone = null;
-        Integer twoDigitYearStart = null;
-        boolean useClientLocale = false;
-        try (DataSession session = createSession()) {
-            language = (String) businessLogics.authenticationLM.languageCustomUser.read(session, user);
-            country = (String) businessLogics.authenticationLM.countryCustomUser.read(session, user);
-            timeZone = (String) businessLogics.authenticationLM.timeZoneCustomUser.read(session, user);
-            twoDigitYearStart = (Integer) businessLogics.authenticationLM.twoDigitYearStartCustomUser.read(session, user);
-            useClientLocale = businessLogics.authenticationLM.useClientLocaleCustomUser.read(session, user) != null;
-        } catch (SQLException | SQLHandledException ignored) {
-        }
-        return new LocalePreferences(language, country, timeZone, twoDigitYearStart, useClientLocale);
     }
 
     public void gainedFocus(FormInstance<T> form) {

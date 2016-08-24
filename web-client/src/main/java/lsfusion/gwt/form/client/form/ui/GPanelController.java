@@ -162,7 +162,6 @@ public class GPanelController {
                         PanelRenderer renderer = renderers.get(columnKey);
                         if (renderer == null && !property.hide) {
                             renderer = property.createPanelRenderer(form, columnKey);
-                            renderer.setReadOnly(property.isReadOnly());
                             renderers.put(columnKey, renderer);
                         }
                     } else {
@@ -212,10 +211,7 @@ public class GPanelController {
 
         private void updateRenderer(GGroupObjectValue columnKey, PanelRenderer renderer) {
             renderer.setValue(values.get(columnKey));
-            
-            if (readOnly != null) {
-                renderer.setReadOnly(readOnly.get(columnKey) != null);
-            }
+            renderer.setReadOnly(readOnly != null && readOnly.get(columnKey) != null);
 
             Object background = rowBackground;
             if (background == null && cellBackgroundValues != null) {

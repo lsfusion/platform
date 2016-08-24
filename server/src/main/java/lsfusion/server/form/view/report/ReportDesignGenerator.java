@@ -302,7 +302,7 @@ public class ReportDesignGenerator {
             GroupObjectEntity applyGroup = property.entity.propertyObject.getApplyObject(formView.entity.getGroupsList());
             GroupObjectEntity drawGroup = property.entity.getToDraw(formView.entity);
 
-            if (applyGroup == null && drawGroup == null && property.entity.propertyObject.property instanceof CalcProperty && ((CalcProperty) property.entity.propertyObject.property).getInterfaceCount() == 0) {
+            if (applyGroup == null && drawGroup == null && property.entity.propertyObject.property instanceof CalcProperty && ((CalcProperty) property.entity.propertyObject.property).getOrderInterfaces().isEmpty()) {
                 ReportDrawField reportField = property.getReportDrawField(charWidth, 1);
                 if (reportField != null) {
                     addDesignField(design, reportField);

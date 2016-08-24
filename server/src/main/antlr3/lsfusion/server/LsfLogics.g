@@ -3458,7 +3458,7 @@ mappedProperty returns [PropertyUsage propUsage, List<TypedParameter> mapping]
 	;
 
 parameter
-	:	ID | RECURSIVE_PARAM
+	:	ID | NUMBERED_PARAM | RECURSIVE_PARAM
 	;
 
 typedParameter returns [TypedParameter param]

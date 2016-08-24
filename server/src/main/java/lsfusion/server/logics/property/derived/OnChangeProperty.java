@@ -94,11 +94,11 @@ public class OnChangeProperty<T extends PropertyInterface,P extends PropertyInte
     }
 
     public static <T extends PropertyInterface, P extends PropertyInterface> ImOrderSet<Interface<T, P>> getInterfaces(CalcProperty<T> onChange, CalcProperty<P> toChange) {
-        return onChange.getFriendlyPropertyOrderInterfaces().mapOrderSetValues(new GetValue<Interface<T, P>, T>() {
+        return onChange.getOrderInterfaces().mapOrderSetValues(new GetValue<Interface<T, P>, T>() {
             public Interface<T, P> getMapValue(T value) {
                 return new KeyOnInterface<>(value);
             }
-        }).addOrderExcl(toChange.getFriendlyPropertyOrderInterfaces().mapOrderSetValues(new GetValue<Interface<T, P>, P>() {
+        }).addOrderExcl(toChange.getOrderInterfaces().mapOrderSetValues(new GetValue<Interface<T, P>, P>() {
             public Interface<T, P> getMapValue(P value) {
                 return new KeyToInterface<>(value);
             }

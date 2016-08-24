@@ -8,7 +8,7 @@
         <meta http-equiv="cache-control" content="no-store, no-cache, must-revalidate"/>
         <meta http-equiv="Pragma" content="no-store, no-cache"/>
         <meta http-equiv="Expires" content="0"/>
-        <meta name="gwt:property" content="locale=<%=ServerUtils.getLocaleLanguage(request.getCookies())%>">
+        <meta name="gwt:property" content="locale=<%=ServerUtils.getLocaleLanguage()%>">
 
         <link rel="shortcut icon" href="favicon.ico" />
         
@@ -60,7 +60,7 @@
                 <div class="loadingIndicator">
                     <img id="loadingGif" src="images/loading.gif" width="16" height="16"/>
                     lsFusion<br/>
-                    <span id="loadingMsg">Loading...</span>
+                    <span id="loadingMsg">Загрузка...</span>
                 </div>
             </div>
         </div>

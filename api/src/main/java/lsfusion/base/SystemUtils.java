@@ -603,6 +603,7 @@ public class SystemUtils {
         
         int bytes = 0;
         byte currentByte = hash[bytes];
+        int bits = 0;
         int bit = 0;
         char[] result = new char[hash.length * 8 / 6 + 1];
         int num = 0;

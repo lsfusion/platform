@@ -27,7 +27,7 @@ public class ViewProxyUtil {
             throw new RuntimeException("object is undefined");
         }
 
-        ViewProxy viewProxy;
+        ViewProxy viewProxy = null;
         try {
             viewProxy = getViewProxy(propertyReceiver);
         } catch (Exception e) {

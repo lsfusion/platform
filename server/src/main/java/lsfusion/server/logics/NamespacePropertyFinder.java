@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by DAle on 10.04.14
+ * Created by DAle on 10.04.14.
  */
 
 public class NamespacePropertyFinder extends NamespaceElementFinder<LP<?, ?>, List<ResolveClassSet>> {

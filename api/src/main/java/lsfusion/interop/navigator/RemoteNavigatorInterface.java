@@ -1,7 +1,6 @@
 package lsfusion.interop.navigator;
 
 import lsfusion.base.DefaultFormsType;
-import lsfusion.interop.LocalePreferences;
 import lsfusion.interop.form.RemoteFormInterface;
 import lsfusion.interop.form.ServerResponse;
 import lsfusion.interop.remote.ClientCallBackInterface;
@@ -53,6 +52,4 @@ public interface RemoteNavigatorInterface extends PendingRemoteInterface {
     boolean isConfigurationAccessAllowed() throws RemoteException;
 
     boolean isBusyDialog() throws RemoteException;
-
-    LocalePreferences getLocalePreferences() throws RemoteException;
 }

@@ -57,20 +57,10 @@ public abstract class RmiRequest<T> {
         onResponse(requestIndex, result);
     }
 
-    final void onResponseGetFailed(Exception e) throws Exception {
-        if (logger.isDebugEnabled()) {
-            logger.debug("OnResponseGetFailed: " + this);
-        }
-        onResponseGetFailed(requestIndex, e);
-    }
-
     protected void onAsyncRequest(long requestIndex) {
     }
 
     protected abstract T doRequest(long requestIndex, long lastReceivedRequestIndex) throws RemoteException;
-
-    protected void onResponseGetFailed(long requestIndex, Exception e) throws Exception {
-    }
 
     protected void onResponse(long requestIndex, T result) throws Exception {
     }

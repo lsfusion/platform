@@ -8,7 +8,7 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.interop.GUIPreferences;
 import lsfusion.interop.RemoteLogicsInterface;
-import lsfusion.interop.LocalePreferences;
+import lsfusion.interop.TimePreferencies;
 import lsfusion.interop.VMOptions;
 import lsfusion.interop.event.IDaemonTask;
 import lsfusion.interop.exceptions.RemoteMessageException;
@@ -188,15 +188,23 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
 
     @Override
     public Integer getApiVersion() throws RemoteException {
-        return 16;
+        return 13;
     }
 
     public GUIPreferences getGUIPreferences() throws RemoteException {
         return new GUIPreferences(name, displayName, null, null, Boolean.parseBoolean(clientHideMenu));
     }
     
-    public LocalePreferences getDefaultLocalePreferences() throws RemoteException {
-        return new LocalePreferences(userLanguage, userCountry, userTimeZone, twoDigitYearStart, false);
+    public TimePreferencies getTimePreferencies() throws RemoteException {
+        return new TimePreferencies(userTimeZone, twoDigitYearStart);
+    }
+
+    public String getUserCountry() throws RemoteException {
+        return userCountry;
+    }
+
+    public String getUserLanguage() throws RemoteException {
+        return userLanguage;
     }
 
     public int generateNewID() throws RemoteException {

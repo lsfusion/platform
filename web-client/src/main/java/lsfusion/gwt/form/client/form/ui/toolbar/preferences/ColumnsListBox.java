@@ -61,7 +61,8 @@ public abstract class ColumnsListBox extends Composite {
     }
 
     private PropertyLabel createLabel(PropertyListItem property) {
-        return new PropertyLabel(property);
+        PropertyLabel label = new PropertyLabel(property);
+        return label;
     }
 
     public int getItemCount() {

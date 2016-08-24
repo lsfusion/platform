@@ -134,7 +134,6 @@ public class PropertyController {
                 PanelView view = views.get(columnKey);
                 if (view == null && !property.hide) {
                     view = property.getPanelView(form, columnKey);
-                    view.setReadOnly(property.isReadOnly());
                     views.put(columnKey, view);
 
                     panelController.addGroupObjectActions(view.getComponent());
@@ -183,9 +182,7 @@ public class PropertyController {
             }
         }
 
-        if (readOnly != null) {
-            view.setReadOnly(readOnly.get(columnKey) != null);
-        }
+        view.setReadOnly(readOnly != null && readOnly.get(columnKey) != null);
 
         Color background = rowBackground;
         if (background == null && cellBackgroundValues != null) {

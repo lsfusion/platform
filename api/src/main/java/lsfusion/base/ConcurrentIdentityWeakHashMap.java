@@ -182,7 +182,7 @@ public final class ConcurrentIdentityWeakHashMap<K, V> extends AbstractMap<K, V>
         }
 
         @SuppressWarnings("unchecked")
-        static <K, V> HashEntry<K, V>[] newArray(int i) {
+        static final <K, V> HashEntry<K, V>[] newArray(int i) {
             return new HashEntry[i];
         }
     }
@@ -274,7 +274,7 @@ public final class ConcurrentIdentityWeakHashMap<K, V> extends AbstractMap<K, V>
         }
 
         @SuppressWarnings("unchecked")
-        static <K, V> Segment<K, V>[] newArray(int i) {
+        static final <K, V> Segment<K, V>[] newArray(int i) {
             return new Segment[i];
         }
 
@@ -481,9 +481,11 @@ public final class ConcurrentIdentityWeakHashMap<K, V> extends AbstractMap<K, V>
             threshold = (int) (newTable.length * loadFactor);
             int sizeMask = newTable.length - 1;
             int reduce = 0;
-            for (HashEntry<K, V> e : oldTable) {
+            for (int i = 0; i < oldCapacity; i ++) {
                 // We need to guarantee that any existing reads of old Map can
                 // proceed. So we cannot yet null out each bin.
+                HashEntry<K, V> e = oldTable[i];
+
                 if (e != null) {
                     HashEntry<K, V> next = e.next;
                     int idx = e.hash & sizeMask;
@@ -508,7 +510,7 @@ public final class ConcurrentIdentityWeakHashMap<K, V> extends AbstractMap<K, V>
                             // Skip GC'd weak references
                             K key = p.key();
                             if (key == null) {
-                                reduce++;
+                                reduce ++;
                                 continue;
                             }
                             int k = p.hash & sizeMask;
@@ -787,14 +789,14 @@ public final class ConcurrentIdentityWeakHashMap<K, V> extends AbstractMap<K, V>
         }
         if (check != sum) { // Resort to locking all segments
             sum = 0;
-            for (Segment<K, V> segment : segments) {
-                segment.lock();
+            for (int i = 0; i < segments.length; ++ i) {
+                segments[i].lock();
             }
-            for (Segment<K, V> segment : segments) {
-                sum += segment.count;
+            for (int i = 0; i < segments.length; ++ i) {
+                sum += segments[i].count;
             }
-            for (Segment<K, V> segment : segments) {
-                segment.unlock();
+            for (int i = 0; i < segments.length; ++ i) {
+                segments[i].unlock();
             }
         }
         if (sum > Integer.MAX_VALUE) {
@@ -881,20 +883,20 @@ public final class ConcurrentIdentityWeakHashMap<K, V> extends AbstractMap<K, V>
             }
         }
         // Resort to locking all segments
-        for (Segment<K, V> segment : segments) {
-            segment.lock();
+        for (int i = 0; i < segments.length; ++ i) {
+            segments[i].lock();
         }
         boolean found = false;
         try {
-            for (Segment<K, V> segment : segments) {
-                if (segment.containsValue(value)) {
+            for (int i = 0; i < segments.length; ++ i) {
+                if (segments[i].containsValue(value)) {
                     found = true;
                     break;
                 }
             }
         } finally {
-            for (Segment<K, V> segment : segments) {
-                segment.unlock();
+            for (int i = 0; i < segments.length; ++ i) {
+                segments[i].unlock();
             }
         }
         return found;
@@ -1029,8 +1031,8 @@ public final class ConcurrentIdentityWeakHashMap<K, V> extends AbstractMap<K, V>
      */
     @Override
     public void clear() {
-        for (Segment<K, V> segment : segments) {
-            segment.clear();
+        for (int i = 0; i < segments.length; ++ i) {
+            segments[i].clear();
         }
     }
 
@@ -1046,8 +1048,8 @@ public final class ConcurrentIdentityWeakHashMap<K, V> extends AbstractMap<K, V>
      * of this table, so if it is to be used, it should be used sparingly.
      */
     public void purgeStaleEntries() {
-        for (Segment<K, V> segment : segments) {
-            segment.removeStale();
+        for (int i = 0; i < segments.length; ++ i) {
+            segments[i].removeStale();
         }
     }
 

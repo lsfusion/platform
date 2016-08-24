@@ -1173,7 +1173,8 @@ public abstract class LogicsModule {
                 for (CalcProperty property : overridePersist)
                     addProperty(null, true, new LCP(property));
             } else
-                for (LCP lcp : result) addPersistent(lcp);
+                for (int i = 0; i < result.length; i++)
+                    addPersistent(result[i]);
         }
 
         return result;
@@ -1475,7 +1476,7 @@ public abstract class LogicsModule {
             ActionProperty formProperty = drillDownFormProperty.property;
             formProperty.checkReadOnly = false;
             property.setContextMenuAction(formProperty.getSID(), formProperty.caption);
-            property.setEditAction(formProperty.getSID(), formProperty.getImplement(property.getReflectionOrderInterfaces()));
+            property.setEditAction(formProperty.getSID(), formProperty.getImplement(property.getOrderInterfaces()));
         }
     }
     
@@ -1484,7 +1485,7 @@ public abstract class LogicsModule {
     }
 
     public LAP<?> addDDAProp(LCP property) {
-        assert property.property.getReflectionOrderInterfaces().equals(property.listInterfaces);
+        assert property.property.getOrderInterfaces().equals(property.listInterfaces);
         if (property.property instanceof CalcProperty && ((CalcProperty) property.property).supportsDrillDown())
             return addDDAProp((CalcProperty) property.property);
         else 

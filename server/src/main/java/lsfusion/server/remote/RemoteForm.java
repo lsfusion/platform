@@ -949,13 +949,6 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         });
     }
 
-    public boolean isInServerInvocation(long requestIndex) throws RemoteException {
-        boolean isInServerInvocation = currentInvocation != null;
-        Object recentResult = recentResults.get(requestIndex).get();
-        assert recentResult instanceof ServerResponse && isInServerInvocation == ((ServerResponse) recentResult).resumeInvocation;
-        return isInServerInvocation;
-    }
-
     @Override
     public void interrupt(boolean cancelable) throws RemoteException {
         try {

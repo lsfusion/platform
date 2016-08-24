@@ -112,7 +112,7 @@ changedSchedulerTask (ScheduledTask t) = GROUP SUM 1 IF (((CHANGED (runAtStart(S
                                                 CHANGED(in(DOW dow, t))) AND isStartedScheduler() AND t IS ScheduledTask AND td IS ScheduledTaskDetail AND dow IS DOW BY t;
                                                 
 executeScheduledTask 'Выполнить задание' = ACTION CUSTOM 'lsfusion.server.scheduler.ExecuteScheduledTaskActionProperty' (ScheduledTask) CONFIRM;                                                                                                                                 
-setupScheduledTask 'Перезапустить задание' = ACTION CUSTOM 'lsfusion.server.scheduler.SetupScheduledTaskActionProperty' (ScheduledTask) CONFIRM;                                         
+setupScheduledTask 'Перезапустить задание' = ACTION CUSTOM 'lsfusion.server.scheduler.SetupScheduledTaskActionProperty' (ScheduledTask);                                         
 WHEN changedSchedulerTask(ScheduledTask t) DO EXEC setupScheduledTask(t);
 WHEN DROPPED (ScheduledTaskDetail td IS ScheduledTaskDetail) IF PREV(active(td)) AND isStartedScheduler() DO EXEC setupScheduledTask(scheduledTask(td));
            

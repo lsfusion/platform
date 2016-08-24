@@ -95,7 +95,7 @@ public class LongClass extends IntClass<Long> {
     }
 
     public Object getDefaultValue() {
-        return 0L;
+        return 0l;
     }
 
     public Long parseString(String s) throws ParseException {

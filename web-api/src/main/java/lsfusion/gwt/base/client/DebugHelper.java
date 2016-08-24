@@ -48,10 +48,10 @@ public class DebugHelper {
             public void run() {
 //                logCurrentFocusable();
                 Element e = getActiveElement();
-                int left;
-                int top;
-                int width;
-                int height;
+                int left = 0;
+                int top = 0;
+                int width = 0;
+                int height = 0;
                 if (e != null && e != lastActiveElement) {
                     left = e.getAbsoluteLeft() - RootPanel.get().getElement().getAbsoluteLeft() - 1;
                     top = e.getAbsoluteTop() - RootPanel.get().getElement().getAbsoluteTop() - 1;

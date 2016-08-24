@@ -33,7 +33,6 @@ import lsfusion.interop.FormGrouping;
 import lsfusion.interop.Order;
 import lsfusion.interop.Scroll;
 import lsfusion.interop.action.ClientAction;
-import lsfusion.interop.action.ExceptionClientAction;
 import lsfusion.interop.action.LogMessageClientAction;
 import lsfusion.interop.form.*;
 
@@ -960,11 +959,6 @@ public class ClientFormController implements AsyncListener {
                     protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
                         return remoteForm.executeEditAction(requestIndex, lastReceivedRequestIndex, property.getID(), fullCurrentKey, actionSID);
                     }
-
-                    @Override
-                    protected void onResponseGetFailed(long requestIndex, Exception e) throws Exception {
-                        processServerResponse(new ServerResponse(requestIndex, new ClientAction[] {new ExceptionClientAction(e)}, isInServerInvocation(requestIndex)));
-                    }
                 });
         return result == null ? ServerResponse.EMPTY : result;
     }
@@ -989,15 +983,6 @@ public class ClientFormController implements AsyncListener {
                     }
                 });
         return result == null ? ServerResponse.EMPTY : result;
-    }
-
-    public boolean isInServerInvocation(long requestIndex) throws RemoteException {
-        return rmiQueue.directRequest(requestIndex, new RmiCheckNullFormRequest<Boolean>("isInServerInvocation") {
-            @Override
-            protected Boolean doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
-                return remoteForm.isInServerInvocation(requestIndex);
-            }
-        });
     }
 
     public void gainedFocus() {

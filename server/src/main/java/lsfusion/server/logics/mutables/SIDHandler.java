@@ -3,7 +3,7 @@ package lsfusion.server.logics.mutables;
 import lsfusion.server.logics.mutables.interfaces.NFList;
 import lsfusion.server.logics.mutables.interfaces.NFMapList;
 
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.Iterator;
 
 public abstract class SIDHandler<K> {
@@ -16,7 +16,7 @@ public abstract class SIDHandler<K> {
         String sid = getSID(object);
         NFList<K> nfList = sidToObject.getNFList(sid);
         assert !checkUnique() || nfList == null || nfList.getNFList(version).isEmpty();
-        sidToObject.addAll(sid, Collections.singletonList(object), version);
+        sidToObject.addAll(sid, Arrays.asList(object), version);
     }
     
     public boolean checkUnique() {

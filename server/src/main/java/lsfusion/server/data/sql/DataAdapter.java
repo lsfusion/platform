@@ -43,9 +43,9 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
     protected DataAdapter() {
     }
 
-    protected abstract void ensureDB(boolean cleanDB) throws Exception;
+    protected abstract void ensureDB(boolean cleanDB) throws Exception, SQLException, InstantiationException, IllegalAccessException;
 
-    protected DataAdapter(String dataBase, String server, String instance, String userID, String password, Long connectTimeout, boolean cleanDB) throws Exception {
+    protected DataAdapter(String dataBase, String server, String instance, String userID, String password, Long connectTimeout, boolean cleanDB) throws Exception, SQLException, IllegalAccessException, InstantiationException {
 
         Class.forName(getClassName());
 
@@ -406,11 +406,14 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
     protected Connection ensureConnection;
 
     protected void executeEnsure(String command) throws SQLException {
-        //        statement.setQueryTimeout(1);
-        try (Statement statement = ensureConnection.createStatement()) {
+        Statement statement = ensureConnection.createStatement();
+//        statement.setQueryTimeout(1);
+        try {
             statement.execute(command);
-        } catch (SQLException e) {
+        } catch(SQLException e) {
             ServerLoggers.sqlSuppLog(e);
+        } finally {
+            statement.close();
         }
     }
 

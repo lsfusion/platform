@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Map;
 
 public class GBusyDialog extends WindowBox {
-    private static final MainFrameMessages messages = MainFrameMessages.Instance.get();
+
     private static boolean devMode = MainFrame.configurationAccessAllowed;
     public Boolean needInterrupt = null;
 
@@ -54,7 +54,8 @@ public class GBusyDialog extends WindowBox {
         setGlassEnabled(true);
 
         addStyleName("busyDialog");
-        setText(messages.busyDialogLoading());
+        setText("Загрузка");
+
 
         mainPanel = new VerticalPanel();
         mainPanel.setWidth("100%");
@@ -82,7 +83,7 @@ public class GBusyDialog extends WindowBox {
         HorizontalPanel buttonPanel = new HorizontalPanel();
         buttonPanel.setSpacing(5);
 
-        Button btnCopy = new Button(messages.busyDialogCopyToClipboard());
+        Button btnCopy = new Button("Копировать в буфер обмена");
         if (devMode) {
             btnCopy.addClickHandler(new ClickHandler() {
                 @Override
@@ -93,7 +94,7 @@ public class GBusyDialog extends WindowBox {
             buttonPanel.add(btnCopy);
         }
 
-        btnExit = new Button(messages.busyDialogExit());
+        btnExit = new Button("Выйти");
         btnExit.setEnabled(false);
         btnExit.addClickHandler(new ClickHandler() {
             @Override
@@ -103,7 +104,7 @@ public class GBusyDialog extends WindowBox {
         });
         buttonPanel.add(btnExit);
 
-        btnReconnect = new Button(messages.busyDialogReconnect());
+        btnReconnect = new Button("Переподключиться");
         btnReconnect.setEnabled(false);
         btnReconnect.addClickHandler(new ClickHandler() {
             @Override
@@ -113,7 +114,7 @@ public class GBusyDialog extends WindowBox {
         });
         buttonPanel.add(btnReconnect);
 
-        btnCancel = new Button(messages.cancel());
+        btnCancel = new Button("Отменить");
         btnCancel.setEnabled(false);
         btnCancel.addClickHandler(new ClickHandler() {
             @Override
@@ -123,7 +124,7 @@ public class GBusyDialog extends WindowBox {
         });
         buttonPanel.add(btnCancel);
 
-        btnInterrupt = new Button(messages.busyDialogBreak());
+        btnInterrupt = new Button("Прервать");
         btnInterrupt.setEnabled(false);
         btnInterrupt.addClickHandler(new ClickHandler() {
             @Override
@@ -286,8 +287,8 @@ public class GBusyDialog extends WindowBox {
     }
 
     private void cancelAction() {
-        DialogBoxHelper.showConfirmBox(messages.busyDialogCancelTransaction(),
-                messages.busyDialogCancelTransactionConfirm(),
+        DialogBoxHelper.showConfirmBox("Отмена транзакции",
+                "Вы действительно хотите отменить транзакцию, не применив изменения в базу данных?",
                 false, new DialogBoxHelper.CloseCallback() {
                     @Override
                     public void closed(DialogBoxHelper.OptionType chosenOption) {
@@ -299,8 +300,8 @@ public class GBusyDialog extends WindowBox {
     }
 
     private void interruptAction() {
-        DialogBoxHelper.showConfirmBox(messages.busyDialogInterruptTransaction(),
-                messages.busyDialogInterruptTransactionConfirm(),
+        DialogBoxHelper.showConfirmBox("Прерывание транзакции",
+                "Вы действительно хотите прервать транзакцию? Это может привести к непредвиденным ошибкам!",
                 false, new DialogBoxHelper.CloseCallback() {
                     @Override
                     public void closed(DialogBoxHelper.OptionType chosenOption) {

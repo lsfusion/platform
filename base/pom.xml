@@ -11,11 +11,11 @@
     <groupId>lsfusion.platform</groupId>
     <artifactId>base</artifactId>
     <packaging>pom</packaging>
-    <version>1.2.4-SNAPSHOT</version>
+    <version>1.2.3</version>
     <name>Base</name>
 
     <properties>
-        <lsfusion.version>1.2.4-SNAPSHOT</lsfusion.version>
+        <lsfusion.version>1.2.3</lsfusion.version>
 
         <junit.version>4.10</junit.version>
         <log4j.version>1.2.16</log4j.version>
@@ -67,7 +67,7 @@
         <jnlp.api.version>7.0</jnlp.api.version>
         <ojdbc14.version>11.2.0.4</ojdbc14.version>
         <janino.version>2.7.8</janino.version>
-
+        
         <spring.version>3.0.5.RELEASE</spring.version>
         <aspectj.version>1.8.5</aspectj.version>
 
@@ -594,4 +594,8 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
+
+  <scm>
+    <developerConnection>scm:svn:svn://server/lsfusion/build/tags/platform-1.2.3/base</developerConnection>
+  </scm>
 </project>

@@ -20,8 +20,6 @@ import lsfusion.gwt.cellview.client.KeyboardRowChangedEvent;
 import lsfusion.gwt.cellview.client.cell.Cell;
 import lsfusion.gwt.cellview.client.cell.CellPreviewEvent;
 import lsfusion.gwt.form.client.ErrorHandlingCallback;
-import lsfusion.gwt.form.client.HotkeyManager;
-import lsfusion.gwt.form.client.MainFrameMessages;
 import lsfusion.gwt.form.client.form.ui.toolbar.preferences.GGridUserPreferences;
 import lsfusion.gwt.form.shared.actions.form.ServerResponseResult;
 import lsfusion.gwt.form.shared.view.*;
@@ -41,11 +39,9 @@ import static java.lang.Boolean.TRUE;
 import static java.lang.Math.min;
 import static java.lang.String.valueOf;
 import static java.util.Collections.singleton;
-import static lsfusion.gwt.base.client.GwtClientUtils.isShowing;
 import static lsfusion.gwt.base.shared.GwtSharedUtils.*;
 
 public class GGridTable extends GGridPropertyTable<GridDataRecord> {
-    private static final MainFrameMessages messages = MainFrameMessages.Instance.get();
     private static final double QUICK_SEARCH_MAX_DELAY = 2000;
 
     private ArrayList<GPropertyDraw> columnProperties = new ArrayList<>();
@@ -82,6 +78,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
     private GGridUserPreferences generalGridPreferences;
     private GGridUserPreferences userGridPreferences;
     private GGridUserPreferences currentGridPreferences;
+    GFormController formController;
 
     private int nextColumnID = 0;
 
@@ -94,6 +91,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
     public GGridTable(GFormController iform, GGroupObjectController igroupController, GGridController gridController, GGridUserPreferences[] iuserPreferences) {
         super(iform, null);
 
+        this.formController = iform;
         this.groupObjectController = igroupController;
         this.groupObject = igroupController.groupObject;
         this.gridController = gridController;
@@ -309,7 +307,6 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
                 List<GGroupObjectValue> columnKeys = columnGroupsColumnKeys.get(i);
                 
                 if (columnGroup.size() == 1) {
-                    //noinspection Duplicates
                     for (GPropertyDraw property : columnGroup) {
                         //showIfs.get() вынесен из двойного цикла
                         Map<GGroupObjectValue, Object> propShowIfs = showIfs.get(property);
@@ -321,7 +318,6 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
                         }
                     }
                 } else {
-                    //noinspection Duplicates
                     for (GGroupObjectValue columnKey : columnKeys) {
                         for (GPropertyDraw property : columnGroup) {
                             Map<GGroupObjectValue, Object> propShowIfs = showIfs.get(property);
@@ -647,20 +643,6 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
 
         int newColumnIndex = GwtSharedUtils.relativePosition(property, form.getPropertyDraws(), properties);
         properties.add(newColumnIndex, property);
-        
-        if (property.editKey != null) {
-            form.addHotkeyBinding(property.groupObject, property.editKey, new HotkeyManager.Binding() {
-                @Override
-                public boolean onKeyPress(NativeEvent event, GKeyStroke key) {
-                    if (!form.isEditing() && isShowing(GGridTable.this)) {
-                        selectProperty(property); // редактирование сразу по индексу не захотело работать. поэтому сначала выделяем ячейку
-                        editCellAt(getKeyboardSelectedRow(), getKeyboardSelectedColumn(), GEditBindingMap.CHANGE);
-                        return true;
-                    }
-                    return false;
-                }
-            });
-        }
 
         columnsUpdated = true;
     }
@@ -847,7 +829,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
         boolean singleC = table.size() == 1 && tableColumns == 1;
 
         if (!singleC) {
-            DialogBoxHelper.showConfirmBox("lsFusion", messages.formGridSureToPasteMultivalue(), false, new DialogBoxHelper.CloseCallback() {
+            DialogBoxHelper.showConfirmBox("lsFusion", "Вы уверены, что хотите изменить значения нескольких ячеек?", false, new DialogBoxHelper.CloseCallback() {
                 @Override
                 public void closed(DialogBoxHelper.OptionType chosenOption) {
                     if (chosenOption == DialogBoxHelper.OptionType.YES) {
@@ -997,7 +979,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
         currentGridPreferences.resetPreferences();
 
         if (forAllUsers) {
-            form.blockingConfirm(messages.formGridPreferencesCompleteReset(), messages.formGridPreferencesCompleteResetHeader(), false, 0, 0, new DialogBoxHelper.CloseCallback() {
+            formController.blockingConfirm("Сбросить также индивидуальные настройки пользователей?", "Сброс настроек", false, 0, 0, new DialogBoxHelper.CloseCallback() {
                 @Override
                 public void closed(DialogBoxHelper.OptionType chosenOption) {
                     form.saveUserPreferences(currentGridPreferences, true, chosenOption == DialogBoxHelper.OptionType.YES, new ErrorHandlingCallback<ServerResponseResult>() {

@@ -192,8 +192,7 @@ public class KeyStrokes {
         if (event instanceof KeyEvent) {
             KeyEvent keyEvent = (KeyEvent)event;
             int keyCode = keyEvent.getKeyCode();
-            return (keyCode >= KeyEvent.VK_0 && keyCode <= KeyEvent.VK_9 && !keyEvent.isShiftDown()) 
-                    || (keyCode >= KeyEvent.VK_NUMPAD0 && keyCode <= KeyEvent.VK_NUMPAD9);
+            return keyCode >= KeyEvent.VK_0 && keyCode <= KeyEvent.VK_9 || keyCode >= KeyEvent.VK_NUMPAD0 && keyCode <= KeyEvent.VK_NUMPAD9;
         }
         return false;
     }

@@ -26,7 +26,7 @@ public abstract class LP<T extends PropertyInterface, P extends Property<T>> {
 
     public LP(P property) {
         this.property = property;
-        listInterfaces = property.getFriendlyPropertyOrderInterfaces();
+        listInterfaces = property.getOrderInterfaces();
     }
 
     public LP(P property, ImOrderSet<T> listInterfaces) {

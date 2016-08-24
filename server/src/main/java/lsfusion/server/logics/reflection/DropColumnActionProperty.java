@@ -1,6 +1,6 @@
 package lsfusion.server.logics.reflection;
 
-import lsfusion.server.ServerLoggers;
+import lsfusion.interop.action.MessageClientAction;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.BusinessLogics;
@@ -30,7 +30,7 @@ public class DropColumnActionProperty extends ScriptingActionProperty {
         try {
             context.getDbManager().dropColumn(tableName, columnName);
         } catch (SQLException e) {
-            ServerLoggers.sqlLogger.error("Ошибка при удалении колонки", e);
+            context.requestUserInteraction(new MessageClientAction(e.getMessage(), "Ошибка при удалении колонки"));
         }
         delete.execute(context, dropColumnObject);
     }
