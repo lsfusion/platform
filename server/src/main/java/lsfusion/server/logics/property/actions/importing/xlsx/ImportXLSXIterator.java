@@ -9,6 +9,7 @@ import lsfusion.server.classes.ValueClass;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.ClassType;
 import lsfusion.server.logics.property.actions.importing.ImportIterator;
+import org.apache.commons.lang3.time.DateUtils;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFRow;
@@ -94,9 +95,28 @@ public class ImportXLSXIterator extends ImportIterator {
                         break;
                     case Cell.CELL_TYPE_STRING:
                     default:
-                        result = (xssfCell.getStringCellValue().isEmpty()) ? defaultValue : xssfCell.getStringCellValue().trim();
+                        if(dateFormat != null) {
+                            result = (xssfCell.getStringCellValue().isEmpty()) ? defaultValue : xssfCell.getStringCellValue().trim();
+                            if(result != null)
+                                result = parseFormatDate(dateFormat, result);
+                        } else {
+                            result = (xssfCell.getStringCellValue().isEmpty()) ? defaultValue : xssfCell.getStringCellValue().trim();
+                        }
                 }
             }
+        }
+        return result;
+    }
+
+    private String parseFormatDate(DateFormat dateFormat, String value) {
+        String result = null;
+        try {
+            if (value != null && !value.isEmpty() && !value.replace(".", "").trim().isEmpty()) {
+                Date date = DateUtils.parseDate(value, "dd/MM/yyyy", "dd.MM.yyyy");
+                if(date != null)
+                    result = dateFormat.format(date);
+            }
+        } catch (ParseException ignored) {
         }
         return result;
     }
