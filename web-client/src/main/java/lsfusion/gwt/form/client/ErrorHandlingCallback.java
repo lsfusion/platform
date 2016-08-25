@@ -18,7 +18,8 @@ public class ErrorHandlingCallback<T> extends AsyncCallbackEx<T> {
     public void failure(Throwable caught) {
         GwtClientUtils.removeLoaderFromHostedPage();
 
-        showErrorMessage(caught);
+        if(!GConnectionLostManager.shouldBeBlocked())
+            showErrorMessage(caught);
     }
 
     protected void showErrorMessage(final Throwable caught) {

@@ -9,6 +9,7 @@ import com.google.gwt.user.client.rpc.RpcRequestBuilder;
 import com.google.gwt.user.client.rpc.ServiceDefTarget;
 import com.google.gwt.user.client.rpc.StatusCodeException;
 import lsfusion.gwt.base.client.GwtClientUtils;
+import lsfusion.gwt.form.client.GConnectionLostManager;
 import lsfusion.gwt.base.shared.RetryException;
 import lsfusion.gwt.form.client.GExceptionManager;
 import net.customware.gwt.dispatch.client.AbstractDispatchAsync;
@@ -64,7 +65,9 @@ public class DispatchAsyncWrapper extends AbstractDispatchAsync {
         getRealServiceInstance().execute(action, new AsyncCallback<Result>() {
             public void onFailure(Throwable caught) {
                 if ((caught instanceof StatusCodeException && finalRequestTry <= MAX_REQUEST_TRIES) // при разрыве связи пробуем послать запрос ещё MAX_REQUEST_TRIES раз
-                        || (caught instanceof RetryException && finalRequestTry <= ((RetryException) caught).maxTries)) { 
+                        || (caught instanceof RetryException && finalRequestTry <= ((RetryException) caught).maxTries)) {
+                    if(caught instanceof RetryException && finalRequestTry == 2) //first retry
+                        GConnectionLostManager.registerFailedRmiRequest();
                     GExceptionManager.addFailedRmiRequest(caught, action);
                     
                     Timer timer = new Timer() {  // таймер, чтобы не исчерпать слишком быстро попытки соединения с сервером
@@ -81,7 +84,8 @@ public class DispatchAsyncWrapper extends AbstractDispatchAsync {
 
             public void onSuccess(Result result) {
                 DispatchAsyncWrapper.this.onSuccess(action, (R) result, callback);
-                
+                if(finalRequestTry > 1) //had retries
+                    GConnectionLostManager.unregisterFailedRmiRequest();
                 requestTries.remove(action);
                 GExceptionManager.flushFailedNotFatalRequests(action);
             }

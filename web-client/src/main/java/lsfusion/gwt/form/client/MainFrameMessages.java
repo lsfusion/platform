@@ -78,6 +78,14 @@ public interface MainFrameMessages extends Messages {
     String uncaughtGWTException();
     String formGridSureToPasteMultivalue();
 
+    String rmiConnectionLost();
+    String rmiConnectionLostFatal();
+    String rmiConnectionLostNonfatal();
+    String rmiConnectionLostExit();
+    String rmiConnectionLostRelogin();
+    String rmiConnectionLostReconnect();
+
+
     class Instance {
         private static final MainFrameMessages instance = (MainFrameMessages) GWT.create(MainFrameMessages.class);
 

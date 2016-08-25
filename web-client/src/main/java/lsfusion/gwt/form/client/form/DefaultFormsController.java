@@ -196,10 +196,12 @@ public abstract class DefaultFormsController implements FormsController {
 
     @Override
     public void dropCurForm(GFormController form) {
-        gFormControllersList.remove(form);
-        gFormControllersMap.remove(form.getForm().sID);
-        if(gFormControllersList.isEmpty())
-            setCurrentForm(null);
+        if(form != null) {
+            gFormControllersList.remove(form);
+            gFormControllersMap.remove(form.getForm().sID);
+            if (gFormControllersList.isEmpty())
+                setCurrentForm(null);
+        }
     }
 
     @Override

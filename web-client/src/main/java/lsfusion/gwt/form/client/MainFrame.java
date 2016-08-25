@@ -163,10 +163,12 @@ public class MainFrame implements EntryPoint {
             }
         });
 
+        GConnectionLostManager.start();
+
         Scheduler.get().scheduleFixedDelay(new Scheduler.RepeatingCommand() {
             @Override
             public boolean execute() {
-                if (shouldRepeatPingRequest) {
+                if (shouldRepeatPingRequest && !GConnectionLostManager.shouldBeBlocked()) {
                     setShouldRepeatPingRequest(false);
                     dispatcher.execute(new ClientMessage(), new ErrorHandlingCallback<ClientMessageResult>() {
                         @Override
@@ -189,6 +191,7 @@ public class MainFrame implements EntryPoint {
 
                         @Override
                         public void failure(Throwable caught) {
+                            GConnectionLostManager.connectionLost();
                             setShouldRepeatPingRequest(true);
                             super.failure(caught);
                         }
