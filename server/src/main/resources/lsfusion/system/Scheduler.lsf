@@ -59,6 +59,8 @@ returnProperty 'Возвращаемый класс' (ScheduledTaskDetail schedu
 timeout 'Выполнять не дольше (секунд)' = DATA INTEGER (ScheduledTaskDetail);
 ignoreExceptions 'Игнорировать ошибки' = DATA BOOLEAN (ScheduledTaskDetail);
 
+CONSTRAINT script(ScheduledTaskDetail d) AND property(d) MESSAGE 'В задании планировщика не могут быть одновременно выбраны свойство и скрипт';
+
 CLASS ScheduledTaskLog 'Лог планировщика';
 TABLE scheduledTaskLog (ScheduledTaskLog);
 TABLE scheduledTaskScheduledTaskLog (ScheduledTask, ScheduledTaskLog);
