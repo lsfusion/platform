@@ -40,8 +40,7 @@ public class GConnectionLostManager {
                     blockDialog.setFatal(isConnectionLost());
                     if (!shouldBeBlocked()) {
                         timerWhenBlocked.cancel();
-                        blockDialog.hide();
-                        blockDialog.makeMaskVisible(false);
+                        blockDialog.hideDialog();
                         blockDialog = null;
                     }
                 }
@@ -68,7 +67,7 @@ public class GConnectionLostManager {
                     }
                 }
             });
-            blockDialog.showCenter();
+            blockDialog.showDialog();
         }
     }
 
@@ -104,8 +103,7 @@ public class GConnectionLostManager {
         }
 
         if (blockDialog != null) {
-            blockDialog.hide();
-            blockDialog.makeMaskVisible(false);
+            blockDialog.hideDialog();
             blockDialog = null;
         }
     }
@@ -113,6 +111,7 @@ public class GConnectionLostManager {
 
     public static class GBlockDialog extends WindowBox {
 
+        public Timer showButtonsTimer;
         private Button btnExit;
         private Button btnRelogin;
         private Button btnReconnect;
@@ -131,6 +130,7 @@ public class GConnectionLostManager {
             buttonPanel.setSpacing(5);
 
             btnExit = new Button(messages.rmiConnectionLostExit());
+            btnExit.setEnabled(false);
             btnExit.addClickHandler(new ClickHandler() {
                 @Override
                 public void onClick(ClickEvent clickEvent) {
@@ -140,6 +140,7 @@ public class GConnectionLostManager {
             buttonPanel.add(btnExit);
 
             btnReconnect = new Button(messages.rmiConnectionLostReconnect());
+            btnReconnect.setEnabled(false);
             btnReconnect.addClickHandler(new ClickHandler() {
                 @Override
                 public void onClick(ClickEvent clickEvent) {
@@ -151,6 +152,7 @@ public class GConnectionLostManager {
             }
 
             btnRelogin = new Button(messages.rmiConnectionLostRelogin());
+            btnRelogin.setEnabled(false);
             btnRelogin.addClickHandler(new ClickHandler() {
                 @Override
                 public void onClick(ClickEvent clickEvent) {
@@ -174,10 +176,27 @@ public class GConnectionLostManager {
             setWidget(mainPanel);
         }
 
-        public void showCenter() {
+        public void showDialog() {
+            showButtonsTimer = new Timer() {
+                @Override
+                public void run() {
+                    btnExit.setEnabled(true);
+                    btnRelogin.setEnabled(true);
+                    btnReconnect.setEnabled(true);
+                }
+            };
+            showButtonsTimer.schedule(5000);
+
             if(!isShowing())
                 center();
             makeMaskVisible(true);
+        }
+
+        public void hideDialog() {
+            if(showButtonsTimer != null)
+                showButtonsTimer.cancel();
+            hide();
+            blockDialog.makeMaskVisible(false);
         }
 
         private void exitAction() {
