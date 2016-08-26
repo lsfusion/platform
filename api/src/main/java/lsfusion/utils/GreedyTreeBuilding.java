@@ -420,16 +420,20 @@ public class GreedyTreeBuilding<V, C extends Comparable<C>, E extends GreedyTree
                     TreeNode<V, C> firstNode = DP(submask, memo, functor);
                     TreeNode<V, C> secondNode = DP(submask2, memo, functor);
                     EdgeLinkedList<E> edgeList = new EdgeLinkedList<>();
-                    for (int firstIndex = 0; firstIndex < vertices.size(); ++firstIndex) {
-                        if ((submask & (1<<firstIndex)) != 0) {
-                            for (E edge : adjList.get(firstIndex)) {
-                                int secondIndex;
-                                if (vertexIndex.get(edge.getTo()) == firstIndex) {
-                                    secondIndex = vertexIndex.get(edge.getFrom());
-                                } else {
-                                    secondIndex = vertexIndex.get(edge.getTo());
+                    for (int fromIndex = 0; fromIndex < vertices.size(); ++fromIndex) {
+                        if ((submask & (1<<fromIndex)) != 0) {
+                            for (E edge : adjList.get(fromIndex)) {
+                                int toIndex = vertexIndex.get(edge.getTo());
+                                if ((submask2 & (1<<toIndex)) != 0) {
+                                    edgeList.addEdge(edge);
                                 }
-                                if ((submask2 & (1<<secondIndex)) != 0) {
+                            }
+                        }
+
+                        if ((submask2 & (1<<fromIndex)) != 0) {
+                            for (E edge : adjList.get(fromIndex)) {
+                                int toIndex = vertexIndex.get(edge.getTo());
+                                if ((submask & (1<<toIndex)) != 0) {
                                     edgeList.addEdge(edge);
                                 }
                             }
@@ -493,11 +497,16 @@ public class GreedyTreeBuilding<V, C extends Comparable<C>, E extends GreedyTree
         List<E> edges = new ArrayList<>(); 
         for (int leftIndex : leftNodeIndices) {
             for (E edge : adjList.get(leftIndex)) {
-                int fromIndex = vertexIndex.get(edge.getFrom());
-                int toIndex = vertexIndex.get(edge.getTo());
-                if (leftIndex == toIndex && rightNodeIndices.contains(fromIndex) ||
-                    leftIndex == fromIndex && rightNodeIndices.contains(toIndex)) {
-                    edges.add(edge);            
+                if (rightNodeIndices.contains(vertexIndex.get(edge.getTo()))) {
+                    edges.add(edge);    
+                }
+            }
+        }
+
+        for (int rightIndex : rightNodeIndices) {
+            for (E edge : adjList.get(rightIndex)) {
+                if (leftNodeIndices.contains(vertexIndex.get(edge.getTo()))) {
+                    edges.add(edge);
                 }
             }
         }
