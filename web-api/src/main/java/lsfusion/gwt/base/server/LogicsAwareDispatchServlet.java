@@ -142,17 +142,6 @@ public abstract class LogicsAwareDispatchServlet<T extends RemoteLogicsInterface
                 throw new MessageException("Access denied.");
             }
             return dispatch.execute(action);
-        } catch (RemoteDispatchException e) {
-            logger.error("Ошибка в LogicsAwareDispatchServlet.execute: ", e.getRemote());
-            if (e instanceof RemoteFormDispatchException) {
-                throw new InvalidateException(action, "Внутренняя ошибка сервера. Форма будет закрыта.");
-            } else if (e instanceof RemoteNavigatorDispatchException) {
-                navigatorProvider.invalidate();
-                throw new InvalidateException(action, "Внутренняя ошибка сервера. Попробуйте повторить действие или войти заново.");
-            } else {
-                blProvider.invalidate();
-                throw new InvalidateException(action, "Внутренняя ошибка сервера. Попробуйте перезагрузить страницу.");
-            }
         } catch (RemoteRetryException e) {
             logger.error("Ошибка в LogicsAwareDispatchServlet.execute: ", e);
             throw new RetryException(e.getMessage(), e.maxTries);
@@ -190,6 +179,16 @@ public abstract class LogicsAwareDispatchServlet<T extends RemoteLogicsInterface
 
     public RemoteNavigatorInterface getNavigator() throws RemoteException {
         return navigatorProvider.getNavigator();
+    }
+
+    public void invalidate() throws RemoteException {
+        try {
+            blProvider.invalidate();
+        } catch (Exception ignored) {}
+        try {
+            navigatorProvider.getNavigator().close();
+        } catch (Exception ignored) {}
+        navigatorProvider.invalidate();
     }
 
     public HttpServletRequest getRequest() {

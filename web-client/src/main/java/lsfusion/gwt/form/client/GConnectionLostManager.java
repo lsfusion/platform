@@ -116,7 +116,9 @@ public class GConnectionLostManager {
         private Button btnRelogin;
         private Button btnReconnect;
         private HTML lbMessage;
-        private Panel loadingPanel;
+        private VerticalPanel loadingPanel;
+        private VerticalPanel warningPanel;
+        private VerticalPanel errorPanel;
 
         private boolean fatal;
 
@@ -127,6 +129,7 @@ public class GConnectionLostManager {
             lbMessage = new HTML(fatal ? messages.rmiConnectionLostFatal() : messages.rmiConnectionLostNonfatal());
 
             HorizontalPanel buttonPanel = new HorizontalPanel();
+            buttonPanel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
             buttonPanel.setSpacing(5);
 
             btnExit = new Button(messages.rmiConnectionLostExit());
@@ -164,13 +167,32 @@ public class GConnectionLostManager {
             setModal(true);
 
             setText(messages.rmiConnectionLost());
+
+            loadingPanel = new VerticalPanel();
+            loadingPanel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
+            loadingPanel.add(new Image(GWT.getModuleBaseURL() + "images/loading_bar.gif"));
+
+            warningPanel = new VerticalPanel();
+            warningPanel.setSpacing(10);
+            warningPanel.add(new Image(GWT.getModuleBaseURL() + "images/warning.png"));
+            if(fatal)
+                warningPanel.setVisible(false);
+            errorPanel = new VerticalPanel();
+            errorPanel.setSpacing(10);
+            errorPanel.add(new Image(GWT.getModuleBaseURL() + "images/error.png"));
+            if(!fatal)
+                errorPanel.setVisible(false);
+
+            HorizontalPanel centralPanel = new HorizontalPanel();
+            centralPanel.add(warningPanel);
+            centralPanel.add(errorPanel);
+            centralPanel.add(lbMessage);
+
             VerticalPanel mainPanel = new VerticalPanel();
             mainPanel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
-            loadingPanel = new VerticalPanel();
-            loadingPanel.add(new Image(GWT.getModuleBaseURL() + "images/loading_bar.gif"));
             if(!fatal)
                 mainPanel.add(loadingPanel);
-            mainPanel.add(lbMessage);
+            mainPanel.add(centralPanel);
             mainPanel.add(buttonPanel);
 
             setWidget(mainPanel);
@@ -200,17 +222,14 @@ public class GConnectionLostManager {
         }
 
         private void exitAction() {
-            GConnectionLostManager.invalidate();
             GwtClientUtils.logout();
         }
 
         private void reconnectAction() {
-            GConnectionLostManager.invalidate();
             Window.Location.reload();
         }
 
         private void reloginAction() {
-            GConnectionLostManager.invalidate();
             GwtClientUtils.relogin();
         }
 
@@ -218,7 +237,10 @@ public class GConnectionLostManager {
             if (this.fatal != fatal) {
                 lbMessage.setHTML(fatal ? messages.rmiConnectionLostFatal() : messages.rmiConnectionLostNonfatal());
                 loadingPanel.setVisible(!fatal);
+                warningPanel.setVisible(!fatal);
+                errorPanel.setVisible(fatal);
                 this.fatal = fatal;
+                center();
             }
         }
 
