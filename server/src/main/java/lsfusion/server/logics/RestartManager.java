@@ -22,6 +22,7 @@ public class RestartManager implements InitializingBean {
     private BusinessLogics businessLogics;
 
     private Future restartFuture;
+    private boolean pendingRestart = false; //changes in service.lsf
 
     public RestartManager() {
     }
@@ -71,7 +72,11 @@ public class RestartManager implements InitializingBean {
     }
 
     public synchronized boolean isPendingRestart() {
-        return restartFuture != null && !restartFuture.isDone();
+        return pendingRestart;
+    }
+
+    public void setPendingRestart(boolean pendingRestart) {
+        this.pendingRestart = pendingRestart;
     }
 
     public synchronized void cancelRestart() throws SQLException {

@@ -242,13 +242,33 @@ onStarted() += ACTION {
     refreshReupdateMode();
 } 
 
+restartPushed = DATA BOOLEAN ();
+notRestartPushed = NOT restartPushed();
+
+scheduledRestart 'Остановка через 5 минут' = DATA BOOLEAN ();
+restartServerAction 'Запланировать остановку сервера' = ACTION CUSTOM 'lsfusion.server.logics.service.RestartActionProperty' ();
+cancelRestartServerAction 'Отменить запланированную остановку сервера' = ACTION CUSTOM 'lsfusion.server.logics.service.CancelRestartActionProperty' ();
+
+forbidLogin 'Запретить вход новым пользователям' = DATA BOOLEAN ();
+setPendingRestartAction 'Запретить вход новым пользователям' = ACTION CUSTOM <{ context.getRestartManager().setPendingRestart(true); }>;
+resetPendingRestartAction 'Разрешить вход новым пользователям' = ACTION CUSTOM <{ context.getRestartManager().setPendingRestart(false); }>;
+
+
 restartServer 'Остановить сервер' = ACTION ABSTRACT LIST ();
-restartServerAction 'Остановить сервер' = ACTION CUSTOM 'lsfusion.server.logics.service.RestartActionProperty' ();
-restartServer() += ACTION { restartServerAction(); }
+restartServer() += ACTION {
+    IF scheduledRestart() THEN restartServerAction();
+    IF forbidLogin() THEN setPendingRestartAction();
+    restartPushed() <- TRUE;
+    apply();
+}
 
 cancelRestartServer 'Отменить остановку сервера' = ACTION ABSTRACT LIST ();
-cancelRestartServerAction 'Отменить остановку сервера' = ACTION CUSTOM 'lsfusion.server.logics.service.CancelRestartActionProperty' ();
-cancelRestartServer() += ACTION { cancelRestartServerAction(); }
+cancelRestartServer() += ACTION { 
+    cancelRestartServerAction();
+    resetPendingRestartAction();
+    restartPushed() <- NULL;
+    apply();
+}
 
 runGarbageCollector 'Запустить сборщик мусора' = ACTION CUSTOM 'lsfusion.server.logics.service.GarbageCollectorActionProperty' ();
 dropLRUPercent 'Процент очистки LRU' = DATA DOUBLE ();
@@ -283,7 +303,7 @@ FORM admin 'Администрирование'
     PROPERTIES() currentDate, defaultBackgroundColor, defaultForegroundColor, 
                  selectedRowBackgroundColor, selectedRowBorderColor, selectedCellBackgroundColor, focusedCellBackgroundColor, focusedCellBorderColor,
                  reportCharWidth, reportRowHeight, reportNotToStretch, 
-                 restartServer SHOWIF isNotServerRestarting(), cancelRestartServer SHOWIF isServerRestarting(), 
+                 scheduledRestart, forbidLogin, restartServer SHOWIF notRestartPushed(), cancelRestartServer SHOWIF restartPushed(),
                  checkAggregationsAction, checkClassesAction, checkIndicesAction, checkAggregationsMultiThreadAction, checkClassesMultiThreadAction,
                  recalculateClassesAction, recalculateAction, recalculateFollowsAction, recalculateStatsAction, overCalculateStatsAction, maxQuantityOverCalculate,
                  threadCountMultiThread, recalculateClassesMultiThreadAction, recalculateMultiThreadAction, recalculateFollowsMultiThreadAction,
@@ -307,6 +327,8 @@ DESIGN admin {
             }
             NEW administration {
                 caption = 'Запуск';
+                MOVE PROPERTY(scheduledRestart());
+                MOVE PROPERTY(forbidLogin()); 
                 MOVE PROPERTY(restartServer());
                 MOVE PROPERTY(cancelRestartServer());
                 MOVE PROPERTY(hostnameServerComputer());
