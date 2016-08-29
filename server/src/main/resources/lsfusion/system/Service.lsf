@@ -270,6 +270,10 @@ cancelRestartServer() += ACTION {
     apply();
 }
 
+onStarted() += ACTION {
+    restartPushed() <- NULL;
+} 
+
 runGarbageCollector 'Запустить сборщик мусора' = ACTION CUSTOM 'lsfusion.server.logics.service.GarbageCollectorActionProperty' ();
 dropLRUPercent 'Процент очистки LRU' = DATA DOUBLE ();
 randomDropLRU 'Случ. очистка LRU' = DATA BOOLEAN ();
