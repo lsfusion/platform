@@ -180,9 +180,20 @@ sendMessage 'Написать в чат' (Chat chat, TEXT message, BOOLEAN syste
 sendMessage 'Отправить' = ACTION ABSTRACT LIST (Chat, CustomUser) EDITKEY 'ctrl ENTER';
 saveMessage 'Сохранить' = ACTION ABSTRACT LIST (Chat) EDITKEY 'ctrl ENTER';
 
-restartServer() += ACTION { sendMessage(chat('system'), 'Сервер будет остановлен через 5 минут!\nСохраните текущую работу и выйдите из приложения.', TRUE); }
+sendRestartMessage 'Отправить сообщение об остановке сервера' = DATA BOOLEAN ();
+sendRestartServerMessage 'Отправить сообщение об остановке сервера' () = ACTION sendMessage(chat('system'), 'Сервер будет остановлен через 5 минут!\nСохраните текущую работу и выйдите из приложения.', TRUE);
+restartServer() += ACTION { IF sendRestartMessage() THEN sendRestartServerMessage(); }
 
-cancelRestartServer() += ACTION { sendMessage(chat('system'), 'Остановка сервера отменена', TRUE); }
+sendCancelRestartServerMessage 'Отправить сообщение об отмене остановки сервера' () = ACTION sendMessage(chat('system'), 'Остановка сервера отменена', TRUE);
+cancelRestartServer() += ACTION { IF sendRestartMessage() THEN sendCancelRestartServerMessage(); }
+
+EXTEND FORM admin PROPERTIES() sendRestartMessage;
+
+DESIGN admin {
+    administration {
+        MOVE PROPERTY(sendRestartMessage()) BEFORE PROPERTY(restartServer());
+    }
+}                               
 
 seekChat = ACTION ABSTRACT(CustomUser);
   
