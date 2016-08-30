@@ -50,7 +50,7 @@
         <dependency>
             <groupId>org.silvertunnel-ng</groupId>
             <artifactId>netlib</artifactId>
-            <version>0.0.2</version>
+            <version>0.0.5</version>
         </dependency>
     </dependencies>
 </project>
