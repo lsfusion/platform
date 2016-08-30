@@ -18,6 +18,8 @@ prevCountFiles = DATA INTEGER ();
 resultCustomFile = DATA LOCAL CUSTOMFILE ();
 //value, charset, extension
 stringToCustomFile 'Запись строки в файл' = ACTION CUSTOM 'lsfusion.erp.utils.utils.StringToFileActionProperty' (VARISTRING[255], VARSTRING[10], VARSTRING[10]);
+
+mkdir 'Создать папку' = ACTION CUSTOM 'lsfusion.erp.utils.utils.MkdirActionProperty' (VARISTRING[255]);
 // --------------------------------------------- Работа со строками --------------------------------- //
 
 lower (TEXT p1) = FORMULA 'lower($1)';
