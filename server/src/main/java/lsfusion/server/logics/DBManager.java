@@ -728,13 +728,13 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 }
             }
 
-            List<AggregateProperty> recalculateProperties = new ArrayList<>();
+            List<CalcProperty> recalculateProperties = new ArrayList<>();
 
             MExclSet<Pair<String, String>> mDropColumns = SetFact.mExclSet(); // вообще pend'ить нужно только classDataProperty, но их тогда надо будет отличать
 
             // бежим по свойствам
             List<DBStoredProperty> restNewDBStored = new LinkedList<>(newDBStructure.storedProperties);
-            List<AggregateProperty> recalculateTableProperties = new ArrayList<>();
+            List<CalcProperty> recalculateStatProperties = new ArrayList<>();
             Map<Table, Map<Field, Type>> alterTableMap = new HashMap<>();
             for (DBStoredProperty oldProperty : oldDBStructure.storedProperties) {
                 Table oldTable = oldDBStructure.getTable(oldProperty.tableName);
@@ -763,8 +763,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
                                         foundInterfaces.join((ImMap<PropertyInterface, KeyField>) newProperty.property.mapTable.mapKeys), oldTable.findProperty(oldProperty.getDBName()));
                                 startLogger.info("Done");
                                 moved = true;
-                                if(newProperty.property instanceof AggregateProperty)
-                                    recalculateTableProperties.add((AggregateProperty) newProperty.property);
+                                recalculateStatProperties.add(newProperty.property);
                             } else { // надо проверить что тип не изменился
                                 Type oldType = oldTable.findProperty(oldProperty.getDBName()).type;
                                 if (!oldType.equals(newProperty.property.field.type)) {
@@ -811,8 +810,8 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
             for (DBStoredProperty property : restNewDBStored) { // добавляем оставшиеся
                 sql.addColumn(property.getTable(), property.property.field);
-                if (oldDBStructure.version > 0 && property.property instanceof AggregateProperty) // если все свойства "новые" то ничего перерасчитывать не надо
-                    recalculateProperties.add((AggregateProperty) property.property);
+                if (oldDBStructure.version > 0) // если все свойства "новые" то ничего перерасчитывать не надо
+                    recalculateStatProperties.add(property.property);
             }
 
             // обработка изменений с классами
@@ -936,8 +935,8 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
             startLogger.info("Recalculating aggregations");
             recalculateAggregations(getStack(), sql, recalculateProperties, false, startLogger); // перерасчитаем агрегации
-            updateAggregationStats(recalculateProperties, tableStats, false);
-            updateAggregationStats(recalculateTableProperties, tableStats, true);
+            updateAggregationStats(recalculateProperties, tableStats);
+            updateAggregationStats(recalculateStatProperties, tableStats);
             if(!noTransSyncDB)
                 sql.commitTransaction();
 
@@ -970,7 +969,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
     }
 
-    private void updateAggregationStats(List<AggregateProperty> recalculateProperties, ImMap<String, Integer> tableStats, boolean onlyTable) throws SQLException, SQLHandledException {
+    private void updateAggregationStats(List<CalcProperty> recalculateProperties, ImMap<String, Integer> tableStats) throws SQLException, SQLHandledException {
         Map<ImplementTable, List<CalcProperty>> calcPropertiesMap; // статистика для новых свойств
         if (Settings.get().isGroupByTables()) {
             calcPropertiesMap = new HashMap<>();
@@ -991,7 +990,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 try (DataSession session = createSession()) {
                     long start = System.currentTimeMillis();
                     startLogger.info(String.format("Update Aggregation Stats started: %s", table));
-                    propStats = table.calculateStat(reflectionLM, session, fields, onlyTable);
+                    propStats = table.calculateStat(reflectionLM, session, fields);
                     session.apply(businessLogics, getStack());
                     long time = System.currentTimeMillis() - start;
                     startLogger.info(String.format("Update Aggregation Stats: %s, %sms", table, time));
@@ -1050,11 +1049,12 @@ public class DBManager extends LogicsManager implements InitializingBean {
     }
 
     public String checkAggregations(SQLSession session) throws SQLException, SQLHandledException {
-        List<AggregateProperty> checkProperties = businessLogics.getAggregateStoredProperties(false);
+        List<CalcProperty> checkProperties = businessLogics.getAggregateStoredProperties(false);
         String message = "";
         for (int i = 0; i < checkProperties.size(); i++) {
-            AggregateProperty property = checkProperties.get(i);
-            message += property.checkAggregation(session, LM.baseClass, new ProgressBar(getString("logics.info.checking.aggregated.property"), i, checkProperties.size(), property.getSID()));
+            CalcProperty property = checkProperties.get(i);
+            if(property instanceof AggregateProperty)
+            message += ((AggregateProperty) property).checkAggregation(session, LM.baseClass, new ProgressBar(getString("logics.info.checking.aggregated.property"), i, checkProperties.size(), property.getSID()));
         }
         return message;
     }
@@ -1165,14 +1165,16 @@ public class DBManager extends LogicsManager implements InitializingBean {
             run.run(session);
     }
 
-    public String recalculateAggregations(ExecutionStack stack, SQLSession session, final List<AggregateProperty> recalculateProperties, boolean isolatedTransaction, Logger logger) throws SQLException, SQLHandledException {
+    public String recalculateAggregations(ExecutionStack stack, SQLSession session, final List<CalcProperty> recalculateProperties, boolean isolatedTransaction, Logger logger) throws SQLException, SQLHandledException {
         final List<String> messageList = new ArrayList<>();
         final int total = recalculateProperties.size();
         final long maxRecalculateTime = Settings.get().getMaxRecalculateTime();
         if(total > 0) {
             try (DataSession dataSession = createSession()) {
                 for (int i = 0; i < recalculateProperties.size(); i++) {
-                    recalculateAggregation(dataSession, session, isolatedTransaction, new ProgressBar(getString("logics.recalculation.aggregations"), i, total), messageList, maxRecalculateTime, recalculateProperties.get(i), logger);
+                    CalcProperty property = recalculateProperties.get(i);
+                    if(property instanceof AggregateProperty)
+                        recalculateAggregation(dataSession, session, isolatedTransaction, new ProgressBar(getString("logics.recalculation.aggregations"), i, total), messageList, maxRecalculateTime, (AggregateProperty) property, logger);
                 }
                 dataSession.apply(businessLogics, stack);
             }
@@ -1255,7 +1257,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
 
         if (dependents) {
-            for (AggregateProperty prop : businessLogics.getAggregateStoredProperties(true)) {
+            for (CalcProperty prop : businessLogics.getAggregateStoredProperties(true)) {
                 if (prop != property && !calculated.contains(prop) && CalcProperty.depends(prop, (CalcProperty) property)) {
                     boolean recalculate = reflectionLM.notRecalculateTableColumn.read(dataSession, reflectionLM.tableColumnSID.readClasses(dataSession, new DataObject(property.getDBName()))) == null;
                     if(recalculate)

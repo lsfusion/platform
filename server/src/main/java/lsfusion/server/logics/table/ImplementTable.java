@@ -425,10 +425,10 @@ public class ImplementTable extends GlobalTable { // последний инте
     }
 
     public void calculateStat(ReflectionLogicsModule reflectionLM, DataSession session) throws SQLException, SQLHandledException {
-        calculateStat(reflectionLM, session, null, false);
+        calculateStat(reflectionLM, session, null);
     }
 
-    public ImMap<String, Pair<Integer, Integer>> calculateStat(ReflectionLogicsModule reflectionLM, DataSession session, ImMap<PropertyField, String> props, boolean onlyTable) throws SQLException, SQLHandledException {
+    public ImMap<String, Pair<Integer, Integer>> calculateStat(ReflectionLogicsModule reflectionLM, DataSession session, ImMap<PropertyField, String> props) throws SQLException, SQLHandledException {
         ImMap<String, Pair<Integer, Integer>> propStats = MapFact.EMPTY();
         if (!SystemProperties.doNotCalculateStats) {
             boolean calcKeys = true;//props == null || onlyTable;
@@ -486,10 +486,8 @@ public class ImplementTable extends GlobalTable { // последний инте
                         propertyObject = session.addObject(reflectionLM.property);
                         reflectionLM.canonicalNameProperty.change(canonicalName, session, propertyObject);
                     }
-                    if(!onlyTable) {
-                        reflectionLM.storedProperty.change(true, session, propertyObject);
-                        reflectionLM.dbNameProperty.change(property.getName(), session, propertyObject);
-                    }
+                    reflectionLM.storedProperty.change(true, session, propertyObject);
+                    reflectionLM.dbNameProperty.change(property.getName(), session, propertyObject);
                     reflectionLM.tableSIDProperty.change(getName(), session, propertyObject);
                 }
                 if (propertyObject != null) {

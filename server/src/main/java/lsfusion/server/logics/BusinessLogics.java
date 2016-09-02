@@ -1562,8 +1562,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     }
 
     // используется не в task'ах
-    public List<AggregateProperty> getAggregateStoredProperties(boolean ignoreCheck) {
-        List<AggregateProperty> result = new ArrayList<>();
+    public List<CalcProperty> getAggregateStoredProperties(boolean ignoreCheck) {
+        List<CalcProperty> result = new ArrayList<>();
         try (final DataSession dataSession = getDbManager().createSession()) {
             for (Property property : getStoredProperties())
                 if (property instanceof AggregateProperty) {
