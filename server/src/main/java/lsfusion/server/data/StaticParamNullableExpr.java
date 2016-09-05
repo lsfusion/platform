@@ -3,14 +3,14 @@ package lsfusion.server.data;
 import lsfusion.base.TwinImmutableObject;
 import lsfusion.server.caches.hash.HashContext;
 import lsfusion.server.classes.sets.AndClassSet;
-import lsfusion.server.data.expr.StaticNotNullExpr;
+import lsfusion.server.data.expr.StaticNullableExpr;
 import lsfusion.server.data.query.CompileSource;
 
 // эмулируем ключ равный значению, используется в нескольких не принципиальных эвристиках
-public class StaticParamNotNullExpr extends StaticNotNullExpr {
+public class StaticParamNullableExpr extends StaticNullableExpr {
 
     private final String name;
-    public StaticParamNotNullExpr(AndClassSet paramClass, String name) {
+    public StaticParamNullableExpr(AndClassSet paramClass, String name) {
         super(paramClass);
         this.name = name;
     }

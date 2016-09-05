@@ -5,12 +5,10 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.caches.hash.HashContext;
 import lsfusion.server.classes.ConcreteCustomClass;
-import lsfusion.server.classes.DataClass;
 import lsfusion.server.classes.StaticClass;
 import lsfusion.server.data.ParseValue;
 import lsfusion.server.data.query.CompileSource;
 import lsfusion.server.data.translator.MapTranslate;
-import lsfusion.server.data.translator.QueryTranslator;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.type.TypeObject;
 import lsfusion.server.logics.DataObject;
@@ -37,10 +35,6 @@ public class StaticValueExpr extends StaticExpr<StaticClass> implements ParseVal
     }
 
     protected StaticValueExpr translate(MapTranslate translator) {
-        return this;
-    }
-
-    public StaticValueExpr translateQuery(QueryTranslator translator) {
         return this;
     }
 

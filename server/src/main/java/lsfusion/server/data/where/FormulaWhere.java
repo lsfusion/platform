@@ -2,30 +2,23 @@ package lsfusion.server.data.where;
 
 import lsfusion.base.ArrayInstancer;
 import lsfusion.base.BaseUtils;
-import lsfusion.base.OrderedMap;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.Settings;
-import lsfusion.server.caches.AbstractInnerContext;
 import lsfusion.server.caches.ManualLazy;
 import lsfusion.server.caches.OuterContext;
-import lsfusion.server.caches.ParamExpr;
 import lsfusion.server.caches.hash.HashContext;
-import lsfusion.server.data.Value;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
+import lsfusion.server.data.expr.query.StatType;
 import lsfusion.server.data.query.CompileSource;
 import lsfusion.server.data.query.innerjoins.GroupJoinsWheres;
 import lsfusion.server.data.query.innerjoins.KeyEquals;
 import lsfusion.server.data.query.stat.KeyStat;
-import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.where.classes.ClassExprWhere;
 import lsfusion.server.data.where.classes.MeanClassWhere;
 import lsfusion.server.data.where.classes.MeanClassWheres;
-
-import java.util.Map;
-import java.util.TreeMap;
 
 public abstract class FormulaWhere<WhereType extends Where> extends AbstractWhere {
 
@@ -153,16 +146,16 @@ public abstract class FormulaWhere<WhereType extends Where> extends AbstractWher
         return checkTrue;
     }
 
-    protected abstract <K extends BaseExpr> GroupJoinsWheres calculateGroupJoinsWheres(ImSet<K> keepStat, KeyStat keyStat, ImOrderSet<Expr> orderTop, GroupJoinsWheres.Type type);
+    protected abstract <K extends BaseExpr> GroupJoinsWheres calculateGroupJoinsWheres(ImSet<K> keepStat, StatType statType, KeyStat keyStat, ImOrderSet<Expr> orderTop, GroupJoinsWheres.Type type);
 
-    protected static <K extends BaseExpr> GroupJoinsWheres packIntermediate(GroupJoinsWheres result, GroupJoinsWheres.Type type, ImSet<K> keepStat, KeyStat keyStat, Where where, ImOrderSet<Expr> orderTop) {
-        return result.pack(keepStat, keyStat, type, where, true, orderTop);
+    protected static <K extends BaseExpr> GroupJoinsWheres packIntermediate(GroupJoinsWheres result, GroupJoinsWheres.Type type, ImSet<K> keepStat, StatType statType, KeyStat keyStat, Where where, ImOrderSet<Expr> orderTop) {
+        return result.pack(keepStat, statType, keyStat, type, where, true, orderTop);
     }   
     
-    public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(ImSet<K> keepStat, KeyStat keyStat, ImOrderSet<Expr> orderTop, GroupJoinsWheres.Type type) {
-        GroupJoinsWheres result = calculateGroupJoinsWheres(keepStat, keyStat, orderTop, type);
+    public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(ImSet<K> keepStat, StatType statType, KeyStat keyStat, ImOrderSet<Expr> orderTop, GroupJoinsWheres.Type type) {
+        GroupJoinsWheres result = calculateGroupJoinsWheres(keepStat, statType, keyStat, orderTop, type);
         if(result.isExceededIntermediatePackThreshold())
-            result = packIntermediate(result, type, keepStat, keyStat, this, orderTop);
+            result = packIntermediate(result, type, keepStat, statType, keyStat, this, orderTop);
         return result;
     }
 

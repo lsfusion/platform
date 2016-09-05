@@ -8,11 +8,12 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.server.caches.ManualLazy;
 import lsfusion.server.data.expr.where.NotNullWhere;
+import lsfusion.server.data.query.innerjoins.UpWhere;
 import lsfusion.server.data.query.stat.UnionJoin;
 import lsfusion.server.data.where.DataWhere;
 import lsfusion.server.data.where.Where;
 
-public abstract class NotNullExpr extends VariableSingleClassExpr implements NotNullExprInterface {
+public abstract class NullableExpr extends VariableSingleClassExpr implements NullableExprInterface {
 
     @Override
     public Where calculateOrWhere() {
@@ -26,7 +27,7 @@ public abstract class NotNullExpr extends VariableSingleClassExpr implements Not
 
     public abstract class NotNull extends NotNullWhere {
         protected BaseExpr getExpr() {
-            return NotNullExpr.this;
+            return NullableExpr.this;
         }
     }
 
@@ -36,10 +37,10 @@ public abstract class NotNullExpr extends VariableSingleClassExpr implements Not
     public final static boolean INNERJOINS = true; // одновременно и при конструировании InnerJoins и проверке contains и при проталкивании InnerJoins (,впоследствии можно разделить)
 
     // второй параметр, предполагается true при использовании в логике InnerJoins (при выяснении isInner в компиляции в CompiledQuery в основном), false - в булевой логике - логике следствий
-    // !!! есть упрощенная копия метода в NotNullKeyExpr из-за отсутствия множественного наследования и для скорости (так как есть кэш)
-    private ImSet<NotNullExprInterface> exprThisFollows = null;
+    // !!! есть упрощенная копия метода в NullableKeyExpr из-за отсутствия множественного наследования и для скорости (так как есть кэш)
+    private ImSet<NullableExprInterface> exprThisFollows = null;
     @ManualLazy
-    public ImSet<NotNullExprInterface> getExprFollows(boolean includeThis, boolean includeInnerWithoutNotNull, boolean recursive) {
+    public ImSet<NullableExprInterface> getExprFollows(boolean includeThis, boolean includeInnerWithoutNotNull, boolean recursive) {
         assert includeThis || recursive;
         if(recursive) {
             if(includeThis && (includeInnerWithoutNotNull || hasNotNull())) {
@@ -55,7 +56,7 @@ public abstract class NotNullExpr extends VariableSingleClassExpr implements Not
         
         // не кэшируем так как редко используется
         if(includeInnerWithoutNotNull || hasNotNull())
-            return SetFact.<NotNullExprInterface>singleton(this);
+            return SetFact.<NullableExprInterface>singleton(this);
         else
             return SetFact.EMPTY();
     }
@@ -68,7 +69,7 @@ public abstract class NotNullExpr extends VariableSingleClassExpr implements Not
     }
 
     // множественное наследование
-    public static void fillFollowSet(NotNullExprInterface notNull, MSet<DataWhere> fillSet) {
+    public static void fillFollowSet(NullableExprInterface notNull, MSet<DataWhere> fillSet) {
         assert notNull.hasNotNull();
         fillSet.add((DataWhere)notNull.getNotNullWhere());
     }
@@ -81,7 +82,7 @@ public abstract class NotNullExpr extends VariableSingleClassExpr implements Not
         return hasNotNull(this);
     }
 
-    public static boolean hasNotNull(NotNullExprInterface notNullExpr) {
+    public static boolean hasNotNull(NullableExprInterface notNullExpr) {
         return notNullExpr.getNotNullWhere() instanceof DataWhere;
     }
 
@@ -92,14 +93,14 @@ public abstract class NotNullExpr extends VariableSingleClassExpr implements Not
         return false;
     }
 
-    public static ImSet<DataWhere> getFollows(ImSet<NotNullExprInterface> exprFollows) {
+    public static ImSet<DataWhere> getFollows(ImSet<NullableExprInterface> exprFollows) {
         MSet<DataWhere> result = SetFact.mSet();
         for(int i=0,size=exprFollows.size();i<size;i++)
             exprFollows.get(i).fillFollowSet(result);
         return result.immutable();
     }
 
-    public static ImSet<InnerExpr> getInnerExprs(ImSet<NotNullExprInterface> set, Result<ImSet<UnionJoin>> unionJoins) {
+    public static ImSet<InnerExpr> getInnerExprs(ImSet<NullableExprInterface> set, Result<ImSet<UnionJoin>> unionJoins) {
         boolean hasNotInner = false;
         for(int i=0,size=set.size();i<size;i++) // оптимизация
             if(!(set.get(i) instanceof InnerExpr)) {
@@ -118,13 +119,13 @@ public abstract class NotNullExpr extends VariableSingleClassExpr implements Not
 
         MSet<InnerExpr> mResult = SetFact.mSet();
         for(int i=0,size=set.size();i<size;i++) {
-            NotNullExprInterface expr = set.get(i);
+            NullableExprInterface expr = set.get(i);
             if(expr instanceof InnerExpr)
                 mResult.add((InnerExpr)expr);
             else {
                 if(mUnionJoins!=null && expr instanceof UnionExpr)
                     mUnionJoins.add(((UnionExpr)expr).getBaseJoin());
-                mResult.addAll(getInnerExprs(expr.getExprFollows(NotNullExpr.INNERJOINS, false), unionJoins));
+                mResult.addAll(getInnerExprs(expr.getExprFollows(NullableExpr.INNERJOINS, false), unionJoins));
             }
         }
 

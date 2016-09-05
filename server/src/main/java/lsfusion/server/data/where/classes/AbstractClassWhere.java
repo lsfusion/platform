@@ -82,6 +82,10 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
         public boolean stopWhenNull() {
             return true;
         }
+
+        public boolean exclusive() {
+            return false;
+        }
     };
     public static <K> AddValue<K, AndClassSet> addAnd() {
         return (AddValue<K, AndClassSet>) addAnd;

@@ -14,7 +14,7 @@ import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
 import lsfusion.server.data.*;
 import lsfusion.server.data.expr.query.Stat;
-import lsfusion.server.data.query.stat.ExecCost;
+import lsfusion.server.data.query.stat.Cost;
 import lsfusion.server.data.type.ParseInterface;
 
 import java.sql.SQLException;
@@ -388,7 +388,7 @@ public class AdjustMaterializedExecuteEnvironment extends DynamicExecuteEnvironm
     }
 
     private static int getDefaultTimeout(SQLCommand command, ImMap<SQLQuery, MaterializedQuery> queries) {
-        ExecCost baseCost = command.getCost(queries.mapValues(new GetValue<Stat, MaterializedQuery>() {
+        Cost baseCost = command.getCost(queries.mapValues(new GetValue<Stat, MaterializedQuery>() {
             public Stat getMapValue(MaterializedQuery value) {
                 return new Stat(value.count);
             }

@@ -8,13 +8,15 @@ import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.KeyType;
+import lsfusion.server.data.expr.query.GroupExprWhereJoins;
 import lsfusion.server.data.expr.query.Stat;
+import lsfusion.server.data.expr.query.StatType;
 import lsfusion.server.data.query.SourceJoin;
 import lsfusion.server.data.query.innerjoins.*;
 import lsfusion.server.data.query.stat.KeyStat;
 import lsfusion.server.data.query.stat.StatKeys;
 import lsfusion.server.data.translator.MapTranslate;
-import lsfusion.server.data.translator.QueryTranslator;
+import lsfusion.server.data.translator.ExprTranslator;
 import lsfusion.server.data.where.classes.ClassExprWhere;
 import lsfusion.server.data.where.classes.MeanClassWheres;
 
@@ -81,17 +83,19 @@ public interface Where extends SourceJoin<Where>, OuterContext<Where>, KeyType, 
     // ДОПОЛНИТЕЛЬНЫЕ ИНТЕРФЕЙСЫ
 
     <K extends BaseExpr> Pair<ImCol<GroupJoinsWhere>, Boolean> getPackWhereJoins(boolean tryExclusive, ImSet<K> keepStat, ImOrderSet<Expr> orderTop);
-    <K extends BaseExpr> Pair<ImCol<GroupJoinsWhere>, Boolean> getWhereJoins(boolean tryExclusive, ImSet<K> keepStat, ImOrderSet<Expr> orderTop);
-    <K extends BaseExpr> ImCol<GroupStatWhere<K>> getStatJoins(ImSet<K> keys, boolean exclusive, GroupStatType type, boolean noWhere);
-    <K extends BaseExpr> StatKeys<K> getStatKeys(ImSet<K> keys);
-    <K extends ParamExpr> StatKeys<K> getFullStatKeys(ImSet<K> groups);
-    <K extends BaseExpr> Stat getStatRows();
-    <K extends Expr> ImCol<GroupStatWhere<K>> getStatJoins(boolean notExclusive, ImSet<K> exprs, GroupStatType type, boolean noWhere);
-    <K extends Expr> StatKeys<K> getStatExprs(ImSet<K> keys);
+    <K extends BaseExpr> Pair<ImCol<GroupJoinsWhere>, Boolean> getWhereJoins(boolean tryExclusive, ImSet<K> keepStat, StatType statType, ImOrderSet<Expr> orderTop);
+    <K extends BaseExpr> ImCol<GroupSplitWhere<K>> getSplitJoins(ImSet<K> keys, StatType statType, boolean exclusive, GroupStatType type);
+    <K extends BaseExpr> ImCol<GroupJoinsWhere> getWhereJoins(ImSet<K> keys, StatType statType);
+    <K extends BaseExpr> StatKeys<K> getPushedStatKeys(ImSet<K> keys, StatType type, StatKeys<KeyExpr> pushedKeys);
+    <K extends BaseExpr> StatKeys<K> getStatKeys(ImSet<K> keys, StatType type);
+    <K extends ParamExpr> StatKeys<K> getFullStatKeys(ImSet<K> groups, StatType type);
+    <K extends BaseExpr> Stat getStatRows(StatType type);
+    <K extends Expr> ImCol<GroupSplitWhere<K>> getSplitJoins(boolean notExclusive, ImSet<K> exprs, StatType statType, GroupStatType type);
+    <K extends Expr> GroupExprWhereJoins<K> getGroupWhereJoins(ImSet<K> exprs, final StatType statType);
 
     // группировки в ДНФ, protected по сути
     KeyEquals getKeyEquals();
-    <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(ImSet<K> keepStat, KeyStat keyStat, ImOrderSet<Expr> orderTop, GroupJoinsWheres.Type type);
+    <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(ImSet<K> keepStat, StatType statType, KeyStat keyStat, ImOrderSet<Expr> orderTop, GroupJoinsWheres.Type type);
     MeanClassWheres groupMeanClassWheres(boolean useNots);
 
     ClassExprWhere getClassWhere();
@@ -101,7 +105,7 @@ public interface Where extends SourceJoin<Where>, OuterContext<Where>, KeyType, 
     Where TRUE = new AndWhere();
     Where FALSE = new OrWhere();
 
-    Where translateQuery(QueryTranslator translator);
+    Where translateExpr(ExprTranslator translator);
 
     Where translateOuter(MapTranslate translator);
 

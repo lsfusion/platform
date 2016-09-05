@@ -29,7 +29,7 @@ import lsfusion.server.data.expr.query.PropStat;
 import lsfusion.server.data.expr.where.cases.CaseExpr;
 import lsfusion.server.data.expr.where.extra.CompareWhere;
 import lsfusion.server.data.query.*;
-import lsfusion.server.data.query.stat.StatKeys;
+import lsfusion.server.data.query.stat.TableStatKeys;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
@@ -474,7 +474,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
             propertyClasses = MapFact.singleton(propValue, property.getClassValueWhere(classType).remap(MapFact.<Object, Field>addRevExcl(revMapFields, "value", propValue)));
         }
 
-        public StatKeys<KeyField> getStatKeys() {
+        public TableStatKeys getTableStatKeys() {
             return getStatKeys(this, 100);
         }
 
@@ -866,10 +866,23 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         this.field = field;
     }
 
-    public void markIndexed() {
+
+    public void markIndexed(final ImRevMap<T, String> mapping, ImList<CalcPropertyObjectInterfaceImplement<String>> index) {
         assert isStored();
 
-        mapTable.table.addIndex(field);
+        ImList<Field> indexFields = index.mapListValues(new GetValue<Field, CalcPropertyObjectInterfaceImplement<String>>() {
+            public Field getMapValue(CalcPropertyObjectInterfaceImplement<String> indexField) {
+                if (indexField instanceof CalcPropertyObjectImplement) {
+                    String key = ((CalcPropertyObjectImplement<String>) indexField).object;
+                    return mapTable.mapKeys.get(mapping.reverse().get(key));
+                } else {
+                    CalcProperty property = ((CalcPropertyRevImplement) indexField).property;
+                    assert BaseUtils.hashEquals(mapTable.table, property.mapTable.table);
+                    return property.field;
+                }
+            }
+        });
+        mapTable.table.addIndex(indexFields.toOrderExclSet());
     }
 
     public AndClassSet getValueClassSet() {

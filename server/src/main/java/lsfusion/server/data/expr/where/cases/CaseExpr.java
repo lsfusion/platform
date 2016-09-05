@@ -24,7 +24,7 @@ import lsfusion.server.data.query.CompileSource;
 import lsfusion.server.data.query.JoinData;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.translator.MapTranslate;
-import lsfusion.server.data.translator.QueryTranslator;
+import lsfusion.server.data.translator.ExprTranslator;
 import lsfusion.server.data.type.ClassReader;
 import lsfusion.server.data.type.NullReader;
 import lsfusion.server.data.type.Type;
@@ -132,10 +132,10 @@ public class CaseExpr extends Expr {
     }
 
     @ParamLazy
-    public Expr translateQuery(QueryTranslator translator) {
+    public Expr translate(ExprTranslator translator) {
         MExprCaseList translatedCases = new MExprCaseList(cases.exclusive);
         for(ExprCase exprCase : cases)
-            translatedCases.add(exprCase.where.translateQuery(translator),exprCase.data.translateQuery(translator));
+            translatedCases.add(exprCase.where.translateExpr(translator),exprCase.data.translateExpr(translator));
         return translatedCases.getFinal();
     }
 

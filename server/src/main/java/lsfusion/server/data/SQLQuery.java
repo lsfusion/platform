@@ -15,7 +15,7 @@ import lsfusion.server.Settings;
 import lsfusion.server.SystemProperties;
 import lsfusion.server.classes.FileClass;
 import lsfusion.server.data.query.*;
-import lsfusion.server.data.query.stat.ExecCost;
+import lsfusion.server.data.query.stat.Cost;
 import lsfusion.server.data.sql.SQLExecute;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.ConcatenateType;
@@ -31,7 +31,7 @@ import java.sql.SQLException;
 
 public class SQLQuery extends SQLCommand<ResultHandler<String, String>> {
 
-    public SQLQuery(String command, ExecCost baseCost, ImMap<String, SQLQuery> subQueries, StaticExecuteEnvironment env, ImMap<String, ? extends Reader> keyReaders, ImMap<String, ? extends Reader> propertyReaders, boolean union, boolean recursionFunction) {
+    public SQLQuery(String command, Cost baseCost, ImMap<String, SQLQuery> subQueries, StaticExecuteEnvironment env, ImMap<String, ? extends Reader> keyReaders, ImMap<String, ? extends Reader> propertyReaders, boolean union, boolean recursionFunction) {
         super(command, baseCost, subQueries, env, recursionFunction);
         this.keyReaders = keyReaders;
         this.propertyReaders = propertyReaders;

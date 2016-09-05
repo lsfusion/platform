@@ -74,10 +74,7 @@ public class MeanClassWheres extends DNFWheres<MeanClassWhere, CheckWhere, MeanC
         }
 
         protected int hash(HashContext hash) {
-            int result = 0;
-            for(int i=0,size=size();i<size;i++)
-                result += getKey(i).hashOuter(hash) ^ ((Where)getValue(i)).hashOuter(hash);
-            return result;
+            return AbstractOuterContext.hashMapOuter(BaseUtils.<ImMap<MeanClassWhere, Where>>immutableCast(MeanClassWheres.this), hash);
         }
 
         public ImSet<lsfusion.server.caches.OuterContext> calculateOuterDepends() {

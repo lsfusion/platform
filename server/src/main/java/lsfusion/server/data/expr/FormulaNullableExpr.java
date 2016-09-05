@@ -4,7 +4,6 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.TwinImmutableObject;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MMap;
-import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.caches.hash.HashContext;
 import lsfusion.server.classes.ConcreteClass;
 import lsfusion.server.classes.sets.AndClassSet;
@@ -14,17 +13,14 @@ import lsfusion.server.data.expr.formula.FormulaJoinImpl;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.query.CompileSource;
 import lsfusion.server.data.query.JoinData;
-import lsfusion.server.data.query.innerjoins.GroupJoinsWheres;
-import lsfusion.server.data.query.innerjoins.KeyEquals;
 import lsfusion.server.data.query.stat.InnerBaseJoin;
 import lsfusion.server.data.query.stat.KeyStat;
 import lsfusion.server.data.translator.MapTranslate;
-import lsfusion.server.data.translator.QueryTranslator;
+import lsfusion.server.data.translator.ExprTranslator;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
-import lsfusion.server.data.where.classes.ClassExprWhere;
 
-public class FormulaNotNullExpr extends StaticClassNotNullExpr implements FormulaExprInterface {
+public class FormulaNullableExpr extends StaticClassNullableExpr implements FormulaExprInterface {
 
     protected final ImList<BaseExpr> exprs;
 
@@ -42,7 +38,7 @@ public class FormulaNotNullExpr extends StaticClassNotNullExpr implements Formul
         return BaseUtils.immutableCast(exprs.getCol());
     }
 
-    public FormulaNotNullExpr(ImList<BaseExpr> exprs, FormulaJoinImpl formula) {
+    public FormulaNullableExpr(ImList<BaseExpr> exprs, FormulaJoinImpl formula) {
         assert formula.hasNotNull();
         this.exprs = exprs;
         this.formula = formula;
@@ -74,8 +70,8 @@ public class FormulaNotNullExpr extends StaticClassNotNullExpr implements Formul
         return FormulaExpr.getType(this, keyType);
     }
 
-    public Expr translateQuery(QueryTranslator translator) {
-        return FormulaExpr.translateQuery(this, translator);
+    public Expr translate(ExprTranslator translator) {
+        return FormulaExpr.translateExpr(this, translator);
     }
 
     public Stat getTypeStat(KeyStat keyStat, boolean forJoin) {
@@ -91,14 +87,14 @@ public class FormulaNotNullExpr extends StaticClassNotNullExpr implements Formul
     }
 
     public boolean calcTwins(TwinImmutableObject o) {
-        return exprs.equals(((FormulaNotNullExpr) o).exprs) && formula.equals(((FormulaNotNullExpr) o).formula);
+        return exprs.equals(((FormulaNullableExpr) o).exprs) && formula.equals(((FormulaNullableExpr) o).formula);
     }
 
     protected int hash(HashContext hashContext) {
         return 31 * hashOuter(exprs, hashContext) + formula.hashCode();
     }
 
-    protected FormulaNotNullExpr translate(MapTranslate translator) {
-        return new FormulaNotNullExpr(translator.translateDirect(exprs), formula);
+    protected FormulaNullableExpr translate(MapTranslate translator) {
+        return new FormulaNullableExpr(translator.translateDirect(exprs), formula);
     }
 }

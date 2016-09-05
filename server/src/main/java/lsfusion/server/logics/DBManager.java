@@ -1630,12 +1630,11 @@ public class DBManager extends LogicsManager implements InitializingBean {
     }
 
     @NFLazy
-    public void addIndex(ImList<CalcPropertyObjectInterfaceImplement<String>> index) {
-        CalcPropertyRevImplement<?, String> propertyImplement = findProperty(index);
+    public <Z extends PropertyInterface> void addIndex(ImList<CalcPropertyObjectInterfaceImplement<String>> index) {
+        CalcPropertyRevImplement<Z, String> propertyImplement = (CalcPropertyRevImplement<Z, String>) findProperty(index);
         if(propertyImplement != null) {
             indexes.put(index, propertyImplement.property.getType() instanceof DataClass);
-            if(BaseUtils.hashEquals(index.get(0), propertyImplement)) // если первый
-                propertyImplement.property.markIndexed();
+            propertyImplement.property.markIndexed(propertyImplement.mapping, index);
         }
     }
 

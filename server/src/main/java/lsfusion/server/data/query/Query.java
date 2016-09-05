@@ -1,9 +1,6 @@
 package lsfusion.server.data.query;
 
-import lsfusion.base.BaseUtils;
-import lsfusion.base.Pair;
-import lsfusion.base.Processor;
-import lsfusion.base.Result;
+import lsfusion.base.*;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
@@ -176,7 +173,7 @@ public class Query<K,V> extends IQuery<K,V> {
         join = new MapJoin<>(mapValues, join);
 
         // затем делаем подстановку
-        join = new QueryTranslateJoin<>(new QueryTranslator(mapKeys.crossJoin(joinImplement)), join);
+        join = new QueryTranslateJoin<>(new KeyExprTranslator(mapKeys.crossJoin(joinImplement)), join);
 
         // затем закидываем Where что все implement не null
         join = join.and(Expr.getWhere(joinImplement));
@@ -287,8 +284,8 @@ public class Query<K,V> extends IQuery<K,V> {
     public PullValues<K, V> pullValues() {
         ImMap<K, Expr> pullKeys = pullValues(mapKeys, where);
 
-        QueryTranslator keyTranslator = new PartialQueryTranslator(mapKeys.rightCrossJoin(pullKeys), true);
-        Where transWhere = where.translateQuery(keyTranslator);
+        ExprTranslator keyTranslator = new PartialKeyExprTranslator(mapKeys.rightCrossJoin(pullKeys), true);
+        Where transWhere = where.translateExpr(keyTranslator);
         ImMap<V, Expr> transProps = keyTranslator.translate(properties);
 
         ImMap<V, Expr> pullProps = pullValues(transProps, transWhere);

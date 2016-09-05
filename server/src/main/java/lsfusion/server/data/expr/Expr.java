@@ -34,8 +34,8 @@ import lsfusion.server.data.query.AbstractSourceJoin;
 import lsfusion.server.data.query.CompileOptions;
 import lsfusion.server.data.query.Query;
 import lsfusion.server.data.sql.PostgreDataAdapter;
-import lsfusion.server.data.translator.PartialQueryTranslator;
-import lsfusion.server.data.translator.QueryTranslator;
+import lsfusion.server.data.translator.PartialKeyExprTranslator;
+import lsfusion.server.data.translator.ExprTranslator;
 import lsfusion.server.data.type.ClassReader;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
@@ -195,7 +195,9 @@ abstract public class Expr extends AbstractSourceJoin<Expr> {
         return ifElse(getWhere(),expr);
     }
 
-    public abstract Expr translateQuery(QueryTranslator translator);
+    public Expr translateExpr(ExprTranslator translator) {
+        return super.translateExpr(translator);
+    }
 
     public static Where getWhere(ImList<? extends Expr> list) {
         return getWhere(list.getCol());
@@ -230,7 +232,7 @@ abstract public class Expr extends AbstractSourceJoin<Expr> {
         }, keyRest);
 
         new Query<>(keyRest.result.toRevMap(),
-                translateQuery(new PartialQueryTranslator(keyValues.mapValues(new GetValue<Expr, KeyExpr>() {
+                translateExpr(new PartialKeyExprTranslator(keyValues.mapValues(new GetValue<Expr, KeyExpr>() {
                     public Expr getMapValue(KeyExpr key) {
                         return ((DataClass) key.getType(getWhere())).getDefaultExpr();
                     }

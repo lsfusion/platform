@@ -7,7 +7,7 @@ import lsfusion.server.data.query.stat.UnionJoin;
 import lsfusion.server.data.where.Where;
 
 // выражение для оптимизации, разворачивание которого в case'ы даст экспоненту
-public abstract class UnionExpr extends StaticClassNotNullExpr {
+public abstract class UnionExpr extends StaticClassNullableExpr {
 
     public Where calculateOrWhere() {
         Where result = Where.FALSE;

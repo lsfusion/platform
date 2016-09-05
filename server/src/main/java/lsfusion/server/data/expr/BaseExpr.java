@@ -15,6 +15,7 @@ import lsfusion.server.caches.ParamExpr;
 import lsfusion.server.classes.sets.AndClassSet;
 import lsfusion.server.data.expr.query.PropStat;
 import lsfusion.server.data.expr.query.Stat;
+import lsfusion.server.data.expr.query.StatType;
 import lsfusion.server.data.expr.where.cases.ExprCase;
 import lsfusion.server.data.expr.where.cases.ExprCaseList;
 import lsfusion.server.data.expr.where.extra.EqualsWhere;
@@ -48,13 +49,13 @@ public abstract class BaseExpr extends Expr {
         return new ExprCaseList(SetFact.<ExprCase>singleton(new ExprCase(Where.TRUE, this)));
     }
 
-    public ImSet<NotNullExprInterface> getExprFollows(boolean includeThis, boolean includeInnerWithoutNotNull, boolean recursive) {
-        assert includeThis || recursive; // также предполагается что NotNullExpr includeThis отработал
+    public ImSet<NullableExprInterface> getExprFollows(boolean includeThis, boolean includeInnerWithoutNotNull, boolean recursive) {
+        assert includeThis || recursive; // также предполагается что NullableExpr includeThis отработал
         return getExprFollows(includeInnerWithoutNotNull, recursive);
     }
-    private ImSet<NotNullExprInterface> exprFollows = null;
+    private ImSet<NullableExprInterface> exprFollows = null;
     @ManualLazy
-    public ImSet<NotNullExprInterface> getExprFollows(boolean includeInnerWithoutNotNull, boolean recursive) {
+    public ImSet<NullableExprInterface> getExprFollows(boolean includeInnerWithoutNotNull, boolean recursive) {
         if(recursive && (!includeInnerWithoutNotNull || !hasExprFollowsWithoutNotNull())) {  // кэшированиие
             if(exprFollows==null)
                 exprFollows = getBaseJoin().getExprFollows(includeInnerWithoutNotNull, recursive);
@@ -190,7 +191,7 @@ public abstract class BaseExpr extends Expr {
         return 1;
     }
 
-    public abstract PropStat getStatValue(KeyStat keyStat);
+    public abstract PropStat getStatValue(KeyStat keyStat, StatType type); // должно кэшироваться так как несколько раз используется
     public abstract InnerBaseJoin<?> getBaseJoin();
 
     public ImSet<OuterContext> calculateOuterDepends() {
@@ -265,6 +266,7 @@ public abstract class BaseExpr extends Expr {
         return result;
     }
 
+    // assert InnerExpr или KeyExpr
     public boolean isIndexed() {
         return false;
     }

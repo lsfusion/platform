@@ -12,7 +12,7 @@ import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.translator.MapTranslate;
-import lsfusion.server.data.translator.QueryTranslator;
+import lsfusion.server.data.translator.ExprTranslator;
 import lsfusion.server.data.where.Where;
 
 public abstract class AggrExpr<K extends Expr,G extends AggrType, I extends AggrExpr.Query<G, I>, J extends QueryJoin<?, ?, ?, ?>,
@@ -58,7 +58,7 @@ public abstract class AggrExpr<K extends Expr,G extends AggrType, I extends Aggr
             this.type = query.type;
         }
 
-        protected Query(I query, QueryTranslator translator) {
+        protected Query(I query, ExprTranslator translator) {
             this.exprs = translator.translate(query.exprs);
             this.orders = translator.translate(query.orders);
             this.ordersNotNull = query.ordersNotNull;

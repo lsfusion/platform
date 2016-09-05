@@ -1,6 +1,7 @@
 package lsfusion.server.data.query;
 
 import lsfusion.base.BaseUtils;
+import lsfusion.base.Result;
 import lsfusion.base.SFunctionSet;
 import lsfusion.base.TwinImmutableObject;
 import lsfusion.base.col.MapFact;
@@ -16,14 +17,14 @@ import lsfusion.server.caches.hash.HashContext;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
-import lsfusion.server.data.expr.NotNullExprInterface;
+import lsfusion.server.data.expr.NullableExprInterface;
 import lsfusion.server.data.expr.query.Stat;
+import lsfusion.server.data.expr.query.StatType;
+import lsfusion.server.data.query.stat.Cost;
 import lsfusion.server.data.query.stat.KeyStat;
 import lsfusion.server.data.query.stat.StatKeys;
 import lsfusion.server.data.query.stat.WhereJoin;
 import lsfusion.server.data.translator.MapTranslate;
-
-import java.security.Key;
 
 public class ExprIndexedJoin extends ExprJoin<ExprIndexedJoin> {
 
@@ -52,17 +53,36 @@ public class ExprIndexedJoin extends ExprJoin<ExprIndexedJoin> {
         return isOrderTop;
     }
 
-    public StatKeys<Integer> getStatKeys(KeyStat keyStat) {
-        if(not)
-            return new StatKeys<>(SetFact.<Integer>EMPTY(), Stat.ONE);
-        else {
-            if (compare.equals(Compare.EQUALS) && !givesNoKeys()) { // если не дает ключей, нельзя уменьшать статистику, так как паковка может съесть другие join'ы и тогда будет висячий ключ
-                assert false; // так как !compare.equals(Compare.EQUALS)
-                return new StatKeys<>(SetFact.singleton(0), Stat.ONE);
-            } else
-                return new StatKeys<>(SetFact.singleton(0), baseExpr.getTypeStat(keyStat, true));
+    public StatKeys<Integer> getStatKeys(KeyStat keyStat, StatType type, boolean oldMech) {
+        if(oldMech) {
+            if(not)
+                return new StatKeys<>(SetFact.<Integer>EMPTY(), Stat.ONE);
+            else {
+                if (compare.equals(Compare.EQUALS) && !givesNoKeys()) { // если не дает ключей, нельзя уменьшать статистику, так как паковка может съесть другие join'ы и тогда будет висячий ключ
+                    assert false; // так как !compare.equals(Compare.EQUALS)
+                    return new StatKeys<>(SetFact.singleton(0), Stat.ONE);
+                } else
+                    return new StatKeys<>(SetFact.singleton(0), baseExpr.getTypeStat(keyStat, true));
+            }
         }
+        throw new UnsupportedOperationException(); // так как вырезается в buildGraph
     }
+
+    @Override
+    public Cost getPushedCost(KeyStat keyStat, StatType type, Cost pushCost, Stat pushStat, ImMap<Integer, Stat> pushKeys, ImMap<Integer, Stat> pushNotNullKeys, ImMap<BaseExpr, Stat> pushProps, Result<ImSet<Integer>> rPushedKeys, Result<ImSet<BaseExpr>> rPushedProps) {
+        throw new UnsupportedOperationException(); // так как вырезается в buildGraph
+    }
+
+    //    @Override
+//    protected Stat getStat(KeyStat keyStat) {
+//        assert !not;
+//
+//        if (compare.equals(Compare.EQUALS) && !givesNoKeys()) { // если не дает ключей, нельзя уменьшать статистику, так как паковка может съесть другие join'ы и тогда будет висячий ключ
+//            assert false; // так как !compare.equals(Compare.EQUALS)
+//            return Stat.ONE;
+//        } else
+//            return baseExpr.getTypeStat(keyStat, true);
+//    }
 
     protected int hash(HashContext hashContext) {
         return 31 * (31 * super.hash(hashContext) + compare.hashCode()) + compareExpr.hashOuter(hashContext) + 13 + (not ? 1 : 0) + (isOrderTop ? 3 : 0);
@@ -77,7 +97,7 @@ public class ExprIndexedJoin extends ExprJoin<ExprIndexedJoin> {
     }
 
     @Override
-    public ImSet<NotNullExprInterface> getExprFollows(boolean includeInnerWithoutNotNull, boolean recursive) {
+    public ImSet<NullableExprInterface> getExprFollows(boolean includeInnerWithoutNotNull, boolean recursive) {
         if(not)
             return SetFact.EMPTY();
         return super.getExprFollows(includeInnerWithoutNotNull, recursive);
@@ -101,7 +121,7 @@ public class ExprIndexedJoin extends ExprJoin<ExprIndexedJoin> {
         return not || super.givesNoKeys();
     }
 
-    public KeyExpr getKeyExpr() {
+    private KeyExpr getKeyExpr() {
         if(baseExpr instanceof KeyExpr) {
             assert !not;
             return (KeyExpr) baseExpr;

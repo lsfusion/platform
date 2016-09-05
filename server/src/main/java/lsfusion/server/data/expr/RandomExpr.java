@@ -5,7 +5,6 @@ import lsfusion.server.caches.hash.HashContext;
 import lsfusion.server.classes.DoubleClass;
 import lsfusion.server.data.query.CompileSource;
 import lsfusion.server.data.translator.MapTranslate;
-import lsfusion.server.data.translator.QueryTranslator;
 
 public class RandomExpr extends StaticExpr<DoubleClass> {
 
@@ -15,10 +14,6 @@ public class RandomExpr extends StaticExpr<DoubleClass> {
     }
 
     protected BaseExpr translate(MapTranslate translator) {
-        return this;
-    }
-
-    public Expr translateQuery(QueryTranslator translator) {
         return this;
     }
 

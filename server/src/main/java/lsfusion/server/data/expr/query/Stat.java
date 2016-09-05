@@ -30,7 +30,7 @@ public class Stat {
     }
 
     public Stat(double count, int countDeg) { // ceil чтобы инвариант у суммы stat <=
-        deg = count == 0 ? 0 : (int) Math.ceil((double)countDeg * (Math.log10(count) / Math.log10(Settings.get().getStatDegree())));
+        this(count == 0 ? 0 : (int) Math.ceil((double)countDeg * (Math.log10(count) / Math.log10(Settings.get().getStatDegree()))), true);
     }
 
     public Stat(int count, boolean isDeg) {

@@ -86,6 +86,12 @@ public class SingletonSet<K> implements ImSet<K>, ImList<K>, ImOrderSet<K> {
         return BaseUtils.hashEquals(key, element);
     }
 
+    @Override
+    public K getIdentIncl(K element) {
+        assert contains(element);
+        return key;
+    }
+
     public boolean isEmpty() {
         return false;
     }

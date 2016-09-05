@@ -15,6 +15,7 @@ import lsfusion.server.classes.sets.AndClassSet;
 import lsfusion.server.data.expr.*;
 import lsfusion.server.data.expr.query.PropStat;
 import lsfusion.server.data.expr.query.Stat;
+import lsfusion.server.data.expr.query.StatType;
 import lsfusion.server.data.expr.where.pull.ExprPullWheres;
 import lsfusion.server.data.query.*;
 import lsfusion.server.data.query.stat.FormulaJoin;
@@ -23,7 +24,7 @@ import lsfusion.server.data.query.stat.KeyStat;
 import lsfusion.server.data.sql.PostgreDataAdapter;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.translator.MapTranslate;
-import lsfusion.server.data.translator.QueryTranslator;
+import lsfusion.server.data.translator.ExprTranslator;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
 
@@ -150,7 +151,7 @@ public class FormulaExpr extends StaticClassExpr implements FormulaExprInterface
         });
     }
     
-    public static Expr translateQuery(FormulaExprInterface expr, QueryTranslator translator) {
+    public static Expr translateExpr(FormulaExprInterface expr, ExprTranslator translator) {
         return create(expr.getFormula(), translator.translate(expr.getFParams()));
     }
 
@@ -198,8 +199,8 @@ public class FormulaExpr extends StaticClassExpr implements FormulaExprInterface
         return getType(this, keyType);
     }
 
-    public Expr translateQuery(QueryTranslator translator) {
-        return translateQuery(this, translator);
+    public Expr translate(ExprTranslator translator) {
+        return translateExpr(this, translator);
     }
 
     public Stat getTypeStat(KeyStat keyStat, boolean forJoin) {
@@ -231,7 +232,7 @@ public class FormulaExpr extends StaticClassExpr implements FormulaExprInterface
         return new PropStat(expr.getTypeStat(keyStat, false).min(Stat.AGGR));
     }
 
-    public PropStat getStatValue(KeyStat keyStat) {
+    public PropStat getStatValue(KeyStat keyStat, StatType type) {
         return getStatValue(this, keyStat);
     }
 
@@ -290,7 +291,7 @@ public class FormulaExpr extends StaticClassExpr implements FormulaExprInterface
                 }
             }
         }
-        return BaseExpr.create(formula.hasNotNull() ? new FormulaNotNullExpr(exprs, formula) : new FormulaExpr(exprs, formula));
+        return BaseExpr.create(formula.hasNotNull() ? new FormulaNullableExpr(exprs, formula) : new FormulaExpr(exprs, formula));
     }
 }
 

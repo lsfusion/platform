@@ -6,6 +6,7 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
+import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
@@ -19,7 +20,7 @@ import lsfusion.server.data.expr.query.DistinctKeys;
 import lsfusion.server.data.expr.query.PropStat;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.query.*;
-import lsfusion.server.data.query.stat.ExecCost;
+import lsfusion.server.data.query.stat.Cost;
 import lsfusion.server.data.sql.DataAdapter;
 import lsfusion.server.data.sql.SQLExecute;
 import lsfusion.server.data.sql.SQLSyntax;
@@ -697,6 +698,14 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         return "PRIMARY KEY " + syntax.getClustered() + " (" + keyString + ")";
     }
 
+    public static ImSet<ImOrderSet<Field>> getKeyIndexes(final ImOrderSet<KeyField> keys) {
+        return SetFact.toOrderExclSet(keys.size(), new GetIndex<ImOrderSet<Field>>() {
+            public ImOrderSet<Field> getMapValue(int i) {
+                return BaseUtils.<ImOrderSet<Field>>immutableCast(keys).subOrder(i, keys.size());
+            }
+        }).getSet();
+    }
+
     public void createTable(Table table, ImOrderSet<KeyField> keys, Logger logger) throws SQLException {
         MStaticExecuteEnvironment env = StaticExecuteEnvironmentImpl.mEnv();
 
@@ -914,7 +923,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
 //
 //    private final Map<String, String> sessionTablesStackGot = MapFact.mAddRemoveMap();
 //    private final Map<String, String> sessionTablesStackReturned = MapFact.mAddRemoveMap();
-//    
+//
     // need to check classes after
     public SessionTable createTemporaryTable(ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, Integer count, DistinctKeys<KeyField> distinctKeys, ImMap<PropertyField, PropStat> statProps, FillTemporaryTable fill, Pair<ClassWhere<KeyField>, ImMap<PropertyField, ClassWhere<Field>>> queryClasses, TableOwner owner, OperationOwner opOwner) throws SQLException, SQLHandledException {
         Result<Integer> actual = new Result<>();
@@ -1121,6 +1130,10 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
 
     private void dropTemporaryTableFromDB(String tableName) throws SQLException {
         executeDDL(syntax.getDropSessionTable(tableName), StaticExecuteEnvironmentImpl.NOREADONLY);
+    }
+
+    public static ImSet<ImOrderSet<Field>> getTemporaryIndexes(ImOrderSet<KeyField> keys, ImSet<PropertyField> properties) {
+        return SetFact.singleton(BaseUtils.<ImOrderSet<Field>>immutableCast(keys));
     }
 
     public void createTemporaryTable(String name, ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, OperationOwner owner) throws SQLException {
@@ -1730,7 +1743,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         return result.terminate();
     }
     public <K,V> void executeSelect(String select, OperationOwner owner, StaticExecuteEnvironment env, ImMap<String, ParseInterface> paramObjects, int transactTimeout, ImRevMap<K, String> keyNames, final ImMap<String, ? extends Reader> keyReaders, ImRevMap<V, String> propertyNames, ImMap<String, ? extends Reader> propertyReaders, boolean disableNestLoop, ResultHandler<K, V> handler) throws SQLException, SQLHandledException {
-        executeSelect(new SQLQuery(select, ExecCost.MIN, MapFact.<String, SQLQuery>EMPTY(), env,keyReaders, propertyReaders, false, false), disableNestLoop ? DynamicExecuteEnvironment.DISABLENESTLOOP : DynamicExecuteEnvironment.DEFAULT, owner, paramObjects, transactTimeout, keyNames, propertyNames, handler);
+        executeSelect(new SQLQuery(select, Cost.MIN, MapFact.<String, SQLQuery>EMPTY(), env,keyReaders, propertyReaders, false, false), disableNestLoop ? DynamicExecuteEnvironment.DISABLENESTLOOP : DynamicExecuteEnvironment.DEFAULT, owner, paramObjects, transactTimeout, keyNames, propertyNames, handler);
     }
 
     public <K,V> void executeSelect(SQLQuery query, DynamicExecuteEnvironment queryExecEnv, OperationOwner owner, ImMap<String, ParseInterface> paramObjects, int transactTimeout, ImRevMap<K, String> keyNames, ImRevMap<V, String> propertyNames, ResultHandler<K, V> handler) throws SQLException, SQLHandledException {
@@ -2096,7 +2109,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
             logger.error(statement == null ? "PREPARING STATEMENT" : statement.toString() + " " + e.getMessage());
             firstException.set(e);
         }
-        
+
         afterStatementExecute(firstException, command.first, command.second, connection, statement, opOwner, registerChange, result);
     }
 
@@ -2178,7 +2191,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         }
 
         try {
-            executeDML(new SQLDML("INSERT INTO " + table.getName(syntax) + " (" + insertString + ") VALUES (" + valueString + ")", ExecCost.MIN, MapFact.<String, SQLQuery>EMPTY(), StaticExecuteEnvironmentImpl.EMPTY, false), owner, tableOwner, params.immutable(), DynamicExecuteEnvironment.DEFAULT, null, PureTime.VOID, 0, register(table, tableOwner, TableChange.INSERT));
+            executeDML(new SQLDML("INSERT INTO " + table.getName(syntax) + " (" + insertString + ") VALUES (" + valueString + ")", Cost.MIN, MapFact.<String, SQLQuery>EMPTY(), StaticExecuteEnvironmentImpl.EMPTY, false), owner, tableOwner, params.immutable(), DynamicExecuteEnvironment.DEFAULT, null, PureTime.VOID, 0, register(table, tableOwner, TableChange.INSERT));
         } catch (SQLHandledException e) {
             throw new UnsupportedOperationException(); // по идее ни deadlock'а, ни update conflict'а, ни timeout'а
         }

@@ -5,7 +5,7 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.server.classes.ByteArrayClass;
 import lsfusion.server.data.expr.query.PropStat;
-import lsfusion.server.data.query.stat.StatKeys;
+import lsfusion.server.data.query.stat.TableStatKeys;
 import lsfusion.server.data.where.classes.ClassWhere;
 
 public class StructTable extends GlobalTable {
@@ -25,7 +25,7 @@ public class StructTable extends GlobalTable {
         propertyClasses = MapFact.singleton(struct, new ClassWhere<Field>(struct, ByteArrayClass.instance));
     }
 
-    public StatKeys<KeyField> getStatKeys() {
+    public TableStatKeys getTableStatKeys() {
         return getStatKeys(this, 1);
     }
 

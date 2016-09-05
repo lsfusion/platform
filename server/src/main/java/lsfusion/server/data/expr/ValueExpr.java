@@ -15,7 +15,6 @@ import lsfusion.server.data.Value;
 import lsfusion.server.data.query.CompileSource;
 import lsfusion.server.data.query.JoinData;
 import lsfusion.server.data.translator.MapTranslate;
-import lsfusion.server.data.translator.QueryTranslator;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.type.TypeObject;
 import lsfusion.server.data.where.Where;
@@ -91,10 +90,6 @@ public class ValueExpr extends StaticExpr<ConcreteClass> implements Value {
     public ValueExpr scale(int mult) {
         return new ValueExpr(((IntegralClass)objectClass).multiply((Number) object,mult),objectClass);
     }*/
-
-    public ValueExpr translateQuery(QueryTranslator translator) {
-        return this;
-    }
 
     protected ValueExpr translate(MapTranslate translator) {
         return translator.translate(this);

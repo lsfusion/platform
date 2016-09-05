@@ -20,6 +20,7 @@ import lsfusion.server.data.expr.formula.FormulaExpr;
 import lsfusion.server.data.expr.formula.StringAggConcatenateFormulaImpl;
 import lsfusion.server.data.expr.query.PropStat;
 import lsfusion.server.data.expr.query.Stat;
+import lsfusion.server.data.expr.query.StatType;
 import lsfusion.server.data.expr.query.SubQueryExpr;
 import lsfusion.server.data.expr.where.CaseExprInterface;
 import lsfusion.server.data.expr.where.extra.IsClassWhere;
@@ -27,7 +28,7 @@ import lsfusion.server.data.query.CompileSource;
 import lsfusion.server.data.query.InnerJoin;
 import lsfusion.server.data.query.stat.KeyStat;
 import lsfusion.server.data.translator.MapTranslate;
-import lsfusion.server.data.translator.QueryTranslator;
+import lsfusion.server.data.translator.ExprTranslator;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassExprWhere;
@@ -175,8 +176,8 @@ public class IsClassExpr extends InnerExpr implements StaticClassExprInterface {
     }
 
     @ParamLazy
-    public Expr translateQuery(QueryTranslator translator) {
-        return expr.translateQuery(translator).classExpr(classTables, type);
+    public Expr translate(ExprTranslator translator) {
+        return expr.translateExpr(translator).classExpr(classTables, type);
     }
 
     private static ImSet<ObjectClassField> packTables(Where trueWhere, SingleClassExpr expr, ImSet<ObjectClassField> tables, IsClassType type) {
@@ -225,12 +226,12 @@ public class IsClassExpr extends InnerExpr implements StaticClassExprInterface {
         return expr.equals(((IsClassExpr)obj).expr) && classTables.equals(((IsClassExpr)obj).classTables) && type.equals(((IsClassExpr)obj).type);
     }
 
-    public Stat getStatValue() {
-        return new Stat(getObjectSet().getClassCount());
+    public Stat getStatValue(StatType statType) {
+        return getAdjustStatValue(statType, new Stat(getObjectSet().getClassCount()));
     }
 
-    public PropStat getStatValue(KeyStat keyStat) {
-        return new PropStat(getStatValue());
+    public PropStat getInnerStatValue(KeyStat keyStat, StatType type) {
+        return new PropStat(getStatValue(type));
     }
     public InnerJoin<?, ?> getInnerJoin() {
         return getJoinExpr().getInnerJoin();

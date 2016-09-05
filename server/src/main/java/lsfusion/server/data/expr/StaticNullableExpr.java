@@ -1,31 +1,29 @@
 package lsfusion.server.data.expr;
 
-import lsfusion.base.TwinImmutableObject;
 import lsfusion.base.col.interfaces.mutable.MMap;
-import lsfusion.server.caches.hash.HashContext;
 import lsfusion.server.classes.sets.AndClassSet;
 import lsfusion.server.data.expr.query.PropStat;
 import lsfusion.server.data.expr.query.Stat;
-import lsfusion.server.data.query.CompileSource;
+import lsfusion.server.data.expr.query.StatType;
 import lsfusion.server.data.query.JoinData;
 import lsfusion.server.data.query.stat.InnerBaseJoin;
 import lsfusion.server.data.query.stat.KeyStat;
 import lsfusion.server.data.query.stat.ValueJoin;
 import lsfusion.server.data.translator.MapTranslate;
-import lsfusion.server.data.translator.QueryTranslator;
+import lsfusion.server.data.translator.ExprTranslator;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassExprWhere;
 
-public abstract class StaticNotNullExpr extends NotNullExpr {
+public abstract class StaticNullableExpr extends NullableExpr {
 
     private final AndClassSet paramClass;
 
-    public StaticNotNullExpr(AndClassSet paramClass) {
+    public StaticNullableExpr(AndClassSet paramClass) {
         this.paramClass = paramClass;
     }
 
-    protected StaticNotNullExpr translate(MapTranslate translator) {
+    protected StaticNullableExpr translate(MapTranslate translator) {
         return this;
     }
 
@@ -39,13 +37,13 @@ public abstract class StaticNotNullExpr extends NotNullExpr {
         return paramClass.getTypeStat(forJoin);
     }
 
-    public Expr translateQuery(QueryTranslator translator) {
+    public Expr translate(ExprTranslator translator) {
         return this;
     }
-    public class NotNull extends NotNullExpr.NotNull {
+    public class NotNull extends NullableExpr.NotNull {
 
         public ClassExprWhere calculateClassWhere() {
-            return new ClassExprWhere(StaticNotNullExpr.this, paramClass);
+            return new ClassExprWhere(StaticNullableExpr.this, paramClass);
         }
     }
 
@@ -53,11 +51,10 @@ public abstract class StaticNotNullExpr extends NotNullExpr {
         return new NotNull();
     }
 
-    public PropStat getStatValue(KeyStat keyStat) {
+    public PropStat getStatValue(KeyStat keyStat, StatType type) {
         return PropStat.ONE;
     }
     public InnerBaseJoin<?> getBaseJoin() {
         return ValueJoin.instance;
     }
-
 }

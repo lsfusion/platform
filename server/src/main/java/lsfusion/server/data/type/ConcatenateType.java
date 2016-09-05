@@ -19,6 +19,7 @@ import lsfusion.server.data.SQLSession;
 import lsfusion.server.data.expr.DeconcatenateExpr;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyType;
+import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.where.Where;
@@ -323,6 +324,13 @@ public class ConcatenateType extends AbstractType<Object[]> {
         for (boolean d : desc)
             if (d)
                 throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Stat getTypeStat(boolean forJoin) {
+        Stat result = Stat.ONE;
+        for (Type type : types) result = result.mult(type.getTypeStat(forJoin));
+        return result;
     }
 
     public String getSID() {

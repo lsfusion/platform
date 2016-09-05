@@ -4,13 +4,13 @@ import lsfusion.base.TwinImmutableObject;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.caches.OuterContext;
 import lsfusion.server.caches.hash.HashContext;
 import lsfusion.server.data.Value;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.query.InnerExprFollows;
-import lsfusion.server.data.query.stat.KeyStat;
 import lsfusion.server.data.query.stat.StatKeys;
 import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.where.Where;
@@ -79,13 +79,9 @@ public class SubQueryJoin extends QueryJoin<KeyExpr, SubQueryJoin.Query, SubQuer
         super(partitionJoin, translator);
     }
 
-    public StatKeys<KeyExpr> getStatKeys() {
-        return query.where.getFullStatKeys(keys);
-    }
-
-    // кэшить
-    public StatKeys<KeyExpr> getStatKeys(KeyStat keyStat) {
-        return getStatKeys();
+    @IdentityLazy
+    public StatKeys<KeyExpr> getPushedStatKeys(StatType type, StatKeys<KeyExpr> pushStatKeys) {
+        return query.where.getPushedStatKeys(keys, type, pushStatKeys); // формально full, но у full пока нет смысла добавлять инфраструктуру pushStatKeys
     }
 
     public Where getWhere() {

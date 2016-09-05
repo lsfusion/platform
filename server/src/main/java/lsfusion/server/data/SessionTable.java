@@ -32,7 +32,7 @@ import lsfusion.server.data.query.CompileSource;
 import lsfusion.server.data.query.IQuery;
 import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.data.query.TypeEnvironment;
-import lsfusion.server.data.query.stat.StatKeys;
+import lsfusion.server.data.query.stat.TableStatKeys;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.translator.MapValuesTranslate;
@@ -61,16 +61,21 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
     public final DistinctKeys<KeyField> distinctKeys; // nullable, иногда известно, иногда нет
     public final ImMap<PropertyField, PropStat> statProps; // nullable, иногда известно, иногда нет
 
-    public StatKeys<KeyField> getStatKeys() {
+    public TableStatKeys getTableStatKeys() {
         if(distinctKeys == null)
             return getStatKeys(this, count);
-        return StatKeys.createForTable(new Stat(count), distinctKeys);
+        return TableStatKeys.createForTable(new Stat(count), distinctKeys);
     }
 
     public ImMap<PropertyField,PropStat> getStatProps() {
         if(statProps == null)
             return getStatProps(this, count);
         return statProps;
+    }
+
+    @Override
+    protected ImSet<ImOrderSet<Field>> getIndexes() {
+        return SQLSession.getTemporaryIndexes(keys, properties);
     }
 
     public Value removeBig(MAddSet<Value> usedValues) {
@@ -97,9 +102,9 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
         super(name, keys, properties, null, null);
         initBaseClasses(ThreadLocalContext.getBusinessLogics().LM.baseClass);
 
-        StatKeys<KeyField> statKeys = SerializedTable.getStatKeys(this);
-        count = statKeys.rows.getCount();
-        distinctKeys = statKeys.distinct;
+        TableStatKeys statKeys = SerializedTable.getStatKeys(this);
+        count = statKeys.getRows().getCount();
+        distinctKeys = statKeys.getDistinct();
         statProps = SerializedTable.getStatProps(this);
     }
 
@@ -254,10 +259,10 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
         protected final ClassWhere<KeyField> classes; // по сути условия на null'ы в том числе
         protected final ImMap<PropertyField, ClassWhere<Field>> propertyClasses;
 
-        protected final StatKeys<KeyField> statKeys;
+        protected final TableStatKeys statKeys;
         protected final ImMap<PropertyField, PropStat> statProps;
 
-        private Struct(ImOrderSet<KeyField> keys, ImCol<PropertyField> properties, ClassWhere<KeyField> classes, ImMap<PropertyField, ClassWhere<Field>> propertyClasses, StatKeys<KeyField> statKeys, ImMap<PropertyField, PropStat> statProps) {
+        private Struct(ImOrderSet<KeyField> keys, ImCol<PropertyField> properties, ClassWhere<KeyField> classes, ImMap<PropertyField, ClassWhere<Field>> propertyClasses, TableStatKeys statKeys, ImMap<PropertyField, PropStat> statProps) {
             this.keys = keys;
             this.properties = properties;
             this.classes = classes;
@@ -286,7 +291,7 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
     @ManualLazy
     public Struct getValueClass() {
         if (struct == null) {
-            struct = ThreadLocalContext.getLogicsInstance().twinObject(new Struct(keys, properties, classes, propertyClasses, getStatKeys(), getStatProps()));
+            struct = ThreadLocalContext.getLogicsInstance().twinObject(new Struct(keys, properties, classes, propertyClasses, getTableStatKeys(), getStatProps()));
         }
         return struct;
     }

@@ -2,10 +2,8 @@ package lsfusion.server.data;
 
 import lsfusion.base.Result;
 import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.server.ServerLoggers;
-import lsfusion.server.Settings;
 import lsfusion.server.data.query.StaticExecuteEnvironment;
-import lsfusion.server.data.query.stat.ExecCost;
+import lsfusion.server.data.query.stat.Cost;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -27,7 +25,7 @@ public class SQLDML extends SQLCommand<SQLDML.Handler> {
         void afterProceed();
     }
 
-    public SQLDML(String command, ExecCost baseCost, ImMap<String, SQLQuery> subQueries, StaticExecuteEnvironment env, boolean recursionFunction) {
+    public SQLDML(String command, Cost baseCost, ImMap<String, SQLQuery> subQueries, StaticExecuteEnvironment env, boolean recursionFunction) {
         super(command, baseCost, subQueries, env, recursionFunction);
     }
 

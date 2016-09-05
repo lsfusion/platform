@@ -7,10 +7,14 @@ import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.server.caches.ManualLazy;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
-import lsfusion.server.data.expr.NotNullExprInterface;
+import lsfusion.server.data.expr.NullableExprInterface;
+import lsfusion.server.data.expr.query.StatType;
 import lsfusion.server.data.query.CompileSource;
+import lsfusion.server.data.query.innerjoins.DataUpWhere;
 import lsfusion.server.data.query.innerjoins.GroupJoinsWheres;
+import lsfusion.server.data.query.innerjoins.UpWhere;
 import lsfusion.server.data.query.stat.KeyStat;
+import lsfusion.server.data.query.stat.WhereJoin;
 import lsfusion.server.data.where.classes.MeanClassWhere;
 import lsfusion.server.data.where.classes.MeanClassWheres;
 
@@ -58,14 +62,14 @@ abstract public class DataWhere extends ObjectWhere {
 
     // определяет все
     protected ImSet<DataWhere> calculateFollows() {
-        ImSet<NotNullExprInterface> exprFollows = getExprFollows();
+        ImSet<NullableExprInterface> exprFollows = getExprFollows();
         MSet<DataWhere> result = SetFact.mSet();
         for(int i=0,size=exprFollows.size();i<size;i++)
             exprFollows.get(i).fillFollowSet(result);
         return result.immutable();
     }
 
-    protected abstract ImSet<NotNullExprInterface> getExprFollows();
+    protected abstract ImSet<NullableExprInterface> getExprFollows();
 
     // ДОПОЛНИТЕЛЬНЫЕ ИНТЕРФЕЙСЫ
 
@@ -88,8 +92,20 @@ abstract public class DataWhere extends ObjectWhere {
             return where;
     }
 
-    public <K extends BaseExpr> GroupJoinsWheres groupNotJoinsWheres(ImSet<K> keepStat, KeyStat keyStat, ImOrderSet<Expr> orderTop, GroupJoinsWheres.Type type) {
+    public <K extends BaseExpr> GroupJoinsWheres groupNotJoinsWheres(ImSet<K> keepStat, StatType statType, KeyStat keyStat, ImOrderSet<Expr> orderTop, GroupJoinsWheres.Type type) {
         return null;
+    }
+
+    protected GroupJoinsWheres groupDataJoinsWheres(WhereJoin join, GroupJoinsWheres.Type type) {
+        return new GroupJoinsWheres(join, getUpWhere(), this, type);
+    }
+
+    protected GroupJoinsWheres groupDataNotJoinsWheres(WhereJoin join, GroupJoinsWheres.Type type) {
+        return new GroupJoinsWheres(join, getUpWhere().not(), not(), type);
+    }
+
+    protected UpWhere getUpWhere() {
+        return new DataUpWhere(this);
     }
 
     public boolean isNot() {

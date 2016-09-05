@@ -20,13 +20,14 @@ import lsfusion.server.data.KeyField;
 import lsfusion.server.data.PropertyField;
 import lsfusion.server.data.Value;
 import lsfusion.server.data.expr.BaseExpr;
+import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.query.CompiledQuery;
 import lsfusion.server.data.query.InnerExprFollows;
 import lsfusion.server.data.query.Join;
 import lsfusion.server.data.query.RemapJoin;
-import lsfusion.server.data.query.stat.KeyStat;
 import lsfusion.server.data.query.stat.StatKeys;
+import lsfusion.server.data.query.stat.TableStatKeys;
 import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
@@ -129,7 +130,7 @@ public class RecursiveJoin extends QueryJoin<KeyExpr, RecursiveJoin.Query, Recur
     }
 
     public ClassExprWhere getClassWhere() {
-        return getRecClassesStats().first.first;
+        return getRecClassesStats(StatType.DEFAULT).first.first;
     }
 
     @IdentityLazy
@@ -141,23 +142,32 @@ public class RecursiveJoin extends QueryJoin<KeyExpr, RecursiveJoin.Query, Recur
         return new InnerExprFollows<>(getClassWhere().get(groupKeys.toRevMap()), groupKeys);
     }
 
-    public StatKeys<KeyExpr> getStatKeys() {
-        return getRecClassesStats().first.second;
+    public StatKeys<KeyExpr> getStatKeys(StatType type) {
+        return getStatKeys(type, StatKeys.<KeyExpr>NOPUSH());
+    }
+
+    public StatKeys<KeyExpr> getStatKeys(StatType type, StatKeys<KeyExpr> pushStatKeys) {
+        return getRecClassesStats(type, pushStatKeys).first.second;
     }
 
     public boolean isOnlyInitial() {
-        return getRecClassesStats().second;
+        return getRecClassesStats(StatType.DEFAULT).second;
     }
 
-    private StatKeys<KeyExpr> getStatKeys(Where where) {
-        return where.getStatKeys(group.keys());
+    private StatKeys<KeyExpr> getStatKeys(Where where, StatType type, StatKeys<KeyExpr> pushStatKeys) {
+        return where.getPushedStatKeys(group.keys(), type, pushStatKeys);
+    }
+
+    private Pair<Pair<ClassExprWhere, StatKeys<KeyExpr>>, Boolean> getRecClassesStats(StatType statType) {
+        return getRecClassesStats(statType, StatKeys.<KeyExpr>NOPUSH());
     }
 
     // теоретически можно было бы разными прогонами, но тогда функциональщиной пришлось бы заниматься, плюс непонятно как подставлять друг другу статистику / классы
     @IdentityLazy
-    private Pair<Pair<ClassExprWhere, StatKeys<KeyExpr>>, Boolean> getRecClassesStats() {
-        ClassExprWhere recClasses = getClassWhere(getInitialWhere());
-        StatKeys<KeyExpr> recStats = getStatKeys(getInitialWhere());
+    private Pair<Pair<ClassExprWhere, StatKeys<KeyExpr>>, Boolean> getRecClassesStats(StatType statType, StatKeys<KeyExpr> pushStatKeys) {
+        Where initialWhere = getInitialWhere();
+        ClassExprWhere recClasses = getClassWhere(initialWhere);
+        StatKeys<KeyExpr> recStats = getStatKeys(initialWhere, statType, pushStatKeys);
 
         ClassExprWhere resultClasses = recClasses;
         StatKeys<KeyExpr> resultStats = recStats;
@@ -171,11 +181,11 @@ public class RecursiveJoin extends QueryJoin<KeyExpr, RecursiveJoin.Query, Recur
         int iterations = 0; int maxStatsIterations = Settings.get().getMaxRecursionStatsIterations();
         while(!recClasses.isFalse() && !(mCheckedClasses.add(recClasses) && (iterations >= maxStatsIterations || mCheckedStats.add(recStats)))) {
             Where recWhere = stepWhere.and(getRecJoin(MapFact.<String, Type>EMPTY(), "recursivetable", genKeyNames(),
-                    recClasses, recStats).getWhere());
+                    recClasses, recStats, null).getWhere());
             if(!recWhere.isFalse()) // значит будет еще итерация
                 onlyInitial = false;
             recClasses = getClassWhere(recWhere);
-            recStats = getStatKeys(recWhere);
+            recStats = getStatKeys(recWhere, statType, StatKeys.<KeyExpr>NOPUSH()); // тут можно было бы и pushStatKeys, но нет особого смысла
 
             resultClasses = recClasses.or(resultClasses);
             resultStats = recStats.or(resultStats);
@@ -186,13 +196,11 @@ public class RecursiveJoin extends QueryJoin<KeyExpr, RecursiveJoin.Query, Recur
 
     // для recursive join статистика рекурсивной таблицы делается заведомо маленькой, так как после первых операций, как правило рекурсия начинает сходится и количество записей начинает резко падать
     public Join<String> getRecJoin(ImMap<String, Type> props, String name, ImRevMap<String, KeyExpr> keyNames, Stat adjustStat) {
-        StatKeys<KeyExpr> statKeys = getStatKeys();
-        if(adjustStat != null)
-            statKeys = statKeys.decrease(adjustStat);
-        return getRecJoin(props, name, keyNames, getClassWhere(), statKeys);
+        StatKeys<KeyExpr> statKeys = getStatKeys(StatType.ADJUST_RECURSION);
+        return getRecJoin(props, name, keyNames, getClassWhere(), statKeys, adjustStat);
     }
 
-    public Join<String> getRecJoin(ImMap<String, Type> props, String name, ImRevMap<String, KeyExpr> keyNames, final ClassExprWhere classWhere, StatKeys<KeyExpr> statKeys) {
+    public Join<String> getRecJoin(ImMap<String, Type> props, String name, ImRevMap<String, KeyExpr> keyNames, final ClassExprWhere classWhere, StatKeys<KeyExpr> statKeys, Stat adjustStat) {
 
         // генерируем поля таблицы
         ImRevMap<KeyField, KeyExpr> recKeys = keyNames.mapRevKeys(new GetKeyValue<KeyField, KeyExpr, String>() {
@@ -204,8 +212,11 @@ public class RecursiveJoin extends QueryJoin<KeyExpr, RecursiveJoin.Query, Recur
                 return new PropertyField(key, value);
             }});
 
+        TableStatKeys tableStatKeys = TableStatKeys.createForTable(statKeys.mapBack(recKeys));
+        if(adjustStat != null)
+            tableStatKeys = tableStatKeys.decrease(adjustStat);
         RecursiveTable recTable = new RecursiveTable(name, recKeys.keys(), recProps.valuesSet(),
-                classWhere.mapClasses(recKeys), statKeys.mapBack(recKeys));
+                classWhere.mapClasses(recKeys), tableStatKeys);
 
         return new RemapJoin<>(recTable.join(recKeys.join(getFullMapIterate())), recProps); // mapp'им на предыдушие ключи
     }
@@ -226,8 +237,20 @@ public class RecursiveJoin extends QueryJoin<KeyExpr, RecursiveJoin.Query, Recur
         return getClassWhere().mapClasses(group.keys().toRevMap()).getWhere(getFullMapIterate());
     }
 
-    public StatKeys<KeyExpr> getStatKeys(KeyStat keyStat) {
-        return getStatKeys();
+    @Override
+    public StatKeys<KeyExpr> getPushedStatKeys(StatType type, StatKeys<KeyExpr> pushStatKeys) {
+        return getStatKeys(type, pushStatKeys);
+    }
+
+    @Override
+    public ImMap<Expr, ? extends Expr> getPushGroup(ImMap<KeyExpr, ? extends Expr> group, boolean newPush, Result<Where> pushExtraWhere) {
+        assert !newPush || !group.keys().intersect(getMapIterate().keys());
+        return super.getPushGroup(group, newPush, pushExtraWhere);
+    }
+
+    @Override
+    public ImSet<KeyExpr> getPushKeys(ImSet<KeyExpr> pushKeys) {
+        return pushKeys.remove(getMapIterate().keys());
     }
 
     public Where getInitialWhere() {

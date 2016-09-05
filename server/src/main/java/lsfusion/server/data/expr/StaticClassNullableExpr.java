@@ -14,6 +14,7 @@ import lsfusion.server.classes.sets.AndClassSet;
 import lsfusion.server.data.expr.formula.FormulaExpr;
 import lsfusion.server.data.expr.query.PropStat;
 import lsfusion.server.data.expr.query.Stat;
+import lsfusion.server.data.expr.query.StatType;
 import lsfusion.server.data.query.innerjoins.GroupJoinsWheres;
 import lsfusion.server.data.query.stat.KeyStat;
 import lsfusion.server.data.type.Type;
@@ -21,7 +22,7 @@ import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassExprWhere;
 import lsfusion.server.logics.property.ObjectClassField;
 
-public abstract class StaticClassNotNullExpr extends NotNullExpr  implements StaticClassExprInterface {
+public abstract class StaticClassNullableExpr extends NullableExpr implements StaticClassExprInterface {
 
     public abstract ConcreteClass getStaticClass();
 
@@ -37,7 +38,7 @@ public abstract class StaticClassNotNullExpr extends NotNullExpr  implements Sta
         return BaseUtils.immutableCast(getParams().toSet());
     }
 
-    public PropStat getStatValue(KeyStat keyStat) {
+    public PropStat getStatValue(KeyStat keyStat, StatType type) {
         return FormulaExpr.getStatValue(this, keyStat);
     }
 
@@ -72,10 +73,10 @@ public abstract class StaticClassNotNullExpr extends NotNullExpr  implements Sta
         return getNotNullWhere(getBaseJoin().getJoins().values());
     }
 
-    private class NotNull extends NotNullExpr.NotNull {
+    private class NotNull extends NullableExpr.NotNull {
 
-        public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(ImSet<K> keepStat, KeyStat keyStat, ImOrderSet<Expr> orderTop, GroupJoinsWheres.Type type) {
-            return super.groupJoinsWheres(keepStat, keyStat, orderTop, type).and(getCommonWhere().groupJoinsWheres(keepStat, keyStat, orderTop, type));
+        public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(ImSet<K> keepStat, StatType statType, KeyStat keyStat, ImOrderSet<Expr> orderTop, GroupJoinsWheres.Type type) {
+            return super.groupJoinsWheres(keepStat, statType, keyStat, orderTop, type).and(getCommonWhere().groupJoinsWheres(keepStat, statType, keyStat, orderTop, type));
         }
 
         public ClassExprWhere calculateClassWhere() {

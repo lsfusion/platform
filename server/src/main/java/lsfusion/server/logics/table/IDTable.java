@@ -5,7 +5,6 @@ import lsfusion.base.Pair;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
 import lsfusion.base.col.interfaces.mutable.add.MAddMap;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
@@ -14,9 +13,10 @@ import lsfusion.server.classes.SystemClass;
 import lsfusion.server.data.*;
 import lsfusion.server.data.expr.ValueExpr;
 import lsfusion.server.data.expr.query.PropStat;
+import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.query.Query;
 import lsfusion.server.data.query.QueryBuilder;
-import lsfusion.server.data.query.stat.StatKeys;
+import lsfusion.server.data.query.stat.TableStatKeys;
 import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.logics.DBManager;
 import lsfusion.server.logics.DataObject;
@@ -156,11 +156,11 @@ public class IDTable extends GlobalTable {
         return freeID;
     }
 
-    public StatKeys<KeyField> getStatKeys() {
+    public TableStatKeys getTableStatKeys() {
         return getStatKeys(this, getCounters().size());
     }
 
     public ImMap<PropertyField,PropStat> getStatProps() {
-        throw new RuntimeException("not supported");
+        return getStatProps(this, getCounters().size());
     }
 }

@@ -30,15 +30,16 @@ import lsfusion.server.data.expr.where.pull.ExclPullWheres;
 import lsfusion.server.data.expr.where.pull.ExprPullWheres;
 import lsfusion.server.data.query.*;
 import lsfusion.server.data.query.innerjoins.GroupJoinsWhere;
+import lsfusion.server.data.query.innerjoins.GroupSplitWhere;
 import lsfusion.server.data.query.innerjoins.GroupStatType;
-import lsfusion.server.data.query.innerjoins.GroupStatWhere;
 import lsfusion.server.data.query.innerjoins.KeyEqual;
 import lsfusion.server.data.query.stat.StatKeys;
 import lsfusion.server.data.query.stat.WhereJoin;
 import lsfusion.server.data.query.stat.WhereJoins;
 import lsfusion.server.data.sql.SQLSyntax;
+import lsfusion.server.data.translator.KeyExprTranslator;
 import lsfusion.server.data.translator.MapTranslate;
-import lsfusion.server.data.translator.QueryTranslator;
+import lsfusion.server.data.translator.ExprTranslator;
 import lsfusion.server.data.type.ClassReader;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.OrWhere;
@@ -78,7 +79,7 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
             return new Query(this, translator);
         }
 
-        public Query translateQuery(QueryTranslator translator) {
+        public Query translateExpr(ExprTranslator translator) {
             return new Query(translator.translate(exprs), translator.translate(orders), ordersNotNull, type);
         }
 
@@ -140,10 +141,10 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
                 return element instanceof KeyExpr;
             }
         }));
-        return where.getStatKeys(getInner().getQueryKeys().remove(pushedKeys));
+        return where.getStatKeys(getInner().getQueryKeys().remove(pushedKeys), StatType.DEFAULT);
     }
     private boolean checkNoKeys() {
-        return getStatGroup().rows.lessEquals(new Stat(Long.MAX_VALUE));
+        return getStatGroup().getRows().lessEquals(new Stat(Long.MAX_VALUE));
     }
     protected GroupExpr(Query query, ImMap<Expr, BaseExpr> group) {
         super(query, group);
@@ -220,7 +221,7 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
     }
 
     @ParamLazy
-    public Expr translateQuery(QueryTranslator translator) {
+    public Expr translate(ExprTranslator translator) {
         return createOuterGroupCases(translator.translate(group), query, MapFact.<BaseExpr, BaseExpr>EMPTY(), false);
     }
 
@@ -245,41 +246,31 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
 
     @IdentityInstanceLazy
     public GroupJoin getInnerJoin() {
-        StatKeys<Expr> statKeys;
-        Where queryWhere = query.getWhere();
-        if(query.type.hasAdd()) {
-            statKeys = new StatKeys<>(group.keys());
-            ImCol<GroupStatWhere<Expr>> splitJoins = getSplitJoins(queryWhere, query.type, getRevGroup().reverse(), true);
-            assert !splitJoins.isEmpty();
-            for(GroupStatWhere<Expr> join : splitJoins)
-                statKeys = statKeys.or(join.stats);
-        } else
-            statKeys = queryWhere.getStatExprs(group.keys());
+        final Where queryWhere = query.getWhere();
+
+        GroupExprWhereJoins<Expr> groupWhereJoins = queryWhere.getGroupWhereJoins(group.keys(), StatType.GROUP_SPLIT);
 
         ImSet<KeyExpr> innerKeys = getInner().getQueryKeys();
 
         Where groupWhere;
-        WhereJoins groupJoins;
         if(query.type.nullsNotAllowed()) {
             groupWhere = queryWhere;
-            groupJoins = WhereJoins.EMPTY;
         } else {
-            int groupJoinLevel = Settings.get().getGroupJoinLevel() - group.size();
-            if(groupJoinLevel >= 0) { // оптимизация
-                MSet<WhereJoin> mGroupJoins = SetFact.mSet();
-                for(GroupJoinsWhere queryJoin : queryWhere.getWhereJoins(false, innerKeys, SetFact.<Expr>EMPTYORDER()).first)
-                    mGroupJoins.addAll(queryJoin.getLevelJoins(groupJoinLevel));
-                groupJoins = new WhereJoins(mGroupJoins.immutable());
-            } else
-                groupJoins = WhereJoins.EMPTY;        
-            
+            // не нужно, так как и так WhereJoins включаются
+//            int groupJoinLevel = Settings.get().getGroupJoinLevel() - group.size();
+//            if(groupJoinLevel >= 0) { // оптимизация
+//                MSet<WhereJoin> mGroupJoins = SetFact.mSet();
+//                for(GroupJoinsWhere queryJoin : queryWhere.getWhereJoins(false, innerKeys, StatType.GROUP_SPLIT, SetFact.<Expr>EMPTYORDER()).first)
+//                    mGroupJoins.addAll(queryJoin.getLevelJoins(groupJoinLevel));
+//                groupJoins = new WhereJoins(mGroupJoins.immutable());
+//            } else
+//                groupJoins = WhereJoins.EMPTY;
             groupWhere = (query.type.hasAdd() && query.type.splitExprCases() ? query.exprs.single().getBaseWhere() : Where.TRUE).
                     and(query.getOrderWhere()); // тут особенность в том что в SQL даже если order null, он (в отличии от expr) может повлиять на результат, поэтому важно чтобы условия совпадали (конечно есть небольшой вопрос с and'ом getBaseWhere(), но эта ветка все равно пока не используется)
         }
 
         return new GroupJoin(innerKeys, getInner().getInnerValues(), getInner().getInnerKeyTypes(),
-                getInner().getInnerFollows(), groupWhere, groupJoins,
-                statKeys, group);
+                getInner().getInnerFollows(), groupWhere, groupWhereJoins, group);
     }
 
 
@@ -329,7 +320,13 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
         }
 
         final Where packWhere = packClasses.getPackWhere().and(innerWhere);
-        final Query packQuery = query.followFalse(packWhere.not(), pack).and(getKeepWhere(thisExpr != null ? thisExpr.getInner().getFullWhere() : getFullWhere(innerOuter, query))); // сначала pack'аем expr
+
+        // for keepWhere
+        Where groupWhere = thisExpr != null ? thisExpr.getInner().getGroupWhere() : getGroupWhere(innerOuter);
+        Where fullWhere = thisExpr != null ? thisExpr.getInner().getFullWhere() : getFullWhere(groupWhere, query);
+        Where keepWhere = getKeepWhere(fullWhere).followFalse(groupWhere.not(), pack);
+
+        final Query packQuery = query.followFalse(packWhere.not(), pack).and(keepWhere); // сначала pack'аем expr
         ImMap<BaseExpr, Expr> packOuterInner = outerInner.mapValues(new GetValue<Expr, Expr>() {
             public Expr getMapValue(Expr value) { // собсно будем паковать "общим" where исключив, одновременно за or not'им себя, чтобы собой не пакнуться
                 return value.followFalse(andExprCheck(packQuery.getWhere(), orExprCheck(packWhere, value.getWhere().not())).not(), pack);
@@ -411,7 +408,7 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
         }.proceed(implement);
     }
 
-    // если translateQuery или packFollowFalse, на самом деле тоже самое что сверху, но иначе придется кучу generics'ов сделать
+    // если translateExpr или packFollowFalse, на самом деле тоже самое что сверху, но иначе придется кучу generics'ов сделать
     private static Expr createOuterGroupCases(ImMap<Expr, ? extends Expr> innerOuter, final Query query, final ImMap<BaseExpr, BaseExpr> outerExprValues, final boolean pack) {
         return new ExprPullWheres<Expr>() {
             protected Expr proceedBase(ImMap<Expr, BaseExpr> map) {
@@ -432,8 +429,8 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
                 for(Pair<Expr, Expr> equal : equals)
                     keyEqual = keyEqual.and(KeyEqual.getKeyEqual((BaseExpr)equal.first, (BaseExpr)equal.second));
                 if(!keyEqual.isEmpty()) { // translateOuter'им и погнали
-                    QueryTranslator equalTranslator = keyEqual.getTranslator();
-                    return createInner(equalTranslator.translate(outerInner.result), query.translateQuery(equalTranslator), pack);
+                    ExprTranslator equalTranslator = keyEqual.getTranslator();
+                    return createInner(equalTranslator.translate(outerInner.result), query.translateExpr(equalTranslator), pack);
                 }
             } else
                 if(equals.size() > 0) // могут появиться еще keyEquals, InnerJoin'ы и т.п.
@@ -571,8 +568,8 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
         }
     }
 
-    private static Where getFullWhere(ImMap<Expr, BaseExpr> innerOuter, Query query) {
-        return query.getWhere().and(getGroupWhere(innerOuter));
+    private static Where getFullWhere(Where groupWhere, Query query) {
+        return query.getWhere().and(groupWhere);
     }
 
     protected static ImSet<KeyExpr> getKeys(Query query, ImMap<Expr, BaseExpr> group) {
@@ -584,25 +581,38 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
     }
 
     // "определяет" разбивать на innerJoins или нет
-    private static ImCol<GroupStatWhere<Expr>> getSplitJoins(final Where where, GroupType type, ImMap<BaseExpr, Expr> outerInner, boolean noWhere) {
+    private static ImCol<Pair<KeyEqual, Where>> getSplitJoins(final Where where, GroupType type, ImMap<BaseExpr, Expr> outerInner) {
         assert type.hasAdd();
-        return where.getStatJoins(!noWhere && type.exclusive(), outerInner.values().toSet(),
-                (type.splitInnerJoins()?GroupStatType.NONE:(Settings.get().isSplitGroupStatInnerJoins()?GroupStatType.STAT:GroupStatType.ALL)), noWhere);
+
+        GroupStatType splitType = type.splitInnerJoins() ? GroupStatType.NONE : (Settings.get().isSplitGroupStatInnerJoins() ? GroupStatType.STAT : GroupStatType.ALL);
+        if(splitType.equals(GroupStatType.ALL)) { // оптимизация
+            return where.getKeyEquals().mapColValues(new GetKeyValue<Pair<KeyEqual, Where>, KeyEqual, Where>() {
+                public Pair<KeyEqual, Where> getMapValue(KeyEqual key, Where value) {
+                    return new Pair<>(key, value);
+                }
+            });
+        }
+        return where.getSplitJoins(type.exclusive(), outerInner.values().toSet(),
+                StatType.GROUP_SPLIT, splitType).mapColSetValues(new GetValue<Pair<KeyEqual, Where>, GroupSplitWhere<Expr>>() {
+            public Pair<KeyEqual, Where> getMapValue(GroupSplitWhere<Expr> value) {
+                return new Pair<>(value.keyEqual, value.where);
+            }
+        });
     }
 
     private static Expr createInnerSplit(ImMap<BaseExpr, Expr> outerInner, Query query, boolean pack) {
 
         if(query.type.hasAdd()) {
             Expr result = CaseExpr.NULL;
-            ImCol<GroupStatWhere<Expr>> splitJoins = getSplitJoins(query.getWhere(), query.type, outerInner, false);
-            for(GroupStatWhere<Expr> innerWhere : splitJoins) {
+            ImCol<Pair<KeyEqual, Where>> splitJoins = getSplitJoins(query.getWhere(), query.type, outerInner);
+            for(Pair<KeyEqual, Where> innerWhere : splitJoins) {
                 Expr innerResult;
-                if(!innerWhere.keyEqual.isEmpty()) { // translatе'им expr
-                    QueryTranslator equalTranslator = innerWhere.keyEqual.getTranslator();
-                    innerResult = createInner(equalTranslator.translate(outerInner), query.translateQuery(equalTranslator).and(innerWhere.where), pack);
+                if(!innerWhere.first.isEmpty()) { // translatе'им expr
+                    ExprTranslator equalTranslator = innerWhere.first.getTranslator();
+                    innerResult = createInner(equalTranslator.translate(outerInner), query.translateExpr(equalTranslator).and(innerWhere.second), pack);
                 } else {
                     if(splitJoins.size() > 1) { // разрыв рекурсии + оптимизация
-                        innerResult = createInnerBase(outerInner, query.and(innerWhere.where), pack, query);
+                        innerResult = createInnerBase(outerInner, query.and(innerWhere.second), pack, query);
                         if(innerResult==null) // нафиг такой split
                             return createInnerBase(outerInner, query, pack, null);
                     } else
@@ -616,8 +626,8 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
         } else {
             KeyEqual keyEqual = getFullWhere(query, outerInner).getKeyEquals().getSingle();
             if(!keyEqual.isEmpty()) {
-                QueryTranslator equalTranslator = keyEqual.getTranslator();
-                return createInner(equalTranslator.translate(outerInner), query.translateQuery(equalTranslator), pack);
+                ExprTranslator equalTranslator = keyEqual.getTranslator();
+                return createInner(equalTranslator.translate(outerInner), query.translateExpr(equalTranslator), pack);
             }
             return createInnerBase(outerInner, query, pack, null);
         }
@@ -665,11 +675,11 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
         ImSet<KeyExpr> keys = getKeys(query, innerOuter);
         ImRevMap<KeyExpr, BaseExpr> groupKeys = MapFact.splitRevKeys(innerOuter, keys, compares);
         if(groupKeys.size()==keys.size()) {
-            QueryTranslator translator = new QueryTranslator(groupKeys);
+            ExprTranslator translator = new KeyExprTranslator(groupKeys);
             Where equalsWhere = Where.TRUE; // чтобы лишних проталкиваний не было
             for(int i=0,size=compares.result.size();i<size;i++) // оставшиеся
-                equalsWhere = equalsWhere.and(compares.result.getKey(i).translateQuery(translator).compare(compares.result.getValue(i), Compare.EQUALS));
-            return query.translateQuery(translator).and(equalsWhere).getSingleExpr();
+                equalsWhere = equalsWhere.and(compares.result.getKey(i).translateExpr(translator).compare(compares.result.getValue(i), Compare.EQUALS));
+            return query.translateExpr(translator).and(equalsWhere).getSingleExpr();
         }
 
         // FREEKEYS - отрезаем свободные ключи (которые есть только в группировке) и создаем выражение

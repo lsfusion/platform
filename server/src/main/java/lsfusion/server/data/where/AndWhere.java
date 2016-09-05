@@ -10,12 +10,13 @@ import lsfusion.server.Settings;
 import lsfusion.server.caches.ManualLazy;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
+import lsfusion.server.data.expr.query.StatType;
 import lsfusion.server.data.query.JoinData;
 import lsfusion.server.data.query.innerjoins.GroupJoinsWheres;
 import lsfusion.server.data.query.innerjoins.KeyEquals;
 import lsfusion.server.data.query.stat.KeyStat;
 import lsfusion.server.data.translator.MapTranslate;
-import lsfusion.server.data.translator.QueryTranslator;
+import lsfusion.server.data.translator.ExprTranslator;
 import lsfusion.server.data.where.classes.MeanClassWhere;
 import lsfusion.server.data.where.classes.MeanClassWheres;
 
@@ -94,16 +95,16 @@ public class AndWhere extends FormulaWhere<OrObjectWhere> implements AndObjectWh
         return wheres.length == 0 || (notWheres.length != 1 && substractWheresNot(notWheres, wheres, used, skip)); // hashEquals не будем проверять так как это оптимистичная проверка
     }
 
-    protected <K extends BaseExpr> GroupJoinsWheres calculateGroupJoinsWheres(ImSet<K> keepStat, KeyStat keyStat, ImOrderSet<Expr> orderTop, GroupJoinsWheres.Type type) {
+    protected <K extends BaseExpr> GroupJoinsWheres calculateGroupJoinsWheres(ImSet<K> keepStat, StatType statType, KeyStat keyStat, ImOrderSet<Expr> orderTop, GroupJoinsWheres.Type type) {
         GroupJoinsWheres result = new GroupJoinsWheres(TRUE, type);
         for(int i=0;i<wheres.length;i++) {
             // приходится и промежуточные группировать, так как при большом количестве операндов, complexity может до миллиона дорасти
             if(result.isExceededIntermediatePackThreshold()) {
                 OrObjectWhere[] procWheres = newArray(i);
                 System.arraycopy(wheres, 0, procWheres, 0, i);
-                result = packIntermediate(result, type, keepStat, keyStat, toWhere(procWheres, true), orderTop);
+                result = packIntermediate(result, type, keepStat, statType, keyStat, toWhere(procWheres, true), orderTop);
             }
-            result = result.and(wheres[i].groupJoinsWheres(keepStat, keyStat, orderTop, type));
+            result = result.and(wheres[i].groupJoinsWheres(keepStat, statType, keyStat, orderTop, type));
         }
         return result;
     }
@@ -144,8 +145,8 @@ public class AndWhere extends FormulaWhere<OrObjectWhere> implements AndObjectWh
     protected Where translate(MapTranslate translator) {
         return not().translateOuter(translator).not();
     }
-    public Where translateQuery(QueryTranslator translator) {
-        return not().translateQuery(translator).not();
+    public Where translate(ExprTranslator translator) {
+        return not().translateExpr(translator).not();
     }
 
     protected int hashCoeff() {

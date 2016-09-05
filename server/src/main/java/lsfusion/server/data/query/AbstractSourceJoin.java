@@ -10,11 +10,14 @@ import lsfusion.server.caches.ParamExpr;
 import lsfusion.server.data.ParseValue;
 import lsfusion.server.data.Table;
 import lsfusion.server.data.Value;
+import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.IsClassExpr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.KeyType;
 import lsfusion.server.data.expr.query.QueryExpr;
 import lsfusion.server.data.sql.PostgreDataAdapter;
+import lsfusion.server.data.translator.PartialKeyExprTranslator;
+import lsfusion.server.data.translator.ExprTranslator;
 import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
@@ -78,4 +81,17 @@ abstract public class AbstractSourceJoin<T extends SourceJoin<T>> extends Abstra
 
         return false;
     }
+
+    public T translateExpr(ExprTranslator translator) {
+        return aspectTranslate(translator);
+    }
+
+    protected T aspectTranslate(ExprTranslator translator) {
+        T translated = translator.translate((T)this);
+        if(translated != null)
+            return translated;
+        return translate(translator);
+    }
+
+    protected abstract T translate(ExprTranslator translator);
 }

@@ -20,7 +20,7 @@ import lsfusion.server.data.query.CompileSource;
 import lsfusion.server.data.query.JoinData;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.translator.MapTranslate;
-import lsfusion.server.data.translator.QueryTranslator;
+import lsfusion.server.data.translator.ExprTranslator;
 import lsfusion.server.data.type.ClassReader;
 import lsfusion.server.data.type.NullReader;
 import lsfusion.server.data.type.Type;
@@ -81,7 +81,7 @@ public class NullExpr extends Expr {
         return Where.FALSE;
     }
 
-    public Expr translateQuery(QueryTranslator translator) {
+    public Expr translate(ExprTranslator translator) {
         return this;
     }
 

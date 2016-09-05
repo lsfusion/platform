@@ -18,10 +18,11 @@ import lsfusion.server.Settings;
 import lsfusion.server.caches.ManualLazy;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.data.StaticParamNotNullExpr;
+import lsfusion.server.data.StaticParamNullableExpr;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.query.Stat;
+import lsfusion.server.data.expr.query.StatType;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.form.instance.GroupObjectInstance;
 import lsfusion.server.form.instance.InstanceFactory;
@@ -66,7 +67,7 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
         public ImMap<ObjectInstance, ? extends Expr> process(FilterInstance filt, ImMap<ObjectInstance, ? extends Expr> mapKeys) {
             return MapFact.addExcl(mapKeys, filt.getObjects().remove(mapKeys.keys()).mapValues(new GetValue<Expr, ObjectInstance>() {
                 public Expr getMapValue(ObjectInstance value) {
-                    return new StaticParamNotNullExpr(value.getBaseClass().getUpSet(), value.toString());
+                    return new StaticParamNullableExpr(value.getBaseClass().getUpSet(), value.toString());
                 }
             }));
         }
@@ -109,8 +110,9 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
                     Where staticWhere = groupObject.getWhere(mapKeys, modifier, null, new NoUpProcessor(groupObject));
 
                     // сравниваем статистику фильтра со статистикой класса
-                    Stat filterStat = dynamicWhere.and(staticWhere).getStatKeys(mapKeys.valuesSet()).rows;
-                    Stat classStat = staticWhere.getStatKeys(mapKeys.valuesSet()).rows;
+                    StatType type = StatType.UPDATE;
+                    Stat filterStat = dynamicWhere.and(staticWhere).getStatKeys(mapKeys.valuesSet(), type).getRows();
+                    Stat classStat = staticWhere.getStatKeys(mapKeys.valuesSet(), type).getRows();
 
                     if (new Stat(Settings.get().getDivStatUpdateTypeHeur()).lessEquals(classStat.div(filterStat)))
                         narrow = true;

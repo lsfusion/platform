@@ -11,8 +11,8 @@ import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
-import lsfusion.server.ServerLoggers;
 import lsfusion.server.SystemProperties;
+import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.classes.*;
 import lsfusion.server.data.*;
 import lsfusion.server.data.expr.*;
@@ -20,6 +20,7 @@ import lsfusion.server.data.expr.query.*;
 import lsfusion.server.data.query.IQuery;
 import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.data.query.stat.StatKeys;
+import lsfusion.server.data.query.stat.TableStatKeys;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.data.where.classes.ClassWhere;
@@ -45,9 +46,10 @@ import java.util.*;
 
 public class ImplementTable extends GlobalTable { // последний интерфейс assert что isFull
     public final ImMap<KeyField, ValueClass> mapFields;
-    private StatKeys<KeyField> statKeys = null;
+    private TableStatKeys statKeys = null;
     private ImMap<PropertyField, PropStat> statProps = null;
     private ImSet<PropertyField> indexedProps = SetFact.<PropertyField>EMPTY();
+    private ImSet<ImOrderSet<Field>> indexes = SetFact.EMPTY();
 
     public boolean markedFull;
 
@@ -135,10 +137,18 @@ public class ImplementTable extends GlobalTable { // последний инте
         propertyClasses = propertyClasses.addExcl(field, classes);
     }
 
+    @IdentityLazy
+    protected ImSet<ImOrderSet<Field>> getIndexes() {
+        return super.getIndexes().addExcl(indexes);
+    }
+
     @NFLazy
-    public void addIndex(PropertyField field) { // кривовато конечно, но пока другого варианта нет
-        if(!indexedProps.contains(field)) // временно
-            indexedProps = indexedProps.addExcl(field);
+    public void addIndex(ImOrderSet<Field> index) { // кривовато конечно, но пока другого варианта нет
+        indexes = indexes.addExcl(index);
+
+        Field field = index.get(0);
+        if(field instanceof PropertyField && !indexedProps.contains((PropertyField) field)) // временно
+            indexedProps = indexedProps.addExcl((PropertyField) field);
     }
 
     private NFOrderSet<ImplementTable> parents;
@@ -394,7 +404,7 @@ public class ImplementTable extends GlobalTable { // последний инте
             parent.fillSet(tableImplements);
     }
 
-    public StatKeys<KeyField> getStatKeys() {
+    public TableStatKeys getTableStatKeys() {
         if(statKeys!=null)
             return statKeys;
         else
@@ -560,7 +570,7 @@ public class ImplementTable extends GlobalTable { // последний инте
                 }
                 mvDistinctKeys.mapValue(i, keyStat.min(rowStat));
             }
-            statKeys = StatKeys.createForTable(rowStat, new DistinctKeys<>(mvDistinctKeys.immutableValue()));
+            statKeys = TableStatKeys.createForTable(rowStat, new DistinctKeys<>(mvDistinctKeys.immutableValue()));
         }
 
         ImSet<PropertyField> propertyFieldSet = props == null ? properties : props;
@@ -609,24 +619,24 @@ public class ImplementTable extends GlobalTable { // последний инте
 
     private boolean correctStatProps() {
         for(PropStat stat : statProps.valueIt()) {
-            assert stat.distinct.lessEquals(statKeys.rows);
+            assert stat.distinct.lessEquals(statKeys.getRows());
         }
         return true;
     }
 
     public static class InconsistentTable extends GlobalTable {
 
-        private final StatKeys<KeyField> statKeys;
+        private final TableStatKeys statKeys;
         private final ImMap<PropertyField, PropStat> statProps;
 
-        private InconsistentTable(String name, ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, BaseClass baseClass, StatKeys<KeyField> statKeys, ImMap<PropertyField, PropStat> statProps) {
+        private InconsistentTable(String name, ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, BaseClass baseClass, TableStatKeys statKeys, ImMap<PropertyField, PropStat> statProps) {
             super(name, keys, properties, null, null);
             initBaseClasses(baseClass);
             this.statKeys = statKeys;
             this.statProps = statProps;
         }
 
-        public StatKeys<KeyField> getStatKeys() {
+        public TableStatKeys getTableStatKeys() {
             return statKeys;
         }
 

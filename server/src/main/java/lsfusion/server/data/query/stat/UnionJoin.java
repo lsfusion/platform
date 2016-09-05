@@ -11,6 +11,7 @@ import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MOrderExclMap;
 import lsfusion.base.col.interfaces.mutable.MSet;
+import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
 import lsfusion.base.col.interfaces.mutable.add.MAddMap;
 import lsfusion.server.caches.AbstractOuterContext;
 import lsfusion.server.caches.IdentityLazy;
@@ -75,7 +76,7 @@ public class UnionJoin extends CalculateJoin<Integer> {
             fillOrderedExprs(baseExpr, null, mOrderedExprs);
         ImOrderMap<BaseExpr,ImSet<BaseExpr>> orderedExprs = MapFact.immutable(mOrderedExprs);
 
-        MAddMap<BaseExpr, ImSet<BaseExpr>> found = MapFact.mAddExclMapMax(orderedExprs.size());
+        MAddExclMap<BaseExpr, ImSet<BaseExpr>> found = MapFact.mAddExclMapMax(orderedExprs.size());
         List<BaseExpr> result = new ArrayList<>();
         for(int i=orderedExprs.size()-1;i>=0;i--) { // бежим с конца
             BaseExpr baseExpr = orderedExprs.getKey(i);
@@ -99,7 +100,7 @@ public class UnionJoin extends CalculateJoin<Integer> {
                 if(exprFound != null) // только что нашли
                     result.add(baseExpr);
             } else
-                found.add(baseExpr, exprFound);
+                found.exclAdd(baseExpr, exprFound);
         }
         return result;
     }

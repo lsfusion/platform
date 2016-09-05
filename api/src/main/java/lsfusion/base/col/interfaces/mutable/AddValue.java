@@ -7,4 +7,5 @@ public interface AddValue<K, V> {
     boolean reversed();
     AddValue<K, V> reverse();
     boolean stopWhenNull();
+    boolean exclusive();
 }

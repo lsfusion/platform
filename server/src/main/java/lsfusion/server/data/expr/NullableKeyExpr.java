@@ -7,19 +7,21 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.server.caches.ParamExpr;
+import lsfusion.server.data.expr.query.StatType;
 import lsfusion.server.data.expr.where.NotNullWhere;
 import lsfusion.server.data.query.CompileSource;
 import lsfusion.server.data.query.JoinData;
 import lsfusion.server.data.query.innerjoins.GroupJoinsWheres;
+import lsfusion.server.data.query.innerjoins.UpWhere;
 import lsfusion.server.data.query.stat.KeyStat;
 import lsfusion.server.data.where.DataWhere;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassExprWhere;
 
-public class NotNullKeyExpr extends ParamExpr implements NotNullExprInterface {
+public class NullableKeyExpr extends ParamExpr implements NullableExprInterface {
 
     private final int ID;
-    public NotNullKeyExpr(int ID) {
+    public NullableKeyExpr(int ID) {
         this.ID = ID;
     }
 
@@ -38,15 +40,20 @@ public class NotNullKeyExpr extends ParamExpr implements NotNullExprInterface {
     public class NotNull extends NotNullWhere {
 
         protected BaseExpr getExpr() {
-            return NotNullKeyExpr.this;
+            return NullableKeyExpr.this;
         }
 
         public ClassExprWhere calculateClassWhere() {
             return ClassExprWhere.TRUE;
         }
 
-        public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(ImSet<K> keepStat, KeyStat keyStat, ImOrderSet<Expr> orderTop, GroupJoinsWheres.Type type) {
+        public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(ImSet<K> keepStat, StatType statType, KeyStat keyStat, ImOrderSet<Expr> orderTop, GroupJoinsWheres.Type type) {
             throw new RuntimeException("not supported");
+        }
+
+        @Override
+        protected UpWhere getUpWhere() {
+            throw new UnsupportedOperationException();
         }
     }
 
@@ -55,18 +62,18 @@ public class NotNullKeyExpr extends ParamExpr implements NotNullExprInterface {
     }
 
     public void fillFollowSet(MSet<DataWhere> result) {
-        NotNullExpr.fillFollowSet(this, result);
+        NullableExpr.fillFollowSet(this, result);
     }
 
     public boolean hasNotNull() {
-        return NotNullExpr.hasNotNull(this);
+        return NullableExpr.hasNotNull(this);
     }
 
-    // упрощенная копия аналогичного метода в NotNullExpr
-    public ImSet<NotNullExprInterface> getExprFollows(boolean includeThis, boolean includeInnerWithoutNotNull, boolean recursive) {
+    // упрощенная копия аналогичного метода в NullableExpr
+    public ImSet<NullableExprInterface> getExprFollows(boolean includeThis, boolean includeInnerWithoutNotNull, boolean recursive) {
         assert includeThis || recursive;
         if(includeThis) {
-            return SetFact.<NotNullExprInterface>singleton(this);
+            return SetFact.<NullableExprInterface>singleton(this);
         }
         return SetFact.EMPTY();
     }

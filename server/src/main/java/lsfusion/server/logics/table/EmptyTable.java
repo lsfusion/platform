@@ -7,7 +7,7 @@ import lsfusion.server.data.GlobalTable;
 import lsfusion.server.data.KeyField;
 import lsfusion.server.data.PropertyField;
 import lsfusion.server.data.expr.query.PropStat;
-import lsfusion.server.data.query.stat.StatKeys;
+import lsfusion.server.data.query.stat.TableStatKeys;
 
 public class EmptyTable extends GlobalTable {
     public static final EmptyTable instance = new EmptyTable();
@@ -19,7 +19,7 @@ public class EmptyTable extends GlobalTable {
         keys = SetFact.singletonOrder(new KeyField("id", SystemClass.instance));
     }
 
-    public StatKeys<KeyField> getStatKeys() {
+    public TableStatKeys getTableStatKeys() {
         throw new RuntimeException("not supported");
     }
 

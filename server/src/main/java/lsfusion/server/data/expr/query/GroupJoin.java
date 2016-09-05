@@ -1,19 +1,18 @@
 package lsfusion.server.data.expr.query;
 
-import lsfusion.base.BaseUtils;
 import lsfusion.base.TwinImmutableObject;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.caches.OuterContext;
+import lsfusion.server.caches.ParamExpr;
 import lsfusion.server.caches.hash.HashContext;
 import lsfusion.server.data.Value;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.query.InnerExprFollows;
-import lsfusion.server.data.query.stat.KeyStat;
 import lsfusion.server.data.query.stat.StatKeys;
-import lsfusion.server.data.query.stat.WhereJoins;
 import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
@@ -22,35 +21,33 @@ public class GroupJoin extends QueryJoin<Expr, GroupJoin.Query, GroupJoin, Group
 
     public static class Query extends QueryJoin.Query<Expr, Query> {
         private final Where where;
-        private final StatKeys<Expr> stats;
-        private final ImMap<KeyExpr, Type> keyTypes; // чтобы не сливало группировки с разными типами
-        private final WhereJoins joins;// чтобы не сливало группировки со всем разными join'ами
+        private final ImMap<KeyExpr, Type> keyTypes;
+        private final GroupExprWhereJoins<Expr> joins;// чтобы не сливало группировки со всем разными join'ами
 
-        public Query(InnerExprFollows<Expr> follows, Where where, StatKeys<Expr> stats, ImMap<KeyExpr, Type> keyTypes, WhereJoins joins) {
+        public Query(InnerExprFollows<Expr> follows, Where where, ImMap<KeyExpr, Type> keyTypes, GroupExprWhereJoins<Expr> joins) {
             super(follows);
             this.where = where;
-            this.stats = stats;
             this.keyTypes = keyTypes;
             this.joins = joins;
+            assert !keyTypes.containsNull();
         }
 
         public Query(Query query, MapTranslate translator) {
             super(query, translator);
             where = query.where.translateOuter(translator);
-            stats = StatKeys.translateOuter(query.stats, translator);
             keyTypes = translator.translateExprKeys(query.keyTypes);
             joins = query.joins.translateOuter(translator);
         }
 
         public boolean calcTwins(TwinImmutableObject o) {
-            return super.calcTwins(o) && stats.equals(((Query) o).stats) && where.equals(((Query) o).where) && keyTypes.equals(((Query) o).keyTypes) && joins.equals(((Query) o).joins);
+            return super.calcTwins(o) && where.equals(((Query) o).where) && keyTypes.equals(((Query) o).keyTypes) && joins.equals(((Query) o).joins);
         }
 
         protected boolean isComplex() {
             return true;
         }
         protected int hash(HashContext hashContext) {
-            return 31 * ((31 * (31 * super.hash(hashContext) + hashKeysOuter(keyTypes, hashContext)) + where.hashOuter(hashContext))* 31 + StatKeys.hashOuter(stats, hashContext)) + joins.hashOuter(hashContext);
+            return (31 * (31 * super.hash(hashContext) + hashKeysOuter(keyTypes, hashContext)) + where.hashOuter(hashContext))* 31 + joins.hashOuter(hashContext);
         }
 
         protected Query translate(MapTranslate translator) {
@@ -58,7 +55,7 @@ public class GroupJoin extends QueryJoin<Expr, GroupJoin.Query, GroupJoin, Group
         }
 
         public ImSet<OuterContext> calculateOuterDepends() {
-            return super.calculateOuterDepends().merge(BaseUtils.<ImSet<OuterContext>>immutableCast(stats.getKeys()).merge(keyTypes.keys()).merge(where).merge(joins));
+            return super.calculateOuterDepends().merge(keyTypes.keys()).merge(where).merge(joins);
         }
     }
 
@@ -80,8 +77,8 @@ public class GroupJoin extends QueryJoin<Expr, GroupJoin.Query, GroupJoin, Group
         super(join, translator);
     }
 
-    public GroupJoin(ImSet<KeyExpr> keys, ImSet<Value> values, ImMap<KeyExpr, Type> extKeyTypes, InnerExprFollows<Expr> innerFollows, Where where, WhereJoins groupJoins, StatKeys<Expr> joins, ImMap<Expr, BaseExpr> group) {
-        super(keys,values,new Query(innerFollows, where, joins, extKeyTypes, groupJoins),group);
+    public GroupJoin(ImSet<KeyExpr> keys, ImSet<Value> values, ImMap<KeyExpr, Type> keyTypes, InnerExprFollows<Expr> innerFollows, Where where, GroupExprWhereJoins<Expr> groupJoins, ImMap<Expr, BaseExpr> group) {
+        super(keys,values,new Query(innerFollows, where, keyTypes, groupJoins),group);
     }
 
     private GroupJoin(ImSet<KeyExpr> keys, ImSet<Value> values, Query inner, ImMap<Expr, BaseExpr> group) {
@@ -92,8 +89,12 @@ public class GroupJoin extends QueryJoin<Expr, GroupJoin.Query, GroupJoin, Group
         return new GroupJoin(keys, values, query, group);
     }
 
-    @Override
-    public StatKeys<Expr> getStatKeys(KeyStat keyStat) {
-        return query.stats;
+    @IdentityLazy
+    public StatKeys<Expr> getPushedStatKeys(StatType type, StatKeys<Expr> pushStatKeys) {
+        return query.joins.getStatKeys(new lsfusion.server.data.query.stat.KeyStat() {
+            public Stat getKeyStat(ParamExpr key, boolean forJoin) {
+                return query.keyTypes.get((KeyExpr) key).getTypeStat(forJoin);
+            }
+        }, type, pushStatKeys, group.keys());
     }
 }

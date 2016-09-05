@@ -415,11 +415,16 @@ public class MapFact {
         }
 
         public boolean reversed() {
-            throw new UnsupportedOperationException();
+            return true;
         }
 
         public AddValue<Object, Object> reverse() {
-            throw new UnsupportedOperationException();
+            return this;
+        }
+
+        @Override
+        public boolean exclusive() {
+            return true;
         }
     };
     public static <K, V> AddValue<K, V> exclusive() {
@@ -623,7 +628,7 @@ public class MapFact {
         return mResult;
     }
 
-    public static <K, V> MAddMap<K, V> mAddExclMapMax(int size) {
+    public static <K, V> MAddExclMap<K, V> mAddExclMapMax(int size) {
         return new HMap<>(size, MapFact.<K, V>exclusive());
     }
 

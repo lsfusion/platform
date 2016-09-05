@@ -17,8 +17,9 @@ import lsfusion.server.classes.BaseClass;
 import lsfusion.server.data.*;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
-import lsfusion.server.data.expr.NotNullKeyExpr;
+import lsfusion.server.data.expr.NullableKeyExpr;
 import lsfusion.server.data.expr.query.Stat;
+import lsfusion.server.data.expr.query.StatType;
 import lsfusion.server.data.query.Query;
 import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.data.query.stat.StatKeys;
@@ -198,14 +199,14 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Cal
     }
     
     @IdentityStartLazy
-    private Pair<ImRevMap<T,NotNullKeyExpr>, Expr> calculateQueryExpr(CalcType calcType) {
-        ImRevMap<T,NotNullKeyExpr> mapExprs = getMapNotNullKeys();
+    private Pair<ImRevMap<T,NullableKeyExpr>, Expr> calculateQueryExpr(CalcType calcType) {
+        ImRevMap<T,NullableKeyExpr> mapExprs = getMapNotNullKeys();
         return new Pair<>(mapExprs, calculateExpr(mapExprs, calcType));
     }
     
     @IdentityStartLazy
     protected ClassWhere<Object> calcClassValueWhere(CalcClassType calcType) {
-        Pair<ImRevMap<T, NotNullKeyExpr>, Expr> query = calculateQueryExpr(calcType == CalcClassType.PREVSAME && noOld() ? CalcClassType.PREVBASE : calcType); // оптимизация
+        Pair<ImRevMap<T, NullableKeyExpr>, Expr> query = calculateQueryExpr(calcType == CalcClassType.PREVSAME && noOld() ? CalcClassType.PREVBASE : calcType); // оптимизация
         ClassWhere<Object> result = Query.getClassWhere(Where.TRUE, query.first, MapFact.singleton((Object) "value", query.second)); 
         if(calcType == CalcClassType.PREVSAME) // для того чтобы докинуть orAny, собсно только из-за этого infer необходим в любом случае
             result = result.and(inferClassValueWhere(InferType.PREVSAME));
@@ -215,7 +216,7 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Cal
     @Override
     @IdentityLazy
     protected boolean calcNotNull(CalcInfoType calcType) {
-        Pair<ImRevMap<T, NotNullKeyExpr>, Expr> query = calculateQueryExpr(calcType); // оптимизация
+        Pair<ImRevMap<T, NullableKeyExpr>, Expr> query = calculateQueryExpr(calcType); // оптимизация
         return query.second.getWhere().means(Expr.getWhere(query.first));
     }
 
@@ -225,20 +226,20 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Cal
         return calculateQueryExpr(calcType).second.getWhere().isFalse();
     }
 
-    private ImRevMap<T, NotNullKeyExpr> getMapNotNullKeys() {
-        return interfaces.mapRevValues(new GetIndexValue<NotNullKeyExpr, T>() {
-            public NotNullKeyExpr getMapValue(int i, T value) {
-                return new NotNullKeyExpr(i);
+    private ImRevMap<T, NullableKeyExpr> getMapNotNullKeys() {
+        return interfaces.mapRevValues(new GetIndexValue<NullableKeyExpr, T>() {
+            public NullableKeyExpr getMapValue(int i, T value) {
+                return new NullableKeyExpr(i);
             }});
     }
 
     @IdentityStartLazy
     public StatKeys<T> getInterfaceClassStats() {
         ImRevMap<T,KeyExpr> mapKeys = getMapKeys();
-        return calculateStatExpr(mapKeys).getWhere().getStatKeys(mapKeys.valuesSet()).mapBack(mapKeys);
+        return calculateStatExpr(mapKeys).getWhere().getStatKeys(mapKeys.valuesSet(), StatType.PROP_STATS).mapBack(mapKeys);
     }
 
     public boolean hasAlotKeys() {
-        return Stat.ALOT.lessEquals(getInterfaceClassStats().rows);
+        return Stat.ALOT.lessEquals(getInterfaceClassStats().getRows());
     }
 }

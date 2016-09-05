@@ -745,8 +745,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         Integer statsProperty = null;
         if (property instanceof AggregateProperty) {
             StatKeys classStats = ((AggregateProperty) property).getInterfaceClassStats();
-            if (classStats != null && classStats.rows != null)
-                statsProperty = classStats.rows.getCount();
+            if (classStats != null && classStats.getRows() != null)
+                statsProperty = classStats.getRows().getCount();
         }
         return statsProperty;
     }
