@@ -74,10 +74,12 @@ public class EqualsWhere extends CompareWhere<EqualsWhere> {
 
     @Override
     public WhereJoin groupJoinsWheres(ImOrderSet<Expr> orderTop) {
+        // isValue дают костыль в виде valueJoins, которые может нарушать ряд assertion (см. WhereJoin.getWhereJoins), поэтому впоследствии надо убрать
         if (operator1.isValue())
             return new ExprStatJoin(operator2, Stat.ONE, operator1);
         if (operator2.isValue())
             return new ExprStatJoin(operator1, Stat.ONE, operator2);
+
         return new ExprEqualsJoin(operator1, operator2); // тут тоже assertion из calculateKeyEquals'а есть, но он сложный поэтому пока прописывать не будем
     }
 }

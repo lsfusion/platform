@@ -691,8 +691,6 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
     public <K extends BaseExpr, Z extends Expr> Where getCostPushWhere(final QueryJoin<Z, ?, ?, ?> queryJoin, final UpWheres<WhereJoin> upWheres, final KeyStat keyStat, final StatType type) {
         ImSet<BaseExpr> groups = queryJoin.getJoins().values().toSet();
 
-        if(queryJoin.isValue()) // проблема что queryJoin может быть в ExprStatJoin.valueJoins, тогда он будет Inner, а в WhereJoins его не будет и начнут падать assertion'ы появлятся висячие ключи
-            return null;
 
         return calculateCost(groups, queryJoin, false, keyStat, type, new CostResult<Where>() {
             public Where calculate(CostStat costStat, ImSet<Edge> edges, MAddMap<BaseExpr, PropStat> exprStats) {
@@ -1821,9 +1819,18 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
 //            costResult = costResult;
 
         if(useCost)
-            return ( isInner ? this : and(new WhereJoins(pushJoin))).getCostPushWhere(pushJoin, upWheres, keyStat, StatType.PUSH_OUTER());
+            return getWhereJoins(pushJoin, isInner).getCostPushWhere(pushJoin, upWheres, keyStat, StatType.PUSH_OUTER());
         else
             return getOldPushWhere(joinMap, upWheres, pushJoin, keyStat, fullWhere, currentJoinStat);
+    }
+
+    private <K extends Expr> WhereJoins getWhereJoins(QueryJoin<K, ?, ?, ?> pushJoin, boolean isInner) {
+        if(isInner) {
+            if(pushJoin.isValue()) // проблема что queryJoin может быть в ExprStatJoin.valueJoins, тогда он будет Inner, а в WhereJoins его не будет и начнут падать assertion'ы появлятся висячие ключи, другое дело, что потом надо убрать в EqualsWhere ExprStatJoin = значение, тогда это проверка не нужно
+                return new WhereJoins(pushJoin);
+            return this;
+        }
+        return and(new WhereJoins(pushJoin));
     }
 
     private <K extends Expr> Where getOldPushWhere(ImMap<K, BaseExpr> joinMap, UpWheres<WhereJoin> upWheres, QueryJoin<K, ?, ?, ?> pushJoin, KeyStat keyStat, Where fullWhere, StatKeys<K> currentJoinStat) {
