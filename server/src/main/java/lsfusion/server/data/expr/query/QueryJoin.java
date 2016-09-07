@@ -149,6 +149,9 @@ public abstract class QueryJoin<K extends Expr,I extends QueryJoin.Query<K, I>, 
     public InnerExpr getInnerExpr(WhereJoin join) {
         return getOuter().getInnerExpr(join);
     }
+    public boolean isValue() {
+        return getOuter().isValue();
+    }
     public ImSet<NullableExprInterface> getExprFollows(boolean includeInnerWithoutNotNull, boolean recursive) {
         return getOuter().getExprFollows(includeInnerWithoutNotNull, recursive);
     }

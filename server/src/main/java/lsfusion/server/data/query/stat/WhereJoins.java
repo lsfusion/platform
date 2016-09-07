@@ -691,6 +691,9 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
     public <K extends BaseExpr, Z extends Expr> Where getCostPushWhere(final QueryJoin<Z, ?, ?, ?> queryJoin, final UpWheres<WhereJoin> upWheres, final KeyStat keyStat, final StatType type) {
         ImSet<BaseExpr> groups = queryJoin.getJoins().values().toSet();
 
+        if(queryJoin.isValue()) // проблема что queryJoin может быть в ExprStatJoin.valueJoins, тогда он будет Inner, а в WhereJoins его не будет и начнут падать assertion'ы появлятся висячие ключи
+            return null;
+
         return calculateCost(groups, queryJoin, false, keyStat, type, new CostResult<Where>() {
             public Where calculate(CostStat costStat, ImSet<Edge> edges, MAddMap<BaseExpr, PropStat> exprStats) {
                 return getCostPushWhere(costStat, edges, queryJoin, upWheres);
