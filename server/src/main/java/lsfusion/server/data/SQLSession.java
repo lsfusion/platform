@@ -31,7 +31,6 @@ import lsfusion.server.form.navigator.SQLSessionUserProvider;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
-import lsfusion.server.session.SessionTableUsage;
 import lsfusion.server.stack.ExecutionStackAspect;
 import lsfusion.server.stack.ParamMessage;
 import lsfusion.server.stack.StackMessage;
@@ -1568,7 +1567,14 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
             return handled;
         }
         
-        logger.error(message + " " + e.getMessage()); // duplicate keys валится при : неправильный вывод классов в таблицах (см. SessionTable.assertCheckClasses), неправильном неявном приведении типов (от широкого к узкому, DataClass.containsAll), проблемах с округлениями, недетерминированные ORDER функции (GROUP LAST и т.п.), нецелостной базой (значения классов в базе не правильные)
+        logger.error(message + " " + e.getMessage());
+        // duplicate keys валится при :
+        // ПОЛЬЗОВАТЕЛЬСКИЕ
+        // неправильном неявном приведении типов (от широкого к узкому, DataClass.containsAll), проблемах с округлениями,
+        //      в частности проблема с AS если есть GROUP BY f(a) широкий тип AS узкий тип, то тип выведется узкий, а в вычислении SQL округления не будет и при UNION / GROUP BY можно получить дублмкаты
+        // недетерминированные ORDER функции (GROUP LAST и т.п.)
+        // нецелостной базой (значения классов в базе не правильные)
+        // неправильный вывод классов в таблицах (см. SessionTable.assertCheckClasses),
         return e;
     }
 
@@ -1747,11 +1753,11 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     }
 
     public <K,V> void executeSelect(SQLQuery query, DynamicExecuteEnvironment queryExecEnv, OperationOwner owner, ImMap<String, ParseInterface> paramObjects, int transactTimeout, ImRevMap<K, String> keyNames, ImRevMap<V, String> propertyNames, ResultHandler<K, V> handler) throws SQLException, SQLHandledException {
-        executeSelect(query, queryExecEnv, owner, paramObjects, transactTimeout, new MapResultHandler<>(handler, keyNames, propertyNames));
+        executeSelect(query, queryExecEnv, null, owner, paramObjects, transactTimeout, new MapResultHandler<>(handler, keyNames, propertyNames));
     }
 
-    public <OE, S extends DynamicExecEnvSnapshot> void executeSelect(SQLQuery query, DynamicExecuteEnvironment queryExecEnv, OperationOwner owner, ImMap<String, ParseInterface> paramObjects, int transactTimeout, ResultHandler<String, String> handler) throws SQLException, SQLHandledException {
-        executeCommand(query.fixConcSelect(syntax), queryExecEnv, owner, paramObjects, transactTimeout, handler, DynamicExecuteEnvironment.<OE, S>create(null), PureTime.VOID, true);
+    public <OE, S extends DynamicExecEnvSnapshot> void executeSelect(SQLQuery query, DynamicExecuteEnvironment queryExecEnv, OE outerEnv, OperationOwner owner, ImMap<String, ParseInterface> paramObjects, int transactTimeout, ResultHandler<String, String> handler) throws SQLException, SQLHandledException {
+        executeCommand(query.fixConcSelect(syntax), queryExecEnv, owner, paramObjects, transactTimeout, handler, DynamicExecuteEnvironment.<OE, S>create(outerEnv), PureTime.VOID, true);
     }
 
     public <OE, S extends DynamicExecEnvSnapshot<OE, S>> int executeDML(@ParamMessage SQLDML command, OperationOwner owner, TableOwner tableOwner, ImMap<String, ParseInterface> paramObjects, DynamicExecuteEnvironment<OE, S> queryExecEnv, OE outerEnv, PureTimeInterface pureTime, int transactTimeout, final RegisterChange registerChange) throws SQLException, SQLHandledException { // public для аспекта

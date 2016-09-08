@@ -168,14 +168,14 @@ public class SQLQuery extends SQLCommand<ResultHandler<String, String>> {
         }
     }
 
-    public void outSelect(SQLSession session, DynamicExecuteEnvironment queryExecEnv, ImMap<String, ParseInterface> queryParams, int transactTimeout, OperationOwner owner) throws SQLException, SQLHandledException {
-        ServerLoggers.exinfoLog(this + " " + queryParams + '\n' + readSelect(session, queryExecEnv, queryParams, transactTimeout, owner));
+    public void outSelect(SQLSession session, DynamicExecuteEnvironment queryExecEnv, Object outerEnv, ImMap<String, ParseInterface> queryParams, int transactTimeout, OperationOwner owner) throws SQLException, SQLHandledException {
+        ServerLoggers.exinfoLog(this + " " + queryParams + '\n' + readSelect(session, queryExecEnv, outerEnv, queryParams, transactTimeout, owner));
     }
 
-    public String readSelect(SQLSession session, DynamicExecuteEnvironment queryExecEnv, ImMap<String, ParseInterface> queryParams, int transactTimeout, OperationOwner owner) throws SQLException, SQLHandledException {
+    public String readSelect(SQLSession session, DynamicExecuteEnvironment queryExecEnv, Object outerEnv, ImMap<String, ParseInterface> queryParams, int transactTimeout, OperationOwner owner) throws SQLException, SQLHandledException {
         // выведем на экран
         ReadAllResultHandler<String, String> handler = new ReadAllResultHandler<>();
-        session.executeSelect(this, queryExecEnv, owner, queryParams, transactTimeout, handler);
+        session.executeSelect(this, queryExecEnv, outerEnv, owner, queryParams, transactTimeout, handler);
         ImOrderMap<ImMap<String, Object>, ImMap<String, Object>> result = handler.terminate();
 
         String resultString = "";
@@ -298,7 +298,7 @@ public class SQLQuery extends SQLCommand<ResultHandler<String, String>> {
                 SQLExecute execute = getExecute(dml, queryParams, subQueryExecEnv, materializedQueries, pureTime, transactTimeout, owner, tableOwner, SQLSession.register(name, tableOwner, TableChange.INSERT));
                 return session.insertSessionSelect(execute, new ERunnable() {
                     public void run() throws Exception {
-                        outSelect(session, subQueryExecEnv, queryParams, transactTimeout, owner);
+                        outSelect(session, subQueryExecEnv, materializedQueries, queryParams, transactTimeout, owner);
                     }
                 });
             }

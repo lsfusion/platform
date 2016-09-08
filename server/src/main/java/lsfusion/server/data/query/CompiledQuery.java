@@ -1,7 +1,6 @@
 package lsfusion.server.data.query;
 
 import lsfusion.server.caches.IdentityQuickLazy;
-import lsfusion.server.caches.ParamExpr;
 import lsfusion.server.data.query.innerjoins.UpWheres;
 import lsfusion.server.data.query.stat.*;
 import lsfusion.server.data.query.stat.KeyStat;
@@ -1693,11 +1692,11 @@ public class CompiledQuery<K,V> extends ImmutableObject {
     }
 
     public void outSelect(SQLSession session, QueryEnvironment env) throws SQLException, SQLHandledException {
-        sql.outSelect(session, getQueryExecEnv(session.userProvider), getQueryParams(env), env.getTransactTimeout(), env.getOpOwner());
+        sql.outSelect(session, getQueryExecEnv(session.userProvider), null, getQueryParams(env), env.getTransactTimeout(), env.getOpOwner());
     }
 
     public String readSelect(SQLSession session, QueryEnvironment env) throws SQLException, SQLHandledException {
-        return sql.readSelect(session, getQueryExecEnv(session.userProvider), getQueryParams(env), env.getTransactTimeout(), env.getOpOwner());
+        return sql.readSelect(session, getQueryExecEnv(session.userProvider), null, getQueryParams(env), env.getTransactTimeout(), env.getOpOwner());
     }
 }
 
