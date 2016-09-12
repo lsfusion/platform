@@ -469,7 +469,7 @@ Function createShortcuts
         ${else}
             CreateShortCut "$SMPROGRAMS\lsFusion Platform ${VERSION}\Start lsFusion Server as console application.lnk" \
                             "$javaExe" \
-                            "-Xms512m -Xmx1024m -cp ${SERVER_JAR};deploy-lib\*;deploy-class lsfusion.server.logics.BusinessLogicsBootstrap" \
+                            "-Xmx1200m -cp ${SERVER_JAR};deploy-lib\*;deploy-class lsfusion.server.logics.BusinessLogicsBootstrap" \
                             "$INSTDIR\resources\lsfusion.ico"
         ${endIf}
     ${endIf}
@@ -477,11 +477,11 @@ Function createShortcuts
     ${if} ${SectionIsSelected} ${SecClient}
         CreateShortCut "$SMPROGRAMS\lsFusion Platform ${VERSION}\lsFusion Client.lnk" \
                         "$javaHome\bin\javaw.exe" \
-                        "-Xms512m -Xmx1024m -cp ${CLIENT_JAR} -Dlsfusion.client.hostname=$platformServerHost -Dlsfusion.client.hostport=$platformServerPort -Dlsfusion.client.exportname=default lsfusion.client.Main" \
+                        "-Xmx300m -cp ${CLIENT_JAR} -Dlsfusion.client.hostname=$platformServerHost -Dlsfusion.client.hostport=$platformServerPort -Dlsfusion.client.exportname=default lsfusion.client.Main" \
                         "$INSTDIR\resources\lsfusion.ico"
         CreateShortCut "$DESKTOP\lsFusion Client.lnk" \
                         "$javaHome\bin\javaw.exe" \
-                        "-Xms512m -Xmx1024m -cp ${CLIENT_JAR} -Dlsfusion.client.hostname=$platformServerHost -Dlsfusion.client.hostport=$platformServerPort -Dlsfusion.client.exportname=default lsfusion.client.Main" \
+                        "-Xmx300m -cp ${CLIENT_JAR} -Dlsfusion.client.hostname=$platformServerHost -Dlsfusion.client.hostport=$platformServerPort -Dlsfusion.client.exportname=default lsfusion.client.Main" \
                         "$INSTDIR\resources\lsfusion.ico"
     ${endIf}
 
