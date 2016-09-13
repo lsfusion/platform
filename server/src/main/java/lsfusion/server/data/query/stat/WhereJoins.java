@@ -265,12 +265,14 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
 //        StatKeys<K> costStatKeys = getCostStatKeys(groups, rows, keyStat, type, usedNotNullJoins);
 //        StatKeys<K> oldStatKeys = getOldStatKeys(groups, rows, keyStat, type);
 //        StatKeys<K> exactOldStatKeys = getExactOldStatKeys(groups, rows, keyStat, type);
-
+//
 //        if(!BaseUtils.hashEquals(costStatKeys, oldStatKeys)) {
 //            exactOldStatKeys = exactOldStatKeys;
 //            if(!(BaseUtils.hashEquals(costStatKeys.getRows(), exactOldStatKeys.getRows()) && BaseUtils.hashEquals(costStatKeys.getDistinct(), exactOldStatKeys.getDistinct())))
 //                exactOldStatKeys = exactOldStatKeys;
 //        }
+//
+//        if(1==1) return costStatKeys;
 
         if(useCost || usedNotNullJoins != null)
             return getCostStatKeys(groups, rows, keyStat, type, usedNotNullJoins);
@@ -1060,9 +1062,8 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
                     // PUSH COST (STATS)
                     ImSet pushedKeys = null;
                     StatKeys pushedJoinStatKeys = null;
-                    if(bv != null && !aCost.equals(bCostStat.getCost()) && !edgesList.isEmpty()) { // последнее - оптимизация
+                    if(bv != null && !edgesList.isEmpty()) { // последнее - оптимизация
                         boolean useQueryStatAdjust = bv instanceof QueryJoin;
-                        boolean lessStat = true; // оптимизация, если везде stat больше, то и cost нет шансов умеьшить
 
                         MExclMap<Z, Stat> mKeys = MapFact.mExclMapMax(adjEdges);
                         MExclMap<Z, Stat> mNotNullKeys = MapFact.mExclMapMax(adjEdges);
@@ -1074,7 +1075,6 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
                             int i = exprs.getValue(k);
 
                             Stat aEdgeStat = aEdgeStats[i];
-                            Stat bEdgeStat = bEdgeStats[i];
                             boolean aIsKey = aIsKeys[i];
 
                             if (aIsKey) {
@@ -1093,51 +1093,46 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
                                     mNotNullKeys.exclAdd(key, aNotNullStats[i]);
                                 keyIndices.exclAdd(key, i);
                             }
-
-                            if (aEdgeStat.less(bEdgeStat)) // оптимизация
-                                lessStat = true; // если хоть один меньшей статистикой, иначе не имеет смысла проталкивать cost никак не возможно уменьшить
                         }
 
-                        if (lessStat) {
-                            JoinCostStat<Z> bJoinCost = (JoinCostStat<Z>) bCostStat;
-                            assert BaseUtils.hashEquals(bv, bJoinCost.join);
+                        JoinCostStat<Z> bJoinCost = (JoinCostStat<Z>) bCostStat;
+                        assert BaseUtils.hashEquals(bv, bJoinCost.join);
 
-                            ImMap<Z, Stat> pushKeys = mKeys.immutable();
-                            ImMap<Z, Stat> pushNotNullKeys = mNotNullKeys.immutable();
-                            ImMap<BaseExpr, Stat> pushProps = mProps.immutable();
-                            Stat aStat = aCostStat.getStat();
+                        ImMap<Z, Stat> pushKeys = mKeys.immutable();
+                        ImMap<Z, Stat> pushNotNullKeys = mNotNullKeys.immutable();
+                        ImMap<BaseExpr, Stat> pushProps = mProps.immutable();
+                        Stat aStat = aCostStat.getStat();
 
-                            ImSet<BaseExpr> usedNotNulls = SetFact.EMPTY();
-                            StatKeys<Z> pushedStatKeys;
-                            Result<ImSet<Z>> rPushedKeys = pushJoin != null && BaseUtils.hashEquals(bv, pushJoin) ? new Result<ImSet<Z>>() : null;
-                            Result<ImSet<BaseExpr>> rPushedProps = needNotNulls ? new Result<ImSet<BaseExpr>>() : null;
-                            if (useQueryStatAdjust) { // для query join можно протолкнуть внутрь предикаты
-                                pushedStatKeys = ((QueryJoin) bv).getPushedStatKeys(type, aCost, aStat, pushKeys, pushNotNullKeys, rPushedKeys);
+                        ImSet<BaseExpr> usedNotNulls = SetFact.EMPTY();
+                        StatKeys<Z> pushedStatKeys;
+                        Result<ImSet<Z>> rPushedKeys = pushJoin != null && BaseUtils.hashEquals(bv, pushJoin) ? new Result<ImSet<Z>>() : null;
+                        Result<ImSet<BaseExpr>> rPushedProps = needNotNulls ? new Result<ImSet<BaseExpr>>() : null;
+                        if (useQueryStatAdjust) { // для query join можно протолкнуть внутрь предикаты
+                            pushedStatKeys = ((QueryJoin) bv).getPushedStatKeys(type, aCost, aStat, pushKeys, pushNotNullKeys, rPushedKeys);
 
-                                pushedStatKeys = pushedStatKeys.min(bJoinCost.statKeys); // по идее push должен быть меньше, но из-за несовершенства статистики и отсутствия проталкивания в таблицу (pushedJoin присоединятся к маленьким join'ам и может немного увеличивать cost / stat), после "проталкивания в таблицу" можно попробовать вернуть assertion
+                            pushedStatKeys = pushedStatKeys.min(bJoinCost.statKeys); // по идее push должен быть меньше, но из-за несовершенства статистики и отсутствия проталкивания в таблицу (pushedJoin присоединятся к маленьким join'ам и может немного увеличивать cost / stat), после "проталкивания в таблицу" можно попробовать вернуть assertion
 //                                assert BaseUtils.hashEquals(pushedStatKeys.min(bJoinCost.statKeys), pushedStatKeys);
 
-                                for(int i=0,size=keyIndices.size();i<size;i++) // обновляем bEdgeStats
-                                    bEdgeStats[keyIndices.getValue(i)] = pushedStatKeys.getDistinct(keyIndices.getKey(i));
-                                bAdjStat = bAdjStat.min(pushedStatKeys.getRows());
-                            } else {
-                                Cost pushedCost = bv.getPushedCost(keyStat, type, aCost, aStat, pushKeys, pushNotNullKeys, pushProps, rPushedKeys, rPushedProps); // впоследствие можно убрать aStat добавив predicate pushDown таблицам
+                            for(int i=0,size=keyIndices.size();i<size;i++) // обновляем bEdgeStats
+                                bEdgeStats[keyIndices.getValue(i)] = pushedStatKeys.getDistinct(keyIndices.getKey(i));
+                            bAdjStat = bAdjStat.min(pushedStatKeys.getRows());
+                        } else {
+                            Cost pushedCost = bv.getPushedCost(keyStat, type, aCost, aStat, pushKeys, pushNotNullKeys, pushProps, rPushedKeys, rPushedProps); // впоследствие можно убрать aStat добавив predicate pushDown таблицам
 
-                                pushedCost = pushedCost.min(bJoinCost.getCost()); // по идее push должен быть меньше, но из-за несовершенства статистики и отсутствия проталкивания в таблицу (pushedJoin присоединятся к маленьким join'ам и может немного увеличивать cost / stat), после "проталкивания в таблицу" можно попробовать вернуть assertion
+                            pushedCost = pushedCost.min(bJoinCost.getCost()); // по идее push должен быть меньше, но из-за несовершенства статистики и отсутствия проталкивания в таблицу (pushedJoin присоединятся к маленьким join'ам и может немного увеличивать cost / stat), после "проталкивания в таблицу" можно попробовать вернуть assertion
 //                                assert bv instanceof KeyExpr || BaseUtils.hashEquals(pushedCost.min(bJoinCost.getCost()), pushedCost); // по идее push должен быть меньше
 
-                                pushedStatKeys = bJoinCost.statKeys.replaceCost(pushedCost); // подменяем только cost
-                                if (rPushedProps != null && rPushedProps.result != null) // только notNull и реально использовался для уменьшения cost'а в таблице
-                                    usedNotNulls = mNotNullProps.immutable().filter(rPushedProps.result);
-                                assert bAdjStat.lessEquals(pushedStatKeys.getRows());//
-                            }
+                            pushedStatKeys = bJoinCost.statKeys.replaceCost(pushedCost); // подменяем только cost
+                            if (rPushedProps != null && rPushedProps.result != null) // только notNull и реально использовался для уменьшения cost'а в таблице
+                                usedNotNulls = mNotNullProps.immutable().filter(rPushedProps.result);
+                            assert bAdjStat.lessEquals(pushedStatKeys.getRows());//
+                        }
 
-                            bCostStat = new JoinCostStat<>(bv, pushedStatKeys, usedNotNulls);
+                        bCostStat = new JoinCostStat<>(bv, pushedStatKeys, usedNotNulls);
 
-                            if (rPushedKeys != null) {
-                                pushedKeys = rPushedKeys.result; // теоретически можно и все ребра (в смысле что предикаты лишними не бывают ???)
-                                pushedJoinStatKeys = pushedStatKeys;
-                            }
+                        if (rPushedKeys != null) {
+                            pushedKeys = rPushedKeys.result; // теоретически можно и все ребра (в смысле что предикаты лишними не бывают ???)
+                            pushedJoinStatKeys = pushedStatKeys;
                         }
                     }
 
@@ -1812,11 +1807,13 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
     public <K extends Expr, T extends Expr> Where getPushWhere(ImMap<K, BaseExpr> joinMap, UpWheres<WhereJoin> upWheres, QueryJoin<K, ?, ?, ?> pushJoin, boolean isInner, KeyStat keyStat, Where fullWhere, StatKeys<K> currentJoinStat) {
         // joinKeys из skipJoin.getJoins()
 
-//        Where costResult = ( isInner ? this : and(new WhereJoins(pushJoin))).getCostPushWhere(pushJoin, upWheres, keyStat, StatType.PUSH_OUTER());
+//        Where costResult = getWhereJoins(pushJoin, isInner).getCostPushWhere(pushJoin, upWheres, keyStat, StatType.PUSH_OUTER());
 //        Where oldResult = getOldPushWhere(joinMap, upWheres, pushJoin, keyStat, fullWhere, currentJoinStat);
-
+//
 //        if(!BaseUtils.nullHashEquals(costResult, oldResult))
 //            costResult = costResult;
+//
+//        if(1==1) return costResult;
 
         if(useCost)
             return getWhereJoins(pushJoin, isInner).getCostPushWhere(pushJoin, upWheres, keyStat, StatType.PUSH_OUTER());
