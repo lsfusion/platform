@@ -4,8 +4,13 @@ REQUIRE System;
 
 extractHour = FORMULA INTEGER PG '(extract(hour from ($1)))', MS 'datepart(hh, $1)'; 
 extractDay = FORMULA INTEGER PG '(extract(day from ($1)))', MS 'datepart(dd, $1)';
-extractWeek = FORMULA INTEGER PG '(extract(week from ($1)))', MS 'datepart(isoww, $1)';
+extractWeek = FORMULA INTEGER PG '(extract(week from ($1)))', MS 'datepart(isoww, $1)'; // uses ISO 8601, where first week of the year contains January, 4th
+extractMonthNumber = [= FORMULA INTEGER PG '(extract(month from ($1)))', MS 'DATEPART(mm, $1)'](DATE date AS DATE);
+extractMonth 'Месяц (ИД)' (DATE date) = month(extractMonthNumber(date));
 extractYear = FORMULA INTEGER PG '(extract(year from ($1)))', MS 'datepart(yy, $1)';
+
+// changes extractWeek return value for first days of the year    
+extractWeekZeroBased(DATE date) = IF extractWeek(date) > 50 AND extractMonthNumber(date) == 1 THEN 0 ELSE extractWeek(date);
 
 currentDateTime = NATIVE DATETIME ();
 currentMinute = NATIVE INTEGER ();
@@ -97,8 +102,6 @@ onStarted() += ACTION {
 
 month 'Месяц (ИД)' (number) = GROUP AGGR Month month BY number(month);
 
-extractMonthNumber = [= FORMULA INTEGER PG '(extract(month from ($1)))', MS 'DATEPART(mm, $1)'](DATE date AS DATE);
-extractMonth 'Месяц (ИД)' (DATE date) = month(extractMonthNumber(date));
 extractMonthName 'Месяц' (DATE date) = staticCaption(extractMonth(date));
 
 currentMonth 'Тек. месяц' = extractMonthNumber (currentDate());
