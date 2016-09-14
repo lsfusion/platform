@@ -218,7 +218,7 @@ public class DoublePropertyEditor extends TextFieldPropertyEditor {
                     //проверяем, не превышен ли лимит символов до/после запятой
                     String[] split = text.replace(String.valueOf(df.getDecimalFormatSymbols().getGroupingSeparator()), "").replace("-", "").split(String.valueOf('\\') + String.valueOf(separator));
                     if (currentPosition <= separatorPosition || separatorPosition == -1) {
-                        if (df.getMaximumIntegerDigits() <= split[0].length())
+                        if (split.length > 0 && df.getMaximumIntegerDigits() <= split[0].length())
                             setSingleSelection(currentPosition - (currentPosition == separatorPosition || currentPosition == text.length() ? 1 : 0));
                     } else {
                         if (split.length > 1 && df.getMaximumFractionDigits() <= split[1].length())
