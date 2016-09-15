@@ -17,7 +17,10 @@ propertyGroup 'Свойство' (sID) = GROUP AGGR PropertyGroup propertyGroup 
 
 CLASS NavigatorElement 'Элемент навигатора';
 CLASS NavigatorAction 'Действие' : NavigatorElement;
-CLASS Form 'Форма' : NavigatorElement;
+CLASS ProfileForm  {
+    noForm 'NoForm'    
+} : NavigatorElement;
+CLASS Form 'Форма' : ProfileForm;
 TABLE navigatorElement (NavigatorElement);
 TABLE navigatorElementNavigatorElement(NavigatorElement, NavigatorElement);
 

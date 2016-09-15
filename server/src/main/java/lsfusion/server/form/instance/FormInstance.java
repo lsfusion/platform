@@ -56,6 +56,7 @@ import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.derived.MaxChangeProperty;
 import lsfusion.server.logics.property.derived.OnChangeProperty;
 import lsfusion.server.logics.scripted.ScriptingErrorLog;
+import lsfusion.server.profiler.ProfiledObject;
 import lsfusion.server.session.*;
 import lsfusion.server.stack.ParamMessage;
 import lsfusion.server.stack.StackMessage;
@@ -86,7 +87,7 @@ import static lsfusion.server.logics.ServerResourceBundle.getString;
 // так клиента волнуют панели на форме, список гридов в привязке, дизайн и порядок представлений
 // сервера колышет дерево и св-ва предст. с привязкой к объектам
 
-public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironment implements ReallyChanged {
+public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironment implements ReallyChanged, ProfiledObject {
 
     private final static GetKey<CalcPropertyObjectInstance<?>, PropertyReaderInstance> GET_PROPERTY_OBJECT_FROM_READER =
             new GetKey<CalcPropertyObjectInstance<?>, PropertyReaderInstance>() {
@@ -1514,6 +1515,11 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
             group.orders = group.getSetOrders();
     }
 
+    @Override
+    public Object getProfiledObject() {
+        return entity;
+    }
+
     private static class GroupObjectValue {
         private GroupObjectInstance group;
         private ImMap<ObjectInstance, DataObject> value;
@@ -1533,7 +1539,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
     @StackMessage("message.form.update.props")
     private <T> void queryPropertyObjectValues(
-            @ParamMessage ImOrderSet<T> keysSet,
+            @ParamMessage (profile = false) ImOrderSet<T> keysSet,
             MExclMap<T, ImMap<ImMap<ObjectInstance, DataObject>, ObjectValue>> valuesMap,
             ImSet<GroupObjectInstance> keyGroupObjects,
             GetKey<CalcPropertyObjectInstance<?>, T> getPropertyObject

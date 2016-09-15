@@ -1046,7 +1046,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     }
 
     @LogTime
-    @ThisMessage
+    @ThisMessage (profile = false)
     private void executeSessionEvent(ExecutionEnvironment env, ExecutionStack stack, @ParamMessage ActionProperty<?> action) throws SQLException, SQLHandledException {
         if(noEventsInTransaction || !sessionEventChangedOld.getProperties().intersect(action.getSessionEventOldDepends()))// оптимизация аналогичная верхней
             return;
@@ -1054,9 +1054,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         action.execute(env, stack);
     }
 
-    @LogTime
-    @ThisMessage
-    private void executeGlobalEvent(ExecutionEnvironment env, ExecutionStack stack, @ParamMessage ActionProperty<?> action) throws SQLException, SQLHandledException {
+    private void executeGlobalEvent(ExecutionEnvironment env, ExecutionStack stack, ActionProperty<?> action) throws SQLException, SQLHandledException {
         if(noEventsInTransaction)
             return;
         boolean hasChanges = false;
@@ -1072,17 +1070,23 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         if(Settings.get().isDisableGlobalEventOptimization()) {
             if (!hasChanges)
                 changedFlag.set(true);
-            action.execute(env, stack);
+            executeGlobalEventWithChanges(env, stack, action);
             if (!hasChanges)
                 changedFlag.set(null);
         } else {
             if(hasChanges)
-                action.execute(env, stack);
+                executeGlobalEventWithChanges(env, stack, action);
         }
     }
 
     @LogTime
-    @ThisMessage
+    @ThisMessage (profile = false)
+    private void executeGlobalEventWithChanges(ExecutionEnvironment env, ExecutionStack stack, @ParamMessage ActionProperty<?> action) throws SQLException, SQLHandledException {
+        action.execute(env, stack);
+    }
+
+    @LogTime
+    @ThisMessage (profile = false)
     private void executeActionInTransaction(ExecutionEnvironment env, ExecutionStack stack, @ParamMessage ActionPropertyValueImplement<?> action) throws SQLException, SQLHandledException {
         action.execute(env, stack);
     }
@@ -2062,16 +2066,20 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         }
     }
 
-    @StackMessage("message.session.apply.write")
-    private <P extends PropertyInterface> void readStored(@ParamMessage CalcProperty<P> property, BusinessLogics<?> BL) throws SQLException, SQLHandledException {
+    private <P extends PropertyInterface> void readStored(CalcProperty<P> property, BusinessLogics<?> BL) throws SQLException, SQLHandledException {
         assert isInTransaction();
         assert property.isStored();
         if(property.hasChanges(getModifier())) {
-            SinglePropertyTableUsage<P> changeTable = property.readChangeTable(sql, getModifier(), baseClass, env);
-
-            apply.add(property, splitApplySingleStored(property,
-                    changeTable, BL));
+            readStoredWithChanges(property, BL);
         }
+    }
+
+    @StackMessage("message.session.apply.write")
+    private <P extends PropertyInterface> void readStoredWithChanges(@ParamMessage CalcProperty<P> property, BusinessLogics<?> BL) throws SQLException, SQLHandledException {
+        SinglePropertyTableUsage<P> changeTable = property.readChangeTable(sql, getModifier(), baseClass, env);
+
+        apply.add(property, splitApplySingleStored(property,
+                changeTable, BL));
     }
 
     protected SQLSession getSQL() {

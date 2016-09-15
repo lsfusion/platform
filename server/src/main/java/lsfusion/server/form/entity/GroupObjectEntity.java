@@ -240,4 +240,9 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
         setObjects(objects);
     }
 
+
+    @Override
+    public String toString() {
+        return getSID() + ": " + objects;
+    }
 }

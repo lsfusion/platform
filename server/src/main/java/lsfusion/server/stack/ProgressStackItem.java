@@ -4,12 +4,12 @@ import lsfusion.base.ProgressBar;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.mutable.MList;
+import lsfusion.server.profiler.ProfileObject;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.reflect.MethodSignature;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
-import java.util.Arrays;
 
 public class ProgressStackItem extends AspectStackItem {
     private String message;
@@ -20,8 +20,8 @@ public class ProgressStackItem extends AspectStackItem {
         super(joinPoint);
     }
 
-    public ProgressStackItem(String message, Integer progress, Integer total) {
-        super(null);
+    public ProgressStackItem(String message, Integer progress, Integer total, ProfileObject profileObject) {
+        super(null, profileObject);
         this.message = message;
         this.progress = progress;
         this.total = total;

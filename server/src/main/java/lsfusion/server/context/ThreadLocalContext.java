@@ -21,10 +21,13 @@ import lsfusion.server.lifecycle.EventServer;
 import lsfusion.server.lifecycle.MonitorServer;
 import lsfusion.server.logics.*;
 import lsfusion.server.logics.SecurityManager;
-import lsfusion.server.logics.property.*;
+import lsfusion.server.logics.property.DialogRequest;
+import lsfusion.server.logics.property.ExecutionContext;
+import lsfusion.server.logics.property.PropertyInterface;
+import lsfusion.server.logics.property.PullChangeProperty;
 import lsfusion.server.remote.ContextAwarePendingRemoteObject;
-import lsfusion.server.remote.RmiServer;
 import lsfusion.server.remote.RemoteForm;
+import lsfusion.server.remote.RmiServer;
 import lsfusion.server.session.DataSession;
 import lsfusion.server.stack.ExecutionStackItem;
 import lsfusion.server.stack.ProgressStackItem;
@@ -157,7 +160,7 @@ public class ThreadLocalContext {
     }
 
     public static ProgressStackItem pushProgressMessage(String message, Integer progress, Integer total) {
-        ProgressStackItem progressStackItem = new ProgressStackItem(message, progress, total);
+        ProgressStackItem progressStackItem = new ProgressStackItem(message, progress, total, null);
         pushActionMessage(progressStackItem);
         return progressStackItem;
     }

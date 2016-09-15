@@ -47,6 +47,7 @@ import lsfusion.server.logics.NullValue;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.ServerResourceBundle;
 import lsfusion.server.logics.property.*;
+import lsfusion.server.profiler.ProfiledObject;
 import lsfusion.server.session.*;
 import lsfusion.server.stack.StackMessage;
 import lsfusion.server.stack.ThisMessage;
@@ -58,7 +59,7 @@ import static lsfusion.base.BaseUtils.immutableCast;
 import static lsfusion.interop.ClassViewType.GRID;
 import static lsfusion.interop.ClassViewType.HIDE;
 
-public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
+public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, ProfiledObject {
     public final SeekObjects SEEK_HOME = new SeekObjects(false); 
     public final SeekObjects SEEK_END = new SeekObjects(true); 
 
@@ -369,6 +370,11 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
 
     public UpdateType getUpdateType() throws SQLException, SQLHandledException {
         return entity.getUpdateType(this);
+    }
+
+    @Override
+    public Object getProfiledObject() {
+        return entity;
     }
 
     public interface FilterProcessor {

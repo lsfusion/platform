@@ -27,7 +27,7 @@ public class ValueJoin implements InnerBaseJoin<Object> {
     @Override
     public Cost getPushedCost(KeyStat keyStat, StatType type, Cost pushCost, Stat pushStat, ImMap<Object, Stat> pushKeys, ImMap<Object, Stat> pushNotNullKeys, ImMap<BaseExpr, Stat> pushProps, Result<ImSet<Object>> rPushedKeys, Result<ImSet<BaseExpr>> rPushedProps) {
         assert pushKeys.isEmpty();
-        assert pushProps.size() <= 1; // ниже One быть не может
+//        assert pushProps.size() <= 1; // ниже One быть не может
         return Cost.ONE;
     }
 

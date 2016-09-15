@@ -6,6 +6,10 @@ import lsfusion.base.ExceptionUtils;
 import lsfusion.base.col.MapFact;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.HandledException;
+import lsfusion.server.form.entity.FormEntity;
+import lsfusion.server.form.instance.FormInstance;
+import lsfusion.server.profiler.ProfileObject;
+import lsfusion.server.profiler.Profiler;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -13,6 +17,8 @@ import org.aspectj.lang.annotation.Aspect;
 import java.util.ConcurrentModificationException;
 import java.util.ListIterator;
 import java.util.Stack;
+
+import static lsfusion.server.profiler.Profiler.PROFILER_ENABLED;
 
 @Aspect
 public class ExecutionStackAspect {
@@ -42,22 +48,41 @@ public class ExecutionStackAspect {
         RMICallStackItem item = new RMICallStackItem(joinPoint);
         return processStackItem(joinPoint, item);
     }
+    
+    public static ThreadLocal<Long> sqlTime = new ThreadLocal<>();
+    public static ThreadLocal<Long> userInteractionTime = new ThreadLocal<>();
 
     // тут важно что цикл жизни ровно в стеке, иначе утечку можем получить
     private Object processStackItem(ProceedingJoinPoint joinPoint, ExecutionStackItem item) throws Throwable {
+        assert item != null;
+        
         boolean pushedMessage = false;
-        boolean pushedStack = false;
         Stack<ExecutionStackItem> stack = getOrInitStack();
-        if (item != null) {
-            stack.push(item);
-            pushedStack = true;
-            if (presentItem(item)) {
-                ThreadLocalContext.pushActionMessage(item);
-                pushedMessage = true;
-            }
+        
+        stack.push(item);
+        if (presentItem(item)) {
+            ThreadLocalContext.pushActionMessage(item);
+            pushedMessage = true;
         }
+        
         try {
-            return joinPoint.proceed();
+            long start = 0;
+            if (PROFILER_ENABLED && isProfileStackItem(item)) {
+                sqlTime.set(0L);
+                userInteractionTime.set(0L);
+                start = System.nanoTime();
+            }
+            
+            Object result = joinPoint.proceed();
+            
+            if (start > 0) {
+                long executionTime = System.nanoTime() - start;
+                FormInstance formInstance = ThreadLocalContext.getFormInstance();
+                FormEntity form = formInstance != null ? formInstance.entity : null;
+                Profiler.increase(item.profileObject, getProfileObject(getUpperProfileStackItem(item)), ThreadLocalContext.getCurrentUser(), form, executionTime, sqlTime.get(), userInteractionTime.get());
+            }
+                
+            return result;
         } catch (Throwable e) {
             if (!(e instanceof HandledException && ((HandledException)e).willDefinitelyBeHandled()) && threadLocalExceptionStack.get() == null) {
                 String stackString = getStackString();
@@ -67,13 +92,33 @@ public class ExecutionStackAspect {
             }
             throw e;
         } finally {
-            if (pushedStack) {
-                stack.pop();
-            }
+            stack.pop();
             if (pushedMessage) {
                 ThreadLocalContext.popActionMessage(item);
             }
         }
+    }
+    
+    private boolean isProfileStackItem(ExecutionStackItem item) {
+        return item.profileObject != null;
+    }
+    
+    private ExecutionStackItem getUpperProfileStackItem(ExecutionStackItem sourceItem) {
+        Stack<ExecutionStackItem> stack = getStack();
+        if(stack != null) {
+            ListIterator<ExecutionStackItem> itemListIterator = stack.listIterator(stack.indexOf(sourceItem));
+            while (itemListIterator.hasPrevious()) {
+                ExecutionStackItem item = itemListIterator.previous();
+                if (isProfileStackItem(item)) {
+                    return item;
+                }
+            }
+        }
+        return null;
+    }
+    
+    private ProfileObject getProfileObject(ExecutionStackItem item) {
+        return item != null ? item.profileObject : null;    
     }
 
     public Stack<ExecutionStackItem> getOrInitStack() {

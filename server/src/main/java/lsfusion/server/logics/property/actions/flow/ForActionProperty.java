@@ -193,7 +193,7 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
 
     @LogTime
     @ThisMessage
-    private FlowResult executeFor(ExecutionContext<PropertyInterface> context, @ParamMessage ImMap<I, ObjectValue> newValues) throws SQLException, SQLHandledException {
+    private FlowResult executeFor(ExecutionContext<PropertyInterface> context, @ParamMessage (profile = false) ImMap<I, ObjectValue> newValues) throws SQLException, SQLHandledException {
         return execute(context, action, newValues, mapInterfaces);
     }
 

@@ -5,6 +5,8 @@ import lsfusion.server.logics.ServerResourceBundle;
 import lsfusion.server.logics.debug.ActionDelegationType;
 import lsfusion.server.logics.debug.DebugInfo;
 import lsfusion.server.logics.property.ActionProperty;
+import lsfusion.server.profiler.ActionProfileObject;
+import lsfusion.server.profiler.Profiler;
 import org.aspectj.lang.ProceedingJoinPoint;
 
 public class ExecuteActionStackItem extends ExecutionStackItem {
@@ -12,7 +14,7 @@ public class ExecuteActionStackItem extends ExecutionStackItem {
     private String propertyName;
 
     public ExecuteActionStackItem(ProceedingJoinPoint joinPoint) {
-        super(joinPoint);
+        super(joinPoint, Profiler.PROFILER_ENABLED ? new ActionProfileObject((ActionProperty) joinPoint.getTarget()) : null);
         this.property = (ActionProperty) joinPoint.getTarget();
     }
     

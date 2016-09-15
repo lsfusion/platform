@@ -84,6 +84,18 @@ public class MapFact {
         return mMap.immutable();
     }
 
+    public static <K, V> ImMap<K, V> toMap(K key1, V value1, K key2, V value2, K key3, V value3, K key4, V value4, K key5, V value5, K key6, V value6, K key7, V value7) {
+        MExclMap<K, V> mMap = MapFact.mExclMap(7);
+        mMap.exclAdd(key1, value1);
+        mMap.exclAdd(key2, value2);
+        mMap.exclAdd(key3, value3);
+        mMap.exclAdd(key4, value4);
+        mMap.exclAdd(key5, value5);
+        mMap.exclAdd(key6, value6);
+        mMap.exclAdd(key7, value7);
+        return mMap.immutable();
+    }
+
     public static <K, V> ImRevMap<K, V> toRevMap(K key1, V value1, K key2, V value2) {
         MRevMap<K, V> mMap = MapFact.mRevMap(2);
         mMap.revAdd(key1, value1);
