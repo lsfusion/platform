@@ -15,7 +15,7 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassExprWhere;
 
-public abstract class StaticNullableExpr extends NullableExpr {
+public abstract class StaticNullableExpr extends NullableExpr implements StaticExprInterface {
 
     private final AndClassSet paramClass;
 
@@ -55,6 +55,6 @@ public abstract class StaticNullableExpr extends NullableExpr {
         return PropStat.ONE;
     }
     public InnerBaseJoin<?> getBaseJoin() {
-        return ValueJoin.instance;
+        return ValueJoin.instance(this);
     }
 }

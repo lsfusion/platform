@@ -14,7 +14,7 @@ import lsfusion.server.data.type.FunctionType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
 
-public abstract class StaticExpr<C extends ConcreteClass> extends StaticClassExpr {
+public abstract class StaticExpr<C extends ConcreteClass> extends StaticClassExpr implements StaticExprInterface {
 
     public final C objectClass;
 
@@ -40,7 +40,7 @@ public abstract class StaticExpr<C extends ConcreteClass> extends StaticClassExp
         return PropStat.ONE;
     }
     public InnerBaseJoin<?> getBaseJoin() {
-        return ValueJoin.instance;
+        return ValueJoin.instance(this);
     }
 
     public Type getType() {

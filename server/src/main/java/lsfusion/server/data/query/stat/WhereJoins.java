@@ -306,11 +306,11 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         private final BaseJoin<Z> join;
         private final StatKeys<Z> statKeys;
 
-        public JoinCostStat(BaseJoin<Z> join, StatKeys<Z> statKeys) {
-            this(join, statKeys, SetFact.<BaseExpr>EMPTY());
+        public JoinCostStat(BaseJoin<Z> join, StatKeys<Z> statKeys, BitSet adjJoins) {
+            this(join, statKeys, SetFact.<BaseExpr>EMPTY(), adjJoins);
         }
-        public JoinCostStat(BaseJoin<Z> join, StatKeys<Z> statKeys, ImSet<BaseExpr> usedNotNulls) {
-            super(usedNotNulls);
+        public JoinCostStat(BaseJoin<Z> join, StatKeys<Z> statKeys, ImSet<BaseExpr> usedNotNulls, BitSet adjJoins) {
+            super(usedNotNulls, adjJoins);
             this.join = join;
             this.statKeys = statKeys;
         }
@@ -423,20 +423,20 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         private final Stat[] bEdgeStats;
         private final List<? extends Edge> edges;
 
-        public MergeCostStat(Cost cost, Stat stat,
+        public MergeCostStat(Cost cost, Stat stat, BitSet adjJoins,
                              Cost maxCost, Stat leftStat, Stat rightStat, int joinsCount,
                              CostStat left, CostStat right, Stat[] aEdgeStats, Stat[] bEdgeStats, List<? extends Edge> edges) {
-            this(cost, stat,
+            this(cost, stat, adjJoins,
                     maxCost, leftStat, rightStat, joinsCount,
                     null, null, null, null, null, null,
                     left, right, aEdgeStats, bEdgeStats, edges);
         }
 
-        public MergeCostStat(Cost cost, Stat stat,
+        public MergeCostStat(Cost cost, Stat stat, BitSet adjJoins,
                              Cost maxCost, Stat leftStat, Stat rightStat, int joinsCount,
                              ImMap<BaseJoin, Stat> joinStats, ImMap<BaseJoin, DistinctKeys> keyStats, ImMap<BaseExpr, Stat> propStats, ImSet pushKeys, StatKeys pushStatKeys, ImSet<BaseExpr> usedNotNulls,
                              CostStat left, CostStat right, Stat[] aEdgeStats, Stat[] bEdgeStats, List<? extends Edge> edges) {
-            super(usedNotNulls);
+            super(usedNotNulls, adjJoins);
             this.cost = cost;
             this.stat = stat;
 
@@ -555,8 +555,11 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
 
     private abstract static class CostStat implements Comparable<CostStat> {
 
-        public CostStat(ImSet<BaseExpr> usedNotNulls) {
+        protected final BitSet adjJoins;
+
+        public CostStat(ImSet<BaseExpr> usedNotNulls, BitSet adjJoins) {
             this.usedNotNulls = usedNotNulls;
+            this.adjJoins = adjJoins;
         }
 
         public abstract Cost getCost();
@@ -617,6 +620,11 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
 
         @Override
         public int compareTo(CostStat o) {
+            if(this == max)
+                return o == max ? 0 : 1;
+            if(o == max)
+                return -1;
+
             int compare = Integer.compare(getCost().rows.getWeight(), o.getCost().rows.getWeight());
             if(compare != 0)
                 return compare;
@@ -692,7 +700,6 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
 
     public <K extends BaseExpr, Z extends Expr> Where getCostPushWhere(final QueryJoin<Z, ?, ?, ?> queryJoin, final UpWheres<WhereJoin> upWheres, final KeyStat keyStat, final StatType type) {
         ImSet<BaseExpr> groups = queryJoin.getJoins().values().toSet();
-
 
         return calculateCost(groups, queryJoin, false, keyStat, type, new CostResult<Where>() {
             public Where calculate(CostStat costStat, ImSet<Edge> edges, MAddMap<BaseExpr, PropStat> exprStats) {
@@ -875,16 +882,27 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         final GreedyTreeBuilding<BaseJoin, CostStat, Edge<K>> treeBuilding = new GreedyTreeBuilding<>();
         for (int i = 0, size = joinStats.size(); i < size; i++) {
             BaseJoin join = joinStats.getKey(i);
-            JoinCostStat joinCost = new JoinCostStat(join, new StatKeys(indexedStats.get(join), joinStats.getValue(i), keyDistinctStats.get(join)));
+
+            BitSet adjJoins = new BitSet();
+            JoinCostStat joinCost = new JoinCostStat(join, new StatKeys(indexedStats.get(join), joinStats.getValue(i), keyDistinctStats.get(join)), adjJoins);
 
             if (pushJoin != null && BaseUtils.hashEquals(join, pushJoin))
                 pushCost = joinCost;
 
             treeBuilding.addVertex(join, joinCost);
+
+            int vertexIndex = treeBuilding.getVertexIndex(join); // заполняем матрицу смежности
+            adjJoins.set(vertexIndex);
         }
 
-        for (Edge edge : edges)
+        for (Edge edge : edges) {
             treeBuilding.addEdge(edge);
+
+            int fromIndex = treeBuilding.getVertexIndex(edge.getFrom()); // заполняем матрицу смежности
+            int toIndex = treeBuilding.getVertexIndex(edge.getTo());
+            treeBuilding.getVertexCost(fromIndex).adjJoins.set(toIndex);
+            treeBuilding.getVertexCost(toIndex).adjJoins.set(fromIndex);
+        }
 
         GreedyTreeBuilding.TreeNode<BaseJoin, CostStat> compute;
         if (pushJoin != null) {
@@ -906,6 +924,8 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
             return result;
     }
 
+    private static MergeCostStat max = new MergeCostStat(null, null, null, null, null, null, 0, null, null, null, null, null);
+
     private static <K extends BaseExpr, Z> GreedyTreeBuilding.CalculateCost<BaseJoin, CostStat, Edge<K>> getCostFunc(final QueryJoin pushJoin, final MAddMap<BaseExpr, PropStat> exprStats, final boolean needNotNulls, final KeyStat keyStat, final StatType type) {
         return new GreedyTreeBuilding.CalculateCost<BaseJoin, CostStat, Edge<K>>() {
 
@@ -916,6 +936,10 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
 
                     CostStat aCostStat = a.getCost();
                     CostStat bCostStat = b.getCost();
+
+                    if(!aCostStat.adjJoins.intersects(bCostStat.adjJoins))
+                        return max;
+
                     if (aCostStat.compareTo(bCostStat) > 0) { // будем считать что у a cost меньше то есть он "левый"
                         GreedyTreeBuilding.Node<BaseJoin, CostStat> t = a;
                         a = b;
@@ -966,8 +990,9 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
                     Cost aCost = aCostStat.getCost();
                     Cost bCost = bCostStat.getCost();
                     Cost newCost = (b.getVertex() != null ? aCost.min(bCost) : aCost.or(bCost)).or(new Cost(newStat)); // если есть vertex - может протолкнуться иначе нет
+                    BitSet newAdjJoins = or(aCostStat.adjJoins, bCostStat.adjJoins);
 
-                    return new MergeCostStat(newCost, newStat,
+                    return new MergeCostStat(newCost, newStat, newAdjJoins,
                             bCost, aAdjStat, bAdjStat, aCostStat.getJoins().size() + bCostStat.getJoins().size(),
                             aCostStat, bCostStat, aEdgeStats, bEdgeStats, edgesList);
                 }
@@ -977,6 +1002,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
                     // берем 2 вершины
                     CostStat aCostStat = a.getCost();
                     CostStat bCostStat = b.getCost();
+//                    assert aCostStat.adjJoins.intersects(bCostStat.adjJoins);
                     if (aCostStat.compareTo(bCostStat) > 0) { // будем считать что у a cost меньше то есть он "левый"
                         GreedyTreeBuilding.Node<BaseJoin, CostStat> t = a;
                         a = b;
@@ -1128,7 +1154,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
                             assert bAdjStat.lessEquals(pushedStatKeys.getRows());//
                         }
 
-                        bCostStat = new JoinCostStat<>(bv, pushedStatKeys, usedNotNulls);
+                        bCostStat = new JoinCostStat<>(bv, pushedStatKeys, usedNotNulls, bJoinCost.adjJoins);
 
                         if (rPushedKeys != null) {
                             pushedKeys = rPushedKeys.result; // теоретически можно и все ребра (в смысле что предикаты лишними не бывают ???)
@@ -1145,6 +1171,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
                     ImMap<BaseJoin, DistinctKeys> newKeyStats = aCostStat.getKeyStats().addExcl(bCostStat.getKeyStats());
                     ImMap<BaseJoin, Stat> newJoinStats = reduceIntermediateStats(newStat.min(aAdjStat), aCostStat).addExcl(reduceIntermediateStats(newStat.min(bAdjStat), bCostStat)); // также фильтруем по notNull
                     ImSet<BaseExpr> newUsedNotNulls = aCostStat.usedNotNulls.addExcl(bCostStat.usedNotNulls);
+                    BitSet newAdjJoins = or(aCostStat.adjJoins, bCostStat.adjJoins);
 
                     MMap<BaseExpr, Stat> mPropAdjStats = MapFact.mMap(minStat); // ключи не считаем, так как используются один раз. NotNull'ы не нужны, так как статистика уже редуцировалась
                     for (int k = 0, size = exprs.size(); k < size; k++) {
@@ -1166,12 +1193,18 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
                     }
                     ImMap<BaseExpr, Stat> newPropStats = aCostStat.getPropStats().addExcl(bCostStat.getPropStats()).merge(mPropAdjStats.immutable(), minStat);
 
-                    return new MergeCostStat(newCost, newStat,
+                    return new MergeCostStat(newCost, newStat, newAdjJoins,
                             bBaseCost, aAdjStat, bAdjStat, newJoinStats.size(),
                             newJoinStats, newKeyStats, newPropStats, pushedKeys, pushedJoinStatKeys, newUsedNotNulls,
                             aCostStat, bCostStat, aEdgeStats, bEdgeStats, edgesList);
                 }
             };
+    }
+
+    private static BitSet or(BitSet a, BitSet b) {
+        BitSet result = (BitSet) a.clone();
+        result.or(b);
+        return result;
     }
 
     // точка входа чтобы обозначить необходимую общую логику estimate'ов Push Cost (пока в Table) и Stat (в общем случае)
@@ -1538,7 +1571,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
 
     private Stat getMSTCost(MAddMap<BaseJoin, Stat> joinStats, MAddExclMap<BaseExpr, Set<Edge>> balancedEdges, MAddExclMap<BaseExpr, Stat> balancedStats) {
         UndirectedGraph<BaseJoin> graph = new UndirectedGraph<>();
-        BaseJoin root = ValueJoin.instance; // чтобы создать связность
+        BaseJoin root = ValueJoin.instance(null); // чтобы создать связность
         graph.addNode(root);
         for(int i=0,size=joinStats.size();i<size;i++) {
             BaseJoin node = joinStats.getKey(i);

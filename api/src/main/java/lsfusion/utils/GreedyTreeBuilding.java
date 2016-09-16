@@ -255,6 +255,13 @@ public class GreedyTreeBuilding<V, C extends Comparable<C>, E extends GreedyTree
         costs.add(cost);
     }
 
+    public int getVertexIndex(V vertex) {
+        return vertexIndex.get(vertex);
+    }
+    public C getVertexCost(int index) {
+        return costs.get(index);
+    }
+
     private PriorityQueue<ComplexEdge<V, C, E>> queue = new PriorityQueue<>();
     private final Map<Node<V, C>, Integer> nodeIndex = new HashMap<>();
     private final List<Node<V, C>> nodes = new ArrayList<>();

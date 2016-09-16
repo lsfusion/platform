@@ -1,20 +1,37 @@
 package lsfusion.server.data.query.stat;
 
 import lsfusion.base.Result;
+import lsfusion.base.TwinImmutableObject;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.InnerExpr;
 import lsfusion.server.data.expr.NullableExprInterface;
+import lsfusion.server.data.expr.StaticExprInterface;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.expr.query.StatType;
 
-public class ValueJoin implements InnerBaseJoin<Object> {
+public class ValueJoin extends TwinImmutableObject implements InnerBaseJoin<Object> {
 
-    private ValueJoin() {
+    private final StaticExprInterface staticExpr;
+    private ValueJoin(StaticExprInterface staticExpr) {
+        this.staticExpr = staticExpr;
     }
-    public final static ValueJoin instance = new ValueJoin();
+//    public final static ValueJoin instance = new ValueJoin();
+    public static ValueJoin instance(StaticExprInterface staticExpr) {
+        return new ValueJoin(staticExpr);
+    }
+
+    @Override
+    protected boolean calcTwins(TwinImmutableObject o) {
+        return staticExpr.equals(((ValueJoin)o).staticExpr);
+    }
+
+    @Override
+    public int immutableHashCode() {
+        return staticExpr.hashCode();
+    }
 
     public ImMap<Object, BaseExpr> getJoins() {
         return MapFact.EMPTY();
