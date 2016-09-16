@@ -336,7 +336,7 @@ profileObject = GROUP AGGR ProfileObject profileObject BY text(profileObject);
 
 totalTime 'Суммарное время выполнения' = DATA LOCAL LONG (TEXT, TEXT, User, ProfileForm);
 totalSQLTime 'Суммарное время выполнения SQL' = DATA LOCAL LONG (TEXT, TEXT, User, ProfileForm);  
-totalUserInteractionTime 'Суммарное время ожидания действия пользователя' = DATA LONG (TEXT, TEXT, User, ProfileForm);
+totalUserInteractionTime 'Суммарное время ожидания действия пользователя' = DATA LOCAL LONG (TEXT, TEXT, User, ProfileForm);
 callCount 'Количество вызовов' = DATA LOCAL LONG (TEXT, TEXT, User, ProfileForm);
 minTime 'Минимальное время выполнения' = DATA LOCAL LONG (TEXT, TEXT, User, ProfileForm);
 maxTime 'Максимальное время выполнения' = DATA LOCAL LONG (TEXT, TEXT, User, ProfileForm);
