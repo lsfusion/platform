@@ -3,12 +3,12 @@ package lsfusion.server.stack;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.ConcurrentWeakHashMap;
 import lsfusion.base.ExceptionUtils;
-import lsfusion.base.LongCounter;
 import lsfusion.base.col.MapFact;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.HandledException;
 import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.instance.FormInstance;
+import lsfusion.server.profiler.ExecutionTimeCounter;
 import lsfusion.server.profiler.ProfileObject;
 import lsfusion.server.profiler.Profiler;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -25,6 +25,7 @@ import static lsfusion.server.profiler.Profiler.PROFILER_ENABLED;
 public class ExecutionStackAspect {
     private static ConcurrentWeakHashMap<Thread, Stack<ExecutionStackItem>> executionStack = MapFact.getGlobalConcurrentWeakHashMap();
     private static ThreadLocal<String> threadLocalExceptionStack = new ThreadLocal<>();
+    public static ThreadLocal<ExecutionTimeCounter> executionTime = new ThreadLocal<>();
     
     @Around("execution(lsfusion.server.logics.property.actions.flow.FlowResult lsfusion.server.logics.property.ActionProperty.execute(lsfusion.server.logics.property.ExecutionContext))")
     public Object execution(final ProceedingJoinPoint joinPoint) throws Throwable {
@@ -50,15 +51,14 @@ public class ExecutionStackAspect {
         return processStackItem(joinPoint, item);
     }
     
-    public static ThreadLocal<LongCounter> sqlTime = new ThreadLocal<>();
-    public static ThreadLocal<LongCounter> userInteractionTime = new ThreadLocal<>();
-
     // тут важно что цикл жизни ровно в стеке, иначе утечку можем получить
     private Object processStackItem(ProceedingJoinPoint joinPoint, ExecutionStackItem item) throws Throwable {
         assert item != null;
         
         boolean pushedMessage = false;
         Stack<ExecutionStackItem> stack = getOrInitStack();
+
+        ExecutionTimeCounter executionTimeCounter = null;
         
         stack.push(item);
         if (presentItem(item)) {
@@ -71,16 +71,15 @@ public class ExecutionStackAspect {
             long sqlStart = 0;
             long uiStart = 0;
             if (PROFILER_ENABLED && isProfileStackItem(item)) {
-                if (sqlTime.get() == null) {
-                    sqlTime.set(new LongCounter());
-                }
-                if (userInteractionTime.get() == null) {
-                    userInteractionTime.set(new LongCounter());
+                executionTimeCounter = executionTime.get();
+                if (executionTimeCounter == null) {
+                    executionTimeCounter = new ExecutionTimeCounter();
+                    executionTime.set(executionTimeCounter);
                 }
                 
                 start = System.nanoTime();
-                sqlStart = sqlTime.get().getValue();
-                uiStart = userInteractionTime.get().getValue();
+                sqlStart = executionTimeCounter.sqlTime;
+                uiStart = executionTimeCounter.userInteractionTime;
             }
             
             Object result = joinPoint.proceed();
@@ -96,8 +95,8 @@ public class ExecutionStackAspect {
                         ThreadLocalContext.getCurrentUser(), 
                         form, 
                         executionTime, 
-                        sqlTime.get().getValue() - sqlStart, 
-                        userInteractionTime.get().getValue() - uiStart
+                        executionTimeCounter.sqlTime - sqlStart, 
+                        executionTimeCounter.userInteractionTime - uiStart
                 );
             }
                 

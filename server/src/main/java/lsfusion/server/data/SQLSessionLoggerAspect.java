@@ -1,11 +1,11 @@
 package lsfusion.server.data;
 
-import lsfusion.base.LongCounter;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.server.Settings;
 import lsfusion.server.data.query.DynamicExecEnvSnapshot;
+import lsfusion.server.profiler.ExecutionTimeCounter;
 import lsfusion.server.profiler.Profiler;
 import lsfusion.server.stack.ExecutionStackAspect;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -71,9 +71,9 @@ public class SQLSessionLoggerAspect {
             }
         }
         if (Profiler.PROFILER_ENABLED) {
-            LongCounter counter = ExecutionStackAspect.sqlTime.get();
+            ExecutionTimeCounter counter = ExecutionStackAspect.executionTime.get();
             if (counter != null) {
-                counter.add(System.nanoTime() - startTime);
+                counter.addSql(System.nanoTime() - startTime);
             }
         }
 

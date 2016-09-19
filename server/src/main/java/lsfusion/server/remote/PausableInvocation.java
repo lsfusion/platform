@@ -1,7 +1,7 @@
 package lsfusion.server.remote;
 
-import lsfusion.base.LongCounter;
 import lsfusion.server.ServerLoggers;
+import lsfusion.server.profiler.ExecutionTimeCounter;
 import lsfusion.server.profiler.Profiler;
 import lsfusion.server.stack.ExecutionStackAspect;
 
@@ -170,9 +170,9 @@ public abstract class PausableInvocation<T, E extends Exception> implements Call
         }
         sync.take();
         if (Profiler.PROFILER_ENABLED) {
-            LongCounter counter = ExecutionStackAspect.userInteractionTime.get();
+            ExecutionTimeCounter counter = ExecutionStackAspect.executionTime.get();
             if (counter != null) {
-                counter.add(System.nanoTime() - startTime);
+                counter.addUI(System.nanoTime() - startTime);
             }
         }
     }
