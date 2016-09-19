@@ -701,7 +701,7 @@ public class GridTable extends ClientPropertyTable {
     public void modifyGroupObject(ClientGroupObjectValue rowKey, boolean add, int position) {
         if (add) {
             List<ClientGroupObjectValue> irowKeys = new ArrayList<>(rowKeys);
-            if (position >= 0) {
+            if (position >= 0 && position <= irowKeys.size()) {
                 irowKeys.add(position, rowKey);
             } else {
                 irowKeys.add(rowKey);
