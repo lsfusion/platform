@@ -119,6 +119,7 @@ abstract class ClientDockable extends DefaultMultipleCDockable {
     public void unblockView() {
         closeAction.setEnabled(true);
         contentLayerUI.setLocked(false);
+        contentLayer.updateUI();
 
         getControl().getController().setFocusedDockable(new DefaultFocusRequest(intern(), null, true, true, true, true));
     }
