@@ -2,6 +2,9 @@ package lsfusion.server.profiler;
 
 import lsfusion.base.BaseUtils;
 
+import static lsfusion.base.BaseUtils.nullEquals;
+import static lsfusion.base.BaseUtils.nullHash;
+
 public abstract class ProfileObject {
     protected Object[] objects;
     
@@ -16,7 +19,7 @@ public abstract class ProfileObject {
         }
         int hash = 0;
         for (Object object : objects) {
-            hash = (hash + object.hashCode()) * 31;
+            hash = (hash + nullHash(object)) * 31;
         }
         return hash;
     }
@@ -24,9 +27,9 @@ public abstract class ProfileObject {
     @Override
     public boolean equals(Object obj) {
         if (obj != null && obj instanceof ProfileObject && objects.length == ((ProfileObject) obj).objects.length) {
-            for (int i = 0; i< objects.length; i++) {
-                if (!objects[i].equals(((ProfileObject) obj).objects[i])) {
-                    return false;        
+            for (int i = 0; i < objects.length; i++) {
+                if (!nullEquals(objects[i], ((ProfileObject) obj).objects[i])) {
+                    return false;
                 }
             }
             return true;

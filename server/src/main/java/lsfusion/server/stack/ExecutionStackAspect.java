@@ -17,6 +17,7 @@ import org.aspectj.lang.annotation.Aspect;
 import java.util.ConcurrentModificationException;
 import java.util.ListIterator;
 import java.util.Stack;
+import java.util.concurrent.atomic.AtomicLong;
 
 import static lsfusion.server.profiler.Profiler.PROFILER_ENABLED;
 
@@ -49,8 +50,8 @@ public class ExecutionStackAspect {
         return processStackItem(joinPoint, item);
     }
     
-    public static ThreadLocal<Long> sqlTime = new ThreadLocal<>();
-    public static ThreadLocal<Long> userInteractionTime = new ThreadLocal<>();
+    public static AtomicLong sqlTime = new AtomicLong();
+    public static AtomicLong userInteractionTime = new AtomicLong();
 
     // тут важно что цикл жизни ровно в стеке, иначе утечку можем получить
     private Object processStackItem(ProceedingJoinPoint joinPoint, ExecutionStackItem item) throws Throwable {
@@ -79,7 +80,7 @@ public class ExecutionStackAspect {
                 long executionTime = System.nanoTime() - start;
                 FormInstance formInstance = ThreadLocalContext.getFormInstance();
                 FormEntity form = formInstance != null ? formInstance.entity : null;
-                Profiler.increase(item.profileObject, getProfileObject(getUpperProfileStackItem(item)), ThreadLocalContext.getCurrentUser(), form, executionTime, sqlTime.get(), userInteractionTime.get());
+                Profiler.increase(item.profileObject, getUpperProfileObject(stack, item), ThreadLocalContext.getCurrentUser(), form, executionTime, sqlTime.get(), userInteractionTime.get());
             }
                 
             return result;
@@ -103,22 +104,16 @@ public class ExecutionStackAspect {
         return item.profileObject != null;
     }
     
-    private ExecutionStackItem getUpperProfileStackItem(ExecutionStackItem sourceItem) {
-        Stack<ExecutionStackItem> stack = getStack();
-        if(stack != null) {
-            ListIterator<ExecutionStackItem> itemListIterator = stack.listIterator(stack.indexOf(sourceItem));
-            while (itemListIterator.hasPrevious()) {
-                ExecutionStackItem item = itemListIterator.previous();
-                if (isProfileStackItem(item)) {
-                    return item;
-                }
+    private ProfileObject getUpperProfileObject(Stack<ExecutionStackItem> stack, ExecutionStackItem sourceItem) {
+        int itemIndex = stack.indexOf(sourceItem);
+        
+        for (int i = itemIndex - 1; i > 0; i--) {
+            ExecutionStackItem item = stack.get(i);
+            if (isProfileStackItem(item)) {
+                return item.profileObject;
             }
         }
         return null;
-    }
-    
-    private ProfileObject getProfileObject(ExecutionStackItem item) {
-        return item != null ? item.profileObject : null;    
     }
 
     public Stack<ExecutionStackItem> getOrInitStack() {

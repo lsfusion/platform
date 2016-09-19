@@ -1,6 +1,8 @@
 package lsfusion.server.form.instance;
 
-public interface PropertyReaderInstance {
+import lsfusion.server.profiler.ProfiledObject;
+
+public interface PropertyReaderInstance extends ProfiledObject {
 
     CalcPropertyObjectInstance getPropertyObjectInstance();
 

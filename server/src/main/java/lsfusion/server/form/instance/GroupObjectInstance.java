@@ -1149,6 +1149,11 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         public String toString() {
             return ServerResourceBundle.getString("logics.background") + " (" + GroupObjectInstance.this.toString() + ")";
         }
+
+        @Override
+        public Object getProfiledObject() {
+            return entity.propertyBackground;
+        }
     }
 
     public class RowForegroundReaderInstance implements PropertyReaderInstance {
@@ -1167,6 +1172,11 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         @Override
         public String toString() {
             return ServerResourceBundle.getString("logics.foreground") + " (" + GroupObjectInstance.this.toString() + ")";
+        }
+
+        @Override
+        public Object getProfiledObject() {
+            return entity.propertyForeground;
         }
     }
 }

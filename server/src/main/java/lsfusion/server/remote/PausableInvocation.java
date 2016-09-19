@@ -1,6 +1,5 @@
 package lsfusion.server.remote;
 
-import lsfusion.base.BaseUtils;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.profiler.Profiler;
 import lsfusion.server.stack.ExecutionStackAspect;
@@ -171,7 +170,7 @@ public abstract class PausableInvocation<T, E extends Exception> implements Call
         }
         sync.take();
         if (Profiler.PROFILER_ENABLED) {
-            ExecutionStackAspect.userInteractionTime.set(BaseUtils.nvl(ExecutionStackAspect.userInteractionTime.get() ,0L) + System.nanoTime() - startTime);
+            ExecutionStackAspect.userInteractionTime.addAndGet(System.nanoTime() - startTime);
         }
     }
 

@@ -4,7 +4,7 @@ import static java.lang.Math.max;
 import static java.lang.Math.min;
 
 public class ProfileValue {
-    // nono
+    // nano
     public long totalTime = 0;
     public long totalSQLTime = 0;
     public long totalUserInteractionTime = 0;

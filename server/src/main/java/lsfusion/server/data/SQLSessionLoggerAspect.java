@@ -1,6 +1,5 @@
 package lsfusion.server.data;
 
-import lsfusion.base.BaseUtils;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
@@ -71,7 +70,7 @@ public class SQLSessionLoggerAspect {
             }
         }
         if (Profiler.PROFILER_ENABLED) {
-            ExecutionStackAspect.sqlTime.set(BaseUtils.nvl(ExecutionStackAspect.sqlTime.get() ,0L) + System.nanoTime() - startTime);
+            ExecutionStackAspect.sqlTime.addAndGet(System.nanoTime() - startTime);
         }
 
         return result;

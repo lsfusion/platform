@@ -1538,8 +1538,9 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     }
 
     @StackMessage("message.form.update.props")
+    @ThisMessage
     private <T> void queryPropertyObjectValues(
-            @ParamMessage (profile = false) ImOrderSet<T> keysSet,
+            @ParamMessage ImOrderSet<T> keysSet,
             MExclMap<T, ImMap<ImMap<ObjectInstance, DataObject>, ObjectValue>> valuesMap,
             ImSet<GroupObjectInstance> keyGroupObjects,
             GetKey<CalcPropertyObjectInstance<?>, T> getPropertyObject

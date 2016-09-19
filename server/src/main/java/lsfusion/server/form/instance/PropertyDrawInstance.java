@@ -126,6 +126,11 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
         return entity;
     }
 
+    @Override
+    public Object getProfiledObject() {
+        return entity;
+    }
+
     // заглушка чтобы на сервере ничего не читать
     public class HiddenReaderInstance implements PropertyReaderInstance {
 
@@ -139,6 +144,11 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
 
         public int getID() {
             return PropertyDrawInstance.this.getID();
+        }
+
+        @Override
+        public Object getProfiledObject() {
+            return NullValueProperty.instance;
         }
     }
 
@@ -159,6 +169,11 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
         public PropertyDrawInstance<P> getPropertyDraw() {
             return PropertyDrawInstance.this;
         }
+
+        @Override
+        public Object getProfiledObject() {
+            return entity.propertyShowIf;
+        }
     }
 
     public class CaptionReaderInstance implements PropertyReaderInstance {
@@ -177,6 +192,11 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
         @Override
         public String toString() {
             return ServerResourceBundle.getString("logics.property.caption") + "(" + PropertyDrawInstance.this.toString() + ")";
+        }
+
+        @Override
+        public Object getProfiledObject() {
+            return entity.propertyCaption;
         }
     }
 
@@ -197,6 +217,11 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
         public String toString() {
             return ServerResourceBundle.getString("logics.property.footer") + "(" + PropertyDrawInstance.this.toString() + ")";
         }
+
+        @Override
+        public Object getProfiledObject() {
+            return entity.propertyFooter;
+        }
     }
 
     public class ReadOnlyReaderInstance implements PropertyReaderInstance {
@@ -215,6 +240,11 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
         @Override
         public String toString() {
             return ServerResourceBundle.getString("logics.property.readonly") + "(" + PropertyDrawInstance.this.toString() + ")";
+        }
+
+        @Override
+        public Object getProfiledObject() {
+            return entity.propertyReadOnly;
         }
     }
 
@@ -235,6 +265,11 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
         public String toString() {
             return ServerResourceBundle.getString("logics.background") + "(" + PropertyDrawInstance.this.toString() + ")";
         }
+
+        @Override
+        public Object getProfiledObject() {
+            return entity.propertyBackground;
+        }
     }
 
     public class ForegroundReaderInstance implements PropertyReaderInstance {
@@ -253,6 +288,11 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
         @Override
         public String toString() {
             return ServerResourceBundle.getString("logics.foreground") + "(" + PropertyDrawInstance.this.toString() + ")";
+        }
+
+        @Override
+        public Object getProfiledObject() {
+            return entity.propertyForeground;
         }
     }
 }

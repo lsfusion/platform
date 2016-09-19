@@ -1,8 +1,11 @@
 package lsfusion.server.stack;
 
 import lsfusion.base.col.ListFact;
+import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
+import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.mutable.MList;
+import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.logics.ServerResourceBundle;
 import lsfusion.server.profiler.AspectProfileObject;
 import lsfusion.server.profiler.ProfileObject;
@@ -13,6 +16,7 @@ import org.aspectj.lang.reflect.MethodSignature;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class AspectStackItem extends ExecutionStackItem {
 
@@ -39,31 +43,79 @@ public class AspectStackItem extends ExecutionStackItem {
     }
 
     protected static ProfileObject getProfileObject(ProceedingJoinPoint joinPoint, Method method) {
-        MList<Object> objects = ListFact.mList();
-        
-        Annotation annotation = method.getAnnotation(StackMessage.class);
-        if (annotation != null) {
-            objects.add(ServerResourceBundle.getString(((StackMessage) annotation).value()));
-        }
+        MethodProfileInfo mpi = getMethodProfileInfo(method);
 
-        Annotation thisMessageAnnotation = method.getAnnotation(ThisMessage.class);
-        if (thisMessageAnnotation != null && ((ThisMessage) thisMessageAnnotation).profile()) {
-            Object obj = joinPoint.getThis();
-            objects.add(obj instanceof ProfiledObject ? ((ProfiledObject) obj).getProfiledObject() : obj);
-        }
-
-        Annotation[][] paramAnnotations = method.getParameterAnnotations();
         Object[] args = joinPoint.getArgs();
-        for (int i = 0; i < paramAnnotations.length; i++) {
-            for (Annotation paramAnnotation : paramAnnotations[i]) {
-                if (paramAnnotation instanceof ParamMessage && ((ParamMessage) paramAnnotation).profile()) {
-                    Object arg = args[i];
-                    objects.add(arg instanceof ProfiledObject ? ((ProfiledObject) arg).getProfiledObject() : arg);
+
+        int index = 0;
+        Object[] objects = new Object[mpi.size];
+        if (mpi.message != null) {
+            objects[index++] = mpi.message;
+        }
+        if (mpi.profileThis) {
+            objects[index++] = getProfiledObject(joinPoint.getThis());
+        }
+
+        for (int i = 0; i < mpi.profileArgs.length; i++) {
+            if (mpi.profileArgs[i]) {
+                Object arg = args[i];
+                if (arg instanceof ImOrderSet) {
+                    objects[index++] = ((ImOrderSet) arg).mapListValues(new GetValue() {
+                        @Override
+                        public Object getMapValue(Object value) {
+                            return getProfiledObject(value);
+                        }
+                    });
+                } else {
+                    objects[index++] = getProfiledObject(arg);
                 }
             }
         }
         
-        return objects.size() > 0 ? new AspectProfileObject(objects.immutableList().toArray(new Object[objects.size()])) : null;
+        return new AspectProfileObject(objects);
+    }
+    
+    private static ConcurrentHashMap<Method, MethodProfileInfo> profileMethodCache = MapFact.getGlobalConcurrentHashMap(); 
+    
+    private static MethodProfileInfo getMethodProfileInfo(Method method) {
+        MethodProfileInfo mpi = profileMethodCache.get(method);
+        if (mpi == null) {
+            int size = 0;
+            Annotation messageAnnotation = method.getAnnotation(StackMessage.class);
+            String message = null;
+            if (messageAnnotation != null) {
+                size++;
+                message = ServerResourceBundle.getString(((StackMessage) messageAnnotation).value());
+            }
+
+            Annotation thisMessageAnnotation = method.getAnnotation(ThisMessage.class);
+            boolean isThis = false;
+            if (thisMessageAnnotation != null && ((ThisMessage) thisMessageAnnotation).profile()) {
+                size++;
+                isThis = true;
+            }
+
+            Annotation[][] paramAnnotations = method.getParameterAnnotations();
+            boolean[] profileArgs = new boolean[paramAnnotations.length];
+            for (int i = 0; i < paramAnnotations.length; i++) {
+                profileArgs[i] = false;
+                for (Annotation paramAnnotation : paramAnnotations[i]) {
+                    if (paramAnnotation instanceof ParamMessage && ((ParamMessage) paramAnnotation).profile()) {
+                        size++;
+                        profileArgs[i] = true;
+                        break;
+                    }
+                }
+            }
+            mpi = new MethodProfileInfo(size, message, isThis, profileArgs);
+            profileMethodCache.put(method, mpi);
+        }
+        
+        return mpi;
+    }
+    
+    private static Object getProfiledObject(Object object) {
+        return object instanceof ProfiledObject ? ((ProfiledObject) object).getProfiledObject() : object;
     }
 
     public static ImList<String> getArgs(ProceedingJoinPoint joinPoint, Method method) {
@@ -84,5 +136,19 @@ public class AspectStackItem extends ExecutionStackItem {
                 }
 
         return mStringParams.immutableList();
+    }
+    
+    private static class MethodProfileInfo {
+        private int size;
+        String message;
+        boolean profileThis;
+        boolean[] profileArgs;
+        
+        public MethodProfileInfo(int size, String message, boolean profileThis, boolean[] profileArgs) {
+            this.size = size;
+            this.message = message;
+            this.profileThis = profileThis;
+            this.profileArgs = profileArgs;
+        }
     }
 }

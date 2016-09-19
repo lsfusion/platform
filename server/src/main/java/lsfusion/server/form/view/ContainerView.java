@@ -7,8 +7,8 @@ import lsfusion.interop.form.layout.ContainerAdder;
 import lsfusion.interop.form.layout.ContainerType;
 import lsfusion.server.form.entity.CalcPropertyObjectEntity;
 import lsfusion.server.logics.mutables.NFFact;
-import lsfusion.server.logics.mutables.interfaces.NFOrderSet;
 import lsfusion.server.logics.mutables.Version;
+import lsfusion.server.logics.mutables.interfaces.NFOrderSet;
 import lsfusion.server.serialization.ServerSerializationPool;
 
 import java.io.DataInputStream;
@@ -209,5 +209,10 @@ public class ContainerView extends ComponentView implements AbstractContainer<Co
         
         for(ComponentView child : getChildrenIt())
             child.finalizeAroundInit();
+    }
+
+    @Override
+    public String toString() {
+        return caption;
     }
 }
