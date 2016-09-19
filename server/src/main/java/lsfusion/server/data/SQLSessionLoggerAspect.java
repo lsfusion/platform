@@ -1,5 +1,6 @@
 package lsfusion.server.data;
 
+import lsfusion.base.LongCounter;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
@@ -70,7 +71,10 @@ public class SQLSessionLoggerAspect {
             }
         }
         if (Profiler.PROFILER_ENABLED) {
-            ExecutionStackAspect.sqlTime.addAndGet(System.nanoTime() - startTime);
+            LongCounter counter = ExecutionStackAspect.sqlTime.get();
+            if (counter != null) {
+                counter.add(System.nanoTime() - startTime);
+            }
         }
 
         return result;

@@ -3,6 +3,7 @@ package lsfusion.server.stack;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.ConcurrentWeakHashMap;
 import lsfusion.base.ExceptionUtils;
+import lsfusion.base.LongCounter;
 import lsfusion.base.col.MapFact;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.HandledException;
@@ -17,7 +18,6 @@ import org.aspectj.lang.annotation.Aspect;
 import java.util.ConcurrentModificationException;
 import java.util.ListIterator;
 import java.util.Stack;
-import java.util.concurrent.atomic.AtomicLong;
 
 import static lsfusion.server.profiler.Profiler.PROFILER_ENABLED;
 
@@ -50,8 +50,8 @@ public class ExecutionStackAspect {
         return processStackItem(joinPoint, item);
     }
     
-    public static AtomicLong sqlTime = new AtomicLong();
-    public static AtomicLong userInteractionTime = new AtomicLong();
+    public static ThreadLocal<LongCounter> sqlTime = new ThreadLocal<>();
+    public static ThreadLocal<LongCounter> userInteractionTime = new ThreadLocal<>();
 
     // тут важно что цикл жизни ровно в стеке, иначе утечку можем получить
     private Object processStackItem(ProceedingJoinPoint joinPoint, ExecutionStackItem item) throws Throwable {
@@ -69,8 +69,8 @@ public class ExecutionStackAspect {
         try {
             long start = 0;
             if (PROFILER_ENABLED && isProfileStackItem(item)) {
-                sqlTime.set(0L);
-                userInteractionTime.set(0L);
+                sqlTime.set(new LongCounter());
+                userInteractionTime.set(new LongCounter());
                 start = System.nanoTime();
             }
             
@@ -80,7 +80,8 @@ public class ExecutionStackAspect {
                 long executionTime = System.nanoTime() - start;
                 FormInstance formInstance = ThreadLocalContext.getFormInstance();
                 FormEntity form = formInstance != null ? formInstance.entity : null;
-                Profiler.increase(item.profileObject, getUpperProfileObject(stack, item), ThreadLocalContext.getCurrentUser(), form, executionTime, sqlTime.get(), userInteractionTime.get());
+                assert stack.indexOf(item) == stack.size() - 1;
+                Profiler.increase(item.profileObject, getUpperProfileObject(stack), ThreadLocalContext.getCurrentUser(), form, executionTime, sqlTime.get().getValue(), userInteractionTime.get().getValue());
             }
                 
             return result;
@@ -104,10 +105,8 @@ public class ExecutionStackAspect {
         return item.profileObject != null;
     }
     
-    private ProfileObject getUpperProfileObject(Stack<ExecutionStackItem> stack, ExecutionStackItem sourceItem) {
-        int itemIndex = stack.indexOf(sourceItem);
-        
-        for (int i = itemIndex - 1; i > 0; i--) {
+    private ProfileObject getUpperProfileObject(Stack<ExecutionStackItem> stack) {
+        for (int i = stack.size() - 2; i > 0; i--) {
             ExecutionStackItem item = stack.get(i);
             if (isProfileStackItem(item)) {
                 return item.profileObject;
