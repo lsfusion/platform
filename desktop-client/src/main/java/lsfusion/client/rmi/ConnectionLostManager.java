@@ -5,7 +5,6 @@ import lsfusion.client.*;
 import lsfusion.client.exceptions.ClientExceptionManager;
 import lsfusion.client.form.RmiQueue;
 import lsfusion.interop.DaemonThreadFactory;
-import lsfusion.interop.RemoteLogicsInterface;
 import lsfusion.interop.exceptions.NonFatalHandledRemoteException;
 import lsfusion.interop.remote.ClientCallBackInterface;
 
@@ -382,7 +381,6 @@ public class ConnectionLostManager {
     }
 
     static class Pinger implements Runnable {
-        private RemoteLogicsInterface remoteLogics = Main.remoteLogics;
         private AtomicBoolean abandoned = new AtomicBoolean();
 
         public void execute() {
@@ -394,7 +392,8 @@ public class ConnectionLostManager {
         public void run() {
             RmiQueue.runRetryableRequest(new Callable<Object>() {
                 public Object call() throws Exception {
-                    remoteLogics.ping();
+                    if(Main.remoteLogics != null)
+                        Main.remoteLogics.ping();
                     return true;
                 }
             }, abandoned, true);
