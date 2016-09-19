@@ -68,10 +68,19 @@ public class ExecutionStackAspect {
         
         try {
             long start = 0;
+            long sqlStart = 0;
+            long uiStart = 0;
             if (PROFILER_ENABLED && isProfileStackItem(item)) {
-                sqlTime.set(new LongCounter());
-                userInteractionTime.set(new LongCounter());
+                if (sqlTime.get() == null) {
+                    sqlTime.set(new LongCounter());
+                }
+                if (userInteractionTime.get() == null) {
+                    userInteractionTime.set(new LongCounter());
+                }
+                
                 start = System.nanoTime();
+                sqlStart = sqlTime.get().getValue();
+                uiStart = userInteractionTime.get().getValue();
             }
             
             Object result = joinPoint.proceed();
@@ -81,7 +90,15 @@ public class ExecutionStackAspect {
                 FormInstance formInstance = ThreadLocalContext.getFormInstance();
                 FormEntity form = formInstance != null ? formInstance.entity : null;
                 assert stack.indexOf(item) == stack.size() - 1;
-                Profiler.increase(item.profileObject, getUpperProfileObject(stack), ThreadLocalContext.getCurrentUser(), form, executionTime, sqlTime.get().getValue(), userInteractionTime.get().getValue());
+                Profiler.increase(
+                        item.profileObject, 
+                        getUpperProfileObject(stack), 
+                        ThreadLocalContext.getCurrentUser(), 
+                        form, 
+                        executionTime, 
+                        sqlTime.get().getValue() - sqlStart, 
+                        userInteractionTime.get().getValue() - uiStart
+                );
             }
                 
             return result;

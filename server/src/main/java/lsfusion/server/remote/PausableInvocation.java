@@ -163,9 +163,8 @@ public abstract class PausableInvocation<T, E extends Exception> implements Call
         releaseSync(syncInvocation);
     }
 
-    private long startTime;
-
     private void blockSync(SynchronousQueue sync) throws InterruptedException {
+        long startTime = 0;
         if (Profiler.PROFILER_ENABLED) {
             startTime = System.nanoTime();
         }
