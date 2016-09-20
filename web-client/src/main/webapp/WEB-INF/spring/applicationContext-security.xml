@@ -46,6 +46,7 @@
     <b:bean id="successLoginHandler" class="org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler" >
         <b:property name="targetUrlParameter" value="targetUrl" />
         <b:property name="defaultTargetUrl" value="/form.jsp" />
+        <b:property name="alwaysUseDefaultTargetUrl" value="true" />
     </b:bean>
 
     <b:bean id="accessDeniedHandler" class="lsfusion.gwt.base.server.spring.AccessDeniedHandlerImpl" >
@@ -55,6 +56,7 @@
     <b:bean id="successLogoutHandler" class="org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuccessHandler" >
         <b:property name="targetUrlParameter" value="targetUrl" />
         <b:property name="defaultTargetUrl" value="/form.jsp" />
+        <b:property name="alwaysUseDefaultTargetUrl" value="true" />
     </b:bean>
 
     <!-- Authentication configuration -->
