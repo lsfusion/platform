@@ -160,7 +160,7 @@ public class ThreadLocalContext {
     }
 
     public static ProgressStackItem pushProgressMessage(String message, Integer progress, Integer total) {
-        ProgressStackItem progressStackItem = new ProgressStackItem(message, progress, total, null);
+        ProgressStackItem progressStackItem = new ProgressStackItem(message, progress, total);
         pushActionMessage(progressStackItem);
         return progressStackItem;
     }

@@ -4,7 +4,6 @@ import lsfusion.base.ProgressBar;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.mutable.MList;
-import lsfusion.server.profiler.ProfileObject;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.reflect.MethodSignature;
 
@@ -16,12 +15,13 @@ public class ProgressStackItem extends AspectStackItem {
     private Integer progress;
     private Integer total;
 
+    // не профайлим @StackProgress - передаём null ProfileObject
     public ProgressStackItem(ProceedingJoinPoint joinPoint) {
-        super(joinPoint);
+        super(joinPoint, null);
     }
 
-    public ProgressStackItem(String message, Integer progress, Integer total, ProfileObject profileObject) {
-        super(null, profileObject);
+    public ProgressStackItem(String message, Integer progress, Integer total) {
+        super(null, null);
         this.message = message;
         this.progress = progress;
         this.total = total;
