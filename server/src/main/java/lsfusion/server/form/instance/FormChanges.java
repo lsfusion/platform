@@ -37,6 +37,8 @@ public class FormChanges {
     private final ImSet<PropertyDrawInstance> panelProperties;
     private final ImSet<PropertyDrawInstance> dropProperties;
 
+    public static FormChanges EMPTY = new MFormChanges().immutable();
+
     public FormChanges(ImMap<GroupObjectInstance, ClassViewType> classViews, ImMap<GroupObjectInstance, ImMap<ObjectInstance, ? extends ObjectValue>> objects,
                        ImMap<GroupObjectInstance, ImOrderSet<ImMap<ObjectInstance, DataObject>>> gridObjects,
                        ImMap<GroupObjectInstance, ImList<ImMap<ObjectInstance, DataObject>>> parentObjects,

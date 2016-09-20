@@ -872,7 +872,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     private ServerResponse returnRemoteChangesResponse(long requestIndex, List<ClientAction> pendingActions, boolean delayedHideForm) {
         if (delayedHideForm) {
             ServerLoggers.remoteLifeLog("FORM DELAYED HIDE : " + this);
-            closeLater();
+            deactivateAndCloseLater(false);
         }
 
         return new ServerResponse(requestIndex, pendingActions.toArray(new ClientAction[pendingActions.size()]), false);
@@ -901,7 +901,11 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
 
     public byte[] getFormChangesByteArray(ExecutionStack stack) {
         try {
-            FormChanges formChanges = form.endApply(stack, delayedHideFormSent);
+            FormChanges formChanges;
+            if(isDeactivated() || delayedHideFormSent) // formWillBeClosed
+                formChanges = FormChanges.EMPTY;
+            else
+                formChanges = form.endApply(stack);
 
             if (logger.isTraceEnabled()) {
                 formChanges.logChanges(form, logger);
@@ -1042,29 +1046,19 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
 
     // будем считать что если unreferenced \ finalized то форма точно также должна закрыться ???
     @Override
-    protected void onExplicitClose(boolean syncedOnClient) {
+    protected void onClose(boolean syncedOnClient) {
         try {
-            form.explicitClose(syncedOnClient);
+            form.close(syncedOnClient);
         } catch (Throwable t) {
             ServerLoggers.sqlSuppLog(t);
         }
 
-        super.onExplicitClose(syncedOnClient);
+        super.onClose(syncedOnClient);
 
         // важно делать после, чтобы закрытие navigator'а (а значит и sql conection'а) было после того как закрылись все формы
         RemoteFormListener listener = getRemoteFormListener();
         if (listener != null) {
-            listener.formExplicitClosed(this);
-        }
-    }
-
-    @Override
-    protected void onFinalClose(boolean explicit) {
-        super.onFinalClose(explicit);
-
-        RemoteFormListener listener = getRemoteFormListener();
-        if (listener != null) {
-            listener.formFinalClosed(this);
+            listener.formClosed(this);
         }
     }
 }

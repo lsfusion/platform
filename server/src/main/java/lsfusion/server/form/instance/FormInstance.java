@@ -315,7 +315,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         environmentIncrement = createEnvironmentIncrement(isModal, isDialog, isAdd, sessionScope.isManageSession(), entity.isReadOnly(), showDrop);
 
         if (!interactive) {
-            endApply(stack, false);
+            endApply(stack);
             this.mapObjects = mapObjects;
         } else {
             this.mapObjects = null;
@@ -1297,15 +1297,12 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     }
 
     @Override
-    protected void onExplicitClose(Object o, boolean syncedOnClient) throws SQLException {
+    protected void onClose(Object o, boolean syncedOnClient) throws SQLException {
         assert o == null;
 
-        session.unregisterForm(this, syncedOnClient); // важно после, так как сессия может закрыться
-    }
-
-    @Override
-    protected void onFinalClose(Object owner) throws SQLException {
         ServerLoggers.remoteLifeLog("FORM CLOSE : " + this);
+
+        session.unregisterForm(this, syncedOnClient); // важно после, так как сессия может закрыться
     }
 
 
@@ -1588,18 +1585,12 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     @LogTime
     @ThisMessage
     @AssertSynchronized
-    public FormChanges endApply(ExecutionStack stack, boolean formWillBeClosed) throws SQLException, SQLHandledException {
+    public FormChanges endApply(ExecutionStack stack) throws SQLException, SQLHandledException {
 
         assert interactive;
+        checkNavigatorDeactivated();
 
         final MFormChanges result = new MFormChanges();
-
-        if (isClosed() || formWillBeClosed) {
-//            ServerLoggers.assertLog(false, "FORM IS ALREADY CLOSED");
-            return result.immutable();
-        }
-
-        checkNavigatorClosed();
 
         QueryEnvironment queryEnv = getQueryEnv();
 
@@ -1641,9 +1632,9 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         return result.immutable();
     }
 
-    private void checkNavigatorClosed() {
+    private void checkNavigatorDeactivated() {
         CustomClassListener classListener = getClassListener();
-        ServerLoggers.assertLog(classListener == null || !classListener.isClosed(), "NAVIGATOR CLOSED " + BaseUtils.nullToString(classListener));
+        ServerLoggers.assertLog(classListener == null || !classListener.isDeactivated(), "NAVIGATOR DEACTIVATED " + BaseUtils.nullToString(classListener));
     }
 
     private ImMap<PropertyReaderInstance, ImMap<ImMap<ObjectInstance, DataObject>, ObjectValue>> readShowIfs(
@@ -1919,7 +1910,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     // считывает все данные с формы
     public FormData getFormData(ImSet<PropertyDrawInstance> propertyDraws, ImSet<GroupObjectInstance> classGroups, int orderTop) throws SQLException, SQLHandledException {
 
-        checkNavigatorClosed();
+        checkNavigatorDeactivated();
 
         applyFilters();
         applyOrders();
@@ -2299,11 +2290,6 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
     public void formRefresh() throws SQLException, SQLHandledException {
         refreshData();
-    }
-
-    @Override
-    public void explicitClose(boolean syncedOnClient) throws SQLException {
-        super.explicitClose(syncedOnClient);
     }
 
     @Override

@@ -162,16 +162,13 @@ public class NavigatorsManager extends LogicsManager implements InitializingBean
         }
     }
 
-    public void navigatorExplicitClosed(RemoteNavigator navigator) {
+    public void navigatorClosed(RemoteNavigator navigator, ExecutionStack stack, DataObject connection) {
         synchronized (navigators) {
             navigators.remove(navigator);
             if (navigators.isEmpty()) {
                 restartManager.forcedRestartIfPending();
             }
         }
-    }
-
-    public void navigatorFinalClosed(ExecutionStack stack, DataObject connection) {
         try {
             try (DataSession session = dbManager.createSession()) {
                 if (connection != null) {

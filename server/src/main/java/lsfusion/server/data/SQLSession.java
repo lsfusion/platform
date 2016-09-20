@@ -1049,12 +1049,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     }
 
     @Override
-    public OperationOwner getDefaultExplicitOwner() {
-        return OperationOwner.unknown;
-    }
-
-    @Override
-    public OperationOwner getFinalizeOwner() {
+    public OperationOwner getDefaultCloseOwner() {
         return OperationOwner.unknown;
     }
 
@@ -2563,7 +2558,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     }
     
     @Override
-    protected void onExplicitClose(OperationOwner owner, boolean syncedOnClient) throws SQLException {
+    protected void onClose(OperationOwner owner, boolean syncedOnClient) throws SQLException {
         assert syncedOnClient; // предполагается что весь SQLSession синхронизирован
 
         lockWrite(owner);

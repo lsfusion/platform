@@ -855,7 +855,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
     }
 
     @Override
-    public void formExplicitClosed(RemoteForm form) {
+    public void formClosed(RemoteForm form) {
         synchronized (forms) {
             forms.remove(form);
         }
@@ -870,12 +870,8 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         }
     }
 
-    @Override
-    public void formFinalClosed(RemoteForm form) {
-    }
-
     public synchronized void close() throws RemoteException {
-        explicitClose(true);
+        deactivateAndCloseLater(true);
     }
 
     // обмен изменениями между сессиями в рамках одного подключения
@@ -1007,7 +1003,26 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
     }
 
     @Override
-    protected void onExplicitClose(boolean syncedOnClient) {
+    protected void onDeactivate() {
+        super.onDeactivate(); // сначала очищаем свои процессы, потом процессы форм (так как свои процессы могут создавать формы)
+
+        Set<RemoteForm> proceededForms = new HashSet<>();
+        while(true) { // нужны в том числе закрывающиеся формы, чтобы гарантировать, что все формы закроются до закрытия соединения
+            Set<RemoteForm> formsSnap = new HashSet<>();
+            synchronized (forms) {
+                for(RemoteForm form : forms)
+                    if(form != null && proceededForms.add(form))
+                        formsSnap.add(form);
+                if(formsSnap.isEmpty())
+                    break; // считаем что когда навигатор закрывается новые создаваться не могут
+            }
+            for(RemoteForm form : formsSnap)
+                form.deactivate();
+        }
+    }
+
+    @Override
+    protected void onClose(boolean syncedOnClient) {
         assert syncedOnClient; // пока нет случаев когда это не так
 
         while(true) { // нужны в том числе закрывающиеся формы, чтобы гарантировать, что все формы закроются до закрытия соединения
@@ -1019,33 +1034,19 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
             }
             for(RemoteForm form : formsSnap)
                 if(form != null)
-                    form.explicitClose(syncedOnClient);
+                    form.close(syncedOnClient);
         }
 
-        super.onExplicitClose(syncedOnClient);
+        super.onClose(syncedOnClient);
 
-        navigatorManager.navigatorExplicitClosed(this);
-    }
+        navigatorManager.navigatorClosed(this, getStack(), getConnection());
 
-    protected Runnable getAfterCleanThreadsRunnable() { // даем время на очистку потоков, чтобы например unregisterThreadStack при interrupt'е не получал sql session is already closed
-        return new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    ThreadLocalContext.assureRmi(RemoteNavigator.this);
-                    sql.close();
-                } catch (Throwable t) {
-                    ServerLoggers.sqlSuppLog(t);
-                }
-            }
-        };
-    }
-
-    @Override
-    protected void onFinalClose(boolean explicit) {
-        super.onFinalClose(explicit);
-
-        navigatorManager.navigatorFinalClosed(getStack(), getConnection()); // тут по идее другой connection
+        try {
+            ThreadLocalContext.assureRmi(RemoteNavigator.this);
+            sql.close();
+        } catch (Throwable t) {
+            ServerLoggers.sqlSuppLog(t);
+        }
     }
 
     @Override

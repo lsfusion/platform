@@ -418,7 +418,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     public final SQLSession idSession;
     
     @Override
-    protected void onExplicitClose(Object o, boolean syncedOnClient) throws SQLException {
+    protected void onClose(Object o, boolean syncedOnClient) throws SQLException {
         assert syncedOnClient; // через tryClose идет, поэтому можно считать что тоже синхронизирован
 
         assert o == null;
@@ -2631,7 +2631,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
         if(noOwners) { // не осталось владельцев - закрываем
             assert pendingCleaners.isEmpty();
-            explicitClose();
+            close(true); // так как идет синхронизация closedLock'ом
             return true;
         }
         return false;
