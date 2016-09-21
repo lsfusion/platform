@@ -2615,4 +2615,8 @@ public class BaseUtils {
         String ts = trim(str);
         return isEmpty(ts)?null:ts;
     }
+
+    public static String substring(String value, int length) {
+        return value == null ? null : value.substring(0, Math.min(value.length(), length));
+    }
 }

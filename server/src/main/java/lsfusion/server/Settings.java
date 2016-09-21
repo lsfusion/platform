@@ -231,6 +231,8 @@ public class Settings {
 
     private boolean groupByTables = true; //для recalculate
 
+    private int profilerBatchSize = 500;
+
     private int threadAllocatedMemoryPeriod = 180; //every 3 minutes
 
     private boolean readAllocatedBytes = true;
@@ -1577,6 +1579,14 @@ public class Settings {
 
     public void setGroupByTables(boolean groupByTables) {
         this.groupByTables = groupByTables;
+    }
+
+    public int getProfilerBatchSize() {
+        return profilerBatchSize;
+    }
+
+    public void setProfilerBatchSize(int profilerBatchSize) {
+        this.profilerBatchSize = profilerBatchSize;
     }
 
     public int getThreadAllocatedMemoryPeriod() {

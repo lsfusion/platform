@@ -108,6 +108,7 @@
                 <entry key="startServerAnyWay" value="${settings.startServerAnyWay:}"/>
                 <entry key="singleInstance" value="${jnlp.singleInstance:}"/>
                 <entry key="busyDialog" value="${settings.busyDialog:}"/>
+                <entry key="profilerBatchSize" value="${settings.profilerBatchSize:}"/>
             </map>
         </property>
         </bean>

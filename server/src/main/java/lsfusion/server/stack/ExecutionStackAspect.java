@@ -208,7 +208,7 @@ public class ExecutionStackAspect {
                     lastActionFound = true;
                     result += getLastActionString(stack, (ExecuteActionStackItem) item, cut);
                 } else {
-                    result += cut ? trim(item.toString(), 1000) : item;
+                    result += cut ? BaseUtils.substring(item.toString(), 1000) : item;
                 }
             }
         }
@@ -232,7 +232,7 @@ public class ExecutionStackAspect {
                 }
             }
         }
-        return cut ? trim(lastAction.toString(), 1000) : lastAction.toString();
+        return cut ? BaseUtils.substring(lastAction.toString(), 1000) : lastAction.toString();
     }
 
     public static String getProgressBarLastActionString() {
@@ -251,10 +251,6 @@ public class ExecutionStackAspect {
             }
         }
         return result;
-    }
-
-    private static String trim(String value, int length) {
-        return value == null ? null : value.substring(0, Math.min(value.length(), length));
     }
 
     private static boolean presentItem(ExecutionStackItem item) {
