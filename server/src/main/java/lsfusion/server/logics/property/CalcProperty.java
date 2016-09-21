@@ -843,7 +843,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
     public void markStored(TableFactory tableFactory, ImplementTable table) {
         MapKeysTable<T> mapTable = null;
 
-        ImMap<T, ValueClass> keyClasses = getInterfaceClasses(ClassType.storedPolicy);
+        ImOrderMap<T, ValueClass> keyClasses = getOrderTableInterfaceClasses(ClassType.storedPolicy);
         if (table != null) {
             mapTable = table.getMapKeysTable(keyClasses);
             assert mapTable!=null;
@@ -914,6 +914,11 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
     @IdentityLazy
     public ImMap<T, ValueClass> getInterfaceClasses(ClassType type) {
         return getInterfaceClasses(type, null);
+    }
+
+    // упорядоченный map классов для обеспечения детерминированности (связано с ImplementTable.getOrderMapFields)
+    public ImOrderMap<T, ValueClass> getOrderTableInterfaceClasses(ClassType type) {
+        return getOrderInterfaces().mapOrderMap(getInterfaceClasses(type));
     }
 
     public ImMap<T, ValueClass> getInterfaceClasses(ClassType type, final ExClassSet valueClasses) {

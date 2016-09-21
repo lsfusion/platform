@@ -735,7 +735,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         ImplementTable targetTable = null;
         if (tableName != null) {
             targetTable = findTable(tableName);
-            if (!targetTable.equalClasses(((LCP<?>)property).property.getInterfaceClasses(ClassType.storedPolicy))) {
+            if (!targetTable.equalClasses(((LCP<?>)property).property.getOrderTableInterfaceClasses(ClassType.storedPolicy))) {
                 // todo : проверка неправильная - должна быть на ClassWhere
                 //errLog.emitWrongClassesForTable(parser, name, tableName);
             }

@@ -19,7 +19,6 @@ import lsfusion.server.data.expr.*;
 import lsfusion.server.data.expr.query.*;
 import lsfusion.server.data.query.IQuery;
 import lsfusion.server.data.query.QueryBuilder;
-import lsfusion.server.data.query.stat.StatKeys;
 import lsfusion.server.data.query.stat.TableStatKeys;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
@@ -45,7 +44,18 @@ import java.sql.SQLException;
 import java.util.*;
 
 public class ImplementTable extends GlobalTable { // последний интерфейс assert что isFull
-    public final ImMap<KeyField, ValueClass> mapFields;
+    private final ImMap<KeyField, ValueClass> mapFields;
+
+    public ImMap<KeyField, ValueClass> getMapFields() {
+        return mapFields;
+    }
+
+    // для обеспечения детерминированности mapping'a (связано с CalcProperty.getOrderTableInterfaceClasses)
+    private final ImOrderMap<KeyField, ValueClass> orderMapFields;
+    public ImOrderMap<KeyField, ValueClass> getOrderMapFields() {
+        return orderMapFields;
+    }
+
     private TableStatKeys statKeys = null;
     private ImMap<PropertyField, PropStat> statProps = null;
     private ImSet<PropertyField> indexedProps = SetFact.<PropertyField>EMPTY();
@@ -65,6 +75,7 @@ public class ImplementTable extends GlobalTable { // последний инте
         fullField = field;
 
         ValueClass fieldClass;
+        ImMap<KeyField, ValueClass> mapFields = getMapFields();
         if(mapFields.size() == 1 && (fieldClass = mapFields.singleValue()) instanceof CustomClass) {
             ((CustomClass)fieldClass).setIsClassField(field);
         }
@@ -97,17 +108,22 @@ public class ImplementTable extends GlobalTable { // последний инте
     public ImplementTable(String name, final ValueClass... implementClasses) {
         super(name);
 
+        ImOrderSet<KeyField> keys;
         keys = SetFact.toOrderExclSet(implementClasses.length, new GetIndex<KeyField>() {
             public KeyField getMapValue(int i) {
                 return new KeyField("key"+i,implementClasses[i].getType());
             }});
+        ImMap<KeyField, ValueClass> mapFields;
         mapFields = keys.mapOrderValues(new GetIndex<ValueClass>() {
             public ValueClass getMapValue(int i) {
                 return implementClasses[i];
             }});
-        parents = NFFact.orderSet();
 
+        parents = NFFact.orderSet();
         classes = classes.or(new ClassWhere<>(mapFields, true));
+        this.keys = keys;
+        this.mapFields = mapFields;
+        orderMapFields = keys.mapOrderMap(mapFields);
     }
 
     public <P extends PropertyInterface> IQuery<KeyField, CalcProperty> getReadSaveQuery(ImSet<CalcProperty> properties, Modifier modifier) {
@@ -167,11 +183,12 @@ public class ImplementTable extends GlobalTable { // последний инте
     private final static int IS_PARENT = 1;
     private final static int IS_EQUAL = 2;
 
-    private <T> boolean recCompare(int operation, ImMap<T, ValueClass> toCompare,int iRec,Map<T,KeyField> mapTo) {
-        if(iRec>=mapFields.size()) return true;
+    private <T> boolean recCompare(int operation, ImOrderMap<T, ValueClass> toCompare,int iRec,Map<T,KeyField> mapTo) {
+        ImOrderMap<KeyField, ValueClass> orderMapFields = getOrderMapFields();
+        if(iRec>=orderMapFields.size()) return true;
 
-        KeyField proceedItem = mapFields.getKey(iRec);
-        ValueClass proceedClass = mapFields.getValue(iRec);
+        KeyField proceedItem = orderMapFields.getKey(iRec);
+        ValueClass proceedClass = orderMapFields.getValue(iRec);
         for(int i=0,size=toCompare.size();i<size;i++) {
             T key = toCompare.getKey(i); ValueClass compareClass = toCompare.getValue(i);
             if(!mapTo.containsKey(key) &&
@@ -195,7 +212,7 @@ public class ImplementTable extends GlobalTable { // последний инте
     private final static int COMPARE_EQUAL = 3;
 
     // также возвращает карту если не Diff
-    private <T> int compare(ImMap<T, ValueClass> toCompare,Result<ImRevMap<T,KeyField>> mapTo) {
+    private <T> int compare(ImOrderMap<T, ValueClass> toCompare,Result<ImRevMap<T,KeyField>> mapTo) {
 
         Integer result = null;
         
@@ -217,7 +234,7 @@ public class ImplementTable extends GlobalTable { // последний инте
         return COMPARE_DIFF;
     }
 
-    public <T> boolean equalClasses(ImMap<T, ValueClass> mapClasses) {
+    public <T> boolean equalClasses(ImOrderMap<T, ValueClass> mapClasses) {
         int compResult = compare(mapClasses, new Result<ImRevMap<T, KeyField>>());
         return compResult == COMPARE_EQUAL || compResult == COMPARE_UP;
     }
@@ -229,7 +246,7 @@ public class ImplementTable extends GlobalTable { // последний инте
         boolean wasRemove = false; // для assertiona
         while(i.hasNext()) {
             ImplementTable item = i.next();
-            int relation = item.compare(mapFields,new Result<ImRevMap<KeyField, KeyField>>());
+            int relation = item.compare(getOrderMapFields(),new Result<ImRevMap<KeyField, KeyField>>());
             if(relation==COMPARE_DOWN) { // снизу в дереве, добавляем ее как промежуточную
                 if(checkSiblings(item, parents, this))
                     parents.add(item, version);
@@ -261,7 +278,7 @@ public class ImplementTable extends GlobalTable { // последний инте
         for(ImplementTable siblingTable : tables.getNFList(Version.CURRENT)) {
             if(BaseUtils.hashEquals(item, siblingTable))
                 return false;
-            int compare = siblingTable.compare(item.mapFields, new Result<ImRevMap<KeyField, KeyField>>());
+            int compare = siblingTable.compare(item.getOrderMapFields(), new Result<ImRevMap<KeyField, KeyField>>());
             if(compare==COMPARE_UP || compare == COMPARE_DOWN)
                 return false;
         }
@@ -344,14 +361,14 @@ public class ImplementTable extends GlobalTable { // последний инте
         }
     }
 
-    public <T> MapKeysTable<T> getSingleMapTable(ImMap<T, ValueClass> findItem, boolean included) {
+    public <T> MapKeysTable<T> getSingleMapTable(ImOrderMap<T, ValueClass> findItem, boolean included) {
         ImSet<MapKeysTable<T>> tables = getMapTables(findItem, included ? findIncludedTable : findTable);
         if(tables.isEmpty())
             return null;
         return tables.single();
     }
 
-    public <T> MapKeysTable<T> getClassMapTable(ImMap<T, ValueClass> findItem) {
+    public <T> MapKeysTable<T> getClassMapTable(ImOrderMap<T, ValueClass> findItem) {
         ImSet<MapKeysTable<T>> tables = getMapTables(findItem, findClassTable);
         if(tables.isEmpty())
             tables = getMapTables(findItem, findTable);
@@ -360,11 +377,11 @@ public class ImplementTable extends GlobalTable { // последний инте
         return tables.single();
     }
 
-    public <T> ImSet<MapKeysTable<T>> getFullMapTables(ImMap<T, ValueClass> findItem, ImplementTable skipTable) {
+    public <T> ImSet<MapKeysTable<T>> getFullMapTables(ImOrderMap<T, ValueClass> findItem, ImplementTable skipTable) {
         return getMapTables(findItem, new FindFullTables(skipTable));
     }
 
-    public <T> ImSet<MapKeysTable<T>> getMapTables(ImMap<T, ValueClass> findItem, MapTableType type) {
+    public <T> ImSet<MapKeysTable<T>> getMapTables(ImOrderMap<T, ValueClass> findItem, MapTableType type) {
         Result<ImRevMap<T,KeyField>> mapCompare = new Result<>();
         int relation = compare(findItem,mapCompare);
         // если внизу или отличается то не туда явно зашли
@@ -390,7 +407,7 @@ public class ImplementTable extends GlobalTable { // последний инте
         return SetFact.singleton(new MapKeysTable<>(this, mapCompare.result));
     }
 
-    public <T> MapKeysTable<T> getMapKeysTable(ImMap<T, ValueClass> classes) {
+    public <T> MapKeysTable<T> getMapKeysTable(ImOrderMap<T, ValueClass> classes) {
         Result<ImRevMap<T,KeyField>> mapCompare = new Result<>();
         int relation = compare(classes, mapCompare);
         if(relation==COMPARE_DOWN || relation==COMPARE_DIFF)

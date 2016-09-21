@@ -2049,12 +2049,13 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         for(ImplementTable table : BL.LM.tableFactory.getImplementTables(fromJavaSet(remove))) {
             QueryBuilder<KeyField, PropertyField> query = new QueryBuilder<>(table);
             Where removeWhere = Where.FALSE;
-            for (int i = 0, size = table.mapFields.size(); i < size; i++) {
+            ImMap<KeyField, ValueClass> mapFields = table.getMapFields();
+            for (int i = 0, size = mapFields.size(); i < size; i++) {
                 try {
-                    sql.statusMessage = new StatusMessage("delete", table.mapFields.getKey(i), i, size);
-                    ValueClass value = table.mapFields.getValue(i);
+                    sql.statusMessage = new StatusMessage("delete", mapFields.getKey(i), i, size);
+                    ValueClass value = mapFields.getValue(i);
                     if (remove.contains(value)) {
-                        Join<String> newJoin = news.join(query.getMapExprs().get(table.mapFields.getKey(i)));
+                        Join<String> newJoin = news.join(query.getMapExprs().get(mapFields.getKey(i)));
                         removeWhere = removeWhere.or(newJoin.getWhere().and(isValueClass(newJoin.getExpr("value"), (CustomClass) value, usedNewClasses).not()));
                     }
                 } finally {

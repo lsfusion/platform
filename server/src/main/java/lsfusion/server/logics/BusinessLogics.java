@@ -594,7 +594,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     public void initFullSingleTables() {
         for(ImplementTable table : LM.tableFactory.getImplementTables()) {
             if(table.markedFull && !table.isFull())  // для второго условия все и делается, чтобы не создавать лишние св-ва
-                LM.markFull(table, table.mapFields.singleValue());
+                LM.markFull(table, table.getMapFields().singleValue());
         }
     }
 
@@ -615,7 +615,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     public void initClassDataProps() {
         ImMap<ImplementTable, ImSet<ConcreteCustomClass>> groupTables = getConcreteCustomClasses().group(new BaseUtils.Group<ImplementTable, ConcreteCustomClass>() {
             public ImplementTable group(ConcreteCustomClass customClass) {
-                return LM.tableFactory.getClassMapTable(MapFact.singleton("key", (ValueClass) customClass)).table;
+                return LM.tableFactory.getClassMapTable(MapFact.singletonOrder("key", (ValueClass) customClass)).table;
             }
         });
 
@@ -625,7 +625,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
 
             ObjectValueClassSet classSet = OrObjectClassSet.fromSetConcreteChildren(set);
 
-            CustomClass tableClass = (CustomClass) table.mapFields.singleValue();
+            CustomClass tableClass = (CustomClass) table.getMapFields().singleValue();
             // помечаем full tables
             assert tableClass.getUpSet().containsAll(classSet, false); // должны быть все классы по определению, исходя из логики раскладывания классов по таблицам
             boolean isFull = classSet.containsAll(tableClass.getUpSet(), false);
