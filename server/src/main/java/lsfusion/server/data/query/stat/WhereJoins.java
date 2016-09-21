@@ -28,7 +28,6 @@ import lsfusion.server.data.Value;
 import lsfusion.server.data.expr.*;
 import lsfusion.server.data.expr.query.*;
 import lsfusion.server.data.query.*;
-import lsfusion.server.data.query.innerjoins.AbstractUpWhere;
 import lsfusion.server.data.query.innerjoins.KeyEqual;
 import lsfusion.server.data.query.innerjoins.UpWhere;
 import lsfusion.server.data.query.innerjoins.UpWheres;
@@ -1464,26 +1463,15 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
             return Arrays.asList(wheres);
 
         List<WhereJoin> result = new ArrayList<>();
+
+        MExclSet<ExprIndexedJoin> mExprIndexedJoins = SetFact.mExclSet();
         for(WhereJoin valueJoin : wheres)
-            if(!(valueJoin instanceof ExprIndexedJoin))
+            if(valueJoin instanceof ExprIndexedJoin)
+                mExprIndexedJoins.exclAdd((ExprIndexedJoin) valueJoin);
+            else
                 result.add(valueJoin);
 
-        MMap<WhereJoin, UpWhere> mUpIntervalWheres = null;
-        if(upAdjWheres != null)
-            mUpIntervalWheres = MapFact.mMapMax(wheres.length, AbstractUpWhere.<WhereJoin>and());
-
-        int intStat = Settings.get().getAverageIntervalStat();
-        if(intStat >= 0)
-            for(ExprIndexedJoin join : ExprIndexedJoin.getIntervals(wheres)) { // потом надо будет убрать intervals
-                ExprStatJoin adjJoin = new ExprStatJoin(join.getJoins().singleValue(), new Stat(intStat, true));
-                result.add(adjJoin);
-
-                if(upAdjWheres != null)
-                    mUpIntervalWheres.add(adjJoin, upAdjWheres.result.get(join));
-            }
-
-        if(upAdjWheres != null)
-            upAdjWheres.set(new UpWheres<WhereJoin>(upAdjWheres.result.addExcl(mUpIntervalWheres.immutable())));
+        ExprIndexedJoin.fillIntervals(mExprIndexedJoins.immutable(), result, upAdjWheres, wheres);
 
         return result;
     }

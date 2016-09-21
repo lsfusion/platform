@@ -360,6 +360,7 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
     }
 
     public <K extends BaseExpr> StatKeys<K> getStatKeys(final ImSet<K> groups, final StatType type) { // assertion что ключи groups входят в это where
+        assert getOuterKeys().containsAll(AbstractOuterContext.getOuterSetKeys(groups));
         return getPushedStatKeys(groups, type, StatKeys.<KeyExpr>NOPUSH());
     }
 

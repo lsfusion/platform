@@ -9,10 +9,12 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
+import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.SymmAddValue;
 import lsfusion.base.col.interfaces.mutable.add.MAddMap;
 import lsfusion.interop.Compare;
+import lsfusion.server.Settings;
 import lsfusion.server.caches.hash.HashContext;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
@@ -20,11 +22,13 @@ import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.NullableExprInterface;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.expr.query.StatType;
-import lsfusion.server.data.query.stat.Cost;
-import lsfusion.server.data.query.stat.KeyStat;
-import lsfusion.server.data.query.stat.StatKeys;
-import lsfusion.server.data.query.stat.WhereJoin;
+import lsfusion.server.data.query.innerjoins.AbstractUpWhere;
+import lsfusion.server.data.query.innerjoins.UpWhere;
+import lsfusion.server.data.query.innerjoins.UpWheres;
+import lsfusion.server.data.query.stat.*;
 import lsfusion.server.data.translator.MapTranslate;
+
+import java.util.List;
 
 public class ExprIndexedJoin extends ExprJoin<ExprIndexedJoin> {
 
@@ -131,7 +135,14 @@ public class ExprIndexedJoin extends ExprJoin<ExprIndexedJoin> {
 
 
     private enum IntervalType {
-        LEFT, RIGHT, FULL
+        LEFT, RIGHT, FULL;
+
+        public IntervalType and(IntervalType type) {
+            if(this == type)
+                return this;
+            return FULL;
+        }
+
     }
 
     private static IntervalType getIntervalType(Compare compare) {
@@ -149,9 +160,7 @@ public class ExprIndexedJoin extends ExprJoin<ExprIndexedJoin> {
     public static ImSet<ExprIndexedJoin> getIntervals(WhereJoin[] wheres) {
         MAddMap<BaseExpr, IntervalType> intervals = MapFact.mAddMap(new SymmAddValue<BaseExpr, IntervalType>() {
             public IntervalType addValue(BaseExpr key, IntervalType prevValue, IntervalType newValue) {
-                if(BaseUtils.hashEquals(prevValue, newValue))
-                    return prevValue;
-                return IntervalType.FULL;
+                return prevValue.and(newValue);
             }
         });
         boolean hasKeyExprs = false; // оптимизация
@@ -182,19 +191,7 @@ public class ExprIndexedJoin extends ExprJoin<ExprIndexedJoin> {
         if(result.size() > 0) {
             if(hasKeyExprs) { // оптимизация
                 // по идее эта обработка не нужна, но тогда могут появляться висячие ключи, хотя строго говоря потом можно наоборот поддержать эти случаи, тогда a>=1 AND a<=5 будет работать
-                MSet<KeyExpr> mInnerKeys = SetFact.mSet();
-                for(WhereJoin<?, ?> where : wheres) {
-                    if (where instanceof InnerJoin) {
-                        ImSet<BaseExpr> whereKeys = where.getJoins().values().filterCol(new SFunctionSet<BaseExpr>() {
-                            public boolean contains(BaseExpr element) {
-                                return element instanceof KeyExpr;
-                            }
-                        }).toSet();
-                        mInnerKeys.addAll(BaseUtils.<ImSet<KeyExpr>>immutableCast(whereKeys));
-                    }
-                }
-                final ImSet<KeyExpr> innerKeys = mInnerKeys.immutable();
-
+                final ImSet<KeyExpr> innerKeys = getInnerKeys(wheres);
                 result = result.filterFn(new SFunctionSet<ExprIndexedJoin>() {
                     public boolean contains(ExprIndexedJoin element) {
                         KeyExpr keyExpr = element.getKeyExpr();
@@ -207,5 +204,71 @@ public class ExprIndexedJoin extends ExprJoin<ExprIndexedJoin> {
         }
 
         return result;
+    }
+
+    private static ImSet<KeyExpr> getInnerKeys(WhereJoin[] wheres) {
+        MSet<KeyExpr> mInnerKeys = SetFact.mSet();
+        for(WhereJoin<?, ?> where : wheres) {
+            if (where instanceof InnerJoin) {
+                ImSet<BaseExpr> whereKeys = where.getJoins().values().filterCol(new SFunctionSet<BaseExpr>() {
+                    public boolean contains(BaseExpr element) {
+                        return element instanceof KeyExpr;
+                    }
+                }).toSet();
+                mInnerKeys.addAll(BaseUtils.<ImSet<KeyExpr>>immutableCast(whereKeys));
+            }
+        }
+        return mInnerKeys.immutable();
+    }
+
+    public static void fillIntervals(ImSet<ExprIndexedJoin> exprs, List<WhereJoin> mResult, Result<UpWheres<WhereJoin>> upAdjWheres, WhereJoin[] wheres) {
+        ImMap<BaseExpr, ImSet<ExprIndexedJoin>> exprIndexedJoins = exprs.group(new BaseUtils.Group<BaseExpr, ExprIndexedJoin>() {
+            public BaseExpr group(ExprIndexedJoin key) {
+                return key.baseExpr;
+            }});
+
+        MMap<WhereJoin, UpWhere> mUpIntervalWheres = null;
+        if(upAdjWheres != null)
+            mUpIntervalWheres = MapFact.mMapMax(exprIndexedJoins.size(), AbstractUpWhere.<WhereJoin>and());
+
+        int intStat = Settings.get().getAverageIntervalStat();
+        ImSet<KeyExpr> innerKeys = null;
+        for(int i=0,size=exprIndexedJoins.size();i<size;i++) {
+            ImSet<ExprIndexedJoin> joins = exprIndexedJoins.getValue(i);
+            BaseExpr expr = exprIndexedJoins.getKey(i);
+
+            boolean fixedInterval = true;
+            if(intStat <= 0)
+                fixedInterval = false;
+
+            if(fixedInterval) {
+                ExprIndexedJoin.IntervalType result = null;
+                for (ExprIndexedJoin join : joins) {
+                    IntervalType joinType = getIntervalType(join.compare);
+                    if (result == null)
+                        result = joinType;
+                    else
+                        result = result.and(joinType);
+                }
+                fixedInterval = result == IntervalType.FULL;
+            }
+
+            if(fixedInterval && expr instanceof KeyExpr) { // по идее эта обработка не нужна, но тогда могут появляться висячие ключи (так как a>=1 AND a<=5 будет убивать другие join'ы), хотя строго говоря потом можно наоборот поддержать эти случаи, тогда a>=1 AND a<=5 будет работать
+                if(innerKeys == null)
+                    innerKeys = getInnerKeys(wheres);
+                if(!innerKeys.contains((KeyExpr)expr)) // висячий ключ
+                    fixedInterval = false;
+            }
+
+            ExprStatJoin adjJoin = new ExprStatJoin(expr, fixedInterval ? new Stat(intStat, true) : Stat.ALOT);
+            mResult.add(adjJoin);
+
+            if(upAdjWheres != null)
+                for(ExprIndexedJoin join : joins)
+                    mUpIntervalWheres.add(adjJoin, upAdjWheres.result.get(join));
+        }
+
+        if(upAdjWheres != null)
+            upAdjWheres.set(new UpWheres<WhereJoin>(upAdjWheres.result.addExcl(mUpIntervalWheres.immutable())));
     }
 }
