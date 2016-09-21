@@ -418,9 +418,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     public final SQLSession idSession;
     
     @Override
-    protected void onClose(Object o, boolean syncedOnClient) throws SQLException {
-        assert syncedOnClient; // через tryClose идет, поэтому можно считать что тоже синхронизирован
-
+    protected void onClose(Object o) throws SQLException {
         assert o == null;
         
 //        SQLSession.fifo.add("DC " + getOwner() + SQLSession.getCurrentTimeStamp() + " " + this + '\n' + ExceptionUtils.getStackTrace());
@@ -1861,10 +1859,9 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     }
 
     private interface Cleaner extends ExceptionRunnable<SQLException> {
-        boolean canBeCleaned();
     }
 
-    public void unregisterForm(FormInstance<?> form, final boolean syncedOnClient) throws SQLException {
+    public void unregisterForm(FormInstance<?> form) throws SQLException {
         changes.unregisterForm(form); // synced
 
         dropFormCaches();
@@ -1872,14 +1869,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         final WeakReference<FormInstance> wForm = new WeakReference<FormInstance>(form);
         Cleaner cleaner = new Cleaner() {
             @Override
-            public boolean canBeCleaned() {
-                return syncedOnClient || !isInTransaction(); // нельзя чистить в транзакции, так как изменения могут rollback'ся, а rollDrop некому делать
-            }
-
-            @Override
             public void run() throws SQLException {
-                assert canBeCleaned();
-
                 FormInstance<?> form = wForm.get();
                 if(form == null) // уже все очистилось само
                     return;
@@ -1906,7 +1896,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
             pendingCleaners.add(cleaner);
 
-            tryClose(syncedOnClient);
+            tryClose();
         }
     }
     private void dropFormCaches() throws SQLException {
@@ -2609,7 +2599,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         synchronized (closeLock) {
             threadCount--;
 
-            tryClose(true);
+            tryClose();
         }
 //        threads.remove(Thread.currentThread());
     }
@@ -2617,26 +2607,33 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     // необходимо, так как чистка ресурсов может быть асинхронной (closeLater, unreferenced)
     private WeakIdentityHashSet<Cleaner> pendingCleaners = new WeakIdentityHashSet<>();
 
-    public boolean tryClose(boolean syncedOnClient) throws SQLException { // assert closedLock
-        boolean noOwners = threadCount == 0 && activeForms.isEmpty();
-        if(noOwners || syncedOnClient) { // AssertSynchronized со всеми остальными методами DataSession
-            WeakIdentityHashSet<Cleaner> restCleaners = new WeakIdentityHashSet<>();
-            for(Cleaner pendingCleaner : pendingCleaners) {
-                if (noOwners || pendingCleaner.canBeCleaned()) // вообще assert что когда не осталось owner'ов можно очищать ресурсы
-                    pendingCleaner.run();
-                else
-                    restCleaners.add(pendingCleaner);
-            }
-            pendingCleaners = restCleaners;
-        }
-
-        if(noOwners) { // не осталось владельцев - закрываем
-            assert pendingCleaners.isEmpty();
-            close(true); // так как идет синхронизация closedLock'ом
+    public boolean tryClose() throws SQLException { // assert closedLock
+        // не осталось владельцев - закрываем
+        if(threadCount == 0 && activeForms.isEmpty()) { // AssertSynchronized со всеми остальными методами DataSession
+            ServerLoggers.assertLog(!isInTransaction(), "SHOULD NOT CLOSE DATASESSION IN TRANSACTION");
+            flushPendingCleaners();
+            explicitClose();
             return true;
         }
         return false;
     }
+
+    // потом надо будет ставить в заведомо синхронизированные места
+    private void lockedFlushPendingCleaners() throws SQLException {
+        synchronized (closeLock) {
+            flushPendingCleaners();
+        }
+    }
+
+    private void flushPendingCleaners() throws SQLException { // assert closedLock
+        // нельзя чистить в транзакции, так как изменения могут rollback'ся, а rollDrop некому делать
+        if(!isInTransaction() && !pendingCleaners.isEmpty()) {
+            for (Cleaner pendingCleaner : pendingCleaners)
+                pendingCleaner.run();
+            pendingCleaners = new WeakIdentityHashSet<>();
+        }
+    }
+
     @Override
     public void close() throws SQLException {
         unregisterThreadStack();

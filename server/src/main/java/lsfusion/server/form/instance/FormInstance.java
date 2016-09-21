@@ -1297,12 +1297,12 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     }
 
     @Override
-    protected void onClose(Object o, boolean syncedOnClient) throws SQLException {
+    protected void onClose(Object o) throws SQLException {
         assert o == null;
 
         ServerLoggers.remoteLifeLog("FORM CLOSE : " + this);
 
-        session.unregisterForm(this, syncedOnClient); // важно после, так как сессия может закрыться
+        session.unregisterForm(this);
     }
 
 

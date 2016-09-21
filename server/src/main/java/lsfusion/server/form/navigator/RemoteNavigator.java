@@ -871,7 +871,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
     }
 
     public synchronized void close() throws RemoteException {
-        deactivateAndCloseLater(true);
+        deactivateAndCloseLater(true); // после вызова close, предполагается что новых запросов уже идти не может, а старые закроются
     }
 
     // обмен изменениями между сессиями в рамках одного подключения
@@ -1022,9 +1022,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
     }
 
     @Override
-    protected void onClose(boolean syncedOnClient) {
-        assert syncedOnClient; // пока нет случаев когда это не так
-
+    protected void onClose() {
         while(true) { // нужны в том числе закрывающиеся формы, чтобы гарантировать, что все формы закроются до закрытия соединения
             Set<RemoteForm> formsSnap;
             synchronized (forms) {
@@ -1034,10 +1032,10 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
             }
             for(RemoteForm form : formsSnap)
                 if(form != null)
-                    form.close(syncedOnClient);
+                    form.explicitClose();
         }
 
-        super.onClose(syncedOnClient);
+        super.onClose();
 
         navigatorManager.navigatorClosed(this, getStack(), getConnection());
 

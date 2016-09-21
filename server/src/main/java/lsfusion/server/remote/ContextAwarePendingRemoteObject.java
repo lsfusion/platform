@@ -107,7 +107,7 @@ public abstract class ContextAwarePendingRemoteObject extends PendingRemoteObjec
     }
 
     // явная очистка ресурсов, которые поддерживаются через weak ref'ы
-    protected void onClose(boolean syncedOnClient) {
+    protected void onClose() {
         if (pausablesExecutor != null)
             pausablesExecutor.shutdown();
     }
@@ -164,7 +164,7 @@ public abstract class ContextAwarePendingRemoteObject extends PendingRemoteObjec
                         Thread.currentThread().interrupt();
                     }
 
-                    close(syncedOnClient);
+                    explicitClose();
                 } finally {
                     ThreadLocalContext.aspectAfterRmi();
                 }
@@ -173,14 +173,14 @@ public abstract class ContextAwarePendingRemoteObject extends PendingRemoteObjec
     }
 
     private boolean closed;
-    public synchronized void close(boolean syncedOnClient) {
+    public synchronized void explicitClose() {
         ServerLoggers.assertLog(deactivated, "REMOTE OBJECT MUST BE DEACTIVATED " + this);
         if(closed)
             return;
 
         ServerLoggers.remoteLifeLog("REMOTE OBJECT CLOSE " + this);
 
-        onClose(syncedOnClient);
+        onClose();
 
         closed = true;
     }

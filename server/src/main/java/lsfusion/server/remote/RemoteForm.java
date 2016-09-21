@@ -1046,14 +1046,14 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
 
     // будем считать что если unreferenced \ finalized то форма точно также должна закрыться ???
     @Override
-    protected void onClose(boolean syncedOnClient) {
+    protected void onClose() {
         try {
-            form.close(syncedOnClient);
+            form.explicitClose();
         } catch (Throwable t) {
             ServerLoggers.sqlSuppLog(t);
         }
 
-        super.onClose(syncedOnClient);
+        super.onClose();
 
         // важно делать после, чтобы закрытие navigator'а (а значит и sql conection'а) было после того как закрылись все формы
         RemoteFormListener listener = getRemoteFormListener();

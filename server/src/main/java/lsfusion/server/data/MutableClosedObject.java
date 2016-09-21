@@ -14,20 +14,20 @@ public abstract class MutableClosedObject<O> extends MutableObject implements Au
         return closed;
     }
 
-    public void close(boolean syncedOnClient) throws SQLException {
+    public void explicitClose() throws SQLException {
         ServerLoggers.assertLog(!closed, "ALREADY CLOSED " + this);
 
         if(closed)
             return;
 
-        onClose(getDefaultCloseOwner(), syncedOnClient);
+        onClose(getDefaultCloseOwner());
 
         closed = true;
     }
 
     @Override
     public void close() throws SQLException { // в общем случае пытается закрыть, а не закрывает объект
-        close(true);
+        explicitClose();
     }
 
     public O getDefaultCloseOwner() {
@@ -36,6 +36,6 @@ public abstract class MutableClosedObject<O> extends MutableObject implements Au
 
 
     // явная очистка ресурсов, которые поддерживаются через weak ref'ы
-    protected void onClose(O owner, boolean syncedOnClient) throws SQLException {
+    protected void onClose(O owner) throws SQLException {
     }
 }
