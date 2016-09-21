@@ -324,103 +324,10 @@ DESIGN processMonitor {
     MOVE functions.box;
 }
 
-CLASS ProfileObject {
-    top 'Базовое действие'
-}
-
-TABLE profileObject(ProfileObject); 
-TABLE profileData(ProfileObject, ProfileObject, User, ProfileForm);
-
-text 'Действие' = DATA TEXT (ProfileObject) IN recognize;
-profileObject = GROUP AGGR ProfileObject profileObject BY text(profileObject);
-
-totalTime 'Суммарное время выполнения' = DATA LOCAL LONG (TEXT, TEXT, User, ProfileForm);
-totalSQLTime 'Суммарное время выполнения SQL' = DATA LOCAL LONG (TEXT, TEXT, User, ProfileForm);  
-totalUserInteractionTime 'Суммарное время ожидания действия пользователя' = DATA LOCAL LONG (TEXT, TEXT, User, ProfileForm);
-callCount 'Количество вызовов' = DATA LOCAL LONG (TEXT, TEXT, User, ProfileForm);
-minTime 'Минимальное время выполнения' = DATA LOCAL LONG (TEXT, TEXT, User, ProfileForm);
-maxTime 'Максимальное время выполнения' = DATA LOCAL LONG (TEXT, TEXT, User, ProfileForm);
-squaresSum 'Сумма квадратов времени выполнения' = DATA LOCAL DOUBLE (TEXT, TEXT, User, ProfileForm);
-
-totalTime 'Суммарное время выполнения' = DATA LONG (ProfileObject, ProfileObject, User, ProfileForm);
-totalSQLTime 'Суммарное время выполнения SQL' = DATA LONG (ProfileObject, ProfileObject, User, ProfileForm);
-totalUserInteractionTime 'Суммарное время ожидания действия пользователя' = DATA LONG (ProfileObject, ProfileObject, User, ProfileForm);
-callCount 'Количество вызовов' = DATA LONG (ProfileObject, ProfileObject, User, ProfileForm);
-minTime 'Минимальное время выполнения' = DATA LONG (ProfileObject, ProfileObject, User, ProfileForm);
-maxTime 'Максимальное время выполнения' = DATA LONG (ProfileObject, ProfileObject, User, ProfileForm);
-squaresSum 'Сумма квадратов времени выполнения' = DATA DOUBLE (ProfileObject, ProfileObject, User, ProfileForm);
-
-mTotalTime 'Суммарное время выполнения' (ProfileObject p1, ProfileObject p2, User u, ProfileForm f) = NUMERIC[20,3](totalTime(p1, p2, u, f)) / 1000000;
-mTotalSQLTime 'Суммарное время выполнения SQL' (ProfileObject p1, ProfileObject p2, User u, ProfileForm f) = NUMERIC[20,3](totalSQLTime(p1, p2, u, f)) / 1000000;
-mTotalUserInteractionTime 'Суммарное время ожидания действия пользователя' (ProfileObject p1, ProfileObject p2, User u, ProfileForm f) = NUMERIC[20,3](totalUserInteractionTime(p1, p2, u, f)) / 1000000;
-mMinTime 'Минимальное время выполнения' (ProfileObject p1, ProfileObject p2, User u, ProfileForm f) = NUMERIC[20,3](minTime(p1, p2, u, f)) / 1000000;
-mMaxTime 'Максимальное время выполнения' (ProfileObject p1, ProfileObject p2, User u, ProfileForm f) = NUMERIC[20,3](maxTime(p1, p2, u, f)) / 1000000;
-mAverageTime 'Среднее время выполнения' (ProfileObject p1, ProfileObject p2, User u, ProfileForm f) = NUMERIC[20,3](totalTime(p1, p2, u, f)) / callCount(p1, p2, u, f) / 1000000; 
-mAverageSquaredTime 'Среднее квадратичное времени выполнения' (ProfileObject p1, ProfileObject p2, User u, ProfileForm f) = NUMERIC[20,3](sqrt(squaresSum(p1, p2, u, f) / callCount(p1, p2, u, f)) / 1000000); 
-
-doStartProfiler 'Запустить профилировщик' () = ACTION CUSTOM 'lsfusion.erp.utils.StartProfilerActionProperty';
-startProfiler 'Запустить профилировщик' () = ACTION {
-    totalTime(ProfileObject p1, ProfileObject p2, User u, ProfileForm f) <- NULL;
-    totalSQLTime(ProfileObject p1, ProfileObject p2, User u, ProfileForm f) <- NULL; 
-    totalUserInteractionTime(ProfileObject p1, ProfileObject p2, User u, ProfileForm f) <- NULL; 
-    callCount(ProfileObject p1, ProfileObject p2, User u, ProfileForm f) <- NULL; 
-    minTime(ProfileObject p1, ProfileObject p2, User u, ProfileForm f) <- NULL; 
-    maxTime(ProfileObject p1, ProfileObject p2, User u, ProfileForm f) <- NULL; 
-    squaresSum(ProfileObject p1, ProfileObject p2, User u, ProfileForm f) <- NULL; 
-
-    apply();
-    
-    doStartProfiler();
-}
-
-stopProfiler 'Остановить профилировщик' () = ACTION CUSTOM 'lsfusion.erp.utils.StopProfilerActionProperty';
-
-writeProfilerBatch () = ACTION {
-    FOR [= GROUP SUM 1 IF callCount(TEXT t1, TEXT t2, User u, ProfileForm f) BY t1](TEXT t1) AND NOT profileObject(t1) INLINE ADDOBJ p = ProfileObject DO {
-        text(p) <- t1;    
-    }     
-
-    FOR [= GROUP SUM 1 IF callCount(TEXT t1, TEXT t2, User u, ProfileForm f) BY t2](TEXT t2) AND NOT profileObject(t2) INLINE ADDOBJ p = ProfileObject DO {
-        text(p) <- t2;    
-    }     
-    
-    FOR ProfileObject p1 == profileObject(TEXT t1) AND ProfileObject p2 == profileObject(TEXT t2) AND callCount(t1, t2, User u, ProfileForm f) DO {
-            totalTime(p1, p2, u, f) <- totalTime(p1, p2, u, f) (+) totalTime(t1, t2, u, f); 
-            totalSQLTime(p1, p2, u, f) <- totalSQLTime(p1, p2, u, f) (+) totalSQLTime(t1, t2, u, f); 
-            totalUserInteractionTime(p1, p2, u, f) <- totalUserInteractionTime(p1, p2, u, f) (+) totalUserInteractionTime(t1, t2, u, f); 
-            callCount(p1, p2, u, f) <- callCount(p1, p2, u, f) (+) callCount(t1, t2, u, f); 
-            minTime(p1, p2, u, f) <- MIN minTime(p1, p2, u, f), minTime(t1, t2, u, f); 
-            maxTime(p1, p2, u, f) <- MAX maxTime(p1, p2, u, f), maxTime(t1, t2, u, f); 
-            squaresSum(p1, p2, u, f) <- squaresSum(p1, p2, u, f) (+) squaresSum(t1, t2, u, f);     
-    }   
-     
-    apply();
-}
-
-FORM profiler 'Профилировщик'
-OBJECTS g = (po1 = ProfileObject, po2 = ProfileObject, user = User, form = ProfileForm)
-    PROPERTIES() startProfiler, stopProfiler 
-    PROPERTIES(po2) READONLY text
-    PROPERTIES(po1) READONLY text 
-    PROPERTIES(user) READONLY name
-    PROPERTIES(form) READONLY canonicalName
-    PROPERTIES(po1, po2, user, form) READONLY mTotalTime, mTotalSQLTime, mTotalUserInteractionTime, callCount, mMinTime, mMaxTime, mAverageTime, mAverageSquaredTime
-    
-    ORDER BY mTotalTime(po1, po2, user, form) DESC 
-    FILTERS callCount(po1, po2, user, form)
-;
-
-DESIGN profiler {
-    PROPERTY (text(po2)) {
-        caption = 'Верхнее действие';
-    }
-}
-
 NAVIGATOR {
     systemEvents {
         ADD activeTasks;
         ADD activeBlocks;
         ADD processMonitor;
-        ADD profiler;
     }
 }
