@@ -1,6 +1,7 @@
 package lsfusion.erp.utils;
 
 import com.google.common.base.Throwables;
+import lsfusion.base.BaseUtils;
 import lsfusion.base.ProgressBar;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
@@ -12,6 +13,7 @@ import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.base.col.interfaces.mutable.SymmAddValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
+import lsfusion.server.Settings;
 import lsfusion.server.classes.*;
 import lsfusion.server.data.KeyField;
 import lsfusion.server.data.OperationOwner;
@@ -47,13 +49,6 @@ import java.util.Map;
 import static lsfusion.server.profiler.Profiler.profileData;
 
 public class StopProfilerActionProperty extends ScriptingActionProperty {
-    @SuppressWarnings("FieldCanBeLocal")
-    private static int BATCH_SIZE = 500;
-
-    private ConcreteCustomClass profileObject;
-    private ValueClass user;
-    private ConcreteCustomClass form;
-
     private LCP totalTime;
     private LCP totalSQLTime;
     private LCP totalUserInteractionTime;
@@ -62,45 +57,31 @@ public class StopProfilerActionProperty extends ScriptingActionProperty {
     private LCP maxTime;
     private LCP squaresSum;
 
-    private LCP text;
-
-    private LCP formCanonicalName;
-
     private LAP<?> writeProfilerBatch;
 
     private String basePOStaticCaption;
-    private DataObject noForm;
 
     public StopProfilerActionProperty(ScriptingLogicsModule LM) throws ScriptingErrorLog.SemanticErrorException {
         super(LM);
 
-        profileObject = (ConcreteCustomClass) findClass("ProfileObject");
-        user = findClass("User");
-        form = (ConcreteCustomClass) findClass("ProfileForm");
-
-        text = findProperty("text[ProfileObject]");
-
-        totalTime = findProperty("totalTime[TEXT, TEXT, User, Form]");
-        totalSQLTime = findProperty("totalSQLTime[TEXT, TEXT, User, Form]");
-        totalUserInteractionTime = findProperty("totalUserInteractionTime[TEXT, TEXT, User, Form]");
-        callCount = findProperty("callCount[TEXT, TEXT, User, Form]");
-        minTime = findProperty("minTime[TEXT, TEXT, User, Form]");
-        maxTime = findProperty("maxTime[TEXT, TEXT, User, Form]");
-        squaresSum = findProperty("squaresSum[TEXT, TEXT, User, Form]");
-
-        formCanonicalName = findProperty("navigatorElementCanonicalName[VARSTRING[100]]");
+        totalTime = findProperty("totalTime[TEXT, TEXT, INTEGER, VARSTRING[100]]");
+        totalSQLTime = findProperty("totalSQLTime[TEXT, TEXT, INTEGER, VARSTRING[100]]");
+        totalUserInteractionTime = findProperty("totalUserInteractionTime[TEXT, TEXT, INTEGER, VARSTRING[100]]");
+        callCount = findProperty("callCount[TEXT, TEXT, INTEGER, VARSTRING[100]]");
+        minTime = findProperty("minTime[TEXT, TEXT, INTEGER, VARSTRING[100]]");
+        maxTime = findProperty("maxTime[TEXT, TEXT, INTEGER, VARSTRING[100]]");
+        squaresSum = findProperty("squaresSum[TEXT, TEXT, INTEGER, VARSTRING[100]]");
     }
 
     @Override
     protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
-        DataObject baseProfileObject = profileObject.getDataObject("top");
-        basePOStaticCaption = (String) LM.baseLM.staticCaption.read(context, baseProfileObject);
-        text.change(getProfileObjectText(null), context.getSession(), baseProfileObject);
-        noForm = form.getDataObject("noForm");
-
         Profiler.PROFILER_ENABLED = false;
 
         try {
+            ConcreteCustomClass profileObject = (ConcreteCustomClass) findClass("ProfileObject");
+            DataObject baseProfileObject = profileObject.getDataObject("top");
+            basePOStaticCaption = ((String) LM.baseLM.staticCaption.read(context, baseProfileObject)).trim();
+            
             writeProfilerBatch = findAction("writeProfilerBatch");
 
             updateProfileData(context);
@@ -111,10 +92,8 @@ public class StopProfilerActionProperty extends ScriptingActionProperty {
     }
 
     private void updateProfileData(ExecutionContext context) throws SQLException, SQLHandledException, ScriptingErrorLog.SemanticErrorException {
-        DataSession session = context.getSession();
-
         final ImOrderSet<KeyField> keys = SetFact.fromJavaOrderSet(new ArrayList<>(Arrays.asList(new KeyField("po1", StringClass.text),
-                new KeyField("po2", StringClass.text), new KeyField("user", user.getType()), new KeyField("form", form.getType()))));
+                new KeyField("po2", StringClass.text), new KeyField("user", IntegerClass.instance), new KeyField("form", StringClass.getv(100)))));
 
         ImOrderSet<LCP> props = SetFact.fromJavaOrderSet(new ArrayList<>(Arrays.asList(totalTime, totalSQLTime, 
                 totalUserInteractionTime, callCount, minTime, maxTime, squaresSum)));
@@ -123,32 +102,36 @@ public class StopProfilerActionProperty extends ScriptingActionProperty {
         GetValue<ImMap<LCP, ObjectValue>, ProfileValue> mapProfileValue = new GetValue<ImMap<LCP, ObjectValue>, ProfileValue>() {
             @Override
             public ImMap<LCP, ObjectValue> getMapValue(ProfileValue profileValue) {
-                return MapFact.toMap(totalTime, (ObjectValue) new DataObject(profileValue.totalTime, LongClass.instance),
+                return MapFact.toMap(
+                        totalTime, (ObjectValue) new DataObject(profileValue.totalTime, LongClass.instance),
                         totalSQLTime, new DataObject(profileValue.totalSQLTime, LongClass.instance),
                         totalUserInteractionTime, new DataObject(profileValue.totalUserInteractionTime, LongClass.instance),
                         callCount, new DataObject(profileValue.callCount, LongClass.instance),
                         minTime, new DataObject(profileValue.minTime, LongClass.instance),
                         maxTime, new DataObject(profileValue.maxTime, LongClass.instance),
-                        squaresSum, new DataObject(profileValue.squaresSum, DoubleClass.instance));
+                        squaresSum, new DataObject(profileValue.squaresSum, DoubleClass.instance)
+                );
             }
         };
 
         int batchCounter = 0;
-        int batchQuantity = (int) Math.ceil((double) profileData.size() / BATCH_SIZE);
+        int batchSize = Settings.get().getProfilerBatchSize();
+        int batchQuantity = (int) Math.ceil((double) profileData.size() / batchSize);
         int batchNumber = 1;
 
         for (Map.Entry<ProfileItem, ProfileValue> entry : profileData.entrySet()) {
             ProfileItem profileItem = entry.getKey();
 
-            ImList<DataObject> orderValues = ListFact.toList(new DataObject(getProfileObjectText(profileItem.profileObject)),
+            ImList<DataObject> orderValues = ListFact.toList(
+                    new DataObject(getProfileObjectText(profileItem.profileObject)),
                     new DataObject(getProfileObjectText(profileItem.upperProfileObject)),
-                    session.getDataObject(user, profileItem.userID),
-                    getFormObject(profileItem, session));
+                    new DataObject(profileItem.userID),
+                    new DataObject(profileItem.form == null ? "" : profileItem.form.getSID()));
             mPremap.add(keys.mapList(orderValues), entry.getValue());
 
             batchCounter++;
 
-            if (batchCounter == BATCH_SIZE) {
+            if (batchCounter == batchSize) {
                 writeBatch(keys, props, mPremap.immutable().mapValues(mapProfileValue), context, new ProgressBar("Profiler", batchNumber, batchQuantity));
                 batchNumber++;
                 mPremap = newPremap();
@@ -204,16 +187,7 @@ public class StopProfilerActionProperty extends ScriptingActionProperty {
     }
 
     private String getProfileObjectText(ProfileObject po) {
-        return po == null ? basePOStaticCaption : po.getProfileString();
-    }
-
-    private DataObject getFormObject(ProfileItem profileItem, DataSession session) throws SQLException, SQLHandledException {
-        if (profileItem.form == null) {
-            return noForm;
-        } else {
-            Object formName = formCanonicalName.read(session, new DataObject(profileItem.form.getSID()));
-            return formName == null ? noForm : session.getDataObject(form, formName);
-        }
+        return BaseUtils.substring(po == null ? basePOStaticCaption : po.getProfileString(), 1000);
     }
 
     @Override
