@@ -122,7 +122,7 @@ public class ExecutionStackAspect {
     }
     
     private ProfileObject getUpperProfileObject(Stack<ExecutionStackItem> stack) {
-        for (int i = stack.size() - 2; i > 0; i--) {
+        for (int i = stack.size() - 2; i >= 0; i--) {
             ExecutionStackItem item = stack.get(i);
             if (isProfileStackItem(item)) {
                 return item.profileObject;
