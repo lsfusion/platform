@@ -88,43 +88,40 @@ inFilter 'Отм' = OVERRIDE [=GROUP SUM 1 IF in(User u, UserRole r) AND inFilte
 
 inFilter 'Отм' = DATA LOCAL BOOLEAN (ProfileForm);
 
-downTotalTimeNoWait 'Общее время выполнения' = GROUP SUM totalTimeNoWait(ProfileObject down, ProfileObject up, User u, ProfileForm f) 
-        IF inFilter(f) AND inFilter(u) AND callCount(down, up, u, f)
-        BY down;
-downTotalJavaTime 'Общее время выполнения Java' = GROUP SUM totalJavaTime(ProfileObject down, ProfileObject up, User u, ProfileForm f) 
-        IF inFilter(f) AND inFilter(u) AND callCount(down, up, u, f)
-        BY down;
-downTotalSQLTime 'Общее время выполнения SQL' = GROUP SUM mTotalSQLTime(ProfileObject down, ProfileObject up, User u, ProfileForm f) 
-        IF inFilter(f) AND inFilter(u) AND callCount(down, up, u, f)
-        BY down;
-        
-upTotalTimeNoWait 'Время выполнения вызванных' = GROUP SUM totalTimeNoWait(ProfileObject down, ProfileObject up, User u, ProfileForm f) 
-        IF inFilter(f) AND inFilter(u) AND callCount(down, up, u, f)
-        BY up;
-upTotalJavaTime 'Суммарное время выполнения Java вызванных' = GROUP SUM totalJavaTime(ProfileObject down, ProfileObject up, User u, ProfileForm f) 
-        IF inFilter(f) AND inFilter(u) AND callCount(down, up, u, f)
-        BY up;
-upTotalSQLTime 'Суммарное время выполнения SQL вызванных' = GROUP SUM mTotalSQLTime(ProfileObject down, ProfileObject up, User u, ProfileForm f) 
-        IF inFilter(f) AND inFilter(u) AND callCount(down, up, u, f)
-        BY up;
+inFilter 'Отм' (User u, ProfileForm f) = inFilter(u) AND inFilter(f);
 
-totalTimeNoWait 'Внутренне время выполнения' (ProfileObject po) = downTotalTimeNoWait(po) (-) upTotalTimeNoWait(po);
-totalJavaTime 'Внутреннее время выполнения Java' (ProfileObject po) = downTotalJavaTime(po) (-) upTotalJavaTime(po);
-totalSQLTime 'Внутреннее время выполнения SQL' (ProfileObject po) = downTotalSQLTime(po) (-) upTotalSQLTime(po);
+callCount 'Количество вызовов' = GROUP SUM totalTimeNoWait(ProfileObject down, ProfileObject up, User u, ProfileForm f) IF inFilter(u, f) BY up, down;
+
+totalTimeNoWait 'Время вызова' = GROUP SUM totalTimeNoWait(ProfileObject down, ProfileObject up, User u, ProfileForm f) IF inFilter(u, f) BY up, down;
+totalJavaTime 'Время Java вызова' = GROUP SUM totalJavaTime(ProfileObject down, ProfileObject up, User u, ProfileForm f) IF inFilter(u, f) BY up, down;
+totalSQLTime 'Время SQL вызова' = GROUP SUM mTotalSQLTime(ProfileObject down, ProfileObject up, User u, ProfileForm f) IF inFilter(u, f) BY up, down;        
+
+downTotalTimeNoWait 'Общее время' = GROUP SUM totalTimeNoWait(ProfileObject up, ProfileObject down) BY down;
+downTotalJavaTime 'Общее время Java' = GROUP SUM totalJavaTime(ProfileObject up, ProfileObject down) BY down;
+downTotalSQLTime 'Общее время SQL' = GROUP SUM totalSQLTime(ProfileObject up, ProfileObject down) BY down;
+
+upTotalTimeNoWait 'Время вызванных' = GROUP SUM totalTimeNoWait(ProfileObject up, ProfileObject down) BY up;
+upTotalJavaTime 'Время вызванных Java' = GROUP SUM totalJavaTime(ProfileObject up, ProfileObject down) BY up;
+upTotalSQLTime 'Время вызванных SQL' = GROUP SUM totalSQLTime(ProfileObject up, ProfileObject down) BY up;
+
+totalTimeNoWait 'Внутреннее время' (ProfileObject po) = downTotalTimeNoWait(po) (-) upTotalTimeNoWait(po);
+totalJavaTime 'Внутреннее время Java' (ProfileObject po) = downTotalJavaTime(po) (-) upTotalJavaTime(po);
+totalSQLTime 'Внутреннее время SQL' (ProfileObject po) = downTotalSQLTime(po) (-) upTotalSQLTime(po);
 
 dataSelectedTop = DATA LOCAL ProfileObject();
 selectedTop = OVERRIDE ProfileObject.top, dataSelectedTop();
 nameSelectedTop 'Действие' = VARSTRING[1000](text(selectedTop()));
 
+pathTo(ProfileObject a, ProfileObject b) = RECURSION a AS ProfileObject == b STEP TRUE IF totalTimeNoWait($b, b); // из a можно дойти в b
+pathFrom(ProfileObject a, ProfileObject b) = RECURSION a AS ProfileObject == b STEP TRUE IF totalTimeNoWait(b, $b); // из a можно дойти в b
+
 parent(ProfileObject down) = IF NOT down == selectedTop() THEN 
         OVERRIDE ProfileObject.top IF down IS ProfileObject, 
-            [=GROUP LAST ProfileObject up IF callCount(ProfileObject down, up, User u, ProfileForm f) AND inFilter(f) AND inFilter(u) BY down ORDER downTotalTimeNoWait(down)](down);
+            [=GROUP LAST ProfileObject up IF totalTimeNoWait(up, ProfileObject down) AND pathTo(selectedTop(), up) BY down ORDER totalTimeNoWait(up, down)](down);
         
-allChild = GROUP LAST ProfileObject down IF callCount(down, ProfileObject up, User u, ProfileForm f) AND inFilter(f) AND inFilter(u) BY up ORDER upTotalTimeNoWait(up);
-
-child(ProfileObject up) = IF NOT allChild(up) == selectedTop() THEN 
-        OVERRIDE ProfileObject.top IF up IS ProfileObject, 
-            allChild(up);
+child(ProfileObject up) = IF NOT up == selectedTop() THEN 
+        OVERRIDE ProfileObject.top IF up IS ProfileObject,
+            [=GROUP LAST ProfileObject down IF totalTimeNoWait(ProfileObject up, down) AND pathFrom(selectedTop(), down) BY up ORDER totalTimeNoWait(up, down)](up);
         
 FORM profiler 'Профилировщик'
     PROPERTIES() startProfiler, stopProfiler 
