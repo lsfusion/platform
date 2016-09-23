@@ -655,6 +655,8 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
     }
 
     public <K extends BaseExpr, T> T calculateCost(ImSet<K> groups, QueryJoin join, boolean needNotNulls, final KeyStat keyStat, final StatType type, CostResult<T> result) {
+        // вообще по хорошему надо сделать переборный жадняк, то есть выбрать ребра с минимальной суммой из costReduce + cost (то есть важно и то и то), и искуственно повышать приоритет соединения node'ов (чтобы они соединялись в самом конце), решит проблему 0-5-0-0-5-0
+
         final MAddMap<BaseJoin, Stat> joinStats = MapFact.mAddOverrideMap();
         final MAddMap<BaseJoin, DistinctKeys> keyDistinctStats = MapFact.mAddOverrideMap();
         final MAddMap<BaseExpr, PropStat> exprStats = MapFact.mAddOverrideMap();

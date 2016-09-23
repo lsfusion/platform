@@ -7,10 +7,9 @@ import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.Settings;
-import lsfusion.server.caches.AbstractTranslateValues;
 import lsfusion.server.data.*;
 import lsfusion.server.data.expr.query.GroupType;
-import lsfusion.server.data.translator.MapValuesTranslate;
+import lsfusion.server.data.expr.query.RecursiveTable;
 import lsfusion.server.data.type.ArrayClass;
 import lsfusion.server.data.type.ConcatenateType;
 import lsfusion.server.data.type.Type;
@@ -35,6 +34,7 @@ public class StaticExecuteEnvironmentImpl extends TwinImmutableObject implements
         this.groupAggOrders = env.groupAggOrders;
         this.typeFuncs = env.typeFuncs;
         this.arrayClasses = env.arrayClasses;
+        this.usedRecursiveTables = env.usedRecursiveTables;
         finalized = false;
     }
 
@@ -63,6 +63,8 @@ public class StaticExecuteEnvironmentImpl extends TwinImmutableObject implements
         arrayClasses = SetFact.EMPTY();
         typeFuncs = SetFact.EMPTY();
 
+        usedRecursiveTables = SetFact.EMPTY();
+
         this.finalized = finalized;
     }
 
@@ -74,6 +76,8 @@ public class StaticExecuteEnvironmentImpl extends TwinImmutableObject implements
     private ImSet<ConcatenateType> concTypes;
     private ImSet<Type> safeCastTypes;
     private ImSet<Pair<GroupType, ImList<Type>>> groupAggOrders;
+
+    private ImSet<RecursiveTable> usedRecursiveTables;
 
     private ImSet<Pair<TypeFunc, Type>> typeFuncs;
 
@@ -96,6 +100,20 @@ public class StaticExecuteEnvironmentImpl extends TwinImmutableObject implements
         groupAggOrders = groupAggOrders.merge(envImpl.groupAggOrders);
         arrayClasses = arrayClasses.merge(envImpl.arrayClasses);
         typeFuncs = typeFuncs.merge(envImpl.typeFuncs);
+
+        usedRecursiveTables = usedRecursiveTables.merge(envImpl.usedRecursiveTables);
+    }
+
+    public void addUsedRecursiveTable(RecursiveTable table) {
+        assert !finalized;
+
+        usedRecursiveTables = usedRecursiveTables.merge(table);
+    }
+
+    public void removeUsedRecursiveTable(RecursiveTable table) {
+        assert !finalized;
+
+        usedRecursiveTables = usedRecursiveTables.removeIncl(table); // по идее не может исчезнуть STEP вообще
     }
 
     public void addNoReadOnly() {
@@ -216,6 +234,13 @@ public class StaticExecuteEnvironmentImpl extends TwinImmutableObject implements
         }
         if(volatileStats || command.length() > Settings.get().getCommandLengthVolatileStats())
             sqlSession.popVolatileStats(owner);
+    }
+
+    @Override
+    public boolean hasUsedRecursiveTable() {
+        assert finalized;
+
+        return !usedRecursiveTables.isEmpty();
     }
 
     public boolean hasRecursion() {

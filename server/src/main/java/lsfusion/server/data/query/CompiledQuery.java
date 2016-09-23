@@ -586,6 +586,10 @@ public class CompiledQuery<K,V> extends ImmutableObject {
             }
 
             public String getSource() {
+                RecursiveTable recursiveTable = innerJoin.getRecursiveTable();
+                if(recursiveTable != null)
+                    env.addUsedRecursiveTable(recursiveTable);
+
                 return innerJoin.getQueryName(InnerSelect.this);
             }
 
@@ -1194,7 +1198,8 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                 if(wrapStep) // чтобы избавляться от проблем с 2-м использованием
                     stepWhere = SubQueryExpr.create(stepWhere.and(wrapClassWhere));
 
-                final Join<String> recJoin = tableJoin.getRecJoin(propTypes, tableName, keyNames, adjustStat);
+                Result<RecursiveTable> recursiveTable = new Result<>();
+                final Join<String> recJoin = tableJoin.getRecJoin(propTypes, tableName, keyNames, adjustStat, recursiveTable);
 
                 ImMap<String, Expr> stepExprs;
                 if(isLogical) {
@@ -1233,7 +1238,14 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                 } else
                     recWhere = recJoin.getWhere();
 
-                return getSelect(keyNames, stepExprs, columnTypes, stepWhere.and(recWhere), keyOrder, propOrder, useRecursionFunction, true, innerParams, pushContext, baseCost, subQueries, mSubEnv);
+                MStaticExecuteEnvironment mSubSelectEnv = StaticExecuteEnvironmentImpl.mEnv();
+
+                String result = getSelect(keyNames, stepExprs, columnTypes, stepWhere.and(recWhere), keyOrder, propOrder, useRecursionFunction, true, innerParams, pushContext, baseCost, subQueries, mSubSelectEnv);
+
+                mSubSelectEnv.removeUsedRecursiveTable(recursiveTable.result);
+                mSubEnv.add(mSubSelectEnv.finish());
+
+                return result;
             }
 
             private SQLQuery getCTESource(boolean wrapExpr) {

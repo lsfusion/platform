@@ -181,7 +181,7 @@ public class RecursiveJoin extends QueryJoin<KeyExpr, RecursiveJoin.Query, Recur
         int iterations = 0; int maxStatsIterations = Settings.get().getMaxRecursionStatsIterations();
         while(!recClasses.isFalse() && !(mCheckedClasses.add(recClasses) && (iterations >= maxStatsIterations || mCheckedStats.add(recStats)))) {
             Where recWhere = stepWhere.and(getRecJoin(MapFact.<String, Type>EMPTY(), "recursivetable", genKeyNames(),
-                    recClasses, recStats, null).getWhere());
+                    recClasses, recStats, null, null).getWhere());
             if(!recWhere.isFalse()) // значит будет еще итерация
                 onlyInitial = false;
             recClasses = getClassWhere(recWhere);
@@ -195,12 +195,12 @@ public class RecursiveJoin extends QueryJoin<KeyExpr, RecursiveJoin.Query, Recur
     }
 
     // для recursive join статистика рекурсивной таблицы делается заведомо маленькой, так как после первых операций, как правило рекурсия начинает сходится и количество записей начинает резко падать
-    public Join<String> getRecJoin(ImMap<String, Type> props, String name, ImRevMap<String, KeyExpr> keyNames, Stat adjustStat) {
+    public Join<String> getRecJoin(ImMap<String, Type> props, String name, ImRevMap<String, KeyExpr> keyNames, Stat adjustStat, Result<RecursiveTable> recursiveTable) {
         StatKeys<KeyExpr> statKeys = getStatKeys(StatType.ADJUST_RECURSION);
-        return getRecJoin(props, name, keyNames, getClassWhere(), statKeys, adjustStat);
+        return getRecJoin(props, name, keyNames, getClassWhere(), statKeys, adjustStat, recursiveTable);
     }
 
-    public Join<String> getRecJoin(ImMap<String, Type> props, String name, ImRevMap<String, KeyExpr> keyNames, final ClassExprWhere classWhere, StatKeys<KeyExpr> statKeys, Stat adjustStat) {
+    public Join<String> getRecJoin(ImMap<String, Type> props, String name, ImRevMap<String, KeyExpr> keyNames, final ClassExprWhere classWhere, StatKeys<KeyExpr> statKeys, Stat adjustStat, Result<RecursiveTable> rRecTable) {
 
         // генерируем поля таблицы
         ImRevMap<KeyField, KeyExpr> recKeys = keyNames.mapRevKeys(new GetKeyValue<KeyField, KeyExpr, String>() {
@@ -217,6 +217,8 @@ public class RecursiveJoin extends QueryJoin<KeyExpr, RecursiveJoin.Query, Recur
             tableStatKeys = tableStatKeys.decrease(adjustStat);
         RecursiveTable recTable = new RecursiveTable(name, recKeys.keys(), recProps.valuesSet(),
                 classWhere.mapClasses(recKeys), tableStatKeys);
+        if(rRecTable != null)
+            rRecTable.set(recTable);
 
         return new RemapJoin<>(recTable.join(recKeys.join(getFullMapIterate())), recProps); // mapp'им на предыдушие ключи
     }
