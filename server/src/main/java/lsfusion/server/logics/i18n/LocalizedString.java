@@ -10,9 +10,9 @@ import java.util.Locale;
  *  Описание формата:<br>
  *  Каждая подстрока, которую нужно интернационализировать, должна быть указана с помощью идентификатора, заключенного
  *  в фигурные скобки. Идентификатор может содержать любые символы кроме разделителей (пробелы, табуляции, переводы строк).
- *  При необходимости включить в строку фигурную скобку ее нужно экранировать с помощью обратного слэша, сам обратный слэш
- *  также экранируется с помощью еще одного обратного слэша. Если идентификатор не будет найден, то в качестве 
- *  результата будет принят сам идентификатор.
+ *  При необходимости включить в строку фигурную скобку, ее нужно экранировать с помощью обратного слэша. При необходимости 
+ *  включить в строку обратный слэш, он должен экранироваться с помощью еще одного обратного слэша.
+ *  Если идентификатор не будет найден, то в качестве результата будет принят сам идентификатор.
  *  <br><br>
  *  Пример строки в правильном формате:<br>
  *  "{main.firstID} - \\{Not an ID\\} {main.secondID}"    
@@ -73,13 +73,13 @@ public class LocalizedString {
         return source;
     }
 
-    public static class I18NError extends Exception {
-        public I18NError(String text) {
+    public static class FormatError extends Exception {
+        public FormatError(String text) {
             super(text);
         }
     }
 
-    public static void checkLocalizedStringFormat(String s) throws I18NError {
+    public static void checkLocalizedStringFormat(String s) throws FormatError {
         boolean insideKey = false;
         boolean keyIsEmpty = true;
         for (int i = 0; i < s.length(); i++) {
@@ -94,27 +94,27 @@ public class LocalizedString {
                 ++i;
             } else if (ch == CLOSE_CH) {
                 if (!insideKey) {
-                    throw new I18NError(String.format("invalid character '%c', should be escaped with '\\'", CLOSE_CH));
+                    throw new FormatError(String.format("invalid character '%c', should be escaped with '\\'", CLOSE_CH));
                 } else if (keyIsEmpty) {
-                    throw new I18NError("empty key is forbidden");
+                    throw new FormatError("empty key is forbidden");
                 } else {
                     insideKey = false;
                 }
             } else if (ch == OPEN_CH) {
                 if (insideKey) {
-                    throw new I18NError(String.format("invalid character '%c', should be escaped with '\\'", OPEN_CH));
+                    throw new FormatError(String.format("invalid character '%c', should be escaped with '\\'", OPEN_CH));
                 } else {
                     insideKey = true;
                     keyIsEmpty = true;
                 }
             } else if (insideKey && Character.isWhitespace(s.charAt(i))) {
-                throw new I18NError("any whitespace is forbidden inside key");
+                throw new FormatError("any whitespace is forbidden inside key");
             } else if (insideKey) {
                 keyIsEmpty = false;
             }
         }
         if (insideKey) {
-            throw new I18NError(String.format("key was not closed with '%c'", CLOSE_CH));
+            throw new FormatError(String.format("key was not closed with '%c'", CLOSE_CH));
         }
     }
     
@@ -128,13 +128,22 @@ public class LocalizedString {
         if (!(obj instanceof LocalizedString)) return false;
         return source.equals(((LocalizedString)obj).source);
     }
-    
-    public static LocalizedString createChecked(String source) throws I18NError {
+
+    /**
+     * Создает LocalizedString с проверкой на корректность (соответствие формату) 
+     */
+    public static LocalizedString createChecked(String source) throws FormatError {
+        if (source == null) {
+            return null;
+        }
         checkLocalizedStringFormat(source);
         return create(source);
         
     }
 
+    /**
+     * Создает LocalizedString без проверки на корректность  
+     */
     public static LocalizedString create(String source) {
         if (source == null) {
             return null;
@@ -142,8 +151,10 @@ public class LocalizedString {
         return new LocalizedString(source);
     }
     
-    
-    public static LocalizedString createFromSimpleString(String source) {
+    /**
+     * Создает LocalisedString из строки, в которой не предполагается локализация и могут быть неэкранированные символы фигурных скобок 
+     */
+    public static LocalizedString createEscaped(String source) {
         if (source == null) {
             return null;
         }

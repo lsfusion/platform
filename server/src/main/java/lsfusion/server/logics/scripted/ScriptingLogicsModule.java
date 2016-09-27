@@ -236,7 +236,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     public LocalizedString transformLocalizedStringLiteral(String s) throws ScriptingErrorLog.SemanticErrorException {
         try {
             return ScriptedStringUtils.transformLocalizedStringLiteral(s);
-        } catch (ScriptedStringUtils.TransformationError | LocalizedString.I18NError e) {
+        } catch (ScriptedStringUtils.TransformationError | LocalizedString.FormatError e) {
             errLog.emitSimpleError(parser, e.getMessage());
         }
         return null;

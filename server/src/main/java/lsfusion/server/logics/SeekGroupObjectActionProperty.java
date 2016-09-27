@@ -22,7 +22,7 @@ public class SeekGroupObjectActionProperty extends ScriptingActionProperty {
     private boolean last;
 
     public SeekGroupObjectActionProperty(ScriptingLogicsModule lm, GroupObjectEntity groupObject, List<ObjectEntity> objects, boolean last, ValueClass... classes) {
-        super(lm, LocalizedString.createFromSimpleString("Найти объект (" + groupObject.getSID() + ")"), classes);
+        super(lm, LocalizedString.createEscaped("Найти объект (" + groupObject.getSID() + ")"), classes);
 
         this.groupObject = groupObject;
         this.objects = objects;

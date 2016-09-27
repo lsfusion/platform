@@ -27,7 +27,7 @@ public class PropertyFormEntity<T extends BusinessLogics<T>> extends FormEntity<
         
         ImRevMap<P, ObjectEntity> mapObjects = interfaceClasses.mapRevValues(new GetValue<ObjectEntity, ValueClass>() {
             public ObjectEntity getMapValue(ValueClass value) {
-                return new ObjectEntity(genID(), value, LocalizedString.createFromSimpleString(value.toString()));
+                return new ObjectEntity(genID(), value, LocalizedString.createEscaped(value.toString()));
             }});
 
         GroupObjectEntity groupObject = new GroupObjectEntity(genID(), mapObjects.valuesSet().toOrderSet(), prev);

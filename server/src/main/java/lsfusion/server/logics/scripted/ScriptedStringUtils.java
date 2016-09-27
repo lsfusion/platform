@@ -38,7 +38,7 @@ public class ScriptedStringUtils {
         return b.toString();
     }
 
-    public static LocalizedString transformLocalizedStringLiteral(String s) throws TransformationError, LocalizedString.I18NError {
+    public static LocalizedString transformLocalizedStringLiteral(String s) throws TransformationError, LocalizedString.FormatError {
         StringBuilder b = new StringBuilder();
         for (int i = 1; i+1 < s.length(); i++) {
             if (s.charAt(i) == '\\') {
