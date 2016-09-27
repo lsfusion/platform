@@ -25,11 +25,9 @@ import lsfusion.server.form.navigator.NavigatorElement;
 import lsfusion.server.lifecycle.LifecycleEvent;
 import lsfusion.server.lifecycle.LogicsManager;
 import lsfusion.server.logics.linear.LP;
-import lsfusion.server.logics.property.*;
-import lsfusion.server.logics.property.actions.FormActionProperty;
-import lsfusion.server.logics.property.actions.flow.JoinActionProperty;
-import lsfusion.server.logics.property.actions.flow.ListActionProperty;
-import lsfusion.server.logics.property.actions.flow.NewSessionActionProperty;
+import lsfusion.server.logics.property.ActionProperty;
+import lsfusion.server.logics.property.ActionPropertyMapImplement;
+import lsfusion.server.logics.property.Property;
 import lsfusion.server.session.DataSession;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
@@ -112,27 +110,18 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
             readOnlyPolicy.cls.edit.add.defaultPermission = false;
             readOnlyPolicy.cls.edit.change.defaultPermission = false;
             readOnlyPolicy.cls.edit.remove.defaultPermission = false;
-            readOnlyPolicy.property.change.permit(LM.getFormClose().property);
-            readOnlyPolicy.property.change.permit(LM.getFormOk().property);
-            readOnlyPolicy.property.change.permit(LM.getFormRefresh().property);
-            readOnlyPolicy.property.change.permit(LM.getFormDrop().property);
             
             for (Property property : businessLogics.getProperties()) {
-                if (property instanceof FormActionProperty) {
-                    checkProperty(property, property);
-                } else if (property instanceof JoinActionProperty) {
-                    checkProperty(property, ((JoinActionProperty) property).action.property);
-                } else if (property instanceof ListActionProperty) {
-                    for (ActionPropertyMapImplement<?, PropertyInterface> action : ((ListActionProperty) property).getActions()) {
-                        checkProperty(property, action.property);
-                    }
-                } else if (property instanceof NewSessionActionProperty) {
-                    readOnlyPolicy.property.view.deny(property);
-                } else if (property.ignoreReadOnlyPolicy()) {
+                if (property.ignoreReadOnlyPolicy()) {
                     readOnlyPolicy.property.change.permit(property);
                     ActionPropertyMapImplement changeAction = property.getEditAction("change");
                     if (changeAction != null) {
                         readOnlyPolicy.property.change.permit(changeAction.property);
+                    }
+                } else {
+                    readOnlyPolicy.property.change.deny(property);
+                    if (property instanceof ActionProperty) {
+                        readOnlyPolicy.property.view.deny(property);
                     }
                 }
             }
@@ -141,15 +130,6 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
             allowConfiguratorPolicy.configurator = true;
         } catch (SQLException | SQLHandledException e) {
             throw new RuntimeException("Error initializing Security Manager: ", e);
-        }
-    }
-
-    private void checkProperty(Property parentProperty, Property property) {
-        if(property instanceof FormActionProperty && ((FormActionProperty)property).getPrintType() != null) {
-            readOnlyPolicy.property.change.permit(parentProperty);
-        } else {
-            readOnlyPolicy.property.change.deny(parentProperty);
-            readOnlyPolicy.property.view.deny(parentProperty);
         }
     }
 

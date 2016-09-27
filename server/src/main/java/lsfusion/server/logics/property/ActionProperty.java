@@ -542,6 +542,11 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
     }
 
     @Override
+    public boolean ignoreReadOnlyPolicy() {
+        return true;
+    }
+
+    @Override
     public boolean isSetNotNull() {
         return false;
     }

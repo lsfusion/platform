@@ -5,7 +5,10 @@ import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
-import lsfusion.server.logics.property.*;
+import lsfusion.server.logics.property.CalcPropertyMapImplement;
+import lsfusion.server.logics.property.ClassPropertyInterface;
+import lsfusion.server.logics.property.ExecutionContext;
+import lsfusion.server.logics.property.IsClassProperty;
 import lsfusion.server.logics.property.actions.flow.ChangeFlowType;
 import lsfusion.server.logics.property.actions.flow.FlowResult;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
@@ -56,5 +59,10 @@ public abstract class ExplicitActionProperty extends BaseActionProperty<ClassPro
     @Override
     public boolean hasFlow(ChangeFlowType type) {
         return type == ChangeFlowType.VOLATILE && isVolatile();
+    }
+
+    @Override
+    public boolean ignoreReadOnlyPolicy() {
+        return false;
     }
 }

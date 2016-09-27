@@ -41,4 +41,9 @@ public class LazyActionProperty extends SystemExplicitActionProperty {
         
         evaluatedProperty.execute(context, dataObjects.toArray(new DataObject[dataObjects.size()]));
     }
+
+    @Override
+    public boolean ignoreReadOnlyPolicy() {
+        return true;
+    }
 }

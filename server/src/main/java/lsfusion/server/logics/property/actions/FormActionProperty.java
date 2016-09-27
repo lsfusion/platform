@@ -272,4 +272,9 @@ public class FormActionProperty extends SystemExplicitActionProperty {
             }
         }
     }
+
+    @Override
+    public boolean ignoreReadOnlyPolicy() {
+        return !isAdd;
+    }
 }

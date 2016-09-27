@@ -25,4 +25,9 @@ public class DropActionProperty extends FormToolbarActionProperty {
     protected LCP getShowIf() {
         return showIf;
     }
+
+    @Override
+    public boolean ignoreReadOnlyPolicy() {
+        return true;
+    }
 }

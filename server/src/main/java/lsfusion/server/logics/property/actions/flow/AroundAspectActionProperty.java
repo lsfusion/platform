@@ -58,4 +58,9 @@ public abstract class AroundAspectActionProperty extends KeepContextActionProper
     public CalcPropertyMapImplement<?, PropertyInterface> calcWhereProperty() {
         return aspectActionImplement.mapCalcWhereProperty();
     }
+
+    @Override
+    public boolean ignoreReadOnlyPolicy() {
+        return aspectActionImplement.property.ignoreReadOnlyPolicy();
+    }
 }

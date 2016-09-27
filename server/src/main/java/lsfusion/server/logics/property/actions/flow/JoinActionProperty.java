@@ -128,4 +128,9 @@ public class JoinActionProperty<T extends PropertyInterface> extends KeepContext
             return super.getDelegationType(modifyContext);
         return ActionDelegationType.IN_DELEGATE;
     }
+
+    @Override
+    public boolean ignoreReadOnlyPolicy() {
+        return action.property.ignoreReadOnlyPolicy();
+    }
 }

@@ -17,4 +17,9 @@ public class RefreshActionProperty extends FormToolbarActionProperty {
         if (context.getFormInstance() != null)
             context.getFormInstance().formRefresh();
     }
+
+    @Override
+    public boolean ignoreReadOnlyPolicy() {
+        return true;
+    }
 }
