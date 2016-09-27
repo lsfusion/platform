@@ -1,9 +1,11 @@
 package lsfusion.gwt.form.server.convert;
 
 import lsfusion.client.logics.classes.*;
+import lsfusion.client.logics.classes.link.*;
 import lsfusion.gwt.form.server.FileUtils;
 import lsfusion.gwt.form.shared.view.GExtInt;
 import lsfusion.gwt.form.shared.view.classes.*;
+import lsfusion.gwt.form.shared.view.classes.link.*;
 
 import javax.activation.MimetypesFileTypeMap;
 import java.io.IOException;
@@ -120,6 +122,43 @@ public class ClientTypeToGwtConverter extends ObjectConverter {
     @Converter(from = ClientDynamicFormatFileClass.class)
     public GCustomDynamicFormatFileType convertCustomDynamicFormatClass(ClientDynamicFormatFileClass customClass) {
         return initializeFileClass(customClass, new GCustomDynamicFormatFileType());
+    }
+
+    @Converter(from = ClientPDFLinkClass.class)
+    public GPDFLinkType convertPDFClass(ClientPDFLinkClass pdfClass) {
+        return initializeLinkClass(pdfClass, new GPDFLinkType());
+    }
+
+    @Converter(from = ClientImageLinkClass.class)
+    public GImageLinkType convertImageClass(ClientImageLinkClass imageClass) {
+        return initializeLinkClass(imageClass, new GImageLinkType());
+    }
+
+    @Converter(from = ClientWordLinkClass.class)
+    public GWordLinkType convertWordLinkClass(ClientWordLinkClass wordClass) {
+        return initializeLinkClass(wordClass, new GWordLinkType());
+    }
+
+    @Converter(from = ClientExcelLinkClass.class)
+    public GExcelLinkType convertExcelClass(ClientExcelLinkClass excelClass) {
+        return initializeLinkClass(excelClass, new GExcelLinkType());
+    }
+
+    @Converter(from = ClientCustomStaticFormatLinkClass.class)
+    public GCustomStaticFormatLinkType convertCustomStaticFormatLinkClass(ClientCustomStaticFormatLinkClass customClass) {
+        GCustomStaticFormatLinkType customFormatLinkType = initializeLinkClass(customClass, new GCustomStaticFormatLinkType());
+        customFormatLinkType.description = customClass.filterDescription;
+        return customFormatLinkType;
+    }
+
+    @Converter(from = ClientDynamicFormatLinkClass.class)
+    public GCustomDynamicFormatLinkType convertCustomDynamicFormatClass(ClientDynamicFormatLinkClass customClass) {
+        return initializeLinkClass(customClass, new GCustomDynamicFormatLinkType());
+    }
+
+    private <T extends GLinkType> T initializeLinkClass(ClientLinkClass clientLinkClass, T linkClass) {
+        linkClass.multiple = clientLinkClass.multiple;
+        return linkClass;
     }
 
     @Converter(from = ClientStringClass.class)

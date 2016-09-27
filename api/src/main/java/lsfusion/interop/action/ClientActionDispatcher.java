@@ -56,4 +56,6 @@ public interface ClientActionDispatcher {
     void execute(FocusClientAction action);
 
     void execute(ExceptionClientAction action);
+
+    String execute(LoadLinkClientAction action);
 }

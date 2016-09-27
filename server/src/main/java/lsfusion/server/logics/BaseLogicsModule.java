@@ -155,6 +155,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     public LCP overrideFocusedCellBorderColor;
 
     public LCP reportRowHeight, reportCharWidth, reportToStretch;
+
+    public LCP networkPath;
     
     public ObjectValuePropertySet objectValue;
 
@@ -409,6 +411,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         reportRowHeight = findProperty("reportRowHeight[]");
         reportCharWidth = findProperty("reportCharWidth[]");
         reportToStretch = findProperty("reportToStretch[]");
+
+        networkPath = findProperty("networkPath[]");
         
         // Настройка форм
         defaultBackgroundColor = findProperty("defaultBackgroundColor[]");

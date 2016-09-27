@@ -156,6 +156,11 @@ META defineAnyValue(name, param)
     name##PdfFile = DATA LOCAL PDFFILE (param);
     name##CustomFile = DATA LOCAL CUSTOMFILE (param);
     name##ExcelFile = DATA LOCAL EXCELFILE (param);
+    name##WordLink = DATA LOCAL WORDLINK (param);
+    name##ImageLink = DATA LOCAL IMAGELINK (param);
+    name##PdfLink = DATA LOCAL PDFLINK (param);
+    name##CustomLink = DATA LOCAL CUSTOMLINK (param);
+    name##ExcelLink = DATA LOCAL EXCELLINK (param);    
 END
 
 @defineAnyValue(requested, );
@@ -183,6 +188,21 @@ END
 @applicationForm(options, 'Настройки');
 @applicationForm(integrationData, 'Интеграция');
 @applicationForm(migrationData, 'Миграция');
+
+networkPath 'Сетевой путь' = DATA LOCAL VARSTRING[255] ();
+loadNetworkPath 'Загрузить' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.LoadLinkActionProperty' ();
+FORM networkPathForm 'Выбор сетевого пути'
+    PROPERTIES() networkPath, loadNetworkPath;
+
+META defineLinkDialog (object, class)
+    dialog###object(class o) = ACTION {
+        networkPath() <- VARSTRING[255] (object(o));
+        FORM networkPathForm MODAL;
+        IF formResult() == FormResult.ok THEN {
+            object(o) <- IMAGELINK (networkPath()); 
+        }
+    } ASON CHANGE object[class];
+END
 
 WINDOW root 'Корень' TOOLBAR HORIZONTAL POSITION(0, 0, 100, 6) VALIGN (CENTER) HIDETITLE HIDESCROLLBARS;
 WINDOW toolbar 'Тулбар' TOOLBAR VERTICAL POSITION(0, 6, 20, 64) HIDETITLE;

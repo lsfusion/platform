@@ -1,6 +1,7 @@
 package lsfusion.client.logics.classes;
 
 import lsfusion.base.ExtInt;
+import lsfusion.client.logics.classes.link.*;
 import lsfusion.interop.Data;
 
 import java.io.ByteArrayInputStream;
@@ -72,6 +73,13 @@ public class ClientTypeSerializer {
         if (type == Data.EXCEL) return new ClientExcelClass(inStream.readBoolean(), inStream.readBoolean());
         if (type == Data.DYNAMICFORMATFILE) return new ClientDynamicFormatFileClass(inStream.readBoolean(), inStream.readBoolean());
         if (type == Data.CUSTOMSTATICFORMATFILE) return ClientCustomStaticFormatFileClass.deserialize(inStream);
+
+        if (type == Data.PDFLINK) return new ClientPDFLinkClass(inStream.readBoolean());
+        if (type == Data.IMAGELINK) return new ClientImageLinkClass(inStream.readBoolean());
+        if (type == Data.WORDLINK) return new ClientWordLinkClass(inStream.readBoolean());
+        if (type == Data.EXCELLINK) return new ClientExcelLinkClass(inStream.readBoolean());
+        if (type == Data.DYNAMICFORMATLINK) return new ClientDynamicFormatLinkClass(inStream.readBoolean());
+        if (type == Data.CUSTOMSTATICFORMATLINK) return ClientCustomStaticFormatLinkClass.deserialize(inStream);
 
         if (type == Data.ACTION) return ClientActionClass.instance;
 

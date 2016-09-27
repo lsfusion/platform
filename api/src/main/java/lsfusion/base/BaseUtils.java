@@ -2081,6 +2081,11 @@ public class BaseUtils {
         return extension;
     }
 
+    public static String getFileExtension(String filename) {
+        int index = filename.lastIndexOf(".");
+        return (index == -1) ? "" : filename.substring(index + 1);
+    }
+
     public static byte[] filesToBytes(boolean multiple, boolean storeName, boolean custom, File... files) throws IOException {
         ByteArrayOutputStream byteOutStream = new ByteArrayOutputStream();
         DataOutputStream outStream = new DataOutputStream(byteOutStream);

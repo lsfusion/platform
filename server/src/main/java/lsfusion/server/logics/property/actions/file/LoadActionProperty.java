@@ -29,7 +29,7 @@ public class LoadActionProperty extends SystemExplicitActionProperty {
     }
 
     protected DataClass getReadType() {
-        return (FileClass) fileProperty.property.getType();
+        return (DataClass) fileProperty.property.getType();
     }
 
     @Override

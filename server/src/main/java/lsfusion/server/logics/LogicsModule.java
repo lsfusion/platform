@@ -1572,7 +1572,12 @@ public abstract class LogicsModule {
                 getLCPByName(sidPrefix + "ImageFile"),
                 getLCPByName(sidPrefix + "PdfFile"),
                 getLCPByName(sidPrefix + "CustomFile"),
-                getLCPByName(sidPrefix + "ExcelFile")
+                getLCPByName(sidPrefix + "ExcelFile"),
+                getLCPByName(sidPrefix + "WordLink"),
+                getLCPByName(sidPrefix + "ImageLink"),
+                getLCPByName(sidPrefix + "PdfLink"),
+                getLCPByName(sidPrefix + "CustomLink"),
+                getLCPByName(sidPrefix + "ExcelLink")
         );
     }
 

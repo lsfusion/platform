@@ -218,4 +218,10 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
     @Override
     public void execute(GActivateTabAction action) {
     }
+
+    //todo: по идее, action должен заливать куда-то в сеть выбранный локально файл
+    @Override
+    public String execute(GLoadLinkAction action) {
+        return null;
+    }
 }

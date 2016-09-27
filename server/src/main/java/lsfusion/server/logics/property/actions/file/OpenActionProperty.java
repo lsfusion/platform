@@ -4,9 +4,13 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.interop.action.OpenFileClientAction;
+import lsfusion.interop.action.OpenUriClientAction;
+import lsfusion.server.classes.DataClass;
 import lsfusion.server.classes.DynamicFormatFileClass;
 import lsfusion.server.classes.FileClass;
 import lsfusion.server.classes.StaticFormatFileClass;
+import lsfusion.server.classes.link.DynamicFormatLinkClass;
+import lsfusion.server.classes.link.LinkClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.view.DefaultFormView;
 import lsfusion.server.form.view.PropertyDrawView;
@@ -18,6 +22,8 @@ import lsfusion.server.logics.property.ClassType;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.actions.SystemExplicitActionProperty;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.sql.SQLException;
 
 /**
@@ -42,8 +48,8 @@ public class OpenActionProperty extends SystemExplicitActionProperty {
         return MapFact.<CalcProperty, Boolean>singleton(fileProperty.property, false);
     }
 
-    private FileClass getFileClass() {
-        return (FileClass) fileProperty.property.getType();
+    private DataClass getDataClass() {
+        return (DataClass) fileProperty.property.getType();
     }
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
@@ -51,12 +57,18 @@ public class OpenActionProperty extends SystemExplicitActionProperty {
         int i = 0; // здесь опять учитываем, что порядок тот же
         for (ClassPropertyInterface classInterface : interfaces)
             objects[i++] = context.getKeyValue(classInterface);
-        FileClass fileClass = getFileClass();
-        for(byte[] file : fileClass.getFiles(fileProperty.read(context, objects))) {
-            if (fileClass instanceof DynamicFormatFileClass)
-                context.delayUserInterfaction(new OpenFileClientAction(BaseUtils.getFile(file), BaseUtils.getExtension(file)));
-            else
-                context.delayUserInterfaction(new OpenFileClientAction(file, BaseUtils.firstWord(((StaticFormatFileClass) fileClass).getOpenExtension(file), ",")));
+        DataClass dataClass = getDataClass();
+        if(dataClass instanceof FileClass) {
+            for (byte[] file : ((FileClass)dataClass).getFiles(fileProperty.read(context, objects))) {
+                if (dataClass instanceof DynamicFormatFileClass)
+                    context.delayUserInterfaction(new OpenFileClientAction(BaseUtils.getFile(file), BaseUtils.getExtension(file)));
+                else
+                    context.delayUserInterfaction(new OpenFileClientAction(file, BaseUtils.firstWord(((StaticFormatFileClass) dataClass).getOpenExtension(file), ",")));
+            }
+        } else if (dataClass instanceof LinkClass) {
+            for (URI file : ((LinkClass) dataClass).getFiles(fileProperty.read(context, objects))) {
+                context.delayUserInterfaction(new OpenUriClientAction(file));
+            }
         }
     }
 
