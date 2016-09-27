@@ -1,6 +1,5 @@
 package lsfusion.server.classes;
 
-import lsfusion.base.BaseUtils;
 import lsfusion.base.ExtInt;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
@@ -29,6 +28,7 @@ import lsfusion.server.form.instance.DataObjectInstance;
 import lsfusion.server.form.instance.ObjectInstance;
 import lsfusion.server.form.view.report.ReportDrawField;
 import lsfusion.server.logics.DataObject;
+import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.IsClassProperty;
 import lsfusion.server.logics.property.group.AbstractGroup;
 import net.sf.jasperreports.engine.type.HorizontalAlignEnum;
@@ -39,19 +39,19 @@ import java.util.Random;
 
 public abstract class DataClass<T> extends AbstractType<T> implements StaticClass, FormulaClass, ValueClassSet, OrClassSet, ResolveClassSet {
     private static MAddExclMap<String, DataClass> sidToClass = MapFact.mBigStrongMap();
-    protected String caption;
+    protected LocalizedString caption;
 
     public static void storeClass(DataClass... classes) {
         for(DataClass cls : classes)
             sidToClass.exclAdd(cls.getSID(), cls);
     }
 
-    protected DataClass(String caption) {
+    protected DataClass(LocalizedString caption) {
         this.caption = caption;
     }
 
     @Override
-    public String getCaption() {
+    public LocalizedString getCaption() {
         return caption;
     }
 

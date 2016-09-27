@@ -20,6 +20,7 @@ import lsfusion.server.form.instance.Instantiable;
 import lsfusion.server.form.instance.PropertyDrawInstance;
 import lsfusion.server.form.view.DefaultFormView;
 import lsfusion.server.form.view.PropertyDrawView;
+import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.ActionPropertyMapImplement;
 import lsfusion.server.logics.property.Property;
@@ -44,7 +45,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 
     private String mouseBinding;
     private Map<KeyStroke, String> keyBindings;
-    private OrderedMap<String, String> contextMenuBindings;
+    private OrderedMap<String, LocalizedString> contextMenuBindings;
     private Map<String, ActionPropertyObjectEntity<?>> editActions;
 
     private boolean drawToToolbar = false;
@@ -200,7 +201,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         keyBindings.put(ks, actionSID);
     }
 
-    public void setContextMenuAction(String actionSID, String caption) {
+    public void setContextMenuAction(String actionSID, LocalizedString caption) {
         if (contextMenuBindings == null) {
             contextMenuBindings = new OrderedMap<>();
         }
@@ -215,13 +216,13 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     }
 
 
-    public OrderedMap<String, String> getContextMenuBindings() {
-        ImOrderMap<String, String> propertyContextMenuBindings = propertyObject.property.getContextMenuBindings();
+    public OrderedMap<String, LocalizedString> getContextMenuBindings() {
+        ImOrderMap<String, LocalizedString> propertyContextMenuBindings = propertyObject.property.getContextMenuBindings();
         if (propertyContextMenuBindings.isEmpty()) {
             return contextMenuBindings;
         }
 
-        OrderedMap<String, String> result = new OrderedMap<>();
+        OrderedMap<String, LocalizedString> result = new OrderedMap<>();
         for (int i = 0; i < propertyContextMenuBindings.size(); ++i) {
             result.put(propertyContextMenuBindings.getKey(i), propertyContextMenuBindings.getValue(i));
         }

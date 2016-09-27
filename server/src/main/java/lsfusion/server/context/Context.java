@@ -20,6 +20,7 @@ import lsfusion.server.form.navigator.LogInfo;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.LogicsInstance;
 import lsfusion.server.logics.ObjectValue;
+import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.DialogRequest;
 import lsfusion.server.logics.property.PullChangeProperty;
 import lsfusion.server.remote.RemoteForm;
@@ -28,6 +29,7 @@ import lsfusion.server.stack.ExecutionStackItem;
 
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Locale;
 
 public interface Context {
 
@@ -62,4 +64,7 @@ public interface Context {
     PropertyObjectInterfaceInstance getComputer(ExecutionStack stack);
     Integer getCurrentUser();
     DataObject getConnection();
+    
+    String localize(LocalizedString s);
+    Locale getLocale();
 }

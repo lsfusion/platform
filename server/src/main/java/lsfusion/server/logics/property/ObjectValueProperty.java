@@ -11,7 +11,7 @@ import lsfusion.server.form.entity.ObjectEntity;
 import lsfusion.server.form.entity.PropertyObjectInterfaceEntity;
 import lsfusion.server.form.view.DefaultFormView;
 import lsfusion.server.form.view.PropertyDrawView;
-import lsfusion.server.logics.ServerResourceBundle;
+import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.actions.ChangeReadObjectActionProperty;
 import lsfusion.server.logics.property.infer.ExClassSet;
 import lsfusion.server.logics.property.infer.InferType;
@@ -21,7 +21,7 @@ import lsfusion.server.session.PropertyChanges;
 public class ObjectValueProperty extends NoIncrementProperty<ClassPropertyInterface> {
 
     public ObjectValueProperty(ValueClass valueClass) {
-        super(ServerResourceBundle.getString("logics.object"), IsClassProperty.getInterfaces(new ValueClass[]{valueClass}));
+        super(LocalizedString.create("{logics.object}"), IsClassProperty.getInterfaces(new ValueClass[]{valueClass}));
 
         finalizeInit();
     }

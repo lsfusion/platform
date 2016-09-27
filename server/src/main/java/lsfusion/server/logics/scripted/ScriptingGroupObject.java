@@ -4,6 +4,7 @@ import lsfusion.interop.ClassViewType;
 import lsfusion.server.form.entity.ActionPropertyObjectEntity;
 import lsfusion.server.form.entity.GroupObjectEntity;
 import lsfusion.server.form.entity.UpdateType;
+import lsfusion.server.logics.i18n.LocalizedString;
 
 import java.util.List;
 
@@ -11,7 +12,7 @@ public class ScriptingGroupObject {
     String groupName;
     List<String> objects;
     List<String> classes;
-    List<String> captions;
+    List<LocalizedString> captions;
     List<ActionPropertyObjectEntity> events;
     ClassViewType viewType;
     boolean isInitType;
@@ -23,7 +24,7 @@ public class ScriptingGroupObject {
     GroupObjectEntity neighbourGroupObject;
     Boolean isRightNeighbour;
 
-    public ScriptingGroupObject(String name, List<String> objects, List<String> classes, List<String> captions, List<ActionPropertyObjectEntity> events) {
+    public ScriptingGroupObject(String name, List<String> objects, List<String> classes, List<LocalizedString> captions, List<ActionPropertyObjectEntity> events) {
         assert objects.size() == classes.size() && classes.size() == captions.size() && captions.size() == events.size();
 
         groupName = name;
@@ -33,7 +34,7 @@ public class ScriptingGroupObject {
         this.events = events;
     }
 
-    public ScriptingGroupObject(String name, List<String> objects, List<String> classes, List<String> captions, List<ActionPropertyObjectEntity> events, ClassViewType viewType, boolean isInitType) {
+    public ScriptingGroupObject(String name, List<String> objects, List<String> classes, List<LocalizedString> captions, List<ActionPropertyObjectEntity> events, ClassViewType viewType, boolean isInitType) {
         this(name, objects, classes, captions, events);
 
         this.viewType = viewType;

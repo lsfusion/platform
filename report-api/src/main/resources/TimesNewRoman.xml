@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <fontFamilies>
-
     <fontFamily name="lsf.TimesNewRoman">
         <normal>times.ttf</normal>
         <bold>timesbd.ttf</bold>
@@ -12,6 +11,4 @@
             <export key="net.sf.jasperreports.html">'Times New Roman',times,serif</export>
         </exportFonts>
     </fontFamily>
-
-
 </fontFamilies>

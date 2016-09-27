@@ -7,12 +7,13 @@ import lsfusion.interop.navigator.RemoteNavigatorInterface;
 import lsfusion.server.EnvStackRunnable;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.auth.User;
+import lsfusion.server.context.ExecutionStack;
+import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.navigator.RemoteNavigator;
 import lsfusion.server.lifecycle.LifecycleEvent;
 import lsfusion.server.lifecycle.LogicsManager;
 import lsfusion.server.logics.property.CalcProperty;
-import lsfusion.server.context.ExecutionStack;
 import lsfusion.server.session.DataSession;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
@@ -20,13 +21,7 @@ import org.springframework.util.Assert;
 
 import java.rmi.RemoteException;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import static lsfusion.server.logics.ServerResourceBundle.getString;
 
 public class NavigatorsManager extends LogicsManager implements InitializingBean {
     private static final Logger logger = Logger.getLogger(NavigatorsManager.class);
@@ -217,7 +212,7 @@ public class NavigatorsManager extends LogicsManager implements InitializingBean
                                 ServerLoggers.assertLog(false, "Two RemoteNavigators with same connection");
                         }
                     } catch (RemoteException e) {
-                        logger.error(getString("logics.server.remote.exception.on.push.action"), e);
+                        logger.error(ThreadLocalContext.localize("{logics.server.remote.exception.on.push.action}"), e);
                     }
                 }
             }

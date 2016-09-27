@@ -1,8 +1,10 @@
 package lsfusion.server.logics.property.actions.flow;
 
+import lsfusion.server.logics.i18n.LocalizedString;
+
 public abstract class KeepContextActionProperty extends FlowActionProperty {
 
-    protected KeepContextActionProperty(String caption, int size) {
+    protected KeepContextActionProperty(LocalizedString caption, int size) {
         super(caption, size);
     }
 

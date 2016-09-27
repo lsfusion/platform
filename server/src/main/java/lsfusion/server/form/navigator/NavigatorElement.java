@@ -8,9 +8,11 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.serialization.SerializationUtil;
 import lsfusion.interop.AbstractWindowType;
 import lsfusion.server.auth.SecurityPolicy;
+import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.form.window.NavigatorWindow;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.BusinessLogics;
+import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.mutables.NFFact;
 import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.mutables.interfaces.NFOrderSet;
@@ -33,7 +35,7 @@ public class NavigatorElement<T extends BusinessLogics<T>> {
     private ImageIcon image;
     public DefaultIcon defaultIcon;
 
-    public String caption = "";
+    public LocalizedString caption = LocalizedString.create("");
 
     public NavigatorWindow window = null;
 
@@ -43,7 +45,7 @@ public class NavigatorElement<T extends BusinessLogics<T>> {
     private NFProperty<NavigatorElement<T>> parent = NFFact.property();
     private NFOrderSet<NavigatorElement<T>> children = NFFact.orderSet();
 
-    public NavigatorElement(NavigatorElement<T> parent, String canonicalName, String caption, String icon, Version version) {
+    public NavigatorElement(NavigatorElement<T> parent, String canonicalName, LocalizedString caption, String icon, Version version) {
         this.canonicalName = canonicalName;
         this.ID = BaseLogicsModule.generateStaticNewID();
         this.caption = caption;
@@ -257,7 +259,7 @@ public class NavigatorElement<T extends BusinessLogics<T>> {
 
     @Override
     public String toString() {
-        return getSID() + ": " + (caption != null ? caption : "");
+        return getSID() + ": " + (caption != null ? ThreadLocalContext.localize(caption) : "");
     }
 
     public void serialize(DataOutputStream outStream) throws IOException {
@@ -267,7 +269,7 @@ public class NavigatorElement<T extends BusinessLogics<T>> {
         outStream.writeUTF(getSID());
         SerializationUtil.writeString(outStream, canonicalName);
         
-        outStream.writeUTF(caption);
+        outStream.writeUTF(ThreadLocalContext.localize(caption));
         outStream.writeBoolean(hasChildren());
         if (window == null) {
             outStream.writeInt(AbstractWindowType.NULL_VIEW);

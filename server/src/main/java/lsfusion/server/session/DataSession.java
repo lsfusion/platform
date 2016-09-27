@@ -42,6 +42,7 @@ import lsfusion.server.form.instance.PropertyObjectInterfaceInstance;
 import lsfusion.server.form.navigator.*;
 import lsfusion.server.logics.*;
 import lsfusion.server.logics.debug.ActionPropertyDebugger;
+import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.actions.SessionEnvEvent;
@@ -55,11 +56,11 @@ import java.sql.SQLException;
 import java.util.*;
 
 import static lsfusion.base.col.SetFact.fromJavaSet;
-import static lsfusion.server.logics.ServerResourceBundle.getString;
+import static lsfusion.server.context.ThreadLocalContext.localize;
 
 public class DataSession extends ExecutionEnvironment implements SessionChanges, SessionCreator, AutoCloseable {
 
-    public static final SessionDataProperty isDataChanged = new SessionDataProperty("Is data changed", LogicalClass.instance);
+    public static final SessionDataProperty isDataChanged = new SessionDataProperty(LocalizedString.create("Is data changed"), LogicalClass.instance);
 
     private boolean isStoredDataChanged;
 
@@ -1793,11 +1794,11 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                     if(interaction == null) {
                         autoAttemptCount++;
                         if(autoAttemptCount > settings.getApplyAutoAttemptCountLimit()) {
-                            ThreadLocalContext.delayUserInteraction(new LogMessageClientAction(getString("logics.server.apply.timeout.canceled"), true));                            
+                            ThreadLocalContext.delayUserInteraction(new LogMessageClientAction(localize("{logics.server.apply.timeout.canceled}"), true));                            
                             return false;
                         }
                     } else {
-                        int option = (Integer)interaction.requestUserInteraction(new ConfirmClientAction("lsFusion",getString("logics.server.restart.transaction"), true, settings.getDialogTransactionTimeout(), JOptionPane.CANCEL_OPTION));
+                        int option = (Integer)interaction.requestUserInteraction(new ConfirmClientAction("lsFusion",localize("{logics.server.restart.transaction}"), true, settings.getDialogTransactionTimeout(), JOptionPane.CANCEL_OPTION));
                         if(option == JOptionPane.CANCEL_OPTION)
                             return false;
                         if(option == JOptionPane.YES_OPTION)
@@ -1957,7 +1958,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         for (int i = 0, size = execActions.size(); i < size; i++) {
             try {
                 sql.statusMessage = new StatusMessage("event", execActions.get(i), i, size);
-                if (!executeGlobalEvent(BL, stack, execActions.get(i), new ProgressBar(getString("logics.server.apply.message"), i, size, execActions.get(i) + ", " + i + " of " + size)))
+                if (!executeGlobalEvent(BL, stack, execActions.get(i), new ProgressBar(localize("{logics.server.apply.message}"), i, size, execActions.get(i) + ", " + i + " of " + size)))
                     return false;
             } finally {
                 sql.statusMessage = null;

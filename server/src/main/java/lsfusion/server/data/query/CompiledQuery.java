@@ -1,12 +1,5 @@
 package lsfusion.server.data.query;
 
-import lsfusion.server.caches.IdentityQuickLazy;
-import lsfusion.server.data.query.innerjoins.UpWheres;
-import lsfusion.server.data.query.stat.*;
-import lsfusion.server.data.query.stat.KeyStat;
-import lsfusion.server.data.translator.ExprTranslator;
-import lsfusion.server.form.navigator.SQLSessionUserProvider;
-import lsfusion.server.session.PropertyChange;
 import lsfusion.base.*;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
@@ -20,10 +13,12 @@ import lsfusion.interop.Compare;
 import lsfusion.server.Settings;
 import lsfusion.server.SystemProperties;
 import lsfusion.server.caches.AbstractOuterContext;
+import lsfusion.server.caches.IdentityQuickLazy;
 import lsfusion.server.caches.OuterContext;
 import lsfusion.server.classes.IntegralClass;
 import lsfusion.server.classes.OrderClass;
 import lsfusion.server.classes.StringClass;
+import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.*;
 import lsfusion.server.data.expr.*;
 import lsfusion.server.data.expr.formula.FormulaExpr;
@@ -31,14 +26,19 @@ import lsfusion.server.data.expr.order.PartitionCalc;
 import lsfusion.server.data.expr.order.PartitionToken;
 import lsfusion.server.data.expr.query.*;
 import lsfusion.server.data.query.innerjoins.GroupJoinsWhere;
+import lsfusion.server.data.query.innerjoins.UpWheres;
+import lsfusion.server.data.query.stat.*;
+import lsfusion.server.data.query.stat.KeyStat;
 import lsfusion.server.data.sql.SQLSyntax;
+import lsfusion.server.data.translator.ExprTranslator;
 import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.translator.MapValuesTranslate;
 import lsfusion.server.data.type.*;
 import lsfusion.server.data.where.AbstractWhere;
 import lsfusion.server.data.where.CheckWhere;
 import lsfusion.server.data.where.Where;
-import lsfusion.server.logics.ServerResourceBundle;
+import lsfusion.server.form.navigator.SQLSessionUserProvider;
+import lsfusion.server.session.PropertyChange;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -1545,7 +1545,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
             }
             String joinSource = ""; // заполняем Source
             if(dataAnds.size()==0)
-                throw new RuntimeException(ServerResourceBundle.getString("data.query.should.not.be"));
+                throw new RuntimeException(ThreadLocalContext.localize("{data.query.should.not.be}"));
             else
             if(dataAnds.size()==1)
                 joinSource = dataAnds.iterator().next().alias +'.'+joinName;

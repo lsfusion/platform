@@ -12,13 +12,15 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
 import lsfusion.interop.Compare;
 import lsfusion.server.caches.IdentityInstanceLazy;
 import lsfusion.server.classes.IntegralClass;
+import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.ValueExpr;
 import lsfusion.server.data.expr.query.RecursiveExpr;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
-import lsfusion.server.logics.ServerResourceBundle;
+import lsfusion.server.logics.i18n.FormatLocalizedString;
+import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.derived.DerivedProperty;
 import lsfusion.server.logics.property.infer.ExClassSet;
 import lsfusion.server.logics.property.infer.InferType;
@@ -71,11 +73,11 @@ public class RecursiveProperty<T extends PropertyInterface> extends ComplexIncre
 
         IntegralClass integralClass = (IntegralClass)getType();
         CalcProperty constraint = DerivedProperty.createCompare(interfaces, getImplement(), DerivedProperty.<Interface>createStatic(integralClass.div(integralClass.getSafeInfiniteValue(), 2), integralClass), Compare.GREATER).property;
-        constraint.caption = ServerResourceBundle.getString("logics.property.cycle.detected", caption);
+        constraint.caption = new FormatLocalizedString("{logics.property.cycle.detected}", ThreadLocalContext.localize(caption));
         return constraint;
     }
 
-    public RecursiveProperty(String caption, ImOrderSet<Interface> interfaces, Cycle cycle, ImRevMap<Interface, T> mapInterfaces, ImRevMap<T, T> mapIterate, CalcPropertyMapImplement<?, T> initial, CalcPropertyMapImplement<?, T> step) {
+    public RecursiveProperty(LocalizedString caption, ImOrderSet<Interface> interfaces, Cycle cycle, ImRevMap<Interface, T> mapInterfaces, ImRevMap<T, T> mapIterate, CalcPropertyMapImplement<?, T> initial, CalcPropertyMapImplement<?, T> step) {
         super(caption, interfaces);
         this.mapInterfaces = mapInterfaces;
         this.mapIterate = mapIterate;

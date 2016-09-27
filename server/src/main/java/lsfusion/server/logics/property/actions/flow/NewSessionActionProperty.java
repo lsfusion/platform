@@ -9,6 +9,7 @@ import lsfusion.server.classes.CustomClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
 import lsfusion.server.form.instance.FormInstance;
+import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.session.DataSession;
 
@@ -21,7 +22,7 @@ public class NewSessionActionProperty extends AroundAspectActionProperty {
     private final boolean newSQL; 
     private final boolean doApply;
 
-    public <I extends PropertyInterface> NewSessionActionProperty(String caption, ImOrderSet<I> innerInterfaces,
+    public <I extends PropertyInterface> NewSessionActionProperty(LocalizedString caption, ImOrderSet<I> innerInterfaces,
                                                                   ActionPropertyMapImplement<?, I> action, boolean singleApply,
                                                                   boolean newSQL, boolean doApply,
                                                                   FunctionSet<SessionDataProperty> migrateSessionProperties,

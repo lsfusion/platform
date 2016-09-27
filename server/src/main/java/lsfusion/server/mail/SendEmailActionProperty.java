@@ -17,6 +17,7 @@ import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.EmailLogicsModule;
 import lsfusion.server.logics.NullValue;
 import lsfusion.server.logics.ObjectValue;
+import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.CalcPropertyInterfaceImplement;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
@@ -47,7 +48,7 @@ import java.util.regex.Pattern;
 import static javax.mail.Message.RecipientType.TO;
 import static lsfusion.base.BaseUtils.nullTrim;
 import static lsfusion.base.BaseUtils.rtrim;
-import static lsfusion.server.logics.ServerResourceBundle.getString;
+import static lsfusion.server.context.ThreadLocalContext.localize;
 import static org.apache.commons.lang3.StringUtils.trimToNull;
 
 /**
@@ -75,7 +76,7 @@ public class SendEmailActionProperty extends SystemExplicitActionProperty {
     private final List<CalcPropertyInterfaceImplement> attachFileNames = new ArrayList<>();
     private final List<CalcPropertyInterfaceImplement> attachFiles = new ArrayList<>();
 
-    public SendEmailActionProperty(String caption, ValueClass[] classes) {
+    public SendEmailActionProperty(LocalizedString caption, ValueClass[] classes) {
         super(caption, classes);
 
         askConfirm = true;
@@ -173,30 +174,30 @@ public class SendEmailActionProperty extends SystemExplicitActionProperty {
                 String passwordAccount = (String) emailLM.passwordAccount.read(context, defaultAccount);
                 
                 if (emailLM.disableAccount.read(context, fromAddressAccountObject) != null) {
-                    logger.error(getString("mail.disabled"));
+                    logger.error(localize("{mail.disabled}"));
                     return;
                 }
                 
                 sendEmail(context, smtpHostAccount, smtpPortAccount, nameAccount, passwordAccount, encryptedConnectionType, fromAddressAccount, subject, recipients, inlineForms, attachments, attachmentFiles, customAttachments);
             }
         } catch (Exception e) {
-            String errorMessage = getString("mail.failed.to.send.mail") + " : " + e.toString();
+            String errorMessage = localize("{mail.failed.to.send.mail}") + " : " + e.toString();
             logger.error(errorMessage);
-            context.delayUserInterfaction(new MessageClientAction(errorMessage, getString("mail.sending")));
+            context.delayUserInterfaction(new MessageClientAction(errorMessage, localize("{mail.sending}")));
 
-            logError(context, getString("mail.failed.to.send.mail") + " : " + e.toString());
+            logError(context, localize("{mail.failed.to.send.mail}") + " : " + e.toString());
             e.printStackTrace();
         }
     }
 
     private void sendEmail(ExecutionContext context, String smtpHostAccount, String smtpPortAccount, String userName, String password, String encryptedConnectionType, String fromAddressAccount, String subject, Map<String, Message.RecipientType> recipientEmails, List<String> inlineForms, List<EmailSender.AttachmentProperties> attachments, Map<ByteArray, String> attachmentFiles, Map<ByteArray, Pair<String, String>> customAttachments) throws MessagingException, IOException, ScriptingErrorLog.SemanticErrorException {
         if (smtpHostAccount == null || fromAddressAccount == null) {
-            logError(context, getString("mail.smtp.host.or.sender.not.specified.letters.will.not.be.sent"));
+            logError(context, localize("{mail.smtp.host.or.sender.not.specified.letters.will.not.be.sent}"));
             return;
         }
 
         if (recipientEmails.isEmpty()) {
-            logError(context, getString("mail.recipient.not.specified"));
+            logError(context, localize("{mail.recipient.not.specified}"));
             return;
         }
 
@@ -272,7 +273,7 @@ public class SendEmailActionProperty extends SystemExplicitActionProperty {
             attachmentName = (String) attachmentNameProp.read(context, context.getKeys());
         }
         if (attachmentName == null) {
-            attachmentName = form.caption;
+            attachmentName = localize(form.caption);
         }
         attachmentName = rtrim(attachmentName.replace('"', '\''));
 
@@ -337,6 +338,6 @@ public class SendEmailActionProperty extends SystemExplicitActionProperty {
 
     private void logError(ExecutionContext context, String errorMessage) {
         logger.error(errorMessage);
-        context.delayUserInterfaction(new MessageClientAction(errorMessage, getString("mail.sending")));
+        context.delayUserInterfaction(new MessageClientAction(errorMessage, localize("{mail.sending}")));
     }
 }

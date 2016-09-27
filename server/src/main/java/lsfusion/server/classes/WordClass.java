@@ -1,7 +1,7 @@
 package lsfusion.server.classes;
 
 import lsfusion.interop.Data;
-import lsfusion.server.logics.ServerResourceBundle;
+import lsfusion.server.context.ThreadLocalContext;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -30,7 +30,7 @@ public class WordClass extends StaticFormatFileClass {
     }
 
     public String toString() {
-        return ServerResourceBundle.getString("classes.word.file");
+        return ThreadLocalContext.localize("{classes.word.file}");
     }
 
     public DataClass getCompatible(DataClass compClass, boolean or) {

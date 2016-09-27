@@ -4,6 +4,7 @@ import lsfusion.server.classes.sets.ResolveClassSet;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.form.entity.ObjectEntity;
 import lsfusion.server.form.instance.ObjectInstance;
+import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.IsClassProperty;
 
 import java.io.DataOutputStream;
@@ -25,7 +26,7 @@ public interface ValueClass extends RemoteClass {
 
     String getSID();
     
-    String getCaption();
+    LocalizedString getCaption();
 
     Object getDefaultValue();
 

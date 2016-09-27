@@ -7,6 +7,7 @@ import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.classes.ValueClass;
+import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.type.Type;
@@ -14,6 +15,7 @@ import lsfusion.server.form.entity.ObjectEntity;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.NullValue;
 import lsfusion.server.logics.ObjectValue;
+import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.session.Modifier;
 import lsfusion.server.session.SessionChanges;
@@ -32,7 +34,7 @@ public abstract class ObjectInstance extends CellInstance<ObjectEntity> implemen
 
     public GroupObjectInstance groupTo;
 
-    public String getCaption() {
+    public LocalizedString getCaption() {
         return entity.getCaption();
     }
 
@@ -42,7 +44,7 @@ public abstract class ObjectInstance extends CellInstance<ObjectEntity> implemen
     }
 
     public String toString() {
-        return getCaption();
+        return ThreadLocalContext.localize(getCaption());
     }
 
     public abstract ValueClass getBaseClass();

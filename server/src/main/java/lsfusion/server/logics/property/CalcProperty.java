@@ -18,6 +18,7 @@ import lsfusion.server.classes.sets.OrClassSet;
 import lsfusion.server.classes.sets.ResolveClassSet;
 import lsfusion.server.classes.sets.ResolveUpClassSet;
 import lsfusion.server.context.ExecutionStack;
+import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.*;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
@@ -39,6 +40,8 @@ import lsfusion.server.form.entity.drilldown.DrillDownFormEntity;
 import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.logics.*;
 import lsfusion.server.logics.debug.CalcPropertyDebugInfo;
+import lsfusion.server.logics.i18n.FormatLocalizedString;
+import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.actions.ChangeEvent;
 import lsfusion.server.logics.property.actions.edit.DefaultChangeActionProperty;
@@ -61,6 +64,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Callable;
+
+import static lsfusion.server.context.ThreadLocalContext.localize;
 
 public abstract class CalcProperty<T extends PropertyInterface> extends Property<T> implements MapKeysInterface<T> {
 
@@ -159,7 +164,10 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
 
     public String outputStored(boolean outputTable) {
         assert isStored() && field!=null;
-        return (this instanceof DataProperty? ServerResourceBundle.getString("logics.property.primary"):ServerResourceBundle.getString("logics.property.calculated")) + " "+ServerResourceBundle.getString("logics.property")+" : " + caption+", "+mapTable.table.outputField(field, outputTable);
+        return localize(LocalizedString.create(
+                    (this instanceof DataProperty ? "{logics.property.primary}" : "{logics.property.calculated}") 
+                    + " {logics.property} : " + caption.getSourceString() + ", " + mapTable.table.outputField(field, outputTable))
+        );
     }
     
     public void outClasses(DataSession session, Modifier modifier) throws SQLException, SQLHandledException {
@@ -251,13 +259,14 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         ClassWhere<T> classes = getClassWhere(calcType);
         ClassWhere<T> propClasses = new ClassWhere<>(property.getClassWhere(calcType),map);
         
-        if(!propClasses.meansCompatible(classes))
-            throw new ScriptParsingException("wrong signature of implementation " + caption + " (specified " + propClasses + ") for abstract property " + this + " (expected " + classes + ")");
+        if(!propClasses.meansCompatible(classes)) {
+            throw new ScriptParsingException("wrong signature of implementation " + localize(caption) + " (specified " + propClasses + ") for abstract property " + this + " (expected " + classes + ")");
+        }
         
         AndClassSet valueClass = getValueClassSet();
         AndClassSet propValueClass = value.mapValueClassSet(propClasses);
         if(!valueClass.containsAll(propValueClass, false))
-            throw new ScriptParsingException("wrong value class of implementation " + caption +
+            throw new ScriptParsingException("wrong value class of implementation " + localize(caption) +
                     " (specified " + propValueClass + ") for abstract property " + this + " (expected " + valueClass + ")");
     }
 
@@ -303,7 +312,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         }
     }
 
-    protected CalcProperty(String caption, ImOrderSet<T> interfaces) {
+    protected CalcProperty(LocalizedString caption, ImOrderSet<T> interfaces) {
         super(caption, interfaces);
     }
 
@@ -1238,7 +1247,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         // запишем в DataProperty
         for(DataProperty dataProperty : getChangeProps()) {
             if(Settings.get().isCheckUniqueEvent() && dataProperty.event!=null)
-                throw new RuntimeException(ServerResourceBundle.getString("logics.property.already.has.event", dataProperty));
+                throw new RuntimeException(ThreadLocalContext.localize(new FormatLocalizedString("{logics.property.already.has.event}", dataProperty)));
             dataProperty.event = event;
         }
     }
@@ -1314,7 +1323,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
 
         ImOrderSet<T> listInterfaces = interfaceClasses.keys().toOrderSet();
         ImList<ValueClass> listValues = listInterfaces.mapList(interfaceClasses);
-        DefaultChangeActionProperty<T> changeActionProperty = new DefaultChangeActionProperty<>("sys", this, listInterfaces, listValues, editActionSID, filterProperty);
+        DefaultChangeActionProperty<T> changeActionProperty = new DefaultChangeActionProperty<>(LocalizedString.create("sys"), this, listInterfaces, listValues, editActionSID, filterProperty);
         return changeActionProperty.getImplement(listInterfaces);
     }
 

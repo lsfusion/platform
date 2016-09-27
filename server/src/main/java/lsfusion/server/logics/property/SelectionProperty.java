@@ -11,7 +11,7 @@ import lsfusion.server.form.entity.filter.RegularFilterGroupEntity;
 import lsfusion.server.form.view.DefaultFormView;
 import lsfusion.server.form.view.PropertyDrawView;
 import lsfusion.server.logics.BaseLogicsModule;
-import lsfusion.server.logics.ServerResourceBundle;
+import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.mutables.Version;
@@ -22,7 +22,7 @@ public class SelectionProperty extends SessionDataProperty {
     BaseLogicsModule LM;
 
     public SelectionProperty(ValueClass[] classes, BaseLogicsModule LM) {
-        super(ServerResourceBundle.getString("logics.property.select"), classes, LogicalClass.instance);
+        super(LocalizedString.create("{logics.property.select}"), classes, LogicalClass.instance);
         this.classes = classes;
         this.LM = LM;
     }
@@ -39,7 +39,7 @@ public class SelectionProperty extends SessionDataProperty {
         PropertyObjectEntity<ClassPropertyInterface, ?> po = entity.propertyObject;
         filterGroup.addFilter(new RegularFilterEntity(form.genID(),
                 new NotNullFilterEntity((CalcPropertyObjectEntity) po),
-                ServerResourceBundle.getString("logics.property.selected"),
+                LocalizedString.create("{logics.property.selected}"),
                 KeyStrokes.getSelectionFilterKeyStroke()), false, version);
         form.addRegularFilterGroup(filterGroup, version);
 

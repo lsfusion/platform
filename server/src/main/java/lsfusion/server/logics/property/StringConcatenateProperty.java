@@ -3,19 +3,20 @@ package lsfusion.server.logics.property;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetStaticValue;
 import lsfusion.server.classes.StringClass;
-import lsfusion.server.classes.sets.OrClassSet;
 import lsfusion.server.classes.sets.ResolveClassSet;
 import lsfusion.server.data.expr.formula.StringJoinConcatenateFormulaImpl;
-import lsfusion.server.logics.property.infer.*;
+import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.infer.ExClassSet;
+import lsfusion.server.logics.property.infer.InferType;
+import lsfusion.server.logics.property.infer.Inferred;
 
 public class StringConcatenateProperty extends FormulaImplProperty {
 
-    public StringConcatenateProperty(String caption, int intNum, String separator) {
+    public StringConcatenateProperty(LocalizedString caption, int intNum, String separator) {
         this(caption, intNum, separator, false);
     }
 
-    public StringConcatenateProperty(String caption, int intNum, String separator, boolean caseInsensitive) {
+    public StringConcatenateProperty(LocalizedString caption, int intNum, String separator, boolean caseInsensitive) {
         super(caption, intNum, new StringJoinConcatenateFormulaImpl(separator, caseInsensitive));
     }
 

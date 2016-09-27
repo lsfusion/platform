@@ -11,6 +11,7 @@ import lsfusion.server.data.where.Where;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.debug.ActionDelegationType;
+import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.derived.DerivedProperty;
 import lsfusion.server.session.DataSession;
@@ -27,7 +28,7 @@ public class SetActionProperty<P extends PropertyInterface, W extends PropertyIn
     protected final CalcPropertyMapImplement<P, I> writeTo; // assert что здесь + в mapInterfaces полный набор ключей
     protected final CalcPropertyMapImplement<?, I> where;
 
-    public SetActionProperty(String caption,
+    public SetActionProperty(LocalizedString caption,
                              ImSet<I> innerInterfaces,
                              ImOrderSet<I> mapInterfaces, CalcPropertyMapImplement<?, I> where, CalcPropertyMapImplement<P, I> writeTo,
                              CalcPropertyInterfaceImplement<I> writeFrom) {

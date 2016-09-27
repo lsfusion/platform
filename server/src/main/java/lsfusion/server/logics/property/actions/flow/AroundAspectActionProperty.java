@@ -4,6 +4,7 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.*;
 
 import java.sql.SQLException;
@@ -11,7 +12,7 @@ import java.sql.SQLException;
 public abstract class AroundAspectActionProperty extends KeepContextActionProperty {
     protected final ActionPropertyMapImplement<?, PropertyInterface> aspectActionImplement;
 
-    public <P extends PropertyInterface, I extends PropertyInterface> AroundAspectActionProperty(String caption, ImOrderSet<I> innerInterfaces, ActionPropertyMapImplement<P, I> action) {
+    public <P extends PropertyInterface, I extends PropertyInterface> AroundAspectActionProperty(LocalizedString caption, ImOrderSet<I> innerInterfaces, ActionPropertyMapImplement<P, I> action) {
         super(caption, innerInterfaces.size());
 
         this.aspectActionImplement = action.map(getMapInterfaces(innerInterfaces).reverse());

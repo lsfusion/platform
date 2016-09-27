@@ -2,17 +2,17 @@ package lsfusion.server.logics.service;
 
 import lsfusion.base.Result;
 import lsfusion.interop.action.MessageClientAction;
-import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
 import lsfusion.server.logics.ServiceLogicsModule;
+import lsfusion.server.logics.i18n.FormatLocalizedString;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
 
 import java.sql.SQLException;
 
-import static lsfusion.server.logics.ServerResourceBundle.getString;
+import static lsfusion.server.context.ThreadLocalContext.localize;
 
 public class CheckAggregationsActionProperty extends ScriptingActionProperty {
     public CheckAggregationsActionProperty(ServiceLogicsModule LM) {
@@ -29,7 +29,7 @@ public class CheckAggregationsActionProperty extends ScriptingActionProperty {
             }
         });
 
-        context.delayUserInterfaction(new MessageClientAction(getString("logics.check.completed", getString("logics.checking.aggregations")) + '\n' + '\n' + message.result, getString("logics.checking.aggregations"), true));
+        context.delayUserInterfaction(new MessageClientAction(localize(new FormatLocalizedString("{logics.check.completed}", localize("{logics.checking.aggregations}"))) + '\n' + '\n' + message.result, localize("{logics.checking.aggregations}"), true));
     }
 
     @Override

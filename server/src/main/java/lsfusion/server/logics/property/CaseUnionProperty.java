@@ -20,6 +20,7 @@ import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.form.entity.drilldown.CaseUnionDrillDownFormEntity;
 import lsfusion.server.form.entity.drilldown.DrillDownFormEntity;
 import lsfusion.server.logics.LogicsModule;
+import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.mutables.NFFact;
 import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.mutables.impl.NFListImpl;
@@ -37,12 +38,10 @@ import lsfusion.server.session.StructChanges;
 
 import java.util.List;
 
-import static lsfusion.server.logics.ServerResourceBundle.getString;
-
 public class CaseUnionProperty extends IncrementUnionProperty {
 
     // immutable реализация
-    public CaseUnionProperty(String caption, ImOrderSet<Interface> interfaces, boolean isExclusive, ImList<CalcCase<Interface>> cases) {
+    public CaseUnionProperty(LocalizedString caption, ImOrderSet<Interface> interfaces, boolean isExclusive, ImList<CalcCase<Interface>> cases) {
         super(caption, interfaces);
         this.cases = cases;
         this.isExclusive = isExclusive;
@@ -62,11 +61,11 @@ public class CaseUnionProperty extends IncrementUnionProperty {
         }
     }
 
-    public CaseUnionProperty(String caption, ImOrderSet<Interface> interfaces, ImList<CalcPropertyInterfaceImplement<Interface>> operands, boolean caseClasses, boolean isExclusive, boolean toReverse) {
+    public CaseUnionProperty(LocalizedString caption, ImOrderSet<Interface> interfaces, ImList<CalcPropertyInterfaceImplement<Interface>> operands, boolean caseClasses, boolean isExclusive, boolean toReverse) {
         this(caption, interfaces, isExclusive, (toReverse ? operands.reverseList() : operands).mapListValues(new OperandCase(caseClasses)));
     }
 
-    public CaseUnionProperty(String caption, ImOrderSet<Interface> interfaces, ImCol<CalcPropertyInterfaceImplement<Interface>> operands, boolean caseClasses) {
+    public CaseUnionProperty(LocalizedString caption, ImOrderSet<Interface> interfaces, ImCol<CalcPropertyInterfaceImplement<Interface>> operands, boolean caseClasses) {
         this(caption, interfaces, true, operands.mapColValues(new OperandCase(caseClasses)).toList());
     }
 
@@ -298,7 +297,7 @@ public class CaseUnionProperty extends IncrementUnionProperty {
     }
 
     // для постзадания
-    public CaseUnionProperty(boolean checkExclusiveImplementations, boolean checkAllImplementations, boolean isLast, Type type, String caption, ImOrderSet<Interface> interfaces, ValueClass valueClass, ImMap<Interface, ValueClass> interfaceClasses) {
+    public CaseUnionProperty(boolean checkExclusiveImplementations, boolean checkAllImplementations, boolean isLast, Type type, LocalizedString caption, ImOrderSet<Interface> interfaces, ValueClass valueClass, ImMap<Interface, ValueClass> interfaceClasses) {
         super(caption, interfaces);
 
         abs = new AbstractInfo(checkExclusiveImplementations, checkAllImplementations, type); 
@@ -438,7 +437,7 @@ public class CaseUnionProperty extends IncrementUnionProperty {
     @Override
     public DrillDownFormEntity createDrillDownForm(LogicsModule LM, String canonicalName) {
         return new CaseUnionDrillDownFormEntity(
-                canonicalName, getString("logics.property.drilldown.form.case.union"), this, LM
+                canonicalName, LocalizedString.create("{logics.property.drilldown.form.case.union}"), this, LM
         );
     }
 
@@ -486,7 +485,7 @@ public class IfUnionProperty extends IncrementUnionProperty {
         return result.immutable();
     }
 
-    public IfUnionProperty(String sID, String caption, ImOrderSet<Interface> interfaces, CalcPropertyInterfaceImplement<Interface> ifProp, CalcPropertyInterfaceImplement<Interface> trueProp, CalcPropertyInterfaceImplement<Interface> falseProp) {
+    public IfUnionProperty(String sID, LocalizedString caption, ImOrderSet<Interface> interfaces, CalcPropertyInterfaceImplement<Interface> ifProp, CalcPropertyInterfaceImplement<Interface> trueProp, CalcPropertyInterfaceImplement<Interface> falseProp) {
         super(sID, caption, interfaces);
         this.ifProp = ifProp;
         this.trueProp = trueProp;

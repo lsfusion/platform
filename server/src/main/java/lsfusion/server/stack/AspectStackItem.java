@@ -6,7 +6,7 @@ import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
-import lsfusion.server.logics.ServerResourceBundle;
+import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.profiler.AspectProfileObject;
 import lsfusion.server.profiler.ProfileObject;
 import lsfusion.server.profiler.ProfiledObject;
@@ -33,7 +33,7 @@ public class AspectStackItem extends ExecutionStackItem {
         Method method = ((MethodSignature) joinPoint.getSignature()).getMethod();
 
         Annotation annotation = method.getAnnotation(StackMessage.class);
-        String resultMessage = annotation == null ? "" : ServerResourceBundle.getString(((StackMessage) annotation).value());
+        String resultMessage = annotation == null ? "" : ThreadLocalContext.localize(((StackMessage) annotation).value());
 
         ImList<String> params = getArgs(joinPoint, method);
         if (!params.isEmpty()) {
@@ -85,7 +85,7 @@ public class AspectStackItem extends ExecutionStackItem {
             String message = null;
             if (messageAnnotation != null) {
                 size++;
-                message = ServerResourceBundle.getString(((StackMessage) messageAnnotation).value());
+                message = ThreadLocalContext.localize(((StackMessage) messageAnnotation).value());
             }
 
             Annotation thisMessageAnnotation = method.getAnnotation(ThisMessage.class);

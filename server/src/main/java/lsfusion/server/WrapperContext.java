@@ -6,6 +6,7 @@ import lsfusion.server.classes.CustomClass;
 import lsfusion.server.classes.DataClass;
 import lsfusion.server.context.AbstractContext;
 import lsfusion.server.context.Context;
+import lsfusion.server.context.ExecutionStack;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.form.instance.PropertyObjectInterfaceInstance;
@@ -16,12 +17,12 @@ import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.LogicsInstance;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.property.DialogRequest;
-import lsfusion.server.context.ExecutionStack;
 import lsfusion.server.remote.RemoteForm;
 import lsfusion.server.stack.ExecutionStackItem;
 
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Locale;
 
 public class WrapperContext extends AbstractContext implements Context {
     private Context wrappedContext;
@@ -64,6 +65,11 @@ public class WrapperContext extends AbstractContext implements Context {
 
     public DataObject getConnection() {
         return wrappedContext.getConnection();
+    }
+
+    @Override
+    public Locale getLocale() {
+        return wrappedContext.getLocale();
     }
 
     public RemoteForm createRemoteForm(FormInstance formInstance, ExecutionStack stack) {

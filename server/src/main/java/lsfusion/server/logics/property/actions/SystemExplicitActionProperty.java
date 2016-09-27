@@ -1,6 +1,7 @@
 package lsfusion.server.logics.property.actions;
 
 import lsfusion.server.classes.ValueClass;
+import lsfusion.server.logics.i18n.LocalizedString;
 
 public abstract class SystemExplicitActionProperty extends ExplicitActionProperty {
 
@@ -8,7 +9,7 @@ public abstract class SystemExplicitActionProperty extends ExplicitActionPropert
         super(classes);
     }
 
-    protected SystemExplicitActionProperty(String caption, ValueClass... classes) {
+    protected SystemExplicitActionProperty(LocalizedString caption, ValueClass... classes) {
         super(caption, classes);
     }
 }

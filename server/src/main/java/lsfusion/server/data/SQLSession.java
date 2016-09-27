@@ -2581,6 +2581,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
             temporaryTablesLock.unlock();
             unlockWrite();
         }
+        
     }
     
     public boolean tryRestore(OperationOwner opOwner, Connection connection, boolean isPrivate) {

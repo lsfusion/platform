@@ -31,6 +31,7 @@ import lsfusion.server.form.view.DefaultFormView;
 import lsfusion.server.form.view.FormView;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.BusinessLogics;
+import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.linear.LP;
@@ -56,12 +57,12 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
 
     public static final IsFullClientFormulaProperty isFullClient = IsFullClientFormulaProperty.instance;
     public static final IsDebugFormulaProperty isDebug = IsDebugFormulaProperty.instance;
-    public static final SessionDataProperty isDialog = new SessionDataProperty("Is dialog", LogicalClass.instance);
-    public static final SessionDataProperty isModal = new SessionDataProperty("Is modal", LogicalClass.instance);
-    public static final SessionDataProperty isAdd = new SessionDataProperty("Is add", LogicalClass.instance);
-    public static final SessionDataProperty manageSession = new SessionDataProperty("Manage session", LogicalClass.instance);
-    public static final SessionDataProperty isReadOnly = new SessionDataProperty("Is read only form", LogicalClass.instance);
-    public static final SessionDataProperty showDrop = new SessionDataProperty("Show drop", LogicalClass.instance);
+    public static final SessionDataProperty isDialog = new SessionDataProperty(LocalizedString.create("Is dialog"), LogicalClass.instance);
+    public static final SessionDataProperty isModal = new SessionDataProperty(LocalizedString.create("Is modal"), LogicalClass.instance);
+    public static final SessionDataProperty isAdd = new SessionDataProperty(LocalizedString.create("Is add"), LogicalClass.instance);
+    public static final SessionDataProperty manageSession = new SessionDataProperty(LocalizedString.create("Manage session"), LogicalClass.instance);
+    public static final SessionDataProperty isReadOnly = new SessionDataProperty(LocalizedString.create("Is read only form"), LogicalClass.instance);
+    public static final SessionDataProperty showDrop = new SessionDataProperty(LocalizedString.create("Show drop"), LogicalClass.instance);
 
     public PropertyDrawEntity printActionPropertyDraw;
     public PropertyDrawEntity editActionPropertyDraw;
@@ -161,18 +162,18 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
 
     public CalcPropertyObjectEntity<?> reportPathProp;
 
-    protected FormEntity(String canonicalName, String caption, Version version) {
+    protected FormEntity(String canonicalName, LocalizedString caption, Version version) {
         this(null, canonicalName, caption, null, version);
     }
 
-    public FormEntity(String canonicalName, String caption, String icon, Version version) {
+    public FormEntity(String canonicalName, LocalizedString caption, String icon, Version version) {
         this(null, canonicalName, caption, icon, version);
     }
 
-    private FormEntity(NavigatorElement<T> parent, String canonicalName, String caption, String icon, Version version) {
+    private FormEntity(NavigatorElement<T> parent, String canonicalName, LocalizedString caption, String icon, Version version) {
         super(parent, canonicalName, caption, null, version);
         setImage(icon != null ? icon : "/images/form.png", icon != null ? null : DefaultIcon.FORM);
-        logger.debug("Initializing form " + caption + "...");
+        logger.debug("Initializing form " + ThreadLocalContext.localize(caption) + "...");
 
         BaseLogicsModule baseLM = ThreadLocalContext.getBusinessLogics().LM;
 

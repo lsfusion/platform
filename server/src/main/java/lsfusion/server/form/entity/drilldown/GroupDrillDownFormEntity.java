@@ -18,6 +18,7 @@ import lsfusion.server.form.entity.filter.NotNullFilterEntity;
 import lsfusion.server.form.view.DefaultFormView;
 import lsfusion.server.form.view.FormView;
 import lsfusion.server.logics.LogicsModule;
+import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.CalcPropertyInterfaceImplement;
 import lsfusion.server.logics.property.CalcPropertyMapImplement;
@@ -29,7 +30,7 @@ public class GroupDrillDownFormEntity<I extends PropertyInterface> extends Drill
     private PropertyDrawEntity implPropertyDraw;
     private GroupObjectEntity detailsGroup;
 
-    public GroupDrillDownFormEntity(String canonicalName, String caption, GroupProperty<I> property, LogicsModule LM) {
+    public GroupDrillDownFormEntity(String canonicalName, LocalizedString caption, GroupProperty<I> property, LogicsModule LM) {
         super(canonicalName, caption, property, LM);
     }
 
@@ -58,7 +59,7 @@ public class GroupDrillDownFormEntity<I extends PropertyInterface> extends Drill
             if (byInnerInterfaces.containsKey(innerInterface)) {
                 innerObject = interfaceObjects.get(byInnerInterfaces.get(innerInterface));
             } else {
-                innerObject = new ObjectEntity(genID(), innerIntClass, "");
+                innerObject = new ObjectEntity(genID(), innerIntClass, LocalizedString.create(""));
                 detailsGroup.add(innerObject);
 
                 addPropertyDraw(LM.baseLM.objectValue, false, version, innerObject);

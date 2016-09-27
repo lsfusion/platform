@@ -29,6 +29,7 @@ import lsfusion.server.form.instance.InstanceFactory;
 import lsfusion.server.form.instance.Instantiable;
 import lsfusion.server.form.instance.ObjectInstance;
 import lsfusion.server.form.instance.filter.FilterInstance;
+import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.CalcPropertyRevImplement;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.Property;
@@ -154,7 +155,7 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
         MExclMap<GroupObjectProp, CalcPropertyRevImplement<ClassPropertyInterface, ObjectEntity>> mProps = (MExclMap<GroupObjectProp, CalcPropertyRevImplement<ClassPropertyInterface, ObjectEntity>>) props;
         CalcPropertyRevImplement<ClassPropertyInterface, ObjectEntity> prop = mProps.get(type);
         if(prop==null) { // type.getSID() + "_" + getSID() нельзя потому как надо еще SID формы подмешивать
-            prop = DerivedProperty.createDataPropRev(type.toString() + " (" + objects.toString() + ")", getObjects().mapValues(new GetValue<ValueClass, ObjectEntity>() {
+            prop = DerivedProperty.createDataPropRev(LocalizedString.createFromSimpleString(type.toString() + " (" + objects.toString() + ")"), getObjects().mapValues(new GetValue<ValueClass, ObjectEntity>() {
                 public ValueClass getMapValue(ObjectEntity value) {
                     return value.baseClass;
                 }}), type.getValueClass(), false);

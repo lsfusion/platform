@@ -20,6 +20,7 @@ import lsfusion.server.classes.ConcreteCustomClass;
 import lsfusion.server.classes.OrderClass;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.context.ExecutionStack;
+import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.QueryEnvironment;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
@@ -45,7 +46,6 @@ import lsfusion.server.form.instance.listener.CustomClassListener;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.NullValue;
 import lsfusion.server.logics.ObjectValue;
-import lsfusion.server.logics.ServerResourceBundle;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.profiler.ProfiledObject;
 import lsfusion.server.session.*;
@@ -1147,7 +1147,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
         @Override
         public String toString() {
-            return ServerResourceBundle.getString("logics.background") + " (" + GroupObjectInstance.this.toString() + ")";
+            return ThreadLocalContext.localize("{logics.background} (") + GroupObjectInstance.this.toString() + ")";
         }
 
         @Override
@@ -1171,7 +1171,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
         @Override
         public String toString() {
-            return ServerResourceBundle.getString("logics.foreground") + " (" + GroupObjectInstance.this.toString() + ")";
+            return ThreadLocalContext.localize("{logics.foreground}") + " (" + GroupObjectInstance.this.toString() + ")";
         }
 
         @Override

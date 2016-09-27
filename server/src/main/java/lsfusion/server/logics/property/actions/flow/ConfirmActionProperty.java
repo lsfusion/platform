@@ -2,6 +2,7 @@ package lsfusion.server.logics.property.actions.flow;
 
 import lsfusion.interop.action.ConfirmClientAction;
 import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.PropertyInterface;
@@ -14,7 +15,7 @@ import static lsfusion.base.BaseUtils.toCaption;
 public class ConfirmActionProperty extends MessageActionProperty {
     private final LCP<?> confirmedProperty;
 
-    public <I extends PropertyInterface> ConfirmActionProperty(String caption, String title, LCP confirmedProperty) {
+    public <I extends PropertyInterface> ConfirmActionProperty(LocalizedString caption, String title, LCP confirmedProperty) {
         super(caption, title);
         this.confirmedProperty = confirmedProperty;
     }

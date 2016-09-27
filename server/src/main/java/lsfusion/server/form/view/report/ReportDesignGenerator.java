@@ -384,7 +384,7 @@ public class ReportDesignGenerator {
     private JasperDesign createJasperDesignObject(String name, boolean isMain, boolean hasTopMargin) throws JRException {
         JasperDesign design = new JasperDesign();
         if (name.equals(GroupObjectHierarchy.rootNodeName)) {
-            design.setName(formView.caption);
+            design.setName(ThreadLocalContext.localize(formView.caption));
         } else {
             design.setName(name);
         }

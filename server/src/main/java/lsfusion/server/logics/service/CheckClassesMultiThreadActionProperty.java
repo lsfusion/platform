@@ -2,16 +2,12 @@ package lsfusion.server.logics.service;
 
 import lsfusion.interop.action.MessageClientAction;
 import lsfusion.server.classes.ValueClass;
-import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.ServiceLogicsModule;
-import lsfusion.server.logics.property.ClassPropertyInterface;
-import lsfusion.server.logics.property.ExecutionContext;
+import lsfusion.server.logics.i18n.FormatLocalizedString;
 import lsfusion.server.logics.tasks.GroupPropertiesSingleTask;
 import lsfusion.server.logics.tasks.impl.recalculate.CheckClassesTask;
 
-import java.sql.SQLException;
-
-import static lsfusion.server.logics.ServerResourceBundle.getString;
+import static lsfusion.server.context.ThreadLocalContext.localize;
 
 public class CheckClassesMultiThreadActionProperty extends MultiThreadActionProperty {
 
@@ -26,12 +22,12 @@ public class CheckClassesMultiThreadActionProperty extends MultiThreadActionProp
 
     @Override
     protected String getCaptionError() {
-        return getString("logics.check.classes.error");
+        return localize("{logics.check.classes.error}");
     }
 
     @Override
     protected MessageClientAction createMessageClientAction(GroupPropertiesSingleTask task, boolean errorOccurred) {
-        return new MessageClientAction(getString(errorOccurred ? "logics.check.failed" : "logics.check.completed",
-                getString("logics.checking.data.classes")) + task.getMessages(), getString("logics.checking.data.classes"), true);
+        return new MessageClientAction(localize(new FormatLocalizedString(errorOccurred ? "{logics.check.failed}" : "{logics.check.completed}",
+                localize("{logics.checking.data.classes}"))) + task.getMessages(), localize("{logics.checking.data.classes}"), true);
     }
 }

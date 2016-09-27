@@ -10,6 +10,7 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.caches.IdentityInstanceLazy;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.type.Type;
+import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.derived.DerivedProperty;
 
@@ -21,7 +22,7 @@ public class TryActionProperty extends KeepContextActionProperty {
     private final ActionPropertyMapImplement<?, PropertyInterface> finallyAction;
 
 
-    public <I extends PropertyInterface> TryActionProperty(String caption, ImOrderSet<I> innerInterfaces, 
+    public <I extends PropertyInterface> TryActionProperty(LocalizedString caption, ImOrderSet<I> innerInterfaces,
                                                            ActionPropertyMapImplement<?, I> tryAction,
                                                            ActionPropertyMapImplement<?, I> finallyAction) {
         super(caption, innerInterfaces.size());

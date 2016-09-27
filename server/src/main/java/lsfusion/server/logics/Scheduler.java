@@ -43,6 +43,7 @@ import java.sql.Timestamp;
 import java.util.*;
 import java.util.concurrent.*;
 
+import static lsfusion.server.context.ThreadLocalContext.localize;
 import static org.apache.commons.lang3.StringUtils.trim;
 
 public class Scheduler extends MonitorServer implements InitializingBean {
@@ -442,18 +443,18 @@ public class Scheduler extends MonitorServer implements InitializingBean {
                                 } catch (TimeoutException e) {
                                     afterFinishErrorOccurred = true;
                                     ThreadUtils.interruptThread(afterFinishLogSession.sql, threadId.result, future);
-                                    schedulerLogger.error("Timeout error while running scheduler task (in executeLAP()) " + detail.lap.property.caption);
+                                    schedulerLogger.error("Timeout error while running scheduler task (in executeLAP()) " + localize(detail.lap.property.caption));
                                     try (DataSession timeoutLogSession = dbManager.createSession(getLogSql())) {
                                         DataObject timeoutScheduledTaskLogFinishObject = timeoutLogSession.addObject(BL.schedulerLM.scheduledTaskLog);
                                         BL.schedulerLM.scheduledTaskScheduledTaskLog.change(scheduledTaskObject, (ExecutionEnvironment) timeoutLogSession, timeoutScheduledTaskLogFinishObject);
-                                        BL.schedulerLM.propertyScheduledTaskLog.change(detail.lap.property.caption + " (" + detail.lap.property.getSID() + ")", timeoutLogSession, timeoutScheduledTaskLogFinishObject);
+                                        BL.schedulerLM.propertyScheduledTaskLog.change(localize(detail.lap.property.caption) + " (" + detail.lap.property.getSID() + ")", timeoutLogSession, timeoutScheduledTaskLogFinishObject);
                                         BL.schedulerLM.resultScheduledTaskLog.change("Timeout error", timeoutLogSession, timeoutScheduledTaskLogFinishObject);
                                         BL.schedulerLM.exceptionOccurredScheduledTaskLog.change(true, timeoutLogSession, timeoutScheduledTaskLogFinishObject);
                                         BL.schedulerLM.dateScheduledTaskLog.change(new Timestamp(System.currentTimeMillis()), timeoutLogSession, timeoutScheduledTaskLogFinishObject);
 
                                         timeoutLogSession.apply(BL, stack);
                                     } catch (Exception ie) {
-                                        schedulerLogger.error("Error while reporting exception in scheduler task (in executeLAPThread) " + detail.lap.property.caption + " : ", ie);
+                                        schedulerLogger.error("Error while reporting exception in scheduler task (in executeLAPThread) " + localize(detail.lap.property.caption) + " : ", ie);
                                     }
                                     succeeded = false;
                                 }
@@ -527,7 +528,7 @@ public class Scheduler extends MonitorServer implements InitializingBean {
                 currentScheduledTaskLogFinishObject = afterFinishLogSession.addObject(BL.schedulerLM.scheduledTaskLog);
                 try {
                     BL.schedulerLM.scheduledTaskScheduledTaskLog.change(scheduledTaskObject, (ExecutionEnvironment) beforeStartLogSession, currentScheduledTaskLogStartObject);
-                    BL.schedulerLM.propertyScheduledTaskLog.change(detail.lap.property.caption + " (" + detail.lap.property.getSID() + ")", beforeStartLogSession, currentScheduledTaskLogStartObject);
+                    BL.schedulerLM.propertyScheduledTaskLog.change(localize(detail.lap.property.caption) + " (" + detail.lap.property.getSID() + ")", beforeStartLogSession, currentScheduledTaskLogStartObject);
                     BL.schedulerLM.dateScheduledTaskLog.change(new Timestamp(System.currentTimeMillis()), beforeStartLogSession, currentScheduledTaskLogStartObject);
                     BL.schedulerLM.resultScheduledTaskLog.change("Запущено" + (detail.script == null ? "" : (" " + BaseUtils.truncate(detail.script, 191))), beforeStartLogSession, currentScheduledTaskLogStartObject);
                     beforeStartLogSession.apply(BL, stack);
@@ -560,7 +561,7 @@ public class Scheduler extends MonitorServer implements InitializingBean {
                         String applyResult = mainSession.applyMessage(BL, stack);
                         schedulerLogger.info("After apply " + detail.lap.property.getSID());
                         BL.schedulerLM.scheduledTaskScheduledTaskLog.change(scheduledTaskObject, (ExecutionEnvironment) afterFinishLogSession, currentScheduledTaskLogFinishObject);
-                        BL.schedulerLM.propertyScheduledTaskLog.change(detail.lap.property.caption + " (" + detail.lap.property.getSID() + ")", afterFinishLogSession, currentScheduledTaskLogFinishObject);
+                        BL.schedulerLM.propertyScheduledTaskLog.change(localize(detail.lap.property.caption) + " (" + detail.lap.property.getSID() + ")", afterFinishLogSession, currentScheduledTaskLogFinishObject);
                         BL.schedulerLM.resultScheduledTaskLog.change(applyResult == null ? (afterFinishErrorOccurred ? "Выполнено с ошибками" : "Выполнено успешно") : BaseUtils.truncate(applyResult, 200), afterFinishLogSession, currentScheduledTaskLogFinishObject);
                         if (applyResult != null)
                             BL.schedulerLM.exceptionOccurredScheduledTaskLog.change(true, beforeStartLogSession, currentScheduledTaskLogStartObject);
@@ -571,18 +572,18 @@ public class Scheduler extends MonitorServer implements InitializingBean {
 
                         String finishResult = afterFinishLogSession.applyMessage(BL, stack);
                         if (finishResult != null)
-                            schedulerLogger.error("Error while saving scheduler task result " + detail.lap.property.caption + " : " + finishResult);
+                            schedulerLogger.error("Error while saving scheduler task result " + localize(detail.lap.property.caption) + " : " + finishResult);
                         return applyResult == null || detail.ignoreExceptions;
                     }
                 } catch (Exception e) {
                     //not timeout exception
                     if (e.getMessage() == null || !e.getMessage().contains("FATAL: terminating connection due to administrator command")) {
-                        schedulerLogger.error("Error while running scheduler task (in executeLAP()) " + detail.lap.property.caption + " : ", e);
+                        schedulerLogger.error("Error while running scheduler task (in executeLAP()) " + localize(detail.lap.property.caption) + " : ", e);
 
                         try {
                             Timestamp time = new Timestamp(System.currentTimeMillis());
                             BL.schedulerLM.scheduledTaskScheduledTaskLog.change(scheduledTaskObject, (ExecutionEnvironment) afterFinishLogSession, currentScheduledTaskLogFinishObject);
-                            BL.schedulerLM.propertyScheduledTaskLog.change(detail.lap.property.caption + " (" + detail.lap.property.getSID() + ")", afterFinishLogSession, currentScheduledTaskLogFinishObject);
+                            BL.schedulerLM.propertyScheduledTaskLog.change(localize(detail.lap.property.caption) + " (" + detail.lap.property.getSID() + ")", afterFinishLogSession, currentScheduledTaskLogFinishObject);
                             BL.schedulerLM.resultScheduledTaskLog.change(BaseUtils.truncate(String.valueOf(e), 200), afterFinishLogSession, currentScheduledTaskLogFinishObject);
                             BL.schedulerLM.exceptionOccurredScheduledTaskLog.change(true, afterFinishLogSession, currentScheduledTaskLogFinishObject);
                             BL.schedulerLM.dateScheduledTaskLog.change(time, afterFinishLogSession, currentScheduledTaskLogFinishObject);
@@ -595,7 +596,7 @@ public class Scheduler extends MonitorServer implements InitializingBean {
 
                             afterFinishLogSession.apply(BL, stack);
                         } catch (Exception ie) {
-                            schedulerLogger.error("Error while reporting exception in scheduler task (in executeLAPThread) " + detail.lap.property.caption + " : ", ie);
+                            schedulerLogger.error("Error while reporting exception in scheduler task (in executeLAPThread) " + localize(detail.lap.property.caption) + " : ", ie);
                         }
                     }
                     return detail.ignoreExceptions;

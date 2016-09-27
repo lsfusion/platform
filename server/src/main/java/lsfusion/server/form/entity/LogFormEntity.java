@@ -9,8 +9,8 @@ import lsfusion.interop.PropertyEditType;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.form.entity.filter.NotNullFilterEntity;
 import lsfusion.server.logics.BusinessLogics;
-import lsfusion.server.logics.ServerResourceBundle;
 import lsfusion.server.logics.SystemEventsLogicsModule;
+import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.*;
@@ -42,7 +42,7 @@ public class LogFormEntity<T extends BusinessLogics<T>> extends FormEntity<T> {
     LCP<?> property;
     public boolean lazyInit;
 
-    public LogFormEntity(String canonicalName, String caption, LCP<?> property, LCP<?> logProperty, SystemEventsLogicsModule systemEventsLM, boolean lazyInit) {
+    public LogFormEntity(String canonicalName, LocalizedString caption, LCP<?> property, LCP<?> logProperty, SystemEventsLogicsModule systemEventsLM, boolean lazyInit) {
         super(canonicalName, caption, systemEventsLM.getVersion());
 
         this.systemEventsLM = systemEventsLM;
@@ -74,7 +74,7 @@ public class LogFormEntity<T extends BusinessLogics<T>> extends FormEntity<T> {
         params = Arrays.copyOf(entities, classes.length);
 
         GroupObjectEntity logGroup = new GroupObjectEntity(genID(), "logGroup");
-        objSession = new ObjectEntity(genID(), "session", systemEventsLM.session, ServerResourceBundle.getString("form.entity.session"));
+        objSession = new ObjectEntity(genID(), "session", systemEventsLM.session, LocalizedString.create("{form.entity.session}"));
         entities[classes.length] = objSession;
         logGroup.add(objSession);
 

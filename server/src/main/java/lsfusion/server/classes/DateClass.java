@@ -10,7 +10,7 @@ import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.ParseException;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.form.view.report.ReportDrawField;
-import lsfusion.server.logics.ServerResourceBundle;
+import lsfusion.server.logics.i18n.LocalizedString;
 import net.sf.jasperreports.engine.type.HorizontalAlignEnum;
 
 import java.sql.Date;
@@ -27,11 +27,7 @@ public class DateClass extends DataClass<Date> {
         DataClass.storeClass(instance);
     }
 
-    private DateClass() { super(ServerResourceBundle.getString("classes.date")); }
-
-    public String toString() {
-        return ServerResourceBundle.getString("classes.date");
-    }
+    private DateClass() { super(LocalizedString.create("{classes.date}")); }
 
     public int getPreferredWidth() { return 70; }
 

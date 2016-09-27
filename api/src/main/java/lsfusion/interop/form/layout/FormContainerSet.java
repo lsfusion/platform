@@ -1,7 +1,5 @@
 package lsfusion.interop.form.layout;
 
-import static lsfusion.base.ApiResourceBundle.getString;
-
 public class FormContainerSet <C extends AbstractContainer<C, T>, T extends AbstractComponent<C, T>> {
 
     public static final String FUNCTIONS_CONTAINER = "functions.box";
@@ -39,10 +37,10 @@ public class FormContainerSet <C extends AbstractContainer<C, T>, T extends Abst
 
         set.mainContainer = form.getMainContainer();
         set.mainContainer.setType(ContainerType.CONTAINERV);
-        set.mainContainer.setDescription(getString("form.layout.main.container"));
+        set.mainContainer.setDescription("{form.layout.main.container}");
 
         set.formButtonContainer = contFactory.createContainer();
-        set.formButtonContainer.setDescription(getString("form.layout.service.buttons"));
+        set.formButtonContainer.setDescription("{form.layout.service.buttons}");
         set.formButtonContainer.setSID(FUNCTIONS_CONTAINER);
 
         set.noGroupPanelContainer = contFactory.createContainer();

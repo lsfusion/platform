@@ -9,20 +9,19 @@ import lsfusion.server.form.view.ContainerView;
 import lsfusion.server.form.view.DefaultFormView;
 import lsfusion.server.form.view.FormView;
 import lsfusion.server.logics.LogicsModule;
+import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static lsfusion.server.logics.ServerResourceBundle.getString;
-
 public class UnionDrillDownFormEntity<I extends PropertyInterface, P extends CalcProperty<I>> extends DrillDownFormEntity<UnionProperty.Interface, UnionProperty> {
 
     protected List<PropertyDrawEntity> operandProperties;
     protected PropertyDrawEntity implPropertyDraw;
 
-    public UnionDrillDownFormEntity(String canonicalName, String caption, UnionProperty property, LogicsModule LM) {
+    public UnionDrillDownFormEntity(String canonicalName, LocalizedString caption, UnionProperty property, LogicsModule LM) {
         super(canonicalName, caption, property, LM);
     }
 
@@ -61,7 +60,7 @@ public class UnionDrillDownFormEntity<I extends PropertyInterface, P extends Cal
 
         valueContainer.add(design.get(implPropertyDraw), version);
 
-        ContainerView operandsContainer = design.createContainer(getString("logics.property.drilldown.form.operands"), version);
+        ContainerView operandsContainer = design.createContainer(LocalizedString.create("{logics.property.drilldown.form.operands}"), version);
         operandsContainer.setAlignment(FlexAlignment.STRETCH);
         for (PropertyDrawEntity operandProperty : operandProperties) {
             operandsContainer.add(design.get(operandProperty), version);

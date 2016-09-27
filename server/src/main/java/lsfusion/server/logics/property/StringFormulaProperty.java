@@ -10,6 +10,7 @@ import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.formula.CustomFormulaSyntax;
 import lsfusion.server.data.expr.formula.FormulaExpr;
 import lsfusion.server.data.where.WhereBuilder;
+import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.infer.ExClassSet;
 import lsfusion.server.logics.property.infer.InferType;
 import lsfusion.server.session.PropertyChanges;
@@ -45,7 +46,7 @@ public class StringFormulaProperty extends ValueFormulaProperty<StringFormulaPro
     }
 
     public StringFormulaProperty(DataClass valueClass, CustomFormulaSyntax formula, int paramCount, boolean hasNotNull) {
-        super(formula.getDefaultSyntax(),getInterfaces(paramCount),valueClass);
+        super(LocalizedString.create(formula.getDefaultSyntax()),getInterfaces(paramCount),valueClass);
         this.formula = formula;
         this.hasNotNull = hasNotNull;
 

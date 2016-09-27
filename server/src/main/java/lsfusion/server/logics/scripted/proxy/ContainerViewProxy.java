@@ -5,6 +5,7 @@ import lsfusion.interop.form.layout.ContainerType;
 import lsfusion.interop.form.layout.FlexAlignment;
 import lsfusion.server.form.entity.CalcPropertyObjectEntity;
 import lsfusion.server.form.view.ContainerView;
+import lsfusion.server.logics.i18n.LocalizedString;
 
 public class ContainerViewProxy extends ComponentViewProxy<ContainerView> {
 
@@ -13,11 +14,11 @@ public class ContainerViewProxy extends ComponentViewProxy<ContainerView> {
     }
     
     public void setCaption(String caption) {
-        target.caption = caption;
+        target.caption = LocalizedString.create(caption);
     }
 
     public void setDescription(String description) {
-        target.description = description;
+        target.description = LocalizedString.create(description);
     }
 
     public void setColumnLabelsWidth(int columnLabelsWidth) {

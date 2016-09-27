@@ -5,6 +5,7 @@ import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.instance.*;
 import lsfusion.server.logics.ObjectValue;
+import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
@@ -16,7 +17,7 @@ public class ChangeReadObjectActionProperty extends SystemExplicitActionProperty
     private final CalcProperty filterProperty;
 
     public ChangeReadObjectActionProperty(CalcProperty filterProperty, ValueClass baseClass) {
-        super("CO_" + filterProperty, baseClass);
+        super(LocalizedString.createFromSimpleString("CO_" + filterProperty), baseClass);
         this.filterProperty = filterProperty;
     }
 

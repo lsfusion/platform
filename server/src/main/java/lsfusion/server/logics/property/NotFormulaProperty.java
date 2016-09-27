@@ -6,6 +6,7 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.ValueExpr;
 import lsfusion.server.data.where.WhereBuilder;
+import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.infer.ExClassSet;
 import lsfusion.server.logics.property.infer.InferType;
 import lsfusion.server.logics.property.infer.Inferred;
@@ -14,7 +15,7 @@ import lsfusion.server.session.PropertyChanges;
 public class NotFormulaProperty extends FormulaProperty<PropertyInterface> {
 
     public NotFormulaProperty() {
-        super("Не", SetFact.singletonOrder(new PropertyInterface(0)));
+        super(LocalizedString.create("Не"), SetFact.singletonOrder(new PropertyInterface(0)));
     }
 
     public final static NotFormulaProperty instance = new NotFormulaProperty();

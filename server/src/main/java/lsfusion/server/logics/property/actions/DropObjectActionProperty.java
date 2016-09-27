@@ -5,7 +5,7 @@ import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.instance.ObjectInstance;
 import lsfusion.server.form.instance.PropertyObjectInterfaceInstance;
 import lsfusion.server.logics.NullValue;
-import lsfusion.server.logics.ServerResourceBundle;
+import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 
@@ -15,7 +15,7 @@ import java.sql.SQLException;
 public class DropObjectActionProperty extends SystemExplicitActionProperty {
 
     public DropObjectActionProperty(ValueClass valueClass) {
-        super(ServerResourceBundle.getString("logics.property.actions.drop") + " " + valueClass, new ValueClass[]{valueClass});
+        super(LocalizedString.create("{logics.property.actions.drop} " + valueClass), new ValueClass[]{valueClass});
     }
 
     protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {

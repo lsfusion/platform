@@ -5,6 +5,7 @@ import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.server.data.expr.query.AggrType;
+import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.infer.ExClassSet;
 import lsfusion.server.logics.property.infer.InferType;
 import lsfusion.server.logics.property.infer.Inferred;
@@ -13,7 +14,7 @@ import lsfusion.server.session.StructChanges;
 // свойство производное от остальных свойств
 public abstract class FunctionProperty<T extends PropertyInterface> extends AggregateProperty<T> {
 
-    protected FunctionProperty(String caption, ImOrderSet<T> interfaces) {
+    protected FunctionProperty(LocalizedString caption, ImOrderSet<T> interfaces) {
         super(caption, interfaces);
     }
 

@@ -3,6 +3,7 @@ package lsfusion.server.logics.property.actions;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.server.classes.BaseClass;
 import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
@@ -15,7 +16,7 @@ public class ChangeClassValueActionProperty extends SystemExplicitActionProperty
     private ClassPropertyInterface objectInterface;
     private ClassPropertyInterface classInterface;
 
-    public ChangeClassValueActionProperty(String caption, BaseClass baseClass) {
+    public ChangeClassValueActionProperty(LocalizedString caption, BaseClass baseClass) {
         super(caption, baseClass, baseClass.objectClass);
 
         Iterator<ClassPropertyInterface> i = interfaces.iterator();

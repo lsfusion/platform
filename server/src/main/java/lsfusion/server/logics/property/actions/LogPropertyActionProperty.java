@@ -4,6 +4,7 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.interop.action.LogMessageClientAction;
+import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.entity.ObjectEntity;
 import lsfusion.server.form.instance.*;
@@ -46,7 +47,7 @@ public class LogPropertyActionProperty<P extends PropertyInterface> extends Syst
                 data.add(new ArrayList<String>());
 
             for (ObjectInstance object : formInstance.getObjects()) {
-                titleRow.add(object.getCaption());
+                titleRow.add(ThreadLocalContext.localize(object.getCaption()));
 
                 for (int j = 0; j < formRows.size(); j++)
                     data.get(j).add(String.valueOf(formRows.get(j).keys.get(object)));

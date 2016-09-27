@@ -25,6 +25,7 @@ import lsfusion.server.classes.LogicalClass;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.classes.sets.AndClassSet;
 import lsfusion.server.classes.sets.ResolveClassSet;
+import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.form.entity.FormEntity;
@@ -33,6 +34,7 @@ import lsfusion.server.form.view.DefaultFormView;
 import lsfusion.server.form.view.PropertyDrawView;
 import lsfusion.server.logics.*;
 import lsfusion.server.logics.debug.DebugInfo;
+import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LP;
 import lsfusion.server.logics.mutables.NFLazy;
@@ -64,7 +66,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     private boolean local = false;
     
     // вот отсюда идут свойства, которые отвечают за логику представлений и подставляются автоматически для PropertyDrawEntity и PropertyDrawView
-    public String caption;
+    public LocalizedString caption;
 
     public int minimumCharWidth;
     public int maximumCharWidth;
@@ -122,7 +124,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     private Object editActions;
 
     public String toString() {
-        String result = caption;
+        String result = ThreadLocalContext.localize(caption);
         if(canonicalName != null)
             result = result + " (" + canonicalName + ")";
         return result;
@@ -169,7 +171,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
 
     public abstract boolean isInInterface(ImMap<T, ? extends AndClassSet> interfaceClasses, boolean isAny);
 
-    public Property(String caption, ImOrderSet<T> interfaces) {
+    public Property(LocalizedString caption, ImOrderSet<T> interfaces) {
         this.ID = BaseLogicsModule.generateStaticNewID();
         this.caption = caption;
         this.interfaces = interfaces.getSet();
@@ -231,11 +233,11 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     }
 
     @NFLazy
-    public void setContextMenuAction(String actionSID, String caption) {
+    public void setContextMenuAction(String actionSID, LocalizedString caption) {
         if (contextMenuBindings == null || contextMenuBindings instanceof EmptyOrderMap) {
             contextMenuBindings = MapFact.mOrderMap(MapFact.override());
         }
-        ((MOrderMap<String, String>)contextMenuBindings).add(actionSID, caption);
+        ((MOrderMap<String, LocalizedString>)contextMenuBindings).add(actionSID, caption);
     }
 
     @NFLazy
@@ -254,8 +256,8 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         return (ImMap<KeyStroke, String>)(keyBindings == null ? MapFact.EMPTY() : keyBindings);
     }
 
-    public ImOrderMap<String, String> getContextMenuBindings() {
-        return (ImOrderMap<String, String>)(contextMenuBindings == null ? MapFact.EMPTYORDER() : contextMenuBindings);
+    public ImOrderMap<String, LocalizedString> getContextMenuBindings() {
+        return (ImOrderMap<String, LocalizedString>)(contextMenuBindings == null ? MapFact.EMPTYORDER() : contextMenuBindings);
     }
 
     @LongMutable

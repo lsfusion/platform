@@ -33,11 +33,11 @@ import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.LogicsInstance;
 import lsfusion.server.logics.NullValue;
 import lsfusion.server.logics.ObjectValue;
+import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.DialogRequest;
 import lsfusion.server.logics.property.PullChangeProperty;
 import lsfusion.server.remote.RemoteForm;
 import lsfusion.server.session.DataSession;
-import lsfusion.base.ProgressBar;
 import lsfusion.server.stack.ExecutionStackItem;
 
 import java.io.ByteArrayOutputStream;
@@ -146,6 +146,12 @@ public abstract class AbstractContext implements Context {
 
     public abstract DataObject getConnection();
 
+    @Override
+    public String localize(LocalizedString s) {
+        Locale locale = BaseUtils.nvl(getLocale(), Locale.getDefault());
+        return s.getString(locale, getLogicsInstance().getBusinessLogics().getLocalizer());
+    }
+    
     public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, boolean isAdd, FormSessionScope sessionScope, ExecutionStack stack, boolean checkOnOk, boolean showDrop, boolean interactive, ImSet<FilterEntity> contextFilters, PropertyDrawEntity initFilterProperty, ImSet<PullChangeProperty> pullProps, boolean readonly) throws SQLException, SQLHandledException {
         DataSession newSession = sessionScope.createSession(session);
         try {
@@ -154,7 +160,7 @@ public abstract class AbstractContext implements Context {
                     getSecurityPolicy(), getFocusListener(), getClassListener(),
                     getComputer(stack), getConnection(), mapObjects, stack, isModal,
                     isAdd, sessionScope,
-                    checkOnOk, showDrop, interactive, contextFilters, initFilterProperty, pullProps, readonly);
+                    checkOnOk, showDrop, interactive, contextFilters, initFilterProperty, pullProps, readonly, getLocale());
         } finally {
             if (newSession != session) // временный хак, когда уйдет SessionScope тогда и он уйдет, по сути тоже try with resources
                 newSession.close();

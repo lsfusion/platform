@@ -7,8 +7,8 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.interop.GUIPreferences;
-import lsfusion.interop.RemoteLogicsInterface;
 import lsfusion.interop.LocalePreferences;
+import lsfusion.interop.RemoteLogicsInterface;
 import lsfusion.interop.VMOptions;
 import lsfusion.interop.event.IDaemonTask;
 import lsfusion.interop.exceptions.RemoteMessageException;
@@ -20,6 +20,7 @@ import lsfusion.server.Settings;
 import lsfusion.server.SystemProperties;
 import lsfusion.server.auth.User;
 import lsfusion.server.classes.*;
+import lsfusion.server.context.ExecutionStack;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.lifecycle.LifecycleEvent;
 import lsfusion.server.lifecycle.LifecycleListener;
@@ -28,7 +29,6 @@ import lsfusion.server.logics.SecurityManager;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.ClassType;
-import lsfusion.server.context.ExecutionStack;
 import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.session.DataSession;
 import org.apache.log4j.Logger;
@@ -41,7 +41,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static lsfusion.server.logics.ServerResourceBundle.getString;
+import static lsfusion.server.context.ThreadLocalContext.localize;
 
 public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingRemoteObject implements RemoteLogicsInterface, InitializingBean, LifecycleListener {
     protected final static Logger logger = ServerLoggers.remoteLogger;
@@ -256,14 +256,14 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
             try (DataSession session = createSession()) {
                 Integer userId = getUserByEmail(session, email);
                 if (userId == null) {
-                    throw new RuntimeException(getString("mail.user.not.found") + ": " + email);
+                    throw new RuntimeException(localize("{mail.user.not.found}") + ": " + email);
                 }
 
                 businessLogics.emailLM.emailUserPassUser.execute(session, getStack(), new DataObject(userId, businessLogics.authenticationLM.customUser));
             }
         } catch (Exception e) {
             logger.error("Error reminding password: ", e);
-            throw new RemoteMessageException(getString("mail.error.sending.password.remind"), e);
+            throw new RemoteMessageException(localize("{mail.error.sending.password.remind}"), e);
         }
     }
 

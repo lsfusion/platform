@@ -6,10 +6,8 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.ByteArray;
 import lsfusion.base.Pair;
 import lsfusion.server.ServerLoggers;
-import lsfusion.server.context.Context;
 import lsfusion.server.context.ExecutorFactory;
 import lsfusion.server.context.ThreadLocalContext;
-import lsfusion.server.logics.ServerResourceBundle;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingErrorLog;
@@ -38,6 +36,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ScheduledExecutorService;
+
+import static lsfusion.server.context.ThreadLocalContext.localize;
 
 public class EmailSender {
     private final static Logger logger = ServerLoggers.mailLogger;
@@ -182,7 +182,7 @@ public class EmailSender {
     private String createInlinePart(List<String> inlineFiles) throws IOException {
         String result = convertFilesToUtf(inlineFiles);
         if (result.equals("")) {
-            result = ServerResourceBundle.getString("mail.you.have.received.reports");
+            result = localize("{mail.you.have.received.reports}");
         }
         return result;
     }
@@ -223,12 +223,12 @@ public class EmailSender {
         try {
             Address[] addressesTo = message.getRecipients(MimeMessage.RecipientType.TO);
             if (addressesTo == null || addressesTo.length == 0) {
-                logger.error(ServerResourceBundle.getString("mail.failed.to.send.mail")+" " + messageInfo + " : "+ServerResourceBundle.getString("mail.recipient.not.specified"));
-                throw new RuntimeException(ServerResourceBundle.getString("mail.error.send.mail") + " " + messageInfo + " : "+ServerResourceBundle.getString("mail.recipient.not.specified"));
+                logger.error(localize("{mail.failed.to.send.mail}")+" " + messageInfo + " : "+localize("{mail.recipient.not.specified}"));
+                throw new RuntimeException(localize("{mail.error.send.mail}") + " " + messageInfo + " : "+localize("{mail.recipient.not.specified}"));
             }
-            messageInfo += " "+ServerResourceBundle.getString("mail.recipients")+" : " + BaseUtils.toString(",", addressesTo);
+            messageInfo += " "+localize("{mail.recipients}")+" : " + BaseUtils.toString(",", addressesTo);
         } catch (MessagingException me) {
-            messageInfo += " "+ServerResourceBundle.getString("mail.failed.to.get.list.of.recipients")+" " + me.toString();
+            messageInfo += " "+localize("{mail.failed.to.get.list.of.recipients}")+" " + me.toString();
         }
 
         boolean send = false;
@@ -236,7 +236,7 @@ public class EmailSender {
             sendMessage(message, smtpHost, smtpPort, userName, password);
             send = true;
         } catch (MessagingException e) {
-            throw new RuntimeException(ServerResourceBundle.getString("mail.error.send.mail") + " " + messageInfo, e);
+            throw new RuntimeException(localize("{mail.error.send.mail}") + " " + messageInfo, e);
         } finally {
             try {
                 if (context != null) {
@@ -280,12 +280,12 @@ public class EmailSender {
                 try {
                     Address[] addressesTo = message.getRecipients(MimeMessage.RecipientType.TO);
                     if (addressesTo == null || addressesTo.length == 0) {
-                        logger.error(ServerResourceBundle.getString("mail.failed.to.send.mail")+" " + messageInfo + " : "+ServerResourceBundle.getString("mail.recipient.not.specified"));
-                        throw new RuntimeException(ServerResourceBundle.getString("mail.error.send.mail") + " " + messageInfo + " : "+ServerResourceBundle.getString("mail.recipient.not.specified"));
+                        logger.error(localize("{mail.failed.to.send.mail}")+" " + messageInfo + " : "+localize("{mail.recipient.not.specified}"));
+                        throw new RuntimeException(localize("{mail.error.send.mail}") + " " + messageInfo + " : "+localize("{mail.recipient.not.specified}"));
                     }
-                    messageInfo += " "+ServerResourceBundle.getString("mail.recipients")+" : " + BaseUtils.toString(",", addressesTo);
+                    messageInfo += " "+localize("{mail.recipients}")+" : " + BaseUtils.toString(",", addressesTo);
                 } catch (MessagingException me) {
-                    messageInfo += " "+ServerResourceBundle.getString("mail.failed.to.get.list.of.recipients")+" " + me.toString();
+                    messageInfo += " "+localize("{mail.failed.to.get.list.of.recipients}")+" " + me.toString();
                 }
 
                 boolean send = false;
@@ -296,18 +296,18 @@ public class EmailSender {
                         count++;
                         try {
                             sendMessage(message, smtpHost, smtpPort, userName, password);
-                            logger.info(ServerResourceBundle.getString("mail.successful.mail.sending") + " : " + messageInfo);
+                            logger.info(localize("{mail.successful.mail.sending}") + " : " + messageInfo);
                         } catch (MessagingException e) {
                             send = false;
                             if (count < 40) {
-                                logger.info(ServerResourceBundle.getString("mail.unsuccessful.attempt.to.send.mail") + " : " + e.getMessage() + " " + messageInfo);
+                                logger.info(localize("{mail.unsuccessful.attempt.to.send.mail}") + " : " + e.getMessage() + " " + messageInfo);
                                 try {
                                     Thread.sleep(30000);
                                 } catch (InterruptedException ignored) {
                                 }
                             } else {
-                                logger.error(ServerResourceBundle.getString("mail.failed.to.send.mail") + " : " + messageInfo, e);
-                                throw new RuntimeException(ServerResourceBundle.getString("mail.error.send.mail") + " : " + messageInfo, e);
+                                logger.error(localize("{mail.failed.to.send.mail}") + " : " + messageInfo, e);
+                                throw new RuntimeException(localize("{mail.error.send.mail}") + " : " + messageInfo, e);
                             }
                         }
                     }

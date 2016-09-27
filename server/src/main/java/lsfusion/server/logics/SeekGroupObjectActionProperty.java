@@ -6,6 +6,7 @@ import lsfusion.server.form.entity.GroupObjectEntity;
 import lsfusion.server.form.entity.ObjectEntity;
 import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.form.instance.ObjectInstance;
+import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
@@ -21,7 +22,7 @@ public class SeekGroupObjectActionProperty extends ScriptingActionProperty {
     private boolean last;
 
     public SeekGroupObjectActionProperty(ScriptingLogicsModule lm, GroupObjectEntity groupObject, List<ObjectEntity> objects, boolean last, ValueClass... classes) {
-        super(lm, "Найти объект (" + groupObject.getSID() + ")", classes);
+        super(lm, LocalizedString.createFromSimpleString("Найти объект (" + groupObject.getSID() + ")"), classes);
 
         this.groupObject = groupObject;
         this.objects = objects;

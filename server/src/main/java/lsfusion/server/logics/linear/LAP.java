@@ -10,6 +10,7 @@ import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.PropertyUtils;
+import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.actions.FormEnvironment;
@@ -68,10 +69,10 @@ public class LAP<T extends PropertyInterface> extends LP<T, ActionProperty<T>> {
     }
 
     public <P extends PropertyInterface> void addToContextMenuFor(LP<P, Property<P>> mainProperty) {
-        addToContextMenuFor(mainProperty, property.caption != null ? property.caption : property.getSID());
+        addToContextMenuFor(mainProperty, property.caption != null ? property.caption : LocalizedString.create(property.getSID()));
     }
 
-    public <P extends PropertyInterface> void addToContextMenuFor(LP<P, Property<P>> mainProperty, String contextMenuCaption) {
+    public <P extends PropertyInterface> void addToContextMenuFor(LP<P, Property<P>> mainProperty, LocalizedString contextMenuCaption) {
         setAsEditActionFor(property.getSID(), mainProperty);
         mainProperty.property.setContextMenuAction(property.getSID(), contextMenuCaption);
     }

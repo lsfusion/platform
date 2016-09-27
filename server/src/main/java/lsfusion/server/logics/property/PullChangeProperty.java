@@ -4,6 +4,7 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
+import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.session.StructChanges;
 
 public abstract class PullChangeProperty<T extends PropertyInterface, P extends PropertyInterface, I extends PropertyInterface> extends ChangeProperty<I> {
@@ -12,7 +13,7 @@ public abstract class PullChangeProperty<T extends PropertyInterface, P extends 
     protected final CalcProperty<T> onChange;
     public final CalcProperty<P> toChange;
 
-    public PullChangeProperty(String caption, ImOrderSet<I> interfaces, CalcProperty<T> onChange, CalcProperty<P> toChange) {
+    public PullChangeProperty(LocalizedString caption, ImOrderSet<I> interfaces, CalcProperty<T> onChange, CalcProperty<P> toChange) {
         super(caption, interfaces);
         this.onChange = onChange;
         this.toChange = toChange;

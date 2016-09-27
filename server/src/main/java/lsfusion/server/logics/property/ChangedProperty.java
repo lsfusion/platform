@@ -21,13 +21,13 @@ import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.form.entity.drilldown.ChangedDrillDownFormEntity;
 import lsfusion.server.form.entity.drilldown.DrillDownFormEntity;
 import lsfusion.server.logics.LogicsModule;
-import lsfusion.server.logics.property.infer.*;
+import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.infer.ExClassSet;
+import lsfusion.server.logics.property.infer.InferType;
+import lsfusion.server.logics.property.infer.Inferred;
 import lsfusion.server.session.*;
 
 import java.sql.SQLException;
-
-import static lsfusion.server.logics.ServerResourceBundle.getString;
 
 public class ChangedProperty<T extends PropertyInterface> extends SessionCalcProperty<T> {
 
@@ -40,7 +40,7 @@ public class ChangedProperty<T extends PropertyInterface> extends SessionCalcPro
     }
 
     public ChangedProperty(CalcProperty<T> property, IncrementType type, PrevScope scope) {
-        super("(" + type + ") " + property, property, scope);
+        super(LocalizedString.createFromSimpleString("(" + type + ") " + property), property, scope);
         this.type = type;
 
         property.getOld(scope);// чтобы зарегить old
@@ -158,7 +158,7 @@ public class ChangedProperty<T extends PropertyInterface> extends SessionCalcPro
     @Override
     public DrillDownFormEntity createDrillDownForm(LogicsModule LM, String canonicalName) {
         return new ChangedDrillDownFormEntity(
-                canonicalName, getString("logics.property.drilldown.form.data"), this, LM
+                canonicalName, LocalizedString.create("{logics.property.drilldown.form.data}"), this, LM
         );
     }
 

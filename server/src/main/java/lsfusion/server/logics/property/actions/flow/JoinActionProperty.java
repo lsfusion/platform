@@ -13,6 +13,7 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.debug.ActionDelegationType;
 import lsfusion.server.logics.debug.WatchActionProperty;
+import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.derived.DerivedProperty;
 
@@ -22,7 +23,7 @@ public class JoinActionProperty<T extends PropertyInterface> extends KeepContext
 
     public final ActionPropertyImplement<T, CalcPropertyInterfaceImplement<PropertyInterface>> action; // action + mapping на calculate
 
-    public <I extends PropertyInterface> JoinActionProperty(String caption, ImOrderSet<I> listInterfaces, ActionPropertyImplement<T, CalcPropertyInterfaceImplement<I>> implement) {
+    public <I extends PropertyInterface> JoinActionProperty(LocalizedString caption, ImOrderSet<I> listInterfaces, ActionPropertyImplement<T, CalcPropertyInterfaceImplement<I>> implement) {
         super(caption, listInterfaces.size());
 
         action = DerivedProperty.mapActionImplements(implement, getMapInterfaces(listInterfaces).reverse());

@@ -15,7 +15,7 @@ import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.entity.ObjectEntity;
 import lsfusion.server.form.entity.PropertyDrawEntity;
 import lsfusion.server.form.entity.PropertyObjectInterfaceEntity;
-import lsfusion.server.logics.ServerResourceBundle;
+import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.actions.ChangeClassActionProperty;
 import lsfusion.server.session.Modifier;
@@ -28,7 +28,7 @@ public class ObjectClassProperty extends AggregateProperty<ClassPropertyInterfac
     private final BaseClass baseClass;
 
     public ObjectClassProperty(BaseClass baseClass) {
-        super(ServerResourceBundle.getString("classes.object.class"), IsClassProperty.getInterfaces(new ValueClass[]{baseClass}));
+        super(LocalizedString.create("{classes.object.class}"), IsClassProperty.getInterfaces(new ValueClass[]{baseClass}));
 
         this.baseClass = baseClass;
 

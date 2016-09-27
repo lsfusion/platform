@@ -9,7 +9,7 @@ import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.ParseException;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.form.view.report.ReportDrawField;
-import lsfusion.server.logics.ServerResourceBundle;
+import lsfusion.server.logics.i18n.LocalizedString;
 import net.sf.jasperreports.engine.type.HorizontalAlignEnum;
 
 import java.sql.*;
@@ -24,11 +24,7 @@ public class DateTimeClass extends DataClass<Timestamp> {
         DataClass.storeClass(instance);
     }
 
-    private DateTimeClass() { super(ServerResourceBundle.getString("classes.time")); }
-
-    public String toString() {
-        return ServerResourceBundle.getString("classes.date.with.time");
-    }
+    private DateTimeClass() { super(LocalizedString.create("{classes.date.with.time}")); }
 
     public int getPreferredWidth() {
         return 75;

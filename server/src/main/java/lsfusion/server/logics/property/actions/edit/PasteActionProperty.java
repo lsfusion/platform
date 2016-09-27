@@ -9,6 +9,7 @@ import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.instance.ObjectInstance;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
+import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.ActionPropertyMapImplement;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.PropertyInterface;
@@ -20,7 +21,7 @@ import java.sql.SQLException;
 // глобальный action
 public class PasteActionProperty extends AroundAspectActionProperty {
 
-    public <I extends PropertyInterface> PasteActionProperty(String caption, ImOrderSet<I> innerInterfaces, ActionPropertyMapImplement<?, I> changeWYSAction) {
+    public <I extends PropertyInterface> PasteActionProperty(LocalizedString caption, ImOrderSet<I> innerInterfaces, ActionPropertyMapImplement<?, I> changeWYSAction) {
         super(caption, innerInterfaces, changeWYSAction);
         
         finalizeInit();

@@ -21,6 +21,7 @@ import lsfusion.server.lifecycle.EventServer;
 import lsfusion.server.lifecycle.MonitorServer;
 import lsfusion.server.logics.*;
 import lsfusion.server.logics.SecurityManager;
+import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.DialogRequest;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.PropertyInterface;
@@ -320,4 +321,12 @@ public class ThreadLocalContext {
     public static void unwrapContext(Context prevContext) {
         aspectAfter(prevContext, false);
     }
+    
+    public static String localize(LocalizedString s) {
+        return s == null ? null : get().localize(s);    
+    }
+    
+    public static String localize(String s) {
+        return s == null ? null : get().localize(LocalizedString.create(s));
+    } 
 }

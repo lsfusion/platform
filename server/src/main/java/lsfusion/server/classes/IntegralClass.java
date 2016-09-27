@@ -3,6 +3,7 @@ package lsfusion.server.classes;
 import lsfusion.base.BaseUtils;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.form.view.report.ReportDrawField;
+import lsfusion.server.logics.i18n.LocalizedString;
 import net.sf.jasperreports.engine.type.HorizontalAlignEnum;
 
 // класс который можно сравнивать
@@ -11,7 +12,7 @@ public abstract class IntegralClass<T extends Number> extends DataClass<T> {
     public int getMinimumWidth() { return 30; }
     public int getPreferredWidth() { return 50; }
 
-    protected IntegralClass(String caption) {
+    protected IntegralClass(LocalizedString caption) {
         super(caption);
     }
 

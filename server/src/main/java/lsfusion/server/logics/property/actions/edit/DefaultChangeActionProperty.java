@@ -19,6 +19,7 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
+import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.actions.SystemExplicitActionProperty;
 import lsfusion.server.session.Modifier;
@@ -32,7 +33,7 @@ public class DefaultChangeActionProperty<P extends PropertyInterface> extends Sy
     private final String editActionSID;
     private final CalcProperty filterProperty;
 
-    public DefaultChangeActionProperty(String caption, CalcProperty<P> property, ImOrderSet<P> listInterfaces, ImList<ValueClass> valueClasses, String editActionSID, CalcProperty filterProperty) {
+    public DefaultChangeActionProperty(LocalizedString caption, CalcProperty<P> property, ImOrderSet<P> listInterfaces, ImList<ValueClass> valueClasses, String editActionSID, CalcProperty filterProperty) {
         super(caption, valueClasses.toArray(new ValueClass[valueClasses.size()]));
 
         assert property.canBeChanged();

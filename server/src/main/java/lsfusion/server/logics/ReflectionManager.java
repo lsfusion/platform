@@ -132,7 +132,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
         List<List<Object>> elementsData = new ArrayList<>();
         for (NavigatorElement element : businessLogics.getNavigatorElements()) {
             if (element.needsToBeSynchronized() && (exactJavaClass ? filterJavaClass == element.getClass() : filterJavaClass.isInstance(element))) {
-                elementsData.add(asList((Object) element.getCanonicalName(), element.caption));
+                elementsData.add(asList((Object) element.getCanonicalName(), element.caption.getSourceString()));
             }
         }
         elementsData.add(asList((Object) "noParentGroup", "Без родительской группы"));
@@ -417,7 +417,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
                     } catch (NullPointerException | ArrayIndexOutOfBoundsException ignored) {
                     }
                     
-                    dataProperty.add(asList(property.getCanonicalName(),(Object) property.getDBName(), property.caption, property.loggable ? true : null,
+                    dataProperty.add(asList(property.getCanonicalName(),(Object) property.getDBName(), property.caption.getSourceString(), property.loggable ? true : null,
                             property instanceof CalcProperty && ((CalcProperty) property).isStored() ? true : null,
                             property instanceof CalcProperty && ((CalcProperty) property).reflectionNotNull ? true : null,
                             returnClass, classProperty, complexityProperty, tableSID, property.annotation, (Settings.get().isDisableSyncStatProps() ? (Integer)Stat.DEFAULT.getCount() : businessLogics.getStatsProperty(property))));
@@ -507,7 +507,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
         List<List<Object>> data = new ArrayList<>();
 
         for (AbstractGroup group : businessLogics.getParentGroups()) {
-            data.add(asList(group.getSID(), (Object) group.caption));
+            data.add(asList(group.getSID(), (Object) group.caption.getSourceString()));
         }
 
         startLogger.info("synchronizeGroupProperties integration service started");
@@ -597,7 +597,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
             data.add(Collections.singletonList(tableName));
             ImMap<KeyField, ValueClass> classes = dataTable.getClasses().getCommonParent(dataTable.getTableKeys());
             for (KeyField key : dataTable.keys) {
-                dataKeys.add(asList(tableName, key.getName(), tableName + "." + key.getName(), classes.get(key).getCaption(), classes.get(key).getSID()));
+                dataKeys.add(asList(tableName, key.getName(), tableName + "." + key.getName(), classes.get(key).getCaption().getSourceString(), classes.get(key).getSID()));
             }
             for (PropertyField property : dataTable.properties) {
                 dataProps.add(asList(tableName, property.getName(), tableName + "." + property.getName()));

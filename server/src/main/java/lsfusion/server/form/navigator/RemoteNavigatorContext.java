@@ -1,16 +1,19 @@
 package lsfusion.server.form.navigator;
 
+import lsfusion.interop.LocalePreferences;
 import lsfusion.interop.action.ClientAction;
 import lsfusion.server.auth.SecurityPolicy;
 import lsfusion.server.context.AbstractContext;
+import lsfusion.server.context.ExecutionStack;
 import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.form.instance.PropertyObjectInterfaceInstance;
 import lsfusion.server.form.instance.listener.CustomClassListener;
 import lsfusion.server.form.instance.listener.FocusListener;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.LogicsInstance;
-import lsfusion.server.context.ExecutionStack;
 import lsfusion.server.remote.RemoteForm;
+
+import java.util.Locale;
 
 public class RemoteNavigatorContext extends AbstractContext {
     private final RemoteNavigator navigator;
@@ -66,6 +69,15 @@ public class RemoteNavigatorContext extends AbstractContext {
         return navigator.getConnection();
     }
 
+    @Override
+    public Locale getLocale() {
+        LocalePreferences pref = navigator.getLocalLocalePreferences();
+        if (pref != null && pref.useClientLocale && pref.language != null) {
+            return new Locale(pref.language, pref.country == null ? "" : pref.country);
+        } 
+        return Locale.getDefault();
+    }
+    
     @Override
     public RemoteForm createRemoteForm(FormInstance formInstance, ExecutionStack stack) {
         try {

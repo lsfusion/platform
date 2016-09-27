@@ -10,7 +10,6 @@ import lsfusion.interop.Compare;
 import lsfusion.server.Settings;
 import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.caches.IdentityStartLazy;
-import lsfusion.server.caches.ParamExpr;
 import lsfusion.server.classes.BaseClass;
 import lsfusion.server.data.*;
 import lsfusion.server.data.expr.Expr;
@@ -27,6 +26,7 @@ import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.DBManager;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
+import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.infer.InferType;
 import lsfusion.server.session.DataSession;
 import lsfusion.server.session.PropertyChanges;
@@ -44,7 +44,7 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Cal
         return mapTable!=null && !DataSession.reCalculateAggr; // для тестирования 2-е условие
     }
 
-    protected AggregateProperty(String caption,ImOrderSet<T> interfaces) {
+    protected AggregateProperty(LocalizedString caption, ImOrderSet<T> interfaces) {
         super(caption,interfaces);
     }
 

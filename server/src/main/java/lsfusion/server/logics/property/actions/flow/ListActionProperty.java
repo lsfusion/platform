@@ -13,6 +13,7 @@ import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.debug.ActionDelegationType;
+import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.mutables.NFFact;
 import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.mutables.impl.NFListImpl;
@@ -39,7 +40,7 @@ public class ListActionProperty extends ListCaseActionProperty {
     private final ImSet<SessionDataProperty> localsInScope;
 
     // так, а не как в Join'е, потому как нужны ClassPropertyInterface'ы а там нужны классы
-    public <I extends PropertyInterface> ListActionProperty(String caption, ImOrderSet<I> innerInterfaces, ImList<ActionPropertyMapImplement<?, I>> actions, ImSet<SessionDataProperty> localsInScope)  {
+    public <I extends PropertyInterface> ListActionProperty(LocalizedString caption, ImOrderSet<I> innerInterfaces, ImList<ActionPropertyMapImplement<?, I>> actions, ImSet<SessionDataProperty> localsInScope)  {
         super(caption, false, innerInterfaces);
 
         this.actions = DerivedProperty.mapActionImplements(getMapInterfaces(innerInterfaces).reverse(), actions);
@@ -49,7 +50,7 @@ public class ListActionProperty extends ListCaseActionProperty {
     }
 
     // abstract конструктор без finalize'а
-    public <I extends PropertyInterface> ListActionProperty(String caption, boolean isChecked, boolean isLast, ImOrderSet<I> innerInterfaces, ImMap<I, ValueClass> mapClasses)  {
+    public <I extends PropertyInterface> ListActionProperty(LocalizedString caption, boolean isChecked, boolean isLast, ImOrderSet<I> innerInterfaces, ImMap<I, ValueClass> mapClasses)  {
         super(caption, false, isChecked, isLast, AbstractType.LIST, innerInterfaces, mapClasses);
 
         actions = NFFact.list();

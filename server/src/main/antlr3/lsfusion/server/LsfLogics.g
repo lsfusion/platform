@@ -22,6 +22,7 @@ grammar LsfLogics;
 	import lsfusion.server.form.view.GroupObjectView;
 	import lsfusion.server.form.view.PropertyDrawView;
 	import lsfusion.server.classes.sets.ResolveClassSet;
+	import lsfusion.server.logics.i18n.LocalizedString;
 	import lsfusion.server.logics.mutables.Version;
 	import lsfusion.server.logics.linear.LP;
 	import lsfusion.server.logics.property.Cycle;
@@ -50,7 +51,6 @@ grammar LsfLogics;
 	import lsfusion.server.logics.property.PropertyFollowsDebug;
 	import lsfusion.server.logics.debug.ActionDebugInfo;
 	import lsfusion.server.logics.debug.DebugInfo;
-	
 	import javax.mail.Message;
 
 	import lsfusion.server.form.entity.GroupObjectProp;
@@ -272,12 +272,10 @@ classStatement
 	boolean isAbstract = false;
 	boolean isNative = false;
 	boolean isComplex = false;
-	List<String> instanceNames = new ArrayList<String>();
-	List<String> instanceCaptions = new ArrayList<String>();
 }
 @after {
 	if (inClassParseState()) {
-	    if(!isNative)
+	    if (!isNative)
 		    self.addScriptedClass($nameCaption.name, $nameCaption.caption, isAbstract, $classData.names, $classData.captions, $classData.parents, isComplex);
 	}
 }
@@ -299,11 +297,11 @@ extendClassStatement
 		classData=classInstancesAndParents 
 	;
 
-classInstancesAndParents returns [List<String> names, List<String> captions, List<String> parents] 
+classInstancesAndParents returns [List<String> names, List<LocalizedString> captions, List<String> parents] 
 @init {
 	$parents = new ArrayList<String>();
 	$names = new ArrayList<String>();
-	$captions = new ArrayList<String>();
+	$captions = new ArrayList<LocalizedString>();
 }
 	:	(
 			'{'
@@ -539,15 +537,15 @@ formGroupObjectUpdate returns [UpdateType updateType]
 	|   'PREV' { $updateType = UpdateType.PREV; }
 	;
 
-formSingleGroupObjectDeclaration returns [String name, String className, String caption, ActionPropertyObjectEntity event] 
+formSingleGroupObjectDeclaration returns [String name, String className, LocalizedString caption, ActionPropertyObjectEntity event] 
 	:	foDecl=formObjectDeclaration { $name = $foDecl.name; $className = $foDecl.className; $caption = $foDecl.caption; $event = $foDecl.event; }
 	;
 
-formMultiGroupObjectDeclaration returns [String groupName, List<String> objectNames, List<String> classNames, List<String> captions, List<ActionPropertyObjectEntity> events]
+formMultiGroupObjectDeclaration returns [String groupName, List<String> objectNames, List<String> classNames, List<LocalizedString> captions, List<ActionPropertyObjectEntity> events]
 @init {
 	$objectNames = new ArrayList<String>();
 	$classNames = new ArrayList<String>();
-	$captions = new ArrayList<String>();
+	$captions = new ArrayList<LocalizedString>();
 	$events = new ArrayList<ActionPropertyObjectEntity>();
 }
 	:	(gname=ID { $groupName = $gname.text; } '=')?
@@ -558,10 +556,10 @@ formMultiGroupObjectDeclaration returns [String groupName, List<String> objectNa
 	;
 
 
-formObjectDeclaration returns [String name, String className, String caption, ActionPropertyObjectEntity event] 
+formObjectDeclaration returns [String name, String className, LocalizedString caption, ActionPropertyObjectEntity event] 
 	:	(objectName=ID { $name = $objectName.text; } '=')?	
 		id=classId { $className = $id.sid; }
-		(c=stringLiteral { $caption = $c.val; })?
+		(c=localizedStringLiteral { $caption = $c.val; })?
 		('ON' 'CHANGE' faprop=formActionPropertyObject { $event = $faprop.action; })?
 	; 
 	
@@ -621,7 +619,7 @@ formPropertyOptionsList returns [FormPropertyOptions options]
 		|	'AFTER'  pdraw=formPropertyDraw { $options.setNeighbourPropertyDraw($pdraw.property, $pdraw.text); $options.setNeighbourType(true); }
 		|	'QUICKFILTER' pdraw=formPropertyDraw { $options.setQuickFilterPropertyDraw($pdraw.property); }
 		|	'ON' et=formEventType prop=formActionPropertyObject { $options.addEditAction($et.type, $prop.action); }
-		|	'ON' 'SHORTCUT' (c=stringLiteral)? prop=formActionPropertyObject { $options.addContextMenuEditAction($c.val, $prop.action); }
+		|	'ON' 'SHORTCUT' (c=localizedStringLiteral)? prop=formActionPropertyObject { $options.addContextMenuEditAction($c.val, $prop.action); }
 		|	'EVENTID' id=stringLiteral { $options.setEventId($id.val); }
 		)*
 	;
@@ -857,7 +855,7 @@ formRegularFilterDeclaration returns [RegularFilterInfo filter]
 @init {
 	String key = null;
 }
-    :   'FILTER' caption=stringLiteral fd=formFilterDeclaration (keystroke=stringLiteral {key = $keystroke.val;})? setDefault=filterSetDefault
+    :   'FILTER' caption=localizedStringLiteral fd=formFilterDeclaration (keystroke=stringLiteral {key = $keystroke.val;})? setDefault=filterSetDefault
         {
             $filter = new RegularFilterInfo($caption.val, key, $fd.property, $fd.mapping, $setDefault.isDefault);
         }
@@ -940,7 +938,7 @@ actionDefinition[List<TypedParameter> context, boolean dynamic] returns [LP prop
 	|	'ACTION' 'NATIVE' '(' clist=classIdList ')' { if (inPropParseState()) { $signature = self.createClassSetsFromClassNames($clist.ids); }}
 	;
 
-propertyDeclaration returns [String name, String caption, List<TypedParameter> params]
+propertyDeclaration returns [String name, LocalizedString caption, List<TypedParameter> params]
 	:	propNameCaption=simpleNameWithCaption { $name = $propNameCaption.name; $caption = $propNameCaption.caption; }
 		('(' paramList=typedParameterList ')' { $params = $paramList.params; })? 
 	;
@@ -1778,7 +1776,7 @@ propertyName returns [String name]
 	:	id=compoundID { $name = $id.sid; }
 	;
 
-propertyOptions[LP property, String propertyName, String caption, List<TypedParameter> context, List<ResolveClassSet> signature] returns [LP realProperty]
+propertyOptions[LP property, String propertyName, LocalizedString caption, List<TypedParameter> context, List<ResolveClassSet> signature] returns [LP realProperty]
 @init {
 	String groupName = null;
 	String table = null;
@@ -1802,7 +1800,7 @@ propertyOptions[LP property, String propertyName, String caption, List<TypedPara
 		|	'COMPLEX' { isComplex = true; }
 		|	'NOHINT' { noHint = true; }
 		|	'TABLE' tbl = compoundID { table = $tbl.sid; }
-		|	shortcutSetting [property, caption != null ? caption : propertyName]
+		|	shortcutSetting [property, caption != null ? caption : LocalizedString.create(propertyName)]
 		|	toolbarSetting [property]
 		|	fixedCharWidthSetting [property]
 		|	minCharWidthSetting [property]
@@ -1830,7 +1828,7 @@ propertyOptions[LP property, String propertyName, String caption, List<TypedPara
 	;
 
 
-shortcutSetting [LP property, String caption]
+shortcutSetting [LP property, LocalizedString caption]
 @after {
 	if (inPropParseState()) {
 		self.addToContextMenuFor(property, caption, $usage.propUsage);
@@ -3141,11 +3139,11 @@ navigatorElementStatementBody[NavigatorElement parentElement]
 			|	emptyStatement
 			)*
 		'}'
-	| emptyStatement
+	|	emptyStatement
 	;
 
 addNavigatorElementStatement[NavigatorElement parentElement]
-	:	'ADD' elem=navigatorElementSelector (caption=stringLiteral)? opts=navigatorElementOptions
+	:	'ADD' elem=navigatorElementSelector (caption=localizedStringLiteral)? opts=navigatorElementOptions
 		{
 			if (inPropParseState()) {
 				self.setupNavigatorElement($elem.element, $caption.val, $parentElement, $opts.options, true);
@@ -3158,7 +3156,7 @@ newNavigatorElementStatement[NavigatorElement parentElement]
 @init {
 	NavigatorElement newElement = null;
 }
-	:	'NEW' id=ID (caption=stringLiteral)? ('ACTION' au=propertyUsage)? opts=navigatorElementOptions
+	:	'NEW' id=ID (caption=localizedStringLiteral)? ('ACTION' au=propertyUsage)? opts=navigatorElementOptions
 		{
 			if (inPropParseState()) {
 				newElement = self.createScriptedNavigatorElement($id.text, $caption.val, $parentElement, $opts.options, $au.propUsage);
@@ -3188,7 +3186,7 @@ navigatorElementInsertPosition returns [InsertPosition position, NavigatorElemen
 	;
 
 setupNavigatorElementStatement[NavigatorElement parentElement]
-	:	elem=navigatorElementSelector (caption=stringLiteral)? opts=navigatorElementOptions
+	:	elem=navigatorElementSelector (caption=localizedStringLiteral)? opts=navigatorElementOptions
 		{
 			if (inPropParseState()) {
 				self.setupNavigatorElement($elem.element, $caption.val, $parentElement, $opts.options, false);
@@ -3226,14 +3224,14 @@ scope {
 designHeader returns [ScriptingFormView view]
 @init {
 	boolean customDesign = false;
-	String caption = null;
+	LocalizedString caption = null;
 }
 @after {
 	if (inPropParseState()) {
 		$view = self.getFormDesign($cid.sid, caption, customDesign);
 	}
 }
-	:	'DESIGN' cid=compoundID (s=stringLiteral { caption = $s.val; })? ('CUSTOM' { customDesign = true; })?
+	:	'DESIGN' cid=compoundID (s=localizedStringLiteral { caption = $s.val; })? ('CUSTOM' { customDesign = true; })?
 	;
 
 componentStatementBody [ComponentView parentComponent]
@@ -3470,9 +3468,9 @@ typedParameter returns [TypedParameter param]
 	:	(cname=classId)? pname=ID
 	;
 
-simpleNameWithCaption returns [String name, String caption] 
+simpleNameWithCaption returns [String name, LocalizedString caption] 
 	:	simpleName=ID { $name = $simpleName.text; }
-		(captionStr=stringLiteral { $caption = $captionStr.val; })?
+		(captionStr=localizedStringLiteral { $caption = $captionStr.val; })?
 	;
 	
 idList returns [List<String> ids] 
@@ -3689,6 +3687,10 @@ stringLiteral returns [String val]
 	:	s=STRING_LITERAL { $val = self.transformStringLiteral($s.text); }
 	;
 
+localizedStringLiteral returns [LocalizedString val]
+	:	s=STRING_LITERAL { $val = self.transformLocalizedStringLiteral($s.text); } 
+	;
+
 intLiteral returns [int val]
 @init {
 	boolean isMinus = false;
@@ -3870,11 +3872,11 @@ fragment CLOSE_CODE_BRACKET : '}>';
 PRIMITIVE_TYPE  :	'INTEGER' | 'DOUBLE' | 'LONG' | 'BOOLEAN' | 'DATE' | 'DATETIME' | 'YEAR' | 'TEXT'  | 'RICHTEXT' | 'TIME' | 'WORDFILE' | 'IMAGEFILE' | 'PDFFILE' | 'CUSTOMFILE' | 'EXCELFILE' | 'WORDLINK' | 'IMAGELINK' | 'PDFLINK' | 'CUSTOMLINK' | 'EXCELLINK' | 'STRING[' DIGITS ']' | 'ISTRING[' DIGITS ']'  | 'VARSTRING[' DIGITS ']' | 'VARISTRING[' DIGITS ']' | 'NUMERIC[' DIGITS ',' DIGITS ']' | 'COLOR';
 LOGICAL_LITERAL :	'TRUE' | 'FALSE';
 NULL_LITERAL	:	'NULL';	
-ID          	:	FIRST_ID_LETTER NEXT_ID_LETTER*;
-WS		:	(NEWLINE | SPACE) { $channel=HIDDEN; };
+ID				:	FIRST_ID_LETTER NEXT_ID_LETTER*;
+WS				:	(NEWLINE | SPACE) { $channel=HIDDEN; };
 STRING_LITERAL	:	'\'' STR_LITERAL_CHAR* '\'';
 COLOR_LITERAL 	:	'#' HEX_DIGIT HEX_DIGIT HEX_DIGIT HEX_DIGIT HEX_DIGIT HEX_DIGIT;
-COMMENTS	:	('//' .* '\n') { $channel=HIDDEN; };
+COMMENTS		:	('//' .* '\n') { $channel=HIDDEN; };
 UINT_LITERAL 	:	DIGITS;
 ULONG_LITERAL	:	DIGITS('l'|'L');
 UDOUBLE_LITERAL	:	DIGITS '.' EDIGITS('d'|'D');
@@ -3882,16 +3884,15 @@ UNUMERIC_LITERAL:	DIGITS '.' EDIGITS;
 DATE_LITERAL	:	DIGIT DIGIT DIGIT DIGIT '_' DIGIT DIGIT '_' DIGIT DIGIT; 
 DATETIME_LITERAL:	DIGIT DIGIT DIGIT DIGIT '_' DIGIT DIGIT '_' DIGIT DIGIT '_' DIGIT DIGIT ':' DIGIT DIGIT;	
 TIME_LITERAL	:	DIGIT DIGIT ':' DIGIT DIGIT;
-NUMBERED_PARAM	:	'$' DIGITS;
 RECURSIVE_PARAM :	'$' FIRST_ID_LETTER NEXT_ID_LETTER*;	
-EQ_OPERAND	:	('==') | ('!=');
+EQ_OPERAND		:	('==') | ('!=');
 LESS_OPERAND	: 	('<');
-GR_OPERAND	:	('>');
+GR_OPERAND		:	('>');
 RELEQ_OPERAND	: 	('<=') | ('>=');
-MINUS		:	'-';
-PLUS		:	'+';
-MULT		:	'*';
-DIV		:	'/';
+MINUS			:	'-';
+PLUS			:	'+';
+MULT			:	'*';
+DIV				:	'/';
 ADDOR_OPERAND	:	'(+)' | {ahead("(-)")}?=> '(-)';
 CONCAT_OPERAND	:	'##';
 CONCAT_CAPITALIZE_OPERAND	:	'###';

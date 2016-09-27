@@ -7,6 +7,7 @@ import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
+import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.ClassPropertyInterface;
@@ -31,7 +32,7 @@ public class EvalActionProperty<P extends PropertyInterface> extends SystemExpli
     private final LCP<P> source;
     private final ImMap<P, ClassPropertyInterface> mapSource;
 
-    public EvalActionProperty(String caption, LCP<P> source) {
+    public EvalActionProperty(LocalizedString caption, LCP<P> source) {
         super(caption, source.getInterfaceClasses(ClassType.aroundPolicy));
         mapSource = source.listInterfaces.mapSet(getOrderInterfaces());
         this.source = source;

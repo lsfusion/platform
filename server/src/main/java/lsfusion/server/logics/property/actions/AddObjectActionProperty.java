@@ -22,7 +22,7 @@ import lsfusion.server.form.view.DefaultFormView;
 import lsfusion.server.form.view.PropertyDrawView;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
-import lsfusion.server.logics.ServerResourceBundle;
+import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.actions.flow.ExtendContextActionProperty;
@@ -48,7 +48,7 @@ public class AddObjectActionProperty<T extends PropertyInterface, I extends Prop
     }
 
     public AddObjectActionProperty(CustomClass valueClass, boolean forceDialog, ImSet<I> innerInterfaces, ImOrderSet<I> mapInterfaces, CalcPropertyMapImplement<T, I> where, CalcPropertyMapImplement<?, I> result, ImOrderMap<CalcPropertyInterfaceImplement<I>, Boolean> orders, boolean ordersNotNull) {
-        super(ServerResourceBundle.getString("logics.add"), innerInterfaces, mapInterfaces);
+        super(LocalizedString.create("{logics.add}"), innerInterfaces, mapInterfaces);
         
         this.valueClass = valueClass;
         this.forceDialog = forceDialog;

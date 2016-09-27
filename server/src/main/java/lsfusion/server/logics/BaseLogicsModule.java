@@ -26,6 +26,7 @@ import lsfusion.server.form.window.NavigatorWindow;
 import lsfusion.server.form.window.ToolBarNavigatorWindow;
 import lsfusion.server.logics.debug.ActionPropertyDebugger;
 import lsfusion.server.logics.debug.WatchActionProperty;
+import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.mutables.NFFact;
@@ -45,8 +46,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
-
-import static lsfusion.server.logics.ServerResourceBundle.getString;
 
 /**
  * User: DAle
@@ -281,7 +280,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     
     @Override
     public void initClasses() throws RecognitionException {
-        baseClass = addBaseClass(transformNameToSID("Object"), getString("logics.object"));
+        baseClass = addBaseClass(transformNameToSID("Object"), LocalizedString.create("{logics.object}"));
         
         super.initClasses();
 
@@ -334,7 +333,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
 
         objectClass = addProperty(null, new LCP<>(baseClass.getObjectClassProperty()));
         makePropertyPublic(objectClass, "objectClass", Collections.<ResolveClassSet>nCopies(1, null));
-        random = addRMProp("Random");
+        random = addRMProp(LocalizedString.create("Random"));
         makePropertyPublic(random, "random", Collections.<ResolveClassSet>emptyList());
 
         // Множества свойств
@@ -571,11 +570,11 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
 
         windows.tree = (NavigatorWindow) findWindow("tree");
 
-        windows.forms = addWindow("forms", new AbstractWindow(null, getString("logics.window.forms"), 20, 20, 80, 79));
+        windows.forms = addWindow("forms", new AbstractWindow(null, LocalizedString.create("{logics.window.forms}"), 20, 20, 80, 79));
 
-        windows.log = addWindow("log", new AbstractWindow(null, getString("logics.window.log"), 0, 70, 20, 29));
+        windows.log = addWindow("log", new AbstractWindow(null, LocalizedString.create("{logics.window.log}"), 0, 70, 20, 29));
 
-        windows.status = addWindow("status", new AbstractWindow(null, getString("logics.window.status"), 0, 99, 100, 1));
+        windows.status = addWindow("status", new AbstractWindow(null, LocalizedString.create("{logics.window.status}"), 0, 99, 100, 1));
         windows.status.titleShown = false;
 
         // todo : перенести во внутренний класс Navigator, как в Windows
@@ -615,7 +614,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     @Override
     @IdentityStrongLazy
     public LCP object(ValueClass valueClass) {
-        LCP lcp = addJProp(false, valueClass.toString(), and1, 1, is(valueClass), 1);
+        LCP lcp = addJProp(false, LocalizedString.create(valueClass.toString()), and1, 1, is(valueClass), 1);
         ((JoinProperty)lcp.property).objectPropertyClass = valueClass;
         return lcp;
     }
@@ -629,14 +628,14 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     @Override
     @IdentityStrongLazy
     protected <T extends PropertyInterface> LCP addCProp(StaticClass valueClass, Object value) {
-        CalcPropertyRevImplement<T, Integer> implement = (CalcPropertyRevImplement<T, Integer>) DerivedProperty.createCProp("sys", valueClass, value, MapFact.<Integer, ValueClass>EMPTY());
+        CalcPropertyRevImplement<T, Integer> implement = (CalcPropertyRevImplement<T, Integer>) DerivedProperty.createCProp(LocalizedString.create("sys"), valueClass, value, MapFact.<Integer, ValueClass>EMPTY());
         return addProperty(null, false, new LCP<>(implement.property, ListFact.fromIndexedMap(implement.mapping.reverse())));
     }
 
     @Override
     @IdentityStrongLazy
     protected <P extends PropertyInterface> LCP addCastProp(DataClass castClass) {
-        return addProperty(null, new LCP<>(new FormulaImplProperty("castTo" + castClass.toString(), 1, new CastFormulaImpl(castClass))));
+        return addProperty(null, new LCP<>(new FormulaImplProperty(LocalizedString.create("castTo" + castClass.toString()), 1, new CastFormulaImpl(castClass))));
     }
 
     @Override
@@ -727,7 +726,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     @IdentityStrongLazy
     public LAP getAddFormAction(CustomClass cls, FormSessionScope scope, ClassFormEntity form) {
         String name = "_ADDFORM" + scope + "_" + cls.getSID() + (form.form.isNamed() ? "_" + form.form.getCanonicalName().replace('.', '_') : "");
-        LAP result = addDMFAProp(null, ServerResourceBundle.getString("logics.add"), //+ "(" + cls + ")",
+        LAP result = addDMFAProp(null, LocalizedString.create("{logics.add}"), //+ "(" + cls + ")",
                 form.form, new ObjectEntity[]{},
                 form.form.addPropertyObject(getAddObjectAction(cls, form.form, form.object)), scope, true);
         makePropertyPublic(result, name, new ArrayList<ResolveClassSet>());
@@ -739,7 +738,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     @IdentityStrongLazy
     public LAP getEditFormAction(CustomClass cls, FormSessionScope scope, ClassFormEntity form) {
         String name = "_EDITFORM" + scope + "_" + cls.getSID() + (form.form.isNamed() ? "_" + form.form.getCanonicalName().replace('.', '_') : "");
-        LAP result = addDMFAProp(null, ServerResourceBundle.getString("logics.edit"), form.form, new ObjectEntity[]{form.object}, scope);
+        LAP result = addDMFAProp(null, LocalizedString.create("{logics.edit}"), form.form, new ObjectEntity[]{form.object}, scope);
         makePropertyPublic(result, name, form.object.getResolveClassSet());
         return result;
     } 

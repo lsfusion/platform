@@ -7,6 +7,7 @@ import lsfusion.server.data.expr.query.GroupExpr;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
+import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.session.PropertyChanges;
 
 public class OrderGroupProperty<I extends PropertyInterface> extends GroupProperty<I> {
@@ -31,7 +32,7 @@ public class OrderGroupProperty<I extends PropertyInterface> extends GroupProper
         return ordersNotNull;
     }
 
-    public OrderGroupProperty(String caption, ImSet<I> innerInterfaces, ImCol<? extends CalcPropertyInterfaceImplement<I>> groupInterfaces, ImList<CalcPropertyInterfaceImplement<I>> props, GroupType groupType, ImOrderMap<CalcPropertyInterfaceImplement<I>, Boolean> orders, boolean ordersNotNull) {
+    public OrderGroupProperty(LocalizedString caption, ImSet<I> innerInterfaces, ImCol<? extends CalcPropertyInterfaceImplement<I>> groupInterfaces, ImList<CalcPropertyInterfaceImplement<I>> props, GroupType groupType, ImOrderMap<CalcPropertyInterfaceImplement<I>, Boolean> orders, boolean ordersNotNull) {
         super(caption, innerInterfaces, groupInterfaces);
         this.props = props;
         this.groupType = groupType;

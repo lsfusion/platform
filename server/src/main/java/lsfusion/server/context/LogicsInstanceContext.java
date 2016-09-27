@@ -1,23 +1,25 @@
 package lsfusion.server.context;
 
-import lsfusion.interop.exceptions.LogMessageLogicsException;
+import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.action.ConfirmClientAction;
+import lsfusion.interop.action.LogMessageClientAction;
+import lsfusion.interop.action.MessageClientAction;
+import lsfusion.interop.exceptions.LogMessageLogicsException;
 import lsfusion.server.auth.SecurityPolicy;
+import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.form.instance.PropertyObjectInterfaceInstance;
 import lsfusion.server.form.instance.listener.CustomClassListener;
 import lsfusion.server.form.instance.listener.FocusListener;
 import lsfusion.server.form.navigator.LogInfo;
-import lsfusion.server.logics.*;
+import lsfusion.server.logics.DataObject;
+import lsfusion.server.logics.LogicsInstance;
 import lsfusion.server.logics.SecurityManager;
-import org.apache.log4j.Logger;
-import lsfusion.interop.action.ClientAction;
-import lsfusion.interop.action.LogMessageClientAction;
-import lsfusion.interop.action.MessageClientAction;
-import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.remote.RemoteForm;
+import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import static lsfusion.base.BaseUtils.padLeft;
 import static lsfusion.base.BaseUtils.replicate;
@@ -59,6 +61,11 @@ public class LogicsInstanceContext extends AbstractContext {
 
     public DataObject getConnection() {
         return null;
+    }
+
+    @Override
+    public Locale getLocale() {
+        return Locale.getDefault();
     }
 
     @Override

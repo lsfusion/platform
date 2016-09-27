@@ -1,6 +1,5 @@
 package lsfusion.interop.form.layout;
 
-import static lsfusion.base.ApiResourceBundle.getString;
 import static lsfusion.interop.form.layout.GroupObjectContainerSet.*;
 
 public class TreeGroupContainerSet <C extends AbstractContainer<C, T>, T extends AbstractComponent<C, T>> {
@@ -38,20 +37,20 @@ public class TreeGroupContainerSet <C extends AbstractContainer<C, T>, T extends
         TreeGroupContainerSet<C,T> set = new TreeGroupContainerSet<>();
 
         set.treeContainer = factory.createContainer();
-        set.treeContainer.setCaption(getString("form.layout.tree"));
-        set.treeContainer.setDescription(getString("form.layout.tree"));
+        set.treeContainer.setCaption("{form.layout.tree}");
+        set.treeContainer.setDescription("{form.layout.tree}");
         set.treeContainer.setSID(treeGroup.getSID() + GroupObjectContainerSet.TREE_GROUP_CONTAINER);
 
         set.controlsContainer = factory.createContainer(); // контейнер всех управляющих объектов
-        set.controlsContainer.setDescription(getString("form.layout.control.objects"));
+        set.controlsContainer.setDescription("{form.layout.conrol.objects}");
         set.controlsContainer.setSID(treeGroup.getSID() + CONTROLS_CONTAINER);
 
         set.toolbarPropsContainer = factory.createContainer(); // контейнер тулбара
-        set.toolbarPropsContainer.setDescription(getString("form.layout.toolbar.props.container"));
+        set.toolbarPropsContainer.setDescription("{form.layout.toolbar.props.container}");
         set.toolbarPropsContainer.setSID(treeGroup.getSID() + TOOLBAR_PROPS_CONTAINER);
 
         set.filtersContainer = factory.createContainer(); // контейнер фильтров
-        set.filtersContainer.setDescription(getString("form.layout.filters.container"));
+        set.filtersContainer.setDescription("{form.layout.filters.container}");
         set.filtersContainer.setSID(treeGroup.getSID() + FILTERS_CONTAINER);
 
         set.rightControlsContainer = factory.createContainer();
@@ -69,7 +68,7 @@ public class TreeGroupContainerSet <C extends AbstractContainer<C, T>, T extends
         set.controlsContainer.setChildrenAlignment(Alignment.LEADING);
         adder.add(set.controlsContainer, (T) treeGroup.getToolbar());
         adder.add(set.controlsContainer, (T) set.rightControlsContainer);
-
+        
         set.rightControlsContainer.setType(ContainerType.CONTAINERH);
         set.rightControlsContainer.setAlignment(FlexAlignment.CENTER);
         set.rightControlsContainer.setChildrenAlignment(Alignment.TRAILING);

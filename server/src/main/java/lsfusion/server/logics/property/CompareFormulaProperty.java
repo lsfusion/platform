@@ -9,6 +9,7 @@ import lsfusion.server.classes.LogicalClass;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.ValueExpr;
 import lsfusion.server.data.where.WhereBuilder;
+import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.infer.*;
 import lsfusion.server.session.PropertyChanges;
 
@@ -21,7 +22,7 @@ public class CompareFormulaProperty extends ValueFormulaProperty<CompareFormulaP
     public final Interface operator2;
 
     public CompareFormulaProperty(Compare compare) {
-        super(compare.toString(), getInterfaces(2), LogicalClass.instance);
+        super(LocalizedString.createFromSimpleString(compare.toString()), getInterfaces(2), LogicalClass.instance);
 
         this.compare = compare;
         Iterator<Interface> i = interfaces.iterator();

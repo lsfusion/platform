@@ -14,21 +14,19 @@ import lsfusion.server.form.view.DefaultFormView;
 import lsfusion.server.form.view.FormView;
 import lsfusion.server.form.view.PropertyDrawView;
 import lsfusion.server.logics.LogicsModule;
+import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static lsfusion.base.BaseUtils.isRedundantString;
-import static lsfusion.server.logics.ServerResourceBundle.getString;
-
 public class JoinDrillDownFormEntity<I extends PropertyInterface> extends DrillDownFormEntity<JoinProperty.Interface, JoinProperty<I>> {
 
     private List<PropertyDrawEntity> detailsProperties;
     private PropertyDrawEntity implPropertyDraw;
 
-    public JoinDrillDownFormEntity(String canonicalName, String caption, JoinProperty<I> property, LogicsModule LM) {
+    public JoinDrillDownFormEntity(String canonicalName, LocalizedString caption, JoinProperty<I> property, LogicsModule LM) {
         super(canonicalName, caption, property, LM);
     }
 
@@ -81,14 +79,14 @@ public class JoinDrillDownFormEntity<I extends PropertyInterface> extends DrillD
     public FormView createDefaultRichDesign(Version version) {
         DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign(version);
 
-        ContainerView extraParamsContainer = design.createContainer(getString("logics.property.drilldown.form.inner.params"), version);
+        ContainerView extraParamsContainer = design.createContainer(LocalizedString.create("{logics.property.drilldown.form.inner.params}"), version);
         design.mainContainer.addAfter(extraParamsContainer, valueContainer, version);
 
         if(implPropertyDraw != null) {
             for (PropertyDrawEntity detailProperty : detailsProperties) {
                 PropertyDrawView detailPropertyView = design.get(detailProperty);
-                if (isRedundantString(detailPropertyView.getCaption())) {
-                    detailPropertyView.caption = detailProperty.propertyObject.property.getName();
+                if (detailPropertyView.getCaption().isEmpty()) {
+                    detailPropertyView.caption = LocalizedString.create(detailProperty.propertyObject.property.getName());
                 }
                 detailsContainer.add(detailPropertyView, version);
             }

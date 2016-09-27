@@ -14,7 +14,7 @@ import lsfusion.server.logics.scripted.ScriptingActionProperty;
 import java.sql.SQLException;
 import java.util.Iterator;
 
-import static lsfusion.server.logics.ServerResourceBundle.getString;
+import static lsfusion.server.context.ThreadLocalContext.localize;
 
 public class ServiceDBMultiThreadActionProperty extends ScriptingActionProperty {
     private ClassPropertyInterface threadCountInterface;
@@ -57,7 +57,7 @@ public class ServiceDBMultiThreadActionProperty extends ScriptingActionProperty 
             }
         });
 
-        context.delayUserInterfaction(new MessageClientAction(getString("logics.service.db.completed"), getString("logics.service.db")));
+        context.delayUserInterfaction(new MessageClientAction(localize("{logics.service.db.completed}"), localize("{logics.service.db}")));
     }
 
     @Override

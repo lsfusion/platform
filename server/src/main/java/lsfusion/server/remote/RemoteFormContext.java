@@ -1,9 +1,9 @@
 package lsfusion.server.remote;
 
-import lsfusion.base.BaseUtils;
 import lsfusion.interop.action.ClientAction;
 import lsfusion.server.auth.SecurityPolicy;
 import lsfusion.server.context.AbstractContext;
+import lsfusion.server.context.ExecutionStack;
 import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.form.instance.PropertyObjectInterfaceInstance;
 import lsfusion.server.form.instance.listener.CustomClassListener;
@@ -12,7 +12,8 @@ import lsfusion.server.form.navigator.LogInfo;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.LogicsInstance;
-import lsfusion.server.context.ExecutionStack;
+
+import java.util.Locale;
 
 public class RemoteFormContext<T extends BusinessLogics<T>, F extends FormInstance<T>> extends AbstractContext {
     private final RemoteForm<T, F> form;
@@ -78,5 +79,10 @@ public class RemoteFormContext<T extends BusinessLogics<T>, F extends FormInstan
 
     public DataObject getConnection() {
         return form.form.instanceFactory.connection;
+    }
+
+    @Override
+    public Locale getLocale() {
+        return form.form.getLocale();
     }
 }

@@ -17,6 +17,7 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
+import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.actions.flow.AroundAspectActionProperty;
 import lsfusion.server.logics.property.actions.flow.FlowResult;
@@ -28,7 +29,7 @@ public class AggChangeActionProperty<P extends PropertyInterface> extends Around
     private final CalcProperty<P> aggProp; // assert что один интерфейс и aggProp
     private final ValueClass aggClass;
 
-    public AggChangeActionProperty(String caption, ImOrderSet<JoinProperty.Interface> listInterfaces, CalcProperty<P> aggProp, ValueClass aggClass, ActionPropertyMapImplement<?, JoinProperty.Interface> changeAction) {
+    public AggChangeActionProperty(LocalizedString caption, ImOrderSet<JoinProperty.Interface> listInterfaces, CalcProperty<P> aggProp, ValueClass aggClass, ActionPropertyMapImplement<?, JoinProperty.Interface> changeAction) {
         super(caption, listInterfaces, changeAction);
         this.aggProp = aggProp;
         this.aggClass = aggClass;

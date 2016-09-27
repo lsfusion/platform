@@ -7,9 +7,10 @@ import lsfusion.server.classes.CustomClass;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.classes.sets.AndClassSet;
 import lsfusion.server.classes.sets.ResolveClassSet;
+import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.form.instance.InstanceFactory;
 import lsfusion.server.form.instance.PropertyObjectInterfaceInstance;
-import lsfusion.server.logics.ServerResourceBundle;
+import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.actions.ChangeReadObjectActionProperty;
@@ -17,18 +18,20 @@ import lsfusion.server.logics.property.actions.ExplicitActionProperty;
 
 import java.util.Set;
 
+import static lsfusion.server.logics.i18n.LocalizedString.create;
+
 public class ObjectEntity extends IdentityObject implements PropertyObjectInterfaceEntity {
 
     public GroupObjectEntity groupTo;
 
-    public String caption;
+    public LocalizedString caption;
 
-    public String getCaption() {
-        return !BaseUtils.isRedundantString(caption)
+    public LocalizedString getCaption() {
+        return (caption != null && !BaseUtils.isRedundantString(caption.getSourceString()))
                ? caption
                : !BaseUtils.isRedundantString(baseClass.toString())
-                 ? baseClass.toString()
-                 : ServerResourceBundle.getString("logics.undefined.object");
+                 ? create(baseClass.toString())
+                 : create("{logics.undefined.object}");
     }
 
     public ValueClass baseClass;
@@ -37,11 +40,11 @@ public class ObjectEntity extends IdentityObject implements PropertyObjectInterf
 
     }
     
-    public ObjectEntity(int ID, ValueClass baseClass, String caption) {
+    public ObjectEntity(int ID, ValueClass baseClass, LocalizedString caption) {
         this(ID, null, baseClass, caption);
     }
 
-    public ObjectEntity(int ID, String sID, ValueClass baseClass, String caption) {
+    public ObjectEntity(int ID, String sID, ValueClass baseClass, LocalizedString caption) {
         super(ID);
         this.sID = sID != null ? sID : "obj" + ID;
         this.caption = caption;
@@ -64,7 +67,7 @@ public class ObjectEntity extends IdentityObject implements PropertyObjectInterf
 
     @Override
     public String toString() {
-        return getCaption();
+        return ThreadLocalContext.localize(getCaption());
     }
 
     @IdentityInstanceLazy

@@ -4,19 +4,19 @@ import lsfusion.base.ImmutableObject;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.server.caches.IdentityStrongLazy;
 import lsfusion.server.classes.sets.*;
+import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.expr.formula.FormulaClass;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.NullValue;
 import lsfusion.server.logics.ObjectValue;
-import lsfusion.server.logics.ServerResourceBundle;
 import lsfusion.server.logics.property.ActionProperty;
 
 public class UnknownClass extends ImmutableObject implements FormulaClass, ConcreteObjectClass {
 
     public String toString() {
-        return ServerResourceBundle.getString("classes.unknown");
+        return ThreadLocalContext.localize("{classes.unknown}");
     }
 
     public final BaseClass baseClass;

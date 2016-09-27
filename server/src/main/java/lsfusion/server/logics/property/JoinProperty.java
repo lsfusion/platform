@@ -29,6 +29,7 @@ import lsfusion.server.form.entity.drilldown.JoinDrillDownFormEntity;
 import lsfusion.server.form.view.DefaultFormView;
 import lsfusion.server.form.view.PropertyDrawView;
 import lsfusion.server.logics.LogicsModule;
+import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.actions.edit.AggChangeActionProperty;
 import lsfusion.server.logics.property.derived.DerivedProperty;
@@ -43,8 +44,6 @@ import lsfusion.server.session.StructChanges;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.Set;
-
-import static lsfusion.server.logics.ServerResourceBundle.getString;
 
 public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementProperty<JoinProperty.Interface> {
     public final CalcPropertyImplement<T, CalcPropertyInterfaceImplement<Interface>> implement;
@@ -71,10 +70,10 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
         return rest.isEmpty();
     }
     
-    public JoinProperty(String caption, ImOrderSet<Interface> interfaces, CalcPropertyImplement<T, CalcPropertyInterfaceImplement<Interface>> implement) {
+    public JoinProperty(LocalizedString caption, ImOrderSet<Interface> interfaces, CalcPropertyImplement<T, CalcPropertyInterfaceImplement<Interface>> implement) {
         this(caption, interfaces, false, false, implement);
     }
-    public JoinProperty(String caption, ImOrderSet<Interface> interfaces, boolean implementChange, boolean user, CalcPropertyImplement<T, CalcPropertyInterfaceImplement<Interface>> implement) {
+    public JoinProperty(LocalizedString caption, ImOrderSet<Interface> interfaces, boolean implementChange, boolean user, CalcPropertyImplement<T, CalcPropertyInterfaceImplement<Interface>> implement) {
         super(caption, interfaces);
         this.implement = implement;
         this.user = user;
@@ -310,7 +309,7 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
 
                 ImOrderSet<Interface> listInterfaces = getOrderInterfaces();
                 AggChangeActionProperty<T> aggChangeActionProperty =
-                        new AggChangeActionProperty<>("sys", listInterfaces, aggProp, aggClass, changeActionImplement);
+                        new AggChangeActionProperty<>(LocalizedString.create("sys"), listInterfaces, aggProp, aggClass, changeActionImplement);
                 return aggChangeActionProperty.getImplement(listInterfaces);
             } else {
                 // тут вообще надо что=то типа с join'ить (assertion что filterProperty с одним интерфейсом)
@@ -417,7 +416,7 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
     @Override
     public DrillDownFormEntity createDrillDownForm(LogicsModule LM, String canonicalName) {
         return new JoinDrillDownFormEntity(
-                canonicalName, getString("logics.property.drilldown.form.join"), this, LM
+                canonicalName, LocalizedString.create("{logics.property.drilldown.form.join}"), this, LM
         );
     }
 

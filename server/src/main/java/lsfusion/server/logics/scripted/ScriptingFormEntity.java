@@ -20,6 +20,7 @@ import lsfusion.server.form.entity.filter.RegularFilterEntity;
 import lsfusion.server.form.entity.filter.RegularFilterGroupEntity;
 import lsfusion.server.form.instance.FormSessionScope;
 import lsfusion.server.logics.debug.DebugInfo;
+import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.linear.LP;
@@ -66,7 +67,7 @@ public class ScriptingFormEntity {
                 String className = groupObject.classes.get(j);
                 ValueClass cls = LM.findClass(groupObject.classes.get(j));
                 String objectName = nvl(groupObject.objects.get(j), className);
-                String objectCaption = nvl(groupObject.captions.get(j), cls.getCaption());
+                LocalizedString objectCaption = nvl(groupObject.captions.get(j), cls.getCaption());
 
                 ObjectEntity obj = new ObjectEntity(form.genID(), cls, objectCaption);
                 addObjectEntity(objectName, obj, groupObj, version);
@@ -391,7 +392,7 @@ public class ScriptingFormEntity {
             }
         }
 
-        OrderedMap<String, String> contextMenuBindings = options.getContextMenuBindings();
+        OrderedMap<String, LocalizedString> contextMenuBindings = options.getContextMenuBindings();
         if (contextMenuBindings != null) {
             for (int i = 0; i < contextMenuBindings.size(); ++i) {
                 property.setContextMenuAction(contextMenuBindings.getKey(i), contextMenuBindings.getValue(i));
@@ -516,7 +517,7 @@ public class ScriptingFormEntity {
 
     public void addRegularFilters(RegularFilterGroupEntity filterGroup, List<RegularFilterInfo> filters, Version version, boolean extend) throws ScriptingErrorLog.SemanticErrorException {
         for (RegularFilterInfo info : filters) {
-            String caption = info.caption;
+            LocalizedString caption = info.caption;
             KeyStroke keyStroke = (info.keystroke != null ? KeyStroke.getKeyStroke(info.keystroke) : null);
             boolean isDefault = info.isDefault;
 
@@ -630,13 +631,13 @@ public class ScriptingFormEntity {
     }
     
     public static class RegularFilterInfo {
-        String caption;
+        LocalizedString caption;
         String keystroke;
         LP property;
         List<String> mapping;
         boolean isDefault;
 
-        public RegularFilterInfo(String caption, String keystroke, LP property, List<String> mapping, boolean isDefault) {
+        public RegularFilterInfo(LocalizedString caption, String keystroke, LP property, List<String> mapping, boolean isDefault) {
             this.caption = caption;
             this.keystroke = keystroke;
             this.property = property;

@@ -1,7 +1,6 @@
 package lsfusion.server.classes;
 
 import lsfusion.interop.Data;
-import lsfusion.server.logics.ServerResourceBundle;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -27,10 +26,6 @@ public class DynamicFormatFileClass extends FileClass {
 
     private DynamicFormatFileClass(boolean multiple, boolean storeName) {
         super(multiple, storeName);
-    }
-
-    public String toString() {
-        return ServerResourceBundle.getString("classes.file");
     }
 
     public DataClass getCompatible(DataClass compClass, boolean or) {

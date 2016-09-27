@@ -7,18 +7,18 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
-import lsfusion.server.classes.OrConcatenateClass;
-import lsfusion.server.classes.sets.AndClassSet;
 import lsfusion.server.classes.sets.ResolveClassSet;
 import lsfusion.server.classes.sets.ResolveConcatenateClassSet;
 import lsfusion.server.data.expr.ConcatenateExpr;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.where.WhereBuilder;
+import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.CalcType;
 import lsfusion.server.logics.property.FormulaProperty;
 import lsfusion.server.logics.property.PropertyInterface;
-import lsfusion.server.logics.property.infer.*;
 import lsfusion.server.logics.property.infer.ExClassSet;
+import lsfusion.server.logics.property.infer.InferType;
+import lsfusion.server.logics.property.infer.Inferred;
 import lsfusion.server.session.PropertyChanges;
 
 import java.util.Iterator;
@@ -39,7 +39,7 @@ public class ConcatenateProperty extends FormulaProperty<ConcatenateProperty.Int
     }
 
     public ConcatenateProperty(int intNum) {
-        super("Concatenate " + intNum, getInterfaces(intNum));
+        super(LocalizedString.create("Concatenate " + intNum), getInterfaces(intNum));
 
         finalizeInit();
     }

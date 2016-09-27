@@ -1,6 +1,7 @@
 package lsfusion.server.form.window;
 
 import lsfusion.interop.AbstractWindowType;
+import lsfusion.server.logics.i18n.LocalizedString;
 
 import javax.swing.*;
 import java.io.DataOutputStream;
@@ -11,7 +12,7 @@ public class MenuNavigatorWindow extends NavigatorWindow {
     public int showLevel = 0;
     public int orientation = SwingConstants.HORIZONTAL;
 
-    public MenuNavigatorWindow(String sID, String caption, int x, int y, int width, int height) {
+    public MenuNavigatorWindow(String sID, LocalizedString caption, int x, int y, int width, int height) {
         super(sID, caption, x, y, width, height);
     }
 

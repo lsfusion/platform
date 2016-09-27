@@ -23,6 +23,7 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.debug.*;
+import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.linear.LP;
 import lsfusion.server.logics.property.actions.BaseEvent;
 import lsfusion.server.logics.property.actions.FormEnvironment;
@@ -55,7 +56,7 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
         this.debugLocals = debugLocals;
     }
 
-    public ActionProperty(String caption, ImOrderSet<P> interfaces) {
+    public ActionProperty(LocalizedString caption, ImOrderSet<P> interfaces) {
         super(caption, interfaces);
     }
 
@@ -482,7 +483,7 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
         ActionPropertyMapImplement<P, P> changeImplement = getImplement();
         ImOrderSet<P> listInterfaces = getOrderInterfaces();
 
-        GroupChangeActionProperty groupChangeActionProperty = new GroupChangeActionProperty("sys", listInterfaces, changeImplement);
+        GroupChangeActionProperty groupChangeActionProperty = new GroupChangeActionProperty(LocalizedString.create("sys"), listInterfaces, changeImplement);
         return groupChangeActionProperty.getImplement(listInterfaces);
     }
 

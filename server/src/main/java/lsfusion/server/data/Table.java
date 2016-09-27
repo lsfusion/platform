@@ -13,6 +13,7 @@ import lsfusion.server.caches.hash.HashContext;
 import lsfusion.server.classes.*;
 import lsfusion.server.classes.sets.AndClassSet;
 import lsfusion.server.classes.sets.ObjectClassSet;
+import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.expr.*;
 import lsfusion.server.data.expr.query.*;
 import lsfusion.server.data.expr.where.cases.MCaseList;
@@ -26,9 +27,9 @@ import lsfusion.server.data.query.innerjoins.UpWheres;
 import lsfusion.server.data.query.stat.*;
 import lsfusion.server.data.query.stat.KeyStat;
 import lsfusion.server.data.sql.SQLSyntax;
+import lsfusion.server.data.translator.ExprTranslator;
 import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.translator.MapValuesTranslate;
-import lsfusion.server.data.translator.ExprTranslator;
 import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.DataWhere;
@@ -37,7 +38,6 @@ import lsfusion.server.data.where.classes.ClassExprWhere;
 import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
-import lsfusion.server.logics.ServerResourceBundle;
 import lsfusion.server.logics.table.ImplementTable;
 import lsfusion.server.session.DataSession;
 
@@ -408,12 +408,12 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
     protected ImMap<PropertyField,ClassWhere<Field>> propertyClasses;
 
     public String outputKeys() {
-        return ServerResourceBundle.getString("data.table")+" : " + name + ", "+ServerResourceBundle.getString("data.keys")+" : " + classes.getCommonParent(getTableKeys()).toString();
+        return ThreadLocalContext.localize("{data.table} : ") + name + ThreadLocalContext.localize(", {data.keys} : ") + classes.getCommonParent(getTableKeys()).toString();
     }
 
     public String outputField(PropertyField field, boolean outputTable) {
         ImMap<Field, ValueClass> commonParent = propertyClasses.get(field).getCommonParent(SetFact.addExcl(getTableKeys(), field));
-        return (outputTable ? ServerResourceBundle.getString("data.table")+" : " + name + ", ":"") + ServerResourceBundle.getString("data.field") +" : " + field.getName() + " - " + commonParent.get(field) + ", "+ServerResourceBundle.getString("data.keys")+" : " + commonParent.remove(field);
+        return (outputTable ? ThreadLocalContext.localize("{data.table}")+" : " + name + ", ":"") + ThreadLocalContext.localize("{data.field}") +" : " + field.getName() + " - " + commonParent.get(field) + ", "+ThreadLocalContext.localize("{data.keys}")+" : " + commonParent.remove(field);
     }
 
     public boolean calcTwins(TwinImmutableObject o) {

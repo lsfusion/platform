@@ -3,6 +3,7 @@ package lsfusion.server.logics.property.actions;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.ActionPropertyMapImplement;
 import lsfusion.server.logics.property.CalcPropertyInterfaceImplement;
 import lsfusion.server.logics.property.ExecutionContext;
@@ -16,7 +17,7 @@ public class PushUserInputActionProperty extends AroundAspectActionProperty {
     private final CalcPropertyInterfaceImplement<PropertyInterface> push;
 
     // по аналогии с If
-    public <I extends PropertyInterface> PushUserInputActionProperty(String caption, ImOrderSet<I> innerInterfaces, CalcPropertyInterfaceImplement<I> push, ActionPropertyMapImplement<?, I> action) {
+    public <I extends PropertyInterface> PushUserInputActionProperty(LocalizedString caption, ImOrderSet<I> innerInterfaces, CalcPropertyInterfaceImplement<I> push, ActionPropertyMapImplement<?, I> action) {
         super(caption, innerInterfaces, action);
 
         ImRevMap<I, PropertyInterface> mapInterfaces = getMapInterfaces(innerInterfaces).reverse();

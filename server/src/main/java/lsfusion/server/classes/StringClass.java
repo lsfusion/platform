@@ -3,12 +3,13 @@ package lsfusion.server.classes;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.ExtInt;
 import lsfusion.interop.Data;
+import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.ParseException;
 import lsfusion.server.data.type.Type;
-import lsfusion.server.logics.ServerResourceBundle;
+import lsfusion.server.logics.i18n.LocalizedString;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -86,10 +87,10 @@ public class StringClass extends DataClass {
     }
 
     protected StringClass(boolean blankPadded, ExtInt length, boolean caseInsensitive, boolean rich) {
-        this(caseInsensitive ? ServerResourceBundle.getString("classes.insensitive.string") : ServerResourceBundle.getString("classes.string") + (blankPadded ? " (bp)" : "") + (blankPadded ? " (rich)" : ""), blankPadded, length, caseInsensitive, rich);
+        this(LocalizedString.create(caseInsensitive ? "{classes.insensitive.string}" : "{classes.string}" + (blankPadded ? " (bp)" : "") + (blankPadded ? " (rich)" : "")), blankPadded, length, caseInsensitive, rich);
     }
 
-    protected StringClass(String caption, boolean blankPadded, ExtInt length, boolean caseInsensitive, boolean rich) {
+    protected StringClass(LocalizedString caption, boolean blankPadded, ExtInt length, boolean caseInsensitive, boolean rich) {
         super(caption);
         this.blankPadded = blankPadded;
         this.length = length;
@@ -241,7 +242,7 @@ public class StringClass extends DataClass {
     }
 
     public String toString() {
-        return (caseInsensitive ? ServerResourceBundle.getString("classes.insensitive.string") : ServerResourceBundle.getString("classes.string")) + (blankPadded ? " (bp)" : "") + (rich ? " (rich)" : "") + " " + length;
+        return ThreadLocalContext.localize(LocalizedString.create((caseInsensitive ? "{classes.insensitive.string}" : "{classes.string}") + (blankPadded ? " (bp)" : "") + (rich ? " (rich)" : "") + " " + length));
     }
 
     public static StringClass[] getArray(int... lengths) {

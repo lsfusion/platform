@@ -78,7 +78,6 @@ import static lsfusion.interop.ClassViewType.HIDE;
 import static lsfusion.interop.Order.*;
 import static lsfusion.interop.form.ServerResponse.*;
 import static lsfusion.server.form.instance.GroupObjectInstance.*;
-import static lsfusion.server.logics.ServerResourceBundle.getString;
 
 // класс в котором лежит какие изменения произошли
 
@@ -145,6 +144,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     private final FormSessionScope sessionScope;
 
     private final boolean showDrop;
+    
+    private final Locale locale;
 
     private boolean interactive = true; // важно для assertion'а в endApply
 
@@ -160,8 +161,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                         boolean showDrop, boolean interactive,
                         ImSet<FilterEntity> contextFilters,
                         PropertyDrawEntity initFilterPropertyDraw,
-                        ImSet<PullChangeProperty> pullProps, boolean readOnly) throws SQLException, SQLHandledException {
-        this(entity, logicsInstance, session, securityPolicy, focusListener, classListener, computer, connection, mapObjects, stack, isModal, isAdd, sessionScope, checkOnOk, showDrop, interactive, false, contextFilters, initFilterPropertyDraw, pullProps, readOnly);
+                        ImSet<PullChangeProperty> pullProps, boolean readOnly, Locale locale) throws SQLException, SQLHandledException {
+        this(entity, logicsInstance, session, securityPolicy, focusListener, classListener, computer, connection, mapObjects, stack, isModal, isAdd, sessionScope, checkOnOk, showDrop, interactive, false, contextFilters, initFilterPropertyDraw, pullProps, readOnly, locale);
     }
 
     public FormInstance(FormEntity<T> entity, LogicsInstance logicsInstance, DataSession session, SecurityPolicy securityPolicy,
@@ -174,7 +175,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                         ImSet<FilterEntity> contextFilters,
                         PropertyDrawEntity initFilterPropertyDraw,
                         ImSet<PullChangeProperty> pullProps,
-                        boolean readOnly) throws SQLException, SQLHandledException {
+                        boolean readOnly, Locale locale) throws SQLException, SQLHandledException {
         this.sessionScope = sessionScope;
         this.isModal = isModal;
         this.checkOnOk = checkOnOk;
@@ -192,6 +193,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
         this.readOnly = readOnly;
 
+        this.locale = locale;
+        
         instanceFactory = new InstanceFactory(computer, connection);
 
         this.weakFocusListener = new WeakReference<>(focusListener);
@@ -1257,7 +1260,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
         dataChanged = true; // временно пока applyChanges синхронен, для того чтобы пересылался факт изменения данных
 
-        LogMessageClientAction message = new LogMessageClientAction(getString("form.instance.changes.saved"), false);
+        LogMessageClientAction message = new LogMessageClientAction(ThreadLocalContext.localize("{form.instance.changes.saved}"), false);
         if(interaction!=null)
             interaction.delayUserInteraction(message);
         else
@@ -2121,7 +2124,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                                 MapFact.singleton(dialogEntity, dialogValue),
                                 outerStack,
                                 true, false, FormSessionScope.OLDSESSION, false, true, true, true,
-                                additionalFilters, initFilterPropertyDraw, pullProps, false);
+                                additionalFilters, initFilterPropertyDraw, pullProps, false, locale);
     }
 
     // ---------------------------------------- Events ----------------------------------------
@@ -2200,6 +2203,10 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         return session;
     }
 
+    public Locale getLocale() {
+        return locale;
+    }
+    
     private final IncrementChangeProps environmentIncrement;
 
     private SessionModifier createModifier() {
@@ -2244,7 +2251,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     }
 
     public void formCancel(ExecutionContext context) throws SQLException, SQLHandledException {
-        int result = (Integer) context.requestUserInteraction(new ConfirmClientAction("lsFusion", getString("form.do.you.really.want.to.undo.changes")));
+        int result = (Integer) context.requestUserInteraction(new ConfirmClientAction("lsFusion", ThreadLocalContext.localize("{form.do.you.really.want.to.undo.changes}")));
         if (result == JOptionPane.YES_OPTION) {
             cancel(context.stack);
         }
@@ -2252,7 +2259,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
     public void formClose(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         if (sessionScope.isManageSession() && session.isStoredDataChanged()) {
-            int result = (Integer) context.requestUserInteraction(new ConfirmClientAction("lsFusion", getString("form.do.you.really.want.to.close.form")));
+            int result = (Integer) context.requestUserInteraction(new ConfirmClientAction("lsFusion", ThreadLocalContext.localize("{form.do.you.really.want.to.close.form}")));
             if (result != JOptionPane.YES_OPTION) {
                 return;
             }

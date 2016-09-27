@@ -5,7 +5,9 @@ import lsfusion.interop.form.layout.AbstractContainer;
 import lsfusion.interop.form.layout.Alignment;
 import lsfusion.interop.form.layout.ContainerAdder;
 import lsfusion.interop.form.layout.ContainerType;
+import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.form.entity.CalcPropertyObjectEntity;
+import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.mutables.NFFact;
 import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.mutables.interfaces.NFOrderSet;
@@ -19,8 +21,8 @@ public class ContainerView extends ComponentView implements AbstractContainer<Co
 
     public NFOrderSet<ComponentView> children = NFFact.orderSet();
 
-    public String caption;
-    public String description;
+    public LocalizedString caption;
+    public LocalizedString description;
 
     private ContainerType type = ContainerType.CONTAINERV;
 
@@ -46,11 +48,11 @@ public class ContainerView extends ComponentView implements AbstractContainer<Co
     }
 
     public void setCaption(String caption) {
-        this.caption = caption;
+        this.caption = LocalizedString.create(caption);
     }
 
     public void setDescription(String description) {
-        this.description = description;
+        this.description = LocalizedString.create(description);
     }
 
     public boolean isTabbedPane() {
@@ -171,8 +173,8 @@ public class ContainerView extends ComponentView implements AbstractContainer<Co
 
         pool.serializeCollection(outStream, getChildrenList(), serializationType);
 
-        pool.writeString(outStream, caption);
-        pool.writeString(outStream, description);
+        pool.writeString(outStream, ThreadLocalContext.localize(caption));
+        pool.writeString(outStream, ThreadLocalContext.localize(description));
 
 //        pool.writeObject(outStream, main);
 
@@ -190,8 +192,8 @@ public class ContainerView extends ComponentView implements AbstractContainer<Co
 
         children = NFFact.finalOrderSet(pool.<ComponentView>deserializeList(inStream));
 
-        caption = pool.readString(inStream);
-        description = pool.readString(inStream);
+        caption = LocalizedString.create(pool.readString(inStream));
+        description = LocalizedString.create(pool.readString(inStream));
 
 //        main = pool.readBoolean(inStream); // пока не будем делать, так как надо клиента обновлять
 
@@ -213,6 +215,6 @@ public class ContainerView extends ComponentView implements AbstractContainer<Co
 
     @Override
     public String toString() {
-        return caption;
+        return ThreadLocalContext.localize(caption);
     }
 }

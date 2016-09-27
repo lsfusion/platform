@@ -5,7 +5,7 @@ import lsfusion.server.classes.DataClass;
 import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.ParseException;
-import lsfusion.server.logics.ServerResourceBundle;
+import lsfusion.server.logics.i18n.LocalizedString;
 import org.apache.commons.httpclient.URIException;
 import org.apache.commons.httpclient.util.URIUtil;
 
@@ -26,7 +26,7 @@ public abstract class LinkClass extends DataClass<String> {
     public final boolean multiple;
 
     protected LinkClass(boolean multiple) {
-        super(ServerResourceBundle.getString("classes.link"));
+        super(LocalizedString.create("{classes.link}"));
 
         this.multiple = multiple;
     }

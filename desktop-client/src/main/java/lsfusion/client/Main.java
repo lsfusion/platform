@@ -37,6 +37,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
+import static lsfusion.base.BaseUtils.nvl;
 import static lsfusion.base.DateConverter.*;
 import static lsfusion.client.ClientResourceBundle.getString;
 import static lsfusion.client.StartupProperties.*;
@@ -201,19 +202,14 @@ public class Main {
 
                     LocalePreferences defaultPreferences = remoteLogics.getDefaultLocalePreferences();
                     LocalePreferences userPreferences = remoteNavigator.getLocalePreferences();
-                    if(defaultPreferences != null && userPreferences != null) {
-                        String country = userPreferences.country == null && !userPreferences.useClientLocale ? defaultPreferences.country : userPreferences.country;
-                        String language = userPreferences.language == null && !userPreferences.useClientLocale ? defaultPreferences.language : userPreferences.language;
-                        String timeZone = userPreferences.timeZone == null && !userPreferences.useClientLocale ? defaultPreferences.timeZone : userPreferences.timeZone;
-                        Integer twoDigitYearStart = userPreferences.twoDigitYearStart == null && !userPreferences.useClientLocale ? defaultPreferences.twoDigitYearStart : userPreferences.twoDigitYearStart;
+                    LocalePreferences resultPreferences = LocalePreferences.overrideDefaultWithUser(defaultPreferences, userPreferences);
 
-                        if (country != null && language != null) {
-                            Locale.setDefault(new Locale(language, country));
-                            ClientResourceBundle.clientResourceBundle = ResourceBundle.getBundle("ClientResourceBundle"); // чтобы подставлялась нужная локаль
-                        }
-
-                        setupTimePreferences(timeZone, twoDigitYearStart);
+                    if (resultPreferences.language != null) {
+                        Locale.setDefault(new Locale(resultPreferences.language, nvl(resultPreferences.country, "")));
+                        ClientResourceBundle.clientResourceBundle = ResourceBundle.getBundle("ClientResourceBundle"); // чтобы подставлялась нужная локаль
                     }
+
+                    setupTimePreferences(resultPreferences.timeZone, resultPreferences.twoDigitYearStart);
 
                     computerId = loginAction.getComputerId();
                     configurationAccessAllowed = remoteNavigator.isConfigurationAccessAllowed();
@@ -439,7 +435,7 @@ public class Main {
     }
 
     public static String getMainTitle() {
-        return BaseUtils.nvl(BaseUtils.nullEmpty(logicsDisplayName), LSFUSION_TITLE);
+        return nvl(BaseUtils.nullEmpty(logicsDisplayName), LSFUSION_TITLE);
     }
 
     public static void shutdown() {

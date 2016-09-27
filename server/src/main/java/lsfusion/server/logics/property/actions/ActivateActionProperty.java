@@ -4,6 +4,7 @@ import lsfusion.interop.action.ActivateTabClientAction;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.view.ComponentView;
+import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 
@@ -14,7 +15,7 @@ public class ActivateActionProperty extends SystemExplicitActionProperty {
     private FormEntity requestedForm;
     private ComponentView requestedTab;
 
-    public ActivateActionProperty(String caption, FormEntity form, ComponentView requestedTab) {
+    public ActivateActionProperty(LocalizedString caption, FormEntity form, ComponentView requestedTab) {
         super(caption);
         this.requestedForm = form;
         this.requestedTab = requestedTab;

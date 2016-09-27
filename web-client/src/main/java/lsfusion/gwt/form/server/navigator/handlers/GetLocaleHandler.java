@@ -21,6 +21,7 @@ public class GetLocaleHandler extends SimpleActionHandlerEx<GetLocaleAction, Str
     public StringResult executeEx(GetLocaleAction action, ExecutionContext context) throws DispatchException, IOException {
         LocalePreferences defaultPreferences = servlet.getLogics().getDefaultLocalePreferences();
         LocalePreferences userPreferences = servlet.getNavigator().getLocalePreferences();
-        return new StringResult(userPreferences == null || defaultPreferences == null ? "" : userPreferences.language == null && !userPreferences.useClientLocale ? defaultPreferences.language : userPreferences.language);
+        LocalePreferences preferences = LocalePreferences.overrideDefaultWithUser(defaultPreferences, userPreferences);
+        return new StringResult(preferences.language == null ? "" : preferences.language);
     }
 }

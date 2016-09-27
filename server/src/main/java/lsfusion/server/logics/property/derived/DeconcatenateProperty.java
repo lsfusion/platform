@@ -6,6 +6,7 @@ import lsfusion.server.classes.BaseClass;
 import lsfusion.server.data.expr.DeconcatenateExpr;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.where.WhereBuilder;
+import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.CalcType;
 import lsfusion.server.logics.property.FormulaProperty;
 import lsfusion.server.logics.property.PropertyInterface;
@@ -26,7 +27,7 @@ public class DeconcatenateProperty extends FormulaProperty<DeconcatenateProperty
     final BaseClass baseClass;
 
     public DeconcatenateProperty(int part, BaseClass baseClass) {
-        super("Concatenate "+part, SetFact.singletonOrder(new Interface(0)));
+        super(LocalizedString.create("Concatenate " + part), SetFact.singletonOrder(new Interface(0)));
         
         this.part = part;
         this.baseClass = baseClass;

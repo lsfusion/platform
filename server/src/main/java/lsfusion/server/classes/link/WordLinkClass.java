@@ -2,7 +2,7 @@ package lsfusion.server.classes.link;
 
 import lsfusion.interop.Data;
 import lsfusion.server.classes.DataClass;
-import lsfusion.server.logics.ServerResourceBundle;
+import lsfusion.server.context.ThreadLocalContext;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -31,7 +31,7 @@ public class WordLinkClass extends StaticFormatLinkClass {
     }
 
     public String toString() {
-        return ServerResourceBundle.getString("classes.word.link");
+        return ThreadLocalContext.localize("{classes.word.link}");
     }
 
     public DataClass getCompatible(DataClass compClass, boolean or) {

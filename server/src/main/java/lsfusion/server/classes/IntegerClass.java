@@ -4,7 +4,7 @@ import lsfusion.interop.Data;
 import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.ParseException;
-import lsfusion.server.logics.ServerResourceBundle;
+import lsfusion.server.logics.i18n.LocalizedString;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -18,11 +18,7 @@ public class IntegerClass extends IntClass<Integer> {
         DataClass.storeClass(instance);
     }
 
-    protected IntegerClass() { super(ServerResourceBundle.getString("classes.integer")); }
-
-    public String toString() {
-        return ServerResourceBundle.getString("classes.integer");
-    }
+    protected IntegerClass() { super(LocalizedString.create("{classes.integer}")); }
 
     public Class getReportJavaClass() {
         return Integer.class;

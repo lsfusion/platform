@@ -6,6 +6,7 @@ import lsfusion.server.caches.IdentityInstanceLazy;
 import lsfusion.server.classes.LogicalClass;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.classes.sets.ResolveClassSet;
+import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.derived.DerivedProperty;
@@ -42,7 +43,7 @@ public abstract class ListCaseActionProperty extends KeepContextActionProperty {
     }
 
     // immutable реализация
-    protected <I extends PropertyInterface> ListCaseActionProperty(String caption, boolean isExclusive, ImOrderSet<I> innerInterfaces) {
+    protected <I extends PropertyInterface> ListCaseActionProperty(LocalizedString caption, boolean isExclusive, ImOrderSet<I> innerInterfaces) {
         super(caption, innerInterfaces.size());
 
         this.abstractWhere = null;
@@ -51,7 +52,7 @@ public abstract class ListCaseActionProperty extends KeepContextActionProperty {
     }
 
     // mutable реализация
-    public <I extends PropertyInterface> ListCaseActionProperty(String caption, boolean checkExclusiveImplementations, boolean checkAllImplementations, boolean isLast, AbstractType type, ImOrderSet<I> innerInterfaces, ImMap<I, ValueClass> mapClasses)  {
+    public <I extends PropertyInterface> ListCaseActionProperty(LocalizedString caption, boolean checkExclusiveImplementations, boolean checkAllImplementations, boolean isLast, AbstractType type, ImOrderSet<I> innerInterfaces, ImMap<I, ValueClass> mapClasses)  {
         super(caption, innerInterfaces.size());
 
         this.checkExclusiveImplementations = checkExclusiveImplementations;

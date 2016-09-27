@@ -16,7 +16,11 @@ import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.form.entity.LogFormEntity;
 import lsfusion.server.form.instance.FormInstance;
-import lsfusion.server.logics.*;
+import lsfusion.server.logics.DataObject;
+import lsfusion.server.logics.LogicsModule;
+import lsfusion.server.logics.ObjectValue;
+import lsfusion.server.logics.SystemEventsLogicsModule;
+import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.session.DataSession;
@@ -125,10 +129,10 @@ public class LCP<T extends PropertyInterface> extends LP<T, CalcProperty<T>> {
         }
         if (property.getLogFormProperty() == null) {
             LogFormEntity logFormEntity = new LogFormEntity(null,
-                                                            ServerResourceBundle.getString("logics.property.log.form"),
+                                                            LocalizedString.create("{logics.property.log.form}"),
                                                             this, property.getLogProperty(), systemEventsLM, lazyInit);
             systemEventsLM.addFormEntity(logFormEntity);
-            property.setLogFormProperty(ownerModule.addMFAProp(ServerResourceBundle.getString("logics.property.log.action"), logFormEntity, logFormEntity.params));
+            property.setLogFormProperty(ownerModule.addMFAProp(LocalizedString.create("{logics.property.log.action}"), logFormEntity, logFormEntity.params));
         }
     }
 

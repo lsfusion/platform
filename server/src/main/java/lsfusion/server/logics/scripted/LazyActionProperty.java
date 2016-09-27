@@ -2,6 +2,7 @@ package lsfusion.server.logics.scripted;
 
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.DataObject;
+import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.CalcProperty;
@@ -18,7 +19,7 @@ public class LazyActionProperty extends SystemExplicitActionProperty {
     private final CalcProperty sourceProperty;
     private LAP evaluatedProperty = null;
        
-    public LazyActionProperty(String caption, CalcProperty sourceProperty) {
+    public LazyActionProperty(LocalizedString caption, CalcProperty sourceProperty) {
         super(caption, new LCP(sourceProperty).getInterfaceClasses(ClassType.drillDownPolicy));
         this.sourceProperty = sourceProperty;       
     }

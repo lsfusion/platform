@@ -4,6 +4,7 @@ import lsfusion.server.classes.DateClass;
 import lsfusion.server.classes.IntegralClass;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.form.view.PropertyDrawView;
+import lsfusion.server.logics.i18n.LocalizedString;
 
 import javax.swing.*;
 import java.text.DecimalFormat;
@@ -86,7 +87,7 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
     }
 
     public void setCaption(String caption) {
-        target.caption = caption;
+        target.caption = LocalizedString.create(caption);
     }
 
     public void setClearText(boolean clearText) {

@@ -1,8 +1,6 @@
 package lsfusion.server;
 
-import lsfusion.base.ApiResourceBundle;
 import lsfusion.server.context.ThreadLocalContext;
-import lsfusion.server.logics.ServerResourceBundle;
 import lsfusion.server.logics.property.AlgType;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.PropertyUtils;
@@ -91,9 +89,11 @@ public class Settings {
 
     private int usedChangesCacheLimit = 20;
 
-    private String locale;
+    private String language;
+    
+    private String country;
+    
     // максимум сколько свойств вместе будет применяться в базу
-
     private int splitIncrementApply = 10;
 
     private int statDegree = 5;
@@ -509,16 +509,22 @@ public class Settings {
         this.usedChangesCacheLimit = usedChangesCacheLimit;
     }
 
-    public void setLocale(String locale) {
-        this.locale = locale;
-        ServerResourceBundle.load(locale);
-        ApiResourceBundle.load(locale);
+    public void setLanguage(String language) {
+        this.language = language;
     }
 
-    public String getLocale() {
-        return locale;
+    public void setCountry(String country) {
+        this.country = country;
+    }
+    
+    public String getLanguage() {
+        return language;
     }
 
+    public String getCountry() {
+        return country;
+    }
+    
     public int getSplitIncrementApply() {
         return splitIncrementApply;
     }

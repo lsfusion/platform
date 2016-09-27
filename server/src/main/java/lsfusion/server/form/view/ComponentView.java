@@ -10,6 +10,7 @@ import lsfusion.server.classes.LogicalClass;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.entity.ObjectEntity;
+import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.mutables.NFFact;
 import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.mutables.interfaces.NFProperty;
@@ -50,7 +51,7 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
 
     public CalcPropertyRevImplement<ClassPropertyInterface, ObjectEntity> getActiveTab() {
         if (activeTab == null) {
-            activeTab = DerivedProperty.createDataPropRev(this.toString(), MapFact.<ObjectEntity, ValueClass>EMPTY(), LogicalClass.instance, true);
+            activeTab = DerivedProperty.createDataPropRev(LocalizedString.create(this.toString()), MapFact.<ObjectEntity, ValueClass>EMPTY(), LogicalClass.instance, true);
         }
         return activeTab;
     }

@@ -9,6 +9,7 @@ import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.view.DefaultFormView;
 import lsfusion.server.form.view.PropertyDrawView;
 import lsfusion.server.logics.ObjectValue;
+import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ClassType;
@@ -21,7 +22,7 @@ public class SaveActionProperty extends SystemExplicitActionProperty {
     private LCP<?> fileProperty;
     private LCP<?> fileNameProp;
 
-    public SaveActionProperty(String caption, LCP fileProperty, LCP fileNameProp) {
+    public SaveActionProperty(LocalizedString caption, LCP fileProperty, LCP fileNameProp) {
         super(caption, fileProperty.getInterfaceClasses(ClassType.filePolicy));
 
         this.fileProperty = fileProperty;

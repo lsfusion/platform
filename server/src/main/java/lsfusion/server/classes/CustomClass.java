@@ -22,6 +22,7 @@ import lsfusion.server.classes.sets.OrObjectClassSet;
 import lsfusion.server.classes.sets.ResolveClassSet;
 import lsfusion.server.classes.sets.ResolveUpClassSet;
 import lsfusion.server.classes.sets.UpClassSet;
+import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;
@@ -29,8 +30,9 @@ import lsfusion.server.form.entity.*;
 import lsfusion.server.form.instance.CustomObjectInstance;
 import lsfusion.server.form.instance.ObjectInstance;
 import lsfusion.server.logics.BaseLogicsModule;
-import lsfusion.server.logics.ServerResourceBundle;
-import lsfusion.server.logics.mutables.*;
+import lsfusion.server.logics.i18n.LocalizedString;
+import lsfusion.server.logics.mutables.NFFact;
+import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.mutables.interfaces.NFDefault;
 import lsfusion.server.logics.mutables.interfaces.NFOrderSet;
 import lsfusion.server.logics.mutables.interfaces.NFProperty;
@@ -39,7 +41,10 @@ import lsfusion.server.logics.property.actions.ChangeClassActionProperty;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 public abstract class CustomClass extends ImmutableObject implements ObjectClass, ValueClass {
 
@@ -75,7 +80,7 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
     }
 
     public String toString() {
-        return caption + " (" + sID + ")";
+        return ThreadLocalContext.localize(LocalizedString.create(caption.getSourceString() + " (" + sID + ")"));
     }
 
     public Integer ID;
@@ -93,8 +98,8 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
         return getCanonicalName();
     }
 
-    public String caption;
-    public CustomClass(String sID, String caption, Version version, CustomClass... parents) {
+    public LocalizedString caption;
+    public CustomClass(String sID, LocalizedString caption, Version version, CustomClass... parents) {
         this.sID = sID;
         this.caption = caption;
 
@@ -122,9 +127,9 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
     }
 
     @Override
-    public String getCaption() {
+    public LocalizedString getCaption() {
         return caption;
-    }
+    } 
 
     public boolean hasChildren() {
         return !getChildren().isEmpty();
@@ -165,9 +170,9 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
     public ConcreteCustomClass findConcreteClassID(int idClass) {
         CustomClass cls = findClassID(idClass);
         if (cls == null)
-            throw new RuntimeException(ServerResourceBundle.getString("classes.there.is.an.object.of.not.existing.class.in.the.database")+" : " + idClass + ")");
+            throw new RuntimeException(ThreadLocalContext.localize("{classes.there.is.an.object.of.not.existing.class.in.the.database} : " + idClass + ")"));
         if (! (cls instanceof ConcreteCustomClass))
-            throw new RuntimeException(ServerResourceBundle.getString("classes.there.is.an.object.of.abstract.class.in.the.database")+" : " + idClass + ")");
+            throw new RuntimeException(ThreadLocalContext.localize("{classes.there.is.an.object.of.abstract.class.in.the.database} : " + idClass + ")"));
         return (ConcreteCustomClass) cls;
     }
 
@@ -257,7 +262,7 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
     public void serialize(DataOutputStream outStream) throws IOException {
         outStream.writeByte(Data.OBJECT);
         outStream.writeBoolean(this instanceof ConcreteCustomClass);
-        outStream.writeUTF(caption);
+        outStream.writeUTF(caption.getSourceString());
         outStream.writeInt(ID);
         outStream.writeUTF(getSID());
 
@@ -298,7 +303,7 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
                 return -1;
             if (f2.caption == null)
                 return 1;
-            return f1.caption.compareTo(f2.caption);
+            return f1.caption.getSourceString().compareTo(f2.caption.getSourceString());
         }
     }
 
@@ -438,7 +443,7 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
     }
 
     public static IsClassProperty getProperty(ValueClass valueClass) {
-        return new IsClassProperty(valueClass.getCaption() + ServerResourceBundle.getString("logics.pr"), valueClass);
+        return new IsClassProperty(LocalizedString.create(valueClass.getCaption().getSourceString() + "{logics.pr}"), valueClass);
     }
 
     private IsClassProperty property;

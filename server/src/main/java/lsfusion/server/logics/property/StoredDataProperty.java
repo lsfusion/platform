@@ -2,10 +2,11 @@ package lsfusion.server.logics.property;
 
 import lsfusion.base.FunctionSet;
 import lsfusion.server.classes.ValueClass;
+import lsfusion.server.logics.i18n.LocalizedString;
 
 public class StoredDataProperty extends DataProperty {
 
-    public StoredDataProperty(String caption, ValueClass[] classes, ValueClass value) {
+    public StoredDataProperty(LocalizedString caption, ValueClass[] classes, ValueClass value) {
         super(caption, classes, value);
 
         finalizeInit();

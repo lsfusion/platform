@@ -17,8 +17,6 @@ import lsfusion.server.logics.tasks.TaskRunner;
 import java.sql.SQLException;
 import java.util.Iterator;
 
-import static lsfusion.server.logics.ServerResourceBundle.getString;
-
 public abstract class MultiThreadActionProperty extends ScriptingActionProperty {
     private ClassPropertyInterface threadCountInterface;
     private ClassPropertyInterface propertyTimeoutInterface;

@@ -57,6 +57,8 @@ import lsfusion.server.form.navigator.RemoteNavigator;
 import lsfusion.server.form.window.AbstractWindow;
 import lsfusion.server.lifecycle.LifecycleAdapter;
 import lsfusion.server.lifecycle.LifecycleEvent;
+import lsfusion.server.logics.i18n.DefaultLocalizer;
+import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.linear.LP;
@@ -99,11 +101,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 
-import static lsfusion.base.BaseUtils.isRedundantString;
-import static lsfusion.base.BaseUtils.nullToZero;
-import static lsfusion.base.BaseUtils.serviceLogger;
+import static lsfusion.base.BaseUtils.*;
 import static lsfusion.server.logics.LogicsModule.*;
-import static lsfusion.server.logics.ServerResourceBundle.getString;
 
 public abstract class BusinessLogics<T extends BusinessLogics<T>> extends LifecycleAdapter implements InitializingBean {
     protected final static Logger logger = ServerLoggers.systemLogger;
@@ -143,6 +142,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
 
     private String orderDependencies;
 
+    private LocalizedString.Localizer localizer;
+    
     private PublicTask initTask;
 
     //чтобы можно было использовать один инстанс логики с несколькими инстансами, при этом инициализировать только один раз
@@ -567,6 +568,14 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         return orderedModules;
     }
 
+    public void initLocalizer() {
+        localizer = new DefaultLocalizer();
+    }
+    
+    public LocalizedString.Localizer getLocalizer() {
+        return localizer;
+    }
+
     public void initModuleOrders() {
         if (!isRedundantString(topModule)) {
             overrideModulesList(topModule);
@@ -632,7 +641,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             if(isFull) // важно чтобы getInterfaceClasses дал тот же tableClass
                 classSet = tableClass.getUpSet();
 
-            ClassDataProperty dataProperty = new ClassDataProperty(classSet.toString(), classSet);
+            ClassDataProperty dataProperty = new ClassDataProperty(LocalizedString.createFromSimpleString(classSet.toString()), classSet);
             LCP<ClassPropertyInterface> lp = new LCP<>(dataProperty);
             LM.addProperty(null, new LCP<>(dataProperty));
             LM.makePropertyPublic(lp, PropertyCanonicalNameUtils.classDataPropPrefix + table.getName(), Collections.<ResolveClassSet>singletonList(ResolveOrObjectClassSet.fromSetConcreteChildren(set)));
@@ -809,7 +818,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
                 String emailTo = rowValue.get("emailTo") == null ? "" : rowValue.get("emailTo").toString().trim();
                 String emailToCC = rowValue.get("emailToCC") == null ? "" : rowValue.get("emailToCC").toString().trim();
                 String emailToBC = rowValue.get("emailToBC") == null ? "" : rowValue.get("emailToBC").toString().trim();
-                LAP emailNotificationProperty = LM.addProperty(LM.actionGroup, new LAP(new NotificationActionProperty("emailNotificationProperty", prop, subject, text, emailFrom, emailTo, emailToCC, emailToBC, emailLM)));
+                LAP emailNotificationProperty = LM.addProperty(LM.actionGroup, new LAP(new NotificationActionProperty(LocalizedString.create("emailNotificationProperty"), prop, subject, text, emailFrom, emailTo, emailToCC, emailToBC, emailLM)));
 
                 Integer[] params = new Integer[prop.listInterfaces.size()];
                 for (int j = 0; j < prop.listInterfaces.size(); j++)
@@ -963,7 +972,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             // todo [dale]: тут есть потенциальное пересечение канонических имен, так как приходится разделять эти свойства только по имени
             // и имя приходится создавать из канонического имени базового свойства, заменив спецсимволы на подчеркивания
             String setupPolicyActionName = PropertyCanonicalNameUtils.policyPropPrefix + PropertyCanonicalNameUtils.makeSafeName(propertyCN); 
-            LAP<?> setupPolicyLAP = LM.addJoinAProp(LM.propertyPolicyGroup, getString("logics.property.propertypolicy.action"),
+            LAP<?> setupPolicyLAP = LM.addJoinAProp(LM.propertyPolicyGroup, LocalizedString.create("{logics.property.propertypolicy.action}"),
                     setupPolicyForPropByCN, LM.addCProp(StringClass.get(propertyCN.length()), propertyCN));
             
             ActionProperty setupPolicyAction = setupPolicyLAP.property;
@@ -1336,7 +1345,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
                         String print = "";
                         for (Property property : cycle)
                             print = (print.length() == 0 ? "" : print + " -> ") + property.toString();
-                        throw new RuntimeException(getString("message.cycle.detected") + " : " + print + " -> " + minLink.to);
+                        throw new RuntimeException(ThreadLocalContext.localize("{message.cycle.detected}") + " : " + print + " -> " + minLink.to);
                     }
                     buildList(innerComponent, null, removedLinks, mResult, events);
                 }
@@ -2085,7 +2094,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     private void outputPersistent() {
         String result = "";
 
-        result += '\n' + getString("logics.info.by.tables") + '\n' + '\n';
+        result += ThreadLocalContext.localize("\n{logics.info.by.tables}\n\n");
         ImOrderSet<CalcProperty> storedProperties = getStoredProperties();
         for (Map.Entry<ImplementTable, Collection<CalcProperty>> groupTable : BaseUtils.group(new BaseUtils.Group<ImplementTable, CalcProperty>() {
             public ImplementTable group(CalcProperty key) {
@@ -2096,7 +2105,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             for (CalcProperty property : groupTable.getValue())
                 result += '\t' + property.outputStored(false) + '\n';
         }
-        result += '\n' + getString("logics.info.by.properties") + '\n' + '\n';
+        result += ThreadLocalContext.localize("\n{logics.info.by.properties}\n\n");
         for (CalcProperty property : storedProperties)
             result += property.outputStored(true) + '\n';
         System.out.println(result);

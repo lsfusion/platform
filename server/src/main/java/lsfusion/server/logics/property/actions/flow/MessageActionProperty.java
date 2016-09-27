@@ -4,6 +4,7 @@ import lsfusion.base.col.SetFact;
 import lsfusion.interop.action.MessageClientAction;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.ObjectValue;
+import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.CalcPropertyMapImplement;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.PropertyInterface;
@@ -16,13 +17,13 @@ public class MessageActionProperty extends SystemActionProperty {
     protected final String title;
     private boolean noWait = false;
 
-    public <I extends PropertyInterface> MessageActionProperty(String caption, String title) {
+    public <I extends PropertyInterface> MessageActionProperty(LocalizedString caption, String title) {
         super(caption, SetFact.singletonOrder(new PropertyInterface()));
 
         this.title = title;
     }
 
-    public <I extends PropertyInterface> MessageActionProperty(String caption, String title, boolean noWait) {
+    public <I extends PropertyInterface> MessageActionProperty(LocalizedString caption, String title, boolean noWait) {
         this(caption, title);
 
         this.noWait = noWait;

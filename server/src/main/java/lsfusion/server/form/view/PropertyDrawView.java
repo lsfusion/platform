@@ -10,10 +10,12 @@ import lsfusion.interop.form.screen.ExternalScreenConstraints;
 import lsfusion.server.auth.ChangePropertySecurityPolicy;
 import lsfusion.server.classes.ActionClass;
 import lsfusion.server.classes.ValueClass;
+import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.type.TypeSerializer;
 import lsfusion.server.form.entity.*;
 import lsfusion.server.form.view.report.ReportDrawField;
+import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.ActionProperty;
 import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.ClassType;
@@ -29,8 +31,6 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.text.Format;
 import java.util.Map;
-
-import static lsfusion.server.logics.ServerResourceBundle.getString;
 
 public class PropertyDrawView extends ComponentView {
 
@@ -64,7 +64,7 @@ public class PropertyDrawView extends ComponentView {
     public ExternalScreen externalScreen;
     public ExternalScreenConstraints externalScreenConstraints = new ExternalScreenConstraints();
 
-    public String caption;
+    public LocalizedString caption;
     public boolean clearText;
     public String toolTip;
 
@@ -101,11 +101,11 @@ public class PropertyDrawView extends ComponentView {
         return entity.getSID();
     }
 
-    public String getDefaultCaption() {
+    public LocalizedString getDefaultCaption() {
         return entity.propertyObject.property.caption;
     }
 
-    public String getCaption() {
+    public LocalizedString getCaption() {
         return caption != null
                 ? caption
                 : getDefaultCaption();
@@ -113,8 +113,8 @@ public class PropertyDrawView extends ComponentView {
 
     //Для Jasper'а экранируем кавычки
     public String getReportCaption() {
-        String caption = getCaption();
-        return caption == null ? null : caption.replace("\"", "\\\"");
+        LocalizedString caption = getCaption();
+        return caption == null ? null : ThreadLocalContext.localize(caption).replace("\"", "\\\"");
     }
 
     public ReportDrawField getReportDrawField(int charWidth, int scale) {
@@ -169,9 +169,7 @@ public class PropertyDrawView extends ComponentView {
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         super.customSerialize(pool, outStream, serializationType);
 
-        pool.writeString(outStream, SerializationType.VISUAL_SETUP.equals(serializationType)
-                ? caption
-                : getCaption());
+        pool.writeString(outStream, ThreadLocalContext.localize(SerializationType.VISUAL_SETUP.equals(serializationType) ? caption : getCaption()));
         pool.writeString(outStream, regexp);
         pool.writeString(outStream, regexpMessage);
         pool.writeLong(outStream, maxValue);
@@ -285,27 +283,27 @@ public class PropertyDrawView extends ComponentView {
             }
         }
 
-        OrderedMap<String,String> contextMenuBindings = filterContextMenuItems(entity.getContextMenuBindings(), pool.context);
+        OrderedMap<String, LocalizedString> contextMenuBindings = filterContextMenuItems(entity.getContextMenuBindings(), pool.context);
         outStream.writeInt(contextMenuBindings == null ? 0 : contextMenuBindings.size());
         if (contextMenuBindings != null) {
             for (int i = 0; i < contextMenuBindings.size(); ++i) {
                 pool.writeString(outStream, contextMenuBindings.getKey(i));
-                pool.writeString(outStream, contextMenuBindings.getValue(i));
+                pool.writeString(outStream, ThreadLocalContext.localize(contextMenuBindings.getValue(i)));
             }
         }
 
         outStream.writeBoolean(notNull || entity.propertyObject.property.isSetNotNull());
     }
 
-    private OrderedMap<String, String> filterContextMenuItems(OrderedMap<String, String> contextMenuBindings, ServerContext context) {
+    private OrderedMap<String, LocalizedString> filterContextMenuItems(OrderedMap<String, LocalizedString> contextMenuBindings, ServerContext context) {
         if (contextMenuBindings == null || contextMenuBindings.size() == 0) {
             return null;
         }
 
-        OrderedMap<String, String> contextMenuItems = new OrderedMap<>();
+        OrderedMap<String, LocalizedString> contextMenuItems = new OrderedMap<>();
         for (int i = 0; i < contextMenuBindings.size(); ++i) {
             String actionSID = contextMenuBindings.getKey(i);
-            String caption = contextMenuBindings.getValue(i);
+            LocalizedString caption = contextMenuBindings.getValue(i);
             ActionPropertyObjectEntity<?> editAction = entity.getEditAction(actionSID, context.entity);
             if (editAction != null && context.securityPolicy.property.view.checkPermission(editAction.property)) {
                 contextMenuItems.put(actionSID, caption);
@@ -318,7 +316,7 @@ public class PropertyDrawView extends ComponentView {
     public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
         super.customDeserialize(pool, inStream);
 
-        caption = pool.readString(inStream);
+        caption = LocalizedString.create(pool.readString(inStream));
         regexp = pool.readString(inStream);
         regexpMessage = pool.readString(inStream);
         maxValue = pool.readLong(inStream);
@@ -353,7 +351,7 @@ public class PropertyDrawView extends ComponentView {
 
     @Override
     public String toString() {
-        return getCaption();
+        return ThreadLocalContext.localize(getCaption());
     }
 
     public int getMinimumCharWidth() {
@@ -385,18 +383,18 @@ public class PropertyDrawView extends ComponentView {
         if (entity.askConfirmMessage != null)
             return entity.askConfirmMessage;
         
-        String msg;
+        LocalizedString msg;
         if (entity.propertyObject.property.getType() instanceof ActionClass) {
-            msg = getString("form.instance.do.you.really.want.to.take.action");
+            msg = LocalizedString.create("{form.instance.do.you.really.want.to.take.action}");
         } else {
-            msg = getString("form.instance.do.you.really.want.to.edit.property");
+            msg = LocalizedString.create("{form.instance.do.you.really.want.to.edit.property}");
         }
-        String caption = getCaption();
-        if (caption != null) {
-            msg += " \"" + caption + "\"?";
+        LocalizedString caption = getCaption();
+        if (!caption.isEmpty()) {
+            msg = LocalizedString.create(msg.getSourceString() + " \"" + caption.getSourceString() + "\"?");
         }
 
-        return msg;
+        return ThreadLocalContext.localize(msg);
     }
     
     public boolean hasChangeAction(ServerContext context) {

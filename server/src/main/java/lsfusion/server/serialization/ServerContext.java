@@ -11,8 +11,8 @@ public class ServerContext {
     public final FormView view;
     public final SecurityPolicy securityPolicy;
 
-    public ServerContext(SecurityPolicy securityPolicy, FormView view) {
-        this.BL = null;
+    public ServerContext(SecurityPolicy securityPolicy, FormView view, BusinessLogics<?> BL) {
+        this.BL = BL;
         this.securityPolicy = securityPolicy;
         this.entity = view.entity;
         this.view = view;

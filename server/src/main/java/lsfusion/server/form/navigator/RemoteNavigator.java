@@ -88,6 +88,8 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
 
     private DataObject user;
 
+    private LocalePreferences userLocalePreferences;
+    
     private DataObject computer;
 
     private ObjectValue currentForm;
@@ -151,6 +153,8 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         finalizeInit(stack, SyncType.NOSYNC);
 
         navigatorManager.navigatorCreated(stack, this, navigatorInfo);
+        
+        loadLocalePreferences();
     }
 
     public boolean isFullClient() {
@@ -161,7 +165,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         Object newRole = securityManager.getUserMainRole(user);
         Object currentRole = securityManager.getUserMainRole(this.user);
         if (BaseUtils.nullEquals(newRole, currentRole)) {
-            this.user = user;
+            setUser(user);
             Result<Integer> timeout = new Result<>();
             this.securityPolicy = getUserSecurityPolicy(timeout);
             this.transactionTimeout = timeout.result;
@@ -285,6 +289,11 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }
+    }
+
+    private void setUser(DataObject user) {
+        this.user = user;
+        loadLocalePreferences();
     }
 
     @Aspect
@@ -480,7 +489,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         return useBusyDialog;
     }
 
-    public LocalePreferences getLocalePreferences() throws RemoteException {
+    private void loadLocalePreferences() {
         String language = null;
         String country = null;
         String timeZone = null;
@@ -488,13 +497,26 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         boolean useClientLocale = false;
         try (DataSession session = createSession()) {
             language = (String) businessLogics.authenticationLM.languageCustomUser.read(session, user);
-            country = (String) businessLogics.authenticationLM.countryCustomUser.read(session, user);
+            if (language == null) {
+                language = logicsInstance.getSettings().getLanguage();
+                country = logicsInstance.getSettings().getCountry();
+            } else {
+                country = (String) businessLogics.authenticationLM.countryCustomUser.read(session, user);
+            }
             timeZone = (String) businessLogics.authenticationLM.timeZoneCustomUser.read(session, user);
             twoDigitYearStart = (Integer) businessLogics.authenticationLM.twoDigitYearStartCustomUser.read(session, user);
             useClientLocale = businessLogics.authenticationLM.useClientLocaleCustomUser.read(session, user) != null;
         } catch (SQLException | SQLHandledException ignored) {
         }
-        return new LocalePreferences(language, country, timeZone, twoDigitYearStart, useClientLocale);
+        this.userLocalePreferences = new LocalePreferences(language, country, timeZone, twoDigitYearStart, useClientLocale);
+    }
+    
+    public LocalePreferences getLocalePreferences() throws RemoteException {
+        return userLocalePreferences;
+    }
+
+    public LocalePreferences getLocalLocalePreferences() {
+        return userLocalePreferences;
     }
 
     public void gainedFocus(FormInstance<T> form) {
@@ -626,7 +648,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         FormEntity<T> formEntity = (FormEntity<T>) businessLogics.getFormEntityBySID(formSID);
 
         if (formEntity == null) {
-            throw new RuntimeException(ServerResourceBundle.getString("form.navigator.form.with.id.not.found") + " : " + formSID);
+            throw new RuntimeException(ThreadLocalContext.localize("{form.navigator.form.with.id.not.found}") + " : " + formSID);
         }
 
         if (!securityPolicy.navigator.checkPermission(formEntity)) {
@@ -819,11 +841,11 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
             final NavigatorElement element = businessLogics.LM.root.getNavigatorElementBySID(actionSID);
 
             if (!(element instanceof NavigatorAction)) {
-                throw new RuntimeException(ServerResourceBundle.getString("form.navigator.action.not.found"));
+                throw new RuntimeException(ThreadLocalContext.localize("{form.navigator.action.not.found}"));
             }
 
             if (!securityPolicy.navigator.checkPermission(element)) {
-                throw new RuntimeException(ServerResourceBundle.getString("form.navigator.not.enough.permissions"));
+                throw new RuntimeException(ThreadLocalContext.localize("{form.navigator.not.enough.permissions}"));
             }
 
             property = ((NavigatorAction) element).getProperty();

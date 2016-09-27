@@ -16,7 +16,8 @@ import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.query.Join;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
-import lsfusion.server.logics.ServerResourceBundle;
+import lsfusion.server.logics.i18n.FormatLocalizedString;
+import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.session.DataChanges;
 import lsfusion.server.session.PropertyChange;
@@ -32,7 +33,7 @@ public class CycleGroupProperty<I extends PropertyInterface, P extends PropertyI
 
     final CalcProperty<P> toChange;
 
-    public CycleGroupProperty(String caption, ImSet<I> innerInterfaces, ImCol<? extends CalcPropertyInterfaceImplement<I>> groupInterfaces, CalcPropertyInterfaceImplement<I> property, CalcProperty<P> toChange) {
+    public CycleGroupProperty(LocalizedString caption, ImSet<I> innerInterfaces, ImCol<? extends CalcPropertyInterfaceImplement<I>> groupInterfaces, CalcPropertyInterfaceImplement<I> property, CalcProperty<P> toChange) {
         super(caption, innerInterfaces, groupInterfaces, property, false);
         this.toChange = toChange;
     }
@@ -49,7 +50,7 @@ public class CycleGroupProperty<I extends PropertyInterface, P extends PropertyI
             cycleCaption = ((CalcPropertyMapImplement<?, I>)groupProperty).property.toString();
         else
             cycleCaption = groupProperty.toString();
-        constraint.caption = ServerResourceBundle.getString("logics.property.derived.violate.property.uniqueness.for.objects", cycleCaption);
+        constraint.caption = new FormatLocalizedString("{logics.property.derived.violate.property.uniqueness.for.objects}", cycleCaption);
         return constraint;
     }
 

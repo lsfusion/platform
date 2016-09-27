@@ -7,6 +7,7 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
+import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.infer.ExClassSet;
 import lsfusion.server.logics.property.infer.InferType;
 import lsfusion.server.logics.property.infer.Inferred;
@@ -27,7 +28,7 @@ abstract public class UnionProperty extends ComplexIncrementProperty<UnionProper
         return SetFact.toOrderExclSet(intNum, genInterface);
     }
 
-    protected UnionProperty(String caption, ImOrderSet<Interface> interfaces) {
+    protected UnionProperty(LocalizedString caption, ImOrderSet<Interface> interfaces) {
         super(caption, interfaces);
     }
 

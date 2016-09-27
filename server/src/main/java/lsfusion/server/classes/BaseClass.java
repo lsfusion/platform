@@ -22,7 +22,7 @@ import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.NullValue;
 import lsfusion.server.logics.ObjectValue;
-import lsfusion.server.logics.ServerResourceBundle;
+import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.ObjectClassField;
@@ -50,7 +50,7 @@ public class BaseClass extends AbstractCustomClass {
         this.fullTables = fullTables;
     }
 
-    public BaseClass(String sID, String caption, Version version) {
+    public BaseClass(String sID, LocalizedString caption, Version version) {
         super(sID, caption, version);
         unknown = new UnknownClass(this);
     }
@@ -80,13 +80,13 @@ public class BaseClass extends AbstractCustomClass {
     }
 
     public void initObjectClass(Version version, String sid) { // чтобы сохранить immutability классов
-        objectClass = new ConcreteCustomClass(sid, ServerResourceBundle.getString("classes.object.class"), version, this);
+        objectClass = new ConcreteCustomClass(sid, LocalizedString.create("{classes.object.class}"), version, this);
 
         ImSet<CustomClass> allClasses = getAllClasses().remove(SetFact.singleton(objectClass));
 
         // сначала обрабатываем baseClass.objectClass чтобы классы
         List<String> sidClasses = new ArrayList<>();
-        List<String> nameClasses = new ArrayList<>();
+        List<LocalizedString> nameClasses = new ArrayList<>();
         for(CustomClass customClass : allClasses)
             if(customClass instanceof ConcreteCustomClass) {
                 sidClasses.add(customClass.getSID());
@@ -187,7 +187,7 @@ public class BaseClass extends AbstractCustomClass {
 
     @IdentityStrongLazy // для ID
     public ChangeClassValueActionProperty getChangeClassValueAction() {
-        return new ChangeClassValueActionProperty(ServerResourceBundle.getString("logics.property.actions.changeclass"), this);
+        return new ChangeClassValueActionProperty(LocalizedString.create("{logics.property.actions.changeclass}"), this);
     }
 
     @IdentityLazy

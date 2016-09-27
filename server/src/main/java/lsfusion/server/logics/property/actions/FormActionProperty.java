@@ -21,6 +21,7 @@ import lsfusion.server.Settings;
 import lsfusion.server.SystemProperties;
 import lsfusion.server.classes.ConcreteCustomClass;
 import lsfusion.server.classes.ValueClass;
+import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.entity.*;
 import lsfusion.server.form.entity.filter.FilterEntity;
@@ -29,7 +30,7 @@ import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.form.instance.FormSessionScope;
 import lsfusion.server.form.instance.ObjectInstance;
 import lsfusion.server.logics.DataObject;
-import lsfusion.server.logics.ServerResourceBundle;
+import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.remote.RemoteForm;
@@ -95,7 +96,7 @@ public class FormActionProperty extends SystemExplicitActionProperty {
     //assert getProperties и startAction одинаковой длины
     //startAction привязаны к созадаваемой форме
     //getProperties привязаны к форме, содержащей свойство...
-    public FormActionProperty(String caption,
+    public FormActionProperty(LocalizedString caption,
                               FormEntity form,
                               final ObjectEntity[] objectsToSet,
                               ActionPropertyObjectEntity startAction,
@@ -184,7 +185,8 @@ public class FormActionProperty extends SystemExplicitActionProperty {
 
         if (printType != null && !newFormInstance.areObjectsFound()) {
             context.requestUserInteraction(
-                    new MessageClientAction(ServerResourceBundle.getString("form.navigator.form.do.not.fit.for.specified.parameters"), form.caption));
+                    new MessageClientAction(ThreadLocalContext.localize(LocalizedString.create("{form.navigator.form.do.not.fit.for.specified.parameters}")), 
+                                            ThreadLocalContext.localize(form.caption)));
         } else {
             final FormInstance thisFormInstance = context.getFormInstance();
 

@@ -4,6 +4,7 @@ import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.logics.debug.ActionDelegationType;
+import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.ClassPropertyInterface;
@@ -34,7 +35,7 @@ public abstract class ScriptingActionProperty extends UserActionProperty {
         this.LM = LM;
     }
 
-    public ScriptingActionProperty(ScriptingLogicsModule LM, String caption, ValueClass... classes) {
+    public ScriptingActionProperty(ScriptingLogicsModule LM, LocalizedString caption, ValueClass... classes) {
         super(caption, classes);
         this.LM = LM;
     }

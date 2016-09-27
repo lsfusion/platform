@@ -7,6 +7,7 @@ import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.entity.PropertyDrawEntity;
 import lsfusion.server.form.view.DefaultFormView;
 import lsfusion.server.form.view.PropertyDrawView;
+import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.*;
@@ -70,7 +71,7 @@ public abstract class FormToolbarActionProperty extends ScriptingActionProperty 
         super.proceedDefaultDesign(propertyView, view);
 
         if (!showCaption) {
-            propertyView.caption = "";
+            propertyView.caption = LocalizedString.create("");
         }
     }
 
