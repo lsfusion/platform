@@ -23,10 +23,6 @@ public class ClientWordClass extends ClientStaticFormatFileClass {
         return new String[] {"doc", "docx"};
     }
 
-    public String getFileSID() {
-        return "WordClass";
-    }
-
     public PropertyRenderer getRendererComponent(ClientPropertyDraw property) {
         return new WordPropertyRenderer(property);
     }

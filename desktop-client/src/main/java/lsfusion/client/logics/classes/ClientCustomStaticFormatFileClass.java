@@ -17,8 +17,6 @@ import java.util.Arrays;
 
 public class ClientCustomStaticFormatFileClass extends ClientStaticFormatFileClass {
 
-    private String sID;
-
     public final String filterDescription;
     public final String filterExtensions[];
 
@@ -31,16 +29,6 @@ public class ClientCustomStaticFormatFileClass extends ClientStaticFormatFileCla
     @Override
     public String[] getExtensions() {
         return filterExtensions;
-    }
-
-    public String getFileSID() {
-        throw new RuntimeException("SID overrided");
-    }
-
-    public String getSID() {
-        if(sID==null)
-            sID = "FileActionClass[" + multiple + ", " + filterDescription + "," + Arrays.toString(filterExtensions) + "]";
-        return sID;
     }
 
     public byte getTypeId() {

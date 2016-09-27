@@ -21,13 +21,6 @@ public class ClientDateClass extends ClientDataClass implements ClientTypeClass 
 
     public final static ClientDateClass instance = new ClientDateClass();
 
-    private final static String sID = "DateClass";
-
-    @Override
-    public String getSID() {
-        return sID;
-    }
-
     public byte getTypeId() {
         return Data.DATE;
     }

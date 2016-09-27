@@ -14,13 +14,6 @@ public class ClientLongClass extends ClientIntegralClass implements ClientTypeCl
 
     public final static ClientLongClass instance = new ClientLongClass();
 
-    private final String sID = "LongClass";
-
-    @Override
-    public String getSID() {
-        return sID;
-    }
-
     public byte getTypeId() {
         return Data.LONG;
     }

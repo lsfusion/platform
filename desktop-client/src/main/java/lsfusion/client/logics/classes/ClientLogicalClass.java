@@ -17,13 +17,6 @@ public class ClientLogicalClass extends ClientDataClass implements ClientTypeCla
 
     public final static ClientLogicalClass instance = new ClientLogicalClass();
 
-    private final String sID = "LogicalClass";
-
-    @Override
-    public String getSID() {
-        return sID;
-    }
-
     public byte getTypeId() {
         return Data.LOGICAL;
     }

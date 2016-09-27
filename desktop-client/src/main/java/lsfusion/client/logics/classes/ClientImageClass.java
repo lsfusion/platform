@@ -23,10 +23,6 @@ public class ClientImageClass extends ClientStaticFormatFileClass {
         return new String[] {"jpg", "jpeg", "bmp", "png"};
     }
 
-    public String getFileSID() {
-        return "ImageClass";
-    }
-
     public byte getTypeId() {
         return Data.IMAGE;
     }

@@ -23,10 +23,6 @@ public class ClientDynamicFormatFileClass extends ClientFileClass {
         return null;
     }
 
-    public String getFileSID() {
-        return "CustomFileClass";
-    }
-
     public PropertyRenderer getRendererComponent(ClientPropertyDraw property) {
         return new DynamicFormatFileRenderer(property);
     }

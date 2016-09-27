@@ -22,18 +22,12 @@ public class ClientTimeClass extends ClientDataClass implements ClientTypeClass 
 
     public final static ClientTimeClass instance = new ClientTimeClass();
 
-    private final static String sID = "TimeClass";
-
     public String getPreferredMask() {
         return timeEditFormat.format(wideFormattableDateTime) + "BT";
     }
 
     protected PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property) {
         return new TimePropertyEditor(value, DateConverter.createTimeEditFormat((DateFormat) property.getFormat()), property.design);
-    }
-
-    public String getSID() {
-        return sID;
     }
 
     public Format getDefaultFormat() {

@@ -23,11 +23,6 @@ public abstract class ClientDataClass extends ClientClass implements ClientType 
     }
 
     @Override
-    public String getCode() {
-        return getSID() + ".instance";
-    }
-
-    @Override
     public void serialize(DataOutputStream outStream) throws IOException {
         outStream.writeByte(getTypeClass().getTypeId());
     }
@@ -104,10 +99,6 @@ public abstract class ClientDataClass extends ClientClass implements ClientType 
 
     public String getConfirmMessage() {
         return ClientResourceBundle.getString("logics.classes.do.you.really.want.to.edit.property");
-    }
-
-    public ClientType getType() {
-        return this;
     }
 
     // за исключение классов динамической ширины - так как нету множественного наследования и не хочется каждому прописывать

@@ -23,10 +23,6 @@ public class ClientExcelClass extends ClientStaticFormatFileClass {
         return new String[] {"xls", "xlsx"};
     }
 
-    public String getFileSID() {
-        return "ExcelClass";
-    }
-
     public PropertyRenderer getRendererComponent(ClientPropertyDraw property) {
         return new ExcelPropertyRenderer(property);
     }

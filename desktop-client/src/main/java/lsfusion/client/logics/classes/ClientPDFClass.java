@@ -23,10 +23,6 @@ public class ClientPDFClass extends ClientStaticFormatFileClass {
         return new String[] {"pdf"};
     }
 
-    public String getFileSID() {
-        return "PDFClass";
-    }
-
     public PropertyRenderer getRendererComponent(ClientPropertyDraw property) {
         return new PDFPropertyRenderer(property);
     }

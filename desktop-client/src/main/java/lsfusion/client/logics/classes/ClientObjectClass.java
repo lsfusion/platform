@@ -13,7 +13,6 @@ public class ClientObjectClass extends ClientClass {
     public final static ClientObjectType type = new ClientObjectType();
 
     private final int ID;
-    private final String sID;
 
     private final boolean concreate;
     private final List<ClientObjectClass> children;
@@ -21,7 +20,6 @@ public class ClientObjectClass extends ClientClass {
 
     private ClientObjectClass(int ID, String sID, String caption, boolean concreate, List<ClientObjectClass> children) {
         this.ID = ID;
-        this.sID = sID;
         this.concreate = concreate;
         this.children = children;
         this.caption = caption;
@@ -37,11 +35,6 @@ public class ClientObjectClass extends ClientClass {
         return ID;
     }
 
-    @Override
-    public String getSID(){
-        return sID;
-    }
-
     public boolean isConcreate() {
         return concreate;
     }
@@ -50,21 +43,12 @@ public class ClientObjectClass extends ClientClass {
         return caption;
     }
 
-    @Override
-    public String getCode() {
-        return sID;
-    }
-
     public List<ClientObjectClass> getChildren() {
         return children;
     }
 
     public boolean hasChildren() {
         return !children.isEmpty();
-    }
-
-    public ClientType getType() {
-        return type;
     }
 
     public boolean equals(Object o) {
