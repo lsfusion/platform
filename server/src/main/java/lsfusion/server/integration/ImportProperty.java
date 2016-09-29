@@ -90,7 +90,7 @@ public class ImportProperty <P extends PropertyInterface> {
         return implement.property.toString();
     }
 
-    @StackMessage("message.synchronize.property")
+    @StackMessage("{message.synchronize.property}")
     @ThisMessage
     public DataChanges synchronize(DataSession session, SingleKeyTableUsage<ImportField> importTable, ImMap<ImportKey<?>, SinglePropertyTableUsage<?>> addedKeys, boolean replaceNull, boolean replaceEqual) throws SQLException, SQLHandledException {
         ImMap<ImportField,Expr> importExprs = importTable.join(importTable.getMapKeys()).getExprs();

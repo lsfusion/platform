@@ -1201,7 +1201,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         return checkClasses(property, sql, null, baseClass);
     }
 
-    @StackMessage("logics.checking.data.classes")
+    @StackMessage("{logics.checking.data.classes}")
     public static String checkClasses(@ParamMessage CalcProperty property, SQLSession sql, QueryEnvironment env, BaseClass baseClass) throws SQLException, SQLHandledException {
         assert property.isStored();
         
@@ -1285,7 +1285,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         recalculateTableClasses(table, sql, null, baseClass);
     }
 
-    @StackMessage("logics.recalculating.data.classes")
+    @StackMessage("{logics.recalculating.data.classes}")
     public static void recalculateTableClasses(ImplementTable table, SQLSession sql, QueryEnvironment env, BaseClass baseClass) throws SQLException, SQLHandledException {
         Query<KeyField, PropertyField> query;
 
@@ -2066,7 +2066,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         }
     }
 
-    @StackMessage("message.session.apply.write")
+    @StackMessage("{message.session.apply.write}")
     private <P extends PropertyInterface> void readStoredWithChanges(@ParamMessage CalcProperty<P> property, BusinessLogics<?> BL) throws SQLException, SQLHandledException {
         SinglePropertyTableUsage<P> changeTable = property.readChangeTable(sql, getModifier(), baseClass, env);
 
@@ -2538,7 +2538,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         }
     }
 
-    @StackMessage("message.increment.read.properties")
+    @StackMessage("{message.increment.read.properties}")
     public SessionTableUsage<KeyField, CalcProperty> readSave(ImplementTable table, @ParamMessage ImSet<CalcProperty> properties) throws SQLException, SQLHandledException {
         assert isInTransaction();
 

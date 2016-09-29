@@ -177,7 +177,7 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Cal
             BL.reflectionLM.lastRecalculateProperty.change(new Timestamp(System.currentTimeMillis()), session, (DataObject) propertyObject);
     }
 
-    @StackMessage("logics.info.recalculation.of.aggregated.property")
+    @StackMessage("{logics.info.recalculation.of.aggregated.property}")
     @ThisMessage
     public void recalculateAggregation(SQLSession session, QueryEnvironment env, BaseClass baseClass) throws SQLException, SQLHandledException {
         boolean useRecalculate = Settings.get().isUseRecalculateClassesInsteadOfInconsisentExpr();

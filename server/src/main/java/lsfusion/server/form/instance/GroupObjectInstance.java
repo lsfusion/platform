@@ -619,7 +619,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
     private boolean pendingHiddenUpdateKeys;
     private boolean pendingHiddenUpdateObjects;
 
-    @StackMessage("message.form.update.group.keys")
+    @StackMessage("{message.form.update.group.keys}")
     @ThisMessage
     public ImMap<ObjectInstance, DataObject> updateKeys(SQLSession sql, QueryEnvironment env, final Modifier modifier, IncrementChangeProps environmentIncrement, ExecutionEnvironment execEnv, BaseClass baseClass, boolean hidden, final boolean refresh, MFormChanges result, Result<ChangedData> changedProps, ReallyChanged reallyChanged) throws SQLException, SQLHandledException {
         if (refresh || (updated & UPDATED_CLASSVIEW) != 0) {

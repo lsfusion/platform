@@ -1692,7 +1692,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         };
     }
 
-    @StackMessage("message.sql.execute")
+    @StackMessage("{message.sql.execute}")
     private int executeDML(@ParamMessage (profile = false) String command, OperationOwner owner, TableOwner tableOwner, RegisterChange registerChange) throws SQLException {
         lockRead(owner);
         Statement statement = null;
@@ -1879,7 +1879,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     }
 
     // SQLAnalyzeAspect
-    @StackMessage("message.sql.execute")
+    @StackMessage("{message.sql.execute}")
     public <H> void executeCommand(@ParamMessage (profile = false) final SQLCommand<H> command, final DynamicExecEnvSnapshot snapEnv, final OperationOwner owner, ImMap<String, ParseInterface> paramObjects, H handler) throws SQLException, SQLHandledException {
         lockRead(owner);
 

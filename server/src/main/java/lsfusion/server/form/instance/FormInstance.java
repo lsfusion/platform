@@ -1537,7 +1537,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         queryPropertyObjectValues(propertySet, properties, keyGroupObjects, GET_PROPERTY_OBJECT_FROM_READER);
     }
 
-    @StackMessage("message.form.update.props")
+    @StackMessage("{message.form.update.props}")
     @ThisMessage
     private <T> void queryPropertyObjectValues(
             @ParamMessage ImOrderSet<T> keysSet,
@@ -1584,7 +1584,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
     }
 
-    @StackMessage("message.form.end.apply")
+    @StackMessage("{message.form.end.apply}")
     @LogTime
     @ThisMessage
     @AssertSynchronized

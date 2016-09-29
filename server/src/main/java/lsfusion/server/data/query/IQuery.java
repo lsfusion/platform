@@ -58,7 +58,7 @@ public abstract class IQuery<K,V> extends AbstractInnerContext<IQuery<K, V>> imp
         return result.terminate();
     }
 
-    @StackMessage("message.query.execute")
+    @StackMessage("{message.query.execute}")
     public void executeSQL(SQLSession session, ImOrderMap<V, Boolean> orders, int selectTop, QueryEnvironment env, ResultHandler<K, V> result) throws SQLException, SQLHandledException {
         compile(orders, new CompileOptions<V>(session.syntax, LimitOptions.get(selectTop))).execute(session, env, selectTop, result);
     }

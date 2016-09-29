@@ -567,7 +567,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         return new SinglePropertyTableUsage<>(getOrderInterfaces(), interfaceTypeGetter, getType());
     }
 
-    @StackMessage("message.increment.read.properties")
+    @StackMessage("{message.increment.read.properties}")
     @ThisMessage
     public SinglePropertyTableUsage<T> readChangeTable(SQLSession session, Modifier modifier, BaseClass baseClass, QueryEnvironment env) throws SQLException, SQLHandledException {
         return readFixChangeTable(session, getIncrementChange(modifier), baseClass, env);
@@ -1175,7 +1175,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         return result;
     }
 
-    @StackMessage("message.core.property.data.changes")
+    @StackMessage("{message.core.property.data.changes}")
     @PackComplex
     @ThisMessage
     public DataChanges getDataChanges(PropertyChange<T> change, PropertyChanges propChanges, WhereBuilder changedWhere) {
@@ -1524,7 +1524,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
     }
 
     @PackComplex
-    @StackMessage("message.core.property.get.expr")
+    @StackMessage("{message.core.property.get.expr}")
     @ThisMessage
     public IQuery<T, String> getQuery(CalcType calcType, PropertyChanges propChanges, PropertyQueryType queryType, ImMap<T, ? extends Expr> interfaceValues) {
         if(queryType==PropertyQueryType.FULLCHANGED) {
@@ -1572,7 +1572,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         return queryJoin.getExpr("value");
     }
 
-    @StackMessage("message.core.property.get.expr")
+    @StackMessage("{message.core.property.get.expr}")
     @PackComplex
     @ThisMessage
     public Expr getJoinExpr(ImMap<T, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere) {
@@ -1730,7 +1730,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         recalculateClasses(sql, null, baseClass);
     }
 
-    @StackMessage("logics.recalculating.data.classes")
+    @StackMessage("{logics.recalculating.data.classes}")
     public void recalculateClasses(SQLSession sql, QueryEnvironment env, BaseClass baseClass) throws SQLException, SQLHandledException {
         assert isStored();
         

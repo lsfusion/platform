@@ -92,7 +92,7 @@ public class ImportKey<P extends PropertyInterface> implements ImportKeyInterfac
     public boolean skipKey;
 
     // не будет виден CGProp, который тут неявно assert'ися но это и не важно
-    @StackMessage("message.synchronize.key")
+    @StackMessage("{message.synchronize.key}")
     @ThisMessage
     public SinglePropertyTableUsage<P> synchronize(DataSession session, SingleKeyTableUsage<ImportField> importTable) throws SQLException, SQLHandledException {
 

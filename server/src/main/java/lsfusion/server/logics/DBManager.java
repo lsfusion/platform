@@ -586,7 +586,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
     }
 
-    @StackMessage("logics.upload.db")
+    @StackMessage("{logics.upload.db}")
     private void uploadTableToDB(SQLSession sql, final @ParamMessage GlobalTable implementTable, @ParamMessage String progress, final SQLSession sqlTo, final OperationOwner owner) throws SQLException, SQLHandledException {
         sqlTo.truncate(implementTable, owner);
 
