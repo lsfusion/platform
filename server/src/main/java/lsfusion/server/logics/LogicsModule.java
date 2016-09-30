@@ -1296,14 +1296,18 @@ public abstract class LogicsModule {
         return addProperty(group, persistent, new LCP<>(new CaseUnionProperty(caption, listInterfaces, isExclusive, mListCases.immutableList()), listInterfaces));
     }
 
+    public static List<ResolveClassSet> getSignatureForLogProperty(List<ResolveClassSet> basePropSignature, SystemEventsLogicsModule systemEventsLM) {
+        List<ResolveClassSet> signature = new ArrayList<>(basePropSignature);
+        signature.add(systemEventsLM.currentSession.property.getValueClass(ClassType.aroundPolicy).getResolveSet());
+        return signature;
+    }
+    
     public static List<ResolveClassSet> getSignatureForLogProperty(LCP lp, SystemEventsLogicsModule systemEventsLM) {
         List<ResolveClassSet> signature = new ArrayList<>();
         for (ValueClass cls : lp.getInterfaceClasses(ClassType.logPolicy)) {
             signature.add(cls.getResolveSet());
         }
-
-        signature.add(systemEventsLM.currentSession.property.getValueClass(ClassType.aroundPolicy).getResolveSet());
-        return signature;        
+        return getSignatureForLogProperty(signature, systemEventsLM);    
     } 
     
     public static String getLogPropertyCN(LCP lp, String logNamespace, SystemEventsLogicsModule systemEventsLM) {

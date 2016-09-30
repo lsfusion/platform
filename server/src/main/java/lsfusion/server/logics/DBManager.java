@@ -1445,9 +1445,8 @@ public class DBManager extends LogicsManager implements InitializingBean {
     }
     
     // todo [dale]: временная реализация для переименования
-    // Проблемы текущего способа: 
-    // 1. Каноническое имя log-свойств сейчас определяется не из сигнатуры базового свойства, а из getInterfaces, которые могут не совпадать с сигнатурой
-    // 2. Мы считаем, что при миграции свойств не меняются имена классов параметров, а это может быть не так
+    // Проблема текущего способа: 
+    //   Каноническое имя log-свойств сейчас определяется не из сигнатуры базового свойства, а из getInterfaces, которые могут не совпадать с сигнатурой
     // В дальнейшем. когда сделаем нормальные канонические имена у log-свойств, можно перенести этот функционал в setUserLoggableProperties 
     // и добавлять изменения канонических имен log-свойств напрямую в storedPropertyCNChanges еще на том шаге
     private void addLogPropertiesToMigration(OldDBStructure oldData, DBVersion newDBVersion) {
@@ -1472,18 +1471,17 @@ public class DBManager extends LogicsManager implements InitializingBean {
                         String propCN = declaration.prop.property.getCanonicalName();
                         if (rChanges.containsKey(propCN)) {
                             String oldPropCN = rChanges.get(propCN);
-                            String oldName = "", oldNamespace = "";
                             try {
-                                oldName = PropertyCanonicalNameParser.getName(oldPropCN);
-                                oldNamespace = PropertyCanonicalNameParser.getNamespace(oldPropCN);
+                                PropertyCanonicalNameParser parser = new PropertyCanonicalNameParser(businessLogics, oldPropCN);
+                                String oldLogPropCN = LogicsModule.getLogPropertyCN("System", parser.getNamespace(), parser.getName(), 
+                                        LogicsModule.getSignatureForLogProperty(parser.getSignature(), businessLogics.systemEventsLM));
+                                if (!storedPropertyCNChanges.containsKey(newDBVersion)) {
+                                    storedPropertyCNChanges.put(newDBVersion, new ArrayList<SIDChange>());
+                                }
+                                storedPropertyCNChanges.get(newDBVersion).add(new SIDChange(oldLogPropCN, logPropCN));
                             } catch (AbstractPropertyNameParser.ParseException e) {
                                 Throwables.propagate(e);
                             }
-                            String oldLogPropCN = LogicsModule.getLogPropertyCN("System", oldNamespace, oldName, LogicsModule.getSignatureForLogProperty((LCP)declaration.prop, businessLogics.systemEventsLM));
-                            if (!storedPropertyCNChanges.containsKey(newDBVersion)) {
-                                storedPropertyCNChanges.put(newDBVersion, new ArrayList<SIDChange>());
-                            }
-                            storedPropertyCNChanges.get(newDBVersion).add(new SIDChange(oldLogPropCN, logPropCN));
                         }
                     }
                 }
