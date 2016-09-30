@@ -155,7 +155,7 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
         MExclMap<GroupObjectProp, CalcPropertyRevImplement<ClassPropertyInterface, ObjectEntity>> mProps = (MExclMap<GroupObjectProp, CalcPropertyRevImplement<ClassPropertyInterface, ObjectEntity>>) props;
         CalcPropertyRevImplement<ClassPropertyInterface, ObjectEntity> prop = mProps.get(type);
         if(prop==null) { // type.getSID() + "_" + getSID() нельзя потому как надо еще SID формы подмешивать
-            prop = DerivedProperty.createDataPropRev(LocalizedString.createEscaped(type.toString() + " (" + objects.toString() + ")"), getObjects().mapValues(new GetValue<ValueClass, ObjectEntity>() {
+            prop = DerivedProperty.createDataPropRev(LocalizedString.create(type.toString() + " (" + objects.toString() + ")", false), getObjects().mapValues(new GetValue<ValueClass, ObjectEntity>() {
                 public ValueClass getMapValue(ObjectEntity value) {
                     return value.baseClass;
                 }}), type.getValueClass(), false);

@@ -22,7 +22,7 @@ public class CompareFormulaProperty extends ValueFormulaProperty<CompareFormulaP
     public final Interface operator2;
 
     public CompareFormulaProperty(Compare compare) {
-        super(LocalizedString.createEscaped(compare.toString()), getInterfaces(2), LogicalClass.instance);
+        super(LocalizedString.create(compare.toString(), false), getInterfaces(2), LogicalClass.instance);
 
         this.compare = compare;
         Iterator<Interface> i = interfaces.iterator();

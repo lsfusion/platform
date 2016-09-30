@@ -12,10 +12,17 @@ public class ScriptedStringUtils {
     private static final String wrongEscapeSeqFormat = "wrong escape sequence: '\\%s'";
     
     public static String transformStringLiteral(String s) throws TransformationError {
+        if (s == null) {
+            return null;
+        }
+        
         StringBuilder b = new StringBuilder();
         for (int i = 1; i+1 < s.length(); i++) {
             if (s.charAt(i) == '\\') {
-                assert i+2 < s.length();
+                if (i+2 == s.length()) {
+                    throw new TransformationError("wrong escape sequence at the end of the string");
+                }
+                
                 char nextCh = s.charAt(i+1);
                 switch (nextCh) {
                     case '\\': b.append('\\'); break;
@@ -38,11 +45,18 @@ public class ScriptedStringUtils {
         return b.toString();
     }
 
-    public static LocalizedString transformLocalizedStringLiteral(String s) throws TransformationError, LocalizedString.FormatError {
+    static String transformLocalizedStringLiteralToSourceString(String s) throws TransformationError {
+        if (s == null) {
+            return null;
+        }
+        
         StringBuilder b = new StringBuilder();
         for (int i = 1; i+1 < s.length(); i++) {
             if (s.charAt(i) == '\\') {
-                assert i+2 < s.length();
+                if (i+2 == s.length()) {
+                    throw new TransformationError("wrong escape sequence at the end of the string");
+                }
+
                 char nextCh = s.charAt(i+1);
                 switch (nextCh) {
                     case '\\': b.append("\\\\"); break;
@@ -61,6 +75,10 @@ public class ScriptedStringUtils {
                 b.append(s.charAt(i));
             }
         }
-        return LocalizedString.createChecked(b.toString());
+        return b.toString();        
+    }
+    
+    public static LocalizedString transformLocalizedStringLiteral(String s) throws TransformationError, LocalizedString.FormatError {
+        return LocalizedString.createChecked(transformLocalizedStringLiteralToSourceString(s));
     }
 }

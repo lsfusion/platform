@@ -17,7 +17,7 @@ public class ChangeReadObjectActionProperty extends SystemExplicitActionProperty
     private final CalcProperty filterProperty;
 
     public ChangeReadObjectActionProperty(CalcProperty filterProperty, ValueClass baseClass) {
-        super(LocalizedString.createEscaped("CO_" + filterProperty), baseClass);
+        super(LocalizedString.create("CO_" + filterProperty, false), baseClass);
         this.filterProperty = filterProperty;
     }
 

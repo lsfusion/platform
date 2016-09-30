@@ -641,7 +641,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             if(isFull) // важно чтобы getInterfaceClasses дал тот же tableClass
                 classSet = tableClass.getUpSet();
 
-            ClassDataProperty dataProperty = new ClassDataProperty(LocalizedString.createEscaped(classSet.toString()), classSet);
+            ClassDataProperty dataProperty = new ClassDataProperty(LocalizedString.create(classSet.toString(), false), classSet);
             LCP<ClassPropertyInterface> lp = new LCP<>(dataProperty);
             LM.addProperty(null, new LCP<>(dataProperty));
             LM.makePropertyPublic(lp, PropertyCanonicalNameUtils.classDataPropPrefix + table.getName(), Collections.<ResolveClassSet>singletonList(ResolveOrObjectClassSet.fromSetConcreteChildren(set)));

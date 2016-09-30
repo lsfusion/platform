@@ -37,8 +37,16 @@ public class LocalizedString {
             needToBeLocalized = false;        
         }
     }
+
+    protected LocalizedString(String source, boolean needToBeLocalized) {
+        assert source != null;
+        this.source = source;
+        this.needToBeLocalized = needToBeLocalized;
+    }
     
-    // Предполагается, что перед getString всегда вызывается checkLocalizedStringFormat, поэтому не производятся проверки на соответствие формату
+    /** Предполагается, что getString вызывается для строки, удовлетворяющей checkLocalizedStringFormat,
+     *  поэтому не производятся проверки на соответствие формату
+     */
     public String getString(Locale locale, Localizer localizer) {
         if (!needToBeLocalized) {
             return getSourceString();
@@ -80,14 +88,19 @@ public class LocalizedString {
     }
 
     public static void checkLocalizedStringFormat(String s) throws FormatError {
+        assert s != null;
         boolean insideKey = false;
         boolean keyIsEmpty = true;
         for (int i = 0; i < s.length(); i++) {
             char ch = s.charAt(i);
             if (ch == '\\') {
-                assert i + 1 < s.length();
+                if (i + 1 == s.length()) {
+                    throw new FormatError("wrong escape sequence at the end of the string");
+                }
                 char nextCh = s.charAt(i + 1);
-                assert nextCh == '\\' || nextCh == OPEN_CH || nextCh == CLOSE_CH;
+                if (nextCh != '\\' && nextCh != OPEN_CH && nextCh != CLOSE_CH) {
+                    throw new FormatError(String.format("wrong escape sequence: '%s'", nextCh));
+                }
                 if (insideKey) {
                     keyIsEmpty = false;
                 }
@@ -151,16 +164,33 @@ public class LocalizedString {
         return new LocalizedString(source);
     }
     
-    /**
-     * Создает LocalisedString из строки, в которой не предполагается локализация и могут быть неэкранированные символы фигурных скобок 
-     */
-    public static LocalizedString createEscaped(String source) {
+    public static LocalizedString create(String source, boolean needToBeLocalized) {
         if (source == null) {
             return null;
         }
-        source = source.replace("{", "\\{");
-        source = source.replace("}", "\\}"); 
-        return create(source);
+        return new LocalizedString(source, needToBeLocalized);
+        
+    } 
+    
+    /**
+     * Экранирует обычную строку без локализации таким образом, чтобы потом ее можно было передать в конструктор LocalizedString,
+     * например, объединенную с какой-нибудь строкой с фигурными скобками.
+     */
+    public static String escapeForLocalization(String source) {
+        if (source == null) {
+            return null;
+        }
+        
+        StringBuilder buffer = new StringBuilder();
+        for (int i = 0; i < source.length(); ++i) {
+            switch (source.charAt(i)) {
+                case '\\': buffer.append("\\\\"); break;
+                case '{': buffer.append("\\{"); break;
+                case '}': buffer.append("\\}"); break;
+                default: buffer.append(source.charAt(i));
+            }
+        }
+        return buffer.toString();
     }
     
     public boolean isEmpty() {
