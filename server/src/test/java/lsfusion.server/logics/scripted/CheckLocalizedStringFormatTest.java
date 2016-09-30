@@ -5,7 +5,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-public class CheckLocalizedStringLiteralTest {
+public class CheckLocalizedStringFormatTest {
     @Rule
     public ExpectedException thrown = ExpectedException.none();
 
@@ -22,7 +22,7 @@ public class CheckLocalizedStringLiteralTest {
     }
 
     @Test
-    public void checkSampleString() throws LocalizedString.FormatError {
+    public void checkStringWithBraces() throws LocalizedString.FormatError {
         String source = "{main.firstID} - \\{Not an ID\\} {main.secondID}";
         LocalizedString.checkLocalizedStringFormat(source);
     }
@@ -92,5 +92,40 @@ public class CheckLocalizedStringLiteralTest {
         thrown.expectMessage("empty key");
         LocalizedString.checkLocalizedStringFormat(source);
     }
+    
+    @Test
+    public void checkNullAssertion() throws LocalizedString.FormatError {
+        thrown.expect(AssertionError.class);
+        LocalizedString.checkLocalizedStringFormat(null);
+    } 
    
+    @Test
+    public void checkLastBackslashError() throws LocalizedString.FormatError {
+        String source = "{key} text\\";
+        thrown.expect(LocalizedString.FormatError.class);
+        thrown.expectMessage("the end");
+        LocalizedString.checkLocalizedStringFormat(source);
+    }
+
+    @Test
+    public void checkWrongEscapeSequenceError() throws LocalizedString.FormatError {
+        String source = "\\z";
+        thrown.expect(LocalizedString.FormatError.class);
+        thrown.expectMessage("wrong escape");
+        LocalizedString.checkLocalizedStringFormat(source);
+    }
+
+    @Test
+    public void checkWrongEscapeSequenceError2() throws LocalizedString.FormatError {
+        String source = "\\n\\r";
+        thrown.expect(LocalizedString.FormatError.class);
+        thrown.expectMessage("wrong escape");
+        LocalizedString.checkLocalizedStringFormat(source);
+    }
+
+    @Test
+    public void checkCorrectI18nString5() throws LocalizedString.FormatError {
+        String source = "\n\r\t\\{\\}\\\\";
+        LocalizedString.checkLocalizedStringFormat(source);
+    }
 }
