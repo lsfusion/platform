@@ -17,7 +17,7 @@ TABLE script(Script);
 
 name 'Наименование' = DATA VARSTRING[100] (Script);
 text 'Текст' = DATA TEXT (Script);
-countTextScript() = GROUP MAX Script script IF text(script) == scriptStorage(); 
+textScript() = GROUP MAX Script script IF text(script) == scriptStorage(); 
 dateTime 'Дата запуска' = DATA DATETIME (Script);
 
 updateStorageNewSession(Script script) = ACTION NEWSESSION {
@@ -31,7 +31,7 @@ updateStorage(Script script) = ACTION {
 }
 
 FORM chooseScriptName 'Сохранить как'
-    OBJECTS name = STRING[100] FIXED PANEL
+    OBJECTS name = VARSTRING[100] FIXED PANEL
     PROPERTIES valueName = OBJVALUE(name)
 ;
 
@@ -47,14 +47,15 @@ DESIGN chooseScriptName {
     }
 }
 
-saveAsScriptAction 'Сохранить как'() = ACTION {
+saveAsScriptAction 'Сохранить как'() = ACTION NEWSESSION {
     FORM chooseScriptName MODAL;
     IF formResult() == FormResult.ok THEN {
         FOR ADDOBJ s = Script DO {
-        name(s) <- chosenString('name');
-        text(s) <- scriptStorage();
-        dateTime(s) <- currentDateTime();
+            name(s) <- chosenString('name');
+            text(s) <- scriptStorage();
+            dateTime(s) <- currentDateTime();
         }
+        apply();
     }
 }
 
