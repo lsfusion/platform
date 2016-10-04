@@ -65,6 +65,7 @@ public class EvalActionProperty<P extends PropertyInterface> extends SystemExpli
             if (runAction != null) {
                 String textScript = (String) evalLM.findProperty("scriptStorage[]").read(context);
                 try (DataSession session = context.createSession()) {
+                    evalLM.findProperty("scriptStorage[]").change(textScript, session);
                     ObjectValue scriptObject = evalLM.findProperty("textScript[TEXT]").readClasses(session, new DataObject(textScript));
                     if (scriptObject instanceof NullValue) {
                         scriptObject = session.addObject((ConcreteCustomClass) evalLM.findClass("Script"));
