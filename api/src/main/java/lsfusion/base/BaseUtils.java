@@ -1990,13 +1990,6 @@ public class BaseUtils {
 
     public static String[] monthsEnglish = new String[]{"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"};
 
-    public static int getNumberOfMonthEnglish(String month) {
-        for (int i = 0; i < monthsEnglish.length; i++)
-            if (month.equals(monthsEnglish[i]))
-                return i + 1;
-        return 1;
-    }
-
     @SuppressWarnings({"UnusedDeclaration"})
     public static String formatEnglish(Date date) {
 
