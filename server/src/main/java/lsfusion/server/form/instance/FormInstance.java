@@ -827,6 +827,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
     // пометка что изменились данные
     public boolean dataChanged = true;
+    //canonicalName предыдущей формы
+    private String prevForm = null;
 
     // временно
     private boolean checkFilters(final GroupObjectInstance groupTo) {
@@ -1296,7 +1298,10 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         FocusListener<T> focusListener = getFocusListener();
         if (focusListener != null)
             focusListener.gainedFocus(this);
-        session.form.changeCurrentForm(BL.getDbManager().getFormObject(entity.getCanonicalName(), stack));
+        if (prevForm == null || !prevForm.equals(entity.getCanonicalName())) {
+            session.form.changeCurrentForm(BL.getDbManager().getFormObject(entity.getCanonicalName(), stack));
+            prevForm = entity.getCanonicalName();
+        }
     }
 
     @Override
