@@ -17,7 +17,7 @@ TABLE script(Script);
 
 name 'Наименование' = DATA VARSTRING[100] (Script);
 text 'Текст' = DATA TEXT (Script);
-textScript() = GROUP MAX Script script IF text(script) == scriptStorage(); 
+textScript = GROUP MAX Script script BY text(script); 
 dateTime 'Дата запуска' = DATA DATETIME (Script);
 
 updateStorageNewSession(Script script) = ACTION NEWSESSION {
