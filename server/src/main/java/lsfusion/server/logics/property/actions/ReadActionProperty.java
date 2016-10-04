@@ -18,6 +18,7 @@ import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
+import org.apache.commons.httpclient.util.URIUtil;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.apache.commons.net.ftp.FTP;
@@ -28,7 +29,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.net.URL;
+import java.net.*;
 import java.sql.*;
 import java.util.*;
 import java.util.Date;
@@ -91,7 +92,7 @@ public class ReadActionProperty extends ScriptingActionProperty {
                             break;
                         case "http":
                             file = File.createTempFile("downloaded", "tmp");
-                            FileUtils.copyURLToFile(new URL(sourcePath), file);
+                            copyHTTPToFile(sourcePath, file);
                             extension = BaseUtils.getFileExtension(new File(url));
                             break;
                         case "ftp":
@@ -173,6 +174,33 @@ public class ReadActionProperty extends ScriptingActionProperty {
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }
+    }
+
+    private void copyHTTPToFile(String path, File file) throws IOException {
+        final List<String> properties = parseHTTPPath(path);
+        if(properties != null) {
+            Authenticator.setDefault(new Authenticator() {
+                public PasswordAuthentication getPasswordAuthentication() {
+                    return (new PasswordAuthentication(properties.get(0), properties.get(1).toCharArray()));
+                }
+            });
+            URL httpUrl = new URL(URIUtil.encodeQuery("http://" + properties.get(2)));
+            FileUtils.copyInputStreamToFile(httpUrl.openConnection().getInputStream(), file);
+        } else {
+            FileUtils.copyURLToFile(new URL(path), file);
+        }
+    }
+
+    private List<String> parseHTTPPath(String path) {
+        /*http://username:password@path_to_file*/
+        Pattern connectionStringPattern = Pattern.compile("http:\\/\\/(.*):(.*)@(.*)");
+        Matcher connectionStringMatcher = connectionStringPattern.matcher(path);
+        if (connectionStringMatcher.matches()) {
+            String username = connectionStringMatcher.group(1);
+            String password = connectionStringMatcher.group(2);
+            String pathToFile = connectionStringMatcher.group(3);
+            return Arrays.asList(username, password, pathToFile);
+        } else return null;
     }
 
     private void copyFTPToFile(String path, File file) throws IOException {
