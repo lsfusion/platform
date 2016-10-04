@@ -1296,7 +1296,10 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         FocusListener<T> focusListener = getFocusListener();
         if (focusListener != null)
             focusListener.gainedFocus(this);
-        session.form.changeCurrentForm(BL.getDbManager().getFormObject(entity.getCanonicalName(), stack));
+        if (session.prevFormCanonicalName == null || !session.prevFormCanonicalName.equals(entity.getCanonicalName())) {
+            session.form.changeCurrentForm(BL.getDbManager().getFormObject(entity.getCanonicalName(), stack));
+            session.prevFormCanonicalName = entity.getCanonicalName();
+        }
     }
 
     @Override

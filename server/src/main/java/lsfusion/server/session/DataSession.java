@@ -474,6 +474,8 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     public final UserController user;
     public final ChangesController changes;
 
+    public String prevFormCanonicalName = null;
+
     public DataObject applyObject = null;
     
     private final ImOrderMap<ActionProperty, SessionEnvEvent> sessionEvents;
