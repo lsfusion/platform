@@ -180,7 +180,7 @@ public class SendEmailActionProperty extends SystemExplicitActionProperty {
                 
                 sendEmail(context, smtpHostAccount, smtpPortAccount, nameAccount, passwordAccount, encryptedConnectionType, fromAddressAccount, subject, recipients, inlineForms, attachments, attachmentFiles, customAttachments);
             }
-        } catch (Exception e) {
+        } catch (Throwable e) {
             String errorMessage = localize("{mail.failed.to.send.mail}") + " : " + e.toString();
             logger.error(errorMessage);
             context.delayUserInterfaction(new MessageClientAction(errorMessage, localize("{mail.sending}")));
