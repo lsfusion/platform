@@ -67,6 +67,7 @@
         <jnlp.api.version>7.0</jnlp.api.version>
         <ojdbc14.version>11.2.0.4</ojdbc14.version>
         <janino.version>2.7.8</janino.version>
+        <commons.httpclient.version>3.1</commons.httpclient.version>
 
         <spring.version>3.0.5.RELEASE</spring.version>
         <aspectj.version>1.8.5</aspectj.version>
@@ -375,6 +376,11 @@
                 <groupId>org.codehaus.janino</groupId>
                 <artifactId>janino</artifactId>
                 <version>${janino.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>commons-httpclient</groupId>
+                <artifactId>commons-httpclient</artifactId>
+                <version>${commons.httpclient.version}</version>
             </dependency>
 
             <!-- Spring libraries -->
