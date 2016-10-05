@@ -31,18 +31,18 @@ apply = ACTION APPLY {};
 cancel = ACTION CUSTOM 'lsfusion.server.logics.property.actions.flow.CancelActionProperty' ();
 onStarted = ACTION ABSTRACT LIST ();
 
-upper = FORMULA 'upper($1)';
+upper = FORMULA 'upper($1)';    
 subtractSeconds(DATETIME dateTimeFrom, DATETIME dateTimeTo) = [= FORMULA INTEGER PG 'extract (\'epoch\' from (($1)-($2)))', MS 'DATEDIFF(s, $2, $1)'](dateTimeTo AS DATETIME, dateTimeFrom AS DATETIME);
 
-formApply 'Сохранить' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.form.FormApplyActionProperty' ();
-formCancel 'Отменить' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.form.FormCancelActionProperty' ();
-formPrint 'Печать' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.form.PrintActionProperty' ();
-formEdit 'Редактировать' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.form.EditActionProperty' ();
-formXls 'Экспорт в xls' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.form.XlsActionProperty' ();
-formDrop 'Сбросить' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.form.DropActionProperty' ();
-formRefresh 'Обновить' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.form.RefreshActionProperty' ();
-formOk 'OK' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.form.OkActionProperty' ();
-formClose 'Закрыть' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.form.CloseActionProperty' ();
+formApply '{action.form.save}' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.form.FormApplyActionProperty' ();
+formCancel '{action.form.cancel}' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.form.FormCancelActionProperty' ();
+formPrint '{action.form.print}' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.form.PrintActionProperty' ();
+formEdit '{action.form.edit}' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.form.EditActionProperty' ();
+formXls '{action.form.xlsExport}' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.form.XlsActionProperty' ();
+formDrop '{action.form.drop}' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.form.DropActionProperty' ();
+formRefresh '{action.form.refresh}' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.form.RefreshActionProperty' ();
+formOk '{action.form.ok}' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.form.OkActionProperty' ();
+formClose '{action.form.close}' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.form.CloseActionProperty' ();
 
 seek 'Найти объект' = ACTION CUSTOM 'lsfusion.server.logics.SeekActionProperty' (Object);
 
@@ -185,9 +185,9 @@ META applicationForm(sid, name)
     }
 END
 
-@applicationForm(options, 'Настройки');
-@applicationForm(integrationData, 'Интеграция');
-@applicationForm(migrationData, 'Миграция');
+@applicationForm(options, '{navigator.options}');
+@applicationForm(integrationData, '{navigator.integration}');
+@applicationForm(migrationData, '{navigator.migration}');
 
 networkPath 'Сетевой путь' = DATA LOCAL VARSTRING[255] ();
 loadNetworkPath 'Загрузить' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.LoadLinkActionProperty' ();
@@ -204,21 +204,21 @@ META defineLinkDialog (object, class)
     } ASON CHANGE object[class];
 END
 
-WINDOW root 'Корень' TOOLBAR HORIZONTAL POSITION(0, 0, 100, 6) VALIGN (CENTER) HIDETITLE HIDESCROLLBARS;
-WINDOW toolbar 'Тулбар' TOOLBAR VERTICAL POSITION(0, 6, 20, 64) HIDETITLE;
-WINDOW tree 'Дерево' TOOLBAR POSITION(0, 6, 20, 64) HIDETITLE;
+WINDOW root '{window.root}' TOOLBAR HORIZONTAL POSITION(0, 0, 100, 6) VALIGN (CENTER) HIDETITLE HIDESCROLLBARS;
+WINDOW toolbar '{window.toolbar}' TOOLBAR VERTICAL POSITION(0, 6, 20, 64) HIDETITLE;
+WINDOW tree '{window.tree}' TOOLBAR POSITION(0, 6, 20, 64) HIDETITLE;
 
 NAVIGATOR {
-    NEW root 'Формы' WINDOW root {
-        NEW administration 'Администрирование' WINDOW toolbar IMAGE '/images/tools.png' {
-            NEW application 'Приложение' {
+    NEW root '{navigator.forms}' WINDOW root {
+        NEW administration '{navigator.administration}' WINDOW toolbar IMAGE '/images/tools.png' {
+            NEW application '{navigator.application}' {
                 ADD options;
                 ADD integrationData;
                 ADD migrationData;
             }
-            NEW configuration 'Система';
-            NEW systemEvents 'Просмотр событий';
-            NEW objects 'Объекты' WINDOW tree; 
+            NEW configuration '{navigator.system}';
+            NEW systemEvents '{navigator.systemEvents}';
+            NEW objects '{navigator.objects}' WINDOW tree; 
         }
     }
 }
