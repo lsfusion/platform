@@ -812,7 +812,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
             for (DBStoredProperty property : restNewDBStored) { // добавляем оставшиеся
                 sql.addColumn(property.getTable(), property.property.field);
                 if (oldDBStructure.version > 0) // если все свойства "новые" то ничего перерасчитывать не надо
-                    recalculateStatProperties.add(property.property);
+                    recalculateProperties.add(property.property);
             }
 
             // обработка изменений с классами
