@@ -135,6 +135,7 @@ dateTimeCallProcess 'Время начала вызова' = DATA LOCAL DATETIME
 idSQLProcess 'ID процесса (SQL)' = DATA LOCAL INTEGER (VARSTRING[10]);
 querySQLProcess 'Запрос (SQL)' = DATA LOCAL TEXT (VARSTRING[10]);
 fullQuerySQLProcess 'Полный запрос (SQL)' = DATA LOCAL TEXT (VARSTRING[10]);
+copyFullQuerySQLProcess 'Копировать полный запрос в буфер' (VARSTRING[10] i) = ACTION CUSTOM 'lsfusion.erp.utils.CopyFullQuerySQLProcessActionProperty' (VARSTRING[10]);
 addressUserSQLProcess 'Адрес пользователя (SQL)' = DATA LOCAL VARSTRING[100] (VARSTRING[10]);
 dateTimeSQLProcess 'Время запуска (SQL)' = DATA LOCAL DATETIME (VARSTRING[10]);
 isActiveSQLProcess 'Активный (SQL)' = DATA LOCAL BOOLEAN (VARSTRING[10]);
@@ -244,7 +245,7 @@ FORM processMonitor 'Монитор процессов'
                            addressUserSQLProcess, lsfStackTraceProcess, threadAllocatedBytesProcess, 
                            lastThreadAllocatedBytesProcess, nameJavaProcess, statusJavaProcess, lockNameJavaProcess, 
                            stackTraceJavaProcess, lockOwnerIdProcess, lockOwnerNameProcess, isDisabledNestLoopProcess, queryTimeoutProcess, 
-                           idSQLProcess, fullQuerySQLProcess
+                           idSQLProcess, copyFullQuerySQLProcess EDITABLE
     PROPERTIES(i) TOOLBAR cancelProcess, killProcess, cancelJavaProcess SHOWIF showExtraButtons(i), killJavaProcess SHOWIF showExtraButtons(i)                       
     FILTERS idThreadProcess(i), NOT statusJavaProcess(i) OR statusJavaProcess(i) != 'BLOCKED'
     EVENTS ON INIT setDefaultProcessType()
@@ -257,7 +258,7 @@ FORM processMonitor 'Монитор процессов'
                             addressUserSQLProcess, lsfStackTraceProcess, threadAllocatedBytesProcess, 
                             lastThreadAllocatedBytesProcess, nameJavaProcess, statusJavaProcess, lockNameJavaProcess, 
                             stackTraceJavaProcess, lockOwnerIdProcess, lockOwnerNameProcess, isDisabledNestLoopProcess, queryTimeoutProcess, 
-                            idSQLProcess, fullQuerySQLProcess
+                            idSQLProcess, copyFullQuerySQLProcess EDITABLE 
     PROPERTIES(i2) TOOLBAR cancelProcess, killProcess, cancelJavaProcess SHOWIF isActiveSQLProcess(i2), killJavaProcess SHOWIF isActiveSQLProcess(i2)  
     FILTERS idThreadProcess(i2)
     FILTERGROUP filter FILTER 'Фильтр' (activeBlockingProcess(i2) AND sumBlocked(i2) > 0) OR (lockOwnerIdProcess(i2) AND lockOwnerIdProcess(i2) != '-1') DEFAULT   
@@ -270,14 +271,14 @@ FORM processMonitor 'Монитор процессов'
                                   lsfStackTraceProcess, threadAllocatedBytesProcess, 
                                  lastThreadAllocatedBytesProcess, nameJavaProcess, statusJavaProcess, 
                                  lockNameJavaProcess, stackTraceJavaProcess, lockOwnerIdProcess, lockOwnerNameProcess, isDisabledNestLoopProcess, 
-                                 queryTimeoutProcess, idSQLProcess, fullQuerySQLProcess
+                                 queryTimeoutProcess, idSQLProcess, copyFullQuerySQLProcess EDITABLE 
     PROPERTIES(blocking) READONLY activeProcess, idThreadProcess, sumBlocking, nameComputer, nameUser, dateTimeCallProcess,
                                  querySQLProcess, dateTimeSQLProcess, isActiveSQLProcess, inTransactionSQLProcess, 
                                  startTransactionSQLProcess, attemptCountSQLProcess, statusMessageSQLProcess,
                                  addressUserSQLProcess, lsfStackTraceProcess, threadAllocatedBytesProcess, 
                                  lastThreadAllocatedBytesProcess, nameJavaProcess, statusJavaProcess,
                                  lockNameJavaProcess, stackTraceJavaProcess, lockOwnerIdProcess, lockOwnerNameProcess, isDisabledNestLoopProcess, 
-                                 queryTimeoutProcess, idSQLProcess, fullQuerySQLProcess
+                                 queryTimeoutProcess, idSQLProcess, copyFullQuerySQLProcess EDITABLE 
     PROPERTIES(blocking) TOOLBAR cancelProcess, killProcess, cancelJavaProcess SHOWIF isActiveSQLProcess(blocking), killJavaProcess SHOWIF isActiveSQLProcess(blocking)                                   
     FILTERS idThreadProcess(blocked), sumBlocking(blocked) > 0, sumBlocked(blocking) > 0, isBlockingProcess(blocked, blocking) AND blocked != blocking
     FILTERGROUP nonBlocking FILTER 'Только не блокирующие' sumBlocked(blocked) == 0 OR isDeadlock(blocked) DEFAULT 
