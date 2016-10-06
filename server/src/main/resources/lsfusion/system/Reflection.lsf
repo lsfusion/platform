@@ -173,6 +173,7 @@ TABLE tableColumn (TableColumn);
 
 table 'Таблица' = DATA Table(TableColumn);
 sid 'Имя колонки' = DATA VARISTRING[100] (TableColumn);
+tableSID (sid) = GROUP MAX Table table BY sid(table);
 
 longSID(TableColumn tableColumn) = sid(table(tableColumn)) + '.' + sid(tableColumn);
 tableColumnLong 'Колонка' (sID) = GROUP AGGR TableColumn tableColumn BY longSID(tableColumn) WHERE tableColumn IS TableColumn; 
@@ -210,6 +211,8 @@ recalculateColumnsAggregations 'Пересчитать агрегации кол
 checkClasses 'Проверить классы таблицы' = ACTION CUSTOM 'lsfusion.server.logics.reflection.CheckTableClassesActionProperty' (Table);
 checkClasses(VARISTRING[100] string) = ACTION checkClasses(table(string));
 recalculateClasses 'Пересчитать классы таблицы' = ACTION CUSTOM 'lsfusion.server.logics.reflection.RecalculateTableClassesActionProperty' (Table);
+notRecalculateStats 'Не пересчитывать статистику таблицы' = DATA BOOLEAN (Table);
+notRecalculateStats 'Не пересчитывать статистику таблицы' (VARISTRING[100] sid) = notRecalculateStats(tableSID(sid));
 recalculateStats 'Пересчитать статистику таблицы' = ACTION CUSTOM 'lsfusion.server.logics.reflection.RecalculateTableStatsActionProperty' (Table);
 
 CLASS DropColumn 'Удалённая колонка';
@@ -248,7 +251,7 @@ pivot 'Pivot' = DATA BOOLEAN (FormGrouping, PropertyDraw);
 FORM physicalModel 'Таблицы'
     OBJECTS t=Table
     PROPERTIES(t) READONLY sid, rows, sparseColumns
-    PROPERTIES(t) recalculateColumnsAggregations, checkClasses, recalculateClasses, recalculateStats, skipVacuum
+    PROPERTIES(t) recalculateColumnsAggregations, checkClasses, recalculateClasses, notRecalculateStats, recalculateStats, skipVacuum
 
     OBJECTS tk=TableKey
     PROPERTIES(tk) READONLY class, classSID, name, quantity

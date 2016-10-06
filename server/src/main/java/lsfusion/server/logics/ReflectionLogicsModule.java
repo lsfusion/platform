@@ -146,6 +146,7 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
     public LAP recalculateAggregationTableColumn;
 
     public LCP notRecalculateSID;
+    public LCP notRecalculateStatsSID;
 
     public LCP<?> sidTableDropColumn;
     public LCP<?> sidDropColumn;
@@ -352,6 +353,8 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
         notRecalculateTableColumn = findProperty("notRecalculate[TableColumn]");
         notRecalculateSID = findProperty("notRecalculate[VARISTRING[100]]");
         recalculateAggregationTableColumn = findAction("recalculateAggregation[TableColumn]");
+
+        notRecalculateStatsSID = findProperty("notRecalculateStats[VARISTRING[100]]");
 
         // Удаленные колонки
         sidTableDropColumn = findProperty("sidTable[DropColumn]");

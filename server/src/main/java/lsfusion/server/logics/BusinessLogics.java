@@ -1776,7 +1776,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
 
     public void recalculateStats(DataSession session) throws SQLException, SQLHandledException {
         int count = 0;
-        ImSet<ImplementTable> tables = LM.tableFactory.getImplementTables();
+        ImSet<ImplementTable> tables = LM.tableFactory.getImplementTables(getDbManager().getNotRecalculateStatsTableSet());
         for (ImplementTable dataTable : tables) {
             count++;
             long start = System.currentTimeMillis();

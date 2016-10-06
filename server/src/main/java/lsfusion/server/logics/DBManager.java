@@ -1268,6 +1268,25 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
     }
 
+    public Set<String> getNotRecalculateStatsTableSet() {
+        QueryBuilder<String, Object> query = new QueryBuilder<>(SetFact.singleton("key"));
+        ImSet<String> notRecalculateStatsTableSet = SetFact.EMPTY();
+        try (final DataSession dataSession = createSession()) {
+            Expr expr = reflectionLM.notRecalculateStatsSID.getExpr(query.getMapExprs().singleValue());
+            query.and(expr.getWhere());
+            notRecalculateStatsTableSet = query.execute(dataSession).keys().mapSetValues(new GetValue<String, ImMap<String, Object>>() {
+                @Override
+                public String getMapValue(ImMap<String, Object> value) {
+                    return (String) value.singleValue();
+                }
+            });
+
+        } catch (SQLException | SQLHandledException e) {
+            serviceLogger.info(e.getMessage());
+        }
+        return notRecalculateStatsTableSet.toJavaSet();
+    }
+
     private void checkModules(OldDBStructure dbStructure) {
         String droppedModules = "";
         for (String moduleName : dbStructure.modulesList)

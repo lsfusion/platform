@@ -49,15 +49,25 @@ public class TableFactory implements FullTablesInterface {
 
     // получает постоянные таблицы
     public ImSet<ImplementTable> getImplementTables() {
+        return getImplementTables((Set<String>) null);
+    }
+
+    public ImSet<ImplementTable> getImplementTables(Set<String> notRecalculateStatsTableSet) {
         MExclSet<ImplementTable> result = SetFact.mExclSet();
         for (NFOrderSet<ImplementTable> implementTableEntry : implementTablesMap.values()) {
             MSet<ImplementTable> mIntTables = SetFact.mSet();
-            for (ImplementTable implementTable : implementTableEntry.getIt())
-                implementTable.fillSet(mIntTables);
+            for (ImplementTable implementTable : implementTableEntry.getIt()) {
+                if(notRecalculateStatsTableSet == null || !notRecalculateStatsTableSet.contains(implementTable.getName()))
+                    implementTable.fillSet(mIntTables);
+            }
             result.exclAddAll(mIntTables.immutable());
         }
-        for (List<ImplementTable> implementTableEntry : includedTablesMap.values())
-            result.exclAddAll(SetFact.fromJavaOrderSet(implementTableEntry).getSet());
+        for (List<ImplementTable> implementTableEntry : includedTablesMap.values()) {
+            for (ImplementTable implementTable : implementTableEntry) {
+                if(notRecalculateStatsTableSet == null || !notRecalculateStatsTableSet.contains(implementTable.getName()))
+                    result.exclAdd(implementTable);
+            }
+        }
         return result.immutable();
     }
 
