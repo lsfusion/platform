@@ -438,6 +438,10 @@ public class Main {
         return nvl(BaseUtils.nullEmpty(logicsDisplayName), LSFUSION_TITLE);
     }
 
+    public static void hide() {
+        frame.setState(Frame.ICONIFIED);
+    }
+
     public static void shutdown() {
         SwingUtils.assertDispatchThread();
 
