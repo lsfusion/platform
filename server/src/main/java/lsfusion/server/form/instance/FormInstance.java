@@ -26,6 +26,7 @@ import lsfusion.server.auth.ChangePropertySecurityPolicy;
 import lsfusion.server.auth.SecurityPolicy;
 import lsfusion.server.caches.ManualLazy;
 import lsfusion.server.classes.*;
+import lsfusion.server.classes.link.LinkClass;
 import lsfusion.server.context.ExecutionStack;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.*;
@@ -1114,7 +1115,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                 property = toMax.getKey(i - separator);
                 currentList = toMax.getValue(i - separator);
 
-                if (property.getType() instanceof FileClass) {
+                if (property.getType() instanceof FileClass || property.getType() instanceof LinkClass) {
                     groupType = GroupType.ANY;
                 }
             }
