@@ -227,11 +227,18 @@ public class RemoteFormProxy extends RemoteObjectProxy<RemoteFormInterface> impl
         logRemoteMethodEndVoidCall("saveGrouping");   
     }
 
-    public ServerResponse saveUserPreferences(long requestIndex, long lastReceivedRequestIndex, GroupObjectUserPreferences preferences, boolean forAllUsers, boolean completeOverride) throws RemoteException {
+    public ServerResponse saveUserPreferences(long requestIndex, long lastReceivedRequestIndex, GroupObjectUserPreferences preferences, boolean forAllUsers, boolean completeOverride, String[] hiddenProps) throws RemoteException {
         logRemoteMethodStartCall("saveUserPreferences");
-        ServerResponse result = target.saveUserPreferences(requestIndex, lastReceivedRequestIndex, preferences, forAllUsers, completeOverride);
+        ServerResponse result = target.saveUserPreferences(requestIndex, lastReceivedRequestIndex, preferences, forAllUsers, completeOverride, hiddenProps);
         logRemoteMethodEndCall("saveUserPreferences", result);
         return result;
+    }
+
+    @Override
+    public void refreshUPHiddenProperties(long requestIndex, long lastReceivedRequestIndex, String[] propSids) throws RemoteException {
+        logRemoteMethodStartCall("refreshUPHiddenProperties");
+        target.refreshUPHiddenProperties(requestIndex, lastReceivedRequestIndex, propSids);
+        logRemoteMethodEndVoidCall("refreshUPHiddenProperties");
     }
 
     public ServerResponse okPressed(long requestIndex, long lastReceivedRequestIndex) throws RemoteException {

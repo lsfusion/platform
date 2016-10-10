@@ -61,6 +61,7 @@ import lsfusion.server.session.*;
 import lsfusion.server.stack.ParamMessage;
 import lsfusion.server.stack.StackMessage;
 import lsfusion.server.stack.ThisMessage;
+import net.sf.jasperreports.engine.util.JRStyledTextParser;
 
 import javax.swing.*;
 import java.awt.*;
@@ -449,6 +450,18 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         }
     }
     
+    private ImSet<PropertyDrawInstance> userPrefsHiddenProperties = SetFact.EMPTY();
+    
+    public void refreshUPHiddenProperties(String[] hiddenSids) {
+        userPrefsHiddenProperties = SetFact.EMPTY();
+        for (String hiddenSid : hiddenSids) {
+            PropertyDrawInstance prop = getPropertyDraw(hiddenSid);
+            if (prop != null) {
+                userPrefsHiddenProperties = userPrefsHiddenProperties.addExcl(prop);
+            }
+        }
+    }
+    
     public void readPreferencesValues(ImMap<String, Object> values, List<GroupObjectUserPreferences> goPreferences, boolean general) {
         String prefix = general ? "general" : "user";
         String propertyDrawSID = values.get("propertySID").toString().trim();
@@ -475,6 +488,16 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
             boolean isFontBold = values.get(prefix + "IsFontBold") != null;
             boolean isFontItalic = values.get(prefix + "IsFontItalic") != null;
 
+            PropertyDrawInstance property = getPropertyDraw(propertyDrawSID); 
+            if (userPrefsHiddenProperties.contains(property)) {
+                if (property != null && hasPreferences != null && (needToHide == null || !needToHide)) {
+                    userPrefsHiddenProperties = userPrefsHiddenProperties.removeIncl(property);
+                }
+            } else if (property != null && hasPreferences != null && needToHide != null && needToHide) {
+                userPrefsHiddenProperties = userPrefsHiddenProperties.addExcl(property);
+            }
+            
+            
             boolean prefsFound = false;
             for (GroupObjectUserPreferences groupObjectPreferences : goPreferences) {
                 if (groupObjectPreferences.groupObjectSID.equals(groupObjectSID.trim())) {
@@ -505,7 +528,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         try (DataSession dataSession = session.createSession()) {
             List<DataObject> userObjectList = completeOverride ? readUserObjectList() : null;
 
-            DataObject userObject = dataSession.getDataObject(BL.authenticationLM.user, BL.authenticationLM.currentUser.read(dataSession));
+            DataObject userObject = (!forAllUsers && !completeOverride) ? dataSession.getDataObject(BL.authenticationLM.user, BL.authenticationLM.currentUser.read(dataSession)) : null;
             for (Map.Entry<String, ColumnUserPreferences> entry : preferences.getColumnUserPreferences().entrySet()) {
                 ObjectValue propertyDrawObjectValue = BL.reflectionLM.propertyDrawSIDNavigatorElementNamePropertyDraw.readClasses(
                         dataSession,
@@ -515,15 +538,9 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                     DataObject propertyDrawObject = (DataObject) propertyDrawObjectValue;
                     ColumnUserPreferences columnPreferences = entry.getValue();
                     Integer idShow = columnPreferences.userHide == null ? null : BL.reflectionLM.propertyDrawShowStatus.getObjectID(columnPreferences.userHide ? "Hide" : "Show");
-                    if(completeOverride) {
-                        for(DataObject user : userObjectList) {
-                            BL.reflectionLM.showPropertyDrawCustomUser.change(idShow, dataSession, propertyDrawObject, user);
-                            BL.reflectionLM.columnCaptionPropertyDrawCustomUser.change(columnPreferences.userCaption, dataSession, propertyDrawObject, user);
-                            BL.reflectionLM.columnPatternPropertyDrawCustomUser.change(columnPreferences.userPattern, dataSession, propertyDrawObject, user);
-                            BL.reflectionLM.columnWidthPropertyDrawCustomUser.change(columnPreferences.userWidth, dataSession, propertyDrawObject, user);
-                            BL.reflectionLM.columnOrderPropertyDrawCustomUser.change(columnPreferences.userOrder, dataSession, propertyDrawObject, user);
-                            BL.reflectionLM.columnSortPropertyDrawCustomUser.change(columnPreferences.userSort, dataSession, propertyDrawObject, user);
-                            BL.reflectionLM.columnAscendingSortPropertyDrawCustomUser.change(columnPreferences.userAscendingSort, dataSession, propertyDrawObject, user);
+                    if (completeOverride) {
+                        for (DataObject user : userObjectList) {
+                            changeUserColumnPreferences(columnPreferences, dataSession, idShow, propertyDrawObject, user);
                         }
                     }
                     if (forAllUsers) {
@@ -535,27 +552,16 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                         BL.reflectionLM.columnSortPropertyDraw.change(columnPreferences.userSort, dataSession, propertyDrawObject);
                         BL.reflectionLM.columnAscendingSortPropertyDraw.change(columnPreferences.userAscendingSort, dataSession, propertyDrawObject);
                     } else if (!completeOverride) {
-                        BL.reflectionLM.showPropertyDrawCustomUser.change(idShow, dataSession, propertyDrawObject, userObject);
-                        BL.reflectionLM.columnCaptionPropertyDrawCustomUser.change(columnPreferences.userCaption, dataSession, propertyDrawObject, userObject);
-                        BL.reflectionLM.columnPatternPropertyDrawCustomUser.change(columnPreferences.userPattern, dataSession, propertyDrawObject, userObject);
-                        BL.reflectionLM.columnWidthPropertyDrawCustomUser.change(columnPreferences.userWidth, dataSession, propertyDrawObject, userObject);
-                        BL.reflectionLM.columnOrderPropertyDrawCustomUser.change(columnPreferences.userOrder, dataSession, propertyDrawObject, userObject);
-                        BL.reflectionLM.columnSortPropertyDrawCustomUser.change(columnPreferences.userSort, dataSession, propertyDrawObject, userObject);
-                        BL.reflectionLM.columnAscendingSortPropertyDrawCustomUser.change(columnPreferences.userAscendingSort, dataSession, propertyDrawObject, userObject);
+                        changeUserColumnPreferences(columnPreferences, dataSession, idShow, propertyDrawObject, userObject);
                     }
                 } else {
                     throw new RuntimeException("Объект " + entry.getKey() + " (" + entity.getCanonicalName() + ") не найден");
                 }
             }
             DataObject groupObjectObject = (DataObject) BL.reflectionLM.groupObjectSIDNavigatorElementNameGroupObject.readClasses(dataSession, new DataObject(preferences.groupObjectSID, StringClass.get(50)), new DataObject(entity.getCanonicalName(), StringClass.get(50)));
-            if(completeOverride) {
-                for(DataObject user : userObjectList) {
-                    BL.reflectionLM.hasUserPreferencesGroupObjectCustomUser.change(preferences.hasUserPreferences ? true : null, dataSession, groupObjectObject, user);
-                    BL.reflectionLM.fontSizeGroupObjectCustomUser.change(preferences.fontInfo.fontSize != -1 ? preferences.fontInfo.fontSize : null, dataSession, groupObjectObject, user);
-                    BL.reflectionLM.pageSizeGroupObjectCustomUser.change(preferences.pageSize, dataSession, groupObjectObject, user);
-                    BL.reflectionLM.headerHeightGroupObjectCustomUser.change(preferences.headerHeight, dataSession, groupObjectObject, user);
-                    BL.reflectionLM.isFontBoldGroupObjectCustomUser.change(preferences.fontInfo.isBold() ? true : null, dataSession, groupObjectObject, user);
-                    BL.reflectionLM.isFontItalicGroupObjectCustomUser.change(preferences.fontInfo.isItalic() ? true : null, dataSession, groupObjectObject, user);
+            if (completeOverride) {
+                for (DataObject user : userObjectList) {
+                    changeUserGOPreferences(preferences, dataSession, groupObjectObject, user);
                 }
             }
             if (forAllUsers) {
@@ -565,19 +571,35 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                 BL.reflectionLM.headerHeightGroupObject.change(preferences.headerHeight, dataSession, groupObjectObject);
                 BL.reflectionLM.isFontBoldGroupObject.change(preferences.fontInfo.isBold() ? true : null, dataSession, groupObjectObject);
                 BL.reflectionLM.isFontItalicGroupObject.change(preferences.fontInfo.isItalic() ? true : null, dataSession, groupObjectObject);
-            } else if (!completeOverride){
-                BL.reflectionLM.hasUserPreferencesGroupObjectCustomUser.change(preferences.hasUserPreferences ? true : null, dataSession, groupObjectObject, userObject);
-                BL.reflectionLM.fontSizeGroupObjectCustomUser.change(preferences.fontInfo.fontSize != -1 ? preferences.fontInfo.fontSize : null, dataSession, groupObjectObject, userObject);
-                BL.reflectionLM.pageSizeGroupObjectCustomUser.change(preferences.pageSize, dataSession, groupObjectObject, userObject);
-                BL.reflectionLM.headerHeightGroupObjectCustomUser.change(preferences.headerHeight, dataSession, groupObjectObject, userObject);
-                BL.reflectionLM.isFontBoldGroupObjectCustomUser.change(preferences.fontInfo.isBold() ? true : null, dataSession, groupObjectObject, userObject);
-                BL.reflectionLM.isFontItalicGroupObjectCustomUser.change(preferences.fontInfo.isItalic() ? true : null, dataSession, groupObjectObject, userObject);
+            } else if (!completeOverride) {
+                changeUserGOPreferences(preferences, dataSession, groupObjectObject, userObject);
             }
+            
             return dataSession.applyMessage(BL, stack);
         } catch (SQLException | SQLHandledException e) {
             throw Throwables.propagate(e);
         }
     }
+    
+    private void changeUserColumnPreferences(ColumnUserPreferences columnPreferences, DataSession dataSession, Integer idShow, DataObject propertyDrawObject, DataObject user) throws SQLException, SQLHandledException {
+        BL.reflectionLM.showPropertyDrawCustomUser.change(idShow, dataSession, propertyDrawObject, user);
+        BL.reflectionLM.columnCaptionPropertyDrawCustomUser.change(columnPreferences.userCaption, dataSession, propertyDrawObject, user);
+        BL.reflectionLM.columnPatternPropertyDrawCustomUser.change(columnPreferences.userPattern, dataSession, propertyDrawObject, user);
+        BL.reflectionLM.columnWidthPropertyDrawCustomUser.change(columnPreferences.userWidth, dataSession, propertyDrawObject, user);
+        BL.reflectionLM.columnOrderPropertyDrawCustomUser.change(columnPreferences.userOrder, dataSession, propertyDrawObject, user);
+        BL.reflectionLM.columnSortPropertyDrawCustomUser.change(columnPreferences.userSort, dataSession, propertyDrawObject, user);
+        BL.reflectionLM.columnAscendingSortPropertyDrawCustomUser.change(columnPreferences.userAscendingSort, dataSession, propertyDrawObject, user);    
+    }
+    
+    private void changeUserGOPreferences(GroupObjectUserPreferences preferences, DataSession dataSession, DataObject groupObject, DataObject user) throws SQLException, SQLHandledException {
+        BL.reflectionLM.hasUserPreferencesGroupObjectCustomUser.change(preferences.hasUserPreferences ? true : null, dataSession, groupObject, user);
+        BL.reflectionLM.fontSizeGroupObjectCustomUser.change(preferences.fontInfo.fontSize != -1 ? preferences.fontInfo.fontSize : null, dataSession, groupObject, user);
+        BL.reflectionLM.pageSizeGroupObjectCustomUser.change(preferences.pageSize, dataSession, groupObject, user);
+        BL.reflectionLM.headerHeightGroupObjectCustomUser.change(preferences.headerHeight, dataSession, groupObject, user);
+        BL.reflectionLM.isFontBoldGroupObjectCustomUser.change(preferences.fontInfo.isBold() ? true : null, dataSession, groupObject, user);
+        BL.reflectionLM.isFontItalicGroupObjectCustomUser.change(preferences.fontInfo.isItalic() ? true : null, dataSession, groupObject, user);
+    }
+    
 
     private List<DataObject> readUserObjectList() throws SQLException, SQLHandledException {
         List<DataObject> userObjectList = new ArrayList<>();
@@ -678,6 +700,13 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     public PropertyDrawInstance getPropertyDraw(int propertyID) {
         for (PropertyDrawInstance property : properties)
             if (property.getID() == propertyID)
+                return property;
+        return null;
+    }
+
+    public PropertyDrawInstance getPropertyDraw(String sid) {
+        for (PropertyDrawInstance property : properties)
+            if (property.getsID().equals(sid))
                 return property;
         return null;
     }
@@ -997,6 +1026,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     }
 
     public int countRecords(int groupObjectID) throws SQLException, SQLHandledException {
+        JRStyledTextParser p = JRStyledTextParser.getInstance();
+        System.out.println(p);
         GroupObjectInstance group = getGroupObjectInstance(groupObjectID);
         Expr expr = GroupExpr.create(MapFact.<Object, Expr>EMPTY(), new ValueExpr(1, IntegerClass.instance), group.getWhere(group.getMapKeys(), getModifier()), GroupType.SUM, MapFact.<Object, Expr>EMPTY());
         QueryBuilder<Object, Object> query = new QueryBuilder<>(MapFact.<Object, KeyExpr>EMPTYREV());
@@ -1678,6 +1709,10 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
             if(newInInterface != null) {
                 drawComponent = getDrawComponent(drawProperty, newInInterface);
                 if (isNoTabHidden(drawComponent)) { // hidden, но без учета tab, для него отдельная оптимизация, чтобы не переобновляться при переключении "туда-назад",  связан с assertion'ом в FormInstance.isHidden
+                    newInInterface = null;
+                }
+                
+                if (userPrefsHiddenProperties.contains(drawProperty)) {
                     newInInterface = null;
                 }
             }

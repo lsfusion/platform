@@ -277,11 +277,15 @@ public abstract class GUserPreferencesDialog extends GResizableModalWindow {
                     columnsDualListBox.getVisibleIndex(label), false);
         }
 
-        for (Widget label : columnsDualListBox.getInvisibleWidgets()) {
+        String[] hiddenPropSids = new String[columnsDualListBox.getInvisibleWidgets().size()];
+        for (int i = 0; i < columnsDualListBox.getInvisibleWidgets().size(); i++) {
+            Widget label = columnsDualListBox.getInvisibleWidgets().get(i);
             PropertyListItem property = ((PropertyLabel) label).getPropertyItem();
             grid.setColumnSettings(property.property, property.getUserCaption(true), property.getUserPattern(true),
-                    columnsDualListBox.getVisibleCount() + columnsDualListBox.getInvisibleIndex(label), true);
-
+                    columnsDualListBox.getVisibleCount() + i, true);
+            if (property.inGrid != null && property.inGrid) {
+                hiddenPropSids[i] = property.property.sID;
+            }
         }
 
         GFont userFont = getUserFont();
@@ -297,6 +301,8 @@ public abstract class GUserPreferencesDialog extends GResizableModalWindow {
         grid.setHasUserPreferences(true);
 
         grid.columnsPreferencesChanged();
+        
+        grid.refreshUPHiddenProps(hiddenPropSids);
 
         hide();
     }

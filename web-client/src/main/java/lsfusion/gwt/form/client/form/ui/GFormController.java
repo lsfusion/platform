@@ -980,8 +980,8 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         Window.open(reportUrl, fileName, "");
     }
 
-    public void saveUserPreferences(GGridUserPreferences userPreferences, boolean forAllUsers, boolean completeOverride, final ErrorHandlingCallback<ServerResponseResult> callback) {
-        syncDispatch(new SaveUserPreferencesAction(userPreferences.convertPreferences(), forAllUsers, completeOverride), new ServerResponseCallback() {
+    public void saveUserPreferences(GGridUserPreferences userPreferences, boolean forAllUsers, boolean completeOverride, String[] hiddenProps, final ErrorHandlingCallback<ServerResponseResult> callback) {
+        syncDispatch(new SaveUserPreferencesAction(userPreferences.convertPreferences(), forAllUsers, completeOverride, hiddenProps), new ServerResponseCallback() {
             @Override
             public void success(ServerResponseResult response) {
                 for (GAction action : response.actions) {
@@ -999,6 +999,10 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
                 callback.failure(caught);
             }
         });
+    }
+    
+    public void refreshUPHiddenProps(String[] propSids) {
+        syncDispatch(new RefreshUPHiddenPropsAction(propSids), new ErrorHandlingCallback<VoidResult>());
     }
 
     public List<GPropertyDraw> getPropertyDraws() {

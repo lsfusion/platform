@@ -55,6 +55,7 @@ public class FormDispatchServlet extends LogicsAwareDispatchServlet<RemoteLogics
         registry.addHandler(new OkPressedHandler(this));
         registry.addHandler(new PasteExternalTableHandler(this));
         registry.addHandler(new PasteSingleCellValueHandler(this));
+        registry.addHandler(new RefreshUPHiddenPropsActionHandler(this));
         registry.addHandler(new SaveUserPreferencesActionHandler(this));
         registry.addHandler(new ScrollToEndHandler(this));
         registry.addHandler(new SetRegularFilterHandler(this));

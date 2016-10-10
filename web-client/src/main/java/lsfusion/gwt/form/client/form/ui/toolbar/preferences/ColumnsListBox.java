@@ -18,6 +18,8 @@ public abstract class ColumnsListBox extends Composite {
     private ColumnsListBoxDragController dragController;
 
     private Grid grid;
+    
+    public boolean visible;
 
     public ColumnsListBox() {
         grid = new Grid();
@@ -43,9 +45,10 @@ public abstract class ColumnsListBox extends Composite {
         addStyleName(CSS_DRAGGABLE_LIST_BOX);
     }
 
-    public ColumnsListBox(ColumnsListBoxDragController dragController) {
+    public ColumnsListBox(ColumnsListBoxDragController dragController, boolean visible) {
         this();
         this.dragController = dragController;
+        this.visible = visible;
     }
 
     public void add(PropertyListItem property) {
@@ -53,6 +56,9 @@ public abstract class ColumnsListBox extends Composite {
     }
 
     public void add(Widget widget) {
+        if (widget instanceof PropertyLabel) {
+            ((PropertyLabel) widget).refreshLabel(visible);
+        }
         setWidget(getItemCount(), widget);
     }
 
@@ -61,7 +67,7 @@ public abstract class ColumnsListBox extends Composite {
     }
 
     private PropertyLabel createLabel(PropertyListItem property) {
-        return new PropertyLabel(property);
+        return new PropertyLabel(property, visible);
     }
 
     public int getItemCount() {
@@ -106,7 +112,12 @@ public abstract class ColumnsListBox extends Composite {
             dragController.makeDraggable(widget);
         }
 
+        if (widget instanceof PropertyLabel) {
+//            ((PropertyLabel) widget).getPropertyItem().setVisible(visible);
+            ((PropertyLabel) widget).refreshLabel(visible);
+        }
         grid.setWidget(index, 0, widget);
+
     }
 
     public void clear() {

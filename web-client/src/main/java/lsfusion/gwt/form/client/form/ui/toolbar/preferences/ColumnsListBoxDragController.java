@@ -81,7 +81,7 @@ public class ColumnsListBoxDragController extends PickupDragController {
     @Override
     protected Widget newDragProxy(DragContext context) {
         draggableList = (ColumnsListBox) context.draggable.getParent().getParent();
-        ColumnsListBox proxyMouseListBox = new ColumnsListBox(null) {
+        ColumnsListBox proxyMouseListBox = new ColumnsListBox(null, draggableList.visible) {
             @Override
             public void singleclicked() {
                 // nothing to do
