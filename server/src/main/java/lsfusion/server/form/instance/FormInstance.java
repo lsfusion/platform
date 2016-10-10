@@ -61,7 +61,6 @@ import lsfusion.server.session.*;
 import lsfusion.server.stack.ParamMessage;
 import lsfusion.server.stack.StackMessage;
 import lsfusion.server.stack.ThisMessage;
-import net.sf.jasperreports.engine.util.JRStyledTextParser;
 
 import javax.swing.*;
 import java.awt.*;
@@ -1026,8 +1025,6 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     }
 
     public int countRecords(int groupObjectID) throws SQLException, SQLHandledException {
-        JRStyledTextParser p = JRStyledTextParser.getInstance();
-        System.out.println(p);
         GroupObjectInstance group = getGroupObjectInstance(groupObjectID);
         Expr expr = GroupExpr.create(MapFact.<Object, Expr>EMPTY(), new ValueExpr(1, IntegerClass.instance), group.getWhere(group.getMapKeys(), getModifier()), GroupType.SUM, MapFact.<Object, Expr>EMPTY());
         QueryBuilder<Object, Object> query = new QueryBuilder<>(MapFact.<Object, KeyExpr>EMPTYREV());
