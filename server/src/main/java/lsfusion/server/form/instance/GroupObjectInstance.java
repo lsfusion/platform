@@ -637,6 +637,8 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         boolean objectsUpdated = false;
 
         ImSet<FilterInstance> setFilters = getSetFilters();
+        ImSet<GroupObjectInstance> sThis = SetFact.singleton(this);
+
         if (FilterInstance.ignoreInInterface) {
             updateFilters |= (updated & UPDATED_FILTER) != 0;
             filters = setFilters;
@@ -652,7 +654,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
                 filters = newFilters;
             } else { // остались те же setFilters
                 for (FilterInstance filt : setFilters)
-                    if (refresh || filt.classUpdated(SetFact.singleton(this))) {
+                    if (refresh || filt.classUpdated(sThis)) {
                         boolean inInterface = filt.isInInterface(this);
                         if(inInterface != filters.contains(filt)) {
                             if(inInterface)
@@ -667,7 +669,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
         if (!updateFilters) // изменились "верхние" объекты для фильтров
             for (FilterInstance filt : filters)
-                if (filt.objectUpdated(SetFact.singleton(this))) {
+                if (filt.objectUpdated(sThis)) {
                     updateFilters = true;
                     objectsUpdated = true;
                     break;
@@ -675,7 +677,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
         if (!updateFilters) // изменились данные по фильтрам
             for (FilterInstance filt : filters)
-                if (filt.dataUpdated(changedProps.result, reallyChanged, modifier, hidden, SetFact.singleton(this))) {
+                if (filt.dataUpdated(changedProps.result, reallyChanged, modifier, hidden, sThis)) {
                     updateFilters = true;
                     break;
                 }
@@ -726,14 +728,14 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
         if (!updateOrders && (!updateFilters || orderProperty!=null)) // изменились "верхние" объекты для порядков
             for (OrderInstance order : orders.keyIt())
-                if (order.objectUpdated(SetFact.singleton(this))) {
+                if (order.objectUpdated(sThis)) {
                     updateOrders = true;
                     objectsUpdated = true;
                     break;
                 }
         if (!updateOrders && (!updateFilters || orderProperty!=null)) // изменились данные по порядкам
             for (OrderInstance order : orders.keyIt())
-                if (order.dataUpdated(changedProps.result, reallyChanged, modifier, hidden, SetFact.singleton(this))) {
+                if (order.dataUpdated(changedProps.result, reallyChanged, modifier, hidden, sThis)) {
                     updateOrders = true;
                     break;
                 }
@@ -778,9 +780,26 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         int direction = DIRECTION_CENTER;
 
         if(isInTree()) {
-            if (!updateKeys && (getUpTreeGroup() != null && ((getUpTreeGroup().updated & UPDATED_EXPANDS) != 0)) ||
-                    (parent != null && (updated & UPDATED_EXPANDS) != 0)) {
+            if (!updateKeys && (getUpTreeGroup() != null && ((getUpTreeGroup().updated & UPDATED_EXPANDS) != 0))) {
                 updateKeys = true;
+            }
+            if(parent != null) {
+                if(!updateKeys && (updated & UPDATED_EXPANDS) != 0)
+                    updateKeys = true;
+                if(!updateKeys) {
+                    for(CalcPropertyObjectInstance parentProp : parent.valueIt()) {
+                        if (parentProp.objectUpdated(sThis)) {
+                            updateKeys = true;
+                            break;
+                        }
+                    }
+                    for(CalcPropertyObjectInstance parentProp : parent.valueIt()) {
+                        if (parentProp.dataUpdated(changedProps.result, reallyChanged, modifier, hidden, sThis)) {
+                            updateKeys = true;
+                            break;
+                        }
+                    }
+                }
             }
             orderSeeks = SEEK_HOME;
         } else {

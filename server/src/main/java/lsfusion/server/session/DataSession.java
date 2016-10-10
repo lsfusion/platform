@@ -1047,6 +1047,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     }
 
     @LogTime
+    @StackMessage("{message.local.event.exec}")
     @ThisMessage (profile = false)
     private void executeSessionEvent(ExecutionEnvironment env, ExecutionStack stack, @ParamMessage ActionProperty<?> action) throws SQLException, SQLHandledException {
         if(noEventsInTransaction || !sessionEventChangedOld.getProperties().intersect(action.getSessionEventOldDepends()))// оптимизация аналогичная верхней
@@ -1081,6 +1082,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     }
 
     @LogTime
+    @StackMessage("{message.global.event.exec}")
     @ThisMessage (profile = false)
     private void executeGlobalEventWithChanges(ExecutionEnvironment env, ExecutionStack stack, @ParamMessage ActionProperty<?> action) throws SQLException, SQLHandledException {
         action.execute(env, stack);
