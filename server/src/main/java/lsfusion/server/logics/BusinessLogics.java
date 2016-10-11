@@ -1906,8 +1906,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
                     ImOrderSet<Field> fields = SetFact.fromJavaOrderSet(index.getKey());
                     if (!getDbManager().getThreadLocalSql().checkIndex(table, table.keys, fields, index.getValue()))
                         session.addIndex(table, table.keys, fields, index.getValue(), sqlLogger);
-                    session.addConstraint(table);
                 }
+                session.addConstraint(table);
                 session.checkExtraIndices(getDbManager().getThreadLocalSql(), table, table.keys, sqlLogger);
             }
             session.commitTransaction();

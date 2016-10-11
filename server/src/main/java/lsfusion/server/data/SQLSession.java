@@ -773,9 +773,10 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
 
     public void addConstraint(Table table) throws SQLException {
         try {
-            executeDDL("DO $$ BEGIN ALTER TABLE " + table.getName() + " ADD " + getConstraintDeclare(table.getName(), table.keys, syntax) +
-            "; EXCEPTION WHEN others THEN /* ignore duplicates */ END; $$;");
-        } catch(Exception e) {
+            if (!table.keys.isEmpty())
+                executeDDL("DO $$ BEGIN ALTER TABLE " + table.getName() + " ADD " + getConstraintDeclare(table.getName(), table.keys, syntax) +
+                        "; EXCEPTION WHEN others THEN /* ignore duplicates */ END; $$;");
+        } catch (Exception e) {
             logger.error(e);
         }
     }
