@@ -41,6 +41,8 @@ public class ServerLoggers {
 
     public static final Logger importLogger = Logger.getLogger("ImportLogger");
 
+    public static final Logger webLogger = Logger.getLogger("WebLogger");
+
     public static final Logger printerLogger = Logger.getLogger("PrinterLogger");
 
     public static final Logger assertLogger = Logger.getLogger("AssertLogger");
