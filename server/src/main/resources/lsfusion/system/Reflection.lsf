@@ -143,7 +143,7 @@ isFontItalic 'Курсивный шрифт для пользователя'= DA
 isFontItalic 'Курсивный шрифт' = DATA BOOLEAN (GroupObject);
 
 pageSize 'Размер страницы для пользователя'= DATA INTEGER (GroupObject, CustomUser);
-pageSize 'Размер шрифта' = DATA INTEGER (GroupObject);
+pageSize 'Размер страницы' = DATA INTEGER (GroupObject);
 
 headerHeight 'Высота заголовков для пользователя'= DATA INTEGER (GroupObject, CustomUser);
 headerHeight 'Высота заголовков' = DATA INTEGER (GroupObject);

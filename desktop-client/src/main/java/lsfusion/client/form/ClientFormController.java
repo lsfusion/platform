@@ -514,11 +514,11 @@ public class ClientFormController implements AsyncListener {
         successCallback.run();
     }
     
-    public void refreshUPHiddenProperties(final String[] sids) {
-        rmiQueue.asyncRequest(new RmiVoidRequest("refreshUPHiddenProperties") {
+    public void refreshUPHiddenProperties(final String groupObjectSID, final String[] sids) {
+        rmiQueue.asyncRequest(new ProcessServerResponseRmiRequest("refreshUPHiddenProperties") {
             @Override
-            protected void doExecute(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
-                remoteForm.refreshUPHiddenProperties(requestIndex, lastReceivedRequestIndex, sids);   
+            protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
+                return remoteForm.refreshUPHiddenProperties(requestIndex, lastReceivedRequestIndex, groupObjectSID, sids);   
             }
         });
     }

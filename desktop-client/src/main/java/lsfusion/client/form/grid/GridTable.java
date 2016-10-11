@@ -1535,7 +1535,8 @@ public class GridTable extends ClientPropertyTable {
     }
     
     public void refreshUPHiddenProps(String[] propSids) {
-        form.refreshUPHiddenProperties(propSids);    
+        assert groupObject != null; // при null нету таблицы, а значит и настроек
+        form.refreshUPHiddenProperties(groupObject.getSID(), propSids);    
     }
     
     public GridUserPreferences getCurrentPreferences() {

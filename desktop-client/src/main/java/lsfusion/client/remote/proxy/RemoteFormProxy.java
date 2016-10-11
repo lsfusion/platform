@@ -235,10 +235,11 @@ public class RemoteFormProxy extends RemoteObjectProxy<RemoteFormInterface> impl
     }
 
     @Override
-    public void refreshUPHiddenProperties(long requestIndex, long lastReceivedRequestIndex, String[] propSids) throws RemoteException {
+    public ServerResponse refreshUPHiddenProperties(long requestIndex, long lastReceivedRequestIndex, String groupObjectSID, String[] propSids) throws RemoteException {
         logRemoteMethodStartCall("refreshUPHiddenProperties");
-        target.refreshUPHiddenProperties(requestIndex, lastReceivedRequestIndex, propSids);
+        ServerResponse result = target.refreshUPHiddenProperties(requestIndex, lastReceivedRequestIndex, groupObjectSID, propSids);
         logRemoteMethodEndVoidCall("refreshUPHiddenProperties");
+        return result;
     }
 
     public ServerResponse okPressed(long requestIndex, long lastReceivedRequestIndex) throws RemoteException {

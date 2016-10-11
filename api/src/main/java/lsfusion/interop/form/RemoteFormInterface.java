@@ -107,7 +107,7 @@ public interface RemoteFormInterface extends PendingRemoteInterface {
 
     FormUserPreferences getUserPreferences() throws RemoteException;
     
-    void refreshUPHiddenProperties(long requestIndex, long lastReceivedRequestIndex, String[] propSids) throws RemoteException;
+    ServerResponse refreshUPHiddenProperties(long requestIndex, long lastReceivedRequestIndex, String groupObjectSID, String[] propSids) throws RemoteException;
     
     ColorPreferences getColorPreferences() throws RemoteException;
 }

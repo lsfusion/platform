@@ -670,18 +670,17 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
                 
                 form.saveUserPreferences(stack, preferences, forAllUsers, completeOverride);
                 
-                form.refreshUPHiddenProperties(hiddenProps);
+                form.refreshUPHiddenProperties(preferences.groupObjectSID, hiddenProps);
             }
         });
     }
 
     @Override
-    public void refreshUPHiddenProperties(long requestIndex, long lastReceivedRequestIndex, final String[] propSids) throws RemoteException {
-        processRMIRequest(requestIndex, lastReceivedRequestIndex, new EExecutionStackCallable<Void>() {
+    public ServerResponse refreshUPHiddenProperties(long requestIndex, long lastReceivedRequestIndex, final String groupObjectSID, final String[] propSids) throws RemoteException {
+        return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, new EExecutionStackRunnable() {
             @Override
-            public Void call(ExecutionStack stack) throws Exception {
-                form.refreshUPHiddenProperties(propSids);
-                return null;
+            public void run(ExecutionStack stack) throws Exception {
+                form.refreshUPHiddenProperties(groupObjectSID, propSids);
             }
         });
     }

@@ -1001,8 +1001,8 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         });
     }
     
-    public void refreshUPHiddenProps(String[] propSids) {
-        syncDispatch(new RefreshUPHiddenPropsAction(propSids), new ErrorHandlingCallback<VoidResult>());
+    public void refreshUPHiddenProps(String groupObjectSID, String[] propSids) {
+        syncDispatch(new RefreshUPHiddenPropsAction(groupObjectSID, propSids), new ServerResponseCallback());
     }
 
     public List<GPropertyDraw> getPropertyDraws() {

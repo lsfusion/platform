@@ -452,14 +452,30 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     
     private ImSet<PropertyDrawInstance> userPrefsHiddenProperties = SetFact.EMPTY();
     
-    public void refreshUPHiddenProperties(String[] hiddenSids) {
-        userPrefsHiddenProperties = SetFact.EMPTY();
-        for (String hiddenSid : hiddenSids) {
-            PropertyDrawInstance prop = getPropertyDraw(hiddenSid);
-            if (prop != null) {
-                userPrefsHiddenProperties = userPrefsHiddenProperties.addExcl(prop);
+    public void refreshUPHiddenProperties(String groupObjectSID, String[] hiddenSids) {
+        GroupObjectInstance go = getGroupObjectInstance(groupObjectSID);
+        List<String> hiddenSidsList = new ArrayList<>(Arrays.asList(hiddenSids));
+        
+        Set<PropertyDrawInstance> hiddenProps = userPrefsHiddenProperties.toJavaSet();
+        
+        for (PropertyDrawInstance property : userPrefsHiddenProperties) {
+            if (property.toDraw == go) {
+                if (!hiddenSidsList.contains(property.getsID())) {
+                    hiddenProps.remove(property);        
+                } else {
+                    hiddenSidsList.remove(property.getsID());
+                }
             }
         }
+
+        for (String sid : hiddenSidsList) {
+            PropertyDrawInstance prop = getPropertyDraw(sid);
+            if (prop != null) {
+                hiddenProps.add(prop);
+            }
+        }
+        
+        userPrefsHiddenProperties = SetFact.fromJavaSet(hiddenProps);
     }
     
     public void readPreferencesValues(ImMap<String, Object> values, List<GroupObjectUserPreferences> goPreferences, boolean general) {
@@ -704,17 +720,24 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         return null;
     }
 
-    public PropertyDrawInstance getPropertyDraw(String sid) {
-        for (PropertyDrawInstance property : properties)
-            if (property.getsID().equals(sid))
-                return property;
-        return null;
-    }
-
     public RegularFilterGroupInstance getRegularFilterGroup(int groupID) {
         for (RegularFilterGroupInstance filterGroup : regularFilterGroups)
             if (filterGroup.getID() == groupID)
                 return filterGroup;
+        return null;
+    }
+
+    public GroupObjectInstance getGroupObjectInstance(String sid) {
+        for (GroupObjectInstance groupObject : getGroups())
+            if (groupObject.getSID().equals(sid))
+                return groupObject;
+        return null;
+    }
+    
+    public PropertyDrawInstance getPropertyDraw(String sid) {
+        for (PropertyDrawInstance property : properties)
+            if (property.getsID().equals(sid))
+                return property;
         return null;
     }
 

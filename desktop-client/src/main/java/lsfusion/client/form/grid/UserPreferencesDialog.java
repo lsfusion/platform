@@ -461,7 +461,7 @@ public abstract class UserPreferencesDialog extends JDialog {
         for (int i = 0; i < invisibleItems.length; i++) {
             UserPreferencesPropertyListItem propertyItem = invisibleItems[i];
             initialTable.setUserColumnSettings(propertyItem.property, propertyItem.getUserCaption(true), propertyItem.getUserPattern(true), visibleListModel.getSize() + i, true);
-            if (propertyItem.inGrid != null && propertyItem.inGrid) {
+            if (propertyItem.inGrid == null || propertyItem.inGrid) {
                 hiddenPropSids[i] = propertyItem.property.getSID();
             }
         }

@@ -1086,7 +1086,8 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
     }
     
     public void refreshUPHiddenProps(String[] propSids) {
-        form.refreshUPHiddenProps(propSids);
+        assert groupObject != null; // при null нету таблицы, а значит и настроек
+        form.refreshUPHiddenProps(groupObject.getSID(), propSids);
     }
 
     public GGridUserPreferences getCurrentPreferences() {
