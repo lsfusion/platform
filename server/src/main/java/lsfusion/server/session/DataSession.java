@@ -1851,10 +1851,10 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         }
     }
 
-    private WeakIdentityHashMap<FormInstance, Object> activeForms = new WeakIdentityHashMap<>();
+    private WeakIdentityHashMap<FormInstance, Boolean> activeForms = new WeakIdentityHashMap<>();
     public void registerForm(FormInstance form) throws SQLException, SQLHandledException {
         synchronized (closeLock) {
-            activeForms.put(form, true);
+            activeForms.put(form, isInTransaction());
             changes.registerForm(form); // пометка что есть форма
         }
 
@@ -1897,9 +1897,15 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         };
 
         synchronized (closeLock) {
-            activeForms.remove(form);
+            Boolean createdInTransaction = activeForms.remove(form);
 
-            pendingCleaners.add(cleaner);
+            if(createdInTransaction) { // если создана в транзакции, очищаем сразу, так как все таблицы тоже получались в транзакции, а значит rollback'ся (и в pendingCleaner зависнет очистка ресурсов, которые и так уйдут, а значит в registerChange нарушится assertion)
+                ServerLoggers.assertLog(isInTransaction(), "FORM CREATED IN TRANSACTION SHOULD BE CLOSED IN TRANSACTION");
+                cleaner.run();
+            } else {
+//                ServerLoggers.assertLog(!isInTransaction(), "SHOULD NOT CLOSE FORM IN TRANSACTION, THAT WHERE CREATED NOT IN TRANSACTION"); как раз может, для этого в том числе pendingCleaners и делались
+                pendingCleaners.add(cleaner);
+            }
 
             tryClose();
         }

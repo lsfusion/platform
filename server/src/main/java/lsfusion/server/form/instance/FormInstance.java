@@ -2290,10 +2290,6 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         return this;
     }
 
-    public boolean isInTransaction() {
-        return false;
-    }
-
     // close делать не надо, так как по умолчанию добавляется обработчик события formClose
     public void formQueryClose(ExecutionStack stack) throws SQLException, SQLHandledException {
         fireQueryClose(stack);

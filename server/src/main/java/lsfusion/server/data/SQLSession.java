@@ -946,12 +946,28 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         transactionSessionTablesCount.clear();
         transactionTotalSessionTablesCount = null;
     }
+
+    public static Buffer fifoTC = BufferUtils.synchronizedBuffer(new CircularFifoBuffer(1000000));
+    public static void outFifoTC() throws IOException {
+        String filename = "e:\\outTC.txt";
+        BufferedWriter outputWriter = new BufferedWriter(new FileWriter(filename));
+        for (Object ff : fifoTC) {
+            outputWriter.write(ff+"");
+            outputWriter.newLine();
+        }
+        outputWriter.flush();
+        outputWriter.close();
+    }
+
     private void rollbackTransactionSessionTablesCount() { // assert lockWrite
         for(Map.Entry<String, Integer> tableCount : transactionSessionTablesCount.entrySet()) {
-            if(tableCount.getValue() == null)
+            if(tableCount.getValue() == null) {
                 sessionTablesCount.remove(tableCount.getKey());
-            else
+//                fifoTC.add("REMOVE " + getCurrentTimeStamp() + " " + tableCount.getKey() + " " + this + " " + ExecutionStackAspect.getExStackTrace());
+            } else {
                 sessionTablesCount.put(tableCount.getKey(), tableCount.getValue());
+//                fifoTC.add("PUT " + getCurrentTimeStamp() + " " + tableCount.getKey() + " " + tableCount.getValue() + " " + this + " " + ExecutionStackAspect.getExStackTrace());
+            }
         }
         if(transactionTotalSessionTablesCount != null)
             totalSessionTablesCount = transactionTotalSessionTablesCount;
@@ -1659,13 +1675,21 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
                 assert rows == -1;
                 delta = 0;
                 sessionTablesCount.put(table, 0);
+//                fifoTC.add("ADD " + getCurrentTimeStamp() + " " + table + " " + 0 + " " + this + " " + ExecutionStackAspect.getExStackTrace());
             } else
             if(tableChange == TableChange.REMOVE) {
                 assert rows == -1;
-                delta = -sessionTablesCount.remove(table);
+                Integer removeCount = sessionTablesCount.remove(table);
+                if(removeCount == null) {
+                    ServerLoggers.assertLog(false, "TABLE WAS REMOVED BEFORE"); // по идее всегда связано с транзакцией, когда таблица была получена в транзакции, но не возвращена по той или иной причине (например см. pendingCleaners и проверку createdInTransaction)
+                    removeCount = 0;
+                }
+                delta = -removeCount;
+//                fifoTC.add("REMOVE " + getCurrentTimeStamp() + " " + table + " " + this + " " + ExecutionStackAspect.getExStackTrace());
             } else {
                 delta = (tableChange == TableChange.INSERT ? rows : -rows);
                 sessionTablesCount.put(table, sessionTablesCount.get(table) + delta);
+//                fifoTC.add("INSERT " + getCurrentTimeStamp() + " " + table + " ADD " + delta + " " + this + " " + ExecutionStackAspect.getExStackTrace());
             }
             totalSessionTablesCount += delta;
             assert privateConnection != null;

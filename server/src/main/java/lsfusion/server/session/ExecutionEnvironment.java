@@ -30,8 +30,6 @@ public abstract class ExecutionEnvironment extends MutableClosedObject<Object> {
 
     public abstract FormInstance getFormInstance();
 
-    public abstract boolean isInTransaction();
-
     public <P extends PropertyInterface> void change(CalcProperty<P> property, PropertyChange<P> change) throws SQLException, SQLHandledException {
         if(change.isEmpty()) // оптимизация
             return;

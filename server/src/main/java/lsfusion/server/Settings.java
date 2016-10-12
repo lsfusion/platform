@@ -231,7 +231,7 @@ public class Settings {
 
     private boolean groupByTables = true; //для recalculate
 
-    private int profilerBatchSize = 500;
+    private int profilerBatchSize = 10000;
 
     private int threadAllocatedMemoryPeriod = 180; //every 3 minutes
 
