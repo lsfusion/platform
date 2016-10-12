@@ -13,7 +13,7 @@ text 'Действие' = DATA TEXT (ProfileObject) IN recognize;
 onStarted() += ACTION {
     text(ProfileObject po) <- staticCaption(ProfileObject.top) WHERE po == ProfileObject.top;
 }
-profileObject = GROUP AGGR ProfileObject profileObject BY text(profileObject);
+profileObject = GROUP AGGR ProfileObject profileObject BY text(profileObject) PERSISTENT;
 
 totalTime 'Суммарное время выполнения' = DATA LOCAL LONG (TEXT, TEXT, INTEGER, VARSTRING[100]);
 totalSQLTime 'Суммарное время выполнения SQL' = DATA LOCAL LONG (TEXT, TEXT, INTEGER, VARSTRING[100]);  
@@ -56,6 +56,8 @@ startProfiler 'Запустить профилировщик' () = ACTION {
 
 stopProfiler 'Остановить профилировщик' () = ACTION CUSTOM 'lsfusion.erp.utils.StopProfilerActionProperty';
 
+id(User user) = INTEGER(user AS User) PERSISTENT INDEXED; 
+
 writeProfilerBatch () = ACTION {
     FOR [= GROUP SUM 1 IF callCount(TEXT t1, TEXT t2, INTEGER u, VARSTRING[100] f) BY t1](TEXT t1) AND NOT profileObject(t1) INLINE ADDOBJ p = ProfileObject DO {
         text(p) <- t1;    
@@ -66,7 +68,7 @@ writeProfilerBatch () = ACTION {
     }     
     
     FOR ProfileObject p1 == profileObject(TEXT t1) AND ProfileObject p2 == profileObject(TEXT t2) AND callCount(t1, t2, INTEGER u, VARSTRING[100] f) 
-            AND u == INTEGER(User user AS User) AND (ProfileForm form == navigatorElementCanonicalName(f) OR (f == '' AND form == ProfileForm.noForm)) INLINE DO {
+            AND u == id(User user) AND (ProfileForm form == navigatorElementCanonicalName(f) OR (f == '' AND form == ProfileForm.noForm)) INLINE DO {
         totalTime(p1, p2, user, form) <- totalTime(p1, p2, user, form) (+) totalTime(t1, t2, u, f); 
         totalSQLTime(p1, p2, user, form) <- totalSQLTime(p1, p2, user, form) (+) totalSQLTime(t1, t2, u, f); 
         totalUserInteractionTime(p1, p2, user, form) <- totalUserInteractionTime(p1, p2, user, form) (+) totalUserInteractionTime(t1, t2, u, f); 

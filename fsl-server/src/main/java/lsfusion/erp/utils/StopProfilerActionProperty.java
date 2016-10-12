@@ -123,10 +123,10 @@ public class StopProfilerActionProperty extends ScriptingActionProperty {
             ProfileItem profileItem = entry.getKey();
 
             ImList<DataObject> orderValues = ListFact.toList(
-                    new DataObject(getProfileObjectText(profileItem.profileObject)),
-                    new DataObject(getProfileObjectText(profileItem.upperProfileObject)),
-                    new DataObject(profileItem.userID),
-                    new DataObject(profileItem.form == null ? "" : profileItem.form.getSID()));
+                    new DataObject(getProfileObjectText(profileItem.profileObject), (DataClass)keys.get(0).type),
+                    new DataObject(getProfileObjectText(profileItem.upperProfileObject), (DataClass)keys.get(1).type),
+                    new DataObject(profileItem.userID, (DataClass)keys.get(2).type),
+                    new DataObject(profileItem.form == null ? "" : profileItem.form.getSID(), (DataClass)keys.get(3).type));
             mPremap.add(keys.mapList(orderValues), entry.getValue());
 
             batchCounter++;
