@@ -1,5 +1,6 @@
 package lsfusion.client.form.panel;
 
+import lsfusion.base.Callback;
 import lsfusion.client.form.ClientFormController;
 import lsfusion.client.form.cell.PanelView;
 import lsfusion.client.form.layout.ClientFormLayout;
@@ -129,13 +130,20 @@ public class PropertyController {
         }
 
         List<ClientGroupObjectValue> columnKeys = this.columnKeys != null ? this.columnKeys : ClientGroupObjectValue.SINGLE_EMPTY_KEY_LIST;
-        for (ClientGroupObjectValue columnKey : columnKeys) {
+        for (final ClientGroupObjectValue columnKey : columnKeys) {
             if (showIfs == null || showIfs.get(columnKey) != null) {
                 PanelView view = views.get(columnKey);
                 if (view == null && !property.hide) {
                     view = property.getPanelView(form, columnKey);
                     view.setReadOnly(property.isReadOnly());
                     views.put(columnKey, view);
+                    
+                    view.getEditPropertyDispatcher().setUpdateEditValueCallback(new Callback<Object>() {
+                        @Override
+                        public void done(Object result) {
+                            values.put(columnKey, result);
+                        }
+                    });
 
                     panelController.addGroupObjectActions(view.getComponent());
                 }

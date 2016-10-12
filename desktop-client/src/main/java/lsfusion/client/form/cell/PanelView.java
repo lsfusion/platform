@@ -1,5 +1,7 @@
 package lsfusion.client.form.cell;
 
+import lsfusion.client.form.dispatch.EditPropertyDispatcher;
+
 import javax.swing.*;
 import java.awt.*;
 
@@ -17,4 +19,5 @@ public interface PanelView {
     void setIcon(Icon icon);
     
     void setLabelWidth(int width);
+    EditPropertyDispatcher getEditPropertyDispatcher();
 }

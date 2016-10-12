@@ -325,4 +325,8 @@ public abstract class ClientPropertyTable extends JTable implements TableTransfe
 //        System.out.println("    " + msg);
 //        ExceptionUtils.dumpStack();
     }
+
+    public EditPropertyDispatcher getEditPropertyDispatcher() {
+        return editDispatcher;
+    }
 }

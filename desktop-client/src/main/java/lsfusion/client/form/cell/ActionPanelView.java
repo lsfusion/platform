@@ -1,7 +1,6 @@
 package lsfusion.client.form.cell;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.client.Main;
 import lsfusion.client.SwingUtils;
 import lsfusion.client.form.*;
 import lsfusion.client.form.dispatch.EditPropertyDispatcher;
@@ -234,5 +233,10 @@ public class ActionPanelView extends JButton implements PanelView, EditPropertyH
                 ActionPanelView.super.processKeyEvent(e);
             }
         });
+    }
+
+    @Override
+    public EditPropertyDispatcher getEditPropertyDispatcher() {
+        return editDispatcher;
     }
 }

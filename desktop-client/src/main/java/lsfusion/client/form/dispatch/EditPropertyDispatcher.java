@@ -2,15 +2,16 @@ package lsfusion.client.form.dispatch;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
+import lsfusion.base.Callback;
 import lsfusion.client.SwingUtils;
 import lsfusion.client.form.ClientFormController;
 import lsfusion.client.form.EditPropertyHandler;
 import lsfusion.client.logics.ClientGroupObjectValue;
 import lsfusion.client.logics.ClientPropertyDraw;
 import lsfusion.client.logics.classes.ClientType;
-import lsfusion.interop.action.UpdateEditValueClientAction;
 import lsfusion.interop.action.EditNotPerformedClientAction;
 import lsfusion.interop.action.RequestUserInputClientAction;
+import lsfusion.interop.action.UpdateEditValueClientAction;
 import lsfusion.interop.form.ServerResponse;
 import lsfusion.interop.form.UserInputResult;
 
@@ -32,6 +33,7 @@ public class EditPropertyDispatcher extends ClientFormActionDispatcher {
 
     private ClientType readType;
     private Object oldValue;
+    private Callback<Object> updateEditValueCallback;
 
     public EditPropertyDispatcher(EditPropertyHandler handler) {
         this.handler = handler;
@@ -128,6 +130,9 @@ public class EditPropertyDispatcher extends ClientFormActionDispatcher {
                     //только в этом случае можно асинхронно посланное значение использовать в качестве текущего
                     if (simpleChangeProperty.canUseChangeValueForRendering()) {
                         handler.updateEditValue(inputResult.getValue());
+                        if (updateEditValueCallback != null) {
+                            updateEditValueCallback.done(inputResult.getValue());
+                        }
                     }
                     getFormController().changeProperty(simpleChangeProperty, editColumnKey, inputResult.getValue(), oldValue);
                 } catch (IOException e) {
@@ -174,5 +179,9 @@ public class EditPropertyDispatcher extends ClientFormActionDispatcher {
         } catch (IOException e) {
             Throwables.propagate(e);
         }
+    }
+
+    public void setUpdateEditValueCallback(Callback<Object> updateEditValueCallback) {
+        this.updateEditValueCallback = updateEditValueCallback;
     }
 }

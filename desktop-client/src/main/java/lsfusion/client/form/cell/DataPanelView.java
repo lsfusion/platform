@@ -5,6 +5,7 @@ import lsfusion.client.CaptureKeyEventsDispatcher;
 import lsfusion.client.Main;
 import lsfusion.client.SwingUtils;
 import lsfusion.client.form.ClientFormController;
+import lsfusion.client.form.dispatch.EditPropertyDispatcher;
 import lsfusion.client.form.dispatch.SimpleChangePropertyDispatcher;
 import lsfusion.client.form.layout.ClientFormLayout;
 import lsfusion.client.logics.ClientGroupObjectValue;
@@ -207,6 +208,11 @@ public class DataPanelView extends JPanel implements PanelView {
     @Override
     public void setLabelWidth(int width) {
         labelWidth = width;
+    }
+
+    @Override
+    public EditPropertyDispatcher getEditPropertyDispatcher() {
+        return table.getEditPropertyDispatcher();
     }
 
     private class DataPanelLayout extends CachableLayout {

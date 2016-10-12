@@ -65,7 +65,7 @@ public class ClientFormController implements AsyncListener {
 
     private static IDGenerator idGenerator = new DefaultIDGenerator();
 
-    private final TableManager tableManager = new TableManager(this);
+    private final TableManager tableManager = new TableManager();
 
     private final EProvider<String> serverMessageProvider = new EProvider<String>() {
         @Override

@@ -3,13 +3,7 @@ package lsfusion.client.form;
 import javax.swing.*;
 
 public class TableManager {
-    private final ClientFormController form;
-
     private JTable currentTable = null;
-
-    public TableManager(ClientFormController form) {
-        this.form = form;
-    }
 
     public void setCurrentEditingTable(JTable currentTable) {
         this.currentTable = currentTable;
