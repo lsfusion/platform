@@ -31,14 +31,6 @@ minTime 'Минимальное время выполнения' = DATA LONG (Pr
 maxTime 'Максимальное время выполнения' = DATA LONG (ProfileObject, ProfileObject, User, ProfileForm);
 squaresSum 'Сумма квадратов времени выполнения' = DATA DOUBLE (ProfileObject, ProfileObject, User, ProfileForm);
 
-mTotalTime 'Суммарное время выполнения (с ожиданием)' (ProfileObject p1, ProfileObject p2, User u, ProfileForm f) = NUMERIC[20,3](totalTime(p1, p2, u, f)) / 1000000;
-mTotalSQLTime 'Суммарное время выполнения SQL' (ProfileObject p1, ProfileObject p2, User u, ProfileForm f) = NUMERIC[20,3](totalSQLTime(p1, p2, u, f)) / 1000000;
-mTotalUserInteractionTime 'Суммарное время ожидания действия пользователя' (ProfileObject p1, ProfileObject p2, User u, ProfileForm f) = NUMERIC[20,3](totalUserInteractionTime(p1, p2, u, f)) / 1000000;
-mMinTime 'Минимальное время выполнения' (ProfileObject p1, ProfileObject p2, User u, ProfileForm f) = NUMERIC[20,3](minTime(p1, p2, u, f)) / 1000000;
-mMaxTime 'Максимальное время выполнения' (ProfileObject p1, ProfileObject p2, User u, ProfileForm f) = NUMERIC[20,3](maxTime(p1, p2, u, f)) / 1000000;
-mAverageTime 'Среднее время выполнения' (ProfileObject p1, ProfileObject p2, User u, ProfileForm f) = NUMERIC[20,3](totalTime(p1, p2, u, f)) / callCount(p1, p2, u, f) / 1000000; 
-mAverageSquaredTime 'Среднее квадратичное времени выполнения' (ProfileObject p1, ProfileObject p2, User u, ProfileForm f) = NUMERIC[20,3](sqrt(squaresSum(p1, p2, u, f) / callCount(p1, p2, u, f)) / 1000000); 
-
 doStartProfiler 'Запустить профилировщик' () = ACTION CUSTOM 'lsfusion.erp.utils.StartProfilerActionProperty';
 startProfiler 'Запустить профилировщик' () = ACTION {
     totalTime(ProfileObject p1, ProfileObject p2, User u, ProfileForm f) <- NULL;
@@ -81,91 +73,212 @@ writeProfilerBatch () = ACTION {
     apply();
 }
 
-totalTimeNoWait 'Суммарное время выполнения' (ProfileObject up, ProfileObject down, User u, ProfileForm f) = mTotalTime(up, down, u, f) (-)  mTotalUserInteractionTime(up, down, u, f);
-totalJavaTime 'Суммарное время выполнения Java' (ProfileObject up, ProfileObject down, User u, ProfileForm f) = totalTimeNoWait(up, down, u, f) (-)  mTotalSQLTime(up, down, u, f);
+//показатели
+CLASS ProfilerIndex {
+    callCount 'Количество вызовов',
+    totalTime 'Суммарное время выполнения (с ожиданием)',
+    totalTimeNoWait 'Суммарное время выполнения',
+    totalJavaTime 'Суммарное время выполнения Java',
+    totalSQLTime 'Суммарное время выполнения SQL',
+    inherentTimeNoWait 'Внутреннее время выполнения',
+    inherentJavaTime 'Внутреннее время выполнения Java',
+    inherentSQLTime 'Внутреннее время выполнения SQL',
+    totalUserInteractionTime 'Суммарное время ожидания действия пользователя',
+    minTime 'Минимальное время выполнения',
+    maxTime 'Максимальное время выполнения',
+    averageTime 'Среднее время выполнения',
+    averageSquaredTime 'Среднее квадратичное времени выполнения'
+}
+
+FORM profilerIndex 'Номенклатура'
+    OBJECTS f=ProfilerIndex
+    PROPERTIES(f) staticCaption READONLY
+    DIALOG ProfilerIndex OBJECT f
+;
+
+DESIGN profilerIndex {
+    PROPERTY (staticCaption(f)){caption = 'Наименование'; }
+}
+
+active 'Вкл.' = DATA LOCAL BOOLEAN (ProfilerIndex);
+order  = DATA LOCAL ProfilerIndex ();
+nameOrder 'Сортировка' = staticCaption(order());
+
+value 'Значение показателя'(ProfileObject p1, ProfileObject p2, User u, ProfileForm f, ProfilerIndex pi) = CASE EXCLUSIVE 
+    WHEN pi == ProfilerIndex.callCount THEN callCount(p1, p2, u, f)
+    WHEN pi == ProfilerIndex.totalTime THEN NUMERIC[20,3](totalTime(p1, p2, u, f)) / 1000000
+    WHEN pi == ProfilerIndex.totalSQLTime THEN NUMERIC[20,3](totalSQLTime(p1, p2, u, f)) / 1000000
+    WHEN pi == ProfilerIndex.totalUserInteractionTime THEN NUMERIC[20,3](totalUserInteractionTime(p1, p2, u, f)) / 1000000
+    WHEN pi == ProfilerIndex.minTime THEN NUMERIC[20,3](minTime(p1, p2, u, f)) / 1000000
+    WHEN pi == ProfilerIndex.maxTime THEN NUMERIC[20,3](maxTime(p1, p2, u, f)) / 1000000
+    WHEN pi == ProfilerIndex.averageTime THEN NUMERIC[20,3](totalTime(p1, p2, u, f)) / callCount(p1, p2, u, f) / 1000000
+    WHEN pi == ProfilerIndex.averageSquaredTime THEN NUMERIC[20,3](sqrt(squaresSum(p1, p2, u, f) / callCount(p1, p2, u, f)) / 1000000)
+    WHEN pi == ProfilerIndex.totalTimeNoWait THEN NUMERIC[20,3](totalTime(p1, p2, u, f) (-) totalUserInteractionTime(p1, p2, u, f)) / 1000000
+    WHEN pi == ProfilerIndex.totalJavaTime THEN NUMERIC[20,3](totalTime(p1, p2, u, f) (-) totalUserInteractionTime(p1, p2, u, f) (-) totalSQLTime(p1, p2, u, f)) / 1000000;
+    
+order 'Порядок'(ProfileObject p1, ProfileObject p2, User u, ProfileForm f) = value(p1, p2, u, f, order());
 
 dataInFilter 'Отм' = DATA LOCAL BOOLEAN (User);
 inFilter 'Отм' = DATA LOCAL BOOLEAN (UserRole);
-inFilter 'Отм' = OVERRIDE [=GROUP SUM 1 IF in(User u, UserRole r) AND inFilter(r) BY u](User u) > 0, inFilter(mainRole(u)), dataInFilter(u);
+overFilter 'Отм' = OVERRIDE [=GROUP SUM 1 IF in(User u, UserRole r) AND inFilter(r) BY u](User u) > 0, inFilter(mainRole(u)), dataInFilter(u);
+inFilter 'Отм' (User u) = OVERRIDE NOT [=GROUP SUM 1 IF overFilter(User u)]() AND u IS User, overFilter(u);
+background(User u) = IF inFilter(u) THEN RGB(220,220,220);
 
-inFilter 'Отм' = DATA LOCAL BOOLEAN (ProfileForm);
+dataFilter 'Отм' = DATA LOCAL BOOLEAN (ProfileForm);
+countDataFilterForm = GROUP SUM 1 IF dataFilter(ProfileForm f);
+inFilter 'Отм' (ProfileForm f) = OVERRIDE f IS ProfileForm AND NOT countDataFilterForm(), dataFilter(f);
+background(ProfileForm u) = IF inFilter(u) THEN RGB(220,220,220);
 
 inFilter 'Отм' (User u, ProfileForm f) = inFilter(u) AND inFilter(f);
 
-callCount 'Количество вызовов' = GROUP SUM totalTimeNoWait(ProfileObject down, ProfileObject up, User u, ProfileForm f) IF inFilter(u, f) BY up, down;
+link 'Количество вызовов' = GROUP SUM callCount(ProfileObject down, ProfileObject up, User u, ProfileForm f) IF inFilter(u, f) BY up, down;
 
-totalTimeNoWait 'Время вызова' = GROUP SUM totalTimeNoWait(ProfileObject down, ProfileObject up, User u, ProfileForm f) IF inFilter(u, f) BY up, down;
-totalJavaTime 'Время Java вызова' = GROUP SUM totalJavaTime(ProfileObject down, ProfileObject up, User u, ProfileForm f) IF inFilter(u, f) BY up, down;
-totalSQLTime 'Время SQL вызова' = GROUP SUM mTotalSQLTime(ProfileObject down, ProfileObject up, User u, ProfileForm f) IF inFilter(u, f) BY up, down;        
+value 'Вызов' (ProfileObject up, ProfileObject down, ProfilerIndex pi) = CASE WHEN pi != ProfilerIndex.minTime AND pi != ProfilerIndex.maxTime AND pi != ProfilerIndex.averageTime AND pi != ProfilerIndex.averageSquaredTime  
+    THEN [=GROUP SUM value(ProfileObject down, ProfileObject up, User u, ProfileForm f, ProfilerIndex pi) IF inFilter(u, f) BY up, down, pi](up, down, pi);
+order 'Порядок'(ProfileObject p1, ProfileObject p2) = value(p1, p2, order());
 
-downTotalTimeNoWait 'Общее время' = GROUP SUM totalTimeNoWait(ProfileObject up, ProfileObject down) BY down;
-downTotalJavaTime 'Общее время Java' = GROUP SUM totalJavaTime(ProfileObject up, ProfileObject down) BY down;
-downTotalSQLTime 'Общее время SQL' = GROUP SUM totalSQLTime(ProfileObject up, ProfileObject down) BY down;
+downValue 'Общее' = GROUP SUM value(ProfileObject up, ProfileObject down, ProfilerIndex pi) BY down, pi;
+upValue 'Вызванных' = GROUP SUM value(ProfileObject up, ProfileObject down, ProfilerIndex pi) BY up, pi;
+value 'Значение показателя' (ProfileObject po, ProfilerIndex pi) = CASE 
+    WHEN pi == ProfilerIndex.callCount OR pi == ProfilerIndex.totalTime OR pi == ProfilerIndex.totalSQLTime OR pi == ProfilerIndex.totalUserInteractionTime OR pi == ProfilerIndex.totalTimeNoWait OR pi == ProfilerIndex.totalJavaTime 
+        THEN downValue(po, pi)
+    WHEN pi == ProfilerIndex.inherentTimeNoWait THEN downValue(po, ProfilerIndex.totalTimeNoWait) (-) upValue(po, ProfilerIndex.totalTimeNoWait)
+    WHEN pi == ProfilerIndex.inherentSQLTime THEN downValue(po, ProfilerIndex.totalSQLTime) (-) upValue(po, ProfilerIndex.totalSQLTime)
+    WHEN pi == ProfilerIndex.inherentJavaTime THEN downValue(po, ProfilerIndex.totalJavaTime) (-) upValue(po, ProfilerIndex.totalJavaTime);
+order 'Порядок' (ProfileObject po) = value(po, order());
 
-upTotalTimeNoWait 'Время вызванных' = GROUP SUM totalTimeNoWait(ProfileObject up, ProfileObject down) BY up;
-upTotalJavaTime 'Время вызванных Java' = GROUP SUM totalJavaTime(ProfileObject up, ProfileObject down) BY up;
-upTotalSQLTime 'Время вызванных SQL' = GROUP SUM totalSQLTime(ProfileObject up, ProfileObject down) BY up;
+//из-за того что не работают группы в колонки
+callCount(ProfileObject po) = value(po, ProfilerIndex.callCount);
+totalTime(ProfileObject po) = value(po,ProfilerIndex.totalTime);
+totalUserInteractionTime(ProfileObject po) = value(po,ProfilerIndex.totalUserInteractionTime);
+totalSQLTime(ProfileObject po) = value(po,ProfilerIndex.totalSQLTime);
+totalTimeNoWait(ProfileObject po) = value(po,ProfilerIndex.totalTimeNoWait);
+totalJavaTime(ProfileObject po) = value(po,ProfilerIndex.totalJavaTime);
+inherentSQLTime(ProfileObject po) = value(po,ProfilerIndex.inherentSQLTime);
+inherentTimeNoWait(ProfileObject po) = value(po,ProfilerIndex.inherentTimeNoWait);
+inherentJavaTime(ProfileObject po) = value(po,ProfilerIndex.inherentJavaTime);
 
-totalTimeNoWait 'Внутреннее время' (ProfileObject po) = downTotalTimeNoWait(po) (-) upTotalTimeNoWait(po);
-totalJavaTime 'Внутреннее время Java' (ProfileObject po) = downTotalJavaTime(po) (-) upTotalJavaTime(po);
-totalSQLTime 'Внутреннее время SQL' (ProfileObject po) = downTotalSQLTime(po) (-) upTotalSQLTime(po);
 
+isCallCount() = active(ProfilerIndex.callCount);
+isTotalTime() = active(ProfilerIndex.totalTime);
+isTotalSQLTime() = active(ProfilerIndex.totalSQLTime);
+isTotalUserInteractionTime() = active(ProfilerIndex.totalUserInteractionTime);
+isInherentTimeNoWait() = active(ProfilerIndex.inherentTimeNoWait);
+isInherentSQLTime() = active(ProfilerIndex.inherentSQLTime);
+isInherentJavaTime() = active(ProfilerIndex.inherentJavaTime);
+isTotalTimeNoWait() = active(ProfilerIndex.totalTimeNoWait);
+isTotalJavaTime() = active(ProfilerIndex.totalJavaTime);
+
+//по пользователям, формам
+downValue 'Общее' = GROUP SUM value(ProfileObject down, ProfileObject up, User u, ProfileForm f, ProfilerIndex pi) BY down, u, f, pi;
+upValue 'Вызванных' = GROUP SUM value(ProfileObject down, ProfileObject up, User u, ProfileForm f, ProfilerIndex pi) BY up, u, f, pi;
+value 'Внутреннее' (ProfileObject po, User u, ProfileForm f, ProfilerIndex pi) = downValue(po, u, f, pi) (-) upValue(po, u, f, pi);
+order 'Порядок' (ProfileObject po, User u, ProfileForm f) = value(po, u, f, order());
+
+//интерфейс
 dataSelectedTop = DATA LOCAL ProfileObject();
 selectedTop = OVERRIDE ProfileObject.top, dataSelectedTop();
 nameSelectedTop 'Действие' = VARSTRING[1000](text(selectedTop()));
 
-pathTo(ProfileObject a, ProfileObject b) = RECURSION a AS ProfileObject == b STEP TRUE IF totalTimeNoWait($b, b); // из a можно дойти в b
-pathFrom(ProfileObject a, ProfileObject b) = RECURSION a AS ProfileObject == b STEP TRUE IF totalTimeNoWait(b, $b); // из a можно дойти в b
+pathTo(ProfileObject a, ProfileObject b) = RECURSION a AS ProfileObject == b STEP TRUE IF link($b, b); // из a можно дойти в b
+pathFrom(ProfileObject a, ProfileObject b) = RECURSION a AS ProfileObject == b STEP TRUE IF link(b, $b); // из a можно дойти в b
 
 parent(ProfileObject down) = IF NOT down == selectedTop() THEN 
         OVERRIDE ProfileObject.top IF down IS ProfileObject, 
-            [=GROUP LAST ProfileObject up IF totalTimeNoWait(up, ProfileObject down) AND pathTo(selectedTop(), up) BY down ORDER totalTimeNoWait(up, down)](down);
+            [=GROUP LAST ProfileObject up IF link(up, ProfileObject down) AND pathTo(selectedTop(), up) BY down ORDER order(up, down)](down);
         
 child(ProfileObject up) = IF NOT up == selectedTop() THEN 
         OVERRIDE ProfileObject.top IF up IS ProfileObject,
-            [=GROUP LAST ProfileObject down IF totalTimeNoWait(ProfileObject up, down) AND pathFrom(selectedTop(), down) BY up ORDER totalTimeNoWait(up, down)](up);
+            [=GROUP LAST ProfileObject down IF link(ProfileObject up, down) AND pathFrom(selectedTop(), down) BY up ORDER order(up, down)](up);
         
 FORM profiler 'Профилировщик'
-    PROPERTIES() startProfiler, stopProfiler 
+    PROPERTIES() startProfiler, stopProfiler , nameOrder
   
-    OBJECTS hs = ProfileObject
-    PROPERTIES(hs) READONLY text, totalTimeNoWait, totalJavaTime, totalSQLTime, downTotalTimeNoWait, downTotalJavaTime, downTotalSQLTime
-    ORDER BY totalTimeNoWait(hs) DESC
-    FILTERS totalTimeNoWait(hs)
-    
-    OBJECTS tt = ProfileObject
-    PROPERTIES(tt) READONLY text, downTotalTimeNoWait, downTotalJavaTime, downTotalSQLTime, totalTimeNoWait, totalJavaTime, totalSQLTime
-    ORDER BY downTotalTimeNoWait(tt) DESC
-    FILTERS downTotalTimeNoWait(tt)
+//настройки
+    OBJECTS pi = ProfilerIndex
+    PROPERTIES (pi) active, staticCaption READONLY
 
-    OBJECTS g = (po1 = ProfileObject, po2 = ProfileObject, user = User, form = ProfileForm)
-    PROPERTIES(po2) READONLY text
-    PROPERTIES(po1) READONLY text 
-    PROPERTIES(user) READONLY name
-    PROPERTIES(form) READONLY canonicalName
-    PROPERTIES(po1, po2, user, form) READONLY mTotalTime, totalTimeNoWait, totalJavaTime, mTotalSQLTime,  mTotalUserInteractionTime, callCount, mMinTime, mMaxTime, mAverageTime, mAverageSquaredTime
-    
-    ORDER BY mTotalTime(po1, po2, user, form) DESC 
-    FILTERS callCount(po1, po2, user, form)
-    
     OBJECTS r = UserRole
     PROPERTIES (r) inFilter
     PROPERTIES (r) READONLY name
     
     OBJECTS u = User
-    PROPERTIES (u) inFilter
-    PROPERTIES (u) READONLY name, nameMainRole
+    PROPERTIES (u) BACKGROUND background(u) overFilter, name READONLY  , nameMainRole READONLY  
     
     OBJECTS f = ProfileForm
-    PROPERTIES (f) inFilter
-    PROPERTIES (f) READONLY canonicalName
+    PROPERTIES (f)  BACKGROUND background(f) dataFilter, canonicalName READONLY
+
+//список
+    OBJECTS ihs = ProfilerIndex FIXED GRID
+    FILTERS active(ihs)
+
+    OBJECTS ohs = ProfileObject
+    PROPERTIES READONLY text(ohs), order(ohs), value(ohs, ihs) COLUMNS (ihs) HEADER staticCaption(ihs)
+    ORDER BY order(ohs) DESC
+    FILTERS order(ohs)
+
+//raw data
+    OBJECTS i = ProfilerIndex FIXED GRID
+    FILTERS active(i)
     
+    OBJECTS g = (po1 = ProfileObject, po2 = ProfileObject, user = User, form = ProfileForm)
+    PROPERTIES(po2) READONLY text
+    PROPERTIES(po1) READONLY text 
+    PROPERTIES(user) READONLY name
+    PROPERTIES(form) READONLY canonicalName
+    PROPERTIES(po1, po2, user, form) READONLY order
+    PROPERTIES(po1, po2, user, form, i) READONLY value COLUMNS (i) HEADER staticCaption(i)
+    ORDER BY order(po1, po2, user, form) DESC 
+    FILTERS order(po1, po2, user, form)
+
+//дерево
     PROPERTIES nameSelectedTop() 
+    
     TREE pT down=ProfileObject PARENT parent
-    PROPERTIES (down) READONLY text, downTotalTimeNoWait, downTotalJavaTime, downTotalSQLTime, totalTimeNoWait, totalJavaTime, totalSQLTime
+    PROPERTIES (down) READONLY text, order, totalTimeNoWait SHOWIF isTotalTimeNoWait(), totalJavaTime SHOWIF isTotalJavaTime(), 
+                        totalSQLTime SHOWIF isTotalSQLTime(), inherentTimeNoWait SHOWIF isInherentTimeNoWait(), inherentJavaTime SHOWIF isInherentJavaTime()
+    ORDER BY order(down)
+    
+    OBJECTS iupToDown = ProfilerIndex FIXED GRID
+    FILTERS active(iupToDown)
+    
+    OBJECTS upToDown=ProfileObject
+    PROPERTIES (upToDown) READONLY text
+    PROPERTIES (down, upToDown) READONLY order
+    PROPERTIES (down, upToDown, iupToDown) READONLY value COLUMNS (iupToDown) HEADER staticCaption(iupToDown)
+    ORDER BY order(down, upToDown)
+    FILTERS order(down, upToDown)
+    FILTERGROUP  upToDown
+        FILTER 'Дополнительные' parent(upToDown) != down 'F6'
+    
+    OBJECTS idownWithUsers = ProfilerIndex FIXED GRID
+    FILTERS active(idownWithUsers)    
+    
+    OBJECTS downWithUsers = (downWD = ProfileObject, uWD = User, fWD = ProfileForm)
+    PROPERTIES READONLY text(downWD), name(uWD), canonicalName(fWD)
+    PROPERTIES (downWD, uWD, fWD) READONLY order
+    PROPERTIES (downWD, uWD, fWD, idownWithUsers) READONLY value
+    FILTERS downWD == down, order(downWD, uWD, fWD)
+    
+   
     
     TREE pB up=ProfileObject PARENT child
-    PROPERTIES (up) READONLY text, downTotalTimeNoWait, downTotalJavaTime, downTotalSQLTime, totalTimeNoWait, totalJavaTime, totalSQLTime
+    PROPERTIES (up) READONLY text, order, totalTimeNoWait SHOWIF isTotalTimeNoWait(), totalJavaTime SHOWIF isTotalJavaTime(), 
+                             totalSQLTime SHOWIF isTotalSQLTime(), inherentTimeNoWait SHOWIF isInherentTimeNoWait(), inherentJavaTime SHOWIF isInherentJavaTime()
+    ORDER BY order(up)
+    
+    OBJECTS idownToUp = ProfilerIndex FIXED GRID
+    FILTERS active(iupToDown)
+    
+    OBJECTS downToUp=ProfileObject
+    PROPERTIES (downToUp) READONLY text
+    PROPERTIES (downToUp, up) READONLY order
+    PROPERTIES (downToUp, up, iupToDown) READONLY value COLUMNS (idownToUp) HEADER staticCaption(idownToUp)
+    ORDER BY order(downToUp, up)
+    FILTERS order(downToUp, up)
+    FILTERGROUP  downToUp
+        FILTER 'Дополнительные' child(downToUp) != up 'F6'
+    
 ;
 
 DESIGN profiler {
@@ -176,32 +289,48 @@ DESIGN profiler {
     NEW tab {
         type = TABBED ;
         fill = 1;
-        NEW options {
+        NEW first {
             caption = 'Настройки';
-            type = SPLITH;
-            NEW user{
-                fill = 1;
-                MOVE r.box;
-                MOVE u.box;        
+            MOVE PROPERTY (startProfiler());
+            MOVE PROPERTY (stopProfiler());
+            MOVE PROPERTY (nameOrder());
+            MOVE pi.box{fill = 1;};
+            NEW options {
+                fill = 2;
+                type = SPLITH;
+                NEW user {
+                    fill = 1;
+                    MOVE r.box;
+                    MOVE u.box;        
+                }
+                MOVE f.box{fill = 1;};
             }
-            MOVE f.box;
         }
         NEW hotSpots {
-            caption = 'Hot spots';
-            MOVE hs.box;
-        }
-        NEW totalTime {
-            caption = 'Total time';
-            MOVE tt.box;
+            caption = 'Список вызовов';
+            MOVE ohs.box;
         }
         NEW call {
-            caption = 'Call graph';
+            caption = 'Дерево вызовов';
             MOVE PROPERTY (nameSelectedTop());
             NEW split {
                 type = SPLITH;
                 fill = 1;
-                MOVE pT.tree.box;
-                MOVE pB.tree.box;
+                NEW pT{
+                    type = SPLITV;
+                    MOVE pT.tree.box{fill = 2;};
+                    NEW tabDownUsers{
+                        type = TABBED;
+                        fill = 1;
+                        MOVE upToDown.box {caption = 'Все вызовы';};
+                        MOVE downWithUsers.box {caption = 'По пользователям';};
+                    }
+                }
+                NEW pB {
+                    type = SPLITV;
+                    MOVE pB.tree.box{fill = 2;};
+                    MOVE downToUp.box{fill = 1;};
+                }
             }
         }
         NEW raw {
@@ -209,8 +338,6 @@ DESIGN profiler {
             MOVE g.box;
         }
     }
-    MOVE PROPERTY (startProfiler());
-    MOVE PROPERTY (stopProfiler());
     MOVE functions.box;
 }
 
