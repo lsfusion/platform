@@ -12,6 +12,7 @@ public class DiscountCardDaemonTask extends AbstractDaemonTask implements Serial
     public static final String SCANNER_SID = "SCANNER";
     //public static final String CARD_SID = "CARD";
     private static boolean recording;
+    private static boolean isNew;
     private static String input = "";
 
     public DiscountCardDaemonTask() {
@@ -30,16 +31,20 @@ public class DiscountCardDaemonTask extends AbstractDaemonTask implements Serial
     @Override
     public boolean dispatchKeyEvent(KeyEvent e) {
         if(e.getID() == KeyEvent.KEY_PRESSED) {
-            if(e.getKeyChar() == ';' || e.getKeyChar() == 'ж') {
-                recording = true;
+            if(e.getKeyChar() == ';' || e.getKeyChar() == 'ж' || e.getKeyChar() == '%') {
+                if(!recording) {
+                    recording = true;
+                    isNew = e.getKeyChar() == '%';
+                }
                 e.consume();
             }
             else if(e.getKeyChar() == '\n') {
                 recording = false;
                 if(input.length() > 2 && input.charAt(input.length() - 2) == 65535
                         && ((input.charAt(input.length() - 1) == '?') || input.charAt(input.length() - 1) == ',')) {
-                    ServerLoggers.systemLogger.info(input.substring(0, input.length() - 2));
-                    eventBus.fireValueChanged(SCANNER_SID, input.substring(0, input.length() - 2));
+                    input = isNew && input.startsWith("70833700") ? "70833700" : input.substring(0, input.length() - 2);
+                    ServerLoggers.systemLogger.info(input);
+                    eventBus.fireValueChanged(SCANNER_SID, input);
                     input = "";
                     e.consume();
                 }
