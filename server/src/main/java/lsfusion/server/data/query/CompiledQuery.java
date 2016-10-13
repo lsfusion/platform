@@ -38,6 +38,7 @@ import lsfusion.server.data.where.AbstractWhere;
 import lsfusion.server.data.where.CheckWhere;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.form.navigator.SQLSessionUserProvider;
+import lsfusion.server.session.DataSession;
 import lsfusion.server.session.PropertyChange;
 
 import java.sql.SQLException;
@@ -1069,7 +1070,8 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                     for(int i=0,size=values.size();i<size;i++) {
                         ParseValue value = values.get(i);
                         String paramValue = params.get(value);
-                        if(!value.getParseInterface().isSafeString() || (noDynamicSQL && !(value instanceof StaticValueExpr))) {
+                        // в данном случае опасно проверять на safeString, так как при перекомпиляции может быть другое значение не safe и будет падать ошибка, плюс те же вопросы с локализацией
+                        if(!value.isAlwaysSafeString() || (noDynamicSQL && !(value instanceof StaticValueExpr))) {
                             outerParams = (outerParams.length() == 0 ? "" : outerParams + "," ) + paramValue;
                             mParamTypes.add(value.getFunctionType());
                             paramValue = syntax.getParamUsage(mParamTypes.size());
@@ -1643,10 +1645,12 @@ public class CompiledQuery<K,V> extends ImmutableObject {
         return query;
     }
     
-    private final static GetValue<ParseInterface, ParseValue> GETPARSE = new GetValue<ParseInterface, ParseValue>() {
-        public ParseInterface getMapValue(ParseValue value) {
-            return value.getParseInterface();
-        }
+    private static GetValue<ParseInterface, ParseValue> GETPARSE(final QueryEnvironment env) {
+        return new GetValue<ParseInterface, ParseValue>() {
+            public ParseInterface getMapValue(ParseValue value) {
+                return value.getParseInterface(env);
+            }
+        };
     };
     public ImMap<String, ParseInterface> getQueryParams(QueryEnvironment env) {
         return getQueryParams(env, 0);
@@ -1670,7 +1674,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                 return SystemProperties.isDebug;
             }
         });
-        return mMapValues.immutable().addExcl(params.reverse().mapValues(GETPARSE));
+        return mMapValues.immutable().addExcl(params.reverse().mapValues(GETPARSE(env)));
     }
 
     private String fillSelect(final ImRevMap<String, String> params, Result<ImMap<K, String>> fillKeySelect, Result<ImMap<V, String>> fillPropertySelect, Result<ImCol<String>> fillWhereSelect, Result<ImMap<String, SQLQuery>> fillSubQueries, MStaticExecuteEnvironment fillEnv) {

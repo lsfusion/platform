@@ -193,7 +193,7 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
         return SetFact.<Value>singleton(this);
     }
 
-    public ParseInterface getParseInterface() {
+    public ParseInterface getParseInterface(QueryEnvironment env) {
         return new StringParseInterface() {
             public String getString(SQLSyntax syntax, StringBuilder envString, boolean usedRecursion) {
                 return syntax.getQueryName(name, usedRecursion ? getFunctionType() : null, envString, usedRecursion);
@@ -205,7 +205,12 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
             }
         };
     }
-    
+
+    @Override
+    public boolean isAlwaysSafeString() {
+        return true;
+    }
+
     public TypeStruct getFunctionType() {
         return new TypeStruct(keys, properties);
     }

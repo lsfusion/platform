@@ -169,7 +169,13 @@ public class StringClass extends DataClass {
     }
 
     public boolean isSafeString(Object value) {
-        return !value.toString().contains("'") && !value.toString().contains("\\");
+        if(value == null)
+            return false;
+
+        assert value instanceof String;
+        String string = value.toString();
+        assert !LocalizedString.needToBeLocalized(string);
+        return !string.contains("'") && !string.contains("\\");
     }
 
     public String read(Object value) {

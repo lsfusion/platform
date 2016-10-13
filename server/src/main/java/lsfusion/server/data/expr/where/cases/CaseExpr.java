@@ -15,6 +15,7 @@ import lsfusion.server.caches.hash.HashContext;
 import lsfusion.server.classes.ConcreteClass;
 import lsfusion.server.classes.DataClass;
 import lsfusion.server.classes.ValueClassSet;
+import lsfusion.server.data.QueryEnvironment;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.IsClassType;
@@ -260,9 +261,9 @@ public class CaseExpr extends Expr {
     }
 
     @Override
-    public ObjectValue getObjectValue() {
+    public ObjectValue getObjectValue(QueryEnvironment env) {
         if(cases.size()==0)
             return NullValue.instance;
-        return super.getObjectValue();
+        return super.getObjectValue(env);
     }
 }

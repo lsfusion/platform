@@ -11,6 +11,7 @@ import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.server.caches.ManualLazy;
 import lsfusion.server.caches.hash.HashContext;
 import lsfusion.server.classes.*;
+import lsfusion.server.data.QueryEnvironment;
 import lsfusion.server.data.Value;
 import lsfusion.server.data.query.CompileSource;
 import lsfusion.server.data.query.JoinData;
@@ -24,7 +25,7 @@ import lsfusion.server.logics.ObjectValue;
 import java.math.BigInteger;
 
 
-public class ValueExpr extends StaticExpr<ConcreteClass> implements Value {
+public class ValueExpr extends AbstractValueExpr<ConcreteClass> implements Value {
 
     public final Object object;
 
@@ -132,7 +133,7 @@ public class ValueExpr extends StaticExpr<ConcreteClass> implements Value {
         return ((ImSet<Value>)removeStatic(col1)).containsAll(removeStatic(col2));
     }
 
-    public TypeObject getParseInterface() {
+    public TypeObject getParseInterface(QueryEnvironment env) {
         return new TypeObject(object, objectClass.getType());
     }
 
@@ -157,7 +158,7 @@ public class ValueExpr extends StaticExpr<ConcreteClass> implements Value {
     }
 
     @Override
-    public ObjectValue getObjectValue() {
+    public ObjectValue getObjectValue(QueryEnvironment env) {
         return getDataObject();
     }
 

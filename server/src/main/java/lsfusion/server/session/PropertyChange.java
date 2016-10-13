@@ -205,16 +205,16 @@ public class PropertyChange<T extends PropertyInterface> extends AbstractInnerCo
         return getQuery().join(joinImplement);
     }
 
-    public Pair<ImMap<T, DataObject>, ObjectValue> getSimple() {
+    public Pair<ImMap<T, DataObject>, ObjectValue> getSimple(QueryEnvironment env) {
         ObjectValue exprValue;
-        if(mapKeys.isEmpty() && where.isTrue() && (exprValue = expr.getObjectValue())!=null)
+        if(mapKeys.isEmpty() && where.isTrue() && (exprValue = expr.getObjectValue(env))!=null)
             return new Pair<>(mapValues, exprValue);
         return null;
     }
 
     public ImOrderMap<ImMap<T, DataObject>, ImMap<String, ObjectValue>> executeClasses(ExecutionEnvironment env) throws SQLException, SQLHandledException {
         ObjectValue exprValue;
-        if(mapKeys.isEmpty() && where.isTrue() && (exprValue = expr.getObjectValue())!=null)
+        if(mapKeys.isEmpty() && where.isTrue() && (exprValue = expr.getObjectValue(env.getQueryEnv()))!=null)
             return MapFact.singletonOrder(mapValues, MapFact.<String, ObjectValue>singleton("value", exprValue));
 
         return getQuery().executeClasses(env);
@@ -222,7 +222,7 @@ public class PropertyChange<T extends PropertyInterface> extends AbstractInnerCo
 
     public ModifyResult modifyRows(SinglePropertyTableUsage<T> table, SQLSession session, BaseClass baseClass, Modify type, QueryEnvironment queryEnv, OperationOwner owner, boolean updateClasses) throws SQLException, SQLHandledException {
         ObjectValue exprValue;
-        if(mapKeys.isEmpty() && where.isTrue() && (exprValue = expr.getObjectValue())!=null)
+        if(mapKeys.isEmpty() && where.isTrue() && (exprValue = expr.getObjectValue(queryEnv))!=null)
             return table.modifyRecord(session, mapValues, exprValue, type, owner);
         else
             return table.modifyRows(session, getQuery(), baseClass, type, queryEnv, updateClasses);
@@ -230,7 +230,7 @@ public class PropertyChange<T extends PropertyInterface> extends AbstractInnerCo
 
     public void writeRows(SinglePropertyTableUsage<T> table, SQLSession session, BaseClass baseClass, QueryEnvironment queryEnv, boolean updateClasses) throws SQLException, SQLHandledException {
         ObjectValue exprValue;
-        if(mapKeys.isEmpty() && where.isTrue() && (exprValue = expr.getObjectValue())!=null)
+        if(mapKeys.isEmpty() && where.isTrue() && (exprValue = expr.getObjectValue(queryEnv))!=null)
             table.writeRows(session, MapFact.singleton(mapValues, MapFact.singleton("value", exprValue)), queryEnv.getOpOwner());
         else
             table.writeRows(session, getQuery(), baseClass, queryEnv, updateClasses);

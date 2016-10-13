@@ -37,6 +37,7 @@ import org.apache.log4j.MDC;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public class ThreadLocalContext {
     private static final ThreadLocal<Context> context = new ThreadLocal<>();
@@ -329,4 +330,8 @@ public class ThreadLocalContext {
     public static String localize(String s) {
         return s == null ? null : get().localize(LocalizedString.create(s));
     } 
+
+    public static String localize(String s, Locale locale) {
+        return s == null ? null : get().localize(LocalizedString.create(s), locale);
+    }
 }

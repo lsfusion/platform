@@ -63,6 +63,9 @@ public abstract class LinkClass extends DataClass<String> {
     }
 
     public boolean isSafeString(Object value) {
+        if(value == null) // isAlwaysSafeString
+            return false;
+
         return !value.toString().contains("'") && !value.toString().contains("\\");
     }
 

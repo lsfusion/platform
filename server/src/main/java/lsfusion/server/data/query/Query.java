@@ -363,7 +363,7 @@ public class Query<K,V> extends IQuery<K,V> {
         return execute(form.session.sql, orders, selectTop, form.getQueryEnv());
     }
 
-    private ImOrderMap<ImMap<K, DataObject>, ImMap<V, ObjectValue>> executeSingle() { // оптимизация
+    private ImOrderMap<ImMap<K, DataObject>, ImMap<V, ObjectValue>> executeSingle(QueryEnvironment env) { // оптимизация
         if(where.isFalse())
             return MapFact.EMPTYORDER(); // иначе типы ключей не узнаем
 
@@ -375,7 +375,7 @@ public class Query<K,V> extends IQuery<K,V> {
         for(int i=0,size=mapKeys.size();i<size;i++) {
             BaseExpr keyValue = exprValues.get(mapKeys.getValue(i));
             ObjectValue objectValue;
-            if(keyValue!=null && (objectValue = keyValue.getObjectValue()) instanceof DataObject)
+            if(keyValue!=null && (objectValue = keyValue.getObjectValue(env)) instanceof DataObject)
                 mvKeyValues.mapValue(i, (DataObject) objectValue);
             else
                 return null;
@@ -384,8 +384,8 @@ public class Query<K,V> extends IQuery<K,V> {
         for(int i=0,size=properties.size();i<size;i++) {
             ObjectValue objectValue; BaseExpr propValue;
             Expr propExpr = properties.getValue(i);
-            if((objectValue = propExpr.getObjectValue())!=null ||
-                    ((propValue = exprValues.getObject(propExpr))!=null && (objectValue = propValue.getObjectValue())!=null))
+            if((objectValue = propExpr.getObjectValue(env))!=null ||
+                    ((propValue = exprValues.getObject(propExpr))!=null && (objectValue = propValue.getObjectValue(env))!=null))
                 mvPropValues.mapValue(i, objectValue);
             else
                 return null;
@@ -401,7 +401,7 @@ public class Query<K,V> extends IQuery<K,V> {
         return BaseUtils.immutableCast(getMapDataObjectValues);
     }
     public ImOrderMap<ImMap<K, Object>, ImMap<V, Object>> execute(SQLSession session, ImOrderMap<V, Boolean> orders, int selectTop, QueryEnvironment env) throws SQLException, SQLHandledException {
-        ImOrderMap<ImMap<K, DataObject>, ImMap<V, ObjectValue>> singleResult = executeSingle(); // оптимизация
+        ImOrderMap<ImMap<K, DataObject>, ImMap<V, ObjectValue>> singleResult = executeSingle(env); // оптимизация
         if(singleResult!=null)
             return singleResult.mapOrderKeyValues(Query.<K, DataObject>getMapDataObjectValues(), Query.<V, ObjectValue>getMapDataObjectValues());
 
@@ -467,7 +467,7 @@ public class Query<K,V> extends IQuery<K,V> {
     }
 
     public ImOrderMap<ImMap<K, DataObject>, ImMap<V, ObjectValue>> executeClasses(SQLSession session, ImOrderMap<? extends V, Boolean> orders, int selectTop, final BaseClass baseClass, QueryEnvironment env) throws SQLException, SQLHandledException {
-        ImOrderMap<ImMap<K, DataObject>, ImMap<V, ObjectValue>> singleResult = executeSingle(); // оптимизация
+        ImOrderMap<ImMap<K, DataObject>, ImMap<V, ObjectValue>> singleResult = executeSingle(env); // оптимизация
         if(singleResult!=null)
             return singleResult;
 

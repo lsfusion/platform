@@ -335,6 +335,22 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         }
     }
 
+    private static class WeakLocaleController implements LocaleController { // чтобы помочь сборщику мусора и устранить цикл
+        WeakReference<RemoteNavigator> weakThis;
+
+        private WeakLocaleController(RemoteNavigator navigator) {
+            this.weakThis = new WeakReference<>(navigator);
+        }
+
+        @Override
+        public Locale getLocale() {
+            RemoteNavigator remoteNavigator = weakThis.get();
+            if(remoteNavigator != null)
+                return remoteNavigator.getLocale();
+            return Locale.getDefault();
+        }
+    }
+
     private static class WeakComputerController implements ComputerController { // чтобы помочь сборщику мусора и устранить цикл
         WeakReference<RemoteNavigator> weakThis;
 
@@ -470,7 +486,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
     }
     
     private DataSession createSession() throws SQLException {
-        DataSession session = dbManager.createSession(sql, new WeakUserController(this), new WeakComputerController(this), new WeakFormController(this), new WeakConnectionController(this), new WeakTimeoutController(this), new WeakChangesUserProvider(changesSync), null);
+        DataSession session = dbManager.createSession(sql, new WeakUserController(this), new WeakComputerController(this), new WeakFormController(this), new WeakConnectionController(this), new WeakTimeoutController(this), new WeakChangesUserProvider(changesSync), new WeakLocaleController(this), null);
         sessions.add(session);
         return session;
     }
@@ -517,6 +533,14 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
 
     public LocalePreferences getLocalLocalePreferences() {
         return userLocalePreferences;
+    }
+
+    public Locale getLocale() {
+        LocalePreferences pref = getLocalLocalePreferences();
+        if (pref != null && pref.useClientLocale && pref.language != null) {
+            return new Locale(pref.language, pref.country == null ? "" : pref.country);
+        }
+        return Locale.getDefault();
     }
 
     public void gainedFocus(FormInstance<T> form) {

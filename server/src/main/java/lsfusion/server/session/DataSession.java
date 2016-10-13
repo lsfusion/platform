@@ -473,6 +473,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     public final ConnectionController connection;
     public final UserController user;
     public final ChangesController changes;
+    public final LocaleController locale;
 
     public String prevFormCanonicalName = null;
 
@@ -501,7 +502,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     }
 
     public DataSession(SQLSession sql, final UserController user, final ComputerController computer, final FormController form, final ConnectionController connection,
-                       TimeoutController timeout, ChangesController changes, IsServerRestartingController isServerRestarting, BaseClass baseClass,
+                       TimeoutController timeout, ChangesController changes, LocaleController locale, IsServerRestartingController isServerRestarting, BaseClass baseClass,
                        ConcreteCustomClass sessionClass, LCP currentSession, SQLSession idSession, ImOrderMap<ActionProperty, SessionEnvEvent> sessionEvents,
                        OperationOwner upOwner) throws SQLException {
         this.sql = sql;
@@ -517,6 +518,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         this.connection = connection;
         this.timeout = timeout;
         this.changes = changes;
+        this.locale = locale;
 
         this.sessionEvents = sessionEvents;
 
@@ -534,7 +536,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         return createSession(sql);
     }
     public DataSession createSession(SQLSession sql) throws SQLException {
-        return new DataSession(sql, user, computer, form, connection, timeout, changes, isServerRestarting, baseClass, sessionClass, currentSession, idSession, sessionEvents, null);
+        return new DataSession(sql, user, computer, form, connection, timeout, changes, locale, isServerRestarting, baseClass, sessionClass, currentSession, idSession, sessionEvents, null);
     }
 
     // по хорошему надо было в класс оформить чтоб избежать ошибок, но абстракция получится слишком дырявой
@@ -1302,9 +1304,9 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     }
 
     // для оптимизации
-    public DataChanges getUserDataChanges(DataProperty property, PropertyChange<ClassPropertyInterface> change) throws SQLException, SQLHandledException {
+    public DataChanges getUserDataChanges(DataProperty property, PropertyChange<ClassPropertyInterface> change, QueryEnvironment env) throws SQLException, SQLHandledException {
         Pair<ImMap<ClassPropertyInterface, DataObject>, ObjectValue> simple;
-        if((simple = change.getSimple())!=null) {
+        if((simple = change.getSimple(env))!=null) {
             if(IsClassProperty.fitClasses(getCurrentClasses(simple.first), property.value,
                                           simple.second instanceof DataObject ? getCurrentClass((DataObject) simple.second) : null))
                 return new DataChanges(property, change);
@@ -2123,6 +2125,11 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                 return ParseInterface.empty;
             }
 
+            @Override
+            public Locale getLocale() {
+                return Locale.getDefault();
+            }
+
             public ParseInterface getIsServerRestarting() {
                 return ParseInterface.empty;
             }
@@ -2186,6 +2193,11 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             } else {
                 return ((NullValue)currentConnection).getParse(ObjectType.instance);
             }
+        }
+
+        @Override
+        public Locale getLocale() {
+            return locale.getLocale();
         }
 
         public int getTransactTimeout() {

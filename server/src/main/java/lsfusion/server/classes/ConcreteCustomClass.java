@@ -268,11 +268,6 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
         return new DataObject(getObjectID(name), this);
     }
 
-    @Override
-    public String getString(Object value, SQLSyntax syntax) {
-        return getDataObject((String)value).getString(syntax);
-    }
-
     public ImSet<ConcreteCustomClass> getSetConcreteChildren() {
         return SetFact.singleton(this);
     }

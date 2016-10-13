@@ -82,7 +82,8 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
         this(ig, IntegerClass.instance);
     }
 
-    public boolean isString(SQLSyntax syntax) {
+    // ветки для insert'ов
+    public boolean isSafeString(SQLSyntax syntax) {
         return getType().isSafeString(object);
     }
     public String getString(SQLSyntax syntax) {

@@ -71,11 +71,7 @@ public class RemoteNavigatorContext extends AbstractContext {
 
     @Override
     public Locale getLocale() {
-        LocalePreferences pref = navigator.getLocalLocalePreferences();
-        if (pref != null && pref.useClientLocale && pref.language != null) {
-            return new Locale(pref.language, pref.country == null ? "" : pref.country);
-        } 
-        return Locale.getDefault();
+        return navigator.getLocale();
     }
     
     @Override

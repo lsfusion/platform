@@ -36,7 +36,7 @@ public abstract class ExecutionEnvironment extends MutableClosedObject<Object> {
         
         DataChanges userDataChanges = null;
         if(property instanceof DataProperty) // оптимизация
-            userDataChanges = getSession().getUserDataChanges((DataProperty)property, (PropertyChange<ClassPropertyInterface>) change);
+            userDataChanges = getSession().getUserDataChanges((DataProperty)property, (PropertyChange<ClassPropertyInterface>) change, getQueryEnv());
         change(userDataChanges != null ? userDataChanges : property.getDataChanges(change, getModifier()));
     }
 

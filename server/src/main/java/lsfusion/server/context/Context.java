@@ -66,5 +66,6 @@ public interface Context {
     DataObject getConnection();
     
     String localize(LocalizedString s);
+    String localize(LocalizedString s, Locale locale);
     Locale getLocale();
 }

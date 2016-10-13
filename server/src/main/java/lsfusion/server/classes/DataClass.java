@@ -20,6 +20,7 @@ import lsfusion.server.data.expr.StaticValueExpr;
 import lsfusion.server.data.expr.ValueExpr;
 import lsfusion.server.data.expr.formula.FormulaClass;
 import lsfusion.server.data.expr.query.Stat;
+import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.AbstractType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
@@ -318,4 +319,7 @@ public abstract class DataClass<T> extends AbstractType<T> implements StaticClas
     public boolean isValueZero(T value) {
         return false;
     }
+
+    public abstract String getString(Object value, SQLSyntax syntax);
+
 }

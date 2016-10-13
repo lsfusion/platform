@@ -27,7 +27,7 @@ public abstract class ObjectValue<T extends ObjectValue<T>> extends AbstractValu
 
     public abstract String getString(SQLSyntax syntax);
 
-    public abstract boolean isString(SQLSyntax syntax);
+    public abstract boolean isSafeString(SQLSyntax syntax);
 
     public abstract Expr getExpr();
     public abstract Expr getStaticExpr();

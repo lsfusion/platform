@@ -9,6 +9,7 @@ import lsfusion.server.caches.OuterContext;
 import lsfusion.server.caches.hash.HashContext;
 import lsfusion.server.classes.ConcreteClass;
 import lsfusion.server.classes.ValueClassSet;
+import lsfusion.server.data.QueryEnvironment;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.IsClassType;
@@ -116,7 +117,7 @@ public class NullExpr extends Expr {
         return new HashSet<>();
     }
 
-    public ObjectValue getObjectValue() {
+    public ObjectValue getObjectValue(QueryEnvironment env) {
         return NullValue.instance;
     }
 

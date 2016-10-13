@@ -148,10 +148,13 @@ public abstract class AbstractContext implements Context {
 
     @Override
     public String localize(LocalizedString s) {
-        Locale locale = BaseUtils.nvl(getLocale(), Locale.getDefault());
+        return localize(s, getLocale());
+    }
+
+    public String localize(LocalizedString s, Locale locale) {
         return s.getString(locale, getLogicsInstance().getBusinessLogics().getLocalizer());
     }
-    
+
     public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, boolean isAdd, FormSessionScope sessionScope, ExecutionStack stack, boolean checkOnOk, boolean showDrop, boolean interactive, ImSet<FilterEntity> contextFilters, PropertyDrawEntity initFilterProperty, ImSet<PullChangeProperty> pullProps, boolean readonly) throws SQLException, SQLHandledException {
         DataSession newSession = sessionScope.createSession(session);
         try {

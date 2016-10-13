@@ -2188,7 +2188,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
             KeyField key = keyFields.getKey(i);
             insertString = (insertString.length() == 0 ? "" : insertString + ',') + key.getName(syntax);
             DataObject keyValue = keyFields.getValue(i);
-            if (keyValue.isString(syntax))
+            if (keyValue.isSafeString(syntax))
                 valueString = (valueString.length() == 0 ? "" : valueString + ',') + keyValue.getString(syntax);
             else {
                 String prm = "qxprm" + (paramNum++) + "nx";
@@ -2201,7 +2201,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
             PropertyField property = propFields.getKey(i);
             insertString = (insertString.length() == 0 ? "" : insertString + ',') + property.getName(syntax);
             ObjectValue fieldValue = propFields.getValue(i);
-            if (fieldValue.isString(syntax))
+            if (fieldValue.isSafeString(syntax))
                 valueString = (valueString.length() == 0 ? "" : valueString + ',') + fieldValue.getString(syntax);
             else {
                 String prm = "qxprm" + (paramNum++) + "nx";
@@ -2229,12 +2229,12 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         boolean needParam = false;
 
         for (int i=0,size=keyFields.size();i<size;i++)
-            if (!keyFields.getKey(i).type.isSafeString(keyFields.getValue(i))) {
+            if (!keyFields.getValue(i).isSafeString(syntax)) {
                 needParam = true;
             }
 
         for (int i=0,size=propFields.size();i<size;i++)
-            if (!propFields.getKey(i).type.isSafeString(propFields.getValue(i))) {
+            if (!propFields.getValue(i).isSafeString(syntax)) {
                 needParam = true;
             }
 

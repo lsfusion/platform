@@ -28,14 +28,14 @@ public class LocalizedString {
     public static final char CLOSE_CH = '}';
     
     private final String source;
-    private boolean needToBeLocalized = true;
+    private boolean needToBeLocalized;
     
     protected LocalizedString(String source) {
-        assert source != null;
-        this.source = source;
-        if (source.indexOf('{') == -1) {
-            needToBeLocalized = false;        
-        }
+        this(source, needToBeLocalized(source));
+    }
+
+    public static boolean needToBeLocalized(String source) {
+        return source.indexOf('{') != -1;
     }
 
     protected LocalizedString(String source, boolean needToBeLocalized) {

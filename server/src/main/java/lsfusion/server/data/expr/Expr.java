@@ -244,7 +244,7 @@ abstract public class Expr extends AbstractSourceJoin<Expr> {
         MExclMap<K, Expr> mMapExprValues = MapFact.<K, Expr>mExclMap(mapExprs.size());
         for(int i=0,size=mapExprs.size();i<size;i++) {
             Expr expr = mapExprs.getValue(i);
-            ObjectValue objectValue = expr.getObjectValue();
+            ObjectValue objectValue = expr.getObjectValue(env);
             if(objectValue!=null)
                 mMapValues.exclAdd(mapExprs.getKey(i), objectValue);
             else
@@ -265,7 +265,7 @@ abstract public class Expr extends AbstractSourceJoin<Expr> {
 
     public abstract Set<BaseExpr> getBaseExprs();
     
-    public ObjectValue getObjectValue() {
+    public ObjectValue getObjectValue(QueryEnvironment env) {
         return null;
     }
 

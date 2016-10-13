@@ -351,7 +351,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
                         return NullValue.instance;
                     }
                 },
-        new TimeoutController() {
+                new TimeoutController() {
                     public int getTransactionTimeout() {
                         return 0;
                     }
@@ -369,15 +369,19 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
                     public void unregisterForm(FormInstance form) {
                     }
+                }, new LocaleController() {
+                    public Locale getLocale() {
+                        return Locale.getDefault();
+                    }
                 }, upOwner
         );
     }
 
     public DataSession createSession(SQLSession sql, UserController userController, ComputerController computerController, FormController formController,
-                                     ConnectionController connectionController, TimeoutController timeoutController, ChangesController changesController, OperationOwner owner) throws SQLException {
+                                     ConnectionController connectionController, TimeoutController timeoutController, ChangesController changesController, LocaleController localeController, OperationOwner owner) throws SQLException {
         //todo: неплохо бы избавиться от зависимости на restartManager, а то она неестественна
         return new DataSession(sql, userController, computerController, formController, connectionController,
-                timeoutController, changesController, new IsServerRestartingController() {
+                timeoutController, changesController, localeController, new IsServerRestartingController() {
                                    public boolean isServerRestarting() {
                                        return restartManager.isPendingRestart();
                                    }
