@@ -208,27 +208,31 @@ public abstract class DefaultFormsController implements FormsController {
     public void selectTab(String formID, String tabID) {
         FormDockable.ContentWidget selectedFormWidget = (FormDockable.ContentWidget) tabsPanel.getWidget(tabsPanel.getSelectedIndex());
         GFormLayout formLayout = ((GFormController) selectedFormWidget.getContent()).getFormLayout();
-        Object[] parent = findContainerParent(formLayout.getMainContainer(), tabID);
+        Object[] parent = findContainerParent(formLayout, formLayout.getMainContainer(), tabID);
         if (parent != null) {
-            GAbstractContainerView view = formLayout.getFormContainer((GContainer) parent[0]);
+            GAbstractContainerView view = (GAbstractContainerView) parent[0];
             if (view instanceof TabbedContainerView) {
                 ((TabbedContainerView) view).selectTab((Integer) parent[1]);
             }
         }
     }
 
-    private Object[] findContainerParent(GContainer parent, String tabID) {
+    private Object[] findContainerParent(GFormLayout formLayout, GContainer parent, String tabID) {
+        GAbstractContainerView view = formLayout.getFormContainer(parent);
+        int c = 0;
         for (int i = 0; i < parent.children.size(); i++) {
             GComponent child = parent.children.get(i);
             if (child instanceof GContainer) {
                 if (child.sID != null && child.sID.equals(tabID))
-                    return new Object[] {parent, i};
+                    return new Object[]{view, c};
                 else {
-                    Object[] result = findContainerParent((GContainer) child, tabID);
+                    Object[] result = findContainerParent(formLayout, (GContainer) child, tabID);
                     if (result != null)
                         return result;
                 }
             }
+            if (view instanceof TabbedContainerView && ((TabbedContainerView) view).isTabVisible(i))
+                c++;
         }
         return null;
     }

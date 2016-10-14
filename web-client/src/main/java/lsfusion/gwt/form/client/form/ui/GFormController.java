@@ -927,8 +927,6 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     }
 
     public void activateTab(String formID, String tabID) {
-        int a = 5;
-        a++;
         formsController.selectTab(formID, tabID);
 //        GPropertyDraw propertyDraw = form.getProperty(propertyDrawId);
 //        if (propertyDraw != null && controllers.containsKey(propertyDraw.groupObject)) {

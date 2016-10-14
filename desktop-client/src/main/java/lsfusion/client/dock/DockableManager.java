@@ -108,8 +108,9 @@ public class DockableManager {
     }
 
     public void activateTab(String formSID, String tabSID) throws IOException, ClassNotFoundException, JRException {
-        ClientFormDockable page = (ClientFormDockable) control.getCDockable(control.getCDockableCount() - forms.getFormsList().size() + forms.getFormsList().indexOf(formSID));
-        page.activateTab(tabSID);
+        CDockable page = control.getCDockable(control.getCDockableCount() - forms.getFormsList().size() + forms.getFormsList().indexOf(formSID));
+        if(page instanceof ClientFormDockable)
+            ((ClientFormDockable) page).activateTab(tabSID);
     }
 
     public void openModalForm(String canonicalName, String formSID, ClientNavigator navigator, boolean showFullScreen) throws IOException, ClassNotFoundException {

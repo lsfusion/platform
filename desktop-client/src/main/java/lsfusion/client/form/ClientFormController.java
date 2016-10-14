@@ -230,19 +230,26 @@ public class ClientFormController implements AsyncListener {
     public void activateTab(String tabSID) {
         ClientContainer parentContainer = form.findParentContainerBySID(tabSID);
         if(parentContainer != null && parentContainer.isTabbed()) {
-            Map<String, Integer> tabMap = getTabMap(parentContainer);
             ClientContainerView containerView = getLayout().getContainerView(parentContainer);
-            if(containerView instanceof TabbedClientContainerView)
-                ((TabbedClientContainerView)containerView).activateTab(tabMap.get(tabSID));
+            if(containerView instanceof TabbedClientContainerView) {
+                Map<String, Integer> tabMap = getTabMap((TabbedClientContainerView) containerView, parentContainer);
+                ((TabbedClientContainerView) containerView).activateTab(tabMap.get(tabSID));
+            }
         }
     }
 
-    private Map<String, Integer> getTabMap(ClientContainer component) {
+    private Map<String, Integer> getTabMap(TabbedClientContainerView containerView, ClientContainer component) {
         Map<String, Integer> tabMap = new HashMap<>();
         List<ClientComponent> tabs = component.getChildren();
-        if (tabs != null)
-            for (int i = 0; i < tabs.size(); i++)
-                tabMap.put(tabs.get(i).getSID(), i);
+        if (tabs != null) {
+            int c = 0;
+            for (int i = 0; i < tabs.size(); i++) {
+                ClientComponent tab = tabs.get(i);
+                if (containerView.isTabVisible(tab)) {
+                    tabMap.put(tab.getSID(), c++);
+                }
+            }
+        }
         return tabMap;
     }
 

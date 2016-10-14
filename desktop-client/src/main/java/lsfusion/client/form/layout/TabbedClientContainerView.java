@@ -227,4 +227,8 @@ public class TabbedClientContainerView extends AbstractClientContainerView {
             removeTabAt(index);
         }
     }
+
+    public boolean isTabVisible(ClientComponent tab) {
+        return visibleChildren.contains(tab);
+    }
 }
