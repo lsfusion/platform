@@ -43,7 +43,11 @@ public class LocalizedString {
         this.source = source;
         this.needToBeLocalized = needToBeLocalized;
     }
-    
+
+    public boolean isNeedToBeLocalized() {
+        return needToBeLocalized;
+    }
+
     /** Предполагается, что getString вызывается для строки, удовлетворяющей checkLocalizedStringFormat,
      *  поэтому не производятся проверки на соответствие формату
      */

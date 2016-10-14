@@ -339,10 +339,6 @@ public class DerivedProperty {
         return new CalcPropertyMapImplement<>(new ValueProperty(LocalizedString.create("sys"), value, valueClass), MapFact.<PropertyInterface, T>EMPTYREV());
     }
 
-    public static <T extends PropertyInterface> CalcPropertyMapImplement<?,T> createStatic(String value) {
-        return createStatic(value, StringClass.get(value.length()));
-    }
-
     public static <T extends PropertyInterface> CalcPropertyMapImplement<?,T> createNull() {
         return new CalcPropertyMapImplement<>(NullValueProperty.instance);
     }

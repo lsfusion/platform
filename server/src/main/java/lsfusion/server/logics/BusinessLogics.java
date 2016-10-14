@@ -973,7 +973,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             // и имя приходится создавать из канонического имени базового свойства, заменив спецсимволы на подчеркивания
             String setupPolicyActionName = PropertyCanonicalNameUtils.policyPropPrefix + PropertyCanonicalNameUtils.makeSafeName(propertyCN); 
             LAP<?> setupPolicyLAP = LM.addJoinAProp(LM.propertyPolicyGroup, LocalizedString.create("{logics.property.propertypolicy.action}"),
-                    setupPolicyForPropByCN, LM.addCProp(StringClass.get(propertyCN.length()), propertyCN));
+                    setupPolicyForPropByCN, LM.addCProp(StringClass.get(propertyCN.length()), LocalizedString.create(propertyCN, false)));
             
             ActionProperty setupPolicyAction = setupPolicyLAP.property;
             LM.makePropertyPublic(setupPolicyLAP, setupPolicyActionName, new ArrayList<ResolveClassSet>());

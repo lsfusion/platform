@@ -331,7 +331,7 @@ public class ThreadLocalContext {
         return s == null ? null : get().localize(LocalizedString.create(s));
     } 
 
-    public static String localize(String s, Locale locale) {
-        return s == null ? null : get().localize(LocalizedString.create(s), locale);
+    public static String localize(LocalizedString s, Locale locale) {
+        return s == null ? null : get().localize(s, locale);
     }
 }

@@ -2100,10 +2100,10 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LPWithParams(res, resUsedParams);
     }
 
-    private static StringClass getStringConstClass(String value) {
-        if(LocalizedString.needToBeLocalized(value))
+    private static StringClass getStringConstClass(LocalizedString value) {
+        if(value.isNeedToBeLocalized())
             return StringClass.text;
-        return StringClass.getv(new ExtInt(((String) value).length()));
+        return StringClass.getv(new ExtInt(value.getSourceString().length()));
     }
 
     public LCP addConstantProp(ConstType type, Object value) throws ScriptingErrorLog.SemanticErrorException {
@@ -2112,7 +2112,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             case LONG: return addCProp(LongClass.instance, value);
             case NUMERIC: return addNumericConst((String) value);
             case REAL: return addCProp(DoubleClass.instance, value);
-            case STRING: return addCProp(getStringConstClass((String)value), value);
+            case STRING: return addCProp(getStringConstClass((LocalizedString)value), value);
             case LOGICAL: return addCProp(LogicalClass.instance, value);
             case DATE: return addCProp(DateClass.instance, value);
             case DATETIME: return addCProp(DateTimeClass.instance, value);

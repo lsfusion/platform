@@ -138,7 +138,7 @@ public class EmailLogicsModule extends ScriptingLogicsModule{
         Object[] fromImplement = new Object[] {fromAddressAccount};
         Object[] subjImplement;
         if (subject != null) {
-            subjImplement = new Object[] {addCProp(StringClass.get(subject.length()), subject)};
+            subjImplement = new Object[] {addCProp(StringClass.get(subject.length()), LocalizedString.create(subject, false))};
         } else {
             ValueClass[] nParams = new ValueClass[params.length + 1];
             System.arraycopy(params, 0, nParams, 0, params.length);

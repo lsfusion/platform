@@ -157,7 +157,7 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
     public LAP dropDropColumn;
 
     public final StringClass navigatorElementSIDClass = StringClass.get(50);
-    public final StringClass navigatorElementCanonicalNameClass = StringClass.get(100);
+    public final StringClass navigatorElementCanonicalNameClass = StringClass.getv(100);
     public final StringClass navigatorElementCaptionClass = StringClass.get(250);
     public final StringClass propertySIDValueClass = StringClass.get(100);
     public final StringClass propertyCanonicalNameValueClass = StringClass.get(512);

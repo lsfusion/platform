@@ -22,11 +22,17 @@ public class StaticValueExpr extends AbstractValueExpr<StaticClass> {
     private final Object object;
     private boolean sID;
 
+    public static void checkLocalizedString(Object value, StaticClass staticClass) {
+        assert !(staticClass instanceof StringClass) || value instanceof LocalizedString;
+    }
+
     public StaticValueExpr(Object value, StaticClass customClass, boolean sID) {
         super(customClass);
 
         this.object = value;
         this.sID = sID;
+        
+        checkLocalizedString(object, customClass);
     }
 
     public StaticValueExpr(Object value, StaticClass customClass) {
@@ -69,31 +75,25 @@ public class StaticValueExpr extends AbstractValueExpr<StaticClass> {
         if (isParameterized())
             result = compile.params.get(this);
         else
-            result = type.getString(getAdjustObject(object), compile.syntax);
+            result = type.getString(getLocalizedObject(getAdjustObject(object)), compile.syntax);
         if (!type.isSafeType())
             result = type.getCast(result, compile.syntax, compile.env);
         return result;
-    }
-
-    private boolean needToBeLocalized() {
-        if(objectClass.getType() instanceof StringClass) {
-            String string = object.toString();
-            assert object instanceof String;
-            if (LocalizedString.needToBeLocalized(string))
-                return true;
-        }
-
-        return false;
     }
 
     private boolean isParameterized() {
         if(sID) // код объекта всегда можно inline'ть
             return false;
 
-        if(needToBeLocalized()) // если нужна локализация, придется все равно закидывать в параметры
-            return true;
+        Object adjObject = object;
+        if(objectClass instanceof StringClass) { // если нужна локализация, придется все равно закидывать в параметры            
+            LocalizedString locObject = (LocalizedString) adjObject;
+            if (locObject.isNeedToBeLocalized()) // если нужна локализация, придется все равно закидывать в параметры
+                return true;
+            adjObject = locObject.getSourceString();
+        }
 
-        if(objectClass.getType().isSafeString(object)) // если значение можно inline'ть - inline'м
+        if(objectClass.getType().isSafeString(adjObject)) // если значение можно inline'ть - inline'м
             return false;
 
         return true;
@@ -120,12 +120,24 @@ public class StaticValueExpr extends AbstractValueExpr<StaticClass> {
         return super.isAlwaysSafeString();
     }
 
+    private Object getLocalizedObject(Object object) {
+        Object adjObject = object;
+        if(objectClass instanceof StringClass) {
+            LocalizedString locObject = (LocalizedString) adjObject;
+            assert !locObject.isNeedToBeLocalized();
+            adjObject = locObject.getSourceString();
+        }
+        return adjObject;
+    }
+
     private Object getLocalizedObject(Object object, QueryEnvironment env) {
         Object adjObject = object;
-        if(needToBeLocalized()) {
-            adjObject = object.toString();
-            assert object instanceof String;
-            adjObject = ThreadLocalContext.localize((String) adjObject, env.getLocale());
+        if(objectClass instanceof StringClass) {
+            LocalizedString locObject = (LocalizedString) adjObject;
+            if(locObject.isNeedToBeLocalized())
+                adjObject = ThreadLocalContext.localize(locObject, env.getLocale());
+            else
+                adjObject = locObject.getSourceString();
         }
         return adjObject;
     }
