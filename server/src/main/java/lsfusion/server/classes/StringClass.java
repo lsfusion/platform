@@ -174,7 +174,6 @@ public class StringClass extends DataClass {
 
         assert value instanceof String;
         String string = value.toString();
-        assert !LocalizedString.needToBeLocalized(string);
         return !string.contains("'") && !string.contains("\\");
     }
 
