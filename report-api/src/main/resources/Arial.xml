@@ -9,6 +9,10 @@
         <pdfEmbedded>true</pdfEmbedded>
         <exportFonts>
             <export key="net.sf.jasperreports.html">Arial,Helvetica,sans-serif</export>
+            <export key="net.sf.jasperreports.docx">Arial</export>
+            <export key="net.sf.jasperreports.xls">Arial</export>
+            <export key="net.sf.jasperreports.rtf">Arial</export>
+            <export key="net.sf.jasperreports.odt">Arial</export>
         </exportFonts>
     </fontFamily>
 </fontFamilies>

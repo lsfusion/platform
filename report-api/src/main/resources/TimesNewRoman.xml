@@ -9,6 +9,10 @@
         <pdfEmbedded>true</pdfEmbedded>
         <exportFonts>
             <export key="net.sf.jasperreports.html">'Times New Roman',times,serif</export>
+            <export key="net.sf.jasperreports.docx">Times New Roman</export>
+            <export key="net.sf.jasperreports.xls">Times New Roman</export>
+            <export key="net.sf.jasperreports.rtf">Times New Roman</export>
+            <export key="net.sf.jasperreports.odt">Times New Roman</export>
         </exportFonts>
     </fontFamily>
 </fontFamilies>
