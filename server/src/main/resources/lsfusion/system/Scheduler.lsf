@@ -107,10 +107,10 @@ changedSchedulerTask (ScheduledTask t) = GROUP SUM 1 IF (((CHANGED (runAtStart(S
                                          OR CHANGED (timeTo(t)) OR CHANGED (period(t)) OR CHANGED (daysOfMonth(t))
                                          OR CHANGED (schedulerStartType(t)) OR CHANGED (schedulerStartType(t))) AND active(t)
                                          OR CHANGED (active(t))) OR
-                                                ((CHANGED (active(ScheduledTaskDetail td)) OR CHANGED (order(td)) OR CHANGED(script(td)) 
+                                                (((CHANGED (active(ScheduledTaskDetail td)) OR CHANGED (order(td)) OR CHANGED(script(td)) 
                                          OR CHANGED (scheduledTask(td)) OR CHANGED (property(td)) 
                                          OR CHANGED (ignoreExceptions(td)) OR CHANGED (timeout(td)) OR CHANGED (parameter(td)))
-                                         AND active(scheduledTask(td))) OR 
+                                         AND active(scheduledTask(td))) AND scheduledTask(td)==t) OR 
                                                 CHANGED(in(DOW dow, t))) AND isStartedScheduler() AND t IS ScheduledTask AND td IS ScheduledTaskDetail AND dow IS DOW BY t;
                                                 
 executeScheduledTask 'Выполнить задание' = ACTION CUSTOM 'lsfusion.server.scheduler.ExecuteScheduledTaskActionProperty' (ScheduledTask) CONFIRM;                                                                                                                                 
