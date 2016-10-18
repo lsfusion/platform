@@ -71,7 +71,7 @@ afterRunScript() = ACTION {
 
 scriptExecution 'Выполнить скрипт' () = ACTION { TRY { preRunScript(); EVAL scriptStorage(); afterRunScript(); } CATCH; }
 
-actionBodyExecution 'Выполнить действие' () = ACTION { TRY { preRunScript(); EVAL CONCAT ' ', 'run() = ACTION \{', scriptStorage(), ';\n\};'; afterRunScript(); } CATCH; };
+actionBodyExecution 'Выполнить действие' () = ACTION { TRY { preRunScript(); EVAL CONCAT ' ', 'run() = ACTION {', scriptStorage(), ';\n};'; afterRunScript(); } CATCH; };
 formExecution 'Показать форму' () = ACTION { TRY { preRunScript(); EVAL CONCAT ' ', 'FORM form', scriptStorage(), ';\nrun() = ACTION FORM form;'; afterRunScript(); } CATCH; };
 javaActionBodyExecution 'Выполнить Java-код' () = ACTION { TRY { preRunScript(); EVAL CONCAT ' ', 'run() = ACTION CODE ', scriptStorage(), ' END;'; afterRunScript(); } CATCH; };
 

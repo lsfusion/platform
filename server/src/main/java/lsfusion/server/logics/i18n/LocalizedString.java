@@ -35,7 +35,7 @@ public class LocalizedString {
     }
 
     public static boolean needToBeLocalized(String source) {
-        return source.indexOf('{') != -1;
+        return source.indexOf('{') != -1 && source.indexOf('}') != -1;
     }
 
     protected LocalizedString(String source, boolean needToBeLocalized) {
@@ -111,7 +111,7 @@ public class LocalizedString {
                 ++i;
             } else if (ch == CLOSE_CH) {
                 if (!insideKey) {
-                    throw new FormatError(String.format("invalid character '%c', should be escaped with '\\'", CLOSE_CH));
+                    //throw new FormatError(String.format("invalid character '%c', should be escaped with '\\'", CLOSE_CH));
                 } else if (keyIsEmpty) {
                     throw new FormatError("empty key is forbidden");
                 } else {
@@ -119,7 +119,7 @@ public class LocalizedString {
                 }
             } else if (ch == OPEN_CH) {
                 if (insideKey) {
-                    throw new FormatError(String.format("invalid character '%c', should be escaped with '\\'", OPEN_CH));
+                    //throw new FormatError(String.format("invalid character '%c', should be escaped with '\\'", OPEN_CH));
                 } else {
                     insideKey = true;
                     keyIsEmpty = true;
@@ -131,7 +131,7 @@ public class LocalizedString {
             }
         }
         if (insideKey) {
-            throw new FormatError(String.format("key was not closed with '%c'", CLOSE_CH));
+            //throw new FormatError(String.format("key was not closed with '%c'", CLOSE_CH));
         }
     }
     
