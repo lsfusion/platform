@@ -218,16 +218,22 @@ WHEN CHANGED(volatileStatsEnabled(User user)) DO {
 }
 
 onStarted() += ACTION {
-    FOR User u IS User DO {
+    FOR explainAnalyzeMode(User u) DO 
         refreshExplainAnalyzeMode(u);
+    FOR explainMode(User u) DO 
         refreshExplainMode(u);
+    FOR loggerDebugEnabled(User u) DO 
         refreshLoggerDebugEnabled(u);
+    FOR volatileStatsEnabled(User u) DO 
         refreshVolatileStatsEnabled(u);
+    FOR remoteLoggerDebugEnabled(User u) DO 
         refreshRemoteLoggerDebugEnabled(u);
+    FOR remoteExLogEnabled(User u) DO 
         refreshExLogEnabled(u);
+    FOR remotePausableLogEnabled(User u) DO 
         refreshPausableLogEnabled(u);
+    FOR execEnv(User u) DO 
         refreshExecEnv(u);
-    }
 } 
 
 setReupdateMode 'Включить REUPDATE' = ACTION CUSTOM 'lsfusion.server.logics.service.SetReupdateModeActionProperty' (BOOLEAN);
