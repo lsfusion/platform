@@ -469,7 +469,7 @@ public abstract class LogicsModule {
     // ------------------- Loggable ----------------- //
 
     protected <D extends PropertyInterface> LCP addDCProp(AbstractGroup group, LocalizedString caption, int whereNum, LCP<D> derivedProp, Object... params) {
-        Pair<ValueClass[], ValueClass> signature = getSignature(derivedProp, params);
+        Pair<ValueClass[], ValueClass> signature = getSignature(derivedProp, whereNum, params);
 
         // выполняем само создание свойства
         StoredDataProperty dataProperty = new StoredDataProperty(caption, signature.first, signature.second);
@@ -479,23 +479,23 @@ public abstract class LogicsModule {
         return derDataProp;
     }
 
-    private <D extends PropertyInterface> Pair<ValueClass[], ValueClass> getSignature(LCP<D> derivedProp, Object[] params) {
+    private <D extends PropertyInterface> Pair<ValueClass[], ValueClass> getSignature(LCP<D> derivedProp, int whereNum, Object[] params) {
         // придется создавать Join свойство чтобы считать его класс
-        int propsize = derivedProp.listInterfaces.size();
         int dersize = getIntNum(params);
         ImOrderSet<JoinProperty.Interface> listInterfaces = JoinProperty.getInterfaces(dersize);
 
-        ImList<CalcPropertyInterfaceImplement<JoinProperty.Interface>> list = readCalcImplements(listInterfaces, params);
-        final ImList<CalcPropertyInterfaceImplement<JoinProperty.Interface>> subList = list.subList(propsize, list.size());
+        final ImList<CalcPropertyInterfaceImplement<JoinProperty.Interface>> list = readCalcImplements(listInterfaces, params);
 
-        AndFormulaProperty andProperty = new AndFormulaProperty(list.size() - propsize);
+        assert whereNum == list.size() - 1; // один ON CHANGED, то есть union делать не надо (выполняется, так как только в addLProp работает)
+
+        AndFormulaProperty andProperty = new AndFormulaProperty(list.size());
         ImMap<AndFormulaProperty.Interface, CalcPropertyInterfaceImplement<JoinProperty.Interface>> mapImplement =
-                    MapFact.<AndFormulaProperty.Interface, CalcPropertyInterfaceImplement<JoinProperty.Interface>>addExcl(
-                            andProperty.andInterfaces.mapValues(new GetIndex<CalcPropertyInterfaceImplement<JoinProperty.Interface>>() {
-                                public CalcPropertyInterfaceImplement<JoinProperty.Interface> getMapValue(int i) {
-                                    return subList.get(i);
-                                }
-                            }), andProperty.objectInterface, DerivedProperty.createJoin(mapCalcImplement(derivedProp, list.subList(0, propsize))));
+                MapFact.<AndFormulaProperty.Interface, CalcPropertyInterfaceImplement<JoinProperty.Interface>>addExcl(
+                        andProperty.andInterfaces.mapValues(new GetIndex<CalcPropertyInterfaceImplement<JoinProperty.Interface>>() {
+                            public CalcPropertyInterfaceImplement<JoinProperty.Interface> getMapValue(int i) {
+                                return list.get(i);
+                            }
+                        }), andProperty.objectInterface, mapCalcListImplement(derivedProp, listInterfaces));
 
         JoinProperty<AndFormulaProperty.Interface> joinProperty = new JoinProperty<>(LocalizedString.create("sys"), listInterfaces,
                 new CalcPropertyImplement<>(andProperty, mapImplement));
