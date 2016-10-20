@@ -875,7 +875,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                 changeTable = splitApplySingleStored(property, property.readFixChangeTable(sql, change, baseClass, getQueryEnv()), ThreadLocalContext.getBusinessLogics());
                 change = SinglePropertyTableUsage.getChange(changeTable);
             } else {
-                if(change.needMaterialize() || needSessionEventMaterialize(changeTable, updateChanges)) {
+                if(change.needMaterialize(data.get(property)) || needSessionEventMaterialize(changeTable, updateChanges)) { // для защиты (неполной) от случаев f(a) <- f(a) + 1
                     changeTable = change.materialize(property, sql, baseClass, getQueryEnv());
                     change = SinglePropertyTableUsage.getChange(changeTable);
                 }

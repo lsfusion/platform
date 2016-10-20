@@ -280,8 +280,8 @@ public class PropertyChange<T extends PropertyInterface> extends AbstractInnerCo
         return change1.add(change2);
     }
 
-    public boolean needMaterialize() {
-        return where.needMaterialize() || expr.needMaterialize();
+    public boolean needMaterialize(SessionTableUsage table) {
+        return where.needMaterialize() || expr.needMaterialize() || (table != null && table.used(getQuery()));
     }
 
     public SinglePropertyTableUsage<T> materialize(CalcProperty<T> property, DataSession session) throws SQLException, SQLHandledException {
