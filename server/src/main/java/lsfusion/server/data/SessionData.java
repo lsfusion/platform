@@ -111,7 +111,7 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
         return null;
     }
 
-    private static <F extends Field, D extends ObjectValue> ImMap<F, D> castTypes(ImMap<F, D> values) {
+    public static <F extends Field, D extends ObjectValue> ImMap<F, D> castTypes(ImMap<F, D> values) {
         return values.mapValues(new GetKeyValue<D, F, D>() {
             @Override
             public D getMapValue(F key, D value) {

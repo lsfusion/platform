@@ -116,8 +116,14 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K>, TableOwner {
     }
 
     public ModifyResult modifyRecord(SQLSession session, ImMap<K, DataObject> keyObjects, ImMap<V, ObjectValue> propertyObjects, Modify type, OperationOwner owner) throws SQLException, SQLHandledException {
+        ImMap<KeyField, DataObject> keyFieldObjects = mapKeys.join(keyObjects);
+        ImMap<PropertyField, ObjectValue> propFieldObjects = mapProps.join(propertyObjects);
+
+        if(table instanceof SessionRows) // проверка - оптимизация, можно во всех случаях делать
+            keyFieldObjects = SessionData.castTypes(keyFieldObjects); // так как иначе можно unique violation получить
+        
         Result<Boolean> changed = new Result<>();
-        return aspectModify(table.modifyRecord(session, mapKeys.join(keyObjects), mapProps.join(propertyObjects), type, this, owner, changed), changed.result);
+        return aspectModify(table.modifyRecord(session, keyFieldObjects, propFieldObjects, type, this, owner, changed), changed.result);
     }
 
     public void writeKeys(SQLSession session,ImSet<ImMap<K,DataObject>> writeRows, OperationOwner owner) throws SQLException, SQLHandledException {
