@@ -3,12 +3,10 @@ package lsfusion.gwt.form.shared.view.grid.editor;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JsArray;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.dom.client.*;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
-import org.moxieapps.gwt.uploader.client.File;
-import org.moxieapps.gwt.uploader.client.Uploader;
-import org.moxieapps.gwt.uploader.client.events.*;
 import lsfusion.gwt.base.client.GwtClientUtils;
 import lsfusion.gwt.base.shared.GwtSharedUtils;
 import lsfusion.gwt.cellview.client.cell.Cell;
@@ -17,6 +15,9 @@ import lsfusion.gwt.form.shared.view.GPropertyDraw;
 import lsfusion.gwt.form.shared.view.changes.dto.GFilesDTO;
 import lsfusion.gwt.form.shared.view.grid.EditEvent;
 import lsfusion.gwt.form.shared.view.grid.EditManager;
+import org.moxieapps.gwt.uploader.client.File;
+import org.moxieapps.gwt.uploader.client.Uploader;
+import org.moxieapps.gwt.uploader.client.events.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -45,8 +46,15 @@ public class FileGridCellEditor extends DialogBasedGridCellEditor {
 
     @Override
     protected Widget createComponent(EditEvent editEvent, Cell.Context context, Element parent, Object oldValue) {
+        int addButtonWidth = 133;
+        int addButtonHeight = 31;
+        
+        final ScrollPanel scrollBarPanel = new ScrollPanel();
         final VerticalPanel progressBarPanel = new VerticalPanel();
         progressBarPanel.setWidth("100%");
+        scrollBarPanel.add(progressBarPanel);        
+        scrollBarPanel.getElement().getStyle().setDisplay(Style.Display.INLINE_BLOCK);
+        scrollBarPanel.setHeight("100%");
         final LinkedHashMap<String, FileUploadStatusPanel> fileStatusPanels = new LinkedHashMap<>();
         filePrefixes = new LinkedHashMap<>();
         fileNames = new HashMap<>();
@@ -55,8 +63,8 @@ public class FileGridCellEditor extends DialogBasedGridCellEditor {
 
         newVersionUploader.setUploadURL(GwtClientUtils.getWebAppBaseURL() + "uploadFile")
                 .setButtonText("<button type=\"button\" class=\"gwt-Button\" style=\"height: 27px; width: 129px;\">Выбрать файл" + (multiple ? "ы" : "") + "</button>")
-                .setButtonWidth(133)
-                .setButtonHeight(31)
+                .setButtonWidth(addButtonWidth)
+                .setButtonHeight(addButtonHeight)
                 .setButtonCursor(Uploader.Cursor.HAND)
                 .setButtonAction(multiple ? Uploader.ButtonAction.SELECT_FILES : Uploader.ButtonAction.SELECT_FILE)
                 .setFileQueuedHandler(new FileQueuedHandler() {
@@ -146,8 +154,8 @@ public class FileGridCellEditor extends DialogBasedGridCellEditor {
         if (multiple) {
             addUploader.setUploadURL(GwtClientUtils.getWebAppBaseURL() + "uploadFile")
                     .setButtonText("<button type=\"button\" class=\"gwt-Button\" style=\"height: 27px; width: 129px\">Добавить файлы</button>")
-                    .setButtonWidth(133)
-                    .setButtonHeight(31)
+                    .setButtonWidth(addButtonWidth)
+                    .setButtonHeight(addButtonHeight)
                     .setButtonCursor(Uploader.Cursor.HAND)
                     .setButtonAction(Uploader.ButtonAction.SELECT_FILES)
                     .setFileQueuedHandler(new FileQueuedHandler() {
@@ -226,9 +234,13 @@ public class FileGridCellEditor extends DialogBasedGridCellEditor {
 
         HorizontalPanel horizontalPanel = new HorizontalPanel();
         horizontalPanel.setWidth("100%");
+        horizontalPanel.setHeight("100%");
         horizontalPanel.add(verticalPanel);
-        horizontalPanel.add(GwtClientUtils.createHorizontalStrut(5));
-        horizontalPanel.add(progressBarPanel);
+        horizontalPanel.setCellWidth(verticalPanel, addButtonWidth + "px");
+        Widget horizontalStrut = GwtClientUtils.createHorizontalStrut(5);
+        horizontalPanel.add(horizontalStrut);
+        horizontalPanel.setCellWidth(horizontalStrut, "5px");
+        horizontalPanel.add(scrollBarPanel);
         horizontalPanel.setCellWidth(progressBarPanel, "100%");
         horizontalPanel.setVerticalAlignment(HorizontalPanel.ALIGN_MIDDLE);
 
@@ -261,9 +273,13 @@ public class FileGridCellEditor extends DialogBasedGridCellEditor {
 
         VerticalPanel panel = new VerticalPanel();
         panel.add(horizontalPanel);
+        Widget verticalStrut = GwtClientUtils.createVerticalStrut(5);
+        panel.add(verticalStrut);
+        panel.setCellHeight(verticalStrut, "5px");
         panel.add(buttons);
         panel.setCellWidth(horizontalPanel, "100%");
-        panel.setCellHorizontalAlignment(buttons, HasAlignment.ALIGN_RIGHT);
+        panel.setCellHeight(buttons, "24px");
+        panel.setCellHorizontalAlignment(buttons, HasAlignment.ALIGN_CENTER);
         panel.setCellVerticalAlignment(buttons, HasVerticalAlignment.ALIGN_BOTTOM);
 
         String validFileTypes = null;
