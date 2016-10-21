@@ -22,7 +22,7 @@ public class FormAddObjectActionProperty extends AddObjectActionProperty<Propert
     private final ObjectEntity objectEntity;
 
     public FormAddObjectActionProperty(CustomClass customClass, ObjectEntity objectEntity) {
-        super(customClass, null, true);
+        super(customClass, false, null);
 
         this.objectEntity = objectEntity;
     }

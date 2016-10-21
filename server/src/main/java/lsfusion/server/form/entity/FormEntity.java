@@ -508,30 +508,29 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         });
         ImSet<ValueClassWrapper> valueClasses = objectToClass.valuesSet();
 
+        ImCol<ImSet<ValueClassWrapper>> classSubsets;
+        if (useObjSubsets) {
+            MCol<ImSet<ValueClassWrapper>> mClassSubsets = ListFact.mCol();
+            for (ImSet<ValueClassWrapper> set : new Subsets<>(valueClasses)) {
+                if (!set.isEmpty()) {
+                    mClassSubsets.add(set);
+                }
+            }
+            classSubsets = mClassSubsets.immutableCol();
+        } else {
+            classSubsets = SetFact.singleton(valueClasses);
+        }
+
         List<PropertyDrawEntity> propertyDraws = new ArrayList<>();
 
         ImOrderSet<ValueClassWrapper> orderInterfaces = orderObjects.mapOrder(objectToClass);
-        for (PropertyClassImplement implement : group.getProperties(valueClasses, useObjSubsets, upClasses, version)) {
+        for (PropertyClassImplement implement : group.getProperties(classSubsets, upClasses, version)) {
             ImSet<ValueClassWrapper> wrapers = implement.mapping.valuesSet();
             ImOrderSet<ObjectEntity> filterObjects = orderObjects.filterOrderIncl(objectToClass.filterValuesRev(wrapers).keys());
             propertyDraws.add(addPropertyDraw(implement.createLP(orderInterfaces.filterOrderIncl(wrapers), prev), groupObject, version, filterObjects.toArray(new ObjectEntity[filterObjects.size()])));
         }
 
         return propertyDraws;
-    }
-
-    public static ImCol<ImSet<ValueClassWrapper>> getSubsets(ImSet<ValueClassWrapper> valueClasses, boolean useObjSubsets) {
-        if(!useObjSubsets)
-            return SetFact.singleton(valueClasses);
-            
-        ImCol<ImSet<ValueClassWrapper>> classSubsets;MCol<ImSet<ValueClassWrapper>> mClassSubsets = ListFact.mCol();
-        for (ImSet<ValueClassWrapper> set : new Subsets<>(valueClasses)) {
-            if (!set.isEmpty()) {
-                mClassSubsets.add(set);
-            }
-        }
-        classSubsets = mClassSubsets.immutableCol();
-        return classSubsets;
     }
 
     public PropertyDrawEntity addPropertyDraw(LP property, Version version, PropertyObjectInterfaceEntity... objects) {

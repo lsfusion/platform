@@ -51,7 +51,6 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.entity.LogFormEntity;
-import lsfusion.server.form.instance.listener.CustomClassListener;
 import lsfusion.server.form.navigator.LogInfo;
 import lsfusion.server.form.navigator.NavigatorElement;
 import lsfusion.server.form.navigator.RemoteNavigator;
@@ -198,7 +197,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     public void cleanCaches() {
         startLruCache = null;
         MapCacheAspect.cleanClassCaches();
-        CalcProperty.cleanPropCaches();
 
         startLogger.info("Obsolete caches were successfully cleaned");
     }
@@ -674,8 +672,27 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         try {
             SQLSession sql = getDbManager().getThreadLocalSql();
             
-            startLogger.info("Setting user logging for properties");            
-            setUserLoggableProperties(sql);
+            startLogger.info("Setting user logging for properties");
+            try {
+                setUserLoggableProperties(sql);
+            } catch (Exception e) {
+                // пробуем еще раз но с reparse'ом, для явной типизации
+                useReparse = true;
+
+                ImSet<String> props = SetFact.toSet("canonicalName", "stats", "userLoggable", "notNullQuantity");
+                reparse.set(props.mapKeyValues(new GetValue<String, String>() {
+                    public String getMapValue(String value) {
+                        return "Reflection_" + value + "_Property";
+                    }}, new GetValue<String, String>() {
+                    public String getMapValue(String value) {
+                        return "Reflection_" + value + "Property_Property";
+                    }}));
+
+                setUserLoggableProperties(sql);
+
+                reparse.set(null);
+                useReparse = false;
+            }
 
             startLogger.info("Setting user not null constraints for properties");
             setNotNullProperties(sql);
@@ -684,8 +701,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             setupPropertyNotifications(sql);
             
         } catch (Exception ignored) {
-            startLogger.error("Error while initializing reflection events", ignored);
+            ignored = ignored;
         }
+
     }
 
     public Integer readCurrentUser() {
@@ -929,14 +947,20 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         }
     }
 
-    public <P extends PropertyInterface> void finishLogInit(Property property) {
-        if (property.loggable) {
-            ActionProperty<P> logActionProperty = (ActionProperty<P>) property.logFormProperty.property;
+    public void finishLogInit(Property property) {
+        if (property.loggable && property.logFormProperty.property instanceof FormActionProperty) {
+            FormActionProperty formActionProperty = (FormActionProperty) property.logFormProperty.property;
+            if (formActionProperty.form instanceof LogFormEntity) {
+                LogFormEntity logForm = (LogFormEntity) formActionProperty.form;
+                if (logForm.lazyInit) {
+                    logForm.initProperties();
+                }
+            }
 
             //добавляем в контекстное меню пункт для показа формы
-            property.setContextMenuAction(property.getSID(), logActionProperty.caption);
-            property.setEditAction(property.getSID(), logActionProperty.getImplement(property.getReflectionOrderInterfaces()));
-            logActionProperty.checkReadOnly = false;
+            property.setContextMenuAction(property.getSID(), formActionProperty.caption);
+            property.setEditAction(property.getSID(), formActionProperty.getImplement(property.getReflectionOrderInterfaces()));
+            formActionProperty.checkReadOnly = false;
         }
     }
 
@@ -983,32 +1007,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             namedProperties.addAll(module.getNamedProperties());
         }
         return namedProperties;
-    }
-    
-    @IdentityLazy
-    public ImOrderSet<CalcProperty> getAutoSetProperties() {
-        MOrderExclSet<CalcProperty> mResult = SetFact.mOrderExclSet();
-        for (LP lp : getNamedProperties())
-            if (lp instanceof LCP) {
-                CalcProperty property = ((LCP<?>) lp).property;
-                if (property.autoset)
-                    mResult.exclAdd(property);
-            }
-        return mResult.immutableOrder();                    
-    }
-    
-    public <P extends PropertyInterface> void resolveAutoSet(DataSession session, ConcreteCustomClass customClass, DataObject dataObject, CustomClassListener classListener) throws SQLException, SQLHandledException {
-
-        for (CalcProperty<P> property : getAutoSetProperties()) {
-            ValueClass interfaceClass = property.getInterfaceClasses(ClassType.autoSetPolicy).singleValue();
-            ValueClass valueClass = property.getValueClass(ClassType.autoSetPolicy);
-            if (valueClass instanceof CustomClass && interfaceClass instanceof CustomClass &&
-                    customClass.isChild((CustomClass) interfaceClass)) { // в общем то для оптимизации
-                Integer obj = classListener.getObject((CustomClass) valueClass);
-                if (obj != null)
-                    property.change(MapFact.singleton(property.interfaces.single(), dataObject), session, obj);
-            }
-        }
     }
     
     // todo [dale]: Временно сделал public для переименования log-свойств

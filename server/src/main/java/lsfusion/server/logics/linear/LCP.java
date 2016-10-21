@@ -110,25 +110,29 @@ public class LCP<T extends PropertyInterface> extends LP<T, CalcProperty<T>> {
     }
 
     public void makeLoggable(LogicsModule ownerModule, SystemEventsLogicsModule systemEventsLM) {
-        setupLoggable(ownerModule, systemEventsLM);
+        makeLoggable(ownerModule, systemEventsLM, false);
+    }
+
+    public void makeLoggable(LogicsModule ownerModule, SystemEventsLogicsModule systemEventsLM, boolean lazyInit) {
+        setupLoggable(ownerModule, systemEventsLM, lazyInit);
         property.loggable = true;
     }
 
     public void makeUserLoggable(LogicsModule ownerModule, SystemEventsLogicsModule systemEventsLM) {
-        setupLoggable(ownerModule, systemEventsLM);
+        setupLoggable(ownerModule, systemEventsLM, false);
         property.loggable = true;
     }
 
-    private void setupLoggable(LogicsModule ownerModule, SystemEventsLogicsModule systemEventsLM) {
+    private void setupLoggable(LogicsModule ownerModule, SystemEventsLogicsModule systemEventsLM, boolean lazyInit) {
         if (property.getLogProperty() == null) {
             property.setLogProperty(ownerModule.addLProp(systemEventsLM, this));
         }
         if (property.getLogFormProperty() == null) {
             LogFormEntity logFormEntity = new LogFormEntity(null,
                                                             LocalizedString.create("{logics.property.log.form}"),
-                                                            this, property.getLogProperty(), systemEventsLM);
+                                                            this, property.getLogProperty(), systemEventsLM, lazyInit);
             systemEventsLM.addFormEntity(logFormEntity);
-            property.setLogFormProperty(ownerModule.addMFAProp(LocalizedString.create("{logics.property.log.action}"), logFormEntity, logFormEntity.params, true));
+            property.setLogFormProperty(ownerModule.addMFAProp(LocalizedString.create("{logics.property.log.action}"), logFormEntity, logFormEntity.params));
         }
     }
 

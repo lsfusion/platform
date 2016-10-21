@@ -524,25 +524,56 @@ public abstract class LogicsModule {
         return addProperty(group, persistent, new LCP<>(prop));
     }
 
-    // ------------------- Form actions ----------------- //
+    // ------------------- Multi File action ----------------- //
 
-    // loggable, security, drilldown
-    public LAP addMFAProp(LocalizedString caption, FormEntity form, ObjectEntity[] objectsToSet, boolean newSession) {
-        return addSessionScopeAProp(caption, newSession ? FormSessionScope.NEWSESSION : FormSessionScope.OLDSESSION,
-                addFAProp(form, objectsToSet, newSession, false, ModalityType.MODAL));
+    public LAP addMFAProp(LocalizedString caption, FormEntity form, ObjectEntity... params) {
+        return addMFAProp(null, caption, form, params, false);
     }
 
-    // edit (add)
-    protected LAP addDMFAProp(ClassFormEntity form, boolean manageSession, boolean noCancel) {
-        return addFAProp(form.form, new ObjectEntity[] {form.object}, manageSession, noCancel, ModalityType.DOCKED_MODAL);
+    public LAP addMFAProp(AbstractGroup group, LocalizedString caption, FormEntity form, ObjectEntity[] objectsToSet, boolean newSession) {
+        return addMFAProp(group, caption, form, objectsToSet, null, newSession);
     }
 
-    protected LAP addFAProp(FormEntity form, ObjectEntity[] objectsToSet, boolean manageSession, boolean noCancel, ModalityType modalityType) {
-        return addFAProp(null, LocalizedString.create("sys"), form, objectsToSet, manageSession, noCancel, null, null, null, modalityType, false, false, null, null, false);
+    protected LAP addMFAProp(AbstractGroup group, LocalizedString caption, FormEntity form, ObjectEntity[] objectsToSet, ActionPropertyObjectEntity startAction, boolean newSession) {
+        return addFAProp(group, caption, form, objectsToSet, startAction, newSession, true, false);
     }
 
-    protected LAP addFAProp(AbstractGroup group, LocalizedString caption, FormEntity form, ObjectEntity[] objectsToSet, boolean manageSession, boolean isAdd, ObjectEntity contextObject, CalcProperty contextProperty, PropertyDrawEntity initFilterProperty, ModalityType modalityType, boolean checkOnOk, boolean showDrop, FormPrintType printType, FormExportType exportType, boolean readonly) {
-        return addProperty(group, new LAP(new FormActionProperty(caption, form, objectsToSet, manageSession, isAdd, modalityType, checkOnOk, showDrop, printType, exportType, baseLM.formResult, baseLM.getFormResultProperty(), baseLM.formPageCount, baseLM.formExportFile, baseLM.ignorePrintType, baseLM.getChosenValueProperty(), contextObject, contextProperty, initFilterProperty, readonly)));
+    // ------------------- Data Multi File action ----------------- //
+
+    protected LAP addDMFAProp(AbstractGroup group, LocalizedString caption, FormEntity form, ObjectEntity[] objectsToSet, FormSessionScope scope) {
+        return addDMFAProp(group, caption, form, objectsToSet, null, scope, false);
+    }
+
+    protected LAP addDMFAProp(AbstractGroup group, LocalizedString caption, FormEntity form, ObjectEntity[] objectsToSet, ActionPropertyObjectEntity startAction, FormSessionScope scope, boolean isAdd) {
+        return addFAProp(group, caption, form, objectsToSet, startAction, isAdd, scope, ModalityType.DOCKED_MODAL, false);
+    }
+
+    // ------------------- File action ----------------- //
+
+    protected LAP addFAProp(AbstractGroup group, LocalizedString caption, FormEntity form, ObjectEntity[] objectsToSet, ActionPropertyObjectEntity startAction, boolean newSession, boolean isModal, boolean checkOnOk) {
+        return addFAProp(group, caption, form, objectsToSet, startAction, newSession, isModal, checkOnOk, null);
+    }
+
+    protected LAP addFAProp(AbstractGroup group, LocalizedString caption, FormEntity form, ObjectEntity[] objectsToSet, ActionPropertyObjectEntity startAction, boolean newSession, boolean isModal, boolean checkOnOk, FormPrintType printType) {
+        return addFAProp(group, caption, form, objectsToSet, startAction,
+                newSession ? FormSessionScope.NEWSESSION : FormSessionScope.OLDSESSION,
+                isModal ? ModalityType.MODAL : ModalityType.DOCKED, checkOnOk, printType);
+    }
+
+    protected LAP addFAProp(AbstractGroup group, LocalizedString caption, FormEntity form, ObjectEntity[] objectsToSet, ActionPropertyObjectEntity startAction, boolean isAdd, FormSessionScope sessionScope, ModalityType modalityType, boolean checkOnOk) {
+        return addFAProp(group, caption, form, objectsToSet, startAction, isAdd, null, null, sessionScope, modalityType, checkOnOk, false);
+    }
+
+    protected LAP addFAProp(AbstractGroup group, LocalizedString caption, FormEntity form, ObjectEntity[] objectsToSet, ActionPropertyObjectEntity startAction, FormSessionScope sessionScope, ModalityType modalityType, boolean checkOnOk, FormPrintType printType) {
+        return addFAProp(group, caption, form, objectsToSet, startAction, false, null, null, null, sessionScope, modalityType, checkOnOk, false, printType, null, false);
+    }
+
+    protected LAP addFAProp(AbstractGroup group, LocalizedString caption, FormEntity form, ObjectEntity[] objectsToSet, ActionPropertyObjectEntity startAction, boolean isAdd, ObjectEntity contextObject, CalcProperty contextProperty, FormSessionScope sessionScope, ModalityType modalityType, boolean checkOnOk, boolean showDrop) {
+        return addFAProp(group, caption, form, objectsToSet, startAction, isAdd, null, null, null, sessionScope, modalityType, checkOnOk, false, null, null, false);
+    }
+
+    protected LAP addFAProp(AbstractGroup group, LocalizedString caption, FormEntity form, ObjectEntity[] objectsToSet, ActionPropertyObjectEntity startAction, boolean isAdd, ObjectEntity contextObject, CalcProperty contextProperty, PropertyDrawEntity initFilterProperty, FormSessionScope sessionScope, ModalityType modalityType, boolean checkOnOk, boolean showDrop, FormPrintType printType, FormExportType exportType, boolean readonly) {
+        return addProperty(group, new LAP(new FormActionProperty(caption, form, objectsToSet, startAction, isAdd, sessionScope, modalityType, checkOnOk, showDrop, printType, exportType, baseLM.formResult, baseLM.getFormResultProperty(), baseLM.formPageCount, baseLM.formExportFile, baseLM.ignorePrintType, baseLM.getChosenValueProperty(), contextObject, contextProperty, initFilterProperty, readonly)));
     }
 
     // ------------------- Change Class action ----------------- //
@@ -561,10 +592,6 @@ public abstract class LogicsModule {
 
     // ------------------- Set property action ----------------- //
 
-    protected <C extends PropertyInterface, W extends PropertyInterface> LAP addSetPropertyAProp(int resInterfaces,boolean conditional, Object... params) {
-        return addSetPropertyAProp(null, LocalizedString.create("sys"), resInterfaces, conditional, params);
-    }
-
     protected <C extends PropertyInterface, W extends PropertyInterface> LAP addSetPropertyAProp(AbstractGroup group, LocalizedString caption, int resInterfaces,
                                                                                                  boolean conditional, Object... params) {
         ImOrderSet<PropertyInterface> innerInterfaces = genInterfaces(getIntNum(params));
@@ -578,18 +605,13 @@ public abstract class LogicsModule {
 
     // ------------------- List action ----------------- //
 
-    protected LAP addListAProp(Object... params) {
-        return addListAProp(SetFact.<SessionDataProperty>EMPTY(), params);
-    }
     protected LAP addListAProp(ImSet<SessionDataProperty> localsInScope, Object... params) {
         return addListAProp(null, 0, LocalizedString.create("sys"), localsInScope, params);
     }
     protected LAP addListAProp(int removeLast, Object... params) {
         return addListAProp(null, removeLast, LocalizedString.create("sys"), SetFact.<SessionDataProperty>EMPTY(), params);
     }
-    protected LAP addListAProp(LocalizedString caption, Object... params) {
-        return addListAProp(null, 0, caption, SetFact.<SessionDataProperty>EMPTY(), params);        
-    }
+
     protected LAP addListAProp(AbstractGroup group, int removeLast, LocalizedString caption, ImSet<SessionDataProperty> localsInScope, Object... params) {
         ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(getIntNum(params));
         return addProperty(group, new LAP(new ListActionProperty(caption, listInterfaces,
@@ -613,10 +635,6 @@ public abstract class LogicsModule {
     }
     
     // ------------------- If action ----------------- //
-
-    protected LAP addIfAProp(Object... params) {
-        return addIfAProp(null, LocalizedString.create("sys"), false, params);
-    }
 
     protected LAP addIfAProp(AbstractGroup group, LocalizedString caption, boolean not, Object... params) {
         ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(getIntNum(params));
@@ -685,7 +703,7 @@ public abstract class LogicsModule {
         ImSet<PropertyInterface> noInlineInterfaces = BaseUtils.<ImList<PropertyInterface>>immutableCast(readImplements.subList(implCnt - noInline, implCnt)).toOrderExclSet().getSet();
 
         return addProperty(group, new LAP<>(
-                new ForActionProperty<>(caption, innerInterfaces.getSet(), mapInterfaces, ifProp, orders, ordersNotNull, action, elseAction, addedInterface, addClass, recursive, noInlineInterfaces, forceInline))
+                new ForActionProperty<>(caption, innerInterfaces.getSet(), mapInterfaces, ifProp, orders, ordersNotNull, action, elseAction, addedInterface, addClass, false, recursive, noInlineInterfaces, forceInline))
         );
     }
 
@@ -709,7 +727,7 @@ public abstract class LogicsModule {
         return addProperty(group, new LAP(new JoinActionProperty(caption, listInterfaces, mapActionImplement(action, readImplements))));
     }
 
-    // ------------------------ APPLY / CANCEL ----------------- //
+    // ------------------------ APPLY ----------------- //
 
     protected LAP addApplyAProp(AbstractGroup group, LocalizedString caption, LAP action, boolean singleApply,
                                 FunctionSet<SessionDataProperty> keepSessionProps, boolean serializable) {
@@ -721,26 +739,7 @@ public abstract class LogicsModule {
         actionImplement.property.singleApply = singleApply;
         return addProperty(group, new LAP(applyAction));
     }
-
-    protected LAP addCancelAProp(AbstractGroup group, LocalizedString caption, FunctionSet<SessionDataProperty> keepSessionProps) {
-
-        CancelActionProperty applyAction = new CancelActionProperty(baseLM, caption, keepSessionProps);
-        return addProperty(group, new LAP(applyAction));
-    }
-
-    // ------------------- SESSION SCOPE ----------------- //
-
-    protected LAP addSessionScopeAProp(LocalizedString caption, FormSessionScope sessionScope, LAP action) {
-        return addSessionScopeAProp(caption, sessionScope, SetFact.<SessionDataProperty>EMPTY(), action);
-    }
-    protected LAP addSessionScopeAProp(LocalizedString caption, FormSessionScope sessionScope, FunctionSet<SessionDataProperty> keepProps, LAP action) {
-        if(sessionScope.isNewSession()) {
-            action = addNewSessionAProp(null, caption, action, sessionScope == FormSessionScope.NESTEDSESSION, false, false, false, keepProps);
-        } else
-            action.property.caption = caption;
-        return action;
-    }
-
+    
     // ------------------- NEWSESSION ----------------- //
 
     protected LAP addNewSessionAProp(AbstractGroup group, LocalizedString caption, LAP action, boolean doApply, boolean singleApply, boolean newSQL, boolean isNested) {
@@ -1512,7 +1511,7 @@ public abstract class LogicsModule {
     public LAP<?> addDDAProp(CalcProperty property) {
         List<ResolveClassSet> signature = new ArrayList<>();
         DrillDownFormEntity drillDownFormEntity = property.getDrillDownForm(this, null);
-        LAP result = addMFAProp(LocalizedString.create("{logics.property.drilldown.action}"), drillDownFormEntity, drillDownFormEntity.paramObjects, property.drillDownInNewSession());
+        LAP result = addMFAProp(baseLM.drillDownGroup, LocalizedString.create("{logics.property.drilldown.action}"), drillDownFormEntity, drillDownFormEntity.paramObjects, property.drillDownInNewSession());
         if (property.isNamed()) {
             String name = nameForDrillDownAction(property, signature);
             makePropertyPublic(result, name, signature);
@@ -1588,15 +1587,15 @@ public abstract class LogicsModule {
 
     // ---------------------- Add Object ---------------------- //
 
-    public <T extends PropertyInterface, I extends PropertyInterface> LAP addAddObjAProp(CustomClass cls, boolean autoSet, int resInterfaces, boolean conditional, boolean resultExists, Object... params) {
+    public <T extends PropertyInterface, I extends PropertyInterface> LAP getScriptAddObjectAction(CustomClass cls, boolean forceDialog, int resInterfaces, boolean conditional, boolean resultExists, Object... params) {
         ImOrderSet<PropertyInterface> innerInterfaces = genInterfaces(getIntNum(params));
         ImList<CalcPropertyInterfaceImplement<PropertyInterface>> readImplements = readCalcImplements(innerInterfaces, params);
         CalcPropertyMapImplement<T, PropertyInterface> resultPart = (CalcPropertyMapImplement<T, PropertyInterface>)
                 (resultExists ? readImplements.get(resInterfaces) : null);
         CalcPropertyMapImplement<T, PropertyInterface> conditionalPart = (CalcPropertyMapImplement<T, PropertyInterface>)
-                (conditional ? readImplements.get(resInterfaces + (resultExists ? 1 : 0)) : null);
+                (conditional ? readImplements.get(resInterfaces + (resultExists ? 1 : 0)) : DerivedProperty.createTrue());
 
-        return addAProp(null, new AddObjectActionProperty(cls, innerInterfaces.getSet(), (ImOrderSet) readImplements.subList(0, resInterfaces).toOrderExclSet(), conditionalPart, resultPart, MapFact.<CalcPropertyInterfaceImplement<I>, Boolean>EMPTYORDER(), false, autoSet));
+        return addAProp(null, new AddObjectActionProperty(cls, forceDialog, innerInterfaces.getSet(), (ImOrderSet) readImplements.subList(0, resInterfaces).toOrderExclSet(), conditionalPart, resultPart, MapFact.<CalcPropertyInterfaceImplement<I>, Boolean>EMPTYORDER(), false));
     }
 
     public LAP getAddObjectAction(FormEntity formEntity, ObjectEntity obj) {
@@ -1624,61 +1623,58 @@ public abstract class LogicsModule {
 
     public LAP getScriptAddFormAction(CustomClass cls, FormSessionScope scope) {
         ClassFormEntity form = cls.getEditForm(baseLM, getVersion());
-        return addAddFormAction(cls, null, scope, form);
+
+        LAP property = addDMFAProp(null, LocalizedString.create("{logics.add}"),
+                form.form, new ObjectEntity[] {},
+                form.form.addPropertyObject(getAddObjectAction(cls, form.form, form.object)), scope, true);
+        setAddFormActionProperties(property, form, scope);
+        return property;
     }
 
-    protected LAP addAddFormAction(CustomClass cls, ObjectEntity contextObject, FormSessionScope scope, ClassFormEntity form) {
-        LCP<ClassPropertyInterface> addedProperty = new LCP<ClassPropertyInterface>(baseLM.getAddedObjectProperty());
+    protected void setAddFormActionProperties(LAP property, ClassFormEntity form, FormSessionScope scope) {
+        property.setImage("add.png");
+        property.setShouldBeLast(true);
+        property.setEditKey(KeyStrokes.getAddActionPropertyKeyStroke());
+        property.setShowEditKey(false);
+        property.setDrawToToolbar(true);
+        property.setForceViewType(ClassViewType.PANEL);
 
-        LAP result = addListAProp(
-                            addAddObjAProp(cls, true, 0, false, true, addedProperty), // ADDOBJ (FORM with AUTOSET), addAddObjAProp(cls, false, true, 0, false, true, addedProperty),
-                            addJoinAProp(addListAProp( // так хитро делается чтобы заnest'ить addedProperty (иначе apply его сбрасывает)
-                                    addDMFAProp(form, scope.isManageSession(), true), 1, // FORM EDIT class OBJECT prm
-                                    addSetPropertyAProp(1, false, 1, addedProperty, 1), 1), // addedProperty <- prm 
-                            addedProperty)); // FORM EDIT class OBJECT prm
-
-        LCP formResultProperty = baseLM.getFormResultProperty();
-        result = addSessionScopeAProp(LocalizedString.create("sys"), scope, SetFact.toExclSet((SessionDataProperty)addedProperty.property, (SessionDataProperty)formResultProperty.property), result); // NEWSESSION (if needed)
-        result = addListAProp(LocalizedString.create("{logics.add}"), result,
-                addIfAProp(addJProp(baseLM.equals2, formResultProperty, addCProp(baseLM.formResult, "ok")), // IF formResult == ok
-                        (contextObject != null ? addJoinAProp(addOSAProp(contextObject, true, 1), addedProperty) : baseLM.empty), // THEN (contextObject != null) SEEK exf.o prm
-                        (!scope.isNewSession() ? addJoinAProp(getDeleteAction(cls, true), addedProperty) : baseLM.empty)) // ELSE (!scope.isNewSession) DELETE prm),
-                         );
-
-        result.setImage("add.png");
-        result.setShouldBeLast(true);
-        result.setEditKey(KeyStrokes.getAddActionPropertyKeyStroke());
-        result.setShowEditKey(false);
-        result.setDrawToToolbar(true);
-        result.setForceViewType(ClassViewType.PANEL);
-
-        return result;
+        // todo : так не очень правильно делать - получается, что мы добавляем к Immutable объекту FormActionProperty ссылки на ObjectEntity
+        FormActionProperty formAction = (FormActionProperty)property.property;
+        formAction.seekOnOk.add(form.object);
+        if (!scope.isNewSession()) {
+            formAction.closeAction = form.form.addPropertyObject(getDeleteAction((CustomClass)form.object.baseClass, true), form.object);
+        }
     }
 
-    public LAP getAddFormAction(FormEntity contextForm, ObjectEntity contextObject, FormSessionScope scope, Version version) {
-        CustomClass cls = (CustomClass)contextObject.baseClass;
-        return baseLM.getAddFormAction(cls, contextForm, contextObject, scope, cls.getEditForm(baseLM, version));
+    public LAP getAddFormAction(CustomClass cls, FormSessionScope scope, Version version) {
+        ClassFormEntity form = cls.getEditForm(baseLM, version);
+        return baseLM.getAddFormAction(cls, scope, form);
     }
 
     // ---------------------- Edit Form ---------------------- //
 
     public LAP getScriptEditFormAction(CustomClass cls, FormSessionScope scope) {
         ClassFormEntity form = cls.getEditForm(baseLM, getVersion());
-        return addEditFormAction(scope, form);
+        LAP property = addDMFAProp(null, LocalizedString.create("{logics.edit}"), form.form, new ObjectEntity[]{form.object}, scope);
+        setEditFormActionProperties(property);
+        return property;
     }
 
-    protected LAP addEditFormAction(FormSessionScope scope, ClassFormEntity form) {
-        LAP result = addSessionScopeAProp(LocalizedString.create("{logics.edit}"), scope,
-                addDMFAProp(form, scope.isManageSession(), false));
+    public LAP getEditFormAction(CustomClass cls, FormSessionScope scope, Version version) {
+        ClassFormEntity form = cls.getEditForm(baseLM, version);
+        LAP property = baseLM.getEditFormAction(cls, scope, form);
+        setEditFormActionProperties(property);
+        return property;
+    }
 
-        result.setImage("edit.png");
-        result.setShouldBeLast(true);
-        result.setEditKey(KeyStrokes.getEditActionPropertyKeyStroke());
-        result.setShowEditKey(false);
-        result.setDrawToToolbar(true);
-        result.setForceViewType(ClassViewType.PANEL);
-
-        return result;
+    protected void setEditFormActionProperties(LAP property) {
+        property.setImage("edit.png");
+        property.setShouldBeLast(true);
+        property.setEditKey(KeyStrokes.getEditActionPropertyKeyStroke());
+        property.setShowEditKey(false);
+        property.setDrawToToolbar(true);
+        property.setForceViewType(ClassViewType.PANEL);
     }
 
     public LAP addProp(ActionProperty prop) {
@@ -2077,7 +2073,7 @@ public abstract class LogicsModule {
     }
 
     public PropertyDrawEntity addAddFormAction(FormEntity form, ObjectEntity object, FormSessionScope scope, Version version) {
-        LAP addForm = getAddFormAction(form, object, scope, version);
+        LAP addForm = getAddFormAction((CustomClass)object.baseClass, scope, version);
         PropertyDrawEntity actionAddPropertyDraw = form.addPropertyDraw(addForm, version);
         actionAddPropertyDraw.toDraw = object.groupTo;
 
@@ -2085,8 +2081,7 @@ public abstract class LogicsModule {
     }
 
     public PropertyDrawEntity addEditFormAction(FormEntity form, ObjectEntity object, FormSessionScope scope, Version version) {
-        CustomClass cls = (CustomClass) object.baseClass;
-        return form.addPropertyDraw(baseLM.getEditFormAction(cls, scope, cls.getEditForm(baseLM, version)), version, object);
+        return form.addPropertyDraw(getEditFormAction((CustomClass) object.baseClass, scope, version), version, object);
     }
 
     public PropertyDrawEntity addFormDeleteAction(FormEntity form, ObjectEntity object, boolean oldSession, Version version) {

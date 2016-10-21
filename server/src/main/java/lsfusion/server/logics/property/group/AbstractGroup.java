@@ -8,7 +8,6 @@ import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.base.col.interfaces.mutable.MOrderSet;
 import lsfusion.server.caches.IdentityStartLazy;
-import lsfusion.server.classes.ValueClass;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.mutables.NFFact;
 import lsfusion.server.logics.mutables.Version;
@@ -136,11 +135,10 @@ public class AbstractGroup extends AbstractNode {
         return result;
     }
 
-    @Override
-    protected ImList<PropertyClassImplement> getProperties(ImSet<ValueClassWrapper> valueClasses, ImMap<ValueClass, ImSet<ValueClassWrapper>> mapClasses, boolean useObjSubsets, boolean anyInInterface, Version version) {
+    public ImList<PropertyClassImplement> getProperties(ImCol<ImSet<ValueClassWrapper>> classLists, boolean anyInInterface, Version version) {
         MList<PropertyClassImplement> mResult = ListFact.mList();
         for (AbstractNode child : getNFChildrenListIt(version)) {
-            mResult.addAll(child.getProperties(valueClasses, mapClasses, useObjSubsets, anyInInterface, version));
+            mResult.addAll(child.getProperties(classLists, anyInInterface, version));
         }
         return mResult.immutableList();
     }

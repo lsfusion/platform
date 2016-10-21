@@ -37,7 +37,7 @@ public class LogPropertyActionProperty<P extends PropertyInterface> extends Syst
     protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
 
         try (FormInstance<?> formInstance = context.createFormInstance(context.getBL().LM.getLogForm(property),
-                MapFact.<ObjectEntity, DataObject>EMPTY(), context.getSession(), false, false, false, false, false, null)) {
+                MapFact.<ObjectEntity, DataObject>EMPTY(), context.getSession(), false, FormSessionScope.OLDSESSION, false, false, false, null)) {
             String caption = messageProperty == null ? null : (String) messageProperty.read(context);
 
             List<String> titleRow = new ArrayList<>();

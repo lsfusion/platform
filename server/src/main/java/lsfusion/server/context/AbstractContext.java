@@ -25,6 +25,7 @@ import lsfusion.server.form.entity.PropertyDrawEntity;
 import lsfusion.server.form.entity.filter.FilterEntity;
 import lsfusion.server.form.instance.FormCloseType;
 import lsfusion.server.form.instance.FormInstance;
+import lsfusion.server.form.instance.FormSessionScope;
 import lsfusion.server.form.instance.PropertyObjectInterfaceInstance;
 import lsfusion.server.form.instance.listener.CustomClassListener;
 import lsfusion.server.form.instance.listener.FocusListener;
@@ -154,13 +155,19 @@ public abstract class AbstractContext implements Context {
         return s.getString(locale, getLogicsInstance().getBusinessLogics().getLocalizer());
     }
 
-    public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, boolean isAdd, boolean manageSession, ExecutionStack stack, boolean checkOnOk, boolean showDrop, boolean interactive, ImSet<FilterEntity> contextFilters, PropertyDrawEntity initFilterProperty, ImSet<PullChangeProperty> pullProps, boolean readonly) throws SQLException, SQLHandledException {
-        return new FormInstance(formEntity, getLogicsInstance(),
-                session,
-                getSecurityPolicy(), getFocusListener(), getClassListener(),
-                getComputer(stack), getConnection(), mapObjects, stack, isModal,
-                isAdd, manageSession,
-                checkOnOk, showDrop, interactive, contextFilters, initFilterProperty, pullProps, readonly, getLocale());
+    public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, boolean isAdd, FormSessionScope sessionScope, ExecutionStack stack, boolean checkOnOk, boolean showDrop, boolean interactive, ImSet<FilterEntity> contextFilters, PropertyDrawEntity initFilterProperty, ImSet<PullChangeProperty> pullProps, boolean readonly) throws SQLException, SQLHandledException {
+        DataSession newSession = sessionScope.createSession(session);
+        try {
+            return new FormInstance(formEntity, getLogicsInstance(),
+                    newSession,
+                    getSecurityPolicy(), getFocusListener(), getClassListener(),
+                    getComputer(stack), getConnection(), mapObjects, stack, isModal,
+                    isAdd, sessionScope,
+                    checkOnOk, showDrop, interactive, contextFilters, initFilterProperty, pullProps, readonly, getLocale());
+        } finally {
+            if (newSession != session) // временный хак, когда уйдет SessionScope тогда и он уйдет, по сути тоже try with resources
+                newSession.close();
+        }
     }
 
     public RemoteForm createRemoteForm(FormInstance formInstance, ExecutionStack stack) {
