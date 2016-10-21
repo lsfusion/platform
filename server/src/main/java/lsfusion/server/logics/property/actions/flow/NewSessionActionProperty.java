@@ -16,7 +16,7 @@ import lsfusion.server.session.DataSession;
 import java.sql.SQLException;
 
 public class NewSessionActionProperty extends AroundAspectActionProperty {
-    private final FunctionSet<SessionDataProperty> migrateSessionProperties;
+    private final FunctionSet<SessionDataProperty> migrateSessionProperties; // актуальны и для nested, так как иначе будет отличаться поведение от NEW SESSION
     private final boolean isNested;
     private final boolean singleApply;
     private final boolean newSQL; 
@@ -31,8 +31,6 @@ public class NewSessionActionProperty extends AroundAspectActionProperty {
 
         this.singleApply = singleApply;
         this.newSQL = newSQL;
-
-        assert !(isNested && !migrateSessionProperties.isEmpty());
 
         this.isNested = isNested;
         this.doApply = doApply;
@@ -96,9 +94,7 @@ public class NewSessionActionProperty extends AroundAspectActionProperty {
 
     protected void afterAspect(FlowResult result, ExecutionContext<PropertyInterface> context, ExecutionContext<PropertyInterface> innerContext) throws SQLException, SQLHandledException {
         if (!context.getSession().isInTransaction() && !newSQL) {
-            if (!isNested) {
-                migrateSessionProperties(innerContext.getSession(), context.getSession());
-            }
+            migrateSessionProperties(innerContext.getSession(), context.getSession());
         }
 
         if (doApply) {
@@ -128,7 +124,7 @@ public class NewSessionActionProperty extends AroundAspectActionProperty {
 
     @Override
     public CustomClass getSimpleAdd() {
-        return aspectActionImplement.property.getSimpleAdd();
+        return null; // нет смысла, так как все равно в другой сессии выполнение
     }
 
     @Override
