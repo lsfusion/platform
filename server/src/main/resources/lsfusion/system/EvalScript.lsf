@@ -49,7 +49,7 @@ setSucceeded(Script s) = ACTION {
 preRunScript() = ACTION {
     LOCAL localText = TEXT();
     localText() <- scriptStorage();
-    NEWSESSION NESTED localText {
+    NEWSESSION NESTED (localText) {
         scriptStorage() <- localText();
         LOCAL script = Script ();
         script() <- textScript(localText());

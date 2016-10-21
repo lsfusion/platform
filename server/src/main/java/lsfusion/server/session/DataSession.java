@@ -39,11 +39,13 @@ import lsfusion.server.form.instance.ChangedData;
 import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.form.instance.GroupObjectInstance;
 import lsfusion.server.form.instance.PropertyObjectInterfaceInstance;
+import lsfusion.server.form.instance.listener.CustomClassListener;
 import lsfusion.server.form.navigator.*;
 import lsfusion.server.logics.*;
 import lsfusion.server.logics.debug.ActionPropertyDebugger;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.linear.LCP;
+import lsfusion.server.logics.linear.LP;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.actions.SessionEnvEvent;
 import lsfusion.server.logics.table.IDTable;
@@ -598,6 +600,12 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
     public DataObject addObject() throws SQLException {
         return new DataObject(IDTable.instance.generateID(idSession, IDTable.OBJECT),baseClass.unknown);
+    }
+    
+    public <P extends PropertyInterface> DataObject addObjectAutoSet(ConcreteCustomClass customClass, DataObject object, BusinessLogics BL, CustomClassListener classListener) throws SQLException, SQLHandledException {
+        DataObject dataObject = addObject(customClass, object);
+        BL.resolveAutoSet(this, customClass, dataObject, classListener);
+        return dataObject;
     }
 
     // с fill'ами addObject'ы

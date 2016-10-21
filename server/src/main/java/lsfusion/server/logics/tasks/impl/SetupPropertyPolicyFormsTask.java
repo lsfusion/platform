@@ -26,7 +26,7 @@ public class SetupPropertyPolicyFormsTask extends GroupPropertiesTask {
         BusinessLogics BL = getBL();
         FormEntity policyFormEntity = BL.securityLM.propertyPolicyForm;
         ObjectEntity propertyObj = policyFormEntity.getObject("p");
-        LAP<?> setupPolicyFormProperty = BL.LM.addMFAProp(null, LocalizedString.create("sys"), policyFormEntity, new ObjectEntity[]{propertyObj}, true);
+        LAP<?> setupPolicyFormProperty = BL.LM.addMFAProp(LocalizedString.create("sys"), policyFormEntity, new ObjectEntity[]{propertyObj}, true);
         setupPolicyForPropByCN = BL.LM.addJoinAProp(setupPolicyFormProperty, BL.reflectionLM.propertyCanonicalName, 1);
         return true;
     }

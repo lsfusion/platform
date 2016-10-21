@@ -42,9 +42,7 @@ import lsfusion.server.form.instance.listener.FocusListener;
 import lsfusion.server.form.instance.listener.RemoteFormListener;
 import lsfusion.server.logics.*;
 import lsfusion.server.logics.SecurityManager;
-import lsfusion.server.logics.property.ActionProperty;
-import lsfusion.server.logics.property.CalcProperty;
-import lsfusion.server.logics.property.ClassPropertyInterface;
+import lsfusion.server.logics.property.*;
 import lsfusion.server.remote.ContextAwarePendingRemoteObject;
 import lsfusion.server.remote.RemoteForm;
 import lsfusion.server.remote.RemoteLoggerAspect;
@@ -700,7 +698,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
             try(DataSession session = createSession()) {
                 return context.createRemoteForm(
                         context.createFormInstance(formEntity, MapFact.<ObjectEntity, DataObject>EMPTY(), session,
-                                isModal, false, FormSessionScope.MANAGESESSION, stack, false, false, interactive, null,
+                                isModal, false, true, stack, false, false, interactive, null,
                                 null, null, false),
                         stack);
             }

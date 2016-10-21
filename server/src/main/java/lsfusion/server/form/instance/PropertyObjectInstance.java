@@ -65,7 +65,7 @@ public abstract class PropertyObjectInstance<P extends PropertyInterface, T exte
             public AndClassSet getMapValue(PropertyObjectInterfaceInstance value) {
                 return value.getClassSet(classGroups);
             }});
-        return property.cacheIsInInterface(classImplement, any);
+        return property.isInInterface(classImplement, any);
     }
 
     public abstract CalcPropertyObjectInstance<?> getDrawProperty();

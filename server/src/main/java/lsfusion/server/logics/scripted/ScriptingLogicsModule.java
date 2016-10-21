@@ -879,18 +879,35 @@ public class ScriptingLogicsModule extends LogicsModule {
         property.property.eventID = id;
     }
     
-    private List<ResolveClassSet> getParamClasses(PropertyUsage usage) throws ScriptingErrorLog.SemanticErrorException {
-        if (usage.classNames == null) {
+    public List<ResolveClassSet> getParamClasses(PropertyUsage usage) throws ScriptingErrorLog.SemanticErrorException {
+        List<ValueClass> valueClasses = getValueClasses(usage);
+        if (valueClasses == null) {
             return null;
         }
         
         List<ResolveClassSet> classes = new ArrayList<>();
+        for (ValueClass valueClass : valueClasses) {
+            if (valueClass == null) {
+                classes.add(null);
+            } else {
+                classes.add(valueClass.getResolveSet());
+            }
+        }
+        return classes;
+    }
+
+    public List<ValueClass> getValueClasses(PropertyUsage usage) throws ScriptingErrorLog.SemanticErrorException {
+        if (usage.classNames == null) {
+            return null;
+        }
+
+        List<ValueClass> classes = new ArrayList<>();
         for (String className : usage.classNames) {
             if (className.equals(PropertyCanonicalNameUtils.UNKNOWNCLASS)) {
                 classes.add(null);
             } else {
                 ValueClass cls = findClass(className);
-                classes.add(cls.getResolveSet());
+                classes.add(cls);
             }
         }
         return classes;
@@ -1639,7 +1656,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             paramsList.add(whereProperty);
         }
         List<Object> resultParams = getParamsPlainList(paramsList);
-        LAP result = getScriptAddObjectAction((CustomClass) cls, false, resultInterfaces.size(), whereProperty != null, toProperty != null || whereProperty == null, resultParams.toArray());
+        LAP result = addAddObjAProp((CustomClass) cls, false, resultInterfaces.size(), whereProperty != null, toProperty != null || whereProperty == null, resultParams.toArray());
         return new LPWithParams(result, resultInterfaces);
     }
 
@@ -1762,6 +1779,15 @@ public class ScriptingLogicsModule extends LogicsModule {
                 getMigrateProps(keepSessionProps, keepAllSessionProps), serializable);
 
         return new LPWithParams(result, mergeAllParams(propParams));
+    }
+
+    public LPWithParams addScriptedCancelAProp(List<PropertyUsage> keepSessionProps, boolean keepAllSessionProps)
+            throws ScriptingErrorLog.SemanticErrorException {
+        scriptLogger.info("addScriptedCancelAProp();");
+
+        LP result = addCancelAProp(null, LocalizedString.create(""), getMigrateProps(keepSessionProps, keepAllSessionProps));
+
+        return new LPWithParams(result, new ArrayList<Integer>());
     }
 
     private FunctionSet<SessionDataProperty> getMigrateProps(List<PropertyUsage> keepSessionProps, boolean keepAllSessionProps) throws ScriptingErrorLog.SemanticErrorException {
@@ -2218,7 +2244,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     public LPWithParams addScriptedFAProp(String formName, List<String> objectNames, List<LPWithParams> mapping,
                                           String contextObjectName, LPWithParams contextProperty,
                                           String initFilterPropertyName, List<String> initFilterPropertyMapping,
-                                          ModalityType modalityType, FormSessionScope sessionScope,
+                                          ModalityType modalityType, boolean manageSession,
                                           boolean checkOnOk, boolean showDrop, boolean noCancel,
                                           FormPrintType printType, FormExportType exportType, boolean readonly) throws ScriptingErrorLog.SemanticErrorException {
         if (contextProperty != null) {
@@ -2242,10 +2268,10 @@ public class ScriptingLogicsModule extends LogicsModule {
                                  : getPropertyDraw(this, form, PropertyDrawEntity.createSID(initFilterPropertyName, initFilterPropertyMapping), version);
         }
 
-        LAP property = addFAProp(null, LocalizedString.create(""), form, objects, null, noCancel, contextObject,
-                contextProperty == null ? null : (CalcProperty) contextProperty.property.property,
-                initFilterProperty,
-                sessionScope, modalityType, checkOnOk, showDrop, printType, exportType, readonly);
+        LAP property = addFAProp(null, LocalizedString.create(""), form, objects, manageSession, noCancel, contextObject,
+                                 contextProperty == null ? null : (CalcProperty)contextProperty.property.property,
+                                 initFilterProperty,
+                modalityType, checkOnOk, showDrop, printType, exportType, readonly);
 
         if (mapping.size() > 0) {
             if (contextProperty != null) {

@@ -2,13 +2,14 @@ package lsfusion.server.logics.property.group;
 
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.SetFact;
-import lsfusion.base.col.interfaces.immutable.ImCol;
 import lsfusion.base.col.interfaces.immutable.ImList;
+import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.classes.ValueClass;
+import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.CalcPropertyClassImplement;
 import lsfusion.server.logics.property.Property;
@@ -18,7 +19,7 @@ import lsfusion.server.logics.property.ValueClassWrapper;
 import java.util.List;
 
 // set'ы свойств, нужен в общем то когда входы динамической длины
-public abstract class PropertySet extends AbstractNode {
+public abstract class PropertySet extends AbstractPropertyNode {
     protected abstract Class<?> getPropertyClass();
 
     public boolean hasChild(Property prop) {
@@ -30,9 +31,9 @@ public abstract class PropertySet extends AbstractNode {
     }
 
     @Override
-    public ImList<PropertyClassImplement> getProperties(ImCol<ImSet<ValueClassWrapper>> classLists, boolean anyInInterface, Version version) {
+    protected ImList<PropertyClassImplement> getProperties(ImSet<ValueClassWrapper> valueClasses, ImMap<ValueClass, ImSet<ValueClassWrapper>> mapClasses, boolean useObjSubsets, boolean anyInInterface, Version version) {
         MList<PropertyClassImplement> mResultList = ListFact.mList();
-        for (ImSet<ValueClassWrapper> classes : classLists) {
+        for (ImSet<ValueClassWrapper> classes : FormEntity.getSubsets(valueClasses, useObjSubsets)) {
             if (isInInterface(classes)) {
                 mResultList.addAll(getProperties(classes, version));
             }
@@ -46,7 +47,7 @@ public abstract class PropertySet extends AbstractNode {
             mClassList.exclAdd(new ValueClassWrapper(cls));
         }
 
-        ImList<PropertyClassImplement> clsImplements = getProperties(SetFact.singleton(mClassList.immutable()), true, version);
+        ImList<PropertyClassImplement> clsImplements = getProperties(mClassList.immutable(), false, true, version);
         return clsImplements.mapListValues(new GetValue<Property, PropertyClassImplement>() {
             public Property getMapValue(PropertyClassImplement value) {
                 return value.property;

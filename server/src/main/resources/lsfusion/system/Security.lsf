@@ -476,3 +476,18 @@ NAVIGATOR {
         ADD Security.securityPolicy;
     }
 }
+
+// temporary for migration
+
+dataCopyAccess = DATA TEXT (TEXT);
+copyAccess() = ACTION {
+    FOR TEXT old == dataCopyAccess(TEXT new) AND NOT propertyCanonicalName(new) INLINE ADDOBJ p = Property DO
+        canonicalName(p) <- new;
+        
+    FOR TEXT old == dataCopyAccess(TEXT new) AND Property newProp == propertyCanonicalName(new) AND Property oldProp == propertyCanonicalName(old) INLINE DO {
+        dataPermitView(newProp) <- dataPermitView(oldProp);
+        dataForbidView(newProp) <- dataForbidView(oldProp);
+        dataPermitView(UserRole ur, newProp) <- dataPermitView(ur, oldProp);
+        dataForbidView(UserRole ur, newProp) <- dataForbidView(ur, oldProp);
+    }    
+}

@@ -19,6 +19,7 @@ import lsfusion.server.caches.IdentityStrongLazy;
 import lsfusion.server.classes.ByteArrayClass;
 import lsfusion.server.classes.ConcreteCustomClass;
 import lsfusion.server.classes.DataClass;
+import lsfusion.server.classes.StringClass;
 import lsfusion.server.context.ExecutionStack;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.*;
@@ -50,6 +51,7 @@ import lsfusion.server.logics.table.IDTable;
 import lsfusion.server.logics.table.ImplementTable;
 import lsfusion.server.session.DataSession;
 import lsfusion.server.session.SessionCreator;
+import lsfusion.server.session.SingleKeyPropertyUsage;
 import lsfusion.server.stack.ParamMessage;
 import lsfusion.server.stack.ProgressStackItem;
 import lsfusion.server.stack.StackMessage;
@@ -918,6 +920,12 @@ public class DBManager extends LogicsManager implements InitializingBean {
             if(!migrateReflectionProperties(oldDBStructure))
                 throw new RuntimeException("Error while migrating reflection properties and actions");
 
+            if(newDBStructure.version >= 23 && oldDBStructure.version < 23) {
+                startLogger.info("Migrating ADDFORMS access");
+                if (!migrateAccessProperties())
+                    throw new RuntimeException("Error while migrating ADDFORMS access");
+            }
+
             newDBStructure.writeConcreteClasses(outDB);
 
             try {
@@ -1042,6 +1050,35 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 return session.apply(businessLogics, getStack());
             }
         } catch (Exception e) {
+            throw Throwables.propagate(e);
+        }
+    }
+
+    // temporary
+    public static Map<String, String> copyAccess = new HashMap<>(); 
+    private <P extends PropertyInterface> boolean migrateAccessProperties() {
+        try (DataSession session = createSession(OperationOwner.unknown)) { // создание сессии аналогично fillIDs
+            SingleKeyPropertyUsage table = new SingleKeyPropertyUsage(StringClass.text, StringClass.text);
+            table.writeRows(session.sql, OperationOwner.unknown, MapFact.fromJavaMap(copyAccess).mapKeyValues(new GetValue<DataObject, String>() {
+                public DataObject getMapValue(String value) {
+                    return new DataObject(value, StringClass.text);
+                }
+            }, new GetValue<ObjectValue, String>() {
+                public ObjectValue getMapValue(String value) {
+                    return new DataObject(value, StringClass.text);
+                }
+            }));
+
+            try {
+                LCP lp = businessLogics.securityLM.dataCopyAccess;
+                session.change(((LCP<P>) lp).property, SingleKeyPropertyUsage.getChange(table, ((LCP<P>) lp).listInterfaces.single()));
+            } finally {
+                table.drop(session.sql, OperationOwner.unknown);
+            }
+
+            businessLogics.securityLM.copyAccess.execute(session, getStack());
+            return session.apply(businessLogics, getStack());
+        } catch (SQLException | SQLHandledException e) {
             throw Throwables.propagate(e);
         }
     }
@@ -1982,7 +2019,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
     private class NewDBStructure extends DBStructure<Field> {
 
         public <P extends PropertyInterface> NewDBStructure(DBVersion dbVersion) {
-            version = 22;
+            version = 23;
             this.dbVersion = dbVersion;
 
             tables.putAll(getIndicesMap());

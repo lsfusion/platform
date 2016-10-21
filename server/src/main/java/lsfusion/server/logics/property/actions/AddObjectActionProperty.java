@@ -35,7 +35,7 @@ import java.sql.SQLException;
 public class AddObjectActionProperty<T extends PropertyInterface, I extends PropertyInterface> extends ExtendContextActionProperty<I> {
 
     protected final CustomClass valueClass; // обозначает класс объекта, который нужно добавить
-    private final boolean forceDialog; // если класс конкретный и имеет потомков
+    private final boolean autoSet;
 
     protected CalcPropertyMapImplement<T, I> where;
     private CalcPropertyMapImplement<?, I> result; // только extend интерфейсы
@@ -43,15 +43,16 @@ public class AddObjectActionProperty<T extends PropertyInterface, I extends Prop
     private final ImOrderMap<CalcPropertyInterfaceImplement<I>, Boolean> orders; // calculate
     private final boolean ordersNotNull;
 
-    public <T extends PropertyInterface> AddObjectActionProperty(CustomClass valueClass, boolean forceDialog, CalcProperty<T> result) {
-        this(valueClass, forceDialog, SetFact.<I>EMPTY(), SetFact.<I>EMPTYORDER(), null, result!=null ? new CalcPropertyMapImplement<T, I>(result) : null, MapFact.<CalcPropertyInterfaceImplement<I>, Boolean>EMPTYORDER(), false);
+    public <T extends PropertyInterface> AddObjectActionProperty(CustomClass valueClass, CalcProperty<T> result, boolean autoSet) {
+        this(valueClass, SetFact.<I>EMPTY(), SetFact.<I>EMPTYORDER(), null, result!=null ? new CalcPropertyMapImplement<T, I>(result) : null, MapFact.<CalcPropertyInterfaceImplement<I>, Boolean>EMPTYORDER(), false, autoSet);
     }
 
-    public AddObjectActionProperty(CustomClass valueClass, boolean forceDialog, ImSet<I> innerInterfaces, ImOrderSet<I> mapInterfaces, CalcPropertyMapImplement<T, I> where, CalcPropertyMapImplement<?, I> result, ImOrderMap<CalcPropertyInterfaceImplement<I>, Boolean> orders, boolean ordersNotNull) {
+    public AddObjectActionProperty(CustomClass valueClass, ImSet<I> innerInterfaces, ImOrderSet<I> mapInterfaces, CalcPropertyMapImplement<T, I> where, CalcPropertyMapImplement<?, I> result, ImOrderMap<CalcPropertyInterfaceImplement<I>, Boolean> orders, boolean ordersNotNull, boolean autoSet) {
         super(LocalizedString.create("{logics.add}"), innerInterfaces, mapInterfaces);
         
         this.valueClass = valueClass;
-        this.forceDialog = forceDialog;
+        
+        this.autoSet = autoSet;
         
         this.where = where;
         this.result = result;
@@ -60,12 +61,14 @@ public class AddObjectActionProperty<T extends PropertyInterface, I extends Prop
         this.ordersNotNull = ordersNotNull;
         
         assert where==null || !needDialog();
+        
+        assert where==null || !autoSet;
 
         assert where==null || result==null || innerInterfaces.containsAll(where.mapping.valuesSet().merge(result.mapping.valuesSet()));
     }
     
     protected boolean needDialog() {
-        return valueClass instanceof AbstractCustomClass || (forceDialog && valueClass.hasChildren());
+        return valueClass instanceof AbstractCustomClass;  // || (forceDialog && valueClass.hasChildren())
     }
 
     public ImSet<ActionProperty> getDependActions() {
@@ -117,9 +120,14 @@ public class AddObjectActionProperty<T extends PropertyInterface, I extends Prop
         DataSession session = context.getSession();
         try {
             PropertyChange<I> resultChange;
-            if(where==null) // оптимизация, один объект добавляем
-                resultChange = new PropertyChange<>(context.addObject(readClass));
-            else {
+            if(where==null) { // оптимизация, один объект добавляем
+                DataObject addObject;
+                if(autoSet)
+                    addObject = context.addObjectAutoSet(readClass);
+                else
+                    addObject = context.addObject(readClass);
+                resultChange = new PropertyChange<>(addObject);
+            } else {
                 if(result!=null)
                     session.dropChanges((DataProperty) result.property);
     
@@ -150,6 +158,7 @@ public class AddObjectActionProperty<T extends PropertyInterface, I extends Prop
     @Override
     public void proceedDefaultDraw(PropertyDrawEntity<PropertyInterface> entity, FormEntity<?> form, Version version) {
         super.proceedDefaultDraw(entity, form, version);
+        assert this instanceof FormAddObjectActionProperty || (drawToToolbar && shouldBeLast && forceViewType == ClassViewType.PANEL);
         entity.setDrawToToolbar(true);
         entity.shouldBeLast = true;
         entity.forceViewType = ClassViewType.PANEL;

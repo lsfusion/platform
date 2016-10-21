@@ -42,13 +42,12 @@ public class LogFormEntity<T extends BusinessLogics<T>> extends FormEntity<T> {
     LCP<?> property;
     public boolean lazyInit;
 
-    public LogFormEntity(String canonicalName, LocalizedString caption, LCP<?> property, LCP<?> logProperty, SystemEventsLogicsModule systemEventsLM, boolean lazyInit) {
+    public LogFormEntity(String canonicalName, LocalizedString caption, LCP<?> property, LCP<?> logProperty, SystemEventsLogicsModule systemEventsLM) {
         super(canonicalName, caption, systemEventsLM.getVersion());
 
         this.systemEventsLM = systemEventsLM;
         this.logProperty = logProperty;
         this.property = property;
-        this.lazyInit = lazyInit;
 
         Version version = getVersion();
 
@@ -80,8 +79,7 @@ public class LogFormEntity<T extends BusinessLogics<T>> extends FormEntity<T> {
 
         addGroupObject(logGroup, version);
 
-        if (!lazyInit)
-            initProperties();
+        initProperties();
         
         // finalizeInit внутри initProperties
     }
@@ -100,7 +98,7 @@ public class LogFormEntity<T extends BusinessLogics<T>> extends FormEntity<T> {
         addPropertyDraw(logProperty, version, entities);
 
         ImList<PropertyClassImplement> recognizePropImpls =
-                systemEventsLM.baseLM.recognizeGroup.getProperties(SetFact.singleton(SetFact.singleton(new ValueClassWrapper(property.property.getValueClass(ClassType.logPolicy)))), true, version);
+                systemEventsLM.baseLM.recognizeGroup.getProperties(new ValueClassWrapper(property.property.getValueClass(ClassType.logPolicy)), true, version);
 
         for (PropertyClassImplement impl : recognizePropImpls) {
             if(impl instanceof CalcPropertyClassImplement) {

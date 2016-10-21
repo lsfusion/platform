@@ -9,13 +9,13 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.implementations.simple.EmptyOrderMap;
 import lsfusion.base.col.implementations.simple.EmptyRevMap;
 import lsfusion.base.col.interfaces.immutable.*;
-import lsfusion.base.col.interfaces.mutable.LongMutable;
-import lsfusion.base.col.interfaces.mutable.MList;
-import lsfusion.base.col.interfaces.mutable.MMap;
-import lsfusion.base.col.interfaces.mutable.MOrderMap;
+import lsfusion.base.col.interfaces.mutable.*;
+import lsfusion.base.col.interfaces.mutable.add.MAddCol;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndexValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
+import lsfusion.base.col.lru.LRUSVSMap;
+import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.interop.ClassViewType;
 import lsfusion.server.Settings;
 import lsfusion.server.caches.IdentityLazy;
@@ -42,6 +42,7 @@ import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.actions.edit.DefaultChangeActionProperty;
 import lsfusion.server.logics.property.group.AbstractGroup;
 import lsfusion.server.logics.property.group.AbstractNode;
+import lsfusion.server.logics.property.group.AbstractPropertyNode;
 import lsfusion.server.session.Modifier;
 import lsfusion.server.session.PropertyChanges;
 
@@ -51,7 +52,7 @@ import java.util.concurrent.Callable;
 
 import static lsfusion.interop.form.ServerResponse.*;
 
-public abstract class Property<T extends PropertyInterface> extends AbstractNode {
+public abstract class Property<T extends PropertyInterface> extends AbstractPropertyNode {
     public static final GetIndex<PropertyInterface> genInterface = new GetIndex<PropertyInterface>() {
         public PropertyInterface getMapValue(int i) {
             return new PropertyInterface(i);
@@ -163,11 +164,6 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         return listInterfaces.mapList(getInterfaceClasses(classType)).toArray(new ValueClass[listInterfaces.size()]);
     }
     public abstract ImMap<T, ValueClass> getInterfaceClasses(ClassType type);
-
-    @IdentityLazy
-    public boolean cacheIsInInterface(ImMap<T, ? extends AndClassSet> interfaceClasses, boolean isAny) { // для всех подряд свойств не имеет смысла
-        return isInInterface(interfaceClasses, isAny);
-    }
 
     public abstract boolean isInInterface(ImMap<T, ? extends AndClassSet> interfaceClasses, boolean isAny);
 
@@ -365,13 +361,95 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     public boolean hasNFChild(Property prop, Version version) {
         return hasChild(prop);
     }
-
+    
     public ImOrderSet<Property> getProperties() {
         return SetFact.singletonOrder((Property) this);
     }
+    
+    public static void cleanPropCaches() {
+        hashProps.clear();
+    }
 
-    @Override
-    public ImList<PropertyClassImplement> getProperties(ImCol<ImSet<ValueClassWrapper>> classLists, boolean anyInInterface, Version version) {
+    private static class CacheEntry {
+        private final ImMap<ValueClass, ImSet<ValueClassWrapper>> mapClasses;
+        private final boolean useObjSets;
+        private final boolean anyInInterface;
+        
+        private ImList<PropertyClassImplement> result;
+        
+        public CacheEntry(ImMap<ValueClass, ImSet<ValueClassWrapper>> mapClasses, boolean useObjSets, boolean anyInInterface) {
+            this.mapClasses = mapClasses;
+            this.useObjSets = useObjSets;
+            this.anyInInterface = anyInInterface;
+        }
+
+        public ImRevMap<ValueClassWrapper, ValueClassWrapper> map(CacheEntry entry) {
+            if(!(useObjSets == entry.useObjSets && anyInInterface == entry.anyInInterface && mapClasses.size() == entry.mapClasses.size()))
+                return null;
+
+            MRevMap<ValueClassWrapper, ValueClassWrapper> mResult = MapFact.mRevMap();
+            for(int i=0,size=mapClasses.size();i<size;i++) {
+                ImSet<ValueClassWrapper> wrappers = mapClasses.getValue(i);
+                ImSet<ValueClassWrapper> entryWrappers = entry.mapClasses.get(mapClasses.getKey(i));
+                if(entryWrappers == null || wrappers.size() != entryWrappers.size())
+                    return null;
+                for(int j=0,sizeJ=wrappers.size();j<sizeJ;j++)
+                    mResult.revAdd(wrappers.get(j), entryWrappers.get(j));
+            }
+            return mResult.immutableRev();
+        }
+        
+        public int hash() {
+            int result = 0;
+            for(int i=0,size=mapClasses.size();i<size;i++) {
+                result += mapClasses.getKey(i).hashCode() ^ mapClasses.getValue(i).size();
+            }
+            
+            return 31 * ( 31 * result + (useObjSets ? 1 : 0)) + (anyInInterface ? 1 : 0); 
+        }
+    }    
+    final static LRUSVSMap<Integer, MAddCol<CacheEntry>> hashProps = new LRUSVSMap<>(LRUUtil.G2);
+
+    // вся оптимизация в общем то для drillDown
+    protected ImList<PropertyClassImplement> getProperties(ImSet<ValueClassWrapper> valueClasses, ImMap<ValueClass, ImSet<ValueClassWrapper>> mapClasses, boolean useObjSubsets, boolean anyInInterface, Version version) {
+        if(valueClasses.size() == 1) { // доп оптимизация для DrillDown
+            if(interfaces.size() == 1 && isInInterface(MapFact.singleton(interfaces.single(), valueClasses.single().valueClass.getUpSet()), anyInInterface))
+                return ListFact.<PropertyClassImplement>singleton(createClassImplement(valueClasses.toOrderSet(), SetFact.singletonOrder(interfaces.single())));
+            return ListFact.EMPTY();
+        }            
+            
+        CacheEntry entry = new CacheEntry(mapClasses, useObjSubsets, anyInInterface); // кэширование
+        int hash = entry.hash();
+        MAddCol<CacheEntry> col = hashProps.get(hash);
+        if(col == null) {
+            col = ListFact.mAddCol();
+            hashProps.put(hash, col);                    
+        } else {
+            synchronized (col) {
+                for (CacheEntry cachedEntry : col.it()) {
+                    final ImRevMap<ValueClassWrapper, ValueClassWrapper> map = cachedEntry.map(entry);
+                    if (map != null) {
+                        return cachedEntry.result.mapListValues(new GetValue<PropertyClassImplement, PropertyClassImplement>() {
+                            public PropertyClassImplement getMapValue(PropertyClassImplement value) {
+                                return value.map(map);
+                            }
+                        });
+                    }
+                }
+            }
+        }
+        
+        ImList<PropertyClassImplement> result = getProperties(FormEntity.getSubsets(valueClasses, useObjSubsets), anyInInterface); 
+        
+        entry.result = result;
+        synchronized (col) {
+            col.add(entry);
+        }
+        
+        return result;
+    }
+    
+    private ImList<PropertyClassImplement> getProperties(ImCol<ImSet<ValueClassWrapper>> classLists, boolean anyInInterface) {
         MList<PropertyClassImplement> mResultList = ListFact.mList();
         for (ImSet<ValueClassWrapper> classes : classLists) {
             if (interfaces.size() == classes.size()) {
@@ -527,7 +605,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     }
 
     //
-    protected static <T, V> ImMap<T, V> getExplicitCalcInterfaces(ImSet<T> interfaces, ImMap<T, V> explicitInterfaces, Callable<ImMap<T,V>> calcInterfaces, String caption, Checker<V> checker) {
+    protected static <T, V> ImMap<T, V> getExplicitCalcInterfaces(ImSet<T> interfaces, ImMap<T, V> explicitInterfaces, Callable<ImMap<T,V>> calcInterfaces, String caption, Property property, Checker<V> checker) {
         
         ImMap<T, V> inferred = null;
         if (explicitInterfaces != null)
@@ -542,7 +620,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
                 if (inferred == null)
                     inferred = calcInferred;
                 else {
-                    if (AlgType.checkExplicitInfer) checkExplicitCalcInterfaces(checker, caption, inferred, calcInferred);
+                    if (AlgType.checkExplicitInfer) checkExplicitCalcInterfaces(checker, caption + property, inferred, calcInferred);
                     inferred = calcInferred.override(inferred); // тут возможно replaceValues достаточно, но не так просто оценить
                 }
             } catch (Exception e) {

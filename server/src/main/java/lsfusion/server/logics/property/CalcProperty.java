@@ -430,6 +430,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         return ExClassSet.fromResolveValue(ExClassSet.fromEx(inferValueClass(inferred, inferType)));
     }
 
+    @IdentityLazy
     public boolean isInInterface(ImMap<T, ? extends AndClassSet> interfaceClasses, boolean isAny) {
         return ClassType.formPolicy.getAlg().isInInterface(this, interfaceClasses, isAny);
     }
@@ -1069,9 +1070,9 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         return new ClassWhere<>(ResolveUpClassSet.toAnd(MapFact.<Object, ResolveClassSet>addExcl(ExClassSet.fromEx(inferred), "value", ExClassSet.fromEx(valueCommonClass))).removeNulls());
     }
 
-    protected static <T extends PropertyInterface> ImMap<T, ExClassSet> getInferExplicitCalcInterfaces(ImSet<T> interfaces, boolean noOld, InferType inferType, ImMap<T, ResolveClassSet> explicitInterfaces, Callable<ImMap<T,ExClassSet>> calcInterfaces, String caption, Checker<ExClassSet> checker) {
+    protected static <T extends PropertyInterface> ImMap<T, ExClassSet> getInferExplicitCalcInterfaces(ImSet<T> interfaces, boolean noOld, InferType inferType, ImMap<T, ResolveClassSet> explicitInterfaces, Callable<ImMap<T,ExClassSet>> calcInterfaces, String caption, Property property, Checker<ExClassSet> checker) {
         assert inferType != InferType.RESOLVE;
-        return getExplicitCalcInterfaces(interfaces, (inferType == InferType.PREVBASE && !noOld) || explicitInterfaces == null ? null : ExClassSet.toEx(explicitInterfaces), calcInterfaces, caption, checker);
+        return getExplicitCalcInterfaces(interfaces, (inferType == InferType.PREVBASE && !noOld) || explicitInterfaces == null ? null : ExClassSet.toEx(explicitInterfaces), calcInterfaces, caption, property, checker);
     }
 
     private ImMap<T, ExClassSet> getInferInterfaceClasses(final InferType inferType) {
@@ -1082,7 +1083,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         return getInferExplicitCalcInterfaces(interfaces, noOld(), inferType, explicitClasses, new Callable<ImMap<T, ExClassSet>>() {
             public ImMap<T, ExClassSet> call() throws Exception {
                 return calcInferInterfaceClasses(inferType, valueClasses);
-            }}, "CALC " + this, checker);
+            }}, "CALC ", this, checker);
     }
 
     private ImMap<T, ExClassSet> calcInferInterfaceClasses(InferType inferType, ExClassSet valueClasses) {

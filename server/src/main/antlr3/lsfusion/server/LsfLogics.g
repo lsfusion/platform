@@ -2101,6 +2101,7 @@ keepContextActionDB[List<TypedParameter> context, boolean dynamic] returns [LPWi
 	|	multiADB=multiActionDefinitionBody[context, dynamic] { $property = $multiADB.property; }	
 	|	termADB=terminalFlowActionDefinitionBody { $property = $termADB.property; }
 	|  	applyADB=applyActionDefinitionBody[context, dynamic] { $property = $applyADB.property; }
+    |   cancelPDB=cancelActionDefinitionBody[context, dynamic] { $property = $cancelPDB.property; }
 	|	formADB=formActionDefinitionBody[context, dynamic] { $property = $formADB.property; }
 	|	msgADB=messageActionDefinitionBody[context, dynamic] { $property = $msgADB.property; }
 	|	asyncADB=asyncUpdateActionDefinitionBody[context, dynamic] { $property = $asyncADB.property; }
@@ -2141,7 +2142,7 @@ contextIndependentActionDB returns [LPWithParams property, List<ResolveClassSet>
 
 formActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
 @init {
-	FormSessionScope sessionScope = FormSessionScope.OLDSESSION;
+	boolean manageSession = false;
 	ModalityType modalityType = ModalityType.DOCKED;
 	boolean checkOnOk = false;
 	boolean showDrop = false;
@@ -2158,14 +2159,14 @@ formActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns 
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedFAProp($formName.sid, objects, mapping, contextObjectName, contextProperty, initFilterPropertyName, initFilterPropertyMapping, modalityType, sessionScope, checkOnOk, showDrop, noCancel, printType, exportType, readOnly);
+		$property = self.addScriptedFAProp($formName.sid, objects, mapping, contextObjectName, contextProperty, initFilterPropertyName, initFilterPropertyMapping, modalityType, manageSession, checkOnOk, showDrop, noCancel, printType, exportType, readOnly);
 	}
 }
 	:	'FORM' formName=compoundID 
 		('OBJECTS' list=formActionObjectList[context, dynamic] { objects = $list.objects; mapping = $list.exprs; })?
 		(	'CONTEXTFILTER' objName=ID '=' contextPropertyExpr=propertyExpression[context, dynamic] { contextObjectName = $objName.text; contextProperty = $contextPropertyExpr.property; }
 		|	initFilter = initFilterDefinition { initFilterPropertyMapping = $initFilter.mapping; initFilterPropertyName = $initFilter.propName; }
-		|	'MANAGESESSION' { sessionScope = FormSessionScope.MANAGESESSION; }
+		|	'MANAGESESSION' { manageSession = true; }
 		|	modality = modalityTypeLiteral { modalityType = $modality.val; }
 		|	'CHECK' { checkOnOk = true; }
 		|	'SHOWDROP' { showDrop = true; }
@@ -2642,6 +2643,20 @@ applyActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns
         ('SINGLE' { single = true; })?
         ('SERIALIZABLE' { serializable = true; })?
         applyADB=innerActionDefinitionBody[context, dynamic]
+	;
+
+cancelActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
+@init {
+	List<PropertyUsage> keepSessionProps = Collections.emptyList();
+	boolean keepAllSessionProps = false;
+}
+@after {
+	if (inPropParseState()) {
+		$property = self.addScriptedCancelAProp(keepSessionProps, keepAllSessionProps);
+	}
+}
+	:	'CANCEL'
+        (mps=nestedPropertiesSelector { keepAllSessionProps = $mps.all; keepSessionProps = $mps.props; })?
 	;
 
 multiActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property] 
@@ -3812,13 +3827,6 @@ formExportTypeLiteral returns [FormExportType val]
 		|	'XLSX' { $val = FormExportType.XLSX; }
 		)
 	;	
-
-formSessionScopeLiteral returns [FormSessionScope val]
-	:	'OLDSESSION' { $val = FormSessionScope.OLDSESSION; }
-	|	'NEWSESSION' { $val = FormSessionScope.NEWSESSION; }
-	|	'NESTEDSESSION' { $val = FormSessionScope.NESTEDSESSION; }
-	|	'MANAGESESSION' { $val = FormSessionScope.MANAGESESSION; }
-	;
 
 emailRecipientTypeLiteral returns [Message.RecipientType val]
 	:	'TO'	{ $val = Message.RecipientType.TO; }
