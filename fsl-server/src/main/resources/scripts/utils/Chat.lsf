@@ -475,7 +475,7 @@ openChat 'Перейти в чат' (Chat c, Message m) = ACTION {
         SEEK LAST fullChat.m;
         newMessage(c) <-reply(m);
     } CONNECTION currentConnection(); }
-    APPLY NESTED newMessage[Chat], reply[Message] {};
+    APPLY NESTED (newMessage[Chat], reply[Message]) {};
     formClose();
 };
 
