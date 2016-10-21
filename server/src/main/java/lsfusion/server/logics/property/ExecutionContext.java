@@ -561,6 +561,12 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         stack.updateLastUserInput(getSession(), userInput);
     }
 
+    // backport убрать после релиза
+    public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, FormSessionScope scope, boolean checkOnOk, boolean showDrop, boolean interactive, ImSet<FilterEntity> contextFilters) throws SQLException, SQLHandledException {
+        assert scope.equals(FormSessionScope.OLDSESSION);
+        return createFormInstance(formEntity, mapObjects, session, isModal, false, checkOnOk, showDrop, interactive, contextFilters);
+    }
+
     public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, boolean manageSession, boolean checkOnOk, boolean showDrop, boolean interactive, ImSet<FilterEntity> contextFilters) throws SQLException, SQLHandledException {
         assert !manageSession;
         return createFormInstance(formEntity, mapObjects, session, isModal, false, manageSession, checkOnOk, showDrop, interactive, contextFilters, null, null, false);
