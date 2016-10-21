@@ -28,8 +28,9 @@ GROUP propertyPolicy 'Свойства политики безопасности
 canceled 'Canceled' = DATA LOCAL BOOLEAN ();
 
 apply = ACTION APPLY {};
-cancel = ACTION CUSTOM 'lsfusion.server.logics.property.actions.flow.CancelActionProperty' ();
+cancel = ACTION CANCEL;
 onStarted = ACTION ABSTRACT LIST ();
+empty() = ACTION {};
 
 upper = FORMULA 'upper($1)';    
 subtractSeconds(DATETIME dateTimeFrom, DATETIME dateTimeTo) = [= FORMULA INTEGER PG 'extract (\'epoch\' from (($1)-($2)))', MS 'DATEDIFF(s, $2, $1)'](dateTimeTo AS DATETIME, dateTimeFrom AS DATETIME);

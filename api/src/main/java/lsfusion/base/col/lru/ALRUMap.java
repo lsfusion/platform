@@ -122,6 +122,11 @@ public abstract class ALRUMap<E extends ALRUMap.AEntry<E>, S extends ALRUMap.ASe
             seg.forceRemoveLRU(percent);
     }
 
+    public void clear() {
+        for(S seg : segments)
+            seg.forceRemoveLRU(1.0);
+    }
+
     protected void proceedSafeLockLRUEEntries(Processor<E> set) {
         for(S seg : segments)
             seg.proceedSafeLockLRUEntries(set);

@@ -263,7 +263,7 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
         ImMap<P, ValueClass> inferred = getExplicitCalcInterfaces(interfaces, getExplicitInterfaces(), new Callable<ImMap<P, ValueClass>>() {
             public ImMap<P, ValueClass> call() throws Exception {
                 return calcWhereInterfaceClasses();
-            }}, "ACTION " + this, checker);
+            }}, "ACTION ", this, checker);
         return IsClassProperty.getMapProperty(inferred);
     }
 

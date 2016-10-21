@@ -325,7 +325,7 @@ public class ActionPropertyDebugger implements DebuggerService {
 
         Pair<LAP<PropertyInterface>, Boolean> evalResult = evalAction(namespace, require, priorities, expression, paramsWithClasses, locals, watchContext.isPrevEventScope(), context.getBL());
         LAP<PropertyInterface> evalAction = evalResult.first;
-        boolean forExHack = evalResult.second;
+        boolean forExHack = evalResult.second; // hack для выяснения есть расширение контекста или нет (чтобы знать пустой список или null светить)
 
         final MOrderExclSet<ImMap<String, ObjectValue>> mResult = SetFact.mOrderExclSet();
         final ImSet<String> externalParamNames = paramsWithClasses.keys();

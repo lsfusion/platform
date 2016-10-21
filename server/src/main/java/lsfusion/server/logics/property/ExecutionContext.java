@@ -30,6 +30,7 @@ import lsfusion.server.form.entity.ObjectEntity;
 import lsfusion.server.form.entity.PropertyDrawEntity;
 import lsfusion.server.form.entity.filter.FilterEntity;
 import lsfusion.server.form.instance.*;
+import lsfusion.server.form.instance.listener.CustomClassListener;
 import lsfusion.server.logics.*;
 import lsfusion.server.logics.SecurityManager;
 import lsfusion.server.logics.linear.LP;
@@ -167,7 +168,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
     }
 
     private final ObjectValue pushedUserInput;
-    private final DataObject pushedAddObject;
+    private final DataObject pushedAddObject; // чисто для асинхронного добавления объектов
 
     private final ExecutionEnvironment env;
 
@@ -360,6 +361,10 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
     public LogicsInstance getLogicsInstance() {
         return ThreadLocalContext.getLogicsInstance();
     }
+    
+    private CustomClassListener getClassListener() {
+        return ThreadLocalContext.getClassListener();
+    }
 
     public BusinessLogics<?> getBL() {
         return getLogicsInstance().getBusinessLogics();
@@ -418,6 +423,10 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
     public DataObject addObject(ConcreteCustomClass cls) throws SQLException, SQLHandledException {
         return getSession().addObject(cls, pushedAddObject);
     }
+    
+    public DataObject addObjectAutoSet(ConcreteCustomClass cls) throws SQLException, SQLHandledException {
+        return getSession().addObjectAutoSet(cls, pushedAddObject, getBL(), getClassListener());
+    }
 
     public <T extends PropertyInterface> SinglePropertyTableUsage<T> addObjects(ConcreteCustomClass cls, PropertySet<T> set) throws SQLException, SQLHandledException {
         return getSession().addObjects(cls, set);
@@ -456,8 +465,8 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         return getEnv().apply(getBL(), stack, this, applyActions, keepProperties, getFormInstance());
     }
 
-    public void cancel() throws SQLException, SQLHandledException {
-        getEnv().cancel(stack);
+    public void cancel(FunctionSet<SessionDataProperty> keep) throws SQLException, SQLHandledException {
+        getEnv().cancel(stack, keep);
     }
 
     public void emitExceptionIfNotInFormSession() {
@@ -552,14 +561,14 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         stack.updateLastUserInput(getSession(), userInput);
     }
 
-    public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, FormSessionScope sessionScope, boolean checkOnOk, boolean showDrop, boolean interactive, ImSet<FilterEntity> contextFilters) throws SQLException, SQLHandledException {
-        assert sessionScope.equals(FormSessionScope.OLDSESSION);
-        return createFormInstance(formEntity, mapObjects, session, isModal, false, sessionScope, checkOnOk, showDrop, interactive, contextFilters, null, null, false);
+    public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, boolean manageSession, boolean checkOnOk, boolean showDrop, boolean interactive, ImSet<FilterEntity> contextFilters) throws SQLException, SQLHandledException {
+        assert !manageSession;
+        return createFormInstance(formEntity, mapObjects, session, isModal, false, manageSession, checkOnOk, showDrop, interactive, contextFilters, null, null, false);
     }
 
     // зеркалирование Context, чтобы если что можно было бы не юзать ThreadLocal
-    public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, boolean isAdd, FormSessionScope sessionScope, boolean checkOnOk, boolean showDrop, boolean interactive, ImSet<FilterEntity> contextFilters, PropertyDrawEntity initFilterProperty, ImSet<PullChangeProperty> pullProps, boolean readonly) throws SQLException, SQLHandledException {
-        return ThreadLocalContext.createFormInstance(formEntity, mapObjects, stack, session, isModal, isAdd, sessionScope, checkOnOk, showDrop, interactive, contextFilters, initFilterProperty, pullProps, readonly);
+    public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, boolean isAdd, boolean manageSession, boolean checkOnOk, boolean showDrop, boolean interactive, ImSet<FilterEntity> contextFilters, PropertyDrawEntity initFilterProperty, ImSet<PullChangeProperty> pullProps, boolean readonly) throws SQLException, SQLHandledException {
+        return ThreadLocalContext.createFormInstance(formEntity, mapObjects, stack, session, isModal, isAdd, manageSession, checkOnOk, showDrop, interactive, contextFilters, initFilterProperty, pullProps, readonly);
     }
 
     public RemoteForm createRemoteForm(FormInstance formInstance) {
@@ -567,7 +576,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
     }
 
     public RemoteForm createReportForm(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects) throws SQLException, SQLHandledException {
-        return createRemoteForm(createFormInstance(formEntity, mapObjects, getSession(), false, FormSessionScope.OLDSESSION, false, false, false, null));
+        return createRemoteForm(createFormInstance(formEntity, mapObjects, getSession(), false, false, false, false, false, null));
     }
 
     public File generateFileFromForm(BusinessLogics BL, FormEntity formEntity, ObjectEntity objectEntity, DataObject dataObject) throws SQLException, SQLHandledException {

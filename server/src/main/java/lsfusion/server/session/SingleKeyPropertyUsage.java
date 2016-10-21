@@ -5,6 +5,7 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImCol;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
+import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.classes.BaseClass;
 import lsfusion.server.data.*;
 import lsfusion.server.data.expr.Expr;
@@ -56,6 +57,19 @@ public class SingleKeyPropertyUsage extends SinglePropertyTableUsage<String> {
         Join<String> join = join(key);
         return new ClassChange(key, join.getWhere(), join.getExpr("value"));
     }
+
+    public void writeRows(SQLSession session, OperationOwner opOwner, ImMap<DataObject,ObjectValue> writeRows) throws SQLException, SQLHandledException {
+        writeRows(session, writeRows.mapKeyValues(new GetValue<ImMap<String, DataObject>, DataObject>() {
+            public ImMap<String, DataObject> getMapValue(DataObject value) {
+                return MapFact.singleton("key", value);
+            }
+        }, new GetValue<ImMap<String, ObjectValue>, ObjectValue>() {
+            public ImMap<String, ObjectValue> getMapValue(ObjectValue value) {
+                return MapFact.singleton("value", value);
+            }
+        }), opOwner);
+    }
+
 
     public ImCol<ImMap<String, Object>> read(DataSession session, DataObject object) throws SQLException, SQLHandledException {
         return read(session, MapFact.singleton("key", object));

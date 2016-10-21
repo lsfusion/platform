@@ -110,7 +110,7 @@ abstract public class GroupProperty<I extends PropertyInterface> extends Complex
                 public ImMap<I, ExClassSet> call() throws Exception {
                     return inferInnerInterfaceClasses(inferred, inferType).finishEx(inferType);
                 }
-            }, "CALCINNER" + this, null);
+            }, "CALCINNER", this, null);
         } else {
             assert explicitInnerClasses != null;
             innerInferred = ExClassSet.toEx(explicitInnerClasses);

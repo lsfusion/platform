@@ -93,7 +93,10 @@ public class GroupJoin extends QueryJoin<Expr, GroupJoin.Query, GroupJoin, Group
     public StatKeys<Expr> getPushedStatKeys(StatType type, StatKeys<Expr> pushStatKeys) {
         return query.joins.getStatKeys(new lsfusion.server.data.query.stat.KeyStat() {
             public Stat getKeyStat(ParamExpr key, boolean forJoin) {
-                return query.keyTypes.get((KeyExpr) key).getTypeStat(forJoin);
+                Type keyType = query.keyTypes.get((KeyExpr) key);
+                if(keyType == null) // при висячих ключах бывает
+                    return Stat.ALOT;
+                return keyType.getTypeStat(forJoin);
             }
         }, type, pushStatKeys, group.keys());
     }

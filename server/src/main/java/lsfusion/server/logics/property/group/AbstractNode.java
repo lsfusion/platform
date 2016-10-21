@@ -1,10 +1,10 @@
 package lsfusion.server.logics.property.group;
 
+import lsfusion.base.BaseUtils;
 import lsfusion.base.ImmutableObject;
-import lsfusion.base.col.interfaces.immutable.ImCol;
-import lsfusion.base.col.interfaces.immutable.ImList;
-import lsfusion.base.col.interfaces.immutable.ImOrderSet;
-import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.base.col.SetFact;
+import lsfusion.base.col.interfaces.immutable.*;
+import lsfusion.server.classes.ValueClass;
 import lsfusion.server.logics.mutables.NFFact;
 import lsfusion.server.logics.mutables.interfaces.NFProperty;
 import lsfusion.server.logics.mutables.Version;
@@ -12,7 +12,6 @@ import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyClassImplement;
 import lsfusion.server.logics.property.ValueClassWrapper;
 
-import java.lang.ref.WeakReference;
 import java.util.List;
 
 public abstract class AbstractNode extends ImmutableObject {
@@ -30,8 +29,19 @@ public abstract class AbstractNode extends ImmutableObject {
     public abstract boolean hasNFChild(Property prop, Version version);
 
     public abstract ImOrderSet<Property> getProperties();
-
-    public abstract ImList<PropertyClassImplement> getProperties(ImCol<ImSet<ValueClassWrapper>> classLists, boolean anyInInterface, Version version);
+    
+    protected abstract ImList<PropertyClassImplement> getProperties(ImSet<ValueClassWrapper> valueClasses, ImMap<ValueClass, ImSet<ValueClassWrapper>> mapClasses, boolean useObjSubsets, boolean anyInInterface, Version version);
+    
+    public ImList<PropertyClassImplement> getProperties(ImSet<ValueClassWrapper> classLists, boolean useObjSubsets, boolean anyInInterface, Version version) {
+        return getProperties(classLists, classLists.group(new BaseUtils.Group<ValueClass, ValueClassWrapper>() { // для "кэширования" mapClasses так как очень часто вызывается
+            public ValueClass group(ValueClassWrapper key) {
+                return key.valueClass;
+            }}), useObjSubsets, anyInInterface, version);
+    }
+    
+    public ImList<PropertyClassImplement> getProperties(ValueClassWrapper classw, boolean anyInInterface, Version version) {
+        return getProperties(SetFact.singleton(classw), false, anyInInterface, version);        
+    }
 
     public abstract List<AbstractGroup> fillGroups(List<AbstractGroup> groupsList);
 }

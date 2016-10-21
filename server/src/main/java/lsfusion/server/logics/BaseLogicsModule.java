@@ -9,16 +9,15 @@ import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.identity.DefaultIDGenerator;
 import lsfusion.base.identity.IDGenerator;
+import lsfusion.interop.ClassViewType;
 import lsfusion.interop.Compare;
+import lsfusion.interop.KeyStrokes;
 import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.caches.IdentityStrongLazy;
 import lsfusion.server.classes.*;
 import lsfusion.server.classes.sets.ResolveClassSet;
 import lsfusion.server.data.expr.formula.CastFormulaImpl;
-import lsfusion.server.form.entity.ClassFormEntity;
-import lsfusion.server.form.entity.FormEntity;
-import lsfusion.server.form.entity.ObjectEntity;
-import lsfusion.server.form.entity.PropertyFormEntity;
+import lsfusion.server.form.entity.*;
 import lsfusion.server.form.instance.FormSessionScope;
 import lsfusion.server.form.navigator.NavigatorElement;
 import lsfusion.server.form.window.AbstractWindow;
@@ -376,8 +375,10 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
 
         canceled = findProperty("canceled[]");
 
-        apply = findAction("apply");
+        apply = findAction("apply[]");
         cancel = findAction("cancel[]");
+
+        empty = findAction("empty[]");
 
         onStarted = findAction("onStarted[]");
 
@@ -724,22 +725,39 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     }
 
     @IdentityStrongLazy
-    public LAP getAddFormAction(CustomClass cls, FormSessionScope scope, ClassFormEntity form) {
-        String name = "_ADDFORM" + scope + "_" + cls.getSID() + (form.form.isNamed() ? "_" + form.form.getCanonicalName().replace('.', '_') : "");
-        LAP result = addDMFAProp(null, LocalizedString.create("{logics.add}"), //+ "(" + cls + ")",
-                form.form, new ObjectEntity[]{},
-                form.form.addPropertyObject(getAddObjectAction(cls, form.form, form.object)), scope, true);
+    public LAP getAddFormAction(CustomClass cls, FormEntity contextForm, ObjectEntity contextObject, FormSessionScope scope, ClassFormEntity form) {
+        LAP result = addAddFormAction(cls, contextObject, scope, form);
+
+        String contextPrefix = getFormPrefix(contextForm) + getObjectPrefix(contextObject);
+        String name = "_ADDFORM" + scope + contextPrefix + getClassPrefix(cls) + getFormPrefix(form.form);
+
         makePropertyPublic(result, name, new ArrayList<ResolveClassSet>());
 
-        setAddFormActionProperties(result, form, scope);
+        // temporary for migration
+        String oldName = PropertyCanonicalNameUtils.createName(getNamespace(), "_ADDFORM" + scope + getClassPrefix(cls) + getFormPrefix(form.form), new ArrayList<ResolveClassSet>());
+        DBManager.copyAccess.put(result.property.getCanonicalName(), oldName);
+        
         return result;
+    }
+
+    private static String getClassPrefix(CustomClass cls) {
+        return "_" + cls.getSID();
+    }
+
+    private static String getFormPrefix(FormEntity formEntity) {
+        return formEntity.isNamed() ? "_" + formEntity.getCanonicalName().replace('.', '_') : "";
+    }
+
+    private static String getObjectPrefix(ObjectEntity objectEntity) {
+        return "_" + objectEntity.getSID();
     }
 
     @IdentityStrongLazy
     public LAP getEditFormAction(CustomClass cls, FormSessionScope scope, ClassFormEntity form) {
-        String name = "_EDITFORM" + scope + "_" + cls.getSID() + (form.form.isNamed() ? "_" + form.form.getCanonicalName().replace('.', '_') : "");
-        LAP result = addDMFAProp(null, LocalizedString.create("{logics.edit}"), form.form, new ObjectEntity[]{form.object}, scope);
+        LAP result = addEditFormAction(scope, form);
+
+        String name = "_EDITFORM" + scope + getClassPrefix(cls) + getFormPrefix(form.form);
         makePropertyPublic(result, name, form.object.getResolveClassSet());
         return result;
-    } 
+    }
 }

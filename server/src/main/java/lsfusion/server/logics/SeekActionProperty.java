@@ -35,7 +35,7 @@ public class SeekActionProperty extends ScriptingActionProperty {
     }
     
     public SeekActionProperty(ScriptingLogicsModule lm, ObjectEntity object, boolean last) {
-        super(lm, LocalizedString.create("Найти объект (" + object.caption.getSourceString() + ")"), object.baseClass);
+        super(lm, LocalizedString.create("Найти объект (" + object.getCaption().getSourceString() + ")"), object.baseClass);
 
         this.object = object;
         this.last = last;

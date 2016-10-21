@@ -142,7 +142,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         return isModal;
     }
 
-    private final FormSessionScope sessionScope;
+    private final boolean manageSession;
 
     private final boolean showDrop;
     
@@ -158,12 +158,12 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                         FocusListener<T> focusListener, CustomClassListener classListener,
                         PropertyObjectInterfaceInstance computer, DataObject connection,
                         ImMap<ObjectEntity, ? extends ObjectValue> mapObjects,
-                        ExecutionStack stack, boolean isModal, boolean isAdd, FormSessionScope sessionScope, boolean checkOnOk,
+                        ExecutionStack stack, boolean isModal, boolean isAdd, boolean manageSession, boolean checkOnOk,
                         boolean showDrop, boolean interactive,
                         ImSet<FilterEntity> contextFilters,
                         PropertyDrawEntity initFilterPropertyDraw,
                         ImSet<PullChangeProperty> pullProps, boolean readOnly, Locale locale) throws SQLException, SQLHandledException {
-        this(entity, logicsInstance, session, securityPolicy, focusListener, classListener, computer, connection, mapObjects, stack, isModal, isAdd, sessionScope, checkOnOk, showDrop, interactive, false, contextFilters, initFilterPropertyDraw, pullProps, readOnly, locale);
+        this(entity, logicsInstance, session, securityPolicy, focusListener, classListener, computer, connection, mapObjects, stack, isModal, isAdd, manageSession, checkOnOk, showDrop, interactive, false, contextFilters, initFilterPropertyDraw, pullProps, readOnly, locale);
     }
 
     public FormInstance(FormEntity<T> entity, LogicsInstance logicsInstance, DataSession session, SecurityPolicy securityPolicy,
@@ -171,13 +171,13 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                         PropertyObjectInterfaceInstance computer, DataObject connection,
                         ImMap<ObjectEntity, ? extends ObjectValue> mapObjects,
                         ExecutionStack stack,
-                        boolean isModal, boolean isAdd, FormSessionScope sessionScope, boolean checkOnOk,
+                        boolean isModal, boolean isAdd, boolean manageSession, boolean checkOnOk,
                         boolean showDrop, boolean interactive, boolean isDialog,
                         ImSet<FilterEntity> contextFilters,
                         PropertyDrawEntity initFilterPropertyDraw,
                         ImSet<PullChangeProperty> pullProps,
                         boolean readOnly, Locale locale) throws SQLException, SQLHandledException {
-        this.sessionScope = sessionScope;
+        this.manageSession = manageSession;
         this.isModal = isModal;
         this.checkOnOk = checkOnOk;
         this.showDrop = showDrop;
@@ -316,7 +316,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
         this.session.registerForm(this);
 
-        environmentIncrement = createEnvironmentIncrement(isModal, isDialog, isAdd, sessionScope.isManageSession(), entity.isReadOnly(), showDrop);
+        environmentIncrement = createEnvironmentIncrement(isModal, isDialog, isAdd, manageSession, entity.isReadOnly(), showDrop);
 
         if (!interactive) {
             endApply(stack);
@@ -891,29 +891,12 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     }
 
     public <P extends PropertyInterface> DataObject addFormObject(CustomObjectInstance object, ConcreteCustomClass cls, DataObject pushed, ExecutionStack stack) throws SQLException, SQLHandledException {
-        DataObject dataObject = session.addObject(cls, pushed);
+        DataObject dataObject = session.addObjectAutoSet(cls, pushed, BL, getClassListener());
 
         // резолвим все фильтры
         assert checkFilters(object.groupTo);
         for (FilterInstance filter : object.groupTo.filters)
             filter.resolveAdd(this, object, dataObject, stack);
-
-        for (LP lp : BL.getNamedProperties()) {
-            if (lp instanceof LCP) {
-                LCP<P> lcp = (LCP<P>) lp;
-                CalcProperty<P> property = lcp.property;
-                if (property.autoset) {
-                    ValueClass interfaceClass = property.getInterfaceClasses(ClassType.autoSetPolicy).singleValue();
-                    ValueClass valueClass = property.getValueClass(ClassType.autoSetPolicy);
-                    if (valueClass instanceof CustomClass && interfaceClass instanceof CustomClass &&
-                            cls.isChild((CustomClass) interfaceClass)) { // в общем то для оптимизации
-                        Integer obj = getClassListener().getObject((CustomClass) valueClass);
-                        if (obj != null)
-                            property.change(MapFact.singleton(property.interfaces.single(), dataObject), this, obj);
-                    }
-                }
-            }
-        }
 
         expandCurrentGroupObject(object);
 
@@ -1731,9 +1714,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                 drawComponent = getDrawComponent(drawProperty, newInInterface);
                 if (isNoTabHidden(drawComponent)) { // hidden, но без учета tab, для него отдельная оптимизация, чтобы не переобновляться при переключении "туда-назад",  связан с assertion'ом в FormInstance.isHidden
                     newInInterface = null;
-                }
-                
-                if (userPrefsHiddenProperties.contains(drawProperty)) {
+                } else if (userPrefsHiddenProperties.contains(drawProperty) && newInInterface) { // панель показывается всегда
                     newInInterface = null;
                 }
             }
@@ -2182,7 +2163,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                                 instanceFactory.computer, instanceFactory.connection,
                                 MapFact.singleton(dialogEntity, dialogValue),
                                 outerStack,
-                                true, false, FormSessionScope.OLDSESSION, false, true, true, true,
+                                true, false, false, false, true, true, true,
                                 additionalFilters, initFilterPropertyDraw, pullProps, false, locale);
     }
 
@@ -2313,7 +2294,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     }
 
     public void formClose(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
-        if (sessionScope.isManageSession() && session.isStoredDataChanged()) {
+        if (manageSession && session.isStoredDataChanged()) {
             int result = (Integer) context.requestUserInteraction(new ConfirmClientAction("lsFusion", ThreadLocalContext.localize("{form.do.you.really.want.to.close.form}")));
             if (result != JOptionPane.YES_OPTION) {
                 return;
@@ -2344,7 +2325,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
         fireOnOk();
 
-        if (sessionScope.isManageSession() && !apply(BL, context, getEventsOnOk())) {
+        if (manageSession && !apply(BL, context, getEventsOnOk())) {
             return;
         }
         formHide(context);

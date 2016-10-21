@@ -27,8 +27,6 @@ import lsfusion.server.form.entity.*;
 import lsfusion.server.form.entity.filter.FilterEntity;
 import lsfusion.server.form.instance.FormCloseType;
 import lsfusion.server.form.instance.FormInstance;
-import lsfusion.server.form.instance.FormSessionScope;
-import lsfusion.server.form.instance.ObjectInstance;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.linear.LCP;
@@ -38,19 +36,15 @@ import net.sf.jasperreports.engine.JRException;
 
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.HashSet;
-import java.util.Set;
 
 // вообще по хорошему надо бы generiть интерфейсы, но тогда с DataChanges (из-за дебилизма generics в современных языках) будут проблемы
 public class FormActionProperty extends SystemExplicitActionProperty {
 
     public final FormEntity<?> form;
     public final ImRevMap<ObjectEntity, ClassPropertyInterface> mapObjects;
-    private final ActionPropertyObjectEntity<?> startAction;
-    public ActionPropertyObjectEntity<?> closeAction;
-    public Set<ObjectEntity> seekOnOk = new HashSet<>();
+
     private final boolean checkOnOk;
-    private final FormSessionScope sessionScope;
+    private final boolean manageSession;
     private final ModalityType modalityType;
     private final boolean showDrop;
     private final boolean isAdd;
@@ -92,15 +86,14 @@ public class FormActionProperty extends SystemExplicitActionProperty {
         return valueClasses;
     }
 
-    //assert objects и startAction из form
-    //assert getProperties и startAction одинаковой длины
-    //startAction привязаны к созадаваемой форме
+    //assert objects из form
+    //assert getProperties одинаковой длины
     //getProperties привязаны к форме, содержащей свойство...
     public FormActionProperty(LocalizedString caption,
                               FormEntity form,
                               final ObjectEntity[] objectsToSet,
-                              ActionPropertyObjectEntity startAction,
-                              boolean isAdd, FormSessionScope sessionScope,
+                              boolean manageSession,
+                              boolean isAdd,
                               ModalityType modalityType,
                               boolean checkOnOk,
                               boolean showDrop,
@@ -129,8 +122,7 @@ public class FormActionProperty extends SystemExplicitActionProperty {
         this.showDrop = showDrop;
         this.printType = printType;
         this.exportType = exportType;
-        this.sessionScope = sessionScope;
-        this.startAction = startAction;
+        this.manageSession = manageSession;
         this.isAdd = isAdd;
 
         this.contextObject = contextObject;
@@ -174,7 +166,7 @@ public class FormActionProperty extends SystemExplicitActionProperty {
                                                                         mapObjects.join(context.getKeys()),
                                                                         context.getSession(),
                                                                         modalityType.isModal(),
-                                                                        isAdd, sessionScope,
+                                                                        isAdd, manageSession,
                                                                         checkOnOk,
                                                                         showDrop,
                                                                         printType == null,
@@ -189,10 +181,6 @@ public class FormActionProperty extends SystemExplicitActionProperty {
                                             ThreadLocalContext.localize(form.caption)));
         } else {
             final FormInstance thisFormInstance = context.getFormInstance();
-
-            if (startAction != null) {
-                newFormInstance.instanceFactory.getInstance(startAction).execute(newFormInstance, context.stack);
-            }
 
             RemoteForm newRemoteForm = context.createRemoteForm(newFormInstance);
             if (exportType != null) {
@@ -219,8 +207,7 @@ public class FormActionProperty extends SystemExplicitActionProperty {
                 boolean toExcel = pType == FormPrintType.XLS || pType == FormPrintType.XLSX;
                 Object pageCount = context.requestUserInteraction(new ReportClientAction(form.getSID(), modalityType.isModal(), newRemoteForm.reportManager.getReportData(toExcel), pType, SystemProperties.isDebug));
                 formPageCount.change(pageCount, context);
-            }
-            if (exportType == null && printType == null) {
+            } else if (exportType == null) {
                 context.requestUserInteraction(new FormClientAction(form.getCanonicalName(), form.getSID(), newRemoteForm, newRemoteForm.getImmutableMethods(), Settings.get().isDisableFirstChangesOptimization() ? null : newRemoteForm.getFormChangesByteArray(context.stack), modalityType));
             }
 
@@ -239,30 +226,6 @@ public class FormActionProperty extends SystemExplicitActionProperty {
                             chosenValueProperty.write(
                                     object.baseClass.getType(), newFormInstance.instanceFactory.getInstance(object).getObjectValue(), context, new DataObject(object.getSID())
                             );
-                        }
-                    }
-                }
-
-                if (formResult == FormCloseType.OK) {
-                    for (ObjectEntity object : seekOnOk) {
-                        try {
-                            ObjectInstance objectInstance = newFormInstance.instanceFactory.getInstance(object);
-                            // нужна проверка, т.к. в принципе пока FormActionProperty может ссылаться на ObjectEntity из разных FormEntity
-                            if (objectInstance != null) {
-                                thisFormInstance.expandCurrentGroupObject(object.baseClass);
-                                thisFormInstance.forceChangeObject(object.baseClass, objectInstance.getObjectValue());
-                            }
-                        } catch (SQLException e) {
-                            throw new RuntimeException(e);
-                        }
-                    }
-                }
-                if (formResult == FormCloseType.CLOSE) {
-                    if (closeAction != null) {
-                        try {
-                            newFormInstance.instanceFactory.getInstance(closeAction).execute(newFormInstance, context.stack);
-                        } catch (SQLException e) {
-                            throw new RuntimeException(e);
                         }
                     }
                 }

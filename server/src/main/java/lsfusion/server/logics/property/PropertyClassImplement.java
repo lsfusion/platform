@@ -15,13 +15,19 @@ public abstract class PropertyClassImplement<P extends PropertyInterface, T exte
     }
 
     public PropertyClassImplement(T property, ImOrderSet<ValueClassWrapper> classes, ImOrderSet<P> interfaces) {
+        this(property, interfaces.mapSet(classes));
+    }
+
+    public PropertyClassImplement(T property, ImRevMap<P, ValueClassWrapper> mapping) {
         this.property = property;
-        this.mapping = interfaces.mapSet(classes);
+        this.mapping = mapping;
     }
 
     public boolean calcTwins(TwinImmutableObject o) {
         return property.equals(((PropertyClassImplement) o).property) && mapping.equals(((PropertyClassImplement) o).mapping);
     }
+    
+    public abstract PropertyClassImplement<P, T> map(ImRevMap<ValueClassWrapper, ValueClassWrapper> remap);
 
     public int immutableHashCode() {
         return property.hashCode() * 31 + mapping.hashCode();
