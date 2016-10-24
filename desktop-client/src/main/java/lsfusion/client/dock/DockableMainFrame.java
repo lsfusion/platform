@@ -219,6 +219,7 @@ public class DockableMainFrame extends MainFrame {
         CGrid mainGrid = createGrid();
         CContentArea mainContentArea = mainControl.getContentArea();
         mainContentArea.deploy(mainGrid);
+        mainControl.getLocationManager().refresh(); // есть баг похоже, что при инициализации грида, не обновляется dockable.mode, как следствие в history не попадает location, и при setVisible (в >=14 версии из-за https://github.com/Benoker/DockingFrames/commit/ab648db502ffa2783c734f8db4ed5ce4b42cef32) окно улетает в WorkingArea
 
         setContent(mainContentArea);
 
