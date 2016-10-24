@@ -36,6 +36,7 @@ public class PropertyDrawView extends ComponentView {
 
     public PropertyDrawEntity<?> entity;
 
+    public boolean autoSize;
     public boolean panelCaptionAfter;
     public boolean editOnSingleClick;
     public boolean hide;
@@ -197,6 +198,7 @@ public class PropertyDrawView extends ComponentView {
         }
         pool.writeObject(outStream, externalScreenConstraints);
 
+        outStream.writeBoolean(autoSize);
         outStream.writeBoolean(panelCaptionAfter);
         outStream.writeBoolean(editOnSingleClick);
         outStream.writeBoolean(hide);
@@ -342,6 +344,7 @@ public class PropertyDrawView extends ComponentView {
 
         externalScreenConstraints = pool.readObject(inStream);
 
+        autoSize = inStream.readBoolean();
         panelCaptionAfter = inStream.readBoolean();
         editOnSingleClick = inStream.readBoolean();
         hide = inStream.readBoolean();

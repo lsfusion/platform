@@ -51,6 +51,10 @@ public class GContainer extends GComponent {
         return type == VERTICAL_SPLIT_PANE;
     }
 
+    public boolean isScroll() {
+        return type == SCROLL;
+    }
+
     public List<GGrid> getAllGrids() {
         List<GGrid> grids = new ArrayList<>();
         for (GComponent child : children) {

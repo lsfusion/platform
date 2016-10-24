@@ -124,8 +124,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
             case TABBED_PANE: return GContainerType.TABBED_PANE;
             case VERTICAL_SPLIT_PANE: return GContainerType.VERTICAL_SPLIT_PANE;
             case HORIZONTAL_SPLIT_PANE: return GContainerType.HORIZONTAL_SPLIT_PANE;
-            case SCROLL:
-                throw new IllegalStateException("SCROLL container isn't yet supported");
+            case SCROLL: return GContainerType.SCROLL;
             case FLOW:
                 throw new IllegalStateException("FLOW container isn't yet supported");
         }
@@ -153,8 +152,8 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
                 container.alignment = GFlexAlignment.STRETCH;
             }
 
-            if (parent.isVertical()) {
-                autoSizedOnMainAxis = container.isVertical() && container.flex == 0 ||
+            if (parent.isVertical() || parent.isScroll()) {
+                autoSizedOnMainAxis = (container.isVertical() || container.isScroll()) && container.flex == 0 ||
                                       container.isHorizontal() && container.alignment != GFlexAlignment.STRETCH;
             } else {
                 autoSizedOnMainAxis = container.isHorizontal() && container.flex == 0 ||
@@ -334,6 +333,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         propertyDraw.minimumCharWidth = clientPropertyDraw.minimumCharWidth;
         propertyDraw.maximumCharWidth = clientPropertyDraw.maximumCharWidth;
         propertyDraw.preferredCharWidth = clientPropertyDraw.preferredCharWidth;
+        propertyDraw.autoSize = clientPropertyDraw.autoSize;
 
         propertyDraw.panelCaptionAbove = clientPropertyDraw.panelCaptionAbove;
         

@@ -3777,6 +3777,7 @@ containerTypeLiteral returns [ContainerType val]
 	|	'TABBED' { $val = ContainerType.TABBED_PANE; }
 	|	'SPLITH' { $val = ContainerType.HORIZONTAL_SPLIT_PANE; }
 	|	'SPLITV' { $val = ContainerType.VERTICAL_SPLIT_PANE; }
+	|   'SCROLL' { $val = ContainerType.SCROLL; }
 	;
 
 alignmentLiteral returns [Alignment val]

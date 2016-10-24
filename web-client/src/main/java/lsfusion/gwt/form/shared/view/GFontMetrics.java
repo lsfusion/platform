@@ -121,6 +121,11 @@ public class GFontMetrics {
         return measure != null ? measure.height : 0;
     }
 
+    public static int getSymbolWidth(GFont font) {
+        FontMeasure measure = getMeasure(font == null ? GFont.DEFAULT_FONT : font);
+        return measure != null ? measure.width : 0;
+    }
+
     private static class FontMeasure {
         final int width;
         final int height;

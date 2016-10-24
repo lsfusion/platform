@@ -16,6 +16,10 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
         super(target);
     }
 
+    public void setAutoSize(boolean autoSize) {
+        target.autoSize = autoSize;
+    }
+
     public void setPanelCaptionAfter(boolean panelCaptionAfter) {
         target.panelCaptionAfter = panelCaptionAfter;
     }

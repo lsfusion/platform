@@ -5,6 +5,7 @@ import lsfusion.gwt.base.client.GwtClientUtils;
 import lsfusion.gwt.base.shared.GwtSharedUtils;
 import lsfusion.gwt.cellview.client.Column;
 import lsfusion.gwt.cellview.client.cell.Cell;
+import lsfusion.gwt.form.shared.view.GFontMetrics;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
 import lsfusion.gwt.form.shared.view.changes.GGroupObjectValue;
 import lsfusion.gwt.form.shared.view.changes.dto.ColorDTO;
@@ -33,6 +34,7 @@ public class GSinglePropertyTable extends GPropertyTable<Object> {
     private GGroupObjectValue columnKey;
     private Object value;
     private boolean readOnly = false;
+    private boolean autoSizedHeight = false; //пока не вижу возможности обновлять рекурсивно все компоненты до верха при изменении высоты элемента
 
     private String background;
     private String foreground;
@@ -71,6 +73,47 @@ public class GSinglePropertyTable extends GPropertyTable<Object> {
             this.value = value;
             redraw();
         }
+        if(!autoSizedHeight && property.autoSize && value instanceof String) {
+            int width = getElement().getClientWidth();
+            if(width > 0) {
+                int height = getHeight((String) value, width);
+                getParent().setHeight(height + "px");
+                autoSizedHeight = true;
+                redraw();
+            }
+        }
+    }
+
+    private int getHeight(String text, int maxWidth) {
+        int rows = 0;
+        if (text != null) {
+            String[] lines = text.split("\n");
+            rows += lines.length;
+            for(String line : lines) {
+                String[] splittedText = line.split(" ");
+                String output = "";
+                int outputWidth = 0;
+                int spaceWidth = GFontMetrics.getSymbolWidth(null);
+                int wordWidth;
+                int j = 1;
+
+                for (String word : splittedText) {
+                    wordWidth = 0;
+                    for (int i = 0; i < word.length(); i++)
+                        wordWidth += GFontMetrics.getSymbolWidth(null);
+                    if ((outputWidth + spaceWidth + wordWidth) < maxWidth) {
+                        output = output.concat(" ").concat(word);
+                        outputWidth += spaceWidth + wordWidth;
+                    } else {
+                        rows++;
+                        output = word;
+                        outputWidth = wordWidth;
+                        j = j + 1;
+                    }
+                }
+            }
+        }
+        return (rows + 1) * GFontMetrics.getSymbolHeight(null);
     }
 
     public void setReadOnly(boolean readOnly) {
