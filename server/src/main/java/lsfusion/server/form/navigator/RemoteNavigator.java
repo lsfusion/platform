@@ -850,7 +850,10 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
                     session.apply(businessLogics, stack);
                 }
                 EnvStackRunnable notification = notificationsMap.getNotification(idNotification);
-                notification.run(env, stack);
+                if(notification != null)
+                    notification.run(env, stack);
+                else
+                    ServerLoggers.assertLog(false, "NOTIFICATION " + idNotification + " SHOULD EXIST"); // возможно может нарушаться при перепосылке запроса на клиенте при проблемах со связью
             } catch (SQLException | SQLHandledException e) {
                 ServerLoggers.systemLogger.error("DeliveredNotificationAction failed: ", e);
             }
