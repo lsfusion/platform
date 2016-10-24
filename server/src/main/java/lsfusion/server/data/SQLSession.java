@@ -58,7 +58,7 @@ import java.util.regex.Pattern;
 
 import static lsfusion.server.ServerLoggers.explainLogger;
 
-public class SQLSession extends MutableClosedObject<OperationOwner> {
+public class SQLSession extends MutableClosedObject<OperationOwner> implements AutoCloseable {
     private PreparedStatement executingStatement;
     private static final Logger logger = ServerLoggers.sqlLogger;
     private static final Logger handLogger = ServerLoggers.sqlHandLogger;

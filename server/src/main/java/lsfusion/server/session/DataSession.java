@@ -1909,8 +1909,8 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         synchronized (closeLock) {
             Boolean createdInTransaction = activeForms.remove(form);
 
-            if(createdInTransaction) { // если создана в транзакции, очищаем сразу, так как все таблицы тоже получались в транзакции, а значит rollback'ся (и в pendingCleaner зависнет очистка ресурсов, которые и так уйдут, а значит в registerChange нарушится assertion)
-                ServerLoggers.assertLog(isInTransaction(), "FORM CREATED IN TRANSACTION SHOULD BE CLOSED IN TRANSACTION");
+            if(createdInTransaction || form.local) { // если создана в транзакции, очищаем сразу, так как все таблицы тоже получались в транзакции, а значит rollback'ся (и в pendingCleaner зависнет очистка ресурсов, которые и так уйдут, а значит в registerChange нарушится assertion), local'ы тоже смотри коммент
+                ServerLoggers.assertLog(createdInTransaction == isInTransaction(), "FORM CREATED IN TRANSACTION SHOULD BE CLOSED IN TRANSACTION");
                 cleaner.run();
             } else {
 //                ServerLoggers.assertLog(!isInTransaction(), "SHOULD NOT CLOSE FORM IN TRANSACTION, THAT WHERE CREATED NOT IN TRANSACTION"); как раз может, для этого в том числе pendingCleaners и делались

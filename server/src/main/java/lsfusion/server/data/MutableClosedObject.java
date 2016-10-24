@@ -6,7 +6,7 @@ import lsfusion.server.ServerLoggers;
 import java.sql.SQLException;
 
 // local (not remote) object with SQL resources 
-public abstract class MutableClosedObject<O> extends MutableObject implements AutoCloseable {
+public abstract class MutableClosedObject<O> extends MutableObject {
 
     private boolean closed;
 
@@ -25,7 +25,7 @@ public abstract class MutableClosedObject<O> extends MutableObject implements Au
         closed = true;
     }
 
-    @Override
+//    @Override
     public void close() throws SQLException { // в общем случае пытается закрыть, а не закрывает объект
         explicitClose();
     }

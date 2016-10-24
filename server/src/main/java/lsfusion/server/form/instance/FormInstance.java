@@ -87,7 +87,7 @@ import static lsfusion.server.form.instance.GroupObjectInstance.*;
 // так клиента волнуют панели на форме, список гридов в привязке, дизайн и порядок представлений
 // сервера колышет дерево и св-ва предст. с привязкой к объектам
 
-public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironment implements ReallyChanged, ProfiledObject {
+public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironment implements ReallyChanged, ProfiledObject, AutoCloseable {
 
     private final static GetKey<CalcPropertyObjectInstance<?>, PropertyReaderInstance> GET_PROPERTY_OBJECT_FROM_READER =
             new GetKey<CalcPropertyObjectInstance<?>, PropertyReaderInstance>() {
@@ -153,6 +153,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     private ImSet<ObjectInstance> objects;
 
     private boolean readOnly = false;
+    
+    public boolean local = false; // временный хак для resolve'а, так как modifier очищается синхронно, а форма нет, можно было бы в транзакцию перенести, но там подмену modifier'а (resolveModifier) так не встроишь 
 
     public FormInstance(FormEntity<T> entity, LogicsInstance logicsInstance, DataSession session, SecurityPolicy securityPolicy,
                         FocusListener<T> focusListener, CustomClassListener classListener,
