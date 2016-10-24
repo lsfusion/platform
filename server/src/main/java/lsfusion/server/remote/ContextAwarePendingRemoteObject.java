@@ -91,6 +91,9 @@ public abstract class ContextAwarePendingRemoteObject extends PendingRemoteObjec
     }
 
     public abstract String getSID();
+    protected boolean isEnabledUnreferenced() {
+        return true;
+    }
 
     protected boolean isUnreferencedSyncedClient() {
         return false;
@@ -98,6 +101,9 @@ public abstract class ContextAwarePendingRemoteObject extends PendingRemoteObjec
 
     @Override
     public void unreferenced() {
+        if(!isEnabledUnreferenced())
+            return;
+            
         ThreadLocalContext.aspectBeforeRmi(this, true);
         try {
             deactivateAndCloseLater(isUnreferencedSyncedClient());

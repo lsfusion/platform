@@ -365,6 +365,11 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     }
 
     @Override
+    protected boolean isEnabledUnreferenced() { // иначе когда отключаются все клиенты логика закрывается
+        return false;
+    }
+
+    @Override
     public String getSID() {
         return "logics";
     }
