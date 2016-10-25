@@ -55,6 +55,7 @@ public class MakeZipFileActionProperty extends ScriptingActionProperty {
                             String fileName = (String) result.getKey(i).get("i").getValue();
                             byte[] fileBytes = (byte[]) result.getValue(i).get("zipping").getValue();
                             if (fileBytes != null) {
+                                fileBytes = BaseUtils.getFile(fileBytes);
                                 ByteArrayInputStream bis = new ByteArrayInputStream(fileBytes);
                                 zos.putNextEntry(new ZipEntry(fileName));
                                 byte[] buf = new byte[1024];
