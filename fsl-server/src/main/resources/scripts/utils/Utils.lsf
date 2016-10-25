@@ -24,7 +24,7 @@ mkdir 'Создать папку' = ACTION CUSTOM 'lsfusion.erp.utils.utils.Mkdi
 //zip files
 zipping 'Архивируемый файл' = DATA LOCAL CUSTOMFILE (VARSTRING[100]);
 zipped 'Файл архива' = DATA LOCAL CUSTOMFILE ();
-makeZipFile 'Заархивировать файлы' = ACTION CUSTOM 'lsfusion.erp.utils.utils.MakeZipFileActionProperty' (VARSTRING[255]);
+makeZipFile 'Заархивировать файлы' = ACTION CUSTOM 'lsfusion.erp.utils.utils.MakeZipFileActionProperty' ();
 // --------------------------------------------- Работа со строками --------------------------------- //
 
 lower (TEXT p1) = FORMULA 'lower($1)';

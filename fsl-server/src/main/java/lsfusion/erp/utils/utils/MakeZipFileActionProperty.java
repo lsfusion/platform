@@ -29,8 +29,8 @@ import java.util.zip.ZipOutputStream;
 
 public class MakeZipFileActionProperty extends ScriptingActionProperty {
 
-    public MakeZipFileActionProperty(ScriptingLogicsModule LM, ValueClass... classes) throws ScriptingErrorLog.SemanticErrorException {
-        super(LM, classes);
+    public MakeZipFileActionProperty(ScriptingLogicsModule LM) throws ScriptingErrorLog.SemanticErrorException {
+        super(LM);
     }
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
