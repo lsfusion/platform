@@ -3,7 +3,6 @@ package lsfusion.server.lib;
 import lsfusion.base.SystemUtils;
 import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.action.ClientActionDispatcher;
-import lsfusion.server.ServerLoggers;
 
 import java.awt.*;
 import java.io.File;
@@ -23,7 +22,7 @@ public class LoadDownloadedFontClientAction implements ClientAction {
                 GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
                 ge.registerFont(Font.createFont(Font.TRUETYPE_FONT, font));
             } catch (IOException|FontFormatException e) {
-                ServerLoggers.systemLogger.error("LoadDownloadedFont Error: ", e);
+                ClientActionLogger.logger.error("LoadDownloadedFont Error: ", e);
             }
         }
         return null;

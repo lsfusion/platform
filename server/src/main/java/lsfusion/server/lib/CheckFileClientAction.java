@@ -3,7 +3,6 @@ package lsfusion.server.lib;
 import lsfusion.base.SystemUtils;
 import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.action.ClientActionDispatcher;
-import lsfusion.server.ServerLoggers;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.FileUtils;
 
@@ -28,7 +27,7 @@ public class CheckFileClientAction implements ClientAction {
                 hash = new String(Hex.encodeHex(MessageDigest.getInstance("MD5").digest(FileUtils.readFileToByteArray(file))));
             }
         } catch (NoSuchAlgorithmException e) {
-            ServerLoggers.systemLogger.error("CheckFile Error: ", e);
+            ClientActionLogger.logger.error("CheckFile Error: ", e);
         }
         return hash;
     }

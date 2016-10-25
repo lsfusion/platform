@@ -3,7 +3,6 @@ package lsfusion.server.lib;
 import lsfusion.base.SystemUtils;
 import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.action.ClientActionDispatcher;
-import lsfusion.server.ServerLoggers;
 
 import java.io.IOException;
 
@@ -20,7 +19,7 @@ public class DownloadFileClientAction implements ClientAction {
         try {
             SystemUtils.writeUserFile(path, bytes);
         } catch (Exception e) {
-            ServerLoggers.systemLogger.error("DownloadFile Error", e);
+            ClientActionLogger.logger.error("DownloadFile Error", e);
         }
         return null;
     }
