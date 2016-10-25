@@ -63,7 +63,7 @@ preRunScript() = ACTION {
     }
 }
 
-afterRunScript() = ACTION {
+afterRunScript() = ACTION NEWSESSION {
     setSucceeded(textScript(scriptStorage()));
     apply();
 }
