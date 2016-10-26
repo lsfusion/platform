@@ -38,7 +38,9 @@ public class CopyPasteUtils {
 
     public static native void setClipboardData(String text)
     /*-{
-        $wnd.clipboardData.setData("text/plain", text); // в Firefox не работает
+        if ($wnd.clipboardData) {
+            $wnd.clipboardData.setData("text/plain", text); // в Firefox не работает
+        }
     }-*/;
 
     public static native void setClipboardData2(String text)
