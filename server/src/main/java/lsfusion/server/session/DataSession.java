@@ -35,6 +35,7 @@ import lsfusion.server.data.query.Query;
 import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.data.type.*;
 import lsfusion.server.data.where.Where;
+import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.instance.ChangedData;
 import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.form.instance.GroupObjectInstance;
@@ -45,7 +46,6 @@ import lsfusion.server.logics.*;
 import lsfusion.server.logics.debug.ActionPropertyDebugger;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.linear.LCP;
-import lsfusion.server.logics.linear.LP;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.actions.SessionEnvEvent;
 import lsfusion.server.logics.table.IDTable;
@@ -1025,11 +1025,12 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     }
 
 
-    public <T extends PropertyInterface> void executeSessionEvents(FormInstance form, ExecutionStack stack) throws SQLException, SQLHandledException {
+    public <T extends PropertyInterface> void executeSessionEvents(ExecutionEnvironment env, ExecutionStack stack) throws SQLException, SQLHandledException {
 //        ServerLoggers.assertLog(!isInTransaction(), "LOCAL EVENTS IN TRANSACTION"); // так как LogPropertyAction создает форму
         if(sessionEventChangedOld.getProperties().size() > 0) { // оптимизационная проверка
 
-            ExecutionEnvironment env = (form != null ? form : this);
+            if(env == null)
+                env = this;
 
             updateSessionEventNotChangedOld(env);
 
@@ -1425,14 +1426,14 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 //            return ((LogMessageClientAction)BaseUtils.single(actions)).message;
     }
 
-    public boolean apply(BusinessLogics BL, ExecutionStack stack, UserInteraction interaction, ImOrderSet<ActionPropertyValueImplement> applyActions, FunctionSet<SessionDataProperty> keepProperties, FormInstance formInstance) throws SQLException, SQLHandledException {
-        return apply(BL, formInstance, stack, interaction, applyActions, keepProperties);
+    public boolean apply(BusinessLogics BL, ExecutionStack stack, UserInteraction interaction, ImOrderSet<ActionPropertyValueImplement> applyActions, FunctionSet<SessionDataProperty> keepProperties, ExecutionEnvironment sessionEventFormEnv) throws SQLException, SQLHandledException {
+        return apply(BL, sessionEventFormEnv, stack, interaction, applyActions, keepProperties);
     }
 
-    public boolean check(BusinessLogics BL, FormInstance form, ExecutionStack stack, UserInteraction interaction) throws SQLException, SQLHandledException {
+    public boolean check(BusinessLogics BL, ExecutionEnvironment sessionEventFormEnv, ExecutionStack stack, UserInteraction interaction) throws SQLException, SQLHandledException {
         setApplyFilter(ApplyFilter.ONLYCHECK);
 
-        boolean result = apply(BL, form, stack, interaction, SetFact.<ActionPropertyValueImplement>EMPTYORDER(), SetFact.<SessionDataProperty>EMPTY());
+        boolean result = apply(BL, sessionEventFormEnv, stack, interaction, SetFact.<ActionPropertyValueImplement>EMPTYORDER(), SetFact.<SessionDataProperty>EMPTY());
 
         setApplyFilter(ApplyFilter.NO);
         return result;
@@ -1720,7 +1721,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     }
 
     @AssertSynchronized
-    public boolean apply(final BusinessLogics<?> BL, FormInstance form, ExecutionStack stack, UserInteraction interaction,
+    public boolean apply(final BusinessLogics<?> BL, ExecutionEnvironment sessionEventFormEnv, ExecutionStack stack, UserInteraction interaction,
                          ImOrderSet<ActionPropertyValueImplement> applyActions, FunctionSet<SessionDataProperty> keepProps) throws SQLException, SQLHandledException {
         if(!hasChanges() && applyActions.isEmpty())
             return true;
@@ -1737,7 +1738,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         if (parentSession != null) {
             assert !isInTransaction() && !isInSessionEvent();
 
-            executeSessionEvents(form, stack);
+            executeSessionEvents(sessionEventFormEnv, stack);
 
             NotFunctionSet<SessionDataProperty> notKeepProps = new NotFunctionSet<>(keepProps);
             copyDataTo(parentSession, false, notKeepProps); // те которые не keep не копируем наверх, более того копируем их обратно как при не вложенной newSession
@@ -1762,10 +1763,11 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                 DataObject cn = ThreadLocalContext.getConnection();
                 if(cn != null)
                     BL.systemEventsLM.connectionSession.change(cn, (ExecutionEnvironment)DataSession.this, applyObject);
-                if (form != null) {
-                    Object ne = !form.entity.isNamed()
+                if (sessionEventFormEnv instanceof FormInstance) { // в будущем имеет смысл из стека тянуть, так как оттуда логи берутся
+                    FormEntity formEntity = ((FormInstance) sessionEventFormEnv).entity;
+                    Object ne = !formEntity.isNamed()
                             ? null
-                            : BL.reflectionLM.navigatorElementCanonicalName.read(form, new DataObject(form.entity.getCanonicalName(), StringClass.get(50)));
+                            : BL.reflectionLM.navigatorElementCanonicalName.read((FormInstance) sessionEventFormEnv, new DataObject(formEntity.getCanonicalName(), StringClass.get(50)));
                     if (ne != null)
                         BL.systemEventsLM.navigatorElementSession.change(new DataObject(ne, BL.reflectionLM.navigatorElement), (ExecutionEnvironment) DataSession.this, applyObject);
                 }
@@ -1777,7 +1779,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             }
         }
 
-        executeSessionEvents(form, stack);
+        executeSessionEvents(sessionEventFormEnv, stack);
 
         // очистим, так как в транзакции уже другой механизм используется, и старые increment'ы будут мешать
         dataModifier.clearHints(sql, getOwner());
@@ -2102,10 +2104,6 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         return baseClass;
     }
 
-    public QueryEnvironment getQueryEnv() {
-        return env;
-    }
-    
     public OperationOwner getOwner() {
         return owner;
     }

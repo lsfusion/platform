@@ -158,7 +158,7 @@ public class FormActionProperty extends SystemExplicitActionProperty {
         ImMap<ClassPropertyInterface, DataObject> dataKeys = context.getDataKeys();
         if (contextPropertyImplement != null) {
             final CalcPropertyValueImplement<PropertyInterface> propertyValues = contextPropertyImplement.mapValues(dataKeys);
-            final FormInstance thisFormInstance = context.getFormInstance();
+            final FormInstance thisFormInstance = context.getFormInstance(false, true);
             contextFilters = thisFormInstance.getContextFilters(contextObject, propertyValues, context.getChangingPropertyToDraw(), pullProps);
         }
 
@@ -180,8 +180,6 @@ public class FormActionProperty extends SystemExplicitActionProperty {
                     new MessageClientAction(ThreadLocalContext.localize(LocalizedString.create("{form.navigator.form.do.not.fit.for.specified.parameters}")), 
                                             ThreadLocalContext.localize(form.caption)));
         } else {
-            final FormInstance thisFormInstance = context.getFormInstance();
-
             RemoteForm newRemoteForm = context.createRemoteForm(newFormInstance);
             if (exportType != null) {
                 ReportGenerationData generationData = newRemoteForm.reportManager.getReportData();
@@ -230,10 +228,6 @@ public class FormActionProperty extends SystemExplicitActionProperty {
                     }
                 }
 
-                if (thisFormInstance != null && !Settings.get().getUseUserChangesSync()) {
-                    //обновляем текущую форму, чтобы подхватить изменения из вызываемой формы
-                    thisFormInstance.refreshData();
-                }
             }
         }
     }

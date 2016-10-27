@@ -84,7 +84,7 @@ public class ApplyActionProperty extends KeepContextActionProperty {
             if (serializable)
                 DBManager.pushTIL(Connection.TRANSACTION_REPEATABLE_READ);
 
-            if (!context.apply(action == null ? SetFact.<ActionPropertyValueImplement>EMPTYORDER() : SetFact.<ActionPropertyValueImplement>singletonOrder(action.getValueImplement(context.getKeys())), keepSessionProperties))
+            if (!context.apply(action == null ? SetFact.<ActionPropertyValueImplement>EMPTYORDER() : SetFact.<ActionPropertyValueImplement>singletonOrder(action.getValueImplement(context.getKeys(), context.getObjectInstances(), context.getFormAspectInstance())), keepSessionProperties))
                 if (canceled != null)
                     canceled.change(context, true);
         } finally {

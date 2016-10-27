@@ -23,9 +23,6 @@ public class ActivateActionProperty extends SystemExplicitActionProperty {
 
     @Override
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
-        FormEntity<?> activeForm = context.getFormInstance() == null ? null : context.getFormInstance().entity;
-        Boolean isActive = activeForm != null && requestedForm != null && activeForm.equals(requestedForm);
-
         if(requestedForm != null) {
             if (requestedTab == null) {
                 //todo: activate form пока не реализована

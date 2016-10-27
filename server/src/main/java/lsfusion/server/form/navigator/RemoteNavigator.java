@@ -973,9 +973,6 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         }
 
         public synchronized void regChange(ImSet<CalcProperty> updateChanges, DataSession session) {
-            if(!Settings.get().getUseUserChangesSync())
-                return;
-
             currentStamp++;
 
             for(CalcProperty change : updateChanges) {
@@ -989,9 +986,6 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         }
 
         public synchronized ImSet<CalcProperty> update(DataSession session, FormInstance form) {
-            if(!Settings.get().getUseUserChangesSync())
-                return SetFact.EMPTY();
-
             assert session == form.session;
 
             Long lPrevStamp = formStamps.get(form);

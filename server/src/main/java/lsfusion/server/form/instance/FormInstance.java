@@ -51,7 +51,6 @@ import lsfusion.server.form.navigator.LogInfo;
 import lsfusion.server.form.view.ComponentView;
 import lsfusion.server.form.view.ContainerView;
 import lsfusion.server.logics.*;
-import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.linear.LP;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.derived.MaxChangeProperty;
@@ -689,10 +688,6 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         return weakClassListener.get();
     }
 
-    public QueryEnvironment getQueryEnv() {
-        return session.env;
-    }
-
     @ManualLazy
     public ImSet<ObjectInstance> getObjects() {
         if (objects == null)
@@ -960,7 +955,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                 }
             }
         }
-        editAction.getRemappedPropertyObject(keys).execute(this, stack, pushChange, pushAdd, property);
+        editAction.getRemappedPropertyObject(keys).execute(this, stack, pushChange, pushAdd, property, this);
     }
     
     private boolean checkEditActionPermission(ActionPropertyObjectInstance editAction, String editActionSID, PropertyDrawInstance property) {
@@ -1282,8 +1277,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         return session.check(BL, this, stack, interaction);
     }
 
-    public boolean apply(BusinessLogics BL, ExecutionStack stack, UserInteraction interaction, ImOrderSet<ActionPropertyValueImplement> applyActions, FunctionSet<SessionDataProperty> keepProperties, FormInstance formInstance) throws SQLException, SQLHandledException {
-        assert formInstance == null || this == formInstance;
+    public boolean apply(BusinessLogics BL, ExecutionStack stack, UserInteraction interaction, ImOrderSet<ActionPropertyValueImplement> applyActions, FunctionSet<SessionDataProperty> keepProperties, ExecutionEnvironment sessionEventFormEnv) throws SQLException, SQLHandledException {
+        assert sessionEventFormEnv == null || this == sessionEventFormEnv;
 
         fireOnBeforeApply(stack);
 
@@ -2228,7 +2223,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
             for (ActionPropertyObjectEntity<?> autoAction : actionsOnEvent) {
                 ActionPropertyObjectInstance<? extends PropertyInterface> autoInstance = instanceFactory.getInstance(autoAction);
                 if (autoInstance.isInInterface(null) && securityPolicy.property.change.checkPermission(autoAction.property)) { // для проверки null'ов и политики безопасности
-                    mResult.exclAdd(autoInstance.getValueImplement());
+                    mResult.exclAdd(autoInstance.getValueImplement(this));
                 }
             }
         }

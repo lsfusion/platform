@@ -13,7 +13,7 @@ import lsfusion.server.form.instance.PropertyObjectInterfaceInstance;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.Property;
-import lsfusion.server.logics.property.actions.ChangeReadObjectActionProperty;
+import lsfusion.server.logics.property.actions.DefaultChangeObjectActionProperty;
 import lsfusion.server.logics.property.actions.ExplicitActionProperty;
 
 import java.util.Set;
@@ -73,7 +73,7 @@ public class ObjectEntity extends IdentityObject implements PropertyObjectInterf
     @IdentityInstanceLazy
     public ExplicitActionProperty getChangeAction(Property filterProperty) {
         assert baseClass instanceof CustomClass;
-        return new ChangeReadObjectActionProperty((CalcProperty) filterProperty, baseClass.getBaseClass());
+        return new DefaultChangeObjectActionProperty((CalcProperty) filterProperty, baseClass.getBaseClass());
     }
 
     @Override

@@ -4,11 +4,9 @@ import com.google.common.base.Throwables;
 import lsfusion.base.FunctionSet;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
-import lsfusion.server.Settings;
 import lsfusion.server.classes.CustomClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
-import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.session.DataSession;
@@ -59,10 +57,9 @@ public class NewSessionActionProperty extends AroundAspectActionProperty {
     protected ExecutionContext<PropertyInterface> beforeAspect(ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
         DataSession session = context.getSession();
         if(session.isInTransaction()) { // если в транзацкции
-            session.addRecursion(aspectActionImplement.getValueImplement(context.getKeys()), migrateSessionProperties, singleApply);
+            session.addRecursion(aspectActionImplement.getValueImplement(context.getKeys(), context.getObjectInstances(), context.getFormAspectInstance()), migrateSessionProperties, singleApply);
             return null;
         }
-
 
         DataSession newSession;
         if(newSQL) {
@@ -76,7 +73,7 @@ public class NewSessionActionProperty extends AroundAspectActionProperty {
         } else {
             newSession = session.createSession();
             if (isNested) {
-                session.executeSessionEvents(context.getFormInstance(), context.stack);
+                context.executeSessionEvents();
 
                 newSession.setParentSession(session);
             } else {
@@ -99,11 +96,6 @@ public class NewSessionActionProperty extends AroundAspectActionProperty {
 
         if (doApply) {
             innerContext.apply();
-        }
-
-        FormInstance<?> formInstance = context.getFormInstance();
-        if (formInstance != null && !Settings.get().getUseUserChangesSync()) {
-            formInstance.refreshData();
         }
     }
 

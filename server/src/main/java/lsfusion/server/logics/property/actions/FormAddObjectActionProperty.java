@@ -31,7 +31,7 @@ public class FormAddObjectActionProperty extends AddObjectActionProperty<Propert
     protected void executeRead(ExecutionContext<PropertyInterface> context, ImRevMap<PropertyInterface, KeyExpr> innerKeys, ImMap<PropertyInterface, Expr> innerExprs, ConcreteCustomClass readClass) throws SQLException, SQLHandledException {
         assert where==null;
 
-        context.addFormObject(objectEntity, readClass);
+        context.formAddObject(objectEntity, readClass);
     }
 
     @Override

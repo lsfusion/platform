@@ -457,7 +457,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
                     logger.trace(String.format("clearPropertyOrders: [ID: %1$d]", groupObject.getID()));
                 }
                 
-                form.getFormInstance().getGroupObjectInstance(groupObjectID).clearOrders();
+                form.getGroupObjectInstance(groupObjectID).clearOrders();
             }
         });
     }

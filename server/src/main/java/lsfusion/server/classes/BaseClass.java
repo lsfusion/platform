@@ -27,7 +27,6 @@ import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.ObjectClassField;
 import lsfusion.server.logics.property.ObjectClassProperty;
-import lsfusion.server.logics.property.actions.ChangeClassValueActionProperty;
 import lsfusion.server.logics.table.FullTablesInterface;
 import lsfusion.server.logics.table.ImplementTable;
 import lsfusion.server.session.DataSession;
@@ -183,11 +182,6 @@ public class BaseClass extends AbstractCustomClass {
         for(int i=0,size=values.size();i<size;i++)
             mvResult.mapValue(i, getObjectValue(sql, values.getValue(i), classes.get(values.getKey(i)), owner));
         return mvResult.immutableValue();
-    }
-
-    @IdentityStrongLazy // для ID
-    public ChangeClassValueActionProperty getChangeClassValueAction() {
-        return new ChangeClassValueActionProperty(LocalizedString.create("{logics.property.actions.changeclass}"), this);
     }
 
     @IdentityLazy

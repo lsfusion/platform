@@ -27,6 +27,7 @@ import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LP;
 import lsfusion.server.logics.property.*;
+import lsfusion.server.logics.property.actions.FormEnvironment;
 import lsfusion.server.logics.property.actions.flow.FlowResult;
 import lsfusion.server.logics.scripted.EvalUtils;
 import lsfusion.server.logics.scripted.ScriptingErrorLog;
@@ -321,7 +322,7 @@ public class ActionPropertyDebugger implements DebuggerService {
 
         ImSet<Pair<LP, List<ResolveClassSet>>> locals = stack.getAllLocalsInStack();
 
-        ExecutionContext<PropertyInterface> watchContext = new ExecutionContext<>(MapFact.<PropertyInterface, ObjectValue>EMPTY(), context.getEnv(), stack);
+        ExecutionContext<PropertyInterface> watchContext = ((ExecutionContext<PropertyInterface>)context).override(MapFact.<PropertyInterface, ObjectValue>EMPTY(), (FormEnvironment<PropertyInterface>) null);
 
         Pair<LAP<PropertyInterface>, Boolean> evalResult = evalAction(namespace, require, priorities, expression, paramsWithClasses, locals, watchContext.isPrevEventScope(), context.getBL());
         LAP<PropertyInterface> evalAction = evalResult.first;

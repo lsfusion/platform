@@ -731,11 +731,8 @@ public abstract class LogicsModule {
     // ------------------- SESSION SCOPE ----------------- //
 
     protected LAP addSessionScopeAProp(LocalizedString caption, FormSessionScope sessionScope, LAP action) {
-        return addSessionScopeAProp(caption, sessionScope, SetFact.<SessionDataProperty>EMPTY(), action);
-    }
-    protected LAP addSessionScopeAProp(LocalizedString caption, FormSessionScope sessionScope, FunctionSet<SessionDataProperty> keepProps, LAP action) {
         if(sessionScope.isNewSession()) {
-            action = addNewSessionAProp(null, caption, action, sessionScope == FormSessionScope.NESTEDSESSION, false, false, false, keepProps);
+            action = addNewSessionAProp(null, caption, action, sessionScope == FormSessionScope.NESTEDSESSION, false, false, false);
         } else
             action.property.caption = caption;
         return action;
@@ -1638,12 +1635,12 @@ public abstract class LogicsModule {
                             addedProperty)); // FORM EDIT class OBJECT prm
 
         LCP formResultProperty = baseLM.getFormResultProperty();
-        result = addSessionScopeAProp(LocalizedString.create("sys"), scope, SetFact.toExclSet((SessionDataProperty)addedProperty.property, (SessionDataProperty)formResultProperty.property), result); // NEWSESSION (if needed)
-        result = addListAProp(LocalizedString.create("{logics.add}"), result,
+        result = addListAProp(LocalizedString.create("sys"), result,
                 addIfAProp(addJProp(baseLM.equals2, formResultProperty, addCProp(baseLM.formResult, "ok")), // IF formResult == ok
                         (contextObject != null ? addJoinAProp(addOSAProp(contextObject, true, 1), addedProperty) : baseLM.empty), // THEN (contextObject != null) SEEK exf.o prm
                         (!scope.isNewSession() ? addJoinAProp(getDeleteAction(cls, true), addedProperty) : baseLM.empty)) // ELSE (!scope.isNewSession) DELETE prm),
                          );
+        result = addSessionScopeAProp(LocalizedString.create("{logics.add}"), scope, result); // NEWSESSION (if needed)
 
         result.setImage("add.png");
         result.setShouldBeLast(true);
@@ -1777,7 +1774,7 @@ public abstract class LogicsModule {
 
     @IdentityStrongLazy // для ID
     public LAP addOSAProp(ObjectEntity object, boolean last) {
-        SeekActionProperty seekProperty = new SeekActionProperty((ScriptingLogicsModule)this, object, last);
+        SeekObjectActionProperty seekProperty = new SeekObjectActionProperty((ScriptingLogicsModule)this, object, last);
         return addProperty(null, new LAP<>(seekProperty));
     }
 

@@ -15,7 +15,7 @@ import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 import java.sql.SQLException;
 import java.util.List;
 
-public class SeekGroupObjectActionProperty extends ScriptingActionProperty {
+public class SeekGroupObjectActionProperty extends SeekActionProperty {
 
     private final GroupObjectEntity groupObject;
     private final List<ObjectEntity> objects;
@@ -34,14 +34,11 @@ public class SeekGroupObjectActionProperty extends ScriptingActionProperty {
         return groupObject != null;
     }
 
-    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
-        context.emitExceptionIfNotInFormSession();
-
+    protected void executeForm(FormInstance form, ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         if (groupObject != null) {
             if (objects == null || objects.isEmpty()) {
-                groupObject.getInstance(context.getFormInstance().instanceFactory).addSeek(last);
+                groupObject.getInstance(form.instanceFactory).addSeek(last);
             } else {
-                FormInstance<?> form = context.getFormInstance();
                 for (int i = 0; i < objects.size(); ++i) {
                     ObjectInstance instance = form.instanceFactory.getInstance(objects.get(i));
                     if (i == 0) {

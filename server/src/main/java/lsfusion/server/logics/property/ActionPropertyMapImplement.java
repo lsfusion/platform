@@ -6,6 +6,8 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.entity.ActionPropertyObjectEntity;
 import lsfusion.server.form.entity.PropertyObjectInterfaceEntity;
+import lsfusion.server.form.instance.FormInstance;
+import lsfusion.server.form.instance.PropertyObjectInterfaceInstance;
 import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.debug.ActionDebugInfo;
@@ -95,8 +97,8 @@ public class ActionPropertyMapImplement<P extends PropertyInterface, T extends P
         return property.getParseOldDepends();
     }
 
-    public ActionPropertyValueImplement<P> getValueImplement(ImMap<T, ? extends ObjectValue> mapObjects) {
-        return new ActionPropertyValueImplement<>(property, mapping.join(mapObjects), null);
+    public ActionPropertyValueImplement<P> getValueImplement(ImMap<T, ? extends ObjectValue> mapValues, ImMap<T, PropertyObjectInterfaceInstance> mapObjects, FormInstance formInstance) {
+        return new ActionPropertyValueImplement<>(property, mapping.join(mapValues), mapObjects != null ? mapping.innerJoin(mapObjects) : null, formInstance);
     }
 
     public Graph<ActionCase<T>> mapAbstractGraph() {

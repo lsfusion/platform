@@ -37,15 +37,15 @@ subtractSeconds(DATETIME dateTimeFrom, DATETIME dateTimeTo) = [= FORMULA INTEGER
 
 formApply '{action.form.save}' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.form.FormApplyActionProperty' ();
 formCancel '{action.form.cancel}' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.form.FormCancelActionProperty' ();
-formPrint '{action.form.print}' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.form.PrintActionProperty' ();
-formEdit '{action.form.edit}' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.form.EditActionProperty' ();
-formXls '{action.form.xlsExport}' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.form.XlsActionProperty' ();
+formPrint '{action.form.print}' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.form.RunReportPrintActionProperty' ();
+formEdit '{action.form.edit}' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.form.EditReportActionProperty' ();
+formXls '{action.form.xlsExport}' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.form.RunReportXlsActionProperty' ();
 formDrop '{action.form.drop}' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.form.DropActionProperty' ();
 formRefresh '{action.form.refresh}' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.form.RefreshActionProperty' ();
 formOk '{action.form.ok}' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.form.OkActionProperty' ();
 formClose '{action.form.close}' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.form.CloseActionProperty' ();
 
-seek 'Найти объект' = ACTION CUSTOM 'lsfusion.server.logics.SeekActionProperty' (Object);
+seek 'Найти объект' = ACTION CUSTOM 'lsfusion.server.logics.SeekObjectActionProperty' (Object);
 
 sleep 'Sleep' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.SleepActionProperty' (LONG);
 

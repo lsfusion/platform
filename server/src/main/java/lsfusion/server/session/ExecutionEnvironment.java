@@ -22,13 +22,9 @@ import java.sql.SQLException;
 
 public abstract class ExecutionEnvironment extends MutableClosedObject<Object> {
 
-    public abstract DataSession getSession();
-
-    public abstract QueryEnvironment getQueryEnv();
-
-    public abstract Modifier getModifier();
-
-    public abstract FormInstance getFormInstance();
+    public QueryEnvironment getQueryEnv() {
+        return getSession().env;
+    }
 
     public <P extends PropertyInterface> void change(CalcProperty<P> property, PropertyChange<P> change) throws SQLException, SQLHandledException {
         if(change.isEmpty()) // оптимизация
@@ -48,8 +44,6 @@ public abstract class ExecutionEnvironment extends MutableClosedObject<Object> {
     public <P extends PropertyInterface> FlowResult execute(ActionProperty<P> property, ImMap<P, ? extends ObjectValue> change, FormEnvironment<P> formEnv, ObjectValue pushUserInput, DataObject pushAddObject, ExecutionStack stack) throws SQLException, SQLHandledException {
         return property.execute(new ExecutionContext<>(change, pushUserInput, pushAddObject, this, null, formEnv, stack));
     }
-
-    public abstract void changeClass(PropertyObjectInterfaceInstance objectInstance, DataObject dataObject, ConcreteObjectClass cls) throws SQLException, SQLHandledException;
 
     public boolean apply(BusinessLogics BL, ExecutionStack stack) throws SQLException, SQLHandledException {
         return apply(BL, stack, null);
@@ -74,7 +68,15 @@ public abstract class ExecutionEnvironment extends MutableClosedObject<Object> {
         cancel(stack, SetFact.<SessionDataProperty>EMPTY());
     }
 
-    public abstract boolean apply(BusinessLogics BL, ExecutionStack stack, UserInteraction interaction, ImOrderSet<ActionPropertyValueImplement> applyActions, FunctionSet<SessionDataProperty> keepProperties, FormInstance formInstance) throws SQLException, SQLHandledException;
+    public abstract DataSession getSession();
+
+    public abstract Modifier getModifier();
+
+    public abstract FormInstance getFormInstance();
+
+    public abstract void changeClass(PropertyObjectInterfaceInstance objectInstance, DataObject dataObject, ConcreteObjectClass cls) throws SQLException, SQLHandledException;
+
+    public abstract boolean apply(BusinessLogics BL, ExecutionStack stack, UserInteraction interaction, ImOrderSet<ActionPropertyValueImplement> applyActions, FunctionSet<SessionDataProperty> keepProperties, ExecutionEnvironment sessionEventFormEnv) throws SQLException, SQLHandledException;
     
     public abstract void cancel(ExecutionStack stack, FunctionSet<SessionDataProperty> keep) throws SQLException, SQLHandledException;
 }

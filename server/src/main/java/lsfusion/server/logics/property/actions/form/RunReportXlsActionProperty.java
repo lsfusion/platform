@@ -11,10 +11,10 @@ import lsfusion.server.logics.property.ExecutionContext;
 
 import java.sql.SQLException;
 
-public class XlsActionProperty extends FormToolbarActionProperty {
+public class RunReportXlsActionProperty extends ReportClientActionProperty {
     private static LCP showIf = createShowIfProperty(new CalcProperty[] {FormEntity.isFullClient, FormEntity.isDialog}, new boolean[] {false, true});
 
-    public XlsActionProperty(BaseLogicsModule lm) {
+    public RunReportXlsActionProperty(BaseLogicsModule lm) {
         super(lm, false);
     }
 

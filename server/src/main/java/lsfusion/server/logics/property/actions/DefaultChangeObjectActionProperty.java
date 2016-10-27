@@ -12,11 +12,11 @@ import lsfusion.server.logics.property.ExecutionContext;
 
 import java.sql.SQLException;
 
-public class ChangeReadObjectActionProperty extends SystemExplicitActionProperty {
+public class DefaultChangeObjectActionProperty extends SystemExplicitActionProperty {
 
     private final CalcProperty filterProperty;
 
-    public ChangeReadObjectActionProperty(CalcProperty filterProperty, ValueClass baseClass) {
+    public DefaultChangeObjectActionProperty(CalcProperty filterProperty, ValueClass baseClass) {
         super(LocalizedString.create("CO_" + filterProperty, false), baseClass);
         this.filterProperty = filterProperty;
     }
@@ -29,7 +29,7 @@ public class ChangeReadObjectActionProperty extends SystemExplicitActionProperty
     @Override
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
 
-        final FormInstance<?> formInstance = context.getFormInstance();
+        final FormInstance<?> formInstance = context.getFormFlowInstance();
         PropertyObjectInterfaceInstance singleObjectInstance = context.getSingleObjectInstance();
 
         if (singleObjectInstance instanceof ObjectInstance) {

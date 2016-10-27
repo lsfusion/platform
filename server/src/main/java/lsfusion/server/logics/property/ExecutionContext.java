@@ -14,7 +14,6 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.form.ReportGenerationData;
 import lsfusion.server.ServerLoggers;
-import lsfusion.server.auth.SecurityPolicy;
 import lsfusion.server.classes.ConcreteCustomClass;
 import lsfusion.server.classes.ConcreteObjectClass;
 import lsfusion.server.classes.CustomClass;
@@ -49,7 +48,6 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Stack;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
 
 public class ExecutionContext<P extends PropertyInterface> implements UserInteraction, SessionCreator {
@@ -344,16 +342,42 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         ThreadLocalContext.delayUserInteraction(action);
     }
 
-    public FormInstance<?> getFormInstance() {
-        return env.getFormInstance();
+    public ExecutionEnvironment getSessionEventFormEnv() {
+        return getFormInstance(true, false);
+    }
+    
+    // подразумевают вызов только из Top Action'ов (FORM.ADDOBJ, form*, DefaultChange)
+    public FormInstance getFormFlowInstance() {
+        return getFormInstance(true, true);
+    }
+    
+    // использование формы, чисто для того чтобы передать дальше 
+    public FormInstance getFormAspectInstance() {
+        return getFormInstance(false, false);
     }
 
-    public FormEnvironment<P> getForm() {
-        return form;
-    }
-
-    public SecurityPolicy getSecurityPolicy() {
-        return getFormInstance().securityPolicy;
+    public FormInstance<?> getFormInstance(boolean sameSession, boolean assertExists) {
+        FormInstance formInstance = form.getInstance();
+        FormInstance formExecEnv = env.getFormInstance();
+        
+        if(formExecEnv != null) { // пока дублирующие механизмы, в будущем надо рефакторить
+            // formInstance == null так как в события не всегда formEnv проталкивается
+            ServerLoggers.assertLog(formInstance == null || formExecEnv == formInstance, "FORMS SHOULD BE EQUAL");
+            return formExecEnv;
+        }
+        
+        if(formInstance != null) {
+            if (formInstance.getSession() == env) {
+                ServerLoggers.assertLog(false, "FORM EXECUTION ENVIRONMENT DROPPED");
+            } else {
+                if (sameSession)
+                    formInstance = null;
+            }
+        }
+        
+        if(assertExists && formInstance == null)
+            ServerLoggers.assertLog(false, "FORM ALWAYS SHOULD EXIST");
+        return formInstance;
     }
 
     //todo: закэшировать, если скорость доступа к ThreadLocal станет критичной
@@ -406,11 +430,6 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         return form!=null ? form.getMapObjects() : null;
     }
 
-    public PropertyObjectInterfaceInstance getObjectInstance(P cls) {
-        ImMap<P, PropertyObjectInterfaceInstance> objectInstances = getObjectInstances();
-        return objectInstances != null ? objectInstances.get(cls) : null;
-    }
-
     public PropertyObjectInterfaceInstance getSingleObjectInstance() {
         ImMap<P, PropertyObjectInterfaceInstance> mapObjects = getObjectInstances();
         return mapObjects != null && mapObjects.size() == 1 ? mapObjects.singleValue() : null;
@@ -432,8 +451,8 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         return getSession().addObjects(cls, set);
     }
 
-    public DataObject addFormObject(ObjectEntity object, ConcreteCustomClass cls) throws SQLException, SQLHandledException {
-        FormInstance<?> form = getFormInstance();
+    public DataObject formAddObject(ObjectEntity object, ConcreteCustomClass cls) throws SQLException, SQLHandledException {
+        FormInstance<?> form = getFormFlowInstance();
         return form.addFormObject((CustomObjectInstance) form.instanceFactory.getInstance(object), cls, pushedAddObject, stack);
     }
 
@@ -446,7 +465,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
     }
 
     public boolean checkApply(BusinessLogics BL) throws SQLException, SQLHandledException {
-        return getSession().check(BL, getFormInstance(), stack, this);
+        return getSession().check(BL, getSessionEventFormEnv(), stack, this);
     }
 
     public boolean checkApply() throws SQLException, SQLHandledException {
@@ -462,17 +481,11 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
     }
     
     public boolean apply(ImOrderSet<ActionPropertyValueImplement> applyActions, FunctionSet<SessionDataProperty> keepProperties) throws SQLException, SQLHandledException {
-        return getEnv().apply(getBL(), stack, this, applyActions, keepProperties, getFormInstance());
+        return getEnv().apply(getBL(), stack, this, applyActions, keepProperties, getSessionEventFormEnv());
     }
 
     public void cancel(FunctionSet<SessionDataProperty> keep) throws SQLException, SQLHandledException {
         getEnv().cancel(stack, keep);
-    }
-
-    public void emitExceptionIfNotInFormSession() {
-        if (getFormInstance()==null) {
-            throw new IllegalStateException("Property should only be used in form's session!");
-        }
     }
 
     public ExecutionContext<P> override(ExecutionEnvironment newEnv) {
@@ -513,6 +526,10 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
 
     public QueryEnvironment getQueryEnv() {
         return env.getQueryEnv();
+    }
+
+    public void executeSessionEvents() throws SQLException, SQLHandledException {
+        getSession().executeSessionEvents(getSessionEventFormEnv(), stack);
     }
 
     public void delayUserInteraction(ClientAction action) {

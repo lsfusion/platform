@@ -68,11 +68,11 @@ public class DefaultChangeActionProperty<P extends PropertyInterface> extends Sy
 
         ImMap<ClassPropertyInterface,DataObject> keys = context.getDataKeys();
         Modifier modifier = context.getModifier();
-        final FormInstance<?> formInstance = context.getFormInstance();
+        final FormInstance<?> formInstance = context.getFormFlowInstance();
 
         final CalcPropertyValueImplement<P> propertyValues = implement.mapValues(keys);
 
-        if (context.getSecurityPolicy().property.change.checkPermission(implement.property)) {
+        if (formInstance.securityPolicy.property.change.checkPermission(implement.property)) {
             Type changeType = getImplementType();
 
             if (propertyValues.canBeChanged(modifier)) {

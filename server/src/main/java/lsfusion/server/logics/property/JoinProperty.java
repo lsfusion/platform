@@ -31,7 +31,7 @@ import lsfusion.server.form.view.PropertyDrawView;
 import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.mutables.Version;
-import lsfusion.server.logics.property.actions.edit.AggChangeActionProperty;
+import lsfusion.server.logics.property.actions.edit.DefaultChangeAggActionProperty;
 import lsfusion.server.logics.property.derived.DerivedProperty;
 import lsfusion.server.logics.property.infer.ExClassSet;
 import lsfusion.server.logics.property.infer.InferType;
@@ -308,8 +308,8 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
                 ValueClass aggClass = ((CalcPropertyMapImplement<?, Interface>) implement.mapping.singleValue()).property.getValueClass(ClassType.editPolicy);
 
                 ImOrderSet<Interface> listInterfaces = getOrderInterfaces();
-                AggChangeActionProperty<T> aggChangeActionProperty =
-                        new AggChangeActionProperty<>(LocalizedString.create("sys"), listInterfaces, aggProp, aggClass, changeActionImplement);
+                DefaultChangeAggActionProperty<T> aggChangeActionProperty =
+                        new DefaultChangeAggActionProperty<>(LocalizedString.create("sys"), listInterfaces, aggProp, aggClass, changeActionImplement);
                 return aggChangeActionProperty.getImplement(listInterfaces);
             } else {
                 // тут вообще надо что=то типа с join'ить (assertion что filterProperty с одним интерфейсом)

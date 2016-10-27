@@ -3,6 +3,7 @@ package lsfusion.server.logics.property.actions;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.entity.FormEntity;
+import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.CalcProperty;
@@ -28,7 +29,8 @@ public class IsActiveFormActionProperty extends SystemExplicitActionProperty {
 
     @Override
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
-        FormEntity<?> activeForm = context.getFormInstance() == null ? null : context.getFormInstance().entity;
+        FormInstance<?> activeFormInstance = context.getFormInstance(false, false);
+        FormEntity<?> activeForm = activeFormInstance == null ? null : activeFormInstance.entity;
         Boolean isActive = activeForm != null && requestedForm != null && activeForm.equals(requestedForm);
         isActiveFormProperty.change(isActive, context);
     }

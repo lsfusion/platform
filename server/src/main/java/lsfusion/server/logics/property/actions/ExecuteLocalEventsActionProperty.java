@@ -17,6 +17,6 @@ public class ExecuteLocalEventsActionProperty extends ScriptingActionProperty {
 
     @Override
     protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
-        context.getSession().executeSessionEvents(context.getFormInstance(), context.stack);
+        context.executeSessionEvents();
     }
 }

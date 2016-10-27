@@ -24,12 +24,12 @@ import lsfusion.server.logics.property.actions.flow.FlowResult;
 
 import java.sql.SQLException;
 
-public class AggChangeActionProperty<P extends PropertyInterface> extends AroundAspectActionProperty {
+public class DefaultChangeAggActionProperty<P extends PropertyInterface> extends AroundAspectActionProperty {
 
     private final CalcProperty<P> aggProp; // assert что один интерфейс и aggProp
     private final ValueClass aggClass;
 
-    public AggChangeActionProperty(LocalizedString caption, ImOrderSet<JoinProperty.Interface> listInterfaces, CalcProperty<P> aggProp, ValueClass aggClass, ActionPropertyMapImplement<?, JoinProperty.Interface> changeAction) {
+    public DefaultChangeAggActionProperty(LocalizedString caption, ImOrderSet<JoinProperty.Interface> listInterfaces, CalcProperty<P> aggProp, ValueClass aggClass, ActionPropertyMapImplement<?, JoinProperty.Interface> changeAction) {
         super(caption, listInterfaces, changeAction);
         this.aggProp = aggProp;
         this.aggClass = aggClass;
@@ -52,7 +52,7 @@ public class AggChangeActionProperty<P extends PropertyInterface> extends Around
             readValue = context.requestUserData((DataClass) type, null);
         } else {
             context.requestUserObject(
-                    context.getFormInstance().createObjectDialogRequest((CustomClass) aggProp.getValueClass(ClassType.editPolicy), context.stack)
+                    context.getFormFlowInstance().createObjectDialogRequest((CustomClass) aggProp.getValueClass(ClassType.editPolicy), context.stack)
             );
         }
 
