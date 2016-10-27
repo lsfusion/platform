@@ -120,6 +120,9 @@ public final class ReconnectWorker extends SwingWorker<RemoteLogicsLoaderInterfa
             initUIHandlers();
 
             setupDialogForDevMode();
+
+            //не даём забрать фокус диалогу, потому что при открытии modal form в onClientStarted фокус у ReconnectWorker ещё никто не успевает отобрать
+            setFocusableWindowState(false);
         }
 
         private void setupDialogForDevMode() {
