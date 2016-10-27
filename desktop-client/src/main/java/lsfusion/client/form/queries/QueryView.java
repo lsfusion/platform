@@ -169,6 +169,7 @@ public abstract class QueryView extends JPanel implements QueryConditionView.UIH
 
     void removeAllConditions() {
         condContainer.removeAll();
+        condContainer.repaint(); // если повторно нажали F2 с одним условием, на фоне остаётся изображение старого
         condViews.clear();
 
         conditionChanged();
