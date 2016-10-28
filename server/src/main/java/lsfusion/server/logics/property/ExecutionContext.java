@@ -357,7 +357,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
     }
 
     public FormInstance<?> getFormInstance(boolean sameSession, boolean assertExists) {
-        FormInstance formInstance = form.getInstance();
+        FormInstance formInstance = form != null ? form.getInstance() : null;
         FormInstance formExecEnv = env.getFormInstance();
         
         if(formExecEnv != null) { // пока дублирующие механизмы, в будущем надо рефакторить
