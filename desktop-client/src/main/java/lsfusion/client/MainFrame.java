@@ -16,6 +16,7 @@ import java.awt.event.WindowEvent;
 import java.awt.image.ConvolveOp;
 import java.awt.image.Kernel;
 import java.io.*;
+import java.util.Map;
 import java.util.Scanner;
 
 import static lsfusion.client.ClientResourceBundle.getString;
@@ -144,7 +145,7 @@ public abstract class MainFrame extends JFrame {
         forbidDuplicateForms = remoteNavigator.isForbidDuplicateForms();
     }
 
-    public abstract Integer runReport(String formSID, boolean isModal, ReportGenerationData generationData) throws IOException, ClassNotFoundException;
+    public abstract Integer runReport(Map<String, String> reportPath, boolean isModal, ReportGenerationData generationData) throws IOException, ClassNotFoundException;
     public abstract Integer runReport(boolean isModal, ReportGenerationData generationData, EditReportInvoker editInvoker) throws IOException, ClassNotFoundException;
 
     public abstract ClientFormDockable runForm(String canonicalName, String formSID, RemoteFormInterface remoteForm, byte[] firstChanges, FormCloseListener closeListener);

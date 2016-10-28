@@ -86,7 +86,7 @@ public abstract class ClientFormActionDispatcher extends SwingClientActionDispat
                 ReportGenerator.exportToPdfAndOpen(action.generationData);
             } else {
                 if (action.isDebug) {
-                    pageCount = Main.frame.runReport(action.formSID, action.isModal, action.generationData);
+                    pageCount = Main.frame.runReport(action.reportPath, action.isModal, action.generationData);
                 } else {
                     pageCount = Main.frame.runReport(action.isModal, action.generationData, null);
                 }

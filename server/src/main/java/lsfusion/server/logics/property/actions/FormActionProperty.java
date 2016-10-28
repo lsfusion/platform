@@ -36,6 +36,8 @@ import net.sf.jasperreports.engine.JRException;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Map;
 
 // вообще по хорошему надо бы generiть интерфейсы, но тогда с DataChanges (из-за дебилизма generics в современных языках) будут проблемы
 public class FormActionProperty extends SystemExplicitActionProperty {
@@ -203,7 +205,8 @@ public class FormActionProperty extends SystemExplicitActionProperty {
             if (printType != null) {
                 FormPrintType pType = ignorePrintType.read(context) != null ? FormPrintType.PRINT : printType;
                 boolean toExcel = pType == FormPrintType.XLS || pType == FormPrintType.XLSX;
-                Object pageCount = context.requestUserInteraction(new ReportClientAction(form.getSID(), modalityType.isModal(), newRemoteForm.reportManager.getReportData(toExcel), pType, SystemProperties.isDebug));
+                Map<String, String> reportPath = SystemProperties.isDebug ? newRemoteForm.reportManager.getReportPath(toExcel, null, null) : new HashMap<>();
+                Object pageCount = context.requestUserInteraction(new ReportClientAction(reportPath, modalityType.isModal(), newRemoteForm.reportManager.getReportData(toExcel), pType, SystemProperties.isDebug));
                 formPageCount.change(pageCount, context);
             } else if (exportType == null) {
                 context.requestUserInteraction(new FormClientAction(form.getCanonicalName(), form.getSID(), newRemoteForm, newRemoteForm.getImmutableMethods(), Settings.get().isDisableFirstChangesOptimization() ? null : newRemoteForm.getFormChangesByteArray(context.stack), modalityType));
