@@ -574,9 +574,9 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         return userInput;
     }
 
-    public FormInstance createFormInstance(FormEntity formEntity, ExecutionContext<?> context) throws SQLException, SQLHandledException {
+    public FormInstance createFormInstance(FormEntity formEntity) throws SQLException, SQLHandledException {
         return createFormInstance(formEntity, MapFact.<ObjectEntity, DataObject>EMPTY(),
-                context.getSession(), false, FormSessionScope.OLDSESSION, false, false, false, null);
+                getSession(), false, FormSessionScope.OLDSESSION, false, false, false, null);
     }
 
     public void setLastUserInput(ObjectValue userInput) {
