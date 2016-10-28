@@ -25,6 +25,7 @@ class BusyDialog extends JDialog {
     private JButton btnCancel;
     private JButton btnInterrupt;
     private JButton btnHide;
+    private JProgressBar topProgressBar;
     private boolean indeterminateProgressBar = false;
     private Style defaultStyle;
     private Style highLightStyle;
@@ -206,8 +207,15 @@ class BusyDialog extends JDialog {
 
         if(showProgress) {
             JPanel progressPanel = new JPanel();
-            JProgressBar topProgressBar = new JProgressBar();
+            topProgressBar = new JProgressBar();
             topProgressBar.setIndeterminate(true);
+            topProgressBar.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mousePressed(MouseEvent e) {
+                    super.mousePressed(e);
+                    topProgressBar.setIndeterminate(!topProgressBar.isIndeterminate());
+                }
+            });
 
             progressPanel.add(topProgressBar);
             topProgressBarPanel.add(progressPanel, BorderLayout.SOUTH);
