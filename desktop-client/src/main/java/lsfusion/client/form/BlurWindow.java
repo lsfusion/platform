@@ -1,7 +1,7 @@
 package lsfusion.client.form;
 
-import java.awt.*;
 import javax.swing.*;
+import java.awt.*;
 
 public class BlurWindow extends JDialog {
 
@@ -9,9 +9,8 @@ public class BlurWindow extends JDialog {
         super(parent, ModalityType.MODELESS);
         setLayout(new GridBagLayout());
         setUndecorated(true);
-        setOpacity(0.5f);
         setSize(parent.getSize());
-        setBackground(new Color(0, 0, 0, 128));
+        setBackground(new Color(0, 0, 0, 64));
         setFocusableWindowState(false);
     }
 }

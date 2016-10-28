@@ -29,7 +29,12 @@ public class BusyDialogDisplayer extends TimerTask {
             drawingWindow = Main.frame;
         }
 
-        blurWindow = new BlurWindow(drawingWindow);
+        try {
+            blurWindow = new BlurWindow(drawingWindow);
+        } catch (UnsupportedOperationException ignored) {
+            // может падать на клиентах, не поддерживающих TRANSLUCENT, PERPIXEL_TRANSLUCENT, ... - прозрачность. (особенности видео драйвера)
+            // не будем показывать blurWindow в таком случае
+        }
         busyDialog = new BusyDialog(drawingWindow, true);
 
         if (drawingWindow != null) {
@@ -45,7 +50,9 @@ public class BusyDialogDisplayer extends TimerTask {
             drawingWindow.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
             drawingWindow.repaint();
             drawingWindow = null;
-            blurWindow.dispose();
+            if (blurWindow != null) {
+                blurWindow.dispose();
+            }
             blurWindow = null;
             busyDialog.dispose();
             busyDialog = null;
@@ -60,6 +67,8 @@ public class BusyDialogDisplayer extends TimerTask {
             //они не должны быть null, но stop может сработать раньше, чем show
             if(blurWindow != null && busyDialog != null) {
                 blurWindow.setVisible(true);
+            }
+            if(busyDialog != null) {
                 busyDialog.setVisible(true);
             }
         } finally {
@@ -71,7 +80,9 @@ public class BusyDialogDisplayer extends TimerTask {
 
     public void hide() {
         if(busyDialog != null && busyDialog.isVisible()) {
-            blurWindow.setVisible(false);
+            if (blurWindow != null) {
+                blurWindow.setVisible(false);
+            }
             busyDialog.setVisible(false);
         }
     }
