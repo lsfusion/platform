@@ -419,10 +419,11 @@ formDeclaration returns [ScriptingFormEntity form]
 	int autoRefresh = 0;
 	String image = null;
 	String title = null;
+	DebugInfo.DebugPoint point = getCurrentDebugPoint();
 }
 @after {
 	if (inPropParseState()) {
-		$form = self.createScriptedForm($formNameCaption.name, $formNameCaption.caption, image, modalityType, autoRefresh);
+		$form = self.createScriptedForm($formNameCaption.name, $formNameCaption.caption, point, image, modalityType, autoRefresh);
 	}
 }
 	:	'FORM' 
@@ -946,7 +947,7 @@ propertyDeclaration returns [String name, LocalizedString caption, List<TypedPar
 
 propertyExpression[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
 @init {
-	DebugInfo.DebugPoint point = getCurrentDebugPoint(); 
+	DebugInfo.DebugPoint point = getCurrentDebugPoint();
 }
 @after{
     if (inPropParseState()) {
@@ -3176,7 +3177,7 @@ newNavigatorElementStatement[NavigatorElement parentElement]
 	:	'NEW' id=ID (caption=localizedStringLiteral)? ('ACTION' au=propertyUsage)? opts=navigatorElementOptions
 		{
 			if (inPropParseState()) {
-				newElement = self.createScriptedNavigatorElement($id.text, $caption.val, $parentElement, $opts.options, $au.propUsage);
+				newElement = self.createScriptedNavigatorElement($id.text, $caption.val, getCurrentDebugPoint(), $parentElement, $opts.options, $au.propUsage);
 			}
 		}
 		navigatorElementStatementBody[newElement]

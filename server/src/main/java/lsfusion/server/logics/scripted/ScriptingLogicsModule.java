@@ -479,14 +479,14 @@ public class ScriptingLogicsModule extends LogicsModule {
         addAbstractGroup(groupName, caption, parentGroup);
     }
 
-    public ScriptingFormEntity createScriptedForm(String formName, LocalizedString caption, String icon,
+    public ScriptingFormEntity createScriptedForm(String formName, LocalizedString caption, DebugInfo.DebugPoint point, String icon,
                                                   ModalityType modalityType, int autoRefresh) throws ScriptingErrorLog.SemanticErrorException {
         checkDuplicateNavigatorElement(formName);
         caption = (caption == null ? LocalizedString.create(formName) : caption);
 
         String canonicalName = NavigatorElementCanonicalNameUtils.createNavigatorElementCanonicalName(getNamespace(), formName);
 
-        ScriptingFormEntity form = new ScriptingFormEntity(this, new FormEntity(canonicalName, caption, icon, getVersion()));
+        ScriptingFormEntity form = new ScriptingFormEntity(this, new FormEntity(canonicalName, point.toString(), caption, icon, getVersion()));
         form.setModalityType(modalityType);
         form.setAutoRefresh(autoRefresh);
 
@@ -2767,7 +2767,8 @@ public class ScriptingLogicsModule extends LogicsModule {
         public String windowName;
     }
     
-    public NavigatorElement createScriptedNavigatorElement(String name, LocalizedString caption, NavigatorElement<?> parentElement, NavigatorElementOptions options, PropertyUsage actionUsage) throws ScriptingErrorLog.SemanticErrorException {
+    public NavigatorElement createScriptedNavigatorElement(String name, LocalizedString caption, DebugInfo.DebugPoint point, NavigatorElement<?> parentElement,
+                                                           NavigatorElementOptions options, PropertyUsage actionUsage) throws ScriptingErrorLog.SemanticErrorException {
         checkDuplicateNavigatorElement(name);
 
         NavigatorElement newElement;
@@ -2779,9 +2780,9 @@ public class ScriptingLogicsModule extends LogicsModule {
         if (actionUsage != null) {
             LP findResult = findLPByPropertyUsage(actionUsage);
             checkNavigatorAction(findResult);
-            newElement = addNavigatorAction(name, caption, (LAP<?>)findResult);
+            newElement = addNavigatorAction(name, caption, (LAP<?>)findResult, point.toString());
         } else {
-            newElement = addNavigatorElement(name, caption);
+            newElement = addNavigatorElement(name, caption, point.toString());
         }
 
         setupNavigatorElement(newElement, caption, parentElement, options, true);

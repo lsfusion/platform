@@ -41,14 +41,16 @@ public class NavigatorElement<T extends BusinessLogics<T>> {
 
     private final int ID;
     private final String canonicalName;
+    private final String creationPath;
 
     private NFProperty<NavigatorElement<T>> parent = NFFact.property();
     private NFOrderSet<NavigatorElement<T>> children = NFFact.orderSet();
 
-    public NavigatorElement(NavigatorElement<T> parent, String canonicalName, LocalizedString caption, String icon, Version version) {
+    public NavigatorElement(NavigatorElement<T> parent, String canonicalName, LocalizedString caption, String creationPath, String icon, Version version) {
         this.canonicalName = canonicalName;
         this.ID = BaseLogicsModule.generateStaticNewID();
         this.caption = caption;
+        this.creationPath = creationPath;
 
         setImage(icon != null ? icon : "/images/open.png", icon != null ? null : DefaultIcon.OPEN);
 
@@ -268,7 +270,8 @@ public class NavigatorElement<T extends BusinessLogics<T>> {
         outStream.writeInt(getID());
         outStream.writeUTF(getSID());
         SerializationUtil.writeString(outStream, canonicalName);
-        
+        SerializationUtil.writeString(outStream, creationPath);
+
         outStream.writeUTF(ThreadLocalContext.localize(caption));
         outStream.writeBoolean(hasChildren());
         if (window == null) {

@@ -163,15 +163,15 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     public CalcPropertyObjectEntity<?> reportPathProp;
 
     protected FormEntity(String canonicalName, LocalizedString caption, Version version) {
-        this(null, canonicalName, caption, null, version);
+        this(null, canonicalName, null, caption, null, version);
     }
 
-    public FormEntity(String canonicalName, LocalizedString caption, String icon, Version version) {
-        this(null, canonicalName, caption, icon, version);
+    public FormEntity(String canonicalName, String creationPath, LocalizedString caption, String icon, Version version) {
+        this(null, canonicalName, creationPath, caption, icon, version);
     }
 
-    private FormEntity(NavigatorElement<T> parent, String canonicalName, LocalizedString caption, String icon, Version version) {
-        super(parent, canonicalName, caption, null, version);
+    private FormEntity(NavigatorElement<T> parent, String canonicalName, String creationPath, LocalizedString caption, String icon, Version version) {
+        super(parent, canonicalName, caption, creationPath, null, version);
         setImage(icon != null ? icon : "/images/form.png", icon != null ? null : DefaultIcon.FORM);
         logger.debug("Initializing form " + ThreadLocalContext.localize(caption) + "...");
 

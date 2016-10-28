@@ -8,8 +8,8 @@ import lsfusion.server.logics.property.ActionProperty;
 public class NavigatorAction<T extends BusinessLogics<T>> extends NavigatorElement<T> {
     private ActionProperty property;
 
-    public NavigatorAction(NavigatorElement<T> parent, String canonicalName, LocalizedString caption, String icon, Version version) {
-        super(parent, canonicalName, caption, icon, version);
+    public NavigatorAction(NavigatorElement<T> parent, String canonicalName, LocalizedString caption, String creationPath, String icon, Version version) {
+        super(parent, canonicalName, caption, creationPath, icon, version);
         setImage(icon != null ? icon : "/images/action.png", icon != null ? null : DefaultIcon.ACTION);
     }
 

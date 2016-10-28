@@ -1989,18 +1989,18 @@ public abstract class LogicsModule {
         return addAFProp(nots);
     }
 
-    protected NavigatorElement addNavigatorElement(String name, LocalizedString caption) {
+    protected NavigatorElement addNavigatorElement(String name, LocalizedString caption, String creationPath) {
         String canonicalName = NavigatorElementCanonicalNameUtils.createNavigatorElementCanonicalName(getNamespace(), name);
         
-        NavigatorElement elem = new NavigatorElement(null, canonicalName, caption, null, getVersion());
+        NavigatorElement elem = new NavigatorElement(null, canonicalName, caption, creationPath, null, getVersion());
         addModuleNavigator(elem);
         return elem;
     }
 
-    protected NavigatorAction addNavigatorAction(String name, LocalizedString caption, LAP<?> property) {
+    protected NavigatorAction addNavigatorAction(String name, LocalizedString caption, LAP<?> property, String creationPath) {
         String canonicalName = NavigatorElementCanonicalNameUtils.createNavigatorElementCanonicalName(getNamespace(), name);
 
-        NavigatorAction navigatorAction = new NavigatorAction(null, canonicalName, caption, null, getVersion());
+        NavigatorAction navigatorAction = new NavigatorAction(null, canonicalName, caption, creationPath, null, getVersion());
         navigatorAction.setProperty(property.property);
         addModuleNavigator(navigatorAction);
         return navigatorAction;
