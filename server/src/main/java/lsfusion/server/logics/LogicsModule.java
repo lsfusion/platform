@@ -59,6 +59,7 @@ import lsfusion.server.logics.scripted.LazyActionProperty;
 import lsfusion.server.logics.scripted.MetaCodeFragment;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 import lsfusion.server.logics.table.ImplementTable;
+import lsfusion.server.session.LocalNestedType;
 import org.antlr.runtime.RecognitionException;
 import org.apache.log4j.Logger;
 
@@ -509,18 +510,16 @@ public abstract class LogicsModule {
 
     // ------------------- Scripted DATA ----------------- //
 
-    protected LCP addSDProp(LocalizedString caption, boolean isLocalScope, ValueClass value, boolean isNested, ValueClass... params) {
-        return addSDProp(null, false, caption, isLocalScope, value, isNested, params);
+    protected LCP addSDProp(LocalizedString caption, boolean isLocalScope, ValueClass value, LocalNestedType nestedType, ValueClass... params) {
+        return addSDProp(null, false, caption, isLocalScope, value, nestedType, params);
     }
 
-    protected LCP addSDProp(AbstractGroup group, boolean persistent, LocalizedString caption, boolean isLocalScope, ValueClass value, boolean isNested, ValueClass... params) {
+    protected LCP addSDProp(AbstractGroup group, boolean persistent, LocalizedString caption, boolean isLocalScope, ValueClass value, LocalNestedType nestedType, ValueClass... params) {
         SessionDataProperty prop = new SessionDataProperty(caption, params, value);
         if (isLocalScope) {
             prop.setLocal(true);
         }
-        if (isNested) {
-            prop.isNested = true;
-        }
+        prop.nestedType = nestedType;
         return addProperty(group, persistent, new LCP<>(prop));
     }
 
@@ -533,15 +532,15 @@ public abstract class LogicsModule {
     }
 
     // edit (add)
-    protected LAP addDMFAProp(ClassFormEntity form, boolean manageSession, boolean noCancel) {
+    protected LAP addDMFAProp(ClassFormEntity form, Boolean manageSession, boolean noCancel) {
         return addFAProp(form.form, new ObjectEntity[] {form.object}, manageSession, noCancel, ModalityType.DOCKED_MODAL);
     }
 
-    protected LAP addFAProp(FormEntity form, ObjectEntity[] objectsToSet, boolean manageSession, boolean noCancel, ModalityType modalityType) {
+    protected LAP addFAProp(FormEntity form, ObjectEntity[] objectsToSet, Boolean manageSession, boolean noCancel, ModalityType modalityType) {
         return addFAProp(null, LocalizedString.create("sys"), form, objectsToSet, manageSession, noCancel, null, null, null, modalityType, false, false, null, null, false);
     }
 
-    protected LAP addFAProp(AbstractGroup group, LocalizedString caption, FormEntity form, ObjectEntity[] objectsToSet, boolean manageSession, boolean isAdd, ObjectEntity contextObject, CalcProperty contextProperty, PropertyDrawEntity initFilterProperty, ModalityType modalityType, boolean checkOnOk, boolean showDrop, FormPrintType printType, FormExportType exportType, boolean readonly) {
+    protected LAP addFAProp(AbstractGroup group, LocalizedString caption, FormEntity form, ObjectEntity[] objectsToSet, Boolean manageSession, boolean isAdd, ObjectEntity contextObject, CalcProperty contextProperty, PropertyDrawEntity initFilterProperty, ModalityType modalityType, boolean checkOnOk, boolean showDrop, FormPrintType printType, FormExportType exportType, boolean readonly) {
         return addProperty(group, new LAP(new FormActionProperty(caption, form, objectsToSet, manageSession, isAdd, modalityType, checkOnOk, showDrop, printType, exportType, baseLM.formResult, baseLM.getFormResultProperty(), baseLM.formPageCount, baseLM.formExportFile, baseLM.ignorePrintType, baseLM.getChosenValueProperty(), contextObject, contextProperty, initFilterProperty, readonly)));
     }
 
@@ -732,7 +731,7 @@ public abstract class LogicsModule {
 
     protected LAP addSessionScopeAProp(LocalizedString caption, FormSessionScope sessionScope, LAP action) {
         if(sessionScope.isNewSession()) {
-            action = addNewSessionAProp(null, caption, action, sessionScope == FormSessionScope.NESTEDSESSION, false, false, false);
+            action = addNewSessionAProp(null, caption, action, false, false, false, sessionScope == FormSessionScope.NESTEDSESSION);
         } else
             action.property.caption = caption;
         return action;
@@ -1630,7 +1629,7 @@ public abstract class LogicsModule {
         LAP result = addListAProp(
                             addAddObjAProp(cls, true, 0, false, true, addedProperty), // ADDOBJ (FORM with AUTOSET), addAddObjAProp(cls, false, true, 0, false, true, addedProperty),
                             addJoinAProp(addListAProp( // так хитро делается чтобы заnest'ить addedProperty (иначе apply его сбрасывает)
-                                    addDMFAProp(form, scope.isManageSession(), true), 1, // FORM EDIT class OBJECT prm
+                                    addDMFAProp(form, null, true), 1, // FORM EDIT class OBJECT prm
                                     addSetPropertyAProp(1, false, 1, addedProperty, 1), 1), // addedProperty <- prm 
                             addedProperty)); // FORM EDIT class OBJECT prm
 
@@ -1666,7 +1665,7 @@ public abstract class LogicsModule {
 
     protected LAP addEditFormAction(FormSessionScope scope, ClassFormEntity form) {
         LAP result = addSessionScopeAProp(LocalizedString.create("{logics.edit}"), scope,
-                addDMFAProp(form, scope.isManageSession(), false));
+                addDMFAProp(form, null, false));
 
         result.setImage("edit.png");
         result.setShouldBeLast(true);

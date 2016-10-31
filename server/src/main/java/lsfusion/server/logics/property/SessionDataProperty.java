@@ -6,6 +6,7 @@ import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.where.cases.CaseExpr;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.logics.i18n.LocalizedString;
+import lsfusion.server.session.LocalNestedType;
 import lsfusion.server.session.PropertyChanges;
 
 public class SessionDataProperty extends DataProperty {
@@ -14,7 +15,8 @@ public class SessionDataProperty extends DataProperty {
         this(caption, new ValueClass[0], value);
     }
 
-    public boolean isNested = false;
+    public LocalNestedType nestedType;
+    public boolean noNestingInNestedSession; // hack for sessionOwners 
 
     public SessionDataProperty(LocalizedString caption, ValueClass[] classes, ValueClass value) {
         this(caption, classes, value, false);

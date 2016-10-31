@@ -20,6 +20,7 @@ import lsfusion.server.logics.property.derived.DerivedProperty;
 import lsfusion.server.serialization.ServerIdentitySerializable;
 import lsfusion.server.serialization.ServerSerializationPool;
 import lsfusion.server.session.DataSession;
+import lsfusion.server.session.LocalNestedType;
 
 import java.awt.*;
 import java.io.DataInputStream;
@@ -51,7 +52,7 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
 
     public CalcPropertyRevImplement<ClassPropertyInterface, ObjectEntity> getActiveTab() {
         if (activeTab == null) {
-            activeTab = DerivedProperty.createDataPropRev(LocalizedString.create(this.toString()), MapFact.<ObjectEntity, ValueClass>EMPTY(), LogicalClass.instance, true);
+            activeTab = DerivedProperty.createDataPropRev(LocalizedString.create(this.toString()), MapFact.<ObjectEntity, ValueClass>EMPTY(), LogicalClass.instance, LocalNestedType.ALL);
         }
         return activeTab;
     }

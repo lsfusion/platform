@@ -3,6 +3,7 @@ package lsfusion.server.context;
 import lsfusion.base.ConcurrentWeakHashMap;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.interop.ModalityType;
 import lsfusion.interop.action.ClientAction;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
@@ -27,7 +28,6 @@ import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.logics.property.PullChangeProperty;
 import lsfusion.server.remote.ContextAwarePendingRemoteObject;
-import lsfusion.server.remote.RemoteForm;
 import lsfusion.server.remote.RmiServer;
 import lsfusion.server.session.DataSession;
 import lsfusion.server.stack.ExecutionStackItem;
@@ -109,12 +109,8 @@ public class ThreadLocalContext {
         return get().getFormInstance();
     }
 
-    public static FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, ExecutionStack stack, DataSession session, boolean isModal, boolean isAdd, boolean manageSession, boolean checkOnOk, boolean showDrop, boolean interactive, ImSet<FilterEntity> contextFilters, PropertyDrawEntity initFilterProperty, ImSet<PullChangeProperty> pullProps, boolean readonly) throws SQLException, SQLHandledException {
+    public static FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, ExecutionStack stack, DataSession session, boolean isModal, boolean isAdd, Boolean manageSession, boolean checkOnOk, boolean showDrop, boolean interactive, ImSet<FilterEntity> contextFilters, PropertyDrawEntity initFilterProperty, ImSet<PullChangeProperty> pullProps, boolean readonly) throws SQLException, SQLHandledException {
         return get().createFormInstance(formEntity, mapObjects, session, isModal, isAdd, manageSession, stack, checkOnOk, showDrop, interactive, contextFilters, initFilterProperty, pullProps, readonly);
-    }
-
-    public static RemoteForm createRemoteForm(FormInstance formInstance, ExecutionStack stack) {
-        return get().createRemoteForm(formInstance, stack);
     }
 
     public static ObjectValue requestUserObject(DialogRequest dialogRequest, ExecutionStack stack) throws SQLException, SQLHandledException {
@@ -143,6 +139,10 @@ public class ThreadLocalContext {
 
     public static Object requestUserInteraction(ClientAction action) {
         return get().requestUserInteraction(action);
+    }
+
+    public static void requestFormUserInteraction(FormInstance remoteForm, ModalityType modalityType, ExecutionStack stack) throws SQLException, SQLHandledException {
+        get().requestFormUserInteraction(remoteForm, modalityType, stack);
     }
 
     public static boolean canBeProcessed() {

@@ -51,6 +51,7 @@ import lsfusion.server.form.navigator.LogInfo;
 import lsfusion.server.form.view.ComponentView;
 import lsfusion.server.form.view.ContainerView;
 import lsfusion.server.logics.*;
+import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.linear.LP;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.derived.MaxChangeProperty;
@@ -159,7 +160,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                         FocusListener<T> focusListener, CustomClassListener classListener,
                         PropertyObjectInterfaceInstance computer, DataObject connection,
                         ImMap<ObjectEntity, ? extends ObjectValue> mapObjects,
-                        ExecutionStack stack, boolean isModal, boolean isAdd, boolean manageSession, boolean checkOnOk,
+                        ExecutionStack stack, boolean isModal, boolean isAdd, Boolean manageSession, boolean checkOnOk,
                         boolean showDrop, boolean interactive,
                         ImSet<FilterEntity> contextFilters,
                         PropertyDrawEntity initFilterPropertyDraw,
@@ -172,13 +173,12 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                         PropertyObjectInterfaceInstance computer, DataObject connection,
                         ImMap<ObjectEntity, ? extends ObjectValue> mapObjects,
                         ExecutionStack stack,
-                        boolean isModal, boolean isAdd, boolean manageSession, boolean checkOnOk,
+                        boolean isModal, boolean isAdd, Boolean manageSession, boolean checkOnOk,
                         boolean showDrop, boolean interactive, boolean isDialog,
                         ImSet<FilterEntity> contextFilters,
                         PropertyDrawEntity initFilterPropertyDraw,
                         ImSet<PullChangeProperty> pullProps,
                         boolean readOnly, Locale locale) throws SQLException, SQLHandledException {
-        this.manageSession = manageSession;
         this.isModal = isModal;
         this.checkOnOk = checkOnOk;
         this.showDrop = showDrop;
@@ -317,14 +317,24 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
         this.session.registerForm(this);
 
-        environmentIncrement = createEnvironmentIncrement(isModal, isDialog, isAdd, manageSession, entity.isReadOnly(), showDrop);
+        boolean adjManageSession = manageSession == null ? false : manageSession;
+        environmentIncrement = createEnvironmentIncrement(isModal, isDialog, isAdd, adjManageSession, entity.isReadOnly(), showDrop);
 
         if (!interactive) {
             endApply(stack);
             this.mapObjects = mapObjects;
         } else {
+            int prevOwners = updateSessionOwner(true, stack);
+            
+            if(manageSession == null && prevOwners == 0) { // если нет owner'ов
+                adjManageSession = true; 
+                environmentIncrement.add(FormEntity.manageSession, PropertyChange.<ClassPropertyInterface>STATIC(true));
+            }
+
             this.mapObjects = null;
         }
+
+        this.manageSession = adjManageSession;
 
         this.interactive = interactive; // обязательно в конце чтобы assertion с endApply не рушить
 
@@ -1334,6 +1344,24 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         }
     }
 
+    private int updateSessionOwner(boolean set, ExecutionStack stack) throws SQLException, SQLHandledException {
+        LCP<?> sessionOwners = BL.LM.sessionOwners;
+        int prevOwners = BaseUtils.nvl((Integer) sessionOwners.read(this), 0);
+        int newOwners = prevOwners + (set ? 1 : -1); 
+        sessionOwners.change(newOwners == 0 ? null : newOwners, this);
+        return prevOwners;
+    }
+
+    // сейчас закрытие формы асинхронно (для экономии round trip'а), для записи же скажем sessionOwner'а нужна синхронная работа сессии
+    // для этого можно делать это либо при отсылке hide'а формы на сервере (но тогда owner может сброситься чуть раньше чем надо) 
+    // или в контексте вызова, но тогда в случае немодальной формы, sessionOwner не сбрасывается, то есть мы полагаемся на то что сессия сразу же закроется (де-факто так и будет, но мало ли)
+    // в будущем если все же вернемся к синхронизации закрытия возможно проблема уйдет
+    private static boolean useCallerSyncOnClose = false;
+    public void syncLikelyOnClose(boolean call, ExecutionStack stack) throws SQLException, SQLHandledException {
+        if(call == useCallerSyncOnClose)
+            updateSessionOwner(false, stack);
+    }
+
     @Override
     protected void onClose(Object o) throws SQLException {
         assert o == null;
@@ -2335,5 +2363,10 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     @Override
     public String toString() {
         return "FORM["+System.identityHashCode(this) + " - " + entity.getSID()+","+getClassListener()+"]";
+    }
+
+    @Override
+    public void close() throws SQLException { // в общем случае пытается закрыть, а не закрывает объект
+        explicitClose();
     }
 }

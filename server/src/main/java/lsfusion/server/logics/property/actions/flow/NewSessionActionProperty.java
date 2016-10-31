@@ -32,7 +32,7 @@ public class NewSessionActionProperty extends AroundAspectActionProperty {
 
         this.isNested = isNested;
         this.doApply = doApply;
-        this.migrateSessionProperties = DataSession.adjustKeep(migrateSessionProperties);
+        this.migrateSessionProperties = DataSession.adjustKeep(false, migrateSessionProperties);
 
 
         finalizeInit();

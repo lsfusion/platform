@@ -25,11 +25,6 @@ public abstract class MutableClosedObject<O> extends MutableObject {
         closed = true;
     }
 
-//    @Override
-    public void close() throws SQLException { // в общем случае пытается закрыть, а не закрывает объект
-        explicitClose();
-    }
-
     public O getDefaultCloseOwner() {
         return null;
     }

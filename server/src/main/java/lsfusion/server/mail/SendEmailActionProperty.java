@@ -13,6 +13,7 @@ import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.entity.ObjectEntity;
+import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.EmailLogicsModule;
 import lsfusion.server.logics.NullValue;
@@ -24,6 +25,7 @@ import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.logics.property.actions.SystemExplicitActionProperty;
 import lsfusion.server.logics.scripted.ScriptingErrorLog;
+import lsfusion.server.remote.FormReportManager;
 import lsfusion.server.remote.RemoteForm;
 import net.sf.jasperreports.engine.JRAbstractExporter;
 import net.sf.jasperreports.engine.JRException;
@@ -140,7 +142,7 @@ public class SendEmailActionProperty extends SystemExplicitActionProperty {
                 CalcPropertyInterfaceImplement attachmentProp = attachmentProps.get(i);
                 Map<ObjectEntity, CalcPropertyInterfaceImplement<ClassPropertyInterface>> objectsImplements = mapObjects.get(i);
 
-                RemoteForm remoteForm = createReportForm(context, form, objectsImplements);
+                FormInstance remoteForm = createReportForm(context, form, objectsImplements);
 
                 // если объекты подошли
                 if (remoteForm != null) {
@@ -284,18 +286,18 @@ public class SendEmailActionProperty extends SystemExplicitActionProperty {
         return new EmailSender.AttachmentProperties(filePath, attachmentName, attachmentFormat);
     }
 
-    private RemoteForm createReportForm(ExecutionContext context, FormEntity form, Map<ObjectEntity, CalcPropertyInterfaceImplement<ClassPropertyInterface>> objectsImplements) throws SQLException, SQLHandledException {
+    private FormInstance createReportForm(ExecutionContext context, FormEntity form, Map<ObjectEntity, CalcPropertyInterfaceImplement<ClassPropertyInterface>> objectsImplements) throws SQLException, SQLHandledException {
         Map<ObjectEntity, ObjectValue> objectValues = new HashMap<>();
         for (Map.Entry<ObjectEntity, CalcPropertyInterfaceImplement<ClassPropertyInterface>> objectImpl : objectsImplements.entrySet())
             objectValues.put(objectImpl.getKey(), objectImpl.getValue().readClasses(context, context.getKeys()));
 
-        return context.createReportForm(form, MapFact.fromJavaMap(objectValues));
+        return context.createFormInstance(form, MapFact.fromJavaMap(objectValues));
     }
 
-    private String createReportFile(RemoteForm remoteForm, boolean inlineForm, AttachmentFormat attachmentFormat, Map<ByteArray, String> attachmentFiles) throws ClassNotFoundException, IOException, JRException {
+    private String createReportFile(FormInstance remoteForm, boolean inlineForm, AttachmentFormat attachmentFormat, Map<ByteArray, String> attachmentFiles) throws ClassNotFoundException, IOException, JRException {
 
         boolean toExcel = attachmentFormat != null && attachmentFormat.equals(AttachmentFormat.XLSX);
-        ReportGenerationData generationData = remoteForm.reportManager.getReportData(toExcel);
+        ReportGenerationData generationData = new FormReportManager<>(remoteForm).getReportData(toExcel);
 
         ReportGenerator report = new ReportGenerator(generationData);
         JasperPrint print = report.createReport(inlineForm || toExcel, attachmentFiles);

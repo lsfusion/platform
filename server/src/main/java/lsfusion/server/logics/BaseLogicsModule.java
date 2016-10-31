@@ -116,6 +116,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     public LAP flowBreak;
     public LAP flowReturn;
     public LAP<?> cancel;
+    
+    public LCP<?> sessionOwners;
 
     public LCP objectClass;
     public LCP random;
@@ -403,6 +405,9 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         staticName = findProperty("staticName[Object]");
         staticCaption = findProperty("staticCaption[Object]");
         ((CalcProperty)staticCaption.property).aggProp = true;
+        
+        sessionOwners = findProperty("sessionOwners[]");
+        ((SessionDataProperty)sessionOwners.property).noNestingInNestedSession = true;
 
         objectClassName = findProperty("objectClassName[Object]");
         statCustomObjectClass = findProperty("stat[CustomObjectClass]");

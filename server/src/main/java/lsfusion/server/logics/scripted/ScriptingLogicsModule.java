@@ -62,6 +62,7 @@ import lsfusion.server.mail.AttachmentFormat;
 import lsfusion.server.mail.SendEmailActionProperty;
 import lsfusion.server.mail.SendEmailActionProperty.FormStorageType;
 import lsfusion.server.session.DataSession;
+import lsfusion.server.session.LocalNestedType;
 import org.antlr.runtime.ANTLRFileStream;
 import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CharStream;
@@ -523,7 +524,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new ScriptingFormEntity(this, form);
     }
 
-    public LCP addScriptedDProp(String returnClass, List<String> paramClasses, boolean sessionProp, boolean innerProp, boolean isLocalScope, boolean isNested) throws ScriptingErrorLog.SemanticErrorException {
+    public LCP addScriptedDProp(String returnClass, List<String> paramClasses, boolean sessionProp, boolean innerProp, boolean isLocalScope, LocalNestedType nestedType) throws ScriptingErrorLog.SemanticErrorException {
         ValueClass value = findClass(returnClass);
         ValueClass[] params = new ValueClass[paramClasses.size()];
         for (int i = 0; i < paramClasses.size(); i++) {
@@ -531,9 +532,9 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
 
         if (sessionProp) {
-            return addSDProp(LocalizedString.create(""), isLocalScope, value, isNested, params);
+            return addSDProp(LocalizedString.create(""), isLocalScope, value, nestedType, params);
         } else {
-            assert !isNested;
+            assert nestedType == null;
             if (innerProp) {
                 return addDProp(LocalizedString.create(""), value, params);
             } else {
@@ -1459,14 +1460,14 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LPWithParams(addAProp(null, new ActivateActionProperty(LocalizedString.create(""), form, component)), new ArrayList<Integer>());
     }
 
-    public LCP addLocalDataProperty(String name, String returnClassName, List<String> paramClassNames, boolean isNested) throws ScriptingErrorLog.SemanticErrorException {
+    public LCP addLocalDataProperty(String name, String returnClassName, List<String> paramClassNames, LocalNestedType nestedType) throws ScriptingErrorLog.SemanticErrorException {
         List<ResolveClassSet> signature = new ArrayList<>();
         for (String className : paramClassNames) {
             signature.add(findClass(className).getResolveSet());
         }
         checkDuplicateProperty(name, signature);
 
-        LCP res = addScriptedDProp(returnClassName, paramClassNames, true, false, true, isNested);
+        LCP res = addScriptedDProp(returnClassName, paramClassNames, true, false, true, nestedType);
         makePropertyPublic(res, name, signature);
         return res;
     }

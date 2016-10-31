@@ -113,10 +113,6 @@ public class DockableManager {
             ((ClientFormDockable) page).activateTab(tabSID);
     }
 
-    public void openModalForm(String canonicalName, String formSID, ClientNavigator navigator, boolean showFullScreen) throws IOException, ClassNotFoundException {
-        new ClientModalForm(canonicalName, formSID, Main.frame, navigator.remoteNavigator.createForm(formSID, null, true, true)).showDialog(showFullScreen);
-    }
-
     public Integer openReport(ReportGenerationData generationData, EditReportInvoker editInvoker) throws IOException, ClassNotFoundException {
         ClientReportDockable page = new ClientReportDockable(generationData, this, editInvoker);
         openForm(page);

@@ -58,21 +58,22 @@ public abstract class AbstractContext implements Context {
         return null;
     }
 
+    @Override
+    public void requestFormUserInteraction(FormInstance formInstance, ModalityType modalityType, ExecutionStack stack) throws SQLException, SQLHandledException {
+        FormEntity formEntity = formInstance.entity;
+        RemoteForm remoteForm = createRemoteForm(formInstance, stack);
+        requestUserInteraction(new FormClientAction(formEntity.getCanonicalName(), formEntity.getSID(), remoteForm, remoteForm.getImmutableMethods(), Settings.get().isDisableFirstChangesOptimization() ? null : remoteForm.getFormChangesByteArray(stack), modalityType));
+        if(modalityType.isModal())
+            formInstance.syncLikelyOnClose(true, stack);
+    }
+
     public ObjectValue requestUserObject(DialogRequest dialog, ExecutionStack stack) throws SQLException, SQLHandledException { // null если canceled
         FormInstance dialogInstance = dialog.createDialog();
         if (dialogInstance == null) {
             return null;
         }
 
-        RemoteForm remoteForm = createRemoteForm(dialogInstance, stack);
-        requestUserInteraction(
-                new FormClientAction(
-                        dialogInstance.entity.getCanonicalName(),
-                        dialogInstance.entity.getSID(),
-                        remoteForm,
-                        remoteForm.getImmutableMethods(),
-                        Settings.get().isDisableFirstChangesOptimization() ? null : remoteForm.getFormChangesByteArray(stack),
-                        ModalityType.DIALOG_MODAL));
+        requestFormUserInteraction(dialogInstance, ModalityType.DIALOG_MODAL, stack);
 
         if (dialogInstance.getFormResult() == FormCloseType.CLOSE) {
             return null;
@@ -154,7 +155,7 @@ public abstract class AbstractContext implements Context {
         return s.getString(locale, getLogicsInstance().getBusinessLogics().getLocalizer());
     }
 
-    public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, boolean isAdd, boolean manageSession, ExecutionStack stack, boolean checkOnOk, boolean showDrop, boolean interactive, ImSet<FilterEntity> contextFilters, PropertyDrawEntity initFilterProperty, ImSet<PullChangeProperty> pullProps, boolean readonly) throws SQLException, SQLHandledException {
+    public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, boolean isAdd, Boolean manageSession, ExecutionStack stack, boolean checkOnOk, boolean showDrop, boolean interactive, ImSet<FilterEntity> contextFilters, PropertyDrawEntity initFilterProperty, ImSet<PullChangeProperty> pullProps, boolean readonly) throws SQLException, SQLHandledException {
         return new FormInstance(formEntity, getLogicsInstance(),
                 session,
                 getSecurityPolicy(), getFocusListener(), getClassListener(),

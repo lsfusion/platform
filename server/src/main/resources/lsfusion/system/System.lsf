@@ -49,6 +49,9 @@ seek 'Найти объект' = ACTION CUSTOM 'lsfusion.server.logics.SeekObjec
 
 sleep 'Sleep' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.SleepActionProperty' (LONG);
 
+sessionOwners = DATA LOCAL NESTED MANAGESESSION INTEGER ();
+manageSession = NOT sessionOwners() > 1;
+
 applyOnlyWithoutRecalc = ACTION CUSTOM 'lsfusion.server.logics.property.actions.ApplyOnlyWithoutRecalcActionProperty' ();
 applyOnlyCalc = ACTION CUSTOM 'lsfusion.server.logics.property.actions.ApplyOnlyCalcActionProperty' ();
 applyOnlyCheck = ACTION CUSTOM 'lsfusion.server.logics.property.actions.ApplyOnlyCheckActionProperty' ();

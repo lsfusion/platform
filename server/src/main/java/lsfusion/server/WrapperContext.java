@@ -1,5 +1,6 @@
 package lsfusion.server;
 
+import lsfusion.interop.ModalityType;
 import lsfusion.interop.action.ClientAction;
 import lsfusion.server.auth.SecurityPolicy;
 import lsfusion.server.classes.CustomClass;
@@ -74,6 +75,11 @@ public class WrapperContext extends AbstractContext implements Context {
 
     public RemoteForm createRemoteForm(FormInstance formInstance, ExecutionStack stack) {
         return wrappedContext.createRemoteForm(formInstance, stack);
+    }
+
+    @Override
+    public void requestFormUserInteraction(FormInstance formInstance, ModalityType modalityType, ExecutionStack stack) throws SQLException, SQLHandledException {
+        wrappedContext.requestFormUserInteraction(formInstance, modalityType, stack);
     }
 
     public ObjectValue requestUserObject(DialogRequest dialogRequest, ExecutionStack stack) throws SQLException, SQLHandledException {

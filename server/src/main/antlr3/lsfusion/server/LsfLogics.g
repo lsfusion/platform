@@ -22,6 +22,7 @@ grammar LsfLogics;
 	import lsfusion.server.form.view.GroupObjectView;
 	import lsfusion.server.form.view.PropertyDrawView;
 	import lsfusion.server.classes.sets.ResolveClassSet;
+	import lsfusion.server.session.LocalNestedType;
 	import lsfusion.server.logics.i18n.LocalizedString;
 	import lsfusion.server.logics.mutables.Version;
 	import lsfusion.server.logics.linear.LP;
@@ -1311,24 +1312,28 @@ partitionPropertyDefinition[List<TypedParameter> context, boolean dynamic] retur
 dataPropertyDefinition[boolean innerPD] returns [LP property, List<ResolveClassSet> signature]
 @init {
 	boolean localProp = false;
-	boolean isNested = false;
+	LocalNestedType nestedType = null;
 }
 @after {
 	if (inPropParseState()) {
 		$signature = self.createClassSetsFromClassNames($paramClassNames.ids); 
-		$property = self.addScriptedDProp($returnClass.sid, $paramClassNames.ids, localProp, innerPD, false, isNested);
+		$property = self.addScriptedDProp($returnClass.sid, $paramClassNames.ids, localProp, innerPD, false, nestedType);
 	}
 }
 	:	'DATA'
-		('LOCAL' nlm=nestedLocalModifier { localProp = true; isNested = $nlm.isNested; })?
+		('LOCAL' nlm=nestedLocalModifier { localProp = true; nestedType = $nlm.nestedType; })?
 		returnClass=classId
 		'('
 			paramClassNames=classIdList
 		')'
 	;
 
-nestedLocalModifier returns[boolean isNested = false]
-	:	('NESTED' { $isNested = true; }	)?
+nestedLocalModifier returns[LocalNestedType nestedType = null]
+	:	('NESTED' { $nestedType = LocalNestedType.ALL; }
+	        (   'MANAGESESSION' { $nestedType = LocalNestedType.MANAGESESSION; }
+	        |   'NOMANAGESESSION' { $nestedType = LocalNestedType.NOMANAGESESSION; }
+	        )?
+        )?
 	;
 
 abstractPropertyDefinition returns [LP property, List<ResolveClassSet> signature]
@@ -2529,7 +2534,7 @@ nestedPropertiesSelector returns[boolean all = false, List<PropertyUsage> props 
 localDataPropertyDefinition returns [LP property]
 @after {
 	if (inPropParseState()) {
-		$property = self.addLocalDataProperty($propName.text, $returnClass.sid, $paramClasses.ids, $nlm.isNested);
+		$property = self.addLocalDataProperty($propName.text, $returnClass.sid, $paramClasses.ids, $nlm.nestedType);
 	}
 }
 	:	'LOCAL'

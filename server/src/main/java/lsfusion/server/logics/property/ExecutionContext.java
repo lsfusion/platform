@@ -11,6 +11,7 @@ import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
+import lsfusion.interop.ModalityType;
 import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.form.ReportGenerationData;
 import lsfusion.server.ServerLoggers;
@@ -34,7 +35,7 @@ import lsfusion.server.logics.*;
 import lsfusion.server.logics.SecurityManager;
 import lsfusion.server.logics.linear.LP;
 import lsfusion.server.logics.property.actions.FormEnvironment;
-import lsfusion.server.remote.RemoteForm;
+import lsfusion.server.remote.FormReportManager;
 import lsfusion.server.session.*;
 import net.sf.jasperreports.engine.JRAbstractExporter;
 import net.sf.jasperreports.engine.JRException;
@@ -544,6 +545,11 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         return ThreadLocalContext.requestUserInteraction(action);
     }
 
+    public void requestFormUserInteraction(FormInstance remoteForm, ModalityType modalityType, ExecutionStack stack) throws SQLException, SQLHandledException {
+        assertNotUserInteractionInTransaction();
+        ThreadLocalContext.requestFormUserInteraction(remoteForm, modalityType, stack);
+    }
+    
     public ExecutionContext<P> pushUserInput(ObjectValue overridenUserInput) {
         return override(keys, form, overridenUserInput);
     }
@@ -575,43 +581,30 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
     }
 
     public FormInstance createFormInstance(FormEntity formEntity) throws SQLException, SQLHandledException {
-        return createFormInstance(formEntity, MapFact.<ObjectEntity, DataObject>EMPTY(),
-                getSession(), false, FormSessionScope.OLDSESSION, false, false, false, null);
+        return createFormInstance(formEntity, MapFact.<ObjectEntity, DataObject>EMPTY(), getSession());
     }
 
     public void setLastUserInput(ObjectValue userInput) {
         stack.updateLastUserInput(getSession(), userInput);
     }
 
-    // backport убрать после релиза
-    public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, FormSessionScope scope, boolean checkOnOk, boolean showDrop, boolean interactive, ImSet<FilterEntity> contextFilters) throws SQLException, SQLHandledException {
-        assert scope.equals(FormSessionScope.OLDSESSION);
-        return createFormInstance(formEntity, mapObjects, session, isModal, false, checkOnOk, showDrop, interactive, contextFilters);
+    public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session) throws SQLException, SQLHandledException {
+        return createFormInstance(formEntity, mapObjects, session, false, false, false, false, false, false, null, null, null, false);
     }
 
-    public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, boolean manageSession, boolean checkOnOk, boolean showDrop, boolean interactive, ImSet<FilterEntity> contextFilters) throws SQLException, SQLHandledException {
-        assert !manageSession;
-        return createFormInstance(formEntity, mapObjects, session, isModal, false, manageSession, checkOnOk, showDrop, interactive, contextFilters, null, null, false);
+    public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects) throws SQLException, SQLHandledException {
+        return createFormInstance(formEntity, mapObjects, getSession());
     }
 
-    // зеркалирование Context, чтобы если что можно было бы не юзать ThreadLocal
-    public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, boolean isAdd, boolean manageSession, boolean checkOnOk, boolean showDrop, boolean interactive, ImSet<FilterEntity> contextFilters, PropertyDrawEntity initFilterProperty, ImSet<PullChangeProperty> pullProps, boolean readonly) throws SQLException, SQLHandledException {
+    public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, boolean isAdd, Boolean manageSession, boolean checkOnOk, boolean showDrop, boolean interactive, ImSet<FilterEntity> contextFilters, PropertyDrawEntity initFilterProperty, ImSet<PullChangeProperty> pullProps, boolean readonly) throws SQLException, SQLHandledException {
         return ThreadLocalContext.createFormInstance(formEntity, mapObjects, stack, session, isModal, isAdd, manageSession, checkOnOk, showDrop, interactive, contextFilters, initFilterProperty, pullProps, readonly);
-    }
-
-    public RemoteForm createRemoteForm(FormInstance formInstance) {
-        return ThreadLocalContext.createRemoteForm(formInstance, stack);
-    }
-
-    public RemoteForm createReportForm(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects) throws SQLException, SQLHandledException {
-        return createRemoteForm(createFormInstance(formEntity, mapObjects, getSession(), false, false, false, false, false, null));
     }
 
     public File generateFileFromForm(BusinessLogics BL, FormEntity formEntity, ObjectEntity objectEntity, DataObject dataObject) throws SQLException, SQLHandledException {
 
-        RemoteForm remoteForm = createReportForm(formEntity, MapFact.singleton(objectEntity, dataObject));
+        FormInstance remoteForm = createFormInstance(formEntity, MapFact.singleton(objectEntity, dataObject));
         try {
-            ReportGenerationData generationData = remoteForm.reportManager.getReportData();
+            ReportGenerationData generationData = new FormReportManager<>(remoteForm).getReportData(false);
             ReportGenerator report = new ReportGenerator(generationData);
             JasperPrint print = report.createReport(false, new HashMap());
             File tempFile = File.createTempFile("lsfReport", ".pdf");

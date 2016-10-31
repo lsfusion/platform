@@ -77,6 +77,11 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
     public DataObject(Boolean bl) {
         this(bl, LogicalClass.instance);
     }
+    
+    public static DataObject TRUE = new DataObject(true);
+    public static ObjectValue create(boolean value) {
+        return value ? TRUE : NullValue.instance; 
+    }
 
     public DataObject(Integer ig) {
         this(ig, IntegerClass.instance);

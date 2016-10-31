@@ -23,6 +23,7 @@ import lsfusion.server.logics.property.actions.ChangeClassActionProperty;
 import lsfusion.server.logics.property.actions.flow.*;
 import lsfusion.server.logics.property.cases.ActionCase;
 import lsfusion.server.logics.property.cases.CalcCase;
+import lsfusion.server.session.LocalNestedType;
 
 import java.util.List;
 
@@ -721,12 +722,12 @@ public class DerivedProperty {
         return dataProperty.getImplement(listInterfaces);
     }
 
-    public static <T> CalcPropertyRevImplement<ClassPropertyInterface, T> createDataPropRev(LocalizedString caption, ImMap<T, ValueClass> interfaces, ValueClass valueClass, boolean isNested) {
+    public static <T> CalcPropertyRevImplement<ClassPropertyInterface, T> createDataPropRev(LocalizedString caption, ImMap<T, ValueClass> interfaces, ValueClass valueClass, LocalNestedType nestedType) {
         ImOrderMap<T, ValueClass> orderInterfaces = interfaces.toOrderMap();
         ImOrderSet<T> listInterfaces = orderInterfaces.keyOrderSet();
         ValueClass[] interfaceClasses = orderInterfaces.valuesList().toArray(new ValueClass[orderInterfaces.size()]);
         SessionDataProperty dataProperty = new SessionDataProperty(caption, interfaceClasses, valueClass);
-        dataProperty.isNested = isNested;
+        dataProperty.nestedType = nestedType;
         return dataProperty.getRevImplement(listInterfaces);
     }
 

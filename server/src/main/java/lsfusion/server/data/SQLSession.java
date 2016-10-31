@@ -3202,4 +3202,9 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
 
         executeSelect(select, owner, StaticExecuteEnvironmentImpl.EMPTY, keyNames, revKeyNames.mapValues(Field.<KeyField>fnTypeGetter()), propNames, revPropNames.mapValues(Field.<PropertyField>fnTypeGetter()), reader);
     }
+
+    @Override
+    public void close() throws SQLException {
+        explicitClose();
+    }
 }

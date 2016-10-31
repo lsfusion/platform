@@ -2266,6 +2266,16 @@ public class BaseUtils {
         return new MergeFunctionSet<>(set1, set2);
     }
 
+    public static <K> FunctionSet<K> remove(FunctionSet<K> set1, FunctionSet<K> set2) {
+        if (set1.isEmpty() || set2.isFull())
+            return SetFact.<K>EMPTY();
+        if (set2.isEmpty() || set1.isFull())
+            return set1;
+//        if(set1 instanceof ImSet && set2 instanceof ImSet)
+//            return ((ImSet<K>)set1).merge((ImSet<K>)set2);
+        return new RemoveFunctionSet<>(set1, set2);
+    }
+
     public static <K> boolean containsAll(FunctionSet<K> set1, ImSet<K> set2) {
         for (K element : set2) {
             if (!set1.contains(element))

@@ -18,6 +18,7 @@ import lsfusion.server.logics.property.actions.flow.CaseActionProperty;
 import lsfusion.server.logics.property.actions.flow.FlowResult;
 import lsfusion.server.logics.property.actions.flow.ListActionProperty;
 import lsfusion.server.session.DataSession;
+import lsfusion.server.session.ExecutionEnvironment;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -32,7 +33,7 @@ public class LAP<T extends PropertyInterface> extends LP<T, ActionProperty<T>> {
         super(property, listInterfaces);
     }
 
-    public void execute(DataSession session, ExecutionStack stack, ObjectValue... objects) throws SQLException, SQLHandledException {
+    public void execute(ExecutionEnvironment session, ExecutionStack stack, ObjectValue... objects) throws SQLException, SQLHandledException {
         property.execute(getMapValues(objects), session, stack, null);
     }
 
