@@ -156,24 +156,25 @@ public class SendEmailActionProperty extends SystemExplicitActionProperty {
 
             Map<String, Message.RecipientType> recipients = getRecipientEmails(context);
 
-            ObjectValue defaultAccount = emailLM.defaultInboxAccount.readClasses(context.getSession());
+            String fromAddress = (String) fromAddressAccount.read(context, context.getKeys());
+            ObjectValue account = fromAddress != null ?
+                    emailLM.inboxAccount.readClasses(context, new DataObject(fromAddress)) :
+                    emailLM.defaultInboxAccount.readClasses(context);
 
             Map<ByteArray, Pair<String, String>> customAttachments = createCustomAttachments(context);
 
-            if (!(defaultAccount instanceof NullValue)) {
-                String encryptedConnectionType = (String) emailLM.nameEncryptedConnectionTypeAccount.read(context, defaultAccount);
-                String smtpHostAccount = (String) emailLM.smtpHostAccount.read(context, defaultAccount);
-                String smtpPortAccount = (String) emailLM.smtpPortAccount.read(context, defaultAccount);
+            if (account instanceof DataObject) {
+                String encryptedConnectionType = (String) emailLM.nameEncryptedConnectionTypeAccount.read(context, account);
+                String smtpHostAccount = (String) emailLM.smtpHostAccount.read(context, account);
+                String smtpPortAccount = (String) emailLM.smtpPortAccount.read(context, account);
 
-                ObjectValue fromAddressAccountObject = this.fromAddressAccount.readClasses(context, context.getKeys());
-                String fromAddressAccount = (String) (fromAddressAccountObject instanceof DataObject ? fromAddressAccountObject.getValue() :
-                        emailLM.fromAddressAccount.read(context, defaultAccount));
+                String fromAddressAccount = (String) (fromAddress != null ? fromAddress : emailLM.fromAddressAccount.read(context, account));
 
                 String subject = (String) this.subject.read(context, context.getKeys());
-                String nameAccount = (String) emailLM.nameAccount.read(context, defaultAccount);
-                String passwordAccount = (String) emailLM.passwordAccount.read(context, defaultAccount);
+                String nameAccount = (String) emailLM.nameAccount.read(context, account);
+                String passwordAccount = (String) emailLM.passwordAccount.read(context, account);
                 
-                if (emailLM.disableAccount.read(context, fromAddressAccountObject) != null) {
+                if (emailLM.disableAccount.read(context, account) != null) {
                     logger.error(localize("{mail.disabled}"));
                     return;
                 }
