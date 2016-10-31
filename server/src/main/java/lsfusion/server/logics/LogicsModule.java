@@ -528,7 +528,7 @@ public abstract class LogicsModule {
     // loggable, security, drilldown
     public LAP addMFAProp(LocalizedString caption, FormEntity form, ObjectEntity[] objectsToSet, boolean newSession) {
         return addSessionScopeAProp(caption, newSession ? FormSessionScope.NEWSESSION : FormSessionScope.OLDSESSION,
-                addFAProp(form, objectsToSet, newSession, false, ModalityType.MODAL));
+                addFAProp(form, objectsToSet, null, false, ModalityType.MODAL));
     }
 
     // edit (add)
@@ -1637,7 +1637,7 @@ public abstract class LogicsModule {
         result = addListAProp(LocalizedString.create("sys"), result,
                 addIfAProp(addJProp(baseLM.equals2, formResultProperty, addCProp(baseLM.formResult, "ok")), // IF formResult == ok
                         (contextObject != null ? addJoinAProp(addOSAProp(contextObject, true, 1), addedProperty) : baseLM.empty), // THEN (contextObject != null) SEEK exf.o prm
-                        (!scope.isNewSession() ? addJoinAProp(getDeleteAction(cls, true), addedProperty) : baseLM.empty)) // ELSE (!scope.isNewSession) DELETE prm),
+                        (addIfAProp(baseLM.sessionOwners, addJoinAProp(getDeleteAction(cls, true), addedProperty)))) // ELSE IF sessionOwners DELETE prm, // предполагается что если нет 
                          );
         result = addSessionScopeAProp(LocalizedString.create("{logics.add}"), scope, result); // NEWSESSION (if needed)
 
