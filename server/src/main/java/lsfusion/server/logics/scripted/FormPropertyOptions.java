@@ -39,6 +39,26 @@ public class FormPropertyOptions {
     private PropertyDrawEntity quickFilterPropertyDraw;
     private String neighbourPropertyText;
     private Boolean isRightNeighbour;
+    
+    private Boolean newSession;
+    private Boolean isNested;
+    
+    public void setNewSession(Boolean newSession) {
+        this.newSession = newSession;
+    }
+    
+    public void setNested(Boolean isNested) {
+        this.isNested = isNested;
+    }
+    
+    public Boolean isNewSession() {
+        return newSession;
+    }
+    
+    public Boolean isNested() {
+        return isNested;
+    }
+    
 
     public PropertyEditType getEditType() {
         return editType;
@@ -243,6 +263,8 @@ public class FormPropertyOptions {
     public FormPropertyOptions overrideWith(FormPropertyOptions overrides) {
         FormPropertyOptions merged = new FormPropertyOptions();
 
+        merged.setNewSession(nvl(overrides.isNewSession(), newSession));
+        merged.setNested(nvl(overrides.isNested(), isNested));
         merged.setEditType(nvl(overrides.getEditType(), editType));
         merged.setHintNoUpdate(nvl(overrides.getHintNoUpdate(), hintNoUpdate));
         merged.setHintTable(nvl(overrides.getHintTable(), hintTable));
