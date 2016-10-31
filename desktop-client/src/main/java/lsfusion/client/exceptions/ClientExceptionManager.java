@@ -74,13 +74,16 @@ public class ClientExceptionManager {
 
     public static void reportThrowable(Throwable e) {
         SwingUtils.assertDispatchThread();
+        
+        logger.error("Reporting throwable : " + e, e);
+        
         if (!(e instanceof ConcurrentModificationException && ExceptionUtils.getStackTraceString(e).contains("bibliothek.gui.dock.themes.basic.action.buttons.ButtonPanel.setForeground"))) {
             synchronized (unreportedThrowables) {
                 boolean reported = false;
                 try {
                     reported = Main.clientExceptionLog("Client error", e);
                 } catch (ConnectException ex) {
-                    logger.error("Error reporting client connect exception: " + e.getMessage());
+                    logger.error("Error reporting client connect exception: " + e, ex);
                 } catch (Throwable ex) {
                     logger.error("Error reporting client exception: " + e, ex);
                 }

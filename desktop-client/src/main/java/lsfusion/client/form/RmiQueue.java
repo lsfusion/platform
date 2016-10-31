@@ -99,6 +99,11 @@ public class RmiQueue {
                         RemoteException remote = (RemoteException) t;
 
                         int maxFatal = ExceptionUtils.getFatalRemoteExceptionCount(t);
+
+                        if(logger.isDebugEnabled()) {
+                            logger.debug("Failed rmi request, req count : " + reqCount + ", max fatal : ", t);
+                        }
+                        
                         if (reqCount > maxFatal) {
                             ConnectionLostManager.connectionLost();
 
