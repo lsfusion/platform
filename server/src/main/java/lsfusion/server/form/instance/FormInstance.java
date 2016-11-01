@@ -515,13 +515,17 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
             boolean isFontBold = values.get(prefix + "IsFontBold") != null;
             boolean isFontItalic = values.get(prefix + "IsFontItalic") != null;
 
-            PropertyDrawInstance property = getPropertyDraw(propertyDrawSID); 
-            if (userPrefsHiddenProperties.contains(property)) {
-                if (property != null && hasPreferences != null && (needToHide == null || !needToHide)) {
-                    userPrefsHiddenProperties = userPrefsHiddenProperties.removeIncl(property);
+            PropertyDrawInstance property = getPropertyDraw(propertyDrawSID);
+            if(property == null) {
+                ServerLoggers.assertLog(false, "LoadUserPreferences property not found: " + propertyDrawSID);
+            } else {
+                if (userPrefsHiddenProperties.contains(property)) {
+                    if (hasPreferences != null && (needToHide == null || !needToHide)) {
+                        userPrefsHiddenProperties = userPrefsHiddenProperties.removeIncl(property);
+                    }
+                } else if (hasPreferences != null && needToHide != null && needToHide) {
+                    userPrefsHiddenProperties = userPrefsHiddenProperties.addExcl(property);
                 }
-            } else if (property != null && hasPreferences != null && needToHide != null && needToHide) {
-                userPrefsHiddenProperties = userPrefsHiddenProperties.addExcl(property);
             }
             
             
@@ -1347,13 +1351,13 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     private int updateSessionOwner(boolean set, ExecutionStack stack) throws SQLException, SQLHandledException {
         LCP<?> sessionOwners = BL.LM.sessionOwners;
         int prevOwners = BaseUtils.nvl((Integer) sessionOwners.read(this), 0);
-        int newOwners = prevOwners + (set ? 1 : -1); 
+        int newOwners = prevOwners + (set ? 1 : -1);
         sessionOwners.change(newOwners == 0 ? null : newOwners, this);
         return prevOwners;
     }
 
     // сейчас закрытие формы асинхронно (для экономии round trip'а), для записи же скажем sessionOwner'а нужна синхронная работа сессии
-    // для этого можно делать это либо при отсылке hide'а формы на сервере (но тогда owner может сброситься чуть раньше чем надо) 
+    // для этого можно делать это либо при отсылке hide'а формы на сервере (но тогда owner может сброситься чуть раньше чем надо)
     // или в контексте вызова, но тогда в случае немодальной формы, sessionOwner не сбрасывается, то есть мы полагаемся на то что сессия сразу же закроется (де-факто так и будет, но мало ли)
     // в будущем если все же вернемся к синхронизации закрытия возможно проблема уйдет
     private static boolean useCallerSyncOnClose = false;
