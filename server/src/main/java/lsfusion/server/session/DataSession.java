@@ -733,7 +733,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             public ImMap<K, ConcreteObjectClass> getMapValue(ImMap<K, Object> readClasses) {
                 return readClasses.mapValues(new GetValue<ConcreteObjectClass, Object>() {
                     public ConcreteObjectClass getMapValue(Object id) {
-                        return baseClass.findConcreteClassID(((Integer) id) != -1 ? (Integer) id : null);
+                        return baseClass.findConcreteClassID((Integer) id, -1);
                     }
                 });
             }

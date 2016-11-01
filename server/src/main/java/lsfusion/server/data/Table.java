@@ -322,7 +322,7 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
                     }
                 }).mapValues(new GetKeyValue<ConcreteClass, Field, Object>() {
                     public ConcreteClass getMapValue(Field key, Object id) {
-                        return baseClass.findConcreteClassID(((Integer) id) != -1 ? (Integer) id : null);
+                        return baseClass.findConcreteClassID((Integer)id, -1);
                     }
                 });
             }

@@ -65,6 +65,16 @@ public class BaseClass extends AbstractCustomClass {
         return findClassID((int)idClass);
     }
 
+    // для того чтобы группировать по классам в некоторых местах делается nvl(-1), тем самым assert'ся что результат не null
+    // но если "плывут" классы, или просто объект параллельно удалили, может нарушаться поэтому пока вставим assertion 
+    public ConcreteObjectClass findConcreteClassID(Integer id, int nullValue) {
+        if(id == null) {
+            id = nullValue;
+            ServerLoggers.assertLog(false, "CLASS RESULT SHOULD NOT BE NULL");
+        }
+        return findConcreteClassID(id != nullValue ? id : null);        
+    }
+
     @IdentityLazy
     public ConcreteObjectClass findConcreteClassID(Integer idClass) {
         if(idClass==null) return unknown;
