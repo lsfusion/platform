@@ -201,7 +201,7 @@ public class SQLQuery extends SQLCommand<ResultHandler<String, String>> {
 
             resultString += rowName + '\n';
 
-            if (resultString.length() > 1000000) {
+            if (resultString.length() > Settings.get().getOutSelectLengthThreshold()) {
                 resultString += "and more...\n";
                 break;
             }

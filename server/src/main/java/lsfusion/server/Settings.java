@@ -1817,6 +1817,16 @@ public class Settings {
     public void setQueryLengthAverageMax(int queryLengthAverageMax) {
         this.queryLengthAverageMax = queryLengthAverageMax;
     }
+    
+    private int outSelectLengthThreshold = 10000000;
+
+    public int getOutSelectLengthThreshold() {
+        return outSelectLengthThreshold;
+    }
+
+    public void setOutSelectLengthThreshold(int outSelectLengthThreshold) {
+        this.outSelectLengthThreshold = outSelectLengthThreshold;
+    }
 
     public int getQueryTimeAverageMax() {
         return queryTimeAverageMax;
