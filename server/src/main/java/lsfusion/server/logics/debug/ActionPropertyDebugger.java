@@ -161,6 +161,7 @@ public class ActionPropertyDebugger implements DebuggerService {
             "import lsfusion.server.logics.property.DataProperty;\n" +
             "import lsfusion.server.logics.property.ExecutionContext;\n" +
             "import lsfusion.server.logics.property.actions.flow.FlowResult;\n" +
+            "import lsfusion.server.session.ClassChange;\n" +
             "import lsfusion.server.session.DataSession;\n" +
             "import lsfusion.server.session.PropertyChange;\n" +
             "\n" +
@@ -178,10 +179,14 @@ public class ActionPropertyDebugger implements DebuggerService {
                         "    public static FlowResult " + methodName + "(ActionProperty action, ExecutionContext context) throws SQLException, SQLHandledException {\n" +
                         "        " + body + "\n" +
                         "    }\n";
-            } else {
+            } else if (info instanceof CalcPropertyDebugInfo) {
                 sourceString +=
                         "    public static void " + methodName + "(DataSession session, CalcProperty property, PropertyChange<ClassPropertyInterface> change) throws SQLException, SQLHandledException {\n" +
                         "        session.changePropertyImpl((DataProperty) property, change);\n" +
+                        "    }\n";
+            } else { // class change
+                sourceString +=
+                        "    public static void " + methodName + "() throws SQLException, SQLHandledException {\n" +
                         "    }\n";
             }
         }
@@ -281,6 +286,24 @@ public class ActionPropertyDebugger implements DebuggerService {
         }
 
         dataSession.changePropertyImpl(property, change);
+    }
+
+    public void delegate(ClassDebugInfo debugInfo) throws SQLException, SQLHandledException {
+        if (debugInfo == null || !isEnabled()) {
+            throw new IllegalStateException("Shouldn't happen: debug isn't enabled");
+        }
+
+        Class<?> delegatesHolderClass = delegatesHolderClasses.get(debugInfo.getModuleName());
+        if (delegatesHolderClass != null) {
+            try {
+                Method method = delegatesHolderClass.getMethod(getMethodName(debugInfo));
+                method.invoke(delegatesHolderClass);
+            } catch (InvocationTargetException e) {
+                throw ExceptionUtils.propagate(e.getCause(), SQLException.class, SQLHandledException.class);
+            } catch (Exception e) {
+                logger.warn("Error while delegating to ActionPropertyDebugger: ", e);
+            }
+        }
     }
     
     private Object commonExecuteDelegate(Class<?> clazz, Method method, ActionProperty action, ExecutionContext context) throws InvocationTargetException, IllegalAccessException {

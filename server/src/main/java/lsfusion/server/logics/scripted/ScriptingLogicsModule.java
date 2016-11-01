@@ -309,7 +309,8 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public void addScriptedClass(String className, LocalizedString captionStr, boolean isAbstract,
-                                 List<String> instNames, List<LocalizedString> instCaptions, List<String> parentNames, boolean isComplex) throws ScriptingErrorLog.SemanticErrorException {
+                                 List<String> instNames, List<LocalizedString> instCaptions, List<String> parentNames, boolean isComplex,
+                                 DebugInfo.DebugPoint point) throws ScriptingErrorLog.SemanticErrorException {
         checkDuplicateClass(className);
         checkStaticClassConstraints(isAbstract, instNames, instCaptions);
         checkClassParents(parentNames);
@@ -339,6 +340,12 @@ public class ScriptingLogicsModule extends LogicsModule {
             cls = addConcreteClass(className, caption, instNames, captions, parents);
         }
         cls.isComplex = isComplex;
+
+        ClassDebugInfo debugInfo = new ClassDebugInfo(point);
+        if (debugger.isEnabled() && point.needToCreateDelegate()) {
+            debugger.addDelegate(debugInfo);
+            cls.setDebugInfo(debugInfo);
+        }
     }
 
     public void extendClass(String className, List<String> instNames, List<LocalizedString> instCaptions, List<String> parentNames) throws ScriptingErrorLog.SemanticErrorException {

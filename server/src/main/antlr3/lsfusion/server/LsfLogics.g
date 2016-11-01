@@ -273,11 +273,12 @@ classStatement
 	boolean isAbstract = false;
 	boolean isNative = false;
 	boolean isComplex = false;
+	DebugInfo.DebugPoint point = getCurrentDebugPoint(); 
 }
 @after {
 	if (inClassParseState()) {
 	    if (!isNative)
-		    self.addScriptedClass($nameCaption.name, $nameCaption.caption, isAbstract, $classData.names, $classData.captions, $classData.parents, isComplex);
+		    self.addScriptedClass($nameCaption.name, $nameCaption.caption, isAbstract, $classData.names, $classData.captions, $classData.parents, isComplex, point);
 	}
 }
 	:	'CLASS'

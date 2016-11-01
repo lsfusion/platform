@@ -30,6 +30,7 @@ import lsfusion.server.form.entity.*;
 import lsfusion.server.form.instance.CustomObjectInstance;
 import lsfusion.server.form.instance.ObjectInstance;
 import lsfusion.server.logics.BaseLogicsModule;
+import lsfusion.server.logics.debug.ClassDebugInfo;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.mutables.NFFact;
 import lsfusion.server.logics.mutables.Version;
@@ -47,6 +48,8 @@ import java.util.Comparator;
 import java.util.List;
 
 public abstract class CustomClass extends ImmutableObject implements ObjectClass, ValueClass {
+
+    private ClassDebugInfo debugInfo;
 
     public Type getType() {
         return ObjectType.instance;
@@ -293,6 +296,14 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
             }
         }
         return baseClassForm;
+    }
+
+    public ClassDebugInfo getDebugInfo() {
+        return debugInfo;
+    }
+
+    public void setDebugInfo(ClassDebugInfo debugInfo) {
+        this.debugInfo = debugInfo;
     }
 
     static class FormEntityComparator implements Comparator<FormEntity> {

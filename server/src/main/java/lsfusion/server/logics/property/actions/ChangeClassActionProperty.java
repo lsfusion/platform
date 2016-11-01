@@ -17,6 +17,7 @@ import lsfusion.server.form.instance.ObjectInstance;
 import lsfusion.server.form.instance.PropertyObjectInterfaceInstance;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
+import lsfusion.server.logics.debug.ActionDelegationType;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.actions.flow.ExtendContextActionProperty;
@@ -193,5 +194,10 @@ public class ChangeClassActionProperty<T extends PropertyInterface, I extends Pr
                 return createChangeClassAction(context, mapInnerInterfaces.get(changeInterface), valueClass, forceDialog, where, baseClass, orders, ordersNotNull);
             }
         });
+    }
+
+    @Override
+    public ActionDelegationType getDelegationType(boolean modifyContext) {
+        return ActionDelegationType.IN_DELEGATE;
     }
 }

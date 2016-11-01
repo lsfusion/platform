@@ -44,6 +44,7 @@ import lsfusion.server.form.instance.listener.CustomClassListener;
 import lsfusion.server.form.navigator.*;
 import lsfusion.server.logics.*;
 import lsfusion.server.logics.debug.ActionPropertyDebugger;
+import lsfusion.server.logics.debug.ClassDebugInfo;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.*;
@@ -741,7 +742,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     }
 
     public void changeClass(ClassChange change) throws SQLException, SQLHandledException {
-        if(change.isEmpty()) // оптимизация, важна так как во многих event'ах может учавствовать
+        if(change.isEmpty()) // оптимизация, важна так как во многих event'ах может участвовать
             return;
         
         SingleKeyPropertyUsage changeTable = null;
@@ -765,7 +766,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                     change = changeTable.getChange();
                 }
     
-                if(change.isEmpty()) // оптимизация, важна так как во многих event'ах может учавствовать
+                if(change.isEmpty()) // оптимизация, важна так как во многих event'ах может участвовать
                     return;
     
                 // читаем варианты изменения классов
@@ -779,7 +780,9 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             }
             addClasses = mAddClasses.immutable(); removeClasses = mRemoveClasses.immutable();
             changedOldClasses = mChangeOldClasses.immutable(); changedNewClasses = mChangeNewClasses.immutable();
-    
+
+            delegateToDebugger(addClasses, removeClasses);
+
             updateChanges = getClassChanges(addClasses, removeClasses, changedOldClasses, changedNewClasses);
 
             if(needSessionEventMaterialize(changeTable, updateChanges)) {
@@ -807,6 +810,24 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             updateProperties(updateChanges, updateSourceChanges);
 
             aspectAfterChange();
+        }
+    }
+
+    public void delegateToDebugger(ImSet<CustomClass> addClasses, ImSet<CustomClass> removeClasses) throws SQLException, SQLHandledException {
+        ActionPropertyDebugger debugger = ActionPropertyDebugger.getInstance();
+        if (debugger.isEnabled()) {
+            for (CustomClass addClass : addClasses) {
+                ClassDebugInfo debugInfo = addClass.getDebugInfo();
+                if (debugInfo != null) {
+                    debugger.delegate(debugInfo);
+                }
+            }
+            for (CustomClass removeClass : removeClasses) {
+                ClassDebugInfo debugInfo = removeClass.getDebugInfo();
+                if (debugInfo != null) {
+                    debugger.delegate(debugInfo);
+                }
+            }
         }
     }
 
