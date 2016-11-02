@@ -1,54 +1,45 @@
 package lsfusion.server.logics.property.actions.importing.dbf;
 
-import lsfusion.server.classes.DateClass;
-import lsfusion.server.classes.ValueClass;
-import lsfusion.server.logics.linear.LCP;
-import lsfusion.server.logics.property.ClassType;
 import lsfusion.server.logics.property.actions.importing.ImportIterator;
-import org.apache.commons.lang3.time.DateUtils;
-import org.xBaseJ.DBF;
-import org.xBaseJ.xBaseJException;
+import net.iryndin.jdbf.core.DbfField;
+import net.iryndin.jdbf.core.DbfRecord;
+import net.iryndin.jdbf.reader.DbfReader;
 
 import java.io.IOException;
-import java.text.DateFormat;
-import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-public class ImportDBFIterator extends ImportIterator {
-    DBF dbf;
-    List<Integer> sourceColumns;
-    List<LCP> properties;
+class ImportDBFIterator extends ImportIterator {
+    private DbfReader reader;
+    private List<Integer> sourceColumns;
     
-    public ImportDBFIterator(DBF dbf, List<Integer> sourceColumns, List<LCP> properties) {
-        this.dbf = dbf;
+    ImportDBFIterator(DbfReader reader, List<Integer> sourceColumns) {
+        this.reader = reader;
         this.sourceColumns = sourceColumns;
-        this.properties = properties;
     }
 
     @Override
     public List<String> nextRow() {
         try {
-            dbf.read();
+            DbfRecord record = reader.read();
+            if(record == null)
+                return null;
+            Map<Integer, String> fieldMapping = new HashMap<>();
+            int i = 1;
+            for(DbfField field : record.getFields()) {
+                fieldMapping.put(i, field.getName());
+                i++;
+            }
+
             List<String> listRow = new ArrayList<>();
             for (Integer column : sourceColumns) {
-                ValueClass valueClass = properties.get(sourceColumns.indexOf(column)).property.getValueClass(ClassType.valuePolicy);
-                boolean isDate = valueClass instanceof DateClass;
-                if (column <= dbf.getFieldCount()) {
-                    String value = new String(dbf.getField(column).getBytes(), "Cp866").trim();
-                    if (isDate) {
-                        value = DateFormat.getDateInstance().format(DateUtils.parseDate(value, new String[]{"yyyyMMdd", "dd.MM.yyyy"}));
-                    }
-                    listRow.add(value);
-                }
+                //Пока charset захардкожена. Если потребуется другая, то добавить в язык как для CSV
+                listRow.add(record.getString(fieldMapping.get(column), "cp1251"));
             }
             return listRow;
-        } catch (xBaseJException e) {
-            e.printStackTrace();
-            return null;
         } catch (IOException e) {
-            return null;
-        } catch (ParseException e) {
             return null;
         }
     }
@@ -56,8 +47,8 @@ public class ImportDBFIterator extends ImportIterator {
     @Override
     protected void release() {
         try {
-            if (dbf != null)
-                dbf.close();
+            if (reader != null)
+                reader.close();
         } catch (IOException e) {
             e.printStackTrace();
         }

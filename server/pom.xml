@@ -180,6 +180,10 @@
             <groupId>commons-httpclient</groupId>
             <artifactId>commons-httpclient</artifactId>
         </dependency>
+        <dependency>
+            <groupId>net.iryndin</groupId>
+            <artifactId>jdbf</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>junit</groupId>

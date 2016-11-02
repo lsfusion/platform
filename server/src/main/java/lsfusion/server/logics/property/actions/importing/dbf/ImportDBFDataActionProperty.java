@@ -6,9 +6,9 @@ import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.actions.importing.ImportDataActionProperty;
 import lsfusion.server.logics.property.actions.importing.ImportIterator;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
+import net.iryndin.jdbf.core.DbfField;
+import net.iryndin.jdbf.reader.DbfReader;
 import org.jdom.JDOMException;
-import org.xBaseJ.DBF;
-import org.xBaseJ.xBaseJException;
 
 import java.io.File;
 import java.io.IOException;
@@ -23,25 +23,27 @@ public class ImportDBFDataActionProperty extends ImportDataActionProperty {
     }
 
     @Override
-    public ImportIterator getIterator(byte[] file) throws IOException, ParseException, xBaseJException, JDOMException, ClassNotFoundException {
+    public ImportIterator getIterator(byte[] file) throws IOException, ParseException, JDOMException, ClassNotFoundException {
 
         File tmpFile = null;
         try {
             tmpFile = File.createTempFile("importDBF", ".dbf");
             Files.write(file, tmpFile);
-            DBF dbf = new DBF(tmpFile.getAbsolutePath());
+            DbfReader reader = new DbfReader(tmpFile);
 
             Map<String, Integer> fieldMapping = new HashMap<>();
-            for (int i = 1; i <= dbf.getFieldCount(); i++) {
-                fieldMapping.put(dbf.getField(i).getName().toLowerCase(), i);
+            int i = 1;
+            for(DbfField field : reader.getMetadata().getFields()) {
+                fieldMapping.put(field.getName().toLowerCase(), i);
+                i++;
             }
             List<Integer> sourceColumns = getSourceColumns(fieldMapping);
 
-            return new ImportDBFIterator(dbf, sourceColumns, properties);
+            return new ImportDBFIterator(reader, sourceColumns);
 
         } finally {
-            if (tmpFile != null)
-                tmpFile.delete();
+            if (tmpFile != null && !tmpFile.delete())
+                tmpFile.deleteOnExit();
         }
     }
 
