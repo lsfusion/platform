@@ -115,7 +115,7 @@ public class BaseClass extends AbstractCustomClass {
         if(objectClass.readData(objectClass.ID, session.sql) == null) {
             DataObject classObject = new DataObject(objectClass.ID, unknown);
             session.changeClass(classObject, objectClass);
-            staticCaption.change(objectClass.caption, session, classObject);
+            staticCaption.change(objectClass.caption.getSourceString(), session, classObject);
             staticName.change(objectClass.sID, session, classObject);
         }
         usedSIds.put(objectClass.sID, objectClass);
