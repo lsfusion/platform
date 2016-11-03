@@ -321,7 +321,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     }
 
     public void proceedDefaultDesign(PropertyDrawView propertyView, DefaultFormView defaultView) {
-        propertyObject.property.proceedDefaultDesign(propertyView, defaultView);
+        propertyObject.property.drawOptions.proceedDefaultDesign(propertyView);
     }
 
     @Override

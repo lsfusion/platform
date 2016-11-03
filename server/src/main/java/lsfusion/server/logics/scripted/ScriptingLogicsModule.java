@@ -884,7 +884,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public void setEventId(LP property, String id) {
-        property.property.eventID = id;
+        property.property.drawOptions.setEventID(id);
     }
     
     public List<ResolveClassSet> getParamClasses(PropertyUsage usage) throws ScriptingErrorLog.SemanticErrorException {

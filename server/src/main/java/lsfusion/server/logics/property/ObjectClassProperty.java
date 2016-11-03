@@ -59,14 +59,6 @@ public class ObjectClassProperty extends AggregateProperty<ClassPropertyInterfac
     }
 
     @Override
-    public void proceedDefaultDraw(PropertyDrawEntity<ClassPropertyInterface> entity, FormEntity<?> form, Version version) {
-        super.proceedDefaultDraw(entity, form, version);
-        PropertyObjectInterfaceEntity mapObject = entity.propertyObject.mapping.singleValue();
-        if(mapObject instanceof ObjectEntity && !((CustomClass)((ObjectEntity)mapObject).baseClass).hasChildren())
-            entity.forceViewType = ClassViewType.HIDE;
-    }
-
-    @Override
     public String getChangeExtSID() {
         return "OBJECT";
     }

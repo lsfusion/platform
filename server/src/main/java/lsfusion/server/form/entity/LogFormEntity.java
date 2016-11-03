@@ -1,6 +1,5 @@
 package lsfusion.server.form.entity;
 
-import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
@@ -115,7 +114,7 @@ public class LogFormEntity<T extends BusinessLogics<T>> extends FormEntity<T> {
                 }
                 JoinProperty<?> jProp = new JoinProperty(impl.property.caption,
                         listInterfaces, mapCalcImplement(lpMainProp, readCalcImplements(listInterfaces, params)));
-                jProp.inheritFixedCharWidth(impl.property);
+                jProp.drawOptions.inheritDrawOptions(impl.property.drawOptions);
                 LCP<?> ljProp = new LCP<>(jProp, listInterfaces);
                 addPropertyDraw(ljProp, version, entities);
             }

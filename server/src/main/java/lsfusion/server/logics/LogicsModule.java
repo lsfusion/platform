@@ -924,13 +924,14 @@ public abstract class LogicsModule {
         return addJProp(group, implementChange, persistent, false, caption, mainProp, params);
     }
 
-    protected LCP addJProp(AbstractGroup group, boolean implementChange, boolean persistent, boolean user, LocalizedString caption, LCP mainProp, Object... params) {
+    protected LCP addJProp(AbstractGroup group, boolean implementChange, boolean persistent, boolean user, LocalizedString caption, LCP<?> mainProp, Object... params) {
 
         ImOrderSet<JoinProperty.Interface> listInterfaces = JoinProperty.getInterfaces(getIntNum(params));
+        ImList<CalcPropertyInterfaceImplement<JoinProperty.Interface>> listImplements = readCalcImplements(listInterfaces, params);
         JoinProperty<?> property = new JoinProperty(caption, listInterfaces, implementChange, user,
-                mapCalcImplement(mainProp, readCalcImplements(listInterfaces, params)));
-        property.inheritFixedCharWidth(mainProp.property);
-        property.inheritImage(mainProp.property);
+                mapCalcImplement(mainProp, listImplements));
+
+        property.drawOptions.inheritDrawOptions(mainProp.property.getAndProperty().drawOptions);
 
         return addProperty(group, persistent, new LCP<>(property, listInterfaces));
     }
@@ -1582,6 +1583,12 @@ public abstract class LogicsModule {
         );
     }
 
+    // ---------------------- OBJVALUE ---------------------- //
+
+    public LCP getObjValueProp(FormEntity formEntity, ObjectEntity obj) {
+        return baseLM.getObjValueProp(formEntity, obj);
+    }
+
     // ---------------------- Add Object ---------------------- //
 
     public <T extends PropertyInterface, I extends PropertyInterface> LAP addAddObjAProp(CustomClass cls, boolean autoSet, int resInterfaces, boolean conditional, boolean resultExists, Object... params) {
@@ -1596,11 +1603,7 @@ public abstract class LogicsModule {
     }
 
     public LAP getAddObjectAction(FormEntity formEntity, ObjectEntity obj) {
-        return getAddObjectAction((CustomClass) obj.baseClass, formEntity, obj);
-    }
-    
-    public LAP getAddObjectAction(CustomClass cls, FormEntity formEntity, ObjectEntity obj) {
-        return baseLM.getAddObjectAction(cls, formEntity, obj);
+        return baseLM.getAddObjectAction(formEntity, obj);
     }
 
     // ---------------------- Delete Object ---------------------- //
@@ -1641,15 +1644,22 @@ public abstract class LogicsModule {
                          );
         result = addSessionScopeAProp(LocalizedString.create("{logics.add}"), scope, result); // NEWSESSION (if needed)
 
-        result.setImage("add.png");
-        result.setShouldBeLast(true);
-        result.setEditKey(KeyStrokes.getAddActionPropertyKeyStroke());
-        result.setShowEditKey(false);
-        result.setDrawToToolbar(true);
-        result.setForceViewType(ClassViewType.PANEL);
-
+        setAddActionOptions(result);
+        
         return result;
     }
+
+    protected void setAddActionOptions(LAP property) {
+
+        property.setDrawToToolbar(true);
+        property.setShouldBeLast(true);
+        property.setForceViewType(ClassViewType.PANEL);
+
+        property.setImage("add.png");
+        property.setEditKey(KeyStrokes.getAddActionPropertyKeyStroke());
+        property.setShowEditKey(false);
+    }
+
 
     public LAP getAddFormAction(FormEntity contextForm, ObjectEntity contextObject, FormSessionScope scope, Version version) {
         CustomClass cls = (CustomClass)contextObject.baseClass;
@@ -1667,14 +1677,18 @@ public abstract class LogicsModule {
         LAP result = addSessionScopeAProp(LocalizedString.create("{logics.edit}"), scope,
                 addDMFAProp(form, null, false));
 
+        setEditActionOptions(result);
+
+        return result;
+    }
+
+    private void setEditActionOptions(LAP result) {
         result.setImage("edit.png");
         result.setShouldBeLast(true);
         result.setEditKey(KeyStrokes.getEditActionPropertyKeyStroke());
         result.setShowEditKey(false);
         result.setDrawToToolbar(true);
         result.setForceViewType(ClassViewType.PANEL);
-
-        return result;
     }
 
     public LAP addProp(ActionProperty prop) {
@@ -2047,18 +2061,9 @@ public abstract class LogicsModule {
     }
     
     public void addObjectActions(FormEntity form, ObjectEntity object) {
-        addObjectActions(form, object, true);
-    }
-
-    protected void addObjectActions(FormEntity form, ObjectEntity object, boolean shouldBeLast) {
         Version version = getVersion();
-        
-        PropertyDrawEntity actionAddPropertyDraw;
-        actionAddPropertyDraw = form.addPropertyDraw(getAddObjectAction(form, object), version);
-        actionAddPropertyDraw.shouldBeLast = shouldBeLast;
-        actionAddPropertyDraw.toDraw = object.groupTo;
-
-        form.addPropertyDraw(getDeleteAction((CustomClass)object.baseClass, true), version, object).shouldBeLast = shouldBeLast;
+        form.addPropertyDraw(getAddObjectAction(form, object), version);
+        form.addPropertyDraw(getDeleteAction((CustomClass) object.baseClass, true), version, object);
     }
 
     public void addFormActions(FormEntity form, ObjectEntity object) {

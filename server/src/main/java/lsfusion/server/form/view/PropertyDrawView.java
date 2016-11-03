@@ -16,10 +16,7 @@ import lsfusion.server.data.type.TypeSerializer;
 import lsfusion.server.form.entity.*;
 import lsfusion.server.form.view.report.ReportDrawField;
 import lsfusion.server.logics.i18n.LocalizedString;
-import lsfusion.server.logics.property.ActionProperty;
-import lsfusion.server.logics.property.CalcProperty;
-import lsfusion.server.logics.property.ClassType;
-import lsfusion.server.logics.property.PropertyInterface;
+import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.table.MapKeysTable;
 import lsfusion.server.serialization.SerializationType;
 import lsfusion.server.serialization.ServerContext;
@@ -358,7 +355,7 @@ public class PropertyDrawView extends ComponentView {
     }
 
     public int getMinimumCharWidth() {
-        return minimumCharWidth != 0 ? minimumCharWidth : entity.propertyObject.property.minimumCharWidth;
+        return minimumCharWidth;
     }
 
     public void setMinimumCharWidth(int minimumCharWidth) {
@@ -366,7 +363,7 @@ public class PropertyDrawView extends ComponentView {
     }
 
     public int getMaximumCharWidth() {
-        return maximumCharWidth != 0 ? maximumCharWidth : entity.propertyObject.property.maximumCharWidth;
+        return maximumCharWidth;
     }
 
     public void setMaximumCharWidth(int maximumCharWidth) {
@@ -374,7 +371,7 @@ public class PropertyDrawView extends ComponentView {
     }
 
     public int getPreferredCharWidth() {
-        return preferredCharWidth != 0 ? preferredCharWidth : entity.propertyObject.property.preferredCharWidth;
+        return preferredCharWidth;
     }
 
     public void setPreferredCharWidth(int preferredCharWidth) {

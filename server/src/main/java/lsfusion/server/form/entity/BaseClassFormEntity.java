@@ -18,7 +18,7 @@ public abstract class BaseClassFormEntity <T extends BusinessLogics<T>> extends 
 
         object = addSingleGroupObject(cls, version, LM.baseGroup, true);
 
-        PropertyDrawEntity objectValue = getNFPropertyDraw(LM.objectValue, object, version);
+        PropertyDrawEntity objectValue = getNFPropertyDraw(LM.getObjValueProp(this, object), version, object);
         if (objectValue != null)
             objectValue.setEditType(PropertyEditType.READONLY);
     }

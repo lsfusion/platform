@@ -34,8 +34,8 @@ public class ReceiveEmailAccountActionProperty extends ScriptingActionProperty {
         Iterator<ClassPropertyInterface> i = interfaces.iterator();
         accountInterface = i.next();
 
-        askConfirm = true;
-        setImage("email.png");
+        drawOptions.setAskConfirm(true);
+        drawOptions.setImage("email.png");
     }
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {

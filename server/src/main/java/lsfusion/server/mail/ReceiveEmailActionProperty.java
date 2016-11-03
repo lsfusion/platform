@@ -35,8 +35,8 @@ public class ReceiveEmailActionProperty extends ScriptingActionProperty {
         super(LM);
         this.emailLM = LM;
 
-        askConfirm = true;
-        setImage("email.png");
+        drawOptions.setAskConfirm(true);
+        drawOptions.setImage("email.png");
     }
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {

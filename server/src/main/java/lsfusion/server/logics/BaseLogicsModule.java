@@ -35,7 +35,6 @@ import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.actions.FormAddObjectActionProperty;
 import lsfusion.server.logics.property.derived.DerivedProperty;
 import lsfusion.server.logics.property.group.AbstractGroup;
-import lsfusion.server.logics.property.group.PropertySet;
 import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 import lsfusion.server.logics.table.TableFactory;
@@ -158,8 +157,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
 
     public LCP networkPath;
     
-    public ObjectValuePropertySet objectValue;
-
     public AbstractGroup privateGroup;
 
     public TableFactory tableFactory;
@@ -337,10 +334,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         random = addRMProp(LocalizedString.create("Random"));
         makePropertyPublic(random, "random", Collections.<ResolveClassSet>emptyList());
 
-        // Множества свойств
-        objectValue = new ObjectValuePropertySet();
-        publicGroup.add(objectValue, version);
-
         // логические св-ва
         and1 = addAFProp(false);
         andNot1 = addAFProp(true);
@@ -455,90 +448,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
 
     public static int generateStaticNewID() {
         return idGenerator.idShift();
-    }
-
-    public abstract class MapClassesPropertySet<K, V extends CalcProperty> extends PropertySet {
-        protected final LinkedHashMap<K, V> properties = new LinkedHashMap<>();
-
-        @Override
-        public ImOrderSet<Property> getProperties() {
-            return SetFact.fromJavaOrderSet(new ArrayList<Property>(properties.values()));
-        }
-
-        @Override
-        protected ImList<CalcPropertyClassImplement> getProperties(ImSet<ValueClassWrapper> classes, Version version) {
-            ImOrderSet<ValueClassWrapper> orderClasses = classes.toOrderSet();
-            ValueClass[] valueClasses = getClasses(orderClasses);
-            V property = getProperty(valueClasses, version);
-
-            ImOrderSet<?> interfaces = getPropertyInterfaces(property, valueClasses);
-            return ListFact.singleton(new CalcPropertyClassImplement(property, orderClasses, interfaces));
-        }
-
-        private ValueClass[] getClasses(ImOrderSet<ValueClassWrapper> classes) {
-            ValueClass[] valueClasses = new ValueClass[classes.size()];
-            for (int i = 0; i < classes.size(); i++) {
-                valueClasses[i] = classes.get(i).valueClass;
-            }
-            return valueClasses;
-        }
-
-        @NFLazy
-        protected V getProperty(ValueClass[] classes, Version version) {
-            K key = createKey(classes);
-            if (!properties.containsKey(key)) {
-                V property = createProperty(classes, version);
-                properties.put(key, property);
-                return property;
-            } else {
-                return properties.get(key);
-            }
-        }
-
-        protected abstract ImOrderSet<?> getPropertyInterfaces(V property, ValueClass[] valueClasses);
-
-        protected abstract V createProperty(ValueClass[] classes, Version version);
-
-        protected abstract K createKey(ValueClass[] classes);
-    }
-
-    public class ObjectValuePropertySet extends MapClassesPropertySet<ValueClass, ObjectValueProperty> {
-        @Override
-        protected boolean isInInterface(ImSet<ValueClassWrapper> classes) {
-            return classes.size() == 1;
-        }
-
-        protected Class<?> getPropertyClass() {
-            return ObjectValueProperty.class;
-        }
-
-        @Override
-        protected ImOrderSet<?> getPropertyInterfaces(ObjectValueProperty property, ValueClass[] valueClasses) {
-            return SetFact.singletonOrder(property.interfaces.get(0));
-        }
-
-        @Override
-        protected ValueClass createKey(ValueClass[] classes) {
-            assert classes.length == 1;
-            return classes[0].getBaseClass();
-        }
-
-        @Override
-        protected ObjectValueProperty createProperty(ValueClass[] classes, Version version) {
-            assert classes.length == 1;
-
-            ValueClass valueClass = classes[0].getBaseClass();
-            ObjectValueProperty property = new ObjectValueProperty(valueClass);
-            // Необходимо создавать свойства с разными каноническими именами. В случае с классами STRING и NUMERIC их размерность не влияет на сигнатуру,
-            // поэтому для этих классов будем создавать другие имена. включающие в себя сигнатуру
-            String name = PropertyCanonicalNameUtils.objValuePrefix;
-            if (valueClass instanceof StringClass || valueClass instanceof NumericClass) {
-                name = name + valueClass.getSID();
-            }
-            property.setCanonicalName(getNamespace(), name, Collections.singletonList(valueClass.getResolveSet()), SetFact.singletonOrder(property.interfaces.get(0)), getDBNamePolicy());
-            setParent(property, version);
-            return property;
-        }
     }
 
     // Окна
@@ -705,8 +614,24 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
 
     @Override
     @IdentityStrongLazy
-    public LAP getAddObjectAction(CustomClass cls, FormEntity formEntity, ObjectEntity obj) {
+    public LCP getObjValueProp(FormEntity formEntity, ObjectEntity obj) {
+        ValueClass cls = obj.baseClass;
+        LCP result = addProp(new ObjectValueProperty(cls, obj));
+        if (formEntity.getCanonicalName() != null) {
+            String name = "_OBJVALUE_" + formEntity.getCanonicalName().replace('.', '_') + "_" + obj.getSID();
+            makePropertyPublic(result, name, cls.getResolveSet());
+        }
+        return result;
+    }
+
+    @Override
+    @IdentityStrongLazy
+    public LAP getAddObjectAction(FormEntity formEntity, ObjectEntity obj) {
+        CustomClass cls = (CustomClass)obj.baseClass;
         LAP result = addAProp(new FormAddObjectActionProperty(cls, obj));
+        
+        setAddActionOptions(result);
+        
         if (formEntity.getCanonicalName() != null) {
             String name = "_ADDOBJ_" + formEntity.getCanonicalName().replace('.', '_') + "_" + obj.getSID();
             makePropertyPublic(result, name, cls.getResolveSet());

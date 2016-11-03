@@ -10,7 +10,7 @@ import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.entity.ObjectEntity;
 import lsfusion.server.form.entity.PropertyDrawEntity;
-import lsfusion.server.logics.mutables.Version;
+import lsfusion.server.form.view.PropertyDrawView;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.PropertyInterface;
 
@@ -21,10 +21,18 @@ public class FormAddObjectActionProperty extends AddObjectActionProperty<Propert
     
     private final ObjectEntity objectEntity;
 
-    public FormAddObjectActionProperty(CustomClass customClass, ObjectEntity objectEntity) {
+    public FormAddObjectActionProperty(CustomClass customClass, final ObjectEntity objectEntity) {
         super(customClass, null, true);
 
         this.objectEntity = objectEntity;
+
+        drawOptions.addProcessor(new DefaultProcessor() {
+            public void proceedDefaultDraw(PropertyDrawEntity entity, FormEntity<?> form) {
+                entity.toDraw = objectEntity.groupTo;
+            }
+            public void proceedDefaultDesign(PropertyDrawView propertyView) {
+            }
+        });
     }
 
    @Override
@@ -32,12 +40,5 @@ public class FormAddObjectActionProperty extends AddObjectActionProperty<Propert
         assert where==null;
 
         context.formAddObject(objectEntity, readClass);
-    }
-
-    @Override
-    public void proceedDefaultDraw(PropertyDrawEntity<PropertyInterface> entity, FormEntity<?> form, Version version) {
-        super.proceedDefaultDraw(entity, form, version);
-        
-        entity.toDraw = objectEntity.groupTo; 
     }
 }

@@ -244,9 +244,9 @@ public class ScriptingFormEntity {
                 checkSingleParam(mapping.size());
 
                 //assertion, что создастся только один PropertyDrawEntity
-                property = BaseUtils.<PropertyDrawEntity>single(
-                        form.addPropertyDraw(LM.baseLM.objectValue, version, getMappingObjectsArray(mapping))
-                );
+                ObjectEntity obj = getSingleMappingObject(mapping);
+                LCP objValueProp = LM.getObjValueProp(form, obj);
+                property = form.addPropertyDraw(objValueProp, version, getMappingObjectsArray(mapping));
             } else if (propertyName.equals("ADDOBJ")) {
                 ObjectEntity obj = getSingleCustomClassMappingObject(propertyName, mapping);
                 LAP<?> addObjAction = LM.getAddObjectAction(form, obj);

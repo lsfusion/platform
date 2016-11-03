@@ -338,22 +338,8 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
         return implement.property.checkEquals();
     }
 
-    @Override
-    public void proceedDefaultDraw(PropertyDrawEntity<Interface> entity, FormEntity<?> form, Version version) {
-        super.proceedDefaultDraw(entity, form, version);
-        if (implement.mapping.size() == 1 &&
-                (implement.mapping.singleValue() instanceof CalcPropertyMapImplement) &&
-                ((CalcPropertyMapImplement<?, Interface>) implement.mapping.singleValue()).property instanceof ObjectClassProperty) {
-            PropertyObjectInterfaceEntity mapObject = entity.propertyObject.mapping.singleValue();
-            if (mapObject instanceof ObjectEntity && !((CustomClass) ((ObjectEntity) mapObject).baseClass).hasChildren())
-                entity.forceViewType = ClassViewType.HIDE;
-        }
-    }
-
-    @Override
-    public void proceedDefaultDesign(PropertyDrawView propertyView, DefaultFormView view) {
-        super.proceedDefaultDesign(propertyView, view);
-
+    @Override // см. базовый метод
+    public CalcProperty getAndProperty() {
         if (implement.property instanceof AndFormulaProperty) {
             AndFormulaProperty andProp = (AndFormulaProperty) implement.property;
             CalcPropertyImplement<AndFormulaProperty.Interface, CalcPropertyInterfaceImplement<Interface>> andImplement
@@ -361,9 +347,10 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
 
             CalcPropertyInterfaceImplement<Interface> objectIface = andImplement.mapping.get(andProp.objectInterface);
             if (objectIface instanceof CalcPropertyMapImplement) {
-                ((CalcPropertyMapImplement) objectIface).property.proceedDefaultDesign(propertyView, view);
+                return ((CalcPropertyMapImplement) objectIface).property.getAndProperty();
             }
         }
+        return super.getAndProperty();
     }
 
     @Override

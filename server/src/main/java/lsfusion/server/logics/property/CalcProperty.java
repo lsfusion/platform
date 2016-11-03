@@ -42,6 +42,7 @@ import lsfusion.server.logics.*;
 import lsfusion.server.logics.debug.CalcPropertyDebugInfo;
 import lsfusion.server.logics.i18n.FormatLocalizedString;
 import lsfusion.server.logics.i18n.LocalizedString;
+import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.actions.ChangeEvent;
 import lsfusion.server.logics.property.actions.edit.DefaultChangeActionProperty;
@@ -1767,5 +1768,30 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         for(CalcProperty prop : getDepends(events)) {
             prop.printDepends(events, tab + '\t');
         }
+    }
+
+    // странная конечно эвристика, нужна чтобы f(a) IF g(a) наследовал draw options f(a), возможно в будущем надо убрать
+    public CalcProperty getAndProperty() {
+        return this;
+    }
+
+    private boolean loggable;
+
+    public LAP logFormProperty;
+
+    public void setLoggable(boolean loggable) {
+        this.loggable = loggable;
+    }
+
+    public boolean isLoggable() {
+        return loggable;
+    }
+
+    public void setLogFormProperty(LAP logFormProperty) {
+        this.logFormProperty = logFormProperty;
+    }
+
+    public LAP getLogFormProperty() {
+        return logFormProperty;
     }
 }

@@ -20,9 +20,13 @@ import lsfusion.server.session.PropertyChanges;
 
 public class ObjectValueProperty extends NoIncrementProperty<ClassPropertyInterface> {
 
-    public ObjectValueProperty(ValueClass valueClass) {
-        super(LocalizedString.create("{logics.object}"), IsClassProperty.getInterfaces(new ValueClass[]{valueClass}));
+    private final ObjectEntity object; 
+            
+    public ObjectValueProperty(ValueClass valueClass, ObjectEntity object) { // LocalizedString.create("{logics.object}")
+        super(object.getCaption(), IsClassProperty.getInterfaces(new ValueClass[]{valueClass}));
 
+        this.object = object;
+        
         finalizeInit();
     }
 
@@ -43,19 +47,11 @@ public class ObjectValueProperty extends NoIncrementProperty<ClassPropertyInterf
     @Override
     @IdentityStrongLazy // STRONG пришлось поставить из-за использования в политике безопасности
     public ActionPropertyMapImplement<?, ClassPropertyInterface> getDefaultEditAction(String editActionSID, CalcProperty filterProperty) {
-        return new DefaultChangeObjectActionProperty(null, getInterface().interfaceClass).getImplement(SetFact.singletonOrder(getInterface()));
+        return new DefaultChangeObjectActionProperty(null, getInterface().interfaceClass, object).getImplement(SetFact.singletonOrder(getInterface()));
     }
 
     private ClassPropertyInterface getInterface() {
         return interfaces.single();
-    }
-
-    @Override
-    public void proceedDefaultDesign(PropertyDrawView propertyView, DefaultFormView view) {
-        super.proceedDefaultDesign(propertyView, view);
-        PropertyObjectInterfaceEntity mapObject = propertyView.entity.propertyObject.mapping.singleValue();
-        if (mapObject instanceof ObjectEntity)
-            propertyView.caption = ((ObjectEntity) mapObject).getCaption();
     }
 
     @Override
@@ -73,3 +69,4 @@ public class ObjectValueProperty extends NoIncrementProperty<ClassPropertyInterf
         return true;
     }
 }
+1

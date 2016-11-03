@@ -11,15 +11,10 @@ import lsfusion.server.classes.FileClass;
 import lsfusion.server.classes.StaticFormatFileClass;
 import lsfusion.server.classes.link.LinkClass;
 import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.form.view.DefaultFormView;
-import lsfusion.server.form.view.PropertyDrawView;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.linear.LCP;
-import lsfusion.server.logics.property.CalcProperty;
-import lsfusion.server.logics.property.ClassPropertyInterface;
-import lsfusion.server.logics.property.ClassType;
-import lsfusion.server.logics.property.ExecutionContext;
+import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.actions.SystemExplicitActionProperty;
 
 import java.net.URI;
@@ -40,6 +35,8 @@ public class OpenActionProperty extends SystemExplicitActionProperty {
         super(caption, fileProperty.getInterfaceClasses(ClassType.filePolicy));
 
         this.fileProperty = fileProperty;
+
+        drawOptions.setImage("open.png");
     }
 
     @Override
@@ -69,11 +66,5 @@ public class OpenActionProperty extends SystemExplicitActionProperty {
                 context.delayUserInterfaction(new OpenUriClientAction(file));
             }
         }
-    }
-
-    @Override
-    public void proceedDefaultDesign(PropertyDrawView propertyView, DefaultFormView view) {
-        super.proceedDefaultDesign(propertyView, view);
-        propertyView.design.setImagePath("open.png");
     }
 }

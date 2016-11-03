@@ -156,27 +156,6 @@ public class AddObjectActionProperty<T extends PropertyInterface, I extends Prop
         }
     }
 
-    @Override
-    public void proceedDefaultDraw(PropertyDrawEntity<PropertyInterface> entity, FormEntity<?> form, Version version) {
-        super.proceedDefaultDraw(entity, form, version);
-        entity.setDrawToToolbar(true);
-        entity.shouldBeLast = true;
-        entity.forceViewType = ClassViewType.PANEL;
-
-        ObjectEntity object = form.getNFObject(valueClass, version);
-        if (object != null) {
-            entity.toDraw = object.groupTo;
-        }
-    }
-
-    @Override
-    public void proceedDefaultDesign(PropertyDrawView propertyView, DefaultFormView view) {
-        super.proceedDefaultDesign(propertyView, view);
-        propertyView.editKey = KeyStrokes.getAddActionPropertyKeyStroke();
-        propertyView.design.setImagePath("add.png");
-        propertyView.showEditKey = false;
-    }
-
     protected CalcPropertyMapImplement<?, I> calcGroupWhereProperty() {
         if(where==null)
             return DerivedProperty.createTrue();

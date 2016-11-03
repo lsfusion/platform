@@ -3,6 +3,7 @@ package lsfusion.server.logics.property.actions;
 import lsfusion.interop.ClassViewType;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.form.entity.ObjectEntity;
 import lsfusion.server.form.instance.*;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.i18n.LocalizedString;
@@ -15,10 +16,12 @@ import java.sql.SQLException;
 public class DefaultChangeObjectActionProperty extends SystemExplicitActionProperty {
 
     private final CalcProperty filterProperty;
-
-    public DefaultChangeObjectActionProperty(CalcProperty filterProperty, ValueClass baseClass) {
+    private final ObjectEntity object;
+    
+    public DefaultChangeObjectActionProperty(CalcProperty filterProperty, ValueClass baseClass, ObjectEntity object) {
         super(LocalizedString.create("CO_" + filterProperty, false), baseClass);
         this.filterProperty = filterProperty;
+        this.object = object;
     }
 
     @Override
@@ -30,24 +33,20 @@ public class DefaultChangeObjectActionProperty extends SystemExplicitActionPrope
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
 
         final FormInstance<?> formInstance = context.getFormFlowInstance();
-        PropertyObjectInterfaceInstance singleObjectInstance = context.getSingleObjectInstance();
-
-        if (singleObjectInstance instanceof ObjectInstance) {
-            ObjectInstance objectInstance = (ObjectInstance) singleObjectInstance;
-            if (objectInstance.groupTo.curClassView == ClassViewType.PANEL) { // в grid'е диалог не имеет смысла
-                final ObjectValue oldValue = objectInstance.getObjectValue();
-                ObjectValue changeValue;
-                if (objectInstance instanceof CustomObjectInstance) {
-                    final CustomObjectInstance customObjectInstance = (CustomObjectInstance) objectInstance;
-                    changeValue = context.requestUserObject(
-                            formInstance.createChangeObjectDialogRequest(customObjectInstance.getBaseClass(), oldValue, customObjectInstance.groupTo, filterProperty, context.stack)
-                    );
-                } else {
-                    changeValue = context.requestUserData(((DataObjectInstance) objectInstance).getBaseClass(), oldValue.getValue());
-                }
-                if (changeValue != null) {
-                    formInstance.changeObject(objectInstance, changeValue);
-                }
+        ObjectInstance objectInstance = formInstance.instanceFactory.getInstance(object);
+        if (objectInstance.groupTo.curClassView == ClassViewType.PANEL) { // в grid'е диалог не имеет смысла
+            final ObjectValue oldValue = objectInstance.getObjectValue();
+            ObjectValue changeValue;
+            if (objectInstance instanceof CustomObjectInstance) {
+                final CustomObjectInstance customObjectInstance = (CustomObjectInstance) objectInstance;
+                changeValue = context.requestUserObject(
+                        formInstance.createChangeObjectDialogRequest(customObjectInstance.getBaseClass(), oldValue, customObjectInstance.groupTo, filterProperty, context.stack)
+                );
+            } else {
+                changeValue = context.requestUserData(((DataObjectInstance) objectInstance).getBaseClass(), oldValue.getValue());
+            }
+            if (changeValue != null) {
+                formInstance.changeObject(objectInstance, changeValue);
             }
         }
     }

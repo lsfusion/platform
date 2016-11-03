@@ -603,7 +603,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     public <P extends PropertyInterface> PropertyDrawEntity<P> addPropertyDraw(GroupObjectEntity groupObject, PropertyObjectEntity<P, ?> propertyImplement, String formPath, ImOrderSet<P> interfaces, Version version) {
         final PropertyDrawEntity<P> newPropertyDraw = new PropertyDrawEntity<>(genID(), propertyImplement, groupObject);
 
-        propertyImplement.property.proceedDefaultDraw(newPropertyDraw, this, version);
+        propertyImplement.property.drawOptions.proceedDefaultDraw(newPropertyDraw, this);
 
         if (propertyImplement.property.isNamed()) {
             String propertySID = PropertyDrawEntity.createSID(propertyImplement, interfaces);  

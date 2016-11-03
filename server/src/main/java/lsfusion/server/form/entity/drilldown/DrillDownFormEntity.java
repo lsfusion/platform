@@ -39,7 +39,8 @@ public class DrillDownFormEntity<I extends PropertyInterface, P extends CalcProp
         ImMap<I,ValueClass> interfaceClasses = property.getInterfaceClasses(ClassType.drillDownPolicy);
         int i = 0;
         for (I pi : property.getReflectionOrderInterfaces()) {
-            ObjectEntity paramObject  = addSingleGroupObject(interfaceClasses.get(pi), version, LM.baseLM.objectValue, LM.recognizeGroup, true);
+            ObjectEntity paramObject  = addSingleGroupObject(interfaceClasses.get(pi), version, LM.recognizeGroup, true);
+            addPropertyDraw(LM.getObjValueProp(this, paramObject), version, paramObject);
             paramObject.groupTo.setSingleClassView(ClassViewType.PANEL);
 
             interfaceObjects.add(pi, paramObject);

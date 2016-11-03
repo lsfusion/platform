@@ -50,7 +50,6 @@ import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.form.entity.FormEntity;
-import lsfusion.server.form.entity.LogFormEntity;
 import lsfusion.server.form.instance.listener.CustomClassListener;
 import lsfusion.server.form.navigator.LogInfo;
 import lsfusion.server.form.navigator.NavigatorElement;
@@ -66,7 +65,6 @@ import lsfusion.server.logics.linear.LP;
 import lsfusion.server.logics.mutables.NFLazy;
 import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.*;
-import lsfusion.server.logics.property.actions.FormActionProperty;
 import lsfusion.server.logics.property.actions.SessionEnvEvent;
 import lsfusion.server.logics.property.actions.SystemEvent;
 import lsfusion.server.logics.property.cases.AbstractCase;
@@ -930,8 +928,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     }
 
     public <P extends PropertyInterface> void finishLogInit(Property property) {
-        if (property.loggable) {
-            ActionProperty<P> logActionProperty = (ActionProperty<P>) property.logFormProperty.property;
+        if (property instanceof CalcProperty && ((CalcProperty)property).isLoggable()) {
+            ActionProperty<P> logActionProperty = (ActionProperty<P>) ((CalcProperty)property).getLogFormProperty().property;
 
             //добавляем в контекстное меню пункт для показа формы
             property.setContextMenuAction(property.getSID(), logActionProperty.caption);

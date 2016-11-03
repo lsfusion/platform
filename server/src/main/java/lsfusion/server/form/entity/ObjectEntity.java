@@ -73,7 +73,7 @@ public class ObjectEntity extends IdentityObject implements PropertyObjectInterf
     @IdentityInstanceLazy
     public ExplicitActionProperty getChangeAction(Property filterProperty) {
         assert baseClass instanceof CustomClass;
-        return new DefaultChangeObjectActionProperty((CalcProperty) filterProperty, baseClass.getBaseClass());
+        return new DefaultChangeObjectActionProperty((CalcProperty) filterProperty, baseClass.getBaseClass(), this);
     }
 
     @Override

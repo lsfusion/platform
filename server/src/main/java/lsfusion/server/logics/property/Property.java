@@ -30,18 +30,14 @@ import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.entity.PropertyDrawEntity;
-import lsfusion.server.form.view.DefaultFormView;
 import lsfusion.server.form.view.PropertyDrawView;
 import lsfusion.server.logics.*;
 import lsfusion.server.logics.debug.DebugInfo;
 import lsfusion.server.logics.i18n.LocalizedString;
-import lsfusion.server.logics.linear.LAP;
-import lsfusion.server.logics.linear.LP;
 import lsfusion.server.logics.mutables.NFLazy;
 import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.actions.edit.DefaultChangeActionProperty;
 import lsfusion.server.logics.property.group.AbstractGroup;
-import lsfusion.server.logics.property.group.AbstractNode;
 import lsfusion.server.logics.property.group.AbstractPropertyNode;
 import lsfusion.server.session.Modifier;
 import lsfusion.server.session.PropertyChanges;
@@ -69,61 +65,6 @@ public abstract class Property<T extends PropertyInterface> extends AbstractProp
     // вот отсюда идут свойства, которые отвечают за логику представлений и подставляются автоматически для PropertyDrawEntity и PropertyDrawView
     public LocalizedString caption;
 
-    public int minimumCharWidth;
-    public int maximumCharWidth;
-    public int preferredCharWidth;
-
-    public boolean loggable;
-    public LAP logFormProperty;
-
-    public void setFixedCharWidth(int charWidth) {
-        minimumCharWidth = charWidth;
-        maximumCharWidth = charWidth;
-        preferredCharWidth = charWidth;
-    }
-
-    public void inheritFixedCharWidth(Property property) {
-        minimumCharWidth = property.minimumCharWidth;
-        maximumCharWidth = property.maximumCharWidth;
-        preferredCharWidth = property.preferredCharWidth;
-    }
-
-    private ImageIcon image;
-    private String iconPath;
-
-    public void inheritImage(Property property) {
-        image = property.image;
-        iconPath = property.iconPath;
-    }
-
-    public void setImage(String iconPath) {
-        this.iconPath = iconPath;
-        this.image = new ImageIcon(Property.class.getResource("/images/" + iconPath));
-    }
-
-    public KeyStroke editKey;
-    public Boolean showEditKey;
-
-    public String regexp;
-    public String regexpMessage;
-    public Boolean echoSymbols;
-
-    public boolean drawToToolbar;
-
-    public Boolean shouldBeLast;
-
-    public ClassViewType forceViewType;
-
-    public Boolean askConfirm;
-    public String askConfirmMessage;
-
-    public String eventID;
-
-    private String mouseBinding;
-    private Object keyBindings;
-    private Object contextMenuBindings;
-    private Object editActions;
-
     public String toString() {
         String result = ThreadLocalContext.localize(caption);
         if(canonicalName != null)
@@ -132,7 +73,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractProp
     }
 
     protected DebugInfo debugInfo;
-    
+
     public boolean isField() {
         return false;
     }
@@ -143,14 +84,6 @@ public abstract class Property<T extends PropertyInterface> extends AbstractProp
 
     public void setID(int ID) {
         this.ID = ID;
-    }
-
-    public LP getLogFormProperty() {
-        return logFormProperty;
-    }
-
-    public void setLogFormProperty(LAP logFormProperty) {
-        this.logFormProperty = logFormProperty;
     }
 
     public Type getType() {
@@ -217,8 +150,18 @@ public abstract class Property<T extends PropertyInterface> extends AbstractProp
 
     public boolean cached = false;
 
+    // для всех    
+    private String mouseBinding;
+    private Object keyBindings;
+    private Object contextMenuBindings;
+    private Object editActions;
+
     public void setMouseAction(String actionSID) {
-        mouseBinding = actionSID;
+        setMouseBinding(actionSID);
+    }
+
+    public void setMouseBinding(String mouseBinding) {
+        this.mouseBinding = mouseBinding;
     }
 
     public void setKeyAction(KeyStroke ks, String actionSID) {
@@ -226,22 +169,6 @@ public abstract class Property<T extends PropertyInterface> extends AbstractProp
             keyBindings = MapFact.mMap(MapFact.override());
         }
         ((MMap<KeyStroke, String>)keyBindings).add(ks, actionSID);
-    }
-
-    @NFLazy
-    public void setContextMenuAction(String actionSID, LocalizedString caption) {
-        if (contextMenuBindings == null || contextMenuBindings instanceof EmptyOrderMap) {
-            contextMenuBindings = MapFact.mOrderMap(MapFact.override());
-        }
-        ((MOrderMap<String, LocalizedString>)contextMenuBindings).add(actionSID, caption);
-    }
-
-    @NFLazy
-    public void setEditAction(String editActionSID, ActionPropertyMapImplement<?, T> editActionImplement) {
-        if (editActions == null || editActions instanceof EmptyRevMap) {
-            editActions = MapFact.mMap(MapFact.override());
-        }
-        ((MMap<String, ActionPropertyMapImplement<?, T>>)editActions).add(editActionSID, editActionImplement);
     }
 
     public String getMouseBinding() {
@@ -252,8 +179,24 @@ public abstract class Property<T extends PropertyInterface> extends AbstractProp
         return (ImMap<KeyStroke, String>)(keyBindings == null ? MapFact.EMPTY() : keyBindings);
     }
 
+    @NFLazy
+    public void setContextMenuAction(String actionSID, LocalizedString caption) {
+        if (contextMenuBindings == null || contextMenuBindings instanceof EmptyOrderMap) {
+            contextMenuBindings = MapFact.mOrderMap(MapFact.override());
+        }
+        ((MOrderMap<String, LocalizedString>)contextMenuBindings).add(actionSID, caption);
+    }
+
     public ImOrderMap<String, LocalizedString> getContextMenuBindings() {
         return (ImOrderMap<String, LocalizedString>)(contextMenuBindings == null ? MapFact.EMPTYORDER() : contextMenuBindings);
+    }
+
+    @NFLazy
+    public void setEditAction(String editActionSID, ActionPropertyMapImplement<?, T> editActionImplement) {
+        if (editActions == null || editActions instanceof EmptyRevMap) {
+            editActions = MapFact.mMap(MapFact.override());
+        }
+        ((MMap<String, ActionPropertyMapImplement<?, T>>)editActions).add(editActionSID, editActionImplement);
     }
 
     @LongMutable
@@ -311,47 +254,6 @@ public abstract class Property<T extends PropertyInterface> extends AbstractProp
 
     public ImRevMap<T, T> getIdentityInterfaces() {
         return interfaces.toRevMap();
-    }
-
-    // по умолчанию заполняет свойства
-    // assert что entity этого свойства
-    public void proceedDefaultDraw(PropertyDrawEntity<T> entity, FormEntity<?> form, Version version) {
-        if (shouldBeLast != null)
-            entity.shouldBeLast = shouldBeLast;
-        if (forceViewType != null)
-            entity.forceViewType = forceViewType;
-        if (askConfirm != null)
-            entity.askConfirm = askConfirm;
-        if (askConfirmMessage != null)
-            entity.askConfirmMessage = askConfirmMessage;
-        if (eventID != null)
-            entity.eventID = eventID;
-        if (drawToToolbar) {
-            entity.setDrawToToolbar(true);
-        }
-    }
-
-    public void proceedDefaultDesign(PropertyDrawView propertyView, DefaultFormView view) {
-        if (iconPath != null) {
-            propertyView.design.imagePath = iconPath;
-            propertyView.design.setImage(image);
-        }
-
-        if (editKey != null)
-            propertyView.editKey = editKey;
-        if (showEditKey != null)
-            propertyView.showEditKey = showEditKey;
-        if (regexp != null)
-            propertyView.regexp = regexp;
-        if (regexpMessage != null)
-            propertyView.regexpMessage = regexpMessage;
-        if (echoSymbols != null)
-            propertyView.echoSymbols = echoSymbols;
-
-        if(propertyView.getType() instanceof LogicalClass)
-            propertyView.editOnSingleClick = Settings.get().getEditLogicalOnSingleClick();
-        if(propertyView.getType() instanceof ActionClass)
-            propertyView.editOnSingleClick = Settings.get().getEditActionOnSingleClick();
     }
 
     public boolean hasChild(Property prop) {
@@ -646,4 +548,211 @@ public abstract class Property<T extends PropertyInterface> extends AbstractProp
     public String getChangeExtSID() {
         return null;
     }
+
+    protected interface DefaultProcessor {
+        // из-за inherit entity и view могут быть другого свойства
+        void proceedDefaultDraw(PropertyDrawEntity entity, FormEntity<?> form);
+        void proceedDefaultDesign(PropertyDrawView propertyView);
+    }
+
+    // + caption, который одновременно и draw и не draw
+    public static class DrawOptions {
+        
+        // свойства, но пока реализовано как для всех
+        private int minimumCharWidth;
+        private int maximumCharWidth;
+        private int preferredCharWidth;
+
+        // свойства, но пока реализовано как для всех
+        private String regexp;
+        private String regexpMessage;
+        private Boolean echoSymbols;
+
+        // действия, но пока реализовано как для всех
+        private Boolean askConfirm;
+        private String askConfirmMessage;
+
+        // свойства, но пока реализовано как для всех
+        private String eventID;
+
+        // для всех
+        private ImageIcon image;
+        private String iconPath;
+
+        // для всех
+        private KeyStroke editKey;
+        private Boolean showEditKey;
+
+        // для всех
+        private boolean drawToToolbar;
+
+        // для всех
+        private Boolean shouldBeLast;
+
+        // для всех
+        private ClassViewType forceViewType;
+        
+        // для всех 
+        private ImList<DefaultProcessor> processors = ListFact.EMPTY();
+        
+        public void proceedDefaultDraw(PropertyDrawEntity<?> entity, FormEntity<?> form) {
+            if (shouldBeLast != null)
+                entity.shouldBeLast = shouldBeLast;
+            if (forceViewType != null)
+                entity.forceViewType = forceViewType;
+            if (askConfirm != null)
+                entity.askConfirm = askConfirm;
+            if (askConfirmMessage != null)
+                entity.askConfirmMessage = askConfirmMessage;
+            if (eventID != null)
+                entity.eventID = eventID;
+            if (drawToToolbar)
+                entity.setDrawToToolbar(true);
+            for(DefaultProcessor processor : processors)
+                processor.proceedDefaultDraw(entity, form);
+        }
+
+        public void proceedDefaultDesign(PropertyDrawView propertyView) {
+            if(propertyView.getType() instanceof LogicalClass)
+                propertyView.editOnSingleClick = Settings.get().getEditLogicalOnSingleClick();
+            if(propertyView.getType() instanceof ActionClass)
+                propertyView.editOnSingleClick = Settings.get().getEditActionOnSingleClick();
+
+            if(minimumCharWidth != 0)
+                propertyView.setMinimumCharWidth(minimumCharWidth);
+            if(maximumCharWidth != 0)
+                propertyView.setMaximumCharWidth(maximumCharWidth);
+            if(preferredCharWidth != 0)
+                propertyView.setPreferredCharWidth(preferredCharWidth);
+            if (iconPath != null) {
+                propertyView.design.imagePath = iconPath;
+                propertyView.design.setImage(image);
+            }
+            if (editKey != null)
+                propertyView.editKey = editKey;
+            if (showEditKey != null)
+                propertyView.showEditKey = showEditKey;
+            if (regexp != null)
+                propertyView.regexp = regexp;
+            if (regexpMessage != null)
+                propertyView.regexpMessage = regexpMessage;
+            if (echoSymbols != null)
+                propertyView.echoSymbols = echoSymbols;
+            for(DefaultProcessor processor : processors)
+                processor.proceedDefaultDesign(propertyView);
+        }
+        
+        public void inheritDrawOptions(DrawOptions options) {
+            setMinimumCharWidth(options.minimumCharWidth);
+            setMaximumCharWidth(options.maximumCharWidth);
+            setPreferredCharWidth(options.preferredCharWidth);
+
+            setImage(options.image);
+            setIconPath(options.iconPath);
+            
+            setRegexp(options.regexp);
+            setRegexpMessage(options.regexpMessage);
+            setEchoSymbols(options.echoSymbols);
+            
+            setAskConfirm(options.askConfirm);
+            setAskConfirmMessage(options.askConfirmMessage);
+            
+            setEventID(options.eventID);
+            
+            setEditKey(options.editKey);
+            setShowEditKey(options.showEditKey);
+            
+            setDrawToToolbar(options.drawToToolbar);
+            
+            setShouldBeLast(options.shouldBeLast);
+            
+            setForceViewType(options.forceViewType);
+            
+            processors = options.processors.addList(processors);
+        }
+
+        // setters
+        
+        public void addProcessor(DefaultProcessor processor) {
+            processors = processors.addList(processor);
+        }
+
+        public void setFixedCharWidth(int charWidth) {
+            setMinimumCharWidth(charWidth);
+            setMaximumCharWidth(charWidth);
+            setPreferredCharWidth(charWidth);
+        }
+
+        public void setImage(String iconPath) {
+            this.setIconPath(iconPath);
+            setImage(new ImageIcon(Property.class.getResource("/images/" + iconPath)));
+        }
+
+
+        public void setMinimumCharWidth(int minimumCharWidth) {
+            this.minimumCharWidth = minimumCharWidth;
+        }
+
+        public void setMaximumCharWidth(int maximumCharWidth) {
+            this.maximumCharWidth = maximumCharWidth;
+        }
+
+        public void setPreferredCharWidth(int preferredCharWidth) {
+            this.preferredCharWidth = preferredCharWidth;
+        }
+
+        public void setRegexp(String regexp) {
+            this.regexp = regexp;
+        }
+
+        public void setRegexpMessage(String regexpMessage) {
+            this.regexpMessage = regexpMessage;
+        }
+
+        public void setEchoSymbols(Boolean echoSymbols) {
+            this.echoSymbols = echoSymbols;
+        }
+
+        public void setAskConfirm(Boolean askConfirm) {
+            this.askConfirm = askConfirm;
+        }
+
+        public void setAskConfirmMessage(String askConfirmMessage) {
+            this.askConfirmMessage = askConfirmMessage;
+        }
+
+        public void setEventID(String eventID) {
+            this.eventID = eventID;
+        }
+
+        public void setImage(ImageIcon image) {
+            this.image = image;
+        }
+
+        public void setIconPath(String iconPath) {
+            this.iconPath = iconPath;
+        }
+
+        public void setEditKey(KeyStroke editKey) {
+            this.editKey = editKey;
+        }
+
+        public void setShowEditKey(Boolean showEditKey) {
+            this.showEditKey = showEditKey;
+        }
+
+        public void setDrawToToolbar(boolean drawToToolbar) {
+            this.drawToToolbar = drawToToolbar;
+        }
+
+        public void setShouldBeLast(Boolean shouldBeLast) {
+            this.shouldBeLast = shouldBeLast;
+        }
+
+        public void setForceViewType(ClassViewType forceViewType) {
+            this.forceViewType = forceViewType;
+        }
+    }
+
+    public DrawOptions drawOptions = new DrawOptions();
 }

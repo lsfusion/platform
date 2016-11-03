@@ -56,8 +56,8 @@ public class NotificationActionProperty extends SystemExplicitActionProperty {
 
         this.emailLM = emailLM;
 
-        askConfirm = true;
-        setImage("email.png");
+        drawOptions.setAskConfirm(true);
+        drawOptions.setImage("email.png");
     }
 
     private static ValueClass[] getValueClasses(LCP sourceProperty) {
