@@ -197,7 +197,10 @@ public abstract class ImportDataActionProperty extends ScriptingActionProperty {
                 if (desiredColumn != null) {
                     currentIndex = desiredColumn;
                 } else {
-                    currentIndex = previousIndex + 1;
+                    if(ignoreIncorrectColumns())
+                        currentIndex = previousIndex + 1;
+                    else
+                        throw new RuntimeException("Import error: column " + id + " not found");
                 }
             }
             columns.add(currentIndex);
@@ -212,4 +215,8 @@ public abstract class ImportDataActionProperty extends ScriptingActionProperty {
     }
 
     public abstract ImportIterator getIterator(byte[] file) throws IOException, ParseException, xBaseJException, JDOMException, ClassNotFoundException;
+
+    protected boolean ignoreIncorrectColumns() {
+        return true;
+    }
 }

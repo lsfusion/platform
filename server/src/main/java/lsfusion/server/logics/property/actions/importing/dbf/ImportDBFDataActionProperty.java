@@ -51,4 +51,9 @@ public class ImportDBFDataActionProperty extends ImportDataActionProperty {
     protected int columnsNumberBase() {
         return 1;
     }
+
+    @Override
+    protected boolean ignoreIncorrectColumns() {
+        return false;
+    }
 }
