@@ -69,4 +69,3 @@ public class ObjectValueProperty extends NoIncrementProperty<ClassPropertyInterf
         return true;
     }
 }
-1
