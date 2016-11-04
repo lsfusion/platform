@@ -88,7 +88,11 @@ public abstract class ImportDataActionProperty extends ScriptingActionProperty {
     public static ImportDataActionProperty createProperty(ValueClass valueClass, ImportSourceFormat format, ScriptingLogicsModule LM, List<String> ids, List<LCP> properties) {
         if (format == ImportSourceFormat.DBF) {
             for (int i = 0; i < ids.size(); ++i) { // для DBF делаем case insensitive
-                ids.set(i, ids.get(i).toLowerCase());
+                String id = ids.get(i);
+                if(id != null)
+                    ids.set(i, id.toLowerCase());
+                else
+                    throw new RuntimeException("Import error: field for property " + properties.get(i) + " not specified");
             }
             return new ImportDBFDataActionProperty(valueClass, LM, ids, properties);
         } else if (format == ImportSourceFormat.JDBC) {
