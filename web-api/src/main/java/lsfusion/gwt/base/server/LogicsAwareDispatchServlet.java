@@ -14,6 +14,7 @@ import lsfusion.gwt.base.shared.MessageException;
 import lsfusion.gwt.base.shared.RetryException;
 import lsfusion.interop.RemoteLogicsInterface;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
+import lsfusion.interop.remote.ClientCallBackInterface;
 import net.customware.gwt.dispatch.server.DefaultActionHandlerRegistry;
 import net.customware.gwt.dispatch.server.Dispatch;
 import net.customware.gwt.dispatch.server.InstanceActionHandlerRegistry;
@@ -56,6 +57,8 @@ public abstract class LogicsAwareDispatchServlet<T extends RemoteLogicsInterface
     private String beanName;
 
     protected Dispatch dispatch;
+
+    private ClientCallBackInterface clientCallBack = null;
 
     public void setUseGETForGwtRPC(boolean useGETForGwtRPC) {
         this.useGETForGwtRPC = useGETForGwtRPC;
@@ -181,6 +184,12 @@ public abstract class LogicsAwareDispatchServlet<T extends RemoteLogicsInterface
         return navigatorProvider.getNavigator();
     }
 
+    public ClientCallBackInterface getClientCallBack() throws RemoteException {
+        if(clientCallBack == null)
+            clientCallBack = getNavigator().getClientCallBack();
+        return clientCallBack;
+    }
+
     public void invalidate() throws RemoteException {
         try {
             blProvider.invalidate();
@@ -189,6 +198,7 @@ public abstract class LogicsAwareDispatchServlet<T extends RemoteLogicsInterface
             navigatorProvider.getNavigator().close();
         } catch (Exception ignored) {}
         navigatorProvider.invalidate();
+        clientCallBack = null;
     }
 
     public HttpServletRequest getRequest() {

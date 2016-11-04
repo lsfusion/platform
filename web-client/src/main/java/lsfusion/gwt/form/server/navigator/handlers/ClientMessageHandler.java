@@ -17,7 +17,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ClientMessageHandler extends SimpleActionHandlerEx<ClientMessage, ClientMessageResult, RemoteLogicsInterface> implements NavigatorActionHandler {
-    private ClientCallBackInterface clientCallBack = null;
 
     public ClientMessageHandler(FormDispatchServlet servlet) {
         super(servlet);
@@ -25,9 +24,7 @@ public class ClientMessageHandler extends SimpleActionHandlerEx<ClientMessage, C
 
     @Override
     public ClientMessageResult executeEx(ClientMessage action, ExecutionContext context) throws DispatchException, IOException {
-        if(clientCallBack == null)
-            clientCallBack = servlet.getNavigator().getClientCallBack();
-        List<LifecycleMessage> messages = clientCallBack.pullMessages();
+        List<LifecycleMessage> messages = servlet.getClientCallBack().pullMessages();
         return getClientMessageResult(messages);
     }
 
