@@ -25,10 +25,6 @@ public class Stat {
         this(count, 1);
     }
 
-    public Stat(double count) {
-        this(count, 1);
-    }
-
     public Stat(double count, int countDeg) { // ceil чтобы инвариант у суммы stat <=
         this(count == 0 ? 0 : (int) Math.ceil((double)countDeg * (Math.log10(count) / Math.log10(Settings.get().getStatDegree()))), true);
     }

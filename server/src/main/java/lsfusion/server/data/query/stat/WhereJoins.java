@@ -548,7 +548,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         }
 
         public String toString(String prefix) {
-            return prefix + "m" + getCost() + " " + getStat() + " LEFT : " + Arrays.toString(aEdgeStats) + " RIGHT : " + Arrays.toString(bEdgeStats) + "\n" + left.toString(prefix + '\t') + '\n' + right.toString(prefix + '\t');
+            return prefix + "m" + getCost() + " " + getStat() + " LEFT : " + Arrays.toString(aEdgeStats) + " RIGHT : " + Arrays.toString(bEdgeStats) + "\n" + (left != null ? left.toString(prefix + '\t') : "") + '\n' + (right != null ? right.toString(prefix + '\t') : "");
         }
     }
 

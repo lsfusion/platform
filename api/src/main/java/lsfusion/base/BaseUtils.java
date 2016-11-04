@@ -2627,4 +2627,13 @@ public class BaseUtils {
     public static String substring(String value, int length) {
         return value == null ? null : value.substring(0, Math.min(value.length(), length));
     }
+    
+    public static <E> int indexOf(PriorityQueue<E> queue, E element) {
+        int index = 0;
+        for(E qel : queue) {
+            if(BaseUtils.hashEquals(qel, element))
+                index++;
+        }
+        return index;
+    } 
 }

@@ -328,6 +328,8 @@ public class GreedyTreeBuilding<V, C extends Comparable<C>, E extends GreedyTree
             }
         }
     }
+    
+    private boolean debugEnabled;
 
     private ComplexEdge<V, C, E> getMinimumEdge(Set<Node<V, C>> deleted, CalculateCost<V, C, E> functor) {
         while (!queue.isEmpty()) {
@@ -342,6 +344,11 @@ public class GreedyTreeBuilding<V, C extends Comparable<C>, E extends GreedyTree
                         continue;
                     }
                 } 
+                
+                if(debugEnabled) {
+                    System.out.println("PICK UP : " + nextEdge.cost);
+                }
+                
                 return nextEdge;
             }
         } 
@@ -381,6 +388,10 @@ public class GreedyTreeBuilding<V, C extends Comparable<C>, E extends GreedyTree
                 adjMatrix.get(newIndex).set(i, newEdge);
                 adjMatrix.get(i).add(newEdge);
                 queue.add(newEdge);
+                
+                if(debugEnabled) {
+                    System.out.println("JOIN NODES : " + newEdge.cost + ", index : " + BaseUtils.indexOf(queue, newEdge));
+                }
             }
         }
         
