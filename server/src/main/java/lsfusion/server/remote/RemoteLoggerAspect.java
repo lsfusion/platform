@@ -26,7 +26,7 @@ public class RemoteLoggerAspect {
     @Around("(execution(* (lsfusion.interop.RemoteLogicsInterface+ && *..*Interface).*(..))" +
             " || execution(* lsfusion.interop.form.RemoteFormInterface.*(..))" +
             " || execution(* lsfusion.interop.navigator.RemoteNavigatorInterface.*(..)))" +
-            " && !execution(* *.ping(..))" +
+            " && !execution(* *.ping(..)) && !execution(* *.getClientCallBack(..)) " +
             "&& target(target)")
     public Object executeRemoteMethod(ProceedingJoinPoint thisJoinPoint, Object target) throws Throwable {
         final long id = Thread.currentThread().getId();
