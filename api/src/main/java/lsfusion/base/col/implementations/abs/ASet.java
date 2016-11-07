@@ -214,6 +214,12 @@ public abstract class ASet<K> extends ACol<K> implements ImSet<K> {
         return SetFact.fromJavaOrderSet(sortList);
     }
 
+    public ImOrderSet<K> sortSet(Comparator<K> comparator) {
+        List<K> sortList = new ArrayList<>(toJavaSet());
+        Collections.sort(sortList, comparator);
+        return SetFact.fromJavaOrderSet(sortList);
+    }
+
     public <M> ImSet<M> mapSetValues(GetValue<M, K> getter) {
         MExclSet<M> mResult = SetFact.mExclSet(size());
         for(int i=0,size=size();i<size;i++)

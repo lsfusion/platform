@@ -77,21 +77,23 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
 
     private static Stat getFieldStat(Field field, Stat defStat) {
         if(field.type instanceof DataClass)
-            return defStat.min(((DataClass)field.type).getTypeStat(false));
+            return defStat.min(field.type.getTypeStat(false));
+        else
+            return defStat;
+    }
+    private static int getFieldStat(Field field, int defStat) {
+        if(field.type instanceof DataClass)
+            return BaseUtils.min(defStat, field.type.getTypeStat(false).getCount());
         else
             return defStat;
     }
 
-    protected static TableStatKeys getStatKeys(Table table, int count) { // для мн-го наследования
-        final Stat stat = new Stat(count);
-
-        ImMap<KeyField, Stat> statMap = table.getTableKeys().mapValues(new GetValue<Stat, KeyField>() {
-            public Stat getMapValue(KeyField value) {
-                return getFieldStat(value, stat);
+    protected static TableStatKeys getStatKeys(Table table, final int count) { // для мн-го наследования
+        ImMap<KeyField, Integer> statMap = table.getTableKeys().mapValues(new GetValue<Integer, KeyField>() {
+            public Integer getMapValue(KeyField value) {
+                return getFieldStat(value, count);
             }});
-        DistinctKeys<KeyField> distinctKeys = new DistinctKeys<>(statMap);
-
-        return TableStatKeys.createForTable(stat, distinctKeys);
+        return TableStatKeys.createForTable(count, statMap);
     }
 
     protected static ImMap<PropertyField, PropStat> getStatProps(Table table, final Stat stat) { // для мн-го наследования

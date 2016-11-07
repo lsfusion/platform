@@ -925,9 +925,10 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
 //    private final Map<String, String> sessionTablesStackReturned = MapFact.mAddRemoveMap();
 //
     // need to check classes after
-    public SessionTable createTemporaryTable(ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, Integer count, DistinctKeys<KeyField> distinctKeys, ImMap<PropertyField, PropStat> statProps, FillTemporaryTable fill, Pair<ClassWhere<KeyField>, ImMap<PropertyField, ClassWhere<Field>>> queryClasses, TableOwner owner, OperationOwner opOwner) throws SQLException, SQLHandledException {
+    public SessionTable createTemporaryTable(ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, Integer count, ImMap<KeyField, Integer> distinctKeys, ImMap<PropertyField, PropStat> statProps, FillTemporaryTable fill, Pair<ClassWhere<KeyField>, ImMap<PropertyField, ClassWhere<Field>>> queryClasses, TableOwner owner, OperationOwner opOwner) throws SQLException, SQLHandledException {
         Result<Integer> actual = new Result<>();
-        return new SessionTable(getTemporaryTable(keys, properties, fill, count, actual, owner, opOwner), keys, properties, queryClasses.first, queryClasses.second, actual.result, distinctKeys, statProps).checkClasses(this, null, SessionTable.nonead, opOwner);
+        String temporaryTable = getTemporaryTable(keys, properties, fill, count, actual, owner, opOwner);
+        return new SessionTable(temporaryTable, keys, properties, queryClasses.first, queryClasses.second, actual.result, distinctKeys, statProps).checkClasses(this, null, SessionTable.nonead, opOwner);
     }
 
     private final Set<String> transactionTables = SetFact.mAddRemoveSet();
@@ -2379,7 +2380,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     }
 
     // в явную без query так как часто выполняется
-    public void readSingleValues(SessionTable table, Result<ImMap<KeyField, Object>> keyValues, Result<ImMap<PropertyField, Object>> propValues, Result<DistinctKeys<KeyField>> statKeys, Result<ImMap<PropertyField, PropStat>> statProps, OperationOwner opOwner) throws SQLException {
+    public void readSingleValues(SessionTable table, Result<ImMap<KeyField, Object>> keyValues, Result<ImMap<PropertyField, Object>> propValues, Result<ImMap<KeyField, Integer>> statKeys, Result<ImMap<PropertyField, PropStat>> statProps, OperationOwner opOwner) throws SQLException {
         ImSet<KeyField> tableKeys = table.getTableKeys();
         MStaticExecuteEnvironment env = StaticExecuteEnvironmentImpl.mEnv();
 
@@ -2392,7 +2393,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
                 field.type.readDeconc(syntax.getAnyValueFunc() + "(" + fieldName + ")", field.getName(), mReadKeys, syntax, env);
             }
         else {
-            statKeys.set(new DistinctKeys<>(tableKeys.isEmpty() ? MapFact.<KeyField, Stat>EMPTY() : MapFact.singleton(tableKeys.single(), new Stat(table.count))));
+            statKeys.set(tableKeys.isEmpty() ? MapFact.<KeyField, Integer>EMPTY() : MapFact.singleton(tableKeys.single(), table.count));
             if (table.properties.isEmpty()) {
                 keyValues.set(MapFact.<KeyField, Object>EMPTY());
                 propValues.set(MapFact.<PropertyField, Object>EMPTY());
@@ -2433,17 +2434,17 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
                 int totalCnt = readInt(result.getObject(getCnt("")));
                 if (tableKeys.size() > 1) {
                     ImFilterValueMap<KeyField, Object> mKeyValues = tableKeys.mapFilterValues();
-                    ImFilterValueMap<KeyField, Stat> mStatKeys = tableKeys.mapFilterValues();
+                    ImFilterValueMap<KeyField, Integer> mStatKeys = tableKeys.mapFilterValues();
                     for (int i = 0, size = tableKeys.size(); i < size; i++) {
                         KeyField tableKey = tableKeys.get(i);
                         String fieldName = tableKey.getName();
                         int cnt = readInt(result.getObject(getCntDist(fieldName)));
                         if (cnt == 1)
                             mKeyValues.mapValue(i, tableKey.type.read(result, syntax, fieldName));
-                        mStatKeys.mapValue(i, new Stat(cnt));
+                        mStatKeys.mapValue(i, cnt);
                     }
                     keyValues.set(mKeyValues.immutableValue());
-                    statKeys.set(new DistinctKeys<>(mStatKeys.immutableValue()));
+                    statKeys.set(mStatKeys.immutableValue());
                 } else
                     keyValues.set(MapFact.<KeyField, Object>EMPTY());
 

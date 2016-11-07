@@ -29,7 +29,7 @@ public class DumbTable extends GlobalTable {
     }
 
     public TableStatKeys getTableStatKeys() {
-        return TableStatKeys.createForTable(Stat.ONE, new DistinctKeys<>(MapFact.singleton(key, Stat.ONE))); // throw new RuntimeException("not supported");
+        return TableStatKeys.createForTable(1, MapFact.singleton(key, 1)); // throw new RuntimeException("not supported");
     }
 
     public ImMap<PropertyField,PropStat> getStatProps() {

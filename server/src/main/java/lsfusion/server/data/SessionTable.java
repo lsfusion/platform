@@ -58,13 +58,15 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
 
     public final int count; // вообще должен быть точным, или как минимум пессимистичным, чтобы в addObjects учитываться
 
-    public final DistinctKeys<KeyField> distinctKeys; // nullable, иногда известно, иногда нет
-    public final ImMap<PropertyField, PropStat> statProps; // nullable, иногда известно, иногда нет
+    // nullable, иногда известно, иногда нет
+    // assert что statKeys и statProps или одновременно null или одновременно нет
+    private final TableStatKeys statKeys;  
+    private final ImMap<PropertyField, PropStat> statProps;    
 
     public TableStatKeys getTableStatKeys() {
-        if(distinctKeys == null)
+        if(statKeys == null)
             return getStatKeys(this, count);
-        return TableStatKeys.createForTable(new Stat(count), distinctKeys);
+        return statKeys;
     }
 
     public ImMap<PropertyField,PropStat> getStatProps() {
@@ -82,16 +84,20 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
         return null;
     }
 
-    public SessionTable(String name, ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, ClassWhere<KeyField> classes, ImMap<PropertyField, ClassWhere<Field>> propertyClasses, int count, DistinctKeys<KeyField> distinctKeys, ImMap<PropertyField, PropStat> statProps) {
+    public SessionTable(String name, ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, ClassWhere<KeyField> classes, ImMap<PropertyField, ClassWhere<Field>> propertyClasses, int count, TableStatKeys statKeys, ImMap<PropertyField, PropStat> statProps) {
         super(name, keys, properties, classes, propertyClasses);
         this.count = count;
-        this.distinctKeys = distinctKeys;
+        this.statKeys = statKeys;
         this.statProps = statProps;
+    }
+
+    public SessionTable(String name, ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, ClassWhere<KeyField> classes, ImMap<PropertyField, ClassWhere<Field>> propertyClasses, int count, ImMap<KeyField, Integer> distinctKeys, ImMap<PropertyField, PropStat> statProps) {
+        this(name, keys, properties, classes, propertyClasses, count, distinctKeys == null ? null : TableStatKeys.createForTable(count, distinctKeys), statProps);
     }
 
     // конструкторы со сбросом статистики
     public SessionTable(String name, ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, ClassWhere<KeyField> classes, ImMap<PropertyField, ClassWhere<Field>> propertyClasses, int count) {
-        this(name, keys, properties, classes, propertyClasses, count, null, null);
+        this(name, keys, properties, classes, propertyClasses, count, (ImMap<KeyField, Integer>) null, null);
     }
     public SessionTable(String name, ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, int count, Pair<ClassWhere<KeyField>, ImMap<PropertyField, ClassWhere<Field>>> tableClasses) {
         this(name, keys, properties, tableClasses.first, tableClasses.second, count);
@@ -102,13 +108,12 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
         super(name, keys, properties, null, null);
         initBaseClasses(ThreadLocalContext.getBusinessLogics().LM.baseClass);
 
-        TableStatKeys statKeys = SerializedTable.getStatKeys(this);
+        statKeys = SerializedTable.getStatKeys(this);
         count = statKeys.getRows().getCount();
-        distinctKeys = statKeys.getDistinct();
         statProps = SerializedTable.getStatProps(this);
     }
 
-    private static Pair<DistinctKeys<KeyField>, ImMap<PropertyField, PropStat>> getStats(ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, final ImMap<ImMap<KeyField, DataObject>, ImMap<PropertyField, ObjectValue>> rows) {
+    private static Pair<ImMap<KeyField, Integer>, ImMap<PropertyField, PropStat>> getStats(ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, final ImMap<ImMap<KeyField, DataObject>, ImMap<PropertyField, ObjectValue>> rows) {
         final ImList<MSet<DataObject>> distinctKeyValues = ListFact.toList(keys.size(), ListFact.<DataObject>mSet());
         ImOrderSet<PropertyField> propList = properties.toOrderSet();
         final ImList<MSet<ObjectValue>> distinctPropValues = ListFact.toList(propList.size(), ListFact.<ObjectValue>mSet());
@@ -121,11 +126,11 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
             for(int j=0,sizeJ=propList.size();j<sizeJ;j++)
                 distinctPropValues.get(j).add(propValues.get(propList.get(j)));
         }
-        DistinctKeys<KeyField> distinctKeys = new DistinctKeys<>(keys.mapOrderValues(new GetIndex<Stat>() {
-            public Stat getMapValue(int i) {
-                return new Stat(distinctKeyValues.get(i).size());
+        ImMap<KeyField, Integer> distinctKeys = keys.mapOrderValues(new GetIndex<Integer>() {
+            public Integer getMapValue(int i) {
+                return distinctKeyValues.get(i).size();
             }
-        }));
+        });
         ImMap<PropertyField, PropStat> distinctProps = propList.mapOrderValues(new GetIndex<PropStat>() {
             public PropStat getMapValue(int i) {
                 return new PropStat(new Stat(distinctPropValues.get(i).size()));
@@ -136,7 +141,7 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
     // создает таблицу batch'ем
     public static SessionTable create(final SQLSession session, final ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, final ImMap<ImMap<KeyField, DataObject>, ImMap<PropertyField, ObjectValue>> rows, final TableOwner owner, final OperationOwner opOwner) throws SQLException, SQLHandledException {
         // прочитаем статистику
-        Pair<DistinctKeys<KeyField>, ImMap<PropertyField, PropStat>> stats = getStats(keys, properties, rows);
+        Pair<ImMap<KeyField, Integer>, ImMap<PropertyField, PropStat>> stats = getStats(keys, properties, rows);
 
         // прочитаем классы
         return session.createTemporaryTable(keys, properties, rows.size(), stats.first, stats.second, new FillTemporaryTable() {
@@ -526,12 +531,13 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
                     return value.or(new ClassWhere<>(result.filterIncl(SetFact.addExcl(getTableKeys(), key))));
                 }});
         }
-        return new SessionTable(name, keys, properties, updatedClasses, updatedPropertyClasses, count, distinctKeys, statProps).checkClasses(session.sql, null, nonead, session.getOwner());
+        return new SessionTable(name, keys, properties, updatedClasses, updatedPropertyClasses, count, statKeys, statProps).checkClasses(session.sql, null, nonead, session.getOwner());
     }
 
     public SessionTable updateStatistics(final SQLSession session, int prevCount, int updated, final TableOwner owner, final OperationOwner opOwner) throws SQLException, SQLHandledException {
+        assert statKeys == null && statProps == null;
         if(!SQLTemporaryPool.getDBStatistics(count).equals(SQLTemporaryPool.getDBStatistics(prevCount)) || (updated >= 1 && new Stat(Settings.get().getUpdateStatisticsLimit()).lessEquals(new Stat(updated)))) { // проблема в том, что может появиться много записей с field = n, а СУБД этого не будет знать и будет сильно ошибаться со статистикой
-            return session.createTemporaryTable(keys, properties, count, distinctKeys, statProps, new FillTemporaryTable() {
+            return session.createTemporaryTable(keys, properties, count, null, null, new FillTemporaryTable() {
                 public Integer fill(String name) throws SQLException, SQLHandledException {
                     QueryBuilder<KeyField, PropertyField> moveData = new QueryBuilder<>(SessionTable.this);
                     lsfusion.server.data.query.Join<PropertyField> prevJoin = join(moveData.getMapExprs());
@@ -572,8 +578,8 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
         }, andFieldsClassWheres(classes, propertyClasses, addKeys, addProps), owner, opOwner);
     }
 
-    public SessionTable updateKeyPropStats(DistinctKeys<KeyField> updatedKeyStats, ImMap<PropertyField, PropStat> updatedPropStats) {
-        assert distinctKeys == null && statProps == null;
+    public SessionTable updateKeyPropStats(ImMap<KeyField, Integer> updatedKeyStats, ImMap<PropertyField, PropStat> updatedPropStats) {
+        assert statKeys == null && statProps == null;
         return new SessionTable(name, keys, properties, classes, propertyClasses, count, updatedKeyStats, updatedPropStats);
     }
 
@@ -632,7 +638,7 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
         if(hashEquals(fixedClasses, classes))
             return this;
         else
-            return new SessionTable(name, keys, properties, fixedClasses, propertyClasses, count, distinctKeys, statProps);
+            return new SessionTable(name, keys, properties, fixedClasses, propertyClasses, count, statKeys, statProps);
     }
 
     // для проверки общей целостности есть специальные административные процедуры
@@ -727,7 +733,7 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
         });
 
         if(updatedClasses || updatedProps.result)
-            return new SessionTable(name, keys, properties, newClasses, newPropertyClasses, count, distinctKeys, statProps);
+            return new SessionTable(name, keys, properties, newClasses, newPropertyClasses, count, statKeys, statProps);
 
         return this;
     }

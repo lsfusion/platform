@@ -44,6 +44,7 @@ public interface ImSet<T> extends FunctionSet<T>, ImCol<T> {
     ImRevMap<T, T> toRevMap();
     ImOrderSet<T> toOrderSet();
     ImOrderSet<T> sort(); // natural ordering
+    ImOrderSet<T> sortSet(Comparator<T> comparator);
 
     <M> ImValueMap<T, M> mapItValues();
     <M> ImRevValueMap<T, M> mapItRevValues();

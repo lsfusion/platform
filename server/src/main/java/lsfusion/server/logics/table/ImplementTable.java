@@ -567,31 +567,34 @@ public class ImplementTable extends GlobalTable { // последний инте
 
     public void updateStat(ImMap<String, Integer> tableStats, ImMap<String, Integer> keyStats, ImMap<String, Pair<Integer, Integer>> propStats,
                            boolean statDefault, ImSet<PropertyField> props) throws SQLException {
-        Stat rowStat;
+        Integer rowCount;
+        int defaultCount = Stat.DEFAULT.getCount();
         if (!tableStats.containsKey(name))
-            rowStat = Stat.DEFAULT;
+            rowCount = defaultCount;
         else
-            rowStat = new Stat(BaseUtils.nvl(tableStats.get(name), 0));
+            rowCount = BaseUtils.nvl(tableStats.get(name), 0);
 
         if(props == null) {
             ImSet<KeyField> tableKeys = getTableKeys();
-            ImValueMap<KeyField, Stat> mvDistinctKeys = tableKeys.mapItValues(); // exception есть
+            ImValueMap<KeyField, Integer> mvDistinctKeys = tableKeys.mapItValues(); // exception есть
             for (int i = 0, size = tableKeys.size(); i < size; i++) {
                 String keySID = getName() + "." + tableKeys.get(i).getName();
-                Stat keyStat;
+                Integer keyCount;
                 if (!keyStats.containsKey(keySID))
-                    keyStat = Stat.DEFAULT;
+                    keyCount = defaultCount;
                 else {
-                    Integer keyCount = keyStats.get(keySID);
-                    keyStat = keyCount != null ? new Stat(keyCount) : rowStat;
+                    keyCount = keyStats.get(keySID);
+                    if(keyCount == null)
+                        keyCount = rowCount;
                 }
-                mvDistinctKeys.mapValue(i, keyStat.min(rowStat));
+                mvDistinctKeys.mapValue(i, BaseUtils.min(keyCount, rowCount));
             }
-            statKeys = TableStatKeys.createForTable(rowStat, new DistinctKeys<>(mvDistinctKeys.immutableValue()));
+            statKeys = TableStatKeys.createForTable(rowCount, mvDistinctKeys.immutableValue());
         }
 
         ImSet<PropertyField> propertyFieldSet = props == null ? properties : props;
 
+        Stat rowStat = statKeys.getRows();
         ImValueMap<PropertyField, PropStat> mvUpdateStatProps = propertyFieldSet.mapItValues();
         for(int i=0,size=propertyFieldSet.size();i<size;i++) {
             PropertyField prop = propertyFieldSet.get(i);

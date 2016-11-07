@@ -541,6 +541,10 @@ public class SingletonSet<K> implements ImSet<K>, ImList<K>, ImOrderSet<K> {
         return this;
     }
 
+    public ImOrderSet<K> sortSet(Comparator<K> comparator) {
+        return this;
+    }
+
     public <M> ImMap<K, M> mapItValues(GetValue<M, K> getter) {
         return MapFact.<K, M>singleton(key, getter.getMapValue(key));
     }
