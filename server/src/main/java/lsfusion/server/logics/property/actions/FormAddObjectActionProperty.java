@@ -25,14 +25,6 @@ public class FormAddObjectActionProperty extends AddObjectActionProperty<Propert
         super(customClass, null, true);
 
         this.objectEntity = objectEntity;
-
-        drawOptions.addProcessor(new DefaultProcessor() {
-            public void proceedDefaultDraw(PropertyDrawEntity entity, FormEntity<?> form) {
-                entity.toDraw = objectEntity.groupTo;
-            }
-            public void proceedDefaultDesign(PropertyDrawView propertyView) {
-            }
-        });
     }
 
    @Override

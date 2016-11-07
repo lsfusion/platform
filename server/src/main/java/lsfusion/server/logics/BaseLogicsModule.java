@@ -3,15 +3,9 @@ package lsfusion.server.logics;
 import com.google.common.base.Throwables;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
-import lsfusion.base.col.SetFact;
-import lsfusion.base.col.interfaces.immutable.ImList;
-import lsfusion.base.col.interfaces.immutable.ImOrderSet;
-import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.identity.DefaultIDGenerator;
 import lsfusion.base.identity.IDGenerator;
-import lsfusion.interop.ClassViewType;
 import lsfusion.interop.Compare;
-import lsfusion.interop.KeyStrokes;
 import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.caches.IdentityStrongLazy;
 import lsfusion.server.classes.*;
@@ -29,7 +23,6 @@ import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.mutables.NFFact;
-import lsfusion.server.logics.mutables.NFLazy;
 import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.actions.FormAddObjectActionProperty;
@@ -43,7 +36,6 @@ import org.antlr.runtime.RecognitionException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedHashMap;
 
 /**
  * User: DAle
@@ -630,7 +622,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         CustomClass cls = (CustomClass)obj.baseClass;
         LAP result = addAProp(new FormAddObjectActionProperty(cls, obj));
         
-        setAddActionOptions(result);
+        setAddActionOptions(result, obj);
         
         if (formEntity.getCanonicalName() != null) {
             String name = "_ADDOBJ_" + formEntity.getCanonicalName().replace('.', '_') + "_" + obj.getSID();
@@ -646,7 +638,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
 
         LAP res = addChangeClassAProp(baseClass.unknown, 1, 0, false, true, 1, is(cls), 1);
         if (!oldSession) {
-            res = addNewSessionAProp(null, res.property.caption, res, true, false, false, false);
+            res = addNewSessionAProp(null, res, true, false, false, false);
             res.setAskConfirm(true);
         }
         setDeleteActionOptions(res);

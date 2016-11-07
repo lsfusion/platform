@@ -549,7 +549,11 @@ public abstract class Property<T extends PropertyInterface> extends AbstractProp
         return null;
     }
 
-    protected interface DefaultProcessor {
+    public void inheritCaption(Property property) {
+        caption = property.caption;         
+    }
+    
+    public interface DefaultProcessor {
         // из-за inherit entity и view могут быть другого свойства
         void proceedDefaultDraw(PropertyDrawEntity entity, FormEntity<?> form);
         void proceedDefaultDesign(PropertyDrawView propertyView);

@@ -1,6 +1,5 @@
 package lsfusion.server.logics.scripted;
 
-import lsfusion.base.BaseUtils;
 import lsfusion.base.OrderedMap;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
@@ -32,6 +31,7 @@ import lsfusion.server.logics.property.derived.DerivedProperty;
 
 import javax.swing.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -238,44 +238,49 @@ public class ScriptingFormEntity {
             ScriptingLogicsModule.PropertyUsage pUsage = properties.get(i);
             String propertyName = pUsage.name;
             String alias = aliases.get(i);
-
-            PropertyDrawEntity property;
+            
+            LP property;
+            PropertyObjectInterfaceEntity[] objects;;
             if (propertyName.equals("OBJVALUE")) {
-                checkSingleParam(mapping.size());
-
-                //assertion, что создастся только один PropertyDrawEntity
                 ObjectEntity obj = getSingleMappingObject(mapping);
-                LCP objValueProp = LM.getObjValueProp(form, obj);
-                property = form.addPropertyDraw(objValueProp, version, getMappingObjectsArray(mapping));
+                property = LM.getObjValueProp(form, obj);
+                objects = new PropertyObjectInterfaceEntity[]{obj};
             } else if (propertyName.equals("ADDOBJ")) {
                 ObjectEntity obj = getSingleCustomClassMappingObject(propertyName, mapping);
-                LAP<?> addObjAction = LM.getAddObjectAction(form, obj);
-                property = form.addPropertyDraw(addObjAction, version);
+                property = LM.getAddObjectAction(form, obj);
+                objects = new PropertyObjectInterfaceEntity[]{};
             } else if (propertyName.equals("ADDFORM") || propertyName.equals("ADDSESSIONFORM") || propertyName.equals("ADDNESTEDFORM")) {
                 ObjectEntity obj = getSingleCustomClassMappingObject(propertyName, mapping);
-                property = LM.addAddFormAction(form, obj, getAddFormActionScope(propertyName), version);
+                property = LM.getAddFormAction(form, obj, getAddFormActionScope(propertyName), version);
+                objects = new PropertyObjectInterfaceEntity[]{};
             } else if (propertyName.equals("EDITFORM") || propertyName.equals("EDITSESSIONFORM") || propertyName.equals("EDITNESTEDFORM")) {
                 ObjectEntity obj = getSingleCustomClassMappingObject(propertyName, mapping);
-                property = LM.addEditFormAction(form, obj, getEditFormActionScope(propertyName), version);
+                property = LM.getEditFormAction(obj, getEditFormActionScope(propertyName), version);
+                objects = new PropertyObjectInterfaceEntity[]{obj};
             } else if (propertyName.equals("DELETE") || propertyName.equals("DELETESESSION")) {
                 ObjectEntity obj = getSingleCustomClassMappingObject(propertyName, mapping);
-                property = LM.addFormDeleteAction(form, obj, propertyName.equals("DELETESESSION"), version);
+                property = LM.getDeleteAction(obj, propertyName.equals("DELETESESSION"));
+                objects = new PropertyObjectInterfaceEntity[]{obj};
             } else {
                 MappedProperty prop = getPropertyWithMapping(pUsage, mapping);
-
                 checkPropertyParameters(prop.property, prop.mapping);
-                String formPath = points.get(i).toString();
-                property = form.addPropertyDraw(prop.property, version, formPath, prop.mapping);
+                property = prop.property;
+                objects = prop.mapping;
             }
+
             FormPropertyOptions propertyOptions = commonOptions.overrideWith(options.get(i));
-            applyPropertyOptions(property, propertyOptions, version);
+
+            String formPath = points.get(i).toString();
+            PropertyDrawEntity propertyDraw = form.addPropertyDraw(property, version, formPath, objects);
+            
+            applyPropertyOptions(propertyDraw, propertyOptions, version);
 
             // Добавляем PropertyDrawView в FormView, если он уже был создан
-            form.addPropertyDrawView(property, version);
+            form.addPropertyDrawView(propertyDraw, version);
 
-            movePropertyDraw(property, propertyOptions, version);
+            movePropertyDraw(propertyDraw, propertyOptions, version);
 
-            setFinalPropertyDrawSID(property, alias);
+            setFinalPropertyDrawSID(propertyDraw, alias);
         }
     }
 

@@ -133,6 +133,10 @@ public abstract class LP<T extends PropertyInterface, P extends Property<T>> {
     public void setShowEditKey(boolean showEditKey) {
         property.drawOptions.setShowEditKey(showEditKey);
     }
+    
+    public void addProcessor(Property.DefaultProcessor processor) {
+        property.drawOptions.addProcessor(processor);
+    }
 
     public void setRegexp(String regexp) {
         property.drawOptions.setRegexp(regexp);
