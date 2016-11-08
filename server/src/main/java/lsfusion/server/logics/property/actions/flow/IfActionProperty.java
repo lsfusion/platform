@@ -87,7 +87,7 @@ public class IfActionProperty extends KeepContextActionProperty {
 
     @Override
     public PropertyInterface getSimpleDelete() {
-        return null; // по аналогии с верхним
+        return super.getSimpleDelete(); // по аналогии с верхним
     }
 
     @Override

@@ -230,18 +230,22 @@ public class CaseActionProperty extends ListCaseActionProperty {
     @Override
     public PropertyInterface getSimpleDelete() {
 
-        if(!isExclusive && Settings.get().isDisableSimpleAddRemoveInNonExclCase())
-            return null;
-
-        PropertyInterface result = null;
-        for (ActionPropertyMapImplement<?, PropertyInterface> action : getListActions()) {
-            PropertyInterface simpleDelete = action.mapSimpleDelete();
-            if(simpleDelete!=null && (result==null || BaseUtils.hashEquals(result, simpleDelete)))
-                result = simpleDelete;
-            else // значит есть case который не удаляет или удаляет что-то другое
-                return null;
+        if(isExclusive || !Settings.get().isDisableSimpleAddRemoveInNonExclCase()) {
+            PropertyInterface result = null;
+            for (ActionPropertyMapImplement<?, PropertyInterface> action : getListActions()) {
+                PropertyInterface simpleDelete = action.mapSimpleDelete();
+                if (simpleDelete != null && (result == null || BaseUtils.hashEquals(result, simpleDelete)))
+                    result = simpleDelete;
+                else { // значит есть case который не удаляет или удаляет что-то другое
+                    result = null;
+                    break;
+                }
+            }
+            if (result != null)
+                return result;
         }
-        return result;
+        
+        return super.getSimpleDelete();
     }
 
     /*

@@ -146,11 +146,14 @@ public class ListActionProperty extends ListCaseActionProperty {
                 if (result == null) {
                     result = simpleDelete;
                 } else {
-                    return null;
+                    result = null;
+                    break;
                 }
             }
         }
-        return result;
+        if(result != null)
+            return result;
+        return super.getSimpleDelete();
     }
 
     @Override

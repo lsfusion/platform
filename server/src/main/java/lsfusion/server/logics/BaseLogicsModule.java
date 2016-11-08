@@ -118,7 +118,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     public LCP statCustomObjectClass; 
 
     private LCP addedObject;
-    private LCP confirmed;
+    public LCP confirmed;
     private LCP requestCanceled;
     private LCP isActiveForm;
     private LCP formResultProp;
@@ -631,17 +631,10 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         return result;
     }
 
-    @Override
     @IdentityStrongLazy
     public LAP getDeleteAction(CustomClass cls, boolean oldSession) {
+        LAP res = addDeleteAction(cls, oldSession);
         String name = "_DELETE" + (oldSession ? "SESSION" : "");
-
-        LAP res = addChangeClassAProp(baseClass.unknown, 1, 0, false, true, 1, is(cls), 1);
-        if (!oldSession) {
-            res = addNewSessionAProp(null, res, true, false, false, false);
-            res.setAskConfirm(true);
-        }
-        setDeleteActionOptions(res);
         makePropertyPublic(res, name, cls.getResolveSet());
         return res;
     }

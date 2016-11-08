@@ -470,7 +470,16 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
         return null;
     }
 
+    private boolean isSimpleDelete;
+    
+    public void setSimpleDelete(boolean isSimpleDelete) {
+        assert interfaces.size() == 1;
+        this.isSimpleDelete = isSimpleDelete;
+    }
+
     public P getSimpleDelete() {
+        if(isSimpleDelete)
+            return interfaces.single();
         return null;
     }
 

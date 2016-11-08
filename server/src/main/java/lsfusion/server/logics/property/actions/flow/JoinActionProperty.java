@@ -55,14 +55,13 @@ public class JoinActionProperty<T extends PropertyInterface> extends KeepContext
 
     @Override
     public PropertyInterface getSimpleDelete() {
-        if(isRecursive) // recursion guard
-            return null;
-
-        T simpleRemove = action.property.getSimpleDelete();
-        CalcPropertyInterfaceImplement<PropertyInterface> mapRemove;
-        if(simpleRemove!=null && ((mapRemove = action.mapping.get(simpleRemove)) instanceof PropertyInterface))
-            return (PropertyInterface) mapRemove;
-        return null;
+        if(!isRecursive) { // recursion guard
+            T simpleRemove = action.property.getSimpleDelete();
+            CalcPropertyInterfaceImplement<PropertyInterface> mapRemove;
+            if (simpleRemove != null && ((mapRemove = action.mapping.get(simpleRemove)) instanceof PropertyInterface))
+                return (PropertyInterface) mapRemove;
+        }
+        return super.getSimpleDelete();
     }
 
     @Override

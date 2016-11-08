@@ -121,6 +121,6 @@ public class NewSessionActionProperty extends AroundAspectActionProperty {
 
     @Override
     public PropertyInterface getSimpleDelete() {
-        return aspectActionImplement.property.getSimpleDelete();
+        return null; // aspectActionImplement.property.getSimpleDelete();
     }
 }

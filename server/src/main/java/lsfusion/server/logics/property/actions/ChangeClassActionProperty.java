@@ -99,7 +99,7 @@ public class ChangeClassActionProperty<T extends PropertyInterface, I extends Pr
 
     public ChangeClassActionProperty(ObjectClass valueClass, boolean forceDialog, ImSet<I> innerInterfaces, ImOrderSet<I> mapInterfaces, I changeInterface, CalcPropertyMapImplement<T, I> where, BaseClass baseClass) {
          super(LocalizedString.create(
-                 valueClass instanceof UnknownClass ? "{logics.property.actions.delete}" : "{logics.property.actions.changeclass}"), innerInterfaces, mapInterfaces);
+                 valueClass instanceof UnknownClass ? "{logics.delete}" : "{logics.property.actions.changeclass}"), innerInterfaces, mapInterfaces);
 
          this.valueClass = valueClass;
          this.forceDialog = forceDialog;
@@ -171,7 +171,7 @@ public class ChangeClassActionProperty<T extends PropertyInterface, I extends Pr
     public PropertyInterface getSimpleDelete() {
         if ((where == null || BaseUtils.hashEquals(mapInterfaces.valuesSet(),innerInterfaces)) && valueClass instanceof UnknownClass)
             return interfaces.single();
-        return null;
+        return super.getSimpleDelete();
     }
 
     @Override

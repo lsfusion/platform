@@ -202,7 +202,11 @@ recalculateAggregationWithDependencies 'Пересчитать агрегаци�
 recalculateAggregationWithDependents 'Пересчитать агрегации (+зависимые)' = ACTION CUSTOM 'lsfusion.server.logics.reflection.RecalculateTableColumnWithDependentsActionProperty' (TableColumn);
 checkAggregation 'Проверить агрегации' = ACTION CUSTOM 'lsfusion.server.logics.reflection.CheckTableColumnActionProperty' (TableColumn);
 checkAggregation(VARISTRING[100] string) = ACTION checkAggregation(tableColumnSID(string));
-drop 'Окончательно удалить колонку' = ACTION CUSTOM 'lsfusion.server.logics.reflection.DropColumnActionProperty' (DropColumn);
+dropDB = ACTION CUSTOM 'lsfusion.server.logics.reflection.DropColumnActionProperty' (DropColumn);
+drop 'Окончательно удалить колонку' (DropColumn cl) = ACTION {
+    dropDB(cl);
+    DELETE cl;
+}
 
 recalculateColumnsAggregations 'Пересчитать агрегации колонок' (Table table) = ACTION {
     FOR table == table(TableColumn tableColumn) AND tableColumn IS TableColumn DO {
