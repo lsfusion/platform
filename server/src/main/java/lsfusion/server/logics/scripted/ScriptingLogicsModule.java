@@ -2135,7 +2135,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     private static StringClass getStringConstClass(LocalizedString value) {
-        if(value.isNeedToBeLocalized())
+        if(value.needToBeLocalized())
             return StringClass.text;
         return StringClass.getv(new ExtInt(value.getSourceString().length()));
     }

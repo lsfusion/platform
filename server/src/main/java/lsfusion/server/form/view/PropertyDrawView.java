@@ -16,7 +16,10 @@ import lsfusion.server.data.type.TypeSerializer;
 import lsfusion.server.form.entity.*;
 import lsfusion.server.form.view.report.ReportDrawField;
 import lsfusion.server.logics.i18n.LocalizedString;
-import lsfusion.server.logics.property.*;
+import lsfusion.server.logics.property.ActionProperty;
+import lsfusion.server.logics.property.CalcProperty;
+import lsfusion.server.logics.property.ClassType;
+import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.logics.table.MapKeysTable;
 import lsfusion.server.serialization.SerializationType;
 import lsfusion.server.serialization.ServerContext;
@@ -391,7 +394,7 @@ public class PropertyDrawView extends ComponentView {
         }
         LocalizedString caption = getCaption();
         if (!caption.isEmpty()) {
-            msg = LocalizedString.create(msg.getSourceString() + " \"" + caption.getSourceString() + "\"?");
+            msg = LocalizedString.concatList(msg, " \"", caption, "\"?");
         }
 
         return ThreadLocalContext.localize(msg);

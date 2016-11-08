@@ -1955,7 +1955,7 @@ public abstract class LogicsModule {
         CalcPropertyMapImplement<L, T> mapClasses = (CalcPropertyMapImplement<L, T>) IsClassProperty.getMapProperty(property.getInterfaceClasses(ClassType.logPolicy));
         property.setNotNull = true;
         addFollows(mapClasses.property, new CalcPropertyMapImplement<>(property, mapClasses.mapping.reverse()),
-                LocalizedString.create("{logics.property} " + property.caption.getSourceString() + " [" + property.getSID() + "] {logics.property.not.defined}"),
+                LocalizedString.concatList(LocalizedString.create("{logics.property} "), property.caption, " [" + property.getSID(), LocalizedString.create("] {logics.property.not.defined}")),
                 debugInfo, options, event);
     }
 

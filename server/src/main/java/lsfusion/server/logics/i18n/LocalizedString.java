@@ -1,5 +1,6 @@
 package lsfusion.server.logics.i18n;
 
+import lsfusion.base.BaseUtils;
 import lsfusion.server.context.ThreadLocalContext;
 
 import java.util.Locale;
@@ -31,11 +32,13 @@ public class LocalizedString {
     private boolean needToBeLocalized;
     
     protected LocalizedString(String source) {
-        this(source, needToBeLocalized(source));
-    }
-
-    public static boolean needToBeLocalized(String source) {
-        return source.indexOf('{') != -1 && source.indexOf('}') != -1;
+        if (canBeOptimized(source)) {
+            this.source = removeEscapeSymbols(source);
+            this.needToBeLocalized = false;
+        } else {
+            this.source = source;
+            this.needToBeLocalized = true;
+        }
     }
 
     protected LocalizedString(String source, boolean needToBeLocalized) {
@@ -44,28 +47,29 @@ public class LocalizedString {
         this.needToBeLocalized = needToBeLocalized;
     }
 
-    public boolean isNeedToBeLocalized() {
+    public boolean needToBeLocalized() {
         return needToBeLocalized;
     }
 
-    /** Предполагается, что getString вызывается для строки, удовлетворяющей checkLocalizedStringFormat,
-     *  поэтому не производятся проверки на соответствие формату
-     */
     public String getString(Locale locale, Localizer localizer) {
-        if (!needToBeLocalized) {
+        if (!needToBeLocalized()) {
             return getSourceString();
         }
         
         StringBuilder builder = new StringBuilder();
         for (int i = 0; i < source.length(); ++i) {
             char ch = source.charAt(i);
-            if (ch == '\\') {
-                assert i+1 < source.length();
+            if (ch == '\\' && i+1 < source.length()) {
                 builder.append(source.charAt(i+1));
                 ++i;
             } else if (ch == OPEN_CH) {
+                // не учитывается вариант с экранированной закрывающей скобкой, но для этого должен быть ключ с фигурной скобкой
                 int closePos = source.indexOf(CLOSE_CH, i+1);
-                assert closePos > 0;
+                if (closePos == -1) {
+                    builder.append(source.substring(i));
+                    break;
+                }
+                
                 String localizedSubstr;
                 if (localizer != null) {
                     localizedSubstr = localizer.localize(source.substring(i + 1, closePos), locale);
@@ -111,7 +115,7 @@ public class LocalizedString {
                 ++i;
             } else if (ch == CLOSE_CH) {
                 if (!insideKey) {
-                    //throw new FormatError(String.format("invalid character '%c', should be escaped with '\\'", CLOSE_CH));
+                    throw new FormatError(String.format("invalid character '%c', should be escaped with '\\'", CLOSE_CH));
                 } else if (keyIsEmpty) {
                     throw new FormatError("empty key is forbidden");
                 } else {
@@ -119,7 +123,7 @@ public class LocalizedString {
                 }
             } else if (ch == OPEN_CH) {
                 if (insideKey) {
-                    //throw new FormatError(String.format("invalid character '%c', should be escaped with '\\'", OPEN_CH));
+                    throw new FormatError(String.format("invalid character '%c', should be escaped with '\\'", OPEN_CH));
                 } else {
                     insideKey = true;
                     keyIsEmpty = true;
@@ -131,7 +135,7 @@ public class LocalizedString {
             }
         }
         if (insideKey) {
-            //throw new FormatError(String.format("key was not closed with '%c'", CLOSE_CH));
+            throw new FormatError(String.format("key was not closed with '%c'", CLOSE_CH));
         }
     }
     
@@ -155,11 +159,13 @@ public class LocalizedString {
         }
         checkLocalizedStringFormat(source);
         return create(source);
-        
     }
 
     /**
-     * Создает LocalizedString без проверки на корректность  
+     * Создает LocalizedString без проверки на корректность
+     * Если create вызывается без второго параметра, то происходит проверка (в кострукторе) на необходимость локализации
+     * строки. Если в строке нет ни одной неэкранированной фигурной скобки, то экранирование убирается и строка 
+     * needToBeLocalized устанавливается в false
      */
     public static LocalizedString create(String source) {
         if (source == null) {
@@ -173,8 +179,75 @@ public class LocalizedString {
             return null;
         }
         return new LocalizedString(source, needToBeLocalized);
-        
     } 
+    
+    private static boolean canBeOptimized(String s) {
+        for (int i = 0; i < s.length(); ++i) {
+            char ch = s.charAt(i);
+            if (ch == OPEN_CH || ch == CLOSE_CH) {
+                return false;
+            } else if (ch == '\\') {
+                ++i;
+            }
+        }
+        return true;
+    }
+    
+    private static String removeEscapeSymbols(String s) {
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < s.length(); ++i) {
+            char cur = s.charAt(i);
+            if (cur == '\\' && i+1 < s.length()) {
+                char next = s.charAt(i+1);
+                if (next == '\\' || next == OPEN_CH || next == CLOSE_CH) {
+                    builder.append(next);
+                    ++i;
+                    continue;
+                }
+            } 
+            builder.append(cur);
+        }
+        return builder.toString();
+    }
+    
+    public static LocalizedString concat(LocalizedString leftString, LocalizedString rightString) {
+        if (leftString == null || rightString == null) return BaseUtils.nvl(leftString, rightString);
+        
+        boolean leftNTBL = leftString.needToBeLocalized();
+        boolean rightNTBL = rightString.needToBeLocalized();
+        
+        if (!leftNTBL && !rightNTBL) {
+            return create(leftString.getSourceString() + rightString.getSourceString(), false);
+        }
+        
+        String left = leftNTBL ? leftString.getSourceString() : escapeForLocalization(leftString.getSourceString()); 
+        String right = rightNTBL ? rightString.getSourceString() : escapeForLocalization(rightString.getSourceString());        
+        return create(left + right, true);
+    }
+    
+    public static LocalizedString concat(LocalizedString leftString, String rightString) {
+        return concat(leftString, new LocalizedString(rightString, false));
+    }
+
+    public static LocalizedString concat(String leftString, LocalizedString rightString) {
+        return concat(new LocalizedString(leftString, false), rightString);
+    }
+    
+    public static LocalizedString concatList(Object... strings) {
+        LocalizedString result = null;
+        for (Object nextString : strings) {
+            LocalizedString next = null;
+            if (nextString instanceof LocalizedString) {
+                next = (LocalizedString) nextString;
+            } else if (nextString instanceof String) {
+                next = new LocalizedString((String) nextString, false);
+            } else {
+                assert false;
+            }
+            result = concat(result, next);
+        }
+        return result;
+    }
     
     /**
      * Экранирует обычную строку без локализации таким образом, чтобы потом ее можно было передать в конструктор LocalizedString,
@@ -185,16 +258,16 @@ public class LocalizedString {
             return null;
         }
         
-        StringBuilder buffer = new StringBuilder();
+        StringBuilder builder = new StringBuilder();
         for (int i = 0; i < source.length(); ++i) {
             switch (source.charAt(i)) {
-                case '\\': buffer.append("\\\\"); break;
-                case '{': buffer.append("\\{"); break;
-                case '}': buffer.append("\\}"); break;
-                default: buffer.append(source.charAt(i));
+                case '\\': builder.append("\\\\"); break;
+                case OPEN_CH: builder.append("\\" + OPEN_CH); break;
+                case CLOSE_CH: builder.append("\\" + CLOSE_CH); break;
+                default: builder.append(source.charAt(i));
             }
         }
-        return buffer.toString();
+        return builder.toString();
     }
     
     public boolean isEmpty() {

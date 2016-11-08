@@ -352,7 +352,7 @@ public class DerivedProperty {
     }
 
     public static <T extends PropertyInterface> CalcPropertyMapImplement<?, T> createAnyGProp(CalcProperty<T> prop, ImSet<T> groupInterfaces) {
-        return createAnyGProp(LocalizedString.create("ANY " + prop.caption.getSourceString() + " (" + groupInterfaces.toString(",") + ")"), prop, groupInterfaces);
+        return createAnyGProp(LocalizedString.concatList("ANY ", prop.caption, " (" + groupInterfaces.toString(",") + ")"), prop, groupInterfaces);
     }
     public static <T extends PropertyInterface, N extends PropertyInterface> CalcPropertyMapImplement<?, T> createAnyGProp(LocalizedString caption, CalcProperty<T> prop, ImSet<T> groupInterfaces) {
         if(!prop.getType().equals(LogicalClass.instance)) { // делаем Logical, может валиться по nullPointer, если в ACTION'е идут противоречивые условия (классы неправильные)

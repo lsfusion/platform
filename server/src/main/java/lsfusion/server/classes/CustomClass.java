@@ -83,7 +83,7 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
     }
 
     public String toString() {
-        return ThreadLocalContext.localize(LocalizedString.create(caption.getSourceString() + " (" + sID + ")"));
+        return ThreadLocalContext.localize(LocalizedString.concat(caption, " (" + sID + ")"));
     }
 
     public Integer ID;
@@ -454,7 +454,7 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
     }
 
     public static IsClassProperty getProperty(ValueClass valueClass) {
-        return new IsClassProperty(LocalizedString.create(valueClass.getCaption().getSourceString() + "{logics.pr}"), valueClass);
+        return new IsClassProperty(LocalizedString.concat(valueClass.getCaption(), LocalizedString.create("{logics.pr}")), valueClass);
     }
 
     private IsClassProperty property;

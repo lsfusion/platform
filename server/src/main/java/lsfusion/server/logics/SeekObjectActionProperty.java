@@ -13,7 +13,6 @@ import lsfusion.server.form.instance.ObjectInstance;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
-import lsfusion.server.logics.scripted.ScriptingActionProperty;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 
 import java.sql.SQLException;
@@ -31,7 +30,7 @@ public class SeekObjectActionProperty extends SeekActionProperty {
     }
 
     public SeekObjectActionProperty(ScriptingLogicsModule lm, ObjectEntity object, boolean last) {
-        super(lm, LocalizedString.create("Найти объект (" + object.getCaption().getSourceString() + ")"), object.baseClass);
+        super(lm, LocalizedString.concatList("Найти объект (", object.getCaption(), ")"), object.baseClass);
 
         this.object = object;
         this.last = last;

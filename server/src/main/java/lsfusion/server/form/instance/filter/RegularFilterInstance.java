@@ -1,5 +1,6 @@
 package lsfusion.server.form.instance.filter;
 
+import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.form.entity.filter.RegularFilterEntity;
 import lsfusion.server.logics.i18n.LocalizedString;
 
@@ -34,6 +35,6 @@ public class RegularFilterInstance implements Serializable {
     }
 
     public String toString() {
-        return getName().getSourceString();
+        return ThreadLocalContext.localize(getName());
     }
 }

@@ -107,7 +107,7 @@ public class OnChangeProperty<T extends PropertyInterface,P extends PropertyInte
     }
 
     public OnChangeProperty(CalcProperty<T> onChange, CalcProperty<P> toChange) {
-        super(LocalizedString.create(onChange.caption.getSourceString()+" по ("+toChange.caption.getSourceString()+")"), getInterfaces(onChange, toChange), onChange, toChange);
+        super(LocalizedString.concatList(onChange.caption, " по (", toChange.caption, ")"), getInterfaces(onChange, toChange), onChange, toChange);
 
         finalizeInit();
     }

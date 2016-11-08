@@ -31,11 +31,11 @@ public class AggregateGroupProperty<T extends PropertyInterface> extends CycleGr
         if(caption.isEmpty()) {
             ImCol<CalcPropertyMapImplement<?, T>> groupMapProps = CalcPropertyMapImplement.filter(groupProps);
             for(CalcPropertyMapImplement<?, T> groupProp : groupMapProps)
-                caption = LocalizedString.create(caption.getSourceString() + "," + groupProp.property.toString());
+                caption = LocalizedString.concat(caption, "," + groupProp.property.toString());
             if(groupMapProps.size() > 1)
-                caption = LocalizedString.create("(" + caption.getSourceString() + ")"); 
+                caption = LocalizedString.concatList("(", caption, ")"); 
         } else
-            caption = LocalizedString.create(caption.getSourceString() + "(агр.)");
+            caption = LocalizedString.concat(caption, "(агр.)");
         and.property.caption = caption;
         assert groupProps.toSet().containsAll(innerInterfaces.removeIncl(aggrInterface));
         return create(caption, and, groupProps, innerInterfaces, property, aggrInterface, groupProps);

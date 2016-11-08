@@ -165,9 +165,8 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
 
     public String outputStored(boolean outputTable) {
         assert isStored() && field!=null;
-        return localize(LocalizedString.create(
-                    (this instanceof DataProperty ? "{logics.property.primary}" : "{logics.property.calculated}") 
-                    + " {logics.property} : " + caption.getSourceString() + ", " + mapTable.table.outputField(field, outputTable))
+        return localize(LocalizedString.concatList((this instanceof DataProperty ? "{logics.property.primary}" : "{logics.property.calculated}"), 
+                    LocalizedString.create(" {logics.property} : "), caption, ", " + mapTable.table.outputField(field, outputTable))
         );
     }
     

@@ -79,7 +79,7 @@ public class MaxChangeProperty<T extends PropertyInterface,P extends PropertyInt
     }
 
     public MaxChangeProperty(CalcProperty<T> onChange, CalcProperty<P> toChange) {
-        super(LocalizedString.create(onChange.caption.getSourceString() + " по ("+toChange.caption.getSourceString()+")"), getInterfaces(toChange), onChange, toChange);
+        super(LocalizedString.concatList(onChange.caption, " по (", toChange.caption, ")"), getInterfaces(toChange), onChange, toChange);
 
         finalizeInit();
     }

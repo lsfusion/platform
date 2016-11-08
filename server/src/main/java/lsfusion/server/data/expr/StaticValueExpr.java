@@ -88,7 +88,7 @@ public class StaticValueExpr extends AbstractValueExpr<StaticClass> {
         Object adjObject = object;
         if(objectClass instanceof StringClass) { // если нужна локализация, придется все равно закидывать в параметры            
             LocalizedString locObject = (LocalizedString) adjObject;
-            if (locObject.isNeedToBeLocalized()) // если нужна локализация, придется все равно закидывать в параметры
+            if (locObject.needToBeLocalized()) // если нужна локализация, придется все равно закидывать в параметры
                 return true;
             adjObject = locObject.getSourceString();
         }
@@ -124,7 +124,7 @@ public class StaticValueExpr extends AbstractValueExpr<StaticClass> {
         Object adjObject = object;
         if(objectClass instanceof StringClass) {
             LocalizedString locObject = (LocalizedString) adjObject;
-            assert !locObject.isNeedToBeLocalized();
+            assert !locObject.needToBeLocalized();
             adjObject = locObject.getSourceString();
         }
         return adjObject;
@@ -134,7 +134,7 @@ public class StaticValueExpr extends AbstractValueExpr<StaticClass> {
         Object adjObject = object;
         if(objectClass instanceof StringClass) {
             LocalizedString locObject = (LocalizedString) adjObject;
-            if(locObject.isNeedToBeLocalized())
+            if(locObject.needToBeLocalized())
                 adjObject = ThreadLocalContext.localize(locObject, env.getLocale());
             else
                 adjObject = locObject.getSourceString();
