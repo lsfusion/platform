@@ -277,11 +277,12 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
 
     private FormEntity baseClassForm = null;
 
+    @ManualLazy
     public FormEntity getBaseClassForm(BaseLogicsModule LM) {
         if (baseClassForm == null) {
             Version version = LM.getVersion();
 
-            baseClassForm = getListForm(LM).form;
+            baseClassForm = new ListFormEntity(LM, this);
             List<FormEntity> childrenList = new ArrayList<>();
             for (CustomClass child : getChildrenIt()) {
                 FormEntity childForm = child.getBaseClassForm(LM);
@@ -384,14 +385,6 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
         protected abstract ClassFormEntity createDefaultForm(BaseLogicsModule LM);
     }
 
-    private ClassFormHolder listFormHolder = new ClassFormHolder() {
-        @Override
-        protected ClassFormEntity createDefaultForm(BaseLogicsModule LM) {
-            ListFormEntity listFormEntity = new ListFormEntity(LM, CustomClass.this);
-            return new ClassFormEntity(listFormEntity, listFormEntity.object);
-        }
-    };
-
     private ClassFormHolder dialogFormHolder = new ClassFormHolder() {
         @Override
         protected ClassFormEntity createDefaultForm(BaseLogicsModule LM) {
@@ -407,21 +400,6 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
             return new ClassFormEntity(editFormEntity, editFormEntity.object);
         }
     };
-
-    /**
-     * используются для классовых форм в навигаторе
-     * @param LM
-     */
-    public ClassFormEntity getListForm(BaseLogicsModule LM) {
-        return listFormHolder.getForm(LM);
-    }
-    public ClassFormEntity getListForm(BaseLogicsModule LM, Version version) {
-        return listFormHolder.getNFForm(LM, version);
-    }
-
-    public void setListForm(FormEntity form, ObjectEntity object, Version version) {
-        listFormHolder.setForm(new ClassFormEntity(form, object), version);
-    }
 
     /**
      * используются при редактировании свойства даного класса из диалога, т.е. фактически для выбора объекта данного класса

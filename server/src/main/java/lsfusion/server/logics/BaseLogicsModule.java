@@ -632,14 +632,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     }
 
     @IdentityStrongLazy
-    public LAP getDeleteAction(CustomClass cls, boolean oldSession) {
-        LAP res = addDeleteAction(cls, oldSession);
-        String name = "_DELETE" + (oldSession ? "SESSION" : "");
-        makePropertyPublic(res, name, cls.getResolveSet());
-        return res;
-    }
-
-    @IdentityStrongLazy
     public LAP getAddFormAction(CustomClass cls, FormEntity contextForm, ObjectEntity contextObject, FormSessionScope scope, ClassFormEntity form) {
         LAP result = addAddFormAction(cls, contextObject, scope, form);
 
@@ -655,6 +647,24 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         return result;
     }
 
+    @IdentityStrongLazy
+    public LAP getEditFormAction(CustomClass cls, FormSessionScope scope, ClassFormEntity form) {
+        LAP result = addEditFormAction(scope, form);
+
+        String name = "_EDITFORM" + scope + getClassPrefix(cls) + getFormPrefix(form.form);
+        makePropertyPublic(result, name, form.object.getResolveClassSet());
+        return result;
+    }
+
+    @IdentityStrongLazy
+    public LAP getDeleteAction(CustomClass cls, boolean oldSession) {
+        LAP res = addDeleteAction(cls, oldSession);
+
+        String name = "_DELETE" + (oldSession ? "SESSION" : "");
+        makePropertyPublic(res, name, cls.getResolveSet());
+        return res;
+    }
+
     private static String getClassPrefix(CustomClass cls) {
         return "_" + cls.getSID();
     }
@@ -665,14 +675,5 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
 
     private static String getObjectPrefix(ObjectEntity objectEntity) {
         return "_" + objectEntity.getSID();
-    }
-
-    @IdentityStrongLazy
-    public LAP getEditFormAction(CustomClass cls, FormSessionScope scope, ClassFormEntity form) {
-        LAP result = addEditFormAction(scope, form);
-
-        String name = "_EDITFORM" + scope + getClassPrefix(cls) + getFormPrefix(form.form);
-        makePropertyPublic(result, name, form.object.getResolveClassSet());
-        return result;
     }
 }

@@ -602,10 +602,6 @@ public class ScriptingFormEntity {
         findCustomClassForFormSetup(className).setEditForm(form, getObjectEntity(objectID), version);
     }
 
-    public void setAsListForm(String className, String objectID, Version version) throws ScriptingErrorLog.SemanticErrorException {
-        findCustomClassForFormSetup(className).setListForm(form, getObjectEntity(objectID), version);
-    }
-
     public void setModalityType(ModalityType modalityType) {
         if (modalityType != null) {
             form.modalityType = modalityType;
