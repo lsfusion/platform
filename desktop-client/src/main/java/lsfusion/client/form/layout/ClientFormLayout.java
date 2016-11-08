@@ -27,6 +27,8 @@ public class ClientFormLayout extends JPanel {
 
     private Map<KeyStroke, Map<ClientGroupObject, List<KeyBinding>>> bindings = new HashMap<>();
     private Map<ClientContainer, ClientContainerView> containerViews = new HashMap<>();
+    
+    private boolean blocked;
 
     @SuppressWarnings({"FieldCanBeLocal"})
     private FocusListener focusListener;
@@ -255,5 +257,13 @@ public class ClientFormLayout extends JPanel {
         }
 
         return super.processKeyBinding(ks, ke, condition, pressed);
+    }
+
+    public boolean isBlocked() {
+        return blocked;
+    }
+
+    public void setBlocked(boolean blocked) {
+        this.blocked = blocked;
     }
 }

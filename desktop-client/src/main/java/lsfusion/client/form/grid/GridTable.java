@@ -1372,13 +1372,24 @@ public class GridTable extends ClientPropertyTable {
     public void updatePageSizeIfNeeded(boolean checkVisible) {
         Integer currentPageSize = currentGridPreferences.getPageSize();
         int newPageSize = currentPageSize != null ? currentPageSize : (getParent().getHeight() / getRowHeight() + 1);
-        if (newPageSize != pageSize && (!checkVisible || SwingUtils.isRecursivelyVisible(this))) {
+        if (newPageSize != pageSize && (!checkVisible || (SwingUtils.isRecursivelyVisible(this) && !isRecursivelyBlocked(this)))) {
             try {
                 form.changePageSize(groupObject, newPageSize);
                 pageSize = newPageSize;
             } catch (IOException e) {
                 throw new RuntimeException(getString("errors.error.changing.page.size"), e);
             }
+        }
+    }
+
+    public boolean isRecursivelyBlocked(Component component) {
+        if (component == null) {
+            return false;
+        }
+        if (component instanceof ClientFormLayout) {
+            return ((ClientFormLayout) component).isBlocked();
+        } else {
+            return isRecursivelyBlocked(component.getParent());
         }
     }
 

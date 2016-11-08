@@ -36,11 +36,13 @@ public class ClientFormDockable extends ClientDockable {
 
             @Override
             public void blockView() {
+                clientForm.getLayout().setBlocked(true);
                 ClientFormDockable.this.blockView();
             }
 
             @Override
             public void unblockView() {
+                clientForm.getLayout().setBlocked(false);
                 ClientFormDockable.this.unblockView();
             }
 
