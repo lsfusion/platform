@@ -9,19 +9,19 @@ import org.aspectj.lang.reflect.MethodSignature;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 
 public class ProgressStackItem extends AspectStackItem {
     private String message;
     private Integer progress;
     private Integer total;
 
-    // не профайлим @StackProgress - передаём null ProfileObject
     public ProgressStackItem(ProceedingJoinPoint joinPoint) {
-        super(joinPoint, null);
+        super(joinPoint);
     }
 
     public ProgressStackItem(String message, Integer progress, Integer total) {
-        super(null, null);
+        super(null);
         this.message = message;
         this.progress = progress;
         this.total = total;

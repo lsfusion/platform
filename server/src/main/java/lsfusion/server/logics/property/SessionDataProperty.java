@@ -5,25 +5,24 @@ import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.where.cases.CaseExpr;
 import lsfusion.server.data.where.WhereBuilder;
-import lsfusion.server.logics.i18n.LocalizedString;
-import lsfusion.server.session.LocalNestedType;
 import lsfusion.server.session.PropertyChanges;
+
+import java.util.Arrays;
 
 public class SessionDataProperty extends DataProperty {
 
-    public SessionDataProperty(LocalizedString caption, ValueClass value) {
+    public SessionDataProperty(String caption, ValueClass value) {
         this(caption, new ValueClass[0], value);
     }
 
-    public LocalNestedType nestedType;
-    public boolean noNestingInNestedSession; // hack for sessionOwners 
+    public boolean isNested = false;
 
-    public SessionDataProperty(LocalizedString caption, ValueClass[] classes, ValueClass value) {
+    public SessionDataProperty(String caption, ValueClass[] classes, ValueClass value) {
         this(caption, classes, value, false);
     }
 
     private final boolean noClasses;
-    public SessionDataProperty(LocalizedString caption, ValueClass[] classes, ValueClass value, boolean noClasses) {
+    public SessionDataProperty(String caption, ValueClass[] classes, ValueClass value, boolean noClasses) {
         super(caption, classes, value);
 
         this.noClasses = noClasses;

@@ -15,51 +15,50 @@ import lsfusion.server.data.where.Where;
 import java.util.Collection;
 import java.util.Iterator;
 
-// используется только в SPLIT'е, да и при текущих оптимизациях де-факто не используется
 public enum GroupStatType {
     ALL, STAT, NONE;
 
     // группируем по KeyEqual + статистике, or'им Where
-    private <K> ImCol<GroupSplitWhere<K>> groupStat(boolean noWhere, ImCol<GroupSplitWhere<K>>... statJoinsList) {
+    private <K> ImCol<GroupStatWhere<K>> groupStat(boolean noWhere, ImCol<GroupStatWhere<K>>... statJoinsList) {
 
         MMap<Pair<KeyEqual, StatKeys<K>>, Where> mMapWhere = MapFact.mMap(AbstractWhere.<Pair<KeyEqual, StatKeys<K>>>addOr());
-        for(ImCol<GroupSplitWhere<K>> statJoins : statJoinsList)
-            for(GroupSplitWhere<K> statJoin : statJoins)
+        for(ImCol<GroupStatWhere<K>> statJoins : statJoinsList)
+            for(GroupStatWhere<K> statJoin : statJoins)
                 mMapWhere.add(new Pair<>(statJoin.keyEqual,
                         statJoin.stats), noWhere ? Where.TRUE : statJoin.where);
         ImMap<Pair<KeyEqual, StatKeys<K>>, Where> mapWhere = mMapWhere.immutable();
 
-        MExclSet<GroupSplitWhere<K>> mResult = SetFact.mExclSet(mapWhere.size());
+        MExclSet<GroupStatWhere<K>> mResult = SetFact.mExclSet(mapWhere.size());
         for(int i=0,size=mapWhere.size();i<size;i++) { // возвращаем результат
             Pair<KeyEqual, StatKeys<K>> map = mapWhere.getKey(i);
-            mResult.exclAdd(new GroupSplitWhere<>(map.first, map.second, mapWhere.getValue(i)));
+            mResult.exclAdd(new GroupStatWhere<>(map.first, map.second, mapWhere.getValue(i)));
         }
         return mResult.immutable();
     }
 
     // группируем по keyEqual, or'им StatKeys и Where
-    private <K> ImCol<GroupSplitWhere<K>> groupAll(boolean noWhere, ImMap<KeyEqual, Where> keyEquals, ImCol<GroupSplitWhere<K>>... statJoinsList) {
+    private <K> ImCol<GroupStatWhere<K>> groupAll(boolean noWhere, ImMap<KeyEqual, Where> keyEquals, ImCol<GroupStatWhere<K>>... statJoinsList) {
 
         MMap<KeyEqual, Where> mMapWhere = MapFact.mMap(AbstractWhere.<KeyEqual>addOr());
         MMap<KeyEqual, StatKeys<K>> mMapStats = MapFact.mMap(StatKeys.<KeyEqual, K>addOr());
-        for(ImCol<GroupSplitWhere<K>> statJoins : statJoinsList)
-            for(GroupSplitWhere<K> statJoin : statJoins) {
+        for(ImCol<GroupStatWhere<K>> statJoins : statJoinsList)
+            for(GroupStatWhere<K> statJoin : statJoins) {
                 mMapWhere.add(statJoin.keyEqual, noWhere || keyEquals!=null ? Where.TRUE : statJoin.where);
                 mMapStats.add(statJoin.keyEqual, statJoin.stats);
             }
         ImMap<KeyEqual, Where> mapWhere = mMapWhere.immutable();
         ImMap<KeyEqual, StatKeys<K>> mapStats = mMapStats.immutable();
 
-        MExclSet<GroupSplitWhere<K>> mResult = SetFact.mExclSet(mapWhere.size());
+        MExclSet<GroupStatWhere<K>> mResult = SetFact.mExclSet(mapWhere.size());
         for(int i=0,size=mapWhere.size();i<size;i++) { // возвращаем результат
             KeyEqual keys = mapWhere.getKey(i);
-            mResult.exclAdd(new GroupSplitWhere<>(keys, mapStats.get(keys), keyEquals != null ? keyEquals.get(keys) : mapWhere.getValue(i)));
+            mResult.exclAdd(new GroupStatWhere<>(keys, mapStats.get(keys), keyEquals != null ? keyEquals.get(keys) : mapWhere.getValue(i)));
         }
         return mResult.immutable();
 
     }
 
-    public <K> ImCol<GroupSplitWhere<K>> group(ImCol<GroupSplitWhere<K>> statJoins, boolean noWhere, ImMap<KeyEqual, Where> keyEquals) { // statJoins - в NONE группировке
+    public <K> ImCol<GroupStatWhere<K>> group(ImCol<GroupStatWhere<K>> statJoins, boolean noWhere, ImMap<KeyEqual, Where> keyEquals) { // statJoins - в NONE группировке
         switch(this) {
             case NONE:
                 return statJoins;
@@ -71,7 +70,7 @@ public enum GroupStatType {
         throw new RuntimeException("should not be");
     }
     
-    public <K> ImCol<GroupSplitWhere<K>> merge(ImCol<GroupSplitWhere<K>> joins1, ImCol<GroupSplitWhere<K>> joins2, boolean noWhere) { // joins1, joins2 в this группировке
+    public <K> ImCol<GroupStatWhere<K>> merge(ImCol<GroupStatWhere<K>> joins1, ImCol<GroupStatWhere<K>> joins2, boolean noWhere) { // joins1, joins2 в this группировке
         switch(this) {
             case NONE:
                 return joins1.mergeCol(joins2);
@@ -83,30 +82,30 @@ public enum GroupStatType {
         throw new RuntimeException("should not be");
     }
 
-    public <K> ImCol<GroupSplitWhere<K>> merge(ImCol<GroupSplitWhere<K>> mergeJoins, GroupSplitWhere<K> join) { // joins1 в this группировке
+    public <K> ImCol<GroupStatWhere<K>> merge(ImCol<GroupStatWhere<K>> mergeJoins, GroupStatWhere<K> join) { // joins1 в this группировке
         // для оптимизации сделаем for'ом
-        Collection<GroupSplitWhere<K>> result = ListFact.mAddRemoveCol();
+        Collection<GroupStatWhere<K>> result = ListFact.mAddRemoveCol();
         ListFact.addJavaAll(mergeJoins, result);
 
         switch(this) {
             case NONE:
                 break;
             case STAT: {
-                for(Iterator<GroupSplitWhere<K>> i = result.iterator(); i.hasNext();) {
-                    GroupSplitWhere<K> where = i.next();
+                for(Iterator<GroupStatWhere<K>> i=result.iterator();i.hasNext();) {
+                    GroupStatWhere<K> where = i.next();
                     if(where.keyEqual.equals(join.keyEqual) && where.stats.equals(join.stats)) {
                         i.remove();
-                        join = new GroupSplitWhere<>(join.keyEqual, join.stats, join.where.or(where.where));
+                        join = new GroupStatWhere<>(join.keyEqual, join.stats, join.where.or(where.where));
                         break;
                     }
                 }
                 break;
             } case ALL:
-                for(Iterator<GroupSplitWhere<K>> i = result.iterator(); i.hasNext();) {
-                    GroupSplitWhere<K> where = i.next();
+                for(Iterator<GroupStatWhere<K>> i=result.iterator();i.hasNext();) {
+                    GroupStatWhere<K> where = i.next();
                     if(where.keyEqual.equals(join.keyEqual)) {
                         i.remove();
-                        join = new GroupSplitWhere<>(join.keyEqual, join.stats.or(where.stats), join.where.or(where.where));
+                        join = new GroupStatWhere<>(join.keyEqual, join.stats.or(where.stats), join.where.or(where.where));
                         break;
                     }
                 }

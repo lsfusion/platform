@@ -48,10 +48,6 @@ public class GGridUserPreferences {
     public GColumnUserPreferences getColumnPreferences(GPropertyDraw property) {
         return columnUserPreferences.get(property);
     }
-    
-    public Map<GPropertyDraw, GColumnUserPreferences> getColumnUserPreferences() {
-        return columnUserPreferences;
-    }
 
     public Boolean getUserHide(GPropertyDraw property) {
         GColumnUserPreferences prefs = ensureColumnPreferences(property);

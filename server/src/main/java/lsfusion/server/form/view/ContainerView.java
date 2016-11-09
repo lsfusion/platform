@@ -5,12 +5,10 @@ import lsfusion.interop.form.layout.AbstractContainer;
 import lsfusion.interop.form.layout.Alignment;
 import lsfusion.interop.form.layout.ContainerAdder;
 import lsfusion.interop.form.layout.ContainerType;
-import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.form.entity.CalcPropertyObjectEntity;
-import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.mutables.NFFact;
-import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.mutables.interfaces.NFOrderSet;
+import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.serialization.ServerSerializationPool;
 
 import java.io.DataInputStream;
@@ -21,8 +19,8 @@ public class ContainerView extends ComponentView implements AbstractContainer<Co
 
     public NFOrderSet<ComponentView> children = NFFact.orderSet();
 
-    public LocalizedString caption;
-    public LocalizedString description;
+    public String caption;
+    public String description;
 
     private ContainerType type = ContainerType.CONTAINERV;
 
@@ -48,11 +46,11 @@ public class ContainerView extends ComponentView implements AbstractContainer<Co
     }
 
     public void setCaption(String caption) {
-        this.caption = LocalizedString.create(caption);
+        this.caption = caption;
     }
 
     public void setDescription(String description) {
-        this.description = LocalizedString.create(description);
+        this.description = description;
     }
 
     public boolean isTabbedPane() {
@@ -173,8 +171,8 @@ public class ContainerView extends ComponentView implements AbstractContainer<Co
 
         pool.serializeCollection(outStream, getChildrenList(), serializationType);
 
-        pool.writeString(outStream, ThreadLocalContext.localize(caption));
-        pool.writeString(outStream, ThreadLocalContext.localize(description));
+        pool.writeString(outStream, caption);
+        pool.writeString(outStream, description);
 
 //        pool.writeObject(outStream, main);
 
@@ -192,8 +190,8 @@ public class ContainerView extends ComponentView implements AbstractContainer<Co
 
         children = NFFact.finalOrderSet(pool.<ComponentView>deserializeList(inStream));
 
-        caption = LocalizedString.create(pool.readString(inStream));
-        description = LocalizedString.create(pool.readString(inStream));
+        caption = pool.readString(inStream);
+        description = pool.readString(inStream);
 
 //        main = pool.readBoolean(inStream); // пока не будем делать, так как надо клиента обновлять
 
@@ -211,10 +209,5 @@ public class ContainerView extends ComponentView implements AbstractContainer<Co
         
         for(ComponentView child : getChildrenIt())
             child.finalizeAroundInit();
-    }
-
-    @Override
-    public String toString() {
-        return ThreadLocalContext.localize(caption);
     }
 }

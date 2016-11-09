@@ -5,7 +5,7 @@ import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.ParseException;
-import lsfusion.server.logics.i18n.LocalizedString;
+import lsfusion.server.logics.ServerResourceBundle;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -19,9 +19,13 @@ public class LongClass extends IntClass<Long> {
         DataClass.storeClass(instance);
     }
 
-    private LongClass() { super(LocalizedString.create("{classes.long.integer}")); }
+    private LongClass() { super(ServerResourceBundle.getString("classes.long.integer")); }
 
     public int getPreferredWidth() { return 65; }
+
+    public String toString() {
+        return ServerResourceBundle.getString("classes.big.integer");
+    }
 
     public Class getReportJavaClass() {
         return Long.class;

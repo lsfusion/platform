@@ -68,8 +68,7 @@ final class FormDockable {
             public void unblock() {
                 tabWidget.setBlocked(false);
                 contentWidget.setBlocked(false);
-                if(contentWidget.isAttached())
-                    getFormsController().select(contentWidget);
+                getFormsController().select(contentWidget);
             }
 
             @Override

@@ -55,19 +55,4 @@ public class DistinctKeys<K> extends WrapMap<K, Stat> {
         return new DistinctKeys<>(translator.translateExprKeys(distinct.map));
     }
 
-    public DistinctKeys<K> min(final DistinctKeys<K> distinctKeys) {
-        return new DistinctKeys<>(mapValues(new GetKeyValue<Stat, K, Stat>() {
-            public Stat getMapValue(K key, Stat value) {
-                return value.min(distinctKeys.get(key));
-            }
-        }));
-    }
-
-    public DistinctKeys<K> min(final Stat stat) {
-        return new DistinctKeys<>(mapValues(new GetKeyValue<Stat, K, Stat>() {
-            public Stat getMapValue(K key, Stat value) {
-                return value.min(stat);
-            }
-        }));
-    }
 }

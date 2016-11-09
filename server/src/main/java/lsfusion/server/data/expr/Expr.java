@@ -34,8 +34,8 @@ import lsfusion.server.data.query.AbstractSourceJoin;
 import lsfusion.server.data.query.CompileOptions;
 import lsfusion.server.data.query.Query;
 import lsfusion.server.data.sql.PostgreDataAdapter;
-import lsfusion.server.data.translator.PartialKeyExprTranslator;
-import lsfusion.server.data.translator.ExprTranslator;
+import lsfusion.server.data.translator.PartialQueryTranslator;
+import lsfusion.server.data.translator.QueryTranslator;
 import lsfusion.server.data.type.ClassReader;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
@@ -195,9 +195,7 @@ abstract public class Expr extends AbstractSourceJoin<Expr> {
         return ifElse(getWhere(),expr);
     }
 
-    public Expr translateExpr(ExprTranslator translator) {
-        return super.translateExpr(translator);
-    }
+    public abstract Expr translateQuery(QueryTranslator translator);
 
     public static Where getWhere(ImList<? extends Expr> list) {
         return getWhere(list.getCol());
@@ -232,7 +230,7 @@ abstract public class Expr extends AbstractSourceJoin<Expr> {
         }, keyRest);
 
         new Query<>(keyRest.result.toRevMap(),
-                translateExpr(new PartialKeyExprTranslator(keyValues.mapValues(new GetValue<Expr, KeyExpr>() {
+                translateQuery(new PartialQueryTranslator(keyValues.mapValues(new GetValue<Expr, KeyExpr>() {
                     public Expr getMapValue(KeyExpr key) {
                         return ((DataClass) key.getType(getWhere())).getDefaultExpr();
                     }
@@ -244,7 +242,7 @@ abstract public class Expr extends AbstractSourceJoin<Expr> {
         MExclMap<K, Expr> mMapExprValues = MapFact.<K, Expr>mExclMap(mapExprs.size());
         for(int i=0,size=mapExprs.size();i<size;i++) {
             Expr expr = mapExprs.getValue(i);
-            ObjectValue objectValue = expr.getObjectValue(env);
+            ObjectValue objectValue = expr.getObjectValue();
             if(objectValue!=null)
                 mMapValues.exclAdd(mapExprs.getKey(i), objectValue);
             else
@@ -265,7 +263,7 @@ abstract public class Expr extends AbstractSourceJoin<Expr> {
 
     public abstract Set<BaseExpr> getBaseExprs();
     
-    public ObjectValue getObjectValue(QueryEnvironment env) {
+    public ObjectValue getObjectValue() {
         return null;
     }
 

@@ -5,7 +5,6 @@ import lsfusion.base.col.SetFact;
 import lsfusion.interop.action.AsyncGetRemoteChangesClientAction;
 import lsfusion.interop.action.UpdateEditValueClientAction;
 import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.CalcPropertyMapImplement;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.PropertyInterface;
@@ -19,7 +18,7 @@ import static lsfusion.base.BaseUtils.serializeObject;
 
 public class AsyncUpdateEditValueActionProperty extends SystemActionProperty {
 
-    public AsyncUpdateEditValueActionProperty(LocalizedString caption) {
+    public AsyncUpdateEditValueActionProperty(String caption) {
         super(caption, SetFact.singletonOrder(new PropertyInterface()));
     }
 

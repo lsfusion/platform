@@ -12,14 +12,15 @@ import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.form.entity.drilldown.DrillDownFormEntity;
 import lsfusion.server.form.entity.drilldown.SumUnionDrillDownFormEntity;
 import lsfusion.server.logics.LogicsModule;
-import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.infer.ExClassSet;
 import lsfusion.server.logics.property.infer.InferType;
 import lsfusion.server.session.PropertyChanges;
 
+import static lsfusion.server.logics.ServerResourceBundle.getString;
+
 public class SumUnionProperty extends IncrementUnionProperty {
 
-    public SumUnionProperty(LocalizedString caption, ImOrderSet<Interface> interfaces, ImMap<CalcPropertyInterfaceImplement<Interface>, Integer> operands) {
+    public SumUnionProperty(String caption, ImOrderSet<Interface> interfaces, ImMap<CalcPropertyInterfaceImplement<Interface>, Integer> operands) {
         super(caption, interfaces);
         this.operands = operands;
 
@@ -71,7 +72,7 @@ public class SumUnionProperty extends IncrementUnionProperty {
     @Override
     public DrillDownFormEntity createDrillDownForm(LogicsModule LM, String canonicalName) {
         return new SumUnionDrillDownFormEntity(
-                canonicalName, LocalizedString.create("{logics.property.drilldown.form.sum.union}"), this, LM
+                canonicalName, getString("logics.property.drilldown.form.sum.union"), this, LM
         );
     }
 

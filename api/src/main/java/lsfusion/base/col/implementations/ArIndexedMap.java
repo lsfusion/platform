@@ -1,7 +1,6 @@
 package lsfusion.base.col.implementations;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.implementations.abs.AMRevMap;
 import lsfusion.base.col.implementations.order.ArOrderIndexedMap;
@@ -28,7 +27,6 @@ public class ArIndexedMap<K, V> extends AMRevMap<K, V> {
         this.size = size;
         this.keys = keys;
         this.values = values;
-        assert keys.length == values.length;
     }
 
     public ArIndexedMap(ArIndexedMap<K, V> map, boolean clone) {
@@ -58,8 +56,7 @@ public class ArIndexedMap<K, V> extends AMRevMap<K, V> {
     public ArIndexedMap(int size, Object[] keys) {
         this.size = size;
         this.keys = keys;
-        this.values = new Object[keys.length];
-        assert keys.length == values.length;
+        this.values = new Object[size];
     }
     public ArIndexedMap(ArIndexedMap<K, ?> map) {
         this(map.size, map.keys);
@@ -211,7 +208,7 @@ public class ArIndexedMap<K, V> extends AMRevMap<K, V> {
                 if(j<mgSize)
                     jHash = mgKeys[j].hashCode();
             } else if(iHash == jHash) {
-                if(!add.exclusive() && (keys[i]==mgKeys[j] || keys[i].equals(mgKeys[j]))) { // самый частый случай
+                if(keys[i]==mgKeys[j] || keys[i].equals(mgKeys[j])) { // самый частый случай
                     V addedValue = add.addValue((K)keys[i], (V)values[i], (V)mgValues[j]);
                     if(add.stopWhenNull() && addedValue==null)
                         return null;
@@ -241,16 +238,14 @@ public class ArIndexedMap<K, V> extends AMRevMap<K, V> {
                     while(true) { // бежим по первому массиву пока не закончится хэш и ищем соответствия во втором массиве
                         K key = (K)keys[ni];
                         V addedValue = (V)values[ni];
-                        if(!add.exclusive()) {
-                            for (int kj = j; kj < nj; kj++)
-                                if (!found[kj - j] && (key == mgKeys[kj] || key.equals(mgKeys[kj]))) {
-                                    found[kj - j] = true;
-                                    addedValue = add.addValue(key, addedValue, (V) mgValues[kj]);
-                                    if (add.stopWhenNull() && addedValue == null)
-                                        return null;
-                                    break;
-                                }
-                        }
+                        for(int kj = j; kj < nj; kj++)
+                            if(!found[kj-j] && (key == mgKeys[kj] || key.equals(mgKeys[kj]))) {
+                                found[kj-j] = true;
+                                addedValue = add.addValue(key, addedValue, (V)mgValues[kj]);
+                                if(add.stopWhenNull() && addedValue==null)
+                                    return null;
+                                break;
+                            }
 
                         rKeys[r] = key;
                         rValues[r] = addedValue;
@@ -318,16 +313,11 @@ public class ArIndexedMap<K, V> extends AMRevMap<K, V> {
 
         if(add.reversed() && size < map.size()) return ((ImMap<K, V>)map).merge(this, add.reverse());
 
-        ImMap<K, V> result;
+        ArIndexedMap<K, V> result;
         if(map.size() <= SetFact.useIndexedAddInsteadOfMerge) {
-            ArIndexedMap<K, V> mResult = new ArIndexedMap<>(this, add);
-            if(add.exclusive())
-                mResult.exclAddAll(map);
-            else {
-                if (!mResult.addAll(map))
-                    return null;
-            }
-            result = mResult.immutable();
+            result = new ArIndexedMap<>(this, add);
+            if(!result.addAll(map))
+                result = null;
         } else {
             if(map instanceof ArIndexedMap) {
                 ArIndexedMap<K, V> arMap = (ArIndexedMap<K, V>) map;
@@ -347,11 +337,6 @@ public class ArIndexedMap<K, V> extends AMRevMap<K, V> {
 
 //        assert BaseUtils.hashEquals(result, super.merge(map, add));
         return result;
-    }
-
-    @Override
-    public ImMap<K, V> addExcl(ImMap<? extends K, ? extends V> map) {
-        return merge(map, MapFact.<K, V>exclusive());
     }
 
     @Override

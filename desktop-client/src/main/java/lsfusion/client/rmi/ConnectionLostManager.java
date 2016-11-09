@@ -82,7 +82,7 @@ public class ConnectionLostManager {
 
                         currentFrame.setLocked(false);
 
-                        blockDialog.hideDialog();
+                        blockDialog.dispose();
 
                         blockDialog = null;
                     }
@@ -124,7 +124,7 @@ public class ConnectionLostManager {
                     }
                 }
             });
-            blockDialog.showDialog();
+            blockDialog.setVisible(true);
         }
     }
 
@@ -227,13 +227,12 @@ public class ConnectionLostManager {
         currentFrame = null;
 
         if (blockDialog != null) {
-            blockDialog.hideDialog();
+            blockDialog.dispose();
             blockDialog = null;
         }
     }
 
     public static class BlockDialog extends JDialog {
-        private Timer showButtonsTimer;
         private JButton btnExit;
         private JButton btnCancel;
         private JButton btnReconnect;
@@ -254,11 +253,8 @@ public class ConnectionLostManager {
             setLocationRelativeTo(owner);
 
             btnExit = new JButton(getString("rmi.connectionlost.exit"));
-            btnExit.setEnabled(false);
             btnCancel = new JButton(getString("rmi.connectionlost.relogin"));
-            btnCancel.setEnabled(false);
             btnReconnect = new JButton(getString("rmi.connectionlost.reconnect"));
-            btnReconnect.setEnabled(false);
 
             lbMessage = new JLabel();
 
@@ -297,24 +293,6 @@ public class ConnectionLostManager {
             setupDialogForDevMode();
 
             setFocusableWindowState(false);
-        }
-
-        public void showDialog() {
-            showButtonsTimer = new Timer(5000, new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    btnExit.setEnabled(true);
-                    btnCancel.setEnabled(true);
-                    btnReconnect.setEnabled(true);
-                }
-            });
-            showButtonsTimer.start();
-            setVisible(true);
-        }
-
-        public void hideDialog() {
-            showButtonsTimer.stop();
-            dispose();
         }
 
         private void setupDialogForDevMode() {

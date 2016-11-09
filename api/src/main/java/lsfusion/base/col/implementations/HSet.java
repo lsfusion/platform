@@ -62,15 +62,6 @@ public class HSet<T> extends AMSet<T> {
         return false;
     }
 
-    @Override
-    public T getIdentIncl(T element) {
-        for(int i= MapFact.colHash(element.hashCode()) & (table.length-1);table[i]!=null;i=(i==table.length-1?0:i+1))
-            if(BaseUtils.hashEquals(table[i], element))
-                return (T) table[i];
-        assert false;
-        return null;
-    }
-
     /*    public HSet(HSet<T>[] sets) {
         HSet<T> minSet = sets[0];
         for(int i=1;i<sets.length;i++)

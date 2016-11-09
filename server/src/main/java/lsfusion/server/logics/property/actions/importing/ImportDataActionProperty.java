@@ -88,11 +88,7 @@ public abstract class ImportDataActionProperty extends ScriptingActionProperty {
     public static ImportDataActionProperty createProperty(ValueClass valueClass, ImportSourceFormat format, ScriptingLogicsModule LM, List<String> ids, List<LCP> properties) {
         if (format == ImportSourceFormat.DBF) {
             for (int i = 0; i < ids.size(); ++i) { // для DBF делаем case insensitive
-                String id = ids.get(i);
-                if(id != null)
-                    ids.set(i, id.toLowerCase());
-                else
-                    throw new RuntimeException("Import error: field for property " + properties.get(i) + " not specified");
+                ids.set(i, ids.get(i).toLowerCase());
             }
             return new ImportDBFDataActionProperty(valueClass, LM, ids, properties);
         } else if (format == ImportSourceFormat.JDBC) {
@@ -201,10 +197,7 @@ public abstract class ImportDataActionProperty extends ScriptingActionProperty {
                 if (desiredColumn != null) {
                     currentIndex = desiredColumn;
                 } else {
-                    if(ignoreIncorrectColumns())
-                        currentIndex = previousIndex + 1;
-                    else
-                        throw new RuntimeException("Import error: column " + id + " not found");
+                    currentIndex = previousIndex + 1;
                 }
             }
             columns.add(currentIndex);
@@ -219,8 +212,4 @@ public abstract class ImportDataActionProperty extends ScriptingActionProperty {
     }
 
     public abstract ImportIterator getIterator(byte[] file) throws IOException, ParseException, xBaseJException, JDOMException, ClassNotFoundException;
-
-    protected boolean ignoreIncorrectColumns() {
-        return true;
-    }
 }

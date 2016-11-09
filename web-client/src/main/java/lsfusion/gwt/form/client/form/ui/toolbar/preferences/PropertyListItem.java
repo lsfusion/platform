@@ -9,7 +9,6 @@ public class PropertyListItem {
     private String userCaption;
     private String userPattern;
     Boolean inGrid; // false - panel, null - hidden through showIf
-    private boolean visibleList;
 
     public PropertyListItem(GPropertyDraw property, String userCaption, String userPattern, Boolean inGrid) {
         this.property = property;
@@ -34,17 +33,11 @@ public class PropertyListItem {
         this.userPattern = userPattern;
     }
 
-    public void setVisible(boolean visibleList) {
-        this.visibleList = visibleList;
-    }
-
     @Override
     public String toString() {
         String result = getUserCaption(false);
         if (inGrid == null) {
-            if (visibleList) {
-                result += " (" + messages.formGridPreferencesPropertyNotShown() + ")";
-            }
+            result += " (" + messages.formGridPreferencesPropertyNotShown() + ")";
         } else if (!inGrid) {
             result += " (" + messages.formGridPreferencesPropertyInPanel() + ")";
         }

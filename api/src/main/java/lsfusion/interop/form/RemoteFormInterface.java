@@ -103,11 +103,9 @@ public interface RemoteFormInterface extends PendingRemoteInterface {
 
     // пользовательские настройки
 
-    ServerResponse saveUserPreferences(long requestIndex, long lastReceivedRequestIndex, GroupObjectUserPreferences preferences, boolean forAllUsers, boolean completeOverride, String[] hiddenProps) throws RemoteException;
+    ServerResponse saveUserPreferences(long requestIndex, long lastReceivedRequestIndex, GroupObjectUserPreferences preferences, boolean forAllUsers, boolean completeOverride) throws RemoteException;
 
     FormUserPreferences getUserPreferences() throws RemoteException;
-    
-    ServerResponse refreshUPHiddenProperties(long requestIndex, long lastReceivedRequestIndex, String groupObjectSID, String[] propSids) throws RemoteException;
     
     ColorPreferences getColorPreferences() throws RemoteException;
 }

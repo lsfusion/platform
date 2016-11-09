@@ -8,7 +8,6 @@ import lsfusion.server.form.instance.FormCloseType;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.NullValue;
 import lsfusion.server.logics.ObjectValue;
-import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.ActionPropertyMapImplement;
 import lsfusion.server.logics.property.AnyValuePropertyHolder;
@@ -30,7 +29,7 @@ public class RequestUserInputActionProperty extends AroundAspectActionProperty {
     private final ConcreteCustomClass formResultClass;
     private final LCP formResultProperty;
 
-    public <I extends PropertyInterface> RequestUserInputActionProperty(LocalizedString caption, ImOrderSet<I> innerInterfaces, ActionPropertyMapImplement<?, I> action,
+    public <I extends PropertyInterface> RequestUserInputActionProperty(String caption, ImOrderSet<I> innerInterfaces, ActionPropertyMapImplement<?, I> action,
                                                                         Type requestValueType, String chosenKey,
                                                                         LCP requestCanceledProperty, AnyValuePropertyHolder requestedValueProperty,
                                                                         AnyValuePropertyHolder chosenValueProperty, ConcreteCustomClass formResultClass, LCP formResultProperty) {

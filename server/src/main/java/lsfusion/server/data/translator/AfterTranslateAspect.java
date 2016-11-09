@@ -1,25 +1,26 @@
 package lsfusion.server.data.translator;
 
-import lsfusion.base.col.lru.LRUWVWSMap;
-import lsfusion.server.data.expr.KeyExpr;
-import lsfusion.server.data.expr.NullableExpr;
-import lsfusion.server.data.expr.query.StatType;
-import org.aspectj.lang.ProceedingJoinPoint;
-import org.aspectj.lang.annotation.Around;
-import org.aspectj.lang.annotation.Aspect;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.base.col.lru.LRUWVWSMap;
 import lsfusion.server.caches.AbstractTranslateContext;
 import lsfusion.server.caches.CacheAspect;
 import lsfusion.server.caches.CacheStats;
+import lsfusion.server.caches.ParamExpr;
 import lsfusion.server.data.expr.Expr;
+import lsfusion.server.data.expr.NotNullExpr;
+import lsfusion.server.data.query.AbstractSourceJoin;
 import lsfusion.server.data.query.IQuery;
+import lsfusion.server.data.query.SourceJoin;
 import lsfusion.server.data.query.innerjoins.GroupStatType;
 import lsfusion.server.data.query.stat.StatKeys;
 import lsfusion.server.data.where.AbstractWhere;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.MeanClassWheres;
 import lsfusion.server.session.PropertyChange;
+import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.annotation.Around;
+import org.aspectj.lang.annotation.Aspect;
 
 
 // аспект который заодно транслирует ManualLazy операции
@@ -36,7 +37,7 @@ public class AfterTranslateAspect {
         MapTranslate translator = fromPair.getLRUKey();
         if(translator!=null) {
             Where fromResult = fromPair.getLRUValue().getWhere();
-            if(expr instanceof NullableExpr && ((NullableExpr) expr).hasNotNull()) { // если результат использует сам объект, то вычисляем а затем в явную проставляем транслятор от основного объекта (если тот был посчитан или всегда)
+            if(expr instanceof NotNullExpr && ((NotNullExpr) expr).hasNotNull()) { // если результат использует сам объект, то вычисляем а затем в явную проставляем транслятор от основного объекта (если тот был посчитан или всегда)
                 AbstractTranslateContext calcObject = (AbstractTranslateContext) thisJoinPoint.proceed();
                 calcObject.initTranslate(fromResult, translator);
                 return calcObject;
@@ -103,8 +104,8 @@ public class AfterTranslateAspect {
             return thisJoinPoint.proceed();
     }
 
-    @Around("execution(* lsfusion.server.data.where.AbstractWhere.getFullStatKeys(lsfusion.base.col.interfaces.immutable.ImSet, lsfusion.server.data.expr.query.StatType)) && target(where) && args(groups, type)")
-    public Object callFullStatKeys(ProceedingJoinPoint thisJoinPoint, AbstractWhere where, ImSet groups, StatType type) throws Throwable {
+    @Around("execution(* lsfusion.server.data.where.AbstractWhere.getFullStatKeys(lsfusion.base.col.interfaces.immutable.ImSet)) && target(where) && args(groups)")
+    public Object callFullStatKeys(ProceedingJoinPoint thisJoinPoint, AbstractWhere where, ImSet groups) throws Throwable {
 //        Where from = where.getFrom();
 //        MapTranslate translator = where.getTranslator();
 //        if(from!=null && translator!=null)
@@ -112,23 +113,7 @@ public class AfterTranslateAspect {
         LRUWVWSMap.Value<MapTranslate, Where> fromPair = where.getFromValue();
         MapTranslate translator = fromPair.getLRUKey();
         if(translator!=null)
-            return StatKeys.translateOuter(fromPair.getLRUValue().getFullStatKeys(translator.reverseMap().translateDirect(groups), type), translator);
-        else
-            return thisJoinPoint.proceed();
-    }
-
-    @Around("execution(* lsfusion.server.data.where.AbstractWhere.getPushedStatKeys(lsfusion.base.col.interfaces.immutable.ImSet, lsfusion.server.data.expr.query.StatType, lsfusion.server.data.query.stat.StatKeys)) && target(where) && args(groups, type, pushedStatKeys)")
-    public Object callPushedStatKeys(ProceedingJoinPoint thisJoinPoint, AbstractWhere where, ImSet groups, StatType type, StatKeys pushedStatKeys) throws Throwable {
-//        Where from = where.getFrom();
-//        MapTranslate translator = where.getTranslator();
-//        if(from!=null && translator!=null)
-//            return StatKeys.translateOuter(from.getFullStatKeys(translator.reverseMap().translateDirect(groups)), translator);
-        LRUWVWSMap.Value<MapTranslate, Where> fromPair = where.getFromValue();
-        MapTranslate translator = fromPair.getLRUKey();
-        if(translator!=null) {
-            MapTranslate revTranslator = translator.reverseMap();
-            return StatKeys.translateOuter(fromPair.getLRUValue().getPushedStatKeys(revTranslator.translateDirect(groups), type, pushedStatKeys != null ? StatKeys.translateOuter((StatKeys<KeyExpr>)pushedStatKeys, revTranslator) : null), translator);
-        }
+            return StatKeys.translateOuter(fromPair.getLRUValue().getFullStatKeys(translator.reverseMap().translateDirect(groups)), translator);
         else
             return thisJoinPoint.proceed();
     }
@@ -152,19 +137,28 @@ public class AfterTranslateAspect {
             return thisJoinPoint.proceed();
     }
 
-    @Around("execution(lsfusion.base.Pair lsfusion.server.data.where.AbstractWhere.getWhereJoins(boolean, lsfusion.base.col.interfaces.immutable.ImSet, lsfusion.server.data.expr.query.StatType, lsfusion.base.col.interfaces.immutable.ImOrderSet)) && target(where) && args(tryExclusive,keepStat,statType,orderTop)")
-    public Object callGetWhereJoins(ProceedingJoinPoint thisJoinPoint, AbstractWhere where, boolean tryExclusive, ImSet keepStat, StatType statType, ImOrderSet orderTop) throws Throwable {
+    @Around("execution(lsfusion.base.Pair lsfusion.server.data.where.AbstractWhere.getWhereJoins(boolean, lsfusion.base.col.interfaces.immutable.ImSet, lsfusion.base.col.interfaces.immutable.ImOrderSet)) && target(where) && args(tryExclusive,keepStat,orderTop)")
+    public Object callGetWhereJoins(ProceedingJoinPoint thisJoinPoint, AbstractWhere where, boolean tryExclusive, ImSet keepStat, ImOrderSet orderTop) throws Throwable {
         if(keepStat.equals(where.getOuterKeys()) && orderTop.isEmpty())
             return CacheAspect.callMethod(where, thisJoinPoint, CacheAspect.Type.SIMPLE, CacheStats.CacheType.OTHER);
         return thisJoinPoint.proceed();
     }
-//    уже не используется
-//    @Around("execution(lsfusion.base.col.interfaces.immutable.ImCol lsfusion.server.data.where.AbstractWhere.getStatJoins(boolean, lsfusion.base.col.interfaces.immutable.ImSet, lsfusion.server.data.expr.query.StatType, lsfusion.server.data.query.innerjoins.GroupStatType, boolean)) && target(where) && args(exclusive,keepStat,statType,type,noWhere)")
-//    public Object callGetStatJoins(ProceedingJoinPoint thisJoinPoint, AbstractWhere where, boolean exclusive, ImSet keepStat, StatType statType, GroupStatType type, boolean noWhere) throws Throwable {
-//        if(keepStat.equals(where.getOuterKeys()))
-//            return CacheAspect.callMethod(where, thisJoinPoint, CacheAspect.Type.SIMPLE, CacheStats.CacheType.OTHER);
-//        return thisJoinPoint.proceed();
-//    }
+
+    @Around("execution(lsfusion.base.col.interfaces.immutable.ImCol lsfusion.server.data.where.AbstractWhere.getStatJoins(boolean, lsfusion.base.col.interfaces.immutable.ImSet, lsfusion.server.data.query.innerjoins.GroupStatType, boolean)) && target(where) && args(exclusive,keepStat,type,noWhere)")
+    public Object callGetStatJoins(ProceedingJoinPoint thisJoinPoint, AbstractWhere where, boolean exclusive, ImSet keepStat, GroupStatType type, boolean noWhere) throws Throwable {
+        if(keepStat.equals(where.getOuterKeys()))
+            return CacheAspect.callMethod(where, thisJoinPoint, CacheAspect.Type.SIMPLE, CacheStats.CacheType.OTHER);
+        return thisJoinPoint.proceed();
+    }
+
+    @Around("execution(* lsfusion.server.data.query.AbstractSourceJoin.translateQuery(lsfusion.server.data.translator.QueryTranslator)) && target(toTranslate) && args(translator)")
+    public Object callTranslateQuery(ProceedingJoinPoint thisJoinPoint, AbstractSourceJoin toTranslate, PartialQueryTranslator translator) throws Throwable {
+        ImSet<ParamExpr> keys = ((SourceJoin<?>)toTranslate).getOuterKeys();
+        if(keys.disjoint(translator.keys.keys()))
+            return toTranslate;
+        else
+            return thisJoinPoint.proceed();
+    }
 
 /*    @Around("execution(lsfusion.server.data.where.classes.ClassExprWhere lsfusion.server.data.where.classes.MeanClassWheres.calculateClassWhere()) && target(wheres)")
     public Object callCalculateMeanClassWhere(ProceedingJoinPoint thisJoinPoint, MeanClassWheres wheres) throws Throwable {

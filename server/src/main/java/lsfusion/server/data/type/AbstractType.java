@@ -1,6 +1,5 @@
 package lsfusion.server.data.type;
 
-import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.data.SQLSession;
 import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;

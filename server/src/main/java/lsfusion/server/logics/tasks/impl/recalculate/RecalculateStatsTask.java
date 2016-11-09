@@ -64,7 +64,7 @@ public class RecalculateStatsTask extends GroupPropertiesSingleTask<Object> { //
     protected List<Object> getElements() {
         checkContext();
         List<Object> elements = new ArrayList<>();
-        elements.addAll(getBL().LM.tableFactory.getImplementTables(getDbManager().getNotRecalculateStatsTableSet()).toJavaSet());
+        elements.addAll(getBL().LM.tableFactory.getImplementTables().toJavaSet());
         elements.addAll(getBL().LM.baseClass.getUpObjectClassFields().values().toJavaCol());
         return elements;
     }
@@ -88,7 +88,7 @@ public class RecalculateStatsTask extends GroupPropertiesSingleTask<Object> { //
     @Override
     protected long getTaskComplexity(Object element) {
         if (element instanceof ImplementTable) {
-            Stat stat = ((ImplementTable) element).getStatRows();
+            Stat stat = ((ImplementTable) element).getStatKeys().rows;
             return stat == null ? Stat.MIN.getWeight() : stat.getWeight();
         } else if (element instanceof ObjectValueClassSet)
             return ((ObjectValueClassSet) element).getCount();

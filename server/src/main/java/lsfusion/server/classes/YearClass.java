@@ -1,7 +1,7 @@
 package lsfusion.server.classes;
 
 import lsfusion.interop.Data;
-import lsfusion.server.logics.i18n.LocalizedString;
+import lsfusion.server.logics.ServerResourceBundle;
 
 import java.util.Calendar;
 
@@ -13,7 +13,12 @@ public class YearClass extends IntegerClass {
         DataClass.storeClass(instance);
     }
 
-    private YearClass() { caption = LocalizedString.create("{classes.year}"); }
+    private YearClass() { caption = ServerResourceBundle.getString("classes.year"); }
+
+    @Override
+    public String toString() {
+        return ServerResourceBundle.getString("classes.year");
+    }
 
     @Override
     public Object getDefaultValue() {

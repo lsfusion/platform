@@ -10,7 +10,7 @@ import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.entity.ObjectEntity;
 import lsfusion.server.form.entity.PropertyDrawEntity;
-import lsfusion.server.form.view.PropertyDrawView;
+import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.PropertyInterface;
 
@@ -21,8 +21,8 @@ public class FormAddObjectActionProperty extends AddObjectActionProperty<Propert
     
     private final ObjectEntity objectEntity;
 
-    public FormAddObjectActionProperty(CustomClass customClass, final ObjectEntity objectEntity) {
-        super(customClass, null, true);
+    public FormAddObjectActionProperty(CustomClass customClass, ObjectEntity objectEntity) {
+        super(customClass, false, null);
 
         this.objectEntity = objectEntity;
     }
@@ -31,6 +31,13 @@ public class FormAddObjectActionProperty extends AddObjectActionProperty<Propert
     protected void executeRead(ExecutionContext<PropertyInterface> context, ImRevMap<PropertyInterface, KeyExpr> innerKeys, ImMap<PropertyInterface, Expr> innerExprs, ConcreteCustomClass readClass) throws SQLException, SQLHandledException {
         assert where==null;
 
-        context.formAddObject(objectEntity, readClass);
+        context.addFormObject(objectEntity, readClass);
+    }
+
+    @Override
+    public void proceedDefaultDraw(PropertyDrawEntity<PropertyInterface> entity, FormEntity<?> form, Version version) {
+        super.proceedDefaultDraw(entity, form, version);
+        
+        entity.toDraw = objectEntity.groupTo; 
     }
 }

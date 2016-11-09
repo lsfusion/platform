@@ -14,6 +14,7 @@ import lsfusion.server.classes.DataClass;
 import lsfusion.server.data.Value;
 import lsfusion.server.data.expr.*;
 import lsfusion.server.data.expr.where.pull.StatPullWheres;
+import lsfusion.server.data.query.CompileSource;
 import lsfusion.server.data.query.InnerExprFollows;
 import lsfusion.server.data.query.Query;
 import lsfusion.server.data.query.stat.KeyStat;
@@ -39,8 +40,8 @@ public abstract class QueryExpr<K extends Expr,I extends OuterContext<I>, J exte
     public Stat getTypeStat(KeyStat keyStat, boolean forJoin) {
         return getInner().getTypeStat(forJoin);
     }
-    public PropStat getInnerStatValue(KeyStat keyStat, StatType type) {
-        return new PropStat(getInner().getStatValue(type));
+    public PropStat getStatValue(KeyStat keyStat) {
+        return new PropStat(getInner().getStatValue());
     }
     @Override
     public ImSet<Value> getValues() {
@@ -176,11 +177,11 @@ public abstract class QueryExpr<K extends Expr,I extends OuterContext<I>, J exte
             return getMainExpr().getTypeStat(getFullWhere(), forJoin);
         }
         @IdentityLazy
-        protected Stat getStatValue(StatType type) {
+        protected Stat getStatValue() {
             if(isSelect()) { // assert что expr учавствует в where
-                return new StatPullWheres(type).proceed(getFullWhere(), getMainExpr());
+                return new StatPullWheres().proceed(getFullWhere(), getMainExpr());
             } else
-                return thisObj.getAdjustStatValue(type, Stat.AGGR); // возможно избыточно но рушит assertion'ы на min
+                return Stat.AGGR;
         }
         protected abstract Expr getMainExpr();
         protected abstract Where getFullWhere();

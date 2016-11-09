@@ -43,15 +43,15 @@ public abstract class LP<T extends PropertyInterface, P extends Property<T>> {
     }
 
     public void setMinimumWidth(int charWidth) {
-        property.drawOptions.setMinimumCharWidth(charWidth);
+        property.minimumCharWidth = charWidth;
     }
 
     public void setPreferredWidth(int charWidth) {
-        property.drawOptions.setPreferredCharWidth(charWidth);
+        property.preferredCharWidth = charWidth;
     }
 
     public void setMaximumWidth(int charWidth) {
-        property.drawOptions.setMaximumCharWidth(charWidth);
+        property.maximumCharWidth = charWidth;
     }
 
     public <U> ImMap<T, U> getMap(final U... mapping) {
@@ -107,63 +107,59 @@ public abstract class LP<T extends PropertyInterface, P extends Property<T>> {
     */
     
     public void setMinimumCharWidth(int charWidth) {
-        property.drawOptions.setMinimumCharWidth(charWidth);
+        property.minimumCharWidth = charWidth;
     }
 
     public void setPreferredCharWidth(int charWidth) {
-        property.drawOptions.setPreferredCharWidth(charWidth);
+        property.preferredCharWidth = charWidth;
     }
 
     public void setMaximumCharWidth(int charWidth) {
-        property.drawOptions.setMaximumCharWidth(charWidth);
+        property.maximumCharWidth = charWidth;
     }
 
     public void setFixedCharWidth(int charWidth) {
-        property.drawOptions.setFixedCharWidth(charWidth);
+        property.setFixedCharWidth(charWidth);
     }
 
     public void setImage(String name) {
-        property.drawOptions.setImage(name);
+        property.setImage(name);
     }
 
     public void setEditKey(KeyStroke editKey) {
-        property.drawOptions.setEditKey(editKey);
+        property.editKey = editKey;
     }
 
     public void setShowEditKey(boolean showEditKey) {
-        property.drawOptions.setShowEditKey(showEditKey);
-    }
-    
-    public void addProcessor(Property.DefaultProcessor processor) {
-        property.drawOptions.addProcessor(processor);
+        property.showEditKey = showEditKey;
     }
 
     public void setRegexp(String regexp) {
-        property.drawOptions.setRegexp(regexp);
+        property.regexp = regexp;
     }
 
     public void setRegexpMessage(String regexpMessage) {
-        property.drawOptions.setRegexpMessage(regexpMessage);
+        property.regexpMessage = regexpMessage;
     }
 
     public void setEchoSymbols(boolean echoSymbols) {
-        property.drawOptions.setEchoSymbols(echoSymbols);
+        property.echoSymbols = echoSymbols;
     }
 
     public void setDrawToToolbar(boolean drawToToolbar) {
-        property.drawOptions.setDrawToToolbar(drawToToolbar);
+        property.drawToToolbar = drawToToolbar;
     }
 
     public void setShouldBeLast(boolean shouldBeLast) {
-        property.drawOptions.setShouldBeLast(shouldBeLast);
+        property.shouldBeLast = shouldBeLast;
     }
 
     public void setForceViewType(ClassViewType forceViewType) {
-        property.drawOptions.setForceViewType(forceViewType);
+        property.forceViewType = forceViewType;
     }
 
     public void setAskConfirm(boolean askConfirm) {
-        property.drawOptions.setAskConfirm(askConfirm);
+        property.askConfirm = askConfirm;
     }
 
     public String getCreationScript() {

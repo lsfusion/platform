@@ -26,10 +26,4 @@ public class Data {
     public final static byte TIME = 22;
     public final static byte COLOR = 23;
     public final static byte VARSTRING = 24;
-    public final static byte PDFLINK = 25;
-    public final static byte IMAGELINK = 26;
-    public final static byte WORDLINK = 27;
-    public final static byte EXCELLINK = 28;
-    public final static byte DYNAMICFORMATLINK = 29;
-    public final static byte CUSTOMSTATICFORMATLINK = 30;
 }

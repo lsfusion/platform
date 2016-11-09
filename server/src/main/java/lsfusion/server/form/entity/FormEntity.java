@@ -31,7 +31,6 @@ import lsfusion.server.form.view.DefaultFormView;
 import lsfusion.server.form.view.FormView;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.BusinessLogics;
-import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.linear.LP;
@@ -57,12 +56,12 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
 
     public static final IsFullClientFormulaProperty isFullClient = IsFullClientFormulaProperty.instance;
     public static final IsDebugFormulaProperty isDebug = IsDebugFormulaProperty.instance;
-    public static final SessionDataProperty isDialog = new SessionDataProperty(LocalizedString.create("Is dialog"), LogicalClass.instance);
-    public static final SessionDataProperty isModal = new SessionDataProperty(LocalizedString.create("Is modal"), LogicalClass.instance);
-    public static final SessionDataProperty isAdd = new SessionDataProperty(LocalizedString.create("Is add"), LogicalClass.instance);
-    public static final SessionDataProperty manageSession = new SessionDataProperty(LocalizedString.create("Manage session"), LogicalClass.instance);
-    public static final SessionDataProperty isReadOnly = new SessionDataProperty(LocalizedString.create("Is read only form"), LogicalClass.instance);
-    public static final SessionDataProperty showDrop = new SessionDataProperty(LocalizedString.create("Show drop"), LogicalClass.instance);
+    public static final SessionDataProperty isDialog = new SessionDataProperty("Is dialog", LogicalClass.instance);
+    public static final SessionDataProperty isModal = new SessionDataProperty("Is modal", LogicalClass.instance);
+    public static final SessionDataProperty isAdd = new SessionDataProperty("Is add", LogicalClass.instance);
+    public static final SessionDataProperty manageSession = new SessionDataProperty("Manage session", LogicalClass.instance);
+    public static final SessionDataProperty isReadOnly = new SessionDataProperty("Is read only form", LogicalClass.instance);
+    public static final SessionDataProperty showDrop = new SessionDataProperty("Show drop", LogicalClass.instance);
 
     public PropertyDrawEntity printActionPropertyDraw;
     public PropertyDrawEntity editActionPropertyDraw;
@@ -162,18 +161,18 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
 
     public CalcPropertyObjectEntity<?> reportPathProp;
 
-    protected FormEntity(String canonicalName, LocalizedString caption, Version version) {
-        this(null, canonicalName, null, caption, null, version);
+    protected FormEntity(String canonicalName, String caption, Version version) {
+        this(null, canonicalName, caption, null, version);
     }
 
-    public FormEntity(String canonicalName, String creationPath, LocalizedString caption, String icon, Version version) {
-        this(null, canonicalName, creationPath, caption, icon, version);
+    public FormEntity(String canonicalName, String caption, String icon, Version version) {
+        this(null, canonicalName, caption, icon, version);
     }
 
-    private FormEntity(NavigatorElement<T> parent, String canonicalName, String creationPath, LocalizedString caption, String icon, Version version) {
-        super(parent, canonicalName, caption, creationPath, null, version);
+    private FormEntity(NavigatorElement<T> parent, String canonicalName, String caption, String icon, Version version) {
+        super(parent, canonicalName, caption, null, version);
         setImage(icon != null ? icon : "/images/form.png", icon != null ? null : DefaultIcon.FORM);
-        logger.debug("Initializing form " + ThreadLocalContext.localize(caption) + "...");
+        logger.debug("Initializing form " + caption + "...");
 
         BaseLogicsModule baseLM = ThreadLocalContext.getBusinessLogics().LM;
 
@@ -508,30 +507,29 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         });
         ImSet<ValueClassWrapper> valueClasses = objectToClass.valuesSet();
 
+        ImCol<ImSet<ValueClassWrapper>> classSubsets;
+        if (useObjSubsets) {
+            MCol<ImSet<ValueClassWrapper>> mClassSubsets = ListFact.mCol();
+            for (ImSet<ValueClassWrapper> set : new Subsets<>(valueClasses)) {
+                if (!set.isEmpty()) {
+                    mClassSubsets.add(set);
+                }
+            }
+            classSubsets = mClassSubsets.immutableCol();
+        } else {
+            classSubsets = SetFact.singleton(valueClasses);
+        }
+
         List<PropertyDrawEntity> propertyDraws = new ArrayList<>();
 
         ImOrderSet<ValueClassWrapper> orderInterfaces = orderObjects.mapOrder(objectToClass);
-        for (PropertyClassImplement implement : group.getProperties(valueClasses, useObjSubsets, upClasses, version)) {
+        for (PropertyClassImplement implement : group.getProperties(classSubsets, upClasses, version)) {
             ImSet<ValueClassWrapper> wrapers = implement.mapping.valuesSet();
             ImOrderSet<ObjectEntity> filterObjects = orderObjects.filterOrderIncl(objectToClass.filterValuesRev(wrapers).keys());
             propertyDraws.add(addPropertyDraw(implement.createLP(orderInterfaces.filterOrderIncl(wrapers), prev), groupObject, version, filterObjects.toArray(new ObjectEntity[filterObjects.size()])));
         }
 
         return propertyDraws;
-    }
-
-    public static ImCol<ImSet<ValueClassWrapper>> getSubsets(ImSet<ValueClassWrapper> valueClasses, boolean useObjSubsets) {
-        if(!useObjSubsets)
-            return SetFact.singleton(valueClasses);
-            
-        ImCol<ImSet<ValueClassWrapper>> classSubsets;MCol<ImSet<ValueClassWrapper>> mClassSubsets = ListFact.mCol();
-        for (ImSet<ValueClassWrapper> set : new Subsets<>(valueClasses)) {
-            if (!set.isEmpty()) {
-                mClassSubsets.add(set);
-            }
-        }
-        classSubsets = mClassSubsets.immutableCol();
-        return classSubsets;
     }
 
     public PropertyDrawEntity addPropertyDraw(LP property, Version version, PropertyObjectInterfaceEntity... objects) {
@@ -603,7 +601,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     public <P extends PropertyInterface> PropertyDrawEntity<P> addPropertyDraw(GroupObjectEntity groupObject, PropertyObjectEntity<P, ?> propertyImplement, String formPath, ImOrderSet<P> interfaces, Version version) {
         final PropertyDrawEntity<P> newPropertyDraw = new PropertyDrawEntity<>(genID(), propertyImplement, groupObject);
 
-        propertyImplement.property.drawOptions.proceedDefaultDraw(newPropertyDraw, this);
+        propertyImplement.property.proceedDefaultDraw(newPropertyDraw, this, version);
 
         if (propertyImplement.property.isNamed()) {
             String propertySID = PropertyDrawEntity.createSID(propertyImplement, interfaces);  

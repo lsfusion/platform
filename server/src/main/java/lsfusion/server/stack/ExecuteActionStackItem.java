@@ -1,21 +1,18 @@
 package lsfusion.server.stack;
 
 import lsfusion.base.BaseUtils;
+import lsfusion.server.logics.ServerResourceBundle;
 import lsfusion.server.logics.debug.ActionDelegationType;
 import lsfusion.server.logics.debug.DebugInfo;
 import lsfusion.server.logics.property.ActionProperty;
-import lsfusion.server.profiler.ActionProfileObject;
-import lsfusion.server.profiler.Profiler;
 import org.aspectj.lang.ProceedingJoinPoint;
-
-import static lsfusion.server.context.ThreadLocalContext.localize;
 
 public class ExecuteActionStackItem extends ExecutionStackItem {
     private final ActionProperty property;
     private String propertyName;
 
     public ExecuteActionStackItem(ProceedingJoinPoint joinPoint) {
-        super(joinPoint, Profiler.PROFILER_ENABLED ? new ActionProfileObject((ActionProperty) joinPoint.getTarget()) : null);
+        super(joinPoint);
         this.property = (ActionProperty) joinPoint.getTarget();
     }
     
@@ -28,7 +25,7 @@ public class ExecuteActionStackItem extends ExecutionStackItem {
     }
 
     public String getCaption() {
-        return BaseUtils.nullEmpty(localize(property.caption));
+        return BaseUtils.nullEmpty(property.caption);
     }
 
     public String getCanonicalName() {
@@ -49,7 +46,7 @@ public class ExecuteActionStackItem extends ExecutionStackItem {
     
     @Override
     public String toString() {
-        String result = localize("{message.execute.action}");
+        String result = ServerResourceBundle.getString("message.execute.action");
         if(propertyName != null) {
             result += " : " + propertyName;
             if(property.getDebugInfo() != null) {

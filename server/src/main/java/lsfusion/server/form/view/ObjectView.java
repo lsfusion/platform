@@ -2,9 +2,7 @@ package lsfusion.server.form.view;
 
 import lsfusion.base.identity.IDGenerator;
 import lsfusion.base.identity.IdentityObject;
-import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.form.entity.ObjectEntity;
-import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.serialization.ServerIdentitySerializable;
 import lsfusion.server.serialization.ServerSerializationPool;
 
@@ -32,13 +30,13 @@ public class ObjectView extends IdentityObject implements ServerIdentitySerializ
         classChooser = new ClassChooserView(idGen.idShift(), this.entity, this);
     }
 
-    public LocalizedString getCaption() {
+    public String getCaption() {
         return entity.getCaption();
     }
 
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         pool.serializeObject(outStream, groupObject, serializationType);
-        pool.writeString(outStream, ThreadLocalContext.localize(entity.caption));
+        pool.writeString(outStream, entity.caption);
 
         entity.baseClass.serialize(outStream);
         pool.serializeObject(outStream, classChooser, serializationType);

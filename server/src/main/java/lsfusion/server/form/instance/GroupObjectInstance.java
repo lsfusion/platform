@@ -20,7 +20,6 @@ import lsfusion.server.classes.ConcreteCustomClass;
 import lsfusion.server.classes.OrderClass;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.context.ExecutionStack;
-import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.QueryEnvironment;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
@@ -46,8 +45,8 @@ import lsfusion.server.form.instance.listener.CustomClassListener;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.NullValue;
 import lsfusion.server.logics.ObjectValue;
+import lsfusion.server.logics.ServerResourceBundle;
 import lsfusion.server.logics.property.*;
-import lsfusion.server.profiler.ProfiledObject;
 import lsfusion.server.session.*;
 import lsfusion.server.stack.StackMessage;
 import lsfusion.server.stack.ThisMessage;
@@ -59,7 +58,7 @@ import static lsfusion.base.BaseUtils.immutableCast;
 import static lsfusion.interop.ClassViewType.GRID;
 import static lsfusion.interop.ClassViewType.HIDE;
 
-public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, ProfiledObject {
+public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
     public final SeekObjects SEEK_HOME = new SeekObjects(false); 
     public final SeekObjects SEEK_END = new SeekObjects(true); 
 
@@ -372,11 +371,6 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         return entity.getUpdateType(this);
     }
 
-    @Override
-    public Object getProfiledObject() {
-        return entity;
-    }
-
     public interface FilterProcessor {
         ImMap<ObjectInstance, ? extends Expr> process(FilterInstance filt, ImMap<ObjectInstance, ? extends Expr> mapKeys);
 
@@ -619,7 +613,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
     private boolean pendingHiddenUpdateKeys;
     private boolean pendingHiddenUpdateObjects;
 
-    @StackMessage("{message.form.update.group.keys}")
+    @StackMessage("message.form.update.group.keys")
     @ThisMessage
     public ImMap<ObjectInstance, DataObject> updateKeys(SQLSession sql, QueryEnvironment env, final Modifier modifier, IncrementChangeProps environmentIncrement, ExecutionEnvironment execEnv, BaseClass baseClass, boolean hidden, final boolean refresh, MFormChanges result, Result<ChangedData> changedProps, ReallyChanged reallyChanged) throws SQLException, SQLHandledException {
         if (refresh || (updated & UPDATED_CLASSVIEW) != 0) {
@@ -637,8 +631,6 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         boolean objectsUpdated = false;
 
         ImSet<FilterInstance> setFilters = getSetFilters();
-        ImSet<GroupObjectInstance> sThis = SetFact.singleton(this);
-
         if (FilterInstance.ignoreInInterface) {
             updateFilters |= (updated & UPDATED_FILTER) != 0;
             filters = setFilters;
@@ -654,7 +646,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
                 filters = newFilters;
             } else { // остались те же setFilters
                 for (FilterInstance filt : setFilters)
-                    if (refresh || filt.classUpdated(sThis)) {
+                    if (refresh || filt.classUpdated(SetFact.singleton(this))) {
                         boolean inInterface = filt.isInInterface(this);
                         if(inInterface != filters.contains(filt)) {
                             if(inInterface)
@@ -669,7 +661,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
         if (!updateFilters) // изменились "верхние" объекты для фильтров
             for (FilterInstance filt : filters)
-                if (filt.objectUpdated(sThis)) {
+                if (filt.objectUpdated(SetFact.singleton(this))) {
                     updateFilters = true;
                     objectsUpdated = true;
                     break;
@@ -677,7 +669,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
         if (!updateFilters) // изменились данные по фильтрам
             for (FilterInstance filt : filters)
-                if (filt.dataUpdated(changedProps.result, reallyChanged, modifier, hidden, sThis)) {
+                if (filt.dataUpdated(changedProps.result, reallyChanged, modifier, hidden, SetFact.singleton(this))) {
                     updateFilters = true;
                     break;
                 }
@@ -728,14 +720,14 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
         if (!updateOrders && (!updateFilters || orderProperty!=null)) // изменились "верхние" объекты для порядков
             for (OrderInstance order : orders.keyIt())
-                if (order.objectUpdated(sThis)) {
+                if (order.objectUpdated(SetFact.singleton(this))) {
                     updateOrders = true;
                     objectsUpdated = true;
                     break;
                 }
         if (!updateOrders && (!updateFilters || orderProperty!=null)) // изменились данные по порядкам
             for (OrderInstance order : orders.keyIt())
-                if (order.dataUpdated(changedProps.result, reallyChanged, modifier, hidden, sThis)) {
+                if (order.dataUpdated(changedProps.result, reallyChanged, modifier, hidden, SetFact.singleton(this))) {
                     updateOrders = true;
                     break;
                 }
@@ -780,26 +772,9 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         int direction = DIRECTION_CENTER;
 
         if(isInTree()) {
-            if (!updateKeys && (getUpTreeGroup() != null && ((getUpTreeGroup().updated & UPDATED_EXPANDS) != 0))) {
+            if (!updateKeys && (getUpTreeGroup() != null && ((getUpTreeGroup().updated & UPDATED_EXPANDS) != 0)) ||
+                    (parent != null && (updated & UPDATED_EXPANDS) != 0)) {
                 updateKeys = true;
-            }
-            if(parent != null) {
-                if(!updateKeys && (updated & UPDATED_EXPANDS) != 0)
-                    updateKeys = true;
-                if(!updateKeys) {
-                    for(CalcPropertyObjectInstance parentProp : parent.valueIt()) {
-                        if (parentProp.objectUpdated(sThis)) {
-                            updateKeys = true;
-                            break;
-                        }
-                    }
-                    for(CalcPropertyObjectInstance parentProp : parent.valueIt()) {
-                        if (parentProp.dataUpdated(changedProps.result, reallyChanged, modifier, hidden, sThis)) {
-                            updateKeys = true;
-                            break;
-                        }
-                    }
-                }
             }
             orderSeeks = SEEK_HOME;
         } else {
@@ -1166,12 +1141,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
         @Override
         public String toString() {
-            return ThreadLocalContext.localize("{logics.background} (") + GroupObjectInstance.this.toString() + ")";
-        }
-
-        @Override
-        public Object getProfiledObject() {
-            return entity.propertyBackground;
+            return ServerResourceBundle.getString("logics.background") + " (" + GroupObjectInstance.this.toString() + ")";
         }
     }
 
@@ -1190,12 +1160,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
         @Override
         public String toString() {
-            return ThreadLocalContext.localize("{logics.foreground}") + " (" + GroupObjectInstance.this.toString() + ")";
-        }
-
-        @Override
-        public Object getProfiledObject() {
-            return entity.propertyForeground;
+            return ServerResourceBundle.getString("logics.foreground") + " (" + GroupObjectInstance.this.toString() + ")";
         }
     }
 }

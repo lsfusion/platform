@@ -3,7 +3,6 @@ package lsfusion.server.data.type;
 import lsfusion.base.ExtInt;
 import lsfusion.interop.Data;
 import lsfusion.server.classes.*;
-import lsfusion.server.classes.link.*;
 import lsfusion.server.logics.BusinessLogics;
 
 import java.io.ByteArrayOutputStream;
@@ -96,28 +95,6 @@ public class TypeSerializer {
         if (type == Data.DYNAMICFORMATFILE) return DynamicFormatFileClass.get(inStream.readBoolean(), inStream.readBoolean());
         if (type == Data.PDF) return PDFClass.get(inStream.readBoolean(), inStream.readBoolean());
 
-        if (type == Data.IMAGELINK) return ImageLinkClass.get(inStream.readBoolean());
-        if (type == Data.WORDLINK) return WordLinkClass.get(inStream.readBoolean());
-        if (type == Data.EXCELLINK) return ExcelLinkClass.get(inStream.readBoolean());
-        if (type == Data.CUSTOMSTATICFORMATLINK) {
-            String filterDescription = inStream.readUTF();
-            String[] filterExtensions;
-            int extCount = inStream.readInt();
-            if (extCount <= 0) {
-                filterExtensions = new String[1];
-                filterExtensions[0] = "*";
-            } else {
-                filterExtensions = new String[extCount];
-
-                for (int i = 0; i < extCount; ++i) {
-                    filterExtensions[i] = inStream.readUTF();
-                }
-            }
-            return CustomStaticFormatLinkClass.get(inStream.readBoolean(), filterDescription, filterExtensions);
-        }
-        if (type == Data.DYNAMICFORMATLINK) return DynamicFormatLinkClass.get(inStream.readBoolean());
-        if (type == Data.PDFLINK) return PDFLinkClass.get(inStream.readBoolean());
-
         throw new IOException();
     }
 
@@ -145,13 +122,6 @@ public class TypeSerializer {
         if (type == Data.PDF) return PDFClass.get(false, false);
         //todo:!!
         if (type == Data.CUSTOMSTATICFORMATFILE) return CustomStaticFormatFileClass.get(false, false, "", "");
-
-        if (type == Data.IMAGELINK) return ImageLinkClass.get(false);
-        if (type == Data.WORDLINK) return WordLinkClass.get(false);
-        if (type == Data.EXCELLINK) return ExcelLinkClass.get(false);
-        if (type == Data.PDFLINK) return PDFLinkClass.get(false);
-        //todo:!!
-        if (type == Data.CUSTOMSTATICFORMATLINK) return CustomStaticFormatLinkClass.get(false, "", "");
 
         throw new IOException();
     }

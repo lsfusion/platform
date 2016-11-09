@@ -12,41 +12,44 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.interop.FormExportType;
 import lsfusion.interop.FormPrintType;
 import lsfusion.interop.ModalityType;
+import lsfusion.interop.action.FormClientAction;
 import lsfusion.interop.action.MessageClientAction;
 import lsfusion.interop.action.ReportClientAction;
 import lsfusion.interop.form.ReportGenerationData;
 import lsfusion.server.ServerLoggers;
+import lsfusion.server.Settings;
 import lsfusion.server.SystemProperties;
 import lsfusion.server.classes.ConcreteCustomClass;
 import lsfusion.server.classes.ValueClass;
-import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.entity.*;
 import lsfusion.server.form.entity.filter.FilterEntity;
 import lsfusion.server.form.instance.FormCloseType;
 import lsfusion.server.form.instance.FormInstance;
-import lsfusion.server.logics.BusinessLogics;
+import lsfusion.server.form.instance.FormSessionScope;
+import lsfusion.server.form.instance.ObjectInstance;
 import lsfusion.server.logics.DataObject;
-import lsfusion.server.logics.i18n.LocalizedString;
+import lsfusion.server.logics.ServerResourceBundle;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.*;
-import lsfusion.server.remote.FormReportManager;
 import lsfusion.server.remote.RemoteForm;
 import net.sf.jasperreports.engine.JRException;
 
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.HashSet;
+import java.util.Set;
 
 // вообще по хорошему надо бы generiть интерфейсы, но тогда с DataChanges (из-за дебилизма generics в современных языках) будут проблемы
 public class FormActionProperty extends SystemExplicitActionProperty {
 
     public final FormEntity<?> form;
     public final ImRevMap<ObjectEntity, ClassPropertyInterface> mapObjects;
-
+    private final ActionPropertyObjectEntity<?> startAction;
+    public ActionPropertyObjectEntity<?> closeAction;
+    public Set<ObjectEntity> seekOnOk = new HashSet<>();
     private final boolean checkOnOk;
-    private final Boolean manageSession;
+    private final FormSessionScope sessionScope;
     private final ModalityType modalityType;
     private final boolean showDrop;
     private final boolean isAdd;
@@ -88,14 +91,15 @@ public class FormActionProperty extends SystemExplicitActionProperty {
         return valueClasses;
     }
 
-    //assert objects из form
-    //assert getProperties одинаковой длины
+    //assert objects и startAction из form
+    //assert getProperties и startAction одинаковой длины
+    //startAction привязаны к созадаваемой форме
     //getProperties привязаны к форме, содержащей свойство...
-    public FormActionProperty(LocalizedString caption,
+    public FormActionProperty(String caption,
                               FormEntity form,
                               final ObjectEntity[] objectsToSet,
-                              Boolean manageSession,
-                              boolean isAdd,
+                              ActionPropertyObjectEntity startAction,
+                              boolean isAdd, FormSessionScope sessionScope,
                               ModalityType modalityType,
                               boolean checkOnOk,
                               boolean showDrop,
@@ -124,7 +128,8 @@ public class FormActionProperty extends SystemExplicitActionProperty {
         this.showDrop = showDrop;
         this.printType = printType;
         this.exportType = exportType;
-        this.manageSession = manageSession;
+        this.sessionScope = sessionScope;
+        this.startAction = startAction;
         this.isAdd = isAdd;
 
         this.contextObject = contextObject;
@@ -160,7 +165,7 @@ public class FormActionProperty extends SystemExplicitActionProperty {
         ImMap<ClassPropertyInterface, DataObject> dataKeys = context.getDataKeys();
         if (contextPropertyImplement != null) {
             final CalcPropertyValueImplement<PropertyInterface> propertyValues = contextPropertyImplement.mapValues(dataKeys);
-            final FormInstance thisFormInstance = context.getFormInstance(false, true);
+            final FormInstance thisFormInstance = context.getFormInstance();
             contextFilters = thisFormInstance.getContextFilters(contextObject, propertyValues, context.getChangingPropertyToDraw(), pullProps);
         }
 
@@ -168,7 +173,7 @@ public class FormActionProperty extends SystemExplicitActionProperty {
                                                                         mapObjects.join(context.getKeys()),
                                                                         context.getSession(),
                                                                         modalityType.isModal(),
-                                                                        isAdd, manageSession,
+                                                                        isAdd, sessionScope,
                                                                         checkOnOk,
                                                                         showDrop,
                                                                         printType == null,
@@ -179,43 +184,42 @@ public class FormActionProperty extends SystemExplicitActionProperty {
 
         if (printType != null && !newFormInstance.areObjectsFound()) {
             context.requestUserInteraction(
-                    new MessageClientAction(ThreadLocalContext.localize(LocalizedString.create("{form.navigator.form.do.not.fit.for.specified.parameters}")), 
-                                            ThreadLocalContext.localize(form.caption)));
+                    new MessageClientAction(ServerResourceBundle.getString("form.navigator.form.do.not.fit.for.specified.parameters"), form.caption));
         } else {
-            if(exportType == null && printType == null)
-                context.requestFormUserInteraction(newFormInstance, modalityType, context.stack);
-            else {
-                boolean toExcel = false;
-                FormPrintType pType = printType;
-                if(pType != null) {
-                    pType = ignorePrintType.read(context) != null ? FormPrintType.PRINT : printType;
-                    toExcel = pType == FormPrintType.XLS || pType == FormPrintType.XLSX;
-                }
-                
-                FormReportManager newFormManager = new FormReportManager(newFormInstance);
-                ReportGenerationData generationData = newFormManager.getReportData(toExcel);
-                if (exportType != null) {
-                    DataObject[] dataObjects = dataKeys.values().toArray(new DataObject[dataKeys.size()]);
-                    try {
-                        if (exportType == FormExportType.DOC) {
-                            formExportFile.change(BaseUtils.mergeFileAndExtension(IOUtils.getFileBytes(ReportGenerator.exportToDoc(generationData)), "doc".getBytes()), context, dataObjects);
-                        } else if (exportType == FormExportType.DOCX) {
-                            formExportFile.change(BaseUtils.mergeFileAndExtension(IOUtils.getFileBytes(ReportGenerator.exportToDocx(generationData)), "docx".getBytes()), context, dataObjects);
-                        } else if (exportType == FormExportType.PDF) {
-                            formExportFile.change(BaseUtils.mergeFileAndExtension(IOUtils.getFileBytes(ReportGenerator.exportToPdf(generationData)), "pdf".getBytes()), context, dataObjects);
-                        } else if (exportType == FormExportType.XLS) {
-                            formExportFile.change(BaseUtils.mergeFileAndExtension(IOUtils.getFileBytes(ReportGenerator.exportToXls(generationData)), "xls".getBytes()), context, dataObjects);
-                        } else if (exportType == FormExportType.XLSX) {
-                            formExportFile.change(BaseUtils.mergeFileAndExtension(IOUtils.getFileBytes(ReportGenerator.exportToXlsx(generationData)), "xlsx".getBytes()), context, dataObjects);
-                        }
-                    } catch (JRException | IOException | ClassNotFoundException e) {
-                        ServerLoggers.systemLogger.error(e);
+            final FormInstance thisFormInstance = context.getFormInstance();
+
+            if (startAction != null) {
+                newFormInstance.instanceFactory.getInstance(startAction).execute(newFormInstance, context.stack);
+            }
+
+            RemoteForm newRemoteForm = context.createRemoteForm(newFormInstance);
+            if (exportType != null) {
+                ReportGenerationData generationData = newRemoteForm.reportManager.getReportData();
+                DataObject[] dataObjects = dataKeys.values().toArray(new DataObject[dataKeys.size()]);
+                try {
+                    if (exportType == FormExportType.DOC) {
+                        formExportFile.change(BaseUtils.mergeFileAndExtension(IOUtils.getFileBytes(ReportGenerator.exportToDoc(generationData)), "doc".getBytes()), context, dataObjects);
+                    } else if (exportType == FormExportType.DOCX) {
+                        formExportFile.change(BaseUtils.mergeFileAndExtension(IOUtils.getFileBytes(ReportGenerator.exportToDocx(generationData)), "docx".getBytes()), context, dataObjects);
+                    } else if (exportType == FormExportType.PDF) {
+                        formExportFile.change(BaseUtils.mergeFileAndExtension(IOUtils.getFileBytes(ReportGenerator.exportToPdf(generationData)), "pdf".getBytes()), context, dataObjects);
+                    } else if (exportType == FormExportType.XLS) {
+                        formExportFile.change(BaseUtils.mergeFileAndExtension(IOUtils.getFileBytes(ReportGenerator.exportToXls(generationData)), "xls".getBytes()), context, dataObjects);
+                    } else if (exportType == FormExportType.XLSX) {
+                        formExportFile.change(BaseUtils.mergeFileAndExtension(IOUtils.getFileBytes(ReportGenerator.exportToXlsx(generationData)), "xlsx".getBytes()), context, dataObjects);
                     }
-                } else { // assert printType != null;
-                    Map<String, String> reportPath = SystemProperties.isDebug ? newFormManager.getReportPath(toExcel, null, null) : new HashMap<>();
-                    Object pageCount = context.requestUserInteraction(new ReportClientAction(reportPath, modalityType.isModal(), generationData, pType, SystemProperties.isDebug));
-                    formPageCount.change(pageCount, context);
+                } catch (JRException | IOException | ClassNotFoundException e) {
+                    ServerLoggers.systemLogger.error(e);
                 }
+            }
+            if (printType != null) {
+                FormPrintType pType = ignorePrintType.read(context) != null ? FormPrintType.PRINT : printType;
+                boolean toExcel = pType == FormPrintType.XLS || pType == FormPrintType.XLSX;
+                Object pageCount = context.requestUserInteraction(new ReportClientAction(form.getSID(), modalityType.isModal(), newRemoteForm.reportManager.getReportData(toExcel), pType, SystemProperties.isDebug));
+                formPageCount.change(pageCount, context);
+            }
+            if (exportType == null && printType == null) {
+                context.requestUserInteraction(new FormClientAction(form.getCanonicalName(), form.getSID(), newRemoteForm, newRemoteForm.getImmutableMethods(), Settings.get().isDisableFirstChangesOptimization() ? null : newRemoteForm.getFormChangesByteArray(context.stack), modalityType));
             }
 
             if (modalityType.isModal()) {
@@ -237,6 +241,34 @@ public class FormActionProperty extends SystemExplicitActionProperty {
                     }
                 }
 
+                if (formResult == FormCloseType.OK) {
+                    for (ObjectEntity object : seekOnOk) {
+                        try {
+                            ObjectInstance objectInstance = newFormInstance.instanceFactory.getInstance(object);
+                            // нужна проверка, т.к. в принципе пока FormActionProperty может ссылаться на ObjectEntity из разных FormEntity
+                            if (objectInstance != null) {
+                                thisFormInstance.expandCurrentGroupObject(object.baseClass);
+                                thisFormInstance.forceChangeObject(object.baseClass, objectInstance.getObjectValue());
+                            }
+                        } catch (SQLException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                }
+                if (formResult == FormCloseType.CLOSE) {
+                    if (closeAction != null) {
+                        try {
+                            newFormInstance.instanceFactory.getInstance(closeAction).execute(newFormInstance, context.stack);
+                        } catch (SQLException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                }
+
+                if (thisFormInstance != null && !Settings.get().getUseUserChangesSync()) {
+                    //обновляем текущую форму, чтобы подхватить изменения из вызываемой формы
+                    thisFormInstance.refreshData();
+                }
             }
         }
     }

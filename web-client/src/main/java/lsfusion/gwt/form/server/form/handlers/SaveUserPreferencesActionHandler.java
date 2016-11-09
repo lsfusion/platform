@@ -35,6 +35,6 @@ public class SaveUserPreferencesActionHandler extends ServerResponseActionHandle
         }
         GroupObjectUserPreferences groupObjectUP = new GroupObjectUserPreferences(columnUPMap, gGroupObjectUP.getGroupObjectSID(), gwtConverter.convertFont(gGroupObjectUP.getFont()), gGroupObjectUP.getPageSize(), gGroupObjectUP.getHeaderHeight(), gGroupObjectUP.hasUserPreferences());
 
-        return getServerResponseResult(form, form.remoteForm.saveUserPreferences(action.requestIndex, -1, groupObjectUP, action.forAllUsers, action.completeOverride, action.hiddenProps));
+        return getServerResponseResult(form, form.remoteForm.saveUserPreferences(action.requestIndex, -1, groupObjectUP, action.forAllUsers, action.completeOverride));
     }
 }

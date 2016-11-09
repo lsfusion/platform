@@ -4,12 +4,11 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.ExtInt;
 import lsfusion.interop.Data;
 import lsfusion.server.Settings;
-import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.ParseException;
-import lsfusion.server.logics.i18n.LocalizedString;
+import lsfusion.server.logics.ServerResourceBundle;
 import lsfusion.server.logics.mutables.NFStaticLazy;
 
 import java.io.DataOutputStream;
@@ -24,14 +23,14 @@ import java.util.Collection;
 public class NumericClass extends IntegralClass<BigDecimal> {
 
     public String toString() {
-        return ThreadLocalContext.localize(LocalizedString.create("{classes.number}"))+" "+length+","+precision;
+        return ServerResourceBundle.getString("classes.number")+" "+length+","+precision;
     }
 
     final byte length;
     final byte precision;
 
     private NumericClass(byte length, byte precision) {
-        super(LocalizedString.create("{classes.numeric}"));
+        super(ServerResourceBundle.getString("classes.numeric"));
         this.length = length;
         this.precision = precision;
     }

@@ -993,38 +993,6 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
         }
     }
 
-    private void doResetPreferences(final boolean forAllUsers, final boolean completeReset, final ErrorHandlingCallback<ServerResponseResult> callback) {
-        GGridUserPreferences prefs;
-        if (forAllUsers) {
-            prefs = completeReset ? null : userGridPreferences;
-        } else {
-            // assert !completeReset;
-            prefs = generalGridPreferences;
-        }
-        
-        form.saveUserPreferences(currentGridPreferences, forAllUsers, completeReset, getHiddenProps(prefs), new ErrorHandlingCallback<ServerResponseResult>() {
-            @Override
-            public void failure(Throwable caught) {
-                resetCurrentPreferences(false);
-                callback.failure(caught);
-            }
-
-            @Override
-            public void success(ServerResponseResult result) {
-                if (forAllUsers) {
-                    generalGridPreferences.resetPreferences();
-                    if (completeReset) {
-                        userGridPreferences.resetPreferences();
-                    }
-                } else {
-                    userGridPreferences.resetPreferences();
-                }
-                resetCurrentPreferences(false);
-                callback.success(result);
-            }
-        });
-    }
-    
     public void resetPreferences(final boolean forAllUsers, final ErrorHandlingCallback<ServerResponseResult> callback) {
         currentGridPreferences.resetPreferences();
 
@@ -1032,11 +1000,39 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
             form.blockingConfirm(messages.formGridPreferencesCompleteReset(), messages.formGridPreferencesCompleteResetHeader(), false, 0, 0, new DialogBoxHelper.CloseCallback() {
                 @Override
                 public void closed(DialogBoxHelper.OptionType chosenOption) {
-                    doResetPreferences(true, chosenOption == DialogBoxHelper.OptionType.YES, callback);
+                    form.saveUserPreferences(currentGridPreferences, true, chosenOption == DialogBoxHelper.OptionType.YES, new ErrorHandlingCallback<ServerResponseResult>() {
+                        @Override
+                        public void failure(Throwable caught) {
+                            resetCurrentPreferences(false);
+                            callback.failure(caught);
+                        }
+
+                        @Override
+                        public void success(ServerResponseResult result) {
+                            generalGridPreferences.resetPreferences();
+                            resetCurrentPreferences(false);
+                            callback.success(result);
+                        }
+                    });
                 }
             });
-        } else if (!properties.isEmpty()) {
-            doResetPreferences(false, false, callback);
+        } else {
+            if (!properties.isEmpty()) {
+                form.saveUserPreferences(currentGridPreferences, false, false, new ErrorHandlingCallback<ServerResponseResult>() {
+                    @Override
+                    public void failure(Throwable caught) {
+                        resetCurrentPreferences(false);
+                        callback.failure(caught);
+                    }
+
+                    @Override
+                    public void success(ServerResponseResult result) {
+                        userGridPreferences.resetPreferences();
+                        resetCurrentPreferences(false);
+                        callback.success(result);
+                    }
+                });
+            }
         }
     }
 
@@ -1044,14 +1040,8 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
         currentGridPreferences.setHasUserPreferences(true);
 
         if (!getProperties().isEmpty()) {
-            GGridUserPreferences prefs;
-            if (forAllUsers) {
-                prefs = userGridPreferences.hasUserPreferences() ? userGridPreferences : currentGridPreferences;
-            } else {
-                prefs = currentGridPreferences;
-            }
 
-            form.saveUserPreferences(currentGridPreferences, forAllUsers, false, getHiddenProps(prefs), new ErrorHandlingCallback<ServerResponseResult>() {
+            form.saveUserPreferences(currentGridPreferences, forAllUsers, false, new ErrorHandlingCallback<ServerResponseResult>() {
                 @Override
                 public void success(ServerResponseResult result) {
                     if (forAllUsers) {
@@ -1070,24 +1060,6 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
                 }
             });
         }
-    }
-
-    private String[] getHiddenProps(final GGridUserPreferences preferences) {
-        List<String> result = new ArrayList<>();
-        if (preferences != null && preferences.hasUserPreferences()) {
-            for (GPropertyDraw propertyDraw : preferences.getColumnUserPreferences().keySet()) {
-                Boolean userHide = preferences.getColumnPreferences(propertyDraw).userHide;
-                if (userHide != null && userHide) {
-                    result.add(propertyDraw.sID);
-                }
-            }
-        }
-        return result.toArray(new String[result.size()]);
-    }
-    
-    public void refreshUPHiddenProps(String[] propSids) {
-        assert groupObject != null; // при null нету таблицы, а значит и настроек
-        form.refreshUPHiddenProps(groupObject.getSID(), propSids);
     }
 
     public GGridUserPreferences getCurrentPreferences() {

@@ -18,6 +18,7 @@ import javax.swing.event.ListSelectionListener;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,8 +30,8 @@ public abstract class UserPreferencesDialog extends JDialog {
     private GroupObjectController goController;
     private GridTable initialTable;
 
-    private UserPreferencesPropertyListModel visibleListModel, invisibleListModel;
-    private JList<UserPreferencesPropertyListItem> visibleList, invisibleList;
+    private PropertyListModel visibleListModel, invisibleListModel;
+    private JList visibleList, invisibleList;
     private JTextField fontSizeField;
     private JTextField pageSizeField;
     private JTextField headerHeightField;
@@ -67,16 +68,16 @@ public abstract class UserPreferencesDialog extends JDialog {
 
         ArrayListTransferHandler arrayListHandler = new ArrayListTransferHandler();
 
-        visibleListModel = new UserPreferencesPropertyListModel(true);
-        invisibleListModel = new UserPreferencesPropertyListModel(false);
-        visibleList = new JList<>(visibleListModel);
-        invisibleList = new JList<>(invisibleListModel);
+        visibleListModel = new PropertyListModel();
+        invisibleListModel = new PropertyListModel();
+        visibleList = new JList(visibleListModel);
+        invisibleList = new JList(invisibleListModel);
         
         visibleList.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
         visibleList.setTransferHandler(arrayListHandler);
         visibleList.setDragEnabled(true);
+        visibleList.setCellRenderer(new ListItemRenderer());
         JScrollPane visibleListView = new JScrollPane(visibleList);
-        visibleList.setCellRenderer(new UserPreferencesListItemRenderer(true));
         visibleListView.setPreferredSize(new Dimension(200, 100));
         TitledPanel visiblePanel = new TitledPanel(getString("form.grid.preferences.displayed.columns"));
         visiblePanel.setLayout(new BorderLayout());
@@ -137,7 +138,7 @@ public abstract class UserPreferencesDialog extends JDialog {
         invisibleList.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
         invisibleList.setTransferHandler(arrayListHandler);
         invisibleList.setDragEnabled(true);
-        invisibleList.setCellRenderer(new UserPreferencesListItemRenderer(false));
+        invisibleList.setCellRenderer(new ListItemRenderer());
         JScrollPane invisibleListView = new JScrollPane(invisibleList);
         invisibleListView.setPreferredSize(new Dimension(200, 100));
         TitledPanel invisiblePanel = new TitledPanel(getString("form.grid.preferences.hidden.columns"));
@@ -452,18 +453,11 @@ public abstract class UserPreferencesDialog extends JDialog {
     }
 
     private void okButtonPressed() throws IOException {
-        for (UserPreferencesPropertyListItem propertyItem : visibleListModel.toArray()) {
+        for (PropertyListItem propertyItem : visibleListModel.toArray()) {
             initialTable.setUserColumnSettings(propertyItem.property, propertyItem.getUserCaption(true), propertyItem.getUserPattern(true), visibleListModel.indexOf(propertyItem), false);
         }
-        
-        String[] hiddenPropSids = new String[invisibleListModel.size()];
-        UserPreferencesPropertyListItem[] invisibleItems = invisibleListModel.toArray();
-        for (int i = 0; i < invisibleItems.length; i++) {
-            UserPreferencesPropertyListItem propertyItem = invisibleItems[i];
-            initialTable.setUserColumnSettings(propertyItem.property, propertyItem.getUserCaption(true), propertyItem.getUserPattern(true), visibleListModel.getSize() + i, true);
-            if (propertyItem.inGrid == null || propertyItem.inGrid) {
-                hiddenPropSids[i] = propertyItem.property.getSID();
-            }
+        for (PropertyListItem propertyItem : invisibleListModel.toArray()) {
+            initialTable.setUserColumnSettings(propertyItem.property, propertyItem.getUserCaption(true), propertyItem.getUserPattern(true), visibleListModel.getSize() + invisibleListModel.indexOf(propertyItem), true);
         }
 
         Font tableFont = getInitialFont();
@@ -481,8 +475,6 @@ public abstract class UserPreferencesDialog extends JDialog {
         initialTable.setHasUserPreferences(true);
         
         initialTable.updateTable();
-        
-        initialTable.refreshUPHiddenProps(hiddenPropSids);
 
         setVisible(false);
         dispose();
@@ -497,11 +489,11 @@ public abstract class UserPreferencesDialog extends JDialog {
             j++;
         }
 
-        for (UserPreferencesPropertyListItem propertyItem : visibleListModel.toArray()) {
+        for (PropertyListItem propertyItem : visibleListModel.toArray()) {
             applyPropertyUserPreferences(propertyItem, false, visibleListModel.indexOf(propertyItem), sortDirections.get(propertyItem.property));
         }
 
-        for (UserPreferencesPropertyListItem propertyItem : invisibleListModel.toArray()) {
+        for (PropertyListItem propertyItem : invisibleListModel.toArray()) {
             int propertyOrder = visibleListModel.getSize() + invisibleListModel.indexOf(propertyItem);
             applyPropertyUserPreferences(propertyItem, true, propertyOrder, sortDirections.get(propertyItem.property));
         }
@@ -519,7 +511,7 @@ public abstract class UserPreferencesDialog extends JDialog {
         initialTable.saveCurrentPreferences(forAllUsers, saveSuccessCallback, saveFailureCallback);
     }
 
-    private void applyPropertyUserPreferences(UserPreferencesPropertyListItem propertyItem, boolean hide, int propertyOrder,
+    private void applyPropertyUserPreferences(PropertyListItem propertyItem, boolean hide, int propertyOrder,
                                                                Pair<Boolean, Integer> sortDirections) {
         Boolean sortDirection = sortDirections != null ? sortDirections.first : null;
         Integer sortIndex = sortDirections != null ? sortDirections.second : null;
@@ -579,11 +571,11 @@ public abstract class UserPreferencesDialog extends JDialog {
         visibleListModel.clear();
         invisibleListModel.clear();
         for (ClientPropertyDraw property : orderedVisibleProperties) {
-            visibleListModel.addElement(new UserPreferencesPropertyListItem(property, currentPreferences.getUserCaption(property), currentPreferences.getUserPattern(property), getPropertyState(property)));
+            visibleListModel.addElement(new PropertyListItem(property, currentPreferences.getUserCaption(property), currentPreferences.getUserPattern(property), getPropertyState(property)));
         }
         for (ClientPropertyDraw property : goController.getGroupObjectProperties()) {
             if (!orderedVisibleProperties.contains(property)) {
-                invisibleListModel.addElement(new UserPreferencesPropertyListItem(property, currentPreferences.getUserCaption(property), currentPreferences.getUserPattern(property), getPropertyState(property)));
+                invisibleListModel.addElement(new PropertyListItem(property, currentPreferences.getUserCaption(property), currentPreferences.getUserPattern(property), getPropertyState(property)));
             }
         }
         
@@ -654,17 +646,17 @@ public abstract class UserPreferencesDialog extends JDialog {
     }
 
     private String getSelectedItemCaption(JList list) {
-        UserPreferencesPropertyListItem item = (UserPreferencesPropertyListItem) list.getSelectedValue();
+        PropertyListItem item = (PropertyListItem) list.getSelectedValue();
         return item == null ? null : item.getUserCaption(true);
     }
 
     private String getSelectedItemDefaultCaption(JList list) {
-        UserPreferencesPropertyListItem item = (UserPreferencesPropertyListItem) list.getSelectedValue();
+        PropertyListItem item = (PropertyListItem) list.getSelectedValue();
         return item == null ? null : item.getDefaultCaption();
     }
 
     private void setSelectedItemCaption(JList list, String caption, String userCaption) {
-        UserPreferencesPropertyListItem item = (UserPreferencesPropertyListItem) list.getSelectedValue();
+        PropertyListItem item = (PropertyListItem) list.getSelectedValue();
         if(item != null && caption != null) {
             initialTable.setUserCaption(item.property, caption);
             item.setUserCaption(userCaption == null || userCaption.isEmpty() ? null : userCaption);
@@ -672,13 +664,13 @@ public abstract class UserPreferencesDialog extends JDialog {
     }
 
     private String getSelectedItemPattern(JList list) {
-        UserPreferencesPropertyListItem item = (UserPreferencesPropertyListItem) list.getSelectedValue();
+        PropertyListItem item = (PropertyListItem) list.getSelectedValue();
         String pattern = item == null ? null : item.getUserPattern(true);
         return pattern == null || pattern.isEmpty() ? null : pattern;
     }
 
     private void setSelectedItemPattern(JList list, String pattern) {
-        UserPreferencesPropertyListItem item = (UserPreferencesPropertyListItem) list.getSelectedValue();
+        PropertyListItem item = (PropertyListItem) list.getSelectedValue();
         if(item != null && pattern != null) {
             pattern = pattern.isEmpty() ? null : pattern;
             initialTable.setUserPattern(item.property, pattern);
@@ -687,4 +679,79 @@ public abstract class UserPreferencesDialog extends JDialog {
     }
     
     public abstract void preferencesChanged();
+  
+    private class PropertyListModel extends DefaultListModel  {
+        @Override
+        public PropertyListItem getElementAt(int index) {
+            return (PropertyListItem) super.getElementAt(index);
+        }
+
+        @Override
+        public PropertyListItem get(int index) {
+            return (PropertyListItem) super.get(index);
+        }
+
+        @Override
+        public PropertyListItem[] toArray() {
+            Object[] values = super.toArray();
+            return Arrays.copyOf(values, values.length, PropertyListItem[].class);
+        }
+    }
+    
+    private class PropertyListItem {
+        public ClientPropertyDraw property;
+        private String userCaption;
+        private String userPattern;
+        Boolean inGrid; // false - panel, null - hidden through showIf
+        
+        public PropertyListItem(ClientPropertyDraw property, String userCaption, String userPattern, Boolean inGrid) {
+            this.property = property;
+            this.userCaption = userCaption;
+            this.userPattern = userPattern;
+            this.inGrid = inGrid;
+        }
+
+        public String getDefaultCaption() {
+            return property.getCaption();
+        }
+
+        public String getUserCaption(boolean ignoreDefault) {
+            return userCaption != null ? userCaption : (ignoreDefault ? null : property.getCaption());  
+        }
+        
+        public void setUserCaption(String userCaption) {
+            this.userCaption = userCaption;
+        }
+
+        public String getUserPattern(boolean ignoreDefault) {
+            return userPattern != null ? userPattern : (ignoreDefault ? null : property.getFormatPattern());
+        }
+
+        public void setUserPattern(String userPattern) {
+            this.userPattern = userPattern;
+        }
+
+        @Override
+        public String toString() {
+            String result = getUserCaption(false);
+            if (inGrid == null) {
+                result += " (" + getString("form.grid.preferences.property.not.shown") + ")";
+            } else if (!inGrid) {
+                result += " (" + getString("form.grid.preferences.property.in.panel") + ")";
+            }
+            return result;
+        }
+    }
+    
+    private class ListItemRenderer extends DefaultListCellRenderer {
+
+        @Override
+        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            Component component = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+            if (((PropertyListItem) value).inGrid == null || !((PropertyListItem) value).inGrid) {
+                component.setForeground(Color.LIGHT_GRAY);
+            }
+            return component;
+        }
+    }
 }

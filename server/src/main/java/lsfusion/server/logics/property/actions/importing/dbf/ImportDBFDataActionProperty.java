@@ -6,9 +6,9 @@ import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.actions.importing.ImportDataActionProperty;
 import lsfusion.server.logics.property.actions.importing.ImportIterator;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
-import net.iryndin.jdbf.core.DbfField;
-import net.iryndin.jdbf.reader.DbfReader;
 import org.jdom.JDOMException;
+import org.xBaseJ.DBF;
+import org.xBaseJ.xBaseJException;
 
 import java.io.File;
 import java.io.IOException;
@@ -23,37 +23,30 @@ public class ImportDBFDataActionProperty extends ImportDataActionProperty {
     }
 
     @Override
-    public ImportIterator getIterator(byte[] file) throws IOException, ParseException, JDOMException, ClassNotFoundException {
+    public ImportIterator getIterator(byte[] file) throws IOException, ParseException, xBaseJException, JDOMException, ClassNotFoundException {
 
         File tmpFile = null;
         try {
             tmpFile = File.createTempFile("importDBF", ".dbf");
             Files.write(file, tmpFile);
-            DbfReader reader = new DbfReader(tmpFile);
+            DBF dbf = new DBF(tmpFile.getAbsolutePath());
 
             Map<String, Integer> fieldMapping = new HashMap<>();
-            int i = 1;
-            for(DbfField field : reader.getMetadata().getFields()) {
-                fieldMapping.put(field.getName().toLowerCase(), i);
-                i++;
+            for (int i = 1; i <= dbf.getFieldCount(); i++) {
+                fieldMapping.put(dbf.getField(i).getName().toLowerCase(), i);
             }
             List<Integer> sourceColumns = getSourceColumns(fieldMapping);
 
-            return new ImportDBFIterator(reader, sourceColumns);
+            return new ImportDBFIterator(dbf, sourceColumns, properties);
 
         } finally {
-            if (tmpFile != null && !tmpFile.delete())
-                tmpFile.deleteOnExit();
+            if (tmpFile != null)
+                tmpFile.delete();
         }
     }
 
     @Override
     protected int columnsNumberBase() {
         return 1;
-    }
-
-    @Override
-    protected boolean ignoreIncorrectColumns() {
-        return false;
     }
 }

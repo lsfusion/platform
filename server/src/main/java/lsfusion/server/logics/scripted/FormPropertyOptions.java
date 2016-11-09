@@ -7,7 +7,6 @@ import lsfusion.server.form.entity.ActionPropertyObjectEntity;
 import lsfusion.server.form.entity.CalcPropertyObjectEntity;
 import lsfusion.server.form.entity.GroupObjectEntity;
 import lsfusion.server.form.entity.PropertyDrawEntity;
-import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.ActionProperty;
 
 import java.util.HashMap;
@@ -32,7 +31,7 @@ public class FormPropertyOptions {
     private CalcPropertyObjectEntity footer;
     private ClassViewType forceViewType;
     private GroupObjectEntity toDraw;
-    private OrderedMap<String, LocalizedString> contextMenuBindings;
+    private OrderedMap<String, String> contextMenuBindings;
     private Map<String, ActionPropertyObjectEntity> editActions;
     private String eventId;
     private PropertyDrawEntity neighbourPropertyDraw;
@@ -185,20 +184,20 @@ public class FormPropertyOptions {
         }
     }
 
-    public void addContextMenuBinding(String actionSID, LocalizedString caption) {
+    public void addContextMenuBinding(String actionSID, String caption) {
         if (contextMenuBindings == null) {
             contextMenuBindings = new OrderedMap<>();
         }
         contextMenuBindings.put(actionSID, caption);
     }
 
-    public void addContextMenuEditAction(LocalizedString caption, ActionPropertyObjectEntity action) {
+    public void addContextMenuEditAction(String caption, ActionPropertyObjectEntity action) {
         if (action != null) {
-            if (caption == null || isRedundantString(caption.getSourceString())) {
+            if (isRedundantString(caption)) {
                 caption = action.property.caption;
             }
-            if (caption == null || isRedundantString(caption.getSourceString())) {
-                caption = LocalizedString.create(action.property.getSID());
+            if (isRedundantString(caption)) {
+                caption = action.property.getSID();
             }
 
             addEditAction(action.property.getSID(), action);
@@ -207,11 +206,11 @@ public class FormPropertyOptions {
         }
     }
 
-    public OrderedMap<String, LocalizedString> getContextMenuBindings() {
+    public OrderedMap<String, String> getContextMenuBindings() {
         return contextMenuBindings;
     }
 
-    public void setContextMenuBindings(OrderedMap<String, LocalizedString> contextMenuBindings) {
+    public void setContextMenuBindings(OrderedMap<String, String> contextMenuBindings) {
         this.contextMenuBindings = contextMenuBindings;
     }
 

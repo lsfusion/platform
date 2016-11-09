@@ -9,8 +9,9 @@ import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.form.entity.drilldown.DrillDownFormEntity;
 import lsfusion.server.form.entity.drilldown.MaxUnionDrillDownFormEntity;
 import lsfusion.server.logics.LogicsModule;
-import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.session.PropertyChanges;
+
+import static lsfusion.server.logics.ServerResourceBundle.getString;
 
 public class MaxUnionProperty extends IncrementUnionProperty {
 
@@ -55,7 +56,7 @@ public class MaxUnionProperty extends IncrementUnionProperty {
         return operands;
     }
 
-    public MaxUnionProperty(boolean isMin, LocalizedString caption, ImOrderSet<Interface> interfaces, ImCol<CalcPropertyInterfaceImplement<Interface>> operands) {
+    public MaxUnionProperty(boolean isMin, String caption, ImOrderSet<Interface> interfaces, ImCol<CalcPropertyInterfaceImplement<Interface>> operands) {
         super(caption, interfaces);
         this.operands = operands;
         this.isMin = isMin;
@@ -71,7 +72,7 @@ public class MaxUnionProperty extends IncrementUnionProperty {
     @Override
     public DrillDownFormEntity createDrillDownForm(LogicsModule LM, String canonicalName) {
         return new MaxUnionDrillDownFormEntity(
-                canonicalName, LocalizedString.create("{logics.property.drilldown.form.max.union}"), this, LM
+                canonicalName, getString("logics.property.drilldown.form.max.union"), this, LM
         );
     }
 }

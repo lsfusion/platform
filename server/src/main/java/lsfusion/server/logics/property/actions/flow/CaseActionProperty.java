@@ -14,11 +14,10 @@ import lsfusion.server.classes.sets.ResolveClassSet;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.BusinessLogics;
-import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.mutables.NFFact;
-import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.mutables.impl.NFListImpl;
 import lsfusion.server.logics.mutables.interfaces.NFList;
+import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.cases.*;
 import lsfusion.server.logics.property.cases.graph.Graph;
@@ -31,7 +30,7 @@ import static lsfusion.server.logics.property.derived.DerivedProperty.createForA
 
 public class CaseActionProperty extends ListCaseActionProperty {
 
-    public static <I extends PropertyInterface> ActionProperty createIf(LocalizedString caption, boolean not, ImOrderSet<I> innerInterfaces, CalcPropertyMapImplement<?, I> ifProp, ActionPropertyMapImplement<?, I> trueAction, ActionPropertyMapImplement<?, I> falseAction) {
+    public static <I extends PropertyInterface> ActionProperty createIf(String caption, boolean not, ImOrderSet<I> innerInterfaces, CalcPropertyMapImplement<?, I> ifProp, ActionPropertyMapImplement<?, I> trueAction, ActionPropertyMapImplement<?, I> falseAction) {
         assert trueAction != null;
         if(not) // просто not'им if
             ifProp = DerivedProperty.createNot(ifProp);
@@ -80,7 +79,7 @@ public class CaseActionProperty extends ListCaseActionProperty {
         return ((ImList<ActionCase<PropertyInterface>>)cases);
     }
 
-    public <I extends PropertyInterface> CaseActionProperty(LocalizedString caption, boolean isExclusive, ImList<ActionPropertyMapImplement> impls, ImOrderSet<I> innerInterfaces) {
+    public <I extends PropertyInterface> CaseActionProperty(String caption, boolean isExclusive, ImList<ActionPropertyMapImplement> impls, ImOrderSet<I> innerInterfaces) {
         this(caption, isExclusive, innerInterfaces, impls.<ActionCase<I>>mapListValues(new GetValue<ActionCase<I>, ActionPropertyMapImplement>() {
             @Override
             public ActionCase<I> getMapValue(ActionPropertyMapImplement value) {
@@ -90,7 +89,7 @@ public class CaseActionProperty extends ListCaseActionProperty {
     }
 
     // explicit конструктор
-    public <I extends PropertyInterface> CaseActionProperty(LocalizedString caption, boolean isExclusive, ImOrderSet<I> innerInterfaces, ImList<ActionCase<I>> cases)  {
+    public <I extends PropertyInterface> CaseActionProperty(String caption, boolean isExclusive, ImOrderSet<I> innerInterfaces, ImList<ActionCase<I>> cases)  {
         super(caption, isExclusive, innerInterfaces);
 
         final ImRevMap<I, PropertyInterface> mapInterfaces = getMapInterfaces(innerInterfaces).reverse();
@@ -103,7 +102,7 @@ public class CaseActionProperty extends ListCaseActionProperty {
         finalizeInit();
     }
 
-    public <I extends PropertyInterface> CaseActionProperty(LocalizedString caption, boolean isExclusive, boolean isChecked, boolean isLast, AbstractType type, ImOrderSet<I> innerInterfaces, ImMap<I, ValueClass> mapClasses)  {
+    public <I extends PropertyInterface> CaseActionProperty(String caption, boolean isExclusive, boolean isChecked, boolean isLast, AbstractType type, ImOrderSet<I> innerInterfaces, ImMap<I, ValueClass> mapClasses)  {
         super(caption, isExclusive, isChecked, isLast, type, innerInterfaces, mapClasses);
 
         cases = NFFact.list();
@@ -177,7 +176,7 @@ public class CaseActionProperty extends ListCaseActionProperty {
     }
     
     public Graph<ActionCase<PropertyInterface>> getAbstractGraph() {
-        assert BusinessLogics.disableImplicitCases || (isAbstract() && type == AbstractType.MULTI);
+        assert isAbstract() && type == AbstractType.MULTI;
 
         return BusinessLogics.disableImplicitCases ? null : abstractGraph;
     }
@@ -230,22 +229,18 @@ public class CaseActionProperty extends ListCaseActionProperty {
     @Override
     public PropertyInterface getSimpleDelete() {
 
-        if(isExclusive || !Settings.get().isDisableSimpleAddRemoveInNonExclCase()) {
-            PropertyInterface result = null;
-            for (ActionPropertyMapImplement<?, PropertyInterface> action : getListActions()) {
-                PropertyInterface simpleDelete = action.mapSimpleDelete();
-                if (simpleDelete != null && (result == null || BaseUtils.hashEquals(result, simpleDelete)))
-                    result = simpleDelete;
-                else { // значит есть case который не удаляет или удаляет что-то другое
-                    result = null;
-                    break;
-                }
-            }
-            if (result != null)
-                return result;
+        if(!isExclusive && Settings.get().isDisableSimpleAddRemoveInNonExclCase())
+            return null;
+
+        PropertyInterface result = null;
+        for (ActionPropertyMapImplement<?, PropertyInterface> action : getListActions()) {
+            PropertyInterface simpleDelete = action.mapSimpleDelete();
+            if(simpleDelete!=null && (result==null || BaseUtils.hashEquals(result, simpleDelete)))
+                result = simpleDelete;
+            else // значит есть case который не удаляет или удаляет что-то другое
+                return null;
         }
-        
-        return super.getSimpleDelete();
+        return result;
     }
 
     /*
@@ -255,7 +250,7 @@ public class CaseActionProperty extends ListCaseActionProperty {
     private final ActionPropertyMapImplement<?, PropertyInterface> trueAction;
     private final ActionPropertyMapImplement<?, PropertyInterface> falseAction;
 
-    public <I extends PropertyInterface> IfActionProperty(String sID, LocalizedString caption, boolean not, ImOrderSet<I> innerInterfaces, CalcPropertyMapImplement<?, I> ifProp, ActionPropertyMapImplement<?, I> trueAction, ActionPropertyMapImplement<?, I> falseAction) {
+    public <I extends PropertyInterface> IfActionProperty(String sID, String caption, boolean not, ImOrderSet<I> innerInterfaces, CalcPropertyMapImplement<?, I> ifProp, ActionPropertyMapImplement<?, I> trueAction, ActionPropertyMapImplement<?, I> falseAction) {
         super(sID, caption, innerInterfaces.size());
 
         ImRevMap<I, PropertyInterface> mapInterfaces = getMapInterfaces(innerInterfaces).reverse();

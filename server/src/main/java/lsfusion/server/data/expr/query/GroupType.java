@@ -15,13 +15,12 @@ import lsfusion.server.data.type.ClassReader;
 import lsfusion.server.data.type.ConcatenateType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
-import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.*;
 
 public enum GroupType implements AggrType {
     SUM, MAX, MIN, ANY, STRING_AGG, AGGAR_SETADD, LAST;
 
-    public <T extends PropertyInterface> GroupProperty<T> createProperty(LocalizedString caption, ImSet<T> innerInterfaces, CalcPropertyInterfaceImplement<T> property, ImSet<? extends CalcPropertyInterfaceImplement<T>> interfaces) {
+    public <T extends PropertyInterface> GroupProperty<T> createProperty(String caption, ImSet<T> innerInterfaces, CalcPropertyInterfaceImplement<T> property, ImSet<? extends CalcPropertyInterfaceImplement<T>> interfaces) {
         switch (this) {
             case MAX:
                 return new MaxGroupProperty<>(caption, innerInterfaces, interfaces, property, false);

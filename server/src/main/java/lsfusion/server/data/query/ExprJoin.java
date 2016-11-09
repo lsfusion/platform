@@ -10,13 +10,9 @@ import lsfusion.server.caches.AbstractOuterContext;
 import lsfusion.server.caches.OuterContext;
 import lsfusion.server.caches.hash.HashContext;
 import lsfusion.server.data.expr.*;
-import lsfusion.server.data.expr.query.Stat;
-import lsfusion.server.data.expr.query.StatType;
-import lsfusion.server.data.query.innerjoins.UpWheres;
-import lsfusion.server.data.query.stat.KeyStat;
-import lsfusion.server.data.query.stat.StatKeys;
 import lsfusion.server.data.query.stat.UnionJoin;
 import lsfusion.server.data.query.stat.WhereJoin;
+import lsfusion.server.data.where.Where;
 
 public abstract class ExprJoin<T extends ExprJoin<T>> extends AbstractOuterContext<T> implements WhereJoin<Integer, T> {
 
@@ -39,11 +35,11 @@ public abstract class ExprJoin<T extends ExprJoin<T>> extends AbstractOuterConte
         return baseExpr.equals(((ExprJoin) o).baseExpr);
     }
 
-    public InnerJoins getJoinFollows(Result<UpWheres<InnerJoin>> upWheres, Result<ImSet<UnionJoin>> unionJoins) { // все равно использует getExprFollows
+    public InnerJoins getJoinFollows(Result<ImMap<InnerJoin, Where>> upWheres, Result<ImSet<UnionJoin>> unionJoins) { // все равно использует getExprFollows
         return InnerExpr.getJoinFollows(this, upWheres, unionJoins);
     }
 
-    public ImSet<NullableExprInterface> getExprFollows(boolean includeInnerWithoutNotNull, boolean recursive) {
+    public ImSet<NotNullExprInterface> getExprFollows(boolean includeInnerWithoutNotNull, boolean recursive) {
         return InnerExpr.getExprFollows(this, includeInnerWithoutNotNull, recursive);
     }
 
@@ -53,8 +49,8 @@ public abstract class ExprJoin<T extends ExprJoin<T>> extends AbstractOuterConte
 
     public static InnerJoins getInnerJoins(BaseExpr baseExpr) {
         InnerJoins result = InnerJoins.EMPTY;
-        ImSet<InnerExpr> innerExprs = NullableExpr.getInnerExprs(baseExpr.getExprFollows(true, NullableExpr.INNERJOINS, false), null);
-        for (int i = 0, size = innerExprs.size(); i < size; i++)
+        ImSet<InnerExpr> innerExprs = NotNullExpr.getInnerExprs(baseExpr.getExprFollows(true, NotNullExpr.INNERJOINS, false), null);
+        for(int i=0,size=innerExprs.size();i<size;i++)
             result = result.and(new InnerJoins(innerExprs.get(i).getInnerJoin()));
         return result;
     }

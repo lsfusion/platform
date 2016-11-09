@@ -1,6 +1,8 @@
 package lsfusion.server;
 
+import lsfusion.base.ApiResourceBundle;
 import lsfusion.server.context.ThreadLocalContext;
+import lsfusion.server.logics.ServerResourceBundle;
 import lsfusion.server.logics.property.AlgType;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.PropertyUtils;
@@ -41,6 +43,9 @@ public class Settings {
 
     // обозначает что если компилятор видет включающие join'ы (J1, J2, ... Jk) (J1,...J2, ... Jk,.. Jn) он будет выполнять все в первом подмножестве, предполагая что возникающий OR разберет SQL сервер что мягко говоря не так
     private boolean compileMeans = true;
+
+    // обозначает что компилятор будет проталкивать внутрь order подзапросов, общее условие
+    private boolean pushOrderWhere = true;
 
     // обозначает что при проверке условия на TRUE не будет преобразовывать A cmp B в 3 противоположных NOT'а как правильно, а будет использовать эвристику
     private boolean simpleCheckCompare = true;
@@ -89,11 +94,9 @@ public class Settings {
 
     private int usedChangesCacheLimit = 20;
 
-    private String language;
-    
-    private String country;
-    
+    private String locale;
     // максимум сколько свойств вместе будет применяться в базу
+
     private int splitIncrementApply = 10;
 
     private int statDegree = 5;
@@ -231,8 +234,6 @@ public class Settings {
 
     private boolean groupByTables = true; //для recalculate
 
-    private int profilerBatchSize = 10000;
-
     private int threadAllocatedMemoryPeriod = 180; //every 3 minutes
 
     private boolean readAllocatedBytes = true;
@@ -347,6 +348,14 @@ public class Settings {
 
     public void setEnableApplySingleStored(boolean enableApplySingleStored) {
         this.enableApplySingleStored = enableApplySingleStored;
+    }
+
+    public boolean isPushOrderWhere() {
+        return pushOrderWhere;
+    }
+
+    public void setPushOrderWhere(boolean pushOrderWhere) {
+        this.pushOrderWhere = pushOrderWhere;
     }
 
     public boolean isSplitSelectGroupInnerJoins() {
@@ -509,22 +518,16 @@ public class Settings {
         this.usedChangesCacheLimit = usedChangesCacheLimit;
     }
 
-    public void setLanguage(String language) {
-        this.language = language;
+    public void setLocale(String locale) {
+        this.locale = locale;
+        ServerResourceBundle.load(locale);
+        ApiResourceBundle.load(locale);
     }
 
-    public void setCountry(String country) {
-        this.country = country;
-    }
-    
-    public String getLanguage() {
-        return language;
+    public String getLocale() {
+        return locale;
     }
 
-    public String getCountry() {
-        return country;
-    }
-    
     public int getSplitIncrementApply() {
         return splitIncrementApply;
     }
@@ -1587,14 +1590,6 @@ public class Settings {
         this.groupByTables = groupByTables;
     }
 
-    public int getProfilerBatchSize() {
-        return profilerBatchSize;
-    }
-
-    public void setProfilerBatchSize(int profilerBatchSize) {
-        this.profilerBatchSize = profilerBatchSize;
-    }
-
     public int getThreadAllocatedMemoryPeriod() {
         return threadAllocatedMemoryPeriod;
     }
@@ -1647,6 +1642,16 @@ public class Settings {
 
     public void setMaxRecursionStatsIterations(int maxRecursionStatsIterations) {
         this.maxRecursionStatsIterations = maxRecursionStatsIterations;
+    }
+
+    private boolean useOldPushJoins = false;
+
+    public boolean isUseOldPushJoins() {
+        return useOldPushJoins;
+    }
+
+    public void setUseOldPushJoins(boolean useOldPushJoins) {
+        this.useOldPushJoins = useOldPushJoins;
     }
 
     private boolean useSavepointsForExceptions = true;
@@ -1936,7 +1941,7 @@ public class Settings {
         this.subReportTableOptimization = subReportTableOptimization;
     }
 
-    private int closeFormDelay = 5000;
+    private int closeFormDelay = 15000;
 
     public int getCloseFormDelay() {
         return closeFormDelay;

@@ -2,17 +2,19 @@ package lsfusion.server.logics.service;
 
 import lsfusion.base.Result;
 import lsfusion.interop.action.MessageClientAction;
+import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
+import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.ServiceLogicsModule;
-import lsfusion.server.logics.i18n.FormatLocalizedString;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
+import lsfusion.server.session.DataSession;
 
 import java.sql.SQLException;
 
-import static lsfusion.server.context.ThreadLocalContext.localize;
+import static lsfusion.server.logics.ServerResourceBundle.getString;
 
 public class CheckClassesActionProperty extends ScriptingActionProperty {
     public CheckClassesActionProperty(ServiceLogicsModule LM) {
@@ -28,7 +30,7 @@ public class CheckClassesActionProperty extends ScriptingActionProperty {
                 message.set(context.getBL().checkClasses(session));
             }
         });
-        context.delayUserInterfaction(new MessageClientAction(localize(new FormatLocalizedString("{logics.check.completed}", localize("{logics.checking.data.classes}"))) + '\n' + '\n' + message.result, localize("{logics.checking.data.classes}"), true));
+        context.delayUserInterfaction(new MessageClientAction(getString("logics.check.completed", getString("logics.checking.data.classes")) + '\n' + '\n' + message.result, getString("logics.checking.data.classes"), true));
     }
 
     @Override

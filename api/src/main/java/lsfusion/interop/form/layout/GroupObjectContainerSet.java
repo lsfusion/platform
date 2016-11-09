@@ -1,5 +1,7 @@
 package lsfusion.interop.form.layout;
 
+import static lsfusion.base.ApiResourceBundle.getString;
+
 // в этот класс вынесено автоматическое создание контейнеров при создании GroupObject
 public class GroupObjectContainerSet<C extends AbstractContainer<C, T>, T extends AbstractComponent<C, T>> {
 
@@ -63,30 +65,30 @@ public class GroupObjectContainerSet<C extends AbstractContainer<C, T>, T extend
 
         set.groupContainer = factory.createContainer(); // контейнер всей группы
         set.groupContainer.setCaption(group.getCaption());
-        set.groupContainer.setDescription("{form.layout.group.objects}");
+        set.groupContainer.setDescription(getString("form.layout.group.objects"));
         set.groupContainer.setSID(group.getSID() + GROUP_CONTAINER);
 
         set.gridContainer = factory.createContainer(); // контейнер грида внутрь
-        set.gridContainer.setDescription("{form.layout.grid.part}");
+        set.gridContainer.setDescription(getString("form.layout.grid.part"));
         set.gridContainer.setSID(group.getSID() + GRID_CONTAINER);
 
         set.panelContainer = factory.createContainer(); // контейнер панели
-        set.panelContainer.setDescription("{form.layout.panel}");
+        set.panelContainer.setDescription(getString("form.layout.panel"));
         set.panelContainer.setSID(group.getSID() + PANEL_CONTAINER);
 
         set.panelPropsContainer = factory.createContainer();
         set.panelPropsContainer.setSID(group.getSID() + PANEL_PROPS_CONTAINER);
 
         set.controlsContainer = factory.createContainer(); // контейнер всех управляющих объектов
-        set.controlsContainer.setDescription("{form.layout.control.objects}");
+        set.controlsContainer.setDescription(getString("form.layout.control.objects"));
         set.controlsContainer.setSID(group.getSID() + CONTROLS_CONTAINER);
 
         set.toolbarPropsContainer = factory.createContainer(); // контейнер тулбара
-        set.toolbarPropsContainer.setDescription("{form.layout.toolbar.props.container}");
+        set.toolbarPropsContainer.setDescription(getString("form.layout.toolbar.props.container"));
         set.toolbarPropsContainer.setSID(group.getSID() + TOOLBAR_PROPS_CONTAINER);
 
         set.filtersContainer = factory.createContainer(); // контейнер фильтров
-        set.filtersContainer.setDescription("{form.layout.filters.container}");
+        set.filtersContainer.setDescription(getString("form.layout.filters.container"));
         set.filtersContainer.setSID(group.getSID() + FILTERS_CONTAINER);
 
         set.rightControlsContainer = factory.createContainer();

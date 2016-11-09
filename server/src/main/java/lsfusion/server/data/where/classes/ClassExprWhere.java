@@ -68,7 +68,7 @@ public class ClassExprWhere extends AbstractClassWhere<VariableSingleClassExpr, 
             //else
             //    throw new RuntimeException("no classes"); // см. ClassExprWhere.getKeyType
         } else
-            return classSet.getType().getTypeStat(forJoin);
+            return classSet.getTypeStat(forJoin);
     }
 
     public Where getKeepWhere(KeyExpr keyExpr) {
@@ -233,12 +233,12 @@ public class ClassExprWhere extends AbstractClassWhere<VariableSingleClassExpr, 
         return result;
     }
 
-    public ImSet<NullableExprInterface> getExprFollows() {
-        ImSet<NullableExprInterface>[] follows = new ImSet[wheres.length]; int num = 0;
+    public ImSet<NotNullExprInterface> getExprFollows() {
+        ImSet<NotNullExprInterface>[] follows = new ImSet[wheres.length]; int num = 0;
         for(And<VariableSingleClassExpr> where : wheres) {
-            MSet<NullableExprInterface> mResult = SetFact.mSet();
+            MSet<NotNullExprInterface> mResult = SetFact.mSet();
             for(int i=0,size=where.size();i<size;i++)
-                mResult.addAll(where.getKey(i).getExprFollows(true, NullableExpr.FOLLOW, true));
+                mResult.addAll(where.getKey(i).getExprFollows(true, NotNullExpr.FOLLOW, true));
             follows[num++] = mResult.immutable();
         }
         return SetFact.and(follows);

@@ -42,7 +42,9 @@ import lsfusion.server.form.instance.listener.FocusListener;
 import lsfusion.server.form.instance.listener.RemoteFormListener;
 import lsfusion.server.logics.*;
 import lsfusion.server.logics.SecurityManager;
-import lsfusion.server.logics.property.*;
+import lsfusion.server.logics.property.ActionProperty;
+import lsfusion.server.logics.property.CalcProperty;
+import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.remote.ContextAwarePendingRemoteObject;
 import lsfusion.server.remote.RemoteForm;
 import lsfusion.server.remote.RemoteLoggerAspect;
@@ -86,8 +88,6 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
 
     private DataObject user;
 
-    private LocalePreferences userLocalePreferences;
-    
     private DataObject computer;
 
     private ObjectValue currentForm;
@@ -151,8 +151,6 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         finalizeInit(stack, SyncType.NOSYNC);
 
         navigatorManager.navigatorCreated(stack, this, navigatorInfo);
-        
-        loadLocalePreferences();
     }
 
     public boolean isFullClient() {
@@ -163,7 +161,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         Object newRole = securityManager.getUserMainRole(user);
         Object currentRole = securityManager.getUserMainRole(this.user);
         if (BaseUtils.nullEquals(newRole, currentRole)) {
-            setUser(user);
+            this.user = user;
             Result<Integer> timeout = new Result<>();
             this.securityPolicy = getUserSecurityPolicy(timeout);
             this.transactionTimeout = timeout.result;
@@ -289,11 +287,6 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         }
     }
 
-    private void setUser(DataObject user) {
-        this.user = user;
-        loadLocalePreferences();
-    }
-
     @Aspect
     private static class RemoteNavigatorUsageAspect {
         @Around("execution(* lsfusion.interop.navigator.RemoteNavigatorInterface.*(..)) && target(remoteNavigator)")
@@ -330,22 +323,6 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         public ObjectValue getCurrentUser() {
             RemoteNavigator remoteNavigator = weakThis.get();
             return remoteNavigator == null ? NullValue.instance : remoteNavigator.user;
-        }
-    }
-
-    private static class WeakLocaleController implements LocaleController { // чтобы помочь сборщику мусора и устранить цикл
-        WeakReference<RemoteNavigator> weakThis;
-
-        private WeakLocaleController(RemoteNavigator navigator) {
-            this.weakThis = new WeakReference<>(navigator);
-        }
-
-        @Override
-        public Locale getLocale() {
-            RemoteNavigator remoteNavigator = weakThis.get();
-            if(remoteNavigator != null)
-                return remoteNavigator.getLocale();
-            return Locale.getDefault();
         }
     }
 
@@ -484,7 +461,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
     }
     
     private DataSession createSession() throws SQLException {
-        DataSession session = dbManager.createSession(sql, new WeakUserController(this), new WeakComputerController(this), new WeakFormController(this), new WeakConnectionController(this), new WeakTimeoutController(this), new WeakChangesUserProvider(changesSync), new WeakLocaleController(this), null);
+        DataSession session = dbManager.createSession(sql, new WeakUserController(this), new WeakComputerController(this), new WeakFormController(this), new WeakConnectionController(this), new WeakTimeoutController(this), new WeakChangesUserProvider(changesSync), null);
         sessions.add(session);
         return session;
     }
@@ -503,7 +480,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         return useBusyDialog;
     }
 
-    private void loadLocalePreferences() {
+    public LocalePreferences getLocalePreferences() throws RemoteException {
         String language = null;
         String country = null;
         String timeZone = null;
@@ -511,34 +488,13 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         boolean useClientLocale = false;
         try (DataSession session = createSession()) {
             language = (String) businessLogics.authenticationLM.languageCustomUser.read(session, user);
-            if (language == null) {
-                language = logicsInstance.getSettings().getLanguage();
-                country = logicsInstance.getSettings().getCountry();
-            } else {
-                country = (String) businessLogics.authenticationLM.countryCustomUser.read(session, user);
-            }
+            country = (String) businessLogics.authenticationLM.countryCustomUser.read(session, user);
             timeZone = (String) businessLogics.authenticationLM.timeZoneCustomUser.read(session, user);
             twoDigitYearStart = (Integer) businessLogics.authenticationLM.twoDigitYearStartCustomUser.read(session, user);
             useClientLocale = businessLogics.authenticationLM.useClientLocaleCustomUser.read(session, user) != null;
         } catch (SQLException | SQLHandledException ignored) {
         }
-        this.userLocalePreferences = new LocalePreferences(language, country, timeZone, twoDigitYearStart, useClientLocale);
-    }
-    
-    public LocalePreferences getLocalePreferences() throws RemoteException {
-        return userLocalePreferences;
-    }
-
-    public LocalePreferences getLocalLocalePreferences() {
-        return userLocalePreferences;
-    }
-
-    public Locale getLocale() {
-        LocalePreferences pref = getLocalLocalePreferences();
-        if (pref != null && pref.useClientLocale && pref.language != null) {
-            return new Locale(pref.language, pref.country == null ? "" : pref.country);
-        }
-        return Locale.getDefault();
+        return new LocalePreferences(language, country, timeZone, twoDigitYearStart, useClientLocale);
     }
 
     public void gainedFocus(FormInstance<T> form) {
@@ -670,7 +626,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         FormEntity<T> formEntity = (FormEntity<T>) businessLogics.getFormEntityBySID(formSID);
 
         if (formEntity == null) {
-            throw new RuntimeException(ThreadLocalContext.localize("{form.navigator.form.with.id.not.found}") + " : " + formSID);
+            throw new RuntimeException(ServerResourceBundle.getString("form.navigator.form.with.id.not.found") + " : " + formSID);
         }
 
         if (!securityPolicy.navigator.checkPermission(formEntity)) {
@@ -698,7 +654,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
             try(DataSession session = createSession()) {
                 return context.createRemoteForm(
                         context.createFormInstance(formEntity, MapFact.<ObjectEntity, DataObject>EMPTY(), session,
-                                isModal, false, true, stack, false, false, interactive, null,
+                                isModal, false, FormSessionScope.MANAGESESSION, stack, false, false, interactive, null,
                                 null, null, false),
                         stack);
             }
@@ -850,10 +806,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
                     session.apply(businessLogics, stack);
                 }
                 EnvStackRunnable notification = notificationsMap.getNotification(idNotification);
-                if(notification != null)
-                    notification.run(env, stack);
-                else
-                    ServerLoggers.assertLog(false, "NOTIFICATION " + idNotification + " SHOULD EXIST"); // возможно может нарушаться при перепосылке запроса на клиенте при проблемах со связью
+                notification.run(env, stack);
             } catch (SQLException | SQLHandledException e) {
                 ServerLoggers.systemLogger.error("DeliveredNotificationAction failed: ", e);
             }
@@ -866,11 +819,11 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
             final NavigatorElement element = businessLogics.LM.root.getNavigatorElementBySID(actionSID);
 
             if (!(element instanceof NavigatorAction)) {
-                throw new RuntimeException(ThreadLocalContext.localize("{form.navigator.action.not.found}"));
+                throw new RuntimeException(ServerResourceBundle.getString("form.navigator.action.not.found"));
             }
 
             if (!securityPolicy.navigator.checkPermission(element)) {
-                throw new RuntimeException(ThreadLocalContext.localize("{form.navigator.not.enough.permissions}"));
+                throw new RuntimeException(ServerResourceBundle.getString("form.navigator.not.enough.permissions"));
             }
 
             property = ((NavigatorAction) element).getProperty();
@@ -902,7 +855,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
     }
 
     @Override
-    public void formClosed(RemoteForm form) {
+    public void formExplicitClosed(RemoteForm form) {
         synchronized (forms) {
             forms.remove(form);
         }
@@ -917,8 +870,12 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         }
     }
 
+    @Override
+    public void formFinalClosed(RemoteForm form) {
+    }
+
     public synchronized void close() throws RemoteException {
-        deactivateAndCloseLater(true); // после вызова close, предполагается что новых запросов уже идти не может, а старые закроются
+        explicitClose(true);
     }
 
     // обмен изменениями между сессиями в рамках одного подключения
@@ -973,6 +930,9 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         }
 
         public synchronized void regChange(ImSet<CalcProperty> updateChanges, DataSession session) {
+            if(!Settings.get().getUseUserChangesSync())
+                return;
+
             currentStamp++;
 
             for(CalcProperty change : updateChanges) {
@@ -986,6 +946,9 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         }
 
         public synchronized ImSet<CalcProperty> update(DataSession session, FormInstance form) {
+            if(!Settings.get().getUseUserChangesSync())
+                return SetFact.EMPTY();
+
             assert session == form.session;
 
             Long lPrevStamp = formStamps.get(form);
@@ -1044,26 +1007,9 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
     }
 
     @Override
-    protected void onDeactivate() {
-        super.onDeactivate(); // сначала очищаем свои процессы, потом процессы форм (так как свои процессы могут создавать формы)
+    protected void onExplicitClose(boolean syncedOnClient) {
+        assert syncedOnClient; // пока нет случаев когда это не так
 
-        Set<RemoteForm> proceededForms = new HashSet<>();
-        while(true) { // нужны в том числе закрывающиеся формы, чтобы гарантировать, что все формы закроются до закрытия соединения
-            Set<RemoteForm> formsSnap = new HashSet<>();
-            synchronized (forms) {
-                for(RemoteForm form : forms)
-                    if(form != null && proceededForms.add(form))
-                        formsSnap.add(form);
-                if(formsSnap.isEmpty())
-                    break; // считаем что когда навигатор закрывается новые создаваться не могут
-            }
-            for(RemoteForm form : formsSnap)
-                form.deactivate();
-        }
-    }
-
-    @Override
-    protected void onClose() {
         while(true) { // нужны в том числе закрывающиеся формы, чтобы гарантировать, что все формы закроются до закрытия соединения
             Set<RemoteForm> formsSnap;
             synchronized (forms) {
@@ -1073,19 +1019,33 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
             }
             for(RemoteForm form : formsSnap)
                 if(form != null)
-                    form.explicitClose();
+                    form.explicitClose(syncedOnClient);
         }
 
-        super.onClose();
+        super.onExplicitClose(syncedOnClient);
 
-        navigatorManager.navigatorClosed(this, getStack(), getConnection());
+        navigatorManager.navigatorExplicitClosed(this);
+    }
 
-        try {
-            ThreadLocalContext.assureRmi(RemoteNavigator.this);
-            sql.close();
-        } catch (Throwable t) {
-            ServerLoggers.sqlSuppLog(t);
-        }
+    protected Runnable getAfterCleanThreadsRunnable() { // даем время на очистку потоков, чтобы например unregisterThreadStack при interrupt'е не получал sql session is already closed
+        return new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    ThreadLocalContext.assureRmi(RemoteNavigator.this);
+                    sql.close();
+                } catch (Throwable t) {
+                    ServerLoggers.sqlSuppLog(t);
+                }
+            }
+        };
+    }
+
+    @Override
+    protected void onFinalClose(boolean explicit) {
+        super.onFinalClose(explicit);
+
+        navigatorManager.navigatorFinalClosed(getStack(), getConnection()); // тут по идее другой connection
     }
 
     @Override

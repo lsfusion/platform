@@ -146,7 +146,6 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
     public LAP recalculateAggregationTableColumn;
 
     public LCP notRecalculateSID;
-    public LCP notRecalculateStatsSID;
 
     public LCP<?> sidTableDropColumn;
     public LCP<?> sidDropColumn;
@@ -157,7 +156,7 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
     public LAP dropDropColumn;
 
     public final StringClass navigatorElementSIDClass = StringClass.get(50);
-    public final StringClass navigatorElementCanonicalNameClass = StringClass.getv(100);
+    public final StringClass navigatorElementCanonicalNameClass = StringClass.get(100);
     public final StringClass navigatorElementCaptionClass = StringClass.get(250);
     public final StringClass propertySIDValueClass = StringClass.get(100);
     public final StringClass propertyCanonicalNameValueClass = StringClass.get(512);
@@ -353,8 +352,6 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
         notRecalculateTableColumn = findProperty("notRecalculate[TableColumn]");
         notRecalculateSID = findProperty("notRecalculate[VARISTRING[100]]");
         recalculateAggregationTableColumn = findAction("recalculateAggregation[TableColumn]");
-
-        notRecalculateStatsSID = findProperty("notRecalculateStats[VARISTRING[100]]");
 
         // Удаленные колонки
         sidTableDropColumn = findProperty("sidTable[DropColumn]");

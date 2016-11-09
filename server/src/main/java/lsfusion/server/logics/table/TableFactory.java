@@ -4,7 +4,6 @@ import lsfusion.base.ExceptionUtils;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
@@ -49,25 +48,15 @@ public class TableFactory implements FullTablesInterface {
 
     // получает постоянные таблицы
     public ImSet<ImplementTable> getImplementTables() {
-        return getImplementTables((Set<String>) null);
-    }
-
-    public ImSet<ImplementTable> getImplementTables(Set<String> notRecalculateStatsTableSet) {
         MExclSet<ImplementTable> result = SetFact.mExclSet();
         for (NFOrderSet<ImplementTable> implementTableEntry : implementTablesMap.values()) {
             MSet<ImplementTable> mIntTables = SetFact.mSet();
-            for (ImplementTable implementTable : implementTableEntry.getIt()) {
-                if(notRecalculateStatsTableSet == null || !notRecalculateStatsTableSet.contains(implementTable.getName()))
-                    implementTable.fillSet(mIntTables);
-            }
+            for (ImplementTable implementTable : implementTableEntry.getIt())
+                implementTable.fillSet(mIntTables);
             result.exclAddAll(mIntTables.immutable());
         }
-        for (List<ImplementTable> implementTableEntry : includedTablesMap.values()) {
-            for (ImplementTable implementTable : implementTableEntry) {
-                if(notRecalculateStatsTableSet == null || !notRecalculateStatsTableSet.contains(implementTable.getName()))
-                    result.exclAdd(implementTable);
-            }
-        }
+        for (List<ImplementTable> implementTableEntry : includedTablesMap.values())
+            result.exclAddAll(SetFact.fromJavaOrderSet(implementTableEntry).getSet());
         return result.immutable();
     }
 
@@ -79,7 +68,7 @@ public class TableFactory implements FullTablesInterface {
         });
     }
 
-    public <T> MapKeysTable<T> getMapTable(ImOrderMap<T, ValueClass> findItem) {
+    public <T> MapKeysTable<T> getMapTable(ImMap<T, ValueClass> findItem) {
         NFOrderSet<ImplementTable> tables = implementTablesMap.get(findItem.size());
         if (tables != null)
             for (ImplementTable implementTable : tables.getListIt()) {
@@ -90,7 +79,7 @@ public class TableFactory implements FullTablesInterface {
         return getIncludedMapTable(findItem);
     }
 
-    public <T> MapKeysTable<T> getClassMapTable(ImOrderMap<T, ValueClass> findItem) {
+    public <T> MapKeysTable<T> getClassMapTable(ImMap<T, ValueClass> findItem) {
         NFOrderSet<ImplementTable> tables = implementTablesMap.get(findItem.size());
         if (tables != null) {
             for (ImplementTable implementTable : tables.getListIt()) {
@@ -102,7 +91,7 @@ public class TableFactory implements FullTablesInterface {
         return getIncludedMapTable(findItem);
     }
 
-    public <T> ImSet<MapKeysTable<T>> getFullMapTables(ImOrderMap<T, ValueClass> findItem, ImplementTable table) {
+    public <T> ImSet<MapKeysTable<T>> getFullMapTables(ImMap<T, ValueClass> findItem, ImplementTable table) {
         NFOrderSet<ImplementTable> tables = implementTablesMap.get(findItem.size());
         if(tables == null)
             return SetFact.EMPTY();
@@ -117,14 +106,13 @@ public class TableFactory implements FullTablesInterface {
     @IdentityLazy
     public ImSet<ImplementTable> getFullTables(ObjectValueClassSet findItem, ImplementTable skipTable) {
         ValueClass valueClass;
-        ImMap<KeyField, ValueClass> mapFields;
-        if(skipTable != null && (mapFields = skipTable.getMapFields()).size() == 1 && skipTable.isFull()) // recursion guard, проверка на isFull нужна, потому что иначе пойдем вверх, а потом вернемся на эту же таблиц
-            valueClass = mapFields.singleValue();
+        if(skipTable != null && skipTable.mapFields.size() == 1 && skipTable.isFull()) // recursion guard, проверка на isFull нужна, потому что иначе пойдем вверх, а потом вернемся на эту же таблиц
+            valueClass = skipTable.mapFields.singleValue();
         else {
             valueClass = findItem.getOr().getCommonClass(true);
             skipTable = null;
         }
-        return getFullMapTables(MapFact.<String, ValueClass>singletonOrder("key", valueClass), skipTable).mapSetValues(new GetValue<ImplementTable, MapKeysTable<String>>() {
+        return getFullMapTables(MapFact.<String, ValueClass>singleton("key", valueClass), skipTable).mapSetValues(new GetValue<ImplementTable, MapKeysTable<String>>() {
             public ImplementTable getMapValue(MapKeysTable<String> value) {
                 return value.table;
             }
@@ -133,7 +121,7 @@ public class TableFactory implements FullTablesInterface {
 
     // получает "автоматическую таблицу"
     @NFLazy
-    private <T> MapKeysTable<T> getIncludedMapTable(ImOrderMap<T, ValueClass> findItem) {
+    private <T> MapKeysTable<T> getIncludedMapTable(ImMap<T, ValueClass> findItem) {
         int classCount = findItem.size();
         List<ImplementTable> incTables = includedTablesMap.get(classCount);
         if(incTables==null) {
@@ -204,7 +192,7 @@ public class TableFactory implements FullTablesInterface {
     public List<ImplementTable> getImplementTables(ImSet<CustomClass> cls) {
         List<ImplementTable> result = new ArrayList<>();
         for (ImplementTable table : getImplementTables()) {
-            if (!table.getMapFields().values().toSet().disjoint(cls)) {
+            if (!table.mapFields.values().toSet().disjoint(cls)) {
                 result.add(table);
             }
         }

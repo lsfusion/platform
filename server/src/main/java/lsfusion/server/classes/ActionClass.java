@@ -7,7 +7,7 @@ import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.ParseException;
 import lsfusion.server.form.view.report.ReportDrawField;
 import lsfusion.server.logics.ObjectValue;
-import lsfusion.server.logics.i18n.LocalizedString;
+import lsfusion.server.logics.ServerResourceBundle;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -24,7 +24,12 @@ public class ActionClass extends DataClass<Object> {
         DataClass.storeClass(instance);
     }
 
-    private ActionClass() { super(LocalizedString.create("{classes.action}")); }
+    private ActionClass() { super(ServerResourceBundle.getString("classes.action")); }
+
+    @Override
+    public String toString() {
+        return "Action";
+    }
 
     public DataClass getCompatible(DataClass compClass, boolean or) {
         return compClass instanceof ActionClass ? this : null;

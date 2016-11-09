@@ -3,17 +3,11 @@ package lsfusion.server.logics.property.group;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
-import lsfusion.base.col.interfaces.immutable.ImList;
-import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.base.col.interfaces.immutable.ImOrderSet;
-import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.base.col.interfaces.mutable.MOrderSet;
 import lsfusion.server.caches.IdentityStartLazy;
-import lsfusion.server.classes.ValueClass;
-import lsfusion.server.context.ThreadLocalContext;
-import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.mutables.NFFact;
 import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.mutables.interfaces.NFOrderSet;
@@ -28,13 +22,13 @@ public class AbstractGroup extends AbstractNode {
 
     private final String sID;
 
-    public final LocalizedString caption;
+    public final String caption;
 
     private NFOrderSet<AbstractNode> children = NFFact.orderSet(true);
 
     public boolean createContainer = true;
 
-    public AbstractGroup(String sID, LocalizedString caption) {
+    public AbstractGroup(String sID, String caption) {
         this.sID = sID;
         this.caption = caption;
     }
@@ -140,11 +134,10 @@ public class AbstractGroup extends AbstractNode {
         return result;
     }
 
-    @Override
-    protected ImList<PropertyClassImplement> getProperties(ImSet<ValueClassWrapper> valueClasses, ImMap<ValueClass, ImSet<ValueClassWrapper>> mapClasses, boolean useObjSubsets, boolean anyInInterface, Version version) {
+    public ImList<PropertyClassImplement> getProperties(ImCol<ImSet<ValueClassWrapper>> classLists, boolean anyInInterface, Version version) {
         MList<PropertyClassImplement> mResult = ListFact.mList();
         for (AbstractNode child : getNFChildrenListIt(version)) {
-            mResult.addAll(child.getProperties(valueClasses, mapClasses, useObjSubsets, anyInInterface, version));
+            mResult.addAll(child.getProperties(classLists, anyInInterface, version));
         }
         return mResult.immutableList();
     }
@@ -165,6 +158,6 @@ public class AbstractGroup extends AbstractNode {
 
     @Override
     public String toString() {
-        return caption == null ? super.toString() : ThreadLocalContext.localize(caption);
+        return caption == null ? super.toString() : caption;
     }
 }

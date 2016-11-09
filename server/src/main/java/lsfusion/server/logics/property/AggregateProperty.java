@@ -4,7 +4,10 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.ProgressBar;
 import lsfusion.base.col.MapFact;
-import lsfusion.base.col.interfaces.immutable.*;
+import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.base.col.interfaces.immutable.ImOrderMap;
+import lsfusion.base.col.interfaces.immutable.ImOrderSet;
+import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndexValue;
 import lsfusion.interop.Compare;
 import lsfusion.server.Settings;
@@ -14,9 +17,8 @@ import lsfusion.server.classes.BaseClass;
 import lsfusion.server.data.*;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
-import lsfusion.server.data.expr.NullableKeyExpr;
+import lsfusion.server.data.expr.NotNullKeyExpr;
 import lsfusion.server.data.expr.query.Stat;
-import lsfusion.server.data.expr.query.StatType;
 import lsfusion.server.data.query.Query;
 import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.data.query.stat.StatKeys;
@@ -26,7 +28,6 @@ import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.DBManager;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
-import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.infer.InferType;
 import lsfusion.server.session.DataSession;
 import lsfusion.server.session.PropertyChanges;
@@ -44,7 +45,7 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Cal
         return mapTable!=null && !DataSession.reCalculateAggr; // для тестирования 2-е условие
     }
 
-    protected AggregateProperty(LocalizedString caption, ImOrderSet<T> interfaces) {
+    protected AggregateProperty(String caption,ImOrderSet<T> interfaces) {
         super(caption,interfaces);
     }
 
@@ -177,7 +178,7 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Cal
             BL.reflectionLM.lastRecalculateProperty.change(new Timestamp(System.currentTimeMillis()), session, (DataObject) propertyObject);
     }
 
-    @StackMessage("{logics.info.recalculation.of.aggregated.property}")
+    @StackMessage("logics.info.recalculation.of.aggregated.property")
     @ThisMessage
     public void recalculateAggregation(SQLSession session, QueryEnvironment env, BaseClass baseClass) throws SQLException, SQLHandledException {
         boolean useRecalculate = Settings.get().isUseRecalculateClassesInsteadOfInconsisentExpr();
@@ -197,14 +198,14 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Cal
     }
     
     @IdentityStartLazy
-    private Pair<ImRevMap<T,NullableKeyExpr>, Expr> calculateQueryExpr(CalcType calcType) {
-        ImRevMap<T,NullableKeyExpr> mapExprs = getMapNotNullKeys();
+    private Pair<ImRevMap<T,NotNullKeyExpr>, Expr> calculateQueryExpr(CalcType calcType) {
+        ImRevMap<T,NotNullKeyExpr> mapExprs = getMapNotNullKeys();
         return new Pair<>(mapExprs, calculateExpr(mapExprs, calcType));
     }
     
     @IdentityStartLazy
     protected ClassWhere<Object> calcClassValueWhere(CalcClassType calcType) {
-        Pair<ImRevMap<T, NullableKeyExpr>, Expr> query = calculateQueryExpr(calcType == CalcClassType.PREVSAME && noOld() ? CalcClassType.PREVBASE : calcType); // оптимизация
+        Pair<ImRevMap<T, NotNullKeyExpr>, Expr> query = calculateQueryExpr(calcType == CalcClassType.PREVSAME && noOld() ? CalcClassType.PREVBASE : calcType); // оптимизация
         ClassWhere<Object> result = Query.getClassWhere(Where.TRUE, query.first, MapFact.singleton((Object) "value", query.second)); 
         if(calcType == CalcClassType.PREVSAME) // для того чтобы докинуть orAny, собсно только из-за этого infer необходим в любом случае
             result = result.and(inferClassValueWhere(InferType.PREVSAME));
@@ -214,7 +215,7 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Cal
     @Override
     @IdentityLazy
     protected boolean calcNotNull(CalcInfoType calcType) {
-        Pair<ImRevMap<T, NullableKeyExpr>, Expr> query = calculateQueryExpr(calcType); // оптимизация
+        Pair<ImRevMap<T, NotNullKeyExpr>, Expr> query = calculateQueryExpr(calcType); // оптимизация
         return query.second.getWhere().means(Expr.getWhere(query.first));
     }
 
@@ -224,22 +225,20 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Cal
         return calculateQueryExpr(calcType).second.getWhere().isFalse();
     }
 
-    private ImRevMap<T, NullableKeyExpr> getMapNotNullKeys() {
-        return interfaces.mapRevValues(new GetIndexValue<NullableKeyExpr, T>() {
-            public NullableKeyExpr getMapValue(int i, T value) {
-                return new NullableKeyExpr(i);
+    private ImRevMap<T, NotNullKeyExpr> getMapNotNullKeys() {
+        return interfaces.mapRevValues(new GetIndexValue<NotNullKeyExpr, T>() {
+            public NotNullKeyExpr getMapValue(int i, T value) {
+                return new NotNullKeyExpr(i);
             }});
     }
 
     @IdentityStartLazy
     public StatKeys<T> getInterfaceClassStats() {
         ImRevMap<T,KeyExpr> mapKeys = getMapKeys();
-        Where where = calculateStatExpr(mapKeys).getWhere();
-        mapKeys = mapKeys.filterInclValuesRev(BaseUtils.<ImSet<KeyExpr>>immutableCast(where.getOuterKeys()));
-        return where.getFullStatKeys(mapKeys.valuesSet(), StatType.PROP_STATS).mapBack(mapKeys);
+        return calculateStatExpr(mapKeys).getWhere().getStatKeys(mapKeys.valuesSet()).mapBack(mapKeys);
     }
 
     public boolean hasAlotKeys() {
-        return Stat.ALOT.lessEquals(getInterfaceClassStats().getRows());
+        return Stat.ALOT.lessEquals(getInterfaceClassStats().rows);
     }
 }

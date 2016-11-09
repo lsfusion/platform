@@ -8,7 +8,6 @@ import lsfusion.server.classes.sets.AndClassSet;
 import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
-import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.form.view.report.ReportDrawField;
@@ -55,8 +54,6 @@ public interface Type<T> extends ClassReader<T>, FunctionType {
     ConcreteClass getDataClass(Object value, SQLSession session, AndClassSet classSet, BaseClass baseClass, OperationOwner owner) throws SQLException, SQLHandledException;
 
     ImList<AndClassSet> getUniversal(BaseClass baseClass);
-
-    Stat getTypeStat(boolean forJoin);
 
     ExtInt getCharLength();
 

@@ -4,7 +4,7 @@ import lsfusion.interop.Data;
 import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.ParseException;
-import lsfusion.server.logics.i18n.LocalizedString;
+import lsfusion.server.logics.ServerResourceBundle;
 
 import java.awt.*;
 import java.sql.PreparedStatement;
@@ -19,7 +19,7 @@ public class ColorClass extends DataClass<Color> {
         DataClass.storeClass(instance);
     }
 
-    private ColorClass() { super(LocalizedString.create("{classes.color}")); }
+    private ColorClass() { super(ServerResourceBundle.getString("classes.color")); }
 
     @Override
     public DataClass getCompatible(DataClass compClass, boolean or) {

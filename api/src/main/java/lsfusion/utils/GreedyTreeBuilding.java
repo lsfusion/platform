@@ -255,13 +255,6 @@ public class GreedyTreeBuilding<V, C extends Comparable<C>, E extends GreedyTree
         costs.add(cost);
     }
 
-    public int getVertexIndex(V vertex) {
-        return vertexIndex.get(vertex);
-    }
-    public C getVertexCost(int index) {
-        return costs.get(index);
-    }
-
     private PriorityQueue<ComplexEdge<V, C, E>> queue = new PriorityQueue<>();
     private final Map<Node<V, C>, Integer> nodeIndex = new HashMap<>();
     private final List<Node<V, C>> nodes = new ArrayList<>();
@@ -328,8 +321,6 @@ public class GreedyTreeBuilding<V, C extends Comparable<C>, E extends GreedyTree
             }
         }
     }
-    
-    private boolean debugEnabled;
 
     private ComplexEdge<V, C, E> getMinimumEdge(Set<Node<V, C>> deleted, CalculateCost<V, C, E> functor) {
         while (!queue.isEmpty()) {
@@ -344,11 +335,6 @@ public class GreedyTreeBuilding<V, C extends Comparable<C>, E extends GreedyTree
                         continue;
                     }
                 } 
-                
-                if(debugEnabled) {
-                    System.out.println("PICK UP : " + nextEdge.cost);
-                }
-                
                 return nextEdge;
             }
         } 
@@ -388,10 +374,6 @@ public class GreedyTreeBuilding<V, C extends Comparable<C>, E extends GreedyTree
                 adjMatrix.get(newIndex).set(i, newEdge);
                 adjMatrix.get(i).add(newEdge);
                 queue.add(newEdge);
-                
-                if(debugEnabled) {
-                    System.out.println("JOIN NODES : " + newEdge.cost + ", index : " + BaseUtils.indexOf(queue, newEdge));
-                }
             }
         }
         
@@ -438,20 +420,16 @@ public class GreedyTreeBuilding<V, C extends Comparable<C>, E extends GreedyTree
                     TreeNode<V, C> firstNode = DP(submask, memo, functor);
                     TreeNode<V, C> secondNode = DP(submask2, memo, functor);
                     EdgeLinkedList<E> edgeList = new EdgeLinkedList<>();
-                    for (int fromIndex = 0; fromIndex < vertices.size(); ++fromIndex) {
-                        if ((submask & (1<<fromIndex)) != 0) {
-                            for (E edge : adjList.get(fromIndex)) {
-                                int toIndex = vertexIndex.get(edge.getTo());
-                                if ((submask2 & (1<<toIndex)) != 0) {
-                                    edgeList.addEdge(edge);
+                    for (int firstIndex = 0; firstIndex < vertices.size(); ++firstIndex) {
+                        if ((submask & (1<<firstIndex)) != 0) {
+                            for (E edge : adjList.get(firstIndex)) {
+                                int secondIndex;
+                                if (vertexIndex.get(edge.getTo()) == firstIndex) {
+                                    secondIndex = vertexIndex.get(edge.getFrom());
+                                } else {
+                                    secondIndex = vertexIndex.get(edge.getTo());
                                 }
-                            }
-                        }
-
-                        if ((submask2 & (1<<fromIndex)) != 0) {
-                            for (E edge : adjList.get(fromIndex)) {
-                                int toIndex = vertexIndex.get(edge.getTo());
-                                if ((submask & (1<<toIndex)) != 0) {
+                                if ((submask2 & (1<<secondIndex)) != 0) {
                                     edgeList.addEdge(edge);
                                 }
                             }
@@ -515,16 +493,11 @@ public class GreedyTreeBuilding<V, C extends Comparable<C>, E extends GreedyTree
         List<E> edges = new ArrayList<>(); 
         for (int leftIndex : leftNodeIndices) {
             for (E edge : adjList.get(leftIndex)) {
-                if (rightNodeIndices.contains(vertexIndex.get(edge.getTo()))) {
-                    edges.add(edge);    
-                }
-            }
-        }
-
-        for (int rightIndex : rightNodeIndices) {
-            for (E edge : adjList.get(rightIndex)) {
-                if (leftNodeIndices.contains(vertexIndex.get(edge.getTo()))) {
-                    edges.add(edge);
+                int fromIndex = vertexIndex.get(edge.getFrom());
+                int toIndex = vertexIndex.get(edge.getTo());
+                if (leftIndex == toIndex && rightNodeIndices.contains(fromIndex) ||
+                    leftIndex == fromIndex && rightNodeIndices.contains(toIndex)) {
+                    edges.add(edge);            
                 }
             }
         }

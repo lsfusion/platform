@@ -19,7 +19,7 @@ import java.sql.SQLException;
 import java.util.Iterator;
 
 import static lsfusion.base.BaseUtils.nullTrim;
-import static lsfusion.server.context.ThreadLocalContext.localize;
+import static lsfusion.server.logics.ServerResourceBundle.getString;
 
 public class ReceiveEmailAccountActionProperty extends ScriptingActionProperty {
     private final ClassPropertyInterface accountInterface;
@@ -34,8 +34,8 @@ public class ReceiveEmailAccountActionProperty extends ScriptingActionProperty {
         Iterator<ClassPropertyInterface> i = interfaces.iterator();
         accountInterface = i.next();
 
-        drawOptions.setAskConfirm(true);
-        drawOptions.setImage("email.png");
+        askConfirm = true;
+        setImage("email.png");
     }
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
@@ -46,7 +46,7 @@ public class ReceiveEmailAccountActionProperty extends ScriptingActionProperty {
 
                 DataObject accountObject = context.getDataKeyValue(accountInterface);
                 if (emailLM.disableAccount.read(context, accountObject) != null) {
-                    logError(context, localize("{mail.disabled}"));
+                    logError(context, getString("mail.disabled"));
                     return;
                 }
 
@@ -63,7 +63,7 @@ public class ReceiveEmailAccountActionProperty extends ScriptingActionProperty {
                         isPop3Account, deleteMessagesAccount, lastDaysAccount);
 
             } catch (Exception e) {
-                logError(context, localize("{mail.failed.to.receive.mail}") + " : " + e.toString());
+                logError(context, getString("mail.failed.to.receive.mail") + " : " + e.toString());
                 e.printStackTrace();
             }
         } else {
@@ -75,7 +75,7 @@ public class ReceiveEmailAccountActionProperty extends ScriptingActionProperty {
                               String nameAccount, String passwordAccount, boolean isPop3, boolean deleteMessagesAccount, Integer lastDaysAccount)
             throws MessagingException, IOException, ScriptingErrorLog.SemanticErrorException, SQLException, SQLHandledException, GeneralSecurityException {
         if (receiveHostAccount == null) {
-            logError(context, localize("{mail.pop3.host.not.specified.letters.will.not.be.received}"));
+            logError(context, getString("mail.pop3.host.not.specified.letters.will.not.be.received"));
             return;
         }
 
@@ -87,6 +87,6 @@ public class ReceiveEmailAccountActionProperty extends ScriptingActionProperty {
 
     private void logError(ExecutionContext context, String errorMessage) {
         logger.error(errorMessage);
-        context.delayUserInterfaction(new MessageClientAction(errorMessage, localize("{mail.receiving}")));
+        context.delayUserInterfaction(new MessageClientAction(errorMessage, getString("mail.receiving")));
     }
 }

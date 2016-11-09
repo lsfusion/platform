@@ -5,9 +5,7 @@ import lsfusion.server.data.type.ParseInterface;
 
 public interface ParseValue {
 
-    ParseInterface getParseInterface(QueryEnvironment env);
-
-    boolean isAlwaysSafeString();
+    ParseInterface getParseInterface();
 
     FunctionType getFunctionType();
 }

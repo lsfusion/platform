@@ -5,7 +5,6 @@ import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.ObjectValue;
-import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 
@@ -13,7 +12,7 @@ import java.sql.SQLException;
 
 public abstract class CustomReadValueActionProperty extends UserActionProperty {
 
-    protected CustomReadValueActionProperty(LocalizedString caption, ValueClass[] classes) {
+    protected CustomReadValueActionProperty(String caption, ValueClass[] classes) {
         super(caption, classes);
     }
 

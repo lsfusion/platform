@@ -77,6 +77,6 @@ public abstract class RmiRequest<T> {
 
     @Override
     public String toString() {
-        return "RR[" + name + " : " + requestIndex + ", last received : " + lastReceivedRequestIndex + "]";
+        return "RR[" + name + " : " + requestIndex + "]";
     }
 }

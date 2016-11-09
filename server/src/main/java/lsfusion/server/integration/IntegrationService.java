@@ -59,7 +59,7 @@ public class IntegrationService {
         synchronize(replaceNull, true);
     }
 
-    @StackMessage("{message.synchronize}")
+    @StackMessage("message.synchronize")
     public void synchronize(boolean replaceNull, boolean replaceEqual) throws SQLException, SQLHandledException {
         SingleKeyTableUsage<ImportField> importTable = new SingleKeyTableUsage<>(IntegerClass.instance, table.getFields(), ImportField.typeGetter);
         

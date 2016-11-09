@@ -69,13 +69,6 @@ public class MainFrame implements EntryPoint {
             }
         });
 
-        Window.addWindowClosingHandler(new Window.ClosingHandler() {
-            @Override
-            public void onWindowClosing(Window.ClosingEvent event) {
-                clean();
-            }
-        });
-
         GWT.setUncaughtExceptionHandler(new GWT.UncaughtExceptionHandler() {
             @Override
             public void onUncaughtException(Throwable t) {
@@ -170,12 +163,10 @@ public class MainFrame implements EntryPoint {
             }
         });
 
-        GConnectionLostManager.start();
-
         Scheduler.get().scheduleFixedDelay(new Scheduler.RepeatingCommand() {
             @Override
             public boolean execute() {
-                if (shouldRepeatPingRequest && !GConnectionLostManager.shouldBeBlocked()) {
+                if (shouldRepeatPingRequest) {
                     setShouldRepeatPingRequest(false);
                     dispatcher.execute(new ClientMessage(), new ErrorHandlingCallback<ClientMessageResult>() {
                         @Override
@@ -286,12 +277,6 @@ public class MainFrame implements EntryPoint {
         for (final String formSID : formsSIDs) {
             formsController.openForm(formSID, formSID, GModalityType.DOCKED, true);
         }
-    }
-
-    public void clean() {
-        GConnectionLostManager.invalidate();
-        dispatcher.execute(new CleanAction(), new ErrorHandlingCallback<VoidResult>());
-        System.gc();
     }
 
     private class GNavigatorActionDispatcher extends GwtActionDispatcher {

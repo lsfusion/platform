@@ -4,7 +4,6 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.interop.action.LogMessageClientAction;
-import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.entity.ObjectEntity;
 import lsfusion.server.form.instance.*;
@@ -36,9 +35,8 @@ public class LogPropertyActionProperty<P extends PropertyInterface> extends Syst
 
     protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
 
-        try (FormInstance<?> formInstance = context.createFormInstance(context.getBL().LM.getLogForm(property))) {
-            formInstance.local = true;
-            
+        try (FormInstance<?> formInstance = context.createFormInstance(context.getBL().LM.getLogForm(property),
+                MapFact.<ObjectEntity, DataObject>EMPTY(), context.getSession(), false, FormSessionScope.OLDSESSION, false, false, false, null)) {
             String caption = messageProperty == null ? null : (String) messageProperty.read(context);
 
             List<String> titleRow = new ArrayList<>();
@@ -48,7 +46,7 @@ public class LogPropertyActionProperty<P extends PropertyInterface> extends Syst
                 data.add(new ArrayList<String>());
 
             for (ObjectInstance object : formInstance.getObjects()) {
-                titleRow.add(ThreadLocalContext.localize(object.getCaption()));
+                titleRow.add(object.getCaption());
 
                 for (int j = 0; j < formRows.size(); j++)
                     data.get(j).add(String.valueOf(formRows.get(j).keys.get(object)));

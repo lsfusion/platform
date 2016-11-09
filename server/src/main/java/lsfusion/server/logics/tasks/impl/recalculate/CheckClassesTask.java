@@ -74,7 +74,7 @@ public class CheckClassesTask extends GroupPropertiesSingleTask<Object> { // int
     protected long getTaskComplexity(Object element) {
         Stat stat;
         try {
-            stat = element instanceof ImplementTable ? ((ImplementTable) element).getStatRows() : element instanceof CalcProperty ?
+            stat = element instanceof ImplementTable ? ((ImplementTable) element).getStatKeys().rows : element instanceof CalcProperty ?
                     ((CalcProperty) element).mapTable.table.getStatProps().get(((CalcProperty) element).field).notNull : Stat.MAX;
         } catch (Exception e) {
             stat = null;

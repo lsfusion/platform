@@ -1,14 +1,14 @@
 package lsfusion.gwt.form.client.navigator;
 
 import com.google.gwt.dom.client.Style;
-import com.google.gwt.event.dom.client.*;
+import com.google.gwt.event.dom.client.MouseDownEvent;
+import com.google.gwt.event.dom.client.MouseDownHandler;
 import com.google.gwt.user.client.ui.CellPanel;
 import com.google.gwt.user.client.ui.HasAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.SimplePanel;
 import lsfusion.gwt.base.client.ui.ResizableHorizontalPanel;
 import lsfusion.gwt.base.client.ui.ResizableVerticalPanel;
-import lsfusion.gwt.form.client.form.ui.TooltipManager;
 import lsfusion.gwt.form.shared.view.GNavigatorElement;
 import lsfusion.gwt.form.shared.view.panel.ImageButton;
 import lsfusion.gwt.form.shared.view.window.GToolbarNavigatorWindow;
@@ -54,56 +54,16 @@ public class GToolbarNavigatorView extends GNavigatorView {
     }
 
     private void addElement(final GNavigatorElement element, Set<GNavigatorElement> newElements, int step) {
-        final ImageButton button = new ImageButton(element.caption, verticalTextAlign);
+        ImageButton button = new ImageButton(element.caption, verticalTextAlign);
         button.setImage(element.icon);
         button.addMouseDownHandler(new MouseDownHandler() {
             @Override
             public void onMouseDown(MouseDownEvent event) {
-                TooltipManager.get().hideTooltip();
                 selected = element;
                 navigatorController.update();
                 navigatorController.openElement(element, event.getNativeEvent());
             }
         });
-
-        button.addMouseOverHandler(new MouseOverHandler() {
-            @Override
-            public void onMouseOver(MouseOverEvent event) {
-                TooltipManager.get().showTooltip(event.getClientX(), event.getClientY(), new TooltipManager.TooltipHelper() {
-                    @Override
-                    public String getTooltip() {
-                        return element.getTooltipText();
-                    }
-
-                    @Override
-                    public boolean stillShowTooltip() {
-                        return button.isAttached() && button.isVisible();
-                    }
-                });
-            }
-        });
-
-        button.addMouseOutHandler(new MouseOutHandler() {
-            @Override
-            public void onMouseOut(MouseOutEvent event) {
-                TooltipManager.get().hideTooltip();
-            }
-        });
-
-        button.addMouseMoveHandler(new MouseMoveHandler() {
-            @Override
-            public void onMouseMove(MouseMoveEvent event) {
-                TooltipManager.get().updateMousePosition(event.getClientX(), event.getClientY());
-            }
-        });
-
-        button.addMouseDownHandler(new MouseDownHandler() {
-            @Override
-            public void onMouseDown(MouseDownEvent event) {
-                TooltipManager.get().hideTooltip();
-            }
-        });
-
         button.setFocusable(false);
 
         button.setHeight("auto");

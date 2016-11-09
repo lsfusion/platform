@@ -11,11 +11,11 @@ import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.server.caches.ManualLazy;
 import lsfusion.server.caches.hash.HashContext;
 import lsfusion.server.classes.*;
-import lsfusion.server.data.QueryEnvironment;
 import lsfusion.server.data.Value;
 import lsfusion.server.data.query.CompileSource;
 import lsfusion.server.data.query.JoinData;
 import lsfusion.server.data.translator.MapTranslate;
+import lsfusion.server.data.translator.QueryTranslator;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.type.TypeObject;
 import lsfusion.server.data.where.Where;
@@ -25,7 +25,7 @@ import lsfusion.server.logics.ObjectValue;
 import java.math.BigInteger;
 
 
-public class ValueExpr extends AbstractValueExpr<ConcreteClass> implements Value {
+public class ValueExpr extends StaticExpr<ConcreteClass> implements Value {
 
     public final Object object;
 
@@ -92,6 +92,10 @@ public class ValueExpr extends AbstractValueExpr<ConcreteClass> implements Value
         return new ValueExpr(((IntegralClass)objectClass).multiply((Number) object,mult),objectClass);
     }*/
 
+    public ValueExpr translateQuery(QueryTranslator translator) {
+        return this;
+    }
+
     protected ValueExpr translate(MapTranslate translator) {
         return translator.translate(this);
     }
@@ -133,7 +137,7 @@ public class ValueExpr extends AbstractValueExpr<ConcreteClass> implements Value
         return ((ImSet<Value>)removeStatic(col1)).containsAll(removeStatic(col2));
     }
 
-    public TypeObject getParseInterface(QueryEnvironment env) {
+    public TypeObject getParseInterface() {
         return new TypeObject(object, objectClass.getType());
     }
 
@@ -158,7 +162,7 @@ public class ValueExpr extends AbstractValueExpr<ConcreteClass> implements Value
     }
 
     @Override
-    public ObjectValue getObjectValue(QueryEnvironment env) {
+    public ObjectValue getObjectValue() {
         return getDataObject();
     }
 

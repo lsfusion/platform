@@ -16,11 +16,7 @@ import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.form.entity.LogFormEntity;
 import lsfusion.server.form.instance.FormInstance;
-import lsfusion.server.logics.DataObject;
-import lsfusion.server.logics.LogicsModule;
-import lsfusion.server.logics.ObjectValue;
-import lsfusion.server.logics.SystemEventsLogicsModule;
-import lsfusion.server.logics.i18n.LocalizedString;
+import lsfusion.server.logics.*;
 import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.session.DataSession;
@@ -110,25 +106,29 @@ public class LCP<T extends PropertyInterface> extends LP<T, CalcProperty<T>> {
     }
 
     public void makeLoggable(LogicsModule ownerModule, SystemEventsLogicsModule systemEventsLM) {
-        setupLoggable(ownerModule, systemEventsLM);
-        property.setLoggable(true);
+        makeLoggable(ownerModule, systemEventsLM, false);
+    }
+
+    public void makeLoggable(LogicsModule ownerModule, SystemEventsLogicsModule systemEventsLM, boolean lazyInit) {
+        setupLoggable(ownerModule, systemEventsLM, lazyInit);
+        property.loggable = true;
     }
 
     public void makeUserLoggable(LogicsModule ownerModule, SystemEventsLogicsModule systemEventsLM) {
-        setupLoggable(ownerModule, systemEventsLM);
-        property.setLoggable(true);
+        setupLoggable(ownerModule, systemEventsLM, false);
+        property.loggable = true;
     }
 
-    private void setupLoggable(LogicsModule ownerModule, SystemEventsLogicsModule systemEventsLM) {
+    private void setupLoggable(LogicsModule ownerModule, SystemEventsLogicsModule systemEventsLM, boolean lazyInit) {
         if (property.getLogProperty() == null) {
             property.setLogProperty(ownerModule.addLProp(systemEventsLM, this));
         }
         if (property.getLogFormProperty() == null) {
             LogFormEntity logFormEntity = new LogFormEntity(null,
-                                                            LocalizedString.create("{logics.property.log.form}"),
-                                                            this, property.getLogProperty(), systemEventsLM);
+                                                            ServerResourceBundle.getString("logics.property.log.form"),
+                                                            this, property.getLogProperty(), systemEventsLM, lazyInit);
             systemEventsLM.addFormEntity(logFormEntity);
-            property.setLogFormProperty(ownerModule.addMFAProp(LocalizedString.create("{logics.property.log.action}"), logFormEntity, logFormEntity.params, true));
+            property.setLogFormProperty(ownerModule.addMFAProp(ServerResourceBundle.getString("logics.property.log.action"), logFormEntity, logFormEntity.params));
         }
     }
 

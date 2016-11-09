@@ -68,7 +68,7 @@ public class ClassChange extends ImmutableObject {
         if(keyValue != null)
             return keyValue.equals(object);
         
-        return !Expr.readValues(sql, baseClass, MapFact.singleton("value", ValueExpr.get(where.translateExpr(
+        return !Expr.readValues(sql, baseClass, MapFact.singleton("value", ValueExpr.get(where.translateQuery(
                 new KeyEqual(key, object.getExpr()).getTranslator()))), queryEnv).singleValue().isNull();
     }
 

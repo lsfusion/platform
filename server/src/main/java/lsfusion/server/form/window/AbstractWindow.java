@@ -2,16 +2,14 @@ package lsfusion.server.form.window;
 
 import lsfusion.base.identity.IdentityObject;
 import lsfusion.interop.AbstractWindowType;
-import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.logics.BaseLogicsModule;
-import lsfusion.server.logics.i18n.LocalizedString;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
 
 public class AbstractWindow extends IdentityObject {
 
-    public LocalizedString caption = LocalizedString.create("");
+    public String caption = "";
 
     public int position;
 
@@ -26,19 +24,19 @@ public class AbstractWindow extends IdentityObject {
 
     public boolean visible = true;
 
-    public AbstractWindow(String sID, LocalizedString caption, int x, int y, int width, int height) {
+    public AbstractWindow(String sID, String caption, int x, int y, int width, int height) {
         this(sID, caption);
 
         setDockPosition(x, y, width, height);
     }
 
-    public AbstractWindow(String sID, LocalizedString caption, String borderConstraint) {
+    public AbstractWindow(String sID, String caption, String borderConstraint) {
         this(sID, caption);
 
         setBorderPosition(borderConstraint);
     }
 
-    public AbstractWindow(String sID, LocalizedString caption) {
+    public AbstractWindow(String sID, String caption) {
         this.sID = sID;
         setID(BaseLogicsModule.generateStaticNewID());
         this.caption = caption;
@@ -46,7 +44,7 @@ public class AbstractWindow extends IdentityObject {
 
     public void serialize(DataOutputStream outStream) throws IOException {
         outStream.writeInt(getID());
-        outStream.writeUTF(ThreadLocalContext.localize(caption));
+        outStream.writeUTF(caption);
         outStream.writeUTF(getSID());
 
         outStream.writeInt(position);

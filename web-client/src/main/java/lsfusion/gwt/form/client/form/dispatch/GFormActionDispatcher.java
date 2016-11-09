@@ -128,11 +128,4 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
     public void execute(GActivateTabAction action) {
         form.activateTab(action.formSID, action.tabSID);
     }
-
-    //todo: по идее, action должен заливать куда-то в сеть выбранный локально файл
-    @Override
-    public String execute(GLoadLinkAction action) {
-        return null;
-    }
-
 }

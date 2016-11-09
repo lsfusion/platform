@@ -1435,14 +1435,7 @@ public class GridTable extends ClientPropertyTable {
             Runnable successCallback = new Runnable() {
                 @Override
                 public void run() {
-                    if (forAllUsers) {
-                        generalGridPreferences.resetPreferences();
-                        if (completeReset) {
-                            userGridPreferences.resetPreferences();
-                        }
-                    } else {
-                        userGridPreferences.resetPreferences();
-                    }
+                    (forAllUsers ? generalGridPreferences : userGridPreferences).resetPreferences();
 
                     RmiQueue.runAction(new Runnable() {
                         @Override
@@ -1470,15 +1463,7 @@ public class GridTable extends ClientPropertyTable {
                 }
             };
             
-            GridUserPreferences prefs;
-            if (forAllUsers) {
-                prefs = completeReset ? null : userGridPreferences;
-            } else {
-                // assert !completeReset;
-                prefs = generalGridPreferences;
-            }
-            
-            form.saveUserPreferences(currentGridPreferences, forAllUsers, completeReset, successCallback, failureCallback, getHiddenProps(prefs));
+            form.saveUserPreferences(currentGridPreferences, forAllUsers, completeReset, successCallback, failureCallback);
         }
     }
                                                                                  
@@ -1520,34 +1505,9 @@ public class GridTable extends ClientPropertyTable {
                     });
                 }
             };
-
-            GridUserPreferences prefs;
-            if (forAllUsers) {
-                prefs = userGridPreferences.hasUserPreferences() ? userGridPreferences : currentGridPreferences;
-            } else {
-                prefs = currentGridPreferences;
-            }
             
-            form.saveUserPreferences(currentGridPreferences, forAllUsers, false, successCallback, failureCallback, getHiddenProps(prefs));
+            form.saveUserPreferences(currentGridPreferences, forAllUsers, false, successCallback, failureCallback);
         }
-    }
-    
-    private String[] getHiddenProps(final GridUserPreferences preferences) {
-        List<String> result = new ArrayList<>();
-        if (preferences != null && preferences.hasUserPreferences()) {
-            for (ClientPropertyDraw propertyDraw : preferences.columnUserPreferences.keySet()) {
-                Boolean userHide = preferences.columnUserPreferences.get(propertyDraw).userHide;
-                if (userHide != null && userHide) {
-                    result.add(propertyDraw.getSID());
-                }
-            }
-        }
-        return result.toArray(new String[result.size()]);
-    }
-    
-    public void refreshUPHiddenProps(String[] propSids) {
-        assert groupObject != null; // при null нету таблицы, а значит и настроек
-        form.refreshUPHiddenProperties(groupObject.getSID(), propSids);    
     }
     
     public GridUserPreferences getCurrentPreferences() {

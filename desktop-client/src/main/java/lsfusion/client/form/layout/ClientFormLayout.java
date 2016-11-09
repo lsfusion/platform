@@ -96,6 +96,7 @@ public class ClientFormLayout extends JPanel {
             containerView = new ColumnsClientContainerView(this, container);
         } else if (container.isScroll()) {
             containerView = new ScrollClientContainerView(this, container);
+            throw new IllegalStateException("Scroll isn't implemented yet");
         } else if (container.isFlow()) {
             throw new IllegalStateException("Flow isn't implemented yet");
         } else {

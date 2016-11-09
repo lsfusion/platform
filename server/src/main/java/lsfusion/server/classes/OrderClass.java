@@ -17,7 +17,6 @@ import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.ConcatenateType;
 import lsfusion.server.data.type.ParseException;
 import lsfusion.server.data.type.Type;
-import lsfusion.server.logics.i18n.LocalizedString;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -51,7 +50,7 @@ public class OrderClass extends DataClass<Object> implements FormulaUnionImpl {
     public final static OrderClass value = get(ListFact.<Type>EMPTY(), ListFact.<Boolean>EMPTY());
 
     private OrderClass(ImList<Type> types, ImList<Boolean> desc) {
-        super(LocalizedString.create("ORDER " + types + " " + desc));
+        super("ORDER " + types + " " + desc);
         this.types = types;
         this.desc = desc;
     }

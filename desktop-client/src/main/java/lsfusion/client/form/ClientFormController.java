@@ -230,26 +230,19 @@ public class ClientFormController implements AsyncListener {
     public void activateTab(String tabSID) {
         ClientContainer parentContainer = form.findParentContainerBySID(tabSID);
         if(parentContainer != null && parentContainer.isTabbed()) {
+            Map<String, Integer> tabMap = getTabMap(parentContainer);
             ClientContainerView containerView = getLayout().getContainerView(parentContainer);
-            if(containerView instanceof TabbedClientContainerView) {
-                Map<String, Integer> tabMap = getTabMap((TabbedClientContainerView) containerView, parentContainer);
-                ((TabbedClientContainerView) containerView).activateTab(tabMap.get(tabSID));
-            }
+            if(containerView instanceof TabbedClientContainerView)
+                ((TabbedClientContainerView)containerView).activateTab(tabMap.get(tabSID));
         }
     }
 
-    private Map<String, Integer> getTabMap(TabbedClientContainerView containerView, ClientContainer component) {
+    private Map<String, Integer> getTabMap(ClientContainer component) {
         Map<String, Integer> tabMap = new HashMap<>();
         List<ClientComponent> tabs = component.getChildren();
-        if (tabs != null) {
-            int c = 0;
-            for (int i = 0; i < tabs.size(); i++) {
-                ClientComponent tab = tabs.get(i);
-                if (containerView.isTabVisible(tab)) {
-                    tabMap.put(tab.getSID(), c++);
-                }
-            }
-        }
+        if (tabs != null)
+            for (int i = 0; i < tabs.size(); i++)
+                tabMap.put(tabs.get(i).getSID(), i);
         return tabMap;
     }
 
@@ -501,13 +494,13 @@ public class ClientFormController implements AsyncListener {
                 : null;
     }
 
-    public void saveUserPreferences(final GridUserPreferences gridPreferences, final boolean forAllUsers, final boolean completeOverride, final Runnable successCallback, final Runnable failureCallback, final String[] hiddenProps) throws RemoteException {
+    public void saveUserPreferences(final GridUserPreferences gridPreferences, final boolean forAllUsers, final boolean completeOverride, final Runnable successCallback, final Runnable failureCallback) throws RemoteException {
         commitOrCancelCurrentEditing();
 
         ServerResponse result = rmiQueue.syncRequest(new RmiCheckNullFormRequest<ServerResponse>("saveUserPreferences") {
             @Override
             protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
-                return remoteForm.saveUserPreferences(requestIndex, lastReceivedRequestIndex, gridPreferences.convertPreferences(), forAllUsers, completeOverride, hiddenProps);
+                return remoteForm.saveUserPreferences(requestIndex, lastReceivedRequestIndex, gridPreferences.convertPreferences(), forAllUsers, completeOverride);
             }
         });
 
@@ -519,15 +512,6 @@ public class ClientFormController implements AsyncListener {
             }
         }
         successCallback.run();
-    }
-    
-    public void refreshUPHiddenProperties(final String groupObjectSID, final String[] sids) {
-        rmiQueue.asyncRequest(new ProcessServerResponseRmiRequest("refreshUPHiddenProperties") {
-            @Override
-            protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
-                return remoteForm.refreshUPHiddenProperties(requestIndex, lastReceivedRequestIndex, groupObjectSID, sids);   
-            }
-        });
     }
 
     public void commitOrCancelCurrentEditing() {

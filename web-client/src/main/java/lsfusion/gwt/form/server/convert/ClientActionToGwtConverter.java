@@ -198,9 +198,4 @@ public class ClientActionToGwtConverter extends ObjectConverter {
     public GActivateTabAction convertAction(ActivateTabClientAction action) {
         return new GActivateTabAction(action.formSID, action.tabSID);
     }
-
-    @Converter(from = LoadLinkClientAction.class)
-    public GLoadLinkAction convertAction(LoadLinkClientAction action, LogicsAwareDispatchServlet servlet) throws IOException {
-        return new GLoadLinkAction();
-    }
 }

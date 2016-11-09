@@ -37,14 +37,11 @@ public interface ImSet<T> extends FunctionSet<T>, ImCol<T> {
     ImSet<T> removeIncl(ImSet<? extends T> remove);
     ImSet<T> removeIncl(T element);
 
-    T getIdentIncl(T element);
-
     <V> ImMap<T, V> toMap(V value);
     ImMap<T, T> toMap();
     ImRevMap<T, T> toRevMap();
     ImOrderSet<T> toOrderSet();
     ImOrderSet<T> sort(); // natural ordering
-    ImOrderSet<T> sortSet(Comparator<T> comparator);
 
     <M> ImValueMap<T, M> mapItValues();
     <M> ImRevValueMap<T, M> mapItRevValues();

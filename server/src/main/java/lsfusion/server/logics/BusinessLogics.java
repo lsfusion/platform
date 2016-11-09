@@ -50,21 +50,20 @@ import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.form.entity.FormEntity;
-import lsfusion.server.form.instance.listener.CustomClassListener;
+import lsfusion.server.form.entity.LogFormEntity;
 import lsfusion.server.form.navigator.LogInfo;
 import lsfusion.server.form.navigator.NavigatorElement;
 import lsfusion.server.form.navigator.RemoteNavigator;
 import lsfusion.server.form.window.AbstractWindow;
 import lsfusion.server.lifecycle.LifecycleAdapter;
 import lsfusion.server.lifecycle.LifecycleEvent;
-import lsfusion.server.logics.i18n.DefaultLocalizer;
-import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.linear.LP;
 import lsfusion.server.logics.mutables.NFLazy;
 import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.*;
+import lsfusion.server.logics.property.actions.FormActionProperty;
 import lsfusion.server.logics.property.actions.SessionEnvEvent;
 import lsfusion.server.logics.property.actions.SystemEvent;
 import lsfusion.server.logics.property.cases.AbstractCase;
@@ -100,8 +99,11 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 
-import static lsfusion.base.BaseUtils.*;
+import static lsfusion.base.BaseUtils.isRedundantString;
+import static lsfusion.base.BaseUtils.nullToZero;
+import static lsfusion.base.BaseUtils.serviceLogger;
 import static lsfusion.server.logics.LogicsModule.*;
+import static lsfusion.server.logics.ServerResourceBundle.getString;
 
 public abstract class BusinessLogics<T extends BusinessLogics<T>> extends LifecycleAdapter implements InitializingBean {
     protected final static Logger logger = ServerLoggers.systemLogger;
@@ -141,8 +143,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
 
     private String orderDependencies;
 
-    private LocalizedString.Localizer localizer;
-    
     private PublicTask initTask;
 
     //чтобы можно было использовать один инстанс логики с несколькими инстансами, при этом инициализировать только один раз
@@ -196,7 +196,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     public void cleanCaches() {
         startLruCache = null;
         MapCacheAspect.cleanClassCaches();
-        CalcProperty.cleanPropCaches();
 
         startLogger.info("Obsolete caches were successfully cleaned");
     }
@@ -568,14 +567,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         return orderedModules;
     }
 
-    public void initLocalizer() {
-        localizer = new DefaultLocalizer();
-    }
-    
-    public LocalizedString.Localizer getLocalizer() {
-        return localizer;
-    }
-
     public void initModuleOrders() {
         if (!isRedundantString(topModule)) {
             overrideModulesList(topModule);
@@ -603,7 +594,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     public void initFullSingleTables() {
         for(ImplementTable table : LM.tableFactory.getImplementTables()) {
             if(table.markedFull && !table.isFull())  // для второго условия все и делается, чтобы не создавать лишние св-ва
-                LM.markFull(table, table.getMapFields().singleValue());
+                LM.markFull(table, table.mapFields.singleValue());
         }
     }
 
@@ -624,7 +615,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     public void initClassDataProps() {
         ImMap<ImplementTable, ImSet<ConcreteCustomClass>> groupTables = getConcreteCustomClasses().group(new BaseUtils.Group<ImplementTable, ConcreteCustomClass>() {
             public ImplementTable group(ConcreteCustomClass customClass) {
-                return LM.tableFactory.getClassMapTable(MapFact.singletonOrder("key", (ValueClass) customClass)).table;
+                return LM.tableFactory.getClassMapTable(MapFact.singleton("key", (ValueClass) customClass)).table;
             }
         });
 
@@ -634,14 +625,14 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
 
             ObjectValueClassSet classSet = OrObjectClassSet.fromSetConcreteChildren(set);
 
-            CustomClass tableClass = (CustomClass) table.getMapFields().singleValue();
+            CustomClass tableClass = (CustomClass) table.mapFields.singleValue();
             // помечаем full tables
             assert tableClass.getUpSet().containsAll(classSet, false); // должны быть все классы по определению, исходя из логики раскладывания классов по таблицам
             boolean isFull = classSet.containsAll(tableClass.getUpSet(), false);
             if(isFull) // важно чтобы getInterfaceClasses дал тот же tableClass
                 classSet = tableClass.getUpSet();
 
-            ClassDataProperty dataProperty = new ClassDataProperty(LocalizedString.create(classSet.toString(), false), classSet);
+            ClassDataProperty dataProperty = new ClassDataProperty(classSet.toString(), classSet);
             LCP<ClassPropertyInterface> lp = new LCP<>(dataProperty);
             LM.addProperty(null, new LCP<>(dataProperty));
             LM.makePropertyPublic(lp, PropertyCanonicalNameUtils.classDataPropPrefix + table.getName(), Collections.<ResolveClassSet>singletonList(ResolveOrObjectClassSet.fromSetConcreteChildren(set)));
@@ -672,8 +663,27 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         try {
             SQLSession sql = getDbManager().getThreadLocalSql();
             
-            startLogger.info("Setting user logging for properties");            
-            setUserLoggableProperties(sql);
+            startLogger.info("Setting user logging for properties");
+            try {
+                setUserLoggableProperties(sql);
+            } catch (Exception e) {
+                // пробуем еще раз но с reparse'ом, для явной типизации
+                useReparse = true;
+
+                ImSet<String> props = SetFact.toSet("canonicalName", "stats", "userLoggable", "notNullQuantity");
+                reparse.set(props.mapKeyValues(new GetValue<String, String>() {
+                    public String getMapValue(String value) {
+                        return "Reflection_" + value + "_Property";
+                    }}, new GetValue<String, String>() {
+                    public String getMapValue(String value) {
+                        return "Reflection_" + value + "Property_Property";
+                    }}));
+
+                setUserLoggableProperties(sql);
+
+                reparse.set(null);
+                useReparse = false;
+            }
 
             startLogger.info("Setting user not null constraints for properties");
             setNotNullProperties(sql);
@@ -682,8 +692,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             setupPropertyNotifications(sql);
             
         } catch (Exception ignored) {
-            startLogger.error("Error while initializing reflection events", ignored);
+            ignored = ignored;
         }
+
     }
 
     public Integer readCurrentUser() {
@@ -734,8 +745,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         Integer statsProperty = null;
         if (property instanceof AggregateProperty) {
             StatKeys classStats = ((AggregateProperty) property).getInterfaceClassStats();
-            if (classStats != null && classStats.getRows() != null)
-                statsProperty = classStats.getRows().getCount();
+            if (classStats != null && classStats.rows != null)
+                statsProperty = classStats.rows.getCount();
         }
         return statsProperty;
     }
@@ -798,7 +809,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
                 String emailTo = rowValue.get("emailTo") == null ? "" : rowValue.get("emailTo").toString().trim();
                 String emailToCC = rowValue.get("emailToCC") == null ? "" : rowValue.get("emailToCC").toString().trim();
                 String emailToBC = rowValue.get("emailToBC") == null ? "" : rowValue.get("emailToBC").toString().trim();
-                LAP emailNotificationProperty = LM.addProperty(LM.actionGroup, new LAP(new NotificationActionProperty(LocalizedString.create("emailNotificationProperty"), prop, subject, text, emailFrom, emailTo, emailToCC, emailToBC, emailLM)));
+                LAP emailNotificationProperty = LM.addProperty(LM.actionGroup, new LAP(new NotificationActionProperty("emailNotificationProperty", prop, subject, text, emailFrom, emailTo, emailToCC, emailToBC, emailLM)));
 
                 Integer[] params = new Integer[prop.listInterfaces.size()];
                 for (int j = 0; j < prop.listInterfaces.size(); j++)
@@ -927,14 +938,20 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         }
     }
 
-    public <P extends PropertyInterface> void finishLogInit(Property property) {
-        if (property instanceof CalcProperty && ((CalcProperty)property).isLoggable()) {
-            ActionProperty<P> logActionProperty = (ActionProperty<P>) ((CalcProperty)property).getLogFormProperty().property;
+    public void finishLogInit(Property property) {
+        if (property.loggable && property.logFormProperty.property instanceof FormActionProperty) {
+            FormActionProperty formActionProperty = (FormActionProperty) property.logFormProperty.property;
+            if (formActionProperty.form instanceof LogFormEntity) {
+                LogFormEntity logForm = (LogFormEntity) formActionProperty.form;
+                if (logForm.lazyInit) {
+                    logForm.initProperties();
+                }
+            }
 
             //добавляем в контекстное меню пункт для показа формы
-            property.setContextMenuAction(property.getSID(), logActionProperty.caption);
-            property.setEditAction(property.getSID(), logActionProperty.getImplement(property.getReflectionOrderInterfaces()));
-            logActionProperty.checkReadOnly = false;
+            property.setContextMenuAction(property.getSID(), formActionProperty.caption);
+            property.setEditAction(property.getSID(), formActionProperty.getImplement(property.getReflectionOrderInterfaces()));
+            formActionProperty.checkReadOnly = false;
         }
     }
 
@@ -946,8 +963,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             // todo [dale]: тут есть потенциальное пересечение канонических имен, так как приходится разделять эти свойства только по имени
             // и имя приходится создавать из канонического имени базового свойства, заменив спецсимволы на подчеркивания
             String setupPolicyActionName = PropertyCanonicalNameUtils.policyPropPrefix + PropertyCanonicalNameUtils.makeSafeName(propertyCN); 
-            LAP<?> setupPolicyLAP = LM.addJoinAProp(LM.propertyPolicyGroup, LocalizedString.create("{logics.property.propertypolicy.action}"),
-                    setupPolicyForPropByCN, LM.addCProp(StringClass.get(propertyCN.length()), LocalizedString.create(propertyCN, false)));
+            LAP<?> setupPolicyLAP = LM.addJoinAProp(LM.propertyPolicyGroup, getString("logics.property.propertypolicy.action"),
+                    setupPolicyForPropByCN, LM.addCProp(StringClass.get(propertyCN.length()), propertyCN));
             
             ActionProperty setupPolicyAction = setupPolicyLAP.property;
             LM.makePropertyPublic(setupPolicyLAP, setupPolicyActionName, new ArrayList<ResolveClassSet>());
@@ -981,32 +998,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             namedProperties.addAll(module.getNamedProperties());
         }
         return namedProperties;
-    }
-    
-    @IdentityLazy
-    public ImOrderSet<CalcProperty> getAutoSetProperties() {
-        MOrderExclSet<CalcProperty> mResult = SetFact.mOrderExclSet();
-        for (LP lp : getNamedProperties())
-            if (lp instanceof LCP) {
-                CalcProperty property = ((LCP<?>) lp).property;
-                if (property.autoset)
-                    mResult.exclAdd(property);
-            }
-        return mResult.immutableOrder();                    
-    }
-    
-    public <P extends PropertyInterface> void resolveAutoSet(DataSession session, ConcreteCustomClass customClass, DataObject dataObject, CustomClassListener classListener) throws SQLException, SQLHandledException {
-
-        for (CalcProperty<P> property : getAutoSetProperties()) {
-            ValueClass interfaceClass = property.getInterfaceClasses(ClassType.autoSetPolicy).singleValue();
-            ValueClass valueClass = property.getValueClass(ClassType.autoSetPolicy);
-            if (valueClass instanceof CustomClass && interfaceClass instanceof CustomClass &&
-                    customClass.isChild((CustomClass) interfaceClass)) { // в общем то для оптимизации
-                Integer obj = classListener.getObject((CustomClass) valueClass);
-                if (obj != null)
-                    property.change(MapFact.singleton(property.interfaces.single(), dataObject), session, obj);
-            }
-        }
     }
     
     // todo [dale]: Временно сделал public для переименования log-свойств
@@ -1345,7 +1336,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
                         String print = "";
                         for (Property property : cycle)
                             print = (print.length() == 0 ? "" : print + " -> ") + property.toString();
-                        throw new RuntimeException(ThreadLocalContext.localize("{message.cycle.detected}") + " : " + print + " -> " + minLink.to);
+                        throw new RuntimeException(getString("message.cycle.detected") + " : " + print + " -> " + minLink.to);
                     }
                     buildList(innerComponent, null, removedLinks, mResult, events);
                 }
@@ -1571,8 +1562,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     }
 
     // используется не в task'ах
-    public List<CalcProperty> getAggregateStoredProperties(boolean ignoreCheck) {
-        List<CalcProperty> result = new ArrayList<>();
+    public List<AggregateProperty> getAggregateStoredProperties(boolean ignoreCheck) {
+        List<AggregateProperty> result = new ArrayList<>();
         try (final DataSession dataSession = getDbManager().createSession()) {
             for (Property property : getStoredProperties())
                 if (property instanceof AggregateProperty) {
@@ -1776,7 +1767,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
 
     public void recalculateStats(DataSession session) throws SQLException, SQLHandledException {
         int count = 0;
-        ImSet<ImplementTable> tables = LM.tableFactory.getImplementTables(getDbManager().getNotRecalculateStatsTableSet());
+        ImSet<ImplementTable> tables = LM.tableFactory.getImplementTables();
         for (ImplementTable dataTable : tables) {
             count++;
             long start = System.currentTimeMillis();
@@ -1906,8 +1897,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
                     ImOrderSet<Field> fields = SetFact.fromJavaOrderSet(index.getKey());
                     if (!getDbManager().getThreadLocalSql().checkIndex(table, table.keys, fields, index.getValue()))
                         session.addIndex(table, table.keys, fields, index.getValue(), sqlLogger);
+                    session.addConstraint(table);
                 }
-                session.addConstraint(table);
                 session.checkExtraIndices(getDbManager().getThreadLocalSql(), table, table.keys, sqlLogger);
             }
             session.commitTransaction();
@@ -2094,7 +2085,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     private void outputPersistent() {
         String result = "";
 
-        result += ThreadLocalContext.localize("\n{logics.info.by.tables}\n\n");
+        result += '\n' + getString("logics.info.by.tables") + '\n' + '\n';
         ImOrderSet<CalcProperty> storedProperties = getStoredProperties();
         for (Map.Entry<ImplementTable, Collection<CalcProperty>> groupTable : BaseUtils.group(new BaseUtils.Group<ImplementTable, CalcProperty>() {
             public ImplementTable group(CalcProperty key) {
@@ -2105,7 +2096,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             for (CalcProperty property : groupTable.getValue())
                 result += '\t' + property.outputStored(false) + '\n';
         }
-        result += ThreadLocalContext.localize("\n{logics.info.by.properties}\n\n");
+        result += '\n' + getString("logics.info.by.properties") + '\n' + '\n';
         for (CalcProperty property : storedProperties)
             result += property.outputStored(true) + '\n';
         System.out.println(result);

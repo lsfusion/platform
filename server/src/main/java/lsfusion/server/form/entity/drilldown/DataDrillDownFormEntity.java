@@ -9,12 +9,13 @@ import lsfusion.server.form.view.ContainerView;
 import lsfusion.server.form.view.DefaultFormView;
 import lsfusion.server.form.view.FormView;
 import lsfusion.server.logics.LogicsModule;
-import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.CalcPropertyMapImplement;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.DataProperty;
 import lsfusion.server.logics.property.PropertyInterface;
+
+import static lsfusion.server.logics.ServerResourceBundle.getString;
 
 public class DataDrillDownFormEntity extends DrillDownFormEntity<ClassPropertyInterface, DataProperty> {
 
@@ -22,7 +23,7 @@ public class DataDrillDownFormEntity extends DrillDownFormEntity<ClassPropertyIn
     private PropertyDrawEntity wherePropertyDraw;
     private PropertyDrawEntity writeFromPropertyDraw;
 
-    public DataDrillDownFormEntity(String canonicalName, LocalizedString caption, DataProperty property, LogicsModule LM) {
+    public DataDrillDownFormEntity(String canonicalName, String caption, DataProperty property, LogicsModule LM) {
         super(canonicalName, caption, property, LM);
     }
 
@@ -54,9 +55,9 @@ public class DataDrillDownFormEntity extends DrillDownFormEntity<ClassPropertyIn
         DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign(version);
         valueContainer.add(design.get(implPropertyDraw), version);
 
-        ContainerView whereParamsContainer = design.createContainer(LocalizedString.create("{logics.property.drilldown.form.where.params}"), version);
+        ContainerView whereParamsContainer = design.createContainer(getString("logics.property.drilldown.form.where.params"), version);
         whereParamsContainer.add(design.get(wherePropertyDraw), version);
-        ContainerView expressionParamsContainer = design.createContainer(LocalizedString.create("{logics.property.drilldown.form.expr.params}"), version);
+        ContainerView expressionParamsContainer = design.createContainer(getString("logics.property.drilldown.form.expr.params"), version);
         expressionParamsContainer.add(design.get(writeFromPropertyDraw), version);
 
         design.mainContainer.addAfter(whereParamsContainer, valueContainer, version);

@@ -6,7 +6,6 @@ import lsfusion.server.classes.sets.AndClassSet;
 import lsfusion.server.data.expr.CurrentEnvironmentExpr;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.where.WhereBuilder;
-import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.session.PropertyChanges;
 
 public abstract class CurrentEnvironmentFormulaProperty extends FormulaProperty<PropertyInterface> {
@@ -14,7 +13,7 @@ public abstract class CurrentEnvironmentFormulaProperty extends FormulaProperty<
     private final String paramString; 
     private final AndClassSet paramClass;
 
-    public CurrentEnvironmentFormulaProperty(LocalizedString caption, String paramString, AndClassSet paramClass) {
+    public CurrentEnvironmentFormulaProperty(String caption, String paramString, AndClassSet paramClass) {
         super(caption, SetFact.<PropertyInterface>EMPTYORDER());
         this.paramString = paramString;
         this.paramClass = paramClass;

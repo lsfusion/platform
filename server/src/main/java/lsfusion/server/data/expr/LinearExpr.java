@@ -1,15 +1,21 @@
 package lsfusion.server.data.expr;
 
 import lsfusion.base.TwinImmutableObject;
+import lsfusion.base.col.interfaces.immutable.ImCol;
+import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.caches.ParamLazy;
 import lsfusion.server.caches.hash.HashContext;
 import lsfusion.server.classes.IntegralClass;
 import lsfusion.server.data.query.CompileSource;
+import lsfusion.server.data.query.innerjoins.GroupJoinsWheres;
+import lsfusion.server.data.query.innerjoins.KeyEquals;
+import lsfusion.server.data.query.stat.KeyStat;
 import lsfusion.server.data.translator.MapTranslate;
-import lsfusion.server.data.translator.ExprTranslator;
+import lsfusion.server.data.translator.QueryTranslator;
 import lsfusion.server.data.where.Where;
+import lsfusion.server.data.where.classes.ClassExprWhere;
 
 // среднее что-то между CaseExpr и FormulaExpr - для того чтобы не плодить экспоненциальные case'ы
 // придется делать BaseExpr
@@ -52,10 +58,10 @@ public class LinearExpr extends UnionExpr {
     }
 
     @ParamLazy
-    public Expr translate(ExprTranslator translator) {
+    public Expr translateQuery(QueryTranslator translator) {
         Expr result = null;
         for(int i=0,size=map.size();i<size;i++) {
-            Expr transOperand = map.getKey(i).translateExpr(translator).scale(map.getValue(i));
+            Expr transOperand = map.getKey(i).translateQuery(translator).scale(map.getValue(i));
             if(result==null)
                 result = transOperand;
             else

@@ -14,6 +14,13 @@ public class ClientIntegerClass extends ClientIntegralClass implements ClientTyp
 
     public final static ClientIntegerClass instance = new ClientIntegerClass();
 
+    private final String sID = "IntegerClass";
+
+    @Override
+    public String getSID() {
+        return sID;
+    }
+
     public byte getTypeId() {
         return Data.INTEGER;
     }

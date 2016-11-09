@@ -24,8 +24,12 @@ public class ActionPropertyObjectInstance<P extends PropertyInterface> extends P
         return new ActionPropertyObjectInstance<>(property, remapSkippingEqualsObjectInstances(mapKeyValues));
     }
 
-    public FlowResult execute(ExecutionEnvironment env, ExecutionStack stack, ObjectValue pushValue, DataObject pushAdd, PropertyDrawInstance changingProperty, FormInstance formInstance) throws SQLException, SQLHandledException {
-        return env.execute(property, getInterfaceValues(), new FormEnvironment<>(mapping, changingProperty, formInstance), pushValue, pushAdd, stack);
+    public FlowResult execute(ExecutionEnvironment env, ExecutionStack stack) throws SQLException, SQLHandledException {
+        return execute(env, stack, null, null, null);
+    }
+
+    public FlowResult execute(ExecutionEnvironment env, ExecutionStack stack, ObjectValue pushValue, DataObject pushAdd, PropertyDrawInstance changingProperty) throws SQLException, SQLHandledException {
+        return env.execute(property, getInterfaceValues(), new FormEnvironment<>(mapping, changingProperty), pushValue, pushAdd, stack);
     }
 
     public CalcPropertyObjectInstance<?> getDrawProperty() {
@@ -33,7 +37,7 @@ public class ActionPropertyObjectInstance<P extends PropertyInterface> extends P
         return property.getWhereProperty().mapObjects(mapping);
     }
 
-    public ActionPropertyValueImplement<P> getValueImplement(FormInstance formInstance) {
-        return new ActionPropertyValueImplement<>(property, getInterfaceValues(), mapping, formInstance);
+    public ActionPropertyValueImplement<P> getValueImplement() {
+        return new ActionPropertyValueImplement<>(property, getInterfaceValues(), mapping);
     }
 }

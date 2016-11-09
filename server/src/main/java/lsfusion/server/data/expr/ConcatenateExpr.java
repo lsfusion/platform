@@ -14,7 +14,6 @@ import lsfusion.server.classes.sets.AndClassSet;
 import lsfusion.server.data.expr.formula.FormulaExpr;
 import lsfusion.server.data.expr.query.PropStat;
 import lsfusion.server.data.expr.query.Stat;
-import lsfusion.server.data.expr.query.StatType;
 import lsfusion.server.data.expr.where.pull.ExprPullWheres;
 import lsfusion.server.data.query.CompileSource;
 import lsfusion.server.data.query.JoinData;
@@ -22,7 +21,7 @@ import lsfusion.server.data.query.stat.FormulaJoin;
 import lsfusion.server.data.query.stat.InnerBaseJoin;
 import lsfusion.server.data.query.stat.KeyStat;
 import lsfusion.server.data.translator.MapTranslate;
-import lsfusion.server.data.translator.ExprTranslator;
+import lsfusion.server.data.translator.QueryTranslator;
 import lsfusion.server.data.type.ConcatenateType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
@@ -101,7 +100,7 @@ public class ConcatenateExpr extends VariableClassExpr {
         return where;
     }
 
-    public Expr translate(ExprTranslator translator) {
+    public Expr translateQuery(QueryTranslator translator) {
         return create(translator.translate(exprs));
     }
 
@@ -138,7 +137,7 @@ public class ConcatenateExpr extends VariableClassExpr {
     }
 
     @Override
-    public PropStat getStatValue(KeyStat keyStat, StatType type) {
+    public PropStat getStatValue(KeyStat keyStat) {
         return FormulaExpr.getStatValue(this, keyStat);
     }
 

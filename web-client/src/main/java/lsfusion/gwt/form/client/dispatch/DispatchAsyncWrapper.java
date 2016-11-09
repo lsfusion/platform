@@ -7,9 +7,9 @@ import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.rpc.RpcRequestBuilder;
 import com.google.gwt.user.client.rpc.ServiceDefTarget;
+import com.google.gwt.user.client.rpc.StatusCodeException;
 import lsfusion.gwt.base.client.GwtClientUtils;
-import lsfusion.gwt.form.client.ErrorHandlingCallback;
-import lsfusion.gwt.form.client.GConnectionLostManager;
+import lsfusion.gwt.base.shared.RetryException;
 import lsfusion.gwt.form.client.GExceptionManager;
 import net.customware.gwt.dispatch.client.AbstractDispatchAsync;
 import net.customware.gwt.dispatch.client.ExceptionHandler;
@@ -27,6 +27,7 @@ public class DispatchAsyncWrapper extends AbstractDispatchAsync {
     private static StandardDispatchServiceAsync realService = null;
     
     private static Map<Action, Integer> requestTries = new HashMap<>();
+    private static final Integer MAX_REQUEST_TRIES = 30;
 
     private static StandardDispatchServiceAsync getRealServiceInstance() {
         if (realService == null) {
@@ -62,10 +63,8 @@ public class DispatchAsyncWrapper extends AbstractDispatchAsync {
         final Integer finalRequestTry = requestTry;
         getRealServiceInstance().execute(action, new AsyncCallback<Result>() {
             public void onFailure(Throwable caught) {
-                int maxTries = ErrorHandlingCallback.getMaxTries(caught);
-                if (finalRequestTry <= maxTries) {
-                    if(finalRequestTry == 2) //first retry
-                        GConnectionLostManager.registerFailedRmiRequest();
+                if ((caught instanceof StatusCodeException && finalRequestTry <= MAX_REQUEST_TRIES) // при разрыве связи пробуем послать запрос ещё MAX_REQUEST_TRIES раз
+                        || (caught instanceof RetryException && finalRequestTry <= ((RetryException) caught).maxTries)) { 
                     GExceptionManager.addFailedRmiRequest(caught, action);
                     
                     Timer timer = new Timer() {  // таймер, чтобы не исчерпать слишком быстро попытки соединения с сервером
@@ -76,16 +75,13 @@ public class DispatchAsyncWrapper extends AbstractDispatchAsync {
                     };
                     timer.schedule(1000);
                 } else {
-                    if(maxTries > -1) //известный нам тип ошибки
-                        GConnectionLostManager.connectionLost();
                     DispatchAsyncWrapper.this.onFailure(action, caught, callback);
                 }
             }
 
             public void onSuccess(Result result) {
                 DispatchAsyncWrapper.this.onSuccess(action, (R) result, callback);
-                if(finalRequestTry > 1) //had retries
-                    GConnectionLostManager.unregisterFailedRmiRequest();
+                
                 requestTries.remove(action);
                 GExceptionManager.flushFailedNotFatalRequests(action);
             }

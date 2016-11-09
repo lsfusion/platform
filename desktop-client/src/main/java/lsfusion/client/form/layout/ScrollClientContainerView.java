@@ -8,38 +8,47 @@ import java.awt.*;
 
 public class ScrollClientContainerView extends AbstractClientContainerView {
 
-    private final JScrollPane scroll;
+    private final Scroll scroll;
+    private final ContainerViewPanel scrollPanel;
 
     public ScrollClientContainerView(ClientFormLayout formLayout, ClientContainer container) {
         super(formLayout, container);
-        assert container.isScroll();
-        scroll = new JScrollPane();
+        assert container.isColumns();
+
+        scroll = new Scroll();
+        scrollPanel = new ContainerViewPanel(new BorderLayout());
+        scrollPanel.add(scroll);
+
         container.design.designComponent(scroll);
     }
 
     @Override
     public void addImpl(int index, ClientComponent child, Component view) {
-        view.setPreferredSize(child.preferredSize);
         scroll.setViewportView(view);
     }
 
     @Override
     public void removeImpl(int index, ClientComponent child, Component view) {
+        assert scroll.getViewport() != null;
+
         scroll.getViewport().setView(null);
     }
 
     @Override
     public JComponent getView() {
-        return scroll;
+        return scrollPanel;
     }
 
-    @Override
-    public void updateLayout() {
-        super.updateLayout();
-        if(container.preferredSize != null) {
-            int width = container.preferredSize.width > 0 ? container.preferredSize.width : scroll.getPreferredSize().width;
-            int height = container.preferredSize.height > 0 ? container.preferredSize.height : scroll.getPreferredSize().height;
-            scroll.setPreferredSize(new Dimension(width, height));
+    private class Scroll extends JScrollPane {
+        public Scroll() {
+            super(null);
+            setBorder(BorderFactory.createEmptyBorder());
+        }
+
+        @Override
+        public boolean isValidateRoot() {
+            //не останавливаемся в поиске validate-root, а идём дальше вверх до верхнего контейнера
+            return false;
         }
     }
 }

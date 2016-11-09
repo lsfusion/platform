@@ -18,18 +18,16 @@ import lsfusion.server.Settings;
 import lsfusion.server.caches.ManualLazy;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.data.StaticParamNullableExpr;
+import lsfusion.server.data.StaticParamNotNullExpr;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.query.Stat;
-import lsfusion.server.data.expr.query.StatType;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.form.instance.GroupObjectInstance;
 import lsfusion.server.form.instance.InstanceFactory;
 import lsfusion.server.form.instance.Instantiable;
 import lsfusion.server.form.instance.ObjectInstance;
 import lsfusion.server.form.instance.filter.FilterInstance;
-import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.CalcPropertyRevImplement;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.Property;
@@ -68,7 +66,7 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
         public ImMap<ObjectInstance, ? extends Expr> process(FilterInstance filt, ImMap<ObjectInstance, ? extends Expr> mapKeys) {
             return MapFact.addExcl(mapKeys, filt.getObjects().remove(mapKeys.keys()).mapValues(new GetValue<Expr, ObjectInstance>() {
                 public Expr getMapValue(ObjectInstance value) {
-                    return new StaticParamNullableExpr(value.getBaseClass().getUpSet(), value.toString());
+                    return new StaticParamNotNullExpr(value.getBaseClass().getUpSet(), value.toString());
                 }
             }));
         }
@@ -111,9 +109,8 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
                     Where staticWhere = groupObject.getWhere(mapKeys, modifier, null, new NoUpProcessor(groupObject));
 
                     // сравниваем статистику фильтра со статистикой класса
-                    StatType type = StatType.UPDATE;
-                    Stat filterStat = dynamicWhere.and(staticWhere).getStatKeys(mapKeys.valuesSet(), type).getRows();
-                    Stat classStat = staticWhere.getStatKeys(mapKeys.valuesSet(), type).getRows();
+                    Stat filterStat = dynamicWhere.and(staticWhere).getStatKeys(mapKeys.valuesSet()).rows;
+                    Stat classStat = staticWhere.getStatKeys(mapKeys.valuesSet()).rows;
 
                     if (new Stat(Settings.get().getDivStatUpdateTypeHeur()).lessEquals(classStat.div(filterStat)))
                         narrow = true;
@@ -155,10 +152,10 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
         MExclMap<GroupObjectProp, CalcPropertyRevImplement<ClassPropertyInterface, ObjectEntity>> mProps = (MExclMap<GroupObjectProp, CalcPropertyRevImplement<ClassPropertyInterface, ObjectEntity>>) props;
         CalcPropertyRevImplement<ClassPropertyInterface, ObjectEntity> prop = mProps.get(type);
         if(prop==null) { // type.getSID() + "_" + getSID() нельзя потому как надо еще SID формы подмешивать
-            prop = DerivedProperty.createDataPropRev(LocalizedString.create(type.toString() + " (" + objects.toString() + ")", false), getObjects().mapValues(new GetValue<ValueClass, ObjectEntity>() {
+            prop = DerivedProperty.createDataPropRev(type.toString() + " (" + objects.toString() + ")", getObjects().mapValues(new GetValue<ValueClass, ObjectEntity>() {
                 public ValueClass getMapValue(ObjectEntity value) {
                     return value.baseClass;
-                }}), type.getValueClass(), null);
+                }}), type.getValueClass(), false);
             mProps.exclAdd(type, prop);
         }
         return prop;
@@ -241,9 +238,4 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
         setObjects(objects);
     }
 
-
-    @Override
-    public String toString() {
-        return getSID() + ": " + objects;
-    }
 }

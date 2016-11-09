@@ -13,11 +13,12 @@ import lsfusion.server.form.view.ContainerView;
 import lsfusion.server.form.view.DefaultFormView;
 import lsfusion.server.form.view.FormView;
 import lsfusion.server.logics.LogicsModule;
-import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.ClassType;
 import lsfusion.server.logics.property.PropertyInterface;
+
+import static lsfusion.server.logics.ServerResourceBundle.getString;
 
 public class DrillDownFormEntity<I extends PropertyInterface, P extends CalcProperty<I>> extends FormEntity {
     protected final P property;
@@ -26,7 +27,7 @@ public class DrillDownFormEntity<I extends PropertyInterface, P extends CalcProp
     public final ImMap<I, ObjectEntity> interfaceObjects;
     public final ObjectEntity[] paramObjects;
 
-    public DrillDownFormEntity(String canonicalName, LocalizedString caption, P property, LogicsModule LM) {
+    public DrillDownFormEntity(String canonicalName, String caption, P property, LogicsModule LM) {
         super(canonicalName, caption, LM.getVersion());
 
         this.property = property;
@@ -39,8 +40,7 @@ public class DrillDownFormEntity<I extends PropertyInterface, P extends CalcProp
         ImMap<I,ValueClass> interfaceClasses = property.getInterfaceClasses(ClassType.drillDownPolicy);
         int i = 0;
         for (I pi : property.getReflectionOrderInterfaces()) {
-            ObjectEntity paramObject  = addSingleGroupObject(interfaceClasses.get(pi), version, LM.recognizeGroup, true);
-            addPropertyDraw(LM.getObjValueProp(this, paramObject), version, paramObject);
+            ObjectEntity paramObject  = addSingleGroupObject(interfaceClasses.get(pi), version, LM.baseLM.objectValue, LM.recognizeGroup, true);
             paramObject.groupTo.setSingleClassView(ClassViewType.PANEL);
 
             interfaceObjects.add(pi, paramObject);
@@ -67,18 +67,18 @@ public class DrillDownFormEntity<I extends PropertyInterface, P extends CalcProp
     public FormView createDefaultRichDesign(Version version) {
         DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign(version);
 
-        paramsContainer = design.createContainer(LocalizedString.create("{logics.property.drilldown.form.params}"), version);
+        paramsContainer = design.createContainer(getString("logics.property.drilldown.form.params"), version);
         paramsContainer.setAlignment(FlexAlignment.STRETCH);
         design.mainContainer.addFirst(paramsContainer, version);
         for (ObjectEntity obj : paramObjects) {
             paramsContainer.add(design.getGroupObjectContainer(obj.groupTo), version);
         }
 
-        valueContainer = design.createContainer(LocalizedString.create("{logics.property.drilldown.form.value}"), version);
+        valueContainer = design.createContainer(getString("logics.property.drilldown.form.value"), version);
         valueContainer.setAlignment(FlexAlignment.STRETCH);
         design.mainContainer.addAfter(valueContainer, paramsContainer, version);
 
-        detailsContainer = design.createContainer(LocalizedString.create("{logics.property.drilldown.form.details}"), version);
+        detailsContainer = design.createContainer(getString("logics.property.drilldown.form.details"), version);
         detailsContainer.setAlignment(FlexAlignment.STRETCH);
         design.mainContainer.addAfter(detailsContainer, valueContainer, version);
 

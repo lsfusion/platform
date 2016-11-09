@@ -99,7 +99,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public List<ClientGroupObject> columnGroupObjects = new ArrayList<>();
 
     public boolean autoHide;
-    public boolean autoSize;
     public boolean panelCaptionAfter;
     public boolean clearText;
     public String tableName;
@@ -360,7 +359,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         }
         pool.writeObject(outStream, externalScreenConstraints);
 
-        outStream.writeBoolean(autoSize);
         outStream.writeBoolean(panelCaptionAfter);
         outStream.writeBoolean(editOnSingleClick);
         outStream.writeBoolean(hide);
@@ -399,7 +397,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
         externalScreenConstraints = pool.readObject(inStream);
 
-        autoSize = inStream.readBoolean();
         panelCaptionAfter = inStream.readBoolean();
         editOnSingleClick = inStream.readBoolean();
         hide = inStream.readBoolean();

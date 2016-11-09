@@ -54,11 +54,6 @@ public class ArIndexedSet<K> extends AMSet<K> {
     }
 
     @Override
-    public K getIdentIncl(K element) {
-        return get(ArIndexedMap.findIndex(element, size, array));
-    }
-
-    @Override
     public void keep(K element) {
         assert size==0 || array[size-1].hashCode() <= element.hashCode();
         array[size++] = element;

@@ -2,12 +2,11 @@ package lsfusion.server.classes;
 
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
-import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.mutables.Version;
 
 public class AbstractCustomClass extends CustomClass {
 
-    public AbstractCustomClass(String sID, LocalizedString caption, Version version, CustomClass... parents) {
+    public AbstractCustomClass(String sID, String caption, Version version, CustomClass... parents) {
         super(sID, caption, version, parents);
     }
 

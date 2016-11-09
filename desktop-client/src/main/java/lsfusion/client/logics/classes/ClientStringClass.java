@@ -157,6 +157,16 @@ public class ClientStringClass extends ClientDataClass {
     }
 
     @Override
+    public String getSID() {
+        return sID;
+    }
+
+    @Override
+    public String getCode() {
+        return "StringClass.get(" + blankPadded + "," + caseInsensitive+ "," + rich + "," + length + ")";
+    }
+
+    @Override
     public int getPreferredHeight(FontMetrics fontMetrics) {
         if(length.isUnlimited())
             return 4 * (fontMetrics.getHeight() + 1);

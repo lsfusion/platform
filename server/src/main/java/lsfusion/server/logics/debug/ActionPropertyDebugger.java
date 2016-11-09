@@ -27,7 +27,6 @@ import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LP;
 import lsfusion.server.logics.property.*;
-import lsfusion.server.logics.property.actions.FormEnvironment;
 import lsfusion.server.logics.property.actions.flow.FlowResult;
 import lsfusion.server.logics.scripted.EvalUtils;
 import lsfusion.server.logics.scripted.ScriptingErrorLog;
@@ -161,7 +160,6 @@ public class ActionPropertyDebugger implements DebuggerService {
             "import lsfusion.server.logics.property.DataProperty;\n" +
             "import lsfusion.server.logics.property.ExecutionContext;\n" +
             "import lsfusion.server.logics.property.actions.flow.FlowResult;\n" +
-            "import lsfusion.server.session.ClassChange;\n" +
             "import lsfusion.server.session.DataSession;\n" +
             "import lsfusion.server.session.PropertyChange;\n" +
             "\n" +
@@ -179,14 +177,10 @@ public class ActionPropertyDebugger implements DebuggerService {
                         "    public static FlowResult " + methodName + "(ActionProperty action, ExecutionContext context) throws SQLException, SQLHandledException {\n" +
                         "        " + body + "\n" +
                         "    }\n";
-            } else if (info instanceof CalcPropertyDebugInfo) {
+            } else {
                 sourceString +=
                         "    public static void " + methodName + "(DataSession session, CalcProperty property, PropertyChange<ClassPropertyInterface> change) throws SQLException, SQLHandledException {\n" +
                         "        session.changePropertyImpl((DataProperty) property, change);\n" +
-                        "    }\n";
-            } else { // class change
-                sourceString +=
-                        "    public static void " + methodName + "() throws SQLException, SQLHandledException {\n" +
                         "    }\n";
             }
         }
@@ -287,24 +281,6 @@ public class ActionPropertyDebugger implements DebuggerService {
 
         dataSession.changePropertyImpl(property, change);
     }
-
-    public void delegate(ClassDebugInfo debugInfo) throws SQLException, SQLHandledException {
-        if (debugInfo == null || !isEnabled()) {
-            throw new IllegalStateException("Shouldn't happen: debug isn't enabled");
-        }
-
-        Class<?> delegatesHolderClass = delegatesHolderClasses.get(debugInfo.getModuleName());
-        if (delegatesHolderClass != null) {
-            try {
-                Method method = delegatesHolderClass.getMethod(getMethodName(debugInfo));
-                method.invoke(delegatesHolderClass);
-            } catch (InvocationTargetException e) {
-                throw ExceptionUtils.propagate(e.getCause(), SQLException.class, SQLHandledException.class);
-            } catch (Exception e) {
-                logger.warn("Error while delegating to ActionPropertyDebugger: ", e);
-            }
-        }
-    }
     
     private Object commonExecuteDelegate(Class<?> clazz, Method method, ActionProperty action, ExecutionContext context) throws InvocationTargetException, IllegalAccessException {
         return method.invoke(clazz, action, context);
@@ -345,11 +321,11 @@ public class ActionPropertyDebugger implements DebuggerService {
 
         ImSet<Pair<LP, List<ResolveClassSet>>> locals = stack.getAllLocalsInStack();
 
-        ExecutionContext<PropertyInterface> watchContext = ((ExecutionContext<PropertyInterface>)context).override(MapFact.<PropertyInterface, ObjectValue>EMPTY(), (FormEnvironment<PropertyInterface>) null);
+        ExecutionContext<PropertyInterface> watchContext = new ExecutionContext<>(MapFact.<PropertyInterface, ObjectValue>EMPTY(), context.getEnv(), stack);
 
         Pair<LAP<PropertyInterface>, Boolean> evalResult = evalAction(namespace, require, priorities, expression, paramsWithClasses, locals, watchContext.isPrevEventScope(), context.getBL());
         LAP<PropertyInterface> evalAction = evalResult.first;
-        boolean forExHack = evalResult.second; // hack для выяснения есть расширение контекста или нет (чтобы знать пустой список или null светить)
+        boolean forExHack = evalResult.second;
 
         final MOrderExclSet<ImMap<String, ObjectValue>> mResult = SetFact.mOrderExclSet();
         final ImSet<String> externalParamNames = paramsWithClasses.keys();

@@ -14,7 +14,6 @@ import lsfusion.server.form.entity.CalcPropertyObjectEntity;
 import lsfusion.server.form.entity.ObjectEntity;
 import lsfusion.server.form.entity.PropertyObjectInterfaceEntity;
 import lsfusion.server.logics.DataObject;
-import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.CalcType;
 import lsfusion.server.logics.property.PropertyInterface;
@@ -107,7 +106,7 @@ public class OnChangeProperty<T extends PropertyInterface,P extends PropertyInte
     }
 
     public OnChangeProperty(CalcProperty<T> onChange, CalcProperty<P> toChange) {
-        super(LocalizedString.concatList(onChange.caption, " по (", toChange.caption, ")"), getInterfaces(onChange, toChange), onChange, toChange);
+        super(onChange.caption+" по ("+toChange.caption+")", getInterfaces(onChange, toChange), onChange, toChange);
 
         finalizeInit();
     }

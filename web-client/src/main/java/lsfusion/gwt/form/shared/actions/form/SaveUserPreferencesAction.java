@@ -6,16 +6,14 @@ public class SaveUserPreferencesAction extends FormRequestIndexCountingAction<Se
     public GGroupObjectUserPreferences groupObjectUserPreferences;
     public boolean forAllUsers;
     public boolean completeOverride;
-    public String[] hiddenProps;
 
     @SuppressWarnings("Unused")
     public SaveUserPreferencesAction() {
     }
 
-    public SaveUserPreferencesAction(GGroupObjectUserPreferences userPreferences, boolean forAllUsers, boolean completeOverride, String[] hiddenProps) {
+    public SaveUserPreferencesAction(GGroupObjectUserPreferences userPreferences, boolean forAllUsers, boolean completeOverride) {
         this.groupObjectUserPreferences = userPreferences;
         this.forAllUsers = forAllUsers;
         this.completeOverride = completeOverride;
-        this.hiddenProps = hiddenProps;
     }
 }

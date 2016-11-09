@@ -1,5 +1,6 @@
 package lsfusion.server.classes;
 
+import lsfusion.base.BaseUtils;
 import lsfusion.base.ExtInt;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
@@ -20,7 +21,6 @@ import lsfusion.server.data.expr.StaticValueExpr;
 import lsfusion.server.data.expr.ValueExpr;
 import lsfusion.server.data.expr.formula.FormulaClass;
 import lsfusion.server.data.expr.query.Stat;
-import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.AbstractType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
@@ -29,7 +29,6 @@ import lsfusion.server.form.instance.DataObjectInstance;
 import lsfusion.server.form.instance.ObjectInstance;
 import lsfusion.server.form.view.report.ReportDrawField;
 import lsfusion.server.logics.DataObject;
-import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.IsClassProperty;
 import lsfusion.server.logics.property.group.AbstractGroup;
 import net.sf.jasperreports.engine.type.HorizontalAlignEnum;
@@ -40,19 +39,19 @@ import java.util.Random;
 
 public abstract class DataClass<T> extends AbstractType<T> implements StaticClass, FormulaClass, ValueClassSet, OrClassSet, ResolveClassSet {
     private static MAddExclMap<String, DataClass> sidToClass = MapFact.mBigStrongMap();
-    protected LocalizedString caption;
+    protected String caption;
 
     public static void storeClass(DataClass... classes) {
         for(DataClass cls : classes)
             sidToClass.exclAdd(cls.getSID(), cls);
     }
 
-    protected DataClass(LocalizedString caption) {
+    protected DataClass(String caption) {
         this.caption = caption;
     }
 
     @Override
-    public LocalizedString getCaption() {
+    public String getCaption() {
         return caption;
     }
 
@@ -319,7 +318,4 @@ public abstract class DataClass<T> extends AbstractType<T> implements StaticClas
     public boolean isValueZero(T value) {
         return false;
     }
-
-    public abstract String getString(Object value, SQLSyntax syntax);
-
 }

@@ -5,13 +5,10 @@ import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.server.EnvStackRunnable;
 import lsfusion.server.ServerLoggers;
-import lsfusion.server.context.ExecutionStack;
-import lsfusion.server.context.ExecutorFactory;
-import lsfusion.server.context.ThreadLocalContext;
+import lsfusion.server.context.*;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
-import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.ActionPropertyMapImplement;
 import lsfusion.server.logics.property.CalcPropertyInterfaceImplement;
 import lsfusion.server.logics.property.ExecutionContext;
@@ -29,10 +26,10 @@ public class NewThreadActionProperty extends AroundAspectActionProperty {
     private CalcPropertyInterfaceImplement<PropertyInterface> delayProp;
     private CalcPropertyInterfaceImplement<PropertyInterface> connectionProp;
 
-    public <I extends PropertyInterface> NewThreadActionProperty(LocalizedString caption, ImOrderSet<I> innerInterfaces,
-                                                                 ActionPropertyMapImplement<?, I> action,
-                                                                 CalcPropertyInterfaceImplement<I> period,
-                                                                 CalcPropertyInterfaceImplement<I> delay,
+    public <I extends PropertyInterface> NewThreadActionProperty(String caption, ImOrderSet<I> innerInterfaces, 
+                                                                 ActionPropertyMapImplement<?, I> action, 
+                                                                 CalcPropertyInterfaceImplement<I> period, 
+                                                                 CalcPropertyInterfaceImplement<I> delay, 
                                                                  CalcPropertyInterfaceImplement<I> connection) {
         super(caption, innerInterfaces, action);
 

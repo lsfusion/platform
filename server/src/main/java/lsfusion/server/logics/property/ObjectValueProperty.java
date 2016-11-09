@@ -11,8 +11,8 @@ import lsfusion.server.form.entity.ObjectEntity;
 import lsfusion.server.form.entity.PropertyObjectInterfaceEntity;
 import lsfusion.server.form.view.DefaultFormView;
 import lsfusion.server.form.view.PropertyDrawView;
-import lsfusion.server.logics.i18n.LocalizedString;
-import lsfusion.server.logics.property.actions.DefaultChangeObjectActionProperty;
+import lsfusion.server.logics.ServerResourceBundle;
+import lsfusion.server.logics.property.actions.ChangeReadObjectActionProperty;
 import lsfusion.server.logics.property.infer.ExClassSet;
 import lsfusion.server.logics.property.infer.InferType;
 import lsfusion.server.logics.property.infer.Inferred;
@@ -20,13 +20,9 @@ import lsfusion.server.session.PropertyChanges;
 
 public class ObjectValueProperty extends NoIncrementProperty<ClassPropertyInterface> {
 
-    private final ObjectEntity object; 
-            
-    public ObjectValueProperty(ValueClass valueClass, ObjectEntity object) { // LocalizedString.create("{logics.object}")
-        super(object.getCaption(), IsClassProperty.getInterfaces(new ValueClass[]{valueClass}));
+    public ObjectValueProperty(ValueClass valueClass) {
+        super(ServerResourceBundle.getString("logics.object"), IsClassProperty.getInterfaces(new ValueClass[]{valueClass}));
 
-        this.object = object;
-        
         finalizeInit();
     }
 
@@ -47,11 +43,19 @@ public class ObjectValueProperty extends NoIncrementProperty<ClassPropertyInterf
     @Override
     @IdentityStrongLazy // STRONG пришлось поставить из-за использования в политике безопасности
     public ActionPropertyMapImplement<?, ClassPropertyInterface> getDefaultEditAction(String editActionSID, CalcProperty filterProperty) {
-        return new DefaultChangeObjectActionProperty(null, getInterface().interfaceClass, object).getImplement(SetFact.singletonOrder(getInterface()));
+        return new ChangeReadObjectActionProperty(null, getInterface().interfaceClass).getImplement(SetFact.singletonOrder(getInterface()));
     }
 
     private ClassPropertyInterface getInterface() {
         return interfaces.single();
+    }
+
+    @Override
+    public void proceedDefaultDesign(PropertyDrawView propertyView, DefaultFormView view) {
+        super.proceedDefaultDesign(propertyView, view);
+        PropertyObjectInterfaceEntity mapObject = propertyView.entity.propertyObject.mapping.singleValue();
+        if (mapObject instanceof ObjectEntity)
+            propertyView.caption = ((ObjectEntity) mapObject).getCaption();
     }
 
     @Override

@@ -29,10 +29,7 @@ import lsfusion.server.form.instance.listener.RemoteFormListener;
 import lsfusion.server.form.navigator.LogInfo;
 import lsfusion.server.form.view.ContainerView;
 import lsfusion.server.form.view.FormView;
-import lsfusion.server.logics.BusinessLogics;
-import lsfusion.server.logics.DataObject;
-import lsfusion.server.logics.ObjectValue;
-import lsfusion.server.logics.ThreadUtils;
+import lsfusion.server.logics.*;
 import lsfusion.server.serialization.SerializationType;
 import lsfusion.server.serialization.ServerContext;
 import lsfusion.server.serialization.ServerSerializationPool;
@@ -125,7 +122,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         //будем использовать стандартный OutputStream, чтобы кол-во передаваемых данных было бы как можно меньше
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
         try {
-            new ServerSerializationPool(new ServerContext(form.securityPolicy, richDesign, form.BL)).serializeObject(new DataOutputStream(outStream), richDesign, SerializationType.GENERAL);
+            new ServerSerializationPool(new ServerContext(form.securityPolicy, richDesign)).serializeObject(new DataOutputStream(outStream), richDesign, SerializationType.GENERAL);
             //            richDesign.serialize(new DataOutputStream(outStream));
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -457,7 +454,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
                     logger.trace(String.format("clearPropertyOrders: [ID: %1$d]", groupObject.getID()));
                 }
                 
-                form.getGroupObjectInstance(groupObjectID).clearOrders();
+                form.getFormInstance().getGroupObjectInstance(groupObjectID).clearOrders();
             }
         });
     }
@@ -659,7 +656,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     }
 
     @Override
-    public ServerResponse saveUserPreferences(long requestIndex, long lastReceivedRequestIndex, final GroupObjectUserPreferences preferences, final boolean forAllUsers, final boolean completeOverride, final String[] hiddenProps) throws RemoteException {
+    public ServerResponse saveUserPreferences(long requestIndex, long lastReceivedRequestIndex, final GroupObjectUserPreferences preferences, final boolean forAllUsers, final boolean completeOverride) throws RemoteException {
         return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, new EExecutionStackRunnable() {
             @Override
             public void run(ExecutionStack stack) throws Exception {
@@ -669,18 +666,6 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
                 }
                 
                 form.saveUserPreferences(stack, preferences, forAllUsers, completeOverride);
-                
-                form.refreshUPHiddenProperties(preferences.groupObjectSID, hiddenProps);
-            }
-        });
-    }
-
-    @Override
-    public ServerResponse refreshUPHiddenProperties(long requestIndex, long lastReceivedRequestIndex, final String groupObjectSID, final String[] propSids) throws RemoteException {
-        return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, new EExecutionStackRunnable() {
-            @Override
-            public void run(ExecutionStack stack) throws Exception {
-                form.refreshUPHiddenProperties(groupObjectSID, propSids);
             }
         });
     }
@@ -884,15 +869,10 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     }
 
     // именно непосредственно перед возвращением результата, иначе closeLater может сработать сильно раньше
-    private ServerResponse returnRemoteChangesResponse(long requestIndex, List<ClientAction> pendingActions, boolean delayedHideForm, ExecutionStack stack) {
+    private ServerResponse returnRemoteChangesResponse(long requestIndex, List<ClientAction> pendingActions, boolean delayedHideForm) {
         if (delayedHideForm) {
             ServerLoggers.remoteLifeLog("FORM DELAYED HIDE : " + this);
-            try {
-                form.syncLikelyOnClose(false, stack);
-            } catch (SQLException | SQLHandledException e) {
-                throw Throwables.propagate(e);
-            }
-            deactivateAndCloseLater(true);
+            closeLater();
         }
 
         return new ServerResponse(requestIndex, pendingActions.toArray(new ClientAction[pendingActions.size()]), false);
@@ -906,7 +886,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         }
 
         if (numberOfFormChangesRequests.get() > 1 || delayedGetRemoteChanges) {
-            return returnRemoteChangesResponse(requestIndex, pendingActions, delayedHideForm, stack);
+            return returnRemoteChangesResponse(requestIndex, pendingActions, delayedHideForm);
         }
 
         byte[] formChanges = getFormChangesByteArray(stack);
@@ -916,16 +896,12 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
 
         resultActions.addAll(pendingActions);
 
-        return returnRemoteChangesResponse(requestIndex, resultActions, delayedHideForm, stack);
+        return returnRemoteChangesResponse(requestIndex, resultActions, delayedHideForm);
     }
 
     public byte[] getFormChangesByteArray(ExecutionStack stack) {
         try {
-            FormChanges formChanges;
-            if(isDeactivated() || delayedHideFormSent) // formWillBeClosed
-                formChanges = FormChanges.EMPTY;
-            else
-                formChanges = form.endApply(stack);
+            FormChanges formChanges = form.endApply(stack, delayedHideFormSent);
 
             if (logger.isTraceEnabled()) {
                 formChanges.logChanges(form, logger);
@@ -1066,19 +1042,29 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
 
     // будем считать что если unreferenced \ finalized то форма точно также должна закрыться ???
     @Override
-    protected void onClose() {
+    protected void onExplicitClose(boolean syncedOnClient) {
         try {
-            form.explicitClose();
+            form.explicitClose(syncedOnClient);
         } catch (Throwable t) {
             ServerLoggers.sqlSuppLog(t);
         }
 
-        super.onClose();
+        super.onExplicitClose(syncedOnClient);
 
         // важно делать после, чтобы закрытие navigator'а (а значит и sql conection'а) было после того как закрылись все формы
         RemoteFormListener listener = getRemoteFormListener();
         if (listener != null) {
-            listener.formClosed(this);
+            listener.formExplicitClosed(this);
+        }
+    }
+
+    @Override
+    protected void onFinalClose(boolean explicit) {
+        super.onFinalClose(explicit);
+
+        RemoteFormListener listener = getRemoteFormListener();
+        if (listener != null) {
+            listener.formFinalClosed(this);
         }
     }
 }

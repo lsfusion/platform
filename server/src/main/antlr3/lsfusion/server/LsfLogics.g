@@ -22,8 +22,6 @@ grammar LsfLogics;
 	import lsfusion.server.form.view.GroupObjectView;
 	import lsfusion.server.form.view.PropertyDrawView;
 	import lsfusion.server.classes.sets.ResolveClassSet;
-	import lsfusion.server.session.LocalNestedType;
-	import lsfusion.server.logics.i18n.LocalizedString;
 	import lsfusion.server.logics.mutables.Version;
 	import lsfusion.server.logics.linear.LP;
 	import lsfusion.server.logics.property.Cycle;
@@ -52,6 +50,7 @@ grammar LsfLogics;
 	import lsfusion.server.logics.property.PropertyFollowsDebug;
 	import lsfusion.server.logics.debug.ActionDebugInfo;
 	import lsfusion.server.logics.debug.DebugInfo;
+	
 	import javax.mail.Message;
 
 	import lsfusion.server.form.entity.GroupObjectProp;
@@ -273,12 +272,13 @@ classStatement
 	boolean isAbstract = false;
 	boolean isNative = false;
 	boolean isComplex = false;
-	DebugInfo.DebugPoint point = getCurrentDebugPoint(); 
+	List<String> instanceNames = new ArrayList<String>();
+	List<String> instanceCaptions = new ArrayList<String>();
 }
 @after {
 	if (inClassParseState()) {
-	    if (!isNative)
-		    self.addScriptedClass($nameCaption.name, $nameCaption.caption, isAbstract, $classData.names, $classData.captions, $classData.parents, isComplex, point);
+	    if(!isNative)
+		    self.addScriptedClass($nameCaption.name, $nameCaption.caption, isAbstract, $classData.names, $classData.captions, $classData.parents, isComplex);
 	}
 }
 	:	'CLASS'
@@ -299,11 +299,11 @@ extendClassStatement
 		classData=classInstancesAndParents 
 	;
 
-classInstancesAndParents returns [List<String> names, List<LocalizedString> captions, List<String> parents] 
+classInstancesAndParents returns [List<String> names, List<String> captions, List<String> parents] 
 @init {
 	$parents = new ArrayList<String>();
 	$names = new ArrayList<String>();
-	$captions = new ArrayList<LocalizedString>();
+	$captions = new ArrayList<String>();
 }
 	:	(
 			'{'
@@ -421,11 +421,10 @@ formDeclaration returns [ScriptingFormEntity form]
 	int autoRefresh = 0;
 	String image = null;
 	String title = null;
-	DebugInfo.DebugPoint point = getCurrentDebugPoint();
 }
 @after {
 	if (inPropParseState()) {
-		$form = self.createScriptedForm($formNameCaption.name, $formNameCaption.caption, point, image, modalityType, autoRefresh);
+		$form = self.createScriptedForm($formNameCaption.name, $formNameCaption.caption, image, modalityType, autoRefresh);
 	}
 }
 	:	'FORM' 
@@ -540,15 +539,15 @@ formGroupObjectUpdate returns [UpdateType updateType]
 	|   'PREV' { $updateType = UpdateType.PREV; }
 	;
 
-formSingleGroupObjectDeclaration returns [String name, String className, LocalizedString caption, ActionPropertyObjectEntity event] 
+formSingleGroupObjectDeclaration returns [String name, String className, String caption, ActionPropertyObjectEntity event] 
 	:	foDecl=formObjectDeclaration { $name = $foDecl.name; $className = $foDecl.className; $caption = $foDecl.caption; $event = $foDecl.event; }
 	;
 
-formMultiGroupObjectDeclaration returns [String groupName, List<String> objectNames, List<String> classNames, List<LocalizedString> captions, List<ActionPropertyObjectEntity> events]
+formMultiGroupObjectDeclaration returns [String groupName, List<String> objectNames, List<String> classNames, List<String> captions, List<ActionPropertyObjectEntity> events]
 @init {
 	$objectNames = new ArrayList<String>();
 	$classNames = new ArrayList<String>();
-	$captions = new ArrayList<LocalizedString>();
+	$captions = new ArrayList<String>();
 	$events = new ArrayList<ActionPropertyObjectEntity>();
 }
 	:	(gname=ID { $groupName = $gname.text; } '=')?
@@ -559,10 +558,10 @@ formMultiGroupObjectDeclaration returns [String groupName, List<String> objectNa
 	;
 
 
-formObjectDeclaration returns [String name, String className, LocalizedString caption, ActionPropertyObjectEntity event] 
+formObjectDeclaration returns [String name, String className, String caption, ActionPropertyObjectEntity event] 
 	:	(objectName=ID { $name = $objectName.text; } '=')?	
 		id=classId { $className = $id.sid; }
-		(c=localizedStringLiteral { $caption = $c.val; })?
+		(c=stringLiteral { $caption = $c.val; })?
 		('ON' 'CHANGE' faprop=formActionPropertyObject { $event = $faprop.action; })?
 	; 
 	
@@ -623,7 +622,7 @@ formPropertyOptionsList returns [FormPropertyOptions options]
 		|	'AFTER'  pdraw=formPropertyDraw { $options.setNeighbourPropertyDraw($pdraw.property, $pdraw.text); $options.setNeighbourType(true); }
 		|	'QUICKFILTER' pdraw=formPropertyDraw { $options.setQuickFilterPropertyDraw($pdraw.property); }
 		|	'ON' et=formEventType prop=formActionPropertyObject { $options.addEditAction($et.type, $prop.action); }
-		|	'ON' 'SHORTCUT' (c=localizedStringLiteral)? prop=formActionPropertyObject { $options.addContextMenuEditAction($c.val, $prop.action); }
+		|	'ON' 'SHORTCUT' (c=stringLiteral)? prop=formActionPropertyObject { $options.addContextMenuEditAction($c.val, $prop.action); }
 		|	'EVENTID' id=stringLiteral { $options.setEventId($id.val); }
 		)*
 	;
@@ -859,7 +858,7 @@ formRegularFilterDeclaration returns [RegularFilterInfo filter]
 @init {
 	String key = null;
 }
-    :   'FILTER' caption=localizedStringLiteral fd=formFilterDeclaration (keystroke=stringLiteral {key = $keystroke.val;})? setDefault=filterSetDefault
+    :   'FILTER' caption=stringLiteral fd=formFilterDeclaration (keystroke=stringLiteral {key = $keystroke.val;})? setDefault=filterSetDefault
         {
             $filter = new RegularFilterInfo($caption.val, key, $fd.property, $fd.mapping, $setDefault.isDefault);
         }
@@ -942,7 +941,7 @@ actionDefinition[List<TypedParameter> context, boolean dynamic] returns [LP prop
 	|	'ACTION' 'NATIVE' '(' clist=classIdList ')' { if (inPropParseState()) { $signature = self.createClassSetsFromClassNames($clist.ids); }}
 	;
 
-propertyDeclaration returns [String name, LocalizedString caption, List<TypedParameter> params]
+propertyDeclaration returns [String name, String caption, List<TypedParameter> params]
 	:	propNameCaption=simpleNameWithCaption { $name = $propNameCaption.name; $caption = $propNameCaption.caption; }
 		('(' paramList=typedParameterList ')' { $params = $paramList.params; })? 
 	;
@@ -950,7 +949,7 @@ propertyDeclaration returns [String name, LocalizedString caption, List<TypedPar
 
 propertyExpression[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
 @init {
-	DebugInfo.DebugPoint point = getCurrentDebugPoint();
+	DebugInfo.DebugPoint point = getCurrentDebugPoint(); 
 }
 @after{
     if (inPropParseState()) {
@@ -1314,28 +1313,24 @@ partitionPropertyDefinition[List<TypedParameter> context, boolean dynamic] retur
 dataPropertyDefinition[boolean innerPD] returns [LP property, List<ResolveClassSet> signature]
 @init {
 	boolean localProp = false;
-	LocalNestedType nestedType = null;
+	boolean isNested = false;
 }
 @after {
 	if (inPropParseState()) {
 		$signature = self.createClassSetsFromClassNames($paramClassNames.ids); 
-		$property = self.addScriptedDProp($returnClass.sid, $paramClassNames.ids, localProp, innerPD, false, nestedType);
+		$property = self.addScriptedDProp($returnClass.sid, $paramClassNames.ids, localProp, innerPD, false, isNested);
 	}
 }
 	:	'DATA'
-		('LOCAL' nlm=nestedLocalModifier { localProp = true; nestedType = $nlm.nestedType; })?
+		('LOCAL' nlm=nestedLocalModifier { localProp = true; isNested = $nlm.isNested; })?
 		returnClass=classId
 		'('
 			paramClassNames=classIdList
 		')'
 	;
 
-nestedLocalModifier returns[LocalNestedType nestedType = null]
-	:	('NESTED' { $nestedType = LocalNestedType.ALL; }
-	        (   'MANAGESESSION' { $nestedType = LocalNestedType.MANAGESESSION; }
-	        |   'NOMANAGESESSION' { $nestedType = LocalNestedType.NOMANAGESESSION; }
-	        )?
-        )?
+nestedLocalModifier returns[boolean isNested = false]
+	:	('NESTED' { $isNested = true; }	)?
 	;
 
 abstractPropertyDefinition returns [LP property, List<ResolveClassSet> signature]
@@ -1784,7 +1779,7 @@ propertyName returns [String name]
 	:	id=compoundID { $name = $id.sid; }
 	;
 
-propertyOptions[LP property, String propertyName, LocalizedString caption, List<TypedParameter> context, List<ResolveClassSet> signature] returns [LP realProperty]
+propertyOptions[LP property, String propertyName, String caption, List<TypedParameter> context, List<ResolveClassSet> signature] returns [LP realProperty]
 @init {
 	String groupName = null;
 	String table = null;
@@ -1808,7 +1803,7 @@ propertyOptions[LP property, String propertyName, LocalizedString caption, List<
 		|	'COMPLEX' { isComplex = true; }
 		|	'NOHINT' { noHint = true; }
 		|	'TABLE' tbl = compoundID { table = $tbl.sid; }
-		|	shortcutSetting [property, caption != null ? caption : LocalizedString.create(propertyName)]
+		|	shortcutSetting [property, caption != null ? caption : propertyName]
 		|	toolbarSetting [property]
 		|	fixedCharWidthSetting [property]
 		|	minCharWidthSetting [property]
@@ -1836,7 +1831,7 @@ propertyOptions[LP property, String propertyName, LocalizedString caption, List<
 	;
 
 
-shortcutSetting [LP property, LocalizedString caption]
+shortcutSetting [LP property, String caption]
 @after {
 	if (inPropParseState()) {
 		self.addToContextMenuFor(property, caption, $usage.propUsage);
@@ -2109,7 +2104,6 @@ keepContextActionDB[List<TypedParameter> context, boolean dynamic] returns [LPWi
 	|	multiADB=multiActionDefinitionBody[context, dynamic] { $property = $multiADB.property; }	
 	|	termADB=terminalFlowActionDefinitionBody { $property = $termADB.property; }
 	|  	applyADB=applyActionDefinitionBody[context, dynamic] { $property = $applyADB.property; }
-    |   cancelPDB=cancelActionDefinitionBody[context, dynamic] { $property = $cancelPDB.property; }
 	|	formADB=formActionDefinitionBody[context, dynamic] { $property = $formADB.property; }
 	|	msgADB=messageActionDefinitionBody[context, dynamic] { $property = $msgADB.property; }
 	|	asyncADB=asyncUpdateActionDefinitionBody[context, dynamic] { $property = $asyncADB.property; }
@@ -2150,7 +2144,7 @@ contextIndependentActionDB returns [LPWithParams property, List<ResolveClassSet>
 
 formActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
 @init {
-	boolean manageSession = false;
+	FormSessionScope sessionScope = FormSessionScope.OLDSESSION;
 	ModalityType modalityType = ModalityType.DOCKED;
 	boolean checkOnOk = false;
 	boolean showDrop = false;
@@ -2167,14 +2161,14 @@ formActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns 
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedFAProp($formName.sid, objects, mapping, contextObjectName, contextProperty, initFilterPropertyName, initFilterPropertyMapping, modalityType, manageSession, checkOnOk, showDrop, noCancel, printType, exportType, readOnly);
+		$property = self.addScriptedFAProp($formName.sid, objects, mapping, contextObjectName, contextProperty, initFilterPropertyName, initFilterPropertyMapping, modalityType, sessionScope, checkOnOk, showDrop, noCancel, printType, exportType, readOnly);
 	}
 }
 	:	'FORM' formName=compoundID 
 		('OBJECTS' list=formActionObjectList[context, dynamic] { objects = $list.objects; mapping = $list.exprs; })?
 		(	'CONTEXTFILTER' objName=ID '=' contextPropertyExpr=propertyExpression[context, dynamic] { contextObjectName = $objName.text; contextProperty = $contextPropertyExpr.property; }
 		|	initFilter = initFilterDefinition { initFilterPropertyMapping = $initFilter.mapping; initFilterPropertyName = $initFilter.propName; }
-		|	'MANAGESESSION' { manageSession = true; }
+		|	'MANAGESESSION' { sessionScope = FormSessionScope.MANAGESESSION; }
 		|	modality = modalityTypeLiteral { modalityType = $modality.val; }
 		|	'CHECK' { checkOnOk = true; }
 		|	'SHOWDROP' { showDrop = true; }
@@ -2536,7 +2530,7 @@ nestedPropertiesSelector returns[boolean all = false, List<PropertyUsage> props 
 localDataPropertyDefinition returns [LP property]
 @after {
 	if (inPropParseState()) {
-		$property = self.addLocalDataProperty($propName.text, $returnClass.sid, $paramClasses.ids, $nlm.nestedType);
+		$property = self.addLocalDataProperty($propName.text, $returnClass.sid, $paramClasses.ids, $nlm.isNested);
 	}
 }
 	:	'LOCAL'
@@ -2651,20 +2645,6 @@ applyActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns
         ('SINGLE' { single = true; })?
         ('SERIALIZABLE' { serializable = true; })?
         applyADB=innerActionDefinitionBody[context, dynamic]
-	;
-
-cancelActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
-@init {
-	List<PropertyUsage> keepSessionProps = Collections.emptyList();
-	boolean keepAllSessionProps = false;
-}
-@after {
-	if (inPropParseState()) {
-		$property = self.addScriptedCancelAProp(keepSessionProps, keepAllSessionProps);
-	}
-}
-	:	'CANCEL'
-        (mps=nestedPropertiesSelector { keepAllSessionProps = $mps.all; keepSessionProps = $mps.props; })?
 	;
 
 multiActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property] 
@@ -3164,11 +3144,11 @@ navigatorElementStatementBody[NavigatorElement parentElement]
 			|	emptyStatement
 			)*
 		'}'
-	|	emptyStatement
+	| emptyStatement
 	;
 
 addNavigatorElementStatement[NavigatorElement parentElement]
-	:	'ADD' elem=navigatorElementSelector (caption=localizedStringLiteral)? opts=navigatorElementOptions
+	:	'ADD' elem=navigatorElementSelector (caption=stringLiteral)? opts=navigatorElementOptions
 		{
 			if (inPropParseState()) {
 				self.setupNavigatorElement($elem.element, $caption.val, $parentElement, $opts.options, true);
@@ -3181,10 +3161,10 @@ newNavigatorElementStatement[NavigatorElement parentElement]
 @init {
 	NavigatorElement newElement = null;
 }
-	:	'NEW' id=ID (caption=localizedStringLiteral)? ('ACTION' au=propertyUsage)? opts=navigatorElementOptions
+	:	'NEW' id=ID (caption=stringLiteral)? ('ACTION' au=propertyUsage)? opts=navigatorElementOptions
 		{
 			if (inPropParseState()) {
-				newElement = self.createScriptedNavigatorElement($id.text, $caption.val, getCurrentDebugPoint(), $parentElement, $opts.options, $au.propUsage);
+				newElement = self.createScriptedNavigatorElement($id.text, $caption.val, $parentElement, $opts.options, $au.propUsage);
 			}
 		}
 		navigatorElementStatementBody[newElement]
@@ -3211,7 +3191,7 @@ navigatorElementInsertPosition returns [InsertPosition position, NavigatorElemen
 	;
 
 setupNavigatorElementStatement[NavigatorElement parentElement]
-	:	elem=navigatorElementSelector (caption=localizedStringLiteral)? opts=navigatorElementOptions
+	:	elem=navigatorElementSelector (caption=stringLiteral)? opts=navigatorElementOptions
 		{
 			if (inPropParseState()) {
 				self.setupNavigatorElement($elem.element, $caption.val, $parentElement, $opts.options, false);
@@ -3249,14 +3229,14 @@ scope {
 designHeader returns [ScriptingFormView view]
 @init {
 	boolean customDesign = false;
-	LocalizedString caption = null;
+	String caption = null;
 }
 @after {
 	if (inPropParseState()) {
 		$view = self.getFormDesign($cid.sid, caption, customDesign);
 	}
 }
-	:	'DESIGN' cid=compoundID (s=localizedStringLiteral { caption = $s.val; })? ('CUSTOM' { customDesign = true; })?
+	:	'DESIGN' cid=compoundID (s=stringLiteral { caption = $s.val; })? ('CUSTOM' { customDesign = true; })?
 	;
 
 componentStatementBody [ComponentView parentComponent]
@@ -3493,9 +3473,9 @@ typedParameter returns [TypedParameter param]
 	:	(cname=classId)? pname=ID
 	;
 
-simpleNameWithCaption returns [String name, LocalizedString caption] 
+simpleNameWithCaption returns [String name, String caption] 
 	:	simpleName=ID { $name = $simpleName.text; }
-		(captionStr=localizedStringLiteral { $caption = $captionStr.val; })?
+		(captionStr=stringLiteral { $caption = $captionStr.val; })?
 	;
 	
 idList returns [List<String> ids] 
@@ -3639,7 +3619,7 @@ literal returns [ScriptingLogicsModule.ConstType cls, Object value]
 	|	vlong=ulongLiteral	{ $cls = ScriptingLogicsModule.ConstType.LONG; $value = $vlong.val; }
 	|	vnum=UNUMERIC_LITERAL	{ $cls = ScriptingLogicsModule.ConstType.NUMERIC; $value = $vnum.text; }
 	|	vdouble=udoubleLiteral { $cls = ScriptingLogicsModule.ConstType.REAL; $value = $vdouble.val; }
-	|	vstr=localizedStringLiteral	{ $cls = ScriptingLogicsModule.ConstType.STRING; $value = $vstr.val; }  
+	|	vstr=stringLiteral	{ $cls = ScriptingLogicsModule.ConstType.STRING; $value = $vstr.val; }  
 	|	vbool=booleanLiteral	{ $cls = ScriptingLogicsModule.ConstType.LOGICAL; $value = $vbool.val; }
 	|	vdate=dateLiteral	{ $cls = ScriptingLogicsModule.ConstType.DATE; $value = $vdate.val; }
 	|	vdatetime=dateTimeLiteral { $cls = ScriptingLogicsModule.ConstType.DATETIME; $value = $vdatetime.val; }
@@ -3712,10 +3692,6 @@ stringLiteral returns [String val]
 	:	s=STRING_LITERAL { $val = self.transformStringLiteral($s.text); }
 	;
 
-localizedStringLiteral returns [LocalizedString val]
-	:	s=STRING_LITERAL { $val = self.transformLocalizedStringLiteral($s.text); } 
-	;
-
 intLiteral returns [int val]
 @init {
 	boolean isMinus = false;
@@ -3785,7 +3761,6 @@ containerTypeLiteral returns [ContainerType val]
 	|	'TABBED' { $val = ContainerType.TABBED_PANE; }
 	|	'SPLITH' { $val = ContainerType.HORIZONTAL_SPLIT_PANE; }
 	|	'SPLITV' { $val = ContainerType.VERTICAL_SPLIT_PANE; }
-	|   'SCROLL' { $val = ContainerType.SCROLL; }
 	;
 
 alignmentLiteral returns [Alignment val]
@@ -3836,6 +3811,13 @@ formExportTypeLiteral returns [FormExportType val]
 		|	'XLSX' { $val = FormExportType.XLSX; }
 		)
 	;	
+
+formSessionScopeLiteral returns [FormSessionScope val]
+	:	'OLDSESSION' { $val = FormSessionScope.OLDSESSION; }
+	|	'NEWSESSION' { $val = FormSessionScope.NEWSESSION; }
+	|	'NESTEDSESSION' { $val = FormSessionScope.NESTEDSESSION; }
+	|	'MANAGESESSION' { $val = FormSessionScope.MANAGESESSION; }
+	;
 
 emailRecipientTypeLiteral returns [Message.RecipientType val]
 	:	'TO'	{ $val = Message.RecipientType.TO; }
@@ -3888,14 +3870,14 @@ fragment NEXT_ID_LETTER		: ('a'..'z'|'A'..'Z'|'_'|'0'..'9');
 fragment OPEN_CODE_BRACKET	: '<{';
 fragment CLOSE_CODE_BRACKET : '}>';
 
-PRIMITIVE_TYPE  :	'INTEGER' | 'DOUBLE' | 'LONG' | 'BOOLEAN' | 'DATE' | 'DATETIME' | 'YEAR' | 'TEXT'  | 'RICHTEXT' | 'TIME' | 'WORDFILE' | 'IMAGEFILE' | 'PDFFILE' | 'CUSTOMFILE' | 'EXCELFILE' | 'WORDLINK' | 'IMAGELINK' | 'PDFLINK' | 'CUSTOMLINK' | 'EXCELLINK' | 'STRING[' DIGITS ']' | 'ISTRING[' DIGITS ']'  | 'VARSTRING[' DIGITS ']' | 'VARISTRING[' DIGITS ']' | 'NUMERIC[' DIGITS ',' DIGITS ']' | 'COLOR';
+PRIMITIVE_TYPE  :	'INTEGER' | 'DOUBLE' | 'LONG' | 'BOOLEAN' | 'DATE' | 'DATETIME' | 'YEAR' | 'TEXT'  | 'RICHTEXT' | 'TIME' | 'WORDFILE' | 'IMAGEFILE' | 'PDFFILE' | 'CUSTOMFILE' | 'EXCELFILE' | 'STRING[' DIGITS ']' | 'ISTRING[' DIGITS ']'  | 'VARSTRING[' DIGITS ']' | 'VARISTRING[' DIGITS ']' | 'NUMERIC[' DIGITS ',' DIGITS ']' | 'COLOR';
 LOGICAL_LITERAL :	'TRUE' | 'FALSE';
 NULL_LITERAL	:	'NULL';	
-ID				:	FIRST_ID_LETTER NEXT_ID_LETTER*;
-WS				:	(NEWLINE | SPACE) { $channel=HIDDEN; };
+ID          	:	FIRST_ID_LETTER NEXT_ID_LETTER*;
+WS		:	(NEWLINE | SPACE) { $channel=HIDDEN; };
 STRING_LITERAL	:	'\'' STR_LITERAL_CHAR* '\'';
 COLOR_LITERAL 	:	'#' HEX_DIGIT HEX_DIGIT HEX_DIGIT HEX_DIGIT HEX_DIGIT HEX_DIGIT;
-COMMENTS		:	('//' .* '\n') { $channel=HIDDEN; };
+COMMENTS	:	('//' .* '\n') { $channel=HIDDEN; };
 UINT_LITERAL 	:	DIGITS;
 ULONG_LITERAL	:	DIGITS('l'|'L');
 UDOUBLE_LITERAL	:	DIGITS '.' EDIGITS('d'|'D');
@@ -3903,15 +3885,16 @@ UNUMERIC_LITERAL:	DIGITS '.' EDIGITS;
 DATE_LITERAL	:	DIGIT DIGIT DIGIT DIGIT '_' DIGIT DIGIT '_' DIGIT DIGIT; 
 DATETIME_LITERAL:	DIGIT DIGIT DIGIT DIGIT '_' DIGIT DIGIT '_' DIGIT DIGIT '_' DIGIT DIGIT ':' DIGIT DIGIT;	
 TIME_LITERAL	:	DIGIT DIGIT ':' DIGIT DIGIT;
+NUMBERED_PARAM	:	'$' DIGITS;
 RECURSIVE_PARAM :	'$' FIRST_ID_LETTER NEXT_ID_LETTER*;	
-EQ_OPERAND		:	('==') | ('!=');
+EQ_OPERAND	:	('==') | ('!=');
 LESS_OPERAND	: 	('<');
-GR_OPERAND		:	('>');
+GR_OPERAND	:	('>');
 RELEQ_OPERAND	: 	('<=') | ('>=');
-MINUS			:	'-';
-PLUS			:	'+';
-MULT			:	'*';
-DIV				:	'/';
+MINUS		:	'-';
+PLUS		:	'+';
+MULT		:	'*';
+DIV		:	'/';
 ADDOR_OPERAND	:	'(+)' | {ahead("(-)")}?=> '(-)';
 CONCAT_OPERAND	:	'##';
 CONCAT_CAPITALIZE_OPERAND	:	'###';

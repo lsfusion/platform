@@ -5,7 +5,6 @@ import lsfusion.server.classes.DataClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.ObjectValue;
-import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.AnyValuePropertyHolder;
 import lsfusion.server.logics.property.CalcProperty;
@@ -25,7 +24,7 @@ public class RequestUserDataActionProperty extends SystemExplicitActionProperty 
         return getChangeProps(requestCanceledProperty.property, requestedValueProperty.getLCP(dataClass).property);
     }
 
-    public RequestUserDataActionProperty(LocalizedString caption, DataClass dataClass, LCP requestCanceledProperty, AnyValuePropertyHolder requestedValueProperty) {
+    public RequestUserDataActionProperty(String caption, DataClass dataClass, LCP requestCanceledProperty, AnyValuePropertyHolder requestedValueProperty) {
         super(caption);
 
         this.dataClass = dataClass;

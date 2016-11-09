@@ -12,7 +12,6 @@ import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
-import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.*;
 
 import java.sql.SQLException;
@@ -22,7 +21,7 @@ public abstract class ExtendContextActionProperty<I extends PropertyInterface> e
     protected final ImSet<I> innerInterfaces;
     protected final ImRevMap<PropertyInterface, I> mapInterfaces;
 
-    public ExtendContextActionProperty(LocalizedString caption, ImSet<I> innerInterfaces, ImOrderSet<I> mapInterfaces) {
+    public ExtendContextActionProperty(String caption, ImSet<I> innerInterfaces, ImOrderSet<I> mapInterfaces) {
         super(caption, mapInterfaces.size());
 
         this.innerInterfaces = innerInterfaces;

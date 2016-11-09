@@ -4,7 +4,7 @@ import lsfusion.interop.Data;
 import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.ParseException;
-import lsfusion.server.logics.i18n.LocalizedString;
+import lsfusion.server.logics.ServerResourceBundle;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -18,7 +18,11 @@ public class DoubleClass extends IntegralClass<Double> {
         DataClass.storeClass(instance);
     }
 
-    private DoubleClass() { super(LocalizedString.create("{classes.floating}")); }
+    private DoubleClass() { super(ServerResourceBundle.getString("classes.real")); }
+
+    public String toString() {
+        return ServerResourceBundle.getString("classes.floating");
+    }
 
     public Class getReportJavaClass() {
         return Double.class;

@@ -6,7 +6,6 @@ import lsfusion.server.classes.StringClass;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.entity.ObjectEntity;
-import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.CalcPropertyInterfaceImplement;
@@ -36,7 +35,6 @@ public class EmailLogicsModule extends ScriptingLogicsModule{
     public ConcreteCustomClass notification;
     
     public LCP defaultInboxAccount;
-    public LCP inboxAccount;
     public LCP nameEncryptedConnectionTypeAccount;
     public LCP smtpHostAccount;
     public LCP smtpPortAccount;
@@ -82,8 +80,7 @@ public class EmailLogicsModule extends ScriptingLogicsModule{
 
         // Настройки почтового сервера
         defaultInboxAccount = findProperty("defaultInboxAccount[]");
-        inboxAccount = findProperty("inboxAccount[VARSTRING[100]]");
-
+        
         nameEncryptedConnectionTypeAccount = findProperty("nameEncryptedConnectionType[Account]");
 
         smtpHostAccount = findProperty("smtpHost[Account]");
@@ -133,14 +130,14 @@ public class EmailLogicsModule extends ScriptingLogicsModule{
     }
 
     public LAP addEAProp(String subject, LCP fromAddressAccount, LCP blindCarbonCopyAccount, ValueClass... params) {
-        return addEAProp(null, LocalizedString.create("emailContact"), subject, fromAddressAccount, blindCarbonCopyAccount, params);
+        return addEAProp(null, "emailContact", subject, fromAddressAccount, blindCarbonCopyAccount, params);
     }
 
-    public LAP addEAProp(AbstractGroup group, LocalizedString caption, String subject, LCP fromAddressAccount, LCP blindCarbonCopyAccount, ValueClass... params) {
+    public LAP addEAProp(AbstractGroup group, String caption, String subject, LCP fromAddressAccount, LCP blindCarbonCopyAccount, ValueClass... params) {
         Object[] fromImplement = new Object[] {fromAddressAccount};
         Object[] subjImplement;
         if (subject != null) {
-            subjImplement = new Object[] {addCProp(StringClass.get(subject.length()), LocalizedString.create(subject, false))};
+            subjImplement = new Object[] {addCProp(StringClass.get(subject.length()), subject)};
         } else {
             ValueClass[] nParams = new ValueClass[params.length + 1];
             System.arraycopy(params, 0, nParams, 0, params.length);
@@ -157,7 +154,7 @@ public class EmailLogicsModule extends ScriptingLogicsModule{
         return eaPropLP;
     }
 
-    public LAP<ClassPropertyInterface> addEAProp(AbstractGroup group, LocalizedString caption, ValueClass[] params, Object[] fromAddressAccount, Object[] subject) {
+    public LAP<ClassPropertyInterface> addEAProp(AbstractGroup group, String caption, ValueClass[] params, Object[] fromAddressAccount, Object[] subject) {
         SendEmailActionProperty eaProp = new SendEmailActionProperty(caption, params);
         LAP<ClassPropertyInterface> eaPropLP = addProperty(group, new LAP<>(eaProp));
 

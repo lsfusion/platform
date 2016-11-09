@@ -6,6 +6,12 @@ NAMESPACE System;
 
 scriptStorage 'Скрипт' () = DATA TEXT ();
 
+scriptExecution 'Выполнить скрипт' () = ACTION EVAL scriptStorage();
+
+actionBodyExecution 'Выполнить действие' () = ACTION EVAL CONCAT ' ', 'run() = ACTION {', scriptStorage(), ';\n};';
+formExecution 'Показать форму' () = ACTION EVAL CONCAT ' ', 'FORM form', scriptStorage(), ';\nrun() = ACTION FORM form;';
+javaActionBodyExecution 'Выполнить Java-код' () = ACTION EVAL CONCAT ' ', 'run() = ACTION CODE ', scriptStorage(), ' END;';
+
 CLASS Script 'Скрипт';
 TABLE script(Script);
 
@@ -13,16 +19,6 @@ name 'Наименование' = DATA VARSTRING[100] (Script);
 text 'Текст' = DATA TEXT (Script);
 textScript = GROUP MAX Script script BY text(script); 
 dateTime 'Дата запуска' = DATA DATETIME (Script);
-succeeded = DATA BOOLEAN (Script);
-
-//при первом старте помечает все старые скрипты как succeeded
-onStartedSucceeded = DATA BOOLEAN ();
-onStarted() += ACTION {
-    IF NOT onStartedSucceeded() THEN {
-        succeeded(Script s) <- TRUE;
-        onStartedSucceeded() <- TRUE;
-    }
-}
 
 updateStorageNewSession(Script script) = ACTION NEWSESSION {
     scriptStorage() <- text(script);
@@ -33,47 +29,6 @@ updateStorage(Script script) = ACTION {
     updateStorageNewSession(script);
     cancel();
 }
-
-saveTextScript(Script s, TEXT t) = ACTION {
-    text(s) <- t;
-}
-
-updateDateTimeScript(Script s) = ACTION {
-    dateTime(s) <- currentDateTime();
-}
-
-setSucceeded(Script s) = ACTION {
-    succeeded(s) <- TRUE;
-}
-
-preRunScript() = ACTION {
-    LOCAL localText = TEXT();
-    localText() <- scriptStorage();
-    NEWSESSION NESTED (localText) {
-        scriptStorage() <- localText();
-        LOCAL script = Script ();
-        script() <- textScript(localText());
-        IF NOT script() THEN {
-            ADDOBJ Script; 
-            script() <- addedObject();
-            saveTextScript(script(), scriptStorage());
-        }
-        updateDateTimeScript(script());
-        apply();
-    }
-}
-
-afterRunScript() = ACTION NEWSESSION {
-    setSucceeded(textScript(scriptStorage()));
-    apply();
-}
-
-
-scriptExecution 'Выполнить скрипт' () = ACTION { TRY { preRunScript(); EVAL scriptStorage(); afterRunScript(); } CATCH; }
-
-actionBodyExecution 'Выполнить действие' () = ACTION { TRY { preRunScript(); EVAL CONCAT ' ', 'run() = ACTION \{', scriptStorage(), ';\n\};'; afterRunScript(); } CATCH; };
-formExecution 'Показать форму' () = ACTION { TRY { preRunScript(); EVAL CONCAT ' ', 'FORM form', scriptStorage(), ';\nrun() = ACTION FORM form;'; afterRunScript(); } CATCH; };
-javaActionBodyExecution 'Выполнить Java-код' () = ACTION { TRY { preRunScript(); EVAL CONCAT ' ', 'run() = ACTION CODE ', scriptStorage(), ' END;'; afterRunScript(); } CATCH; };
 
 FORM chooseScriptName 'Сохранить как'
     OBJECTS name = VARSTRING[100] FIXED PANEL
@@ -198,7 +153,6 @@ FORM scriptsLog 'Скрипты'
     ORDER BY dateTime(s) DESC
 
     FILTERGROUP user FILTER 'Только пользовательские' name(s) 'F9'
-    FILTERGROUP succeeded FILTER 'Только без ошибок' succeeded(s) 'F10' DEFAULT
 
     DIALOG Script OBJECT s
 ;

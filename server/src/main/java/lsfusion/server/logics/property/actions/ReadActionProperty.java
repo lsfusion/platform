@@ -78,7 +78,7 @@ public class ReadActionProperty extends ScriptingActionProperty {
 
         try {
             if (sourcePath != null) {
-                Pattern p = Pattern.compile("(file|ftp||sftp|http|https|jdbc|mdb):(?:\\/\\/)?(.*)");
+                Pattern p = Pattern.compile("(file|ftp||sftp|http|jdbc|mdb):(?:\\/\\/)?(.*)");
                 Matcher m = p.matcher(sourcePath);
                 if (m.matches()) {
                     type = m.group(1).toLowerCase();
@@ -91,7 +91,6 @@ public class ReadActionProperty extends ScriptingActionProperty {
                             extension = BaseUtils.getFileExtension(file);
                             break;
                         case "http":
-                        case "https":
                             file = File.createTempFile("downloaded", "tmp");
                             copyHTTPToFile(sourcePath, file);
                             extension = BaseUtils.getFileExtension(new File(url));
@@ -166,7 +165,7 @@ public class ReadActionProperty extends ScriptingActionProperty {
                 case 1:
                     throw Throwables.propagate(new RuntimeException("ReadActionProperty Error. Path not specified."));
                 case 2:
-                    throw Throwables.propagate(new RuntimeException(String.format("ReadActionProperty Error. Incorrect path: %s, use syntax (file|ftp|http|https|jdbc|mdb)://path", sourcePath)));
+                    throw Throwables.propagate(new RuntimeException(String.format("ReadActionProperty Error. Incorrect path: %s, use syntax (file|ftp|http|jdbc|mdb)://path", sourcePath)));
                 case 3:
                     throw Throwables.propagate(new RuntimeException("ReadActionProperty Error. File not found: " + sourcePath));
 
@@ -180,16 +179,12 @@ public class ReadActionProperty extends ScriptingActionProperty {
     private void copyHTTPToFile(String path, File file) throws IOException {
         final List<String> properties = parseHTTPPath(path);
         if(properties != null) {
-            String type = properties.get(0);
-            final String username = properties.get(1);
-            final String password = properties.get(2);
-            String pathToFile = properties.get(3);
             Authenticator.setDefault(new Authenticator() {
                 public PasswordAuthentication getPasswordAuthentication() {
-                    return (new PasswordAuthentication(username, password.toCharArray()));
+                    return (new PasswordAuthentication(properties.get(0), properties.get(1).toCharArray()));
                 }
             });
-            URL httpUrl = new URL(URIUtil.encodeQuery(type + "://" + pathToFile));
+            URL httpUrl = new URL(URIUtil.encodeQuery("http://" + properties.get(2)));
             FileUtils.copyInputStreamToFile(httpUrl.openConnection().getInputStream(), file);
         } else {
             FileUtils.copyURLToFile(new URL(path), file);
@@ -197,15 +192,14 @@ public class ReadActionProperty extends ScriptingActionProperty {
     }
 
     private List<String> parseHTTPPath(String path) {
-        /*http|https://username:password@path_to_file*/
-        Pattern connectionStringPattern = Pattern.compile("(http|https):\\/\\/(.*):(.*)@(.*)");
+        /*http://username:password@path_to_file*/
+        Pattern connectionStringPattern = Pattern.compile("http:\\/\\/(.*):(.*)@(.*)");
         Matcher connectionStringMatcher = connectionStringPattern.matcher(path);
         if (connectionStringMatcher.matches()) {
-            String type = connectionStringMatcher.group(1);
-            String username = connectionStringMatcher.group(2);
-            String password = connectionStringMatcher.group(3);
-            String pathToFile = connectionStringMatcher.group(4);
-            return Arrays.asList(type, username, password, pathToFile);
+            String username = connectionStringMatcher.group(1);
+            String password = connectionStringMatcher.group(2);
+            String pathToFile = connectionStringMatcher.group(3);
+            return Arrays.asList(username, password, pathToFile);
         } else return null;
     }
 

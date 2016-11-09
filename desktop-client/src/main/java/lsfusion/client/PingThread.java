@@ -138,7 +138,7 @@ public class PingThread extends Thread {
                 if(globalCounter == sendInterval) {
                     try {
                         lastTimeFrom = currentTime;
-                        if(Main.remoteLogics != null && computerId != null)
+                        if(Main.remoteLogics != null)
                             Main.remoteLogics.sendPingInfo(computerId, pingInfoMap);
                         pingInfoMap.clear();
                         globalCounter = 0;

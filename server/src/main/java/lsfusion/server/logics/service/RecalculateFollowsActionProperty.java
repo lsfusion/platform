@@ -3,7 +3,6 @@ package lsfusion.server.logics.service;
 import lsfusion.interop.action.MessageClientAction;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.ServiceLogicsModule;
-import lsfusion.server.logics.i18n.FormatLocalizedString;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
@@ -11,7 +10,7 @@ import lsfusion.server.session.SessionCreator;
 
 import java.sql.SQLException;
 
-import static lsfusion.server.context.ThreadLocalContext.localize;
+import static lsfusion.server.logics.ServerResourceBundle.getString;
 
 public class RecalculateFollowsActionProperty extends ScriptingActionProperty {
     public RecalculateFollowsActionProperty(ServiceLogicsModule LM) {
@@ -23,11 +22,11 @@ public class RecalculateFollowsActionProperty extends ScriptingActionProperty {
             public void run(SessionCreator session, boolean isolatedTransaction) throws SQLException, SQLHandledException {
                 String result = context.getBL().recalculateFollows(session, isolatedTransaction, context.stack);
                 if(result != null)
-                    context.delayUserInterfaction(new MessageClientAction(result, localize("{logics.recalculation.follows}")));
+                    context.delayUserInterfaction(new MessageClientAction(result, getString("logics.recalculation.follows")));
             }
         });
 
-        context.delayUserInterfaction(new MessageClientAction(localize(new FormatLocalizedString("{logics.recalculation.completed}", localize("{logics.recalculation.follows}"))), localize("{logics.recalculation.follows}")));
+        context.delayUserInterfaction(new MessageClientAction(getString("logics.recalculation.completed", getString("logics.recalculation.follows")), getString("logics.recalculation.follows")));
     }
 
     @Override

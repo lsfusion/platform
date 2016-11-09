@@ -5,8 +5,8 @@ import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
 import lsfusion.server.logics.DataObject;
+import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.ReflectionLogicsModule;
-import lsfusion.server.logics.i18n.FormatLocalizedString;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
@@ -17,7 +17,7 @@ import lsfusion.server.logics.service.ServiceDBActionProperty;
 import java.sql.SQLException;
 import java.util.Iterator;
 
-import static lsfusion.server.context.ThreadLocalContext.localize;
+import static lsfusion.server.logics.ServerResourceBundle.getString;
 
 public class RecalculateTableClassesActionProperty extends ScriptingActionProperty {
 
@@ -40,6 +40,6 @@ public class RecalculateTableClassesActionProperty extends ScriptingActionProper
             }
         });
 
-        context.delayUserInterfaction(new MessageClientAction(localize(new FormatLocalizedString("{logics.recalculation.completed}", localize("{logics.recalculating.data.classes}"))), localize("{logics.recalculating.data.classes}")));
+        context.delayUserInterfaction(new MessageClientAction(getString("logics.recalculation.completed", getString("logics.recalculating.data.classes")), getString("logics.recalculating.data.classes")));
     }
 }

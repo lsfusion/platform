@@ -6,7 +6,6 @@ import lsfusion.gwt.base.client.ui.FlexPanel;
 import lsfusion.gwt.form.client.form.ui.GFormController;
 import lsfusion.gwt.form.client.form.ui.layout.GAbstractContainerView;
 import lsfusion.gwt.form.client.form.ui.layout.GFormLayoutImpl;
-import lsfusion.gwt.form.client.form.ui.layout.ScrollContainerView;
 import lsfusion.gwt.form.shared.view.GContainer;
 import lsfusion.gwt.form.shared.view.GGrid;
 
@@ -24,8 +23,6 @@ public class FlexFormLayoutImpl extends GFormLayoutImpl {
             return new FlexTabbedContainerView(form, container);
         } else if (container.isColumns()) {
             return new FlexColumnsContainerView(container);
-        } else if(container.isScroll()) {
-            return new ScrollContainerView(container);
         } else {
             throw new IllegalStateException("Incorrect container type");
         }

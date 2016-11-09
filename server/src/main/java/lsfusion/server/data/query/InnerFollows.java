@@ -14,7 +14,7 @@ import lsfusion.server.classes.ValueClassSet;
 import lsfusion.server.classes.sets.AndClassSet;
 import lsfusion.server.data.Table;
 import lsfusion.server.data.expr.BaseExpr;
-import lsfusion.server.data.expr.NullableExprInterface;
+import lsfusion.server.data.expr.NotNullExprInterface;
 import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.logics.property.IsClassField;
 import lsfusion.server.logics.table.FullTablesInterface;
@@ -85,8 +85,8 @@ public class InnerFollows<K> extends TwinImmutableObject {
     }
 
     // должен быть "синхронизирован" с hasExprFollowsNotNull иначе кэши поплывут для чего последний собсно и сделан
-    public ImSet<NullableExprInterface> getExprFollows(ImMap<K, BaseExpr> joins, boolean includeInnerWithoutNotNull, boolean recursive) {
-        MSet<NullableExprInterface> set = SetFact.mSet();
+    public ImSet<NotNullExprInterface> getExprFollows(ImMap<K, BaseExpr> joins, boolean includeInnerWithoutNotNull, boolean recursive) {
+        MSet<NotNullExprInterface> set = SetFact.mSet();
         for(int i=0,size=joins.size();i<size;i++) {
             BaseExpr joinExpr = joins.getValue(i);
             ImSet<IsClassField> followFields;

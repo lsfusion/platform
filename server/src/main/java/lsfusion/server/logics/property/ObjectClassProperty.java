@@ -15,7 +15,7 @@ import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.entity.ObjectEntity;
 import lsfusion.server.form.entity.PropertyDrawEntity;
 import lsfusion.server.form.entity.PropertyObjectInterfaceEntity;
-import lsfusion.server.logics.i18n.LocalizedString;
+import lsfusion.server.logics.ServerResourceBundle;
 import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.actions.ChangeClassActionProperty;
 import lsfusion.server.session.Modifier;
@@ -28,7 +28,7 @@ public class ObjectClassProperty extends AggregateProperty<ClassPropertyInterfac
     private final BaseClass baseClass;
 
     public ObjectClassProperty(BaseClass baseClass) {
-        super(LocalizedString.create("{classes.object.class}"), IsClassProperty.getInterfaces(new ValueClass[]{baseClass}));
+        super(ServerResourceBundle.getString("classes.object.class"), IsClassProperty.getInterfaces(new ValueClass[]{baseClass}));
 
         this.baseClass = baseClass;
 
@@ -56,6 +56,14 @@ public class ObjectClassProperty extends AggregateProperty<ClassPropertyInterfac
     @IdentityInstanceLazy
     public ActionPropertyMapImplement<?, ClassPropertyInterface> getDefaultEditAction(String editActionSID, CalcProperty filterProperty) {
         return ChangeClassActionProperty.create(null, false, baseClass).getImplement(SetFact.singletonOrder(getInterface()));
+    }
+
+    @Override
+    public void proceedDefaultDraw(PropertyDrawEntity<ClassPropertyInterface> entity, FormEntity<?> form, Version version) {
+        super.proceedDefaultDraw(entity, form, version);
+        PropertyObjectInterfaceEntity mapObject = entity.propertyObject.mapping.singleValue();
+        if(mapObject instanceof ObjectEntity && !((CustomClass)((ObjectEntity)mapObject).baseClass).hasChildren())
+            entity.forceViewType = ClassViewType.HIDE;
     }
 
     @Override

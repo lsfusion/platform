@@ -2,8 +2,6 @@ package lsfusion.server.data;
 
 import lsfusion.server.data.type.ParseInterface;
 
-import java.util.Locale;
-
 public interface QueryEnvironment {
 
     ParseInterface getSQLUser();
@@ -18,5 +16,4 @@ public interface QueryEnvironment {
     ParseInterface getSQLConnection();
     ParseInterface getIsServerRestarting();
 
-    Locale getLocale();
 }

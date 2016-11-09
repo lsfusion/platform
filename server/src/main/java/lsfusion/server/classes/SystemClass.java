@@ -4,7 +4,7 @@ import lsfusion.base.ExtInt;
 import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.ParseException;
-import lsfusion.server.logics.i18n.LocalizedString;
+import lsfusion.server.logics.ServerResourceBundle;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -18,8 +18,12 @@ public class SystemClass extends DataClass<Integer> {
         DataClass.storeClass(instance);
     }
 
-    private SystemClass() { super(LocalizedString.create("{classes.system}")); }
+    private SystemClass() { super(ServerResourceBundle.getString("classes.system")); }
     
+    public String toString() {
+        return ServerResourceBundle.getString("classes.system");
+    }
+
     public byte getTypeID() {
         throw new RuntimeException("not supported yet");
     }

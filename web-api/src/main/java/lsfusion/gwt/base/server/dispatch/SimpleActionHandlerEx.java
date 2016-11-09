@@ -30,6 +30,16 @@ public abstract class SimpleActionHandlerEx<A extends Action<R>, R extends Resul
         } catch (RemoteMessageException rme) {
             throw new MessageException(rme.getMessage());
         } catch (IOException ioe) {
+            if (ioe instanceof NoSuchObjectException) {
+                NoSuchObjectException re = (NoSuchObjectException) ioe;
+                if (this instanceof BaseFormBoundActionHandler && !(this instanceof NavigatorActionHandler)) {
+                    throw new RemoteFormDispatchException("Удалённая ошибка при выполнении action: ", re);
+                } else if (this instanceof NavigatorActionHandler)  {
+                    throw new RemoteNavigatorDispatchException("Удалённая ошибка при выполнении action: ", re);
+                } else {
+                    throw new RemoteDispatchException("Удалённая ошибка при выполнении action: ", re);
+                }   
+            }
             if (ioe instanceof RemoteException) { // пробуем послать повторный запрос
                 throw new RemoteRetryException(ioe.getMessage(), (RemoteException) ioe, ExceptionUtils.getFatalRemoteExceptionCount(ioe));
             }

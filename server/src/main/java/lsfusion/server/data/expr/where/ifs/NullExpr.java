@@ -9,7 +9,6 @@ import lsfusion.server.caches.OuterContext;
 import lsfusion.server.caches.hash.HashContext;
 import lsfusion.server.classes.ConcreteClass;
 import lsfusion.server.classes.ValueClassSet;
-import lsfusion.server.data.QueryEnvironment;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.IsClassType;
@@ -21,7 +20,7 @@ import lsfusion.server.data.query.CompileSource;
 import lsfusion.server.data.query.JoinData;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.translator.MapTranslate;
-import lsfusion.server.data.translator.ExprTranslator;
+import lsfusion.server.data.translator.QueryTranslator;
 import lsfusion.server.data.type.ClassReader;
 import lsfusion.server.data.type.NullReader;
 import lsfusion.server.data.type.Type;
@@ -82,7 +81,7 @@ public class NullExpr extends Expr {
         return Where.FALSE;
     }
 
-    public Expr translate(ExprTranslator translator) {
+    public Expr translateQuery(QueryTranslator translator) {
         return this;
     }
 
@@ -117,7 +116,7 @@ public class NullExpr extends Expr {
         return new HashSet<>();
     }
 
-    public ObjectValue getObjectValue(QueryEnvironment env) {
+    public ObjectValue getObjectValue() {
         return NullValue.instance;
     }
 

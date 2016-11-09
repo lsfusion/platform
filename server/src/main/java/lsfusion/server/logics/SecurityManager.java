@@ -38,7 +38,7 @@ import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.*;
 
-import static lsfusion.server.context.ThreadLocalContext.localize;
+import static lsfusion.server.logics.ServerResourceBundle.getString;
 
 public class SecurityManager extends LogicsManager implements InitializingBean {
     private static final Logger startLogger = ServerLoggers.startLogger;
@@ -102,10 +102,10 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
         try {
             defaultPolicy = new SecurityPolicy();
 
-            permitAllPolicy = addPolicy(localize("{logics.policy.allow.all}"), localize("{logics.policy.allows.all.actions}"));
+            permitAllPolicy = addPolicy(getString("logics.policy.allow.all"), getString("logics.policy.allows.all.actions"));
             permitAllPolicy.setReplaceMode(true);
 
-            readOnlyPolicy = addPolicy(localize("{logics.policy.forbid.editing.all.properties}"), localize("{logics.policy.read.only.forbids.editing.of.all.properties.on.the.forms}"));
+            readOnlyPolicy = addPolicy(getString("logics.policy.forbid.editing.all.properties"), getString("logics.policy.read.only.forbids.editing.of.all.properties.on.the.forms"));
             readOnlyPolicy.property.change.defaultPermission = false;
             readOnlyPolicy.cls.edit.add.defaultPermission = false;
             readOnlyPolicy.cls.edit.change.defaultPermission = false;
@@ -126,7 +126,7 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
                 }
             }
 
-            allowConfiguratorPolicy = addPolicy(localize("{logics.policy.allow.configurator}"), localize("{logics.policy.logics.allow.configurator}"));
+            allowConfiguratorPolicy = addPolicy(getString("logics.policy.allow.configurator"), getString("logics.policy.logics.allow.configurator"));
             allowConfiguratorPolicy.configurator = true;
         } catch (SQLException | SQLHandledException e) {
             throw new RuntimeException("Error initializing Security Manager: ", e);
@@ -205,11 +205,11 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
             DataSession session = createSession();
             Object userId = authenticationLM.customUserLogin.read(session, new DataObject(username, StringClass.get(30)));
             if (userId != null)
-                return localize("{logics.error.user.duplicate}");
+                return getString("logics.error.user.duplicate");
 
             Object emailId = businessLogics.contactLM.contactEmail.read(session, new DataObject(email, StringClass.get(50)));
             if (emailId != null) {
-                return localize("{logics.error.emailContact.duplicate}");
+                return getString("logics.error.emailContact.duplicate");
             }
 
             DataObject userObject = session.addObject(authenticationLM.customUser);
@@ -220,9 +220,9 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
             businessLogics.contactLM.lastNameContact.change(lastName, session, userObject);
             session.apply(businessLogics, stack);
         } catch (SQLException e) {
-            return localize("{logics.error.registration}");
+            return getString("logics.error.registration");
         } catch (SQLHandledException e) {
-            return localize("{logics.error.registration}");
+            return getString("logics.error.registration");
         }
         return null;
     }
@@ -599,7 +599,7 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
             }
 
         } catch (SQLException e) {
-            throw new RuntimeException(localize("{logics.info.error.reading.list.of.roles}"), e);
+            throw new RuntimeException(getString("logics.info.error.reading.list.of.roles"), e);
         } catch (SQLHandledException e) {
             throw Throwables.propagate(e);
         }
@@ -681,7 +681,7 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
             DataSession session = createSession();
             Object form = reflectionLM.navigatorElementCanonicalName.read(session, new DataObject(canonicalName));
             if (form == null) {
-                throw new RuntimeException(localize("{form.navigator.form.with.id.not.found}"));
+                throw new RuntimeException(getString("form.navigator.form.with.id.not.found"));
             }
             DataObject formObject = new DataObject(form, reflectionLM.navigatorElement);
             return securityLM.permitExportNavigatorElement.read(session, formObject) != null;

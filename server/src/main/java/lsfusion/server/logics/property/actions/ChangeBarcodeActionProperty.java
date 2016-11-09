@@ -2,9 +2,9 @@ package lsfusion.server.logics.property.actions;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.col.MapFact;
+import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.DataObject;
-import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ClassType;
@@ -19,7 +19,7 @@ public class ChangeBarcodeActionProperty extends SystemExplicitActionProperty {
     private final CalcProperty barcodePrefix;
 
     public ChangeBarcodeActionProperty(CalcProperty<?> barcode, CalcProperty barcodePrefix) {
-        super(LocalizedString.create("sys"), barcode.getInterfaceClasses(ClassType.obsolete).singleValue());
+        super("sys", barcode.getInterfaceClasses(ClassType.obsolete).singleValue());
         this.barcode = barcode;
         this.barcodePrefix = barcodePrefix;
     }

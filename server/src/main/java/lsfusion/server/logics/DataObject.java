@@ -77,18 +77,12 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
     public DataObject(Boolean bl) {
         this(bl, LogicalClass.instance);
     }
-    
-    public static DataObject TRUE = new DataObject(true);
-    public static ObjectValue create(boolean value) {
-        return value ? TRUE : NullValue.instance; 
-    }
 
     public DataObject(Integer ig) {
         this(ig, IntegerClass.instance);
     }
 
-    // ветки для insert'ов
-    public boolean isSafeString(SQLSyntax syntax) {
+    public boolean isString(SQLSyntax syntax) {
         return getType().isSafeString(object);
     }
     public String getString(SQLSyntax syntax) {

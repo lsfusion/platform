@@ -6,7 +6,6 @@ import lsfusion.gwt.form.server.FormDispatchServlet;
 import lsfusion.gwt.form.shared.actions.navigator.ClientMessage;
 import lsfusion.gwt.form.shared.actions.navigator.ClientMessageResult;
 import lsfusion.interop.RemoteLogicsInterface;
-import lsfusion.interop.remote.ClientCallBackInterface;
 import lsfusion.interop.remote.LifecycleMessage;
 import lsfusion.interop.remote.PushMessage;
 import net.customware.gwt.dispatch.server.ExecutionContext;
@@ -17,14 +16,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ClientMessageHandler extends SimpleActionHandlerEx<ClientMessage, ClientMessageResult, RemoteLogicsInterface> implements NavigatorActionHandler {
-
     public ClientMessageHandler(FormDispatchServlet servlet) {
         super(servlet);
     }
 
     @Override
     public ClientMessageResult executeEx(ClientMessage action, ExecutionContext context) throws DispatchException, IOException {
-        List<LifecycleMessage> messages = servlet.getClientCallBack().pullMessages();
+        List<LifecycleMessage> messages = servlet.getNavigator().getClientCallBack().pullMessages();
         return getClientMessageResult(messages);
     }
 

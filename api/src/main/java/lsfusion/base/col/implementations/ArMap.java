@@ -1,7 +1,6 @@
 package lsfusion.base.col.implementations;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.implementations.abs.AMRevMap;
 import lsfusion.base.col.implementations.order.ArOrderMap;
@@ -169,15 +168,13 @@ public class ArMap<K, V> extends AMRevMap<K, V> {
         for(int i=0;i<size;i++) {
             K key = (K)keys[i];
             V addedValue = (V)values[i];
-            if(!add.exclusive()) {
-                for (int j = 0; j < mgSize; j++)
-                    if (!found[j] && BaseUtils.hashEquals(key, mgKeys[j])) {
-                        found[j] = true;
-                        addedValue = add.addValue(key, addedValue, (V) mgValues[j]);
-                        if (add.stopWhenNull() && addedValue == null)
-                            return null;
-                    }
-            }
+            for(int j=0;j<mgSize;j++)
+                if(!found[j] && BaseUtils.hashEquals(key, mgKeys[j])) {
+                    found[j] = true;
+                    addedValue = add.addValue(key, addedValue, (V)mgValues[j]);
+                    if(add.stopWhenNull() && addedValue==null)
+                        return null;
+                }
             rKeys[r] = key;
             rValues[r] = addedValue;
             r++;
@@ -205,6 +202,7 @@ public class ArMap<K, V> extends AMRevMap<K, V> {
         // упорядочиваем Set
         ArSet.sortArray(r, rKeys, rValues);
         return new ArIndexedMap<>(r, rKeys, rValues);
+
     }
 
     @Override
@@ -216,13 +214,10 @@ public class ArMap<K, V> extends AMRevMap<K, V> {
         ImMap<K, V> result;
         if(map.size() <= SetFact.useIndexedAddInsteadOfMerge) {
             ArMap<K, V> mResult = new ArMap<>(this, add);
-            if(add.exclusive()) {
-                mResult.exclAddAll(map);
-            } else {
-                if (!mResult.addAll(map))
-                    return null;
-            }
-            result = mResult.immutable();
+            if(!mResult.addAll(map))
+                result = null;
+            else
+                result = mResult.immutable();
         } else {
             if(map instanceof ArMap) {
                 ArMap<K, V> arMap = (ArMap<K, V>) map;
@@ -242,10 +237,5 @@ public class ArMap<K, V> extends AMRevMap<K, V> {
 
 //        assert BaseUtils.nullHashEquals(result, super.merge(map, add));
         return result;
-    }
-
-    @Override
-    public ImMap<K, V> addExcl(ImMap<? extends K, ? extends V> map) {
-        return merge(map, MapFact.<K, V>exclusive());
     }
 }

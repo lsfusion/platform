@@ -5,7 +5,6 @@ import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
-import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.CalcPropertyMapImplement;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
@@ -21,10 +20,10 @@ public abstract class ExplicitActionProperty extends BaseActionProperty<ClassPro
     public boolean allowNullValue;
 
     protected ExplicitActionProperty(ValueClass... classes) {
-        this(LocalizedString.create("sys"), classes);
+        this("sys", classes);
     }
 
-    protected ExplicitActionProperty(LocalizedString caption, ValueClass[] classes) {
+    protected ExplicitActionProperty(String caption, ValueClass[] classes) {
         super(caption, IsClassProperty.getInterfaces(classes));
     }
 

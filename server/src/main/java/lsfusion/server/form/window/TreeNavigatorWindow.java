@@ -1,18 +1,17 @@
 package lsfusion.server.form.window;
 
 import lsfusion.interop.AbstractWindowType;
-import lsfusion.server.logics.i18n.LocalizedString;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
 
 public class TreeNavigatorWindow extends NavigatorWindow {
 
-    public TreeNavigatorWindow(String sID, LocalizedString caption, int x, int y, int width, int height) {
+    public TreeNavigatorWindow(String sID, String caption, int x, int y, int width, int height) {
         super(sID, caption, x, y, width, height);
     }
 
-    public TreeNavigatorWindow(String sID, LocalizedString caption) {
+    public TreeNavigatorWindow(String sID, String caption) {
         super(sID, caption);
     }
 

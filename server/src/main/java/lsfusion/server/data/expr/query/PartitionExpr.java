@@ -27,8 +27,8 @@ import lsfusion.server.data.expr.where.pull.ExprPullWheres;
 import lsfusion.server.data.query.CompileSource;
 import lsfusion.server.data.query.innerjoins.KeyEqual;
 import lsfusion.server.data.translator.MapTranslate;
-import lsfusion.server.data.translator.PartialKeyExprTranslator;
-import lsfusion.server.data.translator.ExprTranslator;
+import lsfusion.server.data.translator.PartialQueryTranslator;
+import lsfusion.server.data.translator.QueryTranslator;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassExprWhere;
@@ -52,12 +52,12 @@ public class PartitionExpr extends AggrExpr<KeyExpr, PartitionType, PartitionExp
             return new Query(this, translator);
         }
 
-        private Query(Query query, ExprTranslator translator, ImSet<Expr> restPartitions) {
+        private Query(Query query, QueryTranslator translator, ImSet<Expr> restPartitions) {
             super(query, translator);
             this.partitions = translator.translate(restPartitions);
         }
 
-        public Query translateExpr(ExprTranslator translator, ImSet<Expr> restPartitions) {
+        public Query translateQuery(QueryTranslator translator, ImSet<Expr> restPartitions) {
             return new Query(this, translator, restPartitions);
         }
 
@@ -157,7 +157,7 @@ public class PartitionExpr extends AggrExpr<KeyExpr, PartitionType, PartitionExp
     }
 
     @ParamLazy
-    public Expr translate(ExprTranslator translator) {
+    public Expr translateQuery(QueryTranslator translator) {
         return create(query, translator.translate(group));
     }
 
@@ -190,7 +190,7 @@ public class PartitionExpr extends AggrExpr<KeyExpr, PartitionType, PartitionExp
         ImSet<Expr> restPartitions = query.partitions.remove(translate.keys());
 
         if(translate.size()>0)
-            query = query.translateExpr(new PartialKeyExprTranslator(translate, true), restPartitions);
+            query = query.translateQuery(new PartialQueryTranslator(translate, true), restPartitions);
         else
             assert BaseUtils.hashEquals(restPartitions, query.partitions);
 
@@ -208,7 +208,7 @@ public class PartitionExpr extends AggrExpr<KeyExpr, PartitionType, PartitionExp
                 }
             }, restGroup), keyEqual.keyExprs);
 
-            return createKeyEqual(restGroup.result, query.translateExpr(keyEqual.getTranslator(), query.partitions)).and(keyWhere);
+            return createKeyEqual(restGroup.result, query.translateQuery(keyEqual.getTranslator(), query.partitions)).and(keyWhere);
         }
         return createRemoveValues(group, query);
     }
@@ -296,6 +296,6 @@ public class PartitionExpr extends AggrExpr<KeyExpr, PartitionType, PartitionExp
 
     @IdentityInstanceLazy
     public PartitionJoin getInnerJoin() {
-        return new PartitionJoin(getInner().getQueryKeys(), getInner().getInnerValues(), getInner().getInnerFollows(), query.getWhere(), query.partitions,group);
+        return new PartitionJoin(getInner().getQueryKeys(), getInner().getInnerValues(), getInner().getInnerFollows(), query.getWhere(), Settings.get().isPushOrderWhere() ?query.partitions:SetFact.<Expr>EMPTY(),group);
     }
 }

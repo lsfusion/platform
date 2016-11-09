@@ -14,7 +14,6 @@ import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.DBManager;
 import lsfusion.server.logics.debug.ActionDelegationType;
-import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.derived.DerivedProperty;
@@ -30,7 +29,7 @@ public class ApplyActionProperty extends KeepContextActionProperty {
     private final boolean serializable;
 
     public <I extends PropertyInterface> ApplyActionProperty(BaseLogicsModule LM, ActionPropertyMapImplement<?, I> action,
-                                                             LocalizedString caption, ImOrderSet<I> innerInterfaces,
+                                                             String caption, ImOrderSet<I> innerInterfaces,
                                                              FunctionSet<SessionDataProperty> keepSessionProperties, boolean serializable) {
         super(caption, innerInterfaces.size());
         this.keepSessionProperties = keepSessionProperties;
@@ -84,7 +83,7 @@ public class ApplyActionProperty extends KeepContextActionProperty {
             if (serializable)
                 DBManager.pushTIL(Connection.TRANSACTION_REPEATABLE_READ);
 
-            if (!context.apply(action == null ? SetFact.<ActionPropertyValueImplement>EMPTYORDER() : SetFact.<ActionPropertyValueImplement>singletonOrder(action.getValueImplement(context.getKeys(), context.getObjectInstances(), context.getFormAspectInstance())), keepSessionProperties))
+            if (!context.apply(action == null ? SetFact.<ActionPropertyValueImplement>EMPTYORDER() : SetFact.<ActionPropertyValueImplement>singletonOrder(action.getValueImplement(context.getKeys())), keepSessionProperties))
                 if (canceled != null)
                     canceled.change(context, true);
         } finally {

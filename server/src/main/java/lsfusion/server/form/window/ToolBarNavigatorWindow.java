@@ -1,7 +1,6 @@
 package lsfusion.server.form.window;
 
 import lsfusion.interop.AbstractWindowType;
-import lsfusion.server.logics.i18n.LocalizedString;
 
 import javax.swing.*;
 import java.io.DataOutputStream;
@@ -21,19 +20,19 @@ public class ToolBarNavigatorWindow extends NavigatorWindow {
     public float alignmentY = JToolBar.TOP_ALIGNMENT;
     public float alignmentX = JToolBar.LEFT_ALIGNMENT;
 
-    public ToolBarNavigatorWindow(int type, String sID, LocalizedString caption, int x, int y, int width, int height) {
+    public ToolBarNavigatorWindow(int type, String sID, String caption, int x, int y, int width, int height) {
         super(sID, caption, x, y, width, height);
 
         setType(type);
     }
 
-    public ToolBarNavigatorWindow(int type, String sID, LocalizedString caption, String borderConstraint) {
+    public ToolBarNavigatorWindow(int type, String sID, String caption, String borderConstraint) {
         super(sID, caption, borderConstraint);
 
         setType(type);
     }
 
-    public ToolBarNavigatorWindow(int type, String sID, LocalizedString caption) {
+    public ToolBarNavigatorWindow(int type, String sID, String caption) {
         super(sID, caption);
 
         setType(type);

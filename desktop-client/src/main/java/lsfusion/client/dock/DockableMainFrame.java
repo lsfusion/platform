@@ -76,6 +76,10 @@ public class DockableMainFrame extends MainFrame {
                 }
             }
 
+            public void openModalForm(ClientNavigatorForm element) throws IOException, ClassNotFoundException {
+                dockableManager.openModalForm(element.getCanonicalName(), element.getSID(), this, element.modalityType.isFullScreen());
+            }
+
             @Override
             public void openAction(ClientNavigatorAction action) {
                 executeNavigatorAction(action);
@@ -215,7 +219,6 @@ public class DockableMainFrame extends MainFrame {
         CGrid mainGrid = createGrid();
         CContentArea mainContentArea = mainControl.getContentArea();
         mainContentArea.deploy(mainGrid);
-        mainControl.getLocationManager().refresh(); // есть баг похоже, что при инициализации грида, не обновляется dockable.mode, как следствие в history не попадает location, и при setVisible (в >=14 версии из-за https://github.com/Benoker/DockingFrames/commit/ab648db502ffa2783c734f8db4ed5ce4b42cef32) окно улетает в WorkingArea
 
         setContent(mainContentArea);
 
@@ -278,20 +281,11 @@ public class DockableMainFrame extends MainFrame {
     }
 
     @Override
-    public Integer runReport(final Map<String, String> reportPath, boolean isModal, ReportGenerationData generationData) throws IOException, ClassNotFoundException {
+    public Integer runReport(final String formSID, boolean isModal, ReportGenerationData generationData) throws IOException, ClassNotFoundException {
         return runReport(isModal, generationData, new EditReportInvoker() {
             @Override
             public void invokeEditReport() throws RemoteException {
-                assert Main.module.isFull();
-                try {
-                    if (reportPath != null) {
-                        for (String path : reportPath.keySet()) {
-                            Desktop.getDesktop().open(new File(path));
-                        }
-                    }
-                } catch (Exception e) {
-                    throw new RuntimeException(getString("form.error.printing.form"), e);
-                }
+                new ClientFormController(null, formSID, Main.remoteNavigator.createForm(formSID, null, false, true), null, mainNavigator).runEditReport();
             }
         });
     }

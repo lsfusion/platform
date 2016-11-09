@@ -28,10 +28,7 @@ public class GBusyDialog extends WindowBox {
     VerticalPanel mainPanel;
     VerticalPanel topPanel;
     HorizontalPanel bottomPanel;
-    boolean pauseTopProgressBar = false;
-    private Image topProgressBarDynamic;
-    private Image topProgressBarStatic;
-
+    Image topProgressBar;
     private ScrollPanel scrollMessagePanel;
     private VerticalPanel messagePanel;
     private Button btnExit;
@@ -66,27 +63,8 @@ public class GBusyDialog extends WindowBox {
         topPanel.setWidth("100%");
 
         topPanel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
-        topProgressBarDynamic = new Image(GWT.getModuleBaseURL() + "images/loading_bar.gif");
-        topProgressBarStatic = new Image(GWT.getModuleBaseURL() + "images/loading_bar.png");
-        topProgressBarStatic.setVisible(false);
-        topProgressBarDynamic.addClickHandler(new ClickHandler() {
-            @Override
-            public void onClick(ClickEvent clickEvent) {
-                pauseTopProgressBar = true;
-                topProgressBarDynamic.setVisible(false);
-                topProgressBarStatic.setVisible(true);
-            }
-        });
-        topProgressBarStatic.addClickHandler(new ClickHandler() {
-            @Override
-            public void onClick(ClickEvent clickEvent) {
-                pauseTopProgressBar = false;
-                topProgressBarDynamic.setVisible(true);
-                topProgressBarStatic.setVisible(false);
-            }
-        });
-        topPanel.add(topProgressBarDynamic);
-        topPanel.add(topProgressBarStatic);
+        topProgressBar = new Image(GWT.getModuleBaseURL() + "images/loading_bar.gif");
+        topPanel.add(topProgressBar);
 
         topPanel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_LEFT);
         messagePanel = new VerticalPanel();
@@ -231,10 +209,7 @@ public class GBusyDialog extends WindowBox {
         if (!stackLines.isEmpty() && devMode) {
             widgetList.add(createStackPanel(stackLines));
         }
-        if(pauseTopProgressBar)
-            topProgressBarStatic.setVisible(showTopProgressBar);
-        else
-            topProgressBarDynamic.setVisible(showTopProgressBar);
+        topProgressBar.setVisible(showTopProgressBar);
 
         messagePanel.clear();
         for (Widget widget : widgetList)
@@ -256,11 +231,8 @@ public class GBusyDialog extends WindowBox {
             int minHeight = (int) (latestWindowHeight * (devMode ? 0.5 : 0.1));
 
             int width = topPanel.getOffsetWidth() != 0 ? topPanel.getOffsetWidth() : minWidth;
-            int topProgressBarHeight = pauseTopProgressBar ?
-                    (topProgressBarStatic.isVisible() ? topProgressBarStatic.getElement().getClientHeight() : 0) :
-                    (topProgressBarDynamic.isVisible() ? topProgressBarDynamic.getElement().getClientHeight() : 0);
             int height = mainPanel.getElement().getClientHeight() - bottomPanel.getElement().getClientHeight() -
-                    topProgressBarHeight - 3; //3 is magic number
+                    (topProgressBar.isVisible() ? topProgressBar.getElement().getClientHeight() : 0) - 3; //3 is magic number
             messagePanel.getElement().getStyle().setProperty("maxWidth", width + "px");
             scrollMessagePanel.getElement().getStyle().setProperty("maxWidth", width + "px");
             scrollMessagePanel.getElement().getStyle().setProperty("maxHeight", (height < 0 ? minHeight : height) + "px");

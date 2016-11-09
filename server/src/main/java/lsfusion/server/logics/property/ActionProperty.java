@@ -23,7 +23,6 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.debug.*;
-import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.linear.LP;
 import lsfusion.server.logics.property.actions.BaseEvent;
 import lsfusion.server.logics.property.actions.FormEnvironment;
@@ -56,7 +55,7 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
         this.debugLocals = debugLocals;
     }
 
-    public ActionProperty(LocalizedString caption, ImOrderSet<P> interfaces) {
+    public ActionProperty(String caption, ImOrderSet<P> interfaces) {
         super(caption, interfaces);
     }
 
@@ -263,7 +262,7 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
         ImMap<P, ValueClass> inferred = getExplicitCalcInterfaces(interfaces, getExplicitInterfaces(), new Callable<ImMap<P, ValueClass>>() {
             public ImMap<P, ValueClass> call() throws Exception {
                 return calcWhereInterfaceClasses();
-            }}, "ACTION ", this, checker);
+            }}, "ACTION " + this, checker);
         return IsClassProperty.getMapProperty(inferred);
     }
 
@@ -470,16 +469,7 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
         return null;
     }
 
-    private boolean isSimpleDelete;
-    
-    public void setSimpleDelete(boolean isSimpleDelete) {
-        assert interfaces.size() == 1;
-        this.isSimpleDelete = isSimpleDelete;
-    }
-
     public P getSimpleDelete() {
-        if(isSimpleDelete)
-            return interfaces.single();
         return null;
     }
 
@@ -492,7 +482,7 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
         ActionPropertyMapImplement<P, P> changeImplement = getImplement();
         ImOrderSet<P> listInterfaces = getOrderInterfaces();
 
-        GroupChangeActionProperty groupChangeActionProperty = new GroupChangeActionProperty(LocalizedString.create("sys"), listInterfaces, changeImplement);
+        GroupChangeActionProperty groupChangeActionProperty = new GroupChangeActionProperty("sys", listInterfaces, changeImplement);
         return groupChangeActionProperty.getImplement(listInterfaces);
     }
 

@@ -19,7 +19,6 @@ import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.form.entity.drilldown.DrillDownFormEntity;
 import lsfusion.server.form.entity.drilldown.GroupDrillDownFormEntity;
 import lsfusion.server.logics.LogicsModule;
-import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.infer.ExClassSet;
 import lsfusion.server.logics.property.infer.InferType;
 import lsfusion.server.logics.property.infer.Inferred;
@@ -27,6 +26,8 @@ import lsfusion.server.session.PropertyChanges;
 
 import java.util.List;
 import java.util.concurrent.Callable;
+
+import static lsfusion.server.logics.ServerResourceBundle.getString;
 
 abstract public class GroupProperty<I extends PropertyInterface> extends ComplexIncrementProperty<GroupProperty.Interface<I>> {
 
@@ -41,16 +42,16 @@ abstract public class GroupProperty<I extends PropertyInterface> extends Complex
 
     protected final ImSet<I> innerInterfaces;
 
-    private GroupProperty(LocalizedString caption, ImOrderSet<Interface<I>> interfaces, ImSet<I> innerInterfaces) {
+    private GroupProperty(String caption, ImOrderSet<Interface<I>> interfaces, ImSet<I> innerInterfaces) {
         super(caption, interfaces);
         this.innerInterfaces = innerInterfaces;
     }
 
-    protected GroupProperty(LocalizedString caption, ImSet<I> innerInterfaces, ImCol<? extends CalcPropertyInterfaceImplement<I>> groupInterfaces) {
+    protected GroupProperty(String caption, ImSet<I> innerInterfaces, ImCol<? extends CalcPropertyInterfaceImplement<I>> groupInterfaces) {
         this(caption, getInterfaces(groupInterfaces), innerInterfaces);
     }
 
-    protected GroupProperty(LocalizedString caption, ImSet<I> innerInterfaces, ImList<? extends CalcPropertyInterfaceImplement<I>> groupInterfaces) {
+    protected GroupProperty(String caption, ImSet<I> innerInterfaces, ImList<? extends CalcPropertyInterfaceImplement<I>> groupInterfaces) {
         this(caption, getTempInterfaces(groupInterfaces), innerInterfaces);
     }
     
@@ -110,7 +111,7 @@ abstract public class GroupProperty<I extends PropertyInterface> extends Complex
                 public ImMap<I, ExClassSet> call() throws Exception {
                     return inferInnerInterfaceClasses(inferred, inferType).finishEx(inferType);
                 }
-            }, "CALCINNER", this, null);
+            }, "CALCINNER" + this, null);
         } else {
             assert explicitInnerClasses != null;
             innerInferred = ExClassSet.toEx(explicitInnerClasses);
@@ -219,7 +220,7 @@ abstract public class GroupProperty<I extends PropertyInterface> extends Complex
     @Override
     public DrillDownFormEntity createDrillDownForm(LogicsModule LM, String canonicalName) {
         return new GroupDrillDownFormEntity(
-                canonicalName, LocalizedString.create("{logics.property.drilldown.form.group}." + getGroupType().name().toLowerCase()), this, LM
+                canonicalName, getString("logics.property.drilldown.form.group." + getGroupType().name().toLowerCase()), this, LM
         );
     }
 

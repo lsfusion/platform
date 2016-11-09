@@ -5,6 +5,7 @@ import lsfusion.server.caches.hash.HashContext;
 import lsfusion.server.classes.DataClass;
 import lsfusion.server.data.query.CompileSource;
 import lsfusion.server.data.translator.MapTranslate;
+import lsfusion.server.data.translator.QueryTranslator;
 
 public class InfiniteExpr extends StaticExpr<DataClass> {
 
@@ -18,6 +19,11 @@ public class InfiniteExpr extends StaticExpr<DataClass> {
     }
 
     protected BaseExpr translate(MapTranslate translator) {
+        return this;
+    }
+
+    @Override
+    public Expr translateQuery(QueryTranslator translator) {
         return this;
     }
 

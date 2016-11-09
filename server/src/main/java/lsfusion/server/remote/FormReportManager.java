@@ -28,7 +28,7 @@ import java.util.*;
 import java.util.regex.Pattern;
 
 import static lsfusion.base.BaseUtils.serializeObject;
-import static lsfusion.server.context.ThreadLocalContext.localize;
+import static lsfusion.server.logics.ServerResourceBundle.getString;
 
 public class FormReportManager<T extends BusinessLogics<T>, F extends FormInstance<T>> {
     private static final Logger systemLogger = Logger.getLogger("SystemLogger");
@@ -95,10 +95,14 @@ public class FormReportManager<T extends BusinessLogics<T>, F extends FormInstan
                 }
 
             } catch (JRException e) {
-                throw new RuntimeException(localize("{form.instance.error.creating.design}"), e);
+                throw new RuntimeException(getString("form.instance.error.creating.design"), e);
             }
         }
         return ret;
+    }
+
+    public ReportGenerationData getReportData() {
+        return getReportData(false);
     }
 
     public ReportGenerationData getReportData(boolean toExcel) {
@@ -224,7 +228,7 @@ public class FormReportManager<T extends BusinessLogics<T>, F extends FormInstan
             }
             return designs;
         } catch (JRException e) {
-            throw new RuntimeException(localize("{form.instance.error.creating.design}"), e);
+            throw new RuntimeException(getString("form.instance.error.creating.design"), e);
         }
     }
 

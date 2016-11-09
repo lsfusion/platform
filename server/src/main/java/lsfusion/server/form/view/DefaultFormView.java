@@ -17,7 +17,10 @@ import lsfusion.server.logics.property.group.AbstractGroup;
 import lsfusion.server.serialization.ServerIdentitySerializable;
 
 import javax.swing.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static java.util.Collections.synchronizedMap;
 
@@ -102,25 +105,13 @@ public class DefaultFormView extends FormView {
         panelContainers.put(null, noGroupPanelContainer);
         panelPropsContainers.put(null, noGroupPanelPropsContainer);
 
-        Iterator<TreeGroupView> treeIterator = getNFTreeGroupsListIt(version).iterator();
-        TreeGroupView treeNextGroup = treeIterator.hasNext() ? treeIterator.next() : null;
-        boolean groupStarted = false;
         for (GroupObjectView groupObject : getNFGroupObjectsListIt(version)) {
             addGroupObjectView(groupObject, version);
-
-            //если группа началась, ставим флаг. Если группа закончилась, addTreeGroupView и флаг снимаем
-            if(treeNextGroup != null) {
-                if (groupObject.entity.treeGroup != null && groupObject.entity.treeGroup.equals(treeNextGroup.entity)) {
-                    groupStarted = true;
-                } else if (groupStarted) {
-                    addTreeGroupView(treeNextGroup, version);
-                    treeNextGroup = treeIterator.hasNext() ? treeIterator.next() : null;
-                    groupStarted = groupObject.entity.treeGroup != null && treeNextGroup != null && groupObject.entity.treeGroup.equals(treeNextGroup.entity);
-                }
-            }
         }
-        if(groupStarted)
-            addTreeGroupView(treeNextGroup, version);
+
+        for (TreeGroupView treeGroup : getNFTreeGroupsListIt(version)) {
+            addTreeGroupView(treeGroup, version);
+        }
 
         for (PropertyDrawView propertyDraw : getNFPropertiesListIt(version)) {
             addPropertyDrawView(propertyDraw, version);
@@ -260,11 +251,8 @@ public class DefaultFormView extends FormView {
         toolbarPropsContainers.put(treeGroup, treeSet.getToolbarPropsContainer());
         setComponentSID(treeSet.getToolbarPropsContainer(), treeSet.getToolbarPropsContainer().getSID(), version);
 
-        for (GroupObjectEntity group : treeGroup.entity.getGroups()) {
-            ContainerView groupContainer = groupContainers.get(mgroupObjects.get(group));
-            treeSet.getTreeContainer().add(groupContainer, version);
-        }
-        mainContainer.add(treeSet.getTreeContainer(), version);
+        //вставляем перед первым groupObject в данной treeGroup
+        mainContainer.addBefore(treeSet.getTreeContainer(), groupContainers.get(mgroupObjects.get(treeGroup.entity.getGroups().get(0))), version);
     }
 
     private void addPropertyDrawView(PropertyDrawView propertyDraw, Version version) {

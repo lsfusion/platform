@@ -18,7 +18,6 @@ import lsfusion.server.data.query.Query;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.data.where.classes.ClassWhere;
-import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.table.ImplementTable;
 import lsfusion.server.session.PropertyChanges;
 
@@ -30,7 +29,7 @@ public class ClassDataProperty extends CalcProperty<ClassPropertyInterface> impl
 
     public final ObjectValueClassSet set;
 
-    public ClassDataProperty(LocalizedString caption, ObjectValueClassSet set) {
+    public ClassDataProperty(String caption, ObjectValueClassSet set) {
         super(caption, SetFact.singletonOrder(new ClassPropertyInterface(0, set.getOr().getCommonClass())));
         this.set = set;
     }

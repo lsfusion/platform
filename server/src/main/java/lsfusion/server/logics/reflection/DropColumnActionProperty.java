@@ -15,8 +15,11 @@ import java.sql.SQLException;
 
 public class DropColumnActionProperty extends ScriptingActionProperty {
 
+    LAP delete;
+
     public DropColumnActionProperty(ReflectionLogicsModule LM, ValueClass... classes) {
         super(LM, classes);
+        delete = LM.getDeleteAction(LM.dropColumn, true);
     }
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
@@ -29,5 +32,6 @@ public class DropColumnActionProperty extends ScriptingActionProperty {
         } catch (SQLException e) {
             ServerLoggers.sqlLogger.error("Ошибка при удалении колонки", e);
         }
+        delete.execute(context, dropColumnObject);
     }
 }

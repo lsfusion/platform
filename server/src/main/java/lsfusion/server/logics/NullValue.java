@@ -34,7 +34,7 @@ public class NullValue extends ObjectValue<NullValue> {
         return SQLSyntax.NULL;
     }
 
-    public boolean isSafeString(SQLSyntax syntax) {
+    public boolean isString(SQLSyntax syntax) {
         return true;
     }
 

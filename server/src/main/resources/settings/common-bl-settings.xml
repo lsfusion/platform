@@ -42,8 +42,7 @@
                 <entry key="disablePrereadValues" value="${settings.disablePrereadValues:}"/>
                 <entry key="disableSumGroupNotZero" value="${settings.disableSumGroupNotZero:}"/>
                 <entry key="usedChangesCacheLimit" value="${settings.usedChangesCacheLimit:}"/>
-                <entry key="language" value="${user.language:}"/>
-                <entry key="country" value="${user.country:}"/>
+                <entry key="locale" value="${user.language:}"/>
                 <entry key="splitIncrementApply" value="${settings.splitIncrementApply:}"/>
                 <entry key="statDegree" value="${settings.statDegree:}"/>
                 <entry key="barcodeLength" value="${settings.barcodeLength:}"/>
@@ -109,7 +108,6 @@
                 <entry key="startServerAnyWay" value="${settings.startServerAnyWay:}"/>
                 <entry key="singleInstance" value="${jnlp.singleInstance:}"/>
                 <entry key="busyDialog" value="${settings.busyDialog:}"/>
-                <entry key="profilerBatchSize" value="${settings.profilerBatchSize:}"/>
             </map>
         </property>
         </bean>
@@ -208,19 +206,10 @@
         <property name="BL" ref="businessLogics"/>
     </bean>
 
-    <bean id="initLocalizerTask" class="lsfusion.server.logics.tasks.impl.simple.InitLocalizerTask">
-        <property name="dependencies">
-            <set>
-            </set>
-        </property>
-        <property name="BL" ref="businessLogics"/>
-    </bean>
-
     <bean id="initModuleDependenciesTask" class="lsfusion.server.logics.tasks.impl.InitModuleDependenciesTask">
         <property name="dependencies">
             <set>
                 <ref bean="createModulesTask"/>
-                <ref bean="initLocalizerTask"/>
             </set>
         </property>
         <property name="BL" ref="businessLogics"/>

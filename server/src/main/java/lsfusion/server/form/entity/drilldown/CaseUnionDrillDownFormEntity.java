@@ -9,7 +9,6 @@ import lsfusion.server.form.view.ContainerView;
 import lsfusion.server.form.view.DefaultFormView;
 import lsfusion.server.form.view.FormView;
 import lsfusion.server.logics.LogicsModule;
-import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.cases.CalcCase;
@@ -17,13 +16,15 @@ import lsfusion.server.logics.property.cases.CalcCase;
 import java.util.ArrayList;
 import java.util.List;
 
+import static lsfusion.server.logics.ServerResourceBundle.getString;
+
 public class CaseUnionDrillDownFormEntity<I extends PropertyInterface> extends DrillDownFormEntity<CaseUnionProperty.Interface, CaseUnionProperty> {
 
     protected List<PropertyDrawEntity> propProperties;
     protected List<PropertyDrawEntity> whereProperties;
     protected PropertyDrawEntity implPropertyDraw;
 
-    public CaseUnionDrillDownFormEntity(String canonicalName, LocalizedString caption, CaseUnionProperty property, LogicsModule LM) {
+    public CaseUnionDrillDownFormEntity(String canonicalName, String caption, CaseUnionProperty property, LogicsModule LM) {
         super(canonicalName, caption, property, LM);
     }
 
@@ -80,7 +81,7 @@ public class CaseUnionDrillDownFormEntity<I extends PropertyInterface> extends D
 
         valueContainer.add(design.get(implPropertyDraw), version);
         for (int i = propProperties.size()-1; i >= 0; i--) {
-            ContainerView propsContainer = design.createContainer(LocalizedString.create("{logics.property.drilldown.form.where}" + " " + (i + 1)), version);
+            ContainerView propsContainer = design.createContainer(getString("logics.property.drilldown.form.where") + " " + (i + 1), version);
             propsContainer.setAlignment(FlexAlignment.STRETCH);
             propsContainer.add(design.get(propProperties.get(i)), version);
             if (i < whereProperties.size()) // может быть else

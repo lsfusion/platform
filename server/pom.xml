@@ -3,7 +3,7 @@
     <parent>
         <groupId>lsfusion.platform</groupId>
         <artifactId>base</artifactId>
-        <version>1.3.0-SNAPSHOT</version>
+        <version>1.2.4</version>
         <relativePath>../base/pom.xml</relativePath>
     </parent>
     <artifactId>server</artifactId>
@@ -71,8 +71,8 @@
             <artifactId>ojdbc14</artifactId>
         </dependency>
         <!--<dependency>-->
-            <!--<groupId>net.sourceforge.jtds</groupId>-->
-            <!--<artifactId>jtds</artifactId>-->
+        <!--<groupId>net.sourceforge.jtds</groupId>-->
+        <!--<artifactId>jtds</artifactId>-->
         <!--</dependency>-->
         <dependency>
             <groupId>com.microsoft</groupId>
@@ -180,14 +180,6 @@
             <groupId>commons-httpclient</groupId>
             <artifactId>commons-httpclient</artifactId>
         </dependency>
-        <dependency>
-            <groupId>net.iryndin</groupId>
-            <artifactId>jdbf</artifactId>
-        </dependency>
 
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-        </dependency>
     </dependencies>
 </project>

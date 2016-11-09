@@ -4,23 +4,24 @@ import com.google.common.base.Throwables;
 import lsfusion.base.FunctionSet;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
+import lsfusion.server.Settings;
 import lsfusion.server.classes.CustomClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
-import lsfusion.server.logics.i18n.LocalizedString;
+import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.session.DataSession;
 
 import java.sql.SQLException;
 
 public class NewSessionActionProperty extends AroundAspectActionProperty {
-    private final FunctionSet<SessionDataProperty> migrateSessionProperties; // актуальны и для nested, так как иначе будет отличаться поведение от NEW SESSION
+    private final FunctionSet<SessionDataProperty> migrateSessionProperties;
     private final boolean isNested;
     private final boolean singleApply;
     private final boolean newSQL; 
     private final boolean doApply;
 
-    public <I extends PropertyInterface> NewSessionActionProperty(LocalizedString caption, ImOrderSet<I> innerInterfaces,
+    public <I extends PropertyInterface> NewSessionActionProperty(String caption, ImOrderSet<I> innerInterfaces,
                                                                   ActionPropertyMapImplement<?, I> action, boolean singleApply,
                                                                   boolean newSQL, boolean doApply,
                                                                   FunctionSet<SessionDataProperty> migrateSessionProperties,
@@ -30,9 +31,11 @@ public class NewSessionActionProperty extends AroundAspectActionProperty {
         this.singleApply = singleApply;
         this.newSQL = newSQL;
 
+        assert !(isNested && !migrateSessionProperties.isEmpty());
+
         this.isNested = isNested;
         this.doApply = doApply;
-        this.migrateSessionProperties = DataSession.adjustKeep(false, migrateSessionProperties);
+        this.migrateSessionProperties = DataSession.adjustKeep(migrateSessionProperties);
 
 
         finalizeInit();
@@ -57,9 +60,10 @@ public class NewSessionActionProperty extends AroundAspectActionProperty {
     protected ExecutionContext<PropertyInterface> beforeAspect(ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
         DataSession session = context.getSession();
         if(session.isInTransaction()) { // если в транзацкции
-            session.addRecursion(aspectActionImplement.getValueImplement(context.getKeys(), context.getObjectInstances(), context.getFormAspectInstance()), migrateSessionProperties, singleApply);
+            session.addRecursion(aspectActionImplement.getValueImplement(context.getKeys()), migrateSessionProperties, singleApply);
             return null;
         }
+
 
         DataSession newSession;
         if(newSQL) {
@@ -73,7 +77,7 @@ public class NewSessionActionProperty extends AroundAspectActionProperty {
         } else {
             newSession = session.createSession();
             if (isNested) {
-                context.executeSessionEvents();
+                session.executeSessionEvents(context.getFormInstance(), context.stack);
 
                 newSession.setParentSession(session);
             } else {
@@ -91,11 +95,18 @@ public class NewSessionActionProperty extends AroundAspectActionProperty {
 
     protected void afterAspect(FlowResult result, ExecutionContext<PropertyInterface> context, ExecutionContext<PropertyInterface> innerContext) throws SQLException, SQLHandledException {
         if (!context.getSession().isInTransaction() && !newSQL) {
-            migrateSessionProperties(innerContext.getSession(), context.getSession());
+            if (!isNested) {
+                migrateSessionProperties(innerContext.getSession(), context.getSession());
+            }
         }
 
         if (doApply) {
             innerContext.apply();
+        }
+
+        FormInstance<?> formInstance = context.getFormInstance();
+        if (formInstance != null && !Settings.get().getUseUserChangesSync()) {
+            formInstance.refreshData();
         }
     }
 
@@ -116,11 +127,11 @@ public class NewSessionActionProperty extends AroundAspectActionProperty {
 
     @Override
     public CustomClass getSimpleAdd() {
-        return null; // нет смысла, так как все равно в другой сессии выполнение
+        return aspectActionImplement.property.getSimpleAdd();
     }
 
     @Override
     public PropertyInterface getSimpleDelete() {
-        return null; // aspectActionImplement.property.getSimpleDelete();
+        return aspectActionImplement.property.getSimpleDelete();
     }
 }

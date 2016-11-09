@@ -2,7 +2,6 @@ package lsfusion.client.navigator;
 
 import lsfusion.base.IOUtils;
 import lsfusion.base.serialization.SerializationUtil;
-import lsfusion.client.Main;
 import lsfusion.interop.SerializableImageIconHolder;
 
 import java.io.DataInputStream;
@@ -17,8 +16,7 @@ public class ClientNavigatorElement {
     private int ID;
     private String sID;
     private String canonicalName;
-
-    public String creationPath;
+    
     public String caption;
     
     public List<ClientNavigatorElement> parents = new ArrayList<>();
@@ -33,7 +31,6 @@ public class ClientNavigatorElement {
         ID = inStream.readInt();
         sID = inStream.readUTF();
         canonicalName = SerializationUtil.readString(inStream);
-        creationPath = SerializationUtil.readString(inStream);
         
         caption = inStream.readUTF();
         hasChildren = inStream.readBoolean();
@@ -127,14 +124,5 @@ public class ClientNavigatorElement {
             }
         }
         return false;
-    }
-
-    public String getTooltip() {
-        return Main.configurationAccessAllowed && creationPath != null ?
-                String.format("<html><body bgcolor=#FFFFE1>" +
-                        "<b>%s</b><br/><hr>" +
-                        "<b>sID:</b> %s<br/>" +
-                        "<b>Путь:</b> %s<br/>" +
-                        "</body></html>", caption, canonicalName, creationPath) : caption;
     }
 }

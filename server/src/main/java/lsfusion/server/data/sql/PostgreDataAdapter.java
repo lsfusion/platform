@@ -9,18 +9,15 @@ import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.interop.action.MessageClientAction;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
-import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.Log4jWriter;
 import lsfusion.server.data.expr.formula.SQLSyntaxType;
 import lsfusion.server.data.query.MStaticExecuteEnvironment;
 import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.type.*;
 import lsfusion.server.logics.BusinessLogics;
+import lsfusion.server.logics.ServerResourceBundle;
 import lsfusion.server.logics.property.ExecutionContext;
-import org.apache.commons.exec.CommandLine;
-import org.apache.commons.exec.DefaultExecutor;
-import org.apache.commons.exec.Executor;
-import org.apache.commons.exec.PumpStreamHandler;
+import org.apache.commons.exec.*;
 import org.apache.commons.lang3.StringUtils;
 import org.postgresql.Driver;
 import org.postgresql.PGConnection;
@@ -35,6 +32,7 @@ import java.sql.*;
 import java.util.*;
 
 import static lsfusion.base.BaseUtils.isRedundantString;
+import static lsfusion.server.logics.ServerResourceBundle.getString;
 
 
 public class PostgreDataAdapter extends DataAdapter {
@@ -82,8 +80,7 @@ public class PostgreDataAdapter extends DataAdapter {
             try {
                 connect.createStatement().execute("DROP DATABASE " + dataBase);
             } catch (SQLException e) {
-                ResourceBundle resourceBundle = ResourceBundle.getBundle("ServerResourceBundle");
-                logger.error(resourceBundle.getString("{data.sql.error.creating.database}"), e);
+                logger.error(ServerResourceBundle.getString("data.sql.error.creating.database"), e);
             }
         }
 
@@ -91,8 +88,7 @@ public class PostgreDataAdapter extends DataAdapter {
             // обязательно нужно создавать на основе template0, так как иначе у template1 может быть другая кодировка и ошибка
             connect.createStatement().execute("CREATE DATABASE " + dataBase + " WITH TEMPLATE template0 ENCODING='UTF8' ");
         } catch (SQLException e) {
-            ResourceBundle resourceBundle = ResourceBundle.getBundle("ServerResourceBundle"); 
-            logger.info(resourceBundle.getString("data.sql.error.creating.database"), e);
+            logger.info(ServerResourceBundle.getString("data.sql.error.creating.database"), e);
         }
         connect.close();
     }
@@ -231,7 +227,7 @@ public class PostgreDataAdapter extends DataAdapter {
     @Override
     public String backupDB(ExecutionContext context, String dumpFileName, List<String> excludeTables) throws IOException, InterruptedException {
         if (isRedundantString(dumpDir) || isRedundantString(binPath)) {
-            context.delayUserInterfaction(new MessageClientAction(ThreadLocalContext.localize("{logics.backup.path.not.specified}"), ThreadLocalContext.localize("{logics.backup.error}")));
+            context.delayUserInterfaction(new MessageClientAction(getString("logics.backup.path.not.specified"), getString("logics.backup.error")));
             return null;
         }
 

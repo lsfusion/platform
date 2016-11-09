@@ -16,7 +16,6 @@ import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.form.entity.drilldown.DataDrillDownFormEntity;
 import lsfusion.server.form.entity.drilldown.DrillDownFormEntity;
 import lsfusion.server.logics.LogicsModule;
-import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.actions.ChangeEvent;
 import lsfusion.server.logics.property.infer.ExClassSet;
 import lsfusion.server.logics.property.infer.InferType;
@@ -25,6 +24,8 @@ import lsfusion.server.session.DataChanges;
 import lsfusion.server.session.PropertyChange;
 import lsfusion.server.session.PropertyChanges;
 import lsfusion.server.session.StructChanges;
+
+import static lsfusion.server.logics.ServerResourceBundle.getString;
 
 public abstract class DataProperty extends CalcProperty<ClassPropertyInterface> {
 
@@ -36,7 +37,7 @@ public abstract class DataProperty extends CalcProperty<ClassPropertyInterface> 
         }
     }
 
-    public DataProperty(LocalizedString caption, ValueClass[] classes, ValueClass value) {
+    public DataProperty(String caption, ValueClass[] classes, ValueClass value) {
         super(caption, IsClassProperty.getInterfaces(classes));
         this.value = value;
     }
@@ -217,7 +218,7 @@ public abstract class DataProperty extends CalcProperty<ClassPropertyInterface> 
     @Override
     public DrillDownFormEntity createDrillDownForm(LogicsModule LM, String canonicalName) {
         return new DataDrillDownFormEntity(
-                canonicalName, LocalizedString.create("{logics.property.drilldown.form.data}"), this, LM
+                canonicalName, getString("logics.property.drilldown.form.data"), this, LM
         );
     }
 

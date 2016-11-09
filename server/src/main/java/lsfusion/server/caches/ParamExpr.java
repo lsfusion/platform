@@ -1,7 +1,6 @@
 package lsfusion.server.caches;
 
 import lsfusion.base.GlobalInteger;
-import lsfusion.base.Result;
 import lsfusion.base.TwinImmutableObject;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
@@ -11,10 +10,11 @@ import lsfusion.server.caches.hash.HashContext;
 import lsfusion.server.data.expr.*;
 import lsfusion.server.data.expr.query.PropStat;
 import lsfusion.server.data.expr.query.Stat;
-import lsfusion.server.data.expr.query.StatType;
-import lsfusion.server.data.query.stat.*;
+import lsfusion.server.data.query.stat.InnerBaseJoin;
+import lsfusion.server.data.query.stat.KeyStat;
+import lsfusion.server.data.query.stat.StatKeys;
 import lsfusion.server.data.translator.MapTranslate;
-import lsfusion.server.data.translator.ExprTranslator;
+import lsfusion.server.data.translator.QueryTranslator;
 import lsfusion.server.data.type.Type;
 
 public abstract class ParamExpr extends VariableSingleClassExpr implements InnerBaseJoin<Object> {
@@ -26,8 +26,8 @@ public abstract class ParamExpr extends VariableSingleClassExpr implements Inner
         return keyStat.getKeyStat(this, forJoin);
     }
 
-    public Expr translate(ExprTranslator translator) {
-        return this;
+    public Expr translateQuery(QueryTranslator translator) {
+        return translator.translate(this);
     }
 
     protected ParamExpr translate(MapTranslate translator) {
@@ -50,23 +50,14 @@ public abstract class ParamExpr extends VariableSingleClassExpr implements Inner
         return false;
     }
 
-    public PropStat getStatValue(KeyStat keyStat, StatType type) {
-        return PropStat.ALOT;
+    public PropStat getStatValue(KeyStat keyStat) {
+        return PropStat.ALOT; // временный фикс, так как при других формулах
 //        return FormulaExpr.getStatValue(this, keyStat);
     }
 
-    public StatKeys<Object> getStatKeys(KeyStat keyStat, StatType type, boolean oldMech) {
-        return new StatKeys<>(Stat.ALOT);
+    public StatKeys<Object> getStatKeys(KeyStat keyStat) {
+        return new StatKeys<>(SetFact.EMPTY(), Stat.ALOT);
 //        return new StatKeys<Object>(SetFact.EMPTY(), keyStat.getKeyStat(this));
-    }
-
-    @Override
-    public Cost getPushedCost(KeyStat keyStat, StatType type, Cost pushCost, Stat pushStat, ImMap<Object, Stat> pushKeys, ImMap<Object, Stat> pushNotNullKeys, ImMap<BaseExpr, Stat> pushProps, Result<ImSet<Object>> rPushedKeys, Result<ImSet<BaseExpr>> rPushedProps) {
-        assert pushKeys.isEmpty(); // входов нет
-        assert pushProps.size() <= 1;
-        if(pushProps.isEmpty())
-            return Cost.ALOT;
-        return new Cost(pushProps.get(this));
     }
 
     public InnerBaseJoin<?> getBaseJoin() {
@@ -78,7 +69,7 @@ public abstract class ParamExpr extends VariableSingleClassExpr implements Inner
     }
 
     @Override
-    public ImSet<NullableExprInterface> getExprFollows(boolean includeInnerWithoutNotNull, boolean recursive) {
+    public ImSet<NotNullExprInterface> getExprFollows(boolean includeInnerWithoutNotNull, boolean recursive) {
         return InnerExpr.getExprFollows(this, includeInnerWithoutNotNull, recursive);
     }
 

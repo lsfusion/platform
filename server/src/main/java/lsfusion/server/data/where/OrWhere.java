@@ -14,7 +14,6 @@ import lsfusion.server.caches.ManualLazy;
 import lsfusion.server.caches.ParamLazy;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
-import lsfusion.server.data.expr.query.StatType;
 import lsfusion.server.data.expr.where.extra.EqualsWhere;
 import lsfusion.server.data.expr.where.extra.GreaterWhere;
 import lsfusion.server.data.query.JoinData;
@@ -24,7 +23,7 @@ import lsfusion.server.data.query.innerjoins.KeyEquals;
 import lsfusion.server.data.query.stat.KeyStat;
 import lsfusion.server.data.query.stat.WhereJoins;
 import lsfusion.server.data.translator.MapTranslate;
-import lsfusion.server.data.translator.ExprTranslator;
+import lsfusion.server.data.translator.QueryTranslator;
 import lsfusion.server.data.where.classes.ClassExprWhere;
 import lsfusion.server.data.where.classes.MeanClassWhere;
 import lsfusion.server.data.where.classes.MeanClassWheres;
@@ -712,10 +711,10 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
         return toWhere(resultWheres);
     }
     @ParamLazy
-    public Where translate(ExprTranslator translator) {
+    public Where translateQuery(QueryTranslator translator) {
         Where result = Where.FALSE;
         for(Where where : wheres)
-            result = result.or(where.translateExpr(translator));
+            result = result.or(where.translateQuery(translator));
         return result;
     }
     
@@ -752,10 +751,10 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
 
     // ДОПОЛНИТЕЛЬНЫЕ ИНТЕРФЕЙСЫ
 
-    protected <K extends BaseExpr> GroupJoinsWheres calculateGroupJoinsWheres(ImSet<K> keepStat, StatType statType, KeyStat keyStat, ImOrderSet<Expr> orderTop, GroupJoinsWheres.Type type) {
+    protected <K extends BaseExpr> GroupJoinsWheres calculateGroupJoinsWheres(ImSet<K> keepStat, KeyStat keyStat, ImOrderSet<Expr> orderTop, GroupJoinsWheres.Type type) {
         MMap<WhereJoins, GroupJoinsWheres.Value> result = MapFact.mMap(GroupJoinsWheres.getAddValue(type.noWhere()));
         for(Where where : wheres)
-            result.addAll(where.groupJoinsWheres(keepStat, statType, keyStat, orderTop, type));
+            result.addAll(where.groupJoinsWheres(keepStat, keyStat, orderTop, type));
         return new GroupJoinsWheres(result.immutable(), type);
     }
     public KeyEquals calculateGroupKeyEquals() {

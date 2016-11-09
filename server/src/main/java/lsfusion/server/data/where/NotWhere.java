@@ -10,16 +10,19 @@ import lsfusion.server.caches.OuterContext;
 import lsfusion.server.caches.hash.HashContext;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
-import lsfusion.server.data.expr.query.StatType;
+import lsfusion.server.data.expr.where.extra.BinaryWhere;
+import lsfusion.server.data.expr.where.extra.IsClassWhere;
 import lsfusion.server.data.query.CompileSource;
 import lsfusion.server.data.query.JoinData;
 import lsfusion.server.data.query.innerjoins.GroupJoinsWheres;
 import lsfusion.server.data.query.stat.KeyStat;
+import lsfusion.server.data.query.stat.WhereJoin;
 import lsfusion.server.data.translator.MapTranslate;
-import lsfusion.server.data.translator.ExprTranslator;
+import lsfusion.server.data.translator.QueryTranslator;
 import lsfusion.server.data.where.classes.ClassExprWhere;
 import lsfusion.server.data.where.classes.MeanClassWhere;
 import lsfusion.server.data.where.classes.MeanClassWheres;
+import lsfusion.server.data.where.classes.PackClassWhere;
 
 public class NotWhere extends ObjectWhere {
 
@@ -65,8 +68,8 @@ public class NotWhere extends ObjectWhere {
     protected Where translate(MapTranslate translator) {
         return where.translateOuter(translator).not();
     }
-    public Where translate(ExprTranslator translator) {
-        return where.translateExpr(translator).not();
+    public Where translateQuery(QueryTranslator translator) {
+        return where.translateQuery(translator).not();
     }
 
     public ImSet<OuterContext> calculateOuterDepends() {
@@ -84,11 +87,11 @@ public class NotWhere extends ObjectWhere {
         where.fillDataJoinWheres(joins, andWhere);
     }
 
-    public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(ImSet<K> keepStat, StatType statType, KeyStat keyStat, ImOrderSet<Expr> orderTop, GroupJoinsWheres.Type type) {
+    public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(ImSet<K> keepStat, KeyStat keyStat, ImOrderSet<Expr> orderTop, GroupJoinsWheres.Type type) {
         GroupJoinsWheres notGroup;
-        if(!Settings.get().isDisableGroupNotJoinsWheres() && (notGroup = where.groupNotJoinsWheres(keepStat, statType, keyStat, orderTop, type))!=null) // на самом деле СУБД часто умеет делать BitmapOr, но весьма редка ведет себя очень нестабильно, но если что можно будет попробовать потом отключить
+        if(!Settings.get().isDisableGroupNotJoinsWheres() && (notGroup = where.groupNotJoinsWheres(keepStat, keyStat, orderTop, type))!=null) // на самом деле СУБД часто умеет делать BitmapOr, но весьма редка ведет себя очень нестабильно, но если что можно будет попробовать потом отключить
             return notGroup;
-        return super.groupJoinsWheres(keepStat, statType, keyStat, orderTop, type);
+        return super.groupJoinsWheres(keepStat, keyStat, orderTop, type);
     }
 
     public MeanClassWheres calculateMeanClassWheres(boolean useNots) {

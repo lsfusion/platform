@@ -1,21 +1,18 @@
 package lsfusion.gwt.form.client;
 
 import com.google.gwt.http.client.RequestTimeoutException;
-import com.google.gwt.user.client.rpc.IncompatibleRemoteServiceException;
 import com.google.gwt.user.client.rpc.StatusCodeException;
 import lsfusion.gwt.base.client.AsyncCallbackEx;
 import lsfusion.gwt.base.client.GwtClientUtils;
 import lsfusion.gwt.base.client.ui.DialogBoxHelper;
 import lsfusion.gwt.base.shared.InvalidateException;
 import lsfusion.gwt.base.shared.MessageException;
-import lsfusion.gwt.base.shared.RetryException;
 import lsfusion.gwt.base.shared.actions.NavigatorAction;
 
 import static lsfusion.gwt.base.client.GwtClientUtils.baseMessages;
 
 public class ErrorHandlingCallback<T> extends AsyncCallbackEx<T> {
     private static final String TIMEOUT_MESSAGE = "SESSION_TIMED_OUT";
-    private static final Integer MAX_REQUEST_TRIES = 30;
 
     @Override
     public void failure(Throwable caught) {
@@ -30,8 +27,6 @@ public class ErrorHandlingCallback<T> extends AsyncCallbackEx<T> {
         String message = getServerMessage(caught);
         if (message != null) {
             DialogBoxHelper.showMessageBox(true, "Error: ", message, null);
-            return;
-        } else if(getMaxTries(caught) > -1) {
             return;
         } else if (caught instanceof RequestTimeoutException) {
             DialogBoxHelper.showMessageBox(true, "Error: ", baseMessages.actionTimeoutErrorMessage(), false, null);
@@ -64,16 +59,6 @@ public class ErrorHandlingCallback<T> extends AsyncCallbackEx<T> {
             }
         }
         DialogBoxHelper.showMessageBox(true, "Error: ", baseMessages.internalServerErrorMessage(), false, null);
-    }
-
-    public static int getMaxTries(Throwable caught) {
-        if (caught instanceof StatusCodeException)
-            return MAX_REQUEST_TRIES;
-        else if (caught instanceof RetryException)
-            return ((RetryException) caught).maxTries;
-        if (caught instanceof IncompatibleRemoteServiceException)
-            return 2;
-        else return -1;
     }
 
     protected String getServerMessage(Throwable caught) {

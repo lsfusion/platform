@@ -10,12 +10,10 @@ import lsfusion.interop.form.screen.ExternalScreenConstraints;
 import lsfusion.server.auth.ChangePropertySecurityPolicy;
 import lsfusion.server.classes.ActionClass;
 import lsfusion.server.classes.ValueClass;
-import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.type.TypeSerializer;
 import lsfusion.server.form.entity.*;
 import lsfusion.server.form.view.report.ReportDrawField;
-import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.ActionProperty;
 import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.ClassType;
@@ -32,11 +30,12 @@ import java.io.IOException;
 import java.text.Format;
 import java.util.Map;
 
+import static lsfusion.server.logics.ServerResourceBundle.getString;
+
 public class PropertyDrawView extends ComponentView {
 
     public PropertyDrawEntity<?> entity;
 
-    public boolean autoSize;
     public boolean panelCaptionAfter;
     public boolean editOnSingleClick;
     public boolean hide;
@@ -65,7 +64,7 @@ public class PropertyDrawView extends ComponentView {
     public ExternalScreen externalScreen;
     public ExternalScreenConstraints externalScreenConstraints = new ExternalScreenConstraints();
 
-    public LocalizedString caption;
+    public String caption;
     public boolean clearText;
     public String toolTip;
 
@@ -102,11 +101,11 @@ public class PropertyDrawView extends ComponentView {
         return entity.getSID();
     }
 
-    public LocalizedString getDefaultCaption() {
+    public String getDefaultCaption() {
         return entity.propertyObject.property.caption;
     }
 
-    public LocalizedString getCaption() {
+    public String getCaption() {
         return caption != null
                 ? caption
                 : getDefaultCaption();
@@ -114,8 +113,8 @@ public class PropertyDrawView extends ComponentView {
 
     //Для Jasper'а экранируем кавычки
     public String getReportCaption() {
-        LocalizedString caption = getCaption();
-        return caption == null ? null : ThreadLocalContext.localize(caption).replace("\"", "\\\"");
+        String caption = getCaption();
+        return caption == null ? null : caption.replace("\"", "\\\"");
     }
 
     public ReportDrawField getReportDrawField(int charWidth, int scale) {
@@ -170,7 +169,9 @@ public class PropertyDrawView extends ComponentView {
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         super.customSerialize(pool, outStream, serializationType);
 
-        pool.writeString(outStream, ThreadLocalContext.localize(SerializationType.VISUAL_SETUP.equals(serializationType) ? caption : getCaption()));
+        pool.writeString(outStream, SerializationType.VISUAL_SETUP.equals(serializationType)
+                ? caption
+                : getCaption());
         pool.writeString(outStream, regexp);
         pool.writeString(outStream, regexpMessage);
         pool.writeLong(outStream, maxValue);
@@ -198,7 +199,6 @@ public class PropertyDrawView extends ComponentView {
         }
         pool.writeObject(outStream, externalScreenConstraints);
 
-        outStream.writeBoolean(autoSize);
         outStream.writeBoolean(panelCaptionAfter);
         outStream.writeBoolean(editOnSingleClick);
         outStream.writeBoolean(hide);
@@ -285,27 +285,27 @@ public class PropertyDrawView extends ComponentView {
             }
         }
 
-        OrderedMap<String, LocalizedString> contextMenuBindings = filterContextMenuItems(entity.getContextMenuBindings(), pool.context);
+        OrderedMap<String,String> contextMenuBindings = filterContextMenuItems(entity.getContextMenuBindings(), pool.context);
         outStream.writeInt(contextMenuBindings == null ? 0 : contextMenuBindings.size());
         if (contextMenuBindings != null) {
             for (int i = 0; i < contextMenuBindings.size(); ++i) {
                 pool.writeString(outStream, contextMenuBindings.getKey(i));
-                pool.writeString(outStream, ThreadLocalContext.localize(contextMenuBindings.getValue(i)));
+                pool.writeString(outStream, contextMenuBindings.getValue(i));
             }
         }
 
         outStream.writeBoolean(notNull || entity.propertyObject.property.isSetNotNull());
     }
 
-    private OrderedMap<String, LocalizedString> filterContextMenuItems(OrderedMap<String, LocalizedString> contextMenuBindings, ServerContext context) {
+    private OrderedMap<String, String> filterContextMenuItems(OrderedMap<String, String> contextMenuBindings, ServerContext context) {
         if (contextMenuBindings == null || contextMenuBindings.size() == 0) {
             return null;
         }
 
-        OrderedMap<String, LocalizedString> contextMenuItems = new OrderedMap<>();
+        OrderedMap<String, String> contextMenuItems = new OrderedMap<>();
         for (int i = 0; i < contextMenuBindings.size(); ++i) {
             String actionSID = contextMenuBindings.getKey(i);
-            LocalizedString caption = contextMenuBindings.getValue(i);
+            String caption = contextMenuBindings.getValue(i);
             ActionPropertyObjectEntity<?> editAction = entity.getEditAction(actionSID, context.entity);
             if (editAction != null && context.securityPolicy.property.view.checkPermission(editAction.property)) {
                 contextMenuItems.put(actionSID, caption);
@@ -318,7 +318,7 @@ public class PropertyDrawView extends ComponentView {
     public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
         super.customDeserialize(pool, inStream);
 
-        caption = LocalizedString.create(pool.readString(inStream));
+        caption = pool.readString(inStream);
         regexp = pool.readString(inStream);
         regexpMessage = pool.readString(inStream);
         maxValue = pool.readLong(inStream);
@@ -344,7 +344,6 @@ public class PropertyDrawView extends ComponentView {
 
         externalScreenConstraints = pool.readObject(inStream);
 
-        autoSize = inStream.readBoolean();
         panelCaptionAfter = inStream.readBoolean();
         editOnSingleClick = inStream.readBoolean();
         hide = inStream.readBoolean();
@@ -354,11 +353,11 @@ public class PropertyDrawView extends ComponentView {
 
     @Override
     public String toString() {
-        return ThreadLocalContext.localize(getCaption());
+        return getCaption();
     }
 
     public int getMinimumCharWidth() {
-        return minimumCharWidth;
+        return minimumCharWidth != 0 ? minimumCharWidth : entity.propertyObject.property.minimumCharWidth;
     }
 
     public void setMinimumCharWidth(int minimumCharWidth) {
@@ -366,7 +365,7 @@ public class PropertyDrawView extends ComponentView {
     }
 
     public int getMaximumCharWidth() {
-        return maximumCharWidth;
+        return maximumCharWidth != 0 ? maximumCharWidth : entity.propertyObject.property.maximumCharWidth;
     }
 
     public void setMaximumCharWidth(int maximumCharWidth) {
@@ -374,7 +373,7 @@ public class PropertyDrawView extends ComponentView {
     }
 
     public int getPreferredCharWidth() {
-        return preferredCharWidth;
+        return preferredCharWidth != 0 ? preferredCharWidth : entity.propertyObject.property.preferredCharWidth;
     }
 
     public void setPreferredCharWidth(int preferredCharWidth) {
@@ -386,18 +385,18 @@ public class PropertyDrawView extends ComponentView {
         if (entity.askConfirmMessage != null)
             return entity.askConfirmMessage;
         
-        LocalizedString msg;
+        String msg;
         if (entity.propertyObject.property.getType() instanceof ActionClass) {
-            msg = LocalizedString.create("{form.instance.do.you.really.want.to.take.action}");
+            msg = getString("form.instance.do.you.really.want.to.take.action");
         } else {
-            msg = LocalizedString.create("{form.instance.do.you.really.want.to.edit.property}");
+            msg = getString("form.instance.do.you.really.want.to.edit.property");
         }
-        LocalizedString caption = getCaption();
-        if (!caption.isEmpty()) {
-            msg = LocalizedString.concatList(msg, " \"", caption, "\"?");
+        String caption = getCaption();
+        if (caption != null) {
+            msg += " \"" + caption + "\"?";
         }
 
-        return ThreadLocalContext.localize(msg);
+        return msg;
     }
     
     public boolean hasChangeAction(ServerContext context) {

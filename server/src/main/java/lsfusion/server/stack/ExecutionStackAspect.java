@@ -6,11 +6,6 @@ import lsfusion.base.ExceptionUtils;
 import lsfusion.base.col.MapFact;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.HandledException;
-import lsfusion.server.form.entity.FormEntity;
-import lsfusion.server.form.instance.FormInstance;
-import lsfusion.server.profiler.ExecutionTimeCounter;
-import lsfusion.server.profiler.ProfileObject;
-import lsfusion.server.profiler.Profiler;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -19,13 +14,10 @@ import java.util.ConcurrentModificationException;
 import java.util.ListIterator;
 import java.util.Stack;
 
-import static lsfusion.server.profiler.Profiler.PROFILER_ENABLED;
-
 @Aspect
 public class ExecutionStackAspect {
     private static ConcurrentWeakHashMap<Thread, Stack<ExecutionStackItem>> executionStack = MapFact.getGlobalConcurrentWeakHashMap();
     private static ThreadLocal<String> threadLocalExceptionStack = new ThreadLocal<>();
-    public static ThreadLocal<ExecutionTimeCounter> executionTime = new ThreadLocal<>();
     
     @Around("execution(lsfusion.server.logics.property.actions.flow.FlowResult lsfusion.server.logics.property.ActionProperty.execute(lsfusion.server.logics.property.ExecutionContext))")
     public Object execution(final ProceedingJoinPoint joinPoint) throws Throwable {
@@ -50,57 +42,22 @@ public class ExecutionStackAspect {
         RMICallStackItem item = new RMICallStackItem(joinPoint);
         return processStackItem(joinPoint, item);
     }
-    
+
     // тут важно что цикл жизни ровно в стеке, иначе утечку можем получить
     private Object processStackItem(ProceedingJoinPoint joinPoint, ExecutionStackItem item) throws Throwable {
-        assert item != null;
-        
         boolean pushedMessage = false;
+        boolean pushedStack = false;
         Stack<ExecutionStackItem> stack = getOrInitStack();
-
-        ExecutionTimeCounter executionTimeCounter = null;
-        
-        stack.push(item);
-        if (presentItem(item)) {
-            ThreadLocalContext.pushActionMessage(item);
-            pushedMessage = true;
+        if (item != null) {
+            stack.push(item);
+            pushedStack = true;
+            if (presentItem(item)) {
+                ThreadLocalContext.pushActionMessage(item);
+                pushedMessage = true;
+            }
         }
-        
         try {
-            long start = 0;
-            long sqlStart = 0;
-            long uiStart = 0;
-            if (PROFILER_ENABLED && isProfileStackItem(item)) {
-                executionTimeCounter = executionTime.get();
-                if (executionTimeCounter == null) {
-                    executionTimeCounter = new ExecutionTimeCounter();
-                    executionTime.set(executionTimeCounter);
-                }
-                
-                start = System.nanoTime();
-                sqlStart = executionTimeCounter.sqlTime;
-                uiStart = executionTimeCounter.userInteractionTime;
-            }
-            
-            Object result = joinPoint.proceed();
-            
-            if (start > 0) {
-                long executionTime = System.nanoTime() - start;
-                FormInstance formInstance = ThreadLocalContext.getFormInstance();
-                FormEntity form = formInstance != null ? formInstance.entity : null;
-                assert stack.indexOf(item) == stack.size() - 1;
-                Profiler.increase(
-                        item.profileObject, 
-                        getUpperProfileObject(stack), 
-                        ThreadLocalContext.getCurrentUser(), 
-                        form, 
-                        executionTime, 
-                        executionTimeCounter.sqlTime - sqlStart, 
-                        executionTimeCounter.userInteractionTime - uiStart
-                );
-            }
-                
-            return result;
+            return joinPoint.proceed();
         } catch (Throwable e) {
             if (!(e instanceof HandledException && ((HandledException)e).willDefinitelyBeHandled()) && threadLocalExceptionStack.get() == null) {
                 String stackString = getStackString();
@@ -110,25 +67,13 @@ public class ExecutionStackAspect {
             }
             throw e;
         } finally {
-            stack.pop();
+            if (pushedStack) {
+                stack.pop();
+            }
             if (pushedMessage) {
                 ThreadLocalContext.popActionMessage(item);
             }
         }
-    }
-    
-    private boolean isProfileStackItem(ExecutionStackItem item) {
-        return item.profileObject != null;
-    }
-    
-    private ProfileObject getUpperProfileObject(Stack<ExecutionStackItem> stack) {
-        for (int i = stack.size() - 2; i >= 0; i--) {
-            ExecutionStackItem item = stack.get(i);
-            if (isProfileStackItem(item)) {
-                return item.profileObject;
-            }
-        }
-        return null;
     }
 
     public Stack<ExecutionStackItem> getOrInitStack() {
@@ -208,7 +153,7 @@ public class ExecutionStackAspect {
                     lastActionFound = true;
                     result += getLastActionString(stack, (ExecuteActionStackItem) item, cut);
                 } else {
-                    result += cut ? BaseUtils.substring(item.toString(), 1000) : item;
+                    result += cut ? trim(item.toString(), 1000) : item;
                 }
             }
         }
@@ -232,7 +177,7 @@ public class ExecutionStackAspect {
                 }
             }
         }
-        return cut ? BaseUtils.substring(lastAction.toString(), 1000) : lastAction.toString();
+        return cut ? trim(lastAction.toString(), 1000) : lastAction.toString();
     }
 
     public static String getProgressBarLastActionString() {
@@ -251,6 +196,10 @@ public class ExecutionStackAspect {
             }
         }
         return result;
+    }
+
+    private static String trim(String value, int length) {
+        return value == null ? null : value.substring(0, Math.min(value.length(), length));
     }
 
     private static boolean presentItem(ExecutionStackItem item) {

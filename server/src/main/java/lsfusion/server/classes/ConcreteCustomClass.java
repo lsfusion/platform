@@ -10,7 +10,6 @@ import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.server.classes.sets.*;
-import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
@@ -19,8 +18,7 @@ import lsfusion.server.data.expr.StaticValueExpr;
 import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.logics.DataObject;
-import lsfusion.server.logics.i18n.FormatLocalizedString;
-import lsfusion.server.logics.i18n.LocalizedString;
+import lsfusion.server.logics.ServerResourceBundle;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.mutables.NFFact;
 import lsfusion.server.logics.mutables.Version;
@@ -32,11 +30,11 @@ import java.sql.SQLException;
 import java.util.*;
 
 public class ConcreteCustomClass extends CustomClass implements ConcreteValueClass,ConcreteObjectClass, ObjectValueClassSet, StaticClass {
-    public ConcreteCustomClass(String sID, LocalizedString caption, Version version, CustomClass... parents) {
+    public ConcreteCustomClass(String sID, String caption, Version version, CustomClass... parents) {
         super(sID, caption, version, parents);
     }
 
-    public static void fillObjectClass(ConcreteCustomClass objectClass, List<String> names, List<LocalizedString> captions, Version version) {
+    public static void fillObjectClass(ConcreteCustomClass objectClass, List<String> names, List<String> captions, Version version) {
         objectClass.addStaticObjects(names, captions, version);
         for (ObjectInfo info : objectClass.getNFStaticObjectsInfoIt(version))
             info.sid = info.name;
@@ -120,16 +118,16 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
     }
 
     public static class ObjectInfo {
-        public ObjectInfo(String sid, String name, LocalizedString caption, Integer id) {
+        public ObjectInfo(String sid, String name, String caption, Integer id) {
             this.sid = sid;
             this.name = name;
-            this.caption = caption;
+            this.caption = caption.trim();
             this.id = id;
         }
 
         public String sid;
         public String name;
-        public LocalizedString caption;
+        public String caption;
         public Integer id;
     }
 
@@ -177,7 +175,7 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
         throw new RuntimeException("id not found");
     }
 
-    public final void addStaticObjects(List<String> names, List<LocalizedString> captions, Version version) {
+    public final void addStaticObjects(List<String> names, List<String> captions, Version version) {
         assert names.size() == captions.size();
         for (int i = 0; i < names.size(); i++) {
             staticObjectsInfo.add(new ObjectInfo(createStaticObjectSID(names.get(i)), names.get(i), captions.get(i), null), version);
@@ -192,8 +190,8 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
         return sids;
     }
 
-    public List<LocalizedString> getNFStaticObjectsCaptions(Version version) {
-        List<LocalizedString> names = new ArrayList<>();
+    public List<String> getNFStaticObjectsCaptions(Version version) {
+        List<String> names = new ArrayList<>();
         for (ObjectInfo info : getNFStaticObjectsInfoIt(version)) {
             names.add(info.caption);
         }
@@ -228,7 +226,7 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
             String newSID = info.sid; // todo [dale]:
             ConcreteCustomClass usedClass;
             if ((usedClass = usedSIds.put(newSID, this)) != null)
-                throw new RuntimeException(ThreadLocalContext.localize(new FormatLocalizedString("{classes.objects.have.the.same.id}", newSID, caption, usedClass.caption)));
+                throw new RuntimeException(ServerResourceBundle.getString("classes.objects.have.the.same.id", newSID, caption, usedClass.caption));
 
             String oldSID = newSID;
             if (reversedChanges.containsKey(newSID)) {
@@ -239,13 +237,13 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
             }
 
             if (oldClasses.containsKey(oldSID)) {
-                if (info.caption != null && !info.caption.getSourceString().equals(oldClasses.get(oldSID).second)) {
-                    modifiedNames.put(new DataObject(oldClasses.get(oldSID).first, this), info.caption.getSourceString());
+                if (info.caption != null && !info.caption.equals(oldClasses.get(oldSID).second)) {
+                    modifiedNames.put(new DataObject(oldClasses.get(oldSID).first, this), info.caption);
                 }
                 info.id = oldClasses.get(oldSID).first;
             } else {
                 DataObject classObject = session.addObject(this);
-                name.change(info.caption.getSourceString(), session, classObject);
+                name.change(info.caption, session, classObject);
                 staticName.change(newSID, session, classObject);
                 info.id = (Integer) classObject.object;
             }
@@ -266,6 +264,11 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
 
     public DataObject getDataObject(String name) {
         return new DataObject(getObjectID(name), this);
+    }
+
+    @Override
+    public String getString(Object value, SQLSyntax syntax) {
+        return getDataObject((String)value).getString(syntax);
     }
 
     public ImSet<ConcreteCustomClass> getSetConcreteChildren() {
@@ -315,7 +318,7 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
 
     @Override
     public String getShortName() {
-        return ThreadLocalContext.localize(getCaption());
+        return getCaption();
     }
 
     public boolean isZero(Object object) {

@@ -11,7 +11,7 @@ import lsfusion.server.data.expr.formula.*;
 import lsfusion.server.data.expr.formula.conversion.CompatibleTypeConversion;
 import lsfusion.server.data.query.CompileSource;
 import lsfusion.server.data.translator.MapTranslate;
-import lsfusion.server.data.translator.ExprTranslator;
+import lsfusion.server.data.translator.QueryTranslator;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
 
@@ -55,7 +55,7 @@ public class FormulaUnionExpr extends UnionExpr {
         return new FormulaUnionExpr(formula, translator.translate(exprs));
     }
 
-    public Expr translate(ExprTranslator translator) {
+    public Expr translateQuery(QueryTranslator translator) {
         return create(formula, translator.translate(exprs));
     }
 

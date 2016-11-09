@@ -164,7 +164,7 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
         // нужно прочитать то что записано
         if(table.count > SessionRows.MAX_ROWS) {
             if(!Settings.get().isDisableReadSingleValues()) { // чтение singleValues
-                Result<ImMap<KeyField, Object>> actualKeyValues = new Result<>(); Result<ImMap<KeyField, Integer>> statKeys = new Result<>();
+                Result<ImMap<KeyField, Object>> actualKeyValues = new Result<>(); Result<DistinctKeys<KeyField>> statKeys = new Result<>();
                 Result<ImMap<PropertyField, Object>> actualPropValues = new Result<>(); Result<ImMap<PropertyField, PropStat>> statProps = new Result<>();
                 session.readSingleValues(table, actualKeyValues, actualPropValues, statKeys, statProps, opOwner);
                 keyValues.set(baseClass.getDataObjects(session, actualKeyValues.result, table.classes.getCommonClasses(actualKeyValues.result.keys()), opOwner).addExcl(keyValues.result));

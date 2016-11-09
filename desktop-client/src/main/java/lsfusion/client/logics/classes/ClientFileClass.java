@@ -28,6 +28,12 @@ public abstract class ClientFileClass extends ClientDataClass implements ClientT
         outStream.writeBoolean(storeName);
     }
 
+    public String getSID() {
+        return getFileSID() + (multiple ? "_Multiple" : "") + (storeName ? "_StoreName" : "");
+    }
+
+    public abstract String getFileSID();
+
     public abstract String[] getExtensions();
 
     public String getPreferredMask() {

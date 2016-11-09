@@ -16,7 +16,7 @@ public class EditFormEntity<T extends BusinessLogics<T>> extends BaseClassFormEn
 
         object.groupTo.setSingleClassView(ClassViewType.PANEL);
 
-        PropertyDrawEntity objectValue = getNFPropertyDraw(LM.getObjValueProp(this, object), LM.getVersion(), object);
+        PropertyDrawEntity objectValue = getNFPropertyDraw(LM.objectValue, object, LM.getVersion());
         if (objectValue != null)
             objectValue.setEditType(PropertyEditType.READONLY);
 

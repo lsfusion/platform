@@ -10,7 +10,7 @@ import lsfusion.server.logics.scripted.ScriptingActionProperty;
 
 import java.sql.SQLException;
 
-import static lsfusion.server.context.ThreadLocalContext.localize;
+import static lsfusion.server.logics.ServerResourceBundle.getString;
 
 public class PackActionProperty extends ScriptingActionProperty {
     public PackActionProperty(ServiceLogicsModule LM) {
@@ -25,7 +25,7 @@ public class PackActionProperty extends ScriptingActionProperty {
                 context.getDbManager().packTables(session, context.getBL().LM.tableFactory.getImplementTables(), isolatedTransaction);
             }
         });
-        context.delayUserInterfaction(new MessageClientAction(localize("{logics.tables.packing.completed}"), localize("{logics.tables.packing}")));
+        context.delayUserInterfaction(new MessageClientAction(getString("logics.tables.packing.completed"), getString("logics.tables.packing")));
     }
 
     @Override

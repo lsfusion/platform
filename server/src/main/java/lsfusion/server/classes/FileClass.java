@@ -4,7 +4,7 @@ import lsfusion.base.ExtInt;
 import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.ParseException;
-import lsfusion.server.logics.i18n.LocalizedString;
+import lsfusion.server.logics.ServerResourceBundle;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
@@ -22,7 +22,7 @@ public abstract class FileClass extends DataClass<byte[]> {
     public boolean storeName;
 
     protected FileClass(boolean multiple, boolean storeName) {
-        super(LocalizedString.create("{classes.file}"));
+        super(ServerResourceBundle.getString("classes.file"));
 
         this.multiple = multiple;
         this.storeName = storeName;

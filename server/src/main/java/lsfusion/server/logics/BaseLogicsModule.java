@@ -3,6 +3,10 @@ package lsfusion.server.logics;
 import com.google.common.base.Throwables;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
+import lsfusion.base.col.SetFact;
+import lsfusion.base.col.interfaces.immutable.ImList;
+import lsfusion.base.col.interfaces.immutable.ImOrderSet;
+import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.identity.DefaultIDGenerator;
 import lsfusion.base.identity.IDGenerator;
 import lsfusion.interop.Compare;
@@ -11,7 +15,10 @@ import lsfusion.server.caches.IdentityStrongLazy;
 import lsfusion.server.classes.*;
 import lsfusion.server.classes.sets.ResolveClassSet;
 import lsfusion.server.data.expr.formula.CastFormulaImpl;
-import lsfusion.server.form.entity.*;
+import lsfusion.server.form.entity.ClassFormEntity;
+import lsfusion.server.form.entity.FormEntity;
+import lsfusion.server.form.entity.ObjectEntity;
+import lsfusion.server.form.entity.PropertyFormEntity;
 import lsfusion.server.form.instance.FormSessionScope;
 import lsfusion.server.form.navigator.NavigatorElement;
 import lsfusion.server.form.window.AbstractWindow;
@@ -19,15 +26,16 @@ import lsfusion.server.form.window.NavigatorWindow;
 import lsfusion.server.form.window.ToolBarNavigatorWindow;
 import lsfusion.server.logics.debug.ActionPropertyDebugger;
 import lsfusion.server.logics.debug.WatchActionProperty;
-import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.mutables.NFFact;
+import lsfusion.server.logics.mutables.NFLazy;
 import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.actions.FormAddObjectActionProperty;
 import lsfusion.server.logics.property.derived.DerivedProperty;
 import lsfusion.server.logics.property.group.AbstractGroup;
+import lsfusion.server.logics.property.group.PropertySet;
 import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 import lsfusion.server.logics.table.TableFactory;
@@ -36,6 +44,9 @@ import org.antlr.runtime.RecognitionException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
+
+import static lsfusion.server.logics.ServerResourceBundle.getString;
 
 /**
  * User: DAle
@@ -107,8 +118,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     public LAP flowBreak;
     public LAP flowReturn;
     public LAP<?> cancel;
-    
-    public LCP<?> sessionOwners;
 
     public LCP objectClass;
     public LCP random;
@@ -118,7 +127,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     public LCP statCustomObjectClass; 
 
     private LCP addedObject;
-    public LCP confirmed;
+    private LCP confirmed;
     private LCP requestCanceled;
     private LCP isActiveForm;
     private LCP formResultProp;
@@ -146,9 +155,9 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     public LCP overrideFocusedCellBorderColor;
 
     public LCP reportRowHeight, reportCharWidth, reportToStretch;
-
-    public LCP networkPath;
     
+    public ObjectValuePropertySet objectValue;
+
     public AbstractGroup privateGroup;
 
     public TableFactory tableFactory;
@@ -270,7 +279,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     
     @Override
     public void initClasses() throws RecognitionException {
-        baseClass = addBaseClass(transformNameToSID("Object"), LocalizedString.create("{logics.object}"));
+        baseClass = addBaseClass(transformNameToSID("Object"), getString("logics.object"));
         
         super.initClasses();
 
@@ -323,8 +332,12 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
 
         objectClass = addProperty(null, new LCP<>(baseClass.getObjectClassProperty()));
         makePropertyPublic(objectClass, "objectClass", Collections.<ResolveClassSet>nCopies(1, null));
-        random = addRMProp(LocalizedString.create("Random"));
+        random = addRMProp("Random");
         makePropertyPublic(random, "random", Collections.<ResolveClassSet>emptyList());
+
+        // Множества свойств
+        objectValue = new ObjectValuePropertySet();
+        publicGroup.add(objectValue, version);
 
         // логические св-ва
         and1 = addAFProp(false);
@@ -362,10 +375,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
 
         canceled = findProperty("canceled[]");
 
-        apply = findAction("apply[]");
+        apply = findAction("apply");
         cancel = findAction("cancel[]");
-
-        empty = findAction("empty[]");
 
         onStarted = findAction("onStarted[]");
 
@@ -390,9 +401,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         staticName = findProperty("staticName[Object]");
         staticCaption = findProperty("staticCaption[Object]");
         ((CalcProperty)staticCaption.property).aggProp = true;
-        
-        sessionOwners = findProperty("sessionOwners[]");
-        ((SessionDataProperty)sessionOwners.property).noNestingInNestedSession = true;
 
         objectClassName = findProperty("objectClassName[Object]");
         statCustomObjectClass = findProperty("stat[CustomObjectClass]");
@@ -401,8 +409,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         reportRowHeight = findProperty("reportRowHeight[]");
         reportCharWidth = findProperty("reportCharWidth[]");
         reportToStretch = findProperty("reportToStretch[]");
-
-        networkPath = findProperty("networkPath[]");
         
         // Настройка форм
         defaultBackgroundColor = findProperty("defaultBackgroundColor[]");
@@ -442,6 +448,90 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         return idGenerator.idShift();
     }
 
+    public abstract class MapClassesPropertySet<K, V extends CalcProperty> extends PropertySet {
+        protected final LinkedHashMap<K, V> properties = new LinkedHashMap<>();
+
+        @Override
+        public ImOrderSet<Property> getProperties() {
+            return SetFact.fromJavaOrderSet(new ArrayList<Property>(properties.values()));
+        }
+
+        @Override
+        protected ImList<CalcPropertyClassImplement> getProperties(ImSet<ValueClassWrapper> classes, Version version) {
+            ImOrderSet<ValueClassWrapper> orderClasses = classes.toOrderSet();
+            ValueClass[] valueClasses = getClasses(orderClasses);
+            V property = getProperty(valueClasses, version);
+
+            ImOrderSet<?> interfaces = getPropertyInterfaces(property, valueClasses);
+            return ListFact.singleton(new CalcPropertyClassImplement(property, orderClasses, interfaces));
+        }
+
+        private ValueClass[] getClasses(ImOrderSet<ValueClassWrapper> classes) {
+            ValueClass[] valueClasses = new ValueClass[classes.size()];
+            for (int i = 0; i < classes.size(); i++) {
+                valueClasses[i] = classes.get(i).valueClass;
+            }
+            return valueClasses;
+        }
+
+        @NFLazy
+        protected V getProperty(ValueClass[] classes, Version version) {
+            K key = createKey(classes);
+            if (!properties.containsKey(key)) {
+                V property = createProperty(classes, version);
+                properties.put(key, property);
+                return property;
+            } else {
+                return properties.get(key);
+            }
+        }
+
+        protected abstract ImOrderSet<?> getPropertyInterfaces(V property, ValueClass[] valueClasses);
+
+        protected abstract V createProperty(ValueClass[] classes, Version version);
+
+        protected abstract K createKey(ValueClass[] classes);
+    }
+
+    public class ObjectValuePropertySet extends MapClassesPropertySet<ValueClass, ObjectValueProperty> {
+        @Override
+        protected boolean isInInterface(ImSet<ValueClassWrapper> classes) {
+            return classes.size() == 1;
+        }
+
+        protected Class<?> getPropertyClass() {
+            return ObjectValueProperty.class;
+        }
+
+        @Override
+        protected ImOrderSet<?> getPropertyInterfaces(ObjectValueProperty property, ValueClass[] valueClasses) {
+            return SetFact.singletonOrder(property.interfaces.get(0));
+        }
+
+        @Override
+        protected ValueClass createKey(ValueClass[] classes) {
+            assert classes.length == 1;
+            return classes[0].getBaseClass();
+        }
+
+        @Override
+        protected ObjectValueProperty createProperty(ValueClass[] classes, Version version) {
+            assert classes.length == 1;
+
+            ValueClass valueClass = classes[0].getBaseClass();
+            ObjectValueProperty property = new ObjectValueProperty(valueClass);
+            // Необходимо создавать свойства с разными каноническими именами. В случае с классами STRING и NUMERIC их размерность не влияет на сигнатуру,
+            // поэтому для этих классов будем создавать другие имена. включающие в себя сигнатуру
+            String name = PropertyCanonicalNameUtils.objValuePrefix;
+            if (valueClass instanceof StringClass || valueClass instanceof NumericClass) {
+                name = name + valueClass.getSID();
+            }
+            property.setCanonicalName(getNamespace(), name, Collections.singletonList(valueClass.getResolveSet()), SetFact.singletonOrder(property.interfaces.get(0)), getDBNamePolicy());
+            setParent(property, version);
+            return property;
+        }
+    }
+
     // Окна
     public class Windows {
         public ToolBarNavigatorWindow root;
@@ -477,11 +567,11 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
 
         windows.tree = (NavigatorWindow) findWindow("tree");
 
-        windows.forms = addWindow("forms", new AbstractWindow(null, LocalizedString.create("{logics.window.forms}"), 20, 20, 80, 79));
+        windows.forms = addWindow("forms", new AbstractWindow(null, getString("logics.window.forms"), 20, 20, 80, 79));
 
-        windows.log = addWindow("log", new AbstractWindow(null, LocalizedString.create("{logics.window.log}"), 0, 70, 20, 29));
+        windows.log = addWindow("log", new AbstractWindow(null, getString("logics.window.log"), 0, 70, 20, 29));
 
-        windows.status = addWindow("status", new AbstractWindow(null, LocalizedString.create("{logics.window.status}"), 0, 99, 100, 1));
+        windows.status = addWindow("status", new AbstractWindow(null, getString("logics.window.status"), 0, 99, 100, 1));
         windows.status.titleShown = false;
 
         // todo : перенести во внутренний класс Navigator, как в Windows
@@ -521,7 +611,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     @Override
     @IdentityStrongLazy
     public LCP object(ValueClass valueClass) {
-        LCP lcp = addJProp(false, LocalizedString.create(valueClass.toString()), and1, 1, is(valueClass), 1);
+        LCP lcp = addJProp(false, valueClass.toString(), and1, 1, is(valueClass), 1);
         ((JoinProperty)lcp.property).objectPropertyClass = valueClass;
         return lcp;
     }
@@ -535,14 +625,14 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     @Override
     @IdentityStrongLazy
     protected <T extends PropertyInterface> LCP addCProp(StaticClass valueClass, Object value) {
-        CalcPropertyRevImplement<T, Integer> implement = (CalcPropertyRevImplement<T, Integer>) DerivedProperty.createCProp(LocalizedString.create("sys"), valueClass, value, MapFact.<Integer, ValueClass>EMPTY());
+        CalcPropertyRevImplement<T, Integer> implement = (CalcPropertyRevImplement<T, Integer>) DerivedProperty.createCProp("sys", valueClass, value, MapFact.<Integer, ValueClass>EMPTY());
         return addProperty(null, false, new LCP<>(implement.property, ListFact.fromIndexedMap(implement.mapping.reverse())));
     }
 
     @Override
     @IdentityStrongLazy
     protected <P extends PropertyInterface> LCP addCastProp(DataClass castClass) {
-        return addProperty(null, new LCP<>(new FormulaImplProperty(LocalizedString.create("castTo" + castClass.toString()), 1, new CastFormulaImpl(castClass))));
+        return addProperty(null, new LCP<>(new FormulaImplProperty("castTo" + castClass.toString(), 1, new CastFormulaImpl(castClass))));
     }
 
     @Override
@@ -606,24 +696,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
 
     @Override
     @IdentityStrongLazy
-    public LCP getObjValueProp(FormEntity formEntity, ObjectEntity obj) {
-        ValueClass cls = obj.baseClass;
-        LCP result = addProp(new ObjectValueProperty(cls, obj));
-        if (formEntity.getCanonicalName() != null) {
-            String name = "_OBJVALUE_" + formEntity.getCanonicalName().replace('.', '_') + "_" + obj.getSID();
-            makePropertyPublic(result, name, cls.getResolveSet());
-        }
-        return result;
-    }
-
-    @Override
-    @IdentityStrongLazy
-    public LAP getAddObjectAction(FormEntity formEntity, ObjectEntity obj) {
-        CustomClass cls = (CustomClass)obj.baseClass;
+    public LAP getAddObjectAction(CustomClass cls, FormEntity formEntity, ObjectEntity obj) {
         LAP result = addAProp(new FormAddObjectActionProperty(cls, obj));
-        
-        setAddActionOptions(result, obj);
-        
         if (formEntity.getCanonicalName() != null) {
             String name = "_ADDOBJ_" + formEntity.getCanonicalName().replace('.', '_') + "_" + obj.getSID();
             makePropertyPublic(result, name, cls.getResolveSet());
@@ -631,49 +705,38 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         return result;
     }
 
+    @Override
     @IdentityStrongLazy
-    public LAP getAddFormAction(CustomClass cls, FormEntity contextForm, ObjectEntity contextObject, FormSessionScope scope, ClassFormEntity form) {
-        LAP result = addAddFormAction(cls, contextObject, scope, form);
+    public LAP getDeleteAction(CustomClass cls, boolean oldSession) {
+        String name = "_DELETE" + (oldSession ? "SESSION" : "");
 
-        String contextPrefix = getFormPrefix(contextForm) + getObjectPrefix(contextObject);
-        String name = "_ADDFORM" + scope + contextPrefix + getClassPrefix(cls) + getFormPrefix(form.form);
+        LAP res = addChangeClassAProp(baseClass.unknown, 1, 0, false, true, 1, is(cls), 1);
+        if (!oldSession) {
+            res = addNewSessionAProp(null, res.property.caption, res, true, false, false, false);
+            res.setAskConfirm(true);
+        }
+        setDeleteActionOptions(res);
+        makePropertyPublic(res, name, cls.getResolveSet());
+        return res;
+    }
 
+    @IdentityStrongLazy
+    public LAP getAddFormAction(CustomClass cls, FormSessionScope scope, ClassFormEntity form) {
+        String name = "_ADDFORM" + scope + "_" + cls.getSID() + (form.form.isNamed() ? "_" + form.form.getCanonicalName().replace('.', '_') : "");
+        LAP result = addDMFAProp(null, ServerResourceBundle.getString("logics.add"), //+ "(" + cls + ")",
+                form.form, new ObjectEntity[]{},
+                form.form.addPropertyObject(getAddObjectAction(cls, form.form, form.object)), scope, true);
         makePropertyPublic(result, name, new ArrayList<ResolveClassSet>());
 
-        // temporary for migration
-        String oldName = PropertyCanonicalNameUtils.createName(getNamespace(), "_ADDFORM" + scope + getClassPrefix(cls) + getFormPrefix(form.form), new ArrayList<ResolveClassSet>());
-        DBManager.copyAccess.put(result.property.getCanonicalName(), oldName);
-        
+        setAddFormActionProperties(result, form, scope);
         return result;
     }
 
     @IdentityStrongLazy
     public LAP getEditFormAction(CustomClass cls, FormSessionScope scope, ClassFormEntity form) {
-        LAP result = addEditFormAction(scope, form);
-
-        String name = "_EDITFORM" + scope + getClassPrefix(cls) + getFormPrefix(form.form);
+        String name = "_EDITFORM" + scope + "_" + cls.getSID() + (form.form.isNamed() ? "_" + form.form.getCanonicalName().replace('.', '_') : "");
+        LAP result = addDMFAProp(null, ServerResourceBundle.getString("logics.edit"), form.form, new ObjectEntity[]{form.object}, scope);
         makePropertyPublic(result, name, form.object.getResolveClassSet());
         return result;
-    }
-
-    @IdentityStrongLazy
-    public LAP getDeleteAction(CustomClass cls, boolean oldSession) {
-        LAP res = addDeleteAction(cls, oldSession);
-
-        String name = "_DELETE" + (oldSession ? "SESSION" : "");
-        makePropertyPublic(res, name, cls.getResolveSet());
-        return res;
-    }
-
-    private static String getClassPrefix(CustomClass cls) {
-        return "_" + cls.getSID();
-    }
-
-    private static String getFormPrefix(FormEntity formEntity) {
-        return formEntity.isNamed() ? "_" + formEntity.getCanonicalName().replace('.', '_') : "";
-    }
-
-    private static String getObjectPrefix(ObjectEntity objectEntity) {
-        return "_" + objectEntity.getSID();
-    }
+    } 
 }

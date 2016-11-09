@@ -1,5 +1,6 @@
 package lsfusion.server.logics.scripted;
 
+import lsfusion.base.BaseUtils;
 import lsfusion.base.OrderedMap;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
@@ -19,7 +20,6 @@ import lsfusion.server.form.entity.filter.RegularFilterEntity;
 import lsfusion.server.form.entity.filter.RegularFilterGroupEntity;
 import lsfusion.server.form.instance.FormSessionScope;
 import lsfusion.server.logics.debug.DebugInfo;
-import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.linear.LP;
@@ -31,7 +31,6 @@ import lsfusion.server.logics.property.derived.DerivedProperty;
 
 import javax.swing.*;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -67,7 +66,7 @@ public class ScriptingFormEntity {
                 String className = groupObject.classes.get(j);
                 ValueClass cls = LM.findClass(groupObject.classes.get(j));
                 String objectName = nvl(groupObject.objects.get(j), className);
-                LocalizedString objectCaption = nvl(groupObject.captions.get(j), cls.getCaption());
+                String objectCaption = nvl(groupObject.captions.get(j), cls.getCaption());
 
                 ObjectEntity obj = new ObjectEntity(form.genID(), cls, objectCaption);
                 addObjectEntity(objectName, obj, groupObj, version);
@@ -238,49 +237,44 @@ public class ScriptingFormEntity {
             ScriptingLogicsModule.PropertyUsage pUsage = properties.get(i);
             String propertyName = pUsage.name;
             String alias = aliases.get(i);
-            
-            LP property;
-            PropertyObjectInterfaceEntity[] objects;;
+
+            PropertyDrawEntity property;
             if (propertyName.equals("OBJVALUE")) {
-                ObjectEntity obj = getSingleMappingObject(mapping);
-                property = LM.getObjValueProp(form, obj);
-                objects = new PropertyObjectInterfaceEntity[]{obj};
+                checkSingleParam(mapping.size());
+
+                //assertion, что создастся только один PropertyDrawEntity
+                property = BaseUtils.<PropertyDrawEntity>single(
+                        form.addPropertyDraw(LM.baseLM.objectValue, version, getMappingObjectsArray(mapping))
+                );
             } else if (propertyName.equals("ADDOBJ")) {
                 ObjectEntity obj = getSingleCustomClassMappingObject(propertyName, mapping);
-                property = LM.getAddObjectAction(form, obj);
-                objects = new PropertyObjectInterfaceEntity[]{};
+                LAP<?> addObjAction = LM.getAddObjectAction(form, obj);
+                property = form.addPropertyDraw(addObjAction, version);
             } else if (propertyName.equals("ADDFORM") || propertyName.equals("ADDSESSIONFORM") || propertyName.equals("ADDNESTEDFORM")) {
                 ObjectEntity obj = getSingleCustomClassMappingObject(propertyName, mapping);
-                property = LM.getAddFormAction(form, obj, getAddFormActionScope(propertyName), version);
-                objects = new PropertyObjectInterfaceEntity[]{};
+                property = LM.addAddFormAction(form, obj, getAddFormActionScope(propertyName), version);
             } else if (propertyName.equals("EDITFORM") || propertyName.equals("EDITSESSIONFORM") || propertyName.equals("EDITNESTEDFORM")) {
                 ObjectEntity obj = getSingleCustomClassMappingObject(propertyName, mapping);
-                property = LM.getEditFormAction(obj, getEditFormActionScope(propertyName), version);
-                objects = new PropertyObjectInterfaceEntity[]{obj};
+                property = LM.addEditFormAction(form, obj, getEditFormActionScope(propertyName), version);
             } else if (propertyName.equals("DELETE") || propertyName.equals("DELETESESSION")) {
                 ObjectEntity obj = getSingleCustomClassMappingObject(propertyName, mapping);
-                property = LM.getDeleteAction(obj, propertyName.equals("DELETESESSION"));
-                objects = new PropertyObjectInterfaceEntity[]{obj};
+                property = LM.addFormDeleteAction(form, obj, propertyName.equals("DELETESESSION"), version);
             } else {
                 MappedProperty prop = getPropertyWithMapping(pUsage, mapping);
+
                 checkPropertyParameters(prop.property, prop.mapping);
-                property = prop.property;
-                objects = prop.mapping;
+                String formPath = points.get(i).toString();
+                property = form.addPropertyDraw(prop.property, version, formPath, prop.mapping);
             }
-
             FormPropertyOptions propertyOptions = commonOptions.overrideWith(options.get(i));
-
-            String formPath = points.get(i).toString();
-            PropertyDrawEntity propertyDraw = form.addPropertyDraw(property, version, formPath, objects);
-            
-            applyPropertyOptions(propertyDraw, propertyOptions, version);
+            applyPropertyOptions(property, propertyOptions, version);
 
             // Добавляем PropertyDrawView в FormView, если он уже был создан
-            form.addPropertyDrawView(propertyDraw, version);
+            form.addPropertyDrawView(property, version);
 
-            movePropertyDraw(propertyDraw, propertyOptions, version);
+            movePropertyDraw(property, propertyOptions, version);
 
-            setFinalPropertyDrawSID(propertyDraw, alias);
+            setFinalPropertyDrawSID(property, alias);
         }
     }
 
@@ -397,7 +391,7 @@ public class ScriptingFormEntity {
             }
         }
 
-        OrderedMap<String, LocalizedString> contextMenuBindings = options.getContextMenuBindings();
+        OrderedMap<String, String> contextMenuBindings = options.getContextMenuBindings();
         if (contextMenuBindings != null) {
             for (int i = 0; i < contextMenuBindings.size(); ++i) {
                 property.setContextMenuAction(contextMenuBindings.getKey(i), contextMenuBindings.getValue(i));
@@ -522,7 +516,7 @@ public class ScriptingFormEntity {
 
     public void addRegularFilters(RegularFilterGroupEntity filterGroup, List<RegularFilterInfo> filters, Version version, boolean extend) throws ScriptingErrorLog.SemanticErrorException {
         for (RegularFilterInfo info : filters) {
-            LocalizedString caption = info.caption;
+            String caption = info.caption;
             KeyStroke keyStroke = (info.keystroke != null ? KeyStroke.getKeyStroke(info.keystroke) : null);
             boolean isDefault = info.isDefault;
 
@@ -602,6 +596,10 @@ public class ScriptingFormEntity {
         findCustomClassForFormSetup(className).setEditForm(form, getObjectEntity(objectID), version);
     }
 
+    public void setAsListForm(String className, String objectID, Version version) throws ScriptingErrorLog.SemanticErrorException {
+        findCustomClassForFormSetup(className).setListForm(form, getObjectEntity(objectID), version);
+    }
+
     public void setModalityType(ModalityType modalityType) {
         if (modalityType != null) {
             form.modalityType = modalityType;
@@ -632,13 +630,13 @@ public class ScriptingFormEntity {
     }
     
     public static class RegularFilterInfo {
-        LocalizedString caption;
+        String caption;
         String keystroke;
         LP property;
         List<String> mapping;
         boolean isDefault;
 
-        public RegularFilterInfo(LocalizedString caption, String keystroke, LP property, List<String> mapping, boolean isDefault) {
+        public RegularFilterInfo(String caption, String keystroke, LP property, List<String> mapping, boolean isDefault) {
             this.caption = caption;
             this.keystroke = keystroke;
             this.property = property;

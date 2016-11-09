@@ -10,7 +10,7 @@ import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.query.MaterializedQuery;
 import lsfusion.server.data.query.StaticExecuteEnvironment;
-import lsfusion.server.data.query.stat.Cost;
+import lsfusion.server.data.query.stat.ExecCost;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.*;
 
@@ -21,20 +21,20 @@ import java.sql.SQLException;
 public abstract class SQLCommand<H> extends TwinImmutableObject<SQLCommand<H>> {
 
     protected final String command;
-    public final Cost baseCost;
+    public final ExecCost baseCost;
     public final ImMap<String, SQLQuery> subQueries;
     protected final StaticExecuteEnvironment env;
 
     protected final boolean recursionFunction; // subQueries все внутри '' идут
 
     @IdentityLazy
-    public Cost getCost(ImMap<SQLQuery, Stat> materializedQueries) {
-        Cost result = baseCost;
+    public ExecCost getCost(ImMap<SQLQuery, Stat> materializedQueries) {
+        ExecCost result = baseCost;
         for(SQLQuery subQuery : subQueries.valueIt()) {
-            Cost subQueryCost;
+            ExecCost subQueryCost;
             Stat matStat = materializedQueries.get(subQuery);
             if(matStat != null)
-                subQueryCost = new Cost(matStat);
+                subQueryCost = new ExecCost(matStat);
             else
                 subQueryCost = subQuery.getCost(materializedQueries);
             result = result.or(subQueryCost);
@@ -42,7 +42,7 @@ public abstract class SQLCommand<H> extends TwinImmutableObject<SQLCommand<H>> {
         return result;
     }
 
-    public SQLCommand(String command, Cost baseCost, ImMap<String, SQLQuery> subQueries, StaticExecuteEnvironment env, boolean recursionFunction) {
+    public SQLCommand(String command, ExecCost baseCost, ImMap<String, SQLQuery> subQueries, StaticExecuteEnvironment env, boolean recursionFunction) {
         this.command = command;
         this.baseCost = baseCost;
         this.subQueries = subQueries;

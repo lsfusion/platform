@@ -11,16 +11,16 @@ import lsfusion.interop.Compare;
 import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.caches.OuterContext;
 import lsfusion.server.caches.ParamLazy;
-import lsfusion.server.data.StaticParamNullableExpr;
+import lsfusion.server.classes.StaticClass;
+import lsfusion.server.data.StaticParamNotNullExpr;
 import lsfusion.server.data.expr.*;
-import lsfusion.server.data.expr.query.StatType;
 import lsfusion.server.data.query.*;
 import lsfusion.server.data.query.innerjoins.GroupJoinsWheres;
 import lsfusion.server.data.query.stat.KeyStat;
 import lsfusion.server.data.query.stat.WhereJoin;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.translator.MapTranslate;
-import lsfusion.server.data.translator.ExprTranslator;
+import lsfusion.server.data.translator.QueryTranslator;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.DataWhere;
 import lsfusion.server.data.where.Where;
@@ -42,8 +42,8 @@ public abstract class BinaryWhere<This extends BinaryWhere<This>> extends DataWh
 
     public static boolean checkStaticNotEquals(BaseExpr operator1, BaseExpr operator2) {
         assert checkStaticClass(operator1, operator2);
-        assert operator1 instanceof StaticExpr || operator1 instanceof StaticParamNullableExpr;
-        assert operator2 instanceof StaticExpr || operator2 instanceof StaticParamNullableExpr;
+        assert operator1 instanceof StaticExpr || operator1 instanceof StaticParamNotNullExpr;
+        assert operator2 instanceof StaticExpr || operator2 instanceof StaticParamNotNullExpr;
         assert operator1.getClass() == operator2.getClass() || operator1 instanceof InfiniteExpr || operator2 instanceof InfiniteExpr;
 
         // не равны, и если static, то типы у них одинаковые, потому как в противном случае СУБД будет считать, что равны, а сервер приложений нет
@@ -65,8 +65,8 @@ public abstract class BinaryWhere<This extends BinaryWhere<This>> extends DataWh
         operator2.fillJoinWheres(joins,andWhere);
     }
 
-    protected ImSet<NullableExprInterface> getExprFollows() {
-        return operator1.getExprFollows(true, NullableExpr.FOLLOW, true).merge(operator2.getExprFollows(true, NullableExpr.FOLLOW, true));
+    protected ImSet<NotNullExprInterface> getExprFollows() {
+        return operator1.getExprFollows(true, NotNullExpr.FOLLOW, true).merge(operator2.getExprFollows(true, NotNullExpr.FOLLOW, true));
     }
 
     protected abstract This createThis(BaseExpr operator1, BaseExpr operator2);
@@ -76,8 +76,8 @@ public abstract class BinaryWhere<This extends BinaryWhere<This>> extends DataWh
         return createThis(operator1.translateOuter(translator),operator2.translateOuter(translator));
     }
     @ParamLazy
-    public Where translate(ExprTranslator translator) {
-        return operator1.translateExpr(translator).compare(operator2.translateExpr(translator),getCompare());
+    public Where translateQuery(QueryTranslator translator) {
+        return operator1.translateQuery(translator).compare(operator2.translateQuery(translator),getCompare());
     }
 
     @Override
@@ -121,11 +121,11 @@ public abstract class BinaryWhere<This extends BinaryWhere<This>> extends DataWh
             return new ExprIndexedJoin(operator1, getCompare(), operator2, false, isOrderTop.result);
         return null;
     }
-    public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(ImSet<K> keepStat, StatType statType, KeyStat keyStat, ImOrderSet<Expr> orderTop, GroupJoinsWheres.Type type) {
+    public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(ImSet<K> keepStat, KeyStat keyStat, ImOrderSet<Expr> orderTop, GroupJoinsWheres.Type type) {
         WhereJoin exprJoin = groupJoinsWheres(orderTop);
         if(exprJoin!=null)
-            return groupDataJoinsWheres(exprJoin, type);
-        return getOperandWhere().groupJoinsWheres(keepStat, statType, keyStat, orderTop, type).and(super.groupJoinsWheres(keepStat, statType, keyStat, orderTop, type));
+            return new GroupJoinsWheres(exprJoin, this, type);
+        return getOperandWhere().groupJoinsWheres(keepStat, keyStat, orderTop, type).and(super.groupJoinsWheres(keepStat, keyStat, orderTop, type));
     }
 
     @IdentityLazy

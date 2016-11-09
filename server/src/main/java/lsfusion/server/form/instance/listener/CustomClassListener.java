@@ -8,5 +8,5 @@ public interface CustomClassListener {
     Integer getObject(CustomClass cls);
     void objectChanged(ConcreteCustomClass cls, int objectID);
     
-    boolean isDeactivated(); // потом надо будет переделать на отдельный интерфейс
+    boolean isClosed(); // потом надо будет переделать на отдельный интерфейс 
 }

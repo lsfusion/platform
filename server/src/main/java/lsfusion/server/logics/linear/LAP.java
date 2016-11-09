@@ -10,7 +10,6 @@ import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.PropertyUtils;
-import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.actions.FormEnvironment;
@@ -18,7 +17,6 @@ import lsfusion.server.logics.property.actions.flow.CaseActionProperty;
 import lsfusion.server.logics.property.actions.flow.FlowResult;
 import lsfusion.server.logics.property.actions.flow.ListActionProperty;
 import lsfusion.server.session.DataSession;
-import lsfusion.server.session.ExecutionEnvironment;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -33,7 +31,7 @@ public class LAP<T extends PropertyInterface> extends LP<T, ActionProperty<T>> {
         super(property, listInterfaces);
     }
 
-    public void execute(ExecutionEnvironment session, ExecutionStack stack, ObjectValue... objects) throws SQLException, SQLHandledException {
+    public void execute(DataSession session, ExecutionStack stack, ObjectValue... objects) throws SQLException, SQLHandledException {
         property.execute(getMapValues(objects), session, stack, null);
     }
 
@@ -70,10 +68,10 @@ public class LAP<T extends PropertyInterface> extends LP<T, ActionProperty<T>> {
     }
 
     public <P extends PropertyInterface> void addToContextMenuFor(LP<P, Property<P>> mainProperty) {
-        addToContextMenuFor(mainProperty, property.caption != null ? property.caption : LocalizedString.create(property.getSID()));
+        addToContextMenuFor(mainProperty, property.caption != null ? property.caption : property.getSID());
     }
 
-    public <P extends PropertyInterface> void addToContextMenuFor(LP<P, Property<P>> mainProperty, LocalizedString contextMenuCaption) {
+    public <P extends PropertyInterface> void addToContextMenuFor(LP<P, Property<P>> mainProperty, String contextMenuCaption) {
         setAsEditActionFor(property.getSID(), mainProperty);
         mainProperty.property.setContextMenuAction(property.getSID(), contextMenuCaption);
     }

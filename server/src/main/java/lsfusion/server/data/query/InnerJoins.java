@@ -5,7 +5,6 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.Result;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.server.data.expr.query.QueryJoin;
-import lsfusion.server.data.query.innerjoins.UpWheres;
 import lsfusion.server.data.query.stat.WhereJoin;
 import lsfusion.server.data.query.stat.WhereJoins;
 import lsfusion.server.data.translator.MapTranslate;
@@ -43,11 +42,11 @@ public class InnerJoins extends AddSet<InnerJoin, InnerJoins> {
         return add(joins);
     }
 
-    public UpWheres<InnerJoin> andUpWheres(UpWheres<InnerJoin> up1, UpWheres<InnerJoin> up2) {
+    public ImMap<InnerJoin, Where> andUpWheres(ImMap<InnerJoin, Where> up1, ImMap<InnerJoin, Where> up2) {
         return WhereJoins.andUpWheres(wheres, up1, up2);
     }
 
-    public WhereJoins removeJoin(QueryJoin removeJoin, UpWheres<WhereJoin> upWheres, Result<UpWheres<WhereJoin>> resultWheres) {
+    public WhereJoins removeJoin(QueryJoin removeJoin, ImMap<WhereJoin, Where> upWheres, Result<ImMap<WhereJoin, Where>> resultWheres) {
         return WhereJoins.removeJoin(removeJoin, wheres, upWheres, resultWheres);
     }
 

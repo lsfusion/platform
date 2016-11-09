@@ -2,7 +2,6 @@ package lsfusion.server.form.view;
 
 import lsfusion.base.identity.IDGenerator;
 import lsfusion.interop.form.layout.AbstractGroupObject;
-import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.form.entity.GroupObjectEntity;
 import lsfusion.server.form.entity.ObjectEntity;
 import lsfusion.server.serialization.ServerIdentitySerializable;
@@ -52,7 +51,7 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
 
     public String getCaption() {
         if (size() > 0)
-            return ThreadLocalContext.localize(get(0).getCaption());
+            return get(0).getCaption();
         else
             return null;
     }

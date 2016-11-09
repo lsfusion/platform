@@ -8,7 +8,6 @@ import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.NullValue;
 import lsfusion.server.logics.ObjectValue;
-import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.ClassPropertyInterface;
@@ -33,7 +32,7 @@ public class EvalActionProperty<P extends PropertyInterface> extends SystemExpli
     private final LCP<P> source;
     private final ImMap<P, ClassPropertyInterface> mapSource;
 
-    public EvalActionProperty(LocalizedString caption, LCP<P> source) {
+    public EvalActionProperty(String caption, LCP<P> source) {
         super(caption, source.getInterfaceClasses(ClassType.aroundPolicy));
         mapSource = source.listInterfaces.mapSet(getOrderInterfaces());
         this.source = source;
@@ -51,6 +50,10 @@ public class EvalActionProperty<P extends PropertyInterface> extends SystemExpli
 
     @Override
     protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+        BusinessLogics BL = context.getBL();
+
+        ScriptingLogicsModule evalLM = BL.getModule("EvalScript");
+
         String script = getScript(context);
 
         try {
@@ -59,11 +62,21 @@ public class EvalActionProperty<P extends PropertyInterface> extends SystemExpli
             String runName = module.getName() + ".run";
             LAP<?> runAction = module.findAction(runName);
             if (runAction != null) {
+                String textScript = (String) evalLM.findProperty("scriptStorage[]").read(context);
+                try (DataSession session = context.createSession()) {
+                    evalLM.findProperty("scriptStorage[]").change(textScript, session);
+                    ObjectValue scriptObject = evalLM.findProperty("textScript[TEXT]").readClasses(session, new DataObject(textScript));
+                    if (scriptObject instanceof NullValue) {
+                        scriptObject = session.addObject((ConcreteCustomClass) evalLM.findClass("Script"));
+                        evalLM.findProperty("text[Script]").change(textScript, session, (DataObject) scriptObject);
+                    }
+                    evalLM.findProperty("dateTime[Script]").change(new Timestamp(Calendar.getInstance().getTime().getTime()), session, (DataObject) scriptObject);
+                    session.apply(context);
+                }
                 runAction.execute(context);
             }
         } catch (EvalUtils.EvaluationException | RecognitionException e) {
             context.delayUserInteraction(new MessageClientAction(e.getMessage(), "Parse error"));
-            throw new RuntimeException(e);
         }
     }
 }

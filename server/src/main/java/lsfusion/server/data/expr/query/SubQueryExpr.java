@@ -12,8 +12,8 @@ import lsfusion.server.data.expr.*;
 import lsfusion.server.data.expr.where.pull.ExprPullWheres;
 import lsfusion.server.data.query.CompileSource;
 import lsfusion.server.data.translator.MapTranslate;
-import lsfusion.server.data.translator.PartialKeyExprTranslator;
-import lsfusion.server.data.translator.ExprTranslator;
+import lsfusion.server.data.translator.PartialQueryTranslator;
+import lsfusion.server.data.translator.QueryTranslator;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
 
@@ -77,7 +77,7 @@ public class SubQueryExpr extends QueryExpr<KeyExpr, Expr, SubQueryJoin, SubQuer
         return new NotNull();
     }
 
-    public Expr translate(ExprTranslator translator) {
+    public Expr translateQuery(QueryTranslator translator) {
         return create(query, translator.translate(group));
     }
 
@@ -128,8 +128,8 @@ public class SubQueryExpr extends QueryExpr<KeyExpr, Expr, SubQueryJoin, SubQuer
         }, restGroup);
 
         if(translate.size()>0) {
-            ExprTranslator translator = new PartialKeyExprTranslator(translate, true);
-            expr = expr.translateExpr(translator);
+            QueryTranslator translator = new PartialQueryTranslator(translate, true);
+            expr = expr.translateQuery(translator);
         }
 
         return BaseExpr.create(new SubQueryExpr(expr, restGroup.result));

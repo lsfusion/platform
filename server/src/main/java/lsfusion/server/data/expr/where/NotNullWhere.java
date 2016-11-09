@@ -12,22 +12,20 @@ import lsfusion.server.caches.OuterContext;
 import lsfusion.server.caches.hash.HashContext;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
-import lsfusion.server.data.expr.NullableExpr;
-import lsfusion.server.data.expr.NullableExprInterface;
-import lsfusion.server.data.expr.query.StatType;
+import lsfusion.server.data.expr.NotNullExpr;
+import lsfusion.server.data.expr.NotNullExprInterface;
 import lsfusion.server.data.expr.where.extra.BinaryWhere;
 import lsfusion.server.data.query.CompileSource;
 import lsfusion.server.data.query.ExprIndexedJoin;
 import lsfusion.server.data.query.JoinData;
 import lsfusion.server.data.query.innerjoins.GroupJoinsWheres;
-import lsfusion.server.data.query.innerjoins.UpWhere;
 import lsfusion.server.data.query.stat.KeyStat;
 import lsfusion.server.data.translator.MapTranslate;
-import lsfusion.server.data.translator.ExprTranslator;
+import lsfusion.server.data.translator.QueryTranslator;
 import lsfusion.server.data.where.DataWhere;
 import lsfusion.server.data.where.Where;
 
-// из-за отсутствия множественного наследования приходится выделять (так было бы внутренним классом в NullableExpr)
+// из-за отсутствия множественного наследования приходится выделять (так было бы внутренним классом в NotNullExpr)
 public abstract class NotNullWhere extends DataWhere {
 
     protected abstract BaseExpr getExpr();
@@ -50,12 +48,12 @@ public abstract class NotNullWhere extends DataWhere {
     }
 
     @Override
-    public <K extends BaseExpr> GroupJoinsWheres groupNotJoinsWheres(ImSet<K> keepStat, StatType statType, KeyStat keyStat, ImOrderSet<Expr> orderTop, GroupJoinsWheres.Type type) {
+    public <K extends BaseExpr> GroupJoinsWheres groupNotJoinsWheres(ImSet<K> keepStat, KeyStat keyStat, ImOrderSet<Expr> orderTop, GroupJoinsWheres.Type type) {
         BaseExpr expr = getExpr();
         Result<Boolean> isOrderTop = new Result<>();
         if(BinaryWhere.needIndexedJoin(expr, orderTop, null, isOrderTop))
-            return groupDataNotJoinsWheres(new ExprIndexedJoin(expr, Compare.LESS, Expr.NULL, true, isOrderTop.result), type); // кривовато конечно, но пока достаточно
-        return super.groupNotJoinsWheres(keepStat, statType, keyStat, orderTop, type);
+            return new GroupJoinsWheres(new ExprIndexedJoin(expr, Compare.LESS, Expr.NULL, true, isOrderTop.result), not(), type); // кривовато конечно, но пока достаточно
+        return super.groupNotJoinsWheres(keepStat, keyStat, orderTop, type);
     }
 
     @Override
@@ -70,9 +68,9 @@ public abstract class NotNullWhere extends DataWhere {
             return packExpr.getWhere();
     }
 
-    public Where translate(ExprTranslator translator) {
+    public Where translateQuery(QueryTranslator translator) {
         Expr expr = getExpr();
-        Expr translateExpr = expr.translateExpr(translator);
+        Expr translateExpr = expr.translateQuery(translator);
 //            if(translateExpr instanceof BaseExpr) // ??? в pack на это нарвались, здесь по идее может быть аналогичная ситуация
 //                return ((BaseExpr)translateExpr).getNotNullWhere();
         if(BaseUtils.hashEquals(translateExpr, expr)) // чтобы бесконечных циклов не было
@@ -93,8 +91,8 @@ public abstract class NotNullWhere extends DataWhere {
         return getExpr().hashOuter(hashContext);
     }
 
-    protected ImSet<NullableExprInterface> getExprFollows() {
-        return getExpr().getExprFollows(false, NullableExpr.FOLLOW, true);
+    protected ImSet<NotNullExprInterface> getExprFollows() {
+        return getExpr().getExprFollows(false, NotNullExpr.FOLLOW, true);
     }
 
     public boolean calcTwins(TwinImmutableObject o) {

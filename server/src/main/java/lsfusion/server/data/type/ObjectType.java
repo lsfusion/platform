@@ -19,7 +19,6 @@ import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.KeyType;
 import lsfusion.server.data.expr.ValueExpr;
-import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.expr.where.CaseExprInterface;
 import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.data.query.TypeEnvironment;
@@ -154,11 +153,6 @@ public class ObjectType extends AbstractType<Integer> {
 
     public String getSID() {
         return "ObjectType";
-    }
-
-    @Override
-    public Stat getTypeStat(boolean forJoin) {
-        return Stat.ALOT;
     }
 
     public Object getInfiniteValue(boolean min) {

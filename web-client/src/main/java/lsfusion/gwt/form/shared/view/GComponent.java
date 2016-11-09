@@ -61,7 +61,7 @@ public class GComponent implements Serializable {
 
     public boolean isVerticallyStretched() {
         if (container != null) {
-            if (container.isScroll() || container.isTabbed() || container.isSplit()) {
+            if (container.isTabbed() || container.isSplit()) {
                 return true;
             } else if (container.isColumns()) {
                 return false;
@@ -76,7 +76,7 @@ public class GComponent implements Serializable {
 
     public boolean isHorizontallyStretched() {
         if (container != null) {
-            if (container.isScroll() || container.isTabbed() || container.isSplit()) {
+            if (container.isTabbed() || container.isSplit()) {
                 return true;
             } else if (container.isColumns()) {
                 return false;

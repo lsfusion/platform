@@ -13,19 +13,19 @@ import lsfusion.server.data.Table;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
-import lsfusion.server.data.expr.query.GroupExprWhereJoins;
 import lsfusion.server.data.expr.query.Stat;
-import lsfusion.server.data.expr.query.StatType;
 import lsfusion.server.data.expr.where.NotNullWhere;
 import lsfusion.server.data.expr.where.extra.CompareWhere;
 import lsfusion.server.data.expr.where.extra.EqualsWhere;
 import lsfusion.server.data.expr.where.pull.ExclPullWheres;
 import lsfusion.server.data.query.AbstractSourceJoin;
 import lsfusion.server.data.query.Query;
-import lsfusion.server.data.query.innerjoins.*;
+import lsfusion.server.data.query.innerjoins.GroupJoinsWhere;
+import lsfusion.server.data.query.innerjoins.GroupStatType;
+import lsfusion.server.data.query.innerjoins.GroupStatWhere;
+import lsfusion.server.data.query.innerjoins.KeyEquals;
 import lsfusion.server.data.query.stat.StatKeys;
 import lsfusion.server.data.translator.MapTranslate;
-import lsfusion.server.data.translator.ExprTranslator;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.classes.ClassExprWhere;
 import lsfusion.server.data.where.classes.MeanClassWheres;
@@ -249,7 +249,7 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
     // так как используется в подзапросах еще, и может быть сложным вычислением, можно было бы хранить чисто в течении компиляции запроса
     @IdentityQuickLazy
     public <K extends BaseExpr> Pair<ImCol<GroupJoinsWhere>, Boolean> getPackWhereJoins(boolean tryExclusive, ImSet<K> keepStat, ImOrderSet<Expr> orderTop) {
-        Pair<ImCol<GroupJoinsWhere>,Boolean> whereJoinsExcl = getWhereJoins(tryExclusive, keepStat, StatType.PACK, orderTop);
+        Pair<ImCol<GroupJoinsWhere>,Boolean> whereJoinsExcl = getWhereJoins(tryExclusive, keepStat, orderTop);
         ImCol<GroupJoinsWhere> whereJoins = whereJoinsExcl.first;
         boolean exclusive = whereJoinsExcl.second;
 
@@ -301,77 +301,57 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
     }
 
     // 2-й параметр чисто для оптимизации пока
-    public <K extends BaseExpr> Pair<ImCol<GroupJoinsWhere>, Boolean> getWhereJoins(boolean tryExclusive, ImSet<K> keepStat, StatType statType, ImOrderSet<Expr> orderTop) {
-        return getKeyEquals().getWhereJoins(tryExclusive, keepStat, statType, orderTop);
+    public <K extends BaseExpr> Pair<ImCol<GroupJoinsWhere>, Boolean> getWhereJoins(boolean tryExclusive, ImSet<K> keepStat, ImOrderSet<Expr> orderTop) {
+        return getKeyEquals().getWhereJoins(tryExclusive, keepStat, orderTop);
     }
 
-    public <K extends BaseExpr> ImCol<GroupSplitWhere<K>> getSplitJoins(ImSet<K> keys, StatType statType, boolean exclusive, GroupStatType type) {
-        return getKeyEquals().getSplitJoins(exclusive, keys, statType, type);
+    public <K extends BaseExpr> ImCol<GroupStatWhere<K>> getStatJoins(ImSet<K> keys, boolean exclusive, GroupStatType type, boolean noWhere) {
+        return getKeyEquals().getStatJoins(exclusive, keys, type, noWhere);
     }
 
-    public <K extends BaseExpr> ImCol<GroupJoinsWhere> getWhereJoins(ImSet<K> keys, StatType statType) {
-        return getKeyEquals().getWhereJoins(keys, statType);
-    }
-
-    public <K extends Expr> ImCol<GroupSplitWhere<K>> getSplitJoins(final boolean exclusive, ImSet<K> exprs, final StatType statType, final GroupStatType type) {
-        return new ExclPullWheres<ImCol<GroupSplitWhere<K>>, K, Where>() {
-            protected ImCol<GroupSplitWhere<K>> proceedBase(Where data, ImMap<K, BaseExpr> map) {
-                return GroupSplitWhere.mapBack(data.and(Expr.getWhere(map)).getSplitJoins(
-                        map.values().toSet(), statType, exclusive, type), map);
+    public <K extends Expr> ImCol<GroupStatWhere<K>> getStatJoins(final boolean exclusive, ImSet<K> exprs, final GroupStatType type, final boolean noWhere) {
+        return new ExclPullWheres<ImCol<GroupStatWhere<K>>, K, Where>() {
+            protected ImCol<GroupStatWhere<K>> proceedBase(Where data, ImMap<K, BaseExpr> map) {
+                return GroupStatWhere.mapBack(data.and(Expr.getWhere(map)).getStatJoins(
+                        map.values().toSet(), exclusive, type, noWhere), map);
             }
 
-            protected ImCol<GroupSplitWhere<K>> initEmpty() {
+            protected ImCol<GroupStatWhere<K>> initEmpty() {
                 return SetFact.EMPTY();
             }
 
-            protected ImCol<GroupSplitWhere<K>> add(ImCol<GroupSplitWhere<K>> op1, ImCol<GroupSplitWhere<K>> op2) {
-                return type.merge(op1, op2, false);
+            protected ImCol<GroupStatWhere<K>> add(ImCol<GroupStatWhere<K>> op1, ImCol<GroupStatWhere<K>> op2) {
+                return type.merge(op1, op2, noWhere);
             }
         }.proceed(this, exprs.toMap());
     }
 
-    public <K extends Expr> GroupExprWhereJoins<K> getGroupWhereJoins(ImSet<K> exprs, final StatType statType) {
-        return new ExclPullWheres<GroupExprWhereJoins<K>, K, Where>() {
-            protected GroupExprWhereJoins<K> proceedBase(Where data, ImMap<K, BaseExpr> map) {
-                return GroupExprWhereJoins.create(data.and(Expr.getWhere(map)).getWhereJoins(
-                        map.values().toSet(), statType), map);
-            }
-
-            protected GroupExprWhereJoins<K> initEmpty() {
-                return GroupExprWhereJoins.EMPTY();
-            }
-
-            protected GroupExprWhereJoins<K> add(GroupExprWhereJoins<K> op1, GroupExprWhereJoins<K> op2) {
-                return op1.merge(op2);
-            }
-        }.proceed(this, exprs.toMap());
+    public <K extends BaseExpr> StatKeys<K> getStatKeys(ImSet<K> groups) { // assertion что ключи groups входят в это where
+        StatKeys<K> result = new StatKeys<>(groups);
+        ImCol<GroupStatWhere<K>> statJoins = getStatJoins(groups, false, GroupStatType.ALL, true);
+//        assert !statJoins.isEmpty();
+        for(GroupStatWhere<K> groupJoin : statJoins)
+            result = result.or(groupJoin.stats);
+        return result;
     }
 
     @IdentityLazy
-    public <K extends BaseExpr> ImCol<GroupJoinsWhere> getPushedWhereJoins(ImSet<K> keys, StatType statType) {
-        return getWhereJoins(keys, statType);
-    }
-
-    public <K extends BaseExpr> StatKeys<K> getPushedStatKeys(final ImSet<K> groups, final StatType type, final StatKeys<KeyExpr> pushStatKeys) { // assertion что ключи groups входят в это where
-        return StatKeys.or(getPushedWhereJoins(groups, type), new GetValue<StatKeys<K>, GroupJoinsWhere>() {
-            public StatKeys<K> getMapValue(GroupJoinsWhere value) {
-                return value.getStatKeys(groups, type, pushStatKeys);
-            }}, groups);
-    }
-
-    public <K extends BaseExpr> StatKeys<K> getStatKeys(final ImSet<K> groups, final StatType type) { // assertion что ключи groups входят в это where
-        assert getOuterKeys().containsAll(AbstractOuterContext.getOuterSetKeys(groups));
-        return getPushedStatKeys(groups, type, StatKeys.<KeyExpr>NOPUSH());
-    }
-
-    @IdentityLazy
-    public <K extends ParamExpr> StatKeys<K> getFullStatKeys(ImSet<K> groups, StatType type) { // assertion что ключи groups являются ключами этого where
+    public <K extends ParamExpr> StatKeys<K> getFullStatKeys(ImSet<K> groups) { // assertion что ключи groups являются ключами этого where
         assert BaseUtils.hashEquals(getOuterKeys(), groups);
-        return getStatKeys(groups, type);
+        return getStatKeys(groups);
     }
 
-    public Stat getStatRows(StatType type) {
-        return getFullStatKeys(BaseUtils.<ImSet<KeyExpr>>immutableCast(getOuterKeys()), type).getRows();
+    public Stat getStatRows() {
+        return getFullStatKeys(BaseUtils.<ImSet<KeyExpr>>immutableCast(getOuterKeys())).rows;
+    }
+
+    public <K extends Expr> StatKeys<K> getStatExprs(ImSet<K> groups) {
+        StatKeys<K> result = new StatKeys<>(groups);
+        ImCol<GroupStatWhere<K>> statJoins = getStatJoins(false, groups, GroupStatType.ALL, true);
+//        assert !statJoins.isEmpty();
+        for(GroupStatWhere<K> groupJoin : statJoins)
+            result = result.or(groupJoin.stats);
+        return result;
     }
 
     public Type getKeyType(ParamExpr expr) {
@@ -432,10 +412,5 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
         }
 
         return super.needMaterialize();
-    }
-
-    @Override
-    public Where translateExpr(ExprTranslator translator) {
-        return super.translateExpr(translator);
     }
 }

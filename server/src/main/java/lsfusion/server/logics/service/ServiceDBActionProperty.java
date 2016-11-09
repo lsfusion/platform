@@ -1,6 +1,7 @@
 package lsfusion.server.logics.service;
 
 import lsfusion.interop.action.MessageClientAction;
+import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
 import lsfusion.server.logics.DBManager;
@@ -13,7 +14,7 @@ import lsfusion.server.session.SessionCreator;
 
 import java.sql.SQLException;
 
-import static lsfusion.server.context.ThreadLocalContext.localize;
+import static lsfusion.server.logics.ServerResourceBundle.getString;
 
 public class ServiceDBActionProperty extends ScriptingActionProperty {
     public ServiceDBActionProperty(ServiceLogicsModule LM) {
@@ -26,14 +27,14 @@ public class ServiceDBActionProperty extends ScriptingActionProperty {
             public void run(SQLSession session, boolean isolatedTransaction) throws SQLException, SQLHandledException {
                 String result = context.getBL().recalculateClasses(session, isolatedTransaction);
                 if(result != null)
-                    context.delayUserInterfaction(new MessageClientAction(result, localize("{logics.service.db}")));
+                    context.delayUserInterfaction(new MessageClientAction(result, getString("logics.service.db")));
             }});
 
         run(context, new RunService() {
             public void run(SQLSession session, boolean isolatedTransaction) throws SQLException, SQLHandledException {
                 String result = context.getDbManager().recalculateAggregations(context.stack, session, isolatedTransaction);
                 if(result != null)
-                    context.delayUserInterfaction(new MessageClientAction(result, localize("{logics.service.db}")));
+                    context.delayUserInterfaction(new MessageClientAction(result, getString("logics.service.db")));
             }});
 
         run(context, new RunService() {
@@ -48,14 +49,14 @@ public class ServiceDBActionProperty extends ScriptingActionProperty {
             public void run(SessionCreator session, boolean isolatedTransaction) throws SQLException, SQLHandledException {
                 String result = context.getBL().recalculateFollows(session, isolatedTransaction, context.stack);
                 if(result != null)
-                    context.delayUserInterfaction(new MessageClientAction(result, localize("{logics.service.db}")));
+                    context.delayUserInterfaction(new MessageClientAction(result, getString("logics.service.db")));
             }});
 
         DataSession dataSession = context.getSession();
         context.getBL().recalculateStats(dataSession);
         dataSession.apply(context);
 
-        context.delayUserInterfaction(new MessageClientAction(localize("{logics.service.db.completed}"), localize("{logics.service.db}")));
+        context.delayUserInterfaction(new MessageClientAction(getString("logics.service.db.completed"), getString("logics.service.db")));
     }
 
     @Override

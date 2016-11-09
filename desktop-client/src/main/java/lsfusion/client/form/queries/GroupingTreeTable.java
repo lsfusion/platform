@@ -5,8 +5,6 @@ import lsfusion.client.Main;
 import lsfusion.client.form.renderer.ImagePropertyRenderer;
 import lsfusion.client.logics.ClientPropertyDraw;
 import lsfusion.client.logics.classes.*;
-import lsfusion.client.logics.classes.link.ClientImageLinkClass;
-import org.apache.commons.io.IOUtils;
 import org.jdesktop.swingx.JXTreeTable;
 import org.jdesktop.swingx.treetable.*;
 
@@ -18,8 +16,6 @@ import javax.swing.table.TableColumnModel;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.IOException;
-import java.net.URL;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.*;
@@ -30,7 +26,7 @@ import static lsfusion.client.ClientResourceBundle.getString;
 public class GroupingTreeTable extends JXTreeTable {
     private final int DEFAULT_ROW_HEIGHT = 16;
     
-    GroupingTreeTableModel treeTableModel;
+    private GroupingTreeTableModel treeTableModel;
     
     public GroupingTreeTable() {
         super();
@@ -71,7 +67,7 @@ public class GroupingTreeTable extends JXTreeTable {
                 if (e.getClickCount() == 2 ) {
                     int columnClicked = columnAtPoint(e.getPoint());
                     ClientPropertyDraw columnProperty = treeTableModel.getColumnProperty(columnClicked);
-                    if (columnProperty != null && (columnProperty.baseType instanceof ClientImageClass || columnProperty.baseType instanceof ClientImageLinkClass)) {
+                    if (columnProperty != null && columnProperty.baseType instanceof ClientImageClass) {
                         ImagePropertyRenderer.expandImage((byte[]) getValueAt(rowAtPoint(e.getPoint()), columnClicked));
                     }
                 }
@@ -98,7 +94,7 @@ public class GroupingTreeTable extends JXTreeTable {
             column.setMaxWidth(property != null ? property.getMaximumWidth(this) : 3000);
             column.setMinWidth(property != null ? property.getMinimumWidth(this) : 56);
             
-            if (property != null && (property.baseType instanceof ClientImageClass || property.baseType instanceof ClientImageLinkClass)) {
+            if (property != null && property.baseType instanceof ClientImageClass) {
                 needToExpandRows = true;
             }
         }    
@@ -280,7 +276,7 @@ public class GroupingTreeTable extends JXTreeTable {
                 if (columnProperty != null) {
                     if (columnProperty.baseType instanceof ClientLogicalClass) {
                         return Boolean.class;
-                    } else if (columnProperty.baseType instanceof ClientImageClass || columnProperty.baseType instanceof ClientImageLinkClass) {
+                    } else if (columnProperty.baseType instanceof ClientImageClass) {
                         return Image.class;
                     }
                 }
@@ -435,20 +431,9 @@ public class GroupingTreeTable extends JXTreeTable {
         @Override
         protected void setValue(Object value) {
             if (value != null) {
-                ImageIcon icon = null;
-                if(value instanceof byte[]) { //image
-                    icon = new ImageIcon((byte[]) value);
-                } else if(value instanceof String) { //link image
-                    try {
-                        icon = new ImageIcon(IOUtils.toByteArray(new URL((String) value)));
-                    } catch (IOException ignored) {
-                    }
-                }
-                if(icon != null) {
-                    Dimension scaled = ImagePropertyRenderer.scaleIcon(icon, getColumn(column).getWidth(), getRowHeight());
-                    if(scaled != null)
-                        icon.setImage(icon.getImage().getScaledInstance(scaled.width, scaled.height, Image.SCALE_SMOOTH));
-                }
+                ImageIcon icon = new ImageIcon((byte[]) value);
+                Dimension scaled = ImagePropertyRenderer.scaleIcon(icon, getColumn(column).getWidth(), getRowHeight());
+                icon.setImage(icon.getImage().getScaledInstance(scaled.width, scaled.height, Image.SCALE_SMOOTH));
                 setIcon(icon);
             } else {
                 setIcon(null);

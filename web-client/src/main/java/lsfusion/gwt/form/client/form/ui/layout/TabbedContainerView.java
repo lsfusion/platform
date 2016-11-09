@@ -141,8 +141,4 @@ public class TabbedContainerView extends GAbstractContainerView {
         }
         return tabCaption;
     }
-
-    public boolean isTabVisible(int tab) {
-        return visibleChildren.contains(getChild(tab));
-    }
 }

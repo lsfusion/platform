@@ -35,17 +35,13 @@ import lsfusion.server.data.query.Query;
 import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.data.type.*;
 import lsfusion.server.data.where.Where;
-import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.instance.ChangedData;
 import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.form.instance.GroupObjectInstance;
 import lsfusion.server.form.instance.PropertyObjectInterfaceInstance;
-import lsfusion.server.form.instance.listener.CustomClassListener;
 import lsfusion.server.form.navigator.*;
 import lsfusion.server.logics.*;
 import lsfusion.server.logics.debug.ActionPropertyDebugger;
-import lsfusion.server.logics.debug.ClassDebugInfo;
-import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.actions.SessionEnvEvent;
@@ -59,11 +55,11 @@ import java.sql.SQLException;
 import java.util.*;
 
 import static lsfusion.base.col.SetFact.fromJavaSet;
-import static lsfusion.server.context.ThreadLocalContext.localize;
+import static lsfusion.server.logics.ServerResourceBundle.getString;
 
 public class DataSession extends ExecutionEnvironment implements SessionChanges, SessionCreator, AutoCloseable {
 
-    public static final SessionDataProperty isDataChanged = new SessionDataProperty(LocalizedString.create("Is data changed"), LogicalClass.instance);
+    public static final SessionDataProperty isDataChanged = new SessionDataProperty("Is data changed", LogicalClass.instance);
 
     private boolean isStoredDataChanged;
 
@@ -422,7 +418,9 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     public final SQLSession idSession;
     
     @Override
-    protected void onClose(Object o) throws SQLException {
+    protected void onExplicitClose(Object o, boolean syncedOnClient) throws SQLException {
+        assert syncedOnClient; // через tryClose идет, поэтому можно считать что тоже синхронизирован
+
         assert o == null;
         
 //        SQLSession.fifo.add("DC " + getOwner() + SQLSession.getCurrentTimeStamp() + " " + this + '\n' + ExceptionUtils.getStackTrace());
@@ -476,9 +474,6 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     public final ConnectionController connection;
     public final UserController user;
     public final ChangesController changes;
-    public final LocaleController locale;
-
-    public String prevFormCanonicalName = null;
 
     public DataObject applyObject = null;
     
@@ -505,7 +500,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     }
 
     public DataSession(SQLSession sql, final UserController user, final ComputerController computer, final FormController form, final ConnectionController connection,
-                       TimeoutController timeout, ChangesController changes, LocaleController locale, IsServerRestartingController isServerRestarting, BaseClass baseClass,
+                       TimeoutController timeout, ChangesController changes, IsServerRestartingController isServerRestarting, BaseClass baseClass,
                        ConcreteCustomClass sessionClass, LCP currentSession, SQLSession idSession, ImOrderMap<ActionProperty, SessionEnvEvent> sessionEvents,
                        OperationOwner upOwner) throws SQLException {
         this.sql = sql;
@@ -521,7 +516,6 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         this.connection = connection;
         this.timeout = timeout;
         this.changes = changes;
-        this.locale = locale;
 
         this.sessionEvents = sessionEvents;
 
@@ -539,23 +533,17 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         return createSession(sql);
     }
     public DataSession createSession(SQLSession sql) throws SQLException {
-        return new DataSession(sql, user, computer, form, connection, timeout, changes, locale, isServerRestarting, baseClass, sessionClass, currentSession, idSession, sessionEvents, null);
+        return new DataSession(sql, user, computer, form, connection, timeout, changes, isServerRestarting, baseClass, sessionClass, currentSession, idSession, sessionEvents, null);
     }
 
     // по хорошему надо было в класс оформить чтоб избежать ошибок, но абстракция получится слишком дырявой
-    public static FunctionSet<SessionDataProperty> adjustKeep(final boolean manageSession, final FunctionSet<SessionDataProperty> operationKeep) {
+    public static FunctionSet<SessionDataProperty> adjustKeep(final FunctionSet<SessionDataProperty> operationKeep) {
         return new SFunctionSet<SessionDataProperty>() {
             public boolean contains(SessionDataProperty element) {
-                return (element.nestedType != null && element.nestedType.is(manageSession)) || operationKeep.contains(element);
+                return element.isNested || operationKeep.contains(element);
             }
         };
     }
-
-    private final static FunctionSet<SessionDataProperty> NONESTING = new SFunctionSet<SessionDataProperty>() {
-        public boolean contains(SessionDataProperty element) {
-            return element.noNestingInNestedSession;
-        }
-    };
 
     public void restart(boolean cancel, FunctionSet<SessionDataProperty> keep) throws SQLException, SQLHandledException {
 
@@ -607,12 +595,6 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
     public DataObject addObject() throws SQLException {
         return new DataObject(IDTable.instance.generateID(idSession, IDTable.OBJECT),baseClass.unknown);
-    }
-    
-    public <P extends PropertyInterface> DataObject addObjectAutoSet(ConcreteCustomClass customClass, DataObject object, BusinessLogics BL, CustomClassListener classListener) throws SQLException, SQLHandledException {
-        DataObject dataObject = addObject(customClass, object);
-        BL.resolveAutoSet(this, customClass, dataObject, classListener);
-        return dataObject;
     }
 
     // с fill'ами addObject'ы
@@ -742,7 +724,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     }
 
     public void changeClass(ClassChange change) throws SQLException, SQLHandledException {
-        if(change.isEmpty()) // оптимизация, важна так как во многих event'ах может участвовать
+        if(change.isEmpty()) // оптимизация, важна так как во многих event'ах может учавствовать
             return;
         
         SingleKeyPropertyUsage changeTable = null;
@@ -766,7 +748,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                     change = changeTable.getChange();
                 }
     
-                if(change.isEmpty()) // оптимизация, важна так как во многих event'ах может участвовать
+                if(change.isEmpty()) // оптимизация, важна так как во многих event'ах может учавствовать
                     return;
     
                 // читаем варианты изменения классов
@@ -780,9 +762,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             }
             addClasses = mAddClasses.immutable(); removeClasses = mRemoveClasses.immutable();
             changedOldClasses = mChangeOldClasses.immutable(); changedNewClasses = mChangeNewClasses.immutable();
-
-            delegateToDebugger(addClasses, removeClasses);
-
+    
             updateChanges = getClassChanges(addClasses, removeClasses, changedOldClasses, changedNewClasses);
 
             if(needSessionEventMaterialize(changeTable, updateChanges)) {
@@ -813,24 +793,6 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         }
     }
 
-    public void delegateToDebugger(ImSet<CustomClass> addClasses, ImSet<CustomClass> removeClasses) throws SQLException, SQLHandledException {
-        ActionPropertyDebugger debugger = ActionPropertyDebugger.getInstance();
-        if (debugger.isEnabled()) {
-            for (CustomClass addClass : addClasses) {
-                ClassDebugInfo debugInfo = addClass.getDebugInfo();
-                if (debugInfo != null) {
-                    debugger.delegate(debugInfo);
-                }
-            }
-            for (CustomClass removeClass : removeClasses) {
-                ClassDebugInfo debugInfo = removeClass.getDebugInfo();
-                if (debugInfo != null) {
-                    debugger.delegate(debugInfo);
-                }
-            }
-        }
-    }
-
     public void dropChanges(DataProperty property) throws SQLException, SQLHandledException {
         if(!data.containsKey(property)) // оптимизация, см. использование
             return;
@@ -842,25 +804,23 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         updateProperties(SetFact.singleton(property), true); // уже соптимизировано выше
     }
 
-    public void dropAllDataChanges(FunctionSet<SessionDataProperty> keepProps) throws SQLException, SQLHandledException {
+    public void dropAllDataChanges() throws SQLException, SQLHandledException {
         if (!data.isEmpty()) {
-            Map<DataProperty, SinglePropertyTableUsage<ClassPropertyInterface>> dropProps = filterNotSessionData(keepProps);
-            ImSet<DataProperty> dataChanges = fromJavaSet(dropProps.keySet());
+            ImSet<DataProperty> dataChanges = fromJavaSet(data.keySet());
             
             updateSessionEvents(dataChanges);
 
-            aspectDropAllChanges(keepProps, dropProps);
+            aspectDropAllChanges();
 
             updateProperties(dataChanges, true); // уже соптимизировано выше
         }
     }
 
-    private void aspectDropAllChanges(FunctionSet<SessionDataProperty> keepProps, Map<DataProperty, SinglePropertyTableUsage<ClassPropertyInterface>> dropProps) throws SQLException {
-        Map<DataProperty, SinglePropertyTableUsage<ClassPropertyInterface>> newData = new HashMap<DataProperty, SinglePropertyTableUsage<ClassPropertyInterface>>(filterSessionData(keepProps));
-        for (Map.Entry<DataProperty, SinglePropertyTableUsage<ClassPropertyInterface>> e : dropProps.entrySet()) {
+    private void aspectDropAllChanges() throws SQLException {
+        for (Map.Entry<DataProperty, SinglePropertyTableUsage<ClassPropertyInterface>> e : data.entrySet()) {
             e.getValue().drop(sql, getOwner());
         }
-        data = newData;
+        data.clear();
     }
 
     public void dropClassChanges() throws SQLException, SQLHandledException {
@@ -912,7 +872,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                 changeTable = splitApplySingleStored(property, property.readFixChangeTable(sql, change, baseClass, getQueryEnv()), ThreadLocalContext.getBusinessLogics());
                 change = SinglePropertyTableUsage.getChange(changeTable);
             } else {
-                if(change.needMaterialize(data.get(property)) || needSessionEventMaterialize(changeTable, updateChanges)) { // для защиты (неполной) от случаев f(a) <- f(a) + 1
+                if(change.needMaterialize() || needSessionEventMaterialize(changeTable, updateChanges)) {
                     changeTable = change.materialize(property, sql, baseClass, getQueryEnv());
                     change = SinglePropertyTableUsage.getChange(changeTable);
                 }
@@ -1054,12 +1014,11 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     }
 
 
-    public <T extends PropertyInterface> void executeSessionEvents(ExecutionEnvironment env, ExecutionStack stack) throws SQLException, SQLHandledException {
+    public <T extends PropertyInterface> void executeSessionEvents(FormInstance form, ExecutionStack stack) throws SQLException, SQLHandledException {
 //        ServerLoggers.assertLog(!isInTransaction(), "LOCAL EVENTS IN TRANSACTION"); // так как LogPropertyAction создает форму
         if(sessionEventChangedOld.getProperties().size() > 0) { // оптимизационная проверка
 
-            if(env == null)
-                env = this;
+            ExecutionEnvironment env = (form != null ? form : this);
 
             updateSessionEventNotChangedOld(env);
 
@@ -1087,8 +1046,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     }
 
     @LogTime
-    @StackMessage("{message.local.event.exec}")
-    @ThisMessage (profile = false)
+    @ThisMessage
     private void executeSessionEvent(ExecutionEnvironment env, ExecutionStack stack, @ParamMessage ActionProperty<?> action) throws SQLException, SQLHandledException {
         if(noEventsInTransaction || !sessionEventChangedOld.getProperties().intersect(action.getSessionEventOldDepends()))// оптимизация аналогичная верхней
             return;
@@ -1096,7 +1054,9 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         action.execute(env, stack);
     }
 
-    private void executeGlobalEvent(ExecutionEnvironment env, ExecutionStack stack, ActionProperty<?> action) throws SQLException, SQLHandledException {
+    @LogTime
+    @ThisMessage
+    private void executeGlobalEvent(ExecutionEnvironment env, ExecutionStack stack, @ParamMessage ActionProperty<?> action) throws SQLException, SQLHandledException {
         if(noEventsInTransaction)
             return;
         boolean hasChanges = false;
@@ -1112,24 +1072,17 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         if(Settings.get().isDisableGlobalEventOptimization()) {
             if (!hasChanges)
                 changedFlag.set(true);
-            executeGlobalEventWithChanges(env, stack, action);
+            action.execute(env, stack);
             if (!hasChanges)
                 changedFlag.set(null);
         } else {
             if(hasChanges)
-                executeGlobalEventWithChanges(env, stack, action);
+                action.execute(env, stack);
         }
     }
 
     @LogTime
-    @StackMessage("{message.global.event.exec}")
-    @ThisMessage (profile = false)
-    private void executeGlobalEventWithChanges(ExecutionEnvironment env, ExecutionStack stack, @ParamMessage ActionProperty<?> action) throws SQLException, SQLHandledException {
-        action.execute(env, stack);
-    }
-
-    @LogTime
-    @ThisMessage (profile = false)
+    @ThisMessage
     private void executeActionInTransaction(ExecutionEnvironment env, ExecutionStack stack, @ParamMessage ActionPropertyValueImplement<?> action) throws SQLException, SQLHandledException {
         action.execute(env, stack);
     }
@@ -1245,7 +1198,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         return checkClasses(property, sql, null, baseClass);
     }
 
-    @StackMessage("{logics.checking.data.classes}")
+    @StackMessage("logics.checking.data.classes")
     public static String checkClasses(@ParamMessage CalcProperty property, SQLSession sql, QueryEnvironment env, BaseClass baseClass) throws SQLException, SQLHandledException {
         assert property.isStored();
         
@@ -1329,7 +1282,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         recalculateTableClasses(table, sql, null, baseClass);
     }
 
-    @StackMessage("{logics.recalculating.data.classes}")
+    @StackMessage("logics.recalculating.data.classes")
     public static void recalculateTableClasses(ImplementTable table, SQLSession sql, QueryEnvironment env, BaseClass baseClass) throws SQLException, SQLHandledException {
         Query<KeyField, PropertyField> query;
 
@@ -1342,9 +1295,9 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     }
 
     // для оптимизации
-    public DataChanges getUserDataChanges(DataProperty property, PropertyChange<ClassPropertyInterface> change, QueryEnvironment env) throws SQLException, SQLHandledException {
+    public DataChanges getUserDataChanges(DataProperty property, PropertyChange<ClassPropertyInterface> change) throws SQLException, SQLHandledException {
         Pair<ImMap<ClassPropertyInterface, DataObject>, ObjectValue> simple;
-        if((simple = change.getSimple(env))!=null) {
+        if((simple = change.getSimple())!=null) {
             if(IsClassProperty.fitClasses(getCurrentClasses(simple.first), property.value,
                                           simple.second instanceof DataObject ? getCurrentClass((DataObject) simple.second) : null))
                 return new DataChanges(property, change);
@@ -1455,14 +1408,14 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 //            return ((LogMessageClientAction)BaseUtils.single(actions)).message;
     }
 
-    public boolean apply(BusinessLogics BL, ExecutionStack stack, UserInteraction interaction, ImOrderSet<ActionPropertyValueImplement> applyActions, FunctionSet<SessionDataProperty> keepProperties, ExecutionEnvironment sessionEventFormEnv) throws SQLException, SQLHandledException {
-        return apply(BL, sessionEventFormEnv, stack, interaction, applyActions, keepProperties);
+    public boolean apply(BusinessLogics BL, ExecutionStack stack, UserInteraction interaction, ImOrderSet<ActionPropertyValueImplement> applyActions, FunctionSet<SessionDataProperty> keepProperties, FormInstance formInstance) throws SQLException, SQLHandledException {
+        return apply(BL, formInstance, stack, interaction, applyActions, keepProperties);
     }
 
-    public boolean check(BusinessLogics BL, ExecutionEnvironment sessionEventFormEnv, ExecutionStack stack, UserInteraction interaction) throws SQLException, SQLHandledException {
+    public boolean check(BusinessLogics BL, FormInstance form, ExecutionStack stack, UserInteraction interaction) throws SQLException, SQLHandledException {
         setApplyFilter(ApplyFilter.ONLYCHECK);
 
-        boolean result = apply(BL, sessionEventFormEnv, stack, interaction, SetFact.<ActionPropertyValueImplement>EMPTYORDER(), SetFact.<SessionDataProperty>EMPTY());
+        boolean result = apply(BL, form, stack, interaction, SetFact.<ActionPropertyValueImplement>EMPTYORDER(), SetFact.<SessionDataProperty>EMPTY());
 
         setApplyFilter(ApplyFilter.NO);
         return result;
@@ -1750,7 +1703,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     }
 
     @AssertSynchronized
-    public boolean apply(final BusinessLogics<?> BL, ExecutionEnvironment sessionEventFormEnv, ExecutionStack stack, UserInteraction interaction,
+    public boolean apply(final BusinessLogics<?> BL, FormInstance form, ExecutionStack stack, UserInteraction interaction,
                          ImOrderSet<ActionPropertyValueImplement> applyActions, FunctionSet<SessionDataProperty> keepProps) throws SQLException, SQLHandledException {
         if(!hasChanges() && applyActions.isEmpty())
             return true;
@@ -1762,16 +1715,16 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             return true;
         }
 
-        keepProps = adjustKeep(true, keepProps);
+        keepProps = adjustKeep(keepProps);
 
         if (parentSession != null) {
             assert !isInTransaction() && !isInSessionEvent();
 
-            executeSessionEvents(sessionEventFormEnv, stack);
+            executeSessionEvents(form, stack);
 
             NotFunctionSet<SessionDataProperty> notKeepProps = new NotFunctionSet<>(keepProps);
-            copyDataTo(parentSession, false, notKeepProps); // те которые не keep не копируем наверх, noNesting не копируем наверх
-            parentSession.copyDataTo(this, BaseUtils.remove(notKeepProps, NONESTING)); // копируем их обратно как при не вложенной newSession, noNesting не копируем обратно
+            copyDataTo(parentSession, false, notKeepProps); // те которые не keep не копируем наверх, более того копируем их обратно как при не вложенной newSession
+            parentSession.copyDataTo(this, notKeepProps);
 
             cleanIsDataChangedProperty();
 
@@ -1792,11 +1745,10 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                 DataObject cn = ThreadLocalContext.getConnection();
                 if(cn != null)
                     BL.systemEventsLM.connectionSession.change(cn, (ExecutionEnvironment)DataSession.this, applyObject);
-                if (sessionEventFormEnv instanceof FormInstance) { // в будущем имеет смысл из стека тянуть, так как оттуда логи берутся
-                    FormEntity formEntity = ((FormInstance) sessionEventFormEnv).entity;
-                    Object ne = !formEntity.isNamed()
+                if (form != null) {
+                    Object ne = !form.entity.isNamed()
                             ? null
-                            : BL.reflectionLM.navigatorElementCanonicalName.read((FormInstance) sessionEventFormEnv, new DataObject(formEntity.getCanonicalName(), StringClass.get(50)));
+                            : BL.reflectionLM.navigatorElementCanonicalName.read(form, new DataObject(form.entity.getCanonicalName(), StringClass.get(50)));
                     if (ne != null)
                         BL.systemEventsLM.navigatorElementSession.change(new DataObject(ne, BL.reflectionLM.navigatorElement), (ExecutionEnvironment) DataSession.this, applyObject);
                 }
@@ -1808,7 +1760,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             }
         }
 
-        executeSessionEvents(sessionEventFormEnv, stack);
+        executeSessionEvents(form, stack);
 
         // очистим, так как в транзакции уже другой механизм используется, и старые increment'ы будут мешать
         dataModifier.clearHints(sql, getOwner());
@@ -1839,11 +1791,11 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                     if(interaction == null) {
                         autoAttemptCount++;
                         if(autoAttemptCount > settings.getApplyAutoAttemptCountLimit()) {
-                            ThreadLocalContext.delayUserInteraction(new LogMessageClientAction(localize("{logics.server.apply.timeout.canceled}"), true));                            
+                            ThreadLocalContext.delayUserInteraction(new LogMessageClientAction(getString("logics.server.apply.timeout.canceled"), true));                            
                             return false;
                         }
                     } else {
-                        int option = (Integer)interaction.requestUserInteraction(new ConfirmClientAction("lsFusion",localize("{logics.server.restart.transaction}"), true, settings.getDialogTransactionTimeout(), JOptionPane.CANCEL_OPTION));
+                        int option = (Integer)interaction.requestUserInteraction(new ConfirmClientAction("lsFusion",getString("logics.server.restart.transaction"), true, settings.getDialogTransactionTimeout(), JOptionPane.CANCEL_OPTION));
                         if(option == JOptionPane.CANCEL_OPTION)
                             return false;
                         if(option == JOptionPane.YES_OPTION)
@@ -1892,10 +1844,10 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         }
     }
 
-    private WeakIdentityHashMap<FormInstance, Boolean> activeForms = new WeakIdentityHashMap<>();
+    private WeakIdentityHashMap<FormInstance, Object> activeForms = new WeakIdentityHashMap<>();
     public void registerForm(FormInstance form) throws SQLException, SQLHandledException {
         synchronized (closeLock) {
-            activeForms.put(form, isInTransaction());
+            activeForms.put(form, true);
             changes.registerForm(form); // пометка что есть форма
         }
 
@@ -1905,9 +1857,10 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     }
 
     private interface Cleaner extends ExceptionRunnable<SQLException> {
+        boolean canBeCleaned();
     }
 
-    public void unregisterForm(FormInstance<?> form) throws SQLException {
+    public void unregisterForm(FormInstance<?> form, final boolean syncedOnClient) throws SQLException {
         changes.unregisterForm(form); // synced
 
         dropFormCaches();
@@ -1915,7 +1868,14 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         final WeakReference<FormInstance> wForm = new WeakReference<FormInstance>(form);
         Cleaner cleaner = new Cleaner() {
             @Override
+            public boolean canBeCleaned() {
+                return syncedOnClient || !isInTransaction(); // нельзя чистить в транзакции, так как изменения могут rollback'ся, а rollDrop некому делать
+            }
+
+            @Override
             public void run() throws SQLException {
+                assert canBeCleaned();
+
                 FormInstance<?> form = wForm.get();
                 if(form == null) // уже все очистилось само
                     return;
@@ -1938,17 +1898,11 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         };
 
         synchronized (closeLock) {
-            Boolean createdInTransaction = activeForms.remove(form);
+            activeForms.remove(form);
 
-            if(createdInTransaction || form.local) { // если создана в транзакции, очищаем сразу, так как все таблицы тоже получались в транзакции, а значит rollback'ся (и в pendingCleaner зависнет очистка ресурсов, которые и так уйдут, а значит в registerChange нарушится assertion), local'ы тоже смотри коммент
-                ServerLoggers.assertLog(createdInTransaction == isInTransaction(), "FORM CREATED IN TRANSACTION SHOULD BE CLOSED IN TRANSACTION");
-                cleaner.run();
-            } else {
-//                ServerLoggers.assertLog(!isInTransaction(), "SHOULD NOT CLOSE FORM IN TRANSACTION, THAT WHERE CREATED NOT IN TRANSACTION"); как раз может, для этого в том числе pendingCleaners и делались
-                pendingCleaners.add(cleaner);
-            }
+            pendingCleaners.add(cleaner);
 
-            tryClose();
+            tryClose(syncedOnClient);
         }
     }
     private void dropFormCaches() throws SQLException {
@@ -2009,7 +1963,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         for (int i = 0, size = execActions.size(); i < size; i++) {
             try {
                 sql.statusMessage = new StatusMessage("event", execActions.get(i), i, size);
-                if (!executeGlobalEvent(BL, stack, execActions.get(i), new ProgressBar(localize("{logics.server.apply.message}"), i, size, execActions.get(i) + ", " + i + " of " + size)))
+                if (!executeGlobalEvent(BL, stack, execActions.get(i), new ProgressBar(getString("logics.server.apply.message"), i, size, execActions.get(i) + ", " + i + " of " + size)))
                     return false;
             } finally {
                 sql.statusMessage = null;
@@ -2091,13 +2045,12 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         for(ImplementTable table : BL.LM.tableFactory.getImplementTables(fromJavaSet(remove))) {
             QueryBuilder<KeyField, PropertyField> query = new QueryBuilder<>(table);
             Where removeWhere = Where.FALSE;
-            ImMap<KeyField, ValueClass> mapFields = table.getMapFields();
-            for (int i = 0, size = mapFields.size(); i < size; i++) {
+            for (int i = 0, size = table.mapFields.size(); i < size; i++) {
                 try {
-                    sql.statusMessage = new StatusMessage("delete", mapFields.getKey(i), i, size);
-                    ValueClass value = mapFields.getValue(i);
+                    sql.statusMessage = new StatusMessage("delete", table.mapFields.getKey(i), i, size);
+                    ValueClass value = table.mapFields.getValue(i);
                     if (remove.contains(value)) {
-                        Join<String> newJoin = news.join(query.getMapExprs().get(mapFields.getKey(i)));
+                        Join<String> newJoin = news.join(query.getMapExprs().get(table.mapFields.getKey(i)));
                         removeWhere = removeWhere.or(newJoin.getWhere().and(isValueClass(newJoin.getExpr("value"), (CustomClass) value, usedNewClasses).not()));
                     }
                 } finally {
@@ -2109,20 +2062,16 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         }
     }
 
-    private <P extends PropertyInterface> void readStored(CalcProperty<P> property, BusinessLogics<?> BL) throws SQLException, SQLHandledException {
+    @StackMessage("message.session.apply.write")
+    private <P extends PropertyInterface> void readStored(@ParamMessage CalcProperty<P> property, BusinessLogics<?> BL) throws SQLException, SQLHandledException {
         assert isInTransaction();
         assert property.isStored();
         if(property.hasChanges(getModifier())) {
-            readStoredWithChanges(property, BL);
+            SinglePropertyTableUsage<P> changeTable = property.readChangeTable(sql, getModifier(), baseClass, env);
+
+            apply.add(property, splitApplySingleStored(property,
+                    changeTable, BL));
         }
-    }
-
-    @StackMessage("{message.session.apply.write}")
-    private <P extends PropertyInterface> void readStoredWithChanges(@ParamMessage CalcProperty<P> property, BusinessLogics<?> BL) throws SQLException, SQLHandledException {
-        SinglePropertyTableUsage<P> changeTable = property.readChangeTable(sql, getModifier(), baseClass, env);
-
-        apply.add(property, splitApplySingleStored(property,
-                changeTable, BL));
     }
 
     protected SQLSession getSQL() {
@@ -2133,6 +2082,10 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         return baseClass;
     }
 
+    public QueryEnvironment getQueryEnv() {
+        return env;
+    }
+    
     public OperationOwner getOwner() {
         return owner;
     }
@@ -2158,11 +2111,6 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             @Override
             public ParseInterface getSQLConnection() {
                 return ParseInterface.empty;
-            }
-
-            @Override
-            public Locale getLocale() {
-                return Locale.getDefault();
             }
 
             public ParseInterface getIsServerRestarting() {
@@ -2228,11 +2176,6 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             } else {
                 return ((NullValue)currentConnection).getParse(ObjectType.instance);
             }
-        }
-
-        @Override
-        public Locale getLocale() {
-            return locale.getLocale();
         }
 
         public int getTransactTimeout() {
@@ -2404,17 +2347,15 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
     // тут вообще вопрос нужны или нет keepSessionProps так как речь идет о вложенных сессиях
     private void copyDataTo(DataSession other, boolean cleanIsDataChangedProp, FunctionSet<SessionDataProperty> ignoreSessionProps) throws SQLException, SQLHandledException {
-        FunctionSet<SessionDataProperty> noNestingProps = NONESTING;
-        
-        other.cleanChanges(noNestingProps);
-        
-        ignoreSessionProps = BaseUtils.merge(noNestingProps, ignoreSessionProps);
+        other.cleanChanges();
 
         if (news != null) {
             other.changeClass(news.getChange());
         }
-        for (Map.Entry<DataProperty, SinglePropertyTableUsage<ClassPropertyInterface>> e : filterNotSessionData(ignoreSessionProps).entrySet()) {
-            other.change(e.getKey(), SinglePropertyTableUsage.getChange(e.getValue()));
+        for (Map.Entry<DataProperty, SinglePropertyTableUsage<ClassPropertyInterface>> e : data.entrySet()) {
+            DataProperty property = e.getKey();
+            if(!(property instanceof SessionDataProperty && ignoreSessionProps.contains((SessionDataProperty) property)))
+                other.change(property, SinglePropertyTableUsage.getChange(e.getValue()));
         }
         
         if (cleanIsDataChangedProp) {
@@ -2449,9 +2390,9 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         }
     }
 
-    private void cleanChanges(FunctionSet<SessionDataProperty> keepProps) throws SQLException, SQLHandledException {
+    private void cleanChanges() throws SQLException, SQLHandledException {
         dropClassChanges();
-        dropAllDataChanges(keepProps);
+        dropAllDataChanges();
         isStoredDataChanged = false;
     }
 
@@ -2495,7 +2436,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             return true;
         }
 
-        keep = adjustKeep(true, keep);
+        keep = adjustKeep(keep);
 
         restart(true, keep);
 
@@ -2597,7 +2538,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         }
     }
 
-    @StackMessage("{message.increment.read.properties}")
+    @StackMessage("message.increment.read.properties")
     public SessionTableUsage<KeyField, CalcProperty> readSave(ImplementTable table, @ParamMessage ImSet<CalcProperty> properties) throws SQLException, SQLHandledException {
         assert isInTransaction();
 
@@ -2659,7 +2600,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         synchronized (closeLock) {
             threadCount--;
 
-            tryClose();
+            tryClose(true);
         }
 //        threads.remove(Thread.currentThread());
     }
@@ -2667,33 +2608,26 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     // необходимо, так как чистка ресурсов может быть асинхронной (closeLater, unreferenced)
     private WeakIdentityHashSet<Cleaner> pendingCleaners = new WeakIdentityHashSet<>();
 
-    public boolean tryClose() throws SQLException { // assert closedLock
-        // не осталось владельцев - закрываем
-        if(threadCount == 0 && activeForms.isEmpty()) { // AssertSynchronized со всеми остальными методами DataSession
-            ServerLoggers.assertLog(!isInTransaction(), "SHOULD NOT CLOSE DATASESSION IN TRANSACTION");
-            flushPendingCleaners();
+    public boolean tryClose(boolean syncedOnClient) throws SQLException { // assert closedLock
+        boolean noOwners = threadCount == 0 && activeForms.isEmpty();
+        if(noOwners || syncedOnClient) { // AssertSynchronized со всеми остальными методами DataSession
+            WeakIdentityHashSet<Cleaner> restCleaners = new WeakIdentityHashSet<>();
+            for(Cleaner pendingCleaner : pendingCleaners) {
+                if (noOwners || pendingCleaner.canBeCleaned()) // вообще assert что когда не осталось owner'ов можно очищать ресурсы
+                    pendingCleaner.run();
+                else
+                    restCleaners.add(pendingCleaner);
+            }
+            pendingCleaners = restCleaners;
+        }
+
+        if(noOwners) { // не осталось владельцев - закрываем
+            assert pendingCleaners.isEmpty();
             explicitClose();
             return true;
         }
         return false;
     }
-
-    // потом надо будет ставить в заведомо синхронизированные места
-    private void lockedFlushPendingCleaners() throws SQLException {
-        synchronized (closeLock) {
-            flushPendingCleaners();
-        }
-    }
-
-    private void flushPendingCleaners() throws SQLException { // assert closedLock
-        // нельзя чистить в транзакции, так как изменения могут rollback'ся, а rollDrop некому делать
-        if(!isInTransaction() && !pendingCleaners.isEmpty()) {
-            for (Cleaner pendingCleaner : pendingCleaners)
-                pendingCleaner.run();
-            pendingCleaners = new WeakIdentityHashSet<>();
-        }
-    }
-
     @Override
     public void close() throws SQLException {
         unregisterThreadStack();

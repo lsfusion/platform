@@ -18,7 +18,6 @@ import lsfusion.server.classes.sets.OrClassSet;
 import lsfusion.server.classes.sets.ResolveClassSet;
 import lsfusion.server.classes.sets.ResolveUpClassSet;
 import lsfusion.server.context.ExecutionStack;
-import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.*;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
@@ -30,7 +29,7 @@ import lsfusion.server.data.expr.query.PropStat;
 import lsfusion.server.data.expr.where.cases.CaseExpr;
 import lsfusion.server.data.expr.where.extra.CompareWhere;
 import lsfusion.server.data.query.*;
-import lsfusion.server.data.query.stat.TableStatKeys;
+import lsfusion.server.data.query.stat.StatKeys;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
@@ -40,9 +39,6 @@ import lsfusion.server.form.entity.drilldown.DrillDownFormEntity;
 import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.logics.*;
 import lsfusion.server.logics.debug.CalcPropertyDebugInfo;
-import lsfusion.server.logics.i18n.FormatLocalizedString;
-import lsfusion.server.logics.i18n.LocalizedString;
-import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.actions.ChangeEvent;
 import lsfusion.server.logics.property.actions.edit.DefaultChangeActionProperty;
@@ -65,8 +61,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Callable;
-
-import static lsfusion.server.context.ThreadLocalContext.localize;
 
 public abstract class CalcProperty<T extends PropertyInterface> extends Property<T> implements MapKeysInterface<T> {
 
@@ -165,9 +159,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
 
     public String outputStored(boolean outputTable) {
         assert isStored() && field!=null;
-        return localize(LocalizedString.concatList((this instanceof DataProperty ? "{logics.property.primary}" : "{logics.property.calculated}"), 
-                    LocalizedString.create(" {logics.property} : "), caption, ", " + mapTable.table.outputField(field, outputTable))
-        );
+        return (this instanceof DataProperty? ServerResourceBundle.getString("logics.property.primary"):ServerResourceBundle.getString("logics.property.calculated")) + " "+ServerResourceBundle.getString("logics.property")+" : " + caption+", "+mapTable.table.outputField(field, outputTable);
     }
     
     public void outClasses(DataSession session, Modifier modifier) throws SQLException, SQLHandledException {
@@ -259,14 +251,13 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         ClassWhere<T> classes = getClassWhere(calcType);
         ClassWhere<T> propClasses = new ClassWhere<>(property.getClassWhere(calcType),map);
         
-        if(!propClasses.meansCompatible(classes)) {
-            throw new ScriptParsingException("wrong signature of implementation " + localize(caption) + " (specified " + propClasses + ") for abstract property " + this + " (expected " + classes + ")");
-        }
+        if(!propClasses.meansCompatible(classes))
+            throw new ScriptParsingException("wrong signature of implementation " + caption + " (specified " + propClasses + ") for abstract property " + this + " (expected " + classes + ")");
         
         AndClassSet valueClass = getValueClassSet();
         AndClassSet propValueClass = value.mapValueClassSet(propClasses);
         if(!valueClass.containsAll(propValueClass, false))
-            throw new ScriptParsingException("wrong value class of implementation " + localize(caption) +
+            throw new ScriptParsingException("wrong value class of implementation " + caption +
                     " (specified " + propValueClass + ") for abstract property " + this + " (expected " + valueClass + ")");
     }
 
@@ -312,7 +303,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         }
     }
 
-    protected CalcProperty(LocalizedString caption, ImOrderSet<T> interfaces) {
+    protected CalcProperty(String caption, ImOrderSet<T> interfaces) {
         super(caption, interfaces);
     }
 
@@ -430,7 +421,6 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         return ExClassSet.fromResolveValue(ExClassSet.fromEx(inferValueClass(inferred, inferType)));
     }
 
-    @IdentityLazy
     public boolean isInInterface(ImMap<T, ? extends AndClassSet> interfaceClasses, boolean isAny) {
         return ClassType.formPolicy.getAlg().isInInterface(this, interfaceClasses, isAny);
     }
@@ -484,7 +474,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
             propertyClasses = MapFact.singleton(propValue, property.getClassValueWhere(classType).remap(MapFact.<Object, Field>addRevExcl(revMapFields, "value", propValue)));
         }
 
-        public TableStatKeys getTableStatKeys() {
+        public StatKeys<KeyField> getStatKeys() {
             return getStatKeys(this, 100);
         }
 
@@ -568,7 +558,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         return new SinglePropertyTableUsage<>(getOrderInterfaces(), interfaceTypeGetter, getType());
     }
 
-    @StackMessage("{message.increment.read.properties}")
+    @StackMessage("message.increment.read.properties")
     @ThisMessage
     public SinglePropertyTableUsage<T> readChangeTable(SQLSession session, Modifier modifier, BaseClass baseClass, QueryEnvironment env) throws SQLException, SQLHandledException {
         return readFixChangeTable(session, getIncrementChange(modifier), baseClass, env);
@@ -853,7 +843,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
     public void markStored(TableFactory tableFactory, ImplementTable table) {
         MapKeysTable<T> mapTable = null;
 
-        ImOrderMap<T, ValueClass> keyClasses = getOrderTableInterfaceClasses(ClassType.storedPolicy);
+        ImMap<T, ValueClass> keyClasses = getInterfaceClasses(ClassType.storedPolicy);
         if (table != null) {
             mapTable = table.getMapKeysTable(keyClasses);
             assert mapTable!=null;
@@ -876,23 +866,10 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         this.field = field;
     }
 
-
-    public void markIndexed(final ImRevMap<T, String> mapping, ImList<CalcPropertyObjectInterfaceImplement<String>> index) {
+    public void markIndexed() {
         assert isStored();
 
-        ImList<Field> indexFields = index.mapListValues(new GetValue<Field, CalcPropertyObjectInterfaceImplement<String>>() {
-            public Field getMapValue(CalcPropertyObjectInterfaceImplement<String> indexField) {
-                if (indexField instanceof CalcPropertyObjectImplement) {
-                    String key = ((CalcPropertyObjectImplement<String>) indexField).object;
-                    return mapTable.mapKeys.get(mapping.reverse().get(key));
-                } else {
-                    CalcProperty property = ((CalcPropertyRevImplement) indexField).property;
-                    assert BaseUtils.hashEquals(mapTable.table, property.mapTable.table);
-                    return property.field;
-                }
-            }
-        });
-        mapTable.table.addIndex(indexFields.toOrderExclSet());
+        mapTable.table.addIndex(field);
     }
 
     public AndClassSet getValueClassSet() {
@@ -924,11 +901,6 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
     @IdentityLazy
     public ImMap<T, ValueClass> getInterfaceClasses(ClassType type) {
         return getInterfaceClasses(type, null);
-    }
-
-    // упорядоченный map классов для обеспечения детерминированности (связано с ImplementTable.getOrderMapFields)
-    public ImOrderMap<T, ValueClass> getOrderTableInterfaceClasses(ClassType type) {
-        return getOrderInterfaces().mapOrderMap(getInterfaceClasses(type));
     }
 
     public ImMap<T, ValueClass> getInterfaceClasses(ClassType type, final ExClassSet valueClasses) {
@@ -1070,9 +1042,9 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         return new ClassWhere<>(ResolveUpClassSet.toAnd(MapFact.<Object, ResolveClassSet>addExcl(ExClassSet.fromEx(inferred), "value", ExClassSet.fromEx(valueCommonClass))).removeNulls());
     }
 
-    protected static <T extends PropertyInterface> ImMap<T, ExClassSet> getInferExplicitCalcInterfaces(ImSet<T> interfaces, boolean noOld, InferType inferType, ImMap<T, ResolveClassSet> explicitInterfaces, Callable<ImMap<T,ExClassSet>> calcInterfaces, String caption, Property property, Checker<ExClassSet> checker) {
+    protected static <T extends PropertyInterface> ImMap<T, ExClassSet> getInferExplicitCalcInterfaces(ImSet<T> interfaces, boolean noOld, InferType inferType, ImMap<T, ResolveClassSet> explicitInterfaces, Callable<ImMap<T,ExClassSet>> calcInterfaces, String caption, Checker<ExClassSet> checker) {
         assert inferType != InferType.RESOLVE;
-        return getExplicitCalcInterfaces(interfaces, (inferType == InferType.PREVBASE && !noOld) || explicitInterfaces == null ? null : ExClassSet.toEx(explicitInterfaces), calcInterfaces, caption, property, checker);
+        return getExplicitCalcInterfaces(interfaces, (inferType == InferType.PREVBASE && !noOld) || explicitInterfaces == null ? null : ExClassSet.toEx(explicitInterfaces), calcInterfaces, caption, checker);
     }
 
     private ImMap<T, ExClassSet> getInferInterfaceClasses(final InferType inferType) {
@@ -1083,7 +1055,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         return getInferExplicitCalcInterfaces(interfaces, noOld(), inferType, explicitClasses, new Callable<ImMap<T, ExClassSet>>() {
             public ImMap<T, ExClassSet> call() throws Exception {
                 return calcInferInterfaceClasses(inferType, valueClasses);
-            }}, "CALC ", this, checker);
+            }}, "CALC " + this, checker);
     }
 
     private ImMap<T, ExClassSet> calcInferInterfaceClasses(InferType inferType, ExClassSet valueClasses) {
@@ -1176,7 +1148,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         return result;
     }
 
-    @StackMessage("{message.core.property.data.changes}")
+    @StackMessage("message.core.property.data.changes")
     @PackComplex
     @ThisMessage
     public DataChanges getDataChanges(PropertyChange<T> change, PropertyChanges propChanges, WhereBuilder changedWhere) {
@@ -1248,7 +1220,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         // запишем в DataProperty
         for(DataProperty dataProperty : getChangeProps()) {
             if(Settings.get().isCheckUniqueEvent() && dataProperty.event!=null)
-                throw new RuntimeException(ThreadLocalContext.localize(new FormatLocalizedString("{logics.property.already.has.event}", dataProperty)));
+                throw new RuntimeException(ServerResourceBundle.getString("logics.property.already.has.event", dataProperty));
             dataProperty.event = event;
         }
     }
@@ -1265,23 +1237,19 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
             setNotNull(row, env, stack, notNull, true);
     }
 
-    protected Object getDefaultValue() {
+    protected DataObject getDefaultObjectValue() {
         Type type = getType();
         if(type instanceof DataClass)
-            return ((DataClass) type).getDefaultValue();
+            return ((DataClass) type).getDefaultObjectValue();
         else
             return null;
     }
 
     public ActionPropertyMapImplement<?, T> getSetNotNullAction(boolean notNull) {
         if(notNull) {
-            Object defaultValue = getDefaultValue();
-            if(defaultValue!=null) {
-                DataClass dataClass = (DataClass) getType();
-                if(dataClass instanceof StringClass)
-                    defaultValue = LocalizedString.create((String)defaultValue, false);
-                return DerivedProperty.createSetAction(interfaces, getImplement(), DerivedProperty.<T>createStatic(defaultValue, dataClass));
-            }
+            DataObject defaultValue = getDefaultObjectValue();
+            if(defaultValue!=null)
+                return DerivedProperty.createSetAction(interfaces, getImplement(), DerivedProperty.<T>createStatic(defaultValue.object, (DataClass)defaultValue.objectClass));
             return null;
         } else
             return DerivedProperty.createSetAction(interfaces, getImplement(), DerivedProperty.<T>createNull());
@@ -1328,7 +1296,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
 
         ImOrderSet<T> listInterfaces = interfaceClasses.keys().toOrderSet();
         ImList<ValueClass> listValues = listInterfaces.mapList(interfaceClasses);
-        DefaultChangeActionProperty<T> changeActionProperty = new DefaultChangeActionProperty<>(LocalizedString.create("sys"), this, listInterfaces, listValues, editActionSID, filterProperty);
+        DefaultChangeActionProperty<T> changeActionProperty = new DefaultChangeActionProperty<>("sys", this, listInterfaces, listValues, editActionSID, filterProperty);
         return changeActionProperty.getImplement(listInterfaces);
     }
 
@@ -1529,7 +1497,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
     }
 
     @PackComplex
-    @StackMessage("{message.core.property.get.expr}")
+    @StackMessage("message.core.property.get.expr")
     @ThisMessage
     public IQuery<T, String> getQuery(CalcType calcType, PropertyChanges propChanges, PropertyQueryType queryType, ImMap<T, ? extends Expr> interfaceValues) {
         if(queryType==PropertyQueryType.FULLCHANGED) {
@@ -1577,7 +1545,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         return queryJoin.getExpr("value");
     }
 
-    @StackMessage("{message.core.property.get.expr}")
+    @StackMessage("message.core.property.get.expr")
     @PackComplex
     @ThisMessage
     public Expr getJoinExpr(ImMap<T, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere) {
@@ -1735,7 +1703,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         recalculateClasses(sql, null, baseClass);
     }
 
-    @StackMessage("{logics.recalculating.data.classes}")
+    @StackMessage("logics.recalculating.data.classes")
     public void recalculateClasses(SQLSession sql, QueryEnvironment env, BaseClass baseClass) throws SQLException, SQLHandledException {
         assert isStored();
         
@@ -1767,30 +1735,5 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         for(CalcProperty prop : getDepends(events)) {
             prop.printDepends(events, tab + '\t');
         }
-    }
-
-    // странная конечно эвристика, нужна чтобы f(a) IF g(a) наследовал draw options f(a), возможно в будущем надо убрать
-    public CalcProperty getAndProperty() {
-        return this;
-    }
-
-    private boolean loggable;
-
-    public LAP logFormProperty;
-
-    public void setLoggable(boolean loggable) {
-        this.loggable = loggable;
-    }
-
-    public boolean isLoggable() {
-        return loggable;
-    }
-
-    public void setLogFormProperty(LAP logFormProperty) {
-        this.logFormProperty = logFormProperty;
-    }
-
-    public LAP getLogFormProperty() {
-        return logFormProperty;
     }
 }

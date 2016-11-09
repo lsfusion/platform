@@ -10,16 +10,18 @@ import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.form.entity.drilldown.DrillDownFormEntity;
 import lsfusion.server.form.entity.drilldown.OldDrillDownFormEntity;
 import lsfusion.server.logics.LogicsModule;
-import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.infer.ExClassSet;
 import lsfusion.server.logics.property.infer.InferType;
 import lsfusion.server.logics.property.infer.Inferred;
 import lsfusion.server.session.PropertyChanges;
 
+import static lsfusion.base.BaseUtils.join;
+import static lsfusion.server.logics.ServerResourceBundle.getString;
+
 public class OldProperty<T extends PropertyInterface> extends SessionCalcProperty<T> {
 
     public OldProperty(CalcProperty<T> property, PrevScope scope) {
-        super(LocalizedString.create("(" + scope.getSID() + ",в БД) " + property), property, scope);
+        super("(" + scope.getSID() + ",в БД) " + property, property, scope);
     }
 
 /*    @Override
@@ -77,7 +79,7 @@ public class OldProperty<T extends PropertyInterface> extends SessionCalcPropert
     @Override
     public DrillDownFormEntity createDrillDownForm(LogicsModule LM, String canonicalName) {
         return new OldDrillDownFormEntity(
-                canonicalName, LocalizedString.create("{logics.property.drilldown.form.old}"), this, LM
+                canonicalName, getString("logics.property.drilldown.form.old"), this, LM
         );
     }
 

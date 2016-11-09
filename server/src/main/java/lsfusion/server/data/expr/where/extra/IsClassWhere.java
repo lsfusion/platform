@@ -15,14 +15,13 @@ import lsfusion.server.classes.*;
 import lsfusion.server.classes.sets.AndClassSet;
 import lsfusion.server.data.expr.*;
 import lsfusion.server.data.expr.query.Stat;
-import lsfusion.server.data.expr.query.StatType;
 import lsfusion.server.data.query.CompileSource;
 import lsfusion.server.data.query.ExprStatJoin;
 import lsfusion.server.data.query.JoinData;
 import lsfusion.server.data.query.innerjoins.GroupJoinsWheres;
 import lsfusion.server.data.query.stat.KeyStat;
 import lsfusion.server.data.translator.MapTranslate;
-import lsfusion.server.data.translator.ExprTranslator;
+import lsfusion.server.data.translator.QueryTranslator;
 import lsfusion.server.data.where.DataWhere;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassExprWhere;
@@ -111,8 +110,8 @@ public class IsClassWhere extends DataWhere {
         return new IsClassWhere(this, translator);
     }
     @ParamLazy
-    public Where translate(ExprTranslator translator) {
-        return expr.translateExpr(translator).isClass(classes, inconsistent);
+    public Where translateQuery(QueryTranslator translator) {
+        return expr.translateQuery(translator).isClass(classes, inconsistent);
     }
 
     public static ValueClassSet getPackSet(Where outWhere, SingleClassExpr expr) {
@@ -144,8 +143,8 @@ public class IsClassWhere extends DataWhere {
             expr.fillJoinWheres(joins,andWhere);        
     }
 
-    protected ImSet<NullableExprInterface> getExprFollows() {
-        return expr.getExprFollows(true, NullableExpr.FOLLOW, true);
+    protected ImSet<NotNullExprInterface> getExprFollows() {
+        return expr.getExprFollows(true, NotNullExpr.FOLLOW, true);
     }
 
     //    public KeyEquals calculateKeyEquals() {
@@ -156,13 +155,13 @@ public class IsClassWhere extends DataWhere {
         return ((ObjectValueClassSet)classes).getBaseClass();
     }
 
-    public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(ImSet<K> keepStat, StatType statType, KeyStat keyStat, ImOrderSet<Expr> orderTop, GroupJoinsWheres.Type type) {
+    public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(ImSet<K> keepStat, KeyStat keyStat, ImOrderSet<Expr> orderTop, GroupJoinsWheres.Type type) {
         if(classes instanceof ObjectValueClassSet) { // "модифицируем" статистику classExpr'а чтобы "уточнить статистику" по объектам
             // тут правда есть нюанс, что статистика по классам считается одним механизмом, а по join'ами другим
-            ExprStatJoin adjustJoin = classExpr.getAdjustStatJoin(new Stat(((ObjectValueClassSet) classes).getCount()), keyStat, statType, false);
-            return groupDataJoinsWheres(adjustJoin, type);
+            Stat stat = classExpr.getStatValue().mult(new Stat(((ObjectValueClassSet) classes).getCount())).div(classExpr.getInnerJoin().getStatKeys(keyStat).rows);
+            return new GroupJoinsWheres(new ExprStatJoin(classExpr, stat), this, type);
         }
-        return expr.getNotNullWhere().groupJoinsWheres(keepStat, statType, keyStat, orderTop, type).and(super.groupJoinsWheres(keepStat, statType, keyStat, orderTop, type));
+        return expr.getNotNullWhere().groupJoinsWheres(keepStat, keyStat, orderTop, type).and(super.groupJoinsWheres(keepStat, keyStat, orderTop, type));
     }
     public ClassExprWhere calculateClassWhere() {
         return expr.getClassWhere(inconsistent ? getBaseClass().getUpSet() : classes).and(expr.getWhere().getClassWhere());

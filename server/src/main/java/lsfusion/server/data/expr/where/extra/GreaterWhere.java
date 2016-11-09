@@ -1,5 +1,6 @@
 package lsfusion.server.data.expr.where.extra;
 
+import lsfusion.base.Result;
 import lsfusion.base.TwinImmutableObject;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
@@ -7,7 +8,6 @@ import lsfusion.interop.Compare;
 import lsfusion.server.caches.hash.HashContext;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
-import lsfusion.server.data.expr.query.StatType;
 import lsfusion.server.data.query.CompileSource;
 import lsfusion.server.data.query.innerjoins.GroupJoinsWheres;
 import lsfusion.server.data.query.stat.KeyStat;
@@ -70,12 +70,12 @@ public class GreaterWhere<T> extends CompareWhere<GreaterWhere<T>> {
 
     // тут есть нюанс, что может неявно появится keyEquals (при текущей реализации с orEquals не появится), поэтому правильнее может быть было бы в getKeyEquals перенести, но пока не важно
     @Override
-    public <K extends BaseExpr> GroupJoinsWheres groupNotJoinsWheres(ImSet<K> keepStat, StatType statType, KeyStat keyStat, ImOrderSet<Expr> orderTop, GroupJoinsWheres.Type type) {
+    public <K extends BaseExpr> GroupJoinsWheres groupNotJoinsWheres(ImSet<K> keepStat, KeyStat keyStat, ImOrderSet<Expr> orderTop, GroupJoinsWheres.Type type) {
         if (needIndexedJoin(operator2, orderTop, operator1, null) || // избаляемся от not'ов, NOT EQUALS не интересует так как в индексе не помогает
                 needIndexedJoin(operator1, orderTop, operator2, null))
-            return getSymmetricGreaterWhere().not().groupJoinsWheres(keepStat, statType, keyStat, orderTop, type);
+            return getSymmetricGreaterWhere().not().groupJoinsWheres(keepStat, keyStat, orderTop, type);
 
-        return super.groupNotJoinsWheres(keepStat, statType, keyStat, orderTop, type);
+        return super.groupNotJoinsWheres(keepStat, keyStat, orderTop, type);
     }
 
     protected String getCompareSource(CompileSource compile) {

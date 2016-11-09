@@ -6,7 +6,6 @@ import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.server.classes.CustomClass;
 import lsfusion.server.context.ExecutorFactory;
 import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.tasks.TaskRunner;
 
@@ -18,7 +17,7 @@ public class NewExecutorActionProperty extends AroundAspectActionProperty {
     ScheduledExecutorService executor;
     private final CalcPropertyInterfaceImplement threadsProp;
 
-    public <I extends PropertyInterface> NewExecutorActionProperty(LocalizedString caption, ImOrderSet<I> innerInterfaces,
+    public <I extends PropertyInterface> NewExecutorActionProperty(String caption, ImOrderSet<I> innerInterfaces,
                                                                    ActionPropertyMapImplement<?, I> action,
                                                                    CalcPropertyInterfaceImplement threadsProp) {
         super(caption, innerInterfaces, action);

@@ -2,7 +2,6 @@ package lsfusion.client.form.dispatch;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
-import lsfusion.base.SystemUtils;
 import lsfusion.client.Log;
 import lsfusion.client.Main;
 import lsfusion.client.MainFrame;
@@ -397,9 +396,9 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
             throw new RuntimeException(e);
         }
     }
-
+    
     public void execute(final SaveFileClientAction action) {
-        SwingUtils.showSaveFileDialog(action.getFileMap());
+        SwingUtils.showSaveFileDialog(action.getFileMap());    
     }
 
     public void execute(AudioClientAction action) {
@@ -461,19 +460,5 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
 
     public void execute(ExceptionClientAction action) {
         throw new RuntimeException(action.e);
-    }
-
-    @Override
-    public String execute(LoadLinkClientAction action) {
-        String result = null;
-        JFileChooser fileChooser = new JFileChooser();
-        fileChooser.setCurrentDirectory(SystemUtils.loadCurrentDirectory());
-        boolean canceled = fileChooser.showOpenDialog(SwingUtils.getActiveWindow()) != JFileChooser.APPROVE_OPTION;
-        if (!canceled) {
-            File file = fileChooser.getSelectedFile();
-            result = file.toURI().toString();
-        }
-        SystemUtils.saveCurrentDirectory(fileChooser.getSelectedFile());
-        return result;
     }
 }

@@ -1,14 +1,9 @@
 package lsfusion.server.caches;
 
-import lsfusion.base.*;
-import lsfusion.server.data.HandledException;
-import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.data.expr.query.StatType;
-import lsfusion.server.logics.property.*;
-import org.aspectj.lang.ProceedingJoinPoint;
-import org.aspectj.lang.annotation.Around;
-import org.aspectj.lang.annotation.Aspect;
-import org.aspectj.lang.reflect.MethodSignature;
+import lsfusion.base.BaseUtils;
+import lsfusion.base.ReflectionUtils;
+import lsfusion.base.Result;
+import lsfusion.base.TwinImmutableObject;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.implementations.abs.AMap;
@@ -193,7 +188,7 @@ public class AutoHintsAspect {
 
             if(cacheHint==null || MapCacheAspect.checkCaches()) {
                 CacheStats.incrementMissed(CacheStats.CacheType.AUTOHINT);
-
+                
                 Object result = proceed(thisJoinPoint, sessionModifier, resultHint);
                 if(result!=null)
                     return result;
@@ -292,7 +287,7 @@ public class AutoHintsAspect {
                             int maxCountUsed = catchHint.getMaxCountUsed(property);
                             // будем считать что рост сложности полиномиальный (квадратичный с учетом того что A x B, выполняется за условно AB операций), в то же время сложность агрегации условно линейный
                             long limit = BaseUtils.max(maxCountUsed / Settings.get().getStatDegree(), baseLimit) * complexity / limitComplexity;
-                            if (changed.isFalse() || changed.getFullStatKeys(mapKeys.valuesSet(), StatType.HINTCHANGE).getRows().lessEquals(new Stat(limit))) { // changed.isFalse() временно
+                            if (changed.isFalse() || changed.getFullStatKeys(mapKeys.valuesSet()).rows.lessEquals(new Stat(limit))) { // changed.isFalse() временно
                                 throw new HintException(new IncrementHint(property, true));
                             }
                             if(allowNoUpdate && complexity > catchHint.getLimitHintNoUpdateComplexity()) {

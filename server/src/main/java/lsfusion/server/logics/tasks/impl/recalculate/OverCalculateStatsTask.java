@@ -59,7 +59,7 @@ public class OverCalculateStatsTask extends GroupPropertiesSingleTask<ImplementT
 
     @Override
     protected long getTaskComplexity(ImplementTable element) {
-        Stat stat = ((ImplementTable) element).getStatRows();
+        Stat stat = ((ImplementTable) element).getStatKeys().rows;
         return stat == null ? Stat.MIN.getWeight() : stat.getWeight();
     }
 }

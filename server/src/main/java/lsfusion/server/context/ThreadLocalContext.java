@@ -3,7 +3,6 @@ package lsfusion.server.context;
 import lsfusion.base.ConcurrentWeakHashMap;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.interop.ModalityType;
 import lsfusion.interop.action.ClientAction;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
@@ -16,19 +15,16 @@ import lsfusion.server.form.entity.ObjectEntity;
 import lsfusion.server.form.entity.PropertyDrawEntity;
 import lsfusion.server.form.entity.filter.FilterEntity;
 import lsfusion.server.form.instance.FormInstance;
-import lsfusion.server.form.instance.listener.CustomClassListener;
+import lsfusion.server.form.instance.FormSessionScope;
 import lsfusion.server.form.navigator.LogInfo;
 import lsfusion.server.lifecycle.EventServer;
 import lsfusion.server.lifecycle.MonitorServer;
 import lsfusion.server.logics.*;
 import lsfusion.server.logics.SecurityManager;
-import lsfusion.server.logics.i18n.LocalizedString;
-import lsfusion.server.logics.property.DialogRequest;
-import lsfusion.server.logics.property.ExecutionContext;
-import lsfusion.server.logics.property.PropertyInterface;
-import lsfusion.server.logics.property.PullChangeProperty;
+import lsfusion.server.logics.property.*;
 import lsfusion.server.remote.ContextAwarePendingRemoteObject;
 import lsfusion.server.remote.RmiServer;
+import lsfusion.server.remote.RemoteForm;
 import lsfusion.server.session.DataSession;
 import lsfusion.server.stack.ExecutionStackItem;
 import lsfusion.server.stack.ProgressStackItem;
@@ -37,7 +33,6 @@ import org.apache.log4j.MDC;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 public class ThreadLocalContext {
     private static final ThreadLocal<Context> context = new ThreadLocal<>();
@@ -73,10 +68,6 @@ public class ThreadLocalContext {
         return get().getLogicsInstance();
     }
 
-    public static CustomClassListener getClassListener() {
-        return get().getClassListener();
-    }
-
     public static BusinessLogics getBusinessLogics() {
         return getLogicsInstance().getBusinessLogics();
     }
@@ -109,8 +100,12 @@ public class ThreadLocalContext {
         return get().getFormInstance();
     }
 
-    public static FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, ExecutionStack stack, DataSession session, boolean isModal, boolean isAdd, Boolean manageSession, boolean checkOnOk, boolean showDrop, boolean interactive, ImSet<FilterEntity> contextFilters, PropertyDrawEntity initFilterProperty, ImSet<PullChangeProperty> pullProps, boolean readonly) throws SQLException, SQLHandledException {
-        return get().createFormInstance(formEntity, mapObjects, session, isModal, isAdd, manageSession, stack, checkOnOk, showDrop, interactive, contextFilters, initFilterProperty, pullProps, readonly);
+    public static FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, ExecutionStack stack, DataSession session, boolean isModal, boolean isAdd, FormSessionScope sessionScope, boolean checkOnOk, boolean showDrop, boolean interactive, ImSet<FilterEntity> contextFilters, PropertyDrawEntity initFilterProperty, ImSet<PullChangeProperty> pullProps, boolean readonly) throws SQLException, SQLHandledException {
+        return get().createFormInstance(formEntity, mapObjects, session, isModal, isAdd, sessionScope, stack, checkOnOk, showDrop, interactive, contextFilters, initFilterProperty, pullProps, readonly);
+    }
+
+    public static RemoteForm createRemoteForm(FormInstance formInstance, ExecutionStack stack) {
+        return get().createRemoteForm(formInstance, stack);
     }
 
     public static ObjectValue requestUserObject(DialogRequest dialogRequest, ExecutionStack stack) throws SQLException, SQLHandledException {
@@ -139,10 +134,6 @@ public class ThreadLocalContext {
 
     public static Object requestUserInteraction(ClientAction action) {
         return get().requestUserInteraction(action);
-    }
-
-    public static void requestFormUserInteraction(FormInstance remoteForm, ModalityType modalityType, ExecutionStack stack) throws SQLException, SQLHandledException {
-        get().requestFormUserInteraction(remoteForm, modalityType, stack);
     }
 
     public static boolean canBeProcessed() {
@@ -325,17 +316,5 @@ public class ThreadLocalContext {
 
     public static void unwrapContext(Context prevContext) {
         aspectAfter(prevContext, false);
-    }
-    
-    public static String localize(LocalizedString s) {
-        return s == null ? null : get().localize(s);    
-    }
-    
-    public static String localize(String s) {
-        return s == null ? null : get().localize(LocalizedString.create(s));
-    } 
-
-    public static String localize(LocalizedString s, Locale locale) {
-        return s == null ? null : get().localize(s, locale);
     }
 }

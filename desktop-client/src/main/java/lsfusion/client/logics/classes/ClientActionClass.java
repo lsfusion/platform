@@ -19,7 +19,14 @@ import java.text.ParseException;
 public class ClientActionClass extends ClientDataClass implements ClientTypeClass {
     public final static ClientActionClass instance = new ClientActionClass();
 
+    private final String sID = "ActionClass";
+
     private ClientActionClass() {
+    }
+
+    @Override
+    public String getSID() {
+        return sID;
     }
 
     public byte getTypeId() {

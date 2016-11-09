@@ -2,7 +2,6 @@ package lsfusion.server.logics;
 
 import lsfusion.server.classes.ConcreteCustomClass;
 import lsfusion.server.form.entity.FormEntity;
-import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 import org.antlr.runtime.RecognitionException;
@@ -56,9 +55,6 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
     public LCP mainRoleUser;
     public LCP sidMainRoleCustomUser;
     public LCP nameMainRoleUser;
-
-    public LCP dataCopyAccess;
-    public LAP copyAccess;    
 
     public FormEntity propertyPolicyForm;
 
@@ -140,8 +136,5 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
         transactTimeoutUser = findProperty("transactTimeout[User]");
 
         propertyPolicyForm = (FormEntity) findNavigatorElement("propertyPolicy");
-
-        dataCopyAccess = findProperty("dataCopyAccess[TEXT]");
-        copyAccess = findAction("copyAccess[]");
     }
 }

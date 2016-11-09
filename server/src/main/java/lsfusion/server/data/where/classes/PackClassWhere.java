@@ -9,15 +9,14 @@ import lsfusion.server.caches.OuterContext;
 import lsfusion.server.caches.hash.HashContext;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
-import lsfusion.server.data.expr.NullableExprInterface;
-import lsfusion.server.data.expr.query.StatType;
+import lsfusion.server.data.expr.NotNullExpr;
+import lsfusion.server.data.expr.NotNullExprInterface;
 import lsfusion.server.data.query.CompileSource;
 import lsfusion.server.data.query.JoinData;
 import lsfusion.server.data.query.innerjoins.GroupJoinsWheres;
-import lsfusion.server.data.query.innerjoins.UpWhere;
 import lsfusion.server.data.query.stat.KeyStat;
 import lsfusion.server.data.translator.MapTranslate;
-import lsfusion.server.data.translator.ExprTranslator;
+import lsfusion.server.data.translator.QueryTranslator;
 import lsfusion.server.data.where.DataWhere;
 import lsfusion.server.data.where.Where;
 
@@ -33,7 +32,7 @@ public class PackClassWhere extends DataWhere {
         assert !packWhere.isTrue();
     }
 
-    protected ImSet<NullableExprInterface> getExprFollows() {
+    protected ImSet<NotNullExprInterface> getExprFollows() {
         return packWhere.getExprFollows();
     }
 
@@ -68,19 +67,13 @@ public class PackClassWhere extends DataWhere {
     protected Where translate(MapTranslate translator) {
         throw new RuntimeException("Not supported");
     }
-    public Where translate(ExprTranslator translator) {
+    public Where translateQuery(QueryTranslator translator) {
         throw new RuntimeException("Not supported");
     }
 
-    public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(ImSet<K> keepStat, StatType statType, KeyStat keyStat, ImOrderSet<Expr> orderTop, GroupJoinsWheres.Type type) {
+    public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(ImSet<K> keepStat, KeyStat keyStat, ImOrderSet<Expr> orderTop, GroupJoinsWheres.Type type) {
         throw new RuntimeException("Not supported");
     }
-
-    @Override
-    protected UpWhere getUpWhere() {
-        throw new UnsupportedOperationException();
-    }
-
     public ClassExprWhere calculateClassWhere() {
         return packWhere;
     }

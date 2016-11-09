@@ -6,7 +6,6 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.classes.BaseClass;
 import lsfusion.server.data.expr.query.PropStat;
 import lsfusion.server.data.query.stat.StatKeys;
-import lsfusion.server.data.query.stat.TableStatKeys;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -24,14 +23,14 @@ public class SerializedTable extends Table {
     }
 
     private final static int prevStats = 100000;
-    public static TableStatKeys getStatKeys(Table table) {
+    public static StatKeys<KeyField> getStatKeys(Table table) {
         return getStatKeys(table, prevStats);
     }
     public static ImMap<PropertyField, PropStat> getStatProps(Table table) {
         return getStatProps(table, prevStats);
     }
 
-    public TableStatKeys getTableStatKeys() {
+    public StatKeys<KeyField> getStatKeys() {
         return getStatKeys(this);
     }
 

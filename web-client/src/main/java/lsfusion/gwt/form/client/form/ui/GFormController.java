@@ -927,6 +927,8 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     }
 
     public void activateTab(String formID, String tabID) {
+        int a = 5;
+        a++;
         formsController.selectTab(formID, tabID);
 //        GPropertyDraw propertyDraw = form.getProperty(propertyDrawId);
 //        if (propertyDraw != null && controllers.containsKey(propertyDraw.groupObject)) {
@@ -978,8 +980,8 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         Window.open(reportUrl, fileName, "");
     }
 
-    public void saveUserPreferences(GGridUserPreferences userPreferences, boolean forAllUsers, boolean completeOverride, String[] hiddenProps, final ErrorHandlingCallback<ServerResponseResult> callback) {
-        syncDispatch(new SaveUserPreferencesAction(userPreferences.convertPreferences(), forAllUsers, completeOverride, hiddenProps), new ServerResponseCallback() {
+    public void saveUserPreferences(GGridUserPreferences userPreferences, boolean forAllUsers, boolean completeOverride, final ErrorHandlingCallback<ServerResponseResult> callback) {
+        syncDispatch(new SaveUserPreferencesAction(userPreferences.convertPreferences(), forAllUsers, completeOverride), new ServerResponseCallback() {
             @Override
             public void success(ServerResponseResult response) {
                 for (GAction action : response.actions) {
@@ -997,10 +999,6 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
                 callback.failure(caught);
             }
         });
-    }
-    
-    public void refreshUPHiddenProps(String groupObjectSID, String[] propSids) {
-        syncDispatch(new RefreshUPHiddenPropsAction(groupObjectSID, propSids), new ServerResponseCallback());
     }
 
     public List<GPropertyDraw> getPropertyDraws() {

@@ -18,7 +18,6 @@ import lsfusion.server.caches.PackInterface;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.query.Stat;
-import lsfusion.server.data.expr.query.StatType;
 import lsfusion.server.data.query.stat.*;
 import lsfusion.server.data.where.DNFWheres;
 import lsfusion.server.data.where.Where;
@@ -28,7 +27,7 @@ import java.util.*;
 // используется только в groupJoinWheres, по сути protected класс
 public class GroupJoinsWheres extends DNFWheres<WhereJoins, GroupJoinsWheres.Value, GroupJoinsWheres> implements PackInterface<GroupJoinsWheres> {
 
-    public static enum Type {
+    public enum Type {
         WHEREJOINS, STAT_WITH_WHERE, STAT_ONLY;
         
         public boolean noWhere() {
@@ -67,21 +66,20 @@ public class GroupJoinsWheres extends DNFWheres<WhereJoins, GroupJoinsWheres.Val
     }
 
     public static class Value {
-        public final UpWheres<WhereJoin> upWheres; // впоследствии только для проталкивания
+        public final ImMap<WhereJoin, Where> upWheres; // впоследствии только для проталкивания
         public final Where where;
 
         public Value(Where where) {
-            this(UpWheres.EMPTY(), where);
+            this(MapFact.<WhereJoin, Where>EMPTY(), where);
         }
 
-        public Value(WhereJoin join, UpWhere upWhere, Where where) {
-            this(new UpWheres<>(join, upWhere), where);
+        public Value(WhereJoin join, Where where) {
+            this(MapFact.<WhereJoin, Where>singleton(join, where), where);
         }
 
-        public Value(UpWheres<WhereJoin> upWheres, Where where) {
+        public Value(ImMap<WhereJoin, Where> upWheres, Where where) {
             this.upWheres = upWheres;
             this.where = where;
-            assert upWheres != null;
         }
 
         public Value and(WhereJoins key, Value value, boolean noWhere) {
@@ -111,8 +109,8 @@ public class GroupJoinsWheres extends DNFWheres<WhereJoins, GroupJoinsWheres.Val
         return new GroupJoinsWheres(map, noWhere);
     }
 
-    private static <K extends BaseExpr> boolean compileMeans(WhereJoins from, WhereJoins what, ImSet<K> keepStat, KeyStat keyStat, StatType type, boolean saveStat) {
-        return from.means(what) && (!saveStat || BaseUtils.hashEquals(from.getPackStatKeys(keepStat, keyStat, type), what.getPackStatKeys(keepStat, keyStat, type)));
+    private static <K extends BaseExpr> boolean compileMeans(WhereJoins from, WhereJoins what, ImSet<K> keepStat, KeyStat keyStat, boolean saveStat) {
+        return from.means(what) && (!saveStat || BaseUtils.hashEquals(from.getCompileStatKeys(keepStat, keyStat), what.getCompileStatKeys(keepStat, keyStat)));
     }
 
     public GroupJoinsWheres(ImMap<WhereJoins, Value> map, boolean noWhere) {
@@ -124,13 +122,13 @@ public class GroupJoinsWheres extends DNFWheres<WhereJoins, GroupJoinsWheres.Val
         this(map, type.noWhere());
     }
 
-    public <K extends BaseExpr> GroupJoinsWheres pack(ImSet<K> keepStat, StatType statType, KeyStat keyStat, Type type, Where where, boolean intermediate, ImOrderSet<Expr> orderTop) {
+    public <K extends BaseExpr> GroupJoinsWheres pack(ImSet<K> keepStat, KeyStat keyStat, Type type, Where where, boolean intermediate, ImOrderSet<Expr> orderTop) {
         assert !intermediate || isExceededIntermediatePackThreshold();
 
-//        if(Settings.get().isPackStatBackwardCompatibility() && intermediate && type.isStat()) // !!! НЕПРАВИЛЬНАЯ ОПТИМИЗАЦИЯ, смотри коммент внизу, самый быстрый способ сохранить статистику, проверка на intermediate чтобы не было рекурсии
-//            return new GroupJoinsWheres(new StatKeysJoin<K>(getStatKeys(keepStat, keyStat, statType)), where, type);
+        if(Settings.get().isPackStatBackwardCompatibility() && intermediate && type.isStat()) // !!! НЕПРАВИЛЬНАЯ ОПТИМИЗАЦИЯ, смотри коммент внизу, самый быстрый способ сохранить статистику, проверка на intermediate чтобы не было рекурсии
+            return new GroupJoinsWheres(new StatKeysJoin<>(getStatKeys(keepStat, keyStat)), where, type);
 
-        GroupJoinsWheres result = pack(keepStat, keyStat, statType, type.isStat() || intermediate); // savestat нужно для более правильной статистикой, для intermediate тоже важна статистика так как сверху могут добавиться еще and'ы, а значит некоторые node'ы уйти и статистика может потеряться
+        GroupJoinsWheres result = pack(keepStat, keyStat, type.isStat() || intermediate); // savestat нужно для более правильной статистикой, для intermediate тоже важна статистика так как сверху могут добавиться еще and'ы, а значит некоторые node'ы уйти и статистика может потеряться
 //        GroupJoinsWheres result = packMeans(keepStat, keyStat, intermediate);
         if(result.size() == 1) { // оптимизация
             Value value = result.singleValue();
@@ -157,7 +155,7 @@ public class GroupJoinsWheres extends DNFWheres<WhereJoins, GroupJoinsWheres.Val
         return !(size() > Settings.get().getCollapseStatsCount() || (!noWhere && getComplexity(true) > Settings.get().getCollapseStatsComplexity()));
     }
 
-    private <K extends BaseExpr> GroupJoinsWheres pack(ImSet<K> keepStat, KeyStat keyStat, StatType type, boolean saveStat) {
+    private <K extends BaseExpr> GroupJoinsWheres pack(ImSet<K> keepStat, KeyStat keyStat, boolean saveStat) {
 
         GroupJoinsWheres result = this;
         if(saveStat && result.fitsPackThreshold())
@@ -165,23 +163,23 @@ public class GroupJoinsWheres extends DNFWheres<WhereJoins, GroupJoinsWheres.Val
 
         boolean collapseStats = !fitsCollapseStatsThreshold();
         if(!collapseStats) {
-            result = result.packMeans(keepStat, keyStat, type, true);
+            result = result.packMeans(keepStat, keyStat, true);
             if (result.fitsPackThreshold())
                 return result;
         }
 
         // оптимизация, так как packMeans быстрее packReduce, для не saveStat не стоит делать так как при A, AB, BC, где B маленький предикат логичнее A, B получить чем A, BC
         if(saveStat == collapseStats) {
-            result = result.packMeans(keepStat, keyStat, type, saveStat);
+            result = result.packMeans(keepStat, keyStat, saveStat);
             if (result.fitsPackThreshold())
                 return result;
         }
 
-        return result.packReduce(keepStat, keyStat, type, saveStat, collapseStats);
+        return result.packReduce(keepStat, keyStat, saveStat, collapseStats);
     }
 
     // keepStat нужен чтобы можно было гарантировать что не образуется case с недостающим WhereJoin существенно влияющим на статистику
-    private <K extends BaseExpr> GroupJoinsWheres packMeans(ImSet<K> keepStat, KeyStat keyStat, StatType type, boolean saveStat) {
+    private <K extends BaseExpr> GroupJoinsWheres packMeans(ImSet<K> keepStat, KeyStat keyStat, boolean saveStat) {
         if(!Settings.get().isCompileMeans())
             return this;
 
@@ -193,7 +191,7 @@ public class GroupJoinsWheres extends DNFWheres<WhereJoins, GroupJoinsWheres.Val
             boolean found = false;
             // ищем кого-нибудь кого он means
             for(Map.Entry<WhereJoins, Value> resultJoin : result.entrySet())
-                if(compileMeans(objectJoin, resultJoin.getKey(), keepStat, keyStat, type, saveStat)) {
+                if(compileMeans(objectJoin, resultJoin.getKey(), keepStat, keyStat, saveStat)) {
                     resultJoin.setValue(resultJoin.getValue().orMeans(resultJoin.getKey(), objectJoin, where, noWhere));
                     found = true;
                 }
@@ -201,7 +199,7 @@ public class GroupJoinsWheres extends DNFWheres<WhereJoins, GroupJoinsWheres.Val
                 // ищем все кто его means и удаляем
                 for(Iterator<Map.Entry<WhereJoins,Value>> it = result.entrySet().iterator();it.hasNext();) {
                     Map.Entry<WhereJoins, Value> resultJoin = it.next();
-                    if(compileMeans(resultJoin.getKey(), objectJoin, keepStat, keyStat, type, saveStat)) {
+                    if(compileMeans(resultJoin.getKey(), objectJoin, keepStat, keyStat, saveStat)) {
                         where = where.orMeans(objectJoin, resultJoin.getKey(), resultJoin.getValue(), noWhere);
                         it.remove();
                     }
@@ -219,10 +217,10 @@ public class GroupJoinsWheres extends DNFWheres<WhereJoins, GroupJoinsWheres.Val
         public final int orderTopCount;
         public final int childrenCount;
 
-        public <K extends BaseExpr> CEntry(WhereJoins where, ImSet<K> keepStat, KeyStat keyStat, StatType type) {
+        public <K extends BaseExpr> CEntry(WhereJoins where, ImSet<K> keepStat, KeyStat keyStat) {
             this.where = where;
             
-            rows = where.getPackStatKeys(keepStat, keyStat, type).getRows().getWeight();
+            rows = where.getCompileStatKeys(keepStat, keyStat).rows.getWeight();
             orderTopCount = where.getOrderTopCount();
             childrenCount = where.getAllChildrenCount();
         }
@@ -231,8 +229,8 @@ public class GroupJoinsWheres extends DNFWheres<WhereJoins, GroupJoinsWheres.Val
     }
     
     private static class COriginal extends CEntry {
-        public <K extends BaseExpr> COriginal(WhereJoins where, ImSet<K> keepStat, KeyStat keyStat, StatType type) {
-            super(where, keepStat, keyStat, type);
+        public <K extends BaseExpr> COriginal(WhereJoins where, ImSet<K> keepStat, KeyStat keyStat) {
+            super(where, keepStat, keyStat);
         }
 
         public void fillOriginal(MExclSet<WhereJoins> wheres) {
@@ -280,8 +278,8 @@ public class GroupJoinsWheres extends DNFWheres<WhereJoins, GroupJoinsWheres.Val
         private int[] priority;
         private boolean collapseStats;
 
-        public <K extends BaseExpr> CMerged(SymmPair<CEntry, CEntry> original, WhereJoins where, ImSet<K> keepStat, KeyStat keyStat, StatType type, boolean collapseStats) {
-            super(where, keepStat, keyStat, type);
+        public <K extends BaseExpr> CMerged(SymmPair<CEntry, CEntry> original, WhereJoins where, ImSet<K> keepStat, KeyStat keyStat, boolean collapseStats) {
+            super(where, keepStat, keyStat);
             this.original = original;
             this.collapseStats = collapseStats;
 //            assert assertMeansOriginal(where);
@@ -340,7 +338,7 @@ public class GroupJoinsWheres extends DNFWheres<WhereJoins, GroupJoinsWheres.Val
     }
     
     // эвристика с приоритезацией
-    private <K extends BaseExpr> GroupJoinsWheres packReduce(ImSet<K> keepStat, KeyStat keyStat, StatType type, boolean saveStat, boolean collapseStats) {
+    private <K extends BaseExpr> GroupJoinsWheres packReduce(ImSet<K> keepStat, KeyStat keyStat, boolean saveStat, boolean collapseStats) {
         if(!Settings.get().isCompileMeans())
             return this;
 
@@ -363,7 +361,7 @@ public class GroupJoinsWheres extends DNFWheres<WhereJoins, GroupJoinsWheres.Val
         
         // бежим по всем A, по все B добавляем (с фильтрацией) в heap и матрицу (A, B) -> A OR B
         for(int i=0,size=size();i<size;i++) {
-            current.add(new COriginal(getKey(i), keepStat, keyStat, type));
+            current.add(new COriginal(getKey(i), keepStat, keyStat));
         }
         List<CEntry> list = new ArrayList<>(current);
         for(int i=0,size=list.size();i<size;i++) {
@@ -372,7 +370,7 @@ public class GroupJoinsWheres extends DNFWheres<WhereJoins, GroupJoinsWheres.Val
                 CEntry jJoin = list.get(j);
                 
                 SymmPair<CEntry, CEntry> pair = new SymmPair<>(iJoin, jJoin);
-                CMerged cEntry = new CMerged(pair, iJoin.where.or(jJoin.where), keepStat, keyStat, type, collapseStats);
+                CMerged cEntry = new CMerged(pair, iJoin.where.or(jJoin.where), keepStat, keyStat, collapseStats);
                 priority.add(cEntry);
                 matrix.put(pair, cEntry);
             }
@@ -410,7 +408,7 @@ public class GroupJoinsWheres extends DNFWheres<WhereJoins, GroupJoinsWheres.Val
                 priority.remove(secondEntry);
 
                 SymmPair<CEntry, CEntry> newEntry = new SymmPair<CEntry, CEntry>(entry, element);
-                CMerged merged = new CMerged(newEntry, firstEntry.where.or(secondEntry.where), keepStat, keyStat, type, collapseStats);
+                CMerged merged = new CMerged(newEntry, firstEntry.where.or(secondEntry.where), keepStat, keyStat, collapseStats);
                 matrix.put(newEntry, merged);
                 priority.add(merged);
             }
@@ -430,7 +428,7 @@ public class GroupJoinsWheres extends DNFWheres<WhereJoins, GroupJoinsWheres.Val
                 MExclSet<WhereJoins> mOrigs = SetFact.mExclSet();
                 entry.fillOriginal(mOrigs);
                 
-                Value resultValue = new Value(new UpWheres<>(SetFact.toExclSet(entry.where.wheres).toMap(UpWheres.FALSE)), Where.FALSE);
+                Value resultValue = new Value(SetFact.toExclSet(entry.where.wheres).toMap(Where.FALSE), Where.FALSE);
                 for(WhereJoins orig : mOrigs.immutable()) {
                     assert orig.means(entry.where);
                     Value origValue = get(orig);
@@ -447,11 +445,12 @@ public class GroupJoinsWheres extends DNFWheres<WhereJoins, GroupJoinsWheres.Val
         }
     }
     
-    public <K extends BaseExpr> StatKeys<K> getStatKeys(final ImSet<K> keepStat, final KeyStat keyStat, final StatType type) {
-        return StatKeys.or(keyIt(), new GetValue<StatKeys<K>, WhereJoins>() {
-            public StatKeys<K> getMapValue(WhereJoins whereJoins) {
-                return whereJoins.getStatKeys(keepStat, keyStat, type);
-            }}, keepStat);
+    public <K extends BaseExpr> StatKeys<K> getStatKeys(ImSet<K> keepStat, KeyStat keyStat) {
+        StatKeys<K> result = new StatKeys<>(keepStat);
+        assert !isEmpty();
+        for(WhereJoins whereJoins : keyIt())
+            result = result.or(whereJoins.getStatKeys(keepStat, keyStat));
+        return result;    
     }
 
     private final boolean noWhere;
@@ -464,8 +463,8 @@ public class GroupJoinsWheres extends DNFWheres<WhereJoins, GroupJoinsWheres.Val
         this(WhereJoins.EMPTY, new Value(where), type);
     }
 
-    public GroupJoinsWheres(WhereJoin join, UpWhere upWhere, Where where, Type type) {
-        this(new WhereJoins(join), new Value(join, upWhere, where), type);
+    public GroupJoinsWheres(WhereJoin join, Where where, Type type) {
+        this(new WhereJoins(join), new Value(join, where), type);
     }
 
     public GroupJoinsWheres pack() {

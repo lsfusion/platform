@@ -5,9 +5,10 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.entity.PropertyDrawEntity;
+import lsfusion.server.form.view.DefaultFormView;
 import lsfusion.server.form.view.PropertyDrawView;
-import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.linear.LCP;
+import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
@@ -20,6 +21,8 @@ import static lsfusion.server.logics.property.derived.DerivedProperty.createTrue
 public abstract class FormToolbarActionProperty extends ScriptingActionProperty {
     public final static Dimension BUTTON_SIZE = new Dimension(25, 20);
 
+    private final boolean showCaption;
+
     @Override
     protected boolean isVolatile() { // проще чем разбираться, что используется
         return true;
@@ -29,22 +32,9 @@ public abstract class FormToolbarActionProperty extends ScriptingActionProperty 
         this(lm, true);
     }
 
-    public FormToolbarActionProperty(ScriptingLogicsModule lm, final boolean showCaption) {
+    public FormToolbarActionProperty(ScriptingLogicsModule lm, boolean showCaption) {
         super(lm);
-
-        final LCP propertyCaption = getShowIf();
-        drawOptions.addProcessor(new DefaultProcessor() {
-            public void proceedDefaultDraw(PropertyDrawEntity entity, FormEntity<?> form) {
-                if (propertyCaption != null) {
-                    entity.propertyShowIf = form.addPropertyObject(propertyCaption);
-                }
-            }
-            public void proceedDefaultDesign(PropertyDrawView propertyView) {
-                if (!showCaption) {
-                    propertyView.caption = LocalizedString.create("");
-                }
-            }
-        });
+        this.showCaption = showCaption;
     }
 
     protected CalcProperty getEnableIf() {
@@ -59,6 +49,29 @@ public abstract class FormToolbarActionProperty extends ScriptingActionProperty 
     public CalcPropertyMapImplement<?, ClassPropertyInterface> getWhereProperty(boolean recursive) {
         CalcProperty enableIf = getEnableIf();
         return enableIf == null ? super.getWhereProperty(recursive) : enableIf.getImplement();
+    }
+
+    private void setupToolbarButton(FormEntity form, PropertyDrawEntity propertyDraw) {
+        LCP propertyCaption = getShowIf();
+        if (propertyCaption != null) {
+            propertyDraw.propertyShowIf = form.addPropertyObject(propertyCaption);
+        }
+    }
+
+    @Override
+    public void proceedDefaultDraw(PropertyDrawEntity<ClassPropertyInterface> propertyDraw, FormEntity<?> form, Version version) {
+        super.proceedDefaultDraw(propertyDraw, form, version);
+
+        setupToolbarButton(form, propertyDraw);
+    }
+
+    @Override
+    public void proceedDefaultDesign(PropertyDrawView propertyView, DefaultFormView view) {
+        super.proceedDefaultDesign(propertyView, view);
+
+        if (!showCaption) {
+            propertyView.caption = "";
+        }
     }
 
     static LCP createShowIfProperty(final CalcProperty showIfs[], boolean showIfNots[]) {

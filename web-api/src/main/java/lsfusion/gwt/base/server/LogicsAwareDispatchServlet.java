@@ -14,7 +14,6 @@ import lsfusion.gwt.base.shared.MessageException;
 import lsfusion.gwt.base.shared.RetryException;
 import lsfusion.interop.RemoteLogicsInterface;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
-import lsfusion.interop.remote.ClientCallBackInterface;
 import net.customware.gwt.dispatch.server.DefaultActionHandlerRegistry;
 import net.customware.gwt.dispatch.server.Dispatch;
 import net.customware.gwt.dispatch.server.InstanceActionHandlerRegistry;
@@ -57,8 +56,6 @@ public abstract class LogicsAwareDispatchServlet<T extends RemoteLogicsInterface
     private String beanName;
 
     protected Dispatch dispatch;
-
-    private ClientCallBackInterface clientCallBack = null;
 
     public void setUseGETForGwtRPC(boolean useGETForGwtRPC) {
         this.useGETForGwtRPC = useGETForGwtRPC;
@@ -145,6 +142,17 @@ public abstract class LogicsAwareDispatchServlet<T extends RemoteLogicsInterface
                 throw new MessageException("Access denied.");
             }
             return dispatch.execute(action);
+        } catch (RemoteDispatchException e) {
+            logger.error("Ошибка в LogicsAwareDispatchServlet.execute: ", e.getRemote());
+            if (e instanceof RemoteFormDispatchException) {
+                throw new InvalidateException(action, "Внутренняя ошибка сервера. Форма будет закрыта.");
+            } else if (e instanceof RemoteNavigatorDispatchException) {
+                navigatorProvider.invalidate();
+                throw new InvalidateException(action, "Внутренняя ошибка сервера. Попробуйте повторить действие или войти заново.");
+            } else {
+                blProvider.invalidate();
+                throw new InvalidateException(action, "Внутренняя ошибка сервера. Попробуйте перезагрузить страницу.");
+            }
         } catch (RemoteRetryException e) {
             logger.error("Ошибка в LogicsAwareDispatchServlet.execute: ", e);
             throw new RetryException(e.getMessage(), e.maxTries);
@@ -182,23 +190,6 @@ public abstract class LogicsAwareDispatchServlet<T extends RemoteLogicsInterface
 
     public RemoteNavigatorInterface getNavigator() throws RemoteException {
         return navigatorProvider.getNavigator();
-    }
-
-    public ClientCallBackInterface getClientCallBack() throws RemoteException {
-        if(clientCallBack == null)
-            clientCallBack = getNavigator().getClientCallBack();
-        return clientCallBack;
-    }
-
-    public void invalidate() throws RemoteException {
-        try {
-            blProvider.invalidate();
-        } catch (Exception ignored) {}
-        try {
-            navigatorProvider.getNavigator().close();
-        } catch (Exception ignored) {}
-        navigatorProvider.invalidate();
-        clientCallBack = null;
     }
 
     public HttpServletRequest getRequest() {

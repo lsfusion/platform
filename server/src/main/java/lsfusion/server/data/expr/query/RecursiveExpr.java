@@ -21,8 +21,8 @@ import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.where.pull.ExprPullWheres;
 import lsfusion.server.data.query.CompileSource;
 import lsfusion.server.data.translator.MapTranslate;
-import lsfusion.server.data.translator.PartialKeyExprTranslator;
-import lsfusion.server.data.translator.ExprTranslator;
+import lsfusion.server.data.translator.PartialQueryTranslator;
+import lsfusion.server.data.translator.QueryTranslator;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassExprWhere;
 
@@ -137,7 +137,7 @@ public class RecursiveExpr extends QueryExpr<KeyExpr, RecursiveExpr.Query, Recur
         return new RecursiveJoin(getInner().getQueryKeys(), getInner().getInnerValues(), query.initial.getWhere(), query.step.getWhere(), query.mapIterate, query.cyclePossible, query.getType() instanceof LogicalClass, group);
     }
 
-    public Expr translate(ExprTranslator translator) {
+    public Expr translateQuery(QueryTranslator translator) {
         return create(query.mapIterate, query.initial, query.step, query.cyclePossible, translator.translate(group));
     }
 
@@ -159,9 +159,9 @@ public class RecursiveExpr extends QueryExpr<KeyExpr, RecursiveExpr.Query, Recur
         }, restGroup);
         
         if(translate.size()>0) {
-            ExprTranslator translator = new PartialKeyExprTranslator(translate, true);
-            initial = initial.translateExpr(translator);
-            step = step.translateExpr(translator);
+            QueryTranslator translator = new PartialQueryTranslator(translate, true);
+            initial = initial.translateQuery(translator);
+            step = step.translateQuery(translator);
         }
 
         if(initial.isNull()) // потому как иначе в getInnerJoin используется getType который assert'ит что не null

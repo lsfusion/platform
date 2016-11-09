@@ -10,12 +10,10 @@ import lsfusion.base.identity.IdentityObject;
 import lsfusion.interop.FontInfo;
 import lsfusion.interop.PropertyEditType;
 import lsfusion.interop.form.layout.AbstractForm;
-import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.form.entity.*;
 import lsfusion.server.form.entity.filter.RegularFilterEntity;
 import lsfusion.server.form.entity.filter.RegularFilterGroupEntity;
-import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.linear.LP;
 import lsfusion.server.logics.mutables.NFFact;
 import lsfusion.server.logics.mutables.SIDHandler;
@@ -49,7 +47,7 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
 
     public KeyStroke keyStroke = null;
 
-    public LocalizedString caption = LocalizedString.create("");
+    public String caption = "";
     public String canonicalName = "";
     public String creationPath = "";
 
@@ -324,19 +322,14 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         return createContainer(null, version);
     }
 
-    public ContainerView createContainer(LocalizedString caption, Version version) {
+    public ContainerView createContainer(String caption, Version version) {
         return createContainer(caption, null, null, version);
     }
 
-    public ContainerView createContainer(LocalizedString caption, LocalizedString description, String sID, Version version) {
+    public ContainerView createContainer(String caption, String description, String sID, Version version) {
         ContainerView container = new ContainerView(idGenerator.idShift());
-        
-        // Не используем здесь setCaption и setDescription из-за того, что они принимают на вход String.
-        // Изменить тип, принимаемый set методами не можем, потому что этот интерфейс используется и на клиенте, где
-        // LocalizedString отсутствует.
-        container.caption = caption;
-        container.description = description;
-        
+        container.setCaption(caption);
+        container.setDescription(description);
         container.setSID(sID);
         if (sID != null) {
             addComponentToMapping(container, version);
@@ -701,7 +694,7 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         this.keyStroke = keyStroke;
     }
 
-    public void setCaption(LocalizedString caption) {
+    public void setCaption(String caption) {
         this.caption = caption;
     }
 
@@ -880,7 +873,7 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         }
 
         pool.writeObject(outStream, keyStroke);
-        pool.writeString(outStream, ThreadLocalContext.localize(caption));
+        pool.writeString(outStream, caption);
         pool.writeString(outStream, canonicalName);
         pool.writeString(outStream, creationPath);
         pool.writeInt(outStream, overridePageWidth);
@@ -903,7 +896,7 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         defaultOrders = NFFact.finalOrderMap(mDefaultOrders.immutableOrder());
 
         keyStroke = pool.readObject(inStream);
-        caption = LocalizedString.create(pool.readString(inStream));
+        caption = pool.readString(inStream);
         canonicalName = pool.readString(inStream);
         creationPath = pool.readString(inStream);
         overridePageWidth = pool.readInt(inStream);

@@ -141,7 +141,7 @@ public class RecalculateClassesTask extends GroupPropertiesSingleTask<Object> { 
     protected long getTaskComplexity(Object element) {
         Stat stat;
         try {
-            stat = element instanceof ImplementTable ? ((ImplementTable) element).getStatRows() :
+            stat = element instanceof ImplementTable ? ((ImplementTable) element).getStatKeys().rows :
                     element instanceof CalcProperty ? ((CalcProperty) element).mapTable.table.getStatProps().get(((CalcProperty) element).field).notNull :
                             Stat.MAX;
         } catch (Exception e) {

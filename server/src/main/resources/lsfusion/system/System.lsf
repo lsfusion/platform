@@ -28,29 +28,25 @@ GROUP propertyPolicy 'Свойства политики безопасности
 canceled 'Canceled' = DATA LOCAL BOOLEAN ();
 
 apply = ACTION APPLY {};
-cancel = ACTION CANCEL;
+cancel = ACTION CUSTOM 'lsfusion.server.logics.property.actions.flow.CancelActionProperty' ();
 onStarted = ACTION ABSTRACT LIST ();
-empty() = ACTION {};
 
-upper = FORMULA 'upper($1)';    
+upper = FORMULA 'upper($1)';
 subtractSeconds(DATETIME dateTimeFrom, DATETIME dateTimeTo) = [= FORMULA INTEGER PG 'extract (\'epoch\' from (($1)-($2)))', MS 'DATEDIFF(s, $2, $1)'](dateTimeTo AS DATETIME, dateTimeFrom AS DATETIME);
 
-formApply '{action.form.save}' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.form.FormApplyActionProperty' ();
-formCancel '{action.form.cancel}' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.form.FormCancelActionProperty' ();
-formPrint '{action.form.print}' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.form.RunReportPrintActionProperty' ();
-formEdit '{action.form.edit}' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.form.EditReportActionProperty' ();
-formXls '{action.form.xlsExport}' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.form.RunReportXlsActionProperty' ();
-formDrop '{action.form.drop}' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.form.DropActionProperty' ();
-formRefresh '{action.form.refresh}' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.form.RefreshActionProperty' ();
-formOk '{action.form.ok}' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.form.OkActionProperty' ();
-formClose '{action.form.close}' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.form.CloseActionProperty' ();
+formApply 'Сохранить' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.form.FormApplyActionProperty' ();
+formCancel 'Отменить' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.form.FormCancelActionProperty' ();
+formPrint 'Печать' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.form.PrintActionProperty' ();
+formEdit 'Редактировать' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.form.EditActionProperty' ();
+formXls 'Экспорт в xls' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.form.XlsActionProperty' ();
+formDrop 'Сбросить' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.form.DropActionProperty' ();
+formRefresh 'Обновить' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.form.RefreshActionProperty' ();
+formOk 'OK' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.form.OkActionProperty' ();
+formClose 'Закрыть' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.form.CloseActionProperty' ();
 
-seek 'Найти объект' = ACTION CUSTOM 'lsfusion.server.logics.SeekObjectActionProperty' (Object);
+seek 'Найти объект' = ACTION CUSTOM 'lsfusion.server.logics.SeekActionProperty' (Object);
 
 sleep 'Sleep' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.SleepActionProperty' (LONG);
-
-sessionOwners = DATA LOCAL NESTED MANAGESESSION INTEGER ();
-manageSession = NOT sessionOwners() > 1;
 
 applyOnlyWithoutRecalc = ACTION CUSTOM 'lsfusion.server.logics.property.actions.ApplyOnlyWithoutRecalcActionProperty' ();
 applyOnlyCalc = ACTION CUSTOM 'lsfusion.server.logics.property.actions.ApplyOnlyCalcActionProperty' ();
@@ -160,11 +156,6 @@ META defineAnyValue(name, param)
     name##PdfFile = DATA LOCAL PDFFILE (param);
     name##CustomFile = DATA LOCAL CUSTOMFILE (param);
     name##ExcelFile = DATA LOCAL EXCELFILE (param);
-    name##WordLink = DATA LOCAL WORDLINK (param);
-    name##ImageLink = DATA LOCAL IMAGELINK (param);
-    name##PdfLink = DATA LOCAL PDFLINK (param);
-    name##CustomLink = DATA LOCAL CUSTOMLINK (param);
-    name##ExcelLink = DATA LOCAL EXCELLINK (param);    
 END
 
 @defineAnyValue(requested, );
@@ -189,40 +180,25 @@ META applicationForm(sid, name)
     }
 END
 
-@applicationForm(options, '{navigator.options}');
-@applicationForm(integrationData, '{navigator.integration}');
-@applicationForm(migrationData, '{navigator.migration}');
+@applicationForm(options, 'Настройки');
+@applicationForm(integrationData, 'Интеграция');
+@applicationForm(migrationData, 'Миграция');
 
-networkPath 'Сетевой путь' = DATA LOCAL VARSTRING[255] ();
-loadNetworkPath 'Загрузить' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.LoadLinkActionProperty' ();
-FORM networkPathForm 'Выбор сетевого пути'
-    PROPERTIES() networkPath, loadNetworkPath;
-
-META defineLinkDialog (object, class)
-    dialog###object(class o) = ACTION {
-        networkPath() <- VARSTRING[255] (object(o));
-        FORM networkPathForm MODAL;
-        IF formResult() == FormResult.ok THEN {
-            object(o) <- IMAGELINK (networkPath()); 
-        }
-    } ASON CHANGE object[class];
-END
-
-WINDOW root '{window.root}' TOOLBAR HORIZONTAL POSITION(0, 0, 100, 6) VALIGN (CENTER) HIDETITLE HIDESCROLLBARS;
-WINDOW toolbar '{window.toolbar}' TOOLBAR VERTICAL POSITION(0, 6, 20, 64) HIDETITLE;
-WINDOW tree '{window.tree}' TOOLBAR POSITION(0, 6, 20, 64) HIDETITLE;
+WINDOW root 'Корень' TOOLBAR HORIZONTAL POSITION(0, 0, 100, 6) VALIGN (CENTER) HIDETITLE HIDESCROLLBARS;
+WINDOW toolbar 'Тулбар' TOOLBAR VERTICAL POSITION(0, 6, 20, 64) HIDETITLE;
+WINDOW tree 'Дерево' TOOLBAR POSITION(0, 6, 20, 64) HIDETITLE;
 
 NAVIGATOR {
-    NEW root '{navigator.forms}' WINDOW root {
-        NEW administration '{navigator.administration}' WINDOW toolbar IMAGE '/images/tools.png' {
-            NEW application '{navigator.application}' {
+    NEW root 'Формы' WINDOW root {
+        NEW administration 'Администрирование' WINDOW toolbar IMAGE '/images/tools.png' {
+            NEW application 'Приложение' {
                 ADD options;
                 ADD integrationData;
                 ADD migrationData;
             }
-            NEW configuration '{navigator.system}';
-            NEW systemEvents '{navigator.systemEvents}';
-            NEW objects '{navigator.objects}' WINDOW tree; 
+            NEW configuration 'Система';
+            NEW systemEvents 'Просмотр событий';
+            NEW objects 'Объекты' WINDOW tree; 
         }
     }
 }

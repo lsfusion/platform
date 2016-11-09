@@ -11,11 +11,7 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.where.WhereBuilder;
-import lsfusion.server.logics.i18n.LocalizedString;
-import lsfusion.server.logics.property.ActionPropertyMapImplement;
-import lsfusion.server.logics.property.CalcPropertyInterfaceImplement;
-import lsfusion.server.logics.property.CalcPropertyMapImplement;
-import lsfusion.server.logics.property.PropertyInterface;
+import lsfusion.server.logics.property.*;
 import lsfusion.server.session.PropertyChanges;
 
 // связь один к одному
@@ -26,27 +22,27 @@ public class AggregateGroupProperty<T extends PropertyInterface> extends CycleGr
     private final ImSet<CalcPropertyInterfaceImplement<T>> groupProps;
 
     // чисто из-за ограничения конструктора
-    public static <T extends PropertyInterface<T>> AggregateGroupProperty<T> create(LocalizedString caption, ImSet<T> innerInterfaces, CalcPropertyInterfaceImplement<T> property, T aggrInterface, ImSet<CalcPropertyInterfaceImplement<T>> groupProps) {
+    public static <T extends PropertyInterface<T>> AggregateGroupProperty<T> create(String caption, ImSet<T> innerInterfaces, CalcPropertyInterfaceImplement<T> property, T aggrInterface, ImSet<CalcPropertyInterfaceImplement<T>> groupProps) {
         CalcPropertyMapImplement<?, T> and = DerivedProperty.createAnd(innerInterfaces, aggrInterface, property);
         if(caption.isEmpty()) {
             ImCol<CalcPropertyMapImplement<?, T>> groupMapProps = CalcPropertyMapImplement.filter(groupProps);
             for(CalcPropertyMapImplement<?, T> groupProp : groupMapProps)
-                caption = LocalizedString.concat(caption, "," + groupProp.property.toString());
+                caption = (caption.isEmpty() ? "" : caption + ",") + groupProp.property.toString();
             if(groupMapProps.size() > 1)
-                caption = LocalizedString.concatList("(", caption, ")"); 
+                caption = "(" + caption + ")"; 
         } else
-            caption = LocalizedString.concat(caption, "(агр.)");
+            caption = caption + "(агр.)";
         and.property.caption = caption;
         assert groupProps.toSet().containsAll(innerInterfaces.removeIncl(aggrInterface));
         return create(caption, and, groupProps, innerInterfaces, property, aggrInterface, groupProps);
     }
 
     // чисто для generics
-    private static <T extends PropertyInterface<T>> AggregateGroupProperty<T> create(LocalizedString caption, CalcPropertyInterfaceImplement<T> and, ImCol<CalcPropertyInterfaceImplement<T>> groupInterfaces, ImSet<T> innerInterfaces, CalcPropertyInterfaceImplement<T> whereProp, T aggrInterface, ImSet<CalcPropertyInterfaceImplement<T>> groupProps) {
+    private static <T extends PropertyInterface<T>> AggregateGroupProperty<T> create(String caption, CalcPropertyInterfaceImplement<T> and, ImCol<CalcPropertyInterfaceImplement<T>> groupInterfaces, ImSet<T> innerInterfaces, CalcPropertyInterfaceImplement<T> whereProp, T aggrInterface, ImSet<CalcPropertyInterfaceImplement<T>> groupProps) {
         return new AggregateGroupProperty<>(caption, and, groupInterfaces, innerInterfaces, whereProp, aggrInterface, groupProps);
     }
 
-    private AggregateGroupProperty(LocalizedString caption, CalcPropertyInterfaceImplement<T> and, ImCol<CalcPropertyInterfaceImplement<T>> groupInterfaces, ImSet<T> innerInterfaces, CalcPropertyInterfaceImplement<T> whereProp, T aggrInterface, ImSet<CalcPropertyInterfaceImplement<T>> groupProps) {
+    private AggregateGroupProperty(String caption, CalcPropertyInterfaceImplement<T> and, ImCol<CalcPropertyInterfaceImplement<T>> groupInterfaces, ImSet<T> innerInterfaces, CalcPropertyInterfaceImplement<T> whereProp, T aggrInterface, ImSet<CalcPropertyInterfaceImplement<T>> groupProps) {
         super(caption, innerInterfaces, groupInterfaces, and, null);
 
         this.whereProp = whereProp;

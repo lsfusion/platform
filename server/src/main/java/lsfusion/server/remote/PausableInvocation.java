@@ -1,9 +1,8 @@
 package lsfusion.server.remote;
 
 import lsfusion.server.ServerLoggers;
-import lsfusion.server.profiler.ExecutionTimeCounter;
-import lsfusion.server.profiler.Profiler;
 import lsfusion.server.stack.ExecutionStackAspect;
+import org.apache.log4j.Logger;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -164,17 +163,7 @@ public abstract class PausableInvocation<T, E extends Exception> implements Call
     }
 
     private void blockSync(SynchronousQueue sync) throws InterruptedException {
-        long startTime = 0;
-        if (Profiler.PROFILER_ENABLED) {
-            startTime = System.nanoTime();
-        }
         sync.take();
-        if (Profiler.PROFILER_ENABLED) {
-            ExecutionTimeCounter counter = ExecutionStackAspect.executionTime.get();
-            if (counter != null) {
-                counter.addUI(System.nanoTime() - startTime);
-            }
-        }
     }
 
     private void releaseSync(SynchronousQueue sync) throws InterruptedException {

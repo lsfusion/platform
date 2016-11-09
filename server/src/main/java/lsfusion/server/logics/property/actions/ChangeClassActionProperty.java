@@ -5,6 +5,7 @@ import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
+import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.server.classes.*;
 import lsfusion.server.classes.sets.OrObjectClassSet;
@@ -17,8 +18,7 @@ import lsfusion.server.form.instance.ObjectInstance;
 import lsfusion.server.form.instance.PropertyObjectInterfaceInstance;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
-import lsfusion.server.logics.debug.ActionDelegationType;
-import lsfusion.server.logics.i18n.LocalizedString;
+import lsfusion.server.logics.ServerResourceBundle;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.actions.flow.ExtendContextActionProperty;
 import lsfusion.server.logics.property.actions.flow.FlowResult;
@@ -98,8 +98,8 @@ public class ChangeClassActionProperty<T extends PropertyInterface, I extends Pr
     }
 
     public ChangeClassActionProperty(ObjectClass valueClass, boolean forceDialog, ImSet<I> innerInterfaces, ImOrderSet<I> mapInterfaces, I changeInterface, CalcPropertyMapImplement<T, I> where, BaseClass baseClass) {
-         super(LocalizedString.create(
-                 valueClass instanceof UnknownClass ? "{logics.delete}" : "{logics.property.actions.changeclass}"), innerInterfaces, mapInterfaces);
+         super(ServerResourceBundle.getString(
+                 valueClass instanceof UnknownClass ? "logics.property.actions.delete" : "logics.property.actions.changeclass"), innerInterfaces, mapInterfaces);
 
          this.valueClass = valueClass;
          this.forceDialog = forceDialog;
@@ -171,7 +171,7 @@ public class ChangeClassActionProperty<T extends PropertyInterface, I extends Pr
     public PropertyInterface getSimpleDelete() {
         if ((where == null || BaseUtils.hashEquals(mapInterfaces.valuesSet(),innerInterfaces)) && valueClass instanceof UnknownClass)
             return interfaces.single();
-        return super.getSimpleDelete();
+        return null;
     }
 
     @Override
@@ -194,10 +194,5 @@ public class ChangeClassActionProperty<T extends PropertyInterface, I extends Pr
                 return createChangeClassAction(context, mapInnerInterfaces.get(changeInterface), valueClass, forceDialog, where, baseClass, orders, ordersNotNull);
             }
         });
-    }
-
-    @Override
-    public ActionDelegationType getDelegationType(boolean modifyContext) {
-        return ActionDelegationType.IN_DELEGATE;
     }
 }

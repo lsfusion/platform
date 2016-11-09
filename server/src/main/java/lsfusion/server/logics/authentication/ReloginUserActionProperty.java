@@ -7,7 +7,6 @@ import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.AuthenticationLogicsModule;
 import lsfusion.server.logics.DataObject;
-import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
@@ -15,13 +14,12 @@ import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 
 import java.sql.SQLException;
-
-import static lsfusion.server.context.ThreadLocalContext.localize;
+import java.util.ResourceBundle;
 
 public class ReloginUserActionProperty extends ScriptingActionProperty {
 
     public ReloginUserActionProperty(AuthenticationLogicsModule LM, ValueClass... classes) throws ScriptingErrorLog.SemanticErrorException {
-        super(LM, LocalizedString.create("reloginUser"), classes);
+        super(LM, "reloginUser", classes);
     }
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
@@ -35,7 +33,8 @@ public class ReloginUserActionProperty extends ScriptingActionProperty {
                 throw ExceptionUtils.propagate(e, SQLException.class);
             }
         } else {
-            context.requestUserInteraction(new MessageClientAction(localize("{logics.error.changing.current.user.different.roles}"), localize("{logics.error}")));
+            ResourceBundle resourceBundle = ResourceBundle.getBundle("ServerResourceBundle");
+            context.requestUserInteraction(new MessageClientAction(resourceBundle.getString("logics.error.changing.current.user.different.roles"), resourceBundle.getString("logics.error")));
         }
     }
 }

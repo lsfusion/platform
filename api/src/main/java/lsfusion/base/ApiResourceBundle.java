@@ -17,11 +17,11 @@ public class ApiResourceBundle {
         return MessageFormat.format(getString(key), params);
     }
 
-    public static void load(Locale locale) {
-        if (locale == null) {
+    public static void load(String locale) {
+        if (locale.equals("")) {
             apiResourceBundle = ResourceBundle.getBundle("ApiResourceBundle");
         } else {
-            apiResourceBundle = ResourceBundle.getBundle("ApiResourceBundle", locale);
+            apiResourceBundle = ResourceBundle.getBundle("ApiResourceBundle", new Locale(locale, ""));
         }
     }
 }

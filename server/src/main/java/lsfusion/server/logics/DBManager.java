@@ -19,7 +19,6 @@ import lsfusion.server.caches.IdentityStrongLazy;
 import lsfusion.server.classes.ByteArrayClass;
 import lsfusion.server.classes.ConcreteCustomClass;
 import lsfusion.server.classes.DataClass;
-import lsfusion.server.classes.StringClass;
 import lsfusion.server.context.ExecutionStack;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.*;
@@ -41,7 +40,6 @@ import lsfusion.server.form.navigator.*;
 import lsfusion.server.integration.*;
 import lsfusion.server.lifecycle.LifecycleEvent;
 import lsfusion.server.lifecycle.LogicsManager;
-import lsfusion.server.logics.i18n.FormatLocalizedString;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.mutables.NFLazy;
 import lsfusion.server.logics.property.*;
@@ -51,7 +49,6 @@ import lsfusion.server.logics.table.IDTable;
 import lsfusion.server.logics.table.ImplementTable;
 import lsfusion.server.session.DataSession;
 import lsfusion.server.session.SessionCreator;
-import lsfusion.server.session.SingleKeyPropertyUsage;
 import lsfusion.server.stack.ParamMessage;
 import lsfusion.server.stack.ProgressStackItem;
 import lsfusion.server.stack.StackMessage;
@@ -75,7 +72,7 @@ import java.util.*;
 
 import static java.util.Arrays.asList;
 import static lsfusion.base.SystemUtils.getRevision;
-import static lsfusion.server.context.ThreadLocalContext.localize;
+import static lsfusion.server.logics.ServerResourceBundle.getString;
 
 public class DBManager extends LogicsManager implements InitializingBean {
     public static final Logger logger = Logger.getLogger(DBManager.class);
@@ -296,7 +293,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         try {
             return IDTable.instance.generateID(getIDSql(), IDTable.OBJECT);
         } catch (SQLException e) {
-            throw new RuntimeException(localize("{logics.info.error.reading.user.data}"), e);
+            throw new RuntimeException(getString("logics.info.error.reading.user.data"), e);
         }
     }
 
@@ -353,7 +350,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
                         return NullValue.instance;
                     }
                 },
-                new TimeoutController() {
+        new TimeoutController() {
                     public int getTransactionTimeout() {
                         return 0;
                     }
@@ -371,19 +368,15 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
                     public void unregisterForm(FormInstance form) {
                     }
-                }, new LocaleController() {
-                    public Locale getLocale() {
-                        return Locale.getDefault();
-                    }
                 }, upOwner
         );
     }
 
     public DataSession createSession(SQLSession sql, UserController userController, ComputerController computerController, FormController formController,
-                                     ConnectionController connectionController, TimeoutController timeoutController, ChangesController changesController, LocaleController localeController, OperationOwner owner) throws SQLException {
+                                     ConnectionController connectionController, TimeoutController timeoutController, ChangesController changesController, OperationOwner owner) throws SQLException {
         //todo: неплохо бы избавиться от зависимости на restartManager, а то она неестественна
         return new DataSession(sql, userController, computerController, formController, connectionController,
-                timeoutController, changesController, localeController, new IsServerRestartingController() {
+                timeoutController, changesController, new IsServerRestartingController() {
                                    public boolean isServerRestarting() {
                                        return restartManager.isPendingRestart();
                                    }
@@ -592,7 +585,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
     }
 
-    @StackMessage("{logics.upload.db}")
+    @StackMessage("logics.upload.db")
     private void uploadTableToDB(SQLSession sql, final @ParamMessage GlobalTable implementTable, @ParamMessage String progress, final SQLSession sqlTo, final OperationOwner owner) throws SQLException, SQLHandledException {
         sqlTo.truncate(implementTable, owner);
 
@@ -602,14 +595,14 @@ public class DBManager extends LogicsManager implements InitializingBean {
             final int total = sql.getCount(implementTable, owner);
             ResultHandler<KeyField, PropertyField> reader = new ReadBatchResultHandler<KeyField, PropertyField>(10000) {
                 public void start() {
-                    stackItem.value = ThreadLocalContext.pushProgressMessage(localize("{logics.upload.db}"), proceeded.result, total);
+                    stackItem.value = ThreadLocalContext.pushProgressMessage(getString("logics.upload.db"), proceeded.result, total);
                 }
 
                 public void proceedBatch(ImOrderMap<ImMap<KeyField, Object>, ImMap<PropertyField, Object>> batch) throws SQLException {
                     sqlTo.insertBatchRecords(implementTable, batch.getMap(), owner);
                     proceeded.set(proceeded.result + batch.size());
                     ThreadLocalContext.popActionMessage(stackItem.value);
-                    stackItem.value = ThreadLocalContext.pushProgressMessage(localize("{logics.upload.db}"), proceeded.result, total);
+                    stackItem.value = ThreadLocalContext.pushProgressMessage(getString("logics.upload.db"), proceeded.result, total);
                 }
 
                 public void finish() throws SQLException {
@@ -735,13 +728,13 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 }
             }
 
-            List<CalcProperty> recalculateProperties = new ArrayList<>();
+            List<AggregateProperty> recalculateProperties = new ArrayList<>();
 
             MExclSet<Pair<String, String>> mDropColumns = SetFact.mExclSet(); // вообще pend'ить нужно только classDataProperty, но их тогда надо будет отличать
 
             // бежим по свойствам
             List<DBStoredProperty> restNewDBStored = new LinkedList<>(newDBStructure.storedProperties);
-            List<CalcProperty> recalculateStatProperties = new ArrayList<>();
+            List<AggregateProperty> recalculateTableProperties = new ArrayList<>();
             Map<Table, Map<Field, Type>> alterTableMap = new HashMap<>();
             for (DBStoredProperty oldProperty : oldDBStructure.storedProperties) {
                 Table oldTable = oldDBStructure.getTable(oldProperty.tableName);
@@ -765,12 +758,13 @@ public class DBManager extends LogicsManager implements InitializingBean {
                                 sql.addColumn(newTable, newProperty.property.field);
                                 // делаем запрос на перенос
 
-                                startLogger.info(localize(new FormatLocalizedString("{logics.info.property.is.transferred.from.table.to.table}", newProperty.property.field, newProperty.property.caption, oldProperty.tableName, newProperty.tableName)));
+                                startLogger.info(getString("logics.info.property.is.transferred.from.table.to.table", newProperty.property.field, newProperty.property.caption, oldProperty.tableName, newProperty.tableName));
                                 newProperty.property.mapTable.table.moveColumn(sql, newProperty.property.field, oldTable,
                                         foundInterfaces.join((ImMap<PropertyInterface, KeyField>) newProperty.property.mapTable.mapKeys), oldTable.findProperty(oldProperty.getDBName()));
                                 startLogger.info("Done");
                                 moved = true;
-                                recalculateStatProperties.add(newProperty.property);
+                                if(newProperty.property instanceof AggregateProperty)
+                                    recalculateTableProperties.add((AggregateProperty) newProperty.property);
                             } else { // надо проверить что тип не изменился
                                 Type oldType = oldTable.findProperty(oldProperty.getDBName()).type;
                                 if (!oldType.equals(newProperty.property.field.type)) {
@@ -817,8 +811,8 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
             for (DBStoredProperty property : restNewDBStored) { // добавляем оставшиеся
                 sql.addColumn(property.getTable(), property.property.field);
-                if (oldDBStructure.version > 0) // если все свойства "новые" то ничего перерасчитывать не надо
-                    recalculateProperties.add(property.property);
+                if (oldDBStructure.version > 0 && property.property instanceof AggregateProperty) // если все свойства "новые" то ничего перерасчитывать не надо
+                    recalculateProperties.add((AggregateProperty) property.property);
             }
 
             // обработка изменений с классами
@@ -858,7 +852,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 copyObjects.addProperty(table.findProperty(classProp.getDBName()), mExpr.getFinal());
                 copyObjects.and(moveWhere);
 
-                startLogger.info(localize(new FormatLocalizedString("{logics.info.objects.are.transferred.from.tables.to.table}", classProp.tableName, mCopyFromTables.immutable().toString())));
+                startLogger.info(getString("logics.info.objects.are.transferred.from.tables.to.table", classProp.tableName, mCopyFromTables.immutable().toString()));
                 sql.modifyRecords(new ModifyQuery(table, copyObjects.getQuery(), OperationOwner.unknown, TableOwner.global));
             }
             ImMap<String, ImSet<Integer>> toClean = MapFact.mergeMaps(toCopy.values(), ASet.<String, Integer>addMergeSet());
@@ -876,7 +870,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 dropClassObjects.addProperty(oldField, Expr.NULL);
                 dropClassObjects.and(moveWhere);
 
-                startLogger.info(localize(new FormatLocalizedString("{logics.info.objects.are.removed.from.table}", classProp.tableName)));
+                startLogger.info(getString("logics.info.objects.are.removed.from.table", classProp.tableName));
                 sql.updateRecords(new ModifyQuery(table, dropClassObjects.getQuery(), OperationOwner.unknown, TableOwner.global));
             }
 
@@ -920,12 +914,6 @@ public class DBManager extends LogicsManager implements InitializingBean {
             if(!migrateReflectionProperties(oldDBStructure))
                 throw new RuntimeException("Error while migrating reflection properties and actions");
 
-            if(newDBStructure.version >= 23 && oldDBStructure.version < 23) {
-                startLogger.info("Migrating ADDFORMS access");
-                if (!migrateAccessProperties())
-                    throw new RuntimeException("Error while migrating ADDFORMS access");
-            }
-
             newDBStructure.writeConcreteClasses(outDB);
 
             try {
@@ -948,8 +936,8 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
             startLogger.info("Recalculating aggregations");
             recalculateAggregations(getStack(), sql, recalculateProperties, false, startLogger); // перерасчитаем агрегации
-            updateAggregationStats(recalculateProperties, tableStats);
-            updateAggregationStats(recalculateStatProperties, tableStats);
+            updateAggregationStats(recalculateProperties, tableStats, false);
+            updateAggregationStats(recalculateTableProperties, tableStats, true);
             if(!noTransSyncDB)
                 sql.commitTransaction();
 
@@ -982,7 +970,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
     }
 
-    private void updateAggregationStats(List<CalcProperty> recalculateProperties, ImMap<String, Integer> tableStats) throws SQLException, SQLHandledException {
+    private void updateAggregationStats(List<AggregateProperty> recalculateProperties, ImMap<String, Integer> tableStats, boolean onlyTable) throws SQLException, SQLHandledException {
         Map<ImplementTable, List<CalcProperty>> calcPropertiesMap; // статистика для новых свойств
         if (Settings.get().isGroupByTables()) {
             calcPropertiesMap = new HashMap<>();
@@ -1003,7 +991,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 try (DataSession session = createSession()) {
                     long start = System.currentTimeMillis();
                     startLogger.info(String.format("Update Aggregation Stats started: %s", table));
-                    propStats = table.calculateStat(reflectionLM, session, fields);
+                    propStats = table.calculateStat(reflectionLM, session, fields, onlyTable);
                     session.apply(businessLogics, getStack());
                     long time = System.currentTimeMillis() - start;
                     startLogger.info(String.format("Update Aggregation Stats: %s, %sms", table, time));
@@ -1054,35 +1042,6 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
     }
 
-    // temporary
-    public static Map<String, String> copyAccess = new HashMap<>(); 
-    private <P extends PropertyInterface> boolean migrateAccessProperties() {
-        try (DataSession session = createSession(OperationOwner.unknown)) { // создание сессии аналогично fillIDs
-            SingleKeyPropertyUsage table = new SingleKeyPropertyUsage(StringClass.text, StringClass.text);
-            table.writeRows(session.sql, OperationOwner.unknown, MapFact.fromJavaMap(copyAccess).mapKeyValues(new GetValue<DataObject, String>() {
-                public DataObject getMapValue(String value) {
-                    return new DataObject(value, StringClass.text);
-                }
-            }, new GetValue<ObjectValue, String>() {
-                public ObjectValue getMapValue(String value) {
-                    return new DataObject(value, StringClass.text);
-                }
-            }));
-
-            try {
-                LCP lp = businessLogics.securityLM.dataCopyAccess;
-                session.change(((LCP<P>) lp).property, SingleKeyPropertyUsage.getChange(table, ((LCP<P>) lp).listInterfaces.single()));
-            } finally {
-                table.drop(session.sql, OperationOwner.unknown);
-            }
-
-            businessLogics.securityLM.copyAccess.execute(session, getStack());
-            return session.apply(businessLogics, getStack());
-        } catch (SQLException | SQLHandledException e) {
-            throw Throwables.propagate(e);
-        }
-    }
-
     private boolean fillIDs(Map<String, String> sIDChanges, Map<String, String> objectSIDChanges) throws SQLException, SQLHandledException {
         try (DataSession session = createSession(OperationOwner.unknown)) { // по сути вложенная транзакция
             LM.baseClass.fillIDs(session, LM.staticCaption, LM.staticName, sIDChanges, objectSIDChanges);
@@ -1091,12 +1050,11 @@ public class DBManager extends LogicsManager implements InitializingBean {
     }
 
     public String checkAggregations(SQLSession session) throws SQLException, SQLHandledException {
-        List<CalcProperty> checkProperties = businessLogics.getAggregateStoredProperties(false);
+        List<AggregateProperty> checkProperties = businessLogics.getAggregateStoredProperties(false);
         String message = "";
         for (int i = 0; i < checkProperties.size(); i++) {
-            CalcProperty property = checkProperties.get(i);
-            if(property instanceof AggregateProperty)
-            message += ((AggregateProperty) property).checkAggregation(session, LM.baseClass, new ProgressBar(localize("{logics.info.checking.aggregated.property}"), i, checkProperties.size(), property.getSID()));
+            AggregateProperty property = checkProperties.get(i);
+            message += property.checkAggregation(session, LM.baseClass, new ProgressBar(getString("logics.info.checking.aggregated.property"), i, checkProperties.size(), property.getSID()));
         }
         return message;
     }
@@ -1207,16 +1165,14 @@ public class DBManager extends LogicsManager implements InitializingBean {
             run.run(session);
     }
 
-    public String recalculateAggregations(ExecutionStack stack, SQLSession session, final List<CalcProperty> recalculateProperties, boolean isolatedTransaction, Logger logger) throws SQLException, SQLHandledException {
+    public String recalculateAggregations(ExecutionStack stack, SQLSession session, final List<AggregateProperty> recalculateProperties, boolean isolatedTransaction, Logger logger) throws SQLException, SQLHandledException {
         final List<String> messageList = new ArrayList<>();
         final int total = recalculateProperties.size();
         final long maxRecalculateTime = Settings.get().getMaxRecalculateTime();
         if(total > 0) {
             try (DataSession dataSession = createSession()) {
                 for (int i = 0; i < recalculateProperties.size(); i++) {
-                    CalcProperty property = recalculateProperties.get(i);
-                    if(property instanceof AggregateProperty)
-                        recalculateAggregation(dataSession, session, isolatedTransaction, new ProgressBar(localize("{logics.recalculation.aggregations}"), i, total), messageList, maxRecalculateTime, (AggregateProperty) property, logger);
+                    recalculateAggregation(dataSession, session, isolatedTransaction, new ProgressBar(getString("logics.recalculation.aggregations"), i, total), messageList, maxRecalculateTime, recalculateProperties.get(i), logger);
                 }
                 dataSession.apply(businessLogics, stack);
             }
@@ -1299,7 +1255,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
 
         if (dependents) {
-            for (CalcProperty prop : businessLogics.getAggregateStoredProperties(true)) {
+            for (AggregateProperty prop : businessLogics.getAggregateStoredProperties(true)) {
                 if (prop != property && !calculated.contains(prop) && CalcProperty.depends(prop, (CalcProperty) property)) {
                     boolean recalculate = reflectionLM.notRecalculateTableColumn.read(dataSession, reflectionLM.tableColumnSID.readClasses(dataSession, new DataObject(property.getDBName()))) == null;
                     if(recalculate)
@@ -1307,25 +1263,6 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 }
             }
         }
-    }
-
-    public Set<String> getNotRecalculateStatsTableSet() {
-        QueryBuilder<String, Object> query = new QueryBuilder<>(SetFact.singleton("key"));
-        ImSet<String> notRecalculateStatsTableSet = SetFact.EMPTY();
-        try (final DataSession dataSession = createSession()) {
-            Expr expr = reflectionLM.notRecalculateStatsSID.getExpr(query.getMapExprs().singleValue());
-            query.and(expr.getWhere());
-            notRecalculateStatsTableSet = query.execute(dataSession).keys().mapSetValues(new GetValue<String, ImMap<String, Object>>() {
-                @Override
-                public String getMapValue(ImMap<String, Object> value) {
-                    return (String) value.singleValue();
-                }
-            });
-
-        } catch (SQLException | SQLHandledException e) {
-            serviceLogger.info(e.getMessage());
-        }
-        return notRecalculateStatsTableSet.toJavaSet();
     }
 
     private void checkModules(OldDBStructure dbStructure) {
@@ -1689,11 +1626,12 @@ public class DBManager extends LogicsManager implements InitializingBean {
     }
 
     @NFLazy
-    public <Z extends PropertyInterface> void addIndex(ImList<CalcPropertyObjectInterfaceImplement<String>> index) {
-        CalcPropertyRevImplement<Z, String> propertyImplement = (CalcPropertyRevImplement<Z, String>) findProperty(index);
+    public void addIndex(ImList<CalcPropertyObjectInterfaceImplement<String>> index) {
+        CalcPropertyRevImplement<?, String> propertyImplement = findProperty(index);
         if(propertyImplement != null) {
             indexes.put(index, propertyImplement.property.getType() instanceof DataClass);
-            propertyImplement.property.markIndexed(propertyImplement.mapping, index);
+            if(BaseUtils.hashEquals(index.get(0), propertyImplement)) // если первый
+                propertyImplement.property.markIndexed();
         }
     }
 
@@ -1732,7 +1670,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
     public void packTables(SQLSession session, ImCol<ImplementTable> tables, boolean isolatedTransaction) throws SQLException, SQLHandledException {
         for (final Table table : tables) {
-            logger.debug(localize("{logics.info.packing.table}") + " (" + table + ")... ");
+            logger.debug(getString("logics.info.packing.table") + " (" + table + ")... ");
             run(session, isolatedTransaction, new RunService() {
                 @Override
                 public void run(SQLSession sql) throws SQLException, SQLHandledException {
@@ -1973,7 +1911,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
             ImList<CalcPropertyObjectInterfaceImplement<String>> indexFields = index.getKey();
 
             if (indexFields.isEmpty()) {
-                throw new RuntimeException(localize("{logics.policy.forbidden.to.create.empty.indexes}"));
+                throw new RuntimeException(getString("logics.policy.forbidden.to.create.empty.indexes"));
             }
 
             CalcPropertyRevImplement<P, String> basePropertyImplement = (CalcPropertyRevImplement<P, String>) findProperty(indexFields);
@@ -1982,7 +1920,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
             CalcProperty<P> baseProperty = basePropertyImplement.property;
 
             if (!baseProperty.isStored())
-                throw new RuntimeException(localize("{logics.policy.forbidden.to.create.indexes.on.non.regular.properties}") + " (" + baseProperty + ")");
+                throw new RuntimeException(getString("logics.policy.forbidden.to.create.indexes.on.non.regular.properties") + " (" + baseProperty + ")");
 
             ImplementTable baseIndexTable = baseProperty.mapTable.table;
             ImRevMap<String, KeyField> baseMapKeys = basePropertyImplement.mapping.crossJoin(baseProperty.mapTable.mapKeys);
@@ -1996,15 +1934,15 @@ public class DBManager extends LogicsManager implements InitializingBean {
                     CalcProperty<P> property = propertyImplement.property;
 
                     if (!property.isStored())
-                        throw new RuntimeException(localize("{logics.policy.forbidden.to.create.indexes.on.non.regular.properties}") + " (" + property + ")");
+                        throw new RuntimeException(getString("logics.policy.forbidden.to.create.indexes.on.non.regular.properties") + " (" + property + ")");
 
                     ImplementTable indexTable = property.mapTable.table;
                     ImRevMap<String, KeyField> mapKeys = propertyImplement.mapping.crossJoin(property.mapTable.mapKeys);
 
                     if (!BaseUtils.hashEquals(baseIndexTable, indexTable))
-                        throw new RuntimeException(localize(new FormatLocalizedString("{logics.policy.forbidden.to.create.indexes.on.properties.in.different.tables}", baseProperty, property)));
+                        throw new RuntimeException(getString("logics.policy.forbidden.to.create.indexes.on.properties.in.different.tables", baseProperty, property));
                     if (!BaseUtils.hashEquals(baseMapKeys, mapKeys))
-                        throw new RuntimeException(localize(new FormatLocalizedString("{logics.policy.forbidden.to.create.indexes.on.properties.with.different.mappings}", baseProperty, property, baseMapKeys, mapKeys)));
+                        throw new RuntimeException(getString("logics.policy.forbidden.to.create.indexes.on.properties.with.different.mappings", baseProperty, property, baseMapKeys, mapKeys));
                     field = property.field;
                 } else {
                     field = baseMapKeys.get(((CalcPropertyObjectImplement<String>)indexField).object);
@@ -2019,7 +1957,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
     private class NewDBStructure extends DBStructure<Field> {
 
         public <P extends PropertyInterface> NewDBStructure(DBVersion dbVersion) {
-            version = 23;
+            version = 22;
             this.dbVersion = dbVersion;
 
             tables.putAll(getIndicesMap());

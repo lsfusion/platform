@@ -8,15 +8,15 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.caches.*;
 import lsfusion.server.caches.hash.HashContext;
-import lsfusion.server.data.*;
+import lsfusion.server.data.Value;
 import lsfusion.server.data.expr.*;
 import lsfusion.server.data.query.ExprEnumerator;
 import lsfusion.server.data.query.InnerExprFollows;
 import lsfusion.server.data.query.InnerJoin;
 import lsfusion.server.data.query.InnerJoins;
-import lsfusion.server.data.query.innerjoins.UpWheres;
-import lsfusion.server.data.query.stat.*;
-import lsfusion.server.data.query.stat.KeyStat;
+import lsfusion.server.data.query.stat.BaseJoin;
+import lsfusion.server.data.query.stat.UnionJoin;
+import lsfusion.server.data.query.stat.WhereJoin;
 import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.translator.MapValuesTranslate;
 import lsfusion.server.data.where.Where;
@@ -98,7 +98,7 @@ public abstract class QueryJoin<K extends Expr,I extends QueryJoin.Query<K, I>, 
         public InnerExpr getInnerExpr(WhereJoin join) {
             return QueryJoin.getInnerExpr(thisObj, join);
         }
-        public ImSet<NullableExprInterface> getExprFollows(boolean includeInnerWithoutNotNull, boolean recursive) {
+        public ImSet<NotNullExprInterface> getExprFollows(boolean includeInnerWithoutNotNull, boolean recursive) {
             return InnerExpr.getExprFollows(thisObj, includeInnerWithoutNotNull, recursive);
         }
         public boolean hasExprFollowsWithoutNotNull() {
@@ -107,7 +107,7 @@ public abstract class QueryJoin<K extends Expr,I extends QueryJoin.Query<K, I>, 
         public InnerJoins getInnerJoins() {
             return InnerExpr.getInnerJoins(thisObj);
         }
-        public InnerJoins getJoinFollows(Result<UpWheres<InnerJoin>> upWheres, Result<ImSet<UnionJoin>> unionJoins) {
+        public InnerJoins getJoinFollows(Result<ImMap<InnerJoin, Where>> upWheres, Result<ImSet<UnionJoin>> unionJoins) {
             return InnerExpr.getJoinFollows(thisObj, upWheres, unionJoins);
         }
 
@@ -149,10 +149,7 @@ public abstract class QueryJoin<K extends Expr,I extends QueryJoin.Query<K, I>, 
     public InnerExpr getInnerExpr(WhereJoin join) {
         return getOuter().getInnerExpr(join);
     }
-    public boolean isValue() {
-        return getOuter().isValue();
-    }
-    public ImSet<NullableExprInterface> getExprFollows(boolean includeInnerWithoutNotNull, boolean recursive) {
+    public ImSet<NotNullExprInterface> getExprFollows(boolean includeInnerWithoutNotNull, boolean recursive) {
         return getOuter().getExprFollows(includeInnerWithoutNotNull, recursive);
     }
     public boolean hasExprFollowsWithoutNotNull() {
@@ -161,7 +158,7 @@ public abstract class QueryJoin<K extends Expr,I extends QueryJoin.Query<K, I>, 
     public InnerJoins getInnerJoins() {
         return getOuter().getInnerJoins();
     }
-    public InnerJoins getJoinFollows(Result<UpWheres<InnerJoin>> upWheres, Result<ImSet<UnionJoin>> unionJoins) {
+    public InnerJoins getJoinFollows(Result<ImMap<InnerJoin, Where>> upWheres, Result<ImSet<UnionJoin>> unionJoins) {
         return getOuter().getJoinFollows(upWheres, unionJoins);
     }
 
@@ -171,65 +168,13 @@ public abstract class QueryJoin<K extends Expr,I extends QueryJoin.Query<K, I>, 
 
     // множественное наследование
     public static InnerExpr getInnerExpr(InnerJoin<?, ?> join, BaseJoin<?> whereJoin) {
-        ImSet<InnerExpr> set = NullableExpr.getInnerExprs(whereJoin.getExprFollows(NullableExpr.INNERJOINS, true), null);
+        ImSet<InnerExpr> set = NotNullExpr.getInnerExprs(whereJoin.getExprFollows(NotNullExpr.INNERJOINS, true), null);
         for(int i=0,size=set.size();i<size;i++) {
             InnerExpr expr = set.get(i);
             if(BaseUtils.hashEquals(join,expr.getInnerJoin()))
                 return expr;
         }
         return null;
-    }
-
-    // множественное наследование
-    public static <K> StatKeys<K> getStatKeys(InnerJoin<K, ?> join, KeyStat keyStat, StatType type) {
-        return join.getInnerStatKeys(type);
-    }
-
-    @Override
-    public StatKeys<K> getStatKeys(KeyStat keyStat, StatType type, boolean oldMech) {
-        return getStatKeys(this, keyStat, type);
-    }
-
-
-    @Override
-    public StatKeys<K> getInnerStatKeys(StatType type) {
-        return getPushedStatKeys(type, StatKeys.<K>NOPUSH());
-    }
-
-    // важно делать IdentityLazy для мемоизации
-    public abstract StatKeys<K> getPushedStatKeys(StatType type, StatKeys<K> pushStatKeys);
-
-    public static <K> StatKeys<K> adjustNotNullStats(Cost pushCost, Stat pushStat, ImMap<K, Stat> pushKeys, ImMap<K, Stat> pushNotNullKeys) {
-        Stat min = pushStat;
-        for(Stat stat : pushNotNullKeys.valueIt())
-            min = min.min(stat);
-        return StatKeys.create(pushCost, pushStat, new DistinctKeys<K>(pushKeys)).replaceStat(min);
-    }
-
-    public StatKeys<K> getPushedStatKeys(StatType type, Cost pushCost, Stat pushStat, ImMap<K, Stat> pushKeys, ImMap<K, Stat> pushNotNullKeys, Result<ImSet<K>> rPushedKeys) {
-
-        ImSet<K> pushedKeys = getPushKeys(pushKeys.keys());
-        if(rPushedKeys != null)
-            rPushedKeys.set(pushedKeys);
-
-        if(pushedKeys.size() < pushKeys.size()) {
-            pushKeys = pushKeys.filterIncl(pushedKeys);
-            pushNotNullKeys = pushNotNullKeys.filterIncl(pushedKeys);
-        }
-
-        return getPushedStatKeys(type, adjustNotNullStats(pushCost, pushStat, pushKeys, pushNotNullKeys));
-    }
-
-    public Cost getPushedCost(KeyStat keyStat, StatType type, Cost pushCost, Stat pushStat, ImMap<K, Stat> pushKeys, ImMap<K, Stat> pushNotNullKeys, ImMap<BaseExpr, Stat> pushProps, Result<ImSet<K>> rPushedKeys, Result<ImSet<BaseExpr>> rPushedProps) {
-        return getPushedStatKeys(type, pushCost, pushStat, pushKeys, pushNotNullKeys, rPushedKeys).getCost();
-    }
-
-    public ImMap<Expr, ? extends Expr> getPushGroup(ImMap<K, ? extends Expr> group, boolean newPush, Result<Where> pushExtraWhere) {
-        return BaseUtils.immutableCast(group);
-    }
-
-    public ImSet<K> getPushKeys(ImSet<K> pushKeys) {
-        return pushKeys;
     }
 
     // нужны чтобы при merge'е у транслятора хватало ключей/значений

@@ -38,6 +38,4 @@ public interface GActionDispatcher {
     void execute(GFocusAction action);
 
     void execute(GActivateTabAction action);
-
-    String execute(GLoadLinkAction action);
 }

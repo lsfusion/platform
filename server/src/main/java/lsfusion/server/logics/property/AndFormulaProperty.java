@@ -10,10 +10,9 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
-import lsfusion.server.logics.i18n.LocalizedString;
+import lsfusion.server.logics.ServerResourceBundle;
+import lsfusion.server.logics.property.infer.*;
 import lsfusion.server.logics.property.infer.ExClassSet;
-import lsfusion.server.logics.property.infer.InferType;
-import lsfusion.server.logics.property.infer.Inferred;
 import lsfusion.server.session.PropertyChanges;
 
 // выбирает объект по битам
@@ -48,7 +47,7 @@ public class AndFormulaProperty extends FormulaProperty<AndFormulaProperty.Inter
     }
 
     public AndFormulaProperty(int size) {
-        super(LocalizedString.create("{logics.property.if}"), getInterfaces(size));
+        super(ServerResourceBundle.getString("logics.property.if"), getInterfaces(size));
         objectInterface = (ObjectInterface) getOrderInterfaces().get(0);
         andInterfaces = BaseUtils.immutableCast(getOrderInterfaces().subOrder(1, interfaces.size()).getSet());
 

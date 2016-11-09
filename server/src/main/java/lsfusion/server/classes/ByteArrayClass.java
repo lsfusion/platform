@@ -5,7 +5,7 @@ import lsfusion.interop.Data;
 import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.ParseException;
-import lsfusion.server.logics.i18n.LocalizedString;
+import lsfusion.server.logics.ServerResourceBundle;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -21,7 +21,11 @@ public class ByteArrayClass extends DataClass<byte[]> {
         DataClass.storeClass(instance);
     }
 
-    private ByteArrayClass() { super(LocalizedString.create("{classes.byte.array}")); }
+    private ByteArrayClass() { super(ServerResourceBundle.getString("classes.byte.array")); }
+
+    public String toString() {
+        return ServerResourceBundle.getString("classes.byte.array");
+    }
 
     public DataClass getCompatible(DataClass compClass, boolean or) {
         return compClass instanceof ByteArrayClass?this:null;

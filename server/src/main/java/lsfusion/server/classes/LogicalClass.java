@@ -7,7 +7,7 @@ import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.ParseException;
 import lsfusion.server.form.view.report.ReportDrawField;
-import lsfusion.server.logics.i18n.LocalizedString;
+import lsfusion.server.logics.ServerResourceBundle;
 import net.sf.jasperreports.engine.type.HorizontalAlignEnum;
 
 import java.sql.PreparedStatement;
@@ -22,7 +22,11 @@ public class LogicalClass extends DataClass<Boolean> {
         DataClass.storeClass(instance);
     }
 
-    private LogicalClass() { super(LocalizedString.create("{classes.logical}"));}
+    private LogicalClass() { super(ServerResourceBundle.getString("classes.logical"));}
+
+    public String toString() {
+        return "Logical";
+    }
 
     public int getPreferredWidth() { return 50; }
 

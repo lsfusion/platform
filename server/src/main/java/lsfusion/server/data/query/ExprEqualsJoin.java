@@ -11,12 +11,13 @@ import lsfusion.server.caches.OuterContext;
 import lsfusion.server.caches.hash.HashContext;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.InnerExpr;
-import lsfusion.server.data.expr.NullableExprInterface;
-import lsfusion.server.data.expr.query.Stat;
-import lsfusion.server.data.expr.query.StatType;
-import lsfusion.server.data.query.innerjoins.UpWheres;
-import lsfusion.server.data.query.stat.*;
+import lsfusion.server.data.expr.NotNullExprInterface;
+import lsfusion.server.data.query.stat.KeyStat;
+import lsfusion.server.data.query.stat.StatKeys;
+import lsfusion.server.data.query.stat.UnionJoin;
+import lsfusion.server.data.query.stat.WhereJoin;
 import lsfusion.server.data.translator.MapTranslate;
+import lsfusion.server.data.where.Where;
 
 public class ExprEqualsJoin extends AbstractOuterContext<ExprEqualsJoin> implements WhereJoin<Integer, ExprEqualsJoin> {
 
@@ -44,11 +45,11 @@ public class ExprEqualsJoin extends AbstractOuterContext<ExprEqualsJoin> impleme
         return ExprJoin.getInnerJoins(expr1).and(ExprJoin.getInnerJoins(expr2));
     }
 
-    public InnerJoins getJoinFollows(Result<UpWheres<InnerJoin>> upWheres, Result<ImSet<UnionJoin>> unionJoins) {
+    public InnerJoins getJoinFollows(Result<ImMap<InnerJoin, Where>> upWheres, Result<ImSet<UnionJoin>> unionJoins) {
         return InnerExpr.getJoinFollows(this, upWheres, unionJoins);
     }
 
-    public ImSet<NullableExprInterface> getExprFollows(boolean includeInnerWithoutNotNull, boolean recursive) {
+    public ImSet<NotNullExprInterface> getExprFollows(boolean includeInnerWithoutNotNull, boolean recursive) {
         return InnerExpr.getExprFollows(this, includeInnerWithoutNotNull, recursive);
     }
 
@@ -56,18 +57,8 @@ public class ExprEqualsJoin extends AbstractOuterContext<ExprEqualsJoin> impleme
         return MapFact.toMap(0, expr1, 1, expr2);
     }
 
-    private Stat getStat(KeyStat keyStat) {
-        return expr1.getTypeStat(keyStat, false).min(expr2.getTypeStat(keyStat, false));
-    }
-
-    public StatKeys<Integer> getStatKeys(KeyStat keyStat, StatType type, boolean oldMech) { // тут по идее forJoin и true и false подойдут
-        return new StatKeys<>(SetFact.toExclSet(0, 1), getStat(keyStat));
-    }
-
-    @Override
-    public Cost getPushedCost(KeyStat keyStat, StatType type, Cost pushCost, Stat pushStat, ImMap<Integer, Stat> pushKeys, ImMap<Integer, Stat> pushNotNullKeys, ImMap<BaseExpr, Stat> pushProps, Result<ImSet<Integer>> rPushedKeys, Result<ImSet<BaseExpr>> rPushedProps) {
-        assert pushProps.isEmpty();
-        return pushCost;
+    public StatKeys<Integer> getStatKeys(KeyStat keyStat) { // тут по идее forJoin и true и false подойдут
+        return new StatKeys<>(SetFact.toExclSet(0, 1), expr1.getTypeStat(keyStat, false).min(expr2.getTypeStat(keyStat, false)));
     }
 
     public boolean calcTwins(TwinImmutableObject o) {

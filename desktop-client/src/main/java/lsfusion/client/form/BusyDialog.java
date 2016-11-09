@@ -24,8 +24,6 @@ class BusyDialog extends JDialog {
     private JButton btnReconnect;
     private JButton btnCancel;
     private JButton btnInterrupt;
-    private JButton btnHide;
-    private JProgressBar topProgressBar;
     private boolean indeterminateProgressBar = false;
     private Style defaultStyle;
     private Style highLightStyle;
@@ -87,9 +85,6 @@ class BusyDialog extends JDialog {
         btnInterrupt = new JButton(getString("form.loading.interrupt"));
         btnInterrupt.setEnabled(false);
         buttonPanel.add(btnInterrupt);
-
-        btnHide = new JButton(getString("form.loading.hide"));
-        buttonPanel.add(btnHide);
 
         buttonPanel.setMaximumSize(new Dimension((int) buttonPanel.getPreferredSize().getWidth(), (int) (btnExit.getPreferredSize().getHeight() * 4)));
         contentPane.add(buttonPanel);
@@ -177,13 +172,6 @@ class BusyDialog extends JDialog {
             }
         });
 
-        btnHide.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                Main.hide();
-            }
-        });
-
         longActionTimer = new Timer(Main.configurationAccessAllowed ? 5000 : 60000, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -207,15 +195,8 @@ class BusyDialog extends JDialog {
 
         if(showProgress) {
             JPanel progressPanel = new JPanel();
-            topProgressBar = new JProgressBar();
+            JProgressBar topProgressBar = new JProgressBar();
             topProgressBar.setIndeterminate(true);
-            topProgressBar.addMouseListener(new MouseAdapter() {
-                @Override
-                public void mousePressed(MouseEvent e) {
-                    super.mousePressed(e);
-                    topProgressBar.setIndeterminate(!topProgressBar.isIndeterminate());
-                }
-            });
 
             progressPanel.add(topProgressBar);
             topProgressBarPanel.add(progressPanel, BorderLayout.SOUTH);

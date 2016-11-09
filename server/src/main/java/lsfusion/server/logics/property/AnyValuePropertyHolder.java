@@ -1,7 +1,6 @@
 package lsfusion.server.logics.property;
 
 import lsfusion.server.classes.*;
-import lsfusion.server.classes.link.*;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;
@@ -30,16 +29,10 @@ public class AnyValuePropertyHolder {
     private final LCP pdfFileProperty;
     private final LCP customFileProperty;
     private final LCP excelFileProperty;
-    private final LCP wordLinkProperty;
-    private final LCP imageLinkProperty;
-    private final LCP pdfLinkProperty;
-    private final LCP customLinkProperty;
-    private final LCP excelLinkProperty;
 
     public AnyValuePropertyHolder(LCP objectProperty, LCP stringProperty, LCP textProperty, LCP intProperty, LCP longProperty, LCP doubleProperty, LCP numericProperty, LCP yearProperty,
                                   LCP dateTimeProperty, LCP logicalProperty, LCP dateProperty, LCP timeProperty, LCP colorProperty, LCP wordFileProperty, LCP imageFileProperty,
-                                  LCP pdfFileProperty, LCP customFileProperty, LCP excelFileProperty, LCP wordLinkProperty, LCP imageLinkProperty, LCP pdfLinkProperty,
-                                  LCP customLinkProperty, LCP excelLinkProperty) {
+                                  LCP pdfFileProperty, LCP customFileProperty, LCP excelFileProperty) {
         assert objectProperty.property.getType() == ObjectType.instance
                 && stringProperty.property.getType().getCompatible(StringClass.get(1))!=null
                 && textProperty.property.getType().getCompatible(StringClass.get(1))!=null
@@ -58,11 +51,6 @@ public class AnyValuePropertyHolder {
                 && pdfFileProperty.property.getType() == PDFClass.get(false, false)
                 && customFileProperty.property.getType() == DynamicFormatFileClass.get(false, false)
                 && excelFileProperty.property.getType() == ExcelClass.get(false, false)
-                && wordLinkProperty.property.getType() == WordLinkClass.get(false)
-                && imageLinkProperty.property.getType() == ImageLinkClass.get(false)
-                && pdfLinkProperty.property.getType() == PDFLinkClass.get(false)
-                && customLinkProperty.property.getType() == DynamicFormatLinkClass.get(false)
-                && excelLinkProperty.property.getType() == ExcelLinkClass.get(false)
                 ;
 
         this.objectProperty = objectProperty;
@@ -83,11 +71,6 @@ public class AnyValuePropertyHolder {
         this.pdfFileProperty = pdfFileProperty;
         this.customFileProperty = customFileProperty;
         this.excelFileProperty = excelFileProperty;
-        this.wordLinkProperty = wordLinkProperty;
-        this.imageLinkProperty = imageLinkProperty;
-        this.pdfLinkProperty = pdfLinkProperty;
-        this.customLinkProperty = customLinkProperty;
-        this.excelLinkProperty = excelLinkProperty;
     }
 
     public LCP<?> getLCP(Type valueType) {
@@ -128,16 +111,6 @@ public class AnyValuePropertyHolder {
             return customFileProperty;
         } else if (valueType instanceof ExcelClass) {
             return excelFileProperty;
-        } else if (valueType instanceof WordLinkClass) {
-            return wordLinkProperty;
-        } else if (valueType instanceof ImageLinkClass) {
-            return imageLinkProperty;
-        } else if (valueType instanceof PDFLinkClass) {
-            return pdfLinkProperty;
-        } else if (valueType instanceof DynamicFormatLinkClass) {
-            return customLinkProperty;
-        } else if (valueType instanceof ExcelLinkClass) {
-            return excelLinkProperty;
         } else {
             throw new IllegalStateException(valueType + " is not supported by AnyValueProperty");
         }

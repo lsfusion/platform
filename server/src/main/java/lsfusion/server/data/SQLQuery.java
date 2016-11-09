@@ -15,7 +15,7 @@ import lsfusion.server.Settings;
 import lsfusion.server.SystemProperties;
 import lsfusion.server.classes.FileClass;
 import lsfusion.server.data.query.*;
-import lsfusion.server.data.query.stat.Cost;
+import lsfusion.server.data.query.stat.ExecCost;
 import lsfusion.server.data.sql.SQLExecute;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.ConcatenateType;
@@ -31,7 +31,7 @@ import java.sql.SQLException;
 
 public class SQLQuery extends SQLCommand<ResultHandler<String, String>> {
 
-    public SQLQuery(String command, Cost baseCost, ImMap<String, SQLQuery> subQueries, StaticExecuteEnvironment env, ImMap<String, ? extends Reader> keyReaders, ImMap<String, ? extends Reader> propertyReaders, boolean union, boolean recursionFunction) {
+    public SQLQuery(String command, ExecCost baseCost, ImMap<String, SQLQuery> subQueries, StaticExecuteEnvironment env, ImMap<String, ? extends Reader> keyReaders, ImMap<String, ? extends Reader> propertyReaders, boolean union, boolean recursionFunction) {
         super(command, baseCost, subQueries, env, recursionFunction);
         this.keyReaders = keyReaders;
         this.propertyReaders = propertyReaders;
@@ -168,14 +168,14 @@ public class SQLQuery extends SQLCommand<ResultHandler<String, String>> {
         }
     }
 
-    public void outSelect(SQLSession session, DynamicExecuteEnvironment queryExecEnv, Object outerEnv, ImMap<String, ParseInterface> queryParams, int transactTimeout, OperationOwner owner) throws SQLException, SQLHandledException {
-        ServerLoggers.exinfoLog(this + " " + queryParams + '\n' + readSelect(session, queryExecEnv, outerEnv, queryParams, transactTimeout, owner));
+    public void outSelect(SQLSession session, DynamicExecuteEnvironment queryExecEnv, ImMap<String, ParseInterface> queryParams, int transactTimeout, OperationOwner owner) throws SQLException, SQLHandledException {
+        ServerLoggers.exinfoLog(this + " " + queryParams + '\n' + readSelect(session, queryExecEnv, queryParams, transactTimeout, owner));
     }
 
-    public String readSelect(SQLSession session, DynamicExecuteEnvironment queryExecEnv, Object outerEnv, ImMap<String, ParseInterface> queryParams, int transactTimeout, OperationOwner owner) throws SQLException, SQLHandledException {
+    public String readSelect(SQLSession session, DynamicExecuteEnvironment queryExecEnv, ImMap<String, ParseInterface> queryParams, int transactTimeout, OperationOwner owner) throws SQLException, SQLHandledException {
         // выведем на экран
         ReadAllResultHandler<String, String> handler = new ReadAllResultHandler<>();
-        session.executeSelect(this, queryExecEnv, outerEnv, owner, queryParams, transactTimeout, handler);
+        session.executeSelect(this, queryExecEnv, owner, queryParams, transactTimeout, handler);
         ImOrderMap<ImMap<String, Object>, ImMap<String, Object>> result = handler.terminate();
 
         String resultString = "";
@@ -298,7 +298,7 @@ public class SQLQuery extends SQLCommand<ResultHandler<String, String>> {
                 SQLExecute execute = getExecute(dml, queryParams, subQueryExecEnv, materializedQueries, pureTime, transactTimeout, owner, tableOwner, SQLSession.register(name, tableOwner, TableChange.INSERT));
                 return session.insertSessionSelect(execute, new ERunnable() {
                     public void run() throws Exception {
-                        outSelect(session, subQueryExecEnv, materializedQueries, queryParams, transactTimeout, owner);
+                        outSelect(session, subQueryExecEnv, queryParams, transactTimeout, owner);
                     }
                 });
             }

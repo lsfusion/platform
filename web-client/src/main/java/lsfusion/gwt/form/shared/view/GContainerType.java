@@ -6,6 +6,5 @@ public enum GContainerType {
     COLUMNS,
     TABBED_PANE,
     VERTICAL_SPLIT_PANE,
-    HORIZONTAL_SPLIT_PANE,
-    SCROLL
+    HORIZONTAL_SPLIT_PANE
 }

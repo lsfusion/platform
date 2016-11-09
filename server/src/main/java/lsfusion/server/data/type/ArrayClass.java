@@ -3,7 +3,7 @@ package lsfusion.server.data.type;
 import lsfusion.server.classes.DataClass;
 import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
-import lsfusion.server.logics.i18n.LocalizedString;
+import lsfusion.server.logics.ServerResourceBundle;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -16,7 +16,7 @@ public class ArrayClass<T> extends DataClass<T[]> {
     private final Type<T> type;
 
     private ArrayClass(Type<T> type) {
-        super(LocalizedString.create("{classes.array}" + " " + type));
+        super(ServerResourceBundle.getString("classes.array")+" " + type);
         this.type = type;
     }
     

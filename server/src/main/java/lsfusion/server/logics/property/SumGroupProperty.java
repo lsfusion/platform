@@ -14,7 +14,7 @@ import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.expr.where.cases.CaseExpr;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
-import lsfusion.server.logics.i18n.LocalizedString;
+import lsfusion.server.logics.property.derived.DerivedProperty;
 import lsfusion.server.session.DataChanges;
 import lsfusion.server.session.PropertyChange;
 import lsfusion.server.session.PropertyChanges;
@@ -25,13 +25,13 @@ public class SumGroupProperty<I extends PropertyInterface> extends AddGroupPrope
     private CalcPropertyMapImplement<ClassPropertyInterface, Interface<I>> nullImplement;
     public CalcPropertyMapImplement<?, I> distribute;
 
-    public SumGroupProperty(LocalizedString caption, ImSet<I> innerInterfaces, ImCol<? extends CalcPropertyInterfaceImplement<I>> groupInterfaces, CalcPropertyInterfaceImplement<I> property) {
+    public SumGroupProperty(String caption, ImSet<I> innerInterfaces, ImCol<? extends CalcPropertyInterfaceImplement<I>> groupInterfaces, CalcPropertyInterfaceImplement<I> property) {
         super(caption, innerInterfaces, groupInterfaces, property);
 
         finalizeInit();
     }
 
-    public SumGroupProperty(LocalizedString caption, ImSet<I> innerInterfaces, ImList<? extends CalcPropertyInterfaceImplement<I>> groupInterfaces, CalcPropertyInterfaceImplement<I> property) {
+    public SumGroupProperty(String caption, ImSet<I> innerInterfaces, ImList<? extends CalcPropertyInterfaceImplement<I>> groupInterfaces, CalcPropertyInterfaceImplement<I> property) {
         super(caption, innerInterfaces, groupInterfaces, property);
 
         finalizeInit();

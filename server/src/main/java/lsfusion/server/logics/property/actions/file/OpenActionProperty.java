@@ -4,20 +4,20 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.interop.action.OpenFileClientAction;
-import lsfusion.interop.action.OpenUriClientAction;
-import lsfusion.server.classes.DataClass;
 import lsfusion.server.classes.DynamicFormatFileClass;
 import lsfusion.server.classes.FileClass;
 import lsfusion.server.classes.StaticFormatFileClass;
-import lsfusion.server.classes.link.LinkClass;
 import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.form.view.DefaultFormView;
+import lsfusion.server.form.view.PropertyDrawView;
 import lsfusion.server.logics.ObjectValue;
-import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.linear.LCP;
-import lsfusion.server.logics.property.*;
+import lsfusion.server.logics.property.CalcProperty;
+import lsfusion.server.logics.property.ClassPropertyInterface;
+import lsfusion.server.logics.property.ClassType;
+import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.actions.SystemExplicitActionProperty;
 
-import java.net.URI;
 import java.sql.SQLException;
 
 /**
@@ -31,12 +31,10 @@ public class OpenActionProperty extends SystemExplicitActionProperty {
 
     LCP<?> fileProperty;
 
-    public OpenActionProperty(LocalizedString caption, LCP fileProperty) {
+    public OpenActionProperty(String caption, LCP fileProperty) {
         super(caption, fileProperty.getInterfaceClasses(ClassType.filePolicy));
 
         this.fileProperty = fileProperty;
-
-        drawOptions.setImage("open.png");
     }
 
     @Override
@@ -44,8 +42,8 @@ public class OpenActionProperty extends SystemExplicitActionProperty {
         return MapFact.<CalcProperty, Boolean>singleton(fileProperty.property, false);
     }
 
-    private DataClass getDataClass() {
-        return (DataClass) fileProperty.property.getType();
+    private FileClass getFileClass() {
+        return (FileClass) fileProperty.property.getType();
     }
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
@@ -53,18 +51,18 @@ public class OpenActionProperty extends SystemExplicitActionProperty {
         int i = 0; // здесь опять учитываем, что порядок тот же
         for (ClassPropertyInterface classInterface : interfaces)
             objects[i++] = context.getKeyValue(classInterface);
-        DataClass dataClass = getDataClass();
-        if(dataClass instanceof FileClass) {
-            for (byte[] file : ((FileClass)dataClass).getFiles(fileProperty.read(context, objects))) {
-                if (dataClass instanceof DynamicFormatFileClass)
-                    context.delayUserInterfaction(new OpenFileClientAction(BaseUtils.getFile(file), BaseUtils.getExtension(file)));
-                else
-                    context.delayUserInterfaction(new OpenFileClientAction(file, BaseUtils.firstWord(((StaticFormatFileClass) dataClass).getOpenExtension(file), ",")));
-            }
-        } else if (dataClass instanceof LinkClass) {
-            for (URI file : ((LinkClass) dataClass).getFiles(fileProperty.read(context, objects))) {
-                context.delayUserInterfaction(new OpenUriClientAction(file));
-            }
+        FileClass fileClass = getFileClass();
+        for(byte[] file : fileClass.getFiles(fileProperty.read(context, objects))) {
+            if (fileClass instanceof DynamicFormatFileClass)
+                context.delayUserInterfaction(new OpenFileClientAction(BaseUtils.getFile(file), BaseUtils.getExtension(file)));
+            else
+                context.delayUserInterfaction(new OpenFileClientAction(file, BaseUtils.firstWord(((StaticFormatFileClass) fileClass).getOpenExtension(file), ",")));
         }
+    }
+
+    @Override
+    public void proceedDefaultDesign(PropertyDrawView propertyView, DefaultFormView view) {
+        super.proceedDefaultDesign(propertyView, view);
+        propertyView.design.setImagePath("open.png");
     }
 }

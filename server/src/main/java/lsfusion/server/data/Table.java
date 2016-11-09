@@ -13,7 +13,6 @@ import lsfusion.server.caches.hash.HashContext;
 import lsfusion.server.classes.*;
 import lsfusion.server.classes.sets.AndClassSet;
 import lsfusion.server.classes.sets.ObjectClassSet;
-import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.expr.*;
 import lsfusion.server.data.expr.query.*;
 import lsfusion.server.data.expr.where.cases.MCaseList;
@@ -23,13 +22,14 @@ import lsfusion.server.data.expr.where.ifs.NullJoin;
 import lsfusion.server.data.expr.where.pull.AddPullWheres;
 import lsfusion.server.data.query.*;
 import lsfusion.server.data.query.innerjoins.GroupJoinsWheres;
-import lsfusion.server.data.query.innerjoins.UpWheres;
-import lsfusion.server.data.query.stat.*;
 import lsfusion.server.data.query.stat.KeyStat;
+import lsfusion.server.data.query.stat.StatKeys;
+import lsfusion.server.data.query.stat.UnionJoin;
+import lsfusion.server.data.query.stat.WhereJoin;
 import lsfusion.server.data.sql.SQLSyntax;
-import lsfusion.server.data.translator.ExprTranslator;
 import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.translator.MapValuesTranslate;
+import lsfusion.server.data.translator.QueryTranslator;
 import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.DataWhere;
@@ -38,6 +38,7 @@ import lsfusion.server.data.where.classes.ClassExprWhere;
 import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
+import lsfusion.server.logics.ServerResourceBundle;
 import lsfusion.server.logics.table.ImplementTable;
 import lsfusion.server.session.DataSession;
 
@@ -69,31 +70,26 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
         });
     }
 
-    public Stat getStatRows() {
-        return getTableStatKeys().getRows();
-    }
-    public abstract TableStatKeys getTableStatKeys();
+    public abstract StatKeys<KeyField> getStatKeys();
     public abstract ImMap<PropertyField, PropStat> getStatProps();
 
     private static Stat getFieldStat(Field field, Stat defStat) {
         if(field.type instanceof DataClass)
-            return defStat.min(field.type.getTypeStat(false));
-        else
-            return defStat;
-    }
-    private static int getFieldStat(Field field, int defStat) {
-        if(field.type instanceof DataClass)
-            return BaseUtils.min(defStat, field.type.getTypeStat(false).getCount());
+            return defStat.min(((DataClass)field.type).getTypeStat(false));
         else
             return defStat;
     }
 
-    protected static TableStatKeys getStatKeys(Table table, final int count) { // для мн-го наследования
-        ImMap<KeyField, Integer> statMap = table.getTableKeys().mapValues(new GetValue<Integer, KeyField>() {
-            public Integer getMapValue(KeyField value) {
-                return getFieldStat(value, count);
+    protected static StatKeys<KeyField> getStatKeys(Table table, int count) { // для мн-го наследования
+        final Stat stat = new Stat(count);
+
+        ImMap<KeyField, Stat> statMap = table.getTableKeys().mapValues(new GetValue<Stat, KeyField>() {
+            public Stat getMapValue(KeyField value) {
+                return getFieldStat(value, stat);
             }});
-        return TableStatKeys.createForTable(count, statMap);
+        DistinctKeys<KeyField> distinctKeys = new DistinctKeys<>(statMap);
+
+        return StatKeys.createForTable(stat, distinctKeys);
     }
 
     protected static ImMap<PropertyField, PropStat> getStatProps(Table table, final Stat stat) { // для мн-го наследования
@@ -410,12 +406,12 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
     protected ImMap<PropertyField,ClassWhere<Field>> propertyClasses;
 
     public String outputKeys() {
-        return ThreadLocalContext.localize("{data.table} : ") + name + ThreadLocalContext.localize(", {data.keys} : ") + classes.getCommonParent(getTableKeys()).toString();
+        return ServerResourceBundle.getString("data.table")+" : " + name + ", "+ServerResourceBundle.getString("data.keys")+" : " + classes.getCommonParent(getTableKeys()).toString();
     }
 
     public String outputField(PropertyField field, boolean outputTable) {
         ImMap<Field, ValueClass> commonParent = propertyClasses.get(field).getCommonParent(SetFact.addExcl(getTableKeys(), field));
-        return (outputTable ? ThreadLocalContext.localize("{data.table}")+" : " + name + ", ":"") + ThreadLocalContext.localize("{data.field}") +" : " + field.getName() + " - " + commonParent.get(field) + ", "+ThreadLocalContext.localize("{data.keys}")+" : " + commonParent.remove(field);
+        return (outputTable ? ServerResourceBundle.getString("data.table")+" : " + name + ", ":"") + ServerResourceBundle.getString("data.field") +" : " + field.getName() + " - " + commonParent.get(field) + ", "+ServerResourceBundle.getString("data.keys")+" : " + commonParent.remove(field);
     }
 
     public boolean calcTwins(TwinImmutableObject o) {
@@ -487,27 +483,6 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
         return false;
     }
 
-    public StatKeys<KeyField> getStatKeys() {
-        return StatKeys.create(getTableStatKeys());
-    }
-
-    @IdentityLazy
-    protected ImSet<ImOrderSet<Field>> getIndexes() {
-        return SQLSession.getKeyIndexes(keys);
-    }
-
-    private static class PushResult {
-        private final Cost cost;
-        private final ImSet<KeyField> pushedKeys;
-        private final ImSet<BaseExpr> pushedProps;
-
-        public PushResult(Cost cost, ImSet<KeyField> pushedKeys, ImSet<BaseExpr> pushedProps) {
-            this.cost = cost;
-            this.pushedKeys = pushedKeys;
-            this.pushedProps = pushedProps;
-        }
-    }
-
     public class Join extends AbstractOuterContext<Join> implements InnerJoin<KeyField, Join>, lsfusion.server.data.query.Join<PropertyField> {
 
         public final ImMap<KeyField, BaseExpr> joins;
@@ -515,105 +490,8 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
         public ImMap<KeyField, BaseExpr> getJoins() {
             return joins;
         }
-        public StatKeys<KeyField> getInnerStatKeys(StatType type) {
+        public StatKeys<KeyField> getStatKeys(KeyStat keyStat) {
             return Table.this.getStatKeys();
-        }
-
-        public RecursiveTable getRecursiveTable() {
-            return Table.this instanceof RecursiveTable ? (RecursiveTable)Table.this : null;
-        }
-
-        public StatKeys<KeyField> getStatKeys(KeyStat keyStat, StatType type, boolean oldMech) {
-            return QueryJoin.getStatKeys(this, keyStat, type);
-        }
-
-        @IdentityLazy
-        public PushResult getPushedCost(Stat pushStat, ImMap<KeyField, Stat> pushKeys, ImMap<KeyField, Stat> pushNotNullKeys, ImMap<BaseExpr, Stat> pushProps) {
-            ImRevMap<PropertyField, BaseExpr> mapProps = pushProps.keys().mapRevKeys(new GetValue<PropertyField, BaseExpr>() {
-                public PropertyField getMapValue(BaseExpr value) {
-                    if(value instanceof IsClassExpr)
-                        value = ((IsClassExpr)value).getJoinExpr();
-                    return ((Expr) value).property;
-                }
-            });
-            ImMap<PropertyField, Stat> pushPropFields = mapProps.join(pushProps);
-            ImMap<Field, Stat> pushFieldStats = MapFact.addExcl(pushPropFields, pushKeys);
-
-            ImMap<Field, Stat> pushFieldNotNulls = MapFact.addExcl(pushPropFields.keys().toMap(pushStat), pushNotNullKeys);
-
-            TableStatKeys tableStatKeys = getTableStatKeys();
-            Stat thisStat = tableStatKeys.getRows();
-            ImMap<PropertyField, PropStat> tableStatProps = getStatProps();
-            ImMap<Field, Stat> thisFieldStats = MapFact.addExcl(tableStatProps.mapValues(new GetValue<Stat, PropStat>() {
-                public Stat getMapValue(PropStat value) {
-                    return value.distinct;
-                }
-            }), tableStatKeys.getDistinct());
-
-            ImMap<Field, Stat> thisFieldNotNulls = MapFact.addExcl(tableStatProps.mapValues(new GetValue<Stat, PropStat>() {
-                public Stat getMapValue(PropStat value) {
-                    return value.notNull;
-                }
-            }), tableStatKeys.getDistinct().keys().toMap(thisStat));
-
-            Stat bestStat = thisStat; // интересуют результаты меньшие всего пробега по таблице
-            ImOrderSet<Field> bestIndex = null;
-            Iterable<ImOrderSet<Field>> indexes = getIndexes();
-            for(ImOrderSet<Field> index : indexes) {
-                Stat pushAdjStat = pushStat; // при predicate push down'е надо сделать еще min с mult distinct.min(notNull)
-                Stat thisAdjStat = thisStat;
-
-                int edgesCount = index.size();
-                Stat[] pushEdgeStats = new Stat[edgesCount];
-                Stat[] thisEdgeStats = new Stat[edgesCount];
-                int i=0;
-                for(;i<edgesCount;i++) {
-                    Field field = index.get(i);
-
-                    Stat pushFieldStat = pushFieldStats.get(field);
-                    if(pushFieldStat == null) // не найден предикат, значит только верхнюю часть индекса использовать
-                        break;
-
-                    Stat thisFieldStat = thisFieldStats.get(field);
-
-                    pushEdgeStats[i] = pushFieldStat;
-                    thisEdgeStats[i] = thisFieldStat;
-
-                    Stat thisNotNull = thisFieldNotNulls.get(field);
-                    if(thisNotNull != null)
-                        thisAdjStat = thisAdjStat.min(thisNotNull);
-                    Stat pushNotNull = pushFieldNotNulls.get(field);
-                    if(pushNotNull != null)
-                        pushAdjStat = pushAdjStat.min(pushNotNull);
-                }
-                Stat newStat = WhereJoins.calcEstJoinStat(pushAdjStat, thisAdjStat, i, pushEdgeStats, thisEdgeStats, false, null, null); // пока не поддерживается predicate push down
-
-                if(newStat.less(bestStat)) {
-                    bestStat = newStat;
-                    bestIndex = index.subOrder(0, i);
-                }
-            }
-            if(bestIndex != null) {
-                assert bestStat.less(thisStat);
-                ImSet<BaseExpr> pushedProps = BaseUtils.<ImSet<PropertyField>>immutableCast(bestIndex.getSet().filterFn(new SFunctionSet<Field>() {
-                    public boolean contains(Field element) {
-                        return element instanceof PropertyField;
-                    }
-                })).mapRev(mapProps);
-                // пока не заполняем pushedKeys так как нет predicate push down в таблицу
-                return new PushResult(new Cost(bestStat), null, pushedProps);
-            } else // в худшем случае побежим по таблице
-                return new PushResult(new Cost(thisStat), null, null);
-        }
-
-        @Override
-        public Cost getPushedCost(KeyStat keyStat, StatType type, Cost pushCost, Stat pushStat, ImMap<KeyField, Stat> pushKeys, ImMap<KeyField, Stat> pushNotNullKeys, ImMap<BaseExpr, Stat> pushProps, Result<ImSet<KeyField>> rPushedKeys, Result<ImSet<BaseExpr>> rPushedProps) {
-            PushResult result = getPushedCost(pushStat, pushKeys, pushNotNullKeys, pushProps);
-            if(rPushedKeys != null)
-                rPushedKeys.set(result.pushedKeys);
-            if(rPushedProps != null)
-                rPushedProps.set(result.pushedProps);
-            return result.cost;
         }
 
         public Join(ImMap<KeyField, ? extends BaseExpr> joins) {
@@ -638,7 +516,7 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
             return lsfusion.server.data.expr.Expr.getWhere(joins);
         }
 
-        public ImSet<NullableExprInterface> getExprFollows(boolean includeInnerWithoutNotNull, boolean recursive) {
+        public ImSet<NotNullExprInterface> getExprFollows(boolean includeInnerWithoutNotNull, boolean recursive) {
             return InnerExpr.getExprFollows(this, includeInnerWithoutNotNull, recursive);
         }
 
@@ -650,7 +528,7 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
             return InnerExpr.getInnerJoins(this);
         }
 
-        public InnerJoins getJoinFollows(Result<UpWheres<InnerJoin>> upWheres, Result<ImSet<UnionJoin>> unionJoins) {
+        public InnerJoins getJoinFollows(Result<ImMap<InnerJoin, Where>> upWheres, Result<ImSet<UnionJoin>> unionJoins) {
             return InnerExpr.getJoinFollows(this, upWheres, unionJoins);
         }
 
@@ -709,7 +587,7 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
         }
 
         @ParamLazy
-        public lsfusion.server.data.query.Join<PropertyField> translateExpr(ExprTranslator translator) {
+        public lsfusion.server.data.query.Join<PropertyField> translateQuery(QueryTranslator translator) {
             return join(translator.translate(joins));
         }
 
@@ -772,16 +650,16 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
             protected Where translate(MapTranslate translator) {
                 return Join.this.translateOuter(translator).getDirectWhere();
             }
-            public Where translate(ExprTranslator translator) {
-                return Join.this.translateExpr(translator).getWhere();
+            public Where translateQuery(QueryTranslator translator) {
+                return Join.this.translateQuery(translator).getWhere();
             }
             @Override
             public Where packFollowFalse(Where falseWhere) {
                 return Join.this.packFollowFalse(falseWhere).getWhere();
             }
 
-            protected ImSet<NullableExprInterface> getExprFollows() {
-                return Join.this.getExprFollows(NullableExpr.FOLLOW, true);
+            protected ImSet<NotNullExprInterface> getExprFollows() {
+                return Join.this.getExprFollows(NotNullExpr.FOLLOW, true);
             }
 
             public lsfusion.server.data.expr.Expr getFJExpr() {
@@ -792,8 +670,8 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
                 return exprFJ + " IS NOT NULL";
             }
 
-            public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(ImSet<K> keepStat, StatType statType, KeyStat keyStat, ImOrderSet<lsfusion.server.data.expr.Expr> orderTop, GroupJoinsWheres.Type type) {
-                return groupDataJoinsWheres(Join.this, type);
+            public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(ImSet<K> keepStat, KeyStat keyStat, ImOrderSet<lsfusion.server.data.expr.Expr> orderTop, GroupJoinsWheres.Type type) {
+                return new GroupJoinsWheres(Join.this, this, type);
             }
             public ClassExprWhere calculateClassWhere() {
                 return classes.mapClasses(joins).and(getJoinsWhere().getClassWhere());
@@ -828,8 +706,8 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
                 assert properties.contains(property);
             }
 
-            public lsfusion.server.data.expr.Expr translate(ExprTranslator translator) {
-                return Join.this.translateExpr(translator).getExpr(property);
+            public lsfusion.server.data.expr.Expr translateQuery(QueryTranslator translator) {
+                return Join.this.translateQuery(translator).getExpr(property);
             }
 
             @Override
@@ -893,7 +771,7 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
                 return Join.this;
             }
 
-            public PropStat getInnerStatValue(KeyStat keyStat, StatType type) {
+            public PropStat getStatValue(KeyStat keyStat) {
                 return getStatProps().get(property);
             }
 
@@ -906,7 +784,7 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
             public boolean hasALotOfNulls() {
                 assert isIndexed();
                 Stat notNull = getStatProps().get(property).notNull;
-                return notNull != null && notNull.less(Table.this.getStatRows());
+                return notNull != null && notNull.less(Table.this.getStatKeys().rows);
             }
         }
 

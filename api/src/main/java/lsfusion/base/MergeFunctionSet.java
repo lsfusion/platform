@@ -18,11 +18,9 @@ public class MergeFunctionSet<T> implements FunctionSet<T> {
 
     public boolean isEmpty() {
         return false;
-//        return set1.isEmpty() && set2.isEmpty();
     }
 
     public boolean isFull() {
         return false;
-//        return set1.isFull() || set2.isFull();
     }
 }

@@ -23,7 +23,7 @@ import lsfusion.server.data.expr.where.cases.ExprCaseList;
 import lsfusion.server.data.query.CompileSource;
 import lsfusion.server.data.query.JoinData;
 import lsfusion.server.data.translator.MapTranslate;
-import lsfusion.server.data.translator.ExprTranslator;
+import lsfusion.server.data.translator.QueryTranslator;
 import lsfusion.server.data.type.ClassReader;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
@@ -197,8 +197,8 @@ public class IfExpr extends Expr {
         return ifWhere.ifElse(trueExpr.compare(expr, compare), falseExpr.compare(expr, compare));
     }
 
-    public Expr translate(ExprTranslator translator) {
-        return IfExpr.create(ifWhere.translateExpr(translator), trueExpr.translateExpr(translator), falseExpr.translateExpr(translator));
+    public Expr translateQuery(QueryTranslator translator) {
+        return IfExpr.create(ifWhere.translateQuery(translator), trueExpr.translateQuery(translator), falseExpr.translateQuery(translator));
     }
 
     protected Expr translate(MapTranslate translator) {

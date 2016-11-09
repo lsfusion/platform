@@ -5,9 +5,6 @@ import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.server.Settings;
 import lsfusion.server.data.query.DynamicExecEnvSnapshot;
-import lsfusion.server.profiler.ExecutionTimeCounter;
-import lsfusion.server.profiler.Profiler;
-import lsfusion.server.stack.ExecutionStackAspect;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -46,9 +43,8 @@ public class SQLSessionLoggerAspect {
         boolean loggingEnabled = session.isLoggerDebugEnabled();
 
         long startTime = 0;
-        if (loggingEnabled || Profiler.PROFILER_ENABLED) {
+        if (loggingEnabled)
             startTime = System.nanoTime();
-        }
 
         Object result = thisJoinPoint.proceed();
 
@@ -68,12 +64,6 @@ public class SQLSessionLoggerAspect {
                 if (result instanceof Integer) // cheat, но чисто для логинга
                     queryString = "[rows " + result + "] " + queryString;
                 sqlLogger.info(String.format("Executed query (time: %1$d ms., running total: %3$d, running warn: %4$d, running count: %5$d): %2$s", runTime / 1000000, queryString, runningTotal / 1000000, runningWarningTotal / 1000000, runningCount));
-            }
-        }
-        if (Profiler.PROFILER_ENABLED) {
-            ExecutionTimeCounter counter = ExecutionStackAspect.executionTime.get();
-            if (counter != null) {
-                counter.addSql(System.nanoTime() - startTime);
             }
         }
 

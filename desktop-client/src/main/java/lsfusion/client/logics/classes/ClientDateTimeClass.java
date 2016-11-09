@@ -21,6 +21,13 @@ import static lsfusion.client.form.EditBindingMap.EditEventFilter;
 public class ClientDateTimeClass extends ClientDataClass implements ClientTypeClass {
     public final static ClientDateTimeClass instance = new ClientDateTimeClass();
 
+    private final static String sID = "DateTimeClass";
+
+    @Override
+    public String getSID() {
+        return sID;
+    }
+
     public byte getTypeId() {
         return Data.DATETIME;
     }

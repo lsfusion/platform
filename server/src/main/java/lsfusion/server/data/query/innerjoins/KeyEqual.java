@@ -3,15 +3,15 @@ package lsfusion.server.data.query.innerjoins;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.TwinImmutableObject;
 import lsfusion.base.col.MapFact;
-import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.AddValue;
 import lsfusion.base.col.interfaces.mutable.SymmAddValue;
-import lsfusion.server.caches.*;
-import lsfusion.server.caches.hash.HashContext;
+import lsfusion.server.caches.IdentityInstanceLazy;
+import lsfusion.server.caches.ParamExpr;
+import lsfusion.server.caches.TranslateContext;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
+import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.expr.where.extra.EqualsWhere;
 import lsfusion.server.data.query.ExprEqualsJoin;
@@ -19,12 +19,15 @@ import lsfusion.server.data.query.stat.KeyStat;
 import lsfusion.server.data.query.stat.WhereJoin;
 import lsfusion.server.data.query.stat.WhereJoins;
 import lsfusion.server.data.translator.MapTranslate;
-import lsfusion.server.data.translator.PartialKeyExprTranslator;
-import lsfusion.server.data.translator.ExprTranslator;
+import lsfusion.server.data.translator.PartialQueryTranslator;
+import lsfusion.server.data.translator.QueryTranslator;
 import lsfusion.server.data.where.DNFWheres;
 import lsfusion.server.data.where.Where;
 
-public class KeyEqual extends AbstractOuterContext<KeyEqual> implements DNFWheres.Interface<KeyEqual>,TranslateContext<KeyEqual> {
+import java.util.HashMap;
+import java.util.Map;
+
+public class KeyEqual extends TwinImmutableObject implements DNFWheres.Interface<KeyEqual>,TranslateContext<KeyEqual> {
 
     public final ImMap<ParamExpr, BaseExpr> keyExprs;
 
@@ -69,8 +72,8 @@ public class KeyEqual extends AbstractOuterContext<KeyEqual> implements DNFWhere
     }
 
     @IdentityInstanceLazy
-    public ExprTranslator getTranslator() {
-        return new PartialKeyExprTranslator(keyExprs);
+    public QueryTranslator getTranslator() {
+        return new PartialQueryTranslator(keyExprs);
     }
 
     public Where getWhere() {
@@ -115,15 +118,7 @@ public class KeyEqual extends AbstractOuterContext<KeyEqual> implements DNFWhere
         };
     }
 
-    protected ImSet<OuterContext> calculateOuterDepends() {
-        return SetFact.mergeSet(keyExprs.keys(), BaseUtils.<ImSet<OuterContext>>immutableCast(keyExprs.values().toSet()));
-    }
-
-    protected KeyEqual translate(MapTranslate translator) {
-        return new KeyEqual(translator.translateMap(keyExprs));
-    }
-
-    protected int hash(HashContext hash) {
-        return AbstractOuterContext.hashMapOuter(keyExprs, hash);
+    public KeyEqual translateOuter(MapTranslate translate) {
+        return new KeyEqual(translate.translateMap(keyExprs));
     }
 }

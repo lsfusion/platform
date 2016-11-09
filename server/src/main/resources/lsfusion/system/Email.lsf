@@ -44,7 +44,6 @@ TABLE account (Account);
 name 'Имя аккаунта' = DATA VARSTRING[50](Account);
 password 'Пароль' = DATA VARSTRING[50](Account) ECHO;
 fromAddress 'Адрес отправителя' = DATA VARSTRING[50] (Account);
-accountFromAddress = GROUP AGGR Account account BY fromAddress (account) WHERE account IS Account; 
 
 isDefaultNotification 'Использовать для отправки уведомлений' = DATA BOOLEAN (Account);
 defaultNotificationAccount 'E-mail аккаунт для отправки уведомлений' = GROUP MAX Account account IF isDefaultNotification(account);
@@ -52,7 +51,6 @@ fromAddressDefaultNotificationAccount 'Адрес для отправки уве
 
 isDefaultInbox 'Использовать для отправки/получения сообщений' = DATA BOOLEAN (Account);
 defaultInboxAccount 'E-mail аккаунт для отправки/получения сообщений' = GROUP MAX Account account IF isDefaultInbox(account);
-inboxAccount (VARSTRING[100] fromAddress) = OVERRIDE defaultInboxAccount(), accountFromAddress(fromAddress);
 
 smtpHost 'SMTP хост' = DATA VARSTRING[50](Account);
 smtpPort 'SMTP порт' = DATA VARSTRING[10](Account);

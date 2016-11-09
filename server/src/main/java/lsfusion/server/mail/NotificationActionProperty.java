@@ -1,5 +1,9 @@
 package lsfusion.server.mail;
 
+import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.logics.NullValue;
+import lsfusion.server.logics.property.*;
+import org.apache.log4j.Logger;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.ByteArray;
 import lsfusion.base.col.ListFact;
@@ -7,23 +11,17 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.interop.action.MessageClientAction;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.classes.ValueClass;
-import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.EmailLogicsModule;
-import lsfusion.server.logics.NullValue;
 import lsfusion.server.logics.ObjectValue;
-import lsfusion.server.logics.i18n.LocalizedString;
+import lsfusion.server.logics.ServerResourceBundle;
 import lsfusion.server.logics.linear.LCP;
-import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.actions.SystemExplicitActionProperty;
-import org.apache.log4j.Logger;
 
 import javax.mail.Message;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import static lsfusion.server.context.ThreadLocalContext.localize;
 
 public class NotificationActionProperty extends SystemExplicitActionProperty {
     private final static Logger logger = ServerLoggers.mailLogger;
@@ -44,7 +42,7 @@ public class NotificationActionProperty extends SystemExplicitActionProperty {
         return getUsedProps(ListFact.fromJavaCol(recipients.keySet()));
     }
 
-    public NotificationActionProperty(LocalizedString caption, LCP targetProperty, String subjectNotification, String textNotification, String emailFromNotification, String emailToNotification, String emailToCCNotification, String emailToBCNotification, EmailLogicsModule emailLM) {
+    public NotificationActionProperty(String caption, LCP targetProperty, String subjectNotification, String textNotification, String emailFromNotification, String emailToNotification, String emailToCCNotification, String emailToBCNotification, EmailLogicsModule emailLM) {
         super(caption, getValueClasses(targetProperty));
 
         this.subjectNotification = subjectNotification;
@@ -56,8 +54,8 @@ public class NotificationActionProperty extends SystemExplicitActionProperty {
 
         this.emailLM = emailLM;
 
-        drawOptions.setAskConfirm(true);
-        drawOptions.setImage("email.png");
+        askConfirm = true;
+        setImage("email.png");
     }
 
     private static ValueClass[] getValueClasses(LCP sourceProperty) {
@@ -67,7 +65,7 @@ public class NotificationActionProperty extends SystemExplicitActionProperty {
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
 
         if (emailLM.disableAccount.read(context) != null) {
-            logger.error(localize("{mail.disabled}"));
+            logger.error(ServerResourceBundle.getString("mail.disabled"));
             return;
         }
 
@@ -129,17 +127,17 @@ public class NotificationActionProperty extends SystemExplicitActionProperty {
             String password = (String) emailLM.passwordAccount.read(context);
 
             if (smtpHostAccount == null || emailFromNotification == null) {
-                String errorMessage = localize("{mail.smtp.host.or.sender.not.specified.letters.will.not.be.sent}");
+                String errorMessage = ServerResourceBundle.getString("mail.smtp.host.or.sender.not.specified.letters.will.not.be.sent");
                 logger.error(errorMessage);
-                context.delayUserInterfaction(new MessageClientAction(errorMessage, localize("{mail.sending}")));
+                context.delayUserInterfaction(new MessageClientAction(errorMessage, ServerResourceBundle.getString("mail.sending")));
             } else {
                 EmailSender sender = new EmailSender(smtpHostAccount.trim(), BaseUtils.nullTrim(smtpPortAccount), encryptedConnectionType.trim(), emailFromNotification.trim(), BaseUtils.nullTrim(nameAccount), BaseUtils.nullTrim(password), recipientEmails);
                 try {
                     sender.sendPlainMail(context, subjectNotification, currentText, attachmentForms, attachmentFiles);
                 } catch (Exception e) {
-                    String errorMessage = localize("{mail.failed.to.send.mail}") + " : " + e.toString();
+                    String errorMessage = ServerResourceBundle.getString("mail.failed.to.send.mail") + " : " + e.toString();
                     logger.error(errorMessage);
-                    context.delayUserInterfaction(new MessageClientAction(errorMessage, localize("{mail.sending}")));
+                    context.delayUserInterfaction(new MessageClientAction(errorMessage, ServerResourceBundle.getString("mail.sending")));
                     e.printStackTrace();
                 }
             }

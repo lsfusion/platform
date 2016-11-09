@@ -3,7 +3,6 @@ package lsfusion.interop.action;
 import java.awt.*;
 import java.io.IOException;
 import java.net.URI;
-import java.nio.file.Paths;
 
 
 public class OpenUriClientAction extends ExecuteClientAction {
@@ -17,10 +16,7 @@ public class OpenUriClientAction extends ExecuteClientAction {
     @Override
     public void execute(ClientActionDispatcher dispatcher) throws IOException {
         Desktop desktop = Desktop.isDesktopSupported() ? Desktop.getDesktop() : null;
-        if (desktop != null && desktop.isSupported(Desktop.Action.BROWSE)) {
-            if (uri.getScheme() != null && uri.getScheme().equals("file"))
-                uri = Paths.get(uri).normalize().toUri();
+        if (desktop != null && desktop.isSupported(Desktop.Action.BROWSE))
             desktop.browse(uri);
-        }
     }
 }

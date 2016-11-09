@@ -31,8 +31,6 @@ public interface StaticExecuteEnvironment {
 
     boolean hasRecursion();
 
-    boolean hasUsedRecursiveTable();
-
     boolean isNoPrepare();
 
     EnsureTypeEnvironment getEnsureTypes();

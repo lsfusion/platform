@@ -8,11 +8,9 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.serialization.SerializationUtil;
 import lsfusion.interop.AbstractWindowType;
 import lsfusion.server.auth.SecurityPolicy;
-import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.form.window.NavigatorWindow;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.BusinessLogics;
-import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.mutables.NFFact;
 import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.mutables.interfaces.NFOrderSet;
@@ -35,22 +33,20 @@ public class NavigatorElement<T extends BusinessLogics<T>> {
     private ImageIcon image;
     public DefaultIcon defaultIcon;
 
-    public LocalizedString caption = LocalizedString.create("");
+    public String caption = "";
 
     public NavigatorWindow window = null;
 
     private final int ID;
     private final String canonicalName;
-    private final String creationPath;
 
     private NFProperty<NavigatorElement<T>> parent = NFFact.property();
     private NFOrderSet<NavigatorElement<T>> children = NFFact.orderSet();
 
-    public NavigatorElement(NavigatorElement<T> parent, String canonicalName, LocalizedString caption, String creationPath, String icon, Version version) {
+    public NavigatorElement(NavigatorElement<T> parent, String canonicalName, String caption, String icon, Version version) {
         this.canonicalName = canonicalName;
         this.ID = BaseLogicsModule.generateStaticNewID();
         this.caption = caption;
-        this.creationPath = creationPath;
 
         setImage(icon != null ? icon : "/images/open.png", icon != null ? null : DefaultIcon.OPEN);
 
@@ -261,7 +257,7 @@ public class NavigatorElement<T extends BusinessLogics<T>> {
 
     @Override
     public String toString() {
-        return getSID() + ": " + (caption != null ? ThreadLocalContext.localize(caption) : "");
+        return getSID() + ": " + (caption != null ? caption : "");
     }
 
     public void serialize(DataOutputStream outStream) throws IOException {
@@ -270,9 +266,8 @@ public class NavigatorElement<T extends BusinessLogics<T>> {
         outStream.writeInt(getID());
         outStream.writeUTF(getSID());
         SerializationUtil.writeString(outStream, canonicalName);
-        SerializationUtil.writeString(outStream, creationPath);
-
-        outStream.writeUTF(ThreadLocalContext.localize(caption));
+        
+        outStream.writeUTF(caption);
         outStream.writeBoolean(hasChildren());
         if (window == null) {
             outStream.writeInt(AbstractWindowType.NULL_VIEW);

@@ -15,7 +15,6 @@ import lsfusion.server.caches.hash.HashContext;
 import lsfusion.server.classes.ConcreteClass;
 import lsfusion.server.classes.DataClass;
 import lsfusion.server.classes.ValueClassSet;
-import lsfusion.server.data.QueryEnvironment;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.IsClassType;
@@ -25,7 +24,7 @@ import lsfusion.server.data.query.CompileSource;
 import lsfusion.server.data.query.JoinData;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.translator.MapTranslate;
-import lsfusion.server.data.translator.ExprTranslator;
+import lsfusion.server.data.translator.QueryTranslator;
 import lsfusion.server.data.type.ClassReader;
 import lsfusion.server.data.type.NullReader;
 import lsfusion.server.data.type.Type;
@@ -133,10 +132,10 @@ public class CaseExpr extends Expr {
     }
 
     @ParamLazy
-    public Expr translate(ExprTranslator translator) {
+    public Expr translateQuery(QueryTranslator translator) {
         MExprCaseList translatedCases = new MExprCaseList(cases.exclusive);
         for(ExprCase exprCase : cases)
-            translatedCases.add(exprCase.where.translateExpr(translator),exprCase.data.translateExpr(translator));
+            translatedCases.add(exprCase.where.translateQuery(translator),exprCase.data.translateQuery(translator));
         return translatedCases.getFinal();
     }
 
@@ -261,9 +260,9 @@ public class CaseExpr extends Expr {
     }
 
     @Override
-    public ObjectValue getObjectValue(QueryEnvironment env) {
+    public ObjectValue getObjectValue() {
         if(cases.size()==0)
             return NullValue.instance;
-        return super.getObjectValue(env);
+        return super.getObjectValue();
     }
 }

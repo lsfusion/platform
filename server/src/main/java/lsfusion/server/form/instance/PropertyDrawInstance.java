@@ -6,11 +6,11 @@ import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.interop.ClassViewType;
 import lsfusion.interop.form.PropertyReadType;
-import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.form.entity.ActionPropertyObjectEntity;
 import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.entity.PropertyDrawEntity;
+import lsfusion.server.logics.ServerResourceBundle;
 import lsfusion.server.logics.property.NullValueProperty;
 import lsfusion.server.logics.property.PropertyInterface;
 
@@ -126,11 +126,6 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
         return entity;
     }
 
-    @Override
-    public Object getProfiledObject() {
-        return entity;
-    }
-
     // заглушка чтобы на сервере ничего не читать
     public class HiddenReaderInstance implements PropertyReaderInstance {
 
@@ -144,11 +139,6 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
 
         public int getID() {
             return PropertyDrawInstance.this.getID();
-        }
-
-        @Override
-        public Object getProfiledObject() {
-            return NullValueProperty.instance;
         }
     }
 
@@ -169,11 +159,6 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
         public PropertyDrawInstance<P> getPropertyDraw() {
             return PropertyDrawInstance.this;
         }
-
-        @Override
-        public Object getProfiledObject() {
-            return entity.propertyShowIf;
-        }
     }
 
     public class CaptionReaderInstance implements PropertyReaderInstance {
@@ -191,12 +176,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
 
         @Override
         public String toString() {
-            return ThreadLocalContext.localize("{logics.property.caption}") + "(" + PropertyDrawInstance.this.toString() + ")";
-        }
-
-        @Override
-        public Object getProfiledObject() {
-            return entity.propertyCaption;
+            return ServerResourceBundle.getString("logics.property.caption") + "(" + PropertyDrawInstance.this.toString() + ")";
         }
     }
 
@@ -215,12 +195,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
 
         @Override
         public String toString() {
-            return ThreadLocalContext.localize("{logics.property.footer}") + "(" + PropertyDrawInstance.this.toString() + ")";
-        }
-
-        @Override
-        public Object getProfiledObject() {
-            return entity.propertyFooter;
+            return ServerResourceBundle.getString("logics.property.footer") + "(" + PropertyDrawInstance.this.toString() + ")";
         }
     }
 
@@ -239,12 +214,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
 
         @Override
         public String toString() {
-            return ThreadLocalContext.localize("{logics.property.readonly}") + "(" + PropertyDrawInstance.this.toString() + ")";
-        }
-
-        @Override
-        public Object getProfiledObject() {
-            return entity.propertyReadOnly;
+            return ServerResourceBundle.getString("logics.property.readonly") + "(" + PropertyDrawInstance.this.toString() + ")";
         }
     }
 
@@ -263,12 +233,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
 
         @Override
         public String toString() {
-            return ThreadLocalContext.localize("{logics.background}") + "(" + PropertyDrawInstance.this.toString() + ")";
-        }
-
-        @Override
-        public Object getProfiledObject() {
-            return entity.propertyBackground;
+            return ServerResourceBundle.getString("logics.background") + "(" + PropertyDrawInstance.this.toString() + ")";
         }
     }
 
@@ -287,12 +252,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
 
         @Override
         public String toString() {
-            return ThreadLocalContext.localize("{logics.foreground}") + "(" + PropertyDrawInstance.this.toString() + ")";
-        }
-
-        @Override
-        public Object getProfiledObject() {
-            return entity.propertyForeground;
+            return ServerResourceBundle.getString("logics.foreground") + "(" + PropertyDrawInstance.this.toString() + ")";
         }
     }
 }

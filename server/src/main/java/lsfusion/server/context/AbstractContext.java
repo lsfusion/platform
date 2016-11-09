@@ -25,6 +25,7 @@ import lsfusion.server.form.entity.PropertyDrawEntity;
 import lsfusion.server.form.entity.filter.FilterEntity;
 import lsfusion.server.form.instance.FormCloseType;
 import lsfusion.server.form.instance.FormInstance;
+import lsfusion.server.form.instance.FormSessionScope;
 import lsfusion.server.form.instance.PropertyObjectInterfaceInstance;
 import lsfusion.server.form.instance.listener.CustomClassListener;
 import lsfusion.server.form.instance.listener.FocusListener;
@@ -32,11 +33,11 @@ import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.LogicsInstance;
 import lsfusion.server.logics.NullValue;
 import lsfusion.server.logics.ObjectValue;
-import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.DialogRequest;
 import lsfusion.server.logics.property.PullChangeProperty;
 import lsfusion.server.remote.RemoteForm;
 import lsfusion.server.session.DataSession;
+import lsfusion.base.ProgressBar;
 import lsfusion.server.stack.ExecutionStackItem;
 
 import java.io.ByteArrayOutputStream;
@@ -58,22 +59,21 @@ public abstract class AbstractContext implements Context {
         return null;
     }
 
-    @Override
-    public void requestFormUserInteraction(FormInstance formInstance, ModalityType modalityType, ExecutionStack stack) throws SQLException, SQLHandledException {
-        FormEntity formEntity = formInstance.entity;
-        RemoteForm remoteForm = createRemoteForm(formInstance, stack);
-        requestUserInteraction(new FormClientAction(formEntity.getCanonicalName(), formEntity.getSID(), remoteForm, remoteForm.getImmutableMethods(), Settings.get().isDisableFirstChangesOptimization() ? null : remoteForm.getFormChangesByteArray(stack), modalityType));
-        if(modalityType.isModal())
-            formInstance.syncLikelyOnClose(true, stack);
-    }
-
     public ObjectValue requestUserObject(DialogRequest dialog, ExecutionStack stack) throws SQLException, SQLHandledException { // null если canceled
         FormInstance dialogInstance = dialog.createDialog();
         if (dialogInstance == null) {
             return null;
         }
 
-        requestFormUserInteraction(dialogInstance, ModalityType.DIALOG_MODAL, stack);
+        RemoteForm remoteForm = createRemoteForm(dialogInstance, stack);
+        requestUserInteraction(
+                new FormClientAction(
+                        dialogInstance.entity.getCanonicalName(),
+                        dialogInstance.entity.getSID(),
+                        remoteForm,
+                        remoteForm.getImmutableMethods(),
+                        Settings.get().isDisableFirstChangesOptimization() ? null : remoteForm.getFormChangesByteArray(stack),
+                        ModalityType.DIALOG_MODAL));
 
         if (dialogInstance.getFormResult() == FormCloseType.CLOSE) {
             return null;
@@ -146,22 +146,19 @@ public abstract class AbstractContext implements Context {
 
     public abstract DataObject getConnection();
 
-    @Override
-    public String localize(LocalizedString s) {
-        return localize(s, getLocale());
-    }
-
-    public String localize(LocalizedString s, Locale locale) {
-        return s.getString(locale, getLogicsInstance().getBusinessLogics().getLocalizer());
-    }
-
-    public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, boolean isAdd, Boolean manageSession, ExecutionStack stack, boolean checkOnOk, boolean showDrop, boolean interactive, ImSet<FilterEntity> contextFilters, PropertyDrawEntity initFilterProperty, ImSet<PullChangeProperty> pullProps, boolean readonly) throws SQLException, SQLHandledException {
-        return new FormInstance(formEntity, getLogicsInstance(),
-                session,
-                getSecurityPolicy(), getFocusListener(), getClassListener(),
-                getComputer(stack), getConnection(), mapObjects, stack, isModal,
-                isAdd, manageSession,
-                checkOnOk, showDrop, interactive, contextFilters, initFilterProperty, pullProps, readonly, getLocale());
+    public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, boolean isAdd, FormSessionScope sessionScope, ExecutionStack stack, boolean checkOnOk, boolean showDrop, boolean interactive, ImSet<FilterEntity> contextFilters, PropertyDrawEntity initFilterProperty, ImSet<PullChangeProperty> pullProps, boolean readonly) throws SQLException, SQLHandledException {
+        DataSession newSession = sessionScope.createSession(session);
+        try {
+            return new FormInstance(formEntity, getLogicsInstance(),
+                    newSession,
+                    getSecurityPolicy(), getFocusListener(), getClassListener(),
+                    getComputer(stack), getConnection(), mapObjects, stack, isModal,
+                    isAdd, sessionScope,
+                    checkOnOk, showDrop, interactive, contextFilters, initFilterProperty, pullProps, readonly);
+        } finally {
+            if (newSession != session) // временный хак, когда уйдет SessionScope тогда и он уйдет, по сути тоже try with resources
+                newSession.close();
+        }
     }
 
     public RemoteForm createRemoteForm(FormInstance formInstance, ExecutionStack stack) {

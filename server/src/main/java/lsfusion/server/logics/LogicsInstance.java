@@ -1,7 +1,6 @@
 package lsfusion.server.logics;
 
 import com.google.common.base.Throwables;
-import lsfusion.base.ApiResourceBundle;
 import lsfusion.base.GlobalObject;
 import lsfusion.base.MultiCauseException;
 import lsfusion.base.col.MapFact;
@@ -16,7 +15,6 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
 
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
 
 public class LogicsInstance implements InitializingBean {
@@ -128,20 +126,8 @@ public class LogicsInstance implements InitializingBean {
 
     public void setSettings(Settings settings) {
         this.settings = settings;
-        Locale serverLocale = Locale.getDefault();
-        if (settings != null && settings.getLanguage() != null) {
-            serverLocale = new Locale(settings.getLanguage(), settings.getCountry() == null ? "" : settings.getCountry());    
-        }
-        setServerLocale(serverLocale);
     }
 
-    private void setServerLocale(Locale locale) {
-        if (locale != null) {
-            Locale.setDefault(locale);
-        }
-        ApiResourceBundle.load(Locale.getDefault());
-    }
-    
     public void setCustomObjects(Object... objects) {
         if (objects.length == 0) {
             customObjects = null;

@@ -1,8 +1,6 @@
 package lsfusion.server.form.instance.filter;
 
-import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.form.entity.filter.RegularFilterEntity;
-import lsfusion.server.logics.i18n.LocalizedString;
 
 import javax.swing.*;
 import java.io.Serializable;
@@ -17,7 +15,7 @@ public class RegularFilterInstance implements Serializable {
         return entity.ID;
     }
 
-    public LocalizedString getName() {
+    public String getName() {
         return entity.name;
     }
 
@@ -35,6 +33,6 @@ public class RegularFilterInstance implements Serializable {
     }
 
     public String toString() {
-        return ThreadLocalContext.localize(getName());
+        return getName();
     }
 }

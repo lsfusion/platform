@@ -41,47 +41,7 @@ public abstract class SingleCellTable extends ClientPropertyTable {
 
     public void setValue(Object value) {
         model.setValue(value);
-        if(getProperty().autoSize && value instanceof String) {
-            Dimension size = getSize();
-            if (size != null && size.getWidth() > 0) {
-                setPreferredSize(new Dimension((int) getPreferredSize().getWidth(), getHeight((String) value, (int) size.getWidth())));
-                revalidate();
-            }
-        }
         repaint();
-    }
-
-    private int getHeight(String text, int maxWidth) {
-        int rows = 0;
-        FontMetrics fm = getFontMetrics(getFont());
-        if (text != null) {
-            String[] lines = text.split("\n");
-            rows += lines.length;
-            for(String line : lines) {
-                String[] splittedText = line.split(" ");
-                String output = "";
-                int outputWidth = 0;
-                int spaceWidth = fm.charWidth(' ');
-                int wordWidth;
-                int j = 1;
-
-                for (String word : splittedText) {
-                    wordWidth = 0;
-                    for (int i = 0; i < word.length(); i++)
-                        wordWidth += fm.charWidth(word.charAt(i));
-                    if ((outputWidth + spaceWidth + wordWidth) < maxWidth) {
-                        output = output.concat(" ").concat(word);
-                        outputWidth += spaceWidth + wordWidth;
-                    } else {
-                        rows++;
-                        output = word;
-                        outputWidth = wordWidth;
-                        j = j + 1;
-                    }
-                }
-            }
-        }
-        return (rows + 1) * fm.getHeight();
     }
 
     public void setReadOnly(boolean readOnly) {

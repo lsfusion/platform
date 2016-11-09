@@ -6,7 +6,7 @@ import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.ParseException;
-import lsfusion.server.logics.i18n.LocalizedString;
+import lsfusion.server.logics.ServerResourceBundle;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -22,7 +22,7 @@ public class TimeClass extends DataClass<Time> {
         DataClass.storeClass(instance);
     }
 
-    private TimeClass() { super(LocalizedString.create("{classes.time}")); }
+    private TimeClass() { super(ServerResourceBundle.getString("classes.time")); }
 
     public DataClass getCompatible(DataClass compClass, boolean or) {
         return compClass instanceof TimeClass ? this : null;

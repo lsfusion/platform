@@ -8,11 +8,8 @@ import lsfusion.server.classes.ValueClass;
 import lsfusion.server.form.entity.filter.NotNullFilterEntity;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.BusinessLogics;
-import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.mutables.Version;
-import lsfusion.server.logics.property.CalcProperty;
-import lsfusion.server.logics.property.ClassType;
-import lsfusion.server.logics.property.PropertyInterface;
+import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.group.AbstractGroup;
 
 public class PropertyFormEntity<T extends BusinessLogics<T>> extends FormEntity<T> {
@@ -27,7 +24,7 @@ public class PropertyFormEntity<T extends BusinessLogics<T>> extends FormEntity<
         
         ImRevMap<P, ObjectEntity> mapObjects = interfaceClasses.mapRevValues(new GetValue<ObjectEntity, ValueClass>() {
             public ObjectEntity getMapValue(ValueClass value) {
-                return new ObjectEntity(genID(), value, LocalizedString.create(value.toString(), false));
+                return new ObjectEntity(genID(), value, value.toString());
             }});
 
         GroupObjectEntity groupObject = new GroupObjectEntity(genID(), mapObjects.valuesSet().toOrderSet(), prev);

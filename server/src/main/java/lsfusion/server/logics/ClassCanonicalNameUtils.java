@@ -2,7 +2,6 @@ package lsfusion.server.logics;
 
 import lsfusion.base.ExtInt;
 import lsfusion.server.classes.*;
-import lsfusion.server.classes.link.*;
 import lsfusion.server.classes.sets.*;
 
 import java.util.HashMap;
@@ -84,11 +83,6 @@ public final class ClassCanonicalNameUtils {
         put("PDFFILE", PDFClass.get(false, false));
         put("CUSTOMFILE", DynamicFormatFileClass.get(false, false));
         put("EXCELFILE", ExcelClass.get(false, false));
-        put("WORDLINK", WordLinkClass.get(false));
-        put("IMAGELINK", ImageLinkClass.get(false));
-        put("PDFLINK", PDFLinkClass.get(false));
-        put("CUSTOMLINK", DynamicFormatLinkClass.get(false));
-        put("EXCELLINK", ExcelLinkClass.get(false));
         put("COLOR", ColorClass.instance);
         put("STRING", defaultStringClassObj);
         put("NUMERIC", defaultNumericClassObj);
@@ -134,11 +128,6 @@ public final class ClassCanonicalNameUtils {
         put("PDFFILE", PDFClass.get(false, false));
         put("CUSTOMFILE", DynamicFormatFileClass.get(false, false));
         put("EXCELFILE", ExcelClass.get(false, false));
-        put("WORDLINK", WordLinkClass.get(false));
-        put("IMAGELINK", ImageLinkClass.get(false));
-        put("PDFLINK", PDFLinkClass.get(false));
-        put("CUSTOMLINK", DynamicFormatLinkClass.get(false));
-        put("EXCELLINK", ExcelLinkClass.get(false));
         put("COLOR", ColorClass.instance);
         put("TEXT", StringClass.text);
         put("RICHTEXT", StringClass.richText);

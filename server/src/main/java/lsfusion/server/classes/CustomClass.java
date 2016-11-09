@@ -22,7 +22,6 @@ import lsfusion.server.classes.sets.OrObjectClassSet;
 import lsfusion.server.classes.sets.ResolveClassSet;
 import lsfusion.server.classes.sets.ResolveUpClassSet;
 import lsfusion.server.classes.sets.UpClassSet;
-import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;
@@ -30,10 +29,8 @@ import lsfusion.server.form.entity.*;
 import lsfusion.server.form.instance.CustomObjectInstance;
 import lsfusion.server.form.instance.ObjectInstance;
 import lsfusion.server.logics.BaseLogicsModule;
-import lsfusion.server.logics.debug.ClassDebugInfo;
-import lsfusion.server.logics.i18n.LocalizedString;
-import lsfusion.server.logics.mutables.NFFact;
-import lsfusion.server.logics.mutables.Version;
+import lsfusion.server.logics.ServerResourceBundle;
+import lsfusion.server.logics.mutables.*;
 import lsfusion.server.logics.mutables.interfaces.NFDefault;
 import lsfusion.server.logics.mutables.interfaces.NFOrderSet;
 import lsfusion.server.logics.mutables.interfaces.NFProperty;
@@ -42,14 +39,9 @@ import lsfusion.server.logics.property.actions.ChangeClassActionProperty;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 public abstract class CustomClass extends ImmutableObject implements ObjectClass, ValueClass {
-
-    private ClassDebugInfo debugInfo;
 
     public Type getType() {
         return ObjectType.instance;
@@ -83,7 +75,7 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
     }
 
     public String toString() {
-        return ThreadLocalContext.localize(LocalizedString.concat(caption, " (" + sID + ")"));
+        return caption + " (" + sID + ")";
     }
 
     public Integer ID;
@@ -101,8 +93,8 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
         return getCanonicalName();
     }
 
-    public LocalizedString caption;
-    public CustomClass(String sID, LocalizedString caption, Version version, CustomClass... parents) {
+    public String caption;
+    public CustomClass(String sID, String caption, Version version, CustomClass... parents) {
         this.sID = sID;
         this.caption = caption;
 
@@ -130,9 +122,9 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
     }
 
     @Override
-    public LocalizedString getCaption() {
+    public String getCaption() {
         return caption;
-    } 
+    }
 
     public boolean hasChildren() {
         return !getChildren().isEmpty();
@@ -173,9 +165,9 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
     public ConcreteCustomClass findConcreteClassID(int idClass) {
         CustomClass cls = findClassID(idClass);
         if (cls == null)
-            throw new RuntimeException(ThreadLocalContext.localize("{classes.there.is.an.object.of.not.existing.class.in.the.database} : " + idClass + ")"));
+            throw new RuntimeException(ServerResourceBundle.getString("classes.there.is.an.object.of.not.existing.class.in.the.database")+" : " + idClass + ")");
         if (! (cls instanceof ConcreteCustomClass))
-            throw new RuntimeException(ThreadLocalContext.localize("{classes.there.is.an.object.of.abstract.class.in.the.database} : " + idClass + ")"));
+            throw new RuntimeException(ServerResourceBundle.getString("classes.there.is.an.object.of.abstract.class.in.the.database")+" : " + idClass + ")");
         return (ConcreteCustomClass) cls;
     }
 
@@ -265,7 +257,7 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
     public void serialize(DataOutputStream outStream) throws IOException {
         outStream.writeByte(Data.OBJECT);
         outStream.writeBoolean(this instanceof ConcreteCustomClass);
-        outStream.writeUTF(caption.getSourceString());
+        outStream.writeUTF(caption);
         outStream.writeInt(ID);
         outStream.writeUTF(getSID());
 
@@ -277,12 +269,11 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
 
     private FormEntity baseClassForm = null;
 
-    @ManualLazy
     public FormEntity getBaseClassForm(BaseLogicsModule LM) {
         if (baseClassForm == null) {
             Version version = LM.getVersion();
 
-            baseClassForm = new ListFormEntity(LM, this);
+            baseClassForm = getListForm(LM).form;
             List<FormEntity> childrenList = new ArrayList<>();
             for (CustomClass child : getChildrenIt()) {
                 FormEntity childForm = child.getBaseClassForm(LM);
@@ -299,14 +290,6 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
         return baseClassForm;
     }
 
-    public ClassDebugInfo getDebugInfo() {
-        return debugInfo;
-    }
-
-    public void setDebugInfo(ClassDebugInfo debugInfo) {
-        this.debugInfo = debugInfo;
-    }
-
     static class FormEntityComparator implements Comparator<FormEntity> {
         public int compare(FormEntity f1, FormEntity f2) {
             if (f1.caption == null && f2.caption == null)
@@ -315,7 +298,7 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
                 return -1;
             if (f2.caption == null)
                 return 1;
-            return f1.caption.getSourceString().compareTo(f2.caption.getSourceString());
+            return f1.caption.compareTo(f2.caption);
         }
     }
 
@@ -385,6 +368,14 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
         protected abstract ClassFormEntity createDefaultForm(BaseLogicsModule LM);
     }
 
+    private ClassFormHolder listFormHolder = new ClassFormHolder() {
+        @Override
+        protected ClassFormEntity createDefaultForm(BaseLogicsModule LM) {
+            ListFormEntity listFormEntity = new ListFormEntity(LM, CustomClass.this);
+            return new ClassFormEntity(listFormEntity, listFormEntity.object);
+        }
+    };
+
     private ClassFormHolder dialogFormHolder = new ClassFormHolder() {
         @Override
         protected ClassFormEntity createDefaultForm(BaseLogicsModule LM) {
@@ -400,6 +391,21 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
             return new ClassFormEntity(editFormEntity, editFormEntity.object);
         }
     };
+
+    /**
+     * используются для классовых форм в навигаторе
+     * @param LM
+     */
+    public ClassFormEntity getListForm(BaseLogicsModule LM) {
+        return listFormHolder.getForm(LM);
+    }
+    public ClassFormEntity getListForm(BaseLogicsModule LM, Version version) {
+        return listFormHolder.getNFForm(LM, version);
+    }
+
+    public void setListForm(FormEntity form, ObjectEntity object, Version version) {
+        listFormHolder.setForm(new ClassFormEntity(form, object), version);
+    }
 
     /**
      * используются при редактировании свойства даного класса из диалога, т.е. фактически для выбора объекта данного класса
@@ -432,7 +438,7 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
     }
 
     public static IsClassProperty getProperty(ValueClass valueClass) {
-        return new IsClassProperty(LocalizedString.concat(valueClass.getCaption(), LocalizedString.create("{logics.pr}")), valueClass);
+        return new IsClassProperty(valueClass.getCaption() + ServerResourceBundle.getString("logics.pr"), valueClass);
     }
 
     private IsClassProperty property;

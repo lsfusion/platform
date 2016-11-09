@@ -90,9 +90,35 @@ public abstract class ContextAwarePendingRemoteObject extends PendingRemoteObjec
         }
     }
 
+    public void closeLater() {
+        if(!Settings.get().isDisableAsyncClose())
+            runLater(new Runnable() {
+                public void run() {
+                    explicitClose(false);
+                }
+            });
+    }
+
+    public void runLater(final Runnable runnable) {
+        BaseUtils.runLater(Settings.get().getCloseFormDelay(), new Runnable() { // тут надо бы на ContextAwareDaemonThreadFactory переделать
+            public void run() {
+                ThreadLocalContext.aspectBeforeRmi(ContextAwarePendingRemoteObject.this, true);
+                try {
+                    runnable.run();
+                } finally {
+                    ThreadLocalContext.aspectAfterRmi();
+                }
+            }
+        });
+    }
+
     public abstract String getSID();
     protected boolean isEnabledUnreferenced() {
         return true;
+    }
+
+    public void explicitClose(boolean syncedOnClient) { // потом надо переминовать в close, но тогда close надо переименовывать и повышать версию интерфейса
+        shutdown(true, syncedOnClient);
     }
 
     protected boolean isUnreferencedSyncedClient() {
@@ -106,93 +132,90 @@ public abstract class ContextAwarePendingRemoteObject extends PendingRemoteObjec
             
         ThreadLocalContext.aspectBeforeRmi(this, true);
         try {
-            deactivateAndCloseLater(isUnreferencedSyncedClient());
+            if(!Settings.get().isDisableAsyncClose())
+                shutdown(true, isUnreferencedSyncedClient());
         } finally {
             ThreadLocalContext.aspectAfterRmi();
         }
     }
 
+    // static должен быть по хорошему чтобы не зависали ссылки
+    protected Runnable getAfterCleanThreadsRunnable() {
+        return null;
+    }
+
     // явная очистка ресурсов, которые поддерживаются через weak ref'ы
-    protected void onClose() {
+    protected void onExplicitClose(boolean syncedOnClient) {
+        unexport();
+
+        runLater(cleanThreads());
+    }
+
+    // все кроме weakRef (onExplicitClose) !!!! ВАЖНО нельзя запускать очистку weakRef ресурсов, так как WeakReference'у уже могут стать null, и ресурсы (например временные таблицы) перейдут другому владельцу, в итоге почистятся ресурсы используемые уже новым объектом
+    protected void onFinalClose(final boolean explicit) { // assert synchronized
         if (pausablesExecutor != null)
             pausablesExecutor.shutdown();
     }
 
-    public boolean isDeactivated() {
-        return deactivated;
-    }
-
-    private boolean deactivated = false;
-    // умертвляет объект - отключает его от новых потоков + закрывает все старые потоки
-    // ВАЖНО что должно выполняться в потоке, который сам не попадает в cleanThreads
-    public synchronized void deactivate() {
-        if(deactivated)
-            return;
-
-        ServerLoggers.remoteLifeLog("REMOTE OBJECT DEACTIVATE " + this);
-
-        onDeactivate();
-
-        deactivated = true;
-    }
-
-    protected void onDeactivate() {
-        unexport();
-
-        synchronized (threads) {
-            for (Thread thread : threads) {
-                ServerLoggers.exinfoLog("FORCEFULLY STOPPED : " + thread + '\n' + ExceptionUtils.getStackTrace() + '\n' + ExceptionUtils.getStackTrace(thread.getStackTrace()));
-                try {
-                    ThreadUtils.interruptThread(context, thread);
-                } catch (SQLException | SQLHandledException ignored) {
-                    ServerLoggers.sqlSuppLog(ignored);
-                } catch (Throwable t) {
-                    ServerLoggers.sqlSuppLog(t); // пока сюда же выведем
-                }
-            }
-        }
-    }
-
-    public synchronized void deactivateAndCloseLater(final boolean syncedOnClient) {
-        if(Settings.get().isDisableAsyncClose() && !syncedOnClient)
-            return;
-
-        final int delay = Settings.get().getCloseFormDelay();
-        BaseUtils.runLater(delay, new Runnable() { // тут надо бы на ContextAwareDaemonThreadFactory переделать
+    private Runnable cleanThreads() {
+        return new Runnable() {
+            @Override
             public void run() {
-                ThreadLocalContext.aspectBeforeRmi(ContextAwarePendingRemoteObject.this, true);
-                try {
-                    deactivate();
-
-                    try {
-                        Thread.sleep(delay); // даем время на deactivate (interrupt)
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
+                synchronized (threads) {
+                    for (Thread thread : threads) {
+                        ServerLoggers.exinfoLog("FORCEFULLY STOPPED : " + thread + '\n' + ExceptionUtils.getStackTrace() + '\n' + ExceptionUtils.getStackTrace(thread.getStackTrace()));
+                        try {
+                            ThreadUtils.interruptThread(context, thread);
+                        } catch (SQLException | SQLHandledException ignored) {
+                            ServerLoggers.sqlSuppLog(ignored);
+                        } catch (Throwable t) {
+                            ServerLoggers.sqlSuppLog(t); // пока сюда же выведем
+                        }
                     }
-
-                    explicitClose();
-                } finally {
-                    ThreadLocalContext.aspectAfterRmi();
                 }
+                Runnable runnable = getAfterCleanThreadsRunnable();
+                if(runnable != null)
+                    runLater(runnable);
             }
-        });
+        };
     }
 
     private boolean closed;
-    public synchronized void explicitClose() {
-        ServerLoggers.assertLog(deactivated, "REMOTE OBJECT MUST BE DEACTIVATED " + this);
-        if(closed)
+    private synchronized void shutdown(boolean explicit, boolean syncedOnClient) {  // по идее assert synchronized но может быть проблема так как unreferenced и explicitClose могут быть вместе
+        if(closed) {
+//            if (explicit) // много вариантов когда закрывается несколько раз explicit, unreferenced + close, * + forceDisconnect
+//                ServerLoggers.assertLog(false, "REMOTE OBJECT ALREADY CLOSED " + this);
             return;
-
+        }
         ServerLoggers.remoteLifeLog("REMOTE OBJECT CLOSE " + this);
-
-        onClose();
-
+        if (explicit)
+            onExplicitClose(syncedOnClient);
+        onFinalClose(explicit);
         closed = true;
     }
 
-    public boolean isClosed() {
+    public boolean isClosed() { // в том числе используется как isClosing
         return closed;
+    }
+
+    public static boolean disableFinalized = true; // временно, проверить проблемы с остановкой сервера
+    // также может быть проблема что в aspectBeforeRmi устанавливается контекст, в частности getLogInfo (причем IdentityLazy уже ушел), который может сделать допсылку (правда Weak) на этот объект
+
+    protected void finalize() throws Throwable {
+        if(!disableFinalized) {
+            try {
+                ThreadLocalContext.aspectBeforeRmi(this, true);
+                try {
+                    if (!Settings.get().isDisableFinalized())
+                        shutdown(false, false);
+                } catch (Throwable ignored) {
+                } finally {
+                    ThreadLocalContext.aspectAfterRmi();
+                }
+            } finally {
+                super.finalize();
+            }
+        }
     }
 
     public void logServerException(Throwable t) throws SQLException, SQLHandledException {

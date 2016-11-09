@@ -1,7 +1,6 @@
 package lsfusion.server.form.view;
 
 import lsfusion.base.identity.IdentityObject;
-import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.form.entity.filter.RegularFilterEntity;
 import lsfusion.server.serialization.ServerIdentitySerializable;
 import lsfusion.server.serialization.ServerSerializationPool;
@@ -25,9 +24,7 @@ public class RegularFilterView extends IdentityObject implements ServerIdentityS
     }
 
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
-        // todo [dale]: нужно протянуть нужную локаль  
-        String name = ThreadLocalContext.localize(entity.name);
-        pool.writeString(outStream, name);
+        pool.writeString(outStream, entity.name);
         pool.writeObject(outStream, entity.key);
         outStream.writeBoolean(entity.showKey);
     }

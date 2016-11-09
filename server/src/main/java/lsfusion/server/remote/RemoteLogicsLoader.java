@@ -4,6 +4,7 @@ import com.google.common.io.Resources;
 import lsfusion.interop.RemoteLogicsInterface;
 import lsfusion.interop.RemoteLogicsLoaderInterface;
 import lsfusion.server.ServerLoggers;
+import lsfusion.server.lifecycle.LifecycleAdapter;
 import lsfusion.server.lifecycle.LifecycleEvent;
 import lsfusion.server.lifecycle.LogicsManager;
 import lsfusion.server.logics.RMIManager;
@@ -15,7 +16,7 @@ import java.io.IOException;
 import java.rmi.AlreadyBoundException;
 import java.rmi.RemoteException;
 
-import static lsfusion.server.context.ThreadLocalContext.localize;
+import static lsfusion.server.logics.ServerResourceBundle.getString;
 
 public class RemoteLogicsLoader extends LogicsManager implements RemoteLogicsLoaderInterface, InitializingBean {
     private static final Logger logger = ServerLoggers.startLogger;
@@ -81,7 +82,7 @@ public class RemoteLogicsLoader extends LogicsManager implements RemoteLogicsLoa
         try {
             return Resources.toByteArray(Resources.getResource(name.replace('.', '/') + ".class"));
         } catch (IOException e) {
-            throw new RuntimeException(localize("{logics.error.reading.class.on.the.server}"), e);
+            throw new RuntimeException(getString("logics.error.reading.class.on.the.server"), e);
         }
     }
 }

@@ -1,8 +1,7 @@
 package lsfusion.server.classes;
 
 import lsfusion.interop.Data;
-import lsfusion.server.context.ThreadLocalContext;
-import lsfusion.server.logics.i18n.LocalizedString;
+import lsfusion.server.logics.ServerResourceBundle;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -31,7 +30,7 @@ public class PDFClass extends StaticFormatFileClass {
     }
 
     public String toString() {
-        return ThreadLocalContext.localize(LocalizedString.create("{classes.pdf.file}"));
+        return ServerResourceBundle.getString("classes.pdf.file");
     }
 
     public DataClass getCompatible(DataClass compClass, boolean or) {

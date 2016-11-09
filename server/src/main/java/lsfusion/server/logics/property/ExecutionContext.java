@@ -11,10 +11,10 @@ import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
-import lsfusion.interop.ModalityType;
 import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.form.ReportGenerationData;
 import lsfusion.server.ServerLoggers;
+import lsfusion.server.auth.SecurityPolicy;
 import lsfusion.server.classes.ConcreteCustomClass;
 import lsfusion.server.classes.ConcreteObjectClass;
 import lsfusion.server.classes.CustomClass;
@@ -30,12 +30,11 @@ import lsfusion.server.form.entity.ObjectEntity;
 import lsfusion.server.form.entity.PropertyDrawEntity;
 import lsfusion.server.form.entity.filter.FilterEntity;
 import lsfusion.server.form.instance.*;
-import lsfusion.server.form.instance.listener.CustomClassListener;
 import lsfusion.server.logics.*;
 import lsfusion.server.logics.SecurityManager;
 import lsfusion.server.logics.linear.LP;
 import lsfusion.server.logics.property.actions.FormEnvironment;
-import lsfusion.server.remote.FormReportManager;
+import lsfusion.server.remote.RemoteForm;
 import lsfusion.server.session.*;
 import net.sf.jasperreports.engine.JRAbstractExporter;
 import net.sf.jasperreports.engine.JRException;
@@ -49,6 +48,7 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Stack;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
 
 public class ExecutionContext<P extends PropertyInterface> implements UserInteraction, SessionCreator {
@@ -167,7 +167,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
     }
 
     private final ObjectValue pushedUserInput;
-    private final DataObject pushedAddObject; // чисто для асинхронного добавления объектов
+    private final DataObject pushedAddObject;
 
     private final ExecutionEnvironment env;
 
@@ -343,52 +343,22 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         ThreadLocalContext.delayUserInteraction(action);
     }
 
-    public ExecutionEnvironment getSessionEventFormEnv() {
-        return getFormInstance(true, false);
-    }
-    
-    // подразумевают вызов только из Top Action'ов (FORM.ADDOBJ, form*, DefaultChange)
-    public FormInstance getFormFlowInstance() {
-        return getFormInstance(true, true);
-    }
-    
-    // использование формы, чисто для того чтобы передать дальше 
-    public FormInstance getFormAspectInstance() {
-        return getFormInstance(false, false);
+    public FormInstance<?> getFormInstance() {
+        return env.getFormInstance();
     }
 
-    public FormInstance<?> getFormInstance(boolean sameSession, boolean assertExists) {
-        FormInstance formInstance = form != null ? form.getInstance() : null;
-        FormInstance formExecEnv = env.getFormInstance();
-        
-        if(formExecEnv != null) { // пока дублирующие механизмы, в будущем надо рефакторить
-            // formInstance == null так как в события не всегда formEnv проталкивается
-            ServerLoggers.assertLog(formInstance == null || formExecEnv == formInstance, "FORMS SHOULD BE EQUAL");
-            return formExecEnv;
-        }
-        
-        if(formInstance != null) {
-            if (formInstance.getSession() == env) {
-                ServerLoggers.assertLog(false, "FORM EXECUTION ENVIRONMENT DROPPED");
-            } else {
-                if (sameSession)
-                    formInstance = null;
-            }
-        }
-        
-        if(assertExists && formInstance == null)
-            ServerLoggers.assertLog(false, "FORM ALWAYS SHOULD EXIST");
-        return formInstance;
+    public FormEnvironment<P> getForm() {
+        return form;
+    }
+
+    public SecurityPolicy getSecurityPolicy() {
+        return getFormInstance().securityPolicy;
     }
 
     //todo: закэшировать, если скорость доступа к ThreadLocal станет критичной
     //todo: сейчас по идее не актуально, т.к. большая часть времени в ActionProperty уходит на основную работу
     public LogicsInstance getLogicsInstance() {
         return ThreadLocalContext.getLogicsInstance();
-    }
-    
-    private CustomClassListener getClassListener() {
-        return ThreadLocalContext.getClassListener();
     }
 
     public BusinessLogics<?> getBL() {
@@ -431,6 +401,11 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         return form!=null ? form.getMapObjects() : null;
     }
 
+    public PropertyObjectInterfaceInstance getObjectInstance(P cls) {
+        ImMap<P, PropertyObjectInterfaceInstance> objectInstances = getObjectInstances();
+        return objectInstances != null ? objectInstances.get(cls) : null;
+    }
+
     public PropertyObjectInterfaceInstance getSingleObjectInstance() {
         ImMap<P, PropertyObjectInterfaceInstance> mapObjects = getObjectInstances();
         return mapObjects != null && mapObjects.size() == 1 ? mapObjects.singleValue() : null;
@@ -443,17 +418,13 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
     public DataObject addObject(ConcreteCustomClass cls) throws SQLException, SQLHandledException {
         return getSession().addObject(cls, pushedAddObject);
     }
-    
-    public DataObject addObjectAutoSet(ConcreteCustomClass cls) throws SQLException, SQLHandledException {
-        return getSession().addObjectAutoSet(cls, pushedAddObject, getBL(), getClassListener());
-    }
 
     public <T extends PropertyInterface> SinglePropertyTableUsage<T> addObjects(ConcreteCustomClass cls, PropertySet<T> set) throws SQLException, SQLHandledException {
         return getSession().addObjects(cls, set);
     }
 
-    public DataObject formAddObject(ObjectEntity object, ConcreteCustomClass cls) throws SQLException, SQLHandledException {
-        FormInstance<?> form = getFormFlowInstance();
+    public DataObject addFormObject(ObjectEntity object, ConcreteCustomClass cls) throws SQLException, SQLHandledException {
+        FormInstance<?> form = getFormInstance();
         return form.addFormObject((CustomObjectInstance) form.instanceFactory.getInstance(object), cls, pushedAddObject, stack);
     }
 
@@ -466,7 +437,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
     }
 
     public boolean checkApply(BusinessLogics BL) throws SQLException, SQLHandledException {
-        return getSession().check(BL, getSessionEventFormEnv(), stack, this);
+        return getSession().check(BL, getFormInstance(), stack, this);
     }
 
     public boolean checkApply() throws SQLException, SQLHandledException {
@@ -482,11 +453,17 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
     }
     
     public boolean apply(ImOrderSet<ActionPropertyValueImplement> applyActions, FunctionSet<SessionDataProperty> keepProperties) throws SQLException, SQLHandledException {
-        return getEnv().apply(getBL(), stack, this, applyActions, keepProperties, getSessionEventFormEnv());
+        return getEnv().apply(getBL(), stack, this, applyActions, keepProperties, getFormInstance());
     }
 
-    public void cancel(FunctionSet<SessionDataProperty> keep) throws SQLException, SQLHandledException {
-        getEnv().cancel(stack, keep);
+    public void cancel() throws SQLException, SQLHandledException {
+        getEnv().cancel(stack);
+    }
+
+    public void emitExceptionIfNotInFormSession() {
+        if (getFormInstance()==null) {
+            throw new IllegalStateException("Property should only be used in form's session!");
+        }
     }
 
     public ExecutionContext<P> override(ExecutionEnvironment newEnv) {
@@ -529,10 +506,6 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         return env.getQueryEnv();
     }
 
-    public void executeSessionEvents() throws SQLException, SQLHandledException {
-        getSession().executeSessionEvents(getSessionEventFormEnv(), stack);
-    }
-
     public void delayUserInteraction(ClientAction action) {
         ThreadLocalContext.delayUserInteraction(action);
     }
@@ -545,11 +518,6 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         return ThreadLocalContext.requestUserInteraction(action);
     }
 
-    public void requestFormUserInteraction(FormInstance remoteForm, ModalityType modalityType, ExecutionStack stack) throws SQLException, SQLHandledException {
-        assertNotUserInteractionInTransaction();
-        ThreadLocalContext.requestFormUserInteraction(remoteForm, modalityType, stack);
-    }
-    
     public ExecutionContext<P> pushUserInput(ObjectValue overridenUserInput) {
         return override(keys, form, overridenUserInput);
     }
@@ -581,30 +549,37 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
     }
 
     public FormInstance createFormInstance(FormEntity formEntity) throws SQLException, SQLHandledException {
-        return createFormInstance(formEntity, MapFact.<ObjectEntity, DataObject>EMPTY(), getSession());
+        return createFormInstance(formEntity, MapFact.<ObjectEntity, DataObject>EMPTY(),
+                getSession(), false, FormSessionScope.OLDSESSION, false, false, false, null);
     }
 
     public void setLastUserInput(ObjectValue userInput) {
         stack.updateLastUserInput(getSession(), userInput);
     }
 
-    public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session) throws SQLException, SQLHandledException {
-        return createFormInstance(formEntity, mapObjects, session, false, false, false, false, false, false, null, null, null, false);
+    public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, FormSessionScope sessionScope, boolean checkOnOk, boolean showDrop, boolean interactive, ImSet<FilterEntity> contextFilters) throws SQLException, SQLHandledException {
+        assert sessionScope.equals(FormSessionScope.OLDSESSION);
+        return createFormInstance(formEntity, mapObjects, session, isModal, false, sessionScope, checkOnOk, showDrop, interactive, contextFilters, null, null, false);
     }
 
-    public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects) throws SQLException, SQLHandledException {
-        return createFormInstance(formEntity, mapObjects, getSession());
+    // зеркалирование Context, чтобы если что можно было бы не юзать ThreadLocal
+    public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, boolean isAdd, FormSessionScope sessionScope, boolean checkOnOk, boolean showDrop, boolean interactive, ImSet<FilterEntity> contextFilters, PropertyDrawEntity initFilterProperty, ImSet<PullChangeProperty> pullProps, boolean readonly) throws SQLException, SQLHandledException {
+        return ThreadLocalContext.createFormInstance(formEntity, mapObjects, stack, session, isModal, isAdd, sessionScope, checkOnOk, showDrop, interactive, contextFilters, initFilterProperty, pullProps, readonly);
     }
 
-    public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, boolean isAdd, Boolean manageSession, boolean checkOnOk, boolean showDrop, boolean interactive, ImSet<FilterEntity> contextFilters, PropertyDrawEntity initFilterProperty, ImSet<PullChangeProperty> pullProps, boolean readonly) throws SQLException, SQLHandledException {
-        return ThreadLocalContext.createFormInstance(formEntity, mapObjects, stack, session, isModal, isAdd, manageSession, checkOnOk, showDrop, interactive, contextFilters, initFilterProperty, pullProps, readonly);
+    public RemoteForm createRemoteForm(FormInstance formInstance) {
+        return ThreadLocalContext.createRemoteForm(formInstance, stack);
+    }
+
+    public RemoteForm createReportForm(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects) throws SQLException, SQLHandledException {
+        return createRemoteForm(createFormInstance(formEntity, mapObjects, getSession(), false, FormSessionScope.OLDSESSION, false, false, false, null));
     }
 
     public File generateFileFromForm(BusinessLogics BL, FormEntity formEntity, ObjectEntity objectEntity, DataObject dataObject) throws SQLException, SQLHandledException {
 
-        FormInstance remoteForm = createFormInstance(formEntity, MapFact.singleton(objectEntity, dataObject));
+        RemoteForm remoteForm = createReportForm(formEntity, MapFact.singleton(objectEntity, dataObject));
         try {
-            ReportGenerationData generationData = new FormReportManager<>(remoteForm).getReportData(false);
+            ReportGenerationData generationData = remoteForm.reportManager.getReportData();
             ReportGenerator report = new ReportGenerator(generationData);
             JasperPrint print = report.createReport(false, new HashMap());
             File tempFile = File.createTempFile("lsfReport", ".pdf");

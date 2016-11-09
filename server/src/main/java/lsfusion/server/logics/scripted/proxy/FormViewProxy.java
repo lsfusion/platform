@@ -3,7 +3,6 @@ package lsfusion.server.logics.scripted.proxy;
 import lsfusion.interop.form.layout.ContainerType;
 import lsfusion.interop.form.layout.FlexAlignment;
 import lsfusion.server.form.view.FormView;
-import lsfusion.server.logics.i18n.LocalizedString;
 
 import javax.swing.*;
 import java.awt.*;
@@ -22,7 +21,7 @@ public class FormViewProxy extends ViewProxy<FormView> {
     }
 
     public void setCaption(String caption) {
-        target.caption = LocalizedString.create(caption);
+        target.caption = caption;
     }
 
     public void setOverridePageWidth(Integer overridePageWidth) {

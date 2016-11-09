@@ -6,7 +6,6 @@ public class Stat {
 
     public final static Stat MAX = new Stat(1000000, true);
     public final static Stat ONE = new Stat(1);
-    public final static Stat ONESTAT = new Stat(1, true);
     public final static Stat MIN = new Stat(-1000, true);
     private final int deg;
 
@@ -25,13 +24,13 @@ public class Stat {
     public Stat(long count) {
         this(count, 1);
     }
-    
-    public static double getDegree(double count, int countDeg) {
-        return (double)countDeg * (Math.log10(count) / Math.log10(Settings.get().getStatDegree()));
+
+    public Stat(double count) {
+        this(count, 1);
     }
 
     public Stat(double count, int countDeg) { // ceil чтобы инвариант у суммы stat <=
-        this(count == 0 ? 0 : (int) Math.round(getDegree(count, countDeg)), true);
+        deg = count == 0 ? 0 : (int) Math.ceil((double)countDeg * (Math.log10(count) / Math.log10(Settings.get().getStatDegree())));
     }
 
     public Stat(int count, boolean isDeg) {
@@ -93,7 +92,7 @@ public class Stat {
     }
     
     public int getWeight() {
-        return deg;
+        return deg; // для алгоритма edmond'а нужен
     }
 
     public int getCount() {

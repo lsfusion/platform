@@ -6,8 +6,9 @@ import lsfusion.server.classes.DynamicFormatFileClass;
 import lsfusion.server.classes.FileClass;
 import lsfusion.server.classes.StaticFormatFileClass;
 import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.form.view.DefaultFormView;
+import lsfusion.server.form.view.PropertyDrawView;
 import lsfusion.server.logics.ObjectValue;
-import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ClassType;
@@ -20,13 +21,11 @@ public class SaveActionProperty extends SystemExplicitActionProperty {
     private LCP<?> fileProperty;
     private LCP<?> fileNameProp;
 
-    public SaveActionProperty(LocalizedString caption, LCP fileProperty, LCP fileNameProp) {
+    public SaveActionProperty(String caption, LCP fileProperty, LCP fileNameProp) {
         super(caption, fileProperty.getInterfaceClasses(ClassType.filePolicy));
 
         this.fileProperty = fileProperty;
         this.fileNameProp = fileNameProp;
-
-        drawOptions.setImage("save.png");
     }
 
     @Override
@@ -56,5 +55,11 @@ public class SaveActionProperty extends SystemExplicitActionProperty {
             }
             context.delayUserInterfaction(new SaveFileClientAction(saveFile, fileName + "." + extension));
         }
+    }
+
+    @Override
+    public void proceedDefaultDesign(PropertyDrawView propertyView, DefaultFormView view) {
+        super.proceedDefaultDesign(propertyView, view);
+        propertyView.design.setImagePath("save.png");
     }
 }

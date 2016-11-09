@@ -32,9 +32,17 @@ public class ClientNumericClass extends ClientDoubleClass {
     public final int length;
     public final int precision;
 
+    private String sID;
+
     public ClientNumericClass(int length, int precision) {
         this.length = length;
         this.precision = precision;
+        sID = "NumericClass[" + length + "," + precision + "]";
+    }
+
+    @Override
+    public String getSID() {
+        return sID;
     }
 
     @Override

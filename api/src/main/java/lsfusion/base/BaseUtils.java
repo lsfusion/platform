@@ -1990,6 +1990,13 @@ public class BaseUtils {
 
     public static String[] monthsEnglish = new String[]{"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"};
 
+    public static int getNumberOfMonthEnglish(String month) {
+        for (int i = 0; i < monthsEnglish.length; i++)
+            if (month.equals(monthsEnglish[i]))
+                return i + 1;
+        return 1;
+    }
+
     @SuppressWarnings({"UnusedDeclaration"})
     public static String formatEnglish(Date date) {
 
@@ -2072,11 +2079,6 @@ public class BaseUtils {
         int index = name.lastIndexOf(".");
         String extension = (index == -1) ? "" : name.substring(index + 1);
         return extension;
-    }
-
-    public static String getFileExtension(String filename) {
-        int index = filename.lastIndexOf(".");
-        return (index == -1) ? "" : filename.substring(index + 1);
     }
 
     public static byte[] filesToBytes(boolean multiple, boolean storeName, boolean custom, File... files) throws IOException {
@@ -2264,16 +2266,6 @@ public class BaseUtils {
 //        if(set1 instanceof ImSet && set2 instanceof ImSet)
 //            return ((ImSet<K>)set1).merge((ImSet<K>)set2);
         return new MergeFunctionSet<>(set1, set2);
-    }
-
-    public static <K> FunctionSet<K> remove(FunctionSet<K> set1, FunctionSet<K> set2) {
-        if (set1.isEmpty() || set2.isFull())
-            return SetFact.<K>EMPTY();
-        if (set2.isEmpty() || set1.isFull())
-            return set1;
-//        if(set1 instanceof ImSet && set2 instanceof ImSet)
-//            return ((ImSet<K>)set1).merge((ImSet<K>)set2);
-        return new RemoveFunctionSet<>(set1, set2);
     }
 
     public static <K> boolean containsAll(FunctionSet<K> set1, ImSet<K> set2) {
@@ -2623,17 +2615,4 @@ public class BaseUtils {
         String ts = trim(str);
         return isEmpty(ts)?null:ts;
     }
-
-    public static String substring(String value, int length) {
-        return value == null ? null : value.substring(0, Math.min(value.length(), length));
-    }
-    
-    public static <E> int indexOf(PriorityQueue<E> queue, E element) {
-        int index = 0;
-        for(E qel : queue) {
-            if(BaseUtils.hashEquals(qel, element))
-                index++;
-        }
-        return index;
-    } 
 }
