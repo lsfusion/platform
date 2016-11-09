@@ -4,6 +4,7 @@ import lsfusion.interop.ComponentDesign;
 import lsfusion.interop.FontInfo;
 import lsfusion.interop.form.layout.FlexAlignment;
 import lsfusion.server.form.view.ComponentView;
+import lsfusion.server.logics.i18n.LocalizedString;
 
 import java.awt.*;
 
@@ -151,9 +152,10 @@ public class ComponentViewProxy<T extends ComponentView> extends ViewProxy<T> {
         design.setFont(font);
     }
 
-    public void setFontStyle(String fontStyle) {
+    public void setFontStyle(LocalizedString lFontStyle) {
         boolean bold;
         boolean italic;
+        String fontStyle = lFontStyle.getSourceString();
         //чтобы не заморачиваться с лишним типом для стиля просто перечисляем все варианты...
         if ("bold".equals(fontStyle)) {
             bold = true;
@@ -186,7 +188,7 @@ public class ComponentViewProxy<T extends ComponentView> extends ViewProxy<T> {
         target.design.foreground = foreground;
     }
 
-    public void setImagePath(String imagePath) {
-        target.design.setImagePath(imagePath);
+    public void setImagePath(LocalizedString imagePath) {
+        target.design.setImagePath(imagePath.getSourceString());
     }
 }

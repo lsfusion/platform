@@ -3374,7 +3374,7 @@ setObjectPropertyStatement[Object propertyReceiver] returns [String id, Object v
 
 componentPropertyValue returns [Object value]
 	:   c=colorLiteral { $value = $c.val; }
-	|   s=stringLiteral { $value = $s.val; }
+	|   s=localizedStringLiteral { $value = $s.val; }
 	|   i=intLiteral { $value = $i.val; }
 	|   l=longLiteral { $value = $l.val; }
 	|   d=doubleLiteral { $value = $d.val; }

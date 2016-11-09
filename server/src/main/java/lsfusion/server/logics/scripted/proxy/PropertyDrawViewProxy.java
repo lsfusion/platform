@@ -32,15 +32,16 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
         target.hide = hide;
     }
 
-    public void setRegexp(String regexp) {
-        target.regexp = regexp;
+    public void setRegexp(LocalizedString regexp) {
+        target.regexp = regexp.getSourceString();
     }
 
-    public void setRegexpMessage(String regexpMessage) {
-        target.regexpMessage = regexpMessage;
+    public void setRegexpMessage(LocalizedString regexpMessage) {
+        target.regexpMessage = regexpMessage.getSourceString();
     }
 
-    public void setPattern(String pattern) {
+    public void setPattern(LocalizedString lPattern) {
+        String pattern = lPattern.getSourceString();
         Type type = target.getType();
         if(type instanceof IntegralClass) {
             target.format = new DecimalFormat(pattern);
@@ -90,8 +91,8 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
         target.panelCaptionAbove = panelCaptionAbove;
     }
 
-    public void setCaption(String caption) {
-        target.caption = LocalizedString.create(caption);
+    public void setCaption(LocalizedString caption) {
+        target.caption = caption;
     }
 
     public void setClearText(boolean clearText) {
@@ -102,12 +103,12 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
         target.entity.askConfirm = askConfirm;
     }
 
-    public void setAskConfirmMessage(String askConfirmMessage) {
-        target.entity.askConfirmMessage = askConfirmMessage;
+    public void setAskConfirmMessage(LocalizedString askConfirmMessage) {
+        target.entity.askConfirmMessage = askConfirmMessage.getSourceString();
     }
     
-    public void setToolTip(String toolTip) {
-        target.toolTip = toolTip;
+    public void setToolTip(LocalizedString toolTip) {
+        target.toolTip = toolTip.getSourceString();
     }
     
     public void setNotNull(boolean notNull) {

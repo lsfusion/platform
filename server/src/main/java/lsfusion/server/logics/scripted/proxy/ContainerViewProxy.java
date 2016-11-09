@@ -13,12 +13,12 @@ public class ContainerViewProxy extends ComponentViewProxy<ContainerView> {
         super(target);
     }
     
-    public void setCaption(String caption) {
-        target.caption = LocalizedString.create(caption);
+    public void setCaption(LocalizedString caption) {
+        target.caption = caption;
     }
 
-    public void setDescription(String description) {
-        target.description = LocalizedString.create(description);
+    public void setDescription(LocalizedString description) {
+        target.description = description;
     }
 
     public void setColumnLabelsWidth(int columnLabelsWidth) {
