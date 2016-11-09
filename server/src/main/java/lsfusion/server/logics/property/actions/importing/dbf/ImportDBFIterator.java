@@ -36,7 +36,8 @@ class ImportDBFIterator extends ImportIterator {
             List<String> listRow = new ArrayList<>();
             for (Integer column : sourceColumns) {
                 //Пока charset захардкожена. Если потребуется другая, то добавить в язык как для CSV
-                listRow.add(record.getString(fieldMapping.get(column), "cp1251"));
+                if (!record.isDeleted())
+                    listRow.add(record.getString(fieldMapping.get(column), "cp1251"));
             }
             return listRow;
         } catch (IOException e) {
