@@ -4,9 +4,9 @@ apache-tomcat-7.0.47-windows-x86.zip
 ideaIC-15.0.2.exe
 jdk-7u45-windows-i586.exe
 jdk-7u45-windows-x64.exe
-lsfusion-client-1.2.3.jar
-lsfusion-client-1.2.3.war
+lsfusion-client-1.2.4.jar
+lsfusion-client-1.2.4.war
 lsfusion-idea-plugin.zip
-lsfusion-server-1.2.3.jar
+lsfusion-server-1.2.4.jar
 postgresql-9.2.5-1-windows-x64.exe
 postgresql-9.2.5-1-windows.exe
