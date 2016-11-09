@@ -190,7 +190,7 @@ public class RmiQueue {
                     rmiFuture = execRmiRequestInternal(request);
                 }
 
-                while ((direct && !rmiFuture.isDone()) || (!direct && !rmiFutures.isEmpty())) {
+                while (!rmiFuture.isDone()) {
                     waitOnEdtSyncBlocker();
 
                     ConnectionLostManager.blockIfHasFailed();
@@ -236,7 +236,8 @@ public class RmiQueue {
                 } else {
                     rmiFuture = execRmiRequestInternal(request);
                 }
-                while ((direct && !rmiFuture.isDone()) || (!direct && !rmiFutures.isEmpty())) { // дожидаемся выполнения всех запросов в очереди
+
+                while (!rmiFuture.isDone()) {
                     long timeout = 1000 - (System.currentTimeMillis() - start);
 
                     boolean flush = !direct;
@@ -252,7 +253,7 @@ public class RmiQueue {
                         busyDisplayer.show(new Runnable() {
                             @Override
                             public void run() {
-                                while ((direct && !rmiFuture.isDone()) || !isRmiFutureDone()) {
+                                while (!rmiFuture.isDone() && !(!direct && isRmiFutureDone())) {
                                     try {
                                         waitOnEdtSyncBlocker();
                                     } catch (InterruptedException e) {
