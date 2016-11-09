@@ -37,10 +37,9 @@ import org.xBaseJ.xBaseJException;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public abstract class ImportDataActionProperty extends ScriptingActionProperty {
 
@@ -85,17 +84,19 @@ public abstract class ImportDataActionProperty extends ScriptingActionProperty {
         } else return null;
     }
 
+    public static ImportDataActionProperty createDBFProperty(ValueClass valueClass, ValueClass wheresClass, ScriptingLogicsModule LM, List<String> ids, List<LCP> properties) {
+        for (int i = 0; i < ids.size(); ++i) { // для DBF делаем case insensitive
+            String id = ids.get(i);
+            if (id != null)
+                ids.set(i, id.toLowerCase());
+            else
+                throw new RuntimeException("Import error: field for property " + properties.get(i) + " not specified");
+        }
+        return new ImportDBFDataActionProperty(valueClass, wheresClass, LM, ids, properties);
+    }
+
     public static ImportDataActionProperty createProperty(ValueClass valueClass, ImportSourceFormat format, ScriptingLogicsModule LM, List<String> ids, List<LCP> properties) {
-        if (format == ImportSourceFormat.DBF) {
-            for (int i = 0; i < ids.size(); ++i) { // для DBF делаем case insensitive
-                String id = ids.get(i);
-                if(id != null)
-                    ids.set(i, id.toLowerCase());
-                else
-                    throw new RuntimeException("Import error: field for property " + properties.get(i) + " not specified");
-            }
-            return new ImportDBFDataActionProperty(valueClass, LM, ids, properties);
-        } else if (format == ImportSourceFormat.JDBC) {
+        if (format == ImportSourceFormat.JDBC) {
             return new ImportJDBCDataActionProperty(valueClass, LM, ids, properties);
         } else if (format == ImportSourceFormat.MDB) {
             return new ImportMDBDataActionProperty(valueClass, LM, ids, properties);
@@ -113,6 +114,8 @@ public abstract class ImportDataActionProperty extends ScriptingActionProperty {
     protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         DataObject value = context.getDataKeys().getValue(0);
         assert value.getType() instanceof FileClass;
+        DataObject wheresObject = context.getDataKeys().size() > 1 ? context.getDataKeys().getValue(1) : null;
+        wheresObject = wheresObject != null && wheresObject.getType() instanceof StringClass ? wheresObject : null; //переделать
 
         Object file = value.object;
         if (file instanceof byte[]) {
@@ -121,9 +124,11 @@ public abstract class ImportDataActionProperty extends ScriptingActionProperty {
                 if (value.getType() instanceof DynamicFormatFileClass) {
                     file = BaseUtils.getFile((byte[]) file);
                 }
-                ImportIterator iterator = getIterator((byte[]) file);
+                String wheres = wheresObject != null ? (String) wheresObject.object : null;
+                ImportIterator iterator = getIterator((byte[]) file, wheres);
+                List<List<String>> wheresList = getWheresList(wheres);
 
-                List<String> row;
+                Object row;
                 int i = 0;
                 ImOrderSet<LCP> props = SetFact.fromJavaOrderSet(properties).addOrderExcl(LM.baseLM.imported);  
                 SingleKeyTableUsage<LCP> importTable = new SingleKeyTableUsage<>(IntegerClass.instance, props, new Type.Getter<LCP>() {
@@ -133,25 +138,28 @@ public abstract class ImportDataActionProperty extends ScriptingActionProperty {
                     }
                 });
                 MExclMap<ImMap<String, DataObject>, ImMap<LCP, ObjectValue>> mRows = MapFact.mExclMap();
-                while ((row = iterator.nextRow()) != null) {
-                    DataObject rowKey = new DataObject(i++, IntegerClass.instance);
-                    final List<String> finalRow = row;
-                    mRows.exclAdd(MapFact.singleton("key", rowKey), props.getSet().mapValues(new GetValue<ObjectValue, LCP>() {
-                        public ObjectValue getMapValue(LCP prop) {
-                            if (prop == LM.baseLM.imported) {
-                                return ObjectValue.getValue(true, LogicalClass.instance);
-                            } else if (properties.indexOf(prop) < finalRow.size()) {
-                                Type type = prop.property.getType();
-                                Object parsedObject = null;
-                                try {
-                                    parsedObject = type.parseString(finalRow.get(properties.indexOf(prop)));
-                                } catch (lsfusion.server.data.type.ParseException ignored) {
+                while ((row = iterator.nextRow(wheresList)) != null) {
+                    if(row instanceof List) {
+                        DataObject rowKey = new DataObject(i++, IntegerClass.instance);
+                        final List<String> finalRow = (List<String>) row;
+                        mRows.exclAdd(MapFact.singleton("key", rowKey), props.getSet().mapValues(new GetValue<ObjectValue, LCP>() {
+                            public ObjectValue getMapValue(LCP prop) {
+                                if (prop == LM.baseLM.imported) {
+                                    return ObjectValue.getValue(true, LogicalClass.instance);
+                                } else if (properties.indexOf(prop) < finalRow.size()) {
+                                    Type type = prop.property.getType();
+                                    Object parsedObject = null;
+                                    try {
+                                        parsedObject = type.parseString(finalRow.get(properties.indexOf(prop)));
+                                    } catch (lsfusion.server.data.type.ParseException ignored) {
+                                    }
+                                    return ObjectValue.getValue(parsedObject, (ConcreteClass) prop.property.getValueClass(ClassType.editPolicy));
                                 }
-                                return ObjectValue.getValue(parsedObject, (ConcreteClass) prop.property.getValueClass(ClassType.editPolicy));
+
+                                return NullValue.instance;
                             }
-                            
-                            return NullValue.instance;
-                        }}));
+                        }));
+                    }
                 }
                 findProperty("prevImported[]").change(i, context);
                 if(prevImported != null) {
@@ -213,12 +221,29 @@ public abstract class ImportDataActionProperty extends ScriptingActionProperty {
 
         return columns;
     }
+
+    private List<List<String>> getWheresList(String wheres) {
+        List<List<String>> wheresList = new ArrayList<>();
+        if (wheres != null) { //spaces in value are not permitted
+            Pattern wherePattern = Pattern.compile("(?:\\s(AND|OR)\\s)?(?:(NOT)\\s)?([^=<>\\s]+)(\\sIN\\s|=|<|>|<=|>=)([^=<>\\s]+)");
+            Matcher whereMatcher = wherePattern.matcher(wheres);
+            while (whereMatcher.find()) {
+                String condition = whereMatcher.group(1);
+                String not = whereMatcher.group(2);
+                String field = whereMatcher.group(3);
+                String sign = whereMatcher.group(4);
+                String value = whereMatcher.group(5);
+                wheresList.add(Arrays.asList(condition, not, field, sign, value));
+            }
+        }
+        return wheresList;
+    }
     
     protected int columnsNumberBase() {
         return 0;
     }
 
-    public abstract ImportIterator getIterator(byte[] file) throws IOException, ParseException, xBaseJException, JDOMException, ClassNotFoundException;
+    public abstract ImportIterator getIterator(byte[] file, String wheres) throws IOException, ParseException, xBaseJException, JDOMException, ClassNotFoundException;
 
     protected boolean ignoreIncorrectColumns() {
         return true;

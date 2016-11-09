@@ -1663,6 +1663,8 @@ importActionDefinitionBody[List<TypedParameter> context, boolean dynamic] return
         	$property = self.addScriptedImportCSVActionProperty($expr.property, $plist.ids, $plist.propUsages, separator, noHeader, charset);
         else if($type.format == ImportSourceFormat.XML)
         	$property = self.addScriptedImportXMLActionProperty($expr.property, $plist.ids, $plist.propUsages, attr);
+        else if($type.format == ImportSourceFormat.DBF)
+            $property = self.addScriptedImportDBFActionProperty($expr.property, $whereExpr.property, $plist.ids, $plist.propUsages);
 		else
 			$property = self.addScriptedImportActionProperty($type.format, $expr.property, $plist.ids, $plist.propUsages);
 	}
@@ -1671,6 +1673,7 @@ importActionDefinitionBody[List<TypedParameter> context, boolean dynamic] return
 		type = importSourceFormat [context, dynamic] { format = $type.format; sheet = $type.sheet; separator = $type.separator; noHeader = $type.noHeader; attr = $type.attr; charset = $type.charset; }
 		'TO' plist=nonEmptyPropertyUsageListWithIds 
 		'FROM' expr=propertyExpression[context, dynamic]
+		('WHERE' whereExpr=propertyExpression[context, dynamic])?
 	;
 
 newThreadActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]

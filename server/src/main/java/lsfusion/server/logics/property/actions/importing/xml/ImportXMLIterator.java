@@ -26,7 +26,7 @@ public abstract class ImportXMLIterator extends ImportIterator {
     }
 
     @Override
-    public List<String> nextRow() {
+    public List<String> nextRow(List<List<String>> wheresList) {
         if (iterator.hasNext()) {
             List<String> listRow = new ArrayList<>();
             if(attr) {
