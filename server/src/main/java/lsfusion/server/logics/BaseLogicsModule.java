@@ -618,14 +618,16 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
 
     @Override
     @IdentityStrongLazy
-    public LAP getAddObjectAction(FormEntity formEntity, ObjectEntity obj) {
-        CustomClass cls = (CustomClass)obj.baseClass;
+    public LAP getAddObjectAction(FormEntity formEntity, ObjectEntity obj, CustomClass explicitClass) {
+        CustomClass cls = explicitClass;
+        if(explicitClass == null)
+            cls = (CustomClass)obj.baseClass;
         LAP result = addAProp(new FormAddObjectActionProperty(cls, obj));
         
         setAddActionOptions(result, obj);
         
         if (formEntity.getCanonicalName() != null) {
-            String name = "_ADDOBJ_" + formEntity.getCanonicalName().replace('.', '_') + "_" + obj.getSID();
+            String name = "_ADDOBJ_" + formEntity.getCanonicalName().replace('.', '_') + "_" + obj.getSID() + (explicitClass != null ? getClassPrefix(cls) : "");
             makePropertyPublic(result, name, cls.getResolveSet());
         }
         return result;

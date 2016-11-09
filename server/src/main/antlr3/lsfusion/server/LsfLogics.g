@@ -749,18 +749,30 @@ formPropertyUList returns [List<String> aliases, List<PropertyUsage> properties,
 
 
 formPropertyUsage returns [PropertyUsage propUsage]
-	:	pu=propertyUsage	{ $propUsage = $pu.propUsage; }
-	|	cid='OBJVALUE'		{ $propUsage = new PropertyUsage($cid.text); }
-	|	cid='ADDOBJ'		{ $propUsage = new PropertyUsage($cid.text); }
-	|	cid='ADDFORM'		{ $propUsage = new PropertyUsage($cid.text); }
-	|	cid='ADDNESTEDFORM'	{ $propUsage = new PropertyUsage($cid.text); }
-	|	cid='ADDSESSIONFORM'	{ $propUsage = new PropertyUsage($cid.text); }
-	|	cid='EDITFORM'		{ $propUsage = new PropertyUsage($cid.text); }
-	|	cid='EDITNESTEDFORM'	{ $propUsage = new PropertyUsage($cid.text); }
-	|	cid='EDITSESSIONFORM'	{ $propUsage = new PropertyUsage($cid.text); }
-	|	cid='DELETE'		{ $propUsage = new PropertyUsage($cid.text); }
-	|	cid='DELETESESSION'	{ $propUsage = new PropertyUsage($cid.text); }
-	;
+@init {
+   String systemName = null;
+   List<String> signature = null;
+}
+   :   pu=propertyUsage   { $propUsage = $pu.propUsage; }
+       |
+       (
+          (
+             (
+                cid='ADDOBJ'      { systemName = $cid.text; }
+             |  cid='ADDFORM'     { systemName = $cid.text; }
+             |  cid='ADDNESTEDFORM'    { systemName = $cid.text; }
+             |  cid='ADDSESSIONFORM'   { systemName = $cid.text; }
+             )
+             ( '[' clId=compoundID ']'  { signature = Collections.singletonList($clId.sid); } )?
+          )
+          |  cid='EDITFORM'    { systemName = $cid.text; }
+          |  cid='EDITNESTEDFORM'   { systemName = $cid.text; }
+          |  cid='EDITSESSIONFORM'  { systemName = $cid.text; }
+          |  cid='OBJVALUE'    { systemName = $cid.text; }
+          |  cid='DELETE'      { systemName = $cid.text; }
+          |  cid='DELETESESSION'    { systemName = $cid.text; }
+       ) { $propUsage = new PropertyUsage(systemName, signature); }
+   ;
 
 
 formFiltersList

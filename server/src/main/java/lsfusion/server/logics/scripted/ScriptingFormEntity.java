@@ -1,5 +1,6 @@
 package lsfusion.server.logics.scripted;
 
+import lsfusion.base.BaseUtils;
 import lsfusion.base.OrderedMap;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
@@ -31,7 +32,6 @@ import lsfusion.server.logics.property.derived.DerivedProperty;
 
 import javax.swing.*;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -227,6 +227,16 @@ public class ScriptingFormEntity {
             form.reportPathProp = addCalcPropertyObject(propUsage, mapping);
         }
     }
+    
+    private CustomClass getSingleAddClass(ScriptingLogicsModule.PropertyUsage propertyUsage) throws ScriptingErrorLog.SemanticErrorException {
+        List<ValueClass> valueClasses = LM.getValueClasses(propertyUsage);
+        if(valueClasses != null) {
+            ValueClass valueClass = BaseUtils.single(valueClasses);
+            checkCustomClassParam(valueClass, propertyUsage.name);
+            return (CustomClass) valueClass;
+        }
+        return null; 
+    }
 
     public void addScriptedPropertyDraws(List<ScriptingLogicsModule.PropertyUsage> properties, List<String> aliases, List<List<String>> mappings, FormPropertyOptions commonOptions, List<FormPropertyOptions> options, Version version, List<DebugInfo.DebugPoint> points) throws ScriptingErrorLog.SemanticErrorException {
         assert properties.size() == mappings.size();
@@ -247,11 +257,13 @@ public class ScriptingFormEntity {
                 objects = new PropertyObjectInterfaceEntity[]{obj};
             } else if (propertyName.equals("ADDOBJ")) {
                 ObjectEntity obj = getSingleCustomClassMappingObject(propertyName, mapping);
-                property = LM.getAddObjectAction(form, obj);
+                CustomClass explicitClass = getSingleAddClass(pUsage);
+                property = LM.getAddObjectAction(form, obj, explicitClass);
                 objects = new PropertyObjectInterfaceEntity[]{};
             } else if (propertyName.equals("ADDFORM") || propertyName.equals("ADDSESSIONFORM") || propertyName.equals("ADDNESTEDFORM")) {
                 ObjectEntity obj = getSingleCustomClassMappingObject(propertyName, mapping);
-                property = LM.getAddFormAction(form, obj, getAddFormActionScope(propertyName), version);
+                CustomClass explicitClass = getSingleAddClass(pUsage);
+                property = LM.getAddFormAction(form, obj, explicitClass, getAddFormActionScope(propertyName), version);
                 objects = new PropertyObjectInterfaceEntity[]{};
             } else if (propertyName.equals("EDITFORM") || propertyName.equals("EDITSESSIONFORM") || propertyName.equals("EDITNESTEDFORM")) {
                 ObjectEntity obj = getSingleCustomClassMappingObject(propertyName, mapping);
@@ -313,7 +325,11 @@ public class ScriptingFormEntity {
     }
 
     private void checkCustomClassParam(ObjectEntity param, String propertyName) throws ScriptingErrorLog.SemanticErrorException {
-        if (!(param.baseClass instanceof CustomClass)) {
+        checkCustomClassParam(param.baseClass, propertyName);
+    }
+
+    private void checkCustomClassParam(ValueClass cls, String propertyName) throws ScriptingErrorLog.SemanticErrorException {
+        if (!(cls instanceof CustomClass)) {
             LM.getErrLog().emitCustomClassExpextedError(LM.getParser(), propertyName);
         }
     }

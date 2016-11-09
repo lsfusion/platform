@@ -1613,8 +1613,8 @@ public abstract class LogicsModule {
         return addAProp(null, new AddObjectActionProperty(cls, innerInterfaces.getSet(), (ImOrderSet) readImplements.subList(0, resInterfaces).toOrderExclSet(), conditionalPart, resultPart, MapFact.<CalcPropertyInterfaceImplement<I>, Boolean>EMPTYORDER(), false, autoSet));
     }
 
-    public LAP getAddObjectAction(FormEntity formEntity, ObjectEntity obj) {
-        return baseLM.getAddObjectAction(formEntity, obj);
+    public LAP getAddObjectAction(FormEntity formEntity, ObjectEntity obj, CustomClass explicitClass) {
+        return baseLM.getAddObjectAction(formEntity, obj, explicitClass);
     }
 
     // ---------------------- Delete Object ---------------------- //
@@ -2090,7 +2090,7 @@ public abstract class LogicsModule {
     
     public void addObjectActions(FormEntity form, ObjectEntity object) {
         Version version = getVersion();
-        form.addPropertyDraw(getAddObjectAction(form, object), version);
+        form.addPropertyDraw(getAddObjectAction(form, object, null), version);
         form.addPropertyDraw(getDeleteAction(object, true), version, object);
     }
 
@@ -2100,13 +2100,15 @@ public abstract class LogicsModule {
 
     public void addFormActions(FormEntity form, ObjectEntity object, FormSessionScope scope) {
         Version version = getVersion();
-        form.addPropertyDraw(getAddFormAction(form, object, scope, version), version);
+        form.addPropertyDraw(getAddFormAction(form, object, null, scope, version), version);
         form.addPropertyDraw(getEditFormAction(object, scope, version), version, object);
         form.addPropertyDraw(getDeleteAction(object, !scope.isNewSession()), version, object);
     }
 
-    public LAP getAddFormAction(FormEntity contextForm, ObjectEntity contextObject, FormSessionScope scope, Version version) {
-        CustomClass cls = (CustomClass)contextObject.baseClass;
+    public LAP getAddFormAction(FormEntity contextForm, ObjectEntity contextObject, CustomClass explicitClass, FormSessionScope scope, Version version) {
+        CustomClass cls = explicitClass;
+        if(cls == null)
+            cls = (CustomClass)contextObject.baseClass;
         return baseLM.getAddFormAction(cls, contextForm, contextObject, scope, cls.getEditForm(baseLM, version));
     }
 
