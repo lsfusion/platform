@@ -238,6 +238,15 @@ public class ScriptingFormEntity {
         return null; 
     }
 
+    private FormSessionScope override(FormPropertyOptions options, FormSessionScope scope) {
+        Boolean newSession = options.isNewSession();
+        if(newSession != null && newSession) {
+            Boolean nested = options.isNested();
+            return (nested != null && nested ? FormSessionScope.NESTEDSESSION : FormSessionScope.NEWSESSION);
+        }
+        return scope;
+    }
+
     public void addScriptedPropertyDraws(List<ScriptingLogicsModule.PropertyUsage> properties, List<String> aliases, List<List<String>> mappings, FormPropertyOptions commonOptions, List<FormPropertyOptions> options, Version version, List<DebugInfo.DebugPoint> points) throws ScriptingErrorLog.SemanticErrorException {
         assert properties.size() == mappings.size();
 
@@ -248,7 +257,9 @@ public class ScriptingFormEntity {
             ScriptingLogicsModule.PropertyUsage pUsage = properties.get(i);
             String propertyName = pUsage.name;
             String alias = aliases.get(i);
-            
+
+            FormPropertyOptions propertyOptions = commonOptions.overrideWith(options.get(i));
+
             LP property;
             PropertyObjectInterfaceEntity[] objects;;
             if (propertyName.equals("OBJVALUE")) {
@@ -263,15 +274,18 @@ public class ScriptingFormEntity {
             } else if (propertyName.equals("ADDFORM") || propertyName.equals("ADDSESSIONFORM") || propertyName.equals("ADDNESTEDFORM")) {
                 ObjectEntity obj = getSingleCustomClassMappingObject(propertyName, mapping);
                 CustomClass explicitClass = getSingleAddClass(pUsage);
-                property = LM.getAddFormAction(form, obj, explicitClass, getAddFormActionScope(propertyName), version);
+                FormSessionScope scope = override(propertyOptions, getAddFormActionScope(propertyName));
+                property = LM.getAddFormAction(form, obj, explicitClass, scope, version);
                 objects = new PropertyObjectInterfaceEntity[]{};
             } else if (propertyName.equals("EDITFORM") || propertyName.equals("EDITSESSIONFORM") || propertyName.equals("EDITNESTEDFORM")) {
                 ObjectEntity obj = getSingleCustomClassMappingObject(propertyName, mapping);
-                property = LM.getEditFormAction(obj, getEditFormActionScope(propertyName), version);
+                FormSessionScope scope = override(propertyOptions, getEditFormActionScope(propertyName));
+                property = LM.getEditFormAction(obj, scope, version);
                 objects = new PropertyObjectInterfaceEntity[]{obj};
             } else if (propertyName.equals("DELETE") || propertyName.equals("DELETESESSION")) {
                 ObjectEntity obj = getSingleCustomClassMappingObject(propertyName, mapping);
-                property = LM.getDeleteAction(obj, propertyName.equals("DELETESESSION"));
+                FormSessionScope scope = override(propertyOptions, propertyName.equals("DELETESESSION") ? FormSessionScope.OLDSESSION : FormSessionScope.NEWSESSION);
+                property = LM.getDeleteAction(obj, scope);
                 objects = new PropertyObjectInterfaceEntity[]{obj};
             } else {
                 MappedProperty prop = getPropertyWithMapping(pUsage, mapping);
@@ -279,8 +293,6 @@ public class ScriptingFormEntity {
                 property = prop.property;
                 objects = prop.mapping;
             }
-
-            FormPropertyOptions propertyOptions = commonOptions.overrideWith(options.get(i));
 
             String formPath = points.get(i).toString();
             PropertyDrawEntity propertyDraw = form.addPropertyDraw(property, version, formPath, objects);

@@ -659,10 +659,10 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     }
 
     @IdentityStrongLazy
-    public LAP getDeleteAction(CustomClass cls, boolean oldSession) {
-        LAP res = addDeleteAction(cls, oldSession);
+    public LAP getDeleteAction(CustomClass cls, FormSessionScope scope) {
+        LAP res = addDeleteAction(cls, scope);
 
-        String name = "_DELETE" + (oldSession ? "SESSION" : "");
+        String name = "_DELETE" + (scope == FormSessionScope.OLDSESSION ? "SESSION" : (scope == FormSessionScope.NESTEDSESSION ? scope : ""));
         makePropertyPublic(res, name, cls.getResolveSet());
         return res;
     }

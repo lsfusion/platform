@@ -1619,7 +1619,7 @@ public abstract class LogicsModule {
 
     // ---------------------- Delete Object ---------------------- //
 
-    public LAP addDeleteAction(CustomClass cls, boolean oldSession) {
+    public LAP addDeleteAction(CustomClass cls, FormSessionScope scope) {
         LAP delete = addChangeClassAProp(baseClass.unknown, 1, 0, false, true, 1, is(cls), 1);
 
         LAP<?> result = addIfAProp(LocalizedString.create("{logics.delete}"), baseLM.sessionOwners, // IF sessionOwners() THEN 
@@ -1635,7 +1635,7 @@ public abstract class LogicsModule {
         result.property.setSimpleDelete(true);
         setDeleteActionOptions(result);
 
-        return addSessionScopeAProp(!oldSession ? FormSessionScope.NEWSESSION : FormSessionScope.OLDSESSION, result);
+        return addSessionScopeAProp(scope, result);
     }
 
     protected void setDeleteActionOptions(LAP property) {
@@ -1666,7 +1666,7 @@ public abstract class LogicsModule {
         result = addListAProp(LocalizedString.create("{logics.add}"), result,
                 addIfAProp(addJProp(baseLM.equals2, formResultProperty, addCProp(baseLM.formResult, "ok")), // IF formResult == ok
                         (contextObject != null ? addJoinAProp(addOSAProp(contextObject, true, 1), addedProperty) : baseLM.empty), // THEN (contextObject != null) SEEK exf.o prm
-                        (addIfAProp(baseLM.sessionOwners, addJoinAProp(getDeleteAction(cls, contextObject, true), addedProperty)))) // ELSE IF sessionOwners DELETE prm, // предполагается что если нет 
+                        (addIfAProp(baseLM.sessionOwners, addJoinAProp(getDeleteAction(cls, contextObject, FormSessionScope.OLDSESSION), addedProperty)))) // ELSE IF sessionOwners DELETE prm, // предполагается что если нет
                          );
 
         setAddActionOptions(result, contextObject);
@@ -2091,7 +2091,7 @@ public abstract class LogicsModule {
     public void addObjectActions(FormEntity form, ObjectEntity object) {
         Version version = getVersion();
         form.addPropertyDraw(getAddObjectAction(form, object, null), version);
-        form.addPropertyDraw(getDeleteAction(object, true), version, object);
+        form.addPropertyDraw(getDeleteAction(object, FormSessionScope.OLDSESSION), version, object);
     }
 
     public void addFormActions(FormEntity form, ObjectEntity object) {
@@ -2102,7 +2102,7 @@ public abstract class LogicsModule {
         Version version = getVersion();
         form.addPropertyDraw(getAddFormAction(form, object, null, scope, version), version);
         form.addPropertyDraw(getEditFormAction(object, scope, version), version, object);
-        form.addPropertyDraw(getDeleteAction(object, !scope.isNewSession()), version, object);
+        form.addPropertyDraw(getDeleteAction(object, scope), version, object);
     }
 
     public LAP getAddFormAction(FormEntity contextForm, ObjectEntity contextObject, CustomClass explicitClass, FormSessionScope scope, Version version) {
@@ -2117,12 +2117,12 @@ public abstract class LogicsModule {
         return baseLM.getEditFormAction(cls, scope, cls.getEditForm(baseLM, version));
     }
 
-    public LAP getDeleteAction(ObjectEntity object, boolean oldSession) {
+    public LAP getDeleteAction(ObjectEntity object, FormSessionScope scope) {
         CustomClass cls = (CustomClass) object.baseClass;
-        return getDeleteAction(cls, object, oldSession);
+        return getDeleteAction(cls, object, scope);
     }
-    public LAP getDeleteAction(CustomClass cls, ObjectEntity object, boolean oldSession) {
-        return baseLM.getDeleteAction(cls, oldSession);
+    public LAP getDeleteAction(CustomClass cls, ObjectEntity object, FormSessionScope scope) {
+        return baseLM.getDeleteAction(cls, scope);
     }
 
     public String getNamespace() {
