@@ -517,7 +517,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
             PropertyDrawInstance property = getPropertyDraw(propertyDrawSID);
             if(property == null) {
-                ServerLoggers.assertLog(false, "LoadUserPreferences property not found: " + propertyDrawSID);
+                //ServerLoggers.assertLog(false, "LoadUserPreferences property not found: " + propertyDrawSID);
             } else {
                 if (userPrefsHiddenProperties.contains(property)) {
                     if (hasPreferences != null && (needToHide == null || !needToHide)) {
