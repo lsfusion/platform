@@ -224,6 +224,10 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, "can't set custom form for built-in class '" + className + "'");
     }
 
+    public void emitCustomClassExpextedError(ScriptParser parser) throws SemanticErrorException {
+        emitSimpleError(parser, "custom class expected");
+    }
+
     public void emitCustomClassExpextedError(ScriptParser parser, String propertyName) throws SemanticErrorException {
         emitSimpleError(parser, format("custom class parameter expected for property '%s'", propertyName));
     }

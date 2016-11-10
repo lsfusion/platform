@@ -1,5 +1,6 @@
 package lsfusion.server.logics.tasks.impl.simple;
 
+import lsfusion.server.Settings;
 import lsfusion.server.SystemProperties;
 import lsfusion.server.logics.tasks.SimpleBLTask;
 
@@ -10,7 +11,7 @@ public class PrereadCachesTask extends SimpleBLTask {
     }
 
     public void run() {
-        if (!SystemProperties.isDebug) {
+        if (!SystemProperties.isDebug && !Settings.get().isDisablePrereadCaches()) {
             getBL().prereadCaches();
         }
     }

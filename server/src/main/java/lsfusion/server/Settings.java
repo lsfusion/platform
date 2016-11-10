@@ -1976,4 +1976,14 @@ public class Settings {
     public void setCheckSessionCount(boolean checkSessionCount) {
         this.checkSessionCount = checkSessionCount;
     }
+
+    private boolean disablePrereadCaches = false;
+
+    public boolean isDisablePrereadCaches() {
+        return disablePrereadCaches;
+    }
+
+    public void setDisablePrereadCaches(boolean disablePrereadCaches) {
+        this.disablePrereadCaches = disablePrereadCaches;
+    }
 }

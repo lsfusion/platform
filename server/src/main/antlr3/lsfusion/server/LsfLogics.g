@@ -2162,6 +2162,20 @@ contextIndependentActionDB returns [LPWithParams property, List<ResolveClassSet>
 	|	customADB=customActionDefinitionBody { $property.property = $customADB.property; $signature = $customADB.signature; }
 	;
 
+mappedForm[List<TypedParameter> context, boolean dynamic] returns [FormEntity formEntity, List<ObjectEntity> objects = new ArrayList<>(), List<LPWithParams> mapping = new ArrayList<>()]
+@init {
+    boolean edit = false;
+}
+	:
+	(   (   formName=compoundID { if(inPropParseState()) { $formEntity = self.findForm($formName.sid); } } 
+	        ('OBJECTS' list=formActionObjectList[context, dynamic] { if(inPropParseState()) { $objects = self.findObjectEntities($formEntity, $list.objects); } $mapping = $list.exprs; })?)
+	    |
+	    (   ('DIALOG' | ('EDIT' { edit = true; } ))
+	         cls = classId { if(inPropParseState()) { ClassFormEntity classForm = self.findClassForm($cls.sid, edit); $formEntity = classForm.form; $objects = Collections.singletonList(classForm.object); } }
+	         'OBJECT' pe=propertyExpression[context, dynamic] { $mapping = Collections.singletonList($pe.property); }
+	    ))
+;
+
 
 formActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
 @init {
@@ -2172,8 +2186,6 @@ formActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns 
 	boolean noCancel = false;
 	FormPrintType printType = null;
 	FormExportType exportType = null;
-	List<String> objects = new ArrayList<String>();
-	List<LPWithParams> mapping = new ArrayList<LPWithParams>();
 	String contextObjectName = null;
 	LPWithParams contextProperty = null;
 	String initFilterPropertyName = null;
@@ -2182,11 +2194,10 @@ formActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns 
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedFAProp($formName.sid, objects, mapping, contextObjectName, contextProperty, initFilterPropertyName, initFilterPropertyMapping, modalityType, manageSession, checkOnOk, showDrop, noCancel, printType, exportType, readOnly);
+		$property = self.addScriptedFAProp($mf.formEntity, $mf.objects, $mf.mapping, contextObjectName, contextProperty, initFilterPropertyName, initFilterPropertyMapping, modalityType, manageSession, checkOnOk, showDrop, noCancel, printType, exportType, readOnly);
 	}
 }
-	:	'FORM' formName=compoundID 
-		('OBJECTS' list=formActionObjectList[context, dynamic] { objects = $list.objects; mapping = $list.exprs; })?
+	:	'FORM' mf=mappedForm[context,dynamic]
 		(	'CONTEXTFILTER' objName=ID '=' contextPropertyExpr=propertyExpression[context, dynamic] { contextObjectName = $objName.text; contextProperty = $contextPropertyExpr.property; }
 		|	initFilter = initFilterDefinition { initFilterPropertyMapping = $initFilter.mapping; initFilterPropertyName = $initFilter.propName; }
 		|	'MANAGESESSION' { manageSession = true; }

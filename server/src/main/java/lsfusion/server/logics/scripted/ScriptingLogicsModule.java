@@ -449,6 +449,14 @@ public class ScriptingLogicsModule extends LogicsModule {
         return (FormEntity) navigator;
     }
 
+    public List<ObjectEntity> findObjectEntities(FormEntity form, List<String> objectNames) throws ScriptingErrorLog.SemanticErrorException {
+        List<ObjectEntity> objects = new ArrayList<ObjectEntity>();;
+        for (int i = 0; i < objectNames.size(); i++) {
+            objects.add(findObjectEntity(form, objectNames.get(i)));
+        }
+        return objects;
+    }
+
     private List<FormEntity> findForms(List<String> names) throws ScriptingErrorLog.SemanticErrorException {
         List<FormEntity> forms = new ArrayList<>();
         for (String name : names) {
@@ -1512,6 +1520,17 @@ public class ScriptingLogicsModule extends LogicsModule {
         checkAddActionsClass(cls);
         return getScriptEditFormAction((CustomClass) cls, scope);
     }
+    
+    public ClassFormEntity findClassForm(String className, boolean edit) throws ScriptingErrorLog.SemanticErrorException {
+        ValueClass cls = findClass(className);
+        checkCustomClass(cls);
+        CustomClass customClass = (CustomClass) cls;
+        if(edit)
+            return customClass.getEditForm(baseLM, getVersion());
+        else
+            return customClass.getDialogForm(baseLM, getVersion());
+    }
+
 
     public LPWithParams addScriptedConfirmProp(LPWithParams msgProp) {
         List<Object> resultParams = getParamsPlainList(singletonList(msgProp));
@@ -2249,7 +2268,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new Time(h, m, 0);
     }
 
-    public LPWithParams addScriptedFAProp(String formName, List<String> objectNames, List<LPWithParams> mapping,
+    public LPWithParams addScriptedFAProp(FormEntity form, List<ObjectEntity> objects, List<LPWithParams> mapping,
                                           String contextObjectName, LPWithParams contextProperty,
                                           String initFilterPropertyName, List<String> initFilterPropertyMapping,
                                           ModalityType modalityType, boolean manageSession,
@@ -2257,13 +2276,6 @@ public class ScriptingLogicsModule extends LogicsModule {
                                           FormPrintType printType, FormExportType exportType, boolean readonly) throws ScriptingErrorLog.SemanticErrorException {
         if (contextProperty != null) {
             checkCalculationProperty(contextProperty.property);
-        }
-
-        FormEntity form = findForm(formName);
-
-        ObjectEntity[] objects = new ObjectEntity[objectNames.size()];
-        for (int i = 0; i < objectNames.size(); i++) {
-            objects[i] = findObjectEntity(form, objectNames.get(i));
         }
 
         ObjectEntity contextObject = contextObjectName == null ? null : findObjectEntity(form, contextObjectName);
@@ -2276,7 +2288,7 @@ public class ScriptingLogicsModule extends LogicsModule {
                                  : getPropertyDraw(this, form, PropertyDrawEntity.createSID(initFilterPropertyName, initFilterPropertyMapping), version);
         }
 
-        LAP property = addFAProp(null, LocalizedString.create(""), form, objects, manageSession, noCancel, contextObject,
+        LAP property = addFAProp(null, LocalizedString.create(""), form, objects.toArray(new ObjectEntity[objects.size()]), manageSession, noCancel, contextObject,
                                  contextProperty == null ? null : (CalcProperty)contextProperty.property.property,
                                  initFilterProperty,
                 modalityType, checkOnOk, showDrop, printType, exportType, readonly);
@@ -3280,6 +3292,12 @@ public class ScriptingLogicsModule extends LogicsModule {
     public void checkAddActionsClass(ValueClass cls) throws ScriptingErrorLog.SemanticErrorException {
         if (!(cls instanceof CustomClass)) {
             errLog.emitAddActionsClassError(parser);
+        }
+    }
+
+    public void checkCustomClass(ValueClass cls) throws ScriptingErrorLog.SemanticErrorException {
+        if (!(cls instanceof CustomClass)) {
+            errLog.emitCustomClassExpextedError(parser);
         }
     }
 
