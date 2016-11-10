@@ -40,7 +40,7 @@ class ImportDBFIterator extends ImportIterator {
             }
 
             List<String> listRow = new ArrayList<>();
-            if (!ignoreRow(record, wheresList) && !record.isDeleted()) {
+            if (!record.isDeleted() && !ignoreRow(record, wheresList)) {
                 for (Integer column : sourceColumns) {
                     //Пока charset захардкожена. Если потребуется другая, то добавить в язык как для CSV
                     listRow.add(record.getString(fieldMapping.get(column), "cp1251"));
