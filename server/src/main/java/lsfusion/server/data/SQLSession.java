@@ -16,7 +16,6 @@ import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
 import lsfusion.server.classes.IntegerClass;
 import lsfusion.server.data.expr.KeyExpr;
-import lsfusion.server.data.expr.query.DistinctKeys;
 import lsfusion.server.data.expr.query.PropStat;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.query.*;
@@ -715,7 +714,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
 
 //        System.out.println("CREATE TABLE "+Table.Name+" ("+CreateString+")");
         executeDDL("CREATE TABLE " + table.getName(syntax) + " (" + createString + ")", env.finish());
-        addExtraIndices(table, keys, logger);
+        addExtraIndices(table, keys, null);
     }
 
     public void renameTable(Table table, String newTableName) throws SQLException {
@@ -789,9 +788,11 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
 
         long start = System.currentTimeMillis();
         String nameIndex = getIndexName(table, syntax, fields);
-        logger.info(String.format("Adding index started: %s", nameIndex));
+        if(logger != null)
+            logger.info(String.format("Adding index started: %s", nameIndex));
         executeDDL("CREATE INDEX " + nameIndex + " ON " + table.getName(syntax) + " (" + columns + ")");
-        logger.info(String.format("Adding index: %s, %sms", nameIndex, System.currentTimeMillis() - start));
+        if(logger != null)
+            logger.info(String.format("Adding index: %s, %sms", nameIndex, System.currentTimeMillis() - start));
     }
 
     public void dropIndex(Table table, ImOrderSet<KeyField> keyFields, ImOrderSet<String> fields, boolean order, boolean ifExists) throws SQLException {
@@ -1580,7 +1581,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
             return handled;
         }
         
-        logger.error(message + " " + e.getMessage());
+        if(!suppressErrorLogging)
+            logger.error(message + " " + e.getMessage());
         // duplicate keys валится при :
         // ПОЛЬЗОВАТЕЛЬСКИЕ
         // неправильном неявном приведении типов (от широкого к узкому, DataClass.containsAll), проблемах с округлениями,
@@ -1591,6 +1593,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         return e;
     }
 
+    public boolean suppressErrorLogging;
 
     private void lockConnection(boolean needLock, OperationOwner owner) {
         if(syntax.hasJDBCTimeoutMultiThreadProblem() && owner != OperationOwner.debug) { // в debug'е нет смысла lock'ать

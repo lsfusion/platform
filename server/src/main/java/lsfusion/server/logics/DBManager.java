@@ -905,8 +905,10 @@ public class DBManager extends LogicsManager implements InitializingBean {
             // создадим индексы в базе
             startLogger.info("Adding indices");
             for (Map.Entry<Table, Map<List<Field>, Boolean>> mapIndex : newDBStructure.tables.entrySet())
-                for (Map.Entry<List<Field>, Boolean> index : mapIndex.getValue().entrySet())
-                    sql.addIndex(mapIndex.getKey(), mapIndex.getKey().keys, SetFact.fromJavaOrderSet(index.getKey()), index.getValue(), startLogger);
+                for (Map.Entry<List<Field>, Boolean> index : mapIndex.getValue().entrySet()) {
+                    Table table = mapIndex.getKey();
+                    sql.addIndex(table, table.keys, SetFact.fromJavaOrderSet(index.getKey()), index.getValue(), oldDBStructure.getTable(table.getName()) == null ? null : startLogger); // если таблица новая нет смысла логировать
+                }
 
             startLogger.info("Filling static objects ids");
             if(!fillIDs(getChangesAfter(oldDBStructure.dbVersion, classSIDChanges), getChangesAfter(oldDBStructure.dbVersion, objectSIDChanges)))
@@ -938,7 +940,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
             if (oldDBStructure.version < 0) {
                 startLogger.info("Recalculate class stats");
                 try(DataSession session = createSession(OperationOwner.unknown)) {
-                    businessLogics.recalculateClassStat(session);
+                    businessLogics.recalculateClassStat(session, false);
                     session.apply(businessLogics, getStack());
                 }
             }

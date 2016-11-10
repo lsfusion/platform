@@ -666,23 +666,30 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
 
     public void initReflectionEvents() {
 
-        initStats();
-        //временное решение
-        
         try {
             SQLSession sql = getDbManager().getThreadLocalSql();
-            
-            startLogger.info("Setting user logging for properties");            
-            setUserLoggableProperties(sql);
+            boolean prevSuppressErrorLogging = sql.suppressErrorLogging;
+            try {                
+                sql.suppressErrorLogging = true;
 
-            startLogger.info("Setting user not null constraints for properties");
-            setNotNullProperties(sql);
+                //временное решение
+                updateStats(sql);
+                updateClassStat(sql, true);
 
-            startLogger.info("Setting user notifications for property changes");
-            setupPropertyNotifications(sql);
-            
+                startLogger.info("Setting user logging for properties");
+                setUserLoggableProperties(sql);
+
+                startLogger.info("Setting user not null constraints for properties");
+                setNotNullProperties(sql);
+
+                startLogger.info("Setting user notifications for property changes");
+                setupPropertyNotifications(sql);
+            } finally {
+                sql.suppressErrorLogging = prevSuppressErrorLogging;
+            }
         } catch (Exception ignored) {
-            startLogger.error("Error while initializing reflection events", ignored);
+            startLogger.info("Error while initializing reflection events occured. Probably this is the first database synchronization. Look to the exinfo log for details.");
+            ServerLoggers.exInfoLogger.error("Error while initializing reflection events", ignored);
         }
     }
 
@@ -808,28 +815,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
                 else
                     emailNotificationProperty.setEventSetAction(LM, prop, params);
             }
-        }
-    }
-
-
-    public void initStats() {
-        try {
-            SQLSession sql = getDbManager().getThreadLocalSql();
-
-            updateStats(sql);
-        } catch (Exception ignored) {
-        }
-
-        initClassStat();
-    }
-
-    public void initClassStat() { // по аналогии с initStats
-        try {
-            SQLSession sql = getDbManager().getThreadLocalSql();
-
-            updateClassStat(sql, true);
-        } catch (Exception ignored) {
-            ignored = ignored;
         }
     }
 
@@ -1785,7 +1770,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             long time = System.currentTimeMillis() - start;
             serviceLogger.info(String.format("Recalculate Stats: %s, %sms", String.valueOf(dataTable), time));
         }
-        recalculateClassStat(session);
+        recalculateClassStat(session, true);
     }
 
     public void overCalculateStats(DataSession session, Integer maxQuantityOverCalculate) throws SQLException, SQLHandledException {
@@ -1824,10 +1809,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         return resultSet;
     }
 
-    public void recalculateClassStat(DataSession session) throws SQLException, SQLHandledException {
+    public void recalculateClassStat(DataSession session, boolean log) throws SQLException, SQLHandledException {
         for (ObjectValueClassSet tableClasses : LM.baseClass.getUpObjectClassFields().valueIt()) {
             long start = System.currentTimeMillis();
-            serviceLogger.info(String.format("Recalculate Stats: %s", String.valueOf(tableClasses)));
+            if(log)
+                serviceLogger.info(String.format("Recalculate Stats: %s", String.valueOf(tableClasses)));
             QueryBuilder<Integer, Integer> classes = new QueryBuilder<>(SetFact.singleton(0));
 
             KeyExpr countKeyExpr = new KeyExpr("count");
@@ -1845,7 +1831,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
                 LM.statCustomObjectClass.change(classStat == null ? 1 : (Integer) classStat.singleValue(), session, customClass.getClassObject());
             }
             long time = System.currentTimeMillis() - start;
-            serviceLogger.info(String.format("Recalculate Stats: %s, %sms", String.valueOf(tableClasses), time));
+            if(log)
+                serviceLogger.info(String.format("Recalculate Stats: %s, %sms", String.valueOf(tableClasses), time));
         }
     }
 
