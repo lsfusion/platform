@@ -37,9 +37,10 @@ import org.xBaseJ.xBaseJException;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.text.ParseException;
-import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public abstract class ImportDataActionProperty extends ScriptingActionProperty {
 
@@ -114,8 +115,6 @@ public abstract class ImportDataActionProperty extends ScriptingActionProperty {
     protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         DataObject value = context.getDataKeys().getValue(0);
         assert value.getType() instanceof FileClass;
-        DataObject wheresObject = context.getDataKeys().size() > 1 ? context.getDataKeys().getValue(1) : null;
-        wheresObject = wheresObject != null && wheresObject.getType() instanceof StringClass ? wheresObject : null; //переделать
 
         Object file = value.object;
         if (file instanceof byte[]) {
@@ -124,9 +123,7 @@ public abstract class ImportDataActionProperty extends ScriptingActionProperty {
                 if (value.getType() instanceof DynamicFormatFileClass) {
                     file = BaseUtils.getFile((byte[]) file);
                 }
-                String wheres = wheresObject != null ? (String) wheresObject.object : null;
-                ImportIterator iterator = getIterator((byte[]) file, wheres);
-                List<List<String>> wheresList = getWheresList(wheres);
+                ImportIterator iterator = getIterator((byte[]) file);
 
                 Object row;
                 int i = 0;
@@ -138,7 +135,7 @@ public abstract class ImportDataActionProperty extends ScriptingActionProperty {
                     }
                 });
                 MExclMap<ImMap<String, DataObject>, ImMap<LCP, ObjectValue>> mRows = MapFact.mExclMap();
-                while ((row = iterator.nextRow(wheresList)) != null) {
+                while ((row = iterator.nextRow()) != null) {
                     if(row instanceof List) {
                         DataObject rowKey = new DataObject(i++, IntegerClass.instance);
                         final List<String> finalRow = (List<String>) row;
@@ -221,29 +218,12 @@ public abstract class ImportDataActionProperty extends ScriptingActionProperty {
 
         return columns;
     }
-
-    private List<List<String>> getWheresList(String wheres) {
-        List<List<String>> wheresList = new ArrayList<>();
-        if (wheres != null) { //spaces in value are not permitted
-            Pattern wherePattern = Pattern.compile("(?:\\s(AND|OR)\\s)?(?:(NOT)\\s)?([^=<>\\s]+)(\\sIN\\s|=|<|>|<=|>=)([^=<>\\s]+)");
-            Matcher whereMatcher = wherePattern.matcher(wheres);
-            while (whereMatcher.find()) {
-                String condition = whereMatcher.group(1);
-                String not = whereMatcher.group(2);
-                String field = whereMatcher.group(3);
-                String sign = whereMatcher.group(4);
-                String value = whereMatcher.group(5);
-                wheresList.add(Arrays.asList(condition, not, field, sign, value));
-            }
-        }
-        return wheresList;
-    }
     
     protected int columnsNumberBase() {
         return 0;
     }
 
-    public abstract ImportIterator getIterator(byte[] file, String wheres) throws IOException, ParseException, xBaseJException, JDOMException, ClassNotFoundException;
+    public abstract ImportIterator getIterator(byte[] file) throws IOException, ParseException, xBaseJException, JDOMException, ClassNotFoundException;
 
     protected boolean ignoreIncorrectColumns() {
         return true;

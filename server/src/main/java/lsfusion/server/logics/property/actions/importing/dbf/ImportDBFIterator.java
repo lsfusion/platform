@@ -10,18 +10,24 @@ import java.io.IOException;
 import java.util.*;
 
 class ImportDBFIterator extends ImportIterator {
+    private static final String EQ = "=";
+    private static final String GE = ">=";
+    private static final String GT = ">";
+    private static final String LE = "<=";
+    private static final String LT = "<";
+    private static final String IN = " IN ";
     private DbfReader reader;
     private List<Integer> sourceColumns;
-    private String wheres;
+    private List<List<String>> wheresList;
     
-    ImportDBFIterator(DbfReader reader, List<Integer> sourceColumns, String wheres) {
+    ImportDBFIterator(DbfReader reader, List<Integer> sourceColumns, List<List<String>> wheresList) {
         this.reader = reader;
         this.sourceColumns = sourceColumns;
-        this.wheres = wheres;
+        this.wheresList = wheresList;
     }
 
     @Override
-    public Object nextRow(List<List<String>> wheresList) {
+    public Object nextRow() {
         try {
             DbfRecord record = reader.read();
             if(record == null)
@@ -77,5 +83,51 @@ class ImportDBFIterator extends ImportIterator {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private boolean ignoreRowStringCondition(boolean not, Object fieldValue, String sign, String value) {
+        boolean ignoreRow = false;
+        if (sign.equals(IN)) {
+            List<String> stringValues = splitIn(value);
+            ignoreRow = !stringValues.contains(fieldValue);
+        } else {
+            String stringFieldValue = String.valueOf(fieldValue);
+            switch (sign) {
+                case EQ:
+                    if (!stringFieldValue.equals(value))
+                        ignoreRow = true;
+                    break;
+                case GE:
+                    if (stringFieldValue.compareTo(value) < 0)
+                        ignoreRow = true;
+                    break;
+                case GT:
+                    if (stringFieldValue.compareTo(value) <= 0)
+                        ignoreRow = true;
+                    break;
+                case LE:
+                    if (stringFieldValue.compareTo(value) > 0)
+                        ignoreRow = true;
+                    break;
+                case LT:
+                    if (stringFieldValue.compareTo(value) >= 0)
+                        ignoreRow = true;
+                    break;
+            }
+        }
+        return not != ignoreRow;
+    }
+
+    private List<String> splitIn(String value) {
+        List<String> values = null;
+        if (value.matches("\\(.*\\)")) {
+            try {
+                values = Arrays.asList(value.substring(1, value.length() - 1).split(","));
+            } catch (Exception ignored) {
+            }
+            if (values == null)
+                throw Throwables.propagate(new RuntimeException("Incorrect WHERE in IMPORT. Invalid \"IN\" condition"));
+        }
+        return values;
     }
 }

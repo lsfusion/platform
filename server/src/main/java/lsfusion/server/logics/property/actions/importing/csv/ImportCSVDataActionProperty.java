@@ -22,7 +22,7 @@ public class ImportCSVDataActionProperty extends ImportDataActionProperty {
     }
 
     @Override
-    public ImportIterator getIterator(byte[] file, String wheres) {
+    public ImportIterator getIterator(byte[] file) {
         return new ImportCSVIterator(file, getSourceColumns(XLSColumnsMapping), charset, separator, noHeader);
     }
 }

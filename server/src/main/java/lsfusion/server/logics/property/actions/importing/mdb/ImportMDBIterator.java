@@ -16,7 +16,7 @@ public class ImportMDBIterator extends ImportIterator {
     }
 
     @Override
-    public List<String> nextRow(List<List<String>> wheresList) {
+    public List<String> nextRow() {
         if (rowMapIterator.hasNext()) {
             List<String> row = rowMapIterator.next();
             List<String> listRow = new ArrayList<>();

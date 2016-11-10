@@ -23,7 +23,7 @@ public class ImportJDBCIterator extends ImportIterator {
     }
 
     @Override
-    public List<String> nextRow(List<List<String>> wheresList) {
+    public List<String> nextRow() {
         try {
             if (rs.next()) {
                 List<String> listRow = new ArrayList<>();

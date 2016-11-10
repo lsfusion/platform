@@ -18,7 +18,7 @@ public class ImportMDBDataActionProperty extends ImportDataActionProperty {
     }
 
     @Override
-    public ImportIterator getIterator(byte[] file, String wheres) {
+    public ImportIterator getIterator(byte[] file) {
 
         try {
             List<Map<String, Object>> rows = (List<Map<String, Object>>) BaseUtils.deserializeCustomObject(file);

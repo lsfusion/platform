@@ -37,7 +37,7 @@ public class ImportXLSDataActionProperty extends ImportDataActionProperty {
     }
 
     @Override
-    public ImportIterator getIterator(byte[] file, String wheres) throws IOException {
+    public ImportIterator getIterator(byte[] file) throws IOException {
         return new ImportXLSIterator(file, getSourceColumns(XLSColumnsMapping), properties, sheetIndex);
     }
 }
