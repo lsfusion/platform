@@ -2205,7 +2205,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         if(!Settings.get().isReadAllocatedBytes())
             return;
 
-        final long period = Settings.get().getThreadAllocatedMemoryPeriod();
         final long maxAllocatedBytes = Settings.get().getMaxThreadAllocatedBytes();
         final int cacheMissesStatsLimit = Settings.get().getCacheMissesStatsLimit();
 
@@ -2231,6 +2230,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             HashMap<CacheType, Long> exceededMissedMap = new HashMap<>();
 
             boolean logTotal = false;
+            List<AllocatedInfo> infos = new ArrayList<>();
 
             for (Map.Entry<Long, Long> bEntry : SQLSession.threadAllocatedBytesBMap.entrySet()) {
                 Long id = bEntry.getKey();
@@ -2272,19 +2272,22 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
                         String computer = logInfo == null ? null : logInfo.hostnameComputer;
                         String user = logInfo == null ? null : logInfo.userName;
 
-                        String userMessage;
-                        if (user == null) {
-                            userMessage = String.format("PID %s: %s", bEntry.getKey(), humanReadableByteCount(deltaBytes));
-                        } else {
-                            userMessage = String.format("PID %s, %s, Comp. %s, User %s", bEntry.getKey(),
-                                    humanReadableByteCount(deltaBytes), computer == null ? "unknown" : computer, user);
-                        }
-                        userMessage += String.format(", missed-hit: All: %s-%s, %s", userMissed, userHit, getStringMap(userHitMap, userMissedMap));
-
-                        ServerLoggers.allocatedBytesLogger.info(userMessage);
+                        infos.add(new AllocatedInfo(user, computer, bEntry.getKey(), deltaBytes, userMissed, userHit, userHitMap, userMissedMap));
                     }
                 }
             }
+
+            Collections.sort(infos, new Comparator<AllocatedInfo>() {
+                @Override
+                public int compare(AllocatedInfo o1, AllocatedInfo o2) {
+                    long delta = o1.bytes - o2.bytes;
+                    return delta > 0 ? 1 : (delta < 0 ? -1 : 0);
+                }
+            });
+            for (AllocatedInfo info : infos) {
+                ServerLoggers.allocatedBytesLogger.info(info);
+            }
+
             if (logTotal) {
                 ServerLoggers.allocatedBytesLogger.info(String.format("Exceeded: sum: %s, \t\t\tmissed-hit: All: %s-%s, %s",
                         humanReadableByteCount(bytesSum), exceededMisses, exceededMissesHits, getStringMap(exceededHitMap, exceededMissedMap)));
@@ -2381,5 +2384,41 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
                 updateThreadAllocatedBytesMap();
             }
         }, false, Settings.get().getThreadAllocatedMemoryPeriod() / 2, false, "Allocated Bytes");
+    }
+
+    private class AllocatedInfo {
+        private final String user;
+        private final String computer;
+        private final Long pid;
+        private final Long bytes;
+        private final long userMissed;
+        private final long userHit;
+        private final HashMap<CacheType, Long> userHitMap;
+        private final HashMap<CacheType, Long> userMissedMap;
+
+        AllocatedInfo(String user, String computer, Long pid, Long bytes, long userMissed, long userHit, HashMap<CacheType, Long> userHitMap, HashMap<CacheType, Long> userMissedMap) {
+            this.user = user;
+            this.computer = computer;
+            this.pid = pid;
+            this.bytes = bytes;
+            this.userMissed = userMissed;
+            this.userHit = userHit;
+            this.userHitMap = userHitMap;
+            this.userMissedMap = userMissedMap;
+        }
+
+        @Override
+        public String toString() {
+            String userMessage;
+            if (user == null) {
+                userMessage = String.format("PID %s: %s", pid, humanReadableByteCount(bytes));
+            } else {
+                userMessage = String.format("PID %s, %s, Comp. %s, User %s", pid,
+                        humanReadableByteCount(bytes), computer == null ? "unknown" : computer, user);
+            }
+            userMessage += String.format(", missed-hit: All: %s-%s, %s", userMissed, userHit, getStringMap(userHitMap, userMissedMap));
+
+            return userMessage;
+        }
     }
 }
