@@ -33,6 +33,10 @@ public class LAP<T extends PropertyInterface> extends LP<T, ActionProperty<T>> {
         super(property, listInterfaces);
     }
 
+    public void execute(DataSession session, ExecutionStack stack, ObjectValue... objects) throws SQLException, SQLHandledException {
+        execute((ExecutionEnvironment)session, stack, objects);
+    }
+
     public void execute(ExecutionEnvironment session, ExecutionStack stack, ObjectValue... objects) throws SQLException, SQLHandledException {
         property.execute(getMapValues(objects), session, stack, null);
     }
