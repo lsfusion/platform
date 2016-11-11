@@ -2,6 +2,7 @@ package lsfusion.server.logics;
 
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
 import lsfusion.server.context.Context;
 import lsfusion.server.data.SQLHandledException;
@@ -35,6 +36,7 @@ public class ThreadUtils {
 
     public static void interruptThread(SQLSession sqlSession, Thread thread) throws SQLException, SQLHandledException {
         if(thread != null) {
+            ServerLoggers.exinfoLog("THREAD INTERRUPT " + thread);
             SQLSession.cancelExecutingStatement(sqlSession, thread.getId(), true);
             thread.interrupt();
         }
