@@ -49,7 +49,7 @@ public class ImportDBFDataActionProperty extends ImportDataActionProperty {
             i++;
         }
         List<Integer> sourceColumns = getSourceColumns(fieldMapping);
-        return new ImportDBFIterator(reader, sourceColumns, getWheresList());
+        return new ImportDBFIterator(reader, sourceColumns, getWheresList(), properties);
     }
 
     private List<List<String>> getWheresList() {

@@ -1,12 +1,16 @@
 package lsfusion.server.logics.property.actions.importing.dbf;
 
 import com.google.common.base.Throwables;
+import lsfusion.server.classes.*;
+import lsfusion.server.logics.linear.LCP;
+import lsfusion.server.logics.property.ClassType;
 import lsfusion.server.logics.property.actions.importing.ImportIterator;
 import net.iryndin.jdbf.core.DbfField;
 import net.iryndin.jdbf.core.DbfRecord;
 import net.iryndin.jdbf.reader.DbfReader;
 
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.*;
 
 class ImportDBFIterator extends ImportIterator {
@@ -19,11 +23,13 @@ class ImportDBFIterator extends ImportIterator {
     private DbfReader reader;
     private List<Integer> sourceColumns;
     private List<List<String>> wheresList;
+    private final List<LCP> properties;
     
-    ImportDBFIterator(DbfReader reader, List<Integer> sourceColumns, List<List<String>> wheresList) {
+    ImportDBFIterator(DbfReader reader, List<Integer> sourceColumns, List<List<String>> wheresList, List<LCP> properties) {
         this.reader = reader;
         this.sourceColumns = sourceColumns;
         this.wheresList = wheresList;
+        this.properties = properties;
     }
 
     @Override
@@ -42,14 +48,25 @@ class ImportDBFIterator extends ImportIterator {
             List<String> listRow = new ArrayList<>();
             if (!record.isDeleted() && !ignoreRow(record, wheresList)) {
                 for (Integer column : sourceColumns) {
-                    //Пока charset захардкожена. Если потребуется другая, то добавить в язык как для CSV
-                    listRow.add(record.getString(fieldMapping.get(column), "cp1251"));
-
+                    ValueClass valueClass = properties.get(sourceColumns.indexOf(column)).property.getValueClass(ClassType.valuePolicy);
+                    if (valueClass instanceof DateClass) {
+                        Date date = record.getDate(fieldMapping.get(column));
+                        listRow.add(date == null ? null : DateClass.getDateFormat().format(date));
+                    } else if (valueClass instanceof DateTimeClass) {
+                        Date dateTime = record.getDate(fieldMapping.get(column));
+                        listRow.add(dateTime == null ? null : DateTimeClass.getDateTimeFormat().format(dateTime));
+                    } else if (valueClass instanceof LogicalClass) {
+                        Boolean bool = record.getBoolean(fieldMapping.get(column));
+                        listRow.add(bool == null ? null : String.valueOf(bool));
+                    } else {
+                        //Пока charset захардкожена. Если потребуется другая, то добавить в язык как для CSV
+                        listRow.add(record.getString(fieldMapping.get(column), "cp1251"));
+                    }
                 }
                 return listRow;
             } else return "ignored"; //чтобы отличить пропускаемый ряд от null - конца чтения
 
-        } catch (IOException e) {
+        } catch (IOException | ParseException e) {
             return null;
         }
     }

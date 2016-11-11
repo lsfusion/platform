@@ -125,7 +125,7 @@ public class LogicalClass extends DataClass<Boolean> {
 
     public Boolean parseString(String s) throws ParseException {
         try {
-            boolean b = Boolean.parseBoolean(s) || (s != null && s.equalsIgnoreCase("t"));
+            boolean b = Boolean.parseBoolean(s);
             if(b)
                 return true;
             return null;
