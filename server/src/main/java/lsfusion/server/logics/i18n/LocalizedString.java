@@ -1,6 +1,7 @@
 package lsfusion.server.logics.i18n;
 
 import lsfusion.base.BaseUtils;
+import lsfusion.server.caches.IdentityStartLazy;
 import lsfusion.server.context.ThreadLocalContext;
 
 import java.util.Locale;
@@ -22,7 +23,7 @@ import java.util.Locale;
 
 public class LocalizedString {
     public interface Localizer {
-        String localize(String key, Locale locale);
+        String localize(String source, Locale locale);
     }
 
     public static final char OPEN_CH = '{';
@@ -51,40 +52,22 @@ public class LocalizedString {
         return needToBeLocalized;
     }
 
+    private final static Localizer emptyLocalizer = new AbstractLocalizer() {
+        protected String localizeKey(String key, Locale locale) {
+            return key;
+        }
+    };
+    
     public String getString(Locale locale, Localizer localizer) {
         if (!needToBeLocalized()) {
             return getSourceString();
         }
         
-        StringBuilder builder = new StringBuilder();
-        for (int i = 0; i < source.length(); ++i) {
-            char ch = source.charAt(i);
-            if (ch == '\\' && i+1 < source.length()) {
-                builder.append(source.charAt(i+1));
-                ++i;
-            } else if (ch == OPEN_CH) {
-                // не учитывается вариант с экранированной закрывающей скобкой, но для этого должен быть ключ с фигурной скобкой
-                int closePos = source.indexOf(CLOSE_CH, i+1);
-                if (closePos == -1) {
-                    builder.append(source.substring(i));
-                    break;
-                }
-                
-                String localizedSubstr;
-                if (localizer != null) {
-                    localizedSubstr = localizer.localize(source.substring(i + 1, closePos), locale);
-                } else {
-                    localizedSubstr = source.substring(i + 1, closePos);
-                }
-                builder.append(localizedSubstr);
-                i = closePos;
-            } else {
-                builder.append(source.charAt(i));
-            }
-        }
-        return builder.toString();
-    } 
-    
+        if(localizer == null)
+            localizer = emptyLocalizer; 
+        return localizer.localize(source, locale);
+    }
+
     public String getSourceString() {
         return source;
     }
@@ -161,6 +144,20 @@ public class LocalizedString {
         return create(source);
     }
 
+    private static class Instancer {
+        private final static Instancer instance = new Instancer();
+        
+        @IdentityStartLazy
+        public LocalizedString create(String source) {
+            return new LocalizedString(source);
+        }
+
+        @IdentityStartLazy
+        public LocalizedString create(String source, boolean needToBeLocalized) {
+            return new LocalizedString(source, needToBeLocalized);
+        }
+    }
+    
     /**
      * Создает LocalizedString без проверки на корректность
      * Если create вызывается без второго параметра, то происходит проверка (в кострукторе) на необходимость локализации
@@ -171,14 +168,14 @@ public class LocalizedString {
         if (source == null) {
             return null;
         }
-        return new LocalizedString(source);
+        return Instancer.instance.create(source);
     }
     
     public static LocalizedString create(String source, boolean needToBeLocalized) {
         if (source == null) {
             return null;
         }
-        return new LocalizedString(source, needToBeLocalized);
+        return Instancer.instance.create(source, needToBeLocalized);
     } 
     
     private static boolean canBeOptimized(String s) {

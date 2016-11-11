@@ -5,7 +5,7 @@ import lsfusion.base.ResourceList;
 import java.util.*;
 import java.util.regex.Pattern;
 
-public class DefaultLocalizer implements LocalizedString.Localizer {
+public class DefaultLocalizer extends AbstractLocalizer {
     private Collection<String> resourceBundleNames; 
     
     public DefaultLocalizer() {
@@ -18,7 +18,7 @@ public class DefaultLocalizer implements LocalizedString.Localizer {
     }
     
     @Override
-    public String localize(String key, Locale locale) {
+    public String localizeKey(String key, Locale locale) {
         for (String bundleName : resourceBundleNames) {
             try {
                 ResourceBundle bundle = ResourceBundle.getBundle(bundleName, locale);
