@@ -1,6 +1,8 @@
 package lsfusion.server.data.translator;
 
 import lsfusion.base.col.lru.LRUWVWSMap;
+import lsfusion.server.data.Value;
+import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.NullableExpr;
 import lsfusion.server.data.expr.query.StatType;
@@ -125,12 +127,19 @@ public class AfterTranslateAspect {
 //            return StatKeys.translateOuter(from.getFullStatKeys(translator.reverseMap().translateDirect(groups)), translator);
         LRUWVWSMap.Value<MapTranslate, Where> fromPair = where.getFromValue();
         MapTranslate translator = fromPair.getLRUKey();
-        if(translator!=null) {
+        if(translator!=null && containsAllValues(translator.mapValues().getValues(), groups)) {
             MapTranslate revTranslator = translator.reverseMap();
             return StatKeys.translateOuter(fromPair.getLRUValue().getPushedStatKeys(revTranslator.translateDirect(groups), type, pushedStatKeys != null ? StatKeys.translateOuter((StatKeys<KeyExpr>)pushedStatKeys, revTranslator) : null), translator);
         }
         else
             return thisJoinPoint.proceed();
+    }
+    
+    private static boolean containsAllValues(ImSet<Value> values, ImSet<? extends BaseExpr> exprs) {
+        for(BaseExpr expr : exprs)
+            if(!values.containsAll(expr.getValues()))
+                return false;
+        return true;        
     }
 
     @Around("execution(* lsfusion.server.session.PropertyChange.getQuery()) && target(change)")
