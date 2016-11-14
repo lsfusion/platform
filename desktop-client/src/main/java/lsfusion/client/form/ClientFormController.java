@@ -1436,14 +1436,7 @@ public class ClientFormController implements AsyncListener {
 
                 @Override
                 public void onResponse(long requstIndex, Map<String, String> pathMap) throws Exception {
-                    if (pathMap != null) {
-                        for (String path : pathMap.keySet()) {
-                            Desktop.getDesktop().open(new File(path));
-                        }
-
-                        // не очень хорошо оставлять живой поток, но это используется только в девелопменте, поэтому не важно
-                        new SavingThread(pathMap).start();
-                    }
+                    Main.processPathMap(pathMap);
                 }
             });
         } catch (Exception e) {

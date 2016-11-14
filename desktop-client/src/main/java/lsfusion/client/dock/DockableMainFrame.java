@@ -284,11 +284,7 @@ public class DockableMainFrame extends MainFrame {
             public void invokeEditReport() throws RemoteException {
                 assert Main.module.isFull();
                 try {
-                    if (reportPath != null) {
-                        for (String path : reportPath.keySet()) {
-                            Desktop.getDesktop().open(new File(path));
-                        }
-                    }
+                    Main.processPathMap(reportPath);
                 } catch (Exception e) {
                     throw new RuntimeException(getString("form.error.printing.form"), e);
                 }

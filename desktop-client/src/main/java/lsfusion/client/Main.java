@@ -7,6 +7,7 @@ import lsfusion.client.dock.DockableMainFrame;
 import lsfusion.client.exceptions.ClientExceptionManager;
 import lsfusion.client.form.ClientExternalScreen;
 import lsfusion.client.form.ClientFormController;
+import lsfusion.client.form.SavingThread;
 import lsfusion.client.form.editor.rich.RichEditorPane;
 import lsfusion.client.remote.proxy.RemoteFormProxy;
 import lsfusion.client.rmi.ConnectionLostManager;
@@ -524,6 +525,16 @@ public class Main {
     public static void dropCurrentForm(ClientFormController form) {
         if(currentForm != null && currentForm.equals(form))
             currentForm = null;
+    }
+
+    public static void processPathMap(Map<String, String> pathMap) throws IOException {
+        if (pathMap != null) {
+            for (String path : pathMap.keySet()) {
+                Desktop.getDesktop().open(new File(path));
+            }
+            // не очень хорошо оставлять живой поток, но это используется только в девелопменте, поэтому не важно
+            new SavingThread(pathMap).start();
+        }
     }
 
     private static void clean() {
