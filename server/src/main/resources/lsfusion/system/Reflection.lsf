@@ -281,7 +281,7 @@ FORM physicalModel 'Таблицы'
     PROPERTIES(t) recalculateColumnsAggregations, checkClasses, recalculateClasses, notRecalculateStats, recalculateStats, skipVacuum
 
     OBJECTS tk=TableKey
-    PROPERTIES(tk) READONLY class, classSID, name, quantity
+    PROPERTIES(tk) READONLY class, classSID, name, quantity EDITABLE
 
     OBJECTS tc=TableColumn
     PROPERTIES(tc) READONLY sid, caption, canonicalName, annotation, property, return, quantity EDITABLE ON CHANGE changeQuantity(tc), notNullQuantity EDITABLE ON CHANGE changeNotNullQuantity(tc),
