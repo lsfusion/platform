@@ -237,7 +237,7 @@ public class RmiQueue {
                     rmiFuture = execRmiRequestInternal(request);
                 }
 
-                while ((direct && !rmiFuture.isDone()) || (!direct && !rmiFutures.isEmpty())) { // дожидаемся выполнения всех запросов в очереди
+                while ((direct && !rmiFuture.isDone()) || (!direct && !isRmiFutureExecuted(rmiFuture))) { // ждём до тех пор, пока наш запрос не выполнится и не уйдёт из очереди.
                     long timeout = 1000 - (System.currentTimeMillis() - start);
 
                     boolean flush = !direct;
@@ -253,7 +253,7 @@ public class RmiQueue {
                         busyDisplayer.show(new Runnable() {
                             @Override
                             public void run() {
-                                while ((direct && !rmiFuture.isDone()) || (!direct && !isRmiFutureDone())) {
+                                while ((direct && !rmiFuture.isDone()) || (!direct && !isRmiFutureDone() && !isRmiFutureExecuted(rmiFuture))) {
                                     try {
                                         waitOnEdtSyncBlocker();
                                     } catch (InterruptedException e) {
@@ -382,6 +382,10 @@ public class RmiQueue {
                 }
             }
         }
+    }
+
+    private boolean isRmiFutureExecuted(RmiFuture future) {
+        return !rmiFutures.contains(future);
     }
 
     private boolean isRmiFutureDone() {
