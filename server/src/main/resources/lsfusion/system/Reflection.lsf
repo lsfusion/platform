@@ -253,6 +253,28 @@ sum 'Суммировать' = DATA BOOLEAN (FormGrouping, PropertyDraw);
 max 'Максимум' = DATA BOOLEAN (FormGrouping, PropertyDraw);
 pivot 'Pivot' = DATA BOOLEAN (FormGrouping, PropertyDraw);
 
+changeQuantity(Property p, INTEGER q) = ACTION {
+    quantity(p) <- q;
+}
+
+changeQuantity(TableColumn tc) = ACTION {
+    REQUEST INTEGER INPUT;
+        IF requestedInteger() THEN {
+            changeQuantity(property(tc), requestedInteger());
+        }      
+}
+
+changeNotNullQuantity(Property p, INTEGER q) = ACTION {
+    notNullQuantity(p) <- q;
+}
+
+changeNotNullQuantity(TableColumn tc) = ACTION {
+    REQUEST INTEGER INPUT;
+        IF requestedInteger() THEN {
+            changeNotNullQuantity(property(tc), requestedInteger());
+        }      
+}
+
 FORM physicalModel 'Таблицы'
     OBJECTS t=Table
     PROPERTIES(t) READONLY sid, rows, sparseColumns
@@ -262,7 +284,7 @@ FORM physicalModel 'Таблицы'
     PROPERTIES(tk) READONLY class, classSID, name, quantity
 
     OBJECTS tc=TableColumn
-    PROPERTIES(tc) READONLY sid, caption, canonicalName, annotation, property, return, quantity, notNullQuantity,
+    PROPERTIES(tc) READONLY sid, caption, canonicalName, annotation, property, return, quantity EDITABLE ON CHANGE changeQuantity(tc), notNullQuantity EDITABLE ON CHANGE changeNotNullQuantity(tc),
                    percentNotNull, lastRecalculateProperty
     PROPERTIES(tc) notRecalculate, recalculateAggregation, recalculateAggregationWithDependencies, 
             recalculateAggregationWithDependents, checkAggregation
