@@ -147,7 +147,7 @@ META defineNumbered(class)
          DO series(o) <- upper(series(o));
     
     WHEN CHANGED(number(class o)) AND NOT keepNumberSpaces()
-        DO number(o) <- replace(number(o), ' ', '');
+        INLINE DO number(o) <- replace(number(o), ' ', '');
 
     seriesNumber 'Серия/Номер' (class o) = 
         CONCAT '', series(o), number(o) 
