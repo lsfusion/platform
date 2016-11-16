@@ -261,9 +261,12 @@ public class GridSelectionController {
                 if (((String) value).contains("\n") || ((String) value).contains("\t")) {
                     value = "\"" + ((String) value).replace("\"", "\"\"") + "\"";
                 }
-            } else {
-                value = ((String) value).replaceAll("\n", " ");
-                value = ((String) value).replaceAll("\t", " ");
+            // убрал замену ради единообразия - в панельных свойствах и вэбе переносы не вырезаем
+            // теоретически негативно повлияет только на вставку скопированного значения в гриде
+            // следует удалить, если не возникнет необходимость вернуть
+//            } else {
+//                value = ((String) value).replaceAll("\n", " ");
+//                value = ((String) value).replaceAll("\t", " ");
             }
         }
         return value;
