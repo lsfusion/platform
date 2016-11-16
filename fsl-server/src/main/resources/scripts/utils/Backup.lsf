@@ -13,7 +13,12 @@ makePartialBackupAction 'Копировать (оперативно)' = ACTION {
     formRefresh();
 }
 save 'Скачать'= ACTION CUSTOM 'lsfusion.erp.utils.backup.SaveBackupActionProperty' (Backup) TOOLBAR;
-delete 'Удалить'= ACTION CUSTOM 'lsfusion.erp.utils.backup.DeleteBackupActionProperty' (Backup) CONFIRM;
+delete 'Удалить'= ACTION CUSTOM 'lsfusion.erp.utils.backup.DeleteBackupActionProperty' (Backup);
+
+deleteAction 'Удалить' (Backup b) = ACTION {
+    delete(b);
+    formRefresh();
+} CONFIRM;
 
 saveMondayBackups 'Оставлять бэкап за понедельник (от недели до месяца)' = DATA BOOLEAN ();
 saveFirstDayBackups 'Оставлять бэкап за первое число месяца (старше месяца)' = DATA BOOLEAN ();
@@ -56,7 +61,7 @@ FORM backup 'Резервное копирование'
     PROPERTIES() TODRAW b FORCE PANEL decimateBackupsAction, makeBackupAction, makePartialBackupAction
     PROPERTIES(b) save TODRAW b FORCE PANEL
     PROPERTIES(b) READONLY partial, date, time, file, fileDeleted, log FORCE PANEL
-    PROPERTIES(b) delete
+    PROPERTIES(b) deleteAction
     
     OBJECTS t1 = Table
     PROPERTIES(t1) sid, exclude
