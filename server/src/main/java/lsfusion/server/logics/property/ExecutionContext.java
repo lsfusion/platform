@@ -15,10 +15,7 @@ import lsfusion.interop.ModalityType;
 import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.form.ReportGenerationData;
 import lsfusion.server.ServerLoggers;
-import lsfusion.server.classes.ConcreteCustomClass;
-import lsfusion.server.classes.ConcreteObjectClass;
-import lsfusion.server.classes.CustomClass;
-import lsfusion.server.classes.DataClass;
+import lsfusion.server.classes.*;
 import lsfusion.server.classes.sets.ResolveClassSet;
 import lsfusion.server.context.ExecutionStack;
 import lsfusion.server.context.SameThreadExecutionStack;
@@ -566,11 +563,24 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         return userInput;
     }
 
+    // cannot use because of backward compatibility 
+//    public ObjectValue requestUserData(FileClass dataClass, Object oldValue) {
+//        assertNotUserInteractionInTransaction();
+//        ObjectValue userInput = pushedUserInput != null ? pushedUserInput : ThreadLocalContext.requestUserData(dataClass, oldValue);
+//        setLastUserInput(userInput);
+//        return userInput;
+//    }
+//
     public ObjectValue requestUserData(DataClass dataClass, Object oldValue) {
         assertNotUserInteractionInTransaction();
         ObjectValue userInput = pushedUserInput != null ? pushedUserInput : ThreadLocalContext.requestUserData(dataClass, oldValue);
         setLastUserInput(userInput);
         return userInput;
+    }
+
+    public ObjectValue inputUserData(DataClass dataClass, Object oldValue) {
+        assertNotUserInteractionInTransaction();
+        return ThreadLocalContext.requestUserData(dataClass, oldValue);
     }
 
     public ObjectValue requestUserClass(CustomClass baseClass, CustomClass defaultValue, boolean concrete) {

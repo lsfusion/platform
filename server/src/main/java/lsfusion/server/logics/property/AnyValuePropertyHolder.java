@@ -1,15 +1,24 @@
 package lsfusion.server.logics.property;
 
+import lsfusion.base.BaseUtils;
+import lsfusion.base.col.SetFact;
+import lsfusion.base.col.interfaces.immutable.ImOrderSet;
+import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
+import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.classes.*;
 import lsfusion.server.classes.link.*;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.DataObject;
+import lsfusion.server.logics.NullValue;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.linear.LCP;
+import lsfusion.server.session.DataSession;
 
 import java.sql.SQLException;
+import java.util.Set;
 
 public class AnyValuePropertyHolder {
     private final LCP objectProperty;
@@ -142,6 +151,19 @@ public class AnyValuePropertyHolder {
             throw new IllegalStateException(valueType + " is not supported by AnyValueProperty");
         }
     }
+    
+    @IdentityLazy
+    public ImOrderSet<SessionDataProperty> getProps() {
+        return SetFact.toOrderExclSet(
+                objectProperty, stringProperty, textProperty, intProperty, longProperty, doubleProperty, numericProperty, yearProperty, dateTimeProperty, logicalProperty,
+                dateProperty, timeProperty, colorProperty, wordFileProperty, imageFileProperty, pdfFileProperty, customFileProperty, excelFileProperty, imageLinkProperty, 
+                pdfLinkProperty, customLinkProperty, excelLinkProperty
+        ).mapOrderSetValues(new GetValue<SessionDataProperty, LCP>() {
+            public SessionDataProperty getMapValue(LCP value) {
+                return (SessionDataProperty) value.property;
+            }
+        });
+    }
         
     public void write(Type valueType, ObjectValue value, ExecutionContext context, DataObject... keys) throws SQLException, SQLHandledException {
         getLCP(valueType).change(value, context, keys);
@@ -149,5 +171,42 @@ public class AnyValuePropertyHolder {
 
     public ObjectValue read(Type valueType, ExecutionContext context, DataObject... keys) throws SQLException, SQLHandledException {
         return getLCP(valueType).readClasses(context, keys);
+    }
+    
+    public void dropChanges(Type valueType, ExecutionContext context) throws SQLException, SQLHandledException {
+        context.getSession().dropChanges((DataProperty) getLCP(valueType).property);
+    }
+    
+    public ObjectValue dropChanges(boolean keepAndReturnFirst, ExecutionContext context) throws SQLException, SQLHandledException { // return, not drop first value
+        DataSession session = context.getSession();
+
+        ImOrderSet<SessionDataProperty> props = getProps();
+        Set<SessionDataProperty> changedProps = session.getSessionChanges(props.getSet());
+        if(keepAndReturnFirst) {
+            // оптимизация, самые частные случаи
+            if(changedProps.isEmpty())
+                return NullValue.instance;
+            if(changedProps.size() == 1)
+                return BaseUtils.single(changedProps).readClasses(context);
+            
+            // несколько, самый редкий случай, поэтому не сильно оптимизируем
+            ImSet<SessionDataProperty> changedPropsSet = SetFact.fromJavaSet(changedProps);
+            ImOrderSet<SessionDataProperty> changedOrderProps = props.filterOrder(changedPropsSet);
+            
+            ObjectValue resultValue = NullValue.instance;
+            for(SessionDataProperty prop : changedOrderProps) {
+                ObjectValue changedValue = prop.readClasses(context);
+                if(changedValue instanceof DataObject) { // не null
+                    resultValue = changedValue;
+                    changedPropsSet = changedPropsSet.removeIncl(prop);
+                    break;
+                }
+            }
+            session.dropChanges(changedPropsSet);
+            return resultValue;            
+        }
+
+        session.dropChanges(changedProps);
+        return null;
     }
 }

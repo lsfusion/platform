@@ -2443,6 +2443,9 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     public void dropSessionChanges(ImSet<SessionDataProperty> props) throws SQLException, SQLHandledException {
         dropChanges(props.filterFn(new NotFunctionSet<>(recursiveUsed)));
     }
+    public Set<SessionDataProperty> getSessionChanges(FunctionSet<SessionDataProperty> set) {
+        return filterSessionData(set).keySet();        
+    }
     public void dropChanges(Iterable<SessionDataProperty> props) throws SQLException, SQLHandledException {
         for (SessionDataProperty prop : props) { // recursiveUsed не drop'аем
             dropChanges(prop);

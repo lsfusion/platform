@@ -281,6 +281,10 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, "form class must be a built-in class");
     }
 
+    public void emitInputDataClassError(ScriptParser parser) throws SemanticErrorException {
+        emitSimpleError(parser, "Input class must be a built-in class");
+    }
+
     public void emitIncompatibleTypes(ScriptParser parser, String propType) throws SemanticErrorException {
         emitSimpleError(parser, format("%s's arguments' types don't match", propType));
     }

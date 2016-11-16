@@ -45,8 +45,8 @@ public class DefaultChangeActionProperty<P extends PropertyInterface> extends Sy
         this.filterProperty = filterProperty;
     }
 
-    @Override
-    public Type getSimpleRequestInputType(boolean optimistic) {
+    @Override // сам выполняет request поэтому на inRequest не смотрим
+    public Type getSimpleRequestInputType(boolean optimistic, boolean inRequest) {
         Type type = getImplementType();
         if (type instanceof DataClass) {
             return type;

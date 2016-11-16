@@ -37,8 +37,8 @@ public class DefaultChangeAggActionProperty<P extends PropertyInterface> extends
         finalizeInit();
     }
 
-    @Override
-    public Type getSimpleRequestInputType(boolean optimistic) {
+    @Override // сам выполняет request поэтому на inRequest не смотрим
+    public Type getSimpleRequestInputType(boolean optimistic, boolean inRequest) {
         Type type = aggProp.getType();
         return type instanceof DataClass ? type : null;
     }

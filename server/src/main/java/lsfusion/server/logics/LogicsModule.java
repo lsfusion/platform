@@ -541,11 +541,11 @@ public abstract class LogicsModule {
     }
 
     protected LAP addFAProp(LocalizedString caption, FormEntity form, ObjectEntity[] objectsToSet, Boolean manageSession, boolean noCancel, ModalityType modalityType) {
-        return addFAProp(null, caption, form, objectsToSet, manageSession, noCancel, null, null, null, modalityType, false, false, null, null, false);
+        return addFAProp(null, caption, form, null, objectsToSet, manageSession, noCancel, null, null, null, modalityType, false, false, null, null, false);
     }
 
-    protected LAP addFAProp(AbstractGroup group, LocalizedString caption, FormEntity form, ObjectEntity[] objectsToSet, Boolean manageSession, boolean isAdd, ObjectEntity contextObject, CalcProperty contextProperty, PropertyDrawEntity initFilterProperty, ModalityType modalityType, boolean checkOnOk, boolean showDrop, FormPrintType printType, FormExportType exportType, boolean readonly) {
-        return addProperty(group, new LAP(new FormActionProperty(caption, form, objectsToSet, manageSession, isAdd, modalityType, checkOnOk, showDrop, printType, exportType, baseLM.formResult, baseLM.getFormResultProperty(), baseLM.formPageCount, baseLM.formExportFile, baseLM.ignorePrintType, baseLM.getChosenValueProperty(), contextObject, contextProperty, initFilterProperty, readonly)));
+    protected LAP addFAProp(AbstractGroup group, LocalizedString caption, FormEntity form, ObjectEntity input, ObjectEntity[] objectsToSet, Boolean manageSession, boolean isAdd, ObjectEntity contextObject, CalcProperty contextProperty, PropertyDrawEntity initFilterProperty, ModalityType modalityType, boolean checkOnOk, boolean showDrop, FormPrintType printType, FormExportType exportType, boolean readonly) {
+        return addProperty(group, new LAP(new FormActionProperty(caption, form, input, objectsToSet, manageSession, isAdd, modalityType, checkOnOk, showDrop, printType, exportType, baseLM.formResult, baseLM.getFormResultProperty(), baseLM.formPageCount, baseLM.formExportFile, baseLM.ignorePrintType, baseLM.getChosenValueProperty(), baseLM.getRequestedValueProperty(), baseLM.getRequestCanceledProperty(), contextObject, contextProperty, initFilterProperty, readonly)));
     }
 
     // ------------------- Change Class action ----------------- //
@@ -797,6 +797,26 @@ public abstract class LogicsModule {
 
     protected LAP addRequestUserDataAProp(AbstractGroup group, LocalizedString caption, DataClass dataClass) {
         return addAProp(group, new RequestUserDataActionProperty(caption, dataClass, baseLM.getRequestCanceledProperty(), baseLM.getRequestedValueProperty()));
+    }
+
+    protected LP addRequestAProp(AbstractGroup group, LocalizedString caption, LAP action, Type requestValueType) {
+        ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(action.listInterfaces.size());
+        ActionPropertyMapImplement<?, PropertyInterface> actionImplement = mapActionListImplement(action, listInterfaces);
+
+        return addProperty(group, new LAP(
+                new RequestActionProperty(caption, listInterfaces, actionImplement,
+                        requestValueType, baseLM.getRequestCanceledProperty(), baseLM.getRequestedValueProperty()))
+        );
+    }
+
+    // ------------------- Input ----------------- //
+
+    protected LP addInputAProp(AbstractGroup group, LocalizedString caption, DataClass dataClass, Object... params) {
+        return addJoinAProp(group, caption, addInputAProp(dataClass), params);
+    }
+    @IdentityStrongLazy
+    protected LAP addInputAProp(DataClass dataClass) {
+        return addProperty(null, new LAP(new InputActionProperty(LocalizedString.create("Input"), dataClass, baseLM.getRequestCanceledProperty(), baseLM.getRequestedValueProperty())));
     }
 
     // ------------------- Constant ----------------- //

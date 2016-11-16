@@ -65,9 +65,9 @@ public class IfActionProperty extends KeepContextActionProperty {
     }
 
     @Override
-    public Type getSimpleRequestInputType(boolean optimistic) {
-        Type trueType = trueAction == null ? null : trueAction.property.getSimpleRequestInputType(optimistic);
-        Type falseType = falseAction == null ? null : falseAction.property.getSimpleRequestInputType(optimistic);
+    public Type getFlowSimpleRequestInputType(boolean optimistic, boolean inRequest) {
+        Type trueType = trueAction == null ? null : trueAction.property.getSimpleRequestInputType(optimistic, inRequest);
+        Type falseType = falseAction == null ? null : falseAction.property.getSimpleRequestInputType(optimistic, inRequest);
 
         if (!optimistic && (trueType == null || falseType == null)) {
             return null;

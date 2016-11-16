@@ -2117,6 +2117,8 @@ keepContextActionDB[List<TypedParameter> context, boolean dynamic] returns [LPWi
 	:	listADB=listActionDefinitionBody[context, dynamic] { $property = $listADB.property; }
 	|	newSessionADB=newSessionActionDefinitionBody[context, dynamic] { $property = $newSessionADB.property; }
 	|	requestInputADB=requestInputActionDefinitionBody[context, dynamic] { $property = $requestInputADB.property; }
+	|	requestADB=requestActionDefinitionBody[context, dynamic] { $property = $requestADB.property; }
+	|	inputADB=inputActionDefinitionBody[context, dynamic] { $property = $inputADB.property; }
 	|	execADB=execActionDefinitionBody[context, dynamic] { $property = $execADB.property; }	
 	|	tryADB=tryActionDefinitionBody[context, dynamic] { $property = $tryADB.property; }
 	|	ifADB=ifActionDefinitionBody[context, dynamic] { $property = $ifADB.property; }
@@ -2162,17 +2164,22 @@ contextIndependentActionDB returns [LPWithParams property, List<ResolveClassSet>
 	|	customADB=customActionDefinitionBody { $property.property = $customADB.property; $signature = $customADB.signature; }
 	;
 
-mappedForm[List<TypedParameter> context, boolean dynamic] returns [FormEntity formEntity, List<ObjectEntity> objects = new ArrayList<>(), List<LPWithParams> mapping = new ArrayList<>()]
+mappedForm[List<TypedParameter> context, boolean dynamic] returns [FormEntity formEntity, ObjectEntity input = null, List<ObjectEntity> objects = new ArrayList<>(), List<LPWithParams> mapping = new ArrayList<>()]
 @init {
     boolean edit = false;
+    boolean inputObjects = false;
+    ClassFormEntity classForm = null;
 }
 	:
-	(   (   formName=compoundID { if(inPropParseState()) { $formEntity = self.findForm($formName.sid); } } 
-	        ('OBJECTS' list=formActionObjectList[context, dynamic] { if(inPropParseState()) { $objects = self.findObjectEntities($formEntity, $list.objects); } $mapping = $list.exprs; })?)
+	(   (   formName=compoundID { if(inPropParseState()) { $formEntity = self.findForm($formName.sid); } }
+	        ('INPUT' { inputObjects = true; } (objName=ID { if(inPropParseState()) { $input = self.findObjectEntity($formEntity, $objName.text); } } )? )?
+	        ('OBJECTS' list=formActionObjectList[context, dynamic] { if(inPropParseState()) { $objects = self.findObjectEntities($formEntity, $list.objects); if(inputObjects && $input == null) $input = $objects.get(0); } $mapping = $list.exprs; })?
+		)
 	    |
 	    (   ('DIALOG' | ('EDIT' { edit = true; } ))
-	         cls = classId { if(inPropParseState()) { ClassFormEntity classForm = self.findClassForm($cls.sid, edit); $formEntity = classForm.form; $objects = Collections.singletonList(classForm.object); } }
-	         'OBJECT' pe=propertyExpression[context, dynamic] { $mapping = Collections.singletonList($pe.property); }
+	         cls = classId { if(inPropParseState()) { classForm = self.findClassForm($cls.sid, edit); $formEntity = classForm.form; $objects = Collections.singletonList(classForm.object); } }
+	         ('INPUT' { if(inPropParseState()) { $input = classForm.object; } } )?
+	         ('OBJECT' pe=propertyExpression[context, dynamic] { $mapping = Collections.singletonList($pe.property); })?
 	    ))
 ;
 
@@ -2194,7 +2201,7 @@ formActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns 
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedFAProp($mf.formEntity, $mf.objects, $mf.mapping, contextObjectName, contextProperty, initFilterPropertyName, initFilterPropertyMapping, modalityType, manageSession, checkOnOk, showDrop, noCancel, printType, exportType, readOnly);
+		$property = self.addScriptedFAProp($mf.formEntity, $mf.input, $mf.objects, $mf.mapping, contextObjectName, contextProperty, initFilterPropertyName, initFilterPropertyMapping, modalityType, manageSession, checkOnOk, showDrop, noCancel, printType, exportType, readOnly);
 	}
 }
 	:	'FORM' mf=mappedForm[context,dynamic]
@@ -2504,6 +2511,29 @@ requestInputActionDefinitionBody[List<TypedParameter> context, boolean dynamic] 
 		(	'INPUT'
 		|	(objID=ID)? aDB=innerActionDefinitionBody[context, dynamic]
 		)
+	;
+
+requestActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
+@after {
+	if (inPropParseState()) {
+		$property = self.addScriptedRequestAProp($aDB.property, null);
+	}
+}
+	:	'REQUEST' aDB=innerActionDefinitionBody[context, dynamic]
+	;
+
+inputActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
+@init {
+}
+@after {
+	if (inPropParseState()) {
+		$property = self.addScriptedInputAProp($ptype.text, $pe.property);
+	}
+}
+	:	'INPUT'
+	        (ptype=PRIMITIVE_TYPE
+	        |
+	        ((ptype=PRIMITIVE_TYPE)? 'DEFAULT' pe=propertyExpression[context, dynamic]))
 	;
 
 activeFormActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]

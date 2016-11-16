@@ -462,6 +462,10 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
      * @param optimistic - если true, то если для некоторых случаев нельзя вывести тип, то эти случае будут игнорироваться
      */
     public Type getSimpleRequestInputType(boolean optimistic) {
+        return getSimpleRequestInputType(optimistic, false);
+    }
+    // по сути protected (recursive usage)
+    public Type getSimpleRequestInputType(boolean optimistic, boolean inRequest) {
         return null;
     }
 

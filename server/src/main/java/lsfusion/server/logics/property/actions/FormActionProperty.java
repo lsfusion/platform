@@ -1,5 +1,6 @@
 package lsfusion.server.logics.property.actions;
 
+import com.sun.corba.se.spi.orbutil.fsm.InputImpl;
 import jasperapi.ReportGenerator;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.IOUtils;
@@ -25,8 +26,11 @@ import lsfusion.server.form.entity.*;
 import lsfusion.server.form.entity.filter.FilterEntity;
 import lsfusion.server.form.instance.FormCloseType;
 import lsfusion.server.form.instance.FormInstance;
+import lsfusion.server.form.instance.ObjectInstance;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.DataObject;
+import lsfusion.server.logics.NullValue;
+import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.*;
@@ -44,6 +48,7 @@ public class FormActionProperty extends SystemExplicitActionProperty {
 
     public final FormEntity<?> form;
     public final ImRevMap<ObjectEntity, ClassPropertyInterface> mapObjects;
+    public final ObjectEntity input;
 
     private final boolean checkOnOk;
     private final Boolean manageSession;
@@ -53,13 +58,16 @@ public class FormActionProperty extends SystemExplicitActionProperty {
     private final FormPrintType printType;
     private final FormExportType exportType;
 
-    private final ConcreteCustomClass formResultClass;
-    private final LCP formResultProperty;
     private final LCP formPageCount;
     private final LCP formExportFile;
     private final LCP ignorePrintType;
 
+    private final ConcreteCustomClass formResultClass;
+    private final LCP formResultProperty;
     private final AnyValuePropertyHolder chosenValueProperty;
+
+    AnyValuePropertyHolder requestedPropertySet;
+    LCP requestCanceledProperty;
 
     private final ObjectEntity contextObject;
     private final CalcPropertyMapImplement<PropertyInterface, ClassPropertyInterface> contextPropertyImplement;
@@ -93,6 +101,7 @@ public class FormActionProperty extends SystemExplicitActionProperty {
     //getProperties привязаны к форме, содержащей свойство...
     public FormActionProperty(LocalizedString caption,
                               FormEntity form,
+                              ObjectEntity input,
                               final ObjectEntity[] objectsToSet,
                               Boolean manageSession,
                               boolean isAdd,
@@ -107,17 +116,25 @@ public class FormActionProperty extends SystemExplicitActionProperty {
                               LCP formExportFile,
                               LCP ignorePrintType,
                               AnyValuePropertyHolder chosenValueProperty,
+                              AnyValuePropertyHolder requestedPropertySet,
+                              LCP requestCanceledProperty,
                               ObjectEntity contextObject,
                               CalcProperty contextProperty,
                               PropertyDrawEntity initFilterProperty, boolean readOnly) {
         super(caption, getValueClasses(objectsToSet, contextProperty));
 
-        this.formResultClass = formResultClass;
-        this.formResultProperty = formResultProperty;
+        this.input = input;
+        
         this.formPageCount = formPageCount;
         this.formExportFile = formExportFile;
         this.ignorePrintType = ignorePrintType;
+
+        this.formResultClass = formResultClass;
+        this.formResultProperty = formResultProperty;
         this.chosenValueProperty = chosenValueProperty;
+        
+        this.requestedPropertySet = requestedPropertySet;
+        this.requestCanceledProperty = requestCanceledProperty;
 
         this.modalityType = modalityType;
         this.checkOnOk = checkOnOk;
@@ -222,21 +239,21 @@ public class FormActionProperty extends SystemExplicitActionProperty {
                 //для немодальных форм следующее бессмысленно, т.к. они остаются открытыми...
 
                 FormCloseType formResult = newFormInstance.getFormResult();
+                formResultProperty.change(formResultClass.getDataObject(formResult.asString()), context);
 
-                if (formResultProperty != null) {
-                    formResultProperty.change(formResultClass.getDataObject(formResult.asString()), context);
-                }
-
-                if (chosenValueProperty != null) {
-                    for (GroupObjectEntity group : form.getGroupsIt()) {
-                        for (ObjectEntity object : group.getObjects()) {
-                            chosenValueProperty.write(
-                                    object.baseClass.getType(), newFormInstance.instanceFactory.getInstance(object).getObjectValue(), context, new DataObject(object.getSID())
-                            );
-                        }
+                for (GroupObjectEntity group : form.getGroupsIt()) {
+                    for (ObjectEntity object : group.getObjects()) {
+                        chosenValueProperty.write(
+                                object.baseClass.getType(), newFormInstance.instanceFactory.getInstance(object).getObjectValue(), context, new DataObject(object.getSID())
+                        );
                     }
                 }
-
+                
+                if(input != null) {
+                    ObjectInstance object = newFormInstance.instanceFactory.getInstance(input);
+                    InputActionProperty.writeRequested(formResult == FormCloseType.CLOSE ? null : (formResult == FormCloseType.OK ? object.getObjectValue() : NullValue.instance), 
+                            object.getType(), context, requestedPropertySet, requestCanceledProperty);
+                }
             }
         }
     }

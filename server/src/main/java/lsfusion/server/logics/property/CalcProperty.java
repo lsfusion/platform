@@ -1105,6 +1105,10 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         return readQuery.execute(session, env).singleValue().get(readValue);
     }
 
+    public ObjectValue readClasses(ExecutionContext context) throws SQLException, SQLHandledException {
+        return readClasses(context.getSession(), MapFact.<T, ObjectValue>EMPTY(), context.getModifier(), context.getQueryEnv());
+    }
+
     public ObjectValue readClasses(SQLSession session, ImMap<T, Expr> keys, BaseClass baseClass, Modifier modifier, QueryEnvironment env) throws SQLException, SQLHandledException {
         String readValue = "readvalue";
         QueryBuilder<T, Object> readQuery = new QueryBuilder<>(SetFact.<T>EMPTY());

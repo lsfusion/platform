@@ -40,10 +40,10 @@ public class JoinActionProperty<T extends PropertyInterface> extends KeepContext
     }
 
     @Override
-    public Type getSimpleRequestInputType(boolean optimistic) {
+    public Type getFlowSimpleRequestInputType(boolean optimistic, boolean inRequest) {
         if(isRecursive) // recursion guard
             return null;
-        return action.property.getSimpleRequestInputType(optimistic);
+        return action.property.getSimpleRequestInputType(optimistic, inRequest);
     }
 
     @Override

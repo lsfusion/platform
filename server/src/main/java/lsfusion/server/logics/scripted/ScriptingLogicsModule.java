@@ -1460,6 +1460,26 @@ public class ScriptingLogicsModule extends LogicsModule {
         return prop;
     }
 
+    public LPWithParams addScriptedInputAProp(String typeId, LPWithParams oldValue) throws ScriptingErrorLog.SemanticErrorException {
+        assert !(typeId == null && oldValue == null);
+        DataClass requestDataClass;
+        if(typeId != null) {
+            requestDataClass = ClassCanonicalNameUtils.getScriptedDataClass(typeId);
+        } else {
+            ValueClass valueClass = oldValue.property.property.getValueClass(ClassType.valuePolicy);
+            checkInputDataClass(valueClass);
+            requestDataClass = (DataClass) valueClass;
+        }
+        if(oldValue == null)
+            oldValue = new LPWithParams(baseLM.vnull, new ArrayList<Integer>());
+        List<Object> resultParams = getParamsPlainList(singletonList(oldValue));
+        return new LPWithParams(addInputAProp(null, LocalizedString.create(""), requestDataClass, resultParams.toArray()), oldValue.usedParams);
+    }
+
+    public LPWithParams addScriptedRequestAProp(LPWithParams action, Type requestValueType) throws ScriptingErrorLog.SemanticErrorException {
+        return new LPWithParams(addRequestAProp(null, LocalizedString.create(""), (LAP<?>) action.property, requestValueType), newArrayList(action.usedParams));
+    }
+
     public LPWithParams addScriptedActiveFormAProp(String formName) throws ScriptingErrorLog.SemanticErrorException {
         FormEntity form = findForm(formName);
         return new LPWithParams(addAProp(null, new IsActiveFormActionProperty(LocalizedString.create(""), form, baseLM.getIsActiveFormProperty())), new ArrayList<Integer>());
@@ -2268,7 +2288,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new Time(h, m, 0);
     }
 
-    public LPWithParams addScriptedFAProp(FormEntity form, List<ObjectEntity> objects, List<LPWithParams> mapping,
+    public LPWithParams addScriptedFAProp(FormEntity form, ObjectEntity input, List<ObjectEntity> objects, List<LPWithParams> mapping,
                                           String contextObjectName, LPWithParams contextProperty,
                                           String initFilterPropertyName, List<String> initFilterPropertyMapping,
                                           ModalityType modalityType, boolean manageSession,
@@ -2288,7 +2308,7 @@ public class ScriptingLogicsModule extends LogicsModule {
                                  : getPropertyDraw(this, form, PropertyDrawEntity.createSID(initFilterPropertyName, initFilterPropertyMapping), version);
         }
 
-        LAP property = addFAProp(null, LocalizedString.create(""), form, objects.toArray(new ObjectEntity[objects.size()]), manageSession, noCancel, contextObject,
+        LAP property = addFAProp(null, LocalizedString.create(""), form, input, objects.toArray(new ObjectEntity[objects.size()]), manageSession, noCancel, contextObject,
                                  contextProperty == null ? null : (CalcProperty)contextProperty.property.property,
                                  initFilterProperty,
                 modalityType, checkOnOk, showDrop, printType, exportType, readonly);
@@ -3188,6 +3208,12 @@ public class ScriptingLogicsModule extends LogicsModule {
     private void checkFormDataClass(ValueClass cls) throws ScriptingErrorLog.SemanticErrorException {
         if (!(cls instanceof DataClass)) {
             errLog.emitFormDataClassError(parser);
+        }
+    }
+
+    private void checkInputDataClass(ValueClass cls) throws ScriptingErrorLog.SemanticErrorException {
+        if (!(cls instanceof DataClass)) {
+            errLog.emitInputDataClassError(parser);
         }
     }
 

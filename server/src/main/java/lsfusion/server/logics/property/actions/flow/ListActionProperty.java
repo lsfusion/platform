@@ -103,10 +103,10 @@ public class ListActionProperty extends ListCaseActionProperty {
     }
 
     @Override
-    public Type getSimpleRequestInputType(boolean optimistic) {
+    public Type getFlowSimpleRequestInputType(boolean optimistic, boolean inRequest) {
         Type type = null;
         for (ActionPropertyMapImplement<?, PropertyInterface> action : getListActions()) {
-            Type actionRequestType = action.property.getSimpleRequestInputType(optimistic);
+            Type actionRequestType = action.property.getSimpleRequestInputType(optimistic, inRequest);
             if (actionRequestType != null) {
                 if (type == null) {
                     type = actionRequestType;

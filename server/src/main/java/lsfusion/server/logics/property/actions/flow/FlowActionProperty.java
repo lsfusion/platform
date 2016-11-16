@@ -3,6 +3,7 @@ package lsfusion.server.logics.property.actions.flow;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.ActionProperty;
 import lsfusion.server.logics.property.ExecutionContext;
@@ -23,4 +24,11 @@ public abstract class FlowActionProperty extends ActionProperty<PropertyInterfac
     @Override
     public abstract FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException;
 
+    public Type getSimpleRequestInputType(boolean optimistic, boolean inRequest) {
+        return getFlowSimpleRequestInputType(optimistic, inRequest);
+    }
+
+    public Type getFlowSimpleRequestInputType(boolean optimistic, boolean inRequest) {
+        return null;
+    }
 }

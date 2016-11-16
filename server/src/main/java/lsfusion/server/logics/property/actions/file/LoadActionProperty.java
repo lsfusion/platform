@@ -29,8 +29,8 @@ public class LoadActionProperty extends SystemExplicitActionProperty {
         return (DataClass) fileProperty.property.getType();
     }
 
-    @Override
-    public Type getSimpleRequestInputType(boolean optimistic) {
+    @Override // сам выполняет request поэтому на inRequest не смотрим
+    public Type getSimpleRequestInputType(boolean optimistic, boolean inRequest) {
         return getReadType();
     }
 

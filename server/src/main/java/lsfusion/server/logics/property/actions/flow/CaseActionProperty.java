@@ -185,11 +185,11 @@ public class CaseActionProperty extends ListCaseActionProperty {
     public Graph<ActionCase<PropertyInterface>> abstractGraph; 
 
     @Override
-    public Type getSimpleRequestInputType(boolean optimistic) {
+    public Type getFlowSimpleRequestInputType(boolean optimistic, boolean inRequest) {
         Type type = null;
         ImList<ActionPropertyMapImplement<?, PropertyInterface>> actions = getListActions();
         for (ActionPropertyMapImplement<?, PropertyInterface> action : actions) {
-            Type actionRequestType = action.property.getSimpleRequestInputType(optimistic);
+            Type actionRequestType = action.property.getSimpleRequestInputType(optimistic, inRequest);
             if (!optimistic && actionRequestType == null) {
                 return null;
             }

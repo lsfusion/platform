@@ -70,9 +70,9 @@ public class TryActionProperty extends KeepContextActionProperty {
     }
 
     @Override
-    public Type getSimpleRequestInputType(boolean optimistic) {
-        Type tryType = tryAction.property.getSimpleRequestInputType(optimistic);
-        Type finallyType = finallyAction == null ? null : finallyAction.property.getSimpleRequestInputType(optimistic);
+    public Type getFlowSimpleRequestInputType(boolean optimistic, boolean inRequest) {
+        Type tryType = tryAction.property.getSimpleRequestInputType(optimistic, inRequest);
+        Type finallyType = finallyAction == null ? null : finallyAction.property.getSimpleRequestInputType(optimistic, inRequest);
 
         if (!optimistic && (tryType == null || finallyType == null)) {
             return null;
