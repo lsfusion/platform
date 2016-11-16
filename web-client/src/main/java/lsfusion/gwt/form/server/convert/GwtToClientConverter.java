@@ -55,7 +55,8 @@ public class GwtToClientConverter extends ObjectConverter {
     @Converter(from = GDateDTO.class)
     public java.sql.Date convertDate(GDateDTO dto, BusinessLogicsProvider blProvider) {
         GregorianCalendar gc = new GregorianCalendar();
-        gc.set(dto.year + 1900, dto.month, dto.day);
+        gc.set(dto.year + 1900, dto.month, dto.day, 0, 0, 0);
+        gc.set(Calendar.MILLISECOND, 0);
         return new java.sql.Date(gc.getTimeInMillis());
     }
 
