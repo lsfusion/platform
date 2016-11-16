@@ -5,19 +5,22 @@ import lsfusion.client.Main;
 import lsfusion.client.SwingUtils;
 
 import javax.swing.*;
-import javax.swing.Timer;
 import javax.swing.border.EmptyBorder;
-import javax.swing.text.*;
+import javax.swing.text.DefaultCaret;
+import javax.swing.text.JTextComponent;
 import java.awt.*;
-import java.awt.event.*;
-import java.util.*;
 import java.awt.datatransfer.StringSelection;
+import java.awt.event.*;
+import java.util.ArrayList;
 import java.util.List;
 
 import static lsfusion.client.ClientResourceBundle.getString;
 
 class BusyDialog extends JDialog {
+    private static final Color NEW_STACK_MESSAGE_BACKGROUND = new Color(232, 232, 249);
+    private static final Color STACK_MESSAGE_BORDER_COLOR = new Color(198, 198, 198); 
 
+    private TopProgressBarPanel topProgressBarPanel;
     private Timer longActionTimer;
     private JButton btnCopy;
     private JButton btnExit;
@@ -25,15 +28,8 @@ class BusyDialog extends JDialog {
     private JButton btnCancel;
     private JButton btnInterrupt;
     private JButton btnHide;
-    private JProgressBar topProgressBar;
-    private boolean indeterminateProgressBar = false;
-    private Style defaultStyle;
-    private Style highLightStyle;
-    private JPanel stackPanel;
     private JPanel subStackPanel;
-    private JScrollPane scrollPane;
     private Object[] prevLines;
-    private GridBagConstraints fieldConstraints = null;
 
     private boolean longAction;
     private Boolean needInterrupt;
@@ -41,34 +37,35 @@ class BusyDialog extends JDialog {
     public BusyDialog(Window parent, boolean modal) {
         super(parent, getString("form.wait"), ModalityType.APPLICATION_MODAL);
         setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
-        fieldConstraints = initGridBagConstraints();
 
         Container contentPane = getContentPane();
         contentPane.setLayout(new BoxLayout(contentPane, BoxLayout.Y_AXIS));
 
-        JPanel buttonPanel = new JPanel();
-        buttonPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
-
-        StyleContext styleContext = new StyleContext();
-        defaultStyle = styleContext.addStyle("default", null);
-        highLightStyle = styleContext.addStyle("highlight", null);
-        StyleConstants.setBackground(highLightStyle, new Color(230, 230, 250));
-
-        stackPanel = new JPanel();
-        stackPanel.setBackground(null);
-        stackPanel.setLayout(new GridBagLayout());
+        JPanel stackPanel = new JPanel();
+        stackPanel.setLayout(new BorderLayout());
         stackPanel.setBorder(new EmptyBorder(0, 5, 5, 5));
 
         subStackPanel = new JPanel();
-        subStackPanel.setLayout(new GridBagLayout());
+        subStackPanel.setLayout(new BoxLayout(subStackPanel, BoxLayout.Y_AXIS));
 
-        addGridBagComponent(createTopProgressBarPanel(true), stackPanel);
+        topProgressBarPanel = new TopProgressBarPanel(true);
+        stackPanel.add(topProgressBarPanel, BorderLayout.NORTH);
 
-        scrollPane = new JScrollPane(stackPanel);
+        JPanel subStackWrapper = new JPanel(new BorderLayout());
+        subStackWrapper.add(subStackPanel, BorderLayout.NORTH);
+
+        JScrollPane scrollPane = new JScrollPane();
+        scrollPane.setViewportView(subStackWrapper);
         scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        contentPane.add(scrollPane);
+        scrollPane.setBorder(null);
+        stackPanel.add(scrollPane, BorderLayout.CENTER);
 
-        if(Main.configurationAccessAllowed) {
+        contentPane.add(stackPanel);
+
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
+        
+        if (Main.configurationAccessAllowed) {
             btnCopy = new JButton(getString("form.loading.copy"));
             buttonPanel.add(btnCopy);
         }
@@ -76,6 +73,7 @@ class BusyDialog extends JDialog {
         btnExit = new JButton(getString("form.loading.exit"));
         btnExit.setEnabled(false);
         buttonPanel.add(btnExit);
+        
         btnReconnect = new JButton(getString("form.loading.reconnect"));
         btnReconnect.setEnabled(false);
         buttonPanel.add(btnReconnect);
@@ -91,7 +89,7 @@ class BusyDialog extends JDialog {
         btnHide = new JButton(getString("form.loading.hide"));
         buttonPanel.add(btnHide);
 
-        buttonPanel.setMaximumSize(new Dimension((int) buttonPanel.getPreferredSize().getWidth(), (int) (btnExit.getPreferredSize().getHeight() * 4)));
+        buttonPanel.setMaximumSize(new Dimension(buttonPanel.getPreferredSize().width, btnExit.getPreferredSize().height * 4));
         contentPane.add(buttonPanel);
 
         pack();
@@ -107,8 +105,8 @@ class BusyDialog extends JDialog {
         if (Main.configurationAccessAllowed) {
             setMinimumSize(new Dimension((int) (screenWidth * 0.50), (int) (screenHeight * 0.50)));
         } else {
-            setMinimumSize(new Dimension((int) (screenWidth * 0.30), (int) getMinimumSize().getHeight()));
-            setMaximumSize(new Dimension((int) (screenWidth * 0.50), (int) getMaximumSize().getHeight()));
+            setMinimumSize(new Dimension((int) (screenWidth * 0.30), getMinimumSize().height));
+            setMaximumSize(new Dimension((int) (screenWidth * 0.50), getMaximumSize().height));
             setResizable(false);
         }
 
@@ -119,14 +117,14 @@ class BusyDialog extends JDialog {
 
             @Override
             public void windowClosed(WindowEvent e) {
-                if(longActionTimer != null)
+                if (longActionTimer != null)
                     longActionTimer.stop();
             }
         });
     }
 
     private void initUIHandlers(final BusyDialog dialog) {
-        if(Main.configurationAccessAllowed) {
+        if (Main.configurationAccessAllowed) {
             btnCopy.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
@@ -196,43 +194,18 @@ class BusyDialog extends JDialog {
         longActionTimer.start();
     }
 
-    private JPanel createTopProgressBarPanel(boolean showProgress) {
-        JPanel topProgressBarPanel = new JPanel(new BorderLayout());
-
-        JPanel messagePanel = new JPanel();
-        JLabel messageLabel = new JLabel(getString("form.loading"));
-        messageLabel.setFont(messageLabel.getFont().deriveFont((float) (messageLabel.getFont().getSize() * 1.5)));
-        messagePanel.add(messageLabel);
-        topProgressBarPanel.add(messagePanel, BorderLayout.NORTH);
-
-        if(showProgress) {
-            JPanel progressPanel = new JPanel();
-            topProgressBar = new JProgressBar();
-            topProgressBar.setIndeterminate(true);
-            topProgressBar.addMouseListener(new MouseAdapter() {
-                @Override
-                public void mousePressed(MouseEvent e) {
-                    super.mousePressed(e);
-                    topProgressBar.setIndeterminate(!topProgressBar.isIndeterminate());
-                }
-            });
-
-            progressPanel.add(topProgressBar);
-            topProgressBarPanel.add(progressPanel, BorderLayout.SOUTH);
-        }
-        return topProgressBarPanel;
-    }
-
     public void updateBusyDialog(List<Object> input) {
         Object[] lines = input.toArray();
 
-        if(Main.configurationAccessAllowed)
+        subStackPanel.removeAll();
+        
+        if (Main.configurationAccessAllowed)
             setStackMessageDevMode(lines);
         else
             setStackMessage(lines);
 
-        scrollPane.validate();
-        scrollPane.repaint();
+        validate();
+        repaint();
     }
 
     public Boolean needInterrupt() {
@@ -242,150 +215,117 @@ class BusyDialog extends JDialog {
     }
 
     public void setStackMessageDevMode(Object[] lines) {
-
         if (prevLines == null)
             prevLines = new Object[lines.length];
 
         boolean changed = false;
-
-        LinkedHashMap<String, Boolean> stackLines = new LinkedHashMap<>();
-
         boolean showTopProgressBar = true;
-        boolean visibleCancelBtn = false;
+        boolean enableCancelBtn = false;
         int progressBarCount = 0;
-        List<Component> panels = new ArrayList<>();
+        List<String> stackLines = new ArrayList<>();
         for (int i = 0; i < lines.length; i++) {
-            Object prevLine = prevLines.length > i ? prevLines[i] : null;
             Object line = lines[i];
-            if (prevLine == null || !prevLine.equals(line))
-                changed = true;
             if (line instanceof ProgressBar) {
-                if(progressBarCount == 0 && stackLines.isEmpty())
+                if (progressBarCount == 0 && stackLines.isEmpty())
                     showTopProgressBar = false;
                 if (!stackLines.isEmpty()) {
-                    if (!panels.isEmpty())
-                        panels.add(Box.createVerticalStrut(5));
-                    panels.add(createTextPanel(stackLines));
-                    panels.add(Box.createVerticalStrut(5));
+                    addStackElement(createTextPanel(stackLines, changed));
+                    stackLines = new ArrayList<>();
+                    changed = false;
                 }
-                panels.add(createProgressBarPanel((ProgressBar) line));
-                stackLines = new LinkedHashMap<>();
+                JPanel progressBarPanel = createProgressBarPanel((ProgressBar) line, ((ProgressBar) line).params == null ? 1 : 2);
+                progressBarPanel.setBorder(new EmptyBorder(0, 2, 0, 0));
+                addStackElement(progressBarPanel);
                 progressBarCount++;
             } else if (line instanceof Boolean) {
-                visibleCancelBtn = true;
-            } else
-                stackLines.put((String) line, changed);
-        }
-        if(!stackLines.isEmpty()) {
-            if(!panels.isEmpty())
-                panels.add(Box.createVerticalStrut(5));
-            panels.add(createTextPanel(stackLines));
-        }
-
-        if(longAction)
-            btnCancel.setEnabled(visibleCancelBtn);
-
-        if(showTopProgressBar) {
-            if(indeterminateProgressBar) {
-                while (subStackPanel.getComponentCount() > 1)
-                    subStackPanel.remove(1); //оставляем верхний progressBar
+                enableCancelBtn = true;
             } else {
-                subStackPanel.removeAll();
-                addGridBagComponent(createTopProgressBarPanel(true), subStackPanel);
-                indeterminateProgressBar = true; //добавляем верхний progressBar
+                assert line instanceof String;
+                Object prevLine = prevLines.length > i ? prevLines[i] : null;
+                changed = prevLine == null || !prevLine.equals(line);
+                stackLines.add((String) line);
             }
-        } else {
-            subStackPanel.removeAll();
-            indeterminateProgressBar = false; //удаляем всё
-
-            addGridBagComponent(createTopProgressBarPanel(false), subStackPanel);
+        }
+        if (!stackLines.isEmpty()) {
+            addStackElement(createTextPanel(stackLines, changed));
         }
 
-        for (Component panel : panels)
-            addGridBagComponent(panel, subStackPanel);
-        subStackPanel.setMaximumSize(new Dimension((int) subStackPanel.getMaximumSize().getWidth(), (int) subStackPanel.getPreferredSize().getHeight()));
-        stackPanel.removeAll();
-        addGridBagComponent(subStackPanel, stackPanel);
+        if (longAction)
+            btnCancel.setEnabled(enableCancelBtn);
+
+        topProgressBarPanel.showProgressBar(showTopProgressBar);
 
         prevLines = lines;
     }
+    
+    private void addStackElement(JComponent component) {
+        component.setAlignmentX(Component.LEFT_ALIGNMENT);
+        subStackPanel.add(component);
+        subStackPanel.add(Box.createVerticalStrut(5));
+    }
 
     public void setStackMessage(Object[] lines) {
+        boolean enableCancelBtn = false;
 
-        List<JPanel> panels = new ArrayList<>();
-        boolean visibleCancelBtn = false;
         for (Object line : lines) {
             if (line instanceof ProgressBar) {
-                JPanel messageProgressPanel = new JPanel(new GridLayout(2, 1));
-                JPanel messagePanel = new JPanel();
-                messagePanel.setLayout(new BoxLayout(messagePanel, BoxLayout.X_AXIS));
-                messagePanel.add(new JLabel(((ProgressBar) line).message + ": "));
-                JProgressBar progressBar = new JProgressBar(0, ((ProgressBar) line).total);
-                progressBar.setValue(((ProgressBar) line).progress);
-                messagePanel.add(progressBar);
-                messagePanel.setAlignmentX(Component.LEFT_ALIGNMENT);
-                messageProgressPanel.add(messagePanel);
-
-                if (((ProgressBar) line).params != null) {
-                    JLabel paramsLabel = new JLabel(((ProgressBar) line).params);
-                    paramsLabel.setPreferredSize(new Dimension((int) messagePanel.getPreferredSize().getWidth(), (int) paramsLabel.getPreferredSize().getHeight()));
-                    messageProgressPanel.add(paramsLabel);
-                }
-                messageProgressPanel.setBorder(new EmptyBorder(panels.isEmpty() ? 0 : 5, 5, 0, 5));
-                panels.add(messageProgressPanel);
-            } else if(line instanceof Boolean) {
-                visibleCancelBtn = true;
+                JPanel progressBarPanel = createProgressBarPanel((ProgressBar) line, 2);
+                progressBarPanel.setBorder(new EmptyBorder(subStackPanel.getComponentCount() > 0 ? 0 : 5, 5, 0, 5));
+                progressBarPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+                subStackPanel.add(progressBarPanel);
+                subStackPanel.add(Box.createVerticalStrut(5));
+            } else if (line instanceof Boolean) {
+                enableCancelBtn = true;
             }
-
-            btnCancel.setEnabled(visibleCancelBtn);
-
         }
+        btnCancel.setEnabled(enableCancelBtn);
 
-        if(panels.isEmpty()) {
-            if(indeterminateProgressBar) {
-                while (subStackPanel.getComponentCount() > 1)
-                    subStackPanel.remove(1); //оставляем верхний progressBar
-            } else {
-                subStackPanel.removeAll();
-                addGridBagComponent(createTopProgressBarPanel(true), subStackPanel);
-                indeterminateProgressBar = true; //добавляем верхний progressBar
-            }
-        } else {
-            subStackPanel.removeAll();
-            indeterminateProgressBar = false; //удаляем всё
+        topProgressBarPanel.showProgressBar(subStackPanel.getComponentCount() == 0);
 
-            addGridBagComponent(createTopProgressBarPanel(false), subStackPanel);
-            for (Component panel : panels)
-                addGridBagComponent(panel, subStackPanel);
-            stackPanel.removeAll();
-            addGridBagComponent(subStackPanel, stackPanel);
-        }
         pack();
     }
 
-    private JTextPane createTextPanel(LinkedHashMap<String, Boolean> texts) {
-        JTextPane textPane = new JTextPane();
-        textPane.setBackground(null);
-        textPane.setEditable(false);
-        DefaultCaret caret = (DefaultCaret) textPane.getCaret();
+    private JTextArea createTextPanel(List<String> lines, boolean changed) {
+        final JTextArea textArea = new JTextArea();
+        textArea.setLineWrap(true);
+        Font font = UIManager.getFont("Label.font");
+        textArea.setFont(font);
+        final int fontHeight = textArea.getFontMetrics(font).getHeight();
+        
+        textArea.setEditable(false);
+        DefaultCaret caret = (DefaultCaret) textArea.getCaret();
         caret.setUpdatePolicy(DefaultCaret.NEVER_UPDATE); //hack to not to scroll to the bottom (because of running with invokeLater)
-        try {
-            int count = 0;
-            for(Map.Entry<String, Boolean> entry : texts.entrySet()) {
-                count++;
-                boolean changed = entry.getValue();
-                textPane.getDocument().insertString(textPane.getDocument().getLength(), splitToLines(entry.getKey()) + (count == texts.size() ? "" : "\n"), changed ? highLightStyle : defaultStyle);
-
-            }
-        } catch (BadLocationException ignored) {
+        
+        String str = "";
+        for (int i = 0; i < lines.size(); i++) {
+            str += lines.get(i) + (i == lines.size() - 1 ? "" : "\n");
         }
-        textPane.setMaximumSize(textPane.getPreferredSize()); //to prevent stretch
-        textPane.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(Color.GRAY, 1), BorderFactory.createEmptyBorder(5, 5, 5, 5)));
-        return textPane;
+        textArea.setText(str);
+        textArea.setBackground(changed ? NEW_STACK_MESSAGE_BACKGROUND : null);
+        
+        textArea.addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentResized(ComponentEvent e) {
+                textArea.setPreferredSize(new Dimension(subStackPanel.getPreferredSize().width - 40, getLineCountAsSeen(textArea, fontHeight) * fontHeight + 10));
+            }
+        });
+
+        textArea.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(STACK_MESSAGE_BORDER_COLOR, 1), BorderFactory.createEmptyBorder(5, 5, 5, 5)));
+
+        return textArea;
     }
 
-    private JPanel createProgressBarPanel(ProgressBar progressBarLine) {
-        JPanel messageProgressPanel = new JPanel(new GridLayout(progressBarLine.params == null ? 1 : 2, 1));
+    private int getLineCountAsSeen(JTextComponent txtComp, int fontHeight) { // количество строк с учётом переносов. работает после отрисовки
+        try {
+            int height = txtComp.modelToView(txtComp.getDocument().getEndPosition().getOffset() - 1).y;
+            return height / fontHeight + 1;
+        } catch (Exception e) {
+            return 0;
+        }
+    }
+
+    private JPanel createProgressBarPanel(ProgressBar progressBarLine, int rows) {
+        JPanel messageProgressPanel = new JPanel(new GridLayout(rows, 1));
 
         JPanel messagePanel = new JPanel();
         messagePanel.setLayout(new BoxLayout(messagePanel, BoxLayout.X_AXIS));
@@ -394,91 +334,56 @@ class BusyDialog extends JDialog {
         JProgressBar progressBar = new JProgressBar(0, progressBarLine.total);
         progressBar.setValue(progressBarLine.progress);
         messagePanel.add(progressBar);
-        messagePanel.setAlignmentX(Component.LEFT_ALIGNMENT);
         messageProgressPanel.add(messagePanel);
 
         if (progressBarLine.params != null) {
             JLabel paramsLabel = new JLabel(progressBarLine.params);
-            paramsLabel.setPreferredSize(new Dimension((int) messagePanel.getPreferredSize().getWidth(), (int) paramsLabel.getPreferredSize().getHeight()));
+            paramsLabel.setPreferredSize(new Dimension(messagePanel.getPreferredSize().width, paramsLabel.getPreferredSize().height));
             messageProgressPanel.add(paramsLabel);
         }
-        messageProgressPanel.setBorder(new EmptyBorder(0, 2, 0, 0));
         return messageProgressPanel;
-    }
-
-    private String splitToLines(String text) {
-        FontMetrics fm = stackPanel.getFontMetrics(stackPanel.getFont());
-        int maxWidth = scrollPane.getWidth() - 40;
-        String[] words = text.split(" ");
-        String result = "";
-        String line = "";
-        for(String word : words) {
-            String w = word;//
-            if(fm.stringWidth(line + " " + w) > maxWidth) {
-                result += line + "\n";
-                while (fm.stringWidth(w) > maxWidth) {
-                    String leftPart = w;
-                    String rightPart = "";
-                    while (fm.stringWidth(leftPart) > maxWidth) {
-                        rightPart = leftPart.substring(leftPart.length() - 1) + rightPart;
-                        leftPart = leftPart.substring(0, leftPart.length() - 1);
-                    }
-                    result += leftPart + "\n";
-                    w = rightPart;
-                }
-                line = w;
-            }
-            else
-                line += (line.isEmpty() ? "" : " ") + w;
-        }
-        if(!line.isEmpty())
-            result += line + "\n";
-        if(result.endsWith("\n"))
-            result = result.substring(0, result.length() - 1);
-        return result;
     }
 
     private void copyToClipboard() {
         String stackMessageText = "";
-        for(Component component : subStackPanel.getComponents()) {
-            if(component instanceof JTextPane)
-                stackMessageText += ((JTextPane) component).getText() + "\n";
+        for (Component component : subStackPanel.getComponents()) {
+            if (component instanceof JTextArea)
+                stackMessageText += ((JTextArea) component).getText() + "\n";
         }
-        if(!stackMessageText.isEmpty())
+        if (!stackMessageText.isEmpty())
             Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(stackMessageText), null);
     }
 
-    private GridBagConstraints initGridBagConstraints() {
-        // weightx is 1.0 for fields, 0.0 for labels
-        // gridwidth is REMAINDER for fields, 1 for labels
-        GridBagConstraints fieldConstraints = new GridBagConstraints();
+    private class TopProgressBarPanel extends JPanel {
+        JPanel progressPanel;
 
-        // Stretch components horizontally (but not vertically)
-        fieldConstraints.fill = GridBagConstraints.HORIZONTAL;
+        public TopProgressBarPanel(boolean showProgress) {
+            super(new BorderLayout());
 
-        // Components that are too short or narrow for their space
-        // Should be pinned to the northwest (upper left) corner
-        fieldConstraints.anchor = GridBagConstraints.NORTHWEST;
+            JPanel messagePanel = new JPanel();
+            JLabel messageLabel = new JLabel(getString("form.loading"));
+            messageLabel.setFont(messageLabel.getFont().deriveFont((float) (messageLabel.getFont().getSize() * 1.5)));
+            messagePanel.add(messageLabel);
+            add(messagePanel, BorderLayout.NORTH);
 
-        // Give the "last" component as much space as possible
-        fieldConstraints.weightx = 1.0;
+            progressPanel = new JPanel();
+            final JProgressBar topProgressBar = new JProgressBar();
+            topProgressBar.setIndeterminate(true);
+            topProgressBar.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mousePressed(MouseEvent e) {
+                    topProgressBar.setIndeterminate(!topProgressBar.isIndeterminate());
+                }
+            });
 
-        //to prevent stretch
-        fieldConstraints.weighty = 1.0;
+            progressPanel.add(topProgressBar);
+            add(progressPanel, BorderLayout.SOUTH);
 
-        // Give the "last" component the remainder of the row
-        fieldConstraints.gridwidth = GridBagConstraints.REMAINDER;
+            showProgressBar(showProgress);
+        }
 
-        // Add a little padding
-        fieldConstraints.insets = new Insets(1, 1, 1, 1);
-
-        return fieldConstraints;
-    }
-
-    private void addGridBagComponent(Component component, Container parent) {
-        GridBagLayout gbl = (GridBagLayout) parent.getLayout();
-        if(fieldConstraints != null)
-            gbl.setConstraints(component, fieldConstraints);
-        parent.add(component);
+        void showProgressBar(boolean showProgress) {
+            progressPanel.setVisible(showProgress);
+        }
     }
 }
