@@ -1838,19 +1838,24 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
 //
 //        if(1==1) return costResult;
 
-        if(useCost)
-            return getWhereJoins(pushJoin, isInner).getCostPushWhere(pushJoin, upWheres, keyStat, StatType.PUSH_OUTER());
-        else
+        if(useCost) {
+            Result<UpWheres<WhereJoin>> adjUpWheres = new Result<>(upWheres);
+            return getWhereJoins(pushJoin, isInner, adjUpWheres).getCostPushWhere(pushJoin, adjUpWheres.result, keyStat, StatType.PUSH_OUTER());
+        } else
             return getOldPushWhere(joinMap, upWheres, pushJoin, keyStat, fullWhere, currentJoinStat);
     }
 
-    private <K extends Expr> WhereJoins getWhereJoins(QueryJoin<K, ?, ?, ?> pushJoin, boolean isInner) {
+    private <K extends Expr> WhereJoins getWhereJoins(QueryJoin<K, ?, ?, ?> pushJoin, boolean isInner, Result<UpWheres<WhereJoin>> upWheres) {
+        WhereJoins adjWhereJoins = this;
         if(isInner) {
-            if(pushJoin.isValue()) // проблема что queryJoin может быть в ExprStatJoin.valueJoins, тогда он будет Inner, а в WhereJoins его не будет и начнут падать assertion'ы появлятся висячие ключи, другое дело, что потом надо убрать в EqualsWhere ExprStatJoin = значение, тогда это проверка не нужно
+            if(pushJoin.isValue()) { // проблема что queryJoin может быть в ExprStatJoin.valueJoins, тогда он будет Inner, а в WhereJoins его не будет и начнут падать assertion'ы появлятся висячие ключи, другое дело, что потом надо убрать в EqualsWhere ExprStatJoin = значение, тогда это проверка не нужно
                 return new WhereJoins(pushJoin);
-            return this;
+            }
+
+            // recursion guard, иначе бесконечные проталкивания могут быть (проблема с проталкиванием скажем SubQuery.v=5 должна в принципе решаться другим механищзмом)
+            adjWhereJoins = removeJoin(pushJoin, upWheres.result, upWheres);
         }
-        return and(new WhereJoins(pushJoin));
+        return adjWhereJoins.and(new WhereJoins(pushJoin));
     }
 
     private <K extends Expr> Where getOldPushWhere(ImMap<K, BaseExpr> joinMap, UpWheres<WhereJoin> upWheres, QueryJoin<K, ?, ?, ?> pushJoin, KeyStat keyStat, Where fullWhere, StatKeys<K> currentJoinStat) {
