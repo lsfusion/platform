@@ -26,6 +26,7 @@ import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.query.QueryBuilder;
+import lsfusion.server.lifecycle.LifecycleEvent;
 import lsfusion.server.lifecycle.MonitorServer;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.property.ClassPropertyInterface;
@@ -72,6 +73,12 @@ public class Scheduler extends MonitorServer implements InitializingBean {
 
     public void setLogicsInstance(LogicsInstance logicsInstance) {
         this.logicsInstance = logicsInstance;
+    }
+
+    @Override
+    protected void onStopping(LifecycleEvent event) {
+        schedulerLogger.error("SERVER STOPPING, all scheduled tasks will be interrupted");
+        super.onStopping(event);
     }
 
     @IdentityStrongLazy
