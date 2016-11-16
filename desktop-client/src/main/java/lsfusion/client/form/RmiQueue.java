@@ -384,8 +384,12 @@ public class RmiQueue {
         }
     }
 
+    // ожидаем только завершения всех запросов до данного синхронного и самого этого синхронного.
+    // иногда возникает ситуация, что после синхронного успевает проскочить ещё какой-либо асинхронный запрос через
+    // EDT BusyDialog'а (к примеру gainedFocus). тогда возникает dead lock. поэтому не ждём полного очищения очереди 
     private boolean isRmiFutureExecuted(RmiFuture future) {
-        return !rmiFutures.contains(future);
+        assert !rmiFutures.contains(future) == future.executed;
+        return future.executed;
     }
 
     private boolean isRmiFutureDone() {
@@ -414,6 +418,7 @@ public class RmiQueue {
 
     public class RmiFuture<T> extends FutureTask<T> {
         private final RmiRequest<T> request;
+        boolean executed;
 
         public RmiFuture(final RmiRequest<T> request) {
             super(new RequestCallable<>(request));
@@ -454,6 +459,7 @@ public class RmiQueue {
             }
             if(!failed)
                 request.onResponse(result);
+            executed = true;
         }
     }
 
