@@ -13,15 +13,11 @@ import lsfusion.server.logics.property.actions.SystemExplicitActionProperty;
 
 import java.sql.SQLException;
 
-public class LoadActionProperty extends SystemExplicitActionProperty {
-
-    LCP<?> fileProperty;
+public class LoadActionProperty extends FileActionProperty {
 
     public LoadActionProperty(LocalizedString caption, LCP fileProperty) {
-        super(caption, fileProperty.getInterfaceClasses(ClassType.filePolicy));
+        super(caption, fileProperty);
 
-        this.fileProperty = fileProperty;
-        
         drawOptions.setImage("load.png");
     }
 
@@ -37,6 +33,11 @@ public class LoadActionProperty extends SystemExplicitActionProperty {
     @Override
     public ImMap<CalcProperty, Boolean> aspectChangeExtProps() {
         return getChangeProps(fileProperty.property);
+    }
+
+    @Override
+    protected boolean allowNulls() {
+        return false;
     }
 
     @Override

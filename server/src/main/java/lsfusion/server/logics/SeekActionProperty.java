@@ -7,21 +7,18 @@ import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
+import lsfusion.server.logics.property.actions.SystemExplicitActionProperty;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 
 import java.sql.SQLException;
 
-public abstract class SeekActionProperty extends ScriptingActionProperty {
+public abstract class SeekActionProperty extends SystemExplicitActionProperty {
 
-    public SeekActionProperty(ScriptingLogicsModule LM, ValueClass... classes) {
-        super(LM, classes);
+    public SeekActionProperty(LocalizedString caption, ValueClass... classes) {
+        super(caption, classes);
     }
-
-    public SeekActionProperty(ScriptingLogicsModule LM, LocalizedString caption, ValueClass... classes) {
-        super(LM, caption, classes);
-    }
-
+    
     protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         FormInstance<?> formInstance = context.getFormInstance(false, true);
         if(formInstance != null)

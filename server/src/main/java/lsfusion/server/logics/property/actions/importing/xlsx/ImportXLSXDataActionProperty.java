@@ -1,6 +1,7 @@
 package lsfusion.server.logics.property.actions.importing.xlsx;
 
 import lsfusion.server.classes.ValueClass;
+import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.actions.importing.ImportIterator;
 import lsfusion.server.logics.property.actions.importing.xls.ImportXLSDataActionProperty;
@@ -10,8 +11,8 @@ import java.io.IOException;
 import java.util.List;
 
 public class ImportXLSXDataActionProperty extends ImportXLSDataActionProperty {
-    public ImportXLSXDataActionProperty(ValueClass[] valueClasses, ScriptingLogicsModule LM, List<String> ids, List<LCP> properties) {
-        super(valueClasses, LM, ids, properties);
+    public ImportXLSXDataActionProperty(ValueClass[] valueClasses, List<String> ids, List<LCP> properties, BaseLogicsModule baseLM) {
+        super(valueClasses, ids, properties, baseLM);
     }
 
     @Override

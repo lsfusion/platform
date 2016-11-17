@@ -16,14 +16,12 @@ import lsfusion.server.logics.property.actions.SystemExplicitActionProperty;
 
 import java.sql.SQLException;
 
-public class SaveActionProperty extends SystemExplicitActionProperty {
-    private LCP<?> fileProperty;
+public class SaveActionProperty extends FileActionProperty {
     private LCP<?> fileNameProp;
 
     public SaveActionProperty(LocalizedString caption, LCP fileProperty, LCP fileNameProp) {
-        super(caption, fileProperty.getInterfaceClasses(ClassType.filePolicy));
+        super(caption, fileProperty);
 
-        this.fileProperty = fileProperty;
         this.fileNameProp = fileNameProp;
 
         drawOptions.setImage("save.png");

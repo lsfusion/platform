@@ -3,13 +3,13 @@ package lsfusion.server.logics.property.actions.importing.dbf;
 import lsfusion.server.classes.StringClass;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.actions.importing.ImportDataActionProperty;
 import lsfusion.server.logics.property.actions.importing.ImportIterator;
-import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 import net.iryndin.jdbf.core.DbfField;
 import net.iryndin.jdbf.reader.DbfReader;
 import org.jdom.JDOMException;
@@ -24,8 +24,8 @@ import java.util.regex.Pattern;
 
 public class ImportDBFDataActionProperty extends ImportDataActionProperty {
     private String wheres;
-    public ImportDBFDataActionProperty(ValueClass valueClass, ValueClass wheresClass, ScriptingLogicsModule LM, List<String> ids, List<LCP> properties) {
-        super(wheresClass == null ? new ValueClass[] {valueClass} : new ValueClass[] {valueClass, wheresClass}, LM, ids, properties);
+    public ImportDBFDataActionProperty(ValueClass valueClass, ValueClass wheresClass, List<String> ids, List<LCP> properties, BaseLogicsModule baseLM) {
+        super(wheresClass == null ? new ValueClass[] {valueClass} : new ValueClass[] {valueClass, wheresClass}, ids, properties, baseLM);
     }
 
     @Override

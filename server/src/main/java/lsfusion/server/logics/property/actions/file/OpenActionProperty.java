@@ -27,14 +27,10 @@ import java.sql.SQLException;
 * Time: 9:37
 * To change this template use File | Settings | File Templates.
 */
-public class OpenActionProperty extends SystemExplicitActionProperty {
-
-    LCP<?> fileProperty;
+public class OpenActionProperty extends FileActionProperty {
 
     public OpenActionProperty(LocalizedString caption, LCP fileProperty) {
-        super(caption, fileProperty.getInterfaceClasses(ClassType.filePolicy));
-
-        this.fileProperty = fileProperty;
+        super(caption, fileProperty);
 
         drawOptions.setImage("open.png");
     }

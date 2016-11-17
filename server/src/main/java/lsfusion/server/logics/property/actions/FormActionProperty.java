@@ -166,17 +166,16 @@ public class FormActionProperty extends SystemExplicitActionProperty {
         return true;
     }
 
-    protected boolean allowNulls() {
-        return false;
-    }
-
     protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
 
         Result<ImSet<PullChangeProperty>> pullProps = new Result<>();
         ImSet<FilterEntity> contextFilters = null;
-        ImMap<ClassPropertyInterface, DataObject> dataKeys = context.getDataKeys();
         if (contextPropertyImplement != null) {
-            final CalcPropertyValueImplement<PropertyInterface> propertyValues = contextPropertyImplement.mapValues(dataKeys);
+            final CalcPropertyValueImplement<PropertyInterface> propertyValues = contextPropertyImplement.mapObjectValues(context.getKeys());
+            if(propertyValues == null) { // вообще должно \ может проверяться на уровне allowNulls, но он целиком для всех параметров, поэтому пока так
+                proceedNullException();
+                return;
+            }
             final FormInstance thisFormInstance = context.getFormInstance(false, true);
             contextFilters = thisFormInstance.getContextFilters(contextObject, propertyValues, context.getChangingPropertyToDraw(), pullProps);
         }
@@ -194,66 +193,66 @@ public class FormActionProperty extends SystemExplicitActionProperty {
                                                                         pullProps.result,
                                                                         readOnly);
 
-        if (printType != null && !newFormInstance.areObjectsFound()) {
-            context.requestUserInteraction(
-                    new MessageClientAction(ThreadLocalContext.localize(LocalizedString.create("{form.navigator.form.do.not.fit.for.specified.parameters}")), 
-                                            ThreadLocalContext.localize(form.caption)));
-        } else {
-            if(exportType == null && printType == null)
-                context.requestFormUserInteraction(newFormInstance, modalityType, context.stack);
-            else {
-                boolean toExcel = false;
-                FormPrintType pType = printType;
-                if(pType != null) {
-                    pType = ignorePrintType.read(context) != null ? FormPrintType.PRINT : printType;
-                    toExcel = pType == FormPrintType.XLS || pType == FormPrintType.XLSX;
-                }
-                
-                FormReportManager newFormManager = new FormReportManager(newFormInstance);
-                ReportGenerationData generationData = newFormManager.getReportData(toExcel);
-                if (exportType != null) {
-                    DataObject[] dataObjects = dataKeys.values().toArray(new DataObject[dataKeys.size()]);
-                    try {
-                        if (exportType == FormExportType.DOC) {
-                            formExportFile.change(BaseUtils.mergeFileAndExtension(IOUtils.getFileBytes(ReportGenerator.exportToDoc(generationData)), "doc".getBytes()), context, dataObjects);
-                        } else if (exportType == FormExportType.DOCX) {
-                            formExportFile.change(BaseUtils.mergeFileAndExtension(IOUtils.getFileBytes(ReportGenerator.exportToDocx(generationData)), "docx".getBytes()), context, dataObjects);
-                        } else if (exportType == FormExportType.PDF) {
-                            formExportFile.change(BaseUtils.mergeFileAndExtension(IOUtils.getFileBytes(ReportGenerator.exportToPdf(generationData)), "pdf".getBytes()), context, dataObjects);
-                        } else if (exportType == FormExportType.XLS) {
-                            formExportFile.change(BaseUtils.mergeFileAndExtension(IOUtils.getFileBytes(ReportGenerator.exportToXls(generationData)), "xls".getBytes()), context, dataObjects);
-                        } else if (exportType == FormExportType.XLSX) {
-                            formExportFile.change(BaseUtils.mergeFileAndExtension(IOUtils.getFileBytes(ReportGenerator.exportToXlsx(generationData)), "xlsx".getBytes()), context, dataObjects);
-                        }
-                    } catch (JRException | IOException | ClassNotFoundException e) {
-                        ServerLoggers.systemLogger.error(e);
+        if(exportType == null && printType == null) // inteaction
+            context.requestFormUserInteraction(newFormInstance, modalityType, context.stack);
+        else { // print / export
+            if (!newFormInstance.areObjectsFound()) {
+                context.requestUserInteraction(
+                    new MessageClientAction(ThreadLocalContext.localize(LocalizedString.create("{form.navigator.form.do.not.fit.for.specified.parameters}")),
+                            ThreadLocalContext.localize(form.caption)));
+                return;
+            }
+            
+            boolean toExcel = false;
+            FormPrintType pType = printType;
+            if(pType != null) {
+                pType = ignorePrintType.read(context) != null ? FormPrintType.PRINT : printType;
+                toExcel = pType == FormPrintType.XLS || pType == FormPrintType.XLSX;
+            }
+            
+            FormReportManager newFormManager = new FormReportManager(newFormInstance);
+            ReportGenerationData generationData = newFormManager.getReportData(toExcel);
+            if (exportType != null) {
+                try {
+                    if (exportType == FormExportType.DOC) {
+                        formExportFile.change(BaseUtils.mergeFileAndExtension(IOUtils.getFileBytes(ReportGenerator.exportToDoc(generationData)), "doc".getBytes()), context);
+                    } else if (exportType == FormExportType.DOCX) {
+                        formExportFile.change(BaseUtils.mergeFileAndExtension(IOUtils.getFileBytes(ReportGenerator.exportToDocx(generationData)), "docx".getBytes()), context);
+                    } else if (exportType == FormExportType.PDF) {
+                        formExportFile.change(BaseUtils.mergeFileAndExtension(IOUtils.getFileBytes(ReportGenerator.exportToPdf(generationData)), "pdf".getBytes()), context);
+                    } else if (exportType == FormExportType.XLS) {
+                        formExportFile.change(BaseUtils.mergeFileAndExtension(IOUtils.getFileBytes(ReportGenerator.exportToXls(generationData)), "xls".getBytes()), context);
+                    } else if (exportType == FormExportType.XLSX) {
+                        formExportFile.change(BaseUtils.mergeFileAndExtension(IOUtils.getFileBytes(ReportGenerator.exportToXlsx(generationData)), "xlsx".getBytes()), context);
                     }
-                } else { // assert printType != null;
-                    Map<String, String> reportPath = SystemProperties.isDebug ? newFormManager.getReportPath(toExcel, null, null) : new HashMap<>();
-                    Object pageCount = context.requestUserInteraction(new ReportClientAction(reportPath, modalityType.isModal(), generationData, pType, SystemProperties.isDebug));
-                    formPageCount.change(pageCount, context);
+                } catch (JRException | IOException | ClassNotFoundException e) {
+                    ServerLoggers.systemLogger.error(e);
+                }
+            } else { // assert printType != null;
+                Map<String, String> reportPath = SystemProperties.isDebug ? newFormManager.getReportPath(toExcel, null, null) : new HashMap<>();
+                Object pageCount = context.requestUserInteraction(new ReportClientAction(reportPath, modalityType.isModal(), generationData, pType, SystemProperties.isDebug));
+                formPageCount.change(pageCount, context);
+            }
+        }
+
+        if (modalityType.isModal()) {
+            //для немодальных форм следующее бессмысленно, т.к. они остаются открытыми...
+
+            FormCloseType formResult = newFormInstance.getFormResult();
+            formResultProperty.change(formResultClass.getDataObject(formResult.asString()), context);
+
+            for (GroupObjectEntity group : form.getGroupsIt()) {
+                for (ObjectEntity object : group.getObjects()) {
+                    chosenValueProperty.write(
+                            object.baseClass.getType(), newFormInstance.instanceFactory.getInstance(object).getObjectValue(), context, new DataObject(object.getSID())
+                    );
                 }
             }
-
-            if (modalityType.isModal()) {
-                //для немодальных форм следующее бессмысленно, т.к. они остаются открытыми...
-
-                FormCloseType formResult = newFormInstance.getFormResult();
-                formResultProperty.change(formResultClass.getDataObject(formResult.asString()), context);
-
-                for (GroupObjectEntity group : form.getGroupsIt()) {
-                    for (ObjectEntity object : group.getObjects()) {
-                        chosenValueProperty.write(
-                                object.baseClass.getType(), newFormInstance.instanceFactory.getInstance(object).getObjectValue(), context, new DataObject(object.getSID())
-                        );
-                    }
-                }
-                
-                if(input != null) {
-                    ObjectInstance object = newFormInstance.instanceFactory.getInstance(input);
-                    InputActionProperty.writeRequested(formResult == FormCloseType.CLOSE ? null : (formResult == FormCloseType.OK ? object.getObjectValue() : NullValue.instance), 
-                            object.getType(), context, requestedPropertySet, requestCanceledProperty);
-                }
+            
+            if(input != null) {
+                ObjectInstance object = newFormInstance.instanceFactory.getInstance(input);
+                InputActionProperty.writeRequested(formResult == FormCloseType.CLOSE ? null : (formResult == FormCloseType.OK ? object.getObjectValue() : NullValue.instance), 
+                        object.getType(), context, requestedPropertySet, requestCanceledProperty);
             }
         }
     }

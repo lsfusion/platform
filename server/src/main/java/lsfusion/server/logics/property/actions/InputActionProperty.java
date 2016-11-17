@@ -47,11 +47,6 @@ public class InputActionProperty extends SystemExplicitActionProperty {
     }
 
     @Override
-    protected boolean allowNulls() {
-        return true;
-    }
-
-    @Override
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         ObjectValue userValue = context.inputUserData(dataClass, context.getSingleKeyValue().getValue());
         writeRequested(userValue, dataClass, context, requestedPropertySet, requestCanceledProperty);

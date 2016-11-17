@@ -64,6 +64,11 @@ public class DefaultChangeActionProperty<P extends PropertyInterface> extends Sy
     }
 
     @Override
+    protected boolean allowNulls() {
+        return false;
+    }
+
+    @Override
     public void executeCustom(final ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
 
         ImMap<ClassPropertyInterface,DataObject> keys = context.getDataKeys();

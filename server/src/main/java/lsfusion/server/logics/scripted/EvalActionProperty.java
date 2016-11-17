@@ -39,11 +39,6 @@ public class EvalActionProperty<P extends PropertyInterface> extends SystemExpli
         this.source = source;
     }
 
-    @Override
-    protected boolean allowNulls() {
-        return true;
-    }
-
     private String getScript(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         ImMap<P, ? extends ObjectValue> sourceToData = mapSource.join(context.getKeys());
         return (String) source.read(context, source.listInterfaces.mapOrder(sourceToData).toArray(new ObjectValue[interfaces.size()]));

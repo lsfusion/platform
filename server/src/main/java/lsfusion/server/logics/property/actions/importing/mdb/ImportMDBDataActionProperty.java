@@ -4,17 +4,17 @@ import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
 import lsfusion.server.classes.DateTimeClass;
 import lsfusion.server.classes.ValueClass;
+import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.actions.importing.ImportDataActionProperty;
 import lsfusion.server.logics.property.actions.importing.ImportIterator;
-import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 
 import java.io.IOException;
 import java.util.*;
 
 public class ImportMDBDataActionProperty extends ImportDataActionProperty {
-    public ImportMDBDataActionProperty(ValueClass valueClass, ScriptingLogicsModule LM, List<String> ids, List<LCP> properties) {
-        super(new ValueClass[] {valueClass}, LM, ids, properties);
+    public ImportMDBDataActionProperty(ValueClass valueClass, List<String> ids, List<LCP> properties, BaseLogicsModule baseLM) {
+        super(new ValueClass[] {valueClass}, ids, properties, baseLM);
     }
 
     @Override

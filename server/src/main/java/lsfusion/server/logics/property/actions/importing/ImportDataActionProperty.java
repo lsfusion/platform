@@ -17,18 +17,18 @@ import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.query.Join;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
+import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.NullValue;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.*;
+import lsfusion.server.logics.property.actions.SystemExplicitActionProperty;
 import lsfusion.server.logics.property.actions.importing.dbf.ImportDBFDataActionProperty;
 import lsfusion.server.logics.property.actions.importing.jdbc.ImportJDBCDataActionProperty;
 import lsfusion.server.logics.property.actions.importing.mdb.ImportMDBDataActionProperty;
 import lsfusion.server.logics.property.actions.importing.xls.ImportXLSDataActionProperty;
 import lsfusion.server.logics.property.actions.importing.xlsx.ImportXLSXDataActionProperty;
-import lsfusion.server.logics.scripted.ScriptingActionProperty;
-import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 import lsfusion.server.session.PropertyChange;
 import lsfusion.server.session.SingleKeyTableUsage;
 import org.jdom.JDOMException;
@@ -42,10 +42,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public abstract class ImportDataActionProperty extends ScriptingActionProperty {
+public abstract class ImportDataActionProperty extends SystemExplicitActionProperty {
 
     protected final List<String> ids;
     protected final List<LCP> properties;
+    
+    private final LCP<?> importedProperty;
+    private final LCP<?> prevImportedProperty;
 
     public final static Map<String, Integer> XLSColumnsMapping = new HashMap<>();
     static {
@@ -77,15 +80,15 @@ public abstract class ImportDataActionProperty extends ScriptingActionProperty {
         }
     }
     
-    public static ImportDataActionProperty createExcelProperty(ValueClass valueClass, ImportSourceFormat format, ScriptingLogicsModule LM, List<String> ids, List<LCP> properties, ValueClass sheetIndex) {
+    public static ImportDataActionProperty createExcelProperty(ValueClass valueClass, ImportSourceFormat format, List<String> ids, List<LCP> properties, ValueClass sheetIndex, BaseLogicsModule baseLM) {
         if (format == ImportSourceFormat.XLS) {
-            return new ImportXLSDataActionProperty(sheetIndex == null ? new ValueClass[] {valueClass} : new ValueClass[] {valueClass, sheetIndex} , LM, ids, properties);
+            return new ImportXLSDataActionProperty(sheetIndex == null ? new ValueClass[] {valueClass} : new ValueClass[] {valueClass, sheetIndex} , ids, properties, baseLM);
         } else if (format == ImportSourceFormat.XLSX) {
-            return new ImportXLSXDataActionProperty(sheetIndex == null ? new ValueClass[] {valueClass} : new ValueClass[] {valueClass, sheetIndex}, LM, ids, properties);
+            return new ImportXLSXDataActionProperty(sheetIndex == null ? new ValueClass[] {valueClass} : new ValueClass[] {valueClass, sheetIndex}, ids, properties, baseLM);
         } else return null;
     }
 
-    public static ImportDataActionProperty createDBFProperty(ValueClass valueClass, ValueClass wheresClass, ScriptingLogicsModule LM, List<String> ids, List<LCP> properties) {
+    public static ImportDataActionProperty createDBFProperty(ValueClass valueClass, ValueClass wheresClass, List<String> ids, List<LCP> properties, BaseLogicsModule baseLM) {
         for (int i = 0; i < ids.size(); ++i) { // для DBF делаем case insensitive
             String id = ids.get(i);
             if (id != null)
@@ -93,22 +96,29 @@ public abstract class ImportDataActionProperty extends ScriptingActionProperty {
             else
                 throw new RuntimeException("Import error: field for property " + properties.get(i) + " not specified");
         }
-        return new ImportDBFDataActionProperty(valueClass, wheresClass, LM, ids, properties);
+        return new ImportDBFDataActionProperty(valueClass, wheresClass, ids, properties, baseLM);
     }
 
-    public static ImportDataActionProperty createProperty(ValueClass valueClass, ImportSourceFormat format, ScriptingLogicsModule LM, List<String> ids, List<LCP> properties) {
+    public static ImportDataActionProperty createProperty(ValueClass valueClass, ImportSourceFormat format, List<String> ids, List<LCP> properties, BaseLogicsModule baseLM) {
         if (format == ImportSourceFormat.JDBC) {
-            return new ImportJDBCDataActionProperty(valueClass, LM, ids, properties);
+            return new ImportJDBCDataActionProperty(valueClass, ids, properties, baseLM);
         } else if (format == ImportSourceFormat.MDB) {
-            return new ImportMDBDataActionProperty(valueClass, LM, ids, properties);
+            return new ImportMDBDataActionProperty(valueClass, ids, properties, baseLM);
         }
         return null;
     }
 
-    public ImportDataActionProperty(ValueClass[] valueClasses, ScriptingLogicsModule LM, List<String> ids, List<LCP> properties) {
-        super(LM, valueClasses);
+    public ImportDataActionProperty(ValueClass[] valueClasses, List<String> ids, List<LCP> properties, BaseLogicsModule baseLM) {
+        super(valueClasses);
         this.ids = ids;
         this.properties = properties;
+        this.importedProperty = baseLM.imported;
+        this.prevImportedProperty = baseLM.prevImported;
+    }
+
+    @Override
+    protected boolean allowNulls() {
+        return false;
     }
 
     @Override
@@ -119,7 +129,7 @@ public abstract class ImportDataActionProperty extends ScriptingActionProperty {
         Object file = value.object;
         if (file instanceof byte[]) {
             try {
-                Integer prevImported = (Integer) findProperty("prevImported[]").read(context);
+                Integer prevImported = (Integer) prevImportedProperty.read(context);
                 if (value.getType() instanceof DynamicFormatFileClass) {
                     file = BaseUtils.getFile((byte[]) file);
                 }
@@ -127,7 +137,7 @@ public abstract class ImportDataActionProperty extends ScriptingActionProperty {
 
                 Object row;
                 int i = 0;
-                ImOrderSet<LCP> props = SetFact.fromJavaOrderSet(properties).addOrderExcl(LM.baseLM.imported);  
+                ImOrderSet<LCP> props = SetFact.fromJavaOrderSet(properties).addOrderExcl(importedProperty);  
                 SingleKeyTableUsage<LCP> importTable = new SingleKeyTableUsage<>(IntegerClass.instance, props, new Type.Getter<LCP>() {
                     @Override
                     public Type getType(LCP key) {
@@ -141,7 +151,7 @@ public abstract class ImportDataActionProperty extends ScriptingActionProperty {
                         final List<String> finalRow = (List<String>) row;
                         mRows.exclAdd(MapFact.singleton("key", rowKey), props.getSet().mapValues(new GetValue<ObjectValue, LCP>() {
                             public ObjectValue getMapValue(LCP prop) {
-                                if (prop == LM.baseLM.imported) {
+                                if (prop == importedProperty) {
                                     return ObjectValue.getValue(true, LogicalClass.instance);
                                 } else if (properties.indexOf(prop) < finalRow.size()) {
                                     Type type = prop.property.getType();
@@ -158,7 +168,7 @@ public abstract class ImportDataActionProperty extends ScriptingActionProperty {
                         }));
                     }
                 }
-                findProperty("prevImported[]").change(i, context);
+                prevImportedProperty.change(i, context);
                 if(prevImported != null) {
                     while (i < prevImported) {
                         DataObject rowKey = new DataObject(i++, IntegerClass.instance);

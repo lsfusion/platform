@@ -56,6 +56,14 @@ public class CalcPropertyMapImplement<P extends PropertyInterface, T extends Pro
         return new CalcPropertyValueImplement<>(property, mapping.join(mapValues));
     }
 
+    public CalcPropertyValueImplement<P> mapObjectValues(ImMap<T, ? extends ObjectValue> mapValues) {
+        ImMap<P, ? extends ObjectValue> mapped = mapping.join(mapValues);
+        ImMap<P, DataObject> mappedData = DataObject.filterDataObjects(mapped);
+        if(mappedData.size() < mapped.size())
+            return null;
+        return new CalcPropertyValueImplement<>(property, mappedData);
+    }
+
     public void change(ImMap<T, DataObject> keys, ExecutionEnvironment env, Object value) throws SQLException, SQLHandledException {
         change(keys, env, env.getSession().getObjectValue(property.getValueClass(ClassType.editPolicy), value));
     }

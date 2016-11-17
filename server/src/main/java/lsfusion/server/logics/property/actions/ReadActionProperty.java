@@ -36,7 +36,7 @@ import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class ReadActionProperty extends ScriptingActionProperty {
+public class ReadActionProperty extends SystemExplicitActionProperty {
     private final LCP<?> targetProp;
     private final boolean delete;
 
@@ -47,8 +47,8 @@ public class ReadActionProperty extends ScriptingActionProperty {
     private static final String LT = "<";
     private static final String IN = " IN ";
 
-    public ReadActionProperty(ScriptingLogicsModule LM, ValueClass sourceProp, LCP<?> targetProp, ValueClass moveProp, boolean delete) {
-        super(LM, moveProp == null ? new ValueClass[] {sourceProp} : new ValueClass[] {sourceProp, moveProp});
+    public ReadActionProperty(ValueClass sourceProp, LCP<?> targetProp, ValueClass moveProp, boolean delete) {
+        super(moveProp == null ? new ValueClass[] {sourceProp} : new ValueClass[] {sourceProp, moveProp});
         this.targetProp = targetProp;
         this.delete = delete;
 
@@ -57,6 +57,11 @@ public class ReadActionProperty extends ScriptingActionProperty {
         } catch (ClassNotFoundException e) {
             throw Throwables.propagate(e);
         }
+    }
+
+    @Override
+    protected boolean allowNulls() {
+        return false;
     }
 
     @Override

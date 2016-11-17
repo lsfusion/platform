@@ -22,54 +22,18 @@ public class SeekObjectActionProperty extends SeekActionProperty {
     private final ObjectEntity object;
     private boolean last = false;
 
-    @SuppressWarnings("UnusedDeclaration")
-    public SeekObjectActionProperty(BaseLogicsModule lm, ValueClass... classes) {
-        super(lm, classes);
-
-        object = null;
-    }
-
-    public SeekObjectActionProperty(ScriptingLogicsModule lm, ObjectEntity object, boolean last) {
-        super(lm, LocalizedString.concatList("Найти объект (", object.getCaption(), ")"), object.baseClass);
+    public SeekObjectActionProperty(ObjectEntity object, boolean last) {
+        super(LocalizedString.concatList("Найти объект (", object.getCaption(), ")"), object.baseClass);
 
         this.object = object;
         this.last = last;
     }
 
-    @Override
-    protected boolean allowNulls() {
-        return object != null;
-    }
-
     protected void executeForm(FormInstance form, ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
-        ImSet<ObjectInstance> objects;
-        ObjectValue value;
+        ObjectValue value = context.getSingleKeyValue();
 
-        if(object != null) {
-            objects = SetFact.singleton(form.instanceFactory.getInstance(object));
-            value = context.getSingleKeyValue();
-        } else {
-            if (context.getSingleObjectInstance() == null) {
-                DataObject dataValue = context.getSingleDataKeyValue();
-                final ConcreteClass keyClass = context.getSession().getCurrentClass(dataValue);
-                objects = form.getObjects().filterFn(new SFunctionSet<ObjectInstance>() {
-                    public boolean contains(ObjectInstance object) {
-                        return keyClass instanceof ConcreteValueClass && object.getBaseClass().isCompatibleParent((ValueClass) keyClass);
-                    }});
-                value = dataValue;
-            } else {
-                objects = SetFact.EMPTY();
-                value = NullValue.instance;
-            }
-        }
-
-        boolean firstObject = true;
-        for (ObjectInstance object : objects) {
-            if (firstObject) {
-                object.groupTo.seek(last);
-                firstObject = false;
-            }
-            form.seekObject(object, value, last);
-        }
+        ObjectInstance object = form.instanceFactory.getInstance(this.object);
+        object.groupTo.seek(last);
+        form.seekObject(object, value, last);
     }
 }

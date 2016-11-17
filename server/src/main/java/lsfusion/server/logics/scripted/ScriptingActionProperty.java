@@ -9,13 +9,14 @@ import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
-import lsfusion.server.logics.property.actions.UserActionProperty;
+import lsfusion.server.logics.property.actions.ExplicitActionProperty;
 import lsfusion.server.logics.property.group.AbstractGroup;
 import lsfusion.server.session.DataSession;
 
 import java.sql.SQLException;
 
-public abstract class ScriptingActionProperty extends UserActionProperty {
+// !!! ONLY ACTIONS CREATED WITH CUSTOM OPERATOR !!!!
+public abstract class ScriptingActionProperty extends ExplicitActionProperty {
     protected ScriptingLogicsModule LM;
     
     protected LCP<?> is(ValueClass valueClass) {
@@ -80,5 +81,15 @@ public abstract class ScriptingActionProperty extends UserActionProperty {
     @Override
     public ActionDelegationType getDelegationType(boolean modifyContext) {
         return ActionDelegationType.IN_DELEGATE;
+    }
+
+    @Override
+    protected boolean isVolatile() {
+        return true;
+    }
+
+    @Override
+    protected boolean allowNulls() { // does not allow by default
+        return false;
     }
 }

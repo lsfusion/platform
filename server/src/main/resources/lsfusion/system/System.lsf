@@ -45,7 +45,7 @@ formRefresh '{action.form.refresh}' = ACTION CUSTOM 'lsfusion.server.logics.prop
 formOk '{action.form.ok}' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.form.OkActionProperty' ();
 formClose '{action.form.close}' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.form.CloseActionProperty' ();
 
-seek 'Найти объект' = ACTION CUSTOM 'lsfusion.server.logics.SeekObjectActionProperty' (Object);
+seek 'Найти объект' = ACTION CUSTOM 'lsfusion.server.logics.SeekScriptingActionProperty' (Object);
 
 sleep 'Sleep' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.SleepActionProperty' (LONG);
 

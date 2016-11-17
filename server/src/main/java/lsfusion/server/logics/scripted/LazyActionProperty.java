@@ -2,6 +2,7 @@ package lsfusion.server.logics.scripted;
 
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.DataObject;
+import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
@@ -28,19 +29,19 @@ public class LazyActionProperty extends SystemExplicitActionProperty {
     protected boolean allowNulls() {
         return true;
     }
-
+    
     @Override
     protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         if(evaluatedProperty == null) {
             evaluatedProperty = context.getBL().LM.addDDAProp(sourceProperty);
         }
 
-        List<DataObject> dataObjects  = new ArrayList<>();
+        List<ObjectValue> objectValues  = new ArrayList<>();
 
         for(ClassPropertyInterface entry : interfaces)
-            dataObjects.add(context.getDataKeyValue(entry));
+            objectValues.add(context.getKeyValue(entry));
         
-        evaluatedProperty.execute(context, dataObjects.toArray(new DataObject[dataObjects.size()]));
+        evaluatedProperty.execute(context, objectValues.toArray(new ObjectValue[objectValues.size()]));
     }
 
     @Override

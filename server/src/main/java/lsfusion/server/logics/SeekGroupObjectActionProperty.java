@@ -21,31 +21,24 @@ public class SeekGroupObjectActionProperty extends SeekActionProperty {
     private final List<ObjectEntity> objects;
     private boolean last;
 
-    public SeekGroupObjectActionProperty(ScriptingLogicsModule lm, GroupObjectEntity groupObject, List<ObjectEntity> objects, boolean last, ValueClass... classes) {
-        super(lm, LocalizedString.create("Найти объект (" + groupObject.getSID() + ")", false), classes);
+    public SeekGroupObjectActionProperty(GroupObjectEntity groupObject, List<ObjectEntity> objects, boolean last, ValueClass... classes) {
+        super(LocalizedString.create("Найти объект (" + groupObject.getSID() + ")", false), classes);
 
         this.groupObject = groupObject;
         this.objects = objects;
         this.last = last;
     }
 
-    @Override
-    protected boolean allowNulls() {
-        return groupObject != null;
-    }
-
     protected void executeForm(FormInstance form, ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
-        if (groupObject != null) {
-            if (objects == null || objects.isEmpty()) {
-                groupObject.getInstance(form.instanceFactory).addSeek(last);
-            } else {
-                for (int i = 0; i < objects.size(); ++i) {
-                    ObjectInstance instance = form.instanceFactory.getInstance(objects.get(i));
-                    if (i == 0) {
-                        instance.groupTo.seek(last);
-                    }
-                    form.seekObject(instance, context.getKeyValue(getOrderInterfaces().get(i)), last);
+        if (objects == null || objects.isEmpty()) {
+            groupObject.getInstance(form.instanceFactory).addSeek(last);
+        } else {
+            for (int i = 0; i < objects.size(); ++i) {
+                ObjectInstance instance = form.instanceFactory.getInstance(objects.get(i));
+                if (i == 0) {
+                    instance.groupTo.seek(last);
                 }
+                form.seekObject(instance, context.getKeyValue(getOrderInterfaces().get(i)), last);
             }
         }
     }

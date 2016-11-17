@@ -731,7 +731,7 @@ public abstract class LogicsModule {
 
     protected LAP addCancelAProp(AbstractGroup group, LocalizedString caption, FunctionSet<SessionDataProperty> keepSessionProps) {
 
-        CancelActionProperty applyAction = new CancelActionProperty(baseLM, caption, keepSessionProps);
+        CancelActionProperty applyAction = new CancelActionProperty(caption, keepSessionProps);
         return addProperty(group, new LAP(applyAction));
     }
 
@@ -1835,7 +1835,7 @@ public abstract class LogicsModule {
 
     @IdentityStrongLazy // для ID
     public LAP addOSAProp(ObjectEntity object, boolean last) {
-        SeekObjectActionProperty seekProperty = new SeekObjectActionProperty((ScriptingLogicsModule)this, object, last);
+        SeekObjectActionProperty seekProperty = new SeekObjectActionProperty(object, last);
         return addProperty(null, new LAP<>(seekProperty));
     }
 
@@ -1853,7 +1853,7 @@ public abstract class LogicsModule {
         for (ObjectEntity obj : objects) {
             objectClasses.add(obj.baseClass);
         }
-        SeekGroupObjectActionProperty seekProperty = new SeekGroupObjectActionProperty((ScriptingLogicsModule)this, object, objects, last, objectClasses.toArray(new ValueClass[objectClasses.size()]));
+        SeekGroupObjectActionProperty seekProperty = new SeekGroupObjectActionProperty(object, objects, last, objectClasses.toArray(new ValueClass[objectClasses.size()]));
         return addProperty(null, new LAP<>(seekProperty));
     }
 

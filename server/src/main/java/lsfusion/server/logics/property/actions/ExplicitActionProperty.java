@@ -30,9 +30,7 @@ public abstract class ExplicitActionProperty extends BaseActionProperty<ClassPro
 
     protected abstract void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException;
 
-    protected boolean allowNulls() {
-        return false;
-    }
+    protected abstract boolean allowNulls();
 
     public final FlowResult aspectExecute(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         ImMap<ClassPropertyInterface, ? extends ObjectValue> keys = context.getKeys();

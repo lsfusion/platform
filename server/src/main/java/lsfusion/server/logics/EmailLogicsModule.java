@@ -116,47 +116,6 @@ public class EmailLogicsModule extends ScriptingLogicsModule{
         fromAddressAccount = findProperty("fromAddress[Account]");
     }
 
-    public LAP addEAProp(ValueClass... params) throws ScriptingErrorLog.SemanticErrorException {
-        return addEAProp((String) null, params);
-    }
-
-    public LAP addEAProp(LCP fromAddressAccount, ValueClass... params) {
-        return addEAProp(null, fromAddressAccount, blindCarbonCopyAccount, params);
-    }
-
-    public LAP addEAProp(String subject, ValueClass... params) throws ScriptingErrorLog.SemanticErrorException {
-        return addEAProp(subject, findProperty("fromAddress[Account]"), blindCarbonCopyAccount, params);
-    }
-
-    public LAP addEAProp(LCP fromAddressAccount, LCP blindCarbonCopyAccount, ValueClass... params) {
-        return addEAProp(null, fromAddressAccount, blindCarbonCopyAccount, params);
-    }
-
-    public LAP addEAProp(String subject, LCP fromAddressAccount, LCP blindCarbonCopyAccount, ValueClass... params) {
-        return addEAProp(null, LocalizedString.create("emailContact"), subject, fromAddressAccount, blindCarbonCopyAccount, params);
-    }
-
-    public LAP addEAProp(AbstractGroup group, LocalizedString caption, String subject, LCP fromAddressAccount, LCP blindCarbonCopyAccount, ValueClass... params) {
-        Object[] fromImplement = new Object[] {fromAddressAccount};
-        Object[] subjImplement;
-        if (subject != null) {
-            subjImplement = new Object[] {addCProp(StringClass.get(subject.length()), LocalizedString.create(subject, false))};
-        } else {
-            ValueClass[] nParams = new ValueClass[params.length + 1];
-            System.arraycopy(params, 0, nParams, 0, params.length);
-            nParams[params.length] = StringClass.get(100);
-
-            params = nParams;
-
-            subjImplement = new Object[] {params.length};
-        }
-
-        LAP eaPropLP = addEAProp(group, caption, params, fromImplement, subjImplement);
-        addEARecipientsType(eaPropLP, Message.RecipientType.BCC, blindCarbonCopyAccount);
-
-        return eaPropLP;
-    }
-
     public LAP<ClassPropertyInterface> addEAProp(AbstractGroup group, LocalizedString caption, ValueClass[] params, Object[] fromAddressAccount, Object[] subject) {
         SendEmailActionProperty eaProp = new SendEmailActionProperty(caption, params);
         LAP<ClassPropertyInterface> eaPropLP = addProperty(group, new LAP<>(eaProp));

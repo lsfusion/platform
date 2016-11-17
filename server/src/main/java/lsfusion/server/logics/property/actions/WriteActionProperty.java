@@ -25,12 +25,17 @@ import java.sql.SQLException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class WriteActionProperty extends ScriptingActionProperty {
+public class WriteActionProperty extends SystemExplicitActionProperty{
     private final LCP<?> sourceProp;
     
-    public WriteActionProperty(ScriptingLogicsModule LM, ValueClass valueClass, LCP<?> sourceProp) {
-        super(LM, valueClass);
+    public WriteActionProperty(ValueClass valueClass, LCP<?> sourceProp) {
+        super(valueClass);
         this.sourceProp = sourceProp;
+    }
+
+    @Override
+    protected boolean allowNulls() {
+        return false;
     }
 
     @Override
