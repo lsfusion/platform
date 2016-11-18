@@ -57,6 +57,7 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
     public LCP propertyCanonicalName;
     public LCP propertyTableSID;
     public LCP quantityProperty;
+    public LCP quantityTopProperty;
     public LCP notNullQuantityProperty;
     public LCP lastRecalculateProperty;
 
@@ -133,6 +134,7 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
     public LCP classSIDTableKey;
     public LCP nameTableKey;
     public LCP quantityTableKey;
+    public LCP quantityTopTableKey;
     public LCP tableTableColumn;
     public LCP propertyTableColumn;
     public LCP sidTableColumn;
@@ -232,6 +234,7 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
         propertyCanonicalName = findProperty("propertyCanonicalName[VARSTRING[512]]");
         propertyTableSID = findProperty("propertyTable[VARSTRING[100],VARSTRING[100]]");
         quantityProperty = findProperty("quantity[Property]");
+        quantityTopProperty = findProperty("quantityTop[Property]");
         notNullQuantityProperty = findProperty("notNullQuantity[Property]");
         lastRecalculateProperty = findProperty("lastRecalculate[Property]");
 
@@ -337,6 +340,7 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
         nameTableKey = findProperty("name[TableKey]");
 
         quantityTableKey = findProperty("quantity[TableKey]");
+        quantityTopTableKey = findProperty("quantityTop[TableKey]");
 
         // Колонки таблиц
         tableTableColumn = findProperty("table[TableColumn]");

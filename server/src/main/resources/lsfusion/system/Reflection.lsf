@@ -70,6 +70,7 @@ propertyCanonicalName 'Свойство' (cn) = GROUP AGGR Property property BY 
 propertyTable 'Свойство' (string, sID) = GROUP AGGR Property property BY tableSID(property), dbName(property) WHERE stored(property);
 
 quantity 'Количество разновидностей' = DATA INTEGER (Property);
+quantityTop 'Количество разновидностей (Top)' = DATA INTEGER (Property);
 notNullQuantity 'Количество не null значений' = DATA INTEGER (Property);
 overStats 'Кол-во записей' (Property property) = OVERRIDE stats(property), notNullQuantity(property);
 
@@ -168,6 +169,7 @@ class 'Класс ключа' = DATA VARISTRING[40] (TableKey);
 classSID 'SID класса ключа' = DATA VARSTRING[100] (TableKey);
 name 'Имя ключа' = DATA VARISTRING[20] (TableKey);
 quantity 'Количество разновидностей' = DATA INTEGER (TableKey);
+quantityTop 'Количество разновидностей (Top)' = DATA INTEGER (TableKey);
 
 CLASS TableColumn 'Колонка';
 TABLE tableColumn (TableColumn);
@@ -184,6 +186,7 @@ lastRecalculateProperty 'Последний пересчёт аггрегаци�
 caption 'Заголовок свойства' (TableColumn tableColumn) = caption(property(tableColumn));
 canonicalName 'Каноническое имя свойства' (TableColumn tableColumn) = canonicalName(property(tableColumn));
 quantity 'Количество разновидностей' (TableColumn tableColumn) = quantity(property(tableColumn));
+quantityTop 'Количество разновидностей (Top)' (TableColumn tableColumn) = quantityTop(property(tableColumn));
 notNullQuantity 'Количество не null значений' (TableColumn tableColumn) = notNullQuantity(property(tableColumn));
 tableColumn(Property property) = tableColumnLong(tableSID(property) + '.' + dbName(property));
 annotation 'Аннотация' (TableColumn tableColumn) = annotation(property(tableColumn));
@@ -281,11 +284,11 @@ FORM physicalModel 'Таблицы'
     PROPERTIES(t) recalculateColumnsAggregations, checkClasses, recalculateClasses, notRecalculateStats, recalculateStats, skipVacuum
 
     OBJECTS tk=TableKey
-    PROPERTIES(tk) READONLY class, classSID, name, quantity EDITABLE
+    PROPERTIES(tk) READONLY class, classSID, name, quantity EDITABLE, quantityTop
 
     OBJECTS tc=TableColumn
-    PROPERTIES(tc) READONLY sid, caption, canonicalName, annotation, property, return, quantity EDITABLE ON CHANGE changeQuantity(tc), notNullQuantity EDITABLE ON CHANGE changeNotNullQuantity(tc),
-                   percentNotNull, lastRecalculateProperty
+    PROPERTIES(tc) READONLY sid, caption, canonicalName, annotation, property, return, quantity EDITABLE ON CHANGE changeQuantity(tc), quantityTop,
+                   notNullQuantity EDITABLE ON CHANGE changeNotNullQuantity(tc), percentNotNull, lastRecalculateProperty
     PROPERTIES(tc) notRecalculate, recalculateAggregation, recalculateAggregationWithDependencies, 
             recalculateAggregationWithDependents, checkAggregation
 

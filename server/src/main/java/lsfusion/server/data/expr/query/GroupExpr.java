@@ -20,6 +20,7 @@ import lsfusion.base.col.lru.LRUWSVSMap;
 import lsfusion.interop.Compare;
 import lsfusion.server.Settings;
 import lsfusion.server.caches.*;
+import lsfusion.server.classes.IntegerClass;
 import lsfusion.server.classes.LogicalClass;
 import lsfusion.server.data.SQLQuery;
 import lsfusion.server.data.expr.*;
@@ -357,6 +358,10 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
 
     public static <K> Expr create(ImMap<K, ? extends Expr> inner, Expr expr, GroupType type, ImMap<K, ? extends Expr> outer, PullExpr noPull) {
         return create(inner, new Query(expr, type), outer, noPull);
+    }
+
+    public static <K> Expr create(ImMap<K, ? extends Expr> group, Where where, ImMap<K, ? extends Expr> implement, boolean top) {
+        return create(group, top ? new ValueExpr(1, IntegerClass.instance).and(where) : ValueExpr.get(where), top ? GroupType.SUM : GroupType.ANY, implement, null);
     }
 
     public static <K> Expr create(ImMap<K,? extends Expr> group, Where where, ImMap<K,? extends Expr> implement) {

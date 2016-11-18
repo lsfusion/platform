@@ -1005,7 +1005,8 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 try (DataSession session = createSession()) {
                     long start = System.currentTimeMillis();
                     startLogger.info(String.format("Update Aggregation Stats started: %s", table));
-                    propStats = table.calculateStat(reflectionLM, session, fields);
+                    propStats = table.calculateStat(reflectionLM, session, fields, false);
+                    propStats = table.calculateStat(reflectionLM, session, fields, true);
                     session.apply(businessLogics, getStack());
                     long time = System.currentTimeMillis() - start;
                     startLogger.info(String.format("Update Aggregation Stats: %s, %sms", table, time));

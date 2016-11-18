@@ -96,6 +96,13 @@ public class MapFact {
         return mMap.immutable();
     }
 
+    public static <K, V> ImOrderMap<K, V> toOrderMap(K key1, V value1, K key2, V value2) {
+        MOrderMap<K, V> mMap = MapFact.mOrderMap();
+        mMap.add(key1, value1);
+        mMap.add(key2, value2);
+        return mMap.immutableOrder();
+    }
+
     public static <K, V> ImRevMap<K, V> toRevMap(K key1, V value1, K key2, V value2) {
         MRevMap<K, V> mMap = MapFact.mRevMap(2);
         mMap.revAdd(key1, value1);

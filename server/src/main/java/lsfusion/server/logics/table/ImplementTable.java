@@ -4,6 +4,7 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.ProgressBar;
 import lsfusion.base.Result;
+import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
@@ -11,6 +12,7 @@ import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
+import lsfusion.interop.Compare;
 import lsfusion.server.SystemProperties;
 import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.classes.*;
@@ -18,6 +20,7 @@ import lsfusion.server.data.*;
 import lsfusion.server.data.expr.*;
 import lsfusion.server.data.expr.query.*;
 import lsfusion.server.data.query.IQuery;
+import lsfusion.server.data.query.Query;
 import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.data.query.stat.TableStatKeys;
 import lsfusion.server.data.where.Where;
@@ -44,6 +47,8 @@ import java.sql.SQLException;
 import java.util.*;
 
 public class ImplementTable extends GlobalTable { // последний интерфейс assert что isFull
+    private static double topCoefficient = 0.8;
+
     private final ImMap<KeyField, ValueClass> mapFields;
 
     public ImMap<KeyField, ValueClass> getMapFields() {
@@ -435,12 +440,17 @@ public class ImplementTable extends GlobalTable { // последний инте
             return SerializedTable.getStatProps(this);
     }
 
-    public Object readCount(DataSession session, Where where) throws SQLException, SQLHandledException {
+    private Object readCount(DataSession session, Where where) throws SQLException, SQLHandledException {
+        return readCount(session, where, 0, false);
+    }
+
+    private Object readCount(DataSession session, Where where, int total, boolean useCoefficient) throws SQLException, SQLHandledException {
         QueryBuilder<Object, Object> query = new QueryBuilder<>(SetFact.EMPTY());
         ValueExpr one = new ValueExpr(1, IntegerClass.instance);
         query.addProperty("count", GroupExpr.create(MapFact.<Integer, Expr>EMPTY(), one,
                 where, GroupType.SUM, MapFact.<Integer, Expr>EMPTY()));
-        return query.execute(session).singleValue().singleValue();
+        Integer count = (Integer) query.execute(session).singleValue().singleValue();
+        return count == null ? Math.min(total, 1) : (useCoefficient ? (int) Math.min(total, (count / topCoefficient) + 1) : count);
     }
 
     private DataObject safeReadClasses(DataSession session, LCP lcp, DataObject... objects) throws SQLException, SQLHandledException {
@@ -452,32 +462,45 @@ public class ImplementTable extends GlobalTable { // последний инте
     }
 
     public void calculateStat(ReflectionLogicsModule reflectionLM, DataSession session) throws SQLException, SQLHandledException {
-        calculateStat(reflectionLM, session, null);
+        calculateStat(reflectionLM, session, null, false);
+        calculateStat(reflectionLM, session, null, true);
     }
 
-    public ImMap<String, Pair<Integer, Integer>> calculateStat(ReflectionLogicsModule reflectionLM, DataSession session, ImMap<PropertyField, String> props) throws SQLException, SQLHandledException {
+    public ImMap<String, Pair<Integer, Integer>> calculateStat(ReflectionLogicsModule reflectionLM, DataSession session, ImMap<PropertyField, String> props, boolean top) throws SQLException, SQLHandledException {
         ImMap<String, Pair<Integer, Integer>> propStats = MapFact.EMPTY();
         if (!SystemProperties.doNotCalculateStats) {
-            boolean calcKeys = true;//props == null || onlyTable;
             ImRevMap<KeyField, KeyExpr> mapKeys = getMapKeys();
             lsfusion.server.data.query.Join<PropertyField> join = join(mapKeys);
 
             MExclMap<Object, Object> mResult = MapFact.mExclMap();
+            MExclMap<Object, Object> mNotNulls = MapFact.mExclMap();
+
             Where inWhere = join.getWhere();
-            if(calcKeys) {
-                for (KeyField key : keys) {
-                    ImMap<Object, Expr> map = MapFact.<Object, Expr>singleton(0, mapKeys.get(key));
-                    mResult.exclAdd(key, readCount(session, GroupExpr.create(map, inWhere, map).getWhere()));
-                }
+            KeyExpr countKeyExpr = new KeyExpr("count");
+
+            Integer total = (Integer) readCount(session, inWhere);
+
+            for (KeyField key : keys) {
+                ImMap<Object, Expr> map = MapFact.<Object, Expr>singleton(0, mapKeys.get(key));
+                mResult.exclAdd(key, readCount(session, getCountWhere(session.sql, GroupExpr.create(map, inWhere, map, true),
+                            GroupExpr.create(map, inWhere, map, false), mapKeys.get(key), total, top && keys.size() > 1), total, top && keys.size() > 1));
             }
 
             ImSet<PropertyField> propertyFieldSet = props == null ? properties : props.keys();
 
-            for (PropertyField prop : propertyFieldSet)
-                if (props != null ? props.containsKey(prop) : !(prop.type instanceof DataClass && !((DataClass) prop.type).calculateStat()))
-                    mResult.exclAdd(prop, readCount(session, GroupExpr.create(MapFact.singleton(0, join.getExpr(prop)), Where.TRUE, MapFact.singleton(0, new KeyExpr("count"))).getWhere()));
+            for (PropertyField prop : propertyFieldSet) {
+                Integer notNullCount = (Integer) readCount(session, join.getExpr(prop).getWhere());
+                mNotNulls.exclAdd(prop, notNullCount);
 
-            mResult.exclAdd(0, readCount(session, inWhere));
+                if (props != null ? props.containsKey(prop) : !(prop.type instanceof DataClass && !((DataClass) prop.type).calculateStat())) {
+                    mResult.exclAdd(prop, readCount(session, getCountWhere(session.sql,
+                            GroupExpr.create(MapFact.singleton(0, join.getExpr(prop)), Where.TRUE, MapFact.singleton(0, countKeyExpr), true),
+                            GroupExpr.create(MapFact.singleton(0, join.getExpr(prop)), Where.TRUE, MapFact.singleton(0, countKeyExpr), false),
+                            countKeyExpr, notNullCount, top), notNullCount, top));
+                }
+            }
+
+            mResult.exclAdd(0, total);
             ImMap<Object, Object> result = mResult.immutable();
 
             DataObject tableObject = safeReadClasses(session, reflectionLM.tableSID, new DataObject(getName()));
@@ -487,21 +510,15 @@ public class ImplementTable extends GlobalTable { // последний инте
             }
             reflectionLM.rowsTable.change(BaseUtils.nvl(result.get(0), 0), session, (DataObject) tableObject);
 
-            if (calcKeys) {
-                for (KeyField key : keys) {
-                    DataObject keyObject = safeReadClasses(session, reflectionLM.tableKeySID, new DataObject(getName() + "." + key.getName()));
-                    if (keyObject == null) {
-                        keyObject = session.addObject(reflectionLM.tableKey);
-                        reflectionLM.sidTableKey.change(getName() + "." + key.getName(), session, keyObject);
-                    }
-                    reflectionLM.quantityTableKey.change(BaseUtils.nvl(result.get(key), 0), session, keyObject);
+            for (KeyField key : keys) {
+                DataObject keyObject = safeReadClasses(session, reflectionLM.tableKeySID, new DataObject(getName() + "." + key.getName()));
+                if (keyObject == null) {
+                    keyObject = session.addObject(reflectionLM.tableKey);
+                    reflectionLM.sidTableKey.change(getName() + "." + key.getName(), session, keyObject);
                 }
+                (top ? reflectionLM.quantityTopTableKey : reflectionLM.quantityTableKey).change(BaseUtils.nvl(result.get(key), 0), session, keyObject);
             }
 
-            // не null значения и разреженность колонок
-            MExclMap<Object, Object> mNotNulls = MapFact.mExclMap();
-            for (PropertyField property : propertyFieldSet)
-                mNotNulls.exclAdd(property, readCount(session, join.getExpr(property).getWhere()));
             ImMap<Object, Object> notNulls = mNotNulls.immutable();
 
             for (PropertyField property : propertyFieldSet) {
@@ -518,7 +535,7 @@ public class ImplementTable extends GlobalTable { // последний инте
                     reflectionLM.tableSIDProperty.change(getName(), session, propertyObject);
                 }
                 if (propertyObject != null) {
-                    reflectionLM.quantityProperty.change(BaseUtils.nvl(result.get(property), 0), session, propertyObject);
+                    (top ? reflectionLM.quantityTopProperty : reflectionLM.quantityProperty).change(BaseUtils.nvl(result.get(property), 0), session, propertyObject);
 
                     Object notNull = BaseUtils.nvl(notNulls.get(property), 0);
                     Object quantity = BaseUtils.nvl(result.get(property), 0);
@@ -530,8 +547,31 @@ public class ImplementTable extends GlobalTable { // последний инте
         return propStats;
     }
 
+    private Where getCountWhere(SQLSession session, Expr quantityTopExpr, Expr quantityNotTopExpr, KeyExpr keyExpr, Integer total, boolean top) throws SQLException, SQLHandledException {
+        if (top) {
+            ImList<Expr> exprs = ListFact.singleton(quantityTopExpr);
+            ImOrderMap<Expr, Boolean> orders = MapFact.toOrderMap(quantityTopExpr, true, keyExpr, false);
+            ImSet<Expr> partitions = SetFact.EMPTY();
+            ImMap<KeyExpr, KeyExpr> group = MapFact.singleton(keyExpr, keyExpr);
+            Expr partitionExpr = PartitionExpr.create(PartitionType.SUM, exprs, orders, true, partitions, group);
+
+            new Query<>(MapFact.singletonRev("key", keyExpr), partitionExpr, "value", partitionExpr.getWhere()).outSelect(session);
+
+            return partitionExpr.compare(new DataObject(Math.ceil((total == null ? 0 : total) * topCoefficient)), Compare.LESS_EQUALS);
+        }
+        else
+            return quantityNotTopExpr.getWhere();
+    }
+
     @StackProgress
     public boolean overCalculateStat(ReflectionLogicsModule reflectionLM, DataSession session, MSet<Integer> propertiesSet, @StackProgress ProgressBar progressBar) throws SQLException, SQLHandledException {
+        boolean found = overCalculateStat(reflectionLM, session, propertiesSet, progressBar, false);
+        overCalculateStat(reflectionLM, session, propertiesSet, progressBar, true);
+        return found;
+    }
+
+    @StackProgress
+    public boolean overCalculateStat(ReflectionLogicsModule reflectionLM, DataSession session, MSet<Integer> propertiesSet, @StackProgress ProgressBar progressBar, boolean top) throws SQLException, SQLHandledException {
         boolean found = false;
         if (!SystemProperties.doNotCalculateStats) {
 
@@ -539,24 +579,29 @@ public class ImplementTable extends GlobalTable { // последний инте
             lsfusion.server.data.query.Join<PropertyField> join = join(mapKeys);
 
             MExclMap<Object, Object> mResult = MapFact.mExclMap();
+            MExclMap<Object, Object> mNotNulls = MapFact.mExclMap();
+
+            KeyExpr countKeyExpr = new KeyExpr("count");
 
             for(PropertyField prop : properties) {
-                if (!(prop.type instanceof DataClass && !((DataClass) prop.type).calculateStat()))
-                    mResult.exclAdd(prop, readCount(session, GroupExpr.create(MapFact.singleton(0, join.getExpr(prop)), Where.TRUE, MapFact.singleton(0, new KeyExpr("count"))).getWhere()));
+                Integer notNullCount = (Integer) readCount(session, join.getExpr(prop).getWhere());
+                mNotNulls.exclAdd(prop, notNullCount);
+
+                if (!(prop.type instanceof DataClass && !((DataClass) prop.type).calculateStat())) {
+                    mResult.exclAdd(prop, readCount(session, getCountWhere(session.sql,
+                            GroupExpr.create(MapFact.singleton(0, join.getExpr(prop)), Where.TRUE, MapFact.singleton(0, countKeyExpr), true),
+                            GroupExpr.create(MapFact.singleton(0, join.getExpr(prop)), Where.TRUE, MapFact.singleton(0, countKeyExpr), false),
+                            countKeyExpr, notNullCount, top), notNullCount, top));
+                }
             }
             ImMap<Object, Object> result = mResult.immutable();
-
-            // не null значения и разреженность колонок
-            MExclMap<Object, Object> mNotNulls = MapFact.mExclMap();
-            for (PropertyField property : properties)
-                mNotNulls.exclAdd(property, readCount(session, join.getExpr(property).getWhere()));
             ImMap<Object, Object> notNulls = mNotNulls.immutable();
 
             for (PropertyField property : properties) {
                 DataObject propertyObject = safeReadClasses(session, reflectionLM.propertyTableSID, new DataObject(getName()), new DataObject(property.getName()));
 
                 if (propertyObject != null && propertiesSet.contains((Integer) propertyObject.getValue())) {
-                    reflectionLM.quantityProperty.change(BaseUtils.nvl(result.get(property), 0), session, propertyObject);
+                    (top ? reflectionLM.quantityTopProperty : reflectionLM.quantityProperty).change(BaseUtils.nvl(result.get(property), 0), session, propertyObject);
                     reflectionLM.notNullQuantityProperty.change(BaseUtils.nvl(notNulls.get(property), 0), session, propertyObject);
                     found = true;
                 }
