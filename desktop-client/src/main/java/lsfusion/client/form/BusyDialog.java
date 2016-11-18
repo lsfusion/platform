@@ -197,8 +197,6 @@ class BusyDialog extends JDialog {
     public void updateBusyDialog(List<Object> input) {
         Object[] lines = input.toArray();
 
-        subStackPanel.removeAll();
-        
         if (Main.configurationAccessAllowed)
             setStackMessageDevMode(lines);
         else
@@ -222,6 +220,7 @@ class BusyDialog extends JDialog {
         boolean showTopProgressBar = true;
         boolean enableCancelBtn = false;
         int progressBarCount = 0;
+        List<JComponent> stackComponents = new ArrayList<>();
         List<String> stackLines = new ArrayList<>();
         for (int i = 0; i < lines.length; i++) {
             Object line = lines[i];
@@ -229,13 +228,13 @@ class BusyDialog extends JDialog {
                 if (progressBarCount == 0 && stackLines.isEmpty())
                     showTopProgressBar = false;
                 if (!stackLines.isEmpty()) {
-                    addStackElement(createTextPanel(stackLines, changed));
+                    stackComponents.add(createTextPanel(stackLines, changed));
                     stackLines = new ArrayList<>();
                     changed = false;
                 }
                 JPanel progressBarPanel = createProgressBarPanel((ProgressBar) line, ((ProgressBar) line).params == null ? 1 : 2);
                 progressBarPanel.setBorder(new EmptyBorder(0, 2, 0, 0));
-                addStackElement(progressBarPanel);
+                stackComponents.add(progressBarPanel);
                 progressBarCount++;
             } else if (line instanceof Boolean) {
                 enableCancelBtn = true;
@@ -247,8 +246,10 @@ class BusyDialog extends JDialog {
             }
         }
         if (!stackLines.isEmpty()) {
-            addStackElement(createTextPanel(stackLines, changed));
+            stackComponents.add(createTextPanel(stackLines, changed));
         }
+
+        refreshSubStackPanel(stackComponents);
 
         if (longAction)
             btnCancel.setEnabled(enableCancelBtn);
@@ -258,26 +259,31 @@ class BusyDialog extends JDialog {
         prevLines = lines;
     }
     
-    private void addStackElement(JComponent component) {
-        component.setAlignmentX(Component.LEFT_ALIGNMENT);
-        subStackPanel.add(component);
-        subStackPanel.add(Box.createVerticalStrut(5));
+    private void refreshSubStackPanel(List<JComponent> stackComponents) {
+        subStackPanel.removeAll();
+        for (JComponent stackComponent : stackComponents) {
+            stackComponent.setAlignmentX(Component.LEFT_ALIGNMENT);
+            subStackPanel.add(stackComponent);
+            subStackPanel.add(Box.createVerticalStrut(5));
+        }            
     }
 
     public void setStackMessage(Object[] lines) {
         boolean enableCancelBtn = false;
 
+        List<JComponent> stackComponents = new ArrayList<>();
         for (Object line : lines) {
             if (line instanceof ProgressBar) {
                 JPanel progressBarPanel = createProgressBarPanel((ProgressBar) line, 2);
                 progressBarPanel.setBorder(new EmptyBorder(subStackPanel.getComponentCount() > 0 ? 0 : 5, 5, 0, 5));
-                progressBarPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
-                subStackPanel.add(progressBarPanel);
-                subStackPanel.add(Box.createVerticalStrut(5));
+                stackComponents.add(progressBarPanel);
             } else if (line instanceof Boolean) {
                 enableCancelBtn = true;
             }
         }
+
+        refreshSubStackPanel(stackComponents);
+        
         btnCancel.setEnabled(enableCancelBtn);
 
         topProgressBarPanel.showProgressBar(subStackPanel.getComponentCount() == 0);
