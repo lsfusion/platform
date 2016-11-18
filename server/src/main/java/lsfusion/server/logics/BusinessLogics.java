@@ -1765,7 +1765,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         for (ImplementTable dataTable : tables) {
             count++;
             long start = System.currentTimeMillis();
-            serviceLogger.info(String.format("Recalculate Stats %s of %s: %sms", count, tables.size(), String.valueOf(dataTable)));
+            serviceLogger.info(String.format("Recalculate Stats %s of %s: %s", count, tables.size(), String.valueOf(dataTable)));
             dataTable.calculateStat(this.reflectionLM, session);
             long time = System.currentTimeMillis() - start;
             serviceLogger.info(String.format("Recalculate Stats: %s, %sms", String.valueOf(dataTable), time));
