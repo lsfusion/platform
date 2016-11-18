@@ -467,7 +467,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         GroupObjectInstance go = getGroupObjectInstance(groupObjectSID);
         List<String> hiddenSidsList = new ArrayList<>(Arrays.asList(hiddenSids));
         
-        Set<PropertyDrawInstance> hiddenProps = userPrefsHiddenProperties.toJavaSet();
+        Set<PropertyDrawInstance> hiddenProps = new HashSet<>(userPrefsHiddenProperties.toJavaSet()); // removing from singleton is not supported
         
         for (PropertyDrawInstance property : userPrefsHiddenProperties) {
             if (property.toDraw == go) {

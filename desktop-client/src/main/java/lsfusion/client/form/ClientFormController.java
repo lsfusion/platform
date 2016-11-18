@@ -39,18 +39,15 @@ import lsfusion.interop.form.*;
 
 import javax.swing.*;
 import javax.swing.Timer;
-import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.KeyEvent;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.util.*;
-import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -501,7 +498,7 @@ public class ClientFormController implements AsyncListener {
                 : null;
     }
 
-    public void saveUserPreferences(final GridUserPreferences gridPreferences, final boolean forAllUsers, final boolean completeOverride, final Runnable successCallback, final Runnable failureCallback, final String[] hiddenProps) throws RemoteException {
+    public void saveUserPreferences(final GridUserPreferences gridPreferences, final boolean forAllUsers, final boolean completeOverride, final Runnable successCallback, final Runnable failureCallback, final String[] hiddenProps) {
         commitOrCancelCurrentEditing();
 
         ServerResponse result = rmiQueue.syncRequest(new RmiCheckNullFormRequest<ServerResponse>("saveUserPreferences") {

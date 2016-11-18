@@ -1,5 +1,6 @@
 package lsfusion.client.form.grid;
 
+import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.client.ArrayListTransferHandler;
 import lsfusion.client.Main;
@@ -45,12 +46,7 @@ public abstract class UserPreferencesDialog extends JDialog {
         this.goController = goController;
 
         setMinimumSize(new Dimension(500, 500));
-        Rectangle bounds = new Rectangle();
-        bounds.x = 100;
-        bounds.y = 100;
-        bounds.width = 500;
-        bounds.height = 500;
-        setBounds(bounds);
+        setBounds(new Rectangle(100, 100, 500, 500));
         setLocationRelativeTo(owner);
         setLayout(new BorderLayout());
 
@@ -72,205 +68,21 @@ public abstract class UserPreferencesDialog extends JDialog {
         visibleList = new JList<>(visibleListModel);
         invisibleList = new JList<>(invisibleListModel);
         
-        visibleList.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
-        visibleList.setTransferHandler(arrayListHandler);
-        visibleList.setDragEnabled(true);
-        JScrollPane visibleListView = new JScrollPane(visibleList);
-        visibleList.setCellRenderer(new UserPreferencesListItemRenderer(true));
-        visibleListView.setPreferredSize(new Dimension(200, 100));
-        TitledPanel visiblePanel = new TitledPanel(getString("form.grid.preferences.displayed.columns"));
-        visiblePanel.setLayout(new BorderLayout());
-        visiblePanel.add(visibleListView, BorderLayout.CENTER);
-
-        visibleList.addListSelectionListener(new ListSelectionListener() {
-            @Override
-            public void valueChanged(ListSelectionEvent e) {
-                if (!visibleList.isFocusable())
-                    visibleList.setFocusable(true);
-                boolean hasFocus = visibleList.hasFocus() || visibleList.requestFocusInWindow();
-                if(hasFocus) {
-                    String newText = getSelectedItemCaption(visibleList);
-                    if (!columnCaptionField.getText().equals(newText) && visibleList.getSelectedValue() != null) {
-                        columnCaptionField.setText(newText);
-                    }
-                    String newPattern = getSelectedItemPattern(visibleList);
-                    if (!columnPatternField.getText().equals(newText) && visibleList.getSelectedValue() != null) {
-                        columnPatternField.setText(newPattern);
-                    }
-                }
-            }
-        });
-       
-
-        visibleList.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                JList list = (JList) e.getSource();
-                if (e.getClickCount() == 2) {
-                    int index = list.locationToIndex(e.getPoint());
-                    invisibleListModel.addElement(visibleListModel.get(index));
-                    visibleListModel.remove(index);
-                    columnCaptionField.setText(null);
-                    columnPatternField.setText(null);
-                }
-            }
-        });
-        
-        visibleList.addFocusListener(new FocusListener() {
-            @Override
-            public void focusGained(FocusEvent e) {
-                String caption = getSelectedItemCaption(visibleList);
-                String pattern = getSelectedItemPattern(visibleList);
-                if(visibleList.getSelectedValue() != null)
-                    invisibleList.clearSelection();
-                if(caption != null && !columnCaptionField.getText().equals(caption))
-                    columnCaptionField.setText(caption);
-                if(pattern != null && !columnPatternField.getText().equals(pattern))
-                    columnPatternField.setText(pattern);
-            }
-
-            @Override
-            public void focusLost(FocusEvent e) {
-            }
-        });
-
-        invisibleList.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
-        invisibleList.setTransferHandler(arrayListHandler);
-        invisibleList.setDragEnabled(true);
-        invisibleList.setCellRenderer(new UserPreferencesListItemRenderer(false));
-        JScrollPane invisibleListView = new JScrollPane(invisibleList);
-        invisibleListView.setPreferredSize(new Dimension(200, 100));
-        TitledPanel invisiblePanel = new TitledPanel(getString("form.grid.preferences.hidden.columns"));
-        invisiblePanel.setLayout(new BorderLayout());
-        invisiblePanel.add(invisibleListView, BorderLayout.CENTER);
-
-        invisibleList.addListSelectionListener(new ListSelectionListener() {
-            @Override
-            public void valueChanged(ListSelectionEvent e) {
-                if (!invisibleList.isFocusable())
-                    invisibleList.setFocusable(true);
-                boolean hasFocus = invisibleList.hasFocus() || invisibleList.requestFocusInWindow();
-                if (hasFocus) {
-                    String newText = getSelectedItemCaption(invisibleList);
-                    String newPattern = getSelectedItemPattern(invisibleList);
-                    if (!columnCaptionField.getText().equals(newText) && (invisibleList.getSelectedValue() != null)) {
-                        columnCaptionField.setText(newText);
-                    }
-                    if (!columnPatternField.getText().equals(newPattern) && (invisibleList.getSelectedValue() != null)) {
-                        columnPatternField.setText(newPattern);
-                    }
-                }
-            }
-        });
-
-        invisibleList.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                JList list = (JList) e.getSource();
-                if (e.getClickCount() == 2) {
-                    Rectangle r = list.getCellBounds(0, list.getLastVisibleIndex());
-                    if (r != null && r.contains(e.getPoint())) {
-                        int index = list.locationToIndex(e.getPoint());
-                        visibleListModel.addElement(invisibleListModel.get(index));
-                        invisibleListModel.remove(index);
-                        columnCaptionField.setText(null);
-                        columnPatternField.setText(null);
-                    }
-                }
-            }
-        });
-
-        invisibleList.addFocusListener(new FocusListener() {
-            @Override
-            public void focusGained(FocusEvent e) {
-                String caption = getSelectedItemCaption(invisibleList);
-                String pattern = getSelectedItemPattern(invisibleList);
-                if(invisibleList.getSelectedValue() != null)
-                    visibleList.clearSelection();
-                if(caption != null && !columnCaptionField.getText().equals(caption))
-                    columnCaptionField.setText(caption);
-                if(pattern != null && !columnPatternField.getText().equals(pattern))
-                    columnPatternField.setText(pattern);
-            }
-
-            @Override
-            public void focusLost(FocusEvent e) {
-            }
-        });
-        
-        JButton showAllButton = new JButton(new ImageIcon(Main.class.getResource("/images/arrowLeft.png")));
-        showAllButton.setBorder(null);
-        showAllButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                for (int i = 0; i < invisibleListModel.getSize(); i++) {
-                    visibleListModel.addElement(invisibleListModel.get(i));
-                }
-                invisibleListModel.clear();
-                columnCaptionField.setText(null);
-                columnPatternField.setText(null);
-            }
-        });
-
-        JButton hideAllButton = new JButton(new ImageIcon(Main.class.getResource("/images/arrowRight.png")));
-        hideAllButton.setBorder(null);
-        hideAllButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                for (int i = 0; i < visibleListModel.getSize(); i++) {
-                    invisibleListModel.addElement(visibleListModel.get(i));
-                }
-                visibleListModel.clear();
-                columnCaptionField.setText(null);
-                columnPatternField.setText(null);
-            }
-        });
-
-        JPanel arrowsPanel = new JPanel();
-        arrowsPanel.setLayout(new BoxLayout(arrowsPanel, BoxLayout.Y_AXIS));
-        arrowsPanel.add(hideAllButton);
-        arrowsPanel.add(showAllButton);
+        TitledPanel visiblePanel = initColumnsList(visibleList, true, arrayListHandler);
+        TitledPanel invisiblePanel = initColumnsList(invisibleList, false, arrayListHandler);
 
         JPanel columnsPanel = new JPanel();
         columnsPanel.setLayout(new BoxLayout(columnsPanel, BoxLayout.X_AXIS));
         columnsPanel.add(visiblePanel);
-        columnsPanel.add(arrowsPanel, BoxLayout.Y_AXIS);
+        columnsPanel.add(createArrowsPanel(), BoxLayout.Y_AXIS);
         columnsPanel.add(invisiblePanel);
 
-        
+
         final JButton applyButton = new JButton(getString("form.grid.preferences.save.settings"));
-        applyButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                RmiQueue.runAction(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            applyButtonPressed(false);
-                        } catch (IOException e1) {
-                            e1.printStackTrace();
-                        }
-                        firePropertyChange("buttonPressed", null, null);
-                    }
-                });
-            }
-        });
+        applyButton.addActionListener(createApplyResetButtonListener(true, false));
 
         final JButton resetButton = new JButton(getString("form.grid.preferences.reset.settings"));
-        resetButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                RmiQueue.runAction(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            resetButtonPressed(false);
-                        } catch (IOException ex) {
-                            ex.printStackTrace();
-                        }
-                        firePropertyChange("buttonPressed", null, null);
-                    }
-                });
-            }
-        });
+        resetButton.addActionListener(createApplyResetButtonListener(false, false));
 
         TitledPanel currentUserPanel = new TitledPanel(getString("form.grid.preferences.for.user"));
         currentUserPanel.add(applyButton, BorderLayout.NORTH);
@@ -289,11 +101,14 @@ public abstract class UserPreferencesDialog extends JDialog {
             }
 
             public void updateColumnName() {
-                if(invisibleList.getSelectedValue() == null && visibleList.getSelectedValue() != null) {
-                    setSelectedItemCaption(visibleList, columnCaptionField.getText().isEmpty() ? getSelectedItemDefaultCaption(visibleList) :  columnCaptionField.getText(), columnCaptionField.getText());
+                UserPreferencesPropertyListItem selectedVisibleValue = visibleList.getSelectedValue();
+                UserPreferencesPropertyListItem selectedInvisibleValue = invisibleList.getSelectedValue();
+                String userCaption = BaseUtils.nullEmpty(columnCaptionField.getText());
+                if (selectedInvisibleValue == null && selectedVisibleValue != null) {
+                    selectedVisibleValue.setUserCaption(userCaption);
                     visibleList.update(visibleList.getGraphics());
-                } else if(visibleList.getSelectedValue() == null && invisibleList.getSelectedValue() != null) {
-                    setSelectedItemCaption(invisibleList, columnCaptionField.getText().isEmpty() ? getSelectedItemDefaultCaption(invisibleList) :  columnCaptionField.getText(), columnCaptionField.getText());
+                } else if (selectedVisibleValue == null && selectedInvisibleValue != null) {
+                    selectedInvisibleValue.setUserCaption(userCaption);
                     invisibleList.update(invisibleList.getGraphics());
                 }
             }
@@ -312,10 +127,13 @@ public abstract class UserPreferencesDialog extends JDialog {
             }
 
             public void updateColumnPattern() {
-                if(invisibleList.getSelectedValue() == null && visibleList.getSelectedValue() != null) {
-                    setSelectedItemPattern(visibleList, columnPatternField.getText());
-                } else if(visibleList.getSelectedValue() == null && invisibleList.getSelectedValue() != null) {
-                    setSelectedItemPattern(invisibleList, columnPatternField.getText());
+                UserPreferencesPropertyListItem selectedVisibleValue = visibleList.getSelectedValue();
+                UserPreferencesPropertyListItem selectedInvisibleValue = invisibleList.getSelectedValue();
+                String userPattern = BaseUtils.nullEmpty(columnPatternField.getText());
+                if (selectedInvisibleValue == null && selectedVisibleValue != null) {
+                    selectedVisibleValue.setUserPattern(userPattern);
+                } else if (selectedVisibleValue == null && selectedInvisibleValue != null) {
+                    selectedInvisibleValue.setUserPattern(userPattern);
                 }
             }
         });
@@ -364,38 +182,10 @@ public abstract class UserPreferencesDialog extends JDialog {
 
         if (Main.configurationAccessAllowed) {
             final JButton applyForAllButton = new JButton(getString("form.grid.preferences.save.settings"));
-            applyForAllButton.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    RmiQueue.runAction(new Runnable() {
-                        @Override
-                        public void run() {
-                            try {
-                                applyButtonPressed(true);
-                            } catch (IOException ex) {
-                                ex.printStackTrace();
-                            }
-                            firePropertyChange("buttonPressed", null, null);
-                        }
-                    });
-                }
-            });
+            applyForAllButton.addActionListener(createApplyResetButtonListener(true, true));
 
             final JButton resetForAllButton = new JButton(getString("form.grid.preferences.reset.settings"));
-            resetForAllButton.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    RmiQueue.runAction(new Runnable() {
-                        @Override
-                        public void run() {
-                            try {
-                                resetButtonPressed(true);
-                            } catch (IOException ex) {
-                                ex.printStackTrace();
-                            }
-                            firePropertyChange("buttonPressed", null, null);
-                        }
-                    });
-                }
-            });
+            resetForAllButton.addActionListener(createApplyResetButtonListener(false, true));
 
             TitledPanel allUsersPanelPanel = new TitledPanel(getString("form.grid.preferences.for.all.users"));
             allUsersPanelPanel.add(applyForAllButton, BorderLayout.NORTH);
@@ -412,11 +202,7 @@ public abstract class UserPreferencesDialog extends JDialog {
         JButton okButton = new JButton("OK");
         okButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                try {
-                    okButtonPressed();
-                } catch (IOException e1) {
-                    e1.printStackTrace();
-                }
+                okButtonPressed();
                 firePropertyChange("buttonPressed", null, null);
             }
         });
@@ -431,7 +217,6 @@ public abstract class UserPreferencesDialog extends JDialog {
         JPanel buttonsPanel = new JPanel();
         buttonsPanel.add(okButton);
         buttonsPanel.add(cancelButton);
-        
 
         JPanel bottomPanel = new JPanel();
         bottomPanel.setLayout(new BorderLayout());
@@ -451,7 +236,159 @@ public abstract class UserPreferencesDialog extends JDialog {
         refreshValues(mergeFont());
     }
 
-    private void okButtonPressed() throws IOException {
+    private TitledPanel initColumnsList(final JList<UserPreferencesPropertyListItem> list, final boolean visible, ArrayListTransferHandler arrayListHandler) {
+        final UserPreferencesPropertyListModel listModel = (UserPreferencesPropertyListModel) list.getModel();
+        final JList<UserPreferencesPropertyListItem> anotherList = visible ? invisibleList : visibleList;
+        final UserPreferencesPropertyListModel anotherListModel = (UserPreferencesPropertyListModel) anotherList.getModel();
+
+        list.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+        list.setTransferHandler(arrayListHandler);
+        list.setDragEnabled(true);
+
+        list.addListSelectionListener(new ListSelectionListener() {
+            @Override
+            public void valueChanged(ListSelectionEvent e) {
+                if (!list.isFocusable())
+                    list.setFocusable(true);
+                boolean hasFocus = list.hasFocus() || list.requestFocusInWindow();
+                if (hasFocus) {
+                    UserPreferencesPropertyListItem selectedValue = list.getSelectedValue();
+                    if (selectedValue != null) {
+                        String newText = selectedValue.getUserCaption(true);
+                        if (!columnCaptionField.getText().equals(newText)) {
+                            columnCaptionField.setText(newText);
+                        }
+                        String newPattern = getItemPattern(selectedValue);
+                        if (!columnPatternField.getText().equals(newPattern)) {
+                            columnPatternField.setText(newPattern);
+                        }
+                    }
+                }
+            }
+        });
+
+        list.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                anotherList.clearSelection();
+                list.requestFocusInWindow();
+                if (e.getClickCount() == 2) {
+                    Rectangle r = list.getCellBounds(0, list.getLastVisibleIndex());
+                    if (r != null && r.contains(e.getPoint())) {
+                        int index = list.locationToIndex(e.getPoint());
+                        anotherListModel.addElement(listModel.get(index));
+                        listModel.remove(index);
+                        clearColumnFields();
+                    }
+                }
+            }
+        });
+
+        list.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusGained(FocusEvent e) {
+                UserPreferencesPropertyListItem selectedValue = list.getSelectedValue();
+                if (selectedValue != null) {
+                    String caption = selectedValue.getUserCaption(true);
+                    String pattern = getItemPattern(selectedValue);
+                    if (caption != null && !columnCaptionField.getText().equals(caption))
+                        columnCaptionField.setText(caption);
+                    if (pattern != null && !columnPatternField.getText().equals(pattern))
+                        columnPatternField.setText(pattern);
+                }
+            }
+        });
+
+        JScrollPane visibleListView = new JScrollPane(list);
+        list.setCellRenderer(new UserPreferencesListItemRenderer(true));
+        visibleListView.setPreferredSize(new Dimension(200, 100));
+        TitledPanel visiblePanel = new TitledPanel(getString(visible ? "form.grid.preferences.displayed.columns" : "form.grid.preferences.hidden.columns"));
+        visiblePanel.setLayout(new BorderLayout());
+        visiblePanel.add(visibleListView, BorderLayout.CENTER);
+        return visiblePanel;
+    }
+
+    private JPanel createArrowsPanel() {
+        JButton showSelectedButton = new JButton(new ImageIcon(Main.class.getResource("/images/arrowLeftOne.png")));
+        showSelectedButton.setBorder(null);
+        showSelectedButton.addActionListener(createMoveSelectedButtonListener(invisibleList, visibleListModel));
+
+        JButton hideSelectedButton = new JButton(new ImageIcon(Main.class.getResource("/images/arrowRightOne.png")));
+        hideSelectedButton.setBorder(null);
+        hideSelectedButton.addActionListener(createMoveSelectedButtonListener(visibleList, invisibleListModel));
+
+        JButton showAllButton = new JButton(new ImageIcon(Main.class.getResource("/images/arrowLeft.png")));
+        showAllButton.setBorder(null);
+        showAllButton.addActionListener(createMoveAllButtonListener(invisibleListModel, visibleListModel));
+
+        JButton hideAllButton = new JButton(new ImageIcon(Main.class.getResource("/images/arrowRight.png")));
+        hideAllButton.setBorder(null);
+        hideAllButton.addActionListener(createMoveAllButtonListener(visibleListModel, invisibleListModel));
+
+        JPanel arrowsPanel = new JPanel();
+        arrowsPanel.setLayout(new BoxLayout(arrowsPanel, BoxLayout.Y_AXIS));
+        arrowsPanel.add(hideSelectedButton);
+        arrowsPanel.add(showSelectedButton);
+        arrowsPanel.add(Box.createVerticalStrut(10));
+        arrowsPanel.add(hideAllButton);
+        arrowsPanel.add(showAllButton);
+        return arrowsPanel;
+    }
+
+    private ActionListener createMoveSelectedButtonListener(final JList<UserPreferencesPropertyListItem> fromList, final UserPreferencesPropertyListModel toModel) {
+        return new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                List<UserPreferencesPropertyListItem> selectedValuesList = fromList.getSelectedValuesList();
+                if (!selectedValuesList.isEmpty()) {
+                    for (UserPreferencesPropertyListItem listItem : selectedValuesList) {
+                        toModel.addElement(listItem);
+                        UserPreferencesPropertyListModel fromModel = (UserPreferencesPropertyListModel) fromList.getModel();
+                        fromModel.remove(fromModel.indexOf(listItem));
+                    }
+                    clearColumnFields();
+                }
+            }
+        };
+    }
+
+    private ActionListener createMoveAllButtonListener(final UserPreferencesPropertyListModel fromModel, final UserPreferencesPropertyListModel toModel) {
+        return new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                for (int i = 0; i < fromModel.getSize(); i++) {
+                    toModel.addElement(fromModel.get(i));
+                }
+                fromModel.clear();
+                clearColumnFields();
+            }
+        };
+    }
+
+    private ActionListener createApplyResetButtonListener(final boolean apply, final boolean forAllUsers) {
+        return new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                RmiQueue.runAction(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (apply) {
+                            applyButtonPressed(forAllUsers);
+                        } else {
+                            resetButtonPressed(forAllUsers);
+                        }
+                        firePropertyChange("buttonPressed", null, null);
+                    }
+                });
+            }
+        };
+    }
+
+    private void clearColumnFields() {
+        columnCaptionField.setText(null);
+        columnPatternField.setText(null);
+    }
+
+    private void okButtonPressed() {
         for (UserPreferencesPropertyListItem propertyItem : visibleListModel.toArray()) {
             initialTable.setUserColumnSettings(propertyItem.property, propertyItem.getUserCaption(true), propertyItem.getUserPattern(true), visibleListModel.indexOf(propertyItem), false);
         }
@@ -472,11 +409,9 @@ public abstract class UserPreferencesDialog extends JDialog {
         initialTable.setFont(tableFont);
         
         initialTable.setUserPageSize(getPageSize());
-        initialTable.updatePageSizeIfNeeded(false);
 
         Integer headerHeight = getHeaderHeight();
         initialTable.setUserHeaderHeight(headerHeight);
-        initialTable.setHeaderHeight(headerHeight);
 
         initialTable.setHasUserPreferences(true);
         
@@ -488,7 +423,7 @@ public abstract class UserPreferencesDialog extends JDialog {
         dispose();
     }
 
-    private void applyButtonPressed(boolean forAllUsers) throws IOException {
+    private void applyButtonPressed(boolean forAllUsers) {
         Map<Pair<ClientPropertyDraw, ClientGroupObjectValue>, Boolean> orderDirections = initialTable.getOrderDirections();
         Map<ClientPropertyDraw, Pair<Boolean, Integer>> sortDirections = new HashMap<>();
         int j = 0;
@@ -510,11 +445,9 @@ public abstract class UserPreferencesDialog extends JDialog {
         tableFont = tableFont.deriveFont(getFontStyle(), getFontSize(tableFont.getSize()));
         initialTable.setUserFont(tableFont);
         initialTable.setUserPageSize(getPageSize());
-        initialTable.updatePageSizeIfNeeded(false);
 
         Integer headerHeight = getHeaderHeight();
         initialTable.setUserHeaderHeight(headerHeight);
-        initialTable.setHeaderHeight(headerHeight);
         
         initialTable.saveCurrentPreferences(forAllUsers, saveSuccessCallback, saveFailureCallback);
     }
@@ -528,16 +461,15 @@ public abstract class UserPreferencesDialog extends JDialog {
         initialTable.setUserAscendingSort(propertyItem.property, sortDirection);
     }
 
-    private void resetButtonPressed(boolean forAllUsers) throws IOException {
+    private void resetButtonPressed(boolean forAllUsers) {
         boolean completeReset = false;
-        if(forAllUsers) {
+        if (forAllUsers) {
             int result = JOptionPane.showConfirmDialog(this, getString("form.grid.preferences.complete.reset"), getString("form.grid.preferences.complete.reset.header"), JOptionPane.YES_NO_OPTION);
-            if(result == JOptionPane.YES_OPTION) {
+            if (result == JOptionPane.YES_OPTION) {
                 completeReset = true;
             }
         }
-        columnCaptionField.setText(null);
-        columnPatternField.setText(null);
+        clearColumnFields();
         initialTable.resetPreferences(forAllUsers, completeReset, saveSuccessCallback, saveFailureCallback);
     }
     
@@ -548,6 +480,7 @@ public abstract class UserPreferencesDialog extends JDialog {
             FontInfo font = mergeFont();
             refreshValues(font);
             initialTable.setFont(font.deriveFrom(initialTable));
+            initialTable.setHeaderHeight(getHeaderHeight());
 
             initialTable.updateTable();
 
@@ -591,7 +524,7 @@ public abstract class UserPreferencesDialog extends JDialog {
         isFontBoldCheckBox.setSelected(font.bold);
         isFontItalicCheckBox.setSelected(font.italic);
 
-        initialTable.updatePageSizeIfNeeded(false); 
+        initialTable.updatePageSizeIfNeeded(false);
         Integer currentPageSize = currentPreferences.getPageSize();
         pageSizeField.setText(currentPageSize == null ? "" : String.valueOf(currentPageSize));
 
@@ -599,16 +532,13 @@ public abstract class UserPreferencesDialog extends JDialog {
         headerHeightField.setText(currentHeaderHeight == null ? "" : String.valueOf(currentHeaderHeight));
     }
     
-    FontInfo mergeFont() {
+    private FontInfo mergeFont() {
         GridUserPreferences prefs = initialTable.getCurrentPreferences();
-        FontInfo font;
-        Font initialFont = getInitialFont();
         if (prefs.hasUserPreferences()) {
-            font = prefs.fontInfo;
+            return prefs.fontInfo;
         } else {
-            font = FontInfo.createFrom(initialFont);
+            return FontInfo.createFrom(getInitialFont());
         }
-        return font;    
     }
 
     private Font getInitialFont() {
@@ -624,66 +554,34 @@ public abstract class UserPreferencesDialog extends JDialog {
     }
 
     private int getFontSize(int oldSize) {
-        int fontSize;
         try {
-            fontSize = Integer.parseInt(fontSizeField.getText());
+            int fontSize = Integer.parseInt(fontSizeField.getText());
+            return fontSize != 0 ? fontSize : oldSize;
         } catch (Exception e) {
             return oldSize;
         }
-        return fontSize != 0 ? fontSize : oldSize;
     }
 
     private Integer getPageSize() {
-        int pageSize;
         try {
-            pageSize = Integer.parseInt(pageSizeField.getText());
+            int pageSize = Integer.parseInt(pageSizeField.getText());
+            return pageSize != 0 ? pageSize : null;
         } catch (Exception e) {
             return null;
         }
-        return pageSize != 0 ? pageSize : null;
     }
 
     private Integer getHeaderHeight() {
-        int headerHeight;
         try {
-            headerHeight = Integer.parseInt(headerHeightField.getText());
+            int headerHeight = Integer.parseInt(headerHeightField.getText());
+            return headerHeight != 0 ? headerHeight : null;
         } catch (Exception e) {
             return null;
         }
-        return headerHeight != 0 ? headerHeight : null;
     }
 
-    private String getSelectedItemCaption(JList list) {
-        UserPreferencesPropertyListItem item = (UserPreferencesPropertyListItem) list.getSelectedValue();
-        return item == null ? null : item.getUserCaption(true);
-    }
-
-    private String getSelectedItemDefaultCaption(JList list) {
-        UserPreferencesPropertyListItem item = (UserPreferencesPropertyListItem) list.getSelectedValue();
-        return item == null ? null : item.getDefaultCaption();
-    }
-
-    private void setSelectedItemCaption(JList list, String caption, String userCaption) {
-        UserPreferencesPropertyListItem item = (UserPreferencesPropertyListItem) list.getSelectedValue();
-        if(item != null && caption != null) {
-            initialTable.setUserCaption(item.property, caption);
-            item.setUserCaption(userCaption == null || userCaption.isEmpty() ? null : userCaption);
-        }
-    }
-
-    private String getSelectedItemPattern(JList list) {
-        UserPreferencesPropertyListItem item = (UserPreferencesPropertyListItem) list.getSelectedValue();
-        String pattern = item == null ? null : item.getUserPattern(true);
-        return pattern == null || pattern.isEmpty() ? null : pattern;
-    }
-
-    private void setSelectedItemPattern(JList list, String pattern) {
-        UserPreferencesPropertyListItem item = (UserPreferencesPropertyListItem) list.getSelectedValue();
-        if(item != null && pattern != null) {
-            pattern = pattern.isEmpty() ? null : pattern;
-            initialTable.setUserPattern(item.property, pattern);
-            item.setUserPattern(pattern);
-        }
+    private String getItemPattern(UserPreferencesPropertyListItem item) {
+        return BaseUtils.nullEmpty(item.getUserPattern(true));
     }
     
     public abstract void preferencesChanged();

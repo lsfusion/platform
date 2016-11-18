@@ -35,7 +35,6 @@ import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.rmi.RemoteException;
 import java.text.Format;
 import java.text.NumberFormat;
 import java.text.ParseException;
@@ -1428,7 +1427,7 @@ public class GridTable extends ClientPropertyTable {
         }
     }
     
-    public void resetPreferences(final boolean forAllUsers, final boolean completeReset, final Runnable onSuccess, final Runnable onFailure) throws RemoteException {
+    public void resetPreferences(final boolean forAllUsers, final boolean completeReset, final Runnable onSuccess, final Runnable onFailure) {
         currentGridPreferences.resetPreferences();
         
         if (!properties.isEmpty()) {
@@ -1482,7 +1481,7 @@ public class GridTable extends ClientPropertyTable {
         }
     }
                                                                                  
-    public void saveCurrentPreferences(final boolean forAllUsers, final Runnable onSuccess, final Runnable onFailure) throws RemoteException {
+    public void saveCurrentPreferences(final boolean forAllUsers, final Runnable onSuccess, final Runnable onFailure) {
         currentGridPreferences.setHasUserPreferences(true);
         
         if (!properties.isEmpty()) {
@@ -1608,10 +1607,12 @@ public class GridTable extends ClientPropertyTable {
     
     public void setUserPageSize(Integer userPageSize) {
         currentGridPreferences.pageSize = userPageSize;
+        updatePageSizeIfNeeded(false);
     }
 
     public void setUserHeaderHeight(Integer userHeaderHeight) {
         currentGridPreferences.headerHeight = userHeaderHeight;
+        setHeaderHeight(userHeaderHeight);
     }
     
     public void setUserHide(ClientPropertyDraw property, Boolean userHide) {
@@ -1622,14 +1623,6 @@ public class GridTable extends ClientPropertyTable {
         currentGridPreferences.setUserColumnsSettings(property, userCaption, userPattern, userOrder, userHide);
     }
 
-    public void setUserCaption(ClientPropertyDraw property, String userCaption) {
-        currentGridPreferences.setUserCaption(property, userCaption);
-    }
-
-    public void setUserPattern(ClientPropertyDraw property, String userPattern) {
-        currentGridPreferences.setUserPattern(property, userPattern);
-    }
-    
     public void setUserWidth(ClientPropertyDraw property, Integer userWidth) {
         currentGridPreferences.setUserWidth(property, userWidth);
     }

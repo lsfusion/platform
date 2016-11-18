@@ -6,7 +6,6 @@ import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 
 public class ArrayListTransferHandler extends TransferHandler {
     DataFlavor localArrayListFlavor, serialArrayListFlavor;
@@ -27,15 +26,14 @@ public class ArrayListTransferHandler extends TransferHandler {
         try {
             localArrayListFlavor = new DataFlavor(localArrayListType);
         } catch (ClassNotFoundException e) {
-            System.out
-                    .println("ArrayListTransferHandler: unable to create data flavor");
+            System.out.println("ArrayListTransferHandler: unable to create data flavor");
         }
         serialArrayListFlavor = new DataFlavor(ArrayList.class, "ArrayList");
     }
 
     public boolean importData(JComponent c, Transferable t) {
-        JList target = null;
-        ArrayList alist = null;
+        JList target;
+        ArrayList alist;
         if (!canImport(c, t.getTransferDataFlavors())) {
             return false;
         }
@@ -81,16 +79,17 @@ public class ArrayListTransferHandler extends TransferHandler {
         if (index < 0) {
             index = max;
         } else {
-            if (listModel.indexOf(alist.get(0)) < index)
-                index++;
+            // убрал, чтобы в соседний список вставлялось так же, как в свой, т.е. чтобы можно было вставить первым элементом
+//            if (listModel.indexOf(alist.get(0)) < index)
+//                index++;
             if (index > max) {
                 index = max;
             }
         }
         addIndex = index;
         addCount = alist.size();
-        for (int i = 0; i < alist.size(); i++) {
-            listModel.add(index++, alist.get(i));
+        for (Object anAlist : alist) {
+            listModel.add(index++, anAlist);
         }
 
         destination = (JList) c;
@@ -151,30 +150,24 @@ public class ArrayListTransferHandler extends TransferHandler {
     }
 
     public boolean canImport(JComponent c, DataFlavor[] flavors) {
-        if (hasLocalArrayListFlavor(flavors)) {
-            return true;
-        }
-        if (hasSerialArrayListFlavor(flavors)) {
-            return true;
-        }
-        return false;
+        return hasLocalArrayListFlavor(flavors) || hasSerialArrayListFlavor(flavors);
     }
 
     protected Transferable createTransferable(JComponent c) {
         if (c instanceof JList) {
             source = (JList) c;
             indices = source.getSelectedIndices();
-            Object[] values = source.getSelectedValues();
-            if (values == null || values.length == 0) {
+            ArrayList values = (ArrayList) source.getSelectedValuesList();
+            if (values == null || values.isEmpty()) {
                 return null;
             }
-            return new ArrayListTransferable(new ArrayList(Arrays.asList(values)));
+            return new ArrayListTransferable(values);
         }
         return null;
     }
 
     public int getSourceActions(JComponent c) {
-        return COPY_OR_MOVE;
+        return MOVE;
     }
 
     public class ArrayListTransferable implements Transferable {
@@ -198,13 +191,7 @@ public class ArrayListTransferHandler extends TransferHandler {
         }
 
         public boolean isDataFlavorSupported(DataFlavor flavor) {
-            if (localArrayListFlavor.equals(flavor)) {
-                return true;
-            }
-            if (serialArrayListFlavor.equals(flavor)) {
-                return true;
-            }
-            return false;
+            return localArrayListFlavor.equals(flavor) || serialArrayListFlavor.equals(flavor);
         }
     }
 }

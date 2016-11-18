@@ -106,16 +106,6 @@ public class GridUserPreferences {
         prefs.userHide = userHide;
     }
 
-    public void setUserCaption(ClientPropertyDraw property, String userCaption) {
-        ColumnUserPreferences prefs = ensureColumnPreferences(property);
-        prefs.userCaption = userCaption;
-    }
-
-    public void setUserPattern(ClientPropertyDraw property, String userPattern) {
-        ColumnUserPreferences prefs = ensureColumnPreferences(property);
-        prefs.userPattern = userPattern;
-    }
-
     public void setUserColumnsSettings(ClientPropertyDraw property, String userCaption, String userPattern, Integer userOrder, Boolean userHide) {
         ColumnUserPreferences prefs = ensureColumnPreferences(property);
         prefs.userCaption = userCaption;

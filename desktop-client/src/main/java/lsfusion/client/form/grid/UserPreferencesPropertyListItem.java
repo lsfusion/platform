@@ -23,7 +23,7 @@ public class UserPreferencesPropertyListItem {
     }
 
     public String getUserCaption(boolean ignoreDefault) {
-        return userCaption != null ? userCaption : (ignoreDefault ? null : property.getCaption());
+        return userCaption != null ? userCaption : (ignoreDefault ? null : getDefaultCaption());
     }
 
     public void setUserCaption(String userCaption) {
