@@ -32,7 +32,7 @@ public class LongClass extends IntClass<Long> {
     }
 
     public int getWhole() {
-        return 10;
+        return 20;
     }
 
     public int getPrecision() {

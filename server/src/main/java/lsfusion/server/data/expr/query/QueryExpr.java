@@ -185,7 +185,6 @@ public abstract class QueryExpr<K extends Expr,I extends OuterContext<I>, J exte
         protected abstract Expr getMainExpr();
         protected abstract Where getFullWhere();
         protected abstract boolean isSelect();
-        protected abstract boolean isSelectNotInWhere();
     }
     protected abstract IC createInnerContext();
     private IC inner;
@@ -238,10 +237,12 @@ public abstract class QueryExpr<K extends Expr,I extends OuterContext<I>, J exte
             if(staticClass==null) {
                 Expr mainExpr = getInner().getMainExpr();
                 ImRevMap<BaseExpr, Expr> valueMap = MapFact.<BaseExpr, Expr>singletonRev(QueryExpr.this, mainExpr);
-                if(getInner().isSelectNotInWhere())
+                if(getInner().isSelect()) // isSelectNotInWhere неправильно использовать, так как он коррелирует вход с выходом, а это для select агрегаций не так
                     result = ClassExprWhere.mapBack(outerInner, fullWhere).and(ClassExprWhere.mapBack(valueMap, fullWhere));
-                else
+                else {
+                    assert false;
                     result = ClassExprWhere.mapBack(valueMap.addExcl(outerInner), fullWhere);
+                }
             } else
                 result = ClassExprWhere.mapBack(outerInner, fullWhere).and(new ClassExprWhere(QueryExpr.this, staticClass));
             return result.and(getWhere(group).getClassWhere());

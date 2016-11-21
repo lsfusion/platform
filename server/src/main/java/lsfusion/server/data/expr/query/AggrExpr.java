@@ -119,10 +119,6 @@ public abstract class AggrExpr<K extends Expr,G extends AggrType, I extends Aggr
         protected boolean isSelect() {
             return thisObj.query.type.isSelect();
         }
-
-        protected boolean isSelectNotInWhere() {
-            return thisObj.query.type.isSelectNotInWhere();
-        }
     }
 
 }
