@@ -1649,6 +1649,7 @@ importActionDefinitionBody[List<TypedParameter> context, boolean dynamic] return
 @init {
 	ImportSourceFormat format = null;
 	LPWithParams sheet = null;
+	LPWithParams memo = null;
 	String separator = null;
 	boolean noHeader = false;
 	String charset = null;
@@ -1664,13 +1665,13 @@ importActionDefinitionBody[List<TypedParameter> context, boolean dynamic] return
         else if($type.format == ImportSourceFormat.XML)
         	$property = self.addScriptedImportXMLActionProperty($expr.property, $plist.ids, $plist.propUsages, attr);
         else if($type.format == ImportSourceFormat.DBF)
-            $property = self.addScriptedImportDBFActionProperty($expr.property, $whereExpr.property, $plist.ids, $plist.propUsages);
+            $property = self.addScriptedImportDBFActionProperty($expr.property, $whereExpr.property, memo, $plist.ids, $plist.propUsages);
 		else
 			$property = self.addScriptedImportActionProperty($type.format, $expr.property, $plist.ids, $plist.propUsages);
 	}
 } 
 	:	'IMPORT' 
-		type = importSourceFormat [context, dynamic] { format = $type.format; sheet = $type.sheet; separator = $type.separator; noHeader = $type.noHeader; attr = $type.attr; charset = $type.charset; }
+		type = importSourceFormat [context, dynamic] { format = $type.format; sheet = $type.sheet; memo = $type.memo; separator = $type.separator; noHeader = $type.noHeader; attr = $type.attr; charset = $type.charset; }
 		'TO' plist=nonEmptyPropertyUsageListWithIds 
 		'FROM' expr=propertyExpression[context, dynamic]
 		('WHERE' whereExpr=propertyExpression[context, dynamic])?
@@ -1744,10 +1745,10 @@ propertyUsageWithId returns [String id = null, PropertyUsage propUsage]
 		)? 
 	;
 
-importSourceFormat [List<TypedParameter> context, boolean dynamic] returns [ImportSourceFormat format, LPWithParams sheet, String separator, boolean noHeader, String charset, boolean attr]
+importSourceFormat [List<TypedParameter> context, boolean dynamic] returns [ImportSourceFormat format, LPWithParams sheet, LPWithParams memo, String separator, boolean noHeader, String charset, boolean attr]
 	:	'XLS' 	{ $format = ImportSourceFormat.XLS; } ('SHEET' sheetProperty = propertyExpression[context, dynamic] { $sheet = $sheetProperty.property; })?
 	|	'XLSX'	{ $format = ImportSourceFormat.XLSX; } ('SHEET' sheetProperty = propertyExpression[context, dynamic] { $sheet = $sheetProperty.property; })?
-	|	'DBF'	{ $format = ImportSourceFormat.DBF; }
+	|	'DBF'	{ $format = ImportSourceFormat.DBF; } ('MEMO' memoProperty = propertyExpression[context, dynamic] {$memo = $memoProperty.property; })?
 	|	'CSV'	{ $format = ImportSourceFormat.CSV; } (separatorVal = stringLiteral { $separator = $separatorVal.val; })? ('NOHEADER' { $noHeader = true; })? ('CHARSET' charsetVal = stringLiteral { $charset = $charsetVal.val; })?
 	|	'XML'	{ $format = ImportSourceFormat.XML; } ('ATTR' { $attr = true; })?
 	|	'JDBC'	{ $format = ImportSourceFormat.JDBC; }

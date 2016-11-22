@@ -1,15 +1,19 @@
 package lsfusion.server.logics.property.actions.importing.dbf;
 
 import com.google.common.base.Throwables;
-import lsfusion.server.classes.*;
+import lsfusion.server.classes.DateClass;
+import lsfusion.server.classes.DateTimeClass;
+import lsfusion.server.classes.LogicalClass;
+import lsfusion.server.classes.ValueClass;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.ClassType;
 import lsfusion.server.logics.property.actions.importing.ImportIterator;
 import net.iryndin.jdbf.core.DbfField;
-import net.iryndin.jdbf.core.DbfRecord;
-import net.iryndin.jdbf.reader.DbfReader;
+import net.iryndin.jdbf.core.DbfFieldTypeEnum;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.text.ParseException;
 import java.util.*;
 
@@ -20,22 +24,24 @@ class ImportDBFIterator extends ImportIterator {
     private static final String LE = "<=";
     private static final String LT = "<";
     private static final String IN = " IN ";
-    private DbfReader reader;
+    private CustomDbfReader reader;
     private List<Integer> sourceColumns;
     private List<List<String>> wheresList;
     private final List<LCP> properties;
+    private File tempMemoFile;
     
-    ImportDBFIterator(DbfReader reader, List<Integer> sourceColumns, List<List<String>> wheresList, List<LCP> properties) {
+    ImportDBFIterator(CustomDbfReader reader, List<Integer> sourceColumns, List<List<String>> wheresList, List<LCP> properties, File tempMemoFile) {
         this.reader = reader;
         this.sourceColumns = sourceColumns;
         this.wheresList = wheresList;
         this.properties = properties;
+        this.tempMemoFile = tempMemoFile;
     }
 
     @Override
     public Object nextRow() {
         try {
-            DbfRecord record = reader.read();
+            CustomDbfRecord record = reader.read();
             if(record == null)
                 return null;
             Map<Integer, String> fieldMapping = new HashMap<>();
@@ -60,18 +66,23 @@ class ImportDBFIterator extends ImportIterator {
                         listRow.add(bool == null ? null : String.valueOf(bool));
                     } else {
                         //Пока charset захардкожена. Если потребуется другая, то добавить в язык как для CSV
-                        listRow.add(record.getString(fieldMapping.get(column), "cp1251"));
+                        if (record.getField(fieldMapping.get(column)).getType() == DbfFieldTypeEnum.Memo) {
+                            listRow.add(record.getMemoAsString(fieldMapping.get(column), Charset.forName("cp1251")));
+                        }
+                        else
+                            listRow.add(record.getString(fieldMapping.get(column), "cp1251"));
                     }
                 }
                 return listRow;
             } else return "ignored"; //чтобы отличить пропускаемый ряд от null - конца чтения
 
         } catch (IOException | ParseException e) {
+            e.printStackTrace();
             return null;
         }
     }
 
-    private boolean ignoreRow(DbfRecord record, List<List<String>> wheresList) {
+    private boolean ignoreRow(CustomDbfRecord record, List<List<String>> wheresList) {
         boolean ignoreRow = false;
         for (List<String> where : wheresList) {
             String condition = where.get(0);
@@ -97,6 +108,8 @@ class ImportDBFIterator extends ImportIterator {
         try {
             if (reader != null)
                 reader.close();
+            if(tempMemoFile != null && !tempMemoFile.delete())
+                tempMemoFile.deleteOnExit();
         } catch (IOException e) {
             e.printStackTrace();
         }

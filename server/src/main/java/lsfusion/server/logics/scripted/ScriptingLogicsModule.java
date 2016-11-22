@@ -2419,11 +2419,18 @@ public class ScriptingLogicsModule extends LogicsModule {
         return addScriptedJoinAProp(addAProp(new WriteActionProperty(sourcePathProp.property.property.getValueClass(ClassType.valuePolicy), (LCP)sourceProp.property)), Collections.singletonList(sourcePathProp));
     }
 
-    public LPWithParams addScriptedImportDBFActionProperty(LPWithParams fileProp, LPWithParams whereProp, List<String> ids, List<PropertyUsage> propUsages) throws ScriptingErrorLog.SemanticErrorException {
+    public LPWithParams addScriptedImportDBFActionProperty(LPWithParams fileProp, LPWithParams whereProp, LPWithParams memoProp, List<String> ids, List<PropertyUsage> propUsages) throws ScriptingErrorLog.SemanticErrorException {
         List<LCP> props = getProperties(propUsages);
+        List<LPWithParams> params = new ArrayList<>();
+        params.add(fileProp);
+        if(whereProp != null)
+            params.add(whereProp);
+        if(memoProp != null)
+            params.add(memoProp);
         return addScriptedJoinAProp(addAProp(ImportDataActionProperty.createDBFProperty(fileProp.property.property.getValueClass(ClassType.valuePolicy),
-                whereProp == null ? null : whereProp.property.property.getValueClass(ClassType.valuePolicy), ids, props, baseLM)),
-                whereProp == null ? Collections.singletonList(fileProp) : Arrays.asList(fileProp, whereProp));
+                whereProp == null ? null : whereProp.property.property.getValueClass(ClassType.valuePolicy),
+                memoProp == null ? null : memoProp.property.property.getValueClass(ClassType.valuePolicy),
+                ids, props, baseLM)), params);
     }
 
     public LPWithParams addScriptedImportActionProperty(ImportSourceFormat format, LPWithParams fileProp, List<String> ids, List<PropertyUsage> propUsages) throws ScriptingErrorLog.SemanticErrorException {

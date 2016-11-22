@@ -37,10 +37,7 @@ import org.xBaseJ.xBaseJException;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public abstract class ImportDataActionProperty extends SystemExplicitActionProperty {
 
@@ -88,7 +85,7 @@ public abstract class ImportDataActionProperty extends SystemExplicitActionPrope
         } else return null;
     }
 
-    public static ImportDataActionProperty createDBFProperty(ValueClass valueClass, ValueClass wheresClass, List<String> ids, List<LCP> properties, BaseLogicsModule baseLM) {
+    public static ImportDataActionProperty createDBFProperty(ValueClass valueClass, ValueClass wheresClass, ValueClass memoClass, List<String> ids, List<LCP> properties, BaseLogicsModule baseLM) {
         for (int i = 0; i < ids.size(); ++i) { // для DBF делаем case insensitive
             String id = ids.get(i);
             if (id != null)
@@ -96,7 +93,13 @@ public abstract class ImportDataActionProperty extends SystemExplicitActionPrope
             else
                 throw new RuntimeException("Import error: field for property " + properties.get(i) + " not specified");
         }
-        return new ImportDBFDataActionProperty(valueClass, wheresClass, ids, properties, baseLM);
+        List<ValueClass> classes = new ArrayList<>();
+        classes.add(valueClass);
+        if(wheresClass != null)
+            classes.add(wheresClass);
+        if(memoClass != null)
+            classes.add(memoClass);
+        return new ImportDBFDataActionProperty(classes.toArray(new ValueClass[classes.size()]), wheresClass != null, memoClass != null, ids, properties, baseLM);
     }
 
     public static ImportDataActionProperty createProperty(ValueClass valueClass, ImportSourceFormat format, List<String> ids, List<LCP> properties, BaseLogicsModule baseLM) {

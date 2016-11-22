@@ -1,5 +1,6 @@
 package lsfusion.server.logics.property.actions.importing.dbf;
 
+import lsfusion.base.BaseUtils;
 import lsfusion.server.classes.StringClass;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
@@ -11,10 +12,11 @@ import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.actions.importing.ImportDataActionProperty;
 import lsfusion.server.logics.property.actions.importing.ImportIterator;
 import net.iryndin.jdbf.core.DbfField;
-import net.iryndin.jdbf.reader.DbfReader;
+import org.apache.commons.io.FileUtils;
 import org.jdom.JDOMException;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.text.ParseException;
@@ -23,25 +25,41 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class ImportDBFDataActionProperty extends ImportDataActionProperty {
+    private boolean hasWheres;
     private String wheres;
-    public ImportDBFDataActionProperty(ValueClass valueClass, ValueClass wheresClass, List<String> ids, List<LCP> properties, BaseLogicsModule baseLM) {
-        super(wheresClass == null ? new ValueClass[] {valueClass} : new ValueClass[] {valueClass, wheresClass}, ids, properties, baseLM);
+    private boolean hasMemo;
+    private byte[] memo;
+    private File tempMemoFile;
+    public ImportDBFDataActionProperty(ValueClass[] classes, boolean hasWheres, boolean hasMemo, List<String> ids, List<LCP> properties, BaseLogicsModule baseLM) {
+        super(classes, ids, properties, baseLM);
+        this.hasWheres = hasWheres;
+        this.hasMemo = hasMemo;
     }
 
     @Override
     protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         DataObject wheresObject = null;
-        if (context.getDataKeys().size() == 2) {
+        if (hasWheres) {
             wheresObject = context.getDataKeys().getValue(1);
             assert wheresObject.getType() instanceof StringClass;
         }
         wheres = wheresObject != null ? (String) wheresObject.object : null;
+        DataObject memoObject = null;
+        if (hasMemo) {
+            memoObject = context.getDataKeys().getValue(hasWheres ? 2 : 1);
+        }
+        memo = memoObject != null ? BaseUtils.getFile((byte[]) memoObject.object) : null;
         super.executeCustom(context);
     }
 
     @Override
     public ImportIterator getIterator(byte[] file) throws IOException, ParseException, JDOMException, ClassNotFoundException {
-        DbfReader reader = new DbfReader(new ByteArrayInputStream(file));
+        if(memo != null) {
+            tempMemoFile = File.createTempFile("tempMemoFile", ".FPT");
+            FileUtils.writeByteArrayToFile(tempMemoFile, memo);
+        }
+        CustomDbfReader reader = new CustomDbfReader(new ByteArrayInputStream(file), tempMemoFile);
+
         Map<String, Integer> fieldMapping = new HashMap<>();
         int i = 1;
         for (DbfField field : reader.getMetadata().getFields()) {
@@ -49,7 +67,7 @@ public class ImportDBFDataActionProperty extends ImportDataActionProperty {
             i++;
         }
         List<Integer> sourceColumns = getSourceColumns(fieldMapping);
-        return new ImportDBFIterator(reader, sourceColumns, getWheresList(), properties);
+        return new ImportDBFIterator(reader, sourceColumns, getWheresList(), properties, tempMemoFile);
     }
 
     private List<List<String>> getWheresList() {
