@@ -2311,7 +2311,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         LAP property = addFAProp(null, LocalizedString.create(""), form, input, objects.toArray(new ObjectEntity[objects.size()]), manageSession, noCancel, contextObject,
                                  contextProperty == null ? null : (CalcProperty)contextProperty.property.property,
                                  initFilterProperty,
-                modalityType, checkOnOk, showDrop, printType, exportType, readonly);
+                modalityType, checkOnOk, showDrop, printType, exportType, readonly, true);
 
         if (mapping.size() > 0) {
             if (contextProperty != null) {

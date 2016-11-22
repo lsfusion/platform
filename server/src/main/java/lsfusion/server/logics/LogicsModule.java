@@ -58,7 +58,6 @@ import lsfusion.server.logics.property.group.AbstractNode;
 import lsfusion.server.logics.scripted.EvalActionProperty;
 import lsfusion.server.logics.scripted.LazyActionProperty;
 import lsfusion.server.logics.scripted.MetaCodeFragment;
-import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 import lsfusion.server.logics.table.ImplementTable;
 import lsfusion.server.session.LocalNestedType;
 import org.antlr.runtime.RecognitionException;
@@ -541,11 +540,11 @@ public abstract class LogicsModule {
     }
 
     protected LAP addFAProp(LocalizedString caption, FormEntity form, ObjectEntity[] objectsToSet, Boolean manageSession, boolean noCancel, ModalityType modalityType) {
-        return addFAProp(null, caption, form, null, objectsToSet, manageSession, noCancel, null, null, null, modalityType, false, false, null, null, false);
+        return addFAProp(null, caption, form, null, objectsToSet, manageSession, noCancel, null, null, null, modalityType, false, false, null, null, false, false);
     }
 
-    protected LAP addFAProp(AbstractGroup group, LocalizedString caption, FormEntity form, ObjectEntity input, ObjectEntity[] objectsToSet, Boolean manageSession, boolean isAdd, ObjectEntity contextObject, CalcProperty contextProperty, PropertyDrawEntity initFilterProperty, ModalityType modalityType, boolean checkOnOk, boolean showDrop, FormPrintType printType, FormExportType exportType, boolean readonly) {
-        return addProperty(group, new LAP(new FormActionProperty(caption, form, input, objectsToSet, manageSession, isAdd, modalityType, checkOnOk, showDrop, printType, exportType, baseLM.formResult, baseLM.getFormResultProperty(), baseLM.formPageCount, baseLM.formExportFile, baseLM.ignorePrintType, baseLM.getChosenValueProperty(), baseLM.getRequestedValueProperty(), baseLM.getRequestCanceledProperty(), contextObject, contextProperty, initFilterProperty, readonly)));
+    protected LAP addFAProp(AbstractGroup group, LocalizedString caption, FormEntity form, ObjectEntity input, ObjectEntity[] objectsToSet, Boolean manageSession, boolean isAdd, ObjectEntity contextObject, CalcProperty contextProperty, PropertyDrawEntity initFilterProperty, ModalityType modalityType, boolean checkOnOk, boolean showDrop, FormPrintType printType, FormExportType exportType, boolean readonly, boolean allowNulls) {
+        return addProperty(group, new LAP(new FormActionProperty(caption, form, input, objectsToSet, manageSession, isAdd, modalityType, checkOnOk, showDrop, printType, exportType, baseLM.formResult, baseLM.getFormResultProperty(), baseLM.formPageCount, baseLM.formExportFile, baseLM.ignorePrintType, baseLM.getChosenValueProperty(), baseLM.getRequestedValueProperty(), baseLM.getRequestCanceledProperty(), contextObject, contextProperty, initFilterProperty, readonly, allowNulls)));
     }
 
     // ------------------- Change Class action ----------------- //

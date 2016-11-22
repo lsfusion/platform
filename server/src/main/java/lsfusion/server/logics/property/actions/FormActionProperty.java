@@ -96,6 +96,11 @@ public class FormActionProperty extends SystemExplicitActionProperty {
         return valueClasses;
     }
 
+    @Override
+    protected boolean allowNulls() { // temporary
+        return allowNullValue;
+    }
+
     //assert objects из form
     //assert getProperties одинаковой длины
     //getProperties привязаны к форме, содержащей свойство...
@@ -120,9 +125,11 @@ public class FormActionProperty extends SystemExplicitActionProperty {
                               LCP requestCanceledProperty,
                               ObjectEntity contextObject,
                               CalcProperty contextProperty,
-                              PropertyDrawEntity initFilterProperty, boolean readOnly) {
+                              PropertyDrawEntity initFilterProperty, boolean readOnly, boolean allowNulls) {
         super(caption, getValueClasses(objectsToSet, contextProperty));
-
+        
+        this.allowNullValue = allowNulls;
+        
         this.input = input;
         
         this.formPageCount = formPageCount;

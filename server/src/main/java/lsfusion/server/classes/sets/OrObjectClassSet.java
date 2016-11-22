@@ -149,7 +149,7 @@ public class OrObjectClassSet extends TwinImmutableObject implements OrClassSet,
         return set+(!up.isFalse() && !set.isEmpty()?" ":"")+(!up.isFalse()?"Up:"+ up.toString():"")+(!up.isFalse() || !set.isEmpty()?" ":"")+(unknown?"unknown":"");
     }
 
-    // возвращает до каких путей можно дойти и с каким минимальным путем
+    // возвращает до каких классов можно дойти и с каким минимальным путем
     private static ImMap<CustomClass, Integer> recCommonClass(CustomClass customClass, ImSet<CustomClass> used, ImSet<CustomClass> commonSet, MExclMap<CustomClass, ImMap<CustomClass, Integer>> mPathes, MExclSet<CustomClass> mFirstFulls) {
         ImMap<CustomClass, Integer> cachedResult = mPathes.get(customClass);
         if(cachedResult!=null)
