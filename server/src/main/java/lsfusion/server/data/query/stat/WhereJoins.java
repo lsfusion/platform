@@ -1851,10 +1851,16 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
             if(pushJoin.isValue()) { // проблема что queryJoin может быть в ExprStatJoin.valueJoins, тогда он будет Inner, а в WhereJoins его не будет и начнут падать assertion'ы появлятся висячие ключи, другое дело, что потом надо убрать в EqualsWhere ExprStatJoin = значение, тогда это проверка не нужно
                 return new WhereJoins(pushJoin);
             }
-
-            // recursion guard, иначе бесконечные проталкивания могут быть (проблема с проталкиванием скажем SubQuery.v=5 должна в принципе решаться другим механищзмом)
-            adjWhereJoins = removeJoin(pushJoin, upWheres.result, upWheres);
         }
+        
+        // recursion guard, иначе бесконечные проталкивания могут быть (проблема с проталкиванием скажем SubQuery.v=5 должна в принципе решаться другим механищзмом)
+        // в том числе и left приходится проверять так как может проталкиваться скажем UnionJoin, а он дает left join'ы 
+        WhereJoins removedWhereJoins = removeJoin(pushJoin, upWheres.result, upWheres);
+        if(removedWhereJoins != null)
+            adjWhereJoins = removedWhereJoins;
+        else
+            assert !isInner;
+        
         return adjWhereJoins.and(new WhereJoins(pushJoin));
     }
 
