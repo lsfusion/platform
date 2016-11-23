@@ -293,7 +293,7 @@ public class GGridPropertyTableHeader extends Header<String> {
                 if (newLeftWidth > 0) {
                     table.setColumnWidth(leftColumn, newLeftWidth + "px");
                     GPropertyDraw leftProperty = table.getProperty(leftColumn);
-                    if (table instanceof GGridTable) {
+                    if (table instanceof GGridTable && leftProperty != null) {
                         ((GGridTable) table).setUserWidth(leftProperty, (int) newLeftWidth);
                     }
 
@@ -301,7 +301,7 @@ public class GGridPropertyTableHeader extends Header<String> {
                         double newWidth = rightInitialWidths[i] - (rightCoeffs[i] != 0.0 ? dragColumnWidth * rightCoeffs[i] : dragColumnWidth / rightCoeffs.length);
                         table.setColumnWidth(rightColumns[i], newWidth + "px");
                         GPropertyDraw property = table.getProperty(rightColumns[i]);
-                        if (table instanceof GGridTable) {
+                        if (table instanceof GGridTable && property != null) {
                             ((GGridTable) table).setUserWidth(property, (int) newLeftWidth);
                         }
                     }

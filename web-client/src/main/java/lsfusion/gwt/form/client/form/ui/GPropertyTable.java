@@ -230,7 +230,9 @@ public abstract class GPropertyTable<T> extends DataGrid<T> implements EditManag
 
     @Override
     public void updateEditValue(Object value) {
-        setValueAt(editContext, value);
+        if (editContext != null) {
+            setValueAt(editContext, value);
+        }
     }
 
     @Override

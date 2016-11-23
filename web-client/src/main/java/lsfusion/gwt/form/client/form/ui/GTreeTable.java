@@ -401,7 +401,8 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
 
     @Override
     public GPropertyDraw getProperty(Cell.Context context) {
-        return tree.getProperty(((GTreeGridRecord) context.getRowValue()).getGroup(), context.getColumn() - 1);
+        GTreeGridRecord rowValue = (GTreeGridRecord) context.getRowValue();
+        return rowValue == null ? null : tree.getProperty(rowValue.getGroup(), context.getColumn() - 1);
     }
 
     @Override
@@ -464,9 +465,10 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         GTreeGridRecord rowRecord = (GTreeGridRecord) context.getRowValue();
 
         GPropertyDraw property = getProperty(context);
-        rowRecord.setAttribute(property.sID, value);
-
-        tree.putValue(property, rowRecord.getKey(), value);
+        if (property != null) {
+            rowRecord.setAttribute(property.sID, value);
+            tree.putValue(property, rowRecord.getKey(), value);
+        }
 
         setRowData(row, Arrays.asList(rowRecord));
         redrawColumns(singleton(getColumn(column)), false);
