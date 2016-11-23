@@ -206,7 +206,10 @@ public class GwtClientUtils {
     public static boolean isIEUserAgent() {
         String userAgent = getUserAgent();
         // надо бы как-то покрасивее определять браузер
-        return userAgent.contains("msie") || (userAgent.contains("rv:11.0") && !userAgent.contains("firefox"));
+        return userAgent.contains("msie") || 
+                (userAgent.contains("rv:11.0") && !userAgent.contains("firefox")) || 
+                userAgent.contains("edge") ||
+                userAgent.contains("Edge");
     }
 
     public static boolean isShowing(Widget widget) {
