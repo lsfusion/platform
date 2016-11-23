@@ -673,8 +673,13 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
                 sql.suppressErrorLogging = true;
 
                 //временное решение
-                updateStats(sql);
-                updateClassStat(sql, true);
+                try {
+                    updateStats(sql);
+                    updateClassStat(sql, true);
+                } catch (Exception ignored) {
+                    startLogger.info("Error updating stats, while initializing reflection events occured. Probably this is the first database synchronization. Look to the exinfo log for details.");
+                    ServerLoggers.exInfoLogger.error("Error updating stats, while initializing reflection events", ignored);
+                }
 
                 startLogger.info("Setting user logging for properties");
                 setUserLoggableProperties(sql);
