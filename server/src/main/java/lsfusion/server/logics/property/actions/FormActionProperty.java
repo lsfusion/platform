@@ -128,7 +128,7 @@ public class FormActionProperty extends SystemExplicitActionProperty {
                               PropertyDrawEntity initFilterProperty, boolean readOnly, boolean allowNulls) {
         super(caption, getValueClasses(objectsToSet, contextProperty));
         
-        this.allowNullValue = allowNulls;
+        this.allowNullValue = false; //allowNulls;
         
         this.input = input;
         
