@@ -208,8 +208,7 @@ public class GwtClientUtils {
         // надо бы как-то покрасивее определять браузер
         return userAgent.contains("msie") || 
                 (userAgent.contains("rv:11.0") && !userAgent.contains("firefox")) || 
-                userAgent.contains("edge") ||
-                userAgent.contains("Edge");
+                userAgent.contains("edge");
     }
 
     public static boolean isShowing(Widget widget) {
