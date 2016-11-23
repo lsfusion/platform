@@ -135,6 +135,7 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
     public LCP nameTableKey;
     public LCP quantityTableKey;
     public LCP quantityTopTableKey;
+    public LCP overQuantityTableKey;
     public LCP tableTableColumn;
     public LCP propertyTableColumn;
     public LCP sidTableColumn;
@@ -142,7 +143,7 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
     public LCP tableColumnLongSID;
     public LCP tableColumnSID;
 
-    public LCP quantityTableColumn;
+    public LCP overQuantityTableColumn;
     public LCP notNullQuantityTableColumn;
     public LCP notRecalculateTableColumn;
     public LAP recalculateAggregationTableColumn;
@@ -341,6 +342,7 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
 
         quantityTableKey = findProperty("quantity[TableKey]");
         quantityTopTableKey = findProperty("quantityTop[TableKey]");
+        overQuantityTableKey = findProperty("overQuantity[TableKey]");
 
         // Колонки таблиц
         tableTableColumn = findProperty("table[TableColumn]");
@@ -351,7 +353,7 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
         tableColumnLongSID = findProperty("tableColumnLong[VARISTRING[100]]");
         tableColumnSID = findProperty("tableColumnSID[VARISTRING[100]]");
 
-        quantityTableColumn = findProperty("quantity[TableColumn]");
+        overQuantityTableColumn = findProperty("overQuantity[TableColumn]");
         notNullQuantityTableColumn = findProperty("notNullQuantity[TableColumn]");
 
         notRecalculateTableColumn = findProperty("notRecalculate[TableColumn]");

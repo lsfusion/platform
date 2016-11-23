@@ -875,8 +875,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             propStats = MapFact.EMPTY();
         } else {
             tableStats = readStatsFromDB(sql, reflectionLM.tableSID, reflectionLM.rowsTable, null);
-            keyStats = readStatsFromDB(sql, reflectionLM.tableKeySID, reflectionLM.quantityTableKey, null);
-            propStats = readStatsFromDB(sql, reflectionLM.tableColumnLongSID, reflectionLM.quantityTableColumn, reflectionLM.notNullQuantityTableColumn);
+            keyStats = readStatsFromDB(sql, reflectionLM.tableKeySID, reflectionLM.overQuantityTableKey, null);
+            propStats = readStatsFromDB(sql, reflectionLM.tableColumnLongSID, reflectionLM.overQuantityTableColumn, reflectionLM.notNullQuantityTableColumn);
         }
 
         for (ImplementTable dataTable : LM.tableFactory.getImplementTables()) {

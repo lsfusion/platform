@@ -170,6 +170,7 @@ classSID 'SID класса ключа' = DATA VARSTRING[100] (TableKey);
 name 'Имя ключа' = DATA VARISTRING[20] (TableKey);
 quantity 'Количество разновидностей' = DATA INTEGER (TableKey);
 quantityTop 'Количество разновидностей (Top)' = DATA INTEGER (TableKey);
+overQuantity 'Количество разновидностей' (TableKey tableKey) = OVERRIDE quantityTop(tableKey), quantity(tableKey);
 
 CLASS TableColumn 'Колонка';
 TABLE tableColumn (TableColumn);
@@ -187,6 +188,7 @@ caption 'Заголовок свойства' (TableColumn tableColumn) = captio
 canonicalName 'Каноническое имя свойства' (TableColumn tableColumn) = canonicalName(property(tableColumn));
 quantity 'Количество разновидностей' (TableColumn tableColumn) = quantity(property(tableColumn));
 quantityTop 'Количество разновидностей (Top)' (TableColumn tableColumn) = quantityTop(property(tableColumn));
+overQuantity 'Количество разновидностей' (TableColumn tableColumn) = OVERRIDE quantity(tableColumn), quantityTop(tableColumn);
 notNullQuantity 'Количество не null значений' (TableColumn tableColumn) = notNullQuantity(property(tableColumn));
 tableColumn(Property property) = tableColumnLong(tableSID(property) + '.' + dbName(property));
 annotation 'Аннотация' (TableColumn tableColumn) = annotation(property(tableColumn));
