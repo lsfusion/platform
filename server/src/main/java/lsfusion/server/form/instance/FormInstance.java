@@ -1482,7 +1482,11 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     private boolean isLocalHidden(ComponentView component) { // showif or tab
         assert !isDesignHidden(component);
         assert (component instanceof ContainerView && ((ContainerView)component).showIf != null) || component.getContainer().isTabbedPane();
-        return isShowIfHidden(component) || isTabHidden(component);
+        if (isShowIfHidden(component)) 
+            return true;
+
+        ComponentView tabContainer = component.getTabContainer();
+        return tabContainer != null && isTabHidden(tabContainer);
     }
 
     private boolean isDesignHidden(ComponentView component) { // global
