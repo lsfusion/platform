@@ -63,9 +63,7 @@ public class RmiQueue {
     }
 
     public static void waitOnEdtSyncBlocker() throws InterruptedException {
-        synchronized (edtSyncBlocker) {
-            edtSyncBlocker.wait();
-        }
+        waitOnEdtSyncBlocker(1000); // проблема в том что сейчас пара wait / notify не синхронизирована, поэтому на всякий случай вставим timeout
     }
 
     public static void waitOnEdtSyncBlocker(long timeout) throws InterruptedException {
