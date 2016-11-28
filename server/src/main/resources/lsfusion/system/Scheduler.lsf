@@ -79,6 +79,7 @@ TABLE scheduledClientTaskLog (ScheduledClientTaskLog);
 
 scheduledTaskLog 'Лог планировщика'= DATA ScheduledTaskLog (ScheduledClientTaskLog) NOT NULL DELETE;
 message 'Сообщение'= DATA TEXT (ScheduledClientTaskLog);
+lsfStack 'LSF след'= DATA TEXT (ScheduledClientTaskLog);
 date 'Время'= DATA DATETIME (ScheduledClientTaskLog);
 
 isMessages 'Сообщения' (ScheduledTaskLog stl)= TRUE IF [=GROUP SUM 1 IF message(ScheduledClientTaskLog stcl) BY scheduledTaskLog(stcl)](stl) AND NOT exceptionOccurred(stl);
@@ -140,7 +141,7 @@ FORM scheduledTask 'Планировщик'
         FILTER 'Ошибка или сообщение' exceptionOccurred(tl) OR isMessages(tl)
 
     OBJECTS ctl=ScheduledClientTaskLog
-    PROPERTIES (ctl) READONLY message, date
+    PROPERTIES (ctl) READONLY message, lsfStack SHOWIF lsfStack(ctl), date
     
     OBJECTS dow=DOW
     PROPERTIES (dow) number, staticCaption 

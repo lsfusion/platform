@@ -41,6 +41,7 @@ public class SchedulerLogicsModule extends ScriptingLogicsModule {
     public LCP scheduledTaskScheduledTaskLog;
     public LCP scheduledTaskLogScheduledClientTaskLog;
     public LCP messageScheduledClientTaskLog;
+    public LCP lsfStackScheduledClientTaskLog;
     public LCP dateScheduledClientTaskLog;
 
     public LCP scriptText;
@@ -91,6 +92,7 @@ public class SchedulerLogicsModule extends ScriptingLogicsModule {
         scheduledTaskScheduledTaskLog = findProperty("scheduledTask[ScheduledTaskLog]");
         scheduledTaskLogScheduledClientTaskLog = findProperty("scheduledTaskLog[ScheduledClientTaskLog]");
         messageScheduledClientTaskLog = findProperty("message[ScheduledClientTaskLog]");
+        lsfStackScheduledClientTaskLog = findProperty("lsfStack[ScheduledClientTaskLog]");
         dateScheduledClientTaskLog = findProperty("date[ScheduledClientTaskLog]");
 
         scriptText = findProperty("scriptText[]");

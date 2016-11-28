@@ -34,6 +34,7 @@ import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.session.DataSession;
 import lsfusion.server.session.ExecutionEnvironment;
 import lsfusion.server.session.Modifier;
+import lsfusion.server.stack.ExecutionStackAspect;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
@@ -599,6 +600,7 @@ public class Scheduler extends MonitorServer implements InitializingBean {
                             BL.schedulerLM.scheduledTaskLogScheduledClientTaskLog
                                     .change(currentScheduledTaskLogFinishObject, (ExecutionEnvironment) afterFinishLogSession, scheduledClientTaskLogObject);
                             BL.schedulerLM.messageScheduledClientTaskLog.change(ExceptionUtils.getStackTrace(e), afterFinishLogSession, scheduledClientTaskLogObject);
+                            BL.schedulerLM.lsfStackScheduledClientTaskLog.change(ExecutionStackAspect.getExceptionStackString(), afterFinishLogSession, scheduledClientTaskLogObject);
                             BL.schedulerLM.dateScheduledClientTaskLog.change(time, afterFinishLogSession, scheduledClientTaskLogObject);
 
                             afterFinishLogSession.apply(BL, stack);
