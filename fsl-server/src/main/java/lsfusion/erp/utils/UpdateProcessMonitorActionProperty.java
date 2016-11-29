@@ -407,6 +407,7 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
         ImOrderMap rs = context.getSession().sql.executeSelect(originalQuery, OperationOwner.unknown, StaticExecuteEnvironmentImpl.EMPTY, (ImMap<String, ParseInterface>) MapFact.mExclMap(),
                 0, ((ImSet) keyNames).toRevMap(), (ImMap) keyReaders, ((ImSet) propertyNames).toRevMap(), (ImMap) propertyReaders);
 
+        boolean logSqlProcesses = Settings.get().isLogSqlProcesses();
         MMap<String, List<Object>> mResultMap = MapFact.mMap(MapFact.<String, List<Object>>override());
         for (Object rsValue : rs.values()) {
 
@@ -414,6 +415,10 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
 
             String query = trimToEmpty((String) entry.get("query"));
             String state = trimToEmpty((String) entry.get("state"));
+
+            if(logSqlProcesses)
+                ServerLoggers.exInfoLogger.info(String.format("PID: %s, Address: %s, State: %s, Query: %s", entry.get("pid"), entry.get("client_addr"), state, query));
+
             boolean active = !query.isEmpty() && state.equals("active");
             if (!query.equals(originalQuery) && (!onlyActive || active)) {
                 Integer sqlId = (Integer) entry.get("pid");
