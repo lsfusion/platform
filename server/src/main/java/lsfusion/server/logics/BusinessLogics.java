@@ -109,6 +109,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     protected final static Logger startLogger = ServerLoggers.startLogger;
     protected final static Logger debuglogger = Logger.getLogger(BusinessLogics.class);
     protected final static Logger lruLogger = ServerLoggers.lruLogger;
+    protected final static Logger allocatedBytesLogger = ServerLoggers.allocatedBytesLogger;
 
     public static final List<String> defaultExcludedScriptPaths = Collections.singletonList("lsfusion/system");
     public static final List<String> defaultIncludedScriptPaths = Collections.singletonList("");
@@ -122,6 +123,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     private final Map<String, LogicsModule> nameToModule = new HashMap<>();
 
     private final List<ExternalScreen> externalScreens = new ArrayList<>();
+
+    private final Map<Long, Integer> excessAllocatedBytesMap = new HashMap<>();
 
     public BaseLogicsModule<T> LM;
     public ServiceLogicsModule serviceLM;
@@ -2197,6 +2200,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         if(!Settings.get().isReadAllocatedBytes())
             return;
 
+        final long excessAllocatedBytes = Settings.get().getExcessThreadAllocatedBytes();
         final long maxAllocatedBytes = Settings.get().getMaxThreadAllocatedBytes();
         final int cacheMissesStatsLimit = Settings.get().getCacheMissesStatsLimit();
 
@@ -2223,6 +2227,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
 
             boolean logTotal = false;
             List<AllocatedInfo> infos = new ArrayList<>();
+            Set<Long> excessAllocatedBytesSet = new HashSet<>();
 
             for (Map.Entry<Long, Long> bEntry : SQLSession.threadAllocatedBytesBMap.entrySet()) {
                 Long id = bEntry.getKey();
@@ -2249,6 +2254,13 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
                     sumMap(totalHitMap, userHitMap);
                     sumMap(totalMissedMap, userMissedMap);
 
+                    if (deltaBytes > excessAllocatedBytes) {
+                        if (ThreadLocalContext.activeMap.get(threadMap.get(id)) != null && ThreadLocalContext.activeMap.get(threadMap.get(id))
+                                && ThreadUtils.isActiveJavaProcess(ManagementFactory.getThreadMXBean().getThreadInfo(id, Integer.MAX_VALUE))) {
+                            excessAllocatedBytesSet.add(id);
+                        }
+                    }
+
                     if (deltaBytes > maxAllocatedBytes || userMissed > cacheMissesStatsLimit) {
                         logTotal = true;
 
@@ -2269,6 +2281,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
                 }
             }
 
+            checkExceededAllocatedBytes(threadMap, excessAllocatedBytesSet);
+
             Collections.sort(infos, new Comparator<AllocatedInfo>() {
                 @Override
                 public int compare(AllocatedInfo o1, AllocatedInfo o2) {
@@ -2277,16 +2291,41 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
                 }
             });
             for (AllocatedInfo info : infos) {
-                ServerLoggers.allocatedBytesLogger.info(info);
+                allocatedBytesLogger.info(info);
             }
 
             if (logTotal) {
-                ServerLoggers.allocatedBytesLogger.info(String.format("Exceeded: sum: %s, \t\t\tmissed-hit: All: %s-%s, %s",
+                allocatedBytesLogger.info(String.format("Exceeded: sum: %s, \t\t\tmissed-hit: All: %s-%s, %s",
                         humanReadableByteCount(bytesSum), exceededMisses, exceededMissesHits, getStringMap(exceededHitMap, exceededMissedMap)));
-                ServerLoggers.allocatedBytesLogger.info(String.format("Total: sum: %s, elapsed %sms, missed-hit: All: %s-%s, %s",
+                allocatedBytesLogger.info(String.format("Total: sum: %s, elapsed %sms, missed-hit: All: %s-%s, %s",
                         humanReadableByteCount(totalBytesSum), System.currentTimeMillis() - time, totalMissed, totalHit, getStringMap(totalHitMap, totalMissedMap)));
             }
         }
+    }
+
+    private void checkExceededAllocatedBytes(Map<Long, Thread> threadMap, Set<Long> excessAllocatedBytesSet) {
+        for (Iterator<Map.Entry<Long, Integer>> it = excessAllocatedBytesMap.entrySet().iterator(); it.hasNext(); ) {
+            Map.Entry<Long, Integer> entry = it.next();
+            Long id = entry.getKey();
+            if (excessAllocatedBytesSet.contains(id)) {
+                Integer count = entry.getValue();
+                excessAllocatedBytesSet.remove(id);
+                count = (count == null ? 0 : count) + 1;
+                excessAllocatedBytesMap.put(id, count);
+                allocatedBytesLogger.info(String.format("Process %s allocated too much bytes, %s cycles", id, count));
+                if(count >= 4) {
+                    logger.info(String.format("Process %s allocated too much bytes for %s cycles, will be interrupted", id, count));
+                    try {
+                        ThreadUtils.interruptThread(getDbManager(), threadMap.get(id));
+                    } catch (SQLException | SQLHandledException e) {
+                        logger.info(String.format("Failed to interrupt process %s", id));
+                    }
+                }
+            } else
+                it.remove();
+        }
+        for (Long id : excessAllocatedBytesSet)
+            excessAllocatedBytesMap.put(id, 1);
     }
 
     public static String humanReadableByteCount(long bytes) {

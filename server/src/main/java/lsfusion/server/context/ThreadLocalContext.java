@@ -42,6 +42,7 @@ import java.util.Locale;
 public class ThreadLocalContext {
     private static final ThreadLocal<Context> context = new ThreadLocal<>();
     public static ConcurrentWeakHashMap<Thread, LogInfo> logInfoMap = new ConcurrentWeakHashMap<>();
+    public static ConcurrentWeakHashMap<Thread, Boolean> activeMap = new ConcurrentWeakHashMap<>();
     public static Context get() { // временно, потом надо private сделать
         return context.get();
     }
@@ -61,8 +62,10 @@ public class ThreadLocalContext {
                 if (logInfo.remoteAddress != null)
                     MDC.put("remoteAddress", logInfo.remoteAddress);
                 logInfoMap.put(Thread.currentThread(), logInfo);
+                activeMap.put(Thread.currentThread(), true);
             }
-        }
+        } else
+            activeMap.put(Thread.currentThread(), false);
     }
 
     public static Integer getCurrentUser() {

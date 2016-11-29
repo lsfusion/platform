@@ -10,6 +10,7 @@ import lsfusion.server.data.SQLSession;
 import lsfusion.server.logics.property.ExecutionContext;
 
 import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
 import java.sql.SQLException;
 import java.util.HashMap;
@@ -98,5 +99,34 @@ public class ThreadUtils {
         for(Thread thread : getAllThreads())
             result.put(thread.getId(), thread);
         return result;
+    }
+
+    public static boolean isActiveJavaProcess(ThreadInfo threadInfo) {
+        String status = threadInfo == null ? null : String.valueOf(threadInfo.getThreadState());
+        String stackTrace = threadInfo == null ? null : getJavaStack(threadInfo.getStackTrace());
+        return isActiveJavaProcess(status, stackTrace, true);
+    }
+
+    public static boolean isActiveJavaProcess(String status, String stackTrace, boolean ignoreSocketRead) {
+        return status != null && (status.equals("RUNNABLE") || status.equals("BLOCKED")) && (stackTrace != null
+                && !stackTrace.startsWith("java.net.DualStackPlainSocketImpl")
+                && !stackTrace.startsWith("sun.awt.windows.WToolkit.eventLoop")
+                && (ignoreSocketRead || !stackTrace.startsWith("java.net.SocketInputStream.socketRead0"))
+                && !stackTrace.startsWith("sun.management.ThreadImpl.dumpThreads0")
+                && !stackTrace.startsWith("java.net.SocketOutputStream.socketWrite")
+                && !stackTrace.startsWith("java.net.PlainSocketImpl")
+                && !stackTrace.startsWith("java.io.FileInputStream.readBytes")
+                && !stackTrace.startsWith("java.lang.UNIXProcess.waitForProcessExit"))
+                && !stackTrace.contains("UpdateProcessMonitor");
+    }
+
+    public static String getJavaStack(StackTraceElement[] stackTrace) {
+        StringBuilder sb = new StringBuilder();
+        for (StackTraceElement element : stackTrace) {
+            sb.append(element.toString());
+            sb.append("\n");
+        }
+        String result = sb.toString();
+        return result.isEmpty() ? null : result;
     }
 }

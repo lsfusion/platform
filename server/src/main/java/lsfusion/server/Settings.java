@@ -239,6 +239,8 @@ public class Settings {
 
     private long maxThreadAllocatedBytes = 500048576; //500MB
 
+    private long excessThreadAllocatedBytes = 3221225472L; //3GB
+
     public long getMaxRecalculateTime() {
         return maxRecalculateTime;
     }
@@ -1609,6 +1611,14 @@ public class Settings {
 
     public void setMaxThreadAllocatedBytes(long maxThreadAllocatedBytes) {
         this.maxThreadAllocatedBytes = maxThreadAllocatedBytes;
+    }
+
+    public long getExcessThreadAllocatedBytes() {
+        return excessThreadAllocatedBytes;
+    }
+
+    public void setExcessThreadAllocatedBytes(long excessThreadAllocatedBytes) {
+        this.excessThreadAllocatedBytes = excessThreadAllocatedBytes;
     }
 
     private int cacheMissesStatsLimit = 10000;
