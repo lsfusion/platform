@@ -113,7 +113,7 @@ public class AdjustMaterializedExecuteEnvironment extends DynamicExecuteEnvironm
         if(current == null) { // first start
             current = new Step(null, SetFact.<SQLQuery>EMPTYORDER(), false);
             outerQueries = materializedQueries.keys();
-            current.setTimeout(getDefaultTimeout(command, materializedQueries));
+            setDefaultTimeout(current, command, materializedQueries);
         }
 
         ServerLoggers.assertLog(current.recheck, "RECHECK");
@@ -121,7 +121,7 @@ public class AdjustMaterializedExecuteEnvironment extends DynamicExecuteEnvironm
 
         Step nextStep = current;
         if(previousStep != null && nextStep.getIndex() < previousStep.getIndex()) // если current "вернулся назад", просто идем вперед, назад никогда смысла идти нет
-            nextStep = getNextStep(previousStep, command, snapshot);
+            nextStep = getExecuteNextStep(previousStep, command, snapshot);
         return new Snapshot(nextStep, previousStep, command, transactTimeout, materializedQueries);
     }
 
@@ -170,7 +170,7 @@ public class AdjustMaterializedExecuteEnvironment extends DynamicExecuteEnvironm
         // если current после, тоже ничего не трогаем, current и так уже подвинут
         if(BaseUtils.hashEquals(current, snapshot.step)) { // подвигаем current до следующего recheck'а
             current.recheck = false; // при succeded'е он и так сбросится, так что на всякий случай
-            Step nextStep = getNextStep(current, command, snapshot);
+            Step nextStep = getExecuteNextStep(current, command, snapshot);
             log("FAILED TIMEOUT (" + snapshot.setTimeout + ")" + outerMessage + " - NEXT", current, SetFact.singletonOrder(nextStep));
             current = nextStep;
         }
@@ -195,30 +195,50 @@ public class AdjustMaterializedExecuteEnvironment extends DynamicExecuteEnvironm
             mList.add(" TO : " + change);
         ServerLoggers.adjustLog(mList.immutableList(), true);
     }
-
-    private static Step getNextStep(Step current, SQLCommand command, Snapshot snapshot) {
+    
+    private static void checkLastStep(Step step, SQLCommand command, ImMap<SQLQuery, MaterializedQuery> materializedQueries) {
+        if(Settings.get().isNoDisablingNestedLoop()) {
+            Step nextStep = getCachedNextStep(step, command, step.subQueries.getSet().addExcl(materializedQueries.keys())); // по идее коррелировано с assertSameMaterialized
+            if (nextStep.isLastStep())
+                step.setTimeout(100*60*60);
+        }
+    }
+    
+    private static void setDefaultTimeout(Step step, SQLCommand command, ImMap<SQLQuery, MaterializedQuery> materializedQueries) {
+        step.setTimeout(BaseUtils.max(step.getTimeout(), getDefaultTimeout(command, materializedQueries)));
+        checkLastStep(step, command, materializedQueries);
+    }
+    
+    private static Step getCachedNextStep(Step current, SQLCommand command, ImSet<SQLQuery> materializedQueries) {
+        Step next = current.next;
+        if (next == null) {
+            next = createNextStep(command, current, materializedQueries);
+            assert next.recheck;
+            current.next = next;
+        }
+        return next;
+    }
+    
+    private static Step getExecuteNextStep(Step current, SQLCommand command, Snapshot snapshot) {
         assert snapshot.step == current;
         ImMap<SQLQuery, MaterializedQuery> materializedQueries = snapshot.getMaterializedQueries();
-        int coeff = Settings.get().getLastStepCoeff();
+        Settings settings = Settings.get();
+        int coeff = settings.getLastStepCoeff();
         while (true) {
             Step next;
             if(current.isLastStep()) { // идем назад, но этому шагу и себе увеличиваем timeout
+                ServerLoggers.assertLog(!settings.isNoDisablingNestedLoop(), "SHOULD NOT BE");
+                
                 next = current.previous;
                 next.setTimeout(next.getTimeout() * coeff);
                 next.recheck = true;
                 current.setTimeout(current.getTimeout() * coeff);
                 current.recheck = true;
-            } else {
-                next = current.next;
-                if (next == null) {
-                    next = createNextStep(command, current, materializedQueries.keys());
-                    assert next.recheck;
-                    current.next = next;
-                }
-            }
+            } else
+                next = getCachedNextStep(current, command, materializedQueries.keys());
             current = next;
             if (current.recheck) {
-                current.setTimeout(BaseUtils.max(current.getTimeout(), getDefaultTimeout(command, materializedQueries))); // adjust'м timeout в любом случае
+                setDefaultTimeout(current, command, materializedQueries); // adjust'м timeout в любом случае
                 return current;
             }
         }
@@ -284,6 +304,8 @@ public class AdjustMaterializedExecuteEnvironment extends DynamicExecuteEnvironm
         // наша цель найти поддеревья с максимально близкой степенью к этой величине, материализовать ее
         // ищем вершину с максимально подходящей степенью, включаем в результат, берем следующую и т.д. пока не останется пустое дерево
 
+        Settings settings = Settings.get();
+
         final Map<SQLCommand, Node> nodes = new HashMap<>();
         ServerLoggers.assertLog(outerQueries.containsAll(step.getMaterializedQueries()), "SHOULD CONTAIN ALL"); // может включать еще "верхние"
         final Node topNode = new Node(null, command);
@@ -291,7 +313,6 @@ public class AdjustMaterializedExecuteEnvironment extends DynamicExecuteEnvironm
         if(!nodes.isEmpty()) { // оптимизация
             nodes.put(command, topNode);
 
-            Settings settings = Settings.get();
             int split = settings.getSubQueriesSplit();
             final int threshold = new Stat(settings.getSubQueriesRowsThreshold()).getWeight();
             final int max = new Stat(settings.getSubQueriesRowsMax()).getWeight();
@@ -453,12 +474,13 @@ public class AdjustMaterializedExecuteEnvironment extends DynamicExecuteEnvironm
         public Step(boolean disableNestedLoop, Step previous) {
             this(previous, SetFact.<SQLQuery>EMPTYORDER(), disableNestedLoop);
             assert disableNestedLoop;
-            assert !previous.disableNestedLoop; // именно из-за того что у такого step'а MAX timeout
+            assert !previous.disableNestedLoop;
             timeout = 0;
         }
 
-        public Step() {
-            this(null, SetFact.<SQLQuery>EMPTYORDER(), false);
+        public Step(Step previous) {
+            this(previous, SetFact.<SQLQuery>EMPTYORDER(), false);
+            timeout = Integer.MAX_VALUE;
         }
 
         public int getIndex() {

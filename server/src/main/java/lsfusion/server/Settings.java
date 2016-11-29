@@ -1343,6 +1343,16 @@ public class Settings {
     public void setTimeoutNanosPerRow(int timeoutNanosPerRow) {
         this.timeoutNanosPerRow = timeoutNanosPerRow;
     }
+    
+    private boolean noDisablingNestedLoop = true;
+
+    public boolean isNoDisablingNestedLoop() {
+        return noDisablingNestedLoop;
+    }
+
+    public void setNoDisablingNestedLoop(boolean noDisablingNestedLoop) {
+        this.noDisablingNestedLoop = noDisablingNestedLoop;
+    }
 
     private int lastStepCoeff = 5; // для больших баз переходить на disableNestedLoop опасно
 
