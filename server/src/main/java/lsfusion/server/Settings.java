@@ -241,6 +241,8 @@ public class Settings {
 
     private long excessThreadAllocatedBytes = 5368709120L; //5GB
 
+    private boolean logSqlProcesses = false;
+
     public long getMaxRecalculateTime() {
         return maxRecalculateTime;
     }
@@ -1619,6 +1621,14 @@ public class Settings {
 
     public void setExcessThreadAllocatedBytes(long excessThreadAllocatedBytes) {
         this.excessThreadAllocatedBytes = excessThreadAllocatedBytes;
+    }
+
+    public boolean isLogSqlProcesses() {
+        return logSqlProcesses;
+    }
+
+    public void setLogSqlProcesses(boolean logSqlProcesses) {
+        this.logSqlProcesses = logSqlProcesses;
     }
 
     private int cacheMissesStatsLimit = 10000;
