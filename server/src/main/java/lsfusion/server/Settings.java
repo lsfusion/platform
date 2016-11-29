@@ -239,7 +239,7 @@ public class Settings {
 
     private long maxThreadAllocatedBytes = 500048576; //500MB
 
-    private long excessThreadAllocatedBytes = 3221225472L; //3GB
+    private long excessThreadAllocatedBytes = 5368709120L; //5GB
 
     public long getMaxRecalculateTime() {
         return maxRecalculateTime;
