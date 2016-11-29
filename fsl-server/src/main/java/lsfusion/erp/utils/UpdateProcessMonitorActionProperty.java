@@ -567,7 +567,7 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
         long id = thread.getId();
 
         String status = threadInfo == null ? null : String.valueOf(threadInfo.getThreadState());
-        String stackTrace = threadInfo == null ? null : getJavaStack(threadInfo.getStackTrace());
+        String stackTrace = threadInfo == null ? null : ThreadUtils.getJavaStack(threadInfo.getStackTrace());
         String name = threadInfo == null ? null : threadInfo.getThreadName();
         String lockName = threadInfo == null ? null : threadInfo.getLockName();
         String lockOwnerId = threadInfo == null ? null : String.valueOf(threadInfo.getLockOwnerId());
@@ -578,21 +578,8 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
         String lsfStack = getLSFStack(thread);
         Long lastAllocatedBytes = SQLSession.getThreadAllocatedBytes(allocatedBytes, id);
 
-        return !onlyActive || isActiveJavaProcess(status, stackTrace) ? Arrays.asList((Object) stackTrace, name, status, lockName, lockOwnerId,
+        return !onlyActive || ThreadUtils.isActiveJavaProcess(status, stackTrace, false) ? Arrays.asList((Object) stackTrace, name, status, lockName, lockOwnerId,
                 lockOwnerName, computer, user, lsfStack, allocatedBytes, lastAllocatedBytes) : null;
-    }
-
-    private boolean isActiveJavaProcess(String status, String stackTrace) {
-        return status != null && (status.equals("RUNNABLE") || status.equals("BLOCKED")) && (stackTrace != null
-                && !stackTrace.startsWith("java.net.DualStackPlainSocketImpl")
-                && !stackTrace.startsWith("sun.awt.windows.WToolkit.eventLoop")
-                && !stackTrace.startsWith("java.net.SocketInputStream.socketRead0")
-                && !stackTrace.startsWith("sun.management.ThreadImpl.dumpThreads0")
-                && !stackTrace.startsWith("java.net.SocketOutputStream.socketWrite")
-                && !stackTrace.startsWith("java.net.PlainSocketImpl")
-                && !stackTrace.startsWith("java.io.FileInputStream.readBytes")
-                && !stackTrace.startsWith("java.lang.UNIXProcess.waitForProcessExit"))
-                && !stackTrace.contains("UpdateProcessMonitor");
     }
 
     private String getLSFStack(Thread thread) {
@@ -601,16 +588,6 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
         } catch (Exception e) {
             return null;
         }
-    }
-
-    private String getJavaStack(StackTraceElement[] stackTrace) {
-        StringBuilder sb = new StringBuilder();
-        for (StackTraceElement element : stackTrace) {
-            sb.append(element.toString());
-            sb.append("\n");
-        }
-        String result = sb.toString();
-        return result.isEmpty() ? null : result;
     }
 
     protected String trim(String input, Integer length) {
