@@ -18,7 +18,6 @@ import com.google.common.base.Throwables;
 import lsfusion.base.DefaultFormsType;
 import lsfusion.base.ERunnable;
 import lsfusion.client.*;
-import lsfusion.client.form.ClientFormController;
 import lsfusion.client.form.dispatch.ClientNavigatorActionDispatcher;
 import lsfusion.client.form.editor.EditorEventQueue;
 import lsfusion.client.logics.DeSerializer;
@@ -398,6 +397,14 @@ public class DockableMainFrame extends MainFrame {
 
                 setDefaultVisible();
                 navigatorController.update();
+
+                // удаляем файл с расположением, чтобы этим же действием лечить возможные нестыковки синхронизации в разных версиях DockingFrames
+                File layoutFile = new File(baseDir, "layout.data");
+                if (layoutFile.exists()) {
+                    try {
+                        layoutFile.delete();
+                    } catch (SecurityException ignored) {}
+                }
             }
         });
         dockableMenu.getMenu().addSeparator();
