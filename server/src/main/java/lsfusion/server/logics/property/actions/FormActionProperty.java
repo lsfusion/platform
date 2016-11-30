@@ -194,7 +194,7 @@ public class FormActionProperty extends SystemExplicitActionProperty {
                                                                         isAdd, manageSession,
                                                                         checkOnOk,
                                                                         showDrop,
-                                                                        printType == null,
+                                                                        printType == null && exportType == null,
                                                                         contextFilters,
                                                                         initFilterProperty,
                                                                         pullProps.result,
