@@ -72,6 +72,7 @@ public class SendEmailActionProperty extends SystemExplicitActionProperty {
     private final List<CalcPropertyInterfaceImplement> attachmentProps = new ArrayList<>();
     private final List<CalcPropertyInterfaceImplement> attachFileNames = new ArrayList<>();
     private final List<CalcPropertyInterfaceImplement> attachFiles = new ArrayList<>();
+    private final List<CalcPropertyInterfaceImplement> inlineTexts = new ArrayList<>();
 
     public SendEmailActionProperty(LocalizedString caption, ValueClass[] classes) {
         super(caption, classes);
@@ -119,6 +120,10 @@ public class SendEmailActionProperty extends SystemExplicitActionProperty {
         attachFiles.add(file);
     }
 
+    public void addInlineText(CalcPropertyInterfaceImplement inlineText) {
+        inlineTexts.add(inlineText);
+    }
+
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         EmailLogicsModule emailLM = context.getBL().emailLM;
         try {
@@ -160,6 +165,11 @@ public class SendEmailActionProperty extends SystemExplicitActionProperty {
 
             Map<ByteArray, Pair<String, String>> customAttachments = createCustomAttachments(context);
 
+            List<String> texts = new ArrayList<>();
+            for(CalcPropertyInterfaceImplement inlineText : inlineTexts) {
+                texts.add((String) inlineText.read(context, context.getKeys()));
+            }
+
             if (account instanceof DataObject) {
                 String encryptedConnectionType = (String) emailLM.nameEncryptedConnectionTypeAccount.read(context, account);
                 String smtpHostAccount = (String) emailLM.smtpHostAccount.read(context, account);
@@ -175,8 +185,8 @@ public class SendEmailActionProperty extends SystemExplicitActionProperty {
                     logger.error(localize("{mail.disabled}"));
                     return;
                 }
-                
-                sendEmail(context, smtpHostAccount, smtpPortAccount, nameAccount, passwordAccount, encryptedConnectionType, fromAddressAccount, subject, recipients, inlineForms, attachments, attachmentFiles, customAttachments);
+
+                sendEmail(context, smtpHostAccount, smtpPortAccount, nameAccount, passwordAccount, encryptedConnectionType, fromAddressAccount, subject, recipients, inlineForms, attachments, attachmentFiles, customAttachments, texts);
             }
         } catch (Throwable e) {
             String errorMessage = localize("{mail.failed.to.send.mail}") + " : " + e.toString();
@@ -188,7 +198,7 @@ public class SendEmailActionProperty extends SystemExplicitActionProperty {
         }
     }
 
-    private void sendEmail(ExecutionContext context, String smtpHostAccount, String smtpPortAccount, String userName, String password, String encryptedConnectionType, String fromAddressAccount, String subject, Map<String, Message.RecipientType> recipientEmails, List<String> inlineForms, List<EmailSender.AttachmentProperties> attachments, Map<ByteArray, String> attachmentFiles, Map<ByteArray, Pair<String, String>> customAttachments) throws MessagingException, IOException, ScriptingErrorLog.SemanticErrorException {
+    private void sendEmail(ExecutionContext context, String smtpHostAccount, String smtpPortAccount, String userName, String password, String encryptedConnectionType, String fromAddressAccount, String subject, Map<String, Message.RecipientType> recipientEmails, List<String> inlineForms, List<EmailSender.AttachmentProperties> attachments, Map<ByteArray, String> attachmentFiles, Map<ByteArray, Pair<String, String>> customAttachments, List<String> inlineTexts) throws MessagingException, IOException, ScriptingErrorLog.SemanticErrorException {
         if (smtpHostAccount == null || fromAddressAccount == null) {
             logError(context, localize("{mail.smtp.host.or.sender.not.specified.letters.will.not.be.sent}"));
             return;
@@ -209,7 +219,7 @@ public class SendEmailActionProperty extends SystemExplicitActionProperty {
                 recipientEmails
         );
 
-        sender.sendMail(context, subject, inlineForms, attachments, attachmentFiles, customAttachments);
+        sender.sendMail(context, subject, inlineForms, attachments, attachmentFiles, customAttachments, inlineTexts);
     }
 
     private Map<String, Message.RecipientType> getRecipientEmails(ExecutionContext context) throws SQLException, SQLHandledException {
