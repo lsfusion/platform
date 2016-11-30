@@ -232,6 +232,8 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Cal
     }
 
     @IdentityStartLazy
+    @StackMessage("{message.core.property.get.interface.class.stats}")
+    @ThisMessage
     public StatKeys<T> getInterfaceClassStats() {
         ImRevMap<T,KeyExpr> mapKeys = getMapKeys();
         Where where = calculateStatExpr(mapKeys).getWhere();
