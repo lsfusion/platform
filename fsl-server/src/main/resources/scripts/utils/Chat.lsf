@@ -97,22 +97,16 @@ showLoadAttachment (Chat c) = NOT attachment(c);
 showDeleteAttachment (Chat c) = attachment(c);
 
 onStarted() += ACTION {
-    LOCAL systemChat = Chat();
-    systemChat() <- chat('system');
-    IF NOT systemChat() THEN {
-        FOR ADDOBJ c = Chat DO {
-            id(c) <- 'system';
-            dataName(c) <- 'Все'; 
-            FOR(login(User u) AND lastActivity(u)) DO {
-                in(c, u) <- TRUE;
-            }
-            systemChat() <- c;
-        }
+
+    FOR NOT chat('system') ADDOBJ c = Chat DO {
+        id(c) <- 'system';
+        dataName(c) <- 'Все'; 
     }
     
-    FOR system(Message m) DO {
-        status(m, CustomUser u) <- MessageStatus.seen;
-    }
+    in(Chat c, User u) <- TRUE WHERE (login( u) AND lastActivity(u)) AND  c == chat('system');
+
+    status(Message m, CustomUser u) <- MessageStatus.seen WHERE system(m);
+
 }
 
 setSeenMessageUser(Message m, CustomUser user, BOOLEAN system) = ACTION {
