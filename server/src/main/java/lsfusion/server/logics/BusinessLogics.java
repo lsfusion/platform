@@ -2255,8 +2255,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
                     sumMap(totalMissedMap, userMissedMap);
 
                     if (deltaBytes > excessAllocatedBytes) {
-                        if (ThreadLocalContext.activeMap.get(threadMap.get(id)) != null && ThreadLocalContext.activeMap.get(threadMap.get(id))
-                                && ThreadUtils.isActiveJavaProcess(ManagementFactory.getThreadMXBean().getThreadInfo(id, Integer.MAX_VALUE))) {
+                        if (!isSystem(threadMap, id) && ThreadUtils.isActiveJavaProcess(ManagementFactory.getThreadMXBean().getThreadInfo(id, Integer.MAX_VALUE))) {
                             excessAllocatedBytesSet.add(id);
                         }
                     }
@@ -2301,6 +2300,16 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
                         humanReadableByteCount(totalBytesSum), System.currentTimeMillis() - time, totalMissed, totalHit, getStringMap(totalHitMap, totalMissedMap)));
             }
         }
+    }
+
+    private boolean isSystem(Map<Long, Thread> threadMap, long id) {
+        boolean system = ThreadLocalContext.activeMap.get(threadMap.get(id)) == null || !ThreadLocalContext.activeMap.get(threadMap.get(id));
+        if (!system) {
+            Thread thread = threadMap.get(id);
+            LogInfo logInfo = thread == null ? null : ThreadLocalContext.logInfoMap.get(thread);
+            system = logInfo == null || logInfo.allowExcessAllocatedBytes;
+        }
+        return system;
     }
 
     private void checkExceededAllocatedBytes(Map<Long, Thread> threadMap, Set<Long> excessAllocatedBytesSet) {

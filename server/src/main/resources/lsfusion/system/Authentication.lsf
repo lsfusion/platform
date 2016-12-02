@@ -62,6 +62,9 @@ hostnameCurrentComputer 'Текущий компьютер' () = hostname(curren
 
 isLocked 'Заблокирован' = DATA BOOLEAN (CustomUser);
 login 'Логин' = DATA STRING[30] (CustomUser);
+currentUserLogin 'Логин Тек. Польз.' () = login[CustomUser](currentUser());
+allowExcessAllocatedBytes 'Разрешено превышение allocated bytes' = DATA BOOLEAN (CustomUser);
+currentUserAllowExcessAllocatedBytes () = allowExcessAllocatedBytes(currentUser()) OR login[CustomUser](currentUser()) == 'admin';
 customUser 'Обычный пользователь' (login) = GROUP AGGR CustomUser customUser BY login(customUser) WHERE customUser IS CustomUser;
 upcaseLogin 'Логин в верхнем регистре' (CustomUser customUser) = upper(login(customUser));
 customUserUpcase 'Обычный пользователь' (login) = GROUP MAX CustomUser customUser BY upcaseLogin(customUser);
@@ -141,7 +144,7 @@ FORM customUser 'Пользователь'
     PROPERTIES(u) firstName, lastName, login,
     sha256Password ON CHANGE changeSHA256Password(u), email,
     forbidChangePassword, forbidEditProfile, isLocked, lastActivity, ignorePrintTypeCustom, useBusyDialogCustom,
-    language, country, timeZone, twoDigitYearStart, useClientLocale
+    allowExcessAllocatedBytes, language, country, timeZone, twoDigitYearStart, useClientLocale
 
     EDIT CustomUser OBJECT u
 ;
@@ -163,7 +166,7 @@ DESIGN customUser {
 FORM customUsers 'Пользователи'
     OBJECTS u=CustomUser
     PROPERTIES(u) READONLY name[Contact], login, email
-    PROPERTIES(u) forbidChangePassword, forbidEditProfile, useBusyDialogCustom, 
+    PROPERTIES(u) forbidChangePassword, forbidEditProfile, useBusyDialogCustom, allowExcessAllocatedBytes,
                   language, country, timeZone, twoDigitYearStart, useClientLocale, isLocked READONLY,
                   lastActivity, ADDFORM, EDITFORM FORCE PANEL, DELETE FORCE PANEL TOOLBAR
 
@@ -182,7 +185,7 @@ DESIGN customUsersDialog { main{ preferredSize = (1024, 768); }}
 FORM editProfile 'Редактировать профиль' IMAGE '/images/editReport.png'
     OBJECTS u=CustomUser FIXED PANEL
     PROPERTIES(u) login READONLY
-    PROPERTIES(u) READONLYIF forbidEditProfile(u) firstName, lastName, email, useBusyDialogCustom
+    PROPERTIES(u) READONLYIF forbidEditProfile(u) firstName, lastName, email, useBusyDialogCustom, allowExcessAllocatedBytes
 
     FILTERS u==currentUser()
 ;

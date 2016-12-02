@@ -40,6 +40,7 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
     public LCP ignorePrintTypeCustomUser;
     public LCP currentUser;
     public LCP currentUserName;
+    public LCP currentUserAllowExcessAllocatedBytes;
 
     public LCP hostnameComputer;
     public LCP scannerComPortComputer;
@@ -95,6 +96,7 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
         super.initProperties();
 
         currentUserName = findProperty("currentUserName[]");
+        currentUserAllowExcessAllocatedBytes = findProperty("currentUserAllowExcessAllocatedBytes[]");
 
         // Компьютер
         hostnameComputer = findProperty("hostname[Computer]");
