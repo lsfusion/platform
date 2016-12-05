@@ -3,6 +3,7 @@ package lsfusion.client;
 import jasperapi.ReportGenerator;
 import lsfusion.client.exceptions.ClientExceptionManager;
 import lsfusion.interop.form.ReportGenerationData;
+import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRExporterParameter;
 import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.export.JRPrintServiceExporter;
@@ -19,6 +20,7 @@ import javax.print.attribute.standard.MediaSizeName;
 import javax.print.attribute.standard.MediaTray;
 import javax.print.attribute.standard.SheetCollate;
 import javax.print.attribute.standard.Sides;
+import java.awt.print.PrinterAbortException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -83,7 +85,11 @@ public class ClientReportUtils {
 
                 exporter.exportReport();
             } catch (Exception e) {
-                ClientExceptionManager.handle(e);
+                if (e instanceof JRException && e.getCause() instanceof PrinterAbortException) {
+                    Log.message(ClientResourceBundle.getString("form.error.print.job.aborted"), false);
+                } else {
+                    ClientExceptionManager.handle(e);
+                }
             }
         }
     }

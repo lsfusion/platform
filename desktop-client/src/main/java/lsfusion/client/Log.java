@@ -93,9 +93,15 @@ public final class Log {
     }
 
     public static void message(String message) {
+        message(message, true);
+    }
+
+    public static void message(String message, boolean successFeedback) {
         printmsg(message);
         logger.info(message);
-        provideSuccessFeedback(message);
+        if (successFeedback) {
+            provideSuccessFeedback(message);
+        }
     }
 
     public static void error(String message) {
