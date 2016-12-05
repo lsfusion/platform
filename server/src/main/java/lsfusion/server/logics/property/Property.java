@@ -1,6 +1,7 @@
 package lsfusion.server.logics.property;
 
 import com.google.common.base.Throwables;
+import lsfusion.base.BaseUtils;
 import lsfusion.base.ListPermutations;
 import lsfusion.base.Pair;
 import lsfusion.base.col.ListFact;
@@ -273,20 +274,22 @@ public abstract class Property<T extends PropertyInterface> extends AbstractProp
     }
 
     private static class CacheEntry {
+        private final Property property;
         private final ImMap<ValueClass, ImSet<ValueClassWrapper>> mapClasses;
         private final boolean useObjSets;
         private final boolean anyInInterface;
         
         private ImList<PropertyClassImplement> result;
         
-        public CacheEntry(ImMap<ValueClass, ImSet<ValueClassWrapper>> mapClasses, boolean useObjSets, boolean anyInInterface) {
+        public CacheEntry(Property property, ImMap<ValueClass, ImSet<ValueClassWrapper>> mapClasses, boolean useObjSets, boolean anyInInterface) {
+            this.property = property;
             this.mapClasses = mapClasses;
             this.useObjSets = useObjSets;
             this.anyInInterface = anyInInterface;
         }
 
         public ImRevMap<ValueClassWrapper, ValueClassWrapper> map(CacheEntry entry) {
-            if(!(useObjSets == entry.useObjSets && anyInInterface == entry.anyInInterface && mapClasses.size() == entry.mapClasses.size()))
+            if(!(useObjSets == entry.useObjSets && anyInInterface == entry.anyInInterface && mapClasses.size() == entry.mapClasses.size() && BaseUtils.hashEquals(property, entry.property)))
                 return null;
 
             MRevMap<ValueClassWrapper, ValueClassWrapper> mResult = MapFact.mRevMap();
@@ -307,7 +310,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractProp
                 result += mapClasses.getKey(i).hashCode() ^ mapClasses.getValue(i).size();
             }
             
-            return 31 * ( 31 * result + (useObjSets ? 1 : 0)) + (anyInInterface ? 1 : 0); 
+            return 31 * (31 * ( 31 * result + (useObjSets ? 1 : 0)) + (anyInInterface ? 1 : 0)) + property.hashCode(); 
         }
     }    
     final static LRUSVSMap<Integer, MAddCol<CacheEntry>> hashProps = new LRUSVSMap<>(LRUUtil.G2);
@@ -320,7 +323,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractProp
             return ListFact.EMPTY();
         }            
             
-        CacheEntry entry = new CacheEntry(mapClasses, useObjSubsets, anyInInterface); // кэширование
+        CacheEntry entry = new CacheEntry(this, mapClasses, useObjSubsets, anyInInterface); // кэширование
         int hash = entry.hash();
         MAddCol<CacheEntry> col = hashProps.get(hash);
         if(col == null) {
