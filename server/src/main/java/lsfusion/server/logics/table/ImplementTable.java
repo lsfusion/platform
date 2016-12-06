@@ -555,8 +555,6 @@ public class ImplementTable extends GlobalTable { // последний инте
             ImMap<KeyExpr, KeyExpr> group = MapFact.singleton(keyExpr, keyExpr);
             Expr partitionExpr = PartitionExpr.create(PartitionType.SUM, exprs, orders, true, partitions, group);
 
-            new Query<>(MapFact.singletonRev("key", keyExpr), partitionExpr, "value", partitionExpr.getWhere()).outSelect(session);
-
             return partitionExpr.compare(new DataObject(Math.ceil((total == null ? 0 : total) * topCoefficient)), Compare.LESS_EQUALS);
         }
         else
