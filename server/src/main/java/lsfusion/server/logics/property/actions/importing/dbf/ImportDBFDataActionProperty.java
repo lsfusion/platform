@@ -30,10 +30,12 @@ public class ImportDBFDataActionProperty extends ImportDataActionProperty {
     private boolean hasMemo;
     private byte[] memo;
     private File tempMemoFile;
-    public ImportDBFDataActionProperty(ValueClass[] classes, boolean hasWheres, boolean hasMemo, List<String> ids, List<LCP> properties, BaseLogicsModule baseLM) {
+    private String charset;
+    public ImportDBFDataActionProperty(ValueClass[] classes, boolean hasWheres, boolean hasMemo, List<String> ids, List<LCP> properties, String charset, BaseLogicsModule baseLM) {
         super(classes, ids, properties, baseLM);
         this.hasWheres = hasWheres;
         this.hasMemo = hasMemo;
+        this.charset = charset == null ? "cp1251" : charset;
     }
 
     @Override
@@ -67,7 +69,7 @@ public class ImportDBFDataActionProperty extends ImportDataActionProperty {
             i++;
         }
         List<Integer> sourceColumns = getSourceColumns(fieldMapping);
-        return new ImportDBFIterator(reader, sourceColumns, getWheresList(), properties, tempMemoFile);
+        return new ImportDBFIterator(reader, sourceColumns, getWheresList(), properties, tempMemoFile, charset);
     }
 
     private List<List<String>> getWheresList() {

@@ -29,13 +29,15 @@ class ImportDBFIterator extends ImportIterator {
     private List<List<String>> wheresList;
     private final List<LCP> properties;
     private File tempMemoFile;
+    private String charset;
     
-    ImportDBFIterator(CustomDbfReader reader, List<Integer> sourceColumns, List<List<String>> wheresList, List<LCP> properties, File tempMemoFile) {
+    ImportDBFIterator(CustomDbfReader reader, List<Integer> sourceColumns, List<List<String>> wheresList, List<LCP> properties, File tempMemoFile, String charset) {
         this.reader = reader;
         this.sourceColumns = sourceColumns;
         this.wheresList = wheresList;
         this.properties = properties;
         this.tempMemoFile = tempMemoFile;
+        this.charset = charset;
     }
 
     @Override
@@ -65,12 +67,11 @@ class ImportDBFIterator extends ImportIterator {
                         Boolean bool = record.getBoolean(fieldMapping.get(column));
                         listRow.add(bool == null ? null : String.valueOf(bool));
                     } else {
-                        //Пока charset захардкожена. Если потребуется другая, то добавить в язык как для CSV
                         if (record.getField(fieldMapping.get(column)).getType() == DbfFieldTypeEnum.Memo) {
-                            listRow.add(record.getMemoAsString(fieldMapping.get(column), Charset.forName("cp1251")));
+                            listRow.add(record.getMemoAsString(fieldMapping.get(column), Charset.forName(charset)));
                         }
                         else
-                            listRow.add(record.getString(fieldMapping.get(column), "cp1251"));
+                            listRow.add(record.getString(fieldMapping.get(column), charset));
                     }
                 }
                 return listRow;
@@ -96,7 +97,7 @@ class ImportDBFIterator extends ImportIterator {
             if (record.getField(field) == null) {
                 throw Throwables.propagate(new RuntimeException("Incorrect WHERE in IMPORT DBF: no such column"));
             }
-            Object fieldValue = record.getString(field, "cp1251");
+            Object fieldValue = record.getString(field, charset);
             boolean conditionResult = fieldValue == null || ignoreRowStringCondition(not, fieldValue, sign, value);
             ignoreRow = and ? (ignoreRow | conditionResult) : or ? (ignoreRow & conditionResult) : conditionResult;
         }

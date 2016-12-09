@@ -85,7 +85,7 @@ public abstract class ImportDataActionProperty extends SystemExplicitActionPrope
         } else return null;
     }
 
-    public static ImportDataActionProperty createDBFProperty(ValueClass valueClass, ValueClass wheresClass, ValueClass memoClass, List<String> ids, List<LCP> properties, BaseLogicsModule baseLM) {
+    public static ImportDataActionProperty createDBFProperty(ValueClass valueClass, ValueClass wheresClass, ValueClass memoClass, List<String> ids, List<LCP> properties, String charset, BaseLogicsModule baseLM) {
         for (int i = 0; i < ids.size(); ++i) { // для DBF делаем case insensitive
             String id = ids.get(i);
             if (id != null)
@@ -99,7 +99,7 @@ public abstract class ImportDataActionProperty extends SystemExplicitActionPrope
             classes.add(wheresClass);
         if(memoClass != null)
             classes.add(memoClass);
-        return new ImportDBFDataActionProperty(classes.toArray(new ValueClass[classes.size()]), wheresClass != null, memoClass != null, ids, properties, baseLM);
+        return new ImportDBFDataActionProperty(classes.toArray(new ValueClass[classes.size()]), wheresClass != null, memoClass != null, ids, properties, charset, baseLM);
     }
 
     public static ImportDataActionProperty createProperty(ValueClass valueClass, ImportSourceFormat format, List<String> ids, List<LCP> properties, BaseLogicsModule baseLM) {

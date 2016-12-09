@@ -1665,7 +1665,7 @@ importActionDefinitionBody[List<TypedParameter> context, boolean dynamic] return
         else if($type.format == ImportSourceFormat.XML)
         	$property = self.addScriptedImportXMLActionProperty($expr.property, $plist.ids, $plist.propUsages, attr);
         else if($type.format == ImportSourceFormat.DBF)
-            $property = self.addScriptedImportDBFActionProperty($expr.property, $whereExpr.property, memo, $plist.ids, $plist.propUsages);
+            $property = self.addScriptedImportDBFActionProperty($expr.property, $whereExpr.property, memo, $plist.ids, $plist.propUsages, charset);
 		else
 			$property = self.addScriptedImportActionProperty($type.format, $expr.property, $plist.ids, $plist.propUsages);
 	}
@@ -1748,7 +1748,7 @@ propertyUsageWithId returns [String id = null, PropertyUsage propUsage]
 importSourceFormat [List<TypedParameter> context, boolean dynamic] returns [ImportSourceFormat format, LPWithParams sheet, LPWithParams memo, String separator, boolean noHeader, String charset, boolean attr]
 	:	'XLS' 	{ $format = ImportSourceFormat.XLS; } ('SHEET' sheetProperty = propertyExpression[context, dynamic] { $sheet = $sheetProperty.property; })?
 	|	'XLSX'	{ $format = ImportSourceFormat.XLSX; } ('SHEET' sheetProperty = propertyExpression[context, dynamic] { $sheet = $sheetProperty.property; })?
-	|	'DBF'	{ $format = ImportSourceFormat.DBF; } ('MEMO' memoProperty = propertyExpression[context, dynamic] {$memo = $memoProperty.property; })?
+	|	'DBF'	{ $format = ImportSourceFormat.DBF; } ('MEMO' memoProperty = propertyExpression[context, dynamic] {$memo = $memoProperty.property; })? ('CHARSET' charsetVal = stringLiteral { $charset = $charsetVal.val; })?
 	|	'CSV'	{ $format = ImportSourceFormat.CSV; } (separatorVal = stringLiteral { $separator = $separatorVal.val; })? ('NOHEADER' { $noHeader = true; })? ('CHARSET' charsetVal = stringLiteral { $charset = $charsetVal.val; })?
 	|	'XML'	{ $format = ImportSourceFormat.XML; } ('ATTR' { $attr = true; })?
 	|	'JDBC'	{ $format = ImportSourceFormat.JDBC; }
