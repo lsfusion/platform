@@ -151,24 +151,12 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
                 container.flex = 1;
                 container.alignment = GFlexAlignment.STRETCH;
             }
-
-            if (parent.isVertical() || parent.isScroll()) {
-                autoSizedOnMainAxis = (container.isVertical() || container.isScroll()) && container.flex == 0 ||
-                                      container.isHorizontal() && container.alignment != GFlexAlignment.STRETCH;
-            } else {
-                autoSizedOnMainAxis = container.isHorizontal() && container.flex == 0 ||
-                                      container.isVertical() && container.alignment != GFlexAlignment.STRETCH;
-            }
         }
 
         boolean convertToColumns = clientContainer.childrenAlignment == Alignment.LEADING && container.isVertical();
         for (ClientComponent child : clientContainer.children) {
             GComponent childComponent = convertOrCast(child);
             container.children.add(childComponent);
-
-            if (autoSizedOnMainAxis) {
-                childComponent.flex = 0;
-            }
 
             convertToColumns = convertToColumns && childComponent.alignment == GFlexAlignment.LEADING;
         }
