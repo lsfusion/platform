@@ -115,7 +115,8 @@ public class ListFilesActionProperty extends ScriptingActionProperty {
                 ftpClient.enterLocalPassiveMode();
 
                 Map<String, Boolean> result = new HashMap<>();
-                FTPFile[] ftpFileList = ftpClient.listFiles(remotePath);
+                ftpClient.changeWorkingDirectory(remotePath);
+                FTPFile[] ftpFileList = ftpClient.listFiles();
                 for (FTPFile file : ftpFileList) {
                     result.put(file.getName(), file.isDirectory());
                 }
