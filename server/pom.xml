@@ -184,6 +184,14 @@
             <groupId>net.iryndin</groupId>
             <artifactId>jdbf</artifactId>
         </dependency>
+        <dependency> <!--net.iryndin(2.1) не справляется с записью dbf-->
+            <groupId>org.jdbf</groupId>
+            <artifactId>jdbf</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>junit</groupId>

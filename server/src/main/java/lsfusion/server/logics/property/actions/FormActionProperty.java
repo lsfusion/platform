@@ -1,6 +1,5 @@
 package lsfusion.server.logics.property.actions;
 
-import com.sun.corba.se.spi.orbutil.fsm.InputImpl;
 import jasperapi.ReportGenerator;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.IOUtils;
@@ -22,20 +21,24 @@ import lsfusion.server.classes.ConcreteCustomClass;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.form.entity.*;
+import lsfusion.server.form.entity.FormEntity;
+import lsfusion.server.form.entity.GroupObjectEntity;
+import lsfusion.server.form.entity.ObjectEntity;
+import lsfusion.server.form.entity.PropertyDrawEntity;
 import lsfusion.server.form.entity.filter.FilterEntity;
 import lsfusion.server.form.instance.FormCloseType;
 import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.form.instance.ObjectInstance;
-import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.NullValue;
-import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.*;
+import lsfusion.server.logics.property.actions.exporting.csv.CSVFormExporter;
+import lsfusion.server.logics.property.actions.exporting.dbf.DBFFormExporter;
+import lsfusion.server.logics.property.actions.exporting.json.JSONFormExporter;
+import lsfusion.server.logics.property.actions.exporting.xml.XMLFormExporter;
 import lsfusion.server.remote.FormReportManager;
-import lsfusion.server.remote.RemoteForm;
 import net.sf.jasperreports.engine.JRException;
 
 import java.io.IOException;
@@ -60,6 +63,7 @@ public class FormActionProperty extends SystemExplicitActionProperty {
 
     private final LCP formPageCount;
     private final LCP formExportFile;
+    private final LCP formExportFiles;
     private final LCP ignorePrintType;
 
     private final ConcreteCustomClass formResultClass;
@@ -119,6 +123,7 @@ public class FormActionProperty extends SystemExplicitActionProperty {
                               LCP formResultProperty,
                               LCP formPageCount,
                               LCP formExportFile,
+                              LCP formExportFiles,
                               LCP ignorePrintType,
                               AnyValuePropertyHolder chosenValueProperty,
                               AnyValuePropertyHolder requestedPropertySet,
@@ -134,6 +139,7 @@ public class FormActionProperty extends SystemExplicitActionProperty {
         
         this.formPageCount = formPageCount;
         this.formExportFile = formExportFile;
+        this.formExportFiles = formExportFiles;
         this.ignorePrintType = ignorePrintType;
 
         this.formResultClass = formResultClass;
@@ -231,7 +237,33 @@ public class FormActionProperty extends SystemExplicitActionProperty {
                         formExportFile.change(BaseUtils.mergeFileAndExtension(IOUtils.getFileBytes(ReportGenerator.exportToXls(generationData)), "xls".getBytes()), context);
                     } else if (exportType == FormExportType.XLSX) {
                         formExportFile.change(BaseUtils.mergeFileAndExtension(IOUtils.getFileBytes(ReportGenerator.exportToXlsx(generationData)), "xlsx".getBytes()), context);
-                    }
+                    } else if (exportType == FormExportType.XML) {
+                        formExportFile.change(BaseUtils.mergeFileAndExtension(new XMLFormExporter(generationData).export(), "xml".getBytes()), context);
+                    } else if (exportType == FormExportType.JSON) {
+                        formExportFile.change(BaseUtils.mergeFileAndExtension(new JSONFormExporter(generationData).export(), "json".getBytes()), context);
+                    } else if (exportType == FormExportType.CSV) {
+                        Map<String, byte[]> files = new CSVFormExporter(generationData).export();
+                        boolean first = true;
+                        for(Map.Entry<String, byte[]> entry : files.entrySet()) {
+                            byte[] fileBytes = BaseUtils.mergeFileAndExtension(entry.getValue(), "csv".getBytes());
+                            if(first) {
+                                formExportFile.change(fileBytes, context);
+                                first = false;
+                            }
+                            formExportFiles.change(fileBytes, context, new DataObject(entry.getKey()));
+                        }
+                    } else if (exportType == FormExportType.DBF) {
+                        Map<String, byte[]> files = new DBFFormExporter(generationData).export();
+                        boolean first = true;
+                        for(Map.Entry<String, byte[]> entry : files.entrySet()) {
+                            byte[] fileBytes = BaseUtils.mergeFileAndExtension(entry.getValue(), "dbf".getBytes());
+                            if(first) {
+                                formExportFile.change(fileBytes, context);
+                                first = false;
+                            }
+                            formExportFiles.change(fileBytes, context, new DataObject(entry.getKey()));
+                        }
+                }
                 } catch (JRException | IOException | ClassNotFoundException e) {
                     ServerLoggers.systemLogger.error(e);
                 }

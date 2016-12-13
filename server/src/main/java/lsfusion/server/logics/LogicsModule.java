@@ -544,7 +544,7 @@ public abstract class LogicsModule {
     }
 
     protected LAP addFAProp(AbstractGroup group, LocalizedString caption, FormEntity form, ObjectEntity input, ObjectEntity[] objectsToSet, Boolean manageSession, boolean isAdd, ObjectEntity contextObject, CalcProperty contextProperty, PropertyDrawEntity initFilterProperty, ModalityType modalityType, boolean checkOnOk, boolean showDrop, FormPrintType printType, FormExportType exportType, boolean readonly, boolean allowNulls) {
-        return addProperty(group, new LAP(new FormActionProperty(caption, form, input, objectsToSet, manageSession, isAdd, modalityType, checkOnOk, showDrop, printType, exportType, baseLM.formResult, baseLM.getFormResultProperty(), baseLM.formPageCount, baseLM.formExportFile, baseLM.ignorePrintType, baseLM.getChosenValueProperty(), baseLM.getRequestedValueProperty(), baseLM.getRequestCanceledProperty(), contextObject, contextProperty, initFilterProperty, readonly, allowNulls)));
+        return addProperty(group, new LAP(new FormActionProperty(caption, form, input, objectsToSet, manageSession, isAdd, modalityType, checkOnOk, showDrop, printType, exportType, baseLM.formResult, baseLM.getFormResultProperty(), baseLM.formPageCount, baseLM.formExportFile, baseLM.formExportFiles, baseLM.ignorePrintType, baseLM.getChosenValueProperty(), baseLM.getRequestedValueProperty(), baseLM.getRequestCanceledProperty(), contextObject, contextProperty, initFilterProperty, readonly, allowNulls)));
     }
 
     // ------------------- Change Class action ----------------- //

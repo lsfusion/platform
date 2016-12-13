@@ -3893,6 +3893,10 @@ formExportTypeLiteral returns [FormExportType val]
 		|	'PDF'  { $val = FormExportType.PDF; }
 		|	'XLS' { $val = FormExportType.XLS; }
 		|	'XLSX' { $val = FormExportType.XLSX; }
+		|   'XML' { $val = FormExportType.XML; }
+	    |   'JSON' { $val = FormExportType.JSON; }
+	    |   'CSV' { $val = FormExportType.CSV; }
+	    |   'DBF' { $val = FormExportType.DBF; }
 		)
 	;	
 

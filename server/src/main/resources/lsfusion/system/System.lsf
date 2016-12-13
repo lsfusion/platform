@@ -119,6 +119,7 @@ requestCanceled() = DATA LOCAL BOOLEAN ();
 formResult() = DATA LOCAL FormResult ();
 formPageCount() = DATA LOCAL INTEGER ();
 formExportFile() = DATA LOCAL CUSTOMFILE ();
+formExportFiles = DATA LOCAL CUSTOMFILE (VARSTRING[100]);
 
 prevImported = DATA LOCAL INTEGER ();
 imported = DATA LOCAL BOOLEAN (INTEGER);

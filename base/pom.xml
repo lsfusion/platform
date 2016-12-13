@@ -69,6 +69,8 @@
         <janino.version>2.7.8</janino.version>
         <commons.httpclient.version>3.1</commons.httpclient.version>
         <jdbf.version>2.1.0</jdbf.version>
+        <org.jdbf.version>1.1</org.jdbf.version>
+        <json.version>20090211</json.version>
 
         <spring.version>3.0.5.RELEASE</spring.version>
         <aspectj.version>1.8.5</aspectj.version>
@@ -387,6 +389,15 @@
                 <groupId>net.iryndin</groupId>
                 <artifactId>jdbf</artifactId>
                 <version>${jdbf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jdbf</groupId>
+                <artifactId>jdbf</artifactId>
+                <version>${org.jdbf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.json</groupId>
+                <artifactId>${json.version}</artifactId>
             </dependency>
 
             <!-- Spring libraries -->
