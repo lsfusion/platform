@@ -1,4 +1,4 @@
-package lsfusion.client.form.grid;
+package lsfusion.client.form.grid.preferences;
 
 import javax.swing.*;
 import java.util.Arrays;
@@ -8,16 +8,6 @@ public class UserPreferencesPropertyListModel extends DefaultListModel<UserPrefe
 
     public UserPreferencesPropertyListModel(boolean visible) {
         this.visible = visible;
-    }
-    
-    @Override
-    public UserPreferencesPropertyListItem getElementAt(int index) {
-        return super.getElementAt(index);
-    }
-
-    @Override
-    public UserPreferencesPropertyListItem get(int index) {
-        return super.get(index);
     }
 
     @Override

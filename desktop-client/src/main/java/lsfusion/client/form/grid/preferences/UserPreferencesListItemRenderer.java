@@ -1,4 +1,4 @@
-package lsfusion.client.form.grid;
+package lsfusion.client.form.grid.preferences;
 
 import javax.swing.*;
 import java.awt.*;

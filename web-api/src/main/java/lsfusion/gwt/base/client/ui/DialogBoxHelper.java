@@ -7,24 +7,28 @@ import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
+import lsfusion.gwt.base.client.BaseMessages;
 import lsfusion.gwt.base.client.EscapeUtils;
 import lsfusion.gwt.base.client.GwtClientUtils;
 
 public class DialogBoxHelper {
+    private static final BaseMessages messages = BaseMessages.Instance.get();
+    
     public interface CloseCallback {
         void closed(OptionType chosenOption);
     }
 
     public enum OptionType {
-        YES, NO, CLOSE, LOGOUT;
+        YES, NO, OK, CANCEL, CLOSE, LOGOUT;
 
         public String getCaption() {
-            //todo: localize
             switch (this) {
-                case YES: return "Yes";
-                case NO: return "No";
-                case CLOSE: return "Close";
-                case LOGOUT: return "Logout";
+                case YES: return messages.yes();
+                case NO: return messages.no();
+                case OK: return messages.ok();
+                case CANCEL: return messages.cancel();
+                case CLOSE: return messages.close();
+                case LOGOUT: return messages.logout();
             }
             throw new IllegalStateException("Shouldn't happen");
         }
@@ -36,6 +40,8 @@ public class DialogBoxHelper {
             switch (this) {
                 case YES: return 0;
                 case NO: return 1;
+                case OK: return 0;
+                case CANCEL: return 1;
                 case CLOSE: return 0;
                 case LOGOUT: return 1;
             }
@@ -75,13 +81,20 @@ public class DialogBoxHelper {
         messageBox.showCenter();
     }
     
+    public static MessageBox showConfirmBox(String caption, Widget contents, OptionType[] options, final CloseCallback closeCallback) {
+        MessageBox messageBox = new MessageBox(caption, contents, 0, closeCallback, options[0], options);
+        messageBox.showCenter();   
+        return messageBox;
+    }
+    
     public static void showLogoutMessageBox(String caption, String message, CloseCallback callback) {
         new MessageBox(caption, message, 0, callback, OptionType.CLOSE, OptionType.CLOSE, OptionType.LOGOUT).showCenter();
     }
 
-    private static final class MessageBox extends DialogBox {
+    @SuppressWarnings("GWTStyleCheck")
+    public static final class MessageBox extends DialogBox {
         private Widget contents;
-        private FlowPanel buttonPane;
+        private HorizontalPanel buttonPane;
         private Button activeButton;
 
         private MessageBox(String caption, String message, int timeout, final CloseCallback closeCallback, OptionType activeOption, OptionType... options) {
@@ -110,7 +123,7 @@ public class DialogBoxHelper {
                     }
                 };
                 timer.schedule(timeout);
-            }
+        }
 
             final VerticalPanel mainPane = new VerticalPanel();
             mainPane.add(contentsContainer);
@@ -137,7 +150,8 @@ public class DialogBoxHelper {
         }
 
         private void createButtonsPanel(OptionType activeOption, OptionType[] options, CloseCallback closeCallback) {
-            buttonPane = new FlowPanel();
+            buttonPane = new HorizontalPanel();
+            buttonPane.setSpacing(3);
             for (OptionType option : options) {
                 Button optionButton = createOptionButton(option, closeCallback);
                 if (option == activeOption) {

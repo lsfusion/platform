@@ -1,6 +1,7 @@
 package lsfusion.gwt.form.client.form.ui.toolbar.preferences;
 
 import com.allen_sauer.gwt.dnd.client.DragController;
+import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.*;
@@ -12,7 +13,6 @@ import java.util.ArrayList;
 public abstract class ColumnsDualListBox extends AbsolutePanel {
     private static final MainFrameMessages messages = MainFrameMessages.Instance.get();
     private static final String CSS_DUAL_LIST_BUTTONS_CONTAINER = "dualListButtonsContainer";
-    private static final String CSS_DUAL_LIST_CONTAINER = "dualListContainer";
 
     private ColumnsListBoxDragController dragController;
 
@@ -23,21 +23,12 @@ public abstract class ColumnsDualListBox extends AbsolutePanel {
     public ColumnsDualListBox() {
         setSize("100%", "100%");
 
-        HorizontalPanel horizontalPanel = new HorizontalPanel();
-        add(horizontalPanel);
-        horizontalPanel.addStyleName(CSS_DUAL_LIST_CONTAINER);
-        horizontalPanel.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
-
-        VerticalPanel verticalPanel = new VerticalPanel();
-        verticalPanel.addStyleName(CSS_DUAL_LIST_BUTTONS_CONTAINER);
-        verticalPanel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
-
         dragController = new ColumnsListBoxDragController(this);
         visibleList = new ColumnsListBox(dragController, true) {
             @Override
             public void singleclicked() {
-                setColumnCaptionBoxText(visibleList, true);
-                setColumnPatternBoxText(visibleList, true);
+                setColumnCaptionBoxText(visibleList);
+                setColumnPatternBoxText(visibleList);
             }
 
             @Override
@@ -45,12 +36,13 @@ public abstract class ColumnsDualListBox extends AbsolutePanel {
                 moveItems(visibleList, invisibleList, true);
             }
         };
+        ColumnsListContainer leftFocusPanel = new ColumnsListContainer(visibleList);
         
         invisibleList = new ColumnsListBox(dragController, false) {
             @Override
             public void singleclicked() {
-                setColumnCaptionBoxText(invisibleList, true);
-                setColumnPatternBoxText(invisibleList, true);
+                setColumnCaptionBoxText(invisibleList);
+                setColumnPatternBoxText(invisibleList);
             }
 
             @Override
@@ -58,34 +50,38 @@ public abstract class ColumnsDualListBox extends AbsolutePanel {
                 moveItems(invisibleList, visibleList, true);
             }
         };
-
-        ColumnsListContainer leftFocusPanel = new ColumnsListContainer(visibleList);
-        GCaptionPanel leftColumns = new GCaptionPanel(messages.formGridPreferencesDisplayedColumns(), leftFocusPanel);
-        leftColumns.setSize("100%", "100%");
-        horizontalPanel.add(leftColumns);
-        horizontalPanel.setCellHeight(leftColumns, "100%");
-        horizontalPanel.setCellWidth(leftColumns, "43%");
-
-        horizontalPanel.add(verticalPanel);
-        horizontalPanel.setCellWidth(verticalPanel, "6em");
-
         ColumnsListContainer rightFocusPanel = new ColumnsListContainer(invisibleList);
-        GCaptionPanel rightColumns = new GCaptionPanel(messages.formGridPreferencesHiddenColumns(), rightFocusPanel);
-        rightColumns.setSize("100%", "100%");
-        horizontalPanel.add(rightColumns);
-        horizontalPanel.setCellHeight(rightColumns, "100%");
-
-        horizontalPanel.setSize("100%", "100%");
 
         Button oneRight = new Button("&gt;");
         Button oneLeft = new Button("&lt;");
         Button allRight = new Button("&gt;&gt;");
         Button allLeft = new Button("&lt;&lt;");
-        verticalPanel.add(oneRight);
-        verticalPanel.add(oneLeft);
-        verticalPanel.add(new HTML("&nbsp;"));
-        verticalPanel.add(allRight);
-        verticalPanel.add(allLeft);
+
+        VerticalPanel buttonsPanel = new VerticalPanel();
+        buttonsPanel.addStyleName(CSS_DUAL_LIST_BUTTONS_CONTAINER);
+        buttonsPanel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
+        buttonsPanel.add(oneRight);
+        buttonsPanel.add(oneLeft);
+        buttonsPanel.add(new HTML("&nbsp;"));
+        buttonsPanel.add(allRight);
+        buttonsPanel.add(allLeft);
+        
+        HorizontalPanel buttonsPanelAligner = new HorizontalPanel();
+        buttonsPanelAligner.setHeight("100%");
+        buttonsPanelAligner.add(buttonsPanel);
+        buttonsPanelAligner.setCellVerticalAlignment(buttonsPanel, HasVerticalAlignment.ALIGN_MIDDLE);
+
+        DockLayoutPanel buttonsAndRightPanel = new DockLayoutPanel(Style.Unit.EM);
+        buttonsAndRightPanel.addWest(buttonsPanelAligner, 5);
+        buttonsAndRightPanel.add(new GCaptionPanel(messages.formGridPreferencesHiddenColumns(), rightFocusPanel));
+
+        DockLayoutPanel dockContainer = new DockLayoutPanel(Style.Unit.PCT);
+        dockContainer.setSize("100%", "100%");
+        dockContainer.addWest(new GCaptionPanel(messages.formGridPreferencesDisplayedColumns(), leftFocusPanel), 43);
+        dockContainer.add(buttonsAndRightPanel);
+
+        add(dockContainer);
+        
 
         allRight.addClickHandler(new ClickHandler() {
             @Override
@@ -115,14 +111,10 @@ public abstract class ColumnsDualListBox extends AbsolutePanel {
             }
         });
 
-        ColumnsListBoxDropController leftDropController = new ColumnsListBoxDropController(visibleList);
-        ColumnsListBoxDropController rightDropController = new ColumnsListBoxDropController(invisibleList);
-        ColumnsListContainerDropController rightPanelDropController = new ColumnsListContainerDropController(rightFocusPanel);
-        ColumnsListContainerDropController leftPanelDropController = new ColumnsListContainerDropController(leftFocusPanel);
-        dragController.registerDropController(leftDropController);
-        dragController.registerDropController(rightDropController);
-        dragController.registerDropController(rightPanelDropController);
-        dragController.registerDropController(leftPanelDropController);
+        dragController.registerDropController(new ColumnsListBoxDropController(visibleList));
+        dragController.registerDropController(new ColumnsListBoxDropController(invisibleList));
+        dragController.registerDropController(new ColumnsListContainerDropController(rightFocusPanel));
+        dragController.registerDropController(new ColumnsListContainerDropController(leftFocusPanel));
     }
 
     public void addVisible(PropertyListItem property) {
@@ -151,16 +143,16 @@ public abstract class ColumnsDualListBox extends AbsolutePanel {
         return selectedWidgets.size() == 0 ? null : (PropertyLabel)(selectedWidgets.get(selectedWidgets.size() - 1));
     }
     
-    protected void setColumnCaptionBoxText(ColumnsListBox list, boolean ignoreDefault) {
+    protected void setColumnCaptionBoxText(ColumnsListBox list) {
         PropertyLabel selectedWidget = getSelectedWidget(list);
         if(selectedWidget != null)
-            setColumnCaptionBoxText(selectedWidget.getUserCaption(ignoreDefault));
+            setColumnCaptionBoxText(selectedWidget.getUserCaption());
     }
 
-    protected void setColumnPatternBoxText(ColumnsListBox list, boolean ignoreDefault) {
+    protected void setColumnPatternBoxText(ColumnsListBox list) {
         PropertyLabel selectedWidget = getSelectedWidget(list);
         if(selectedWidget != null)
-            setColumnPatternBoxText(selectedWidget.getUserPattern(ignoreDefault));
+            setColumnPatternBoxText(selectedWidget.getUserPattern());
     }
     
     public abstract void setColumnCaptionBoxText(String text);

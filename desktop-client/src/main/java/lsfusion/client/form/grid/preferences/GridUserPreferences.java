@@ -1,4 +1,4 @@
-package lsfusion.client.form.grid;
+package lsfusion.client.form.grid.preferences;
 
 import lsfusion.client.logics.ClientGroupObject;
 import lsfusion.client.logics.ClientPropertyDraw;
@@ -50,38 +50,31 @@ public class GridUserPreferences {
     }
     
     public Boolean getUserHide(ClientPropertyDraw property) {
-        ColumnUserPreferences prefs = ensureColumnPreferences(property);
-        return prefs.userHide;
+        return ensureColumnPreferences(property).userHide;
     }
 
     public String getUserCaption(ClientPropertyDraw property) {
-        ColumnUserPreferences prefs = ensureColumnPreferences(property);
-        return prefs.userCaption;
+        return ensureColumnPreferences(property).userCaption;
     }
 
     public String getUserPattern(ClientPropertyDraw property) {
-        ColumnUserPreferences prefs = ensureColumnPreferences(property);
-        return prefs.userPattern;
+        return ensureColumnPreferences(property).userPattern;
     }
     
     public Integer getUserWidth(ClientPropertyDraw property) {
-        ColumnUserPreferences prefs = ensureColumnPreferences(property);
-        return prefs.userWidth;
+        return ensureColumnPreferences(property).userWidth;
     }
     
     public Integer getUserOrder(ClientPropertyDraw property) {
-        ColumnUserPreferences prefs = ensureColumnPreferences(property);
-        return prefs.userOrder;
+        return ensureColumnPreferences(property).userOrder;
     }
     
     public Integer getUserSort(ClientPropertyDraw property) {
-        ColumnUserPreferences prefs = ensureColumnPreferences(property);
-        return prefs.userSort;
+        return ensureColumnPreferences(property).userSort;
     }
     
     public Boolean getUserAscendingSort(ClientPropertyDraw property) {
-        ColumnUserPreferences prefs = ensureColumnPreferences(property);
-        return prefs.userAscendingSort;
+        return ensureColumnPreferences(property).userAscendingSort;
     }
     
     public Integer getPageSize() {
@@ -102,8 +95,7 @@ public class GridUserPreferences {
     }
     
     public void setUserHide(ClientPropertyDraw property, Boolean userHide) {
-        ColumnUserPreferences prefs = ensureColumnPreferences(property);
-        prefs.userHide = userHide;
+        ensureColumnPreferences(property).userHide = userHide;
     }
 
     public void setUserColumnsSettings(ClientPropertyDraw property, String userCaption, String userPattern, Integer userOrder, Boolean userHide) {
@@ -115,23 +107,19 @@ public class GridUserPreferences {
     }
     
     public void setUserWidth(ClientPropertyDraw property, Integer userWidth) {
-        ColumnUserPreferences prefs = ensureColumnPreferences(property);
-        prefs.userWidth = userWidth;
+        ensureColumnPreferences(property).userWidth = userWidth;
     }
 
     public void setUserOrder(ClientPropertyDraw property, Integer userOrder) {
-        ColumnUserPreferences prefs = ensureColumnPreferences(property);
-        prefs.userOrder = userOrder;    
+        ensureColumnPreferences(property).userOrder = userOrder;    
     }
 
     public void setUserSort(ClientPropertyDraw property, Integer userSort) {
-        ColumnUserPreferences prefs = ensureColumnPreferences(property);
-        prefs.userSort = userSort;
+        ensureColumnPreferences(property).userSort = userSort;
     }
 
     public void setUserAscendingSort(ClientPropertyDraw property, Boolean userAscendingSort) {
-        ColumnUserPreferences prefs = ensureColumnPreferences(property);
-        prefs.userAscendingSort = userAscendingSort;
+        ensureColumnPreferences(property).userAscendingSort = userAscendingSort;
     }
     
     public void resetPreferences() {

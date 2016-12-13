@@ -1,15 +1,15 @@
-package lsfusion.client.form.grid;
+package lsfusion.client.form.grid.preferences;
 
 import lsfusion.client.Main;
 import lsfusion.client.form.GroupObjectController;
 import lsfusion.client.form.RmiQueue;
+import lsfusion.client.form.grid.GridTable;
 import lsfusion.client.form.queries.FilterView;
 import lsfusion.client.form.queries.ToolbarGridButton;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.IOException;
 
 import static lsfusion.client.ClientResourceBundle.getString;
 
@@ -26,23 +26,19 @@ public class UserPreferencesButton extends ToolbarGridButton {
 
         addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                try {
-                    UserPreferencesDialog dialog = new UserPreferencesDialog(Main.frame, table, groupController, groupController.getForm().hasCanonicalName()) {
-                        @Override
-                        public void preferencesChanged() {
-                            RmiQueue.runAction(new Runnable() {
-                                @Override
-                                public void run() {
-                                    setIcon(table.generalPreferencesSaved() || table.userPreferencesSaved() ? PREFERENCES_SAVED_ICON : PREFERENCES_UNSAVED_ICON);
-                                    updateTooltip();
-                                }
-                            });
-                        }
-                    };
-                    dialog.setVisible(true);
-                } catch (IOException ex) {
-                    throw new RuntimeException(ex);
-                }
+                UserPreferencesDialog dialog = new UserPreferencesDialog(Main.frame, table, groupController, groupController.getForm().hasCanonicalName()) {
+                    @Override
+                    public void preferencesChanged() {
+                        RmiQueue.runAction(new Runnable() {
+                            @Override
+                            public void run() {
+                                setIcon(table.generalPreferencesSaved() || table.userPreferencesSaved() ? PREFERENCES_SAVED_ICON : PREFERENCES_UNSAVED_ICON);
+                                updateTooltip();
+                            }
+                        });
+                    }
+                };
+                dialog.setVisible(true);
             }
         });
     }

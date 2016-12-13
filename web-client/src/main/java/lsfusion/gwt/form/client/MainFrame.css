@@ -81,7 +81,6 @@ textarea {
     font-family: tahoma;
     font-weight: bold;
     cursor: pointer;
-    cursor: hand;
 }
 
 .closeTabButton:hover {
@@ -101,7 +100,7 @@ textarea {
 .messageBox-messageContainer {
     height: auto;
     overflow: auto;
-    margin-bottom: 10px;
+    padding: 5px 5px 7px 5px;
 }
 
 /* ------------ Resizable window ------------ */
@@ -197,6 +196,7 @@ textarea {
 
 /* ------------ Caption panel ------------ */
 .captionPanel {
+    padding-top: 1px;
 }
 
 .captionPanelContainer {
@@ -421,10 +421,6 @@ textarea {
 }
 
 /* ------------ Table user preferences  ------------ */
-.dualListContainer {
-    border-spacing: 3px;
-}
-
 .listPositioner{
     z-index: 1;
     border-top: 1px dashed green;
@@ -449,15 +445,15 @@ textarea {
 }
 
 .dualListButtonsContainer {
-    margin: 0.4em;
+    margin: 0.5em;
 }
 
 .dualListButtonsContainer td {
-    padding: 0.2em 0.4em;
+    padding: 0.2em 0.5em;
 }
 
 .dualListButtonsContainer button {
-    width: 4em;
+    width: 3em;
 }
 
 .userPreferencesDualList .dragdrop-selected ,
@@ -469,7 +465,7 @@ textarea {
     opacity: 0.5;
 }
 
-.userPreferencesFontSizeTextBox {
+.userPreferencesIntegralTextBox {
     padding: 2px;
     text-align: right;
     width: 3em;    
@@ -477,7 +473,26 @@ textarea {
 
 .userPreferencesColumnTextBox {
     padding: 2px;
-    width: 28em;
+    flex: auto !important;
+}
+
+.userPreferencesCheckBox {
+    padding-top: 3px;
+    display: flex;
+}
+
+.userPreferencesFontLabel {
+    padding-bottom: 2px;
+}
+
+.userPreferencesSaveResetButton {
+    width: 13em;
+    padding: 0.3em 0;
+}
+
+.userPreferencesRadioButton {
+    display: inline-flex;
+    align-items: center;
 }
 
 /* ------------ Colored corner triangles  ------------ */

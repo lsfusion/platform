@@ -18,12 +18,12 @@ public class PropertyLabel extends Label {
         return propertyItem;
     }
     
-    public String getUserCaption(boolean ignoreDefault) {
-        return propertyItem.getUserCaption(ignoreDefault);
+    public String getUserCaption() {
+        return propertyItem.getUserCaption(true);
     }
 
-    public String getUserPattern(boolean ignoreDefault) {
-        return propertyItem.getUserPattern(ignoreDefault);
+    public String getUserPattern() {
+        return propertyItem.getUserPattern(true);
     }
     
     public void setUserCaption(String userCaption) {

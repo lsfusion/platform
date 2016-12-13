@@ -1,28 +1,32 @@
-package lsfusion.client.form.grid;
+package lsfusion.client.form.grid.preferences;
 
 import lsfusion.base.BaseUtils;
+import lsfusion.base.Callback;
 import lsfusion.base.Pair;
 import lsfusion.client.ArrayListTransferHandler;
 import lsfusion.client.Main;
 import lsfusion.client.form.GroupObjectController;
 import lsfusion.client.form.RmiQueue;
+import lsfusion.client.form.grid.GridTable;
 import lsfusion.client.form.queries.TitledPanel;
 import lsfusion.client.logics.ClientGroupObjectValue;
 import lsfusion.client.logics.ClientPropertyDraw;
 import lsfusion.interop.FontInfo;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import java.awt.*;
 import java.awt.event.*;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static javax.swing.Box.createHorizontalStrut;
+import static javax.swing.Box.createVerticalStrut;
 import static lsfusion.client.ClientResourceBundle.getString;
 
 public abstract class UserPreferencesDialog extends JDialog {
@@ -40,7 +44,7 @@ public abstract class UserPreferencesDialog extends JDialog {
     private JTextField columnCaptionField;
     private JTextField columnPatternField;
 
-    public UserPreferencesDialog(Frame owner, final GridTable initialTable, GroupObjectController goController, final boolean canBeSaved) throws IOException {
+    public UserPreferencesDialog(Frame owner, final GridTable initialTable, GroupObjectController goController, final boolean canBeSaved) {
         super(owner, getString("form.grid.preferences"), true);
         this.initialTable = initialTable;
         this.goController = goController;
@@ -48,10 +52,6 @@ public abstract class UserPreferencesDialog extends JDialog {
         setMinimumSize(new Dimension(500, 500));
         setBounds(new Rectangle(100, 100, 500, 500));
         setLocationRelativeTo(owner);
-        setLayout(new BorderLayout());
-
-        final JPanel allFieldsPanel = new JPanel();
-        allFieldsPanel.setLayout(new BoxLayout(allFieldsPanel, BoxLayout.Y_AXIS));
 
         ActionListener escListener = new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
@@ -77,18 +77,7 @@ public abstract class UserPreferencesDialog extends JDialog {
         columnsPanel.add(createArrowsPanel(), BoxLayout.Y_AXIS);
         columnsPanel.add(invisiblePanel);
 
-
-        final JButton applyButton = new JButton(getString("form.grid.preferences.save.settings"));
-        applyButton.addActionListener(createApplyResetButtonListener(true, false));
-
-        final JButton resetButton = new JButton(getString("form.grid.preferences.reset.settings"));
-        resetButton.addActionListener(createApplyResetButtonListener(false, false));
-
-        TitledPanel currentUserPanel = new TitledPanel(getString("form.grid.preferences.for.user"));
-        currentUserPanel.add(applyButton, BorderLayout.NORTH);
-        currentUserPanel.add(resetButton, BorderLayout.SOUTH);
-
-        columnCaptionField = new JTextField(30);
+        columnCaptionField = new JTextField();
         columnCaptionField.getDocument().addDocumentListener(new DocumentListener() {
             public void changedUpdate(DocumentEvent e) {
                 updateColumnName();
@@ -114,7 +103,7 @@ public abstract class UserPreferencesDialog extends JDialog {
             }
         });
 
-        columnPatternField = new JTextField(30);
+        columnPatternField = new JTextField();
         columnPatternField.getDocument().addDocumentListener(new DocumentListener() {
             public void changedUpdate(DocumentEvent e) {
                 updateColumnPattern();
@@ -138,65 +127,90 @@ public abstract class UserPreferencesDialog extends JDialog {
             }
         });
 
-        TitledPanel columnSettingsPanel = new TitledPanel(getString("form.grid.preferences.selected.column.settings"));
-        columnSettingsPanel.setLayout(new BoxLayout(columnSettingsPanel, BoxLayout.Y_AXIS));//FlowLayout(FlowLayout.CENTER));
-
         JPanel columnCaptionPanel = new JPanel();
+        columnCaptionPanel.setLayout(new BoxLayout(columnCaptionPanel, BoxLayout.X_AXIS));
         columnCaptionPanel.add(new JLabel(getString("form.grid.preferences.column.caption") + ": "));
         columnCaptionPanel.add(columnCaptionField);
-        columnSettingsPanel.add(columnCaptionPanel);
-
+        
         JPanel columnPatternPanel = new JPanel();
+        columnPatternPanel.setLayout(new BoxLayout(columnPatternPanel, BoxLayout.X_AXIS));
         columnPatternPanel.add(new JLabel(getString("form.grid.preferences.column.pattern") + ": "));
         columnPatternPanel.add(columnPatternField);
+        
+        TitledPanel columnSettingsPanel = new TitledPanel(getString("form.grid.preferences.selected.column.settings"));
+        columnSettingsPanel.setLayout(new BoxLayout(columnSettingsPanel, BoxLayout.Y_AXIS));
+        columnSettingsPanel.add(columnCaptionPanel);
+        columnSettingsPanel.add(createVerticalStrut(3));
         columnSettingsPanel.add(columnPatternPanel);
 
-        TitledPanel gridSettingsPanel = new TitledPanel(getString("form.grid.preferences.grid.settings"));
-        gridSettingsPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
-        gridSettingsPanel.add(new JLabel(getString("form.grid.preferences.page.size") + ": "));
         pageSizeField = new JTextField(4);
-        gridSettingsPanel.add(pageSizeField);
-        gridSettingsPanel.add(new JLabel(getString("form.grid.preferences.header.height") + ": "));
+        pageSizeField.setMaximumSize(new Dimension(pageSizeField.getPreferredSize().width, pageSizeField.getMaximumSize().height));
+        pageSizeField.setHorizontalAlignment(SwingConstants.RIGHT);
+        JPanel pageSizePanel = new JPanel();
+        pageSizePanel.setLayout(new BoxLayout(pageSizePanel, BoxLayout.X_AXIS));
+        pageSizePanel.add(new JLabel(getString("form.grid.preferences.page.size") + ": "));
+        pageSizePanel.add(pageSizeField);
+        pageSizePanel.add(Box.createHorizontalGlue());
+
         headerHeightField = new JTextField(4);
-        gridSettingsPanel.add(headerHeightField);
+        headerHeightField.setMaximumSize(new Dimension(headerHeightField.getPreferredSize().width, headerHeightField.getMaximumSize().height));
+        headerHeightField.setHorizontalAlignment(SwingConstants.RIGHT);
+        JPanel headerHeightPanel = new JPanel();
+        headerHeightPanel.setLayout(new BoxLayout(headerHeightPanel, BoxLayout.X_AXIS));
+        headerHeightPanel.add(new JLabel(getString("form.grid.preferences.header.height") + ": "));
+        headerHeightPanel.add(headerHeightField);
+        headerHeightPanel.add(Box.createHorizontalGlue());
 
+        fontSizeField = new JTextField(3);
+        fontSizeField.setHorizontalAlignment(SwingConstants.RIGHT);
+        isFontBoldCheckBox = new JCheckBox(getString("form.grid.preferences.font.style.bold"));
+        isFontItalicCheckBox = new JCheckBox(getString("form.grid.preferences.font.style.italic"));
+        JPanel fontPanelWrapper = new JPanel();
+        fontPanelWrapper.setLayout(new BoxLayout(fontPanelWrapper, BoxLayout.X_AXIS));
+        fontPanelWrapper.add(new JLabel(getString("form.grid.preferences.font.size") + ": "));
+        fontPanelWrapper.add(fontSizeField);
+        fontPanelWrapper.add(createHorizontalStrut(5));
+        fontPanelWrapper.add(isFontBoldCheckBox);
+        fontPanelWrapper.add(isFontItalicCheckBox);
+        TitledPanel fontPanel = new TitledPanel(getString("form.grid.preferences.font"));
+        fontPanel.add(fontPanelWrapper, BorderLayout.WEST);
+
+        TitledPanel gridSettingsPanel = new TitledPanel(getString("form.grid.preferences.grid.settings"));
+        gridSettingsPanel.setLayout(new BoxLayout(gridSettingsPanel, BoxLayout.Y_AXIS));
+        gridSettingsPanel.add(pageSizePanel);
+        gridSettingsPanel.add(createVerticalStrut(3));
+        gridSettingsPanel.add(headerHeightPanel);
+        gridSettingsPanel.add(createVerticalStrut(4));
+        gridSettingsPanel.add(fontPanel);
         
-        fontSizeField = new JTextField(2);
-        isFontBoldCheckBox = new JCheckBox(getString("descriptor.editor.font.style.bold"));
-        isFontItalicCheckBox = new JCheckBox(getString("descriptor.editor.font.style.italic"));
+        Box gridColumnSettingsPanel = new Box(BoxLayout.Y_AXIS);
+        gridColumnSettingsPanel.add(createVerticalStrut(2));
+        gridColumnSettingsPanel.add(columnSettingsPanel);
+        gridColumnSettingsPanel.add(createVerticalStrut(2));
+        gridColumnSettingsPanel.add(gridSettingsPanel);
+
+        Box settingsAndSaveResetPanel = new Box(BoxLayout.Y_AXIS);
+        settingsAndSaveResetPanel.add(gridColumnSettingsPanel);
         
-        TitledPanel fontPanel = new TitledPanel(getString("form.grid.preferences.font.settings"));
-        fontPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
-        fontPanel.add(new JLabel(getString("descriptor.editor.font.size") + ": "));
-        fontPanel.add(fontSizeField);
-        fontPanel.add(isFontBoldCheckBox);
-        fontPanel.add(isFontItalicCheckBox);
-
-        Box gridColumnFontSettingsPanel = new Box(BoxLayout.Y_AXIS);
-        gridColumnFontSettingsPanel.add(gridSettingsPanel);
-        gridColumnFontSettingsPanel.add(columnSettingsPanel);
-        gridColumnFontSettingsPanel.add(fontPanel);
-        
-        JPanel applyResetButtonsPanel = new JPanel();
-        applyResetButtonsPanel.add(currentUserPanel, BorderLayout.WEST);
-
-        if (Main.configurationAccessAllowed) {
-            final JButton applyForAllButton = new JButton(getString("form.grid.preferences.save.settings"));
-            applyForAllButton.addActionListener(createApplyResetButtonListener(true, true));
-
-            final JButton resetForAllButton = new JButton(getString("form.grid.preferences.reset.settings"));
-            resetForAllButton.addActionListener(createApplyResetButtonListener(false, true));
-
-            TitledPanel allUsersPanelPanel = new TitledPanel(getString("form.grid.preferences.for.all.users"));
-            allUsersPanelPanel.add(applyForAllButton, BorderLayout.NORTH);
-            allUsersPanelPanel.add(resetForAllButton, BorderLayout.SOUTH);
-            applyResetButtonsPanel.add(allUsersPanelPanel, BorderLayout.EAST);
-        }
-
-        Box settingsAndApplyResetPanel = new Box(BoxLayout.Y_AXIS);
-        settingsAndApplyResetPanel.add(gridColumnFontSettingsPanel);
         if (canBeSaved) {
-            settingsAndApplyResetPanel.add(applyResetButtonsPanel);
+            JPanel saveResetButtonsPanel = new JPanel(new BorderLayout());
+            final JButton saveButton = new JButton(getString("form.grid.preferences.save"));
+            saveButton.setPreferredSize(new Dimension(saveButton.getPreferredSize().width, 20));
+            saveButton.addActionListener(createSaveResetButtonListener(true));
+
+            final JButton resetButton = new JButton(getString("form.grid.preferences.reset"));
+            resetButton.setPreferredSize(new Dimension(resetButton.getPreferredSize().width, 20));
+            resetButton.addActionListener(createSaveResetButtonListener(false));
+
+            JPanel buttonsPanel = new JPanel();
+            buttonsPanel.setLayout(new GridLayout(2, 1, 0, 2));
+            buttonsPanel.add(saveButton);
+            buttonsPanel.add(resetButton);
+            
+            saveResetButtonsPanel.add(buttonsPanel, BorderLayout.WEST);
+            saveResetButtonsPanel.setBorder(new EmptyBorder(3, 3, 3, 3));
+            
+            settingsAndSaveResetPanel.add(saveResetButtonsPanel);
         }
 
         JButton okButton = new JButton("OK");
@@ -207,31 +221,24 @@ public abstract class UserPreferencesDialog extends JDialog {
             }
         });
 
-        JButton cancelButton = new JButton(getString("form.grid.preferences.cancel"));
+        JButton cancelButton = new JButton(getString("dialog.cancel"));
         cancelButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 setVisible(false);
             }
         });
 
-        JPanel buttonsPanel = new JPanel();
-        buttonsPanel.add(okButton);
-        buttonsPanel.add(cancelButton);
+        JPanel okCancelButtons = new JPanel();
+        okCancelButtons.add(okButton);
+        okCancelButtons.add(cancelButton);
 
-        JPanel bottomPanel = new JPanel();
-        bottomPanel.setLayout(new BorderLayout());
-        bottomPanel.add(settingsAndApplyResetPanel, BorderLayout.NORTH);
-        bottomPanel.add(buttonsPanel, BorderLayout.EAST);
-
-        JPanel mainPanel = new JPanel();
-        mainPanel.setLayout(new BorderLayout());
-        mainPanel.add(columnsPanel, BorderLayout.CENTER);
-        mainPanel.add(bottomPanel, BorderLayout.SOUTH);
+        JPanel settingsOkCancelPanel = new JPanel(new BorderLayout());
+        settingsOkCancelPanel.add(settingsAndSaveResetPanel, BorderLayout.NORTH);
+        settingsOkCancelPanel.add(okCancelButtons, BorderLayout.EAST);
 
         setLayout(new BorderLayout());
-        add(mainPanel, BorderLayout.CENTER);
-
-        add(bottomPanel, BorderLayout.SOUTH);
+        add(columnsPanel, BorderLayout.CENTER);
+        add(settingsOkCancelPanel, BorderLayout.SOUTH);
         
         refreshValues(mergeFont());
     }
@@ -299,13 +306,10 @@ public abstract class UserPreferencesDialog extends JDialog {
             }
         });
 
-        JScrollPane visibleListView = new JScrollPane(list);
-        list.setCellRenderer(new UserPreferencesListItemRenderer(true));
-        visibleListView.setPreferredSize(new Dimension(200, 100));
-        TitledPanel visiblePanel = new TitledPanel(getString(visible ? "form.grid.preferences.displayed.columns" : "form.grid.preferences.hidden.columns"));
-        visiblePanel.setLayout(new BorderLayout());
-        visiblePanel.add(visibleListView, BorderLayout.CENTER);
-        return visiblePanel;
+        JScrollPane listView = new JScrollPane(list);
+        list.setCellRenderer(new UserPreferencesListItemRenderer(visible));
+        listView.setPreferredSize(new Dimension(200, 100));
+        return new TitledPanel(getString(visible ? "form.grid.preferences.displayed.columns" : "form.grid.preferences.hidden.columns"), listView);
     }
 
     private JPanel createArrowsPanel() {
@@ -329,7 +333,7 @@ public abstract class UserPreferencesDialog extends JDialog {
         arrowsPanel.setLayout(new BoxLayout(arrowsPanel, BoxLayout.Y_AXIS));
         arrowsPanel.add(hideSelectedButton);
         arrowsPanel.add(showSelectedButton);
-        arrowsPanel.add(Box.createVerticalStrut(10));
+        arrowsPanel.add(createVerticalStrut(10));
         arrowsPanel.add(hideAllButton);
         arrowsPanel.add(showAllButton);
         return arrowsPanel;
@@ -365,16 +369,16 @@ public abstract class UserPreferencesDialog extends JDialog {
         };
     }
 
-    private ActionListener createApplyResetButtonListener(final boolean apply, final boolean forAllUsers) {
+    private ActionListener createSaveResetButtonListener(final boolean save) {
         return new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 RmiQueue.runAction(new Runnable() {
                     @Override
                     public void run() {
-                        if (apply) {
-                            applyButtonPressed(forAllUsers);
+                        if (save) {
+                            saveButtonPressed();
                         } else {
-                            resetButtonPressed(forAllUsers);
+                            resetButtonPressed();
                         }
                         firePropertyChange("buttonPressed", null, null);
                     }
@@ -423,37 +427,43 @@ public abstract class UserPreferencesDialog extends JDialog {
         dispose();
     }
 
-    private void applyButtonPressed(boolean forAllUsers) {
-        Map<Pair<ClientPropertyDraw, ClientGroupObjectValue>, Boolean> orderDirections = initialTable.getOrderDirections();
-        Map<ClientPropertyDraw, Pair<Boolean, Integer>> sortDirections = new HashMap<>();
-        int j = 0;
-        for (Map.Entry<Pair<ClientPropertyDraw, ClientGroupObjectValue>, Boolean> entry : orderDirections.entrySet()) {
-            sortDirections.put(entry.getKey().first, new Pair<>(entry.getValue(), j));
-            j++;
-        }
+    private void saveButtonPressed() {
+        final SaveResetConfirmDialog confirmDialog = new SaveResetConfirmDialog(true);
+        confirmDialog.show(new Callback() {
+            @Override
+            public void done(Object result) {
+                Map<Pair<ClientPropertyDraw, ClientGroupObjectValue>, Boolean> orderDirections = initialTable.getOrderDirections();
+                Map<ClientPropertyDraw, Pair<Boolean, Integer>> sortDirections = new HashMap<>();
+                int j = 0;
+                for (Map.Entry<Pair<ClientPropertyDraw, ClientGroupObjectValue>, Boolean> entry : orderDirections.entrySet()) {
+                    sortDirections.put(entry.getKey().first, new Pair<>(entry.getValue(), j));
+                    j++;
+                }
 
-        for (UserPreferencesPropertyListItem propertyItem : visibleListModel.toArray()) {
-            applyPropertyUserPreferences(propertyItem, false, visibleListModel.indexOf(propertyItem), sortDirections.get(propertyItem.property));
-        }
+                for (UserPreferencesPropertyListItem propertyItem : visibleListModel.toArray()) {
+                    savePropertyUserPreferences(propertyItem, false, visibleListModel.indexOf(propertyItem), sortDirections.get(propertyItem.property));
+                }
 
-        for (UserPreferencesPropertyListItem propertyItem : invisibleListModel.toArray()) {
-            int propertyOrder = visibleListModel.getSize() + invisibleListModel.indexOf(propertyItem);
-            applyPropertyUserPreferences(propertyItem, true, propertyOrder, sortDirections.get(propertyItem.property));
-        }
+                for (UserPreferencesPropertyListItem propertyItem : invisibleListModel.toArray()) {
+                    int propertyOrder = visibleListModel.getSize() + invisibleListModel.indexOf(propertyItem);
+                    savePropertyUserPreferences(propertyItem, true, propertyOrder, sortDirections.get(propertyItem.property));
+                }
 
-        Font tableFont = getInitialFont();
-        tableFont = tableFont.deriveFont(getFontStyle(), getFontSize(tableFont.getSize()));
-        initialTable.setUserFont(tableFont);
-        initialTable.setUserPageSize(getPageSize());
+                Font tableFont = getInitialFont();
+                tableFont = tableFont.deriveFont(getFontStyle(), getFontSize(tableFont.getSize()));
+                initialTable.setUserFont(tableFont);
+                initialTable.setUserPageSize(getPageSize());
 
-        Integer headerHeight = getHeaderHeight();
-        initialTable.setUserHeaderHeight(headerHeight);
-        
-        initialTable.saveCurrentPreferences(forAllUsers, saveSuccessCallback, saveFailureCallback);
+                Integer headerHeight = getHeaderHeight();
+                initialTable.setUserHeaderHeight(headerHeight);
+
+                initialTable.saveCurrentPreferences(confirmDialog.forAll, saveSuccessCallback, saveFailureCallback);   
+            }
+        });
     }
 
-    private void applyPropertyUserPreferences(UserPreferencesPropertyListItem propertyItem, boolean hide, int propertyOrder,
-                                                               Pair<Boolean, Integer> sortDirections) {
+    private void savePropertyUserPreferences(UserPreferencesPropertyListItem propertyItem, boolean hide, int propertyOrder,
+                                             Pair<Boolean, Integer> sortDirections) {
         Boolean sortDirection = sortDirections != null ? sortDirections.first : null;
         Integer sortIndex = sortDirections != null ? sortDirections.second : null;
         initialTable.setUserColumnSettings(propertyItem.property, propertyItem.getUserCaption(true), propertyItem.getUserPattern(true), propertyOrder, hide);
@@ -461,16 +471,15 @@ public abstract class UserPreferencesDialog extends JDialog {
         initialTable.setUserAscendingSort(propertyItem.property, sortDirection);
     }
 
-    private void resetButtonPressed(boolean forAllUsers) {
-        boolean completeReset = false;
-        if (forAllUsers) {
-            int result = JOptionPane.showConfirmDialog(this, getString("form.grid.preferences.complete.reset"), getString("form.grid.preferences.complete.reset.header"), JOptionPane.YES_NO_OPTION);
-            if (result == JOptionPane.YES_OPTION) {
-                completeReset = true;
+    private void resetButtonPressed() {
+        final SaveResetConfirmDialog confirmDialog = new SaveResetConfirmDialog(false);
+        confirmDialog.show(new Callback() {
+            @Override
+            public void done(Object result) {
+                clearColumnFields();
+                initialTable.resetPreferences(confirmDialog.forAll, confirmDialog.complete, saveSuccessCallback, saveFailureCallback);    
             }
-        }
-        clearColumnFields();
-        initialTable.resetPreferences(forAllUsers, completeReset, saveSuccessCallback, saveFailureCallback);
+        });
     }
     
     private Runnable saveSuccessCallback = new Runnable() {

@@ -54,38 +54,31 @@ public class GGridUserPreferences {
     }
 
     public Boolean getUserHide(GPropertyDraw property) {
-        GColumnUserPreferences prefs = ensureColumnPreferences(property);
-        return prefs.userHide;
+        return ensureColumnPreferences(property).userHide;
     }
 
     public String getUserCaption(GPropertyDraw property) {
-        GColumnUserPreferences prefs = ensureColumnPreferences(property);
-        return prefs.userCaption;
+        return ensureColumnPreferences(property).userCaption;
     }
 
     public String getUserPattern(GPropertyDraw property) {
-        GColumnUserPreferences prefs = ensureColumnPreferences(property);
-        return prefs.userPattern;
+        return ensureColumnPreferences(property).userPattern;
     }
 
     public Integer getUserWidth(GPropertyDraw property) {
-        GColumnUserPreferences prefs = ensureColumnPreferences(property);
-        return prefs.userWidth;
+        return ensureColumnPreferences(property).userWidth;
     }
 
     public Integer getUserOrder(GPropertyDraw property) {
-        GColumnUserPreferences prefs = ensureColumnPreferences(property);
-        return prefs.userOrder;
+        return ensureColumnPreferences(property).userOrder;
     }
 
     public Integer getUserSort(GPropertyDraw property) {
-        GColumnUserPreferences prefs = ensureColumnPreferences(property);
-        return prefs.userSort;
+        return ensureColumnPreferences(property).userSort;
     }
 
     public Boolean getUserAscendingSort(GPropertyDraw property) {
-        GColumnUserPreferences prefs = ensureColumnPreferences(property);
-        return prefs.userAscendingSort;
+        return ensureColumnPreferences(property).userAscendingSort;
     }
 
     private GColumnUserPreferences ensureColumnPreferences(GPropertyDraw property) {
@@ -98,8 +91,7 @@ public class GGridUserPreferences {
     }
 
     public void setUserHide(GPropertyDraw property, Boolean userHide) {
-        GColumnUserPreferences prefs = ensureColumnPreferences(property);
-        prefs.userHide = userHide;
+        ensureColumnPreferences(property).userHide = userHide;
     }
 
     public void setColumnSettings(GPropertyDraw property, String userCaption, String userPattern, Integer userOrder, Boolean userHide) {
@@ -111,28 +103,23 @@ public class GGridUserPreferences {
     }
 
     public void setUserWidth(GPropertyDraw property, Integer userWidth) {
-        GColumnUserPreferences prefs = ensureColumnPreferences(property);
-        prefs.userWidth = userWidth;
+        ensureColumnPreferences(property).userWidth = userWidth;
     }
 
     public void setUserOrder(GPropertyDraw property, Integer userOrder) {
-        GColumnUserPreferences prefs = ensureColumnPreferences(property);
-        prefs.userOrder = userOrder;
+        ensureColumnPreferences(property).userOrder = userOrder;
     }
 
     public void setUserSort(GPropertyDraw property, Integer userSort) {
-        GColumnUserPreferences prefs = ensureColumnPreferences(property);
-        prefs.userSort = userSort;
+        ensureColumnPreferences(property).userSort = userSort;
     }
 
     public void setUserAscendingSort(GPropertyDraw property, Boolean userAscendingSort) {
-        GColumnUserPreferences prefs = ensureColumnPreferences(property);
-        prefs.userAscendingSort = userAscendingSort;
+        ensureColumnPreferences(property).userAscendingSort = userAscendingSort;
     }
 
     public void setUserOrder(GPropertyDraw property, Boolean userAscendingSort) {
-        GColumnUserPreferences prefs = ensureColumnPreferences(property);
-        prefs.userAscendingSort = userAscendingSort;
+        ensureColumnPreferences(property).userAscendingSort = userAscendingSort;
     }
 
     public void resetPreferences(GPropertyDraw property) {

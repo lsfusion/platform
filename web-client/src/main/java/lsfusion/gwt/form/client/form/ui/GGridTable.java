@@ -1025,16 +1025,11 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
         });
     }
     
-    public void resetPreferences(final boolean forAllUsers, final ErrorHandlingCallback<ServerResponseResult> callback) {
+    public void resetPreferences(boolean forAll, boolean complete, final ErrorHandlingCallback<ServerResponseResult> callback) {
         currentGridPreferences.resetPreferences();
 
-        if (forAllUsers) {
-            form.blockingConfirm(messages.formGridPreferencesCompleteReset(), messages.formGridPreferencesCompleteResetHeader(), false, 0, 0, new DialogBoxHelper.CloseCallback() {
-                @Override
-                public void closed(DialogBoxHelper.OptionType chosenOption) {
-                    doResetPreferences(true, chosenOption == DialogBoxHelper.OptionType.YES, callback);
-                }
-            });
+        if (forAll) {
+            doResetPreferences(true, complete, callback);
         } else if (!properties.isEmpty()) {
             doResetPreferences(false, false, callback);
         }

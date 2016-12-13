@@ -6,6 +6,7 @@ import lsfusion.base.Pair;
 import lsfusion.client.Main;
 import lsfusion.client.SwingUtils;
 import lsfusion.client.form.*;
+import lsfusion.client.form.grid.preferences.GridUserPreferences;
 import lsfusion.client.form.layout.ClientFormLayout;
 import lsfusion.client.form.renderer.LabelPropertyRenderer;
 import lsfusion.client.form.sort.MultiLineHeaderRenderer;
@@ -1450,7 +1451,7 @@ public class GridTable extends ClientPropertyTable {
 
                             onSuccess.run();
 
-                            JOptionPane.showMessageDialog(Main.frame, getString("form.grid.preferences.reset.settings.successfully.complete"), getString("form.grid.preferences.save"), JOptionPane.INFORMATION_MESSAGE);
+                            JOptionPane.showMessageDialog(Main.frame, getString("form.grid.preferences.reset.success"), getString("form.grid.preferences.save"), JOptionPane.INFORMATION_MESSAGE);
                         }
                     });
                 }
@@ -1500,7 +1501,7 @@ public class GridTable extends ClientPropertyTable {
 
                             onSuccess.run();
 
-                            JOptionPane.showMessageDialog(Main.frame, getString("form.grid.preferences.save.settings.successfully.complete"), getString("form.grid.preferences.save"), JOptionPane.INFORMATION_MESSAGE);
+                            JOptionPane.showMessageDialog(Main.frame, getString("form.grid.preferences.save.success"), getString("form.grid.preferences.save"), JOptionPane.INFORMATION_MESSAGE);
                         }
                     });
 

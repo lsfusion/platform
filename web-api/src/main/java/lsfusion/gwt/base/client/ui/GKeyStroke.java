@@ -133,6 +133,10 @@ public class GKeyStroke implements Serializable {
         return event.getKeyCode() == KEY_DELETE;
     }
 
+    public static boolean isEnterKeyEvent(NativeEvent event) {
+        return event.getKeyCode() == KEY_ENTER;
+    }
+
     public static boolean isEditObjectEvent(NativeEvent event) {
         return KEYDOWN.equals(event.getType()) && isBackspaceKeyEvent(event);
     }

@@ -13,6 +13,10 @@ public interface BaseMessages extends Messages {
     String yes();
 
     String no();
+    
+    String ok();
+    
+    String close();
 
     String here();
 

@@ -11,7 +11,7 @@ public class ColumnsListContainer extends FocusPanel {
         this.listBox = listBox;
         super.setWidget(listBox);
         addStyleName(CSS_LIST_BOX_CONTAINER);
-        setHeight("200px");
+        setHeight("130px");
     }
 
     public ColumnsListBox getListBox() {

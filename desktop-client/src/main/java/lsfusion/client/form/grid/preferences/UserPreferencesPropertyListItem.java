@@ -1,4 +1,4 @@
-package lsfusion.client.form.grid;
+package lsfusion.client.form.grid.preferences;
 
 import lsfusion.client.logics.ClientPropertyDraw;
 

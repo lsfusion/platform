@@ -5,7 +5,7 @@ import lsfusion.base.OrderedMap;
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.Main;
 import lsfusion.client.form.grid.GridController;
-import lsfusion.client.form.grid.GridUserPreferences;
+import lsfusion.client.form.grid.preferences.GridUserPreferences;
 import lsfusion.client.form.layout.ClientFormLayout;
 import lsfusion.client.form.panel.PanelController;
 import lsfusion.client.form.panel.PropertyController;

@@ -17,7 +17,7 @@ import lsfusion.client.dock.ClientFormDockable;
 import lsfusion.client.form.cell.PanelView;
 import lsfusion.client.form.dispatch.ClientFormActionDispatcher;
 import lsfusion.client.form.dispatch.SimpleChangePropertyDispatcher;
-import lsfusion.client.form.grid.GridUserPreferences;
+import lsfusion.client.form.grid.preferences.GridUserPreferences;
 import lsfusion.client.form.layout.ClientContainerView;
 import lsfusion.client.form.layout.ClientFormLayout;
 import lsfusion.client.form.layout.TabbedClientContainerView;
