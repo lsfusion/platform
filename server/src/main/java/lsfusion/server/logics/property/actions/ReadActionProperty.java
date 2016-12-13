@@ -142,21 +142,14 @@ public class ReadActionProperty extends SystemExplicitActionProperty {
             switch (errorCode) {
                 case 0:
                     if(move) {
-                        switch (type) {
-                            case "file":
-                                if (movePath.startsWith("file://"))
-                                    FileCopyUtils.copy(file, new File(movePath.replace("file://", "")));
-                                else
-                                    throw Throwables.propagate(new RuntimeException("ReadActionProperty Error. Unsupported movePath: " + movePath +
-                                            ", supports only file://filepath"));
-                                break;
-                            case "ftp":
-                                WriteActionProperty.storeFileToFTP(movePath, file);
-                                break;
-                            case "sftp":
-                                WriteActionProperty.storeFileToSFTP(movePath, file);
-                                break;
-                        }
+                        if (movePath.startsWith("file://"))
+                            FileCopyUtils.copy(file, new File(movePath.replace("file://", "")));
+                        else if (movePath.startsWith("ftp://"))
+                            WriteActionProperty.storeFileToFTP(movePath, file);
+                        else if(movePath.startsWith("sftp://"))
+                            WriteActionProperty.storeFileToSFTP(movePath, file);
+                        else
+                            throw Throwables.propagate(new RuntimeException("ReadActionProperty Error. Unsupported movePath: " + movePath + ", supports only file, ftp, sftp"));
                     }
                     if (!type.equals("file") || delete || move)
                         if(!file.delete())
