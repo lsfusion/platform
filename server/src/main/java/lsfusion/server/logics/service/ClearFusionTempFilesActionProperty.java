@@ -64,7 +64,8 @@ public class ClearFusionTempFilesActionProperty extends ScriptingActionProperty 
     private boolean needDeleteFile(File file) {
         String name = file.getName();
         return name.startsWith("lsf")
-                || name.startsWith("+~JF"); //jasper font files
+                || name.startsWith("+~JF")//jasper font files
+                || name.startsWith("ImageResourceGenerator"); //gwt temp files
     }
 
     private void safeDelete(File file) {
