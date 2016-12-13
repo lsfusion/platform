@@ -8,6 +8,7 @@ import com.healthmarketscience.jackcess.Table;
 import com.jcraft.jsch.*;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.IOUtils;
+import lsfusion.server.ServerLoggers;
 import lsfusion.server.classes.DynamicFormatFileClass;
 import lsfusion.server.classes.StringClass;
 import lsfusion.server.classes.ValueClass;
@@ -215,6 +216,7 @@ public class ReadActionProperty extends SystemExplicitActionProperty {
     }
 
     private void copyFTPToFile(String path, File file) throws IOException {
+        ServerLoggers.importLogger.info(String.format("Reading file from %s", path));
         List<Object> properties = parseFTPPath(path, 21);
         if (properties != null) {
             String username = (String) properties.get(0);
