@@ -330,7 +330,7 @@ public class AdjustMaterializedExecuteEnvironment extends DynamicExecuteEnvironm
                         if(cdeg > target) // если больше target по сути запретим выбирать
                             return Integer.MAX_VALUE / 2;
                     } else {
-                        if (pdeg == 0 || o.size >= max || o.hasTooLongKeys || o.hasRecursiveTables) // если удаленная вершина или больше порога не выбираем вообще
+                        if (pdeg == 0 || (o.size >= max && o.size > topNode.size) || o.hasTooLongKeys || o.hasRecursiveTables) // если удаленная вершина или больше порога не выбираем вообще
                             return Integer.MAX_VALUE;
                     }
 

@@ -1334,7 +1334,7 @@ public class Settings {
         this.defaultTypeExecuteEnvironment = defaultTypeExecuteEnvironment;
     }
 
-    private int timeoutNanosPerRow = 120;
+    private int timeoutNanosPerRow = 20;
 
     public int getTimeoutNanosPerRow() {
         return timeoutNanosPerRow;

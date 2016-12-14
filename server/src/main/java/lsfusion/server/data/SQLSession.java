@@ -1589,6 +1589,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         //      в частности проблема с AS если есть GROUP BY f(a) широкий тип AS узкий тип, то тип выведется узкий, а в вычислении SQL округления не будет и при UNION / GROUP BY можно получить дублмкаты
         // недетерминированные ORDER функции (GROUP LAST и т.п.)
         // нецелостной базой (значения классов в базе не правильные)
+        //      также при нарушении GROUP AGGR может возникать, так как GROUP AGGR тоже не детерминирован 
         // неправильный вывод классов в таблицах (см. SessionTable.assertCheckClasses),
         return e;
     }
