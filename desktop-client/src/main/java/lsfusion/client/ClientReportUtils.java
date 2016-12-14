@@ -16,7 +16,6 @@ import javax.print.attribute.HashPrintRequestAttributeSet;
 import javax.print.attribute.HashPrintServiceAttributeSet;
 import javax.print.attribute.PrintRequestAttributeSet;
 import javax.print.attribute.PrintServiceAttributeSet;
-import javax.print.attribute.standard.MediaSizeName;
 import javax.print.attribute.standard.MediaTray;
 import javax.print.attribute.standard.SheetCollate;
 import javax.print.attribute.standard.Sides;
@@ -51,7 +50,7 @@ public class ClientReportUtils {
                 PrintService defaultPrintService = PrintServiceLookup.lookupDefaultPrintService();
 
                 PrintRequestAttributeSet printRequestAttributeSet = new HashPrintRequestAttributeSet();
-                printRequestAttributeSet.add(MediaSizeName.ISO_A4);
+//                printRequestAttributeSet.add(MediaSizeName.ISO_A4);
 
                 String sidesProp = print.getProperty(ReportGenerator.SIDES_PROPERTY_NAME);
                 Sides sides = ReportGenerator.SIDES_VALUES.get(sidesProp);
