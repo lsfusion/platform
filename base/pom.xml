@@ -397,7 +397,8 @@
             </dependency>
             <dependency>
                 <groupId>org.json</groupId>
-                <artifactId>${json.version}</artifactId>
+                <artifactId>json</artifactId>
+                <version>${json.version}</version>
             </dependency>
 
             <!-- Spring libraries -->
