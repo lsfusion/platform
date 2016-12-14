@@ -142,9 +142,10 @@ public class ReadActionProperty extends SystemExplicitActionProperty {
             switch (errorCode) {
                 case 0:
                     if(move) {
-                        if (movePath.startsWith("file://"))
+                        if (movePath.startsWith("file://")) {
+                            ServerLoggers.importLogger.info(String.format("Writing file to %s", movePath));
                             FileCopyUtils.copy(file, new File(movePath.replace("file://", "")));
-                        else if (movePath.startsWith("ftp://"))
+                        } else if (movePath.startsWith("ftp://"))
                             WriteActionProperty.storeFileToFTP(movePath, file);
                         else if(movePath.startsWith("sftp://"))
                             WriteActionProperty.storeFileToSFTP(movePath, file);
