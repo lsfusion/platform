@@ -10,6 +10,7 @@ import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.*;
 import lsfusion.interop.Compare;
+import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
 import lsfusion.server.SystemProperties;
 import lsfusion.server.caches.AbstractOuterContext;
@@ -38,7 +39,6 @@ import lsfusion.server.data.where.AbstractWhere;
 import lsfusion.server.data.where.CheckWhere;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.form.navigator.SQLSessionUserProvider;
-import lsfusion.server.session.DataSession;
 import lsfusion.server.session.PropertyChange;
 
 import java.sql.SQLException;
@@ -690,24 +690,20 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                 return new SQLQuery(select, baseCost, subQueries, mSubEnv.finish(), keyTypes, propertyTypes, false, recursionFunction);
             }
 
-            // чтобы разбить рекурсию
-            protected boolean checkRecursivePush(Where fullWhere) {
-                return false;
-//                return fullWhere.getComplexity(false) > InnerSelect.this.fullWhere.getComplexity(false); // не проталкиваем если, полученная сложность больше сложности всего запроса
-            }
-
             protected Where pushWhere(Where groupWhere, ImSet<KeyExpr> keys, ImMap<K, BaseExpr> innerJoins, StatKeys<K> statKeys, Result<SQLQuery> empty) {
                 Where fullWhere = groupWhere;
                 Where pushWhere;
-                if((pushWhere = whereJoins.getPushWhere(innerJoins, upWheres, innerJoin, isInner(), keyStat, fullWhere, statKeys))!=null) // проталкивание предиката
-                    fullWhere = fullWhere.and(pushWhere);
-                if(isEmptySelect(fullWhere, keys)) { // может быть когда проталкивается верхнее условие, а внутри есть NOT оно же
-                    // getKeyEquals - для надежности, так как идет перетранслирование ключей и условие может стать false, а это критично, так как в emptySelect есть cast'ы, а скажем в GroupSelect, может придти EMPTY, ключи NULL и "Class Cast'ы" будут
-                    empty.set(getEmptySelect(groupWhere));
-                    return null;
-                }
-                if(pushWhere!=null && checkRecursivePush(fullWhere))
-                    fullWhere = groupWhere;
+                Depth subQueryDepth = subcontext.getSubQueryDepth();
+                if(subQueryDepth != Depth.INFINITE){
+                    if ((pushWhere = whereJoins.getPushWhere(innerJoins, upWheres, innerJoin, subQueryDepth == Depth.LARGE, isInner(), keyStat, fullWhere, statKeys)) != null) // проталкивание предиката
+                        fullWhere = fullWhere.and(pushWhere);
+                    if (isEmptySelect(fullWhere, keys)) { // может быть когда проталкивается верхнее условие, а внутри есть NOT оно же
+                        // getKeyEquals - для надежности, так как идет перетранслирование ключей и условие может стать false, а это критично, так как в emptySelect есть cast'ы, а скажем в GroupSelect, может придти EMPTY, ключи NULL и "Class Cast'ы" будут
+                        empty.set(getEmptySelect(groupWhere));
+                        return null;
+                    }
+                } else
+                    ServerLoggers.assertLog(false, "INFINITE PUSH DOWN");
                 return fullWhere;
             }
 
@@ -758,7 +754,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                 final Result<ImMap<Expr,String>> fromPropertySelect = new Result<>();
                 final Result<ImMap<String, SQLQuery>> subQueries = new Result<>();
                 final Query<KeyExpr, Expr> query = new Query<>(keys.toRevMap(), queryExprs.toMap(), groupWhere);
-                final CompiledQuery<KeyExpr, Expr> compiled = query.compile(new CompileOptions<Expr>(syntax, subcontext));
+                final CompiledQuery<KeyExpr, Expr> compiled = query.compile(new CompileOptions<Expr>(syntax, subcontext.pushSubQuery()));
                 String fromSelect = compiled.fillSelect(new Result<ImMap<KeyExpr, String>>(), fromPropertySelect, whereSelect, subQueries, params, mSubEnv);
 
                 ImMap<String, String> keySelect = group.join(fromPropertySelect.result);
@@ -823,7 +819,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                 Result<ImCol<String>> whereSelect = new Result<>(); // проверить crossJoin
                 Result<ImMap<String, SQLQuery>> subQueries = new Result<>();
                 Query<String, Expr> subQuery = new Query<>(group, queryExprs.toMap(), innerWhere);
-                CompiledQuery<String, Expr> compiledSubQuery = subQuery.compile(new CompileOptions<Expr>(syntax, subcontext));
+                CompiledQuery<String, Expr> compiledSubQuery = subQuery.compile(new CompileOptions<Expr>(syntax, subcontext.pushSubQuery()));
                 String fromSelect = compiledSubQuery.fillSelect(keySelect, fromPropertySelect, whereSelect, subQueries, params, mSubEnv);
 
                 // обработка multi-level order'ов
@@ -916,7 +912,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                 Result<ImMap<String, String>> propertySelect = new Result<>();
                 Result<ImCol<String>> whereSelect = new Result<>();
                 Result<ImMap<String, SQLQuery>> subQueries = new Result<>();
-                CompiledQuery<String, String> compiledQuery = new Query<>(group, queries, innerWhere).compile(new CompileOptions<String>(syntax, subcontext));
+                CompiledQuery<String, String> compiledQuery = new Query<>(group, queries, innerWhere).compile(new CompileOptions<String>(syntax, subcontext.pushSubQuery()));
                 String fromSelect = compiledQuery.fillSelect(keySelect, propertySelect, whereSelect, subQueries, params, mSubEnv);
                 return getSQLQuery("(" + syntax.getSelect(fromSelect, SQLSession.stringExpr(keySelect.result,propertySelect.result),
                     whereSelect.result.toString(" AND "),"","","", "") + ")", compiledQuery.sql.baseCost, subQueries.result, mSubEnv, innerWhere, false);
@@ -1096,6 +1092,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                 }));
 
                 SubQueryContext pushContext = subcontext.pushRecursion();// чтобы имена не пересекались
+                pushContext = pushContext.pushSubQuery();
                 
                 Result<ImOrderSet<String>> keyOrder = new Result<>(); Result<ImOrderSet<String>> propOrder = new Result<>();
                 Result<ImMap<String, SQLQuery>> rSubQueries = new Result<>();

@@ -2,6 +2,7 @@ package lsfusion.server.logics.property.actions.file;
 
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.server.classes.DataClass;
+import lsfusion.server.classes.FileClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.DataObject;
@@ -21,8 +22,8 @@ public class LoadActionProperty extends FileActionProperty {
         drawOptions.setImage("load.png");
     }
 
-    protected DataClass getReadType() {
-        return (DataClass) fileProperty.property.getType();
+    protected FileClass getReadType() {
+        return (FileClass) fileProperty.property.getType();
     }
 
     @Override // сам выполняет request поэтому на inRequest не смотрим
@@ -42,7 +43,7 @@ public class LoadActionProperty extends FileActionProperty {
 
     @Override
     protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
-        DataClass readType = getReadType();
+        FileClass readType = getReadType();
         ObjectValue objectValue = context.requestUserData(readType, null);
         if (objectValue == null)
             return;

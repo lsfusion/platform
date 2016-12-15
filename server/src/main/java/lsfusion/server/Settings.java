@@ -2016,4 +2016,23 @@ public class Settings {
     public void setDisablePrereadCaches(boolean disablePrereadCaches) {
         this.disablePrereadCaches = disablePrereadCaches;
     }
+    
+    private int subQueryLargeDepth = 6; // высокая глубина, подозрение на бесконечное проталкивание (смотрим только на cost при проталкивании)
+    private int subQueryInfiniteDepth = 12; //  бесконечная глубина, считаем что бесконечное проталкивание (ничего не проталкиваем)
+
+    public int getSubQueryLargeDepth() {
+        return subQueryLargeDepth;
+    }
+
+    public void setSubQueryLargeDepth(int subQueryLargeDepth) {
+        this.subQueryLargeDepth = subQueryLargeDepth;
+    }
+
+    public int getSubQueryInfiniteDepth() {
+        return subQueryInfiniteDepth;
+    }
+
+    public void setSubQueryInfiniteDepth(int subQueryInfiniteDepth) {
+        this.subQueryInfiniteDepth = subQueryInfiniteDepth;
+    }
 }

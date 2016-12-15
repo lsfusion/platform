@@ -56,7 +56,7 @@ import static lsfusion.base.BaseUtils.hashEquals;
 public class SessionTable extends Table implements ValuesContext<SessionTable>, Value {// в явную хранимые ряды
     private static final Logger sqlLogger = ServerLoggers.sqlLogger;
 
-    public final int count; // вообще должен быть точным, или как минимум пессимистичным, чтобы в addObjects учитываться
+    public final int count; // volatile, same as SubQueryContext.subQuery
 
     // nullable, иногда известно, иногда нет
     // assert что statKeys и statProps или одновременно null или одновременно нет
