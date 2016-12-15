@@ -140,11 +140,16 @@ public final class Log {
 
         provideErrorFeedback();
 
+        JPanel labelPanel = new JPanel();
+        labelPanel.setLayout(new BoxLayout(labelPanel, BoxLayout.X_AXIS));
+        labelPanel.add(new JLabel(toHtml(message)));
+        labelPanel.add(Box.createHorizontalGlue());
+        
         JPanel messagePanel = new JPanel();
         messagePanel.setLayout(new BoxLayout(messagePanel, BoxLayout.Y_AXIS));
-        messagePanel.add(new JLabel(toHtml(message)), BorderLayout.NORTH);
+        messagePanel.add(labelPanel);
         if (data != null) {
-            messagePanel.add(new JScrollPane(createDataTable(titles, data)), BorderLayout.CENTER);
+            messagePanel.add(new JScrollPane(createDataTable(titles, data)));
         }
 
         JTextArea taErrorText = new JTextArea(trace, 7, 60);
@@ -153,7 +158,7 @@ public final class Log {
 
         JPanel textWithLine = new JPanel();
         textWithLine.setLayout(new BorderLayout(10, 10));
-        textWithLine.add(new JSeparator());
+        textWithLine.add(new JSeparator(), BorderLayout.NORTH);
         textWithLine.add(new JScrollPane(taErrorText));
 
         final JPanel south = new JPanel();
@@ -182,8 +187,8 @@ public final class Log {
 
         final JDialog dialog = new JDialog(Main.frame, Main.getMainTitle(), Dialog.ModalityType.APPLICATION_MODAL);
         dialog.setContentPane(optionPane);
-        dialog.pack();
         dialog.setMinimumSize(dialog.getPreferredSize());
+        dialog.pack();
 
         optionPane.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent e) {
@@ -191,10 +196,13 @@ public final class Log {
                 if (dialog.isVisible() && (value.equals("OK") || value.equals(-1))) {
                     dialog.dispose();
                 } else if (value.equals(getString("client.more"))) {
-                    south.setVisible(!south.isVisible());
+                    boolean southWasVisible = south.isVisible();
+                    south.setVisible(!southWasVisible);
                     optionPane.setValue(JOptionPane.UNINITIALIZED_VALUE);
                     dialog.setMinimumSize(dialog.getPreferredSize());
-                    dialog.pack();
+                    if (southWasVisible) {
+                        dialog.pack();
+                    }
                 }
             }
         });
