@@ -88,7 +88,7 @@ public final class ReconnectWorker extends SwingWorker<RemoteLogicsLoaderInterfa
         public ProgressDialog() {
             super((Frame) null, getString("connect.title"), true);
             setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-            setLocationRelativeTo(null);
+            
             setAlwaysOnTop(true);
 
             lbMessage = new JLabel();
@@ -123,6 +123,8 @@ public final class ReconnectWorker extends SwingWorker<RemoteLogicsLoaderInterfa
 
             //не даём забрать фокус диалогу, потому что при открытии modal form в onClientStarted фокус у ReconnectWorker ещё никто не успевает отобрать
             setFocusableWindowState(false);
+
+            setLocationRelativeTo(null);
         }
 
         private void setupDialogForDevMode() {

@@ -103,7 +103,7 @@ public class ImagePropertyRenderer extends FilePropertyRenderer {
         dialog.add(new JLabel(imageIcon));
 
         dialog.pack();
-        dialog.setLocationRelativeTo(null);
+        dialog.setLocationRelativeTo(dialog.getOwner());
         dialog.setVisible(true);
     }
 }

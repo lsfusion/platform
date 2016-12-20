@@ -94,7 +94,7 @@ public class ClientModalForm extends JDialog {
         if (onScreen != null) {
             requestLocation(this, onScreen);
         } else {
-            setLocationRelativeTo(null);
+            setLocationRelativeTo(getOwner());
         }
 
         beforeShowDialog();

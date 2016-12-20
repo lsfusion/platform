@@ -209,7 +209,7 @@ public final class Log {
 
 
         //центрируем на экране
-        dialog.setLocationRelativeTo(null);
+        dialog.setLocationRelativeTo(dialog.getOwner());
 
         dialog.setVisible(true);
     }

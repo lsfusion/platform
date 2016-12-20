@@ -1,6 +1,9 @@
 package lsfusion.client.rmi;
 
-import lsfusion.base.*;
+import lsfusion.base.BaseUtils;
+import lsfusion.base.ExceptionUtils;
+import lsfusion.base.Pair;
+import lsfusion.base.WeakIdentityHashSet;
 import lsfusion.client.*;
 import lsfusion.client.exceptions.ClientExceptionManager;
 import lsfusion.client.form.RmiQueue;
@@ -9,15 +12,16 @@ import lsfusion.interop.exceptions.NonFatalHandledRemoteException;
 import lsfusion.interop.remote.ClientCallBackInterface;
 
 import javax.swing.*;
-import javax.swing.Timer;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.rmi.RemoteException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
@@ -251,7 +255,6 @@ public class ConnectionLostManager {
             this.message = message;
 
             setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
-            setLocationRelativeTo(owner);
 
             btnExit = new JButton(getString("rmi.connectionlost.exit"));
             btnExit.setEnabled(false);
@@ -297,6 +300,8 @@ public class ConnectionLostManager {
             setupDialogForDevMode();
 
             setFocusableWindowState(false);
+            
+            setLocationRelativeTo(owner);
         }
 
         public void showDialog() {
