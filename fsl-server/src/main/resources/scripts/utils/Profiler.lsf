@@ -31,6 +31,11 @@ minTime 'Минимальное время выполнения' = DATA LONG (Pr
 maxTime 'Максимальное время выполнения' = DATA LONG (ProfileObject, ProfileObject, User, ProfileForm);
 squaresSum 'Сумма квадратов времени выполнения' = DATA DOUBLE (ProfileObject, ProfileObject, User, ProfileForm);
 
+isStartedProfiler 'Запущен'  = DATA BOOLEAN ();
+isStoppedProfiler 'Остановлен' () = NOT isStartedProfiler();
+
+onStarted() += ACTION isStartedProfiler() <- NULL;
+
 doStartProfiler 'Запустить профилировщик' () = ACTION CUSTOM 'lsfusion.erp.utils.StartProfilerActionProperty';
 startProfiler 'Запустить профилировщик' () = ACTION {
     totalTime(ProfileObject p1, ProfileObject p2, User u, ProfileForm f) <- NULL;
@@ -40,13 +45,20 @@ startProfiler 'Запустить профилировщик' () = ACTION {
     minTime(ProfileObject p1, ProfileObject p2, User u, ProfileForm f) <- NULL; 
     maxTime(ProfileObject p1, ProfileObject p2, User u, ProfileForm f) <- NULL; 
     squaresSum(ProfileObject p1, ProfileObject p2, User u, ProfileForm f) <- NULL; 
-
+    
+    isStartedProfiler() <- TRUE;
     apply();
     
     doStartProfiler();
 }
 
-stopProfiler 'Остановить профилировщик' () = ACTION CUSTOM 'lsfusion.erp.utils.StopProfilerActionProperty';
+doStopProfiler 'Остановить профилировщик' () = ACTION CUSTOM 'lsfusion.erp.utils.StopProfilerActionProperty';
+
+stopProfiler 'Остановить профилировщик' () = ACTION {
+    doStopProfiler();
+    isStartedProfiler() <- NULL;
+    APPLY {};
+}
 
 id(User user) = INTEGER(user AS User) PERSISTENT INDEXED; 
 
@@ -100,8 +112,8 @@ DESIGN profilerIndex {
     PROPERTY (staticCaption(f)){caption = 'Наименование'; }
 }
 
-active 'Вкл.' = DATA LOCAL BOOLEAN (ProfilerIndex);
-order  = DATA LOCAL ProfilerIndex ();
+active 'Вкл.' = DATA LOCAL NESTED BOOLEAN (ProfilerIndex);
+order  = DATA LOCAL NESTED ProfilerIndex ();
 nameOrder 'Сортировка' = staticCaption(order());
 
 value 'Значение показателя'(ProfileObject p1, ProfileObject p2, User u, ProfileForm f, ProfilerIndex pi) = CASE EXCLUSIVE 
@@ -118,13 +130,13 @@ value 'Значение показателя'(ProfileObject p1, ProfileObject p2
     
 order 'Порядок'(ProfileObject p1, ProfileObject p2, User u, ProfileForm f) = value(p1, p2, u, f, order());
 
-dataInFilter 'Отм' = DATA LOCAL BOOLEAN (User);
-inFilter 'Отм' = DATA LOCAL BOOLEAN (UserRole);
+dataInFilter 'Отм' = DATA LOCAL NESTED BOOLEAN (User);
+inFilter 'Отм' = DATA LOCAL NESTED BOOLEAN (UserRole);
 overFilter 'Отм' = OVERRIDE [=GROUP SUM 1 IF in(User u, UserRole r) AND inFilter(r) BY u](User u) > 0, inFilter(mainRole(u)), dataInFilter(u);
 inFilter 'Отм' (User u) = OVERRIDE NOT [=GROUP SUM 1 IF overFilter(User u)]() AND u IS User, overFilter(u);
 background(User u) = IF inFilter(u) THEN RGB(220,220,220);
 
-dataFilter 'Отм' = DATA LOCAL BOOLEAN (ProfileForm);
+dataFilter 'Отм' = DATA LOCAL NESTED BOOLEAN (ProfileForm);
 countDataFilterForm = GROUP SUM 1 IF dataFilter(ProfileForm f);
 inFilter 'Отм' (ProfileForm f) = OVERRIDE f IS ProfileForm AND NOT countDataFilterForm(), dataFilter(f);
 background(ProfileForm u) = IF inFilter(u) THEN RGB(220,220,220);
@@ -180,8 +192,8 @@ dataSelectedTop = DATA LOCAL ProfileObject();
 selectedTop = OVERRIDE ProfileObject.top, dataSelectedTop();
 nameSelectedTop 'Действие' = VARSTRING[1000](text(selectedTop()));
 
-pathTo(ProfileObject a, ProfileObject b) = RECURSION a AS ProfileObject == b STEP TRUE IF link($b, b); // из a можно дойти в b
-pathFrom(ProfileObject a, ProfileObject b) = RECURSION a AS ProfileObject == b STEP TRUE IF link(b, $b); // из a можно дойти в b
+pathTo(ProfileObject a, ProfileObject b) = RECURSION a AS ProfileObject == b STEP TRUE IF link($b, b) CYCLES YES; // из a можно дойти в b
+pathFrom(ProfileObject a, ProfileObject b) = RECURSION a AS ProfileObject == b STEP TRUE IF link(b, $b) CYCLES YES; // из a можно дойти в b
 
 parent(ProfileObject down) = IF NOT down == selectedTop() THEN 
         OVERRIDE ProfileObject.top IF down IS ProfileObject, 
@@ -190,9 +202,14 @@ parent(ProfileObject down) = IF NOT down == selectedTop() THEN
 child(ProfileObject up) = IF NOT up == selectedTop() THEN 
         OVERRIDE ProfileObject.top IF up IS ProfileObject,
             [=GROUP LAST ProfileObject down IF link(ProfileObject up, down) AND pathFrom(selectedTop(), down) BY up ORDER order(up, down)](up);
+       
+initFilters() = ACTION {
+    order() <- ProfilerIndex.totalTimeNoWait;
+    active(ProfilerIndex i) <- TRUE WHERE i == ProfilerIndex.totalTimeNoWait OR i == ProfilerIndex.totalSQLTime OR i == ProfilerIndex.inherentJavaTime OR i == ProfilerIndex.callCount;
+}
         
 FORM profiler 'Профилировщик'
-    PROPERTIES() startProfiler, stopProfiler , nameOrder
+    PROPERTIES() startProfiler SHOWIF isStoppedProfiler(), stopProfiler SHOWIF isStartedProfiler(), nameOrder
   
 //настройки
     OBJECTS pi = ProfilerIndex
@@ -237,7 +254,7 @@ FORM profiler 'Профилировщик'
     TREE pT down=ProfileObject PARENT parent
     PROPERTIES (down) READONLY text, order, totalTimeNoWait SHOWIF isTotalTimeNoWait(), totalJavaTime SHOWIF isTotalJavaTime(), 
                         totalSQLTime SHOWIF isTotalSQLTime(), inherentTimeNoWait SHOWIF isInherentTimeNoWait(), inherentJavaTime SHOWIF isInherentJavaTime()
-    ORDER BY order(down)
+    ORDER BY order(down) DESC
     
     OBJECTS iupToDown = ProfilerIndex FIXED GRID
     FILTERS active(iupToDown)
@@ -246,7 +263,7 @@ FORM profiler 'Профилировщик'
     PROPERTIES (upToDown) READONLY text
     PROPERTIES (down, upToDown) READONLY order
     PROPERTIES (down, upToDown, iupToDown) READONLY value COLUMNS (iupToDown) HEADER staticCaption(iupToDown)
-    ORDER BY order(down, upToDown)
+    ORDER BY order(down, upToDown) DESC
     FILTERS order(down, upToDown)
     FILTERGROUP  upToDown
         FILTER 'Дополнительные' parent(upToDown) != down 'F6'
@@ -265,7 +282,7 @@ FORM profiler 'Профилировщик'
     TREE pB up=ProfileObject PARENT child
     PROPERTIES (up) READONLY text, order, totalTimeNoWait SHOWIF isTotalTimeNoWait(), totalJavaTime SHOWIF isTotalJavaTime(), 
                              totalSQLTime SHOWIF isTotalSQLTime(), inherentTimeNoWait SHOWIF isInherentTimeNoWait(), inherentJavaTime SHOWIF isInherentJavaTime()
-    ORDER BY order(up)
+    ORDER BY order(up) DESC
     
     OBJECTS idownToUp = ProfilerIndex FIXED GRID
     FILTERS active(iupToDown)
@@ -274,11 +291,13 @@ FORM profiler 'Профилировщик'
     PROPERTIES (downToUp) READONLY text
     PROPERTIES (downToUp, up) READONLY order
     PROPERTIES (downToUp, up, iupToDown) READONLY value COLUMNS (idownToUp) HEADER staticCaption(idownToUp)
-    ORDER BY order(downToUp, up)
+    ORDER BY order(downToUp, up) DESC
     FILTERS order(downToUp, up)
     FILTERGROUP  downToUp
         FILTER 'Дополнительные' child(downToUp) != up 'F6'
     
+    EVENTS 
+        ON INIT initFilters()
 ;
 
 DESIGN profiler {
