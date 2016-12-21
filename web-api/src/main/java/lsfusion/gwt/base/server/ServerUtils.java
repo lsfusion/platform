@@ -17,6 +17,11 @@ public class ServerUtils {
         }
         return auth;
     }
+    
+    public static String getAuthorizedUserName() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        return auth == null ? "Not authorized" : auth.getName();    
+    }
 
     public static Locale getLocale() {
         return LocaleContextHolder.getLocale();

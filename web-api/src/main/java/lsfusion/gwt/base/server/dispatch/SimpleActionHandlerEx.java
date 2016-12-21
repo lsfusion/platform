@@ -2,7 +2,8 @@ package lsfusion.gwt.base.server.dispatch;
 
 import lsfusion.base.ExceptionUtils;
 import lsfusion.gwt.base.server.LogicsAwareDispatchServlet;
-import lsfusion.gwt.base.server.exceptions.*;
+import lsfusion.gwt.base.server.exceptions.IODispatchException;
+import lsfusion.gwt.base.server.exceptions.RemoteRetryException;
 import lsfusion.gwt.base.shared.MessageException;
 import lsfusion.interop.RemoteLogicsInterface;
 import lsfusion.interop.exceptions.RemoteMessageException;
@@ -13,7 +14,6 @@ import net.customware.gwt.dispatch.shared.DispatchException;
 import net.customware.gwt.dispatch.shared.Result;
 
 import java.io.IOException;
-import java.rmi.NoSuchObjectException;
 import java.rmi.RemoteException;
 
 public abstract class SimpleActionHandlerEx<A extends Action<R>, R extends Result, L extends RemoteLogicsInterface> extends SimpleActionHandler<A, R> {
@@ -26,7 +26,10 @@ public abstract class SimpleActionHandlerEx<A extends Action<R>, R extends Resul
     @Override
     public final R execute(A action, ExecutionContext context) throws DispatchException {
         try {
-           return executeEx(action, context);
+            preExecute(action);
+            R result = executeEx(action, context);
+            postExecute(action);
+            return result;
         } catch (RemoteMessageException rme) {
             throw new MessageException(rme.getMessage());
         } catch (IOException ioe) {
@@ -36,6 +39,10 @@ public abstract class SimpleActionHandlerEx<A extends Action<R>, R extends Resul
             throw new IODispatchException("Ошибка ввода/вывода при выполнении action: ", ioe);
         }
     }
+
+    public void preExecute(A action) {}
+
+    public void postExecute(A action) {}
 
     public abstract R executeEx(A action, ExecutionContext context) throws DispatchException, IOException;
 }

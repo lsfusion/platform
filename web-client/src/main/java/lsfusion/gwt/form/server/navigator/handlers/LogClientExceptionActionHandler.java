@@ -6,8 +6,8 @@ import lsfusion.base.ConcurrentIdentityWeakHashMap;
 import lsfusion.base.col.MapFact;
 import lsfusion.gwt.base.server.LogicsAwareDispatchServlet;
 import lsfusion.gwt.base.server.dispatch.NavigatorActionHandler;
-import lsfusion.gwt.base.server.dispatch.SimpleActionHandlerEx;
 import lsfusion.gwt.base.shared.actions.VoidResult;
+import lsfusion.gwt.form.server.form.handlers.LoggableActionHandler;
 import lsfusion.gwt.form.shared.actions.navigator.LogClientExceptionAction;
 import lsfusion.interop.RemoteLogicsInterface;
 import lsfusion.interop.exceptions.NonFatalHandledRemoteException;
@@ -23,7 +23,7 @@ import java.rmi.RemoteException;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class LogClientExceptionActionHandler extends SimpleActionHandlerEx<LogClientExceptionAction, VoidResult, RemoteLogicsInterface> implements NavigatorActionHandler {
+public class LogClientExceptionActionHandler extends LoggableActionHandler<LogClientExceptionAction, VoidResult, RemoteLogicsInterface> implements NavigatorActionHandler {
     public static final long COUNTER_CLEANER_PERIOD = 3 * 60 * 1000;
     
     private ConcurrentIdentityWeakHashMap<RemoteNavigatorInterface, Integer> exceptionCounter = MapFact.getGlobalConcurrentIdentityWeakHashMap();

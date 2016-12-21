@@ -39,6 +39,26 @@
         </layout>
     </appender>
 
+    <appender name="invocationlog" class="org.apache.log4j.rolling.RollingFileAppender">
+        <param name="encoding" value="UTF-8" />
+        <rollingPolicy class="org.apache.log4j.rolling.FixedWindowRollingPolicy">
+            <param name="minIndex" value="1"/>
+            <param name="maxIndex" value="5"/>
+            <param name="activeFileName" value="${catalina.home}/logs/invocation.log"/>
+            <param name="fileNamePattern" value="${catalina.home}/logs/invocation-%i.log.zip"/>
+        </rollingPolicy>
+        <triggeringPolicy class="org.apache.log4j.rolling.SizeBasedTriggeringPolicy">
+            <!-- 10MB -->
+            <param name="maxFileSize" value="10485760"/>
+        </triggeringPolicy>
+        <layout class="org.apache.log4j.EnhancedPatternLayout">
+            <param name="ConversionPattern" value="%d{DATE} %5p %c{1} - %m%n%throwable{1000}"/>
+        </layout>
+        <filter class="org.apache.log4j.varia.LevelRangeFilter">
+            <param name="LevelMin" value="ALL"/>
+        </filter>
+    </appender>
+
     <appender name="errorlog" class="org.apache.log4j.rolling.RollingFileAppender">
         <param name="encoding" value="UTF-8" />
         <rollingPolicy class="org.apache.log4j.rolling.FixedWindowRollingPolicy">
@@ -63,6 +83,11 @@
         <priority value="ERROR"/>
         <appender-ref ref="stdout"/>
         <appender-ref ref="stderr"/>
+    </category>
+    
+    <category name="InvocationsLogger" additivity="false">
+        <priority value="ALL"/>
+        <appender-ref ref="invocationlog"/>
     </category>
 
     <root>

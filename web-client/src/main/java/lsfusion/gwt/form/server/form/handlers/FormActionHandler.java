@@ -1,7 +1,6 @@
 package lsfusion.gwt.form.server.form.handlers;
 
 import lsfusion.gwt.base.server.dispatch.BaseFormBoundActionHandler;
-import lsfusion.gwt.base.server.dispatch.SimpleActionHandlerEx;
 import lsfusion.gwt.form.server.FormDispatchServlet;
 import lsfusion.gwt.form.server.FormSessionManager;
 import lsfusion.gwt.form.server.FormSessionObject;
@@ -9,7 +8,7 @@ import lsfusion.interop.RemoteLogicsInterface;
 import net.customware.gwt.dispatch.shared.Action;
 import net.customware.gwt.dispatch.shared.Result;
 
-public abstract class FormActionHandler<A extends Action<R>, R extends Result> extends SimpleActionHandlerEx<A, R, RemoteLogicsInterface> implements BaseFormBoundActionHandler {
+public abstract class FormActionHandler<A extends Action<R>, R extends Result> extends LoggableActionHandler<A, R, RemoteLogicsInterface> implements BaseFormBoundActionHandler {
     public FormActionHandler(FormDispatchServlet servlet) {
         super(servlet);
     }

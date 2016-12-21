@@ -3,7 +3,7 @@ package lsfusion.gwt.form.server.navigator.handlers;
 import lsfusion.base.DefaultFormsType;
 import lsfusion.gwt.base.server.LogicsAwareDispatchServlet;
 import lsfusion.gwt.base.server.dispatch.NavigatorActionHandler;
-import lsfusion.gwt.base.server.dispatch.SimpleActionHandlerEx;
+import lsfusion.gwt.form.server.form.handlers.LoggableActionHandler;
 import lsfusion.gwt.form.shared.actions.navigator.ShowDefaultFormsAction;
 import lsfusion.gwt.form.shared.actions.navigator.ShowDefaultFormsResult;
 import lsfusion.gwt.form.shared.view.GDefaultFormsType;
@@ -14,7 +14,7 @@ import net.customware.gwt.dispatch.shared.DispatchException;
 import java.io.IOException;
 import java.util.ArrayList;
 
-public class ShowDefaultFormsHandler extends SimpleActionHandlerEx<ShowDefaultFormsAction, ShowDefaultFormsResult, RemoteLogicsInterface> implements NavigatorActionHandler {
+public class ShowDefaultFormsHandler extends LoggableActionHandler<ShowDefaultFormsAction, ShowDefaultFormsResult, RemoteLogicsInterface> implements NavigatorActionHandler {
     public ShowDefaultFormsHandler(LogicsAwareDispatchServlet<RemoteLogicsInterface> servlet) {
         super(servlet);
     }
