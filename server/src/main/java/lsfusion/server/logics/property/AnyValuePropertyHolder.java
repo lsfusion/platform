@@ -16,6 +16,7 @@ import lsfusion.server.logics.NullValue;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.session.DataSession;
+import lsfusion.server.session.ExecutionEnvironment;
 
 import java.sql.SQLException;
 import java.util.Set;
@@ -168,11 +169,19 @@ public class AnyValuePropertyHolder {
     public void write(Type valueType, ObjectValue value, ExecutionContext context, DataObject... keys) throws SQLException, SQLHandledException {
         getLCP(valueType).change(value, context, keys);
     }
+    
+    public void write(Type valueType, ObjectValue value, ExecutionEnvironment env, DataObject... keys) throws SQLException, SQLHandledException {
+        getLCP(valueType).change(value, env, keys);
+    }
 
     public ObjectValue read(Type valueType, ExecutionContext context, DataObject... keys) throws SQLException, SQLHandledException {
         return getLCP(valueType).readClasses(context, keys);
     }
-    
+
+    public ObjectValue read(Type valueType, ExecutionEnvironment env, DataObject... keys) throws SQLException, SQLHandledException {
+        return getLCP(valueType).readClasses(env, keys);
+    }
+
     public void dropChanges(Type valueType, ExecutionContext context) throws SQLException, SQLHandledException {
         context.getSession().dropChanges((DataProperty) getLCP(valueType).property);
     }

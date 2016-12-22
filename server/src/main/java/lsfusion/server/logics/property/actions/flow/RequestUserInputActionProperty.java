@@ -22,9 +22,6 @@ public class RequestUserInputActionProperty extends AroundAspectActionProperty {
 
     private final String chosenKey;
 
-    private final LCP requestCanceledProperty;
-    private final AnyValuePropertyHolder requestedValueProperty;
-
     private final AnyValuePropertyHolder chosenValueProperty;
 
     private final ConcreteCustomClass formResultClass;
@@ -32,15 +29,11 @@ public class RequestUserInputActionProperty extends AroundAspectActionProperty {
 
     public <I extends PropertyInterface> RequestUserInputActionProperty(LocalizedString caption, ImOrderSet<I> innerInterfaces, ActionPropertyMapImplement<?, I> action,
                                                                         Type requestValueType, String chosenKey,
-                                                                        LCP requestCanceledProperty, AnyValuePropertyHolder requestedValueProperty,
                                                                         AnyValuePropertyHolder chosenValueProperty, ConcreteCustomClass formResultClass, LCP formResultProperty) {
         super(caption, innerInterfaces, action);
 
         this.requestValueType = requestValueType;
         this.chosenKey = chosenKey;
-
-        this.requestCanceledProperty = requestCanceledProperty;
-        this.requestedValueProperty = requestedValueProperty;
 
         this.chosenValueProperty = chosenValueProperty;
 
@@ -52,8 +45,8 @@ public class RequestUserInputActionProperty extends AroundAspectActionProperty {
 
     @Override
     protected FlowResult aroundAspect(ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
-        ObjectValue pushedUserInput = context.getPushedUserInput();
-        if (pushedUserInput == null) {
+        boolean isRequest = context.isRequest();
+        if (!isRequest) {
             proceed(context);
 
             if (chosenKey != null) {
@@ -61,25 +54,14 @@ public class RequestUserInputActionProperty extends AroundAspectActionProperty {
                 int dropFormResultID = formResultClass.getObjectID(FormCloseType.DROP.asString());
 
                 Object value = formResultProperty.read(context);
-
-                if (value != null && !value.equals(closeFormResultID)) {
-                    ObjectValue chosenValue = value.equals(dropFormResultID) ? NullValue.instance : chosenValueProperty.read(requestValueType, context, new DataObject(chosenKey));
-                    updateRequestedValue(context, chosenValue);
-                } else {
-                    requestCanceledProperty.change(true, context);
-                    context.setLastUserInput(null);
-                }
+                ObjectValue chosenValue = null;
+                if (value != null && !value.equals(closeFormResultID)) // CLOSE
+                    chosenValue = value.equals(dropFormResultID) ? NullValue.instance : chosenValueProperty.read(requestValueType, context, new DataObject(chosenKey)); // DROP / OK 
+                context.writeRequested(chosenValue, requestValueType);
             }
-        } else {
-            updateRequestedValue(context, pushedUserInput);
-        }
+        } 
 
         return FlowResult.FINISH;
     }
 
-    private void updateRequestedValue(ExecutionContext context, ObjectValue requestedValue) throws SQLException, SQLHandledException {
-        context.setLastUserInput(requestedValue);
-        requestedValueProperty.write(requestValueType, requestedValue, context);
-        requestCanceledProperty.change((Object)null, context);
-    }
 }

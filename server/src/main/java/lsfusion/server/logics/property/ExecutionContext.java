@@ -1,5 +1,6 @@
 package lsfusion.server.logics.property;
 
+import com.google.common.base.Throwables;
 import jasperapi.ReportGenerator;
 import lsfusion.base.FunctionSet;
 import lsfusion.base.Pair;
@@ -21,7 +22,10 @@ import lsfusion.server.context.ExecutionStack;
 import lsfusion.server.context.SameThreadExecutionStack;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.QueryEnvironment;
+import lsfusion.server.data.SQLCallable;
 import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.data.type.ObjectType;
+import lsfusion.server.data.type.Type;
 import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.entity.ObjectEntity;
 import lsfusion.server.form.entity.PropertyDrawEntity;
@@ -30,6 +34,7 @@ import lsfusion.server.form.instance.*;
 import lsfusion.server.form.instance.listener.CustomClassListener;
 import lsfusion.server.logics.*;
 import lsfusion.server.logics.SecurityManager;
+import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.linear.LP;
 import lsfusion.server.logics.property.actions.FormEnvironment;
 import lsfusion.server.remote.FormReportManager;
@@ -141,26 +146,6 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
             }
             super.updateOnApply(session);
         }
-
-        public void updateLastUserInput(DataSession session, final ObjectValue userInput) {
-            if (updateInputListeners != null) {
-                for (UpdateInputListener inputListener : updateInputListeners) {
-                    inputListener.userInputUpdated(userInput);
-                }
-            }
-            super.updateLastUserInput(session, userInput);
-        }
-    }
-
-    private Stack<UpdateInputListener> updateInputListeners;
-    public void pushUpdateInput(UpdateInputListener push) {
-        if (updateInputListeners == null) {
-            updateInputListeners = new Stack<>();
-        }
-        updateInputListeners.push(push);
-    }
-    public void popUpdateInput() {
-        updateInputListeners.pop();
     }
 
     private final ObjectValue pushedUserInput;
@@ -546,21 +531,30 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         assertNotUserInteractionInTransaction();
         ThreadLocalContext.requestFormUserInteraction(remoteForm, modalityType, stack);
     }
-    
-    public ExecutionContext<P> pushUserInput(ObjectValue overridenUserInput) {
-        return override(keys, form, overridenUserInput);
+
+    public void writeRequested(ObjectValue chosenValue, Type type) throws SQLException, SQLHandledException {
+        getBL().LM.writeRequested(chosenValue, type, getEnv());
     }
 
+    public <R> R pushRequest(SQLCallable<R> callable) throws SQLException, SQLHandledException {
+        return getBL().LM.pushRequest(getEnv(), callable);
+    }
+
+    public <R> R pushRequestedValue(ObjectValue pushValue, Type pushType, SQLCallable<R> callable) throws SQLException, SQLHandledException {
+        return getBL().LM.pushRequestedValue(pushValue, pushType, getEnv(), callable);
+    }
+    
     public ObjectValue getPushedUserInput() {
         return pushedUserInput;
     }
 
     // чтение пользователя
-    public ObjectValue requestUserObject(DialogRequest dialog) throws SQLException, SQLHandledException { // null если canceled
-        assertNotUserInteractionInTransaction();
-        ObjectValue userInput = pushedUserInput != null ? pushedUserInput : ThreadLocalContext.requestUserObject(dialog, stack);
-        setLastUserInput(userInput);
-        return userInput;
+    public ObjectValue requestUserObject(final DialogRequest dialog) throws SQLException, SQLHandledException { // null если canceled
+        return requestUser(ObjectType.instance, new SQLCallable<ObjectValue>() {
+            public ObjectValue call() throws SQLException, SQLHandledException {
+                return ThreadLocalContext.requestUserObject(dialog, stack);
+            }
+        });
     }
 
     // cannot use because of backward compatibility 
@@ -570,12 +564,28 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
 //        setLastUserInput(userInput);
 //        return userInput;
 //    }
-//
-    public ObjectValue requestUserData(DataClass dataClass, Object oldValue) {
+
+
+    public boolean isRequest() throws SQLException, SQLHandledException {
         assertNotUserInteractionInTransaction();
-        ObjectValue userInput = pushedUserInput != null ? pushedUserInput : ThreadLocalContext.requestUserData(dataClass, oldValue);
-        setLastUserInput(userInput);
-        return userInput;
+        return getBL().LM.isRequest(getEnv());
+    }
+
+    public ObjectValue requestUser(Type type, SQLCallable<ObjectValue> request) throws SQLException, SQLHandledException {
+        assertNotUserInteractionInTransaction();
+        return getBL().LM.getRequestedValue(type, getEnv(), request);
+    }
+
+    public ObjectValue requestUserData(final DataClass dataClass, final Object oldValue) {
+        try { // временно для обратной совместимости
+            return requestUser(dataClass, new SQLCallable<ObjectValue>() {
+                public ObjectValue call() throws SQLException, SQLHandledException {
+                    return ThreadLocalContext.requestUserData(dataClass, oldValue);
+                }
+            });
+        } catch (SQLException | SQLHandledException e) {
+            throw Throwables.propagate(e);
+        }
     }
 
     public ObjectValue inputUserData(DataClass dataClass, Object oldValue) {
@@ -583,19 +593,16 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         return ThreadLocalContext.requestUserData(dataClass, oldValue);
     }
 
-    public ObjectValue requestUserClass(CustomClass baseClass, CustomClass defaultValue, boolean concrete) {
-        assertNotUserInteractionInTransaction();
-        ObjectValue userInput = pushedUserInput != null ? pushedUserInput : ThreadLocalContext.requestUserClass(baseClass, defaultValue, concrete);
-        setLastUserInput(userInput);
-        return userInput;
+    public ObjectValue requestUserClass(final CustomClass baseClass, final CustomClass defaultValue, final boolean concrete) throws SQLException, SQLHandledException {
+        return requestUser(ObjectType.instance, new SQLCallable<ObjectValue>() {
+            public ObjectValue call() {
+                return ThreadLocalContext.requestUserClass(baseClass, defaultValue, concrete);
+            }
+        });
     }
 
     public FormInstance createFormInstance(FormEntity formEntity) throws SQLException, SQLHandledException {
         return createFormInstance(formEntity, MapFact.<ObjectEntity, DataObject>EMPTY(), getSession());
-    }
-
-    public void setLastUserInput(ObjectValue userInput) {
-        stack.updateLastUserInput(getSession(), userInput);
     }
 
     public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session) throws SQLException, SQLHandledException {

@@ -1126,8 +1126,8 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         return new Pair<>(result.get(readValue), !result.get(readChanged).isNull());
     }
 
-    public Object read(FormInstance form, ImMap<T, ? extends ObjectValue> keys) throws SQLException, SQLHandledException {
-        return read(form.session.sql, keys, form.getModifier(), form.getQueryEnv());
+    public Object read(ExecutionEnvironment env, ImMap<T, ? extends ObjectValue> keys) throws SQLException, SQLHandledException {
+        return read(env.getSession().sql, keys, env.getModifier(), env.getQueryEnv());
     }
 
     public ObjectValue readClasses(FormInstance form, ImMap<T, ? extends ObjectValue> keys) throws SQLException, SQLHandledException {

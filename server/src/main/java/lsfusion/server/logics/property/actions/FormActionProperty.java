@@ -31,6 +31,7 @@ import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.form.instance.ObjectInstance;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.NullValue;
+import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.*;
@@ -69,9 +70,6 @@ public class FormActionProperty extends SystemExplicitActionProperty {
     private final ConcreteCustomClass formResultClass;
     private final LCP formResultProperty;
     private final AnyValuePropertyHolder chosenValueProperty;
-
-    AnyValuePropertyHolder requestedPropertySet;
-    LCP requestCanceledProperty;
 
     private final ObjectEntity contextObject;
     private final CalcPropertyMapImplement<PropertyInterface, ClassPropertyInterface> contextPropertyImplement;
@@ -126,8 +124,6 @@ public class FormActionProperty extends SystemExplicitActionProperty {
                               LCP formExportFiles,
                               LCP ignorePrintType,
                               AnyValuePropertyHolder chosenValueProperty,
-                              AnyValuePropertyHolder requestedPropertySet,
-                              LCP requestCanceledProperty,
                               ObjectEntity contextObject,
                               CalcProperty contextProperty,
                               PropertyDrawEntity initFilterProperty, boolean readOnly, boolean allowNulls) {
@@ -146,9 +142,6 @@ public class FormActionProperty extends SystemExplicitActionProperty {
         this.formResultProperty = formResultProperty;
         this.chosenValueProperty = chosenValueProperty;
         
-        this.requestedPropertySet = requestedPropertySet;
-        this.requestCanceledProperty = requestCanceledProperty;
-
         this.modalityType = modalityType;
         this.checkOnOk = checkOnOk;
         this.showDrop = showDrop;
@@ -290,8 +283,11 @@ public class FormActionProperty extends SystemExplicitActionProperty {
             
             if(input != null) {
                 ObjectInstance object = newFormInstance.instanceFactory.getInstance(input);
-                InputActionProperty.writeRequested(formResult == FormCloseType.CLOSE ? null : (formResult == FormCloseType.OK ? object.getObjectValue() : NullValue.instance), 
-                        object.getType(), context, requestedPropertySet, requestCanceledProperty);
+
+                ObjectValue chosenValue = null;
+                if(formResult != FormCloseType.CLOSE)
+                    chosenValue = (formResult == FormCloseType.OK ? object.getObjectValue() : NullValue.instance);
+                context.writeRequested(chosenValue, object.getType());
             }
         }
     }

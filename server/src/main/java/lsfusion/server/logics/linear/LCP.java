@@ -43,8 +43,8 @@ public class LCP<T extends PropertyInterface> extends LP<T, CalcProperty<T>> {
         super(property, listInterfaces);
     }
 
-    public Object read(FormInstance form, ObjectValue... objects) throws SQLException, SQLHandledException {
-        return property.read(form, getMapValues(objects));
+    public Object read(ExecutionEnvironment env, ObjectValue... objects) throws SQLException, SQLHandledException {
+        return property.read(env, getMapValues(objects));
     }
 
     public Object read(SQLSession session, Modifier modifier, QueryEnvironment env, ObjectValue... objects) throws SQLException, SQLHandledException {
@@ -65,7 +65,11 @@ public class LCP<T extends PropertyInterface> extends LP<T, CalcProperty<T>> {
     }
 
     public ObjectValue readClasses(ExecutionContext context, DataObject... objects) throws SQLException, SQLHandledException {
-        return readClasses(context.getSession(), context.getModifier(), context.getQueryEnv(), objects);
+        return readClasses(context.getEnv(), objects);
+    }
+
+    public ObjectValue readClasses(ExecutionEnvironment env, DataObject... objects) throws SQLException, SQLHandledException {
+        return readClasses(env.getSession(), env.getModifier(), env.getQueryEnv(), objects);
     }
 
     public ObjectValue readClasses(DataSession session, DataObject... objects) throws SQLException, SQLHandledException {

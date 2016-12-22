@@ -54,6 +54,7 @@ import lsfusion.server.logics.*;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.linear.LP;
 import lsfusion.server.logics.property.*;
+import lsfusion.server.logics.property.actions.flow.FlowResult;
 import lsfusion.server.logics.property.derived.MaxChangeProperty;
 import lsfusion.server.logics.property.derived.OnChangeProperty;
 import lsfusion.server.logics.scripted.ScriptingErrorLog;
@@ -936,12 +937,12 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     }
 
     public void executeEditAction(PropertyDrawInstance property, String editActionSID, ImMap<ObjectInstance, DataObject> keys, ExecutionStack stack) throws SQLException, SQLHandledException {
-        executeEditAction(property, editActionSID, keys, null, null, false, stack);
+        executeEditAction(property, editActionSID, keys, null, null, null, false, stack);
     }
     
     @LogTime
     @ThisMessage
-    public void executeEditAction(PropertyDrawInstance property, String editActionSID, ImMap<ObjectInstance, DataObject> keys, ObjectValue pushChange, DataObject pushAdd, boolean pushConfirm, ExecutionStack stack) throws SQLException, SQLHandledException {
+    public void executeEditAction(final PropertyDrawInstance property, String editActionSID, ImMap<ObjectInstance, DataObject> keys, final ObjectValue pushChange, DataClass pushChangeType, final DataObject pushAdd, boolean pushConfirm, final ExecutionStack stack) throws SQLException, SQLHandledException {
         ActionPropertyObjectInstance editAction = property.getEditAction(editActionSID, instanceFactory, entity);
 
         if (property.propertyReadOnly != null && property.propertyReadOnly.getRemappedPropertyObject(keys).read(this) != null && editAction != null && ((ActionProperty) editAction.property).checkReadOnly) {
@@ -969,7 +970,12 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                 }
             }
         }
-        editAction.getRemappedPropertyObject(keys).execute(this, stack, pushChange, pushAdd, property, this);
+        final ActionPropertyObjectInstance remappedEditAction = editAction.getRemappedPropertyObject(keys);
+        BL.LM.pushRequestedValue(pushChange, pushChangeType, this, new SQLCallable<FlowResult>() {
+            public FlowResult call() throws SQLException, SQLHandledException {
+                return remappedEditAction.execute(FormInstance.this, stack, null, pushAdd, property, FormInstance.this);
+            }
+        });
     }
     
     private boolean checkEditActionPermission(ActionPropertyObjectInstance editAction, String editActionSID, PropertyDrawInstance property) {
@@ -1023,21 +1029,21 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
     private void executePasteAction(PropertyDrawInstance<?> property, ImMap<ObjectInstance, DataObject> columnKey, ImOrderMap<ImMap<ObjectInstance, DataObject>, Object> pasteRows, ExecutionStack stack) throws SQLException, SQLHandledException {
         if (!pasteRows.isEmpty()) {
-            for (int i = 0, size = pasteRows.size(); i < size; i++) {
-                ImMap<ObjectInstance, DataObject> key = pasteRows.getKey(i);
-                if (columnKey != null) {
-                    key = key.addExcl(columnKey);
-                }
-
-                Object oValue = pasteRows.getValue(i);
-                ObjectValue value = NullValue.instance;
-                if (oValue != null) {
-                    DataClass changeType = property.entity.getWYSRequestInputType(entity);
-                    if (changeType != null) {
+            DataClass changeType = property.entity.getWYSRequestInputType(entity);
+            if (changeType != null) {
+                for (int i = 0, size = pasteRows.size(); i < size; i++) {
+                    ImMap<ObjectInstance, DataObject> key = pasteRows.getKey(i);
+                    if (columnKey != null) {
+                        key = key.addExcl(columnKey);
+                    }
+    
+                    ObjectValue value = NullValue.instance;
+                    Object oValue = pasteRows.getValue(i);
+                    if (oValue != null) {
                         value = session.getObjectValue(changeType, oValue);
                     }
+                    executeEditAction(property, CHANGE_WYS, key, value, changeType, null, true, stack);
                 }
-                executeEditAction(property, CHANGE_WYS, key, value, null, true, stack);
             }
         }
     }

@@ -21,6 +21,7 @@ import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.action.ProcessFormChangesClientAction;
 import lsfusion.interop.form.*;
 import lsfusion.server.ServerLoggers;
+import lsfusion.server.classes.DataClass;
 import lsfusion.server.context.*;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.instance.*;
@@ -693,8 +694,10 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
                 ImMap<ObjectInstance, DataObject> keys = deserializePropertyKeys(propertyDraw, fullKey);
 
                 ObjectValue pushChangeObject = null;
+                DataClass pushChangeType = null;
                 if (pushChange != null) {
-                    pushChangeObject = DataObject.getValue(deserializeObject(pushChange), propertyDraw.getEntity().getRequestInputType(form.entity));
+                    pushChangeType = propertyDraw.getEntity().getRequestInputType(form.entity);
+                    pushChangeObject = DataObject.getValue(deserializeObject(pushChange), pushChangeType);
                 }
 
                 DataObject pushAddObject = null;
@@ -702,7 +705,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
                     pushAddObject = new DataObject(pushAdd, form.session.baseClass.unknown);
                 }
 
-                form.executeEditAction(propertyDraw, ServerResponse.CHANGE, keys, pushChangeObject, pushAddObject, true, stack);
+                form.executeEditAction(propertyDraw, ServerResponse.CHANGE, keys, pushChangeObject, pushChangeType, pushAddObject, true, stack);
 
                 if (logger.isTraceEnabled()) {
                     logger.trace(String.format("changeProperty: [ID: %1$d, SID: %2$s]", propertyDraw.getID(), propertyDraw.getsID()));

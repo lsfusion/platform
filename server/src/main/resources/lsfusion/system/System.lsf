@@ -116,6 +116,7 @@ hashModules 'Хэш модулей' = DATA VARSTRING[200] ();
 addedObject() = DATA LOCAL Object ();
 confirmed() = DATA LOCAL BOOLEAN ();
 requestCanceled() = DATA LOCAL BOOLEAN ();
+requestPushed() = DATA LOCAL BOOLEAN ();
 formResult() = DATA LOCAL FormResult ();
 formPageCount() = DATA LOCAL INTEGER ();
 formExportFile() = DATA LOCAL CUSTOMFILE ();

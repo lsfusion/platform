@@ -53,10 +53,6 @@ public class TopExecutionStack implements NewThreadExecutionStack {
     }
 
     @Override
-    public void updateLastUserInput(DataSession session, ObjectValue userInput) {
-    }
-
-    @Override
     public boolean sameSession(DataSession session) {
         return true; // особо не принципиально можно и false
     }

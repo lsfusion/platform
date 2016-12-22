@@ -27,7 +27,5 @@ public interface ExecutionStack {
 
     void updateOnApply(DataSession session) throws SQLException, SQLHandledException;
 
-    void updateLastUserInput(DataSession session, final ObjectValue userInput);
-
     boolean sameSession(DataSession session);
 }

@@ -10,7 +10,10 @@ import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.caches.IdentityStrongLazy;
 import lsfusion.server.classes.*;
 import lsfusion.server.classes.sets.ResolveClassSet;
+import lsfusion.server.data.SQLCallable;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.formula.CastFormulaImpl;
+import lsfusion.server.data.type.Type;
 import lsfusion.server.form.entity.*;
 import lsfusion.server.form.instance.FormSessionScope;
 import lsfusion.server.form.navigator.NavigatorElement;
@@ -31,9 +34,11 @@ import lsfusion.server.logics.property.group.AbstractGroup;
 import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 import lsfusion.server.logics.table.TableFactory;
+import lsfusion.server.session.ExecutionEnvironment;
 import org.antlr.runtime.RecognitionException;
 
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 
@@ -120,6 +125,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     private LCP addedObject;
     public LCP confirmed;
     private LCP requestCanceled;
+    private LCP requestPushed;
     private LCP isActiveForm;
     private LCP formResultProp;
     public LCP formPageCount;
@@ -376,6 +382,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         addedObject = findProperty("addedObject[]");
         confirmed = findProperty("confirmed[]");
         requestCanceled = findProperty("requestCanceled[]");
+        requestPushed = findProperty("requestPushed[]");
         isActiveForm = findProperty("isActiveForm[]");
         formResultProp = findProperty("formResult[]");
         formPageCount = findProperty("formPageCount[]");
@@ -565,16 +572,17 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         return addAnyValuePropertyHolder("chosen", "Chosen", StringClass.get(100));
     }
 
-    @Override
     @IdentityStrongLazy
-    public AnyValuePropertyHolder getRequestedValueProperty() {
+    private AnyValuePropertyHolder getRequestedValueProperty() {
         return addAnyValuePropertyHolder("requested", "Requested");
     }
 
-    @Override
-    @IdentityStrongLazy
     public LCP getRequestCanceledProperty() {
         return requestCanceled;
+    }
+
+    private LCP getRequestPushedProperty() {
+        return requestPushed;
     }
 
     @Override
@@ -681,5 +689,51 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
 
     private static String getObjectPrefix(ObjectEntity objectEntity) {
         return "_" + objectEntity.getSID();
+    }
+
+    // REQUEST / INPUT BLOCK
+    
+    public <R> R pushRequest(ExecutionEnvironment env, SQLCallable<R> callable) throws SQLException, SQLHandledException {
+        LCP requestPushed = getRequestPushedProperty();
+        getRequestCanceledProperty().change((Object)null, env);
+        Object prevValue = requestPushed.read(env);
+        requestPushed.change(true, env);
+        try {
+            return callable.call();
+        } finally {
+            requestPushed.change(prevValue, env);
+        }
+    }
+
+    public boolean isRequest(ExecutionEnvironment env) throws SQLException, SQLHandledException {
+        return getRequestPushedProperty().read(env) != null;
+    }
+
+    public <R> R pushRequestedValue(ObjectValue value, Type type, ExecutionEnvironment env, SQLCallable<R> callable) throws SQLException, SQLHandledException {
+        if(value != null) {
+            getRequestedValueProperty().write(type, value, env);
+            return pushRequest(env, callable);
+        } else
+            return callable.call();
+    }
+
+    // defaultchange'и + обратная совместимость
+    public ObjectValue getRequestedValue(Type type, ExecutionEnvironment env, SQLCallable<ObjectValue> request) throws SQLException, SQLHandledException {
+        if(isRequest(env))
+            return getRequestedValueProperty().read(type, env);
+
+        ObjectValue result = request.call();
+        writeRequested(result, type, env);
+        return result;
+    }
+    
+    public void writeRequested(ObjectValue chosenValue, Type type, ExecutionEnvironment env) throws SQLException, SQLHandledException {
+        LCP<?> requestCanceledProperty = getRequestCanceledProperty();
+        if (chosenValue == null) {
+            requestCanceledProperty.change(true, env);
+        } else {
+            requestCanceledProperty.change((Object)null, env);
+            getRequestedValueProperty().write(type, chosenValue, env);
+        }
     }
 }

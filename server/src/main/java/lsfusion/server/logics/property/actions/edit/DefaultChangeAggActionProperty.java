@@ -7,6 +7,7 @@ import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.server.classes.CustomClass;
 import lsfusion.server.classes.DataClass;
 import lsfusion.server.classes.ValueClass;
+import lsfusion.server.data.SQLCallable;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
@@ -83,7 +84,11 @@ public class DefaultChangeAggActionProperty<P extends PropertyInterface> extends
                     new Query<>(MapFact.<String, KeyExpr>EMPTYREV(), MapFact.singleton("value", groupExpr), Where.TRUE).executeClasses(context);
 
             ObjectValue convertWYSValue = values.singleValue().singleValue();
-            return proceed(context.pushUserInput(convertWYSValue));
+            return context.pushRequestedValue(convertWYSValue, aggClass.getType(), new SQLCallable<FlowResult>() {
+                public FlowResult call() throws SQLException, SQLHandledException {
+                    return proceed(context);
+                }
+            });
         }
         return FlowResult.FINISH;
     }

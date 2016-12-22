@@ -60,11 +60,6 @@ public abstract class UpExecutionStack implements ExecutionStack {
             upStack.updateOnApply(session);
     }
 
-    public void updateLastUserInput(DataSession session, final ObjectValue userInput) {
-        if(upStack != null && upStack.sameSession(session))
-            upStack.updateLastUserInput(session, userInput);
-    }
-
     // nullable
     protected abstract DataSession getSession();
 

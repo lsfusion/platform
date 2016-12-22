@@ -544,7 +544,7 @@ public abstract class LogicsModule {
     }
 
     protected LAP addFAProp(AbstractGroup group, LocalizedString caption, FormEntity form, ObjectEntity input, ObjectEntity[] objectsToSet, Boolean manageSession, boolean isAdd, ObjectEntity contextObject, CalcProperty contextProperty, PropertyDrawEntity initFilterProperty, ModalityType modalityType, boolean checkOnOk, boolean showDrop, FormPrintType printType, FormExportType exportType, boolean readonly, boolean allowNulls) {
-        return addProperty(group, new LAP(new FormActionProperty(caption, form, input, objectsToSet, manageSession, isAdd, modalityType, checkOnOk, showDrop, printType, exportType, baseLM.formResult, baseLM.getFormResultProperty(), baseLM.formPageCount, baseLM.formExportFile, baseLM.formExportFiles, baseLM.ignorePrintType, baseLM.getChosenValueProperty(), baseLM.getRequestedValueProperty(), baseLM.getRequestCanceledProperty(), contextObject, contextProperty, initFilterProperty, readonly, allowNulls)));
+        return addProperty(group, new LAP(new FormActionProperty(caption, form, input, objectsToSet, manageSession, isAdd, modalityType, checkOnOk, showDrop, printType, exportType, baseLM.formResult, baseLM.getFormResultProperty(), baseLM.formPageCount, baseLM.formExportFile, baseLM.formExportFiles, baseLM.ignorePrintType, baseLM.getChosenValueProperty(), contextObject, contextProperty, initFilterProperty, readonly, allowNulls)));
     }
 
     // ------------------- Change Class action ----------------- //
@@ -789,13 +789,12 @@ public abstract class LogicsModule {
         return addProperty(group, new LAP(
                 new RequestUserInputActionProperty(caption, listInterfaces, actionImplement,
                         requestValueType, chosenKey,
-                        baseLM.getRequestCanceledProperty(), baseLM.getRequestedValueProperty(),
                         baseLM.getChosenValueProperty(), baseLM.formResult, baseLM.getFormResultProperty()))
         );
     }
 
     protected LAP addRequestUserDataAProp(AbstractGroup group, LocalizedString caption, DataClass dataClass) {
-        return addAProp(group, new RequestUserDataActionProperty(caption, dataClass, baseLM.getRequestCanceledProperty(), baseLM.getRequestedValueProperty()));
+        return addAProp(group, new RequestUserDataActionProperty(caption, dataClass));
     }
 
     protected LP addRequestAProp(AbstractGroup group, LocalizedString caption, LAP action, Type requestValueType) {
@@ -804,7 +803,7 @@ public abstract class LogicsModule {
 
         return addProperty(group, new LAP(
                 new RequestActionProperty(caption, listInterfaces, actionImplement,
-                        requestValueType, baseLM.getRequestCanceledProperty(), baseLM.getRequestedValueProperty()))
+                        requestValueType))
         );
     }
 
@@ -815,7 +814,7 @@ public abstract class LogicsModule {
     }
     @IdentityStrongLazy
     protected LAP addInputAProp(DataClass dataClass) {
-        return addProperty(null, new LAP(new InputActionProperty(LocalizedString.create("Input"), dataClass, baseLM.getRequestCanceledProperty(), baseLM.getRequestedValueProperty())));
+        return addProperty(null, new LAP(new InputActionProperty(LocalizedString.create("Input"), dataClass)));
     }
 
     // ------------------- Constant ----------------- //
@@ -1567,14 +1566,6 @@ public abstract class LogicsModule {
 
     public AnyValuePropertyHolder getChosenValueProperty() {
         return baseLM.getChosenValueProperty();
-    }
-
-    public AnyValuePropertyHolder getRequestedValueProperty() {
-        return baseLM.getRequestedValueProperty();
-    }
-
-    public LCP getRequestCanceledProperty() {
-        return baseLM.getRequestCanceledProperty();
     }
 
     public LCP getIsActiveFormProperty() {
