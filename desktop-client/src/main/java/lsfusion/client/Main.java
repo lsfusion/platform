@@ -495,6 +495,15 @@ public class Main {
             @Override
             public void actionPerformed(ActionEvent e) {
                 clean();
+                //Перегружаем classLoader. Возможно, следует выполнять и другие действия из Main.start()
+                try {
+                    initRmiClassLoader();
+                } catch (Exception ex) {
+                    logger.error("Error during startup: ", ex);
+                    ex.printStackTrace();
+                    removeSingleInstanceListener();
+                    System.exit(1);
+                }
                 startWorkingThreads();
             }
         });
