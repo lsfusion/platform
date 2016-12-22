@@ -14,6 +14,8 @@ public class ScrollClientContainerView extends AbstractClientContainerView {
         super(formLayout, container);
         assert container.isScroll();
         scroll = new JScrollPane();
+        scroll.getVerticalScrollBar().setUnitIncrement(14);
+        scroll.getHorizontalScrollBar().setUnitIncrement(14);
         container.design.designComponent(scroll);
     }
 
