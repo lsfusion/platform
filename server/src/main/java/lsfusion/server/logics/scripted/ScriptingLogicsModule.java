@@ -3176,9 +3176,15 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     private void checkPropertyTypes(List<LPWithParams> properties, String errMsgPropType) throws ScriptingErrorLog.SemanticErrorException {
-        Property prop1 = properties.get(0).property.property;
+        LP lp1 = properties.get(0).property;
+        if(lp1 == null)
+            return;
+        Property prop1 = lp1.property;
         for (int i = 1; i < properties.size(); i++) {
-            Property prop2 = properties.get(i).property.property;
+            LP lp2 = properties.get(i).property;
+            if(lp2 == null)
+                return;            
+            Property prop2 = lp2.property;
             if (prop1.getType() != null && prop2.getType() != null && prop1.getType().getCompatible(prop2.getType()) == null) {
                 errLog.emitIncompatibleTypes(parser, errMsgPropType);
             }
