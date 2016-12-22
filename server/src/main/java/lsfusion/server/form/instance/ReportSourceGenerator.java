@@ -263,6 +263,11 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
                         }
                     }
                 }
+                
+                if (groupId != null && !form.isPropertyShown(property)) {
+                    add = false;
+                }
+                
                 if (add) {
                     resultList.add(property);
                 }

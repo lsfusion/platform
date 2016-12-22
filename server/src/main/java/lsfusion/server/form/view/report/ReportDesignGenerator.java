@@ -12,6 +12,7 @@ import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.entity.GroupObjectEntity;
 import lsfusion.server.form.entity.GroupObjectHierarchy;
+import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.form.view.FormView;
 import lsfusion.server.form.view.GroupObjectView;
 import lsfusion.server.form.view.ObjectView;
@@ -54,6 +55,8 @@ public class ReportDesignGenerator {
 
     private static final int defaultPageMargin = 20;
 
+    private final FormInstance form;
+    
     private int pageWidth;
     private int pageUsableWidth;
     private static final int neighboursGap = 5;
@@ -64,8 +67,9 @@ public class ReportDesignGenerator {
     
     private Map<String, JasperDesign> designs = new HashMap<>();
 
-    public ReportDesignGenerator(FormView formView, GroupObjectHierarchy.ReportHierarchy hierarchy, Set<Integer> hiddenGroupsId, 
-                                 FormUserPreferences userPreferences, boolean toExcel, Map<String, LinkedHashSet<List<Object>>> columnGroupObjects, Integer groupId) {
+    public ReportDesignGenerator(FormView formView, GroupObjectHierarchy.ReportHierarchy hierarchy, Set<Integer> hiddenGroupsId,
+                                 FormUserPreferences userPreferences, boolean toExcel, 
+                                 Map<String, LinkedHashSet<List<Object>>> columnGroupObjects, Integer groupId, FormInstance form) {
         this.formView = formView;
         this.hierarchy = hierarchy;
         this.hiddenGroupsId = hiddenGroupsId;
@@ -76,6 +80,7 @@ public class ReportDesignGenerator {
 
         pageWidth = calculatePageWidth(toExcel);
         pageUsableWidth = pageWidth - defaultPageMargin * 2;
+        this.form = form;
     }
 
     private int calculatePageWidth(boolean toExcel) {
@@ -146,6 +151,10 @@ public class ReportDesignGenerator {
         GroupObjectEntity drawGroup = property.entity.getToDraw(formView.entity);
 
         boolean hidden = pref != null && pref.userHide != null && pref.userHide;
+        if (!hidden && form != null) {
+            assert groupId != null;
+            hidden = !form.isPropertyShown(form.getPropertyDraw(property.getID())); 
+        }
         // В отчет по одной группе объектов не добавляем свойства, которые идут в панель  
         boolean validForGroupReports = !(property.entity.isForcedPanel() && groupId != null && groupId.equals(group.getID()));
 

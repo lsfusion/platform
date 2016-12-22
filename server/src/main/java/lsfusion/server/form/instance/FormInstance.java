@@ -1544,6 +1544,10 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         }
         page.updateActiveTabProperty(session, true);
     }
+    
+    public boolean isPropertyShown(PropertyDrawInstance property) {
+        return isShown.get(property) != null;
+    }
 
     boolean refresh = true;
 
