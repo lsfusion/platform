@@ -30,10 +30,7 @@ import lsfusion.server.data.expr.where.pull.ExclExprPullWheres;
 import lsfusion.server.data.expr.where.pull.ExclPullWheres;
 import lsfusion.server.data.expr.where.pull.ExprPullWheres;
 import lsfusion.server.data.query.*;
-import lsfusion.server.data.query.innerjoins.GroupJoinsWhere;
-import lsfusion.server.data.query.innerjoins.GroupSplitWhere;
-import lsfusion.server.data.query.innerjoins.GroupStatType;
-import lsfusion.server.data.query.innerjoins.KeyEqual;
+import lsfusion.server.data.query.innerjoins.*;
 import lsfusion.server.data.query.stat.StatKeys;
 import lsfusion.server.data.query.stat.WhereJoin;
 import lsfusion.server.data.query.stat.WhereJoins;
@@ -590,14 +587,18 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
         assert type.hasAdd();
 
         GroupStatType splitType = type.splitInnerJoins() ? GroupStatType.NONE : (Settings.get().isSplitGroupStatInnerJoins() ? GroupStatType.STAT : GroupStatType.ALL);
+        boolean exclusive = type.exclusive();
+        
         if(splitType.equals(GroupStatType.ALL)) { // оптимизация
-            return where.getKeyEquals().mapColValues(new GetKeyValue<Pair<KeyEqual, Where>, KeyEqual, Where>() {
-                public Pair<KeyEqual, Where> getMapValue(KeyEqual key, Where value) {
-                    return new Pair<>(key, value);
-                }
-            });
+            KeyEquals keyEquals = where.getKeyEquals();
+            if(!exclusive || keyEquals.size() <= 1)
+                return keyEquals.mapColValues(new GetKeyValue<Pair<KeyEqual, Where>, KeyEqual, Where>() {
+                    public Pair<KeyEqual, Where> getMapValue(KeyEqual key, Where value) {
+                        return new Pair<>(key, value);
+                    }
+                });
         }
-        return where.getSplitJoins(type.exclusive(), outerInner.values().toSet(),
+        return where.getSplitJoins(exclusive, outerInner.values().toSet(),
                 StatType.GROUP_SPLIT, splitType).mapColSetValues(new GetValue<Pair<KeyEqual, Where>, GroupSplitWhere<Expr>>() {
             public Pair<KeyEqual, Where> getMapValue(GroupSplitWhere<Expr> value) {
                 return new Pair<>(value.keyEqual, value.where);

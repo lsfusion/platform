@@ -28,6 +28,6 @@ public class CheckAggregationsMultiThreadActionProperty extends MultiThreadActio
     @Override
     protected MessageClientAction createMessageClientAction(GroupPropertiesSingleTask task, boolean errorOccurred) {
         return new MessageClientAction(localize(new FormatLocalizedString(errorOccurred ? "{logics.check.failed}" : "{logics.check.completed}",
-                localize("{logics.checking.aggregations}"))) + task.getMessages(), localize("{logics.checking.aggregations}"));
+                localize("{logics.checking.aggregations}"))) + task.getMessages(), localize("{logics.checking.aggregations}"), true);
     }
 }
