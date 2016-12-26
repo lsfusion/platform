@@ -72,7 +72,7 @@ public abstract class AbstractCase<P extends PropertyInterface, W extends CalcPr
     public static <P extends PropertyInterface, W extends CalcPropertyInterfaceImplement<P>, 
             M extends PropertyInterfaceImplement<P>, F extends Case<P, W, M>, A extends AbstractCase<P, W, M>> FinalizeResult<F> finalizeCases(NFList<A> cases, GetValue<F, A> translator, final AbstractWrapper<P, W, M, F> wrapper, final GetValue<Graph<F>, M> abstractReader, boolean hasImplicit, boolean explicitExclusive) {
         ImList<A> list = cases.getList();
-        if(!hasImplicit) {
+        if(!hasImplicit || explicitExclusive) { // если не делать explicitExclusive вместо ошибки, начинает работать как если бы exclusive'а не было и платформа сама бы выбирала (впрочем обратная ветка уже работает стабильно)
             return new FinalizeResult<>(list.mapListValues(translator), explicitExclusive, null);
         }
 

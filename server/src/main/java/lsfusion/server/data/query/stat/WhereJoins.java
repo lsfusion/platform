@@ -697,10 +697,6 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         });
     }
 
-    private <K> StatKeys<K> create(Cost cost, Stat stat, ImMap<K, Stat> distinct) {
-        return StatKeys.create(cost, stat, new DistinctKeys<>(distinct));
-    }
-
     public <K extends BaseExpr, Z extends Expr> Where getCostPushWhere(final QueryJoin<Z, ?, ?, ?> queryJoin, boolean pushLargeDepth, final UpWheres<WhereJoin> upWheres, final KeyStat keyStat, final StatType type) {
         ImSet<BaseExpr> groups = queryJoin.getJoins().values().toSet();
 
