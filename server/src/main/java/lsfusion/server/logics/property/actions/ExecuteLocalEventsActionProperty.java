@@ -1,6 +1,7 @@
 package lsfusion.server.logics.property.actions;
 
 import com.google.common.base.Throwables;
+import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.logics.BaseLogicsModule;
@@ -15,8 +16,8 @@ import java.sql.SQLException;
 
 public class ExecuteLocalEventsActionProperty extends ScriptingActionProperty {
 
-    public ExecuteLocalEventsActionProperty(BaseLogicsModule LM) {
-        super(LM);
+    public ExecuteLocalEventsActionProperty(BaseLogicsModule LM, ValueClass... classes) {
+        super(LM, classes);
     }
 
     @Override
