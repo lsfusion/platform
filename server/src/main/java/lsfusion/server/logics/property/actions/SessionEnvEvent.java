@@ -47,6 +47,9 @@ public class SessionEnvEvent extends TwinImmutableObject {
         for(FormInstance form : element.getAllActiveForms())
             if(forms.contains(form.entity))
                 return true;
+        if(element.hasSessionEventActiveForms(forms))
+            return true;
+
         return false;
     }
 

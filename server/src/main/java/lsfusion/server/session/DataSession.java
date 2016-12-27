@@ -491,6 +491,9 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             activeSessionEvents = filterOrderEnv(sessionEvents);
         return activeSessionEvents;
     }
+    public void dropActiveSessionEventsCaches() {
+        activeSessionEvents = null;
+    }
 
     private ImSet<OldProperty> sessionEventOldDepends;
     @ManualLazy
@@ -1951,8 +1954,31 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             tryClose();
         }
     }
+
+    // дополнительные formEntity в локальных событиях
+    private Stack<FormEntity> sessionEventActiveFormEntities = new Stack<>();
+    
+    public boolean hasSessionEventActiveForms(ImSet<FormEntity> forms) {
+        if(!sessionEventActiveFormEntities.isEmpty()) { // оптимизация
+            for(FormEntity form : sessionEventActiveFormEntities)
+                if(forms.contains(form))
+                    return true;
+        }
+        return false;
+    }
+
+    public void pushSessionEventActiveForm(FormEntity form) {
+        sessionEventActiveFormEntities.push(form);
+        dropActiveSessionEventsCaches();
+    }
+
+    public void popSessionEventActiveForm() {
+        sessionEventActiveFormEntities.pop();
+        dropActiveSessionEventsCaches();
+    }
+
     private void dropFormCaches() throws SQLException {
-        activeSessionEvents = null;
+        dropActiveSessionEventsCaches();
         sessionEventOldDepends = null;
     }
     public Iterable<FormInstance> getAllActiveForms() { // including nested

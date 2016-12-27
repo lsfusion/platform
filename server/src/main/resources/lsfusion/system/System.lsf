@@ -74,7 +74,8 @@ check() = ACTION {
     }    
 }
 
-executeLocalEvents = ACTION CUSTOM 'lsfusion.server.logics.property.actions.ExecuteLocalEventsActionProperty' ();
+executeLocalEvents = ACTION CUSTOM 'lsfusion.server.logics.property.actions.ExecuteLocalEventsActionProperty' (TEXT);
+executeLocalEvents() = ACTION executeLocalEvents(NULL);
 
 staticName 'Статическое имя' = DATA STRING[250] (Object);
 nameStatic (name) = GROUP MAX Object object BY staticName(object);
