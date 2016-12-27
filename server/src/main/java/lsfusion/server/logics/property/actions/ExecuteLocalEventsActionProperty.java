@@ -29,11 +29,7 @@ public class ExecuteLocalEventsActionProperty extends ScriptingActionProperty {
         String formId = (String) context.getSingleKeyObject();
         FormEntity formEntity = null;
         if(formId != null)
-            try {
-                formEntity = findForm(formId);
-            } catch (ScriptingErrorLog.SemanticErrorException e) {
-                throw Throwables.propagate(e);
-            }
+            formEntity = (FormEntity) context.getBL().findNavigatorElement(formId);
         DataSession session = context.getSession();
         if(formEntity != null) {
             session.pushSessionEventActiveForm(formEntity);
@@ -41,7 +37,8 @@ public class ExecuteLocalEventsActionProperty extends ScriptingActionProperty {
         try {
             context.executeSessionEvents();
         } finally {
-            session.popSessionEventActiveForm();
+            if(formEntity != null)
+                session.popSessionEventActiveForm();
         }
     }
 }
