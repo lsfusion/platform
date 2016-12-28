@@ -5,6 +5,7 @@ import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.property.ClassPropertyInterface;
+import lsfusion.server.logics.property.DataProperty;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
 import lsfusion.server.logics.scripted.ScriptingErrorLog;
@@ -50,7 +51,10 @@ public class ListFilesActionProperty extends ScriptingActionProperty {
                     } else if (type.equals("ftp")) {
                         filesList = getFTPFilesList(path);
                     }
-                    if (filesList != null/* && !filesList.isEmpty()*/) {
+                    if (filesList != null) {
+
+                        context.getSession().dropChanges((DataProperty) findProperty("fileName[INTEGER]").property);
+                        context.getSession().dropChanges((DataProperty) findProperty("fileIsDirectory[INTEGER]").property);
 
                         Integer i = 0;
                         for (Map.Entry<String, Boolean> file : filesList.entrySet()) {
@@ -58,15 +62,6 @@ public class ListFilesActionProperty extends ScriptingActionProperty {
                             findProperty("fileIsDirectory[INTEGER]").change(file.getValue(), context, new DataObject(i));
                             i++;
                         }
-                        Integer prevCount = (Integer) findProperty("prevCountFiles[]").read(context);
-                        if (prevCount != null) {
-                            while (i < prevCount) {
-                                findProperty("fileName[INTEGER]").change((Object) null, context, new DataObject(i));
-                                findProperty("fileIsDirectory[INTEGER]").change((Object) null, context, new DataObject(i));
-                                i++;
-                            }
-                        }
-                        findProperty("prevCountFiles[]").change(filesList.size(), context);
                     } else {
                         throw Throwables.propagate(new RuntimeException("ReadActionProperty Error. File not found: " + path));
                     }
