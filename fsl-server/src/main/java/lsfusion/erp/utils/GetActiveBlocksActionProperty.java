@@ -20,6 +20,7 @@ import lsfusion.server.data.type.ParseInterface;
 import lsfusion.server.data.type.Reader;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.property.ClassPropertyInterface;
+import lsfusion.server.logics.property.DataProperty;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
 import lsfusion.server.logics.scripted.ScriptingErrorLog;
@@ -52,17 +53,11 @@ public class GetActiveBlocksActionProperty extends ScriptingActionProperty {
 
         DataSession session = context.getSession();
 
-        Integer previousCount = (Integer) findProperty("previousCountActiveBlock[]").read(session);
-        previousCount = previousCount == null ? 0 : previousCount;
-
-        for (int i = 0; i < previousCount; i++) {
-            DataObject currentObject = new DataObject(i);
-            findProperty("typeLockedObjectActiveBlock[INTEGER]").change((Object) null, session, currentObject);
-            findProperty("idLockedObjectActiveBlock[INTEGER]").change((Object) null, session, currentObject);
-            findProperty("processIdActiveBlock[INTEGER]").change((Object) null, session, currentObject);
-            findProperty("modeActiveBlock[INTEGER]").change((Object) null, session, currentObject);
-            findProperty("grantedActiveBlock[INTEGER]").change((Object) null, session, currentObject);
-        }
+        session.dropChanges((DataProperty) findProperty("typeLockedObjectActiveBlock[INTEGER]").property);
+        session.dropChanges((DataProperty) findProperty("idLockedObjectActiveBlock[INTEGER]").property);
+        session.dropChanges((DataProperty) findProperty("processIdActiveBlock[INTEGER]").property);
+        session.dropChanges((DataProperty) findProperty("modeActiveBlock[INTEGER]").property);
+        session.dropChanges((DataProperty) findProperty("grantedActiveBlock[INTEGER]").property);
 
         SQLSyntaxType syntaxType = context.getDbManager().getAdapter().getSyntaxType();
 
@@ -116,8 +111,8 @@ public class GetActiveBlocksActionProperty extends ScriptingActionProperty {
             propertyReaders.exclAdd("Status", StringClass.get(100));
             propertyReaders.immutable();
 
-             ImOrderMap rs = session.sql.executeSelect(originalQuery, OperationOwner.unknown, StaticExecuteEnvironmentImpl.EMPTY, (ImMap<String, ParseInterface>) MapFact.mExclMap(),
-                     0, ((ImSet) keyNames).toRevMap(), (ImMap) keyReaders, ((ImSet) propertyNames).toRevMap(), (ImMap) propertyReaders);
+            ImOrderMap rs = session.sql.executeSelect(originalQuery, OperationOwner.unknown, StaticExecuteEnvironmentImpl.EMPTY, (ImMap<String, ParseInterface>) MapFact.mExclMap(),
+                    0, ((ImSet) keyNames).toRevMap(), (ImMap) keyReaders, ((ImSet) propertyNames).toRevMap(), (ImMap) propertyReaders);
 
             int i = 0;
             for (Object rsValue : rs.values()) {
@@ -141,10 +136,8 @@ public class GetActiveBlocksActionProperty extends ScriptingActionProperty {
 
                 i++;
             }
-            findProperty("previousCountActiveBlock[]").change(i, session);
-                      
-            
-        }  else if (syntaxType == SQLSyntaxType.POSTGRES) {
+
+        } else if (syntaxType == SQLSyntaxType.POSTGRES) {
             String originalQuery = "SELECT relation::regclass, * FROM pg_locks";
 
             MExclSet<String> keyNames = SetFact.mExclSet();
@@ -209,7 +202,6 @@ public class GetActiveBlocksActionProperty extends ScriptingActionProperty {
 
                 i++;
             }
-            findProperty("previousCountActiveBlock[]").change(i, session);
         }
     }
 

@@ -67,7 +67,6 @@ getAllTasksAction 'Обновить список всех процессов' = 
 cancelActiveTaskAction 'Снять процесс' = ACTION CUSTOM 'lsfusion.erp.utils.CancelActiveTaskActionProperty' (INTEGER);
 killActiveTaskAction 'Убить процесс' = ACTION CUSTOM 'lsfusion.erp.utils.KillActiveTaskActionProperty' (INTEGER);
 
-previousCountActiveTask =  DATA LOCAL INTEGER();
 idActiveTask 'ID процесса' = DATA LOCAL INTEGER (INTEGER);
 queryActiveTask 'Запрос' = DATA LOCAL TEXT (INTEGER);
 computerActiveTask 'Компьютер' = DATA LOCAL VARSTRING[100] (INTEGER);
@@ -85,7 +84,6 @@ FORM activeTasks 'Активные процессы'
 
 getActiveBlocksAction 'Обновить список блокировок' = ACTION CUSTOM 'lsfusion.erp.utils.GetActiveBlocksActionProperty' () TOOLBAR;
 
-previousCountActiveBlock =  DATA LOCAL INTEGER();
 processIdActiveBlock 'ID процесса блокировки' = DATA LOCAL INTEGER (INTEGER);
 typeLockedObjectActiveBlock 'Тип заблокированного объекта' = DATA LOCAL VARSTRING[100] (INTEGER);
 idLockedObjectActiveBlock 'ID заблокированного объекта' = DATA LOCAL VARSTRING[100] (INTEGER);
