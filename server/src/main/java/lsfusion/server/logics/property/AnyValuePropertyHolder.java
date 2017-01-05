@@ -138,6 +138,8 @@ public class AnyValuePropertyHolder {
             return customFileProperty;
         } else if (valueType instanceof ExcelClass) {
             return excelFileProperty;
+        } else if (valueType instanceof StaticFormatFileClass) {
+            return customFileProperty;
         } else if (valueType instanceof WordLinkClass) {
             return wordLinkProperty;
         } else if (valueType instanceof ImageLinkClass) {
@@ -148,6 +150,8 @@ public class AnyValuePropertyHolder {
             return customLinkProperty;
         } else if (valueType instanceof ExcelLinkClass) {
             return excelLinkProperty;
+        } else if (valueType instanceof StaticFormatLinkClass) {
+            return customLinkProperty;
         } else {
             throw new IllegalStateException(valueType + " is not supported by AnyValueProperty");
         }
