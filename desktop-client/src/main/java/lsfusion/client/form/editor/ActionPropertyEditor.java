@@ -22,7 +22,7 @@ public class ActionPropertyEditor implements PropertyEditor {
         editorComponent.addFocusListener(new FocusAdapter() {
             @Override
             public void focusGained(FocusEvent e) {
-                tableEditor.stopCellEditing();
+                tableEditor.stopCellEditingLater();
             }
         });
     }

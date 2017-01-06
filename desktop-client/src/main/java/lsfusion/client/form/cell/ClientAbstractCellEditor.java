@@ -50,6 +50,16 @@ public class ClientAbstractCellEditor extends AbstractCellEditor implements Prop
     }
 
     @Override
+    public void stopCellEditingLater() {
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                stopCellEditing();
+            }
+        });
+    }
+
+    @Override
     public boolean stopCellEditing() {
         return propertyEditor.stopCellEditing() && super.stopCellEditing();
     }

@@ -58,7 +58,7 @@ public abstract class DialogBasedPropertyEditor implements PropertyEditor {
             if (!editingStopped) {
                 editingStopped = true;
                 if (valueChanged()) {
-                    tableEditor.stopCellEditing();
+                    tableEditor.stopCellEditingLater();
                 } else {
                     tableEditor.cancelCellEditing();
                 }

@@ -26,7 +26,7 @@ public class LogicalPropertyEditor extends JCheckBox implements PropertyEditor {
         addFocusListener(new FocusAdapter() {
             @Override
             public void focusGained(FocusEvent e) {
-                tableEditor.stopCellEditing();
+                tableEditor.stopCellEditingLater();
             }
         });
     }
