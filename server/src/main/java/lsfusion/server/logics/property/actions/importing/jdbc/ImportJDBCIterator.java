@@ -1,5 +1,6 @@
 package lsfusion.server.logics.property.actions.importing.jdbc;
 
+import com.google.common.base.Throwables;
 import com.sun.rowset.CachedRowSetImpl;
 import lsfusion.server.classes.DateClass;
 import lsfusion.server.classes.ValueClass;
@@ -37,8 +38,7 @@ public class ImportJDBCIterator extends ImportIterator {
                 return listRow;
             }
         } catch (SQLException e) {
-            e.printStackTrace();
-            return null;
+            throw Throwables.propagate(e);
         }
         return null;
     }

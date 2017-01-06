@@ -78,8 +78,7 @@ class ImportDBFIterator extends ImportIterator {
             } else return "ignored"; //чтобы отличить пропускаемый ряд от null - конца чтения
 
         } catch (IOException | ParseException e) {
-            e.printStackTrace();
-            return null;
+            throw Throwables.propagate(e);
         }
     }
 
