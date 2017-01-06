@@ -85,7 +85,18 @@ public class ImportXLSXIterator extends ImportIterator {
                         }
                         break;
                     case Cell.CELL_TYPE_FORMULA:
-                        result = xssfCell.getCellFormula();
+                        try {
+                            if (dateFormat != null) {
+                                result = (xssfCell.getStringCellValue().isEmpty()) ? defaultValue : xssfCell.getStringCellValue().trim();
+                                if(result != null)
+                                    result = parseFormatDate(dateFormat, result);
+                            } else {
+                                result = new DecimalFormat("#.#####").format(xssfCell.getNumericCellValue());
+                            }
+                        } catch (Exception e) {
+                            result = xssfCell.getStringCellValue().isEmpty() ? defaultValue : xssfCell.getStringCellValue();
+                        }
+                        result = result != null && result.endsWith(".0") ? result.substring(0, result.length() - 2) : result;
                         break;
                     case Cell.CELL_TYPE_ERROR:
                         result = null;
