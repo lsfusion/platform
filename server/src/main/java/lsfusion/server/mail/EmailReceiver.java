@@ -5,9 +5,15 @@ import com.sun.mail.util.BASE64DecoderStream;
 import com.sun.mail.util.MailSSLSocketFactory;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.IOUtils;
+import lsfusion.base.col.MapFact;
+import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.base.col.interfaces.immutable.ImOrderMap;
+import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.classes.ConcreteCustomClass;
 import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.data.expr.KeyExpr;
+import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.integration.*;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.EmailLogicsModule;
@@ -54,12 +60,34 @@ public class EmailReceiver {
 
     public void receiveEmail(ExecutionContext context) throws MessagingException, IOException, SQLException, ScriptingErrorLog.SemanticErrorException, SQLHandledException, GeneralSecurityException {
 
-        List<List<List<Object>>> data = downloadEmailList();
+        List<List<List<Object>>> data = downloadEmailList(getSkipEmails(context));
 
         importEmails(context, data.get(0));
         importAttachments(context, data.get(1));
 
         LM.findAction("formRefresh[]").execute(context);
+    }
+
+    private Set<String> getSkipEmails(ExecutionContext context) {
+        Set<String> skipEmails = new HashSet<>();
+        try {
+            KeyExpr emailExpr = new KeyExpr("email");
+            ImRevMap<Object, KeyExpr> emailKeys = MapFact.singletonRev((Object) "email", emailExpr);
+
+            QueryBuilder<Object, Object> emailQuery = new QueryBuilder<>(emailKeys);
+            emailQuery.addProperty("fromAddressEmail", LM.findProperty("fromAddress[Email]").getExpr(emailExpr));
+            emailQuery.addProperty("dateTimeSentEmail", LM.findProperty("dateTimeSent[Email]").getExpr(emailExpr));
+            emailQuery.and(LM.findProperty("fromAddress[Email]").getExpr(emailExpr).getWhere());
+
+            ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> emailResult = emailQuery.execute(context);
+            for(ImMap<Object, Object> entry : emailResult.values()) {
+                skipEmails.add(getEmailId((Timestamp) entry.get("dateTimeSentEmail"), (String) entry.get("fromAddressEmail")));
+            }
+
+        } catch (Exception e) {
+            ServerLoggers.mailLogger.error(String.format("Account %s: read emails from base failed", nameAccount), e);
+        }
+        return skipEmails;
     }
 
     public void importEmails(ExecutionContext context, List<List<Object>> data) throws ScriptingErrorLog.SemanticErrorException, SQLException, SQLHandledException {
@@ -156,7 +184,7 @@ public class EmailReceiver {
         }
     }
 
-    public List<List<List<Object>>> downloadEmailList() throws MessagingException, SQLException, IOException, GeneralSecurityException {
+    public List<List<List<Object>>> downloadEmailList(Set<String> skipEmails) throws MessagingException, SQLException, IOException, GeneralSecurityException {
 
         List<List<Object>> dataEmails = new ArrayList<>();
         List<List<Object>> dataAttachments = new ArrayList<>();
@@ -192,26 +220,28 @@ public class EmailReceiver {
         for (Message message : messages) {
             Timestamp dateTimeSentEmail = getSentDate(message);
             if(minDateTime == null || dateTimeSentEmail == null || minDateTime.compareTo(dateTimeSentEmail) <= 0) {
-                message.setFlag(deleteMessagesAccount ? Flags.Flag.DELETED : Flags.Flag.SEEN, true);
                 String fromAddressEmail = ((InternetAddress) message.getFrom()[0]).getAddress();
-                String idEmail = (dateTimeSentEmail == null ? "" : dateTimeSentEmail.getTime()) + fromAddressEmail;
-                String subjectEmail = message.getSubject();
-                Object messageContent = getEmailContent(message);
-                MultipartBody messageEmail = messageContent instanceof Multipart ? getMultipartBody(subjectEmail, (Multipart) messageContent) :
-                        messageContent instanceof BASE64DecoderStream ? getMultipartBody64(subjectEmail, (BASE64DecoderStream) messageContent, message.getFileName()) :
-                                messageContent instanceof String ? new MultipartBody((String) messageContent, null) : null;
-                if (messageEmail == null) {
-                    messageEmail = new MultipartBody(messageContent == null ? null : String.valueOf(messageContent), null);
-                    ServerLoggers.mailLogger.error("Warning: missing attachment '" + messageContent + "' from email '" + subjectEmail + "'");
-                }
-                byte[] emlFileEmail = BaseUtils.mergeFileAndExtension(getEMLByteArray(message), "eml".getBytes());
-                dataEmails.add(Arrays.asList((Object) idEmail, dateTimeSentEmail, dateTimeReceivedEmail,
-                        fromAddressEmail, nameAccount, subjectEmail, messageEmail.message, emlFileEmail));
-                int counter = 1;
-                if (messageEmail.attachments != null) {
-                    for (Map.Entry<String, byte[]> entry : messageEmail.attachments.entrySet()) {
-                        dataAttachments.add(Arrays.asList((Object) idEmail, String.valueOf(counter), entry.getKey(), entry.getValue()));
-                        counter++;
+                String idEmail = getEmailId(dateTimeSentEmail, fromAddressEmail);
+                if(!skipEmails.contains(idEmail)) {
+                    message.setFlag(deleteMessagesAccount ? Flags.Flag.DELETED : Flags.Flag.SEEN, true);
+                    String subjectEmail = message.getSubject();
+                    Object messageContent = getEmailContent(message);
+                    MultipartBody messageEmail = messageContent instanceof Multipart ? getMultipartBody(subjectEmail, (Multipart) messageContent) :
+                            messageContent instanceof BASE64DecoderStream ? getMultipartBody64(subjectEmail, (BASE64DecoderStream) messageContent, message.getFileName()) :
+                                    messageContent instanceof String ? new MultipartBody((String) messageContent, null) : null;
+                    if (messageEmail == null) {
+                        messageEmail = new MultipartBody(messageContent == null ? null : String.valueOf(messageContent), null);
+                        ServerLoggers.mailLogger.error("Warning: missing attachment '" + messageContent + "' from email '" + subjectEmail + "'");
+                    }
+                    byte[] emlFileEmail = BaseUtils.mergeFileAndExtension(getEMLByteArray(message), "eml".getBytes());
+                    dataEmails.add(Arrays.asList((Object) idEmail, dateTimeSentEmail, dateTimeReceivedEmail,
+                            fromAddressEmail, nameAccount, subjectEmail, messageEmail.message, emlFileEmail));
+                    int counter = 1;
+                    if (messageEmail.attachments != null) {
+                        for (Map.Entry<String, byte[]> entry : messageEmail.attachments.entrySet()) {
+                            dataAttachments.add(Arrays.asList((Object) idEmail, String.valueOf(counter), entry.getKey(), entry.getValue()));
+                            counter++;
+                        }
                     }
                 }
             }
@@ -250,6 +280,10 @@ public class EmailReceiver {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         msg.writeTo(out); //вообще, out сначала необходимо MimeUtility.encode, а при открытии - decode, чтобы всё сохранялось корректно
         return out.toByteArray();
+    }
+
+    private String getEmailId(Timestamp dateTime, String fromAddress) {
+        return (dateTime == null ? "" : dateTime.getTime()) + fromAddress;
     }
 
     private MultipartBody getMultipartBody(String subjectEmail, Multipart mp) throws IOException, MessagingException {
