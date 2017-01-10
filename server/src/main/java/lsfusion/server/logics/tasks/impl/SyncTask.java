@@ -12,13 +12,14 @@ public abstract class SyncTask extends ReflectionTask {
         return false;
     }
 
+    @Override
+    public boolean ignoreExceptions() {
+        return true;
+    }
+
     public void run(Logger logger) {
         if ((!SystemProperties.isDebug || runInDebug()) && getReflectionManager().isSourceHashChanged()) {
-            try {
-                runSync();
-            } catch (Exception e) {
-                logger.error("SyncTask error: ", e);
-            }
+            runSync();
         }
     }
 }

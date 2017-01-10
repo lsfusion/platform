@@ -35,6 +35,8 @@ import lsfusion.server.logics.property.actions.flow.FlowResult;
 import lsfusion.server.logics.property.actions.flow.ListCaseActionProperty;
 import lsfusion.server.logics.property.infer.ExClassSet;
 import lsfusion.server.session.ExecutionEnvironment;
+import lsfusion.server.stack.StackMessage;
+import lsfusion.server.stack.ThisMessage;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -277,6 +279,8 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
         return calcWhereProperty().mapInterfaceClasses(ClassType.signaturePolicy);
     }
 
+    @StackMessage("{logics.property.actions.flow.calc.where}")
+    @ThisMessage
     public CalcPropertyMapImplement<?, P> getWhereProperty(boolean recursive) {
         ActionWhereType actionWhere = AlgType.actionWhere;
         if(actionWhere != ActionWhereType.CALC && (!recursive || actionWhere == ActionWhereType.CLASS))

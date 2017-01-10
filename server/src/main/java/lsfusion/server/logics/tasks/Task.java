@@ -33,6 +33,10 @@ public abstract class Task {
     protected long dependComplexity;
     protected boolean finalizedComplexity;
 
+    public boolean ignoreExceptions() {
+        return false;
+    }
+
     public boolean isLoggable() {
         return true;
     }
@@ -101,7 +105,8 @@ public abstract class Task {
                     proceed(BL, executor, context, monitor, taskCount, logger, taskQueue, throwableConsumer, propertyTimeout);
                 } catch (Throwable t) {
                     logger.error(ExecutionStackAspect.getExceptionStackString());
-                    throwableConsumer.consume(t);
+                    if(!ignoreExceptions())
+                        throwableConsumer.consume(t);
                 } finally {
                     taskQueue.removePolled(this);
                     int taskInQueue = taskCount.decrementAndGet();

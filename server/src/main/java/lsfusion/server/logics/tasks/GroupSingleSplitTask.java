@@ -2,6 +2,7 @@ package lsfusion.server.logics.tasks;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.server.stack.ExecutionStackAspect;
 import org.apache.log4j.Logger;
 
 public abstract class GroupSingleSplitTask<T> extends GroupSplitTask<T> {
@@ -18,8 +19,10 @@ public abstract class GroupSingleSplitTask<T> extends GroupSplitTask<T> {
             try {
                 runTask(obj);
             } catch (Exception e) {
-                if(ignoreTaskException())
-                    logger.error("RunGroupTask error: ", e);
+                if(ignoreTaskException()) {
+                    logger.error(ExecutionStackAspect.getExceptionStackString());
+                    logger.error("RunGroupTask Error:", e);
+                }
                 else throw Throwables.propagate(e);
             }
         }
