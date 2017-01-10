@@ -15,6 +15,11 @@ public class PrereadPropertyCachesTask extends GroupPropertiesTask {
     }
 
     @Override
+    protected boolean ignoreTaskException() {
+        return true;
+    }
+
+    @Override
     public boolean isEndLoggable() {
         return true;
     }

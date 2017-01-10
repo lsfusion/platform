@@ -9,7 +9,7 @@ public abstract class GroupSingleSplitTask<T> extends GroupSplitTask<T> {
     protected abstract void runTask(T object);
 
     protected boolean ignoreTaskException() {
-        return true;
+        return false;
     }
 
     @Override
