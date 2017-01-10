@@ -17,6 +17,7 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.interop.FormExportType;
 import lsfusion.interop.FormPrintType;
 import lsfusion.interop.ModalityType;
+import lsfusion.interop.ReflectionPropertyType;
 import lsfusion.interop.form.layout.Alignment;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
@@ -2584,6 +2585,16 @@ public class ScriptingLogicsModule extends LogicsModule {
         ComponentView component = form.getNFRichDesign(getVersion()).getComponentBySID(componentName, getVersion());
         checkComponent(component, componentName);
         return new LPWithParams(new LCP<>(component.getActiveTab().property), new ArrayList<Integer>());
+    }
+    
+    public LPWithParams addScriptedReflectionProperty(ReflectionPropertyType type, PropertyUsage propertyUsage) throws ScriptingErrorLog.SemanticErrorException {
+        switch (type) {
+            default: return addCanonicalNameProp(propertyUsage);
+        }
+    }
+    
+    public LPWithParams addCanonicalNameProp(PropertyUsage propertyUsage) throws ScriptingErrorLog.SemanticErrorException {
+        return new LPWithParams(new LCP<>(new CanonicalNameProperty(findLPByPropertyUsage(propertyUsage))), Collections.<Integer>emptyList());     
     }
 
     public void addScriptedFollows(PropertyUsage mainPropUsage, List<TypedParameter> namedParams, List<PropertyFollowsDebug> resolveOptions, LPWithParams rightProp, Event event, ActionDebugInfo debugInfo) throws ScriptingErrorLog.SemanticErrorException {

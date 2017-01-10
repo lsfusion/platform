@@ -14,6 +14,7 @@ grammar LsfLogics;
 	import lsfusion.interop.FormPrintType;
 	import lsfusion.interop.FormExportType;
 	import lsfusion.interop.ModalityType;
+	import lsfusion.interop.ReflectionPropertyType;
 	import lsfusion.server.form.instance.FormSessionScope;
 	import lsfusion.server.data.expr.query.PartitionType;
 	import lsfusion.server.form.entity.*;
@@ -1204,6 +1205,7 @@ expressionFriendlyPD[List<TypedParameter> context, boolean dynamic] returns [LPW
 	|	sessionDef=sessionPropertyDefinition[context, dynamic] { $property = $sessionDef.property; }
 	|	signDef=signaturePropertyDefinition[context, dynamic] { $property = $signDef.property; }
 	|	activeTabDef=activeTabPropertyDefinition[context, dynamic] { $property = $activeTabDef.property; }
+	|	reflectionDef=reflectionPropertyDefinition { $property = $reflectionDef.property; }
 	|	constDef=constantProperty { $property = new LPWithParams($constDef.property, new ArrayList<Integer>()); }
 	;
 
@@ -1581,6 +1583,23 @@ activeTabPropertyDefinition[List<TypedParameter> context, boolean dynamic] retur
 	}
 }
 	: 	'ACTIVE' 'TAB' compName=multiCompoundID 'FORM' formName=compoundID
+	;
+
+reflectionPropertyDefinition returns [LPWithParams property]
+@init {
+	ReflectionPropertyType type = null;
+	PropertyUsage propertyUsage = null;
+}
+@after{
+	if (inPropParseState()) {
+		$property = self.addScriptedReflectionProperty(type, propertyUsage);
+	}
+}
+	:	'REFLECTION' t=reflectionPropertyType { type = $t.type; } pu=propertyUsage { propertyUsage = $pu.propUsage; }
+	;
+	
+reflectionPropertyType returns [ReflectionPropertyType type]
+	:	'CANONICALNAME' { $type = ReflectionPropertyType.CANONICAL_NAME; }
 	;
 
 formulaPropertyDefinition returns [LP property, List<ResolveClassSet> signature]
