@@ -30,10 +30,7 @@ import lsfusion.server.form.instance.listener.RemoteFormListener;
 import lsfusion.server.form.navigator.LogInfo;
 import lsfusion.server.form.view.ContainerView;
 import lsfusion.server.form.view.FormView;
-import lsfusion.server.logics.BusinessLogics;
-import lsfusion.server.logics.DataObject;
-import lsfusion.server.logics.ObjectValue;
-import lsfusion.server.logics.ThreadUtils;
+import lsfusion.server.logics.*;
 import lsfusion.server.serialization.SerializationType;
 import lsfusion.server.serialization.ServerContext;
 import lsfusion.server.serialization.ServerSerializationPool;
@@ -697,7 +694,11 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
                 DataClass pushChangeType = null;
                 if (pushChange != null) {
                     pushChangeType = propertyDraw.getEntity().getRequestInputType(form.entity);
-                    pushChangeObject = DataObject.getValue(deserializeObject(pushChange), pushChangeType);
+                    Object objectPushChange = deserializeObject(pushChange);
+                    if(pushChangeType == null) // веб почему-то при асинхронном удалении шлет не null, а [0] который deserialize'ся в null а потом превращается в NullValue.instance и падают ошибки
+                        ServerLoggers.assertLog(objectPushChange == null, "PUSH CHANGE SHOULD BE NULL");
+                    else 
+                        pushChangeObject = DataObject.getValue(objectPushChange, pushChangeType);
                 }
 
                 DataObject pushAddObject = null;
