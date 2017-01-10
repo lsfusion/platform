@@ -42,7 +42,16 @@ public class DiscountCardDaemonTask extends AbstractDaemonTask implements Serial
                 recording = false;
                 if(input.length() > 2 && input.charAt(input.length() - 2) == 65535
                         && ((input.charAt(input.length() - 1) == '?') || input.charAt(input.length() - 1) == ',')) {
-                    input = isNew && input.startsWith("70833700") ? "70833700" : input.substring(0, input.length() - 2);
+                    if (isNew) {
+                        if (input.startsWith("70833700"))
+                            input = "70833700";
+                        else if (input.startsWith('\uFFFF' + "Z7083370"))
+                            input = "Z7083370";
+                        else
+                            input = input.substring(0, input.length() - 2);
+                    } else {
+                        input = input.substring(0, input.length() - 2);
+                    }
                     ServerLoggers.systemLogger.info(input);
                     eventBus.fireValueChanged(SCANNER_SID, input);
                     input = "";
