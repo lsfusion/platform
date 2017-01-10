@@ -2,6 +2,7 @@ package lsfusion.server.logics.tasks.impl;
 
 import lsfusion.server.SystemProperties;
 import lsfusion.server.logics.tasks.ReflectionTask;
+import org.apache.log4j.Logger;
 
 public abstract class SyncTask extends ReflectionTask {
 
@@ -11,9 +12,13 @@ public abstract class SyncTask extends ReflectionTask {
         return false;
     }
 
-    public void run() {
+    public void run(Logger logger) {
         if ((!SystemProperties.isDebug || runInDebug()) && getReflectionManager().isSourceHashChanged()) {
-            runSync();
+            try {
+                runSync();
+            } catch (Exception e) {
+                logger.error("SyncTask error: ", e);
+            }
         }
     }
 }

@@ -1,7 +1,7 @@
 package lsfusion.server.logics.tasks.impl;
 
-import lsfusion.server.logics.ReflectionManager;
 import lsfusion.server.logics.tasks.ReflectionTask;
+import org.apache.log4j.Logger;
 
 public class ExecuteOnStartedTask extends ReflectionTask {
 
@@ -9,7 +9,7 @@ public class ExecuteOnStartedTask extends ReflectionTask {
         return "Executing System.onStarted[] (first apply)";
     }
 
-    public void run() {
+    public void run(Logger logger) {
         getReflectionManager().runOnStarted();
     }
 }

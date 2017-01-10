@@ -75,7 +75,7 @@ public abstract class Task {
 
     public abstract Set<Task> getAllDependencies();
 
-    public abstract void run();
+    public abstract void run(Logger logger);
 
     // не так важно какой
     public void dependProceeded(BusinessLogics BL, Executor executor, ExecutionContext context, Object monitor, AtomicInteger taskCount, Logger logger,
@@ -129,7 +129,7 @@ public abstract class Task {
         }
     }
 
-    public void proceed(BusinessLogics BL, Executor executor, ExecutionContext context, Object monitor, AtomicInteger taskCount, Logger logger,
+    public void proceed(BusinessLogics BL, Executor executor, ExecutionContext context, Object monitor, AtomicInteger taskCount, final Logger logger,
                         TaskBlockingQueue taskQueue, ThrowableConsumer throwableConsumer, Integer propertyTimeout) throws InterruptedException, SQLException, SQLHandledException, ExecutionException {
         if (isLoggable()) {
             String caption = getCaption();
@@ -137,7 +137,7 @@ public abstract class Task {
                 logger.info(caption);
         }
         if(propertyTimeout == null) {
-            run();
+            run(logger);
         } else {
             ExecutorService service = ExecutorFactory.createTaskMirrorSyncService(BaseUtils.<ExecutionContext<PropertyInterface>>immutableCast(context));
             final Result<Long> threadId = new Result<>();
@@ -145,7 +145,7 @@ public abstract class Task {
                 public void run() {
                     threadId.set(Thread.currentThread().getId());
                     try {
-                        Task.this.run();
+                        Task.this.run(logger);
                     } finally {
                         threadId.set(null);
                     }

@@ -1,6 +1,7 @@
 package lsfusion.server.logics.tasks.impl.simple;
 
 import lsfusion.server.logics.tasks.SimpleBLTask;
+import org.apache.log4j.Logger;
 
 public class InitLocalizerTask extends SimpleBLTask {
 
@@ -10,7 +11,7 @@ public class InitLocalizerTask extends SimpleBLTask {
     }
 
     @Override
-    public void run() {
+    public void run(Logger logger) {
         getBL().initLocalizer();
     }
 }

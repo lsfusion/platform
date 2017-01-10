@@ -1,6 +1,7 @@
 package lsfusion.server.logics.tasks.impl.simple;
 
 import lsfusion.server.logics.tasks.SimpleBLTask;
+import org.apache.log4j.Logger;
 
 public class InitReflectionEventsTask extends SimpleBLTask {
 
@@ -8,7 +9,7 @@ public class InitReflectionEventsTask extends SimpleBLTask {
         return "Initializing reflection events";
     }
 
-    public void run() {
+    public void run(Logger logger) {
         getBL().initReflectionEvents();
     }
 }

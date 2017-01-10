@@ -8,12 +8,12 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MCol;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.server.logics.BusinessLogics;
-import lsfusion.server.logics.property.Property;
+import org.apache.log4j.Logger;
 
 // разбивает на группы и выполняет группами
 public abstract class GroupSplitTask<T> extends GroupProgramTask {
 
-    protected abstract void runGroupTask(ImSet<T> objSet);
+    protected abstract void runGroupTask(ImSet<T> objSet, Logger logger);
     
     protected abstract ImSet<T> getObjects(BusinessLogics<?> BL);
     
@@ -46,8 +46,8 @@ public abstract class GroupSplitTask<T> extends GroupProgramTask {
                     return GroupSplitTask.this.isGroupLoggable();
                 }
 
-                public void run() {
-                    runGroupTask(objSet);
+                public void run(Logger logger) {
+                    runGroupTask(objSet, logger);
                 }
             });
         }

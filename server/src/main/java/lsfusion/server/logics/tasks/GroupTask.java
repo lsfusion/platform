@@ -1,5 +1,7 @@
 package lsfusion.server.logics.tasks;
 
+import org.apache.log4j.Logger;
+
 import java.util.Set;
 
 public class GroupTask extends PublicTask {
@@ -16,6 +18,6 @@ public class GroupTask extends PublicTask {
         return getAllDependencies(this);
     }
 
-    public void run() {
+    public void run(Logger logger) {
     }
 }

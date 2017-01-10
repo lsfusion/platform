@@ -1,6 +1,7 @@
 package lsfusion.server.logics.tasks.impl.simple;
 
 import lsfusion.server.logics.tasks.SimpleBLTask;
+import org.apache.log4j.Logger;
 
 public class WriteModulesHashTask extends SimpleBLTask {
 
@@ -10,7 +11,7 @@ public class WriteModulesHashTask extends SimpleBLTask {
     }
 
     @Override
-    public void run() {
+    public void run(Logger logger) {
         getBL().getDbManager().writeModulesHash();
     }
 }

@@ -10,10 +10,9 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.col.interfaces.mutable.MRevMap;
 import lsfusion.base.col.interfaces.mutable.MSet;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
-import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.ScriptParsingException;
 import org.antlr.runtime.RecognitionException;
+import org.apache.log4j.Logger;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -68,7 +67,7 @@ public abstract class GroupSingleTask<T> extends GroupProgramTask {
                     return getTaskComplexity(element);
                 }
 
-                public void run() {
+                public void run(Logger logger) {
                     Exception runException = null;
                     try {
                         long l = System.currentTimeMillis();
@@ -140,7 +139,7 @@ public abstract class GroupSingleTask<T> extends GroupProgramTask {
         return current;
     }
 
-    public void run() {
+    public void run(Logger logger) {
         if (isGraph()) {
             Map<Task, Map<Task, Long>> overMap = new HashMap<>();
             markDiameters(preTask, overMap, this);

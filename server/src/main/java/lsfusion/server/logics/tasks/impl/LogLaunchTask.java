@@ -1,6 +1,7 @@
 package lsfusion.server.logics.tasks.impl;
 
 import lsfusion.server.logics.tasks.ReflectionTask;
+import org.apache.log4j.Logger;
 
 public class LogLaunchTask extends ReflectionTask {
 
@@ -8,7 +9,7 @@ public class LogLaunchTask extends ReflectionTask {
         return "Logging launch";
     }
 
-    public void run() {
+    public void run(Logger logger) {
         getReflectionManager().logLaunch();
     }
 }

@@ -8,6 +8,7 @@ import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.debug.ActionPropertyDebugger;
 import lsfusion.server.logics.debug.DebugInfo;
 import lsfusion.server.logics.tasks.GroupSplitTask;
+import org.apache.log4j.Logger;
 
 import java.io.File;
 
@@ -21,7 +22,7 @@ public class InitActionDebuggerTask extends GroupSplitTask<String> {
     ImMap<String, ImSet<DebugInfo>> groupDelegates;
     
     @Override
-    protected void runGroupTask(ImSet<String> objSet) {
+    protected void runGroupTask(ImSet<String> objSet, Logger logger) {
         try {
             ActionPropertyDebugger.getInstance().compileDelegatesHolders(sourceDir, groupDelegates.filter(objSet));
         } catch (Exception e) {

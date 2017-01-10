@@ -1,6 +1,7 @@
 package lsfusion.server.logics.tasks;
 
 import lsfusion.base.Pair;
+import org.apache.log4j.Logger;
 
 import java.util.Collections;
 import java.util.Set;
@@ -21,7 +22,7 @@ public abstract class GroupProgramTask extends BLTask {
             return GroupProgramTask.this.getCaption();
         }
 
-        public void run() {
+        public void run(Logger logger) {
             if (prerun()) {
                 Pair<Iterable<SingleProgramTask>, Iterable<SingleProgramTask>> tasks = initTasks();
                 for (SingleProgramTask task : tasks.first) {
@@ -57,6 +58,6 @@ public abstract class GroupProgramTask extends BLTask {
         return Collections.singleton(preTask);
     }
 
-    public void run() {
+    public void run(Logger logger) {
     }
 }

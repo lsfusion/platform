@@ -1,6 +1,7 @@
 package lsfusion.server.logics.tasks.impl;
 
 import lsfusion.server.logics.tasks.SimpleBLTask;
+import org.apache.log4j.Logger;
 
 public class GetPropertyListTask extends SimpleBLTask {
 
@@ -8,7 +9,7 @@ public class GetPropertyListTask extends SimpleBLTask {
         return "Building property list";
     }
 
-    public void run() {
+    public void run(Logger logger) {
         getBL().getPropertyList();
     }
 }
