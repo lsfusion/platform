@@ -21,7 +21,7 @@ public class DBFFormExporter extends PlainFormExporter {
 
     public DBFFormExporter(ReportGenerationData reportData, String charset) {
         super(reportData);
-        this.charset = charset == null ? "utf-8" : charset;
+        this.charset = charset == null ? "cp1251" : charset;
     }
 
     @Override
