@@ -3,6 +3,7 @@ package lsfusion.server.logics.property.actions.exporting;
 import com.google.common.base.Throwables;
 import jasperapi.ClientReportData;
 import jasperapi.ReportGenerator;
+import jasperapi.ReportPropertyData;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.interop.form.ReportConstants;
@@ -36,43 +37,47 @@ public abstract class FormExporter {
     Node createGroup(FormObject object) throws XMLStreamException {
         Node groupNode = new Node();
         Node node = new Node();
-        for (HashMap<Integer, Object> keys : data.get(object.object).getKeyRows()) {
-            node.addNode(object.object, createObjectValues(object, keys, new HashSet<String>()));
+        for(ClientReportData dataEntry : data.values()) {
+            for (HashMap<Integer, Object> keys : dataEntry.getKeyRows()) {
+                node.addNode(object.object, createObjectValues(object, dataEntry, keys, new LinkedHashSet<String>()));
+            }
         }
         groupNode.addNode("group", node);
         return groupNode;
     }
 
-    private AbstractNode createObjectValues(FormObject object, HashMap<Integer, Object> keys, Set<String> usedProperties) throws XMLStreamException {
-        ClientReportData reportData = data.get(object.object);
-
+    private AbstractNode createObjectValues(FormObject object, ClientReportData dataEntry, HashMap<Integer, Object> keys, Set<String> usedProperties) throws XMLStreamException {
+        ClientReportData reportData = dataEntry != null ? dataEntry : data.get(object.object);
         Node objectValueElement = new Node();
+        if(reportData != null) {
+            for (Map.Entry<Pair<String, ReportPropertyData>, Object> entry : getObjectElementsMap(reportData, keys, usedProperties).entrySet()) {
+                objectValueElement.addLeaf(entry.getKey().first, entry.getKey().second, entry.getValue());
+            }
 
-        for (Map.Entry<String, String> entry : getObjectElementsMap(reportData, keys, usedProperties).entrySet()) {
-            objectValueElement.addLeaf(entry.getKey(), entry.getValue());
-        }
+            Set<String> usedPropertiesSet = new HashSet<>(usedProperties);
+            usedPropertiesSet.addAll(reportData.getPropertyNames());
 
-        Set<String> usedPropertiesSet = new HashSet<>(usedProperties);
-        usedPropertiesSet.addAll(reportData.getPropertyNames());
+            for (FormObject dependent : object.dependencies) {
+                ClientReportData dependentReportData = data.get(dependent.object);
 
-        for (FormObject dependent : object.dependencies) {
-            ClientReportData dependentReportData = data.get(dependent.object);
-
-            for (HashMap<Integer, Object> k : dependentReportData.getKeyRows()) {
-                if (BaseUtils.containsAll(k, keys)) {
-                    objectValueElement.addNode(dependent.object, createObjectValues(dependent, k, usedProperties));
+                for (HashMap<Integer, Object> k : dependentReportData.getKeyRows()) {
+                    if (BaseUtils.containsAll(k, keys)) {
+                        objectValueElement.addNode(dependent.object, createObjectValues(dependent, null, k, usedProperties));
+                    }
                 }
             }
         }
         return objectValueElement;
     }
 
-    private Map<String, String> getObjectElementsMap(ClientReportData reportData, HashMap<Integer, Object> keys, Set<String> usedProperties) {
-        Map<String, String> objectElementsMap = new HashMap<>();
-        Map<Pair<Integer, Integer>, Object> values = reportData.getRows().get(keys);
+    private Map<Pair<String, ReportPropertyData>, Object> getObjectElementsMap(ClientReportData reportData, HashMap<Integer, Object> keys, Set<String> usedProperties) {
+        Map<Pair<String, ReportPropertyData>, Object> objectElementsMap = new LinkedHashMap<>();
+        Map<ReportPropertyData, Object> values = reportData.getRows().get(keys);
+        Map<String, String> propertyTagMap = getPropertyTagMap(reportData.getPropertyNames());
         for (String property : reportData.getPropertyNames()) {
-            String propertyTag = escapeTag(property);
+            String propertyTag = propertyTagMap.get(property);
             if (!usedProperties.contains(property) && !property.endsWith(ReportConstants.headerSuffix)) {
+                ReportPropertyData propertyType = reportData.getProperties().get(property);
                 if (reportData.getCompositeColumnObjects().containsKey(property)) {
                     for (List<Object> columnKeys : reportData.getCompositeColumnValues().get(property)) {
                         List<Integer> columnObjects = reportData.getCompositeColumnObjects().get(property);
@@ -85,13 +90,15 @@ public abstract class FormExporter {
                                 cKeys.add(keys.get(key));
                             }
                         }
-                        objectElementsMap.put(reportData.getPropertyNames().contains(property + ReportConstants.headerSuffix) ?
+                        String propertyKey = reportData.getPropertyNames().contains(property + ReportConstants.headerSuffix) ?
                                 String.valueOf(reportData.getCompositeObjectValues().get(property + ReportConstants.headerSuffix).get(cKeys)) :
-                                propertyTag, String.valueOf(reportData.getCompositeObjectValues().get(property).get(cKeys)));
+                                propertyTag;
+                        Object value = reportData.getCompositeObjectValues().get(property).get(cKeys);
+                        objectElementsMap.put(Pair.create(propertyKey, propertyType), value);
                     }
                 } else {
-                    if (filter(propertyTag))
-                        objectElementsMap.put(propertyTag, String.valueOf(values.get(reportData.getProperties().get(property))));
+                    if (filter(propertyType))
+                        objectElementsMap.put(Pair.create(propertyTag, propertyType), values.get(reportData.getProperties().get(property)));
                 }
             }
         }
@@ -99,12 +106,33 @@ public abstract class FormExporter {
     }
 
 
-    private String escapeTag(String value) {
-        return value.replace("_", "__").replace("()", "").replaceAll(",|\\(", "_").replace(")", "");
+    private String escapeTag(String value, boolean ignoreUnderscore) {
+        return (ignoreUnderscore ? value : value.replace("_", "__")).replace("()", "").replaceAll(",|\\(", "_").replace(")", "");
     }
 
-    private boolean filter(String property) {
-        return !property.contains("ADDOBJ") && !property.contains("action") && !property.contains("Action");
+    private Map<String, String> getPropertyTagMap(List<String> propertyNames) {
+        Map<String, String> propertyTagMap = new HashMap<>();
+        boolean collision = false;
+        for (String property : propertyNames) {
+            String propertyTag = escapeTag(property, true);
+            if (!propertyTagMap.containsKey(propertyTag))
+                propertyTagMap.put(property, propertyTag);
+            else {
+                collision = true;
+                break;
+            }
+        }
+        if (collision) {
+            propertyTagMap = new HashMap<>();
+            for (String property : propertyNames) {
+                propertyTagMap.put(property, escapeTag(property, false));
+            }
+        }
+        return propertyTagMap;
+    }
+
+    private boolean filter(ReportPropertyData type) {
+        return !type.propertyType.equals("ActionClass");
     }
 
     public class FormObject {
@@ -121,10 +149,12 @@ public abstract class FormExporter {
 
     public class Leaf extends AbstractNode {
         private String key;
-        private String value;
+        private ReportPropertyData type;
+        private Object value;
 
-        Leaf(String key, String value) {
+        Leaf(String key, ReportPropertyData type, Object value) {
             this.key = key;
+            this.type = type;
             this.value = value;
         }
 
@@ -132,7 +162,11 @@ public abstract class FormExporter {
             return key;
         }
 
-        public String getValue() {
+        public ReportPropertyData getType() {
+            return type;
+        }
+
+        public Object getValue() {
             return value;
         }
     }
@@ -144,12 +178,12 @@ public abstract class FormExporter {
             this.valuesMap = new LinkedHashMap<>();
         }
 
-        public Set<Map.Entry<String, List<AbstractNode>>> getChildren() {
-            return valuesMap.entrySet();
+        public List<Map.Entry<String, List<AbstractNode>>> getChildren() {
+            return new ArrayList<>(valuesMap.entrySet());
         }
 
-        void addLeaf(String key, String value) {
-            addNode(key, new Leaf(key, value));
+        void addLeaf(String key, ReportPropertyData type, Object value) {
+            addNode(key, new Leaf(key, type, value));
         }
 
         void addNode(String key, AbstractNode value) {

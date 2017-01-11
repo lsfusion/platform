@@ -9,4 +9,6 @@ public interface PropertyReaderInstance extends ProfiledObject {
     byte getTypeID();
 
     int getID(); // ID в рамках Type
+
+    PropertyType getPropertyType();
 }

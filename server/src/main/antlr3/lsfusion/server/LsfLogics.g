@@ -2213,6 +2213,7 @@ formActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns 
 	boolean noCancel = false;
 	FormPrintType printType = null;
 	FormExportType exportType = null;
+	String charset = null;
 	String contextObjectName = null;
 	LPWithParams contextProperty = null;
 	String initFilterPropertyName = null;
@@ -2221,7 +2222,7 @@ formActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns 
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedFAProp($mf.formEntity, $mf.input, $mf.objects, $mf.mapping, contextObjectName, contextProperty, initFilterPropertyName, initFilterPropertyMapping, modalityType, manageSession, checkOnOk, showDrop, noCancel, printType, exportType, readOnly);
+		$property = self.addScriptedFAProp($mf.formEntity, $mf.input, $mf.objects, $mf.mapping, contextObjectName, contextProperty, initFilterPropertyName, initFilterPropertyMapping, modalityType, manageSession, checkOnOk, showDrop, noCancel, printType, exportType, charset, readOnly);
 	}
 }
 	:	'FORM' mf=mappedForm[context,dynamic]
@@ -2233,7 +2234,7 @@ formActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns 
 		|	'SHOWDROP' { showDrop = true; }
 		|	'NOCANCEL' { noCancel = true; }
 		|	print = formPrintTypeLiteral { printType = $print.val; }
-		|	export = formExportTypeLiteral { exportType = $export.val; }
+		|	export = formExportTypeLiteral { exportType = $export.val; charset = $export.charset; }
 		|	'READONLY' { readOnly = true; }
 		)*
 	;
@@ -3905,7 +3906,7 @@ formPrintTypeLiteral returns [FormPrintType val]
 		)?
 	;
 	
-formExportTypeLiteral returns [FormExportType val]
+formExportTypeLiteral returns [FormExportType val, String charset]
 	:	'EXPORT'
 		(	'DOC'  { $val = FormExportType.DOC; }
 		|	'DOCX' { $val = FormExportType.DOCX; }
@@ -3915,7 +3916,7 @@ formExportTypeLiteral returns [FormExportType val]
 		|   'XML' { $val = FormExportType.XML; }
 	    |   'JSON' { $val = FormExportType.JSON; }
 	    |   'CSV' { $val = FormExportType.CSV; }
-	    |   'DBF' { $val = FormExportType.DBF; }
+	    |   'DBF' { $val = FormExportType.DBF; } ('CHARSET' charsetVal = stringLiteral { $charset = $charsetVal.val; })?
 		)
 	;	
 

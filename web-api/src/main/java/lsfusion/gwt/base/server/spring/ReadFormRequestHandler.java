@@ -4,6 +4,7 @@ import com.google.common.base.Throwables;
 import com.google.common.io.ByteStreams;
 import jasperapi.ClientReportData;
 import jasperapi.ReportGenerator;
+import jasperapi.ReportPropertyData;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.NavigatorInfo;
 import lsfusion.base.Pair;
@@ -193,9 +194,10 @@ public class ReadFormRequestHandler implements HttpRequestHandler {
             xsw.writeCharacters(indent);
             xsw.writeStartElement(object.object);
 
-            Map<Pair<Integer, Integer>, Object> values = reportData.getRows().get(keys);
+            Map<ReportPropertyData, Object> values = reportData.getRows().get(keys);
 
             for (String property : reportData.getPropertyNames()) {
+                //property = property.replace("_", "__").replace("()", "").replaceAll(",|\\(", "_").replace(")", "");
                 if (!usedProperties.contains(property) && !property.endsWith(ReportConstants.headerSuffix)) {
                     if (reportData.getCompositeColumnObjects().containsKey(property)) {
                         for (List<Object> columnKeys : reportData.getCompositeColumnValues().get(property)) {

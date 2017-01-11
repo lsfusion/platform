@@ -21,10 +21,7 @@ import lsfusion.server.classes.ConcreteCustomClass;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.form.entity.FormEntity;
-import lsfusion.server.form.entity.GroupObjectEntity;
-import lsfusion.server.form.entity.ObjectEntity;
-import lsfusion.server.form.entity.PropertyDrawEntity;
+import lsfusion.server.form.entity.*;
 import lsfusion.server.form.entity.filter.FilterEntity;
 import lsfusion.server.form.instance.FormCloseType;
 import lsfusion.server.form.instance.FormInstance;
@@ -61,6 +58,7 @@ public class FormActionProperty extends SystemExplicitActionProperty {
     private final boolean isAdd;
     private final FormPrintType printType;
     private final FormExportType exportType;
+    private final String charset;
 
     private final LCP formPageCount;
     private final LCP formExportFile;
@@ -117,6 +115,7 @@ public class FormActionProperty extends SystemExplicitActionProperty {
                               boolean showDrop,
                               FormPrintType printType,
                               FormExportType exportType,
+                              String charset,
                               ConcreteCustomClass formResultClass,
                               LCP formResultProperty,
                               LCP formPageCount,
@@ -147,6 +146,7 @@ public class FormActionProperty extends SystemExplicitActionProperty {
         this.showDrop = showDrop;
         this.printType = printType;
         this.exportType = exportType;
+        this.charset = charset;
         this.manageSession = manageSession;
         this.isAdd = isAdd;
 
@@ -217,7 +217,7 @@ public class FormActionProperty extends SystemExplicitActionProperty {
             }
             
             FormReportManager newFormManager = new FormReportManager(newFormInstance);
-            ReportGenerationData generationData = newFormManager.getReportData(toExcel);
+            ReportGenerationData generationData = newFormManager.getReportData(toExcel, false);
             if (exportType != null) {
                 try {
                     if (exportType == FormExportType.DOC) {
@@ -231,11 +231,11 @@ public class FormActionProperty extends SystemExplicitActionProperty {
                     } else if (exportType == FormExportType.XLSX) {
                         formExportFile.change(BaseUtils.mergeFileAndExtension(IOUtils.getFileBytes(ReportGenerator.exportToXlsx(generationData)), "xlsx".getBytes()), context);
                     } else if (exportType == FormExportType.XML) {
-                        formExportFile.change(BaseUtils.mergeFileAndExtension(new XMLFormExporter(generationData).export(), "xml".getBytes()), context);
+                        formExportFile.change(BaseUtils.mergeFileAndExtension(new XMLFormExporter(newFormManager.getReportData(toExcel, true)).export(), "xml".getBytes()), context);
                     } else if (exportType == FormExportType.JSON) {
-                        formExportFile.change(BaseUtils.mergeFileAndExtension(new JSONFormExporter(generationData).export(), "json".getBytes()), context);
+                        formExportFile.change(BaseUtils.mergeFileAndExtension(new JSONFormExporter(newFormManager.getReportData(toExcel, true)).export(), "json".getBytes()), context);
                     } else if (exportType == FormExportType.CSV) {
-                        Map<String, byte[]> files = new CSVFormExporter(generationData).export();
+                        Map<String, byte[]> files = new CSVFormExporter(newFormManager.getReportData(toExcel, true)).export();
                         boolean first = true;
                         for(Map.Entry<String, byte[]> entry : files.entrySet()) {
                             byte[] fileBytes = BaseUtils.mergeFileAndExtension(entry.getValue(), "csv".getBytes());
@@ -246,7 +246,7 @@ public class FormActionProperty extends SystemExplicitActionProperty {
                             formExportFiles.change(fileBytes, context, new DataObject(entry.getKey()));
                         }
                     } else if (exportType == FormExportType.DBF) {
-                        Map<String, byte[]> files = new DBFFormExporter(generationData).export();
+                        Map<String, byte[]> files = new DBFFormExporter(newFormManager.getReportData(toExcel, true), charset).export();
                         boolean first = true;
                         for(Map.Entry<String, byte[]> entry : files.entrySet()) {
                             byte[] fileBytes = BaseUtils.mergeFileAndExtension(entry.getValue(), "dbf".getBytes());

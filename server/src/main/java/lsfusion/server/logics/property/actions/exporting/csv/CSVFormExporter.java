@@ -62,8 +62,8 @@ public class CSVFormExporter extends PlainFormExporter {
             List<AbstractNode> childNode = childEntry.getValue();
             for (AbstractNode c : childNode) {
                 if (c instanceof Leaf) {
-                    String value = ((Leaf) c).getValue();
-                    writer.print((value == null ? "" : value.trim()) + ";");
+                    Object value = ((Leaf) c).getValue();
+                    writer.print((value == null ? "" : String.valueOf(value).trim()) + ";");
                 } else
                     exportRow((Node) c, childEntry.getKey());
             }

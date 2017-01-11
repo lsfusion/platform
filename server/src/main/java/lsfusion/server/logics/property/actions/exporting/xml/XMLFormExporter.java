@@ -2,6 +2,7 @@ package lsfusion.server.logics.property.actions.exporting.xml;
 
 import lsfusion.base.IOUtils;
 import lsfusion.interop.form.ReportGenerationData;
+import lsfusion.server.form.entity.GroupObjectHierarchy;
 import lsfusion.server.logics.property.actions.exporting.HierarchicalFormExporter;
 import org.jdom.Document;
 import org.jdom.Element;
@@ -44,7 +45,7 @@ public class XMLFormExporter extends HierarchicalFormExporter {
 
     private void exportNode(Element parentElement, AbstractNode node) {
         if (node instanceof Leaf)
-            parentElement.addContent(((Leaf) node).getValue());
+            parentElement.addContent(String.valueOf(((Leaf) node).getValue()));
         else if (node instanceof Node) {
             for (Map.Entry<String, List<AbstractNode>> child : ((Node) node).getChildren()) {
                 Element element = new Element(child.getKey());

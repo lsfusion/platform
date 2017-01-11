@@ -343,6 +343,20 @@ public class GroupObjectHierarchy {
             res.put(rootNodeName, rootIDs);
             return res;
         }
+
+        public Map<String, List<String>> getFullReportHierarchyMap() {
+            Map<String, List<String>> res = new HashMap<>();
+            List<String> rootIDs = new ArrayList<>();
+            for (Map.Entry<ReportNode, List<ReportNode>> parentNode : dependencies.entrySet()) {
+                ReportNode parent = parentNode.getKey();
+                for(GroupObjectEntity group : parent.getGroupList()) {
+                    res.put(group.getSID(), new ArrayList<String>());
+                    rootIDs.add(group.getSID());
+                }
+            }
+            res.put(rootNodeName, rootIDs);
+            return res;
+        }
     }
 }
 

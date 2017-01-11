@@ -3,6 +3,7 @@ package lsfusion.server.logics.property.actions.exporting.json;
 import com.google.common.base.Throwables;
 import lsfusion.base.IOUtils;
 import lsfusion.interop.form.ReportGenerationData;
+import lsfusion.server.form.entity.GroupObjectHierarchy;
 import lsfusion.server.logics.property.actions.exporting.HierarchicalFormExporter;
 import org.json.JSONArray;
 import org.json.JSONException;

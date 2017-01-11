@@ -103,14 +103,22 @@ public class FormReportManager<T extends BusinessLogics<T>, F extends FormInstan
     }
 
     public ReportGenerationData getReportData(boolean toExcel) {
-        return getReportData(null, toExcel, null);
+        return getReportData(null, toExcel, false, null);
+    }
+
+    public ReportGenerationData getReportData(boolean toExcel, boolean custom) {
+        return getReportData(null, toExcel, custom, null);
     }
 
     public ReportGenerationData getReportData(Integer groupId, boolean toExcel, FormUserPreferences userPreferences) {
+        return getReportData(groupId, toExcel, false, userPreferences);
+    }
+
+    public ReportGenerationData getReportData(Integer groupId, boolean toExcel, boolean custom, FormUserPreferences userPreferences) {
         GroupObjectHierarchy.ReportHierarchy groupReportHierarchy = getReportHierarchy(groupId);
         GroupObjectHierarchy.ReportHierarchy fullReportHierarchy = getReportHierarchy(null);
 
-        byte[] reportHierarchyByteArray = getReportHierarchyByteArray(groupReportHierarchy.getReportHierarchyMap());
+        byte[] reportHierarchyByteArray = getReportHierarchyByteArray(custom ? groupReportHierarchy.getFullReportHierarchyMap() : groupReportHierarchy.getReportHierarchyMap());
         Result<Map<String, LinkedHashSet<List<Object>>>> columnGroupObjects = new Result<>();
         byte[] reportSourcesByteArray = getReportSourcesByteArray(
                 new ReportSourceGenerator<>(form, groupReportHierarchy, fullReportHierarchy, getGridGroups(groupId), groupId, userPreferences)
@@ -120,7 +128,7 @@ public class FormReportManager<T extends BusinessLogics<T>, F extends FormInstan
         return new ReportGenerationData(reportHierarchyByteArray, reportDesignsByteArray, reportSourcesByteArray);
     }
 
-    private GroupObjectHierarchy.ReportHierarchy getReportHierarchy(Integer groupId) {
+    public GroupObjectHierarchy.ReportHierarchy getReportHierarchy(Integer groupId) {
         if (groupId == null) {
             return form.entity.getReportHierarchy();
         } else {

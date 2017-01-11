@@ -19,12 +19,12 @@ public class ClientReportData implements JRDataSource {
     private final List<String> objectNames = new ArrayList<>();
     private final List<String> propertyNames = new ArrayList<>();  
     private final Map<String, Integer> objects = new HashMap<>();
-    private final Map<String, Pair<Integer, Integer>> properties = new HashMap<>();
+    private final Map<String, ReportPropertyData> properties = new HashMap<>();
 
     private final ListIterator<HashMap<Integer, Object>> iterator;
     private final List<HashMap<Integer, Object>> keyRows = new ArrayList<>();
     private HashMap<Integer, Object> currentKeyRow;
-    private final Map<Map<Integer, Object>, Map<Pair<Integer, Integer>, Object>> rows =
+    private final Map<Map<Integer, Object>, Map<ReportPropertyData, Object>> rows =
             new HashMap<>();
 
     private Map<String, List<Integer>> compositeFieldsObjects;
@@ -57,7 +57,7 @@ public class ClientReportData implements JRDataSource {
                     name += footerSuffix;
                 }
                 propertyNames.add(name);
-                properties.put(name, new Pair<>(type, inStream.readInt()));
+                properties.put(name, new ReportPropertyData(type, inStream.readInt(), inStream.readUTF(), inStream.readUTF(), inStream.readInt(), inStream.readInt()));
             }
 
             int rowCnt = inStream.readInt();
@@ -67,7 +67,7 @@ public class ClientReportData implements JRDataSource {
                     Object objValue = BaseUtils.deserializeObject(inStream);
                     objectValues.put(objects.get(objName), objValue);
                 }
-                Map<Pair<Integer, Integer>, Object> propValues = new HashMap<>();
+                Map<ReportPropertyData, Object> propValues = new HashMap<>();
                 for (String propName : propertyNames) {
                     Object propValue = BaseUtils.deserializeObject(inStream);
                     propValues.put(properties.get(propName), propValue);
@@ -85,7 +85,7 @@ public class ClientReportData implements JRDataSource {
         return propertyNames;
     }
 
-    public Map<String, Pair<Integer, Integer>> getProperties() {
+    public Map<String, ReportPropertyData> getProperties() {
         return properties;
     }
 
@@ -93,7 +93,7 @@ public class ClientReportData implements JRDataSource {
         return keyRows;
     }
 
-    public Map<Map<Integer, Object>, Map<Pair<Integer, Integer>, Object>> getRows() {
+    public Map<Map<Integer, Object>, Map<ReportPropertyData, Object>> getRows() {
         return rows;
     }
 
@@ -144,7 +144,7 @@ public class ClientReportData implements JRDataSource {
         if (objectID != null) {
             value = currentKeyRow.get(objectID);
         } else {
-            Pair<Integer, Integer>  propertyID = properties.get(fieldName);
+            ReportPropertyData  propertyID = properties.get(fieldName);
             if (propertyID != null) {
                 value = rows.get(currentKeyRow).get(propertyID);
             } else if (fieldName.endsWith(endMarker)) { 
