@@ -99,7 +99,7 @@ public class DBFFormExporter extends PlainFormExporter {
         for (Pair<String, ReportPropertyData> field : formatFieldNames(fieldNames)) {
             if (field.second.propertyType.equals("DOUBLE"))
                 dbfFields.add(new OverJDBField(field.first, 'F', 10, 3));
-            else if (field.second.propertyType.equals("INTEGER") || field.second.propertyType.equals("NUMERIC"))
+            else if (field.second.propertyType.equals("INTEGER") || field.second.propertyType.startsWith("NUMERIC"))
                 dbfFields.add(new OverJDBField(field.first, 'N', Math.min(field.second.length, 253), field.second.precision));
             else if (field.second.propertyType.equals("DATE") || field.second.propertyType.equals("DATETIME")) {
                 dbfFields.add(new OverJDBField(field.first, 'D', 8, 0));
