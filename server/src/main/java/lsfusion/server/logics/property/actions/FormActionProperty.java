@@ -140,7 +140,7 @@ public class FormActionProperty extends SystemExplicitActionProperty {
         this.formResultClass = formResultClass;
         this.formResultProperty = formResultProperty;
         this.chosenValueProperty = chosenValueProperty;
-        
+
         this.modalityType = modalityType;
         this.checkOnOk = checkOnOk;
         this.showDrop = showDrop;
@@ -217,19 +217,18 @@ public class FormActionProperty extends SystemExplicitActionProperty {
             }
             
             FormReportManager newFormManager = new FormReportManager(newFormInstance);
-            ReportGenerationData generationData = newFormManager.getReportData(toExcel, false);
             if (exportType != null) {
                 try {
                     if (exportType == FormExportType.DOC) {
-                        formExportFile.change(BaseUtils.mergeFileAndExtension(IOUtils.getFileBytes(ReportGenerator.exportToDoc(generationData)), "doc".getBytes()), context);
+                        formExportFile.change(BaseUtils.mergeFileAndExtension(IOUtils.getFileBytes(ReportGenerator.exportToDoc(newFormManager.getReportData(toExcel, false))), "doc".getBytes()), context);
                     } else if (exportType == FormExportType.DOCX) {
-                        formExportFile.change(BaseUtils.mergeFileAndExtension(IOUtils.getFileBytes(ReportGenerator.exportToDocx(generationData)), "docx".getBytes()), context);
+                        formExportFile.change(BaseUtils.mergeFileAndExtension(IOUtils.getFileBytes(ReportGenerator.exportToDocx(newFormManager.getReportData(toExcel, false))), "docx".getBytes()), context);
                     } else if (exportType == FormExportType.PDF) {
-                        formExportFile.change(BaseUtils.mergeFileAndExtension(IOUtils.getFileBytes(ReportGenerator.exportToPdf(generationData)), "pdf".getBytes()), context);
+                        formExportFile.change(BaseUtils.mergeFileAndExtension(IOUtils.getFileBytes(ReportGenerator.exportToPdf(newFormManager.getReportData(toExcel, false))), "pdf".getBytes()), context);
                     } else if (exportType == FormExportType.XLS) {
-                        formExportFile.change(BaseUtils.mergeFileAndExtension(IOUtils.getFileBytes(ReportGenerator.exportToXls(generationData)), "xls".getBytes()), context);
+                        formExportFile.change(BaseUtils.mergeFileAndExtension(IOUtils.getFileBytes(ReportGenerator.exportToXls(newFormManager.getReportData(toExcel, false))), "xls".getBytes()), context);
                     } else if (exportType == FormExportType.XLSX) {
-                        formExportFile.change(BaseUtils.mergeFileAndExtension(IOUtils.getFileBytes(ReportGenerator.exportToXlsx(generationData)), "xlsx".getBytes()), context);
+                        formExportFile.change(BaseUtils.mergeFileAndExtension(IOUtils.getFileBytes(ReportGenerator.exportToXlsx(newFormManager.getReportData(toExcel, false))), "xlsx".getBytes()), context);
                     } else if (exportType == FormExportType.XML) {
                         formExportFile.change(BaseUtils.mergeFileAndExtension(new XMLFormExporter(newFormManager.getReportData(toExcel, true)).export(), "xml".getBytes()), context);
                     } else if (exportType == FormExportType.JSON) {
@@ -262,7 +261,7 @@ public class FormActionProperty extends SystemExplicitActionProperty {
                 }
             } else { // assert printType != null;
                 Map<String, String> reportPath = SystemProperties.isDebug ? newFormManager.getReportPath(toExcel, null, null) : new HashMap<>();
-                Object pageCount = context.requestUserInteraction(new ReportClientAction(reportPath, modalityType.isModal(), generationData, pType, SystemProperties.isDebug));
+                Object pageCount = context.requestUserInteraction(new ReportClientAction(reportPath, modalityType.isModal(), newFormManager.getReportData(toExcel, false), pType, SystemProperties.isDebug));
                 formPageCount.change(pageCount, context);
             }
         }

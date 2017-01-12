@@ -123,7 +123,7 @@ public class FormReportManager<T extends BusinessLogics<T>, F extends FormInstan
         byte[] reportSourcesByteArray = getReportSourcesByteArray(
                 new ReportSourceGenerator<>(form, groupReportHierarchy, fullReportHierarchy, getGridGroups(groupId), groupId, userPreferences)
         , columnGroupObjects);
-        byte[] reportDesignsByteArray = getReportDesignsByteArray(toExcel, groupId, userPreferences, columnGroupObjects.result);
+        byte[] reportDesignsByteArray = custom ? null : getReportDesignsByteArray(toExcel, groupId, userPreferences, columnGroupObjects.result);
 
         return new ReportGenerationData(reportHierarchyByteArray, reportDesignsByteArray, reportSourcesByteArray);
     }
