@@ -2213,6 +2213,7 @@ formActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns 
 	boolean noCancel = false;
 	FormPrintType printType = null;
 	FormExportType exportType = null;
+	String separator = null;
 	String charset = null;
 	String contextObjectName = null;
 	LPWithParams contextProperty = null;
@@ -2222,7 +2223,7 @@ formActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns 
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedFAProp($mf.formEntity, $mf.input, $mf.objects, $mf.mapping, contextObjectName, contextProperty, initFilterPropertyName, initFilterPropertyMapping, modalityType, manageSession, checkOnOk, showDrop, noCancel, printType, exportType, charset, readOnly);
+		$property = self.addScriptedFAProp($mf.formEntity, $mf.input, $mf.objects, $mf.mapping, contextObjectName, contextProperty, initFilterPropertyName, initFilterPropertyMapping, modalityType, manageSession, checkOnOk, showDrop, noCancel, printType, exportType, separator, charset, readOnly);
 	}
 }
 	:	'FORM' mf=mappedForm[context,dynamic]
@@ -2234,7 +2235,7 @@ formActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns 
 		|	'SHOWDROP' { showDrop = true; }
 		|	'NOCANCEL' { noCancel = true; }
 		|	print = formPrintTypeLiteral { printType = $print.val; }
-		|	export = formExportTypeLiteral { exportType = $export.val; charset = $export.charset; }
+		|	export = formExportTypeLiteral { exportType = $export.val; separator = $export.separator; charset = $export.charset; }
 		|	'READONLY' { readOnly = true; }
 		)*
 	;
@@ -3906,7 +3907,7 @@ formPrintTypeLiteral returns [FormPrintType val]
 		)?
 	;
 	
-formExportTypeLiteral returns [FormExportType val, String charset]
+formExportTypeLiteral returns [FormExportType val, String separator, String charset]
 	:	'EXPORT'
 		(	'DOC'  { $val = FormExportType.DOC; }
 		|	'DOCX' { $val = FormExportType.DOCX; }
@@ -3915,7 +3916,7 @@ formExportTypeLiteral returns [FormExportType val, String charset]
 		|	'XLSX' { $val = FormExportType.XLSX; }
 		|   'XML' { $val = FormExportType.XML; }
 	    |   'JSON' { $val = FormExportType.JSON; }
-	    |   'CSV' { $val = FormExportType.CSV; }
+	    |   'CSV' { $val = FormExportType.CSV; } (separatorVal = stringLiteral { $separator = $separatorVal.val; })? ('CHARSET' charsetVal = stringLiteral { $charset = $charsetVal.val; })?
 	    |   'DBF' { $val = FormExportType.DBF; } ('CHARSET' charsetVal = stringLiteral { $charset = $charsetVal.val; })?
 		)
 	;	

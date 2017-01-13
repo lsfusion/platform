@@ -58,6 +58,7 @@ public class FormActionProperty extends SystemExplicitActionProperty {
     private final boolean isAdd;
     private final FormPrintType printType;
     private final FormExportType exportType;
+    private final String separator;
     private final String charset;
 
     private final LCP formPageCount;
@@ -115,6 +116,7 @@ public class FormActionProperty extends SystemExplicitActionProperty {
                               boolean showDrop,
                               FormPrintType printType,
                               FormExportType exportType,
+                              String separator,
                               String charset,
                               ConcreteCustomClass formResultClass,
                               LCP formResultProperty,
@@ -146,6 +148,7 @@ public class FormActionProperty extends SystemExplicitActionProperty {
         this.showDrop = showDrop;
         this.printType = printType;
         this.exportType = exportType;
+        this.separator = separator;
         this.charset = charset;
         this.manageSession = manageSession;
         this.isAdd = isAdd;
@@ -234,7 +237,7 @@ public class FormActionProperty extends SystemExplicitActionProperty {
                     } else if (exportType == FormExportType.JSON) {
                         formExportFile.change(BaseUtils.mergeFileAndExtension(new JSONFormExporter(newFormManager.getReportData(toExcel, true)).export(), "json".getBytes()), context);
                     } else if (exportType == FormExportType.CSV) {
-                        Map<String, byte[]> files = new CSVFormExporter(newFormManager.getReportData(toExcel, true)).export();
+                        Map<String, byte[]> files = new CSVFormExporter(newFormManager.getReportData(toExcel, true), separator, charset).export();
                         boolean first = true;
                         for(Map.Entry<String, byte[]> entry : files.entrySet()) {
                             byte[] fileBytes = BaseUtils.mergeFileAndExtension(entry.getValue(), "csv".getBytes());

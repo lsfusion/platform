@@ -2,22 +2,24 @@ package lsfusion.server.logics.property.actions.exporting.csv;
 
 import lsfusion.interop.form.ReportGenerationData;
 import lsfusion.server.logics.property.actions.exporting.PlainFormExporter;
+import org.olap4j.impl.ArrayMap;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class CSVFormExporter extends PlainFormExporter {
-    private String charset = "utf-8";
+    private String separator;
+    private String charset;
+    private Map<String, String> lastRecordsMap = new ArrayMap<>();
     private Map<String, PrintWriter> writersMap = null;
     private Map<String, File> filesMap = null;
 
-    public CSVFormExporter(ReportGenerationData reportData) {
+    public CSVFormExporter(ReportGenerationData reportData, String separator, String charset) {
         super(reportData);
+        this.separator = separator == null ? "|" : separator;
+        this.charset = charset == null ? "UTF-8" : charset;
     }
 
     @Override
@@ -58,17 +60,27 @@ public class CSVFormExporter extends PlainFormExporter {
             filesMap.put(id, file);
             writersMap.put(id, writer);
         }
+        List<Object> values = new ArrayList<>();
         for (Map.Entry<String, List<AbstractNode>> childEntry : node.getChildren()) {
             List<AbstractNode> childNode = childEntry.getValue();
             for (AbstractNode c : childNode) {
                 if (c instanceof Leaf) {
-                    Object value = ((Leaf) c).getValue();
-                    writer.print((value == null ? "" : String.valueOf(value).trim()) + ";");
+                    if(((Leaf) c).getType().toDraw.equals(id)) {
+                        values.add(((Leaf) c).getValue());
+                    }
                 } else
                     exportRow((Node) c, childEntry.getKey());
             }
         }
-        writer.println();
+        String currentRecord = String.valueOf(values);
+        if(!currentRecord.equals(lastRecordsMap.get(id)) && !values.isEmpty()) {
+            lastRecordsMap.put(id, currentRecord);
+            for (int i = 0; i < values.size(); i++) {
+                writer.print((values.get(i) == null ? "" : String.valueOf(values.get(i)).trim()) + separator);
+            }
+            if(!values.isEmpty())
+                writer.println();
+        }
     }
 
     private void closeWriters() {
