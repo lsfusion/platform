@@ -45,7 +45,7 @@ public class DiscountCardDaemonTask extends AbstractDaemonTask implements Serial
                     if (isNew) {
                         if (input.startsWith("70833700"))
                             input = "70833700";
-                        else if (input.startsWith('\uFFFF' + "Z7083370"))
+                        else if (input.startsWith('\uFFFF' + "Z7083370") || input.startsWith('\uFFFF' + "Я7083370"))
                             input = "Z7083370";
                         else
                             input = input.substring(0, input.length() - 2);
