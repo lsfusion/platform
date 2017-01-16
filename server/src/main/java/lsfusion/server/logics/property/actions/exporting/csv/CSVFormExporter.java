@@ -76,7 +76,7 @@ public class CSVFormExporter extends PlainFormExporter {
         if(!currentRecord.equals(lastRecordsMap.get(id)) && !values.isEmpty()) {
             lastRecordsMap.put(id, currentRecord);
             for (int i = 0; i < values.size(); i++) {
-                writer.print((values.get(i) == null ? "" : String.valueOf(values.get(i)).trim()) + separator);
+                writer.print((values.get(i) == null ? "" : String.valueOf(values.get(i)).trim()) + (values.size() == (i + 1) ? "" : separator));
             }
             if(!values.isEmpty())
                 writer.println();
