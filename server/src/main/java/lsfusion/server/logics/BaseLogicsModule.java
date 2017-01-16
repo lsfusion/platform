@@ -134,7 +134,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     public LCP ignorePrintType;
 
     public LCP imported;
-    public LCP prevImported;
     public LCP importedString;
 
     public LCP defaultBackgroundColor;
@@ -391,7 +390,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         ignorePrintType = findProperty("ignorePrintType[]");
 
         imported = findProperty("imported[INTEGER]");
-        prevImported = findProperty("prevImported[]");
         importedString = findProperty("importedString[VARSTRING[10]]");
 
         sleep = findAction("sleep[LONG]");

@@ -45,7 +45,6 @@ public abstract class ImportDataActionProperty extends SystemExplicitActionPrope
     protected final List<LCP> properties;
     
     private final LCP<?> importedProperty;
-    private final LCP<?> prevImportedProperty;
 
     public final static Map<String, Integer> XLSColumnsMapping = new HashMap<>();
     static {
@@ -116,7 +115,6 @@ public abstract class ImportDataActionProperty extends SystemExplicitActionPrope
         this.ids = ids;
         this.properties = properties;
         this.importedProperty = baseLM.imported;
-        this.prevImportedProperty = baseLM.prevImported;
     }
 
     @Override
@@ -132,7 +130,6 @@ public abstract class ImportDataActionProperty extends SystemExplicitActionPrope
         Object file = value.object;
         if (file instanceof byte[]) {
             try {
-                Integer prevImported = (Integer) prevImportedProperty.read(context);
                 if (value.getType() instanceof DynamicFormatFileClass) {
                     file = BaseUtils.getFile((byte[]) file);
                 }
@@ -140,7 +137,13 @@ public abstract class ImportDataActionProperty extends SystemExplicitActionPrope
 
                 Object row;
                 int i = 0;
-                ImOrderSet<LCP> props = SetFact.fromJavaOrderSet(properties).addOrderExcl(importedProperty);  
+                ImOrderSet<LCP> props = SetFact.fromJavaOrderSet(properties).addOrderExcl(importedProperty);
+
+                for (LCP prop : props) {
+                    if (prop.property instanceof DataProperty)
+                        context.getSession().dropChanges((DataProperty) prop.property);
+                }
+
                 SingleKeyTableUsage<LCP> importTable = new SingleKeyTableUsage<>(IntegerClass.instance, props, new Type.Getter<LCP>() {
                     @Override
                     public Type getType(LCP key) {
@@ -166,17 +169,6 @@ public abstract class ImportDataActionProperty extends SystemExplicitActionPrope
                                     return ObjectValue.getValue(parsedObject, (ConcreteClass) prop.property.getValueClass(ClassType.editPolicy));
                                 }
 
-                                return NullValue.instance;
-                            }
-                        }));
-                    }
-                }
-                prevImportedProperty.change(i, context);
-                if(prevImported != null) {
-                    while (i < prevImported) {
-                        DataObject rowKey = new DataObject(i++, IntegerClass.instance);
-                        mRows.exclAdd(MapFact.singleton("key", rowKey), props.getSet().mapValues(new GetValue<ObjectValue, LCP>() {
-                            public ObjectValue getMapValue(LCP prop) {
                                 return NullValue.instance;
                             }
                         }));
