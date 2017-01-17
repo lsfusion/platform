@@ -606,6 +606,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                 join = new TableSelect(table);
                 tables.exclAdd(table,join);
             }
+            
             usedJoin(join);
             return join.alias;
         }
@@ -1326,32 +1327,38 @@ public class CompiledQuery<K,V> extends ImmutableObject {
             }
 
             QueryJoin exprJoin = queryExpr.getInnerJoin();
-            if(isSingle(exprJoin)) {
-                QuerySelect select = getSingleSelect(queryExpr);
-                if(select!=null)
-                    return select.add(queryExpr.query, queryExpr);
-            } else
-                for(int i=0,size=queries.size();i<size;i++) {
+
+            QuerySelect select = null;
+            OuterContext query = queryExpr.query;
+            
+            if(select == null && isSingle(exprJoin))
+                select = getSingleSelect(queryExpr);
+            
+            if(select == null) { // группировка query / кэгирование
+                for (int i = 0, size = queries.size(); i < size; i++) {
                     MapTranslate translator;
-                    if((translator= exprJoin.mapInner(queries.getKey(i), false))!=null)
-                        return queries.getValue(i).add(queryExpr.query.translateOuter(translator),queryExpr);
+                    if ((translator = exprJoin.mapInner(queries.getKey(i), false)) != null) {
+                        select = queries.getValue(i);
+                        query = queryExpr.query.translateOuter(translator);
+                    }
                 }
+            }
 
-            QuerySelect select;
-            if(exprJoin instanceof GroupJoin) // нету группы - создаем, чтобы не нарушать модульность сделаем без наследования
-                select = new GroupSelect((GroupJoin) exprJoin);
-            else
-            if(exprJoin instanceof PartitionJoin)
-                select = new PartitionSelect((PartitionJoin) exprJoin);
-            else
-            if(exprJoin instanceof RecursiveJoin)
-                select = new RecursiveSelect((RecursiveJoin)exprJoin);
-            else
-                select = new SubQuerySelect((SubQueryJoin)exprJoin);
+            if(select == null) { // нету группы - создаем, чтобы не нарушать модульность сделаем без наследования
+                if (exprJoin instanceof GroupJoin)
+                    select = new GroupSelect((GroupJoin) exprJoin);
+                else if (exprJoin instanceof PartitionJoin)
+                    select = new PartitionSelect((PartitionJoin) exprJoin);
+                else if (exprJoin instanceof RecursiveJoin)
+                    select = new RecursiveSelect((RecursiveJoin) exprJoin);
+                else
+                    select = new SubQuerySelect((SubQueryJoin) exprJoin);
 
-            queries.exclAdd(exprJoin,select);
+                queries.exclAdd(exprJoin, select);
+            }
+            
             usedJoin(select);
-            return select.add(queryExpr.query,queryExpr);
+            return select.add(query,queryExpr);
         }
         private JoinSelect getJoinSelect(InnerJoin innerJoin) {
             if(innerJoin instanceof Table.Join)
