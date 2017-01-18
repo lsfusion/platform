@@ -66,10 +66,10 @@ public class ReportData {
             outStream.writeInt(propertyData.second.getTypeID());
             outStream.writeInt(propertyData.second.getID());
             PropertyType type = propertyData.second.getPropertyType();
-            outStream.writeUTF(type.type);
-            outStream.writeUTF(type.toDraw);
-            outStream.writeInt(type.length);
-            outStream.writeInt(type.precision);
+            outStream.writeUTF(type == null ? "" : type.type);
+            outStream.writeUTF(type == null ? "" : type.toDraw);
+            outStream.writeInt(type == null ? 0 : type.length);
+            outStream.writeInt(type == null ? 0 : type.precision);
         }
 
         outStream.writeInt(keyRows.size());
