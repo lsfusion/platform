@@ -37,10 +37,9 @@ public abstract class FormExporter {
     Node createGroup(FormObject object) throws XMLStreamException {
         Node groupNode = new Node();
         Node node = new Node();
-        for(ClientReportData dataEntry : data.values()) {
-            for (HashMap<Integer, Object> keys : dataEntry.getKeyRows()) {
-                node.addNode(object.object, createObjectValues(object, dataEntry, keys, new LinkedHashSet<String>()));
-            }
+        ClientReportData dataEntry = data.get(object.object);
+        for (HashMap<Integer, Object> keys : dataEntry.getKeyRows()) {
+            node.addNode(object.object, createObjectValues(object, dataEntry, keys, new LinkedHashSet<String>()));
         }
         groupNode.addNode("group", node);
         return groupNode;

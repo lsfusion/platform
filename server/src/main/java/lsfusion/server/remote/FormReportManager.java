@@ -115,10 +115,10 @@ public class FormReportManager<T extends BusinessLogics<T>, F extends FormInstan
     }
 
     public ReportGenerationData getReportData(Integer groupId, boolean toExcel, boolean custom, FormUserPreferences userPreferences) {
-        GroupObjectHierarchy.ReportHierarchy groupReportHierarchy = getReportHierarchy(groupId);
-        GroupObjectHierarchy.ReportHierarchy fullReportHierarchy = getReportHierarchy(null);
+        GroupObjectHierarchy.ReportHierarchy groupReportHierarchy = getReportHierarchy(groupId, custom);
+        GroupObjectHierarchy.ReportHierarchy fullReportHierarchy = getReportHierarchy(null, custom);
 
-        byte[] reportHierarchyByteArray = getReportHierarchyByteArray(custom ? groupReportHierarchy.getFullReportHierarchyMap() : groupReportHierarchy.getReportHierarchyMap());
+        byte[] reportHierarchyByteArray = getReportHierarchyByteArray(groupReportHierarchy.getReportHierarchyMap());
         Result<Map<String, LinkedHashSet<List<Object>>>> columnGroupObjects = new Result<>();
         byte[] reportSourcesByteArray = getReportSourcesByteArray(
                 new ReportSourceGenerator<>(form, groupReportHierarchy, fullReportHierarchy, getGridGroups(groupId), groupId, userPreferences)
@@ -129,10 +129,14 @@ public class FormReportManager<T extends BusinessLogics<T>, F extends FormInstan
     }
 
     public GroupObjectHierarchy.ReportHierarchy getReportHierarchy(Integer groupId) {
+       return getReportHierarchy(groupId, false);
+    }
+
+    public GroupObjectHierarchy.ReportHierarchy getReportHierarchy(Integer groupId, boolean forceGroupNonJoinable) {
         if (groupId == null) {
-            return form.entity.getReportHierarchy();
+            return form.entity.getReportHierarchy(forceGroupNonJoinable);
         } else {
-            return form.entity.getSingleGroupReportHierarchy(groupId);
+            return form.entity.getSingleGroupReportHierarchy(groupId, forceGroupNonJoinable);
         }
     }
 

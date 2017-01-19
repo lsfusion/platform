@@ -187,12 +187,12 @@ public class GroupObjectHierarchy {
         }
     }
 
-    public ReportHierarchy createReportHierarchy() {
-        return new ReportHierarchy(groups, dependencies, markedGroups);
+    public ReportHierarchy createReportHierarchy(boolean forceGroupNonJoinable) {
+        return new ReportHierarchy(groups, dependencies, markedGroups, forceGroupNonJoinable);
     }
 
     /// Для отчета по одной группе оставляем от всей иерархии только путь от нужной нам группы до корневой вершины
-    public ReportHierarchy createSingleGroupReportHierarchy(int groupId) {
+    public ReportHierarchy createSingleGroupReportHierarchy(int groupId, boolean forceGroupNonJoinable) {
         Map<GroupObjectEntity, GroupObjectEntity> parents = new HashMap<>();
         GroupObjectEntity targetGroup = null;
         for (GroupObjectEntity parentGroup : groups) {
@@ -213,7 +213,7 @@ public class GroupObjectHierarchy {
         for (GroupObjectEntity group : remainGroups) {
             remainDependencies.put(group, BaseUtils.filterList(dependencies.get(group), remainGroups));
         }
-        return new ReportHierarchy(remainGroups, remainDependencies, new HashSet<GroupObjectEntity>());
+        return new ReportHierarchy(remainGroups, remainDependencies, new HashSet<GroupObjectEntity>(), forceGroupNonJoinable);
     }
 
     public static class ReportHierarchy {
@@ -222,11 +222,11 @@ public class GroupObjectHierarchy {
         private Map<GroupObjectEntity, ReportNode> groupToReportNode = new HashMap<>();
 
         public ReportHierarchy(List<GroupObjectEntity> groupObjects, Map<GroupObjectEntity, List<GroupObjectEntity>> depends,
-                               Set<GroupObjectEntity> markedGroups) {
+                               Set<GroupObjectEntity> markedGroups, boolean forceGroupNonJoinable) {
 
             for (GroupObjectEntity group : groupObjects) {
                 ReportNode newReportNode = new ReportNode(group);
-                newReportNode.setNonJoinable(markedGroups.contains(group));
+                newReportNode.setNonJoinable(forceGroupNonJoinable || markedGroups.contains(group));
                 reportNodes.add(newReportNode);
                 groupToReportNode.put(group, newReportNode);
                 dependencies.put(newReportNode, new ArrayList<ReportNode>());
@@ -339,20 +339,6 @@ public class GroupObjectHierarchy {
             List<String> rootIDs = new ArrayList<>();
             for (ReportNode node : getRootNodes()) {
                 rootIDs.add(node.getID());
-            }
-            res.put(rootNodeName, rootIDs);
-            return res;
-        }
-
-        public Map<String, List<String>> getFullReportHierarchyMap() {
-            Map<String, List<String>> res = new HashMap<>();
-            List<String> rootIDs = new ArrayList<>();
-            for (Map.Entry<ReportNode, List<ReportNode>> parentNode : dependencies.entrySet()) {
-                ReportNode parent = parentNode.getKey();
-                for(GroupObjectEntity group : parent.getGroupList()) {
-                    res.put(group.getSID(), new ArrayList<String>());
-                    rootIDs.add(group.getSID());
-                }
             }
             res.put(rootNodeName, rootIDs);
             return res;

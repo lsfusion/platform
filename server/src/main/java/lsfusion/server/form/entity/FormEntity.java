@@ -915,12 +915,12 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
 
     private GroupObjectHierarchy groupHierarchy;
 
-    public GroupObjectHierarchy.ReportHierarchy getReportHierarchy() {
-        return getGroupHierarchy().createReportHierarchy();
+    public GroupObjectHierarchy.ReportHierarchy getReportHierarchy(boolean forceGroupNonJoinable) {
+        return getGroupHierarchy().createReportHierarchy(forceGroupNonJoinable);
     }
 
-    public GroupObjectHierarchy.ReportHierarchy getSingleGroupReportHierarchy(int groupId) {
-        return getGroupHierarchy().createSingleGroupReportHierarchy(groupId);
+    public GroupObjectHierarchy.ReportHierarchy getSingleGroupReportHierarchy(int groupId, boolean forceGroupNonJoinable) {
+        return getGroupHierarchy().createSingleGroupReportHierarchy(groupId, forceGroupNonJoinable);
     }
 
     public void modifyHierarchy(GroupObjectHierarchy groupHierarchy) {

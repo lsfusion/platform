@@ -60,8 +60,6 @@ public class DBFFormExporter extends PlainFormExporter {
         DBFWriter writer = writersMap.get(id);
         if (writer == null) { //объявляем
             OverJDBField[] fields = getFields(node, id);
-            if(fields.length == 0) //не тот subReport
-                return;
             File file = File.createTempFile("group_" + id, ".dbf");
             writer = new DBFWriter(file.getAbsolutePath(), fields, charset);
             filesMap.put(id, file);
