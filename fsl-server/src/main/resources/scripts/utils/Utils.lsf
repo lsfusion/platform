@@ -316,6 +316,12 @@ META defineAggregation (prim1Object, prim2Object, prim3Object, prim4Object, aggr
     @defineAggregationClass(prim1Object, ###prim1Object, prim2Object, ###prim2Object, prim3Object, ###prim3Object, prim4Object, ###prim4Object, aggrObject, ###aggrObject, aggrProperty);
 END
 
+// --------------------------- Ссылки на файлы через FILELINK --------------------------- //
+
+META defineFileLink (caption, fileType, property, class1)
+    fileLink caption (class1 param1) = fileType (webServerUrl() + '/readFile?sid=' + [= REFLECTION CANONICALNAME property[class1]]() + '&p=' + param1) IF property(param1); 
+END
+
 // --------------------------- Групповая корректировка на форме --------------------------------- //
 
 isEditable 'Включить корректировку на форме' = DATA LOCAL NESTED BOOLEAN();
