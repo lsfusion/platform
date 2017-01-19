@@ -30,14 +30,14 @@ public class ReportHTMLExporter extends JRHtmlExporter {
                 writer.write(" colspan=\"" + cell.getColSpan() + "\"");
             }
 
-            StringBuffer styleBuffer = new StringBuffer();
-            appendBackcolorStyle(cell, styleBuffer);
-            appendBorderStyle(cell.getBox(), styleBuffer);
+            StringBuilder styleBuilder = new StringBuilder();
+            appendBackcolorStyle(cell, styleBuilder);
+            appendBorderStyle(cell.getBox(), styleBuilder);
 
-            if (styleBuffer.length() > 0)
+            if (styleBuilder.length() > 0)
             {
                 writer.write(" style=\"");
-                writer.write(styleBuffer.toString());
+                writer.write(styleBuilder.toString());
                 writer.write("\"");
             }
 
@@ -65,7 +65,7 @@ public class ReportHTMLExporter extends JRHtmlExporter {
             writer.write(" dir=\"rtl\"");
         }
 
-        StringBuffer styleBuffer = new StringBuffer();
+        StringBuilder styleBuilder = new StringBuilder();
 
         String verticalAlignment = HTML_VERTICAL_ALIGN_TOP;
 
@@ -82,6 +82,7 @@ public class ReportHTMLExporter extends JRHtmlExporter {
                 break;
             }
             case TOP :
+            case JUSTIFIED :
             default :
             {
                 verticalAlignment = HTML_VERTICAL_ALIGN_TOP;
@@ -95,9 +96,9 @@ public class ReportHTMLExporter extends JRHtmlExporter {
             writer.write("\"");
         }
 
-        appendBackcolorStyle(gridCell, styleBuffer);
-        appendBorderStyle(gridCell.getBox(), styleBuffer);
-        appendPaddingStyle(text.getLineBox(), styleBuffer);
+        appendBackcolorStyle(gridCell, styleBuilder);
+        appendBorderStyle(gridCell.getBox(), styleBuilder);
+        appendPaddingStyle(text.getLineBox(), styleBuilder);
 
         String horizontalAlignment = CSS_TEXT_ALIGN_LEFT;
 
@@ -134,30 +135,30 @@ public class ReportHTMLExporter extends JRHtmlExporter {
 //                    && !horizontalAlignment.equals(CSS_TEXT_ALIGN_RIGHT))
 //                )
 //            {
-                styleBuffer.append("text-align: ");
-                styleBuffer.append(horizontalAlignment);
-                styleBuffer.append(";");
+            styleBuilder.append("text-align: ");
+            styleBuilder.append(horizontalAlignment);
+            styleBuilder.append(";");
 //            }
         }
 
         boolean isWrapBreakWord = this.getCurrentItemConfiguration().isWrapBreakWord();
         if (isWrapBreakWord)
         {
-            styleBuffer.append("width: " + toSizeUnit(gridCell.getWidth()) + "; ");
-            styleBuffer.append("word-wrap: break-word; ");
+            styleBuilder.append("width: " + toSizeUnit(gridCell.getWidth()) + "; ");
+            styleBuilder.append("word-wrap: break-word; ");
         }
 
         if (text.getLineBreakOffsets() != null)
         {
             //if we have line breaks saved in the text, set nowrap so that
             //the text only wraps at the explicit positions
-            styleBuffer.append("white-space: nowrap; ");
+            styleBuilder.append("white-space: nowrap; ");
         }
 
-        if (styleBuffer.length() > 0)
+        if (styleBuilder.length() > 0)
         {
             writer.write(" style=\"");
-            writer.write(styleBuffer.toString());
+            writer.write(styleBuilder.toString());
             writer.write("\"");
         }
 
