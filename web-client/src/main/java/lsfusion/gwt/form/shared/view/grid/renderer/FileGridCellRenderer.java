@@ -10,8 +10,8 @@ import lsfusion.gwt.cellview.client.cell.Cell;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
 
 public class FileGridCellRenderer extends AbstractGridCellRenderer {
-    private final String ICON_EMPTY = "empty.png";
-    private final String ICON_FILE = "file.png";
+    public static final String ICON_EMPTY = "empty.png";
+    private static final String ICON_FILE = "file.png";
     private GPropertyDraw property;
 
     public FileGridCellRenderer(GPropertyDraw property) {

@@ -3,10 +3,10 @@ package lsfusion.client.form.queries;
 import lsfusion.base.OrderedMap;
 import lsfusion.client.Main;
 import lsfusion.client.form.renderer.ImagePropertyRenderer;
+import lsfusion.client.form.renderer.link.ImageLinkPropertyRenderer;
 import lsfusion.client.logics.ClientPropertyDraw;
 import lsfusion.client.logics.classes.*;
 import lsfusion.client.logics.classes.link.ClientImageLinkClass;
-import org.apache.commons.io.IOUtils;
 import org.jdesktop.swingx.JXTreeTable;
 import org.jdesktop.swingx.treetable.*;
 
@@ -18,8 +18,6 @@ import javax.swing.table.TableColumnModel;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.IOException;
-import java.net.URL;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.*;
@@ -29,6 +27,9 @@ import static lsfusion.client.ClientResourceBundle.getString;
 
 public class GroupingTreeTable extends JXTreeTable {
     private final int DEFAULT_ROW_HEIGHT = 16;
+    private final int EXPANDED_ROW_HEIGHT = 48;
+    private final int MIN_COLUMN_WIDTH = 56;
+    private final int MAX_COLUMN_WIDTH = 3000;
     
     GroupingTreeTableModel treeTableModel;
     
@@ -88,22 +89,22 @@ public class GroupingTreeTable extends JXTreeTable {
         TableColumn treeColumn = getColumnModel().getColumn(0);
         treeColumn.setMinWidth(treeColumnWidth);  
         treeColumn.setPreferredWidth(treeColumnWidth);
-        treeColumn.setMaxWidth(3000);
+        treeColumn.setMaxWidth(MAX_COLUMN_WIDTH);
 
         boolean needToExpandRows = false;
         for (int i = 1; i < treeTableModel.getColumnCount(); i++) {
             TableColumn column = getColumnModel().getColumn(i);
             ClientPropertyDraw property = columnProperties.get(i - 1);
-            column.setPreferredWidth(property != null ? property.getPreferredWidth(this) : 56);
-            column.setMaxWidth(property != null ? property.getMaximumWidth(this) : 3000);
-            column.setMinWidth(property != null ? property.getMinimumWidth(this) : 56);
+            column.setPreferredWidth(property != null ? property.getPreferredWidth(this) : MIN_COLUMN_WIDTH);
+            column.setMaxWidth(property != null ? property.getMaximumWidth(this) : MAX_COLUMN_WIDTH);
+            column.setMinWidth(property != null ? property.getMinimumWidth(this) : MIN_COLUMN_WIDTH);
             
             if (property != null && (property.baseType instanceof ClientImageClass || property.baseType instanceof ClientImageLinkClass)) {
                 needToExpandRows = true;
             }
         }    
         if (needToExpandRows) { // специально для картинок увеличиваем высоту рядов
-            setRowHeight(48);
+            setRowHeight(EXPANDED_ROW_HEIGHT);
         } else {
             setRowHeight(DEFAULT_ROW_HEIGHT);
         }
@@ -126,11 +127,11 @@ public class GroupingTreeTable extends JXTreeTable {
     }
 
     public int getLastLevelRowCount() {
-        return treeTableModel.getLastLevelRowCount();
+        return treeTableModel.lastLevelRowCount;
     }
 
     public int getLevelCount() {
-        return treeTableModel.getLevelCount();
+        return treeTableModel.levelCount;
     }
     
     public String getColumnName(int column) {
@@ -173,9 +174,10 @@ public class GroupingTreeTable extends JXTreeTable {
     public class GroupingTreeTableModel extends DefaultTreeTableModel {
         List<ClientPropertyDraw> columnProperties;
         java.util.List<String> columnNames;
-        java.util.List<Map<java.util.List<Object>, java.util.List<Object>>> sources;
         Map<SortableTreeTableNode, java.util.List<Object>> values = new OrderedMap<>();
         int keyColumnsQuantity = 0;
+        int levelCount;
+        int lastLevelRowCount;
 
         public LinkedHashMap<Integer, Boolean> sortedColumns = new LinkedHashMap<>(); //column - ascending
         
@@ -184,13 +186,14 @@ public class GroupingTreeTable extends JXTreeTable {
             this.keyColumnsQuantity = keyColumnsQuantity;
             this.columnProperties = columnProperties;
             this.columnNames = columnNames;
-            sources = values;
+            levelCount = getLevelCount(values);
+            lastLevelRowCount = getLastLevelRowCount(values);
 
             removeAll();
 
             root = new SortableTreeTableNode("Root", true);
             if (!values.isEmpty()) {
-                addNodes((SortableTreeTableNode) root, 0, null);
+                addNodes(values, (SortableTreeTableNode) root, 0, null);
             }
         }
         
@@ -201,7 +204,7 @@ public class GroupingTreeTable extends JXTreeTable {
             return null;
         }
 
-        public int getLevelCount() {
+        private int getLevelCount(java.util.List<Map<java.util.List<Object>, java.util.List<Object>>> sources) {
             int count = 0;
             for (Map<java.util.List<Object>, java.util.List<Object>> level : sources) {
                 if (level.isEmpty()) {
@@ -212,7 +215,7 @@ public class GroupingTreeTable extends JXTreeTable {
             return count;
         }
 
-        public int getLastLevelRowCount() {
+        private int getLastLevelRowCount(java.util.List<Map<java.util.List<Object>, java.util.List<Object>>> sources) {
             int rowCount = 0;
             for (int i = sources.size() - 1; i >= 0; i--) {
                 if (!sources.get(i).isEmpty()) {
@@ -232,7 +235,7 @@ public class GroupingTreeTable extends JXTreeTable {
             return true;
         }
 
-        private void addNodes(SortableTreeTableNode parentNode, int index, java.util.List<Object> parentKeys) {
+        private void addNodes(List<Map<List<Object>, List<Object>>> sources, SortableTreeTableNode parentNode, int index, List<Object> parentKeys) {
             Map<java.util.List<Object>, java.util.List<Object>> map = sources.get(index);
             for (java.util.List<Object> keys : map.keySet()) {
                 if (parentKeys == null || containsAll(parentKeys, keys)) {
@@ -244,30 +247,31 @@ public class GroupingTreeTable extends JXTreeTable {
                     row.addAll(map.get(keys));
                     SortableTreeTableNode node = new SortableTreeTableNode(index + 1, true);
                     parentNode.add(node);
-                    
+
                     List<Object> convertedRow = new ArrayList<>();
                     for (Object value : row) {
                         Object convertedValue = value;
 
-                        if (value instanceof String) {
-                            convertedValue = value.toString().trim();
-                        } else {
-                            ClientPropertyDraw columnProperty = columnProperties.get(row.indexOf(value));
-                            if (columnProperty != null) {
-                                if (columnProperty.baseType instanceof ClientLogicalClass) {
-                                    convertedValue = value != null && (Boolean) value;
-                                } else {
-                                    convertedValue = value;
-                                }
+                        ClientPropertyDraw columnProperty = columnProperties.get(row.indexOf(value));
+                        if (columnProperty != null) {
+                            if (columnProperty.baseType instanceof ClientLogicalClass) {
+                                convertedValue = value != null && (Boolean) value;
+                            } else if (columnProperty.baseType instanceof ClientImageLinkClass && value instanceof String) {
+                                convertedValue = ImageLinkPropertyRenderer.readImage(columnProperty, (String) value);
+                            } else {
+                                convertedValue = value;
                             }
                         }
-                        
+                        if (convertedValue instanceof String) {
+                            convertedValue = ((String) convertedValue).trim();
+                        }
+
                         convertedRow.add(convertedValue);
                     }
                     
-                    values.put(node, convertedRow);
+                    this.values.put(node, convertedRow);
                     if (index < sources.size() - 1) {
-                        addNodes(node, index + 1, keys);
+                        addNodes(sources, node, index + 1, keys);
                     }
                 }
             }
@@ -436,17 +440,12 @@ public class GroupingTreeTable extends JXTreeTable {
         protected void setValue(Object value) {
             if (value != null) {
                 ImageIcon icon = null;
-                if(value instanceof byte[]) { //image
+                if (value instanceof byte[]) {
                     icon = new ImageIcon((byte[]) value);
-                } else if(value instanceof String) { //link image
-                    try {
-                        icon = new ImageIcon(IOUtils.toByteArray(new URL((String) value)));
-                    } catch (IOException ignored) {
-                    }
                 }
-                if(icon != null) {
-                    Dimension scaled = ImagePropertyRenderer.scaleIcon(icon, getColumn(column).getWidth(), getRowHeight());
-                    if(scaled != null)
+                if (icon != null) {
+                    Dimension scaled = ImagePropertyRenderer.getIconScale(icon, getColumn(column).getWidth(), getRowHeight());
+                    if (scaled != null)
                         icon.setImage(icon.getImage().getScaledInstance(scaled.width, scaled.height, Image.SCALE_SMOOTH));
                 }
                 setIcon(icon);

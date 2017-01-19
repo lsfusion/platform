@@ -7,8 +7,8 @@ import lsfusion.gwt.form.shared.view.filter.GCompare;
 import lsfusion.gwt.form.shared.view.grid.EditManager;
 import lsfusion.gwt.form.shared.view.grid.editor.GridCellEditor;
 import lsfusion.gwt.form.shared.view.grid.editor.LinkGridCellEditor;
+import lsfusion.gwt.form.shared.view.grid.renderer.FileGridCellRenderer;
 import lsfusion.gwt.form.shared.view.grid.renderer.GridCellRenderer;
-import lsfusion.gwt.form.shared.view.grid.renderer.LinkGridCellRenderer;
 
 import java.text.ParseException;
 
@@ -48,7 +48,7 @@ public abstract class GLinkType extends GDataType {
 
     @Override
     public GridCellRenderer createGridCellRenderer(GPropertyDraw property) {
-        return new LinkGridCellRenderer(property);
+        return new FileGridCellRenderer(property);
     }
 
     @Override

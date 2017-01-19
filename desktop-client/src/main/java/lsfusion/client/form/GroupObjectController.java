@@ -10,6 +10,7 @@ import lsfusion.client.form.layout.ClientFormLayout;
 import lsfusion.client.form.panel.PanelController;
 import lsfusion.client.form.panel.PropertyController;
 import lsfusion.client.form.queries.FilterController;
+import lsfusion.client.form.renderer.link.ImageLinkPropertyRenderer;
 import lsfusion.client.form.showtype.ShowTypeController;
 import lsfusion.client.logics.*;
 import lsfusion.interop.ClassViewType;
@@ -155,6 +156,8 @@ public class GroupObjectController extends AbstractGroupObjectController {
             if (read instanceof ClientPropertyDraw) {
                 ClientPropertyDraw property = (ClientPropertyDraw) read;
                 if (property.groupObject == groupObject && property.shouldBeDrawn(form) && !fc.updateProperties.contains(property)) {
+                    ImageLinkPropertyRenderer.clearChache(property);
+                    
                     addDrawProperty(property, fc.panelProperties.contains(property));
 
                     OrderedMap<ClientGroupObject, List<ClientGroupObjectValue>> groupColumnKeys = new OrderedMap<>();

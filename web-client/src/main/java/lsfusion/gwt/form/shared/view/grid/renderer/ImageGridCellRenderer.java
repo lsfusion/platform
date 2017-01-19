@@ -11,6 +11,8 @@ import lsfusion.gwt.cellview.client.cell.Cell;
 import lsfusion.gwt.form.client.form.ui.GGridPropertyTable;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
 
+import static lsfusion.gwt.form.shared.view.grid.renderer.FileGridCellRenderer.ICON_EMPTY;
+
 public class ImageGridCellRenderer extends AbstractGridCellRenderer {
     protected GPropertyDraw property;
     
@@ -59,11 +61,11 @@ public class ImageGridCellRenderer extends AbstractGridCellRenderer {
         }
     }
 
-    private void setImageSrc(ImageElement img, Object value) {
+    protected void setImageSrc(ImageElement img, Object value) {
         if (value instanceof String) {
             img.setSrc(imageSrc(value));
         } else {
-            img.setSrc(GWT.getModuleBaseURL() + "images/empty.png");
+            img.setSrc(GWT.getModuleBaseURL() + "images/" + ICON_EMPTY);
         }
     }
 

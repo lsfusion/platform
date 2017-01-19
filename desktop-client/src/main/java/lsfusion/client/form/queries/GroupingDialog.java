@@ -27,7 +27,6 @@ import lsfusion.client.logics.classes.ClientType;
 import lsfusion.client.logics.classes.link.ClientImageLinkClass;
 import lsfusion.interop.FormGrouping;
 import lsfusion.interop.KeyStrokes;
-import org.apache.commons.io.IOUtils;
 import org.jdesktop.swingx.treetable.MutableTreeTableNode;
 import org.jdesktop.swingx.treetable.TreeTableNode;
 
@@ -46,7 +45,6 @@ import java.io.IOException;
 import java.lang.Boolean;
 import java.lang.Number;
 import java.math.BigDecimal;
-import java.net.URL;
 import java.sql.Time;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
@@ -839,8 +837,6 @@ public abstract class GroupingDialog extends JDialog {
             List<Object> row = treeTable.getRow(parent);
             for (int column = 0; column <= row.size(); column++) {
                 Object value = treeTable.getValueAt(parent, column);
-                ClientPropertyDraw property = treeTable.treeTableModel.getColumnProperty(column);
-                boolean isLink = value instanceof String && property != null && property.baseType instanceof ClientImageLinkClass;
                 int length = 0;
                 if (value instanceof BigDecimal || value instanceof Double) {
                     length = new DecimalFormat("#,##0.00").format(value).length();
@@ -857,14 +853,7 @@ public abstract class GroupingDialog extends JDialog {
                 } else if (value instanceof Boolean) {
                     length = value.toString().length();
                     sheet.addCell(new jxl.write.Boolean(column, currentRow, (Boolean) value, createCellFormat(null, false)));
-                } else if (value instanceof byte[] || isLink) { // здесь ожидается изображение
-                    if(isLink) {
-                        try {
-                            value = IOUtils.toByteArray(new URL((String) value));
-                        } catch (IOException ignored) {
-                            value = null;
-                        }
-                    }
+                } else if (value instanceof byte[]) { // здесь ожидается изображение
                     WritableCellFormat format = new WritableCellFormat();
                     format.setBorder(jxl.format.Border.ALL, BorderLineStyle.THIN);
                     sheet.getWritableCell(column, currentRow).setCellFormat(format);

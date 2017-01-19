@@ -1,119 +1,95 @@
 package lsfusion.client.form.renderer.link;
 
-import lsfusion.client.Main;
+import lsfusion.base.IOUtils;
+import lsfusion.client.form.renderer.ImagePropertyRenderer;
 import lsfusion.client.logics.ClientPropertyDraw;
 
-import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.WeakHashMap;
 
 public class ImageLinkPropertyRenderer extends LinkPropertyRenderer {
+    private ImageIcon icon;
+
+    public static Map<ClientPropertyDraw, Map<String, byte[]>> imageCache = new WeakHashMap<>();
 
     public ImageLinkPropertyRenderer(ClientPropertyDraw property) {
         super(property);
     }
 
     public void setValue(Object value, boolean isSelected, boolean hasFocus) {
+        byte[] iconBytes = readImage(property, (String) value);
+        if (iconBytes != null) {
+            icon = new ImageIcon(iconBytes);
+        } else {
+            icon = null;
+        }
         super.setValue(value, isSelected, hasFocus);
     }
 
     @Override
+    protected ImageIcon getImageIcon() {
+        return icon;
+    }
+
+    @Override
     public void paintComponent(Graphics g) {
-        if (link != null) {
-            int width = getWidth();
-            int height = getHeight();
-
-            if (width == 0 || height == 0) {
-                return;
-            }
-
-            ImageIcon icon = readImage(link);
-            if(icon != null) {
-                Image img = icon.getImage();
-
-                Dimension scaled = scaleIcon(icon, width, height);
-                if (scaled == null) {
-                    return;
-                }
-                int imageWidth = scaled.width;
-                int imageHeight = scaled.height;
-
-                int dx = (width - imageWidth) / 2;
-                int dy = (height - imageHeight) / 2;
-
-                g.drawImage(img, dx, dy, imageWidth, imageHeight, this);
-            }
+        super.paintComponent(g);
+        
+        if (icon != null) {
+            ImagePropertyRenderer.paintComponent(this, g, icon);
         }
     }
 
-    private ImageIcon readImage(String link) {
+    public static synchronized void clearChache(ClientPropertyDraw property) {
+        imageCache.remove(property);
+    }
+    
+    private static synchronized byte[] getFromCache(ClientPropertyDraw property, String url) {
+        Map<String, byte[]> imageMap = imageCache.get(property);
+        return imageMap == null ? null : imageMap.get(url);
+    }
+    
+    private static synchronized boolean isCached(ClientPropertyDraw property, String url) {
+        Map<String, byte[]> imageMap = imageCache.get(property);
+        return imageMap != null && imageMap.containsKey(url);
+    }
+    
+    private static synchronized void putIntoCache(ClientPropertyDraw property, String url, byte[] image) {
+        Map<String, byte[]> imageMap = imageCache.get(property);
+        if (imageMap == null) {
+            imageMap = new HashMap<>();
+            imageCache.put(property, imageMap);
+        }
+        imageMap.put(url, image);
+    }
+
+    public static byte[] readImage(ClientPropertyDraw property, String link) {
         try {
-            URLConnection httpcon = new URL(link).openConnection();
-            httpcon.addRequestProperty("User-Agent", "");
-            return new ImageIcon(ImageIO.read(httpcon.getInputStream()));
+            byte[] result = getFromCache(property, link);
+            if (result == null && !isCached(property, link)) {
+                URLConnection httpcon = new URL(link).openConnection();
+                httpcon.addRequestProperty("User-Agent", "");
+                InputStream inputStream = httpcon.getInputStream();
+                result = IOUtils.readBytesFromStream(inputStream);
+                
+                ImageIcon icon = new ImageIcon(result); // проверка на то, что массив байтов - картинка. readBytesFromStream возвращает 4 байта, а не null
+                if (icon.getIconWidth() < 0 || icon.getIconHeight() < 0) {
+                    result = null;
+                }
+                
+                putIntoCache(property, link, result);
+            }
+            return result;
         } catch (IOException e) {
+            putIntoCache(property, link, null);
             return null;
         }
-    }
-
-    public static Dimension scaleIcon(ImageIcon icon, int boundWidth, int boundHeight) {
-        int imageWidth = icon.getIconWidth();
-        int imageHeight = icon.getIconHeight();
-        if (imageWidth == 0 || imageHeight == 0) {
-            return null;
-        }
-
-        double cf = imageWidth / (double) imageHeight;
-
-        if (cf * boundHeight <= boundWidth) {
-            //влезли по высоте
-            return new Dimension((int) (cf * boundHeight), boundHeight);
-        } else {
-            return new Dimension(boundWidth, (int) (boundWidth / cf));
-        }
-    }
-
-    public static void expandImage(final byte[] value) {
-        if (value == null) {
-            return;
-        }
-        final JDialog dialog = new JDialog(Main.frame, true);
-
-        ActionListener escListener = new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                dialog.setVisible(false);
-            }
-        };
-        KeyStroke stroke = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0);
-        dialog.getRootPane().registerKeyboardAction(escListener, stroke, JComponent.WHEN_IN_FOCUSED_WINDOW);
-
-        final Rectangle bounds = Main.frame.getBounds();
-        bounds.x += 30;
-        bounds.y += 30;
-        bounds.width -= 60;
-        bounds.height -= 60;
-        dialog.setBounds(bounds);
-        dialog.setResizable(false);
-
-        Image image = Toolkit.getDefaultToolkit().createImage(value);
-        ImageIcon imageIcon = new ImageIcon(image);
-        if (imageIcon.getIconWidth() > bounds.width || imageIcon.getIconHeight() > bounds.height) {
-            Dimension scaled = scaleIcon(imageIcon, bounds.width, bounds.height);
-            if (scaled != null) {
-                imageIcon.setImage(image.getScaledInstance(scaled.width, scaled.height, Image.SCALE_SMOOTH));
-            }
-        }
-
-        dialog.add(new JLabel(imageIcon));
-
-        dialog.pack();
-        dialog.setLocationRelativeTo(dialog.getOwner());
-        dialog.setVisible(true);
     }
 }

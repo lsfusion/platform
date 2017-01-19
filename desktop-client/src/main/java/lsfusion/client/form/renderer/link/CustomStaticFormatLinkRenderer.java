@@ -1,7 +1,6 @@
 package lsfusion.client.form.renderer.link;
 
 import lsfusion.client.SwingUtils;
-import lsfusion.client.form.renderer.FilePropertyRenderer;
 import lsfusion.client.logics.ClientPropertyDraw;
 
 public class CustomStaticFormatLinkRenderer extends LinkPropertyRenderer {
@@ -20,6 +19,6 @@ public class CustomStaticFormatLinkRenderer extends LinkPropertyRenderer {
         } else {
             setIcon(null);
         }
-        setSelected(isSelected, hasFocus);
+        super.setValue(value, isSelected, hasFocus);
     }
 }

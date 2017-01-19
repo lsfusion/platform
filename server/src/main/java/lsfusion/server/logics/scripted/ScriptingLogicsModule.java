@@ -2412,6 +2412,18 @@ public class ScriptingLogicsModule extends LogicsModule {
         return resultProp;
     }
 
+
+    public LCP addScriptedReflectionProperty(ReflectionPropertyType type, PropertyUsage propertyUsage, List<ResolveClassSet> outClasses) throws ScriptingErrorLog.SemanticErrorException {
+        switch (type) {
+            case CANONICAL_NAME:
+            default: return addCanonicalNameProp(propertyUsage);
+        }
+    }
+
+    public LCP addCanonicalNameProp(PropertyUsage propertyUsage) throws ScriptingErrorLog.SemanticErrorException {
+        return new LCP<>(new CanonicalNameProperty(findLPByPropertyUsage(propertyUsage)));
+    }
+
     public LPWithParams addScriptedFocusActionProp(PropertyDrawEntity property) {
         return new LPWithParams(addFocusActionProp(property.getID()), new ArrayList<Integer>());
     }
@@ -2585,16 +2597,6 @@ public class ScriptingLogicsModule extends LogicsModule {
         ComponentView component = form.getNFRichDesign(getVersion()).getComponentBySID(componentName, getVersion());
         checkComponent(component, componentName);
         return new LPWithParams(new LCP<>(component.getActiveTab().property), new ArrayList<Integer>());
-    }
-    
-    public LPWithParams addScriptedReflectionProperty(ReflectionPropertyType type, PropertyUsage propertyUsage) throws ScriptingErrorLog.SemanticErrorException {
-        switch (type) {
-            default: return addCanonicalNameProp(propertyUsage);
-        }
-    }
-    
-    public LPWithParams addCanonicalNameProp(PropertyUsage propertyUsage) throws ScriptingErrorLog.SemanticErrorException {
-        return new LPWithParams(new LCP<>(new CanonicalNameProperty(findLPByPropertyUsage(propertyUsage))), Collections.<Integer>emptyList());     
     }
 
     public void addScriptedFollows(PropertyUsage mainPropUsage, List<TypedParameter> namedParams, List<PropertyFollowsDebug> resolveOptions, LPWithParams rightProp, Event event, ActionDebugInfo debugInfo) throws ScriptingErrorLog.SemanticErrorException {

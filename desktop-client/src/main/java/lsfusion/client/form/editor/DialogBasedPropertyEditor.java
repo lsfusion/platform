@@ -23,7 +23,10 @@ public abstract class DialogBasedPropertyEditor implements PropertyEditor {
     }
 
     public final Component getComponent(Point tableLocation, Rectangle cellRectangle, EventObject editEvent) {
-        Point desiredLocation = new Point((int)(tableLocation.getX() + cellRectangle.getX()), (int)(tableLocation.getY() + cellRectangle.getMaxY()));
+        Point desiredLocation = null;
+        if (tableLocation != null && cellRectangle != null) {
+            desiredLocation = new Point((int) (tableLocation.getX() + cellRectangle.getX()), (int) (tableLocation.getY() + cellRectangle.getMaxY()));
+        }
         showDialog(desiredLocation);
         return editorStub;
     }

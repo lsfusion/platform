@@ -96,7 +96,8 @@ public class FilePropertyEditor extends DialogBasedPropertyEditor {
 
     @Override
     public Object getCellEditorValue() {
-        assert !canceled;
+        // закомментил, т.к. не выполнялся при показе диалога в отборе  
+//        assert !canceled;
 
         Object res = content;
         content = null;

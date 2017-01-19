@@ -1205,7 +1205,6 @@ expressionFriendlyPD[List<TypedParameter> context, boolean dynamic] returns [LPW
 	|	sessionDef=sessionPropertyDefinition[context, dynamic] { $property = $sessionDef.property; }
 	|	signDef=signaturePropertyDefinition[context, dynamic] { $property = $signDef.property; }
 	|	activeTabDef=activeTabPropertyDefinition[context, dynamic] { $property = $activeTabDef.property; }
-	|	reflectionDef=reflectionPropertyDefinition { $property = $reflectionDef.property; }
 	|	constDef=constantProperty { $property = new LPWithParams($constDef.property, new ArrayList<Integer>()); }
 	;
 
@@ -1223,6 +1222,7 @@ contextIndependentPD[boolean innerPD] returns [LP property, List<ResolveClassSet
 	|	formulaProp=formulaPropertyDefinition { $property = $formulaProp.property; $signature = $formulaProp.signature; }
 	|	groupDef=groupPropertyDefinition { $property = $groupDef.property; $signature = $groupDef.signature; }
 	|	filterProp=filterPropertyDefinition { $property = $filterProp.property; $signature = $filterProp.signature; }
+	|	reflectionDef=reflectionPropertyDefinition { $property = $reflectionDef.property; $signature = $reflectionDef.signature;  }
 	;
 
 joinPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
@@ -1585,23 +1585,6 @@ activeTabPropertyDefinition[List<TypedParameter> context, boolean dynamic] retur
 	: 	'ACTIVE' 'TAB' compName=multiCompoundID 'FORM' formName=compoundID
 	;
 
-reflectionPropertyDefinition returns [LPWithParams property]
-@init {
-	ReflectionPropertyType type = null;
-	PropertyUsage propertyUsage = null;
-}
-@after{
-	if (inPropParseState()) {
-		$property = self.addScriptedReflectionProperty(type, propertyUsage);
-	}
-}
-	:	'REFLECTION' t=reflectionPropertyType { type = $t.type; } pu=propertyUsage { propertyUsage = $pu.propUsage; }
-	;
-	
-reflectionPropertyType returns [ReflectionPropertyType type]
-	:	'CANONICALNAME' { $type = ReflectionPropertyType.CANONICAL_NAME; }
-	;
-
 formulaPropertyDefinition returns [LP property, List<ResolveClassSet> signature]
 @init {
 	String className = null;
@@ -1641,6 +1624,24 @@ filterPropertyDefinition returns [LP property, List<ResolveClassSet> signature]
 }
 	:	('FILTER' { prop = GroupObjectProp.FILTER; } | 'ORDER' { prop = GroupObjectProp.ORDER; } | 'VIEW' { prop = GroupObjectProp.VIEW; } )
 		gobj=formGroupObjectID
+	;
+	
+reflectionPropertyDefinition returns [LP property, List<ResolveClassSet> signature]
+@init {
+	ReflectionPropertyType type = null;
+	PropertyUsage propertyUsage = null;
+}
+@after{
+	if (inPropParseState()) {
+		$signature = new ArrayList<ResolveClassSet>();	
+		$property = self.addScriptedReflectionProperty(type, propertyUsage, $signature);
+	}
+}
+	:	'REFLECTION' t=reflectionPropertyType { type = $t.type; } pu=propertyUsage { propertyUsage = $pu.propUsage; }
+	;
+	
+reflectionPropertyType returns [ReflectionPropertyType type]
+	:	'CANONICALNAME' { $type = ReflectionPropertyType.CANONICAL_NAME; }
 	;
 
 readActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]

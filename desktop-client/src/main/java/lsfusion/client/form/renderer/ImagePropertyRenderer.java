@@ -10,6 +10,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 
 public class ImagePropertyRenderer extends FilePropertyRenderer {
+    private ImageIcon icon;
 
     public ImagePropertyRenderer(ClientPropertyDraw property) {
         super(property);
@@ -19,40 +20,47 @@ public class ImagePropertyRenderer extends FilePropertyRenderer {
         super.setValue(value, isSelected, hasFocus);
         
         if (value != null) {
-            setIcon(new ImageIcon((byte[]) value));
+            icon = new ImageIcon((byte[]) value);
+        } else {
+            icon = null;
         }
     }
 
     @Override
     public void paintComponent(Graphics g) {
-        int width = getWidth();
-        int height = getHeight();
+        super.paintComponent(g);
+
+        if (icon != null) {
+            paintComponent(this, g, icon);
+        }
+    }
+    
+    public static void paintComponent(JComponent component, Graphics g, ImageIcon icon) {
+        assert icon != null;
+
+        int width = component.getWidth();
+        int height = component.getHeight();
 
         if (width == 0 || height == 0) {
             return;
         }
 
-        ImageIcon icon = (ImageIcon) getIcon();
-        if (icon != null) {
-            Image img = icon.getImage();
+        Image img = icon.getImage();
 
-            Dimension scaled = scaleIcon(icon, width, height);
-            if (scaled == null) {
-                return;
-            }
-            int imageWidth = scaled.width;
-            int imageHeight = scaled.height;
-
-            int dx = (width - imageWidth) / 2;
-            int dy = (height - imageHeight) / 2;
-            
-            g.drawImage(img, dx, dy, imageWidth, imageHeight, this);
-        } else {
-            super.paintComponent(g);
+        Dimension scaled = getIconScale(icon, width, height);
+        if (scaled == null) {
+            return;
         }
-    }
+        int imageWidth = scaled.width;
+        int imageHeight = scaled.height;
+
+        int dx = (width - imageWidth) / 2;
+        int dy = (height - imageHeight) / 2;
+
+        g.drawImage(img, dx, dy, imageWidth, imageHeight, component);
+    } 
     
-    public static Dimension scaleIcon(ImageIcon icon, int boundWidth, int boundHeight) {
+    public static Dimension getIconScale(ImageIcon icon, int boundWidth, int boundHeight) {
         int imageWidth = icon.getIconWidth();
         int imageHeight = icon.getIconHeight();
         if (imageWidth == 0 || imageHeight == 0) {
@@ -70,40 +78,41 @@ public class ImagePropertyRenderer extends FilePropertyRenderer {
     } 
 
     public static void expandImage(final byte[] value) {
-        if (value == null) {
-            return;
-        }
-        final JDialog dialog = new JDialog(Main.frame, true);
+        if (value != null) {
+            Image image = Toolkit.getDefaultToolkit().createImage(value);
+            if (image != null) {
+                final JDialog dialog = new JDialog(Main.frame, true);
 
-        ActionListener escListener = new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                dialog.setVisible(false);
+                ActionListener escListener = new ActionListener() {
+                    public void actionPerformed(ActionEvent actionEvent) {
+                        dialog.setVisible(false);
+                    }
+                };
+                KeyStroke stroke = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0);
+                dialog.getRootPane().registerKeyboardAction(escListener, stroke, JComponent.WHEN_IN_FOCUSED_WINDOW);
+
+                final Rectangle bounds = Main.frame.getBounds();
+                bounds.x += 30;
+                bounds.y += 30;
+                bounds.width -= 60;
+                bounds.height -= 60;
+                dialog.setBounds(bounds);
+                dialog.setResizable(false);
+
+                ImageIcon imageIcon = new ImageIcon(image);
+                if (imageIcon.getIconWidth() > bounds.width || imageIcon.getIconHeight() > bounds.height) {
+                    Dimension scaled = getIconScale(imageIcon, bounds.width, bounds.height);
+                    if (scaled != null) {
+                        imageIcon.setImage(image.getScaledInstance(scaled.width, scaled.height, Image.SCALE_SMOOTH));
+                    }
+                }
+
+                dialog.add(new JLabel(imageIcon));
+
+                dialog.pack();
+                dialog.setLocationRelativeTo(dialog.getOwner());
+                dialog.setVisible(true);
             }
-        };
-        KeyStroke stroke = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0);
-        dialog.getRootPane().registerKeyboardAction(escListener, stroke, JComponent.WHEN_IN_FOCUSED_WINDOW);
-
-        final Rectangle bounds = Main.frame.getBounds();
-        bounds.x += 30;
-        bounds.y += 30;
-        bounds.width -= 60;
-        bounds.height -= 60;
-        dialog.setBounds(bounds);
-        dialog.setResizable(false);
-
-        Image image = Toolkit.getDefaultToolkit().createImage(value);
-        ImageIcon imageIcon = new ImageIcon(image);
-        if (imageIcon.getIconWidth() > bounds.width || imageIcon.getIconHeight() > bounds.height) {
-            Dimension scaled = scaleIcon(imageIcon, bounds.width, bounds.height);
-            if (scaled != null) {
-                imageIcon.setImage(image.getScaledInstance(scaled.width, scaled.height, Image.SCALE_SMOOTH));
-            }
         }
-
-        dialog.add(new JLabel(imageIcon));
-
-        dialog.pack();
-        dialog.setLocationRelativeTo(dialog.getOwner());
-        dialog.setVisible(true);
     }
 }

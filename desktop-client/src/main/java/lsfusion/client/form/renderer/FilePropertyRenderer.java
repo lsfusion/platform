@@ -22,11 +22,7 @@ public abstract class FilePropertyRenderer extends LabelPropertyRenderer {
             setText(null);
         } else {
             setIcon(null);
-            if (property.isEditableNotNull()) {
-                setText(REQUIRED_STRING);
-                setForeground(REQUIRED_FOREGROUND);
-            }
         }
-        setSelected(isSelected, hasFocus);
+        super.setValue(value, isSelected, hasFocus);
     }
 }
