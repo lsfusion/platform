@@ -122,6 +122,7 @@ public class WriteActionProperty extends SystemExplicitActionProperty{
             String remoteFile = connectionStringMatcher.group(5);
             FTPClient ftpClient = new FTPClient();
             ftpClient.setConnectTimeout(3600000); //1 hour = 3600 sec
+            ftpClient.setControlEncoding("CP1251");
             try {
 
                 ftpClient.connect(server, port);
