@@ -684,7 +684,8 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
             final ClientPropertyDraw property = getProperty(row, column);
             if (property != null) {
                 try {
-                    Object newValue = property.parseChangeValueOrNull(table.get(0).get(0));
+                    String value = table.get(0).get(0);
+                    Object newValue = value == null ? null : property.parseChangeValueOrNull(value);
                     if (property.canUsePasteValueForRendering()) {
                         model.setValueAt(newValue, row, column);
                     }

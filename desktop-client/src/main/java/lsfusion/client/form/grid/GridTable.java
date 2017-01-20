@@ -883,7 +883,7 @@ public class GridTable extends ClientPropertyTable {
                         }
                     }
 
-                    Object newValue = property.parseChangeValueOrNull(sPasteValue);
+                    Object newValue = sPasteValue == null ? null : property.parseChangeValueOrNull(sPasteValue);
                     if (property.canUsePasteValueForRendering()) {
                         for (ClientGroupObjectValue key : keys) {
                             Map<ClientGroupObjectValue, Object> propValues = values.get(property);

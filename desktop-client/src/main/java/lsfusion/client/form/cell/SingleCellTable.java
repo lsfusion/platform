@@ -115,7 +115,8 @@ public abstract class SingleCellTable extends ClientPropertyTable {
         if (!table.isEmpty() && !table.get(0).isEmpty()) {
             try {
                 ClientPropertyDraw property = model.getProperty();
-                Object newValue = property.parseChangeValueOrNull(table.get(0).get(0));
+                String value = table.get(0).get(0);
+                Object newValue = value == null ? null : property.parseChangeValueOrNull(value);
                 if (property.canUsePasteValueForRendering()) {
                     setValue(newValue);
                 }
