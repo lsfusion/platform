@@ -294,11 +294,13 @@ public class GTreeTableTree {
     }
 
     public GTreeTableNode getNodeByRecord(GTreeGridRecord record) {
-        for (Map.Entry<GGroupObject, Set<GTreeTableNode>> entry : groupNodes.entrySet()) {
-            if (entry.getKey().equals(record.getGroup())) {
-                for (GTreeTableNode node : entry.getValue()) {
-                    if (record.getKey().equals(node.getKey())) {
-                        return node;
+        if (record != null) {
+            for (Map.Entry<GGroupObject, Set<GTreeTableNode>> entry : groupNodes.entrySet()) {
+                if (entry.getKey().equals(record.getGroup())) {
+                    for (GTreeTableNode node : entry.getValue()) {
+                        if (record.getKey().equals(node.getKey())) {
+                            return node;
+                        }
                     }
                 }
             }

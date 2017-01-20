@@ -413,13 +413,13 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     @Override
     public boolean isEditable(Cell.Context context) {
         GTreeGridRecord record = (GTreeGridRecord) context.getRowValue();
-        return tree.isEditable(record.getGroup(), context.getColumn() - 1, record.getKey());
+        return record != null && tree.isEditable(record.getGroup(), context.getColumn() - 1, record.getKey());
     }
 
     @Override
     public Object getValueAt(Cell.Context context) {
         GTreeGridRecord record = (GTreeGridRecord) context.getRowValue();
-        return tree.getValue(record.getGroup(), context.getColumn() - 1, record.getKey());
+        return record == null ? null : tree.getValue(record.getGroup(), context.getColumn() - 1, record.getKey());
     }
 
     @Override
@@ -464,10 +464,12 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
 
         GTreeGridRecord rowRecord = (GTreeGridRecord) context.getRowValue();
 
-        GPropertyDraw property = getProperty(context);
-        if (property != null) {
-            rowRecord.setAttribute(property.sID, value);
-            tree.putValue(property, rowRecord.getKey(), value);
+        if (rowRecord != null) {
+            GPropertyDraw property = getProperty(context);
+            if (property != null) {
+                rowRecord.setAttribute(property.sID, value);
+                tree.putValue(property, rowRecord.getKey(), value);
+            }
         }
 
         setRowData(row, Arrays.asList(rowRecord));

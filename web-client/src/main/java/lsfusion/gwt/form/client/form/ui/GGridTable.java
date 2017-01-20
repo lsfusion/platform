@@ -819,19 +819,27 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
         if (property != null && !property.isReadOnly() && !(property.baseType instanceof GObjectType)) {
             GridDataRecord rowRecord = (GridDataRecord) context.getRowValue();
             GridColumn column = (GridColumn) getColumn(context.getColumn());
-            return column != null && !rowRecord.isReadonly(column.columnID);
+            return column != null && rowRecord != null && !rowRecord.isReadonly(column.columnID);
         }
         return false;
     }
 
     public Object getValueAt(Cell.Context context) {
         Column column = getColumn(context.getColumn());
-        return column.getValue(context.getRowValue());
+        Object rowValue = context.getRowValue();
+        if (column == null || rowValue == null) {
+            return null;
+        }
+        return column.getValue(rowValue);
     }
     
     public Object getValueAt(int row, int col) {
         Column column = getColumn(col);
-        return column.getValue(getRowValue(row));
+        GridDataRecord rowValue = getRowValue(row);
+        if (column == null || rowValue == null) {
+            return null;
+        }
+        return column.getValue(rowValue);
     }
 
     @Override
@@ -947,10 +955,12 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
         GridDataRecord rowRecord = (GridDataRecord) context.getRowValue();
         GridColumn column = (GridColumn) getColumn(context.getColumn());
 
-        rowRecord.setValue(column.columnID, value);
+        if (column != null && rowRecord != null) {
+            rowRecord.setValue(column.columnID, value);
 
-        setRowValue(context.getIndex(), rowRecord);
-        redrawColumns(singleton(column), false);
+            setRowValue(context.getIndex(), rowRecord);
+            redrawColumns(singleton(column), false);
+        }
     }
 
     public void clearGridOrders(GGroupObject groupObject) {
