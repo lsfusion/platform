@@ -180,10 +180,12 @@ public abstract class GPropertyTable<T> extends DataGrid<T> implements EditManag
     public void editCellAt(int row, int column, String actionSID) {
         GridEditableCell editCell = (GridEditableCell) getColumn(column).getCell();
         EditEvent editEvent = new InternalEditEvent(actionSID);
-        Context editContext = new Context(row, column, getRowValue(row));
-        Element editCellParent = getCellParent(row, column);
+        if (isRowWithinBounds(row)) {
+            Context editContext = new Context(row, column, getRowValue(row));
+            Element editCellParent = getCellParent(row, column);
 
-        onEditEvent(editCell, editEvent, editContext, editCellParent);
+            onEditEvent(editCell, editEvent, editContext, editCellParent);
+        }
     }
 
     public void editCurrentCell(String actionSID) {

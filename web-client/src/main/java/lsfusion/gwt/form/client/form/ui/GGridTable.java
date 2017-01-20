@@ -929,10 +929,12 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
             }
 
             for (int i = 0; i < getRowCount(); ++i) {
-                Object value = getValueAt(i, searchColumn);
-                if (value != null && value.toString().regionMatches(true, 0, lastQuickSearchPrefix, 0, lastQuickSearchPrefix.length())) {
-                    setKeyboardSelectedRow(i);
-                    break;
+                if (isRowWithinBounds(i)) {
+                    Object value = getValueAt(i, searchColumn);
+                    if (value != null && value.toString().regionMatches(true, 0, lastQuickSearchPrefix, 0, lastQuickSearchPrefix.length())) {
+                        setKeyboardSelectedRow(i);
+                        break;
+                    }
                 }
             }
 
