@@ -7,7 +7,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by DAle on 10.04.14
+ * Поиск свойства/действия 
+ * Из всех вариантов отбирает те, для которых не существует более подходящих вариантов
  */
 
 public class NamespacePropertyFinder extends NamespaceElementFinder<LP<?, ?>, List<ResolveClassSet>> {
@@ -17,7 +18,7 @@ public class NamespacePropertyFinder extends NamespaceElementFinder<LP<?, ?>, Li
     }
 
     @Override
-    protected List<FoundItem<LP<?, ?>>> finalizeResult(List<FoundItem<LP<?, ?>>> result) {
+    protected List<FoundItem<LP<?, ?>>> finalizeResult(final List<FoundItem<LP<?, ?>>> result) {
         return filterFoundProperties(result);
     }
     
