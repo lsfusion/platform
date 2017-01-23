@@ -73,7 +73,7 @@ scriptExecution 'Выполнить скрипт' () = ACTION { TRY { preRunScri
 
 actionBodyExecution 'Выполнить действие' () = ACTION { TRY { preRunScript(); EVAL CONCAT ' ', 'run() = ACTION \{', scriptStorage(), ';\n\};'; afterRunScript(); } CATCH; };
 formExecution 'Показать форму' () = ACTION { TRY { preRunScript(); EVAL CONCAT ' ', 'FORM form', scriptStorage(), ';\nrun() = ACTION FORM form;'; afterRunScript(); } CATCH; };
-javaActionBodyExecution 'Выполнить Java-код' () = ACTION { TRY { preRunScript(); EVAL CONCAT ' ', 'run() = ACTION CODE ', scriptStorage(), ' END;'; afterRunScript(); } CATCH; };
+javaActionBodyExecution 'Выполнить Java-код' () = ACTION { TRY { preRunScript(); EVAL CONCAT ' ', 'run() = ACTION CUSTOM <\{ ', scriptStorage(), ' \}>;'; afterRunScript(); } CATCH; };
 
 FORM chooseScriptName 'Сохранить как'
     OBJECTS name = VARSTRING[100] FIXED PANEL
