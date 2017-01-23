@@ -81,6 +81,7 @@ public class ReadActionProperty extends SystemExplicitActionProperty {
         int errorCode = 0;
         String type = null;
         File file = null;
+        String extension = null;
 
         try {
             if (sourcePath != null) {
@@ -90,7 +91,6 @@ public class ReadActionProperty extends SystemExplicitActionProperty {
                     type = m.group(1).toLowerCase();
                     String url = m.group(2);
 
-                    String extension = null;
                     switch (type) {
                         case "file":
                             file = new File(url);
@@ -146,9 +146,9 @@ public class ReadActionProperty extends SystemExplicitActionProperty {
                             ServerLoggers.importLogger.info(String.format("Writing file to %s", movePath));
                             FileCopyUtils.copy(file, new File(movePath.replace("file://", "")));
                         } else if (movePath.startsWith("ftp://"))
-                            WriteActionProperty.storeFileToFTP(movePath, file);
+                            WriteActionProperty.storeFileToFTP(movePath, file, extension);
                         else if(movePath.startsWith("sftp://"))
-                            WriteActionProperty.storeFileToSFTP(movePath, file);
+                            WriteActionProperty.storeFileToSFTP(movePath, file, extension);
                         else
                             throw Throwables.propagate(new RuntimeException("ReadActionProperty Error. Unsupported movePath: " + movePath + ", supports only file, ftp, sftp"));
                     }
