@@ -43,8 +43,9 @@
         <apache.poi.version>3.12</apache.poi.version>
         <docking.frames.version>1.1.2p17b</docking.frames.version>
         <jexcelapi.version>2.6.12</jexcelapi.version>
-        <batik.version>1.7</batik.version>
-        <barcode4j.version>2.0</barcode4j.version>
+        <batik.version>1.8</batik.version>
+        <xmlgraphics.commons.version>2.1</xmlgraphics.commons.version>
+        <barcode4j.version>2.1</barcode4j.version>
         <swingx.version>1.6.1</swingx.version>
         <jxlayer.version>3.0.4</jxlayer.version>
         <jhlabs.filters.version>2.0.235</jhlabs.filters.version>
@@ -263,6 +264,11 @@
                 <groupId>org.apache.xmlgraphics</groupId>
                 <artifactId>batik-bridge</artifactId>
                 <version>${batik.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.xmlgraphics</groupId>
+                <artifactId>xmlgraphics-commons</artifactId>
+                <version>${xmlgraphics.commons.version}</version>
             </dependency>
             <dependency>
                 <groupId>net.sf.barcode4j</groupId>
