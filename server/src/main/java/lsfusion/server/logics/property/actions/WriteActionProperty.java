@@ -27,7 +27,7 @@ import java.util.regex.Pattern;
 
 public class WriteActionProperty extends SystemExplicitActionProperty{
     private final LCP<?> sourceProp;
-    
+
     public WriteActionProperty(ValueClass valueClass, LCP<?> sourceProp) {
         super(valueClass);
         this.sourceProp = sourceProp;
@@ -58,6 +58,9 @@ public class WriteActionProperty extends SystemExplicitActionProperty{
         try {
             if (path != null && !path.isEmpty()) {
                 if (fileBytes != null) {
+                    if (extension != null && !extension.isEmpty()) {
+                        path += "." + extension;
+                    }
                     Pattern p = Pattern.compile("(file|ftp|sftp):\\/\\/(.*)");
                     Matcher m = p.matcher(path);
                     if (m.matches()) {
@@ -66,7 +69,6 @@ public class WriteActionProperty extends SystemExplicitActionProperty{
 
                         switch (type) {
                             case "file": {
-                                url = addExt(url, extension);
                                 File file = new File(url);
                                 if (!file.getParentFile().exists())
                                     throw Throwables.propagate(new RuntimeException(String.format("Path is incorrect or not found: %s", url)));
@@ -79,7 +81,7 @@ public class WriteActionProperty extends SystemExplicitActionProperty{
                                 try {
                                     file = File.createTempFile("downloaded", ".tmp");
                                     IOUtils.putFileBytes(file, fileBytes);
-                                    storeFileToFTP(path, file, extension);
+                                    storeFileToFTP(path, file);
                                 } finally {
                                     if (file != null && !file.delete())
                                         file.deleteOnExit();
@@ -91,7 +93,7 @@ public class WriteActionProperty extends SystemExplicitActionProperty{
                                 try {
                                     file = File.createTempFile("downloaded", ".tmp");
                                     IOUtils.putFileBytes(file, fileBytes);
-                                    storeFileToSFTP(path, file, extension);
+                                    storeFileToSFTP(path, file);
                                 } finally {
                                     if (file != null && !file.delete())
                                         file.deleteOnExit();
@@ -100,7 +102,7 @@ public class WriteActionProperty extends SystemExplicitActionProperty{
                             }
                         }
                     } else {
-                        throw Throwables.propagate(new RuntimeException("Incorrect path. Please use format: file://path_to_file or ftp|sftp://username:password@host:port/path_to_file;charset"));
+                        throw Throwables.propagate(new RuntimeException("Incorrect path. Please use format: file://path_to_file or ftp|sftp://username:password;charset@host:port/path_to_file"));
                     }
                 } else {
                     throw Throwables.propagate(new RuntimeException("File bytes not specified"));
@@ -113,19 +115,20 @@ public class WriteActionProperty extends SystemExplicitActionProperty{
         }
     }
 
-    public static void storeFileToFTP(String path, File file, String extension) throws IOException {
+    public static void storeFileToFTP(String path, File file) throws IOException {
         ServerLoggers.importLogger.info(String.format("Writing file to %s", path));
-        /*ftp://username:password@host:port/path_to_file;charset*/
-        Pattern connectionStringPattern = Pattern.compile("ftp:\\/\\/(.*):(.*)@([^\\/:]*)(?::([^\\/]*))?(?:\\/([^;]*))?(?:;(.*))?");
+        /*ftp://username:password;charset@host:port/path_to_file*/
+        Pattern connectionStringPattern = Pattern.compile("ftp:\\/\\/(.*):([^;]*)(?:;(.*))?@([^\\/:]*)(?::([^\\/]*))?(?:\\/(.*))?");
         Matcher connectionStringMatcher = connectionStringPattern.matcher(path);
         if (connectionStringMatcher.matches()) {
             String username = connectionStringMatcher.group(1); //lstradeby
             String password = connectionStringMatcher.group(2); //12345
-            String server = connectionStringMatcher.group(3); //ftp.harmony.neolocation.net
-            boolean noPort = connectionStringMatcher.group(4) == null;
-            Integer port = noPort ? 21 : Integer.parseInt(connectionStringMatcher.group(4)); //21
-            String remoteFile = addExt(connectionStringMatcher.group(5), extension);
-            String charset = connectionStringMatcher.group(6);
+            String charset = connectionStringMatcher.group(3);
+            String server = connectionStringMatcher.group(4); //ftp.harmony.neolocation.net
+            boolean noPort = connectionStringMatcher.group(5) == null;
+            Integer port = noPort ? 21 : Integer.parseInt(connectionStringMatcher.group(5)); //21
+            String remoteFile = connectionStringMatcher.group(6);
+
             FTPClient ftpClient = new FTPClient();
             ftpClient.setConnectTimeout(3600000); //1 hour = 3600 sec
             if(charset != null)
@@ -160,23 +163,23 @@ public class WriteActionProperty extends SystemExplicitActionProperty{
                 }
             }
         } else {
-            throw Throwables.propagate(new RuntimeException("Incorrect ftp url. Please use format: ftp://username:password@host:port/path_to_file;charset"));
+            throw Throwables.propagate(new RuntimeException("Incorrect ftp url. Please use format: ftp://username:password;charset@host:port/path_to_file"));
         }
     }
 
-    public static void storeFileToSFTP(String path, File file, String extension) throws JSchException, SftpException, FileNotFoundException {
-        /*sftp://username:password@host:port/path_to_file;charset*/
-        Pattern connectionStringPattern = Pattern.compile("sftp:\\/\\/(.*):(.*)@([^\\/:]*)(?::([^\\/]*))?(?:\\/([^;]*))?(?:;(.*))?");
+    public static void storeFileToSFTP(String path, File file) throws JSchException, SftpException, FileNotFoundException {
+        /*sftp://username:password;charset@host:port/path_to_file*/
+        Pattern connectionStringPattern = Pattern.compile("sftp:\\/\\/(.*):([^;]*)(?:;(.*))?@([^\\/:]*)(?::([^\\/]*))?(?:\\/(.*))?");
         Matcher connectionStringMatcher = connectionStringPattern.matcher(path);
         if (connectionStringMatcher.matches()) {
             String username = connectionStringMatcher.group(1); //username
             String password = connectionStringMatcher.group(2); //password
-            String server = connectionStringMatcher.group(3); //host:IP
-            boolean noPort = connectionStringMatcher.group(4) == null;
-            Integer port = noPort ? 22 : Integer.parseInt(connectionStringMatcher.group(4));
-            String filePath = addExt(connectionStringMatcher.group(5), extension);
+            String charset = connectionStringMatcher.group(3);
+            String server = connectionStringMatcher.group(4); //host:IP
+            boolean noPort = connectionStringMatcher.group(5) == null;
+            Integer port = noPort ? 22 : Integer.parseInt(connectionStringMatcher.group(5));
+            String filePath = connectionStringMatcher.group(6);
             File remoteFile = new File((!filePath.startsWith("/") ? "/" : "") + filePath);
-            String charset = connectionStringMatcher.group(6);
 
             Session session = null;
             Channel channel = null;
@@ -207,11 +210,5 @@ public class WriteActionProperty extends SystemExplicitActionProperty{
         } else {
             throw Throwables.propagate(new RuntimeException("Incorrect sftp url. Please use format: sftp://username:password@host:port/path_to_file;charset"));
         }
-    }
-
-    private static String addExt(String path, String ext) {
-        if (ext != null && !ext.isEmpty())
-            return path + "." + ext;
-        else return path;
     }
 }
