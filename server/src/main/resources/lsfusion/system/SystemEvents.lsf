@@ -81,6 +81,7 @@ totalMemory 'Всего память для JVM, МБ' = DATA INTEGER (Connectio
 maximumMemory 'Максимально доступная память для JVM, МБ' = DATA INTEGER (Connection);
 freeMemory 'Свободная память для JVM, МБ' = DATA INTEGER (Connection);
 javaVersion 'Версия java' = DATA VARSTRING[100] (Connection);
+is64Java '64-битная java' = DATA BOOLEAN (Connection);
 screenSize 'Разрешение экрана' = DATA VARSTRING[20] (Connection);
 
 countConnection 'Кол-во подключений' = GROUP SUM 1 BY user(Connection connection) PERSISTENT; 
@@ -169,6 +170,7 @@ totalMemory 'Всего память для JVM, МБ' (Computer computer) = tot
 maximumMemory 'Максимально доступная память для JVM, МБ' (Computer computer) = maximumMemory(lastConnection(computer));
 freeMemory 'Свободная память для JVM, МБ' (Computer computer) = freeMemory(lastConnection(computer));
 javaVersion 'Версия java' (Computer computer) = javaVersion(lastConnection(computer));
+is64Java '64-битная java' (Computer computer) = is64Java(lastConnection(computer));
 
 countDaysClearPings 'За сколько дней хранить статистику пингов и памяти' = DATA INTEGER (); 
 
@@ -192,7 +194,7 @@ FORM connections 'Журнал подключений'
 
     OBJECTS c=Connection
     PROPERTIES (c) READONLY hostnameComputer, remoteAddress, userLogin, osVersion,
-                            javaVersion, screenSize, processor, architecture, cores, physicalMemory,
+                            javaVersion, is64Java, screenSize, processor, architecture, cores, physicalMemory,
                             totalMemory, maximumMemory, freeMemory, nameConnectionStatus, connectTime,
                             disconnectTime
 
@@ -315,7 +317,7 @@ FORM pings 'Журнал клиентских приложений'
     OBJECTS limits = (limitDFrom = DATETIME, limitDTo = DATETIME) FIXED PANEL, c = Computer, dates = (dFrom = DATETIME, dTo = DATETIME)
     PROPERTIES(c) READONLY hostname, remoteAddress, osVersion, processor, architecture, cores, 
                            physicalMemory, totalMemory, maximumMemory, freeMemory,
-                           javaVersion                                       
+                           javaVersion, is64Java                                       
     PROPERTIES dFromObj = OBJVALUE(dFrom), dToObj = OBJVALUE(dTo), limitDFromObj = OBJVALUE(limitDFrom), limitDToObj = OBJVALUE(limitDTo),
                limitPing() TODRAW limits, limitMaxTotalMemory() TODRAW limits, limitMaxUsedMemory() TODRAW limits, subtractSeconds(dFrom, dTo)
     PROPERTIES(c, limitDFrom, limitDTo) TODRAW c averagePingDateFrom, averageMaxTotalMemoryDateFrom, averageMaxUsedMemoryDateFrom, 
@@ -327,7 +329,7 @@ FORM pings 'Журнал клиентских приложений'
     
     OBJECTS cn = Connection
     PROPERTIES (cn) READONLY hostnameComputer, remoteAddress, userLogin, osVersion,
-                             javaVersion, screenSize, processor, architecture, cores, physicalMemory,
+                             javaVersion, is64Java, screenSize, processor, architecture, cores, physicalMemory,
                              totalMemory, maximumMemory, freeMemory, nameConnectionStatus, connectTime,
                              disconnectTime
     FILTERS computer(cn) == c
