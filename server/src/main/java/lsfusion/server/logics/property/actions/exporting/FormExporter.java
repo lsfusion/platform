@@ -19,7 +19,7 @@ public abstract class FormExporter {
 
     public FormExporter(ReportGenerationData reportData) {
         try {
-            this.data = ReportGenerator.retrieveReportSources(reportData, null).data;
+            this.data = ReportGenerator.retrieveReportSources(reportData, null, true).data;
             this.formHierarchy = ReportGenerator.retrieveReportHierarchy(reportData.reportHierarchyData);
         } catch (IOException | ClassNotFoundException e) {
             throw Throwables.propagate(e);
@@ -41,6 +41,9 @@ public abstract class FormExporter {
         for (HashMap<Integer, Object> keys : dataEntry.getKeyRows()) {
             node.addNode(object.object, createObjectValues(object, dataEntry, keys, new LinkedHashSet<String>()));
         }
+        //данных нет, но создать пустой файл надо
+        if(dataEntry.getKeyRows().isEmpty())
+            node.addNode(object.object, createObjectValues(object, dataEntry, new HashMap<Integer, Object>(), new LinkedHashSet<String>()));
         groupNode.addNode("group", node);
         return groupNode;
     }
@@ -64,6 +67,9 @@ public abstract class FormExporter {
                         objectValueElement.addNode(dependent.object, createObjectValues(dependent, null, k, usedProperties));
                     }
                 }
+                //данных нет, но создать пустой файл надо
+                if(dependentReportData.getKeyRows().isEmpty())
+                    objectValueElement.addNode(dependent.object, createObjectValues(dependent, null, new HashMap<Integer, Object>(), usedProperties));
             }
         }
         return objectValueElement;
@@ -97,7 +103,7 @@ public abstract class FormExporter {
                     }
                 } else {
                     if (filter(propertyType))
-                        objectElementsMap.put(Pair.create(propertyTag, propertyType), values.get(reportData.getProperties().get(property)));
+                        objectElementsMap.put(Pair.create(propertyTag, propertyType), values == null ? null : values.get(reportData.getProperties().get(property)));
                 }
             }
         }

@@ -50,9 +50,9 @@ public class ReportData {
 
     public int getRowCount() { return keyRows.size(); }
 
-    public void serialize(DataOutputStream outStream) throws IOException {
+    public void serialize(DataOutputStream outStream, boolean custom) throws IOException {
         outStream.writeBoolean(keyRows.size() == 0);
-        if (keyRows.size() == 0) return;
+        if (keyRows.size() == 0 && !custom) return;
 
         outStream.writeInt(keys.size());
         for(ObjectInstance object : keys) {

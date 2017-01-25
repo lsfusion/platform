@@ -122,7 +122,7 @@ public class FormReportManager<T extends BusinessLogics<T>, F extends FormInstan
         Result<Map<String, LinkedHashSet<List<Object>>>> columnGroupObjects = new Result<>();
         byte[] reportSourcesByteArray = getReportSourcesByteArray(
                 new ReportSourceGenerator<>(form, groupReportHierarchy, fullReportHierarchy, getGridGroups(groupId), groupId, userPreferences)
-        , columnGroupObjects);
+        , columnGroupObjects, custom);
         byte[] reportDesignsByteArray = custom ? null : getReportDesignsByteArray(toExcel, groupId, userPreferences, columnGroupObjects.result);
 
         return new ReportGenerationData(reportHierarchyByteArray, reportDesignsByteArray, reportSourcesByteArray);
@@ -329,7 +329,7 @@ public class FormReportManager<T extends BusinessLogics<T>, F extends FormInstan
         return nodes;
     }
 
-    private byte[] getReportSourcesByteArray(ReportSourceGenerator<T> sourceGenerator, Result<Map<String, LinkedHashSet<List<Object>>>> columnGroupObjects) {
+    private byte[] getReportSourcesByteArray(ReportSourceGenerator<T> sourceGenerator, Result<Map<String, LinkedHashSet<List<Object>>>> columnGroupObjects, boolean custom) {
         try {
             Map<String, ReportData> sources = sourceGenerator.generate();
             ReportSourceGenerator.ColumnGroupCaptionsData columnGroupCaptions = sourceGenerator.getColumnGroupCaptions();
@@ -340,7 +340,7 @@ public class FormReportManager<T extends BusinessLogics<T>, F extends FormInstan
             dataStream.writeInt(sources.size());
             for (Map.Entry<String, ReportData> source : sources.entrySet()) {
                 dataStream.writeUTF(source.getKey());
-                source.getValue().serialize(dataStream);
+                source.getValue().serialize(dataStream, custom);
             }
 
             int columnPropertiesCount = columnGroupCaptions.propertyObjects.size();

@@ -35,6 +35,15 @@ public abstract class PlainFormExporter extends FormExporter{
         return null;
     }
 
+    protected boolean emptyRow(List<Object> values) {
+        boolean result = true;
+        for(Object value : values) {
+            if(value != null)
+                result = false;
+        }
+        return values.isEmpty() || result;
+    }
+
     protected Map<String, byte[]> getFilesBytes(Map<String, File> filesMap) throws IOException {
         Map<String, byte[]> filesBytes = new HashMap<>();
         for (Map.Entry<String, File> entry : filesMap.entrySet())

@@ -185,15 +185,19 @@ public class ReportGenerator {
         return (Map<String, JasperDesign>) objStream.readObject();
     }
 
-    //corresponding serialization is in lsfusion.server.remote.FormReportManager.getReportSourcesByteArray()
     public static SourcesGenerationOutput retrieveReportSources(ReportGenerationData generationData, Map<ByteArray, String> files) throws IOException {
+        return retrieveReportSources(generationData, files, false);
+    }
+
+    //corresponding serialization is in lsfusion.server.remote.FormReportManager.getReportSourcesByteArray()
+    public static SourcesGenerationOutput retrieveReportSources(ReportGenerationData generationData, Map<ByteArray, String> files, boolean custom) throws IOException {
         SourcesGenerationOutput output = new SourcesGenerationOutput();
         DataInputStream dataStream = new DataInputStream(new ByteArrayInputStream(generationData.reportSourceData));
         int size = dataStream.readInt();
         output.data = new HashMap<>();
         for (int i = 0; i < size; i++) {
             String sid = dataStream.readUTF();
-            ClientReportData reportData = new ClientReportData(dataStream, files);
+            ClientReportData reportData = new ClientReportData(dataStream, files, custom);
             output.data.put(sid, reportData);
         }
 

@@ -77,7 +77,7 @@ public class DBFFormExporter extends PlainFormExporter {
             }
         }
         String currentRecord = String.valueOf(values);
-        if(!currentRecord.equals(lastRecordsMap.get(id)) && !values.isEmpty()) {
+        if (!currentRecord.equals(lastRecordsMap.get(id)) && !emptyRow(values)) {
             lastRecordsMap.put(id, currentRecord);
             writer.addRecord(values.toArray());
         }

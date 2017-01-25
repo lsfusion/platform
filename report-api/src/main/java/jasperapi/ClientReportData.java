@@ -37,9 +37,9 @@ public class ClientReportData implements JRDataSource {
 
     private final Map<ByteArray, String> files;
 
-    public ClientReportData(DataInputStream inStream, Map<ByteArray, String> files) throws IOException {
+    public ClientReportData(DataInputStream inStream, Map<ByteArray, String> files, boolean custom) throws IOException {
 
-        if (!inStream.readBoolean()) {
+        if (!inStream.readBoolean() || custom) {
             int objectCnt = inStream.readInt();
             for (int i = 0; i < objectCnt; i++) {
                 String name = inStream.readUTF();

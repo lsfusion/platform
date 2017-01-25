@@ -32,7 +32,7 @@ public class JSONFormExporter extends HierarchicalFormExporter {
             rootElement.put("export", exportObject);
 
             for (Node rootNode : rootNodes)
-                exportNode(exportObject, rootNode);
+                exportNode(exportArray, "group", rootNode);
 
             file = File.createTempFile("exportForm", ".json");
             try (PrintWriter out = new PrintWriter(file)) {
@@ -47,23 +47,29 @@ public class JSONFormExporter extends HierarchicalFormExporter {
         }
     }
 
-    private void exportNode(Object parentElement, AbstractNode node) throws JSONException {
+    private void exportNode(Object parentElement, String parentId, AbstractNode node) throws JSONException {
         if(node instanceof Leaf) {
             ((JSONObject) parentElement).put(((Leaf) node).getKey(), ((Leaf) node).getValue());
         } else if(node instanceof Node) {
             for (Map.Entry<String, List<AbstractNode>> child : ((Node) node).getChildren()) {
                 JSONArray array = new JSONArray();
                 for(AbstractNode childNode : child.getValue()) {
-                    if(childNode instanceof Leaf) {
-                        exportNode(parentElement, childNode);
-                    } else {
-                        JSONObject object = new JSONOrderObject();
-                        exportNode(object, childNode);
-                        array.put(object);
+                    if (!(childNode instanceof Leaf) || ((Leaf) childNode).getType().toDraw.equals(parentId)) {
+                        if (childNode instanceof Leaf) {
+                            exportNode(parentElement, child.getKey(), childNode);
+                        } else {
+                            JSONObject object = new JSONOrderObject();
+                            exportNode(object, child.getKey(), childNode);
+                            array.put(object);
+                        }
                     }
                 }
-                if(array.length() > 0)
-                    ((JSONObject) parentElement).put(child.getKey(), array);
+                if(array.length() > 0) {
+                    if(parentElement instanceof JSONObject)
+                        ((JSONObject) parentElement).put(child.getKey(), array);
+                    else if(parentElement instanceof JSONArray)
+                        ((JSONArray) parentElement).put(array);
+                }
             }
         }
     }

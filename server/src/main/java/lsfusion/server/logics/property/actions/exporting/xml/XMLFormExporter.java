@@ -44,15 +44,18 @@ public class XMLFormExporter extends HierarchicalFormExporter {
     }
 
     private void exportNode(Element parentElement, AbstractNode node) {
-        if (node instanceof Leaf)
-            parentElement.addContent(String.valueOf(((Leaf) node).getValue()));
-        else if (node instanceof Node) {
+        if (node instanceof Leaf) {
+            Object value = ((Leaf) node).getValue();
+            if(value != null)
+                parentElement.addContent(String.valueOf(value));
+        } else if (node instanceof Node) {
             for (Map.Entry<String, List<AbstractNode>> child : ((Node) node).getChildren()) {
                 for (AbstractNode childNode : child.getValue()) {
                     if (!(childNode instanceof Leaf) || ((Leaf) childNode).getType().toDraw.equals(parentElement.getName())) {
                         Element element = new Element(child.getKey());
                         exportNode(element, childNode);
-                        parentElement.addContent(element);
+                        if(!element.getValue().isEmpty())
+                            parentElement.addContent(element);
                     }
                 }
             }
