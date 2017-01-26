@@ -141,6 +141,7 @@ public class RmiQueue {
         abandoned.set(true);
     }
 
+    // возможно получится и было бы лучше сделать так же, как в вебе - без механизма direct запросов, а с добавленеим этих запросов в начало очереди
     public <T> T directRequest(long requestIndex, final RmiRequest<T> request) throws RemoteException {
         if (logger.isDebugEnabled()) {
             logger.debug("Direct request: " + request);

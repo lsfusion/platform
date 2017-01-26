@@ -103,8 +103,6 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     private Timer asyncTimer;
     private PanelRenderer asyncView;
 
-    private boolean initialResizeProcessed = false;
-
     private HotkeyManager hotkeyManager = new HotkeyManager();
     private LoadingManager loadingManager = MainFrame.isBusyDialog ? new GBusyDialogDisplayer(this) : new LoadingBlocker(this);
 
@@ -705,14 +703,18 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     }
 
     public void continueServerInvocation(Object[] actionResults, AsyncCallback<ServerResponseResult> callback) {
-        syncDispatch(new ContinueInvocation(actionResults), callback);
+        syncDispatch(new ContinueInvocation(actionResults), callback, true);
     }
 
     public void throwInServerInvocation(Throwable throwable, AsyncCallback<ServerResponseResult> callback) {
         syncDispatch(new ThrowInInvocation(throwable), callback);
     }
 
-    public <T extends Result> void syncDispatch(FormBoundAction<T> action, AsyncCallback<T> callback) {
+    public <T extends Result> void syncDispatch(final FormBoundAction<T> action, AsyncCallback<T> callback) {
+        syncDispatch(action, callback, false);
+    }
+
+    public <T extends Result> void syncDispatch(final FormBoundAction<T> action, AsyncCallback<T> callback, boolean direct) {
         //todo: возможно понадобится сделать чтото более сложное как в
         //todo: http://stackoverflow.com/questions/2061699/disable-user-interaction-in-a-gwt-container
         loadingManager.start();
@@ -721,7 +723,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             public void preProcess() {
                 loadingManager.stop();
             }
-        });
+        }, direct);
     }
 
     public GGroupObjectValueBuilder getFullCurrentKey() {

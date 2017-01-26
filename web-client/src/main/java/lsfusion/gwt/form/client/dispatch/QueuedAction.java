@@ -9,7 +9,7 @@ public class QueuedAction<R extends Result> {
     public Action<R> action;
     public AsyncCallback<R> callback;
 
-    public boolean succeded = false;
+    public boolean succeeded = false;
     public boolean finished = false;
     private R result;
     private Throwable throwable;
@@ -19,22 +19,22 @@ public class QueuedAction<R extends Result> {
         this.callback = callback;
     }
 
-    public void succeded(R result) {
+    public void succeeded(R result) {
         finished = true;
-        succeded = true;
+        succeeded = true;
         this.result = result;
     }
 
     public void failed(Throwable t) {
         finished = true;
-        succeded = false;
+        succeeded = false;
         this.throwable = t;
     }
 
-    public Throwable procceed() {
+    public Throwable proceed() {
         assert finished;
 
-        if (succeded) {
+        if (succeeded) {
             callback.onSuccess(result);
         } else {
             callback.onFailure(throwable);

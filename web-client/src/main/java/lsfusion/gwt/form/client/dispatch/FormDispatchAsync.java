@@ -39,19 +39,30 @@ public class FormDispatchAsync {
     }
 
     public <A extends FormBoundAction<R>, R extends Result> void execute(A action, AsyncCallback<R> callback) {
+        execute(action, callback, false);
+    }
+
+    public <A extends FormBoundAction<R>, R extends Result> void execute(A action, AsyncCallback<R> callback, boolean direct) {
         action.formSessionID = form.sessionID;
         if (action instanceof FormRequestIndexCountingAction) {
             ((FormRequestIndexCountingAction) action).requestIndex = nextRequestIndex++;
         }
 
-        queueAction(action, callback);
+        queueAction(action, callback, direct);
     }
 
-    private <A extends Action<R>, R extends Result> void queueAction(final A action, final AsyncCallback<R> callback) {
+    private <A extends Action<R>, R extends Result> void queueAction(final A action, final AsyncCallback<R> callback, boolean direct) {
         Log.debug("Queueing action: " + action.toString());
 
         final QueuedAction queuedAction = new QueuedAction(action, callback);
-        q.add(queuedAction);
+        // в десктопе реализован механизм direct запросов, которые работают не через очередь, а напрямую блокируют EDT.
+        // в вебе нет возможности реализовать подобный механизм. поэтому ставим direct запросы в начало очереди.
+        // иначе мог произойти deadlock, когда, к примеру, между ExecuteEditAction и continueServerInvocation вклинивался changePageSize
+        if (direct) {
+            q.add(0, queuedAction);
+        } else {
+            q.add(queuedAction);
+        }
 
         formController.onAsyncStarted();
 
@@ -63,7 +74,7 @@ public class FormDispatchAsync {
 
             @Override
             public void success(R result) {
-                queuedAction.succeded(result);
+                queuedAction.succeeded(result);
             }
 
             @Override
@@ -83,7 +94,7 @@ public class FormDispatchAsync {
     }
 
     private void execNextAction() {
-        Throwable result = q.remove().procceed();
+        Throwable result = q.remove().proceed();
         if (result != null && result instanceof InvalidateException) {
             formController.hideForm();
         }
