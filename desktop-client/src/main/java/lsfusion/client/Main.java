@@ -107,6 +107,15 @@ public class Main {
         // делаем, чтобы сборщик мусора срабатывал каждую минуту - для удаления ненужных connection'ов
 //        System.setProperty("sun.rmi.dgc.client.gcInterval", "60000");
 
+        // попытка исправить падающий иногда IllegalArgumentException, связанный с TimSort. исправлено в Java9
+        // http://bugs.java.com/bugdatabase/view_bug.do?bug_id=7075600
+        // правда, есть вероятность, что System.setProperty() не поможет, а нужно проставлять свойство JVM в начале: "-Djava.util.Arrays.useLegacyMergeSort=true"
+        // см http://stackoverflow.com/a/26829874
+        Double javaVersion = SystemUtils.getJavaSpecificationVersion();
+        if (javaVersion == null || javaVersion < 1.9) {
+            System.setProperty("java.util.Arrays.useLegacyMergeSort", "true");    
+        }
+
         asyncTimeOut = Integer.parseInt(System.getProperty(LSFUSION_CLIENT_ASYNC_TIMEOUT, "50"));
 
         Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
