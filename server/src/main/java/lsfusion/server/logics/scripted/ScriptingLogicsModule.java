@@ -569,16 +569,20 @@ public class ScriptingLogicsModule extends LogicsModule {
         return addAUProp(null, false, isExclusive, isChecked, isLast, type, LocalizedString.create(""), value, params);
     }
 
-    public LP addScriptedAbstractActionProp(ListCaseActionProperty.AbstractType type, List<String> paramClasses, boolean isExclusive, boolean isChecked, boolean isLast) throws ScriptingErrorLog.SemanticErrorException {
+    public LP addScriptedAbstractActionProp(ListCaseActionProperty.AbstractType type, List<String> paramClasses, boolean isExclusive, boolean isChecked, boolean isLast, DebugInfo.DebugPoint point) throws ScriptingErrorLog.SemanticErrorException {
         ValueClass[] params = new ValueClass[paramClasses.size()];
         for (int i = 0; i < paramClasses.size(); i++) {
             params[i] = findClass(paramClasses.get(i));
         }
+        LAP result;
         if (type == ListCaseActionProperty.AbstractType.LIST) {
-            return addAbstractListAProp(isChecked, isLast, params);
+            result = addAbstractListAProp(isChecked, isLast, params);
         } else {
-            return addAbstractCaseAProp(type, isExclusive, isChecked, isLast, params);
+            result = addAbstractCaseAProp(type, isExclusive, isChecked, isLast, params);
         }
+        ActionProperty property = (ActionProperty) result.property;
+        property.setDebugInfo(new ActionDebugInfo(point, property.getDelegationType(false), false));
+        return result;
     }
 
     public void addImplementationToAbstract(PropertyUsage abstractPropUsage, List<TypedParameter> context, LPWithParams implement, LPWithParams when) throws ScriptingErrorLog.SemanticErrorException {

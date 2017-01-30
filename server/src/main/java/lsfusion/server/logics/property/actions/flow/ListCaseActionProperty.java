@@ -6,6 +6,7 @@ import lsfusion.server.caches.IdentityInstanceLazy;
 import lsfusion.server.classes.LogicalClass;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.classes.sets.ResolveClassSet;
+import lsfusion.server.logics.ScriptParsingException;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.*;
@@ -84,6 +85,8 @@ public abstract class ListCaseActionProperty extends KeepContextActionProperty {
             caseProp.finalizeInit();
         } catch (CaseUnionProperty.NotFullyImplementedException e) {
             throw new RuntimeException("Action is not fully implemented : " + this +  ", Calculated : " + e.fullClassValueWhere + ", Specified : " + e.classValueWhere);
+        } catch (ScriptParsingException e) {
+            throw new ScriptParsingException("error finalizing abstract " + this + ":\n" + e.getMessage());
         }
     }
     

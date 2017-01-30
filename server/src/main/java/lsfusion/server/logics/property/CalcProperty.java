@@ -185,14 +185,14 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         Inferred<P> propClasses = property.inferInterfaceClasses(inferType);
         if(!classes.and(propClasses.map(map), inferType).isEmpty(inferType))
             throw new ScriptParsingException("signature intersection of property " + caption + " (WHEN " + this +") with previosly defined implementation " + propertyCaption + " (WHEN " + property +") for abstract property " + this + "\n" +
-                    "Classes 1 : " + ExClassSet.fromEx(classes.finishEx(inferType)) + ", Classes 2 : " + ExClassSet.fromEx(propClasses.finishEx(inferType)));
+                    "Classes 1 : " + ExClassSet.fromEx(classes.finishEx(inferType)) + ", \nClasses 2 : " + ExClassSet.fromEx(propClasses.finishEx(inferType)));
     }
 
     public <P extends PropertyInterface> void calcCheckExclusiveness(String caption, CalcProperty<P> property, String propertyCaption, ImMap<P, T> map, CalcClassType calcType) {
         ImRevMap<T, KeyExpr> mapKeys = getMapKeys();
         if(!calculateExpr(mapKeys, calcType).getWhere().and(property.calculateExpr(map.join(mapKeys), calcType).getWhere()).not().checkTrue())
             throw new ScriptParsingException("signature intersection of property " + caption + " (WHEN " + this +") with previosly defined implementation " + propertyCaption + " (WHEN " + property +") for abstract property " + this + "\n" +
-                    "Classes 1 : " + getClassWhere(calcType) + ", Classes 2 : " + property.getClassWhere(calcType));
+                    "Classes 1 : " + getClassWhere(calcType) + ", \nClasses 2 : " + property.getClassWhere(calcType));
     }
 
     public <P extends PropertyInterface> void checkContainsAll(CalcProperty<P> property, String caption, ImRevMap<P, T> map, CalcPropertyInterfaceImplement<T> value) {

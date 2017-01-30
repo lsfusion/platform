@@ -1386,11 +1386,12 @@ abstractActionDefinition returns [LP property, List<ResolveClassSet> signature]
     boolean isLast = true;
 	boolean isChecked = false;
 	ListCaseActionProperty.AbstractType type = ListCaseActionProperty.AbstractType.MULTI;
+	DebugInfo.DebugPoint point = getCurrentDebugPoint();
 }
 @after {
 	if (inPropParseState()) {
 		$signature = self.createClassSetsFromClassNames($paramClassNames.ids); 
-		$property = self.addScriptedAbstractActionProp(type, $paramClassNames.ids, isExclusive, isChecked, isLast);
+		$property = self.addScriptedAbstractActionProp(type, $paramClassNames.ids, isExclusive, isChecked, isLast, point);
 	}
 }
 	:	'ACTION' 'ABSTRACT' 

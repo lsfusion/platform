@@ -83,7 +83,7 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
     }
 
     public String toString() {
-        return ThreadLocalContext.localize(LocalizedString.concat(caption, " (" + sID + ")"));
+        return ThreadLocalContext.localize(LocalizedString.concat(caption, " (" + getCanonicalName() + ")"));
     }
 
     public Integer ID;
