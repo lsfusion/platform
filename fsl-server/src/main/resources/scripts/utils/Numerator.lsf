@@ -141,10 +141,10 @@ META defineNumbered(class)
     series 'Серия' = DATA STRING[2] (class) IN numbered FIXEDCHARWIDTH 3;
      
     WHEN useLoweredNumber() AND CHANGED(number(class o))
-         DO number(o) <- lower(number(o));
+         INLINE DO number(o) <- lower(number(o));
          
     WHEN useUpperedSeries() AND CHANGED(series(class o))
-         DO series(o) <- upper(series(o));
+         INLINE DO series(o) <- upper(series(o));
     
     WHEN CHANGED(number(class o)) AND NOT keepNumberSpaces()
         INLINE DO number(o) <- replace(number(o), ' ', '');
