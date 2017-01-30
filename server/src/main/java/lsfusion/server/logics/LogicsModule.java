@@ -540,11 +540,14 @@ public abstract class LogicsModule {
     }
 
     protected LAP addFAProp(LocalizedString caption, FormEntity form, ObjectEntity[] objectsToSet, Boolean manageSession, boolean noCancel, ModalityType modalityType) {
-        return addFAProp(null, caption, form, null, objectsToSet, manageSession, noCancel, null, null, null, modalityType, false, false, null, null, null, null, false, false);
+        return addFAProp(null, caption, form, null, objectsToSet, manageSession, noCancel, null, null, false, false, null, modalityType, false, false, null, null, null, null, false, false);
     }
 
-    protected LAP addFAProp(AbstractGroup group, LocalizedString caption, FormEntity form, ObjectEntity input, ObjectEntity[] objectsToSet, Boolean manageSession, boolean isAdd, ObjectEntity contextObject, CalcProperty contextProperty, PropertyDrawEntity initFilterProperty, ModalityType modalityType, boolean checkOnOk, boolean showDrop, FormPrintType printType, FormExportType exportType, String separator, String charset, boolean readonly, boolean allowNulls) {
-        return addProperty(group, new LAP(new FormActionProperty(caption, form, input, objectsToSet, manageSession, isAdd, modalityType, checkOnOk, showDrop, printType, exportType, separator, charset, baseLM.formResult, baseLM.getFormResultProperty(), baseLM.formPageCount, baseLM.formExportFile, baseLM.formExportFiles, baseLM.ignorePrintType, baseLM.getChosenValueProperty(), contextObject, contextProperty, initFilterProperty, readonly, allowNulls)));
+    protected LAP addFAProp(AbstractGroup group, LocalizedString caption, FormEntity form, ObjectEntity input, ObjectEntity[] objectsToSet, Boolean manageSession, boolean isAdd, ObjectEntity contextObject, CalcProperty contextProperty, boolean hasContextProperty, boolean hasPrinterProperty, PropertyDrawEntity initFilterProperty, ModalityType modalityType, boolean checkOnOk, boolean showDrop, FormPrintType printType, FormExportType exportType, String separator, String charset, boolean readonly, boolean allowNulls, Object... params) {
+        ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(getIntNum(params));
+        ImList<PropertyInterfaceImplement<PropertyInterface>> readImplements = readImplements(listInterfaces, params);
+        CalcPropertyMapImplement printer = hasPrinterProperty ? (CalcPropertyMapImplement) readImplements.get(hasContextProperty ? 1 : 0) : null;
+        return addProperty(group, new LAP(new FormActionProperty(caption, form, input, objectsToSet, manageSession, isAdd, modalityType, checkOnOk, showDrop, printType, printer, listInterfaces, exportType, separator, charset, baseLM.formResult, baseLM.getFormResultProperty(), baseLM.formPageCount, baseLM.formExportFile, baseLM.formExportFiles, baseLM.ignorePrintType, baseLM.getChosenValueProperty(), contextObject, contextProperty, initFilterProperty, readonly, allowNulls)));
     }
 
     // ------------------- Change Class action ----------------- //

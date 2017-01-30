@@ -17,6 +17,7 @@ import javax.print.attribute.HashPrintServiceAttributeSet;
 import javax.print.attribute.PrintRequestAttributeSet;
 import javax.print.attribute.PrintServiceAttributeSet;
 import javax.print.attribute.standard.MediaTray;
+import javax.print.attribute.standard.PrinterName;
 import javax.print.attribute.standard.SheetCollate;
 import javax.print.attribute.standard.Sides;
 import java.awt.print.PrinterAbortException;
@@ -27,17 +28,19 @@ public class ClientReportUtils {
 
     public static ExecutorService executorService = Executors.newSingleThreadExecutor();
 
-    public static void autoprintReport(ReportGenerationData generationData) {
+    public static void autoprintReport(ReportGenerationData generationData, String printerName) {
         
-        executorService.submit(new RunAutoPrintReport(generationData));
+        executorService.submit(new RunAutoPrintReport(generationData, printerName));
         
     }
 
     static class RunAutoPrintReport implements Runnable {
         ReportGenerationData generationData;
+        String printerName;
 
-        RunAutoPrintReport(ReportGenerationData generationData) {
+        RunAutoPrintReport(ReportGenerationData generationData, String printerName) {
             this.generationData = generationData;
+            this.printerName = printerName;
         }
 
         @Override
@@ -72,11 +75,14 @@ public class ClientReportUtils {
                 }
 
                 PrintServiceAttributeSet printServiceAttributeSet = new HashPrintServiceAttributeSet();
+                if(printerName != null)
+                    printServiceAttributeSet.add(new PrinterName(printerName, null));
 
                 JRPrintServiceExporter exporter = new JRPrintServiceExporter();
 
                 exporter.setParameter(JRExporterParameter.JASPER_PRINT, print);
-                exporter.setParameter(JRPrintServiceExporterParameter.PRINT_SERVICE, defaultPrintService);
+                if(printerName == null)
+                    exporter.setParameter(JRPrintServiceExporterParameter.PRINT_SERVICE, defaultPrintService);
                 exporter.setParameter(JRPrintServiceExporterParameter.PRINT_REQUEST_ATTRIBUTE_SET, printRequestAttributeSet);
                 exporter.setParameter(JRPrintServiceExporterParameter.PRINT_SERVICE_ATTRIBUTE_SET, printServiceAttributeSet);
                 exporter.setParameter(JRPrintServiceExporterParameter.DISPLAY_PAGE_DIALOG, Boolean.FALSE);

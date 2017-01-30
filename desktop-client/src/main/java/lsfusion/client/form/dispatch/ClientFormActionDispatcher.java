@@ -79,7 +79,7 @@ public abstract class ClientFormActionDispatcher extends SwingClientActionDispat
         Integer pageCount = null;
         try {
             if (action.printType == FormPrintType.AUTO) {
-                ClientReportUtils.autoprintReport(action.generationData);
+                ClientReportUtils.autoprintReport(action.generationData, action.printerName);
             } else if (action.printType != null && action.printType.isExcel()) {
                 ReportGenerator.exportToExcelAndOpen(action.generationData, action.printType);
             } else if (action.printType == FormPrintType.PDF) {
@@ -88,7 +88,7 @@ public abstract class ClientFormActionDispatcher extends SwingClientActionDispat
                 if (action.isDebug) {
                     pageCount = Main.frame.runReport(action.reportPath, action.isModal, action.generationData);
                 } else {
-                    pageCount = Main.frame.runReport(action.isModal, action.generationData, null);
+                    pageCount = Main.frame.runReport(action.isModal, action.generationData, action.printerName, null);
                 }
             }
         } catch (Exception e) {

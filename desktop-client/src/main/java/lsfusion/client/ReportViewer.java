@@ -7,13 +7,18 @@ import lsfusion.client.form.RmiQueue;
 import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.view.JRViewer;
 
+import javax.print.PrintService;
+import javax.print.PrintServiceLookup;
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.print.PrinterException;
+import java.awt.print.PrinterJob;
 import java.rmi.RemoteException;
 
 public class ReportViewer extends JRViewer {
-    public ReportViewer(JasperPrint print, final EditReportInvoker editInvoker) {
+    public ReportViewer(JasperPrint print, final String printerName, final EditReportInvoker editInvoker) {
         super(print);
 
         lastFolder = SystemUtils.loadCurrentDirectory();
@@ -39,6 +44,32 @@ public class ReportViewer extends JRViewer {
                 }
             }
         });
+
+        if(printerName != null) {
+            btnPrint.removeActionListener(btnPrint.getActionListeners()[0]);
+            btnPrint.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+
+                    PrintService[] printers = PrintServiceLookup.lookupPrintServices(null, null);
+                    PrintService printer = null;
+                    for (PrintService p : printers) {
+                        if (p.getName().equals(printerName)) {
+                            printer = p;
+                            break;
+                        }
+                    }
+                    try {
+                        PrinterJob pj = PrinterJob.getPrinterJob();
+                        pj.setPrintService(printer != null ? printer : PrintServiceLookup.lookupDefaultPrintService());
+                        pj.printDialog();
+                    } catch (PrinterException e1) {
+                        e1.printStackTrace();
+                    }
+
+                }
+            });
+        }
 
         if (editInvoker != null) {
             tlbToolBar.add(Box.createHorizontalStrut(10));

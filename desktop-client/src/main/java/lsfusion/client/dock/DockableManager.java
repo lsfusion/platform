@@ -113,8 +113,8 @@ public class DockableManager {
             ((ClientFormDockable) page).activateTab(tabSID);
     }
 
-    public Integer openReport(ReportGenerationData generationData, EditReportInvoker editInvoker) throws IOException, ClassNotFoundException {
-        ClientReportDockable page = new ClientReportDockable(generationData, this, editInvoker);
+    public Integer openReport(ReportGenerationData generationData, String printerName, EditReportInvoker editInvoker) throws IOException, ClassNotFoundException {
+        ClientReportDockable page = new ClientReportDockable(generationData, this, printerName, editInvoker);
         openForm(page);
         return page.pageCount;
     }

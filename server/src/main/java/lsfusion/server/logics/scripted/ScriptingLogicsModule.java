@@ -2303,10 +2303,16 @@ public class ScriptingLogicsModule extends LogicsModule {
                                           String initFilterPropertyName, List<String> initFilterPropertyMapping,
                                           ModalityType modalityType, boolean manageSession,
                                           boolean checkOnOk, boolean showDrop, boolean noCancel,
-                                          FormPrintType printType, FormExportType exportType, String separator, String charset, boolean readonly) throws ScriptingErrorLog.SemanticErrorException {
-        if (contextProperty != null) {
+                                          FormPrintType printType, LPWithParams printerProperty, FormExportType exportType, String separator, String charset, boolean readonly) throws ScriptingErrorLog.SemanticErrorException {
+        List<LPWithParams> propParams = new ArrayList<>();
+        if(contextProperty != null) {
+            propParams.add(contextProperty);
             checkCalculationProperty(contextProperty.property);
         }
+        if(printerProperty != null) {
+            propParams.add(printerProperty);
+        }
+        List<Integer> allParams = mergeAllParams(propParams);
 
         ObjectEntity contextObject = contextObjectName == null ? null : findObjectEntity(form, contextObjectName);
 
@@ -2320,8 +2326,8 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         LAP property = addFAProp(null, LocalizedString.create(""), form, input, objects.toArray(new ObjectEntity[objects.size()]), manageSession, noCancel, contextObject,
                                  contextProperty == null ? null : (CalcProperty)contextProperty.property.property,
-                                 initFilterProperty,
-                modalityType, checkOnOk, showDrop, printType, exportType, separator, charset, readonly, true);
+                                 contextProperty != null, printerProperty != null, initFilterProperty, modalityType, checkOnOk, showDrop, printType,
+                                 exportType, separator, charset, readonly, true, getParamsPlainList(propParams).toArray());
 
         if (mapping.size() > 0) {
             if (contextProperty != null) {
@@ -2331,8 +2337,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             }
             return addScriptedJoinAProp(property, mapping);
         } else {
-            List<Integer> usedParams = contextProperty == null ? new ArrayList<Integer>() : contextProperty.usedParams;
-            return new LPWithParams(property, usedParams);
+            return new LPWithParams(property, allParams);
         }
     }
 

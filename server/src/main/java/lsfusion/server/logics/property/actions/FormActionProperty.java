@@ -14,7 +14,6 @@ import lsfusion.interop.FormPrintType;
 import lsfusion.interop.ModalityType;
 import lsfusion.interop.action.MessageClientAction;
 import lsfusion.interop.action.ReportClientAction;
-import lsfusion.interop.form.ReportGenerationData;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.SystemProperties;
 import lsfusion.server.classes.ConcreteCustomClass;
@@ -57,6 +56,7 @@ public class FormActionProperty extends SystemExplicitActionProperty {
     private final boolean showDrop;
     private final boolean isAdd;
     private final FormPrintType printType;
+    private CalcPropertyInterfaceImplement<ClassPropertyInterface> printerProperty;
     private final FormExportType exportType;
     private final String separator;
     private final String charset;
@@ -80,8 +80,10 @@ public class FormActionProperty extends SystemExplicitActionProperty {
         return printType;
     }
 
-    private static ValueClass[] getValueClasses(ObjectEntity[] objects, CalcProperty contextProperty) {
-        ValueClass[] valueClasses = new ValueClass[objects.length + (contextProperty == null ? 0 : contextProperty.interfaces.size())];
+    private static ValueClass[] getValueClasses(ObjectEntity[] objects, CalcProperty contextProperty, CalcProperty printerProperty) {
+        ValueClass[] valueClasses = new ValueClass[objects.length
+                + (contextProperty == null ? 0 : contextProperty.interfaces.size())
+                + (printerProperty == null ? 0 : printerProperty.interfaces.size())];
         for (int i = 0; i < objects.length; i++) {
             valueClasses[i] = objects[i].baseClass;
         }
@@ -89,6 +91,14 @@ public class FormActionProperty extends SystemExplicitActionProperty {
         if (contextProperty != null) {
             ImMap<PropertyInterface, ValueClass> interfaceClasses = contextProperty.getInterfaceClasses(ClassType.formPolicy);
             ImOrderSet<PropertyInterface> propInterfaces = contextProperty.getFriendlyPropertyOrderInterfaces();
+            for (int i = 0; i < propInterfaces.size(); ++i) {
+                valueClasses[objects.length + i] = interfaceClasses.get(propInterfaces.get(i));
+            }
+        }
+
+        if (printerProperty != null) {
+            ImMap<PropertyInterface, ValueClass> interfaceClasses = printerProperty.getInterfaceClasses(ClassType.formPolicy);
+            ImOrderSet<PropertyInterface> propInterfaces = printerProperty.getFriendlyPropertyOrderInterfaces();
             for (int i = 0; i < propInterfaces.size(); ++i) {
                 valueClasses[objects.length + i] = interfaceClasses.get(propInterfaces.get(i));
             }
@@ -115,6 +125,8 @@ public class FormActionProperty extends SystemExplicitActionProperty {
                               boolean checkOnOk,
                               boolean showDrop,
                               FormPrintType printType,
+                              CalcPropertyMapImplement printer,
+                              ImOrderSet<PropertyInterface> innerInterfaces,
                               FormExportType exportType,
                               String separator,
                               String charset,
@@ -128,7 +140,7 @@ public class FormActionProperty extends SystemExplicitActionProperty {
                               ObjectEntity contextObject,
                               CalcProperty contextProperty,
                               PropertyDrawEntity initFilterProperty, boolean readOnly, boolean allowNulls) {
-        super(caption, getValueClasses(objectsToSet, contextProperty));
+        super(caption, getValueClasses(objectsToSet, contextProperty, printer == null ? null : printer.property));
         
         this.allowNullValue = false; //allowNulls;
         
@@ -160,7 +172,10 @@ public class FormActionProperty extends SystemExplicitActionProperty {
         this.contextPropertyImplement = contextProperty == null ? null : contextProperty.getImplement(
                 getOrderInterfaces().subOrder(objectsToSet.length, interfaces.size())
         );
-
+        if(printer != null) {
+            ImRevMap<PropertyInterface, ClassPropertyInterface> mapInterfaces = getMapInterfaces(innerInterfaces).reverse();
+            this.printerProperty = printer.map(mapInterfaces);
+        }
         mapObjects = getOrderInterfaces()
                 .subOrder(0, objectsToSet.length)
                 .mapOrderRevKeys(new GetIndex<ObjectEntity>() { // такой же дебилизм и в SessionDataProperty
@@ -218,6 +233,7 @@ public class FormActionProperty extends SystemExplicitActionProperty {
                 pType = ignorePrintType.read(context) != null ? FormPrintType.PRINT : printType;
                 toExcel = pType == FormPrintType.XLS || pType == FormPrintType.XLSX;
             }
+            String pName = printerProperty == null ? null : (String) printerProperty.read(context, context.getKeys());
             
             FormReportManager newFormManager = new FormReportManager(newFormInstance);
             if (exportType != null) {
@@ -264,7 +280,8 @@ public class FormActionProperty extends SystemExplicitActionProperty {
                 }
             } else { // assert printType != null;
                 Map<String, String> reportPath = SystemProperties.isDebug ? newFormManager.getReportPath(toExcel, null, null) : new HashMap<>();
-                Object pageCount = context.requestUserInteraction(new ReportClientAction(reportPath, modalityType.isModal(), newFormManager.getReportData(toExcel, false), pType, SystemProperties.isDebug));
+                Object pageCount = context.requestUserInteraction(new ReportClientAction(reportPath, modalityType.isModal(),
+                        newFormManager.getReportData(toExcel, false), pType, pName, SystemProperties.isDebug));
                 formPageCount.change(pageCount, context);
             }
         }

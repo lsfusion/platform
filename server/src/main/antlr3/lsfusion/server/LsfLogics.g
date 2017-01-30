@@ -2213,6 +2213,7 @@ formActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns 
 	boolean showDrop = false;
 	boolean noCancel = false;
 	FormPrintType printType = null;
+	LPWithParams printerProperty = null;
 	FormExportType exportType = null;
 	String separator = null;
 	String charset = null;
@@ -2224,7 +2225,7 @@ formActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns 
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedFAProp($mf.formEntity, $mf.input, $mf.objects, $mf.mapping, contextObjectName, contextProperty, initFilterPropertyName, initFilterPropertyMapping, modalityType, manageSession, checkOnOk, showDrop, noCancel, printType, exportType, separator, charset, readOnly);
+		$property = self.addScriptedFAProp($mf.formEntity, $mf.input, $mf.objects, $mf.mapping, contextObjectName, contextProperty, initFilterPropertyName, initFilterPropertyMapping, modalityType, manageSession, checkOnOk, showDrop, noCancel, printType, printerProperty, exportType, separator, charset, readOnly);
 	}
 }
 	:	'FORM' mf=mappedForm[context,dynamic]
@@ -2235,7 +2236,7 @@ formActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns 
 		|	'CHECK' { checkOnOk = true; }
 		|	'SHOWDROP' { showDrop = true; }
 		|	'NOCANCEL' { noCancel = true; }
-		|	print = formPrintTypeLiteral { printType = $print.val; }
+		|	print = formPrintTypeLiteral[context, dynamic] { printType = $print.val; printerProperty = $print.printerProperty; }
 		|	export = formExportTypeLiteral { exportType = $export.val; separator = $export.separator; charset = $export.charset; }
 		|	'READONLY' { readOnly = true; }
 		)*
@@ -3896,16 +3897,17 @@ modalityTypeLiteral returns [ModalityType val]
 	|	'DIALOG' { $val = ModalityType.DIALOG_MODAL; }
 	;
 	
-formPrintTypeLiteral returns [FormPrintType val]
+formPrintTypeLiteral[List<TypedParameter> context, boolean dynamic] returns [FormPrintType val, LPWithParams printerProperty]
 @init {
 	$val = FormPrintType.PRINT;
+	LPWithParams printerProperty = null;
 } 
 	:	'PRINT'
-		(	'AUTO' { $val = FormPrintType.AUTO; }
+		(	('AUTO' { $val = FormPrintType.AUTO; })? ('TO' pe = propertyExpression[context, dynamic] { $printerProperty = $pe.property; })?
 		|	'XLS'  { $val = FormPrintType.XLS; }
 		|	'XLSX' { $val = FormPrintType.XLSX; }
 		|	'PDF' { $val = FormPrintType.PDF; }
-		)?
+		)
 	;
 	
 formExportTypeLiteral returns [FormExportType val, String separator, String charset]

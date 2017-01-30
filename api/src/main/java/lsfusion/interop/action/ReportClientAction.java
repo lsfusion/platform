@@ -13,12 +13,15 @@ public class ReportClientAction implements ClientAction {
     public ReportGenerationData generationData;
     public boolean isDebug;
     public FormPrintType printType;
+    public String printerName;
 
-    public ReportClientAction(Map<String, String> reportPath, boolean isModal, ReportGenerationData generationData, FormPrintType printType, boolean isDebug) {
+    public ReportClientAction(Map<String, String> reportPath, boolean isModal, ReportGenerationData generationData,
+                              FormPrintType printType, String printerName, boolean isDebug) {
         this.reportPath = reportPath;
         this.isModal = isModal;
         this.generationData = generationData;
         this.printType = printType;
+        this.printerName = printerName;
         this.isDebug = isDebug;
     }
 

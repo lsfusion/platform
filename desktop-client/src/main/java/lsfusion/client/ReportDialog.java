@@ -21,7 +21,7 @@ public class ReportDialog extends JDialog {
         print.setProperty(JRXlsAbstractExporterParameter.PROPERTY_DETECT_CELL_TYPE, "true");
         pageCount = print.getPages().size();
 
-        final ReportViewer viewer = new ReportViewer(print, editInvoker);
+        final ReportViewer viewer = new ReportViewer(print, null, editInvoker);
         double realZoom = viewer.getRealZoom();
 
         setTitle(print.getName());

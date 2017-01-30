@@ -292,11 +292,11 @@ public class DockableMainFrame extends MainFrame {
     }
 
     @Override
-    public Integer runReport(boolean isModal, ReportGenerationData generationData, EditReportInvoker editInvoker) throws IOException, ClassNotFoundException {
+    public Integer runReport(boolean isModal, ReportGenerationData generationData, String printerName, EditReportInvoker editInvoker) throws IOException, ClassNotFoundException {
         if (isModal) {
             return ReportDialog.showReportDialog(generationData, editInvoker);
         } else {
-            return dockableManager.openReport(generationData, editInvoker);
+            return dockableManager.openReport(generationData, printerName, editInvoker);
         }
     }
 
