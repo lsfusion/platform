@@ -248,6 +248,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
 
         propertyDraw.ID = clientPropertyDraw.ID;
         propertyDraw.sID = clientPropertyDraw.getSID();
+        propertyDraw.namespace = clientPropertyDraw.getNamespace();
         propertyDraw.caption = clientPropertyDraw.caption;
 
         propertyDraw.toolTip = clientPropertyDraw.toolTip;

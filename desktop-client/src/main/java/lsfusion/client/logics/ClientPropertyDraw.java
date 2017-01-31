@@ -90,6 +90,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
     public boolean checkEquals;
 
+    protected String namespace;
     protected String sID;
 
     public String toolTip;
@@ -293,6 +294,10 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         return getEditCaption(caption);
     }
 
+    public String getNamespace() {
+        return namespace;
+    }
+
     public String getSID() {
         return sID;
     }
@@ -423,6 +428,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         hasEditObjectAction = inStream.readBoolean();
         hasChangeAction = inStream.readBoolean();
 
+        namespace = pool.readString(inStream);
         sID = pool.readString(inStream);
 
         toolTip = pool.readString(inStream);
@@ -551,7 +557,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         if (!Main.configurationAccessAllowed) {
             return String.format(TOOL_TIP_FORMAT, propCaption, editKeyText);
         } else {
-            String sid = getSID();
+            String sid = getNamespace() + "." + getSID();
             String tableName = this.tableName != null ? this.tableName : "&lt;none&gt;";
             String ifaceObjects = BaseUtils.toString(", ", interfacesCaptions);
             String ifaceClasses = BaseUtils.toString(", ", interfacesTypes);

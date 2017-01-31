@@ -58,6 +58,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractProp
     private int ID = 0;
     private String dbName;
     private String name;
+    private String namespace;
     private String canonicalName;
     public String annotation;
 
@@ -457,6 +458,10 @@ public abstract class Property<T extends PropertyInterface> extends AbstractProp
 
     public Property showDep; // assert что не null когда events не isEmpty
 
+    public String getNamespace() {
+        return namespace;
+    }
+
     public String getCanonicalName() {
         return canonicalName;
     }
@@ -476,6 +481,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractProp
     }
     
     public void setCanonicalName(String namespace, String name, List<ResolveClassSet> signature, ImOrderSet<T> signatureOrder, PropertyDBNamePolicy policy) {
+        this.namespace = namespace;
         this.name = name;
         this.canonicalName = PropertyCanonicalNameUtils.createName(namespace, name, signature);
         this.dbName = policy.transformToDBName(canonicalName);

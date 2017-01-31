@@ -24,6 +24,7 @@ import java.util.Map;
 public class GPropertyDraw extends GComponent implements GPropertyReader {
     public int ID;
     public String sID;
+    public String namespace;
     public String caption;
 
     public String toolTip;
@@ -221,7 +222,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
         if (!MainFrame.configurationAccessAllowed) {
             return GwtSharedUtils.stringFormat(TOOL_TIP_FORMAT, propCaption, editKeyText);
         } else {
-            String sid = sID;
+            String sid = namespace + "." + sID;
             String tableName = this.tableName != null ? this.tableName : "&lt;none&gt;";
             String ifaceObjects = GwtSharedUtils.toString(", ", interfacesCaptions);
             String ifaceClasses = GwtSharedUtils.toString(", ", interfacesTypes);

@@ -233,6 +233,7 @@ public class PropertyDrawView extends ComponentView {
         outStream.writeBoolean(entity.hasEditObjectAction());
         outStream.writeBoolean(hasChangeAction(pool.context));
 
+        pool.writeString(outStream, entity.getNamespace());
         pool.writeString(outStream, entity.getSID());
         pool.writeString(outStream, toolTip);
         pool.serializeObject(outStream, pool.context.view.getGroupObject(

@@ -384,4 +384,8 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     public void setFormPath(String formPath) {
         this.formPath = formPath;
     }
+
+    public String getNamespace() {
+        return propertyObject == null || propertyObject.property == null ? "" : propertyObject.property.getNamespace();
+    }
 }
