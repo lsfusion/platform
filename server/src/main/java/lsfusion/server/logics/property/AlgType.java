@@ -20,7 +20,7 @@ public interface AlgType {
 
     <P extends PropertyInterface> boolean isInInterface(CalcProperty<P> property, ImMap<P, ? extends AndClassSet> interfaceClasses, boolean isAny);
 
-    <T extends PropertyInterface, P extends PropertyInterface> void checkExclusiveness(CalcProperty<T> property, String caption, CalcProperty<P> intersect, String intersectCaption, ImRevMap<P, T> map);
+    <T extends PropertyInterface, P extends PropertyInterface> void checkExclusiveness(CalcProperty<T> property, String info, CalcProperty<P> intersect, String intersectInfo, ImRevMap<P, T> map, String abstractInfo);
 
     <T extends PropertyInterface, P extends PropertyInterface> void checkContainsAll(CalcProperty<T> property, CalcProperty<P> intersect, String caption, ImRevMap<P, T> map, CalcPropertyInterfaceImplement<T> value);
 

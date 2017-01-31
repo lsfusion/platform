@@ -34,8 +34,8 @@ public class CalcClassType extends CalcType implements AlgType {
         return property.calcIsInInterface(interfaceClasses, isAny, this);
     }
 
-    public <T extends PropertyInterface, P extends PropertyInterface> void checkExclusiveness(CalcProperty<T> property, String caption, CalcProperty<P> intersect, String intersectCaption, ImRevMap<P, T> map) {
-        property.calcCheckExclusiveness(caption, intersect, intersectCaption, map, this);
+    public <T extends PropertyInterface, P extends PropertyInterface> void checkExclusiveness(CalcProperty<T> property, String info, CalcProperty<P> intersect, String intersectInfo, ImRevMap<P, T> map, String abstractInfo) {
+        property.calcCheckExclusiveness(info, intersect, intersectInfo, map, this, abstractInfo);
     }
 
     public <T extends PropertyInterface, P extends PropertyInterface> void checkContainsAll(CalcProperty<T> property, CalcProperty<P> intersect, String caption, ImRevMap<P, T> map, CalcPropertyInterfaceImplement<T> value) {

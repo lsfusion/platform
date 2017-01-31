@@ -404,7 +404,7 @@ public class CaseUnionProperty extends IncrementUnionProperty {
                     CalcPropertyMapImplement<?, Interface> caseWhere = (CalcPropertyMapImplement<?, Interface>) listCases.get(i).where;
                     for (int j = i + 1; j < listCases.size(); j++) {
                         CalcPropertyMapImplement<?, Interface> prevCaseWhere = (CalcPropertyMapImplement<?, Interface>) listCases.get(j).where;
-                        prevCaseWhere.mapCheckExclusiveness(listCases.get(j).implement.toString(), caseWhere, listCases.get(i).implement.toString());
+                        prevCaseWhere.mapCheckExclusiveness(listCases.get(j).implement.toString(), caseWhere, listCases.get(i).implement.toString(), this.toString());
                     }
                 }
             }

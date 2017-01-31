@@ -185,9 +185,9 @@ public class CalcPropertyMapImplement<P extends PropertyInterface, T extends Pro
     public CalcPropertyObjectInstance<P> mapObjects(ImMap<T, ? extends PropertyObjectInterfaceInstance> mapObjects) {
         return new CalcPropertyObjectInstance<>(property, mapping.join(mapObjects));
     }
-    
-    public <I extends PropertyInterface> void mapCheckExclusiveness(String caption, CalcPropertyMapImplement<I, T> implement, String implementCaption) {
-        property.checkExclusiveness(caption, implement.property, implementCaption, implement.mapping.rightCrossValuesRev(mapping));
+
+    public <I extends PropertyInterface> void mapCheckExclusiveness(String caption, CalcPropertyMapImplement<I, T> implement, String implementCaption, String abstractInfo) {
+        property.checkExclusiveness(caption, implement.property, implementCaption, implement.mapping.rightCrossValuesRev(mapping), abstractInfo);
     }
 
     public ActionPropertyMapImplement<?, T> getSetNotNullAction(boolean notNull) {
