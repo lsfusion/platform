@@ -71,29 +71,34 @@ public class ExecutionStackAspect {
             long sqlStart = 0;
             long uiStart = 0;
             if (PROFILER_ENABLED && isProfileStackItem(item)) {
-                executionTimeCounter = executionTime.get();
-                if (executionTimeCounter == null) {
-                    executionTimeCounter = new ExecutionTimeCounter();
-                    executionTime.set(executionTimeCounter);
-                }
+                FormInstance formInstance = ThreadLocalContext.getFormInstance();
+                FormEntity form = formInstance != null ? formInstance.entity : null;
+                boolean checked = Profiler.checkUserForm(ThreadLocalContext.getCurrentUser(), form);
                 
-                start = System.nanoTime();
-                sqlStart = executionTimeCounter.sqlTime;
-                uiStart = executionTimeCounter.userInteractionTime;
+                if (checked) {
+                    executionTimeCounter = executionTime.get();
+                    if (executionTimeCounter == null) {
+                        executionTimeCounter = new ExecutionTimeCounter();
+                        executionTime.set(executionTimeCounter);
+                    }
+
+                    start = System.nanoTime();
+                    sqlStart = executionTimeCounter.sqlTime;
+                    uiStart = executionTimeCounter.userInteractionTime;
+                }
             }
-            
+
             Object result = joinPoint.proceed();
-            
+
             if (start > 0) {
                 long executionTime = System.nanoTime() - start;
                 FormInstance formInstance = ThreadLocalContext.getFormInstance();
-                FormEntity form = formInstance != null ? formInstance.entity : null;
                 assert stack.indexOf(item) == stack.size() - 1;
                 Profiler.increase(
                         item.profileObject, 
-                        getUpperProfileObject(stack), 
-                        ThreadLocalContext.getCurrentUser(), 
-                        form, 
+                        getUpperProfileObject(stack),
+                        ThreadLocalContext.getCurrentUser(),
+                        formInstance != null ? formInstance.entity : null, 
                         executionTime, 
                         executionTimeCounter.sqlTime - sqlStart, 
                         executionTimeCounter.userInteractionTime - uiStart
