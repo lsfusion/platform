@@ -1,5 +1,6 @@
 package lsfusion.erp.utils.utils;
 
+import lsfusion.server.ServerLoggers;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
@@ -21,6 +22,6 @@ public class PrintToLogActionProperty extends ScriptingActionProperty {
 
     @Override
     protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) {
-        System.out.println((String) context.getDataKeyValue(stringInterface).object);
+        ServerLoggers.systemLogger.info(context.getDataKeyValue(stringInterface).object);
     }
 }
