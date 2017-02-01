@@ -189,9 +189,9 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
 
     public void logException(BusinessLogics bl, ExecutionStack stack, Throwable t, DataObject user, String clientName, boolean client, boolean web) throws SQLException, SQLHandledException {
         @SuppressWarnings("ThrowableResultOfMethodCallIgnored")
-        String message = Throwables.getRootCause(t).getLocalizedMessage();
+        String message = replaceNonUTFCharacters(Throwables.getRootCause(t).getLocalizedMessage());
         String errorType = t.getClass().getName();
-        String erTrace = ExceptionUtils.getStackTraceString(t);
+        String erTrace = replaceNonUTFCharacters(ExceptionUtils.getStackTraceString(t));
         String lsfStack = ExecutionStackAspect.getExceptionStackString();
 
         try (DataSession session = createSession()) {
@@ -236,5 +236,9 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
 
             session.apply(bl, stack);
         }
+    }
+
+    private String replaceNonUTFCharacters(String value) {
+        return value == null ? null : value.replace('\u0000', '?');
     }
 }
