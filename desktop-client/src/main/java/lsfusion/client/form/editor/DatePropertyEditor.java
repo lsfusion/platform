@@ -109,6 +109,14 @@ public class DatePropertyEditor extends JDateChooser implements PropertyEditor, 
         return this;
     }
 
+    @Override
+    public void setFont(Font font) {
+        super.setFont(font);
+        if (isInitialized) {
+            jcalendar.setFont(null); // не наследуем шрифт от свойства - пусть берёт из Look&Feel'а
+        }
+    }
+
     public Object getCellEditorValue() {
         return dateToValue(getDate());
     }
