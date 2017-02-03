@@ -1,6 +1,5 @@
 package lsfusion.base;
 
-import com.google.common.collect.Iterables;
 import com.sun.rowset.CachedRowSetImpl;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
@@ -233,49 +232,6 @@ public class BaseUtils {
             result.put(key, value);
         }
         return result;
-    }
-
-    public static <E> Iterable<E> filterIterable(final Iterable<E> iterable, final FunctionSet<E> filter) {
-        return new Iterable<E>() {
-            @Override
-            public Iterator<E> iterator() {
-                final Iterator<E> iterator = iterable.iterator();
-                return new Iterator<E>() {
-                    E next;
-                    private void checkNext() {
-                        if(next == null) {
-                            while (iterator.hasNext()) {
-                                next = iterator.next();
-                                if (filter.contains(next))
-                                    return;
-                                else
-                                    next = null;
-                            }
-                        }
-                    }
-                    @Override
-                    public boolean hasNext() {
-                        checkNext();
-                        
-                        return next != null;
-                    }
-
-                    @Override
-                    public E next() {
-                        checkNext();
-                        
-                        E result = next;
-                        next = null;
-                        return result;
-                    }
-
-                    @Override
-                    public void remove() {
-                        throw new UnsupportedOperationException();
-                    }
-                };
-            }
-        };
     }
 
     // возвращает более конкретный класс если 

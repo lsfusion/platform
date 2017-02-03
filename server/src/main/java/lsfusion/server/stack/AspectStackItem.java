@@ -117,28 +117,21 @@ public class AspectStackItem extends ExecutionStackItem {
     private static Object getProfiledObject(Object object) {
         return object instanceof ProfiledObject ? ((ProfiledObject) object).getProfiledObject() : object;
     }
-    
-    private static String safeToString(Object o) {
-        String s = o.toString();
-        if(s.length() <= 1000)
-            return s;
-        return s.substring(0, 1000) + "...";
-    }
-    
+
     public static ImList<String> getArgs(ProceedingJoinPoint joinPoint, Method method) {
         Object[] args = joinPoint.getArgs();
         MList<String> mStringParams = ListFact.mList();
 
         Annotation thisMessageAnnotation = method.getAnnotation(ThisMessage.class);
         if (thisMessageAnnotation != null) {
-            mStringParams.add(safeToString(joinPoint.getThis()));
+            mStringParams.add(joinPoint.getThis().toString());
         }
 
         Annotation[][] paramAnnotations = method.getParameterAnnotations();
         for (int i = 0; i < paramAnnotations.length; i++)
             for (Annotation paramAnnotation : paramAnnotations[i])
                 if (paramAnnotation instanceof ParamMessage) {
-                    mStringParams.add(safeToString(args[i]));
+                    mStringParams.add(args[i].toString());
                     break;
                 }
 

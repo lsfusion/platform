@@ -95,7 +95,7 @@ public class PartitionJoin extends QueryJoin<KeyExpr, PartitionJoin.Query, Parti
 
     @IdentityLazy
     private GroupExprWhereJoins<Expr> getGroupWhereJoins(StatType type, ImSet<Expr> usedPartitions) {
-        return query.where.getGroupWhereJoins(usedPartitions, type, false);
+        return query.where.getGroupWhereJoins(usedPartitions, type);
     }
 
     @IdentityLazy

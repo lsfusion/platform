@@ -26,8 +26,6 @@ import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.session.Modifier;
 import lsfusion.server.session.SessionTableUsage;
-import lsfusion.server.stack.ParamMessage;
-import lsfusion.server.stack.StackMessage;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -169,81 +167,76 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
 
     private void iterateChildReports(List<ReportNode> children, ImOrderSet<GroupObjectInstance> parentGroups, SessionTableUsage<ObjectInstance, Pair<Object, PropertyType>> parentTable) throws SQLException, SQLHandledException {
         for (ReportNode node : children) {
-            iterateChildReport(node, parentGroups, parentTable);
-        }
-    }
-
-    @StackMessage("{message.form.read.report.node}")
-    private void iterateChildReport(@ParamMessage ReportNode node, ImOrderSet<GroupObjectInstance> parentGroups, SessionTableUsage<ObjectInstance, Pair<Object, PropertyType>> parentTable) throws SQLException, SQLHandledException {
-        String sid = node.getID();
-        List<GroupObjectEntity> groupList = node.getGroupList();
-        MOrderExclSet<GroupObjectInstance> mLocalGroups = SetFact.mOrderExclSet(groupList.size()); // пограничные List'ы
-        for (GroupObjectEntity group : groupList) {
-            GroupObjectInstance groupInstance = idToInstance.get(group.getID());
-            mLocalGroups.exclAdd(groupInstance);
-        }
-
-        ImOrderSet<GroupObjectInstance> groups = parentGroups.mergeOrder(mLocalGroups.immutableOrder()); // тут хрен поймешь excl или нет
-
-        Result<ImOrderMap<Pair<Object, PropertyType>, Boolean>> orders = new Result<>();
-        Result<ImMap<Pair<Object, PropertyType>, Type>> propTypes = new Result<>();
-        ImMap<ObjectInstance, Type> keyTypes = GroupObjectInstance.getObjects(groups.getSet()).mapValues(new GetValue<Type, ObjectInstance>() {
-            public Type getMapValue(ObjectInstance value) {
-                return value.getType();
-            }});
-
-        Query<ObjectInstance, Pair<Object, PropertyType>> query = createQuery(groups, parentGroups, parentTable, orders, propTypes);
-        SessionTableUsage<ObjectInstance, Pair<Object, PropertyType>> reportTable = new SessionTableUsage<>(
-                form.session.sql, query, form.BL.LM.baseClass, form.getQueryEnv(), keyTypes, propTypes.result);
-
-        try {
-            ImOrderMap<ImMap<ObjectInstance, Object>, ImMap<Pair<Object, PropertyType>, Object>> resultData = reportTable.read(form, orders.result);
-
-            List<Pair<String, PropertyReaderInstance>> propertyList = new ArrayList<>();
-            for(PropertyDrawInstance property : filterProperties(groups.getSet())) {
-                propertyList.add(new Pair<String, PropertyReaderInstance>(property.getsID(), property));
-                if (property.propertyCaption != null) {
-                    propertyList.add(new Pair<String, PropertyReaderInstance>(property.getsID(), property.captionReader));
-                }
-                if (property.propertyFooter != null) {
-                    propertyList.add(new Pair<String, PropertyReaderInstance>(property.getsID(), property.footerReader));
-                }
+            String sid = node.getID();
+            List<GroupObjectEntity> groupList = node.getGroupList();
+            MOrderExclSet<GroupObjectInstance> mLocalGroups = SetFact.mOrderExclSet(groupList.size()); // пограничные List'ы
+            for (GroupObjectEntity group : groupList) {
+                GroupObjectInstance groupInstance = idToInstance.get(group.getID());
+                mLocalGroups.exclAdd(groupInstance);
             }
 
-            ImOrderSet<ObjectInstance> keyList = GroupObjectInstance.getOrderObjects(groups);
-            ReportData data = new ReportData(keyList.toJavaList(), propertyList);
+            ImOrderSet<GroupObjectInstance> groups = parentGroups.mergeOrder(mLocalGroups.immutableOrder()); // тут хрен поймешь excl или нет
 
-            for (int i=0,size=resultData.size();i<size;i++) {
-                ImMap<Pair<Object, PropertyType>, Object> resultValue = resultData.getValue(i);
+            Result<ImOrderMap<Pair<Object, PropertyType>, Boolean>> orders = new Result<>();
+            Result<ImMap<Pair<Object, PropertyType>, Type>> propTypes = new Result<>();
+            ImMap<ObjectInstance, Type> keyTypes = GroupObjectInstance.getObjects(groups.getSet()).mapValues(new GetValue<Type, ObjectInstance>() {
+                public Type getMapValue(ObjectInstance value) {
+                    return value.getType();
+                }});
 
-                List<Object> propertyValues = new ArrayList<>();
+            Query<ObjectInstance, Pair<Object, PropertyType>> query = createQuery(groups, parentGroups, parentTable, orders, propTypes);
+            SessionTableUsage<ObjectInstance, Pair<Object, PropertyType>> reportTable = new SessionTableUsage<>(
+                    form.session.sql, query, form.BL.LM.baseClass, form.getQueryEnv(), keyTypes, propTypes.result);
+
+            try {
+                ImOrderMap<ImMap<ObjectInstance, Object>, ImMap<Pair<Object, PropertyType>, Object>> resultData = reportTable.read(form, orders.result);
+
+                List<Pair<String, PropertyReaderInstance>> propertyList = new ArrayList<>();
                 for(PropertyDrawInstance property : filterProperties(groups.getSet())) {
-                    propertyValues.add(resultValue.get(new Pair<Object, PropertyType>(property, PropertyType.PLAIN)));
+                    propertyList.add(new Pair<String, PropertyReaderInstance>(property.getsID(), property));
                     if (property.propertyCaption != null) {
-                        propertyValues.add(resultValue.get(new Pair<Object, PropertyType>(property, PropertyType.CAPTION)));
+                        propertyList.add(new Pair<String, PropertyReaderInstance>(property.getsID(), property.captionReader));
                     }
                     if (property.propertyFooter != null) {
-                        propertyValues.add(resultValue.get(new Pair<Object, PropertyType>(property, PropertyType.FOOTER)));
+                        propertyList.add(new Pair<String, PropertyReaderInstance>(property.getsID(), property.footerReader));
                     }
                 }
 
-                List<ObjectInstance> objectsList = keyList.toJavaList(); 
-                List<Object> keys = BaseUtils.mapList(objectsList, resultData.getKey(i));
-                if (groupId != null) {
-                    for (int keyIndex = 0; keyIndex < objectsList.size(); ++keyIndex) {
-                        if (resultData.getKey(i).get(objectsList.get(keyIndex)) == null) {
-                            keys.set(keyIndex, objectsList.get(keyIndex).getObjectValue().getValue());
+                ImOrderSet<ObjectInstance> keyList = GroupObjectInstance.getOrderObjects(groups);
+                ReportData data = new ReportData(keyList.toJavaList(), propertyList);
+
+                for (int i=0,size=resultData.size();i<size;i++) {
+                    ImMap<Pair<Object, PropertyType>, Object> resultValue = resultData.getValue(i);
+
+                    List<Object> propertyValues = new ArrayList<>();
+                    for(PropertyDrawInstance property : filterProperties(groups.getSet())) {
+                        propertyValues.add(resultValue.get(new Pair<Object, PropertyType>(property, PropertyType.PLAIN)));
+                        if (property.propertyCaption != null) {
+                            propertyValues.add(resultValue.get(new Pair<Object, PropertyType>(property, PropertyType.CAPTION)));
+                        }
+                        if (property.propertyFooter != null) {
+                            propertyValues.add(resultValue.get(new Pair<Object, PropertyType>(property, PropertyType.FOOTER)));
                         }
                     }
+
+                    List<ObjectInstance> objectsList = keyList.toJavaList(); 
+                    List<Object> keys = BaseUtils.mapList(objectsList, resultData.getKey(i));
+                    if (groupId != null) {
+                        for (int keyIndex = 0; keyIndex < objectsList.size(); ++keyIndex) {
+                            if (resultData.getKey(i).get(objectsList.get(keyIndex)) == null) {
+                                keys.set(keyIndex, objectsList.get(keyIndex).getObjectValue().getValue());
+                            }
+                        }
+                    }
+                    data.add(keys, propertyValues);
                 }
-                data.add(keys, propertyValues);
+
+                sources.put(sid, data);
+
+                iterateChildReports(hierarchy.getChildNodes(node), groups, reportTable);
+            } finally {
+                reportTable.drop(form.session.sql, form.session.getOwner());
             }
-
-            sources.put(sid, data);
-
-            iterateChildReports(hierarchy.getChildNodes(node), groups, reportTable);
-        } finally {
-            reportTable.drop(form.session.sql, form.session.getOwner());
         }
     }
 
