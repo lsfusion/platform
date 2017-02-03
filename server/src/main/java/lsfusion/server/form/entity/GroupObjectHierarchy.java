@@ -185,6 +185,11 @@ public class GroupObjectHierarchy {
         void setGroupLevel(int groupLevel) {
             this.groupLevel = groupLevel;
         }
+
+        @Override
+        public String toString() {
+            return groups + " : " + groupLevel;
+        }
     }
 
     public ReportHierarchy createReportHierarchy(boolean forceGroupNonJoinable) {

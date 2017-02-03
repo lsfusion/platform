@@ -4,10 +4,7 @@ import lsfusion.base.*;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
-import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.base.col.interfaces.immutable.ImOrderSet;
-import lsfusion.base.col.interfaces.immutable.ImRevMap;
-import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
 import lsfusion.base.col.interfaces.mutable.add.MAddMap;
@@ -305,13 +302,17 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         private final BaseJoin<Z> join;
         private final StatKeys<Z> statKeys;
 
-        public JoinCostStat(BaseJoin<Z> join, StatKeys<Z> statKeys, BitSet adjJoins) {
-            this(join, statKeys, SetFact.<BaseExpr>EMPTY(), adjJoins);
+        public JoinCostStat(BaseJoin<Z> join, StatKeys<Z> statKeys, BitSet inJoins, BitSet adjJoins, PushCost pushCost) {
+            this(join, statKeys, SetFact.<BaseExpr>EMPTY(), inJoins, adjJoins, pushCost);
         }
-        public JoinCostStat(BaseJoin<Z> join, StatKeys<Z> statKeys, ImSet<BaseExpr> usedNotNulls, BitSet adjJoins) {
-            super(usedNotNulls, adjJoins);
+        public JoinCostStat(BaseJoin<Z> join, StatKeys<Z> statKeys, ImSet<BaseExpr> usedNotNulls, BitSet inJoins, BitSet adjJoins, PushCost pushCost) {
+            super(usedNotNulls, inJoins, adjJoins, join instanceof QueryJoin ? MapFact.singleton((QueryJoin)join, pushCost) : null);
             this.join = join;
             this.statKeys = statKeys;
+        }
+
+        public BaseJoin<Z> getJoin() {
+            return join;
         }
 
         @Override
@@ -322,6 +323,11 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         @Override
         public Stat getStat() {
             return statKeys.getRows();
+        }
+
+        @Override
+        public Cost getMinCost() {
+            return statKeys.getCost();
         }
 
         @Override
@@ -379,15 +385,10 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         }
 
         @Override
-        public ImSet getPushKeys() {
+        public ImSet getPushKeys(QueryJoin pushJoin) {
             return null;
         }
-
-        @Override
-        protected StatKeys getPushStatKeys() {
-            return statKeys;
-        }
-
+        
         @Override
         public String toString(String prefix) {
             return prefix + join + " " + statKeys + " " + join.getJoins();
@@ -401,7 +402,8 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         private final Stat stat;
 
         // доппараметры, в основном для детерменированности
-        private final Cost maxCost;
+        private final Cost leftCost; // assert что больше внутренних
+        private final Cost rightCost; // assert что больше left и больше внутренних (то есть max) 
         private final Stat leftStat;
         private final Stat rightStat;
         private final int joinsCount;
@@ -411,35 +413,43 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         private final ImMap<BaseJoin, DistinctKeys> keyStats; // поддерживаем только потому что getPushedStatKeys может их "уточнять"
         private final ImMap<BaseExpr, Stat> propStats; // поддерживаем только потому что getPushedStatKeys может их "уточнять"
 
-        // проталкивание
-        private final ImSet pushKeys;
-        private final StatKeys pushStatKeys; // важно получить хороший именно pushStatKeys (то есть проталкивание), а не финальную статистику
-
         // debug info, temporary
-        private final CostStat left;
-        private final CostStat right;
-        private final Stat[] aEdgeStats;
-        private final Stat[] bEdgeStats;
-        private final List<? extends Edge> edges;
+//        private final CostStat left;
+//        private final CostStat right;
+//        private final Stat[] aEdgeStats;
+//        private final Stat[] bEdgeStats;
+//        private final List<? extends Edge> edges;
 
-        public MergeCostStat(Cost cost, Stat stat, BitSet adjJoins,
-                             Cost maxCost, Stat leftStat, Stat rightStat, int joinsCount,
-                             CostStat left, CostStat right, Stat[] aEdgeStats, Stat[] bEdgeStats, List<? extends Edge> edges) {
-            this(cost, stat, adjJoins,
-                    maxCost, leftStat, rightStat, joinsCount,
-                    null, null, null, null, null, null,
-                    left, right, aEdgeStats, bEdgeStats, edges);
+        public MergeCostStat(Cost cost, MergeCostStat costStat) {
+            this(cost, costStat.stat, costStat.inJoins, costStat.adjJoins,
+                    costStat.leftCost, costStat.rightCost, costStat.leftStat, costStat.rightStat, costStat.joinsCount,
+                    costStat.joinStats, costStat.keyStats, costStat.propStats, costStat.pushCosts, costStat.usedNotNulls
+//                    ,costStat.left, costStat.right, costStat.aEdgeStats, costStat.bEdgeStats, costStat.edges
+            );
         }
 
-        public MergeCostStat(Cost cost, Stat stat, BitSet adjJoins,
-                             Cost maxCost, Stat leftStat, Stat rightStat, int joinsCount,
-                             ImMap<BaseJoin, Stat> joinStats, ImMap<BaseJoin, DistinctKeys> keyStats, ImMap<BaseExpr, Stat> propStats, ImSet pushKeys, StatKeys pushStatKeys, ImSet<BaseExpr> usedNotNulls,
-                             CostStat left, CostStat right, Stat[] aEdgeStats, Stat[] bEdgeStats, List<? extends Edge> edges) {
-            super(usedNotNulls, adjJoins);
+        public MergeCostStat(Cost cost, Stat stat, BitSet inJoins, BitSet adjJoins,
+                             Cost leftCost, Cost rightCost, Stat leftStat, Stat rightStat, int joinsCount
+//                             , CostStat left, CostStat right, Stat[] aEdgeStats, Stat[] bEdgeStats, List<? extends Edge> edges
+                            ) {
+            this(cost, stat, inJoins, adjJoins,
+                    leftCost, rightCost, leftStat, rightStat, joinsCount,
+                    null, null, null, null, null
+//                    , left, right, aEdgeStats, bEdgeStats, edges
+                );
+        }
+
+        public MergeCostStat(Cost cost, Stat stat, BitSet inJoins, BitSet adjJoins,
+                             Cost leftCost, Cost rightCost, Stat leftStat, Stat rightStat, int joinsCount,
+                             ImMap<BaseJoin, Stat> joinStats, ImMap<BaseJoin, DistinctKeys> keyStats, ImMap<BaseExpr, Stat> propStats, ImMap<QueryJoin, PushCost> pushCosts, ImSet<BaseExpr> usedNotNulls
+//                             , CostStat left, CostStat right, Stat[] aEdgeStats, Stat[] bEdgeStats, List<? extends Edge> edges
+                            ) {
+            super(usedNotNulls, inJoins, adjJoins, pushCosts);
             this.cost = cost;
             this.stat = stat;
 
-            this.maxCost = maxCost;
+            this.leftCost = leftCost;
+            this.rightCost = rightCost;
             this.leftStat = leftStat;
             this.rightStat = rightStat;
             this.joinsCount = joinsCount;
@@ -448,14 +458,16 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
             this.keyStats = keyStats;
             this.propStats = propStats; // assert что все expr.getBaseJoin() из joinStats
 
-            this.pushKeys = pushKeys;
-            this.pushStatKeys = pushStatKeys;
+//            this.left = left;
+//            this.right = right;
+//            this.aEdgeStats = aEdgeStats;
+//            this.bEdgeStats = bEdgeStats;
+//            this.edges = edges;
+        }
 
-            this.left = left;
-            this.right = right;
-            this.aEdgeStats = aEdgeStats;
-            this.bEdgeStats = bEdgeStats;
-            this.edges = edges;
+        @Override
+        public BaseJoin getJoin() {
+            return null;
         }
 
         @Override
@@ -469,8 +481,13 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         }
 
         @Override
+        public Cost getMinCost() {
+            return leftCost;
+        }
+
+        @Override
         public Cost getMaxCost() {
-            return maxCost;
+            return rightCost;
         }
 
         @Override
@@ -538,36 +555,105 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         }
 
         @Override
-        public ImSet getPushKeys() {
-            return pushKeys;
-        }
-
-        @Override
-        protected StatKeys getPushStatKeys() {
-            return pushStatKeys;
+        public ImSet getPushKeys(QueryJoin pushJoin) {
+            return pushCosts.get(pushJoin).pushKeys;
         }
 
         public String toString(String prefix) {
-            return prefix + "m" + getCost() + " " + getStat() + " LEFT : " + Arrays.toString(aEdgeStats) + " RIGHT : " + Arrays.toString(bEdgeStats) + "\n" + (left != null ? left.toString(prefix + '\t') : "") + '\n' + (right != null ? right.toString(prefix + '\t') : "");
+            return prefix + "m" + getCost() + " " + getStat() + " LEFT : " 
+//                            + Arrays.toString(aEdgeStats) + " RIGHT : " + Arrays.toString(bEdgeStats) + "\n" + (left != null ? left.toString(prefix + '\t') : "") + '\n' + (right != null ? right.toString(prefix + '\t') : "")
+                            ;
+        }
+    }
+    
+    private static class PushCost {
+        private final StatKeys pushStatKeys; // важно получить хороший именно pushStatKeys (то есть проталкивание), а не финальную статистику
+        
+        private final Cost leftCost; // чтобы выбирались предикаты с меньшими cost'ами
+        
+        // может быть null если проталкивания нет
+        private boolean noPush;
+        private final ImSet pushKeys; // для getPushKeys + чтобы, с использованием leftCost не выбирать предикаты у которых вообще нет общих связей с проталкиваемым предикатом 
+
+        public PushCost(StatKeys pushStatKeys, Cost leftCost, boolean noPush, ImSet pushKeys) {
+            this.pushStatKeys = pushStatKeys;
+            this.leftCost = leftCost;
+            this.noPush = noPush;
+            this.pushKeys = pushKeys;
+            assert !noPush || pushKeys == null;
+        }
+        
+        private boolean isCartesian() {
+            return !noPush && (pushKeys == null || pushKeys.isEmpty());
+        }
+
+        private int pushCompareTo(PushCost b, boolean pushLargeDepth) {
+            int compare = Integer.compare(pushStatKeys.getCost().rows.getWeight(), b.pushStatKeys.getCost().rows.getWeight());
+            if(compare != 0)
+                return compare;
+            if(pushLargeDepth)
+                return 0;
+            compare = Integer.compare(pushStatKeys.getRows().getWeight(), b.pushStatKeys.getRows().getWeight());
+            if(compare != 0)
+                return compare;
+
+            // если проталкиваемые предикаты имеют меньший cost, берем их (чисто пессимистичная оценка, то есть если статистика неоднородна, лучше протолкнуть более ограничивающий предикат)
+            // при этом важно чтобы pushKeys был иначе смысла в leftCost не будет (значит там valueJoin и декартово)
+
+            // декартово хуже - наличие pushKeys лучше чем отсутствие
+            compare = Boolean.compare(isCartesian(), b.isCartesian());
+            if(compare != 0)
+                return compare;
+
+            compare = Integer.compare(leftCost.rows.getWeight(), b.leftCost.rows.getWeight());
+            if(compare != 0)
+                return compare;
+            return compare;
         }
     }
 
     private abstract static class CostStat implements Comparable<CostStat> {
 
+        protected final BitSet inJoins; // повторяет getJoins чисто для оптимизации
         protected final BitSet adjJoins;
 
-        public CostStat(ImSet<BaseExpr> usedNotNulls, BitSet adjJoins) {
-            this.usedNotNulls = usedNotNulls;
-            this.adjJoins = adjJoins;
+        // проталкивание
+        protected final ImMap<QueryJoin, PushCost> pushCosts;
+
+        public boolean adjacent(CostStat costStat) { // есть общее ребро
+            return costStat.adjJoins.intersects(inJoins) || costStat.inJoins.intersects(adjJoins);
         }
 
+        public boolean adjacentCommon(CostStat costStat) { // есть вершина, для которой есть общие ребра
+            return costStat.adjJoins.intersects(adjJoins); 
+        }
+        
+        public boolean adjacentWithCommon(CostStat costStat) {
+            assert !inJoins.intersects(costStat.inJoins);
+            return adjacent(costStat) || adjacentCommon(costStat);
+        }                
+                
+        public CostStat(ImSet<BaseExpr> usedNotNulls, BitSet inJoins, BitSet adjJoins, ImMap<QueryJoin, PushCost> pushCosts) {
+            this.usedNotNulls = usedNotNulls;
+            this.inJoins = inJoins;
+            this.adjJoins = adjJoins;
+            this.pushCosts = pushCosts;
+            assert (inJoins == null && adjJoins == null) || !inJoins.intersects(adjJoins);
+        }
+
+        public abstract BaseJoin getJoin();
         public abstract Cost getCost();
         public abstract Stat getStat();
 
+        public abstract Cost getMinCost();
         public abstract Cost getMaxCost();
         public abstract Stat getMinStat();
         public abstract Stat getMaxStat();
         public abstract int getJoinsCount();
+        
+        public ImMap<QueryJoin, PushCost> getPushCosts() {
+            return pushCosts;
+        }
 
         public abstract ImSet<BaseJoin> getJoins();
         public abstract ImMap<BaseJoin, Stat> getJoinStats();
@@ -578,7 +664,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         public abstract <K> Stat getKeyStat(BaseJoin<K> join, K key);
 
         protected final ImSet<BaseExpr> usedNotNulls;
-        public abstract ImSet getPushKeys();
+        public abstract ImSet getPushKeys(QueryJoin pushJoin);
 
         private <K> PropStat getPropStat(Edge<K> edge, MAddMap<BaseExpr, PropStat> exprStats) {
             return getPropStat(edge.expr, exprStats);
@@ -596,27 +682,52 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
             }));
         }
 
-        private static int pushCompareTo(StatKeys a, StatKeys b, boolean pushLargeDepth) {
-            int compare = Boolean.compare(a == null, b == null);
-            if(compare != 0)
-                return compare;
-            if(a == null || b == null)
-                return 0;
-            if(pushLargeDepth)
-                return 0;
-            compare = Integer.compare(a.getCost().rows.getWeight(), b.getCost().rows.getWeight());
-            if(compare != 0)
-                return compare;
-            compare = Integer.compare(a.getRows().getWeight(), b.getRows().getWeight());
-            if(compare != 0)
-                return compare;
-            return 0;
+        private static ImMap<QueryJoin, PushCost> addPushCosts(ImMap<QueryJoin, PushCost> left, ImMap<QueryJoin, PushCost> right) {
+            if(left == null) // оптимизация
+                return right;
+            if(right == null)
+                return left;
+            return right.addExcl(left);
         }
 
-        protected abstract StatKeys getPushStatKeys();
-        public int pushCompareTo(CostStat o, boolean pushLargeDepth) {
+        private static int pushCompareTo(ImMap<QueryJoin, PushCost> a, ImMap<QueryJoin, PushCost> b, QueryJoin pushJoin, boolean pushLargeDepth) {
+            // сначала проверяем pushJoin 
+            int compare;
+            compare = a.get(pushJoin).pushCompareTo(b.get(pushJoin), pushLargeDepth);
+            if(compare != 0 || pushLargeDepth)
+                return compare;
+            // бежим слева направо
+            int aGreater = 0;
+            int bGreater = 0;
+            for(int i=0,size=a.size();i<size;i++) {
+                QueryJoin key = a.getKey(i);
+                if(BaseUtils.hashEquals(key, pushJoin))
+                    continue;
+                
+                PushCost aCost = a.getValue(i);
+
+                PushCost bCost = b.get(key);
+                if(bCost != null) {
+                    compare = aCost.pushCompareTo(bCost, false);
+                    if(compare != 0) {
+                        if(compare > 0)
+                            aGreater++;
+                        else
+                            bGreater++;
+                    }
+                }
+            }
+            
+            compare = Integer.compare(aGreater, bGreater);
+            if(compare != 0)
+                return compare;
+
+            return Integer.compare(a.size(), b.size());
+        }
+
+        public int pushCompareTo(CostStat o, QueryJoin pushJoin, boolean pushLargeDepth) {
             MergeCostStat mStat = (MergeCostStat) o;
-            return pushCompareTo(getPushStatKeys(), mStat.pushStatKeys, pushLargeDepth);
+            return pushCompareTo(getPushCosts(), mStat.getPushCosts(), pushJoin, pushLargeDepth);
         }
 
         @Override
@@ -634,6 +745,9 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
                 return compare;
             compare = Integer.compare(getMaxCost().rows.getWeight(), o.getMaxCost().rows.getWeight());
             if(compare != 0) // у кого max cost больше лучше
+                return -compare;
+            compare = Integer.compare(getMinCost().rows.getWeight(), o.getMinCost().rows.getWeight());
+            if(compare != 0) // у кого min cost больше лучше
                 return -compare;
             compare = Integer.compare(getMaxStat().getWeight(), o.getMaxStat().getWeight());
             if(compare != 0) // у кого max больше лучше
@@ -805,12 +919,13 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
     }
 
     private <Z extends Expr> Where getCostPushWhere(CostStat cost, ImSet<Edge> edges, QueryJoin<Z, ?, ?, ?> queryJoin, UpWheres<WhereJoin> upWheres) {
-        ImSet<Z> pushedKeys = (ImSet<Z>) cost.getPushKeys();
+        ImSet<Z> pushedKeys = (ImSet<Z>) cost.getPushKeys(queryJoin);
         if(pushedKeys == null) { // значит ничего не протолкнулось
             // пока падает из-за неправильного computeVertex видимо
 //            assert BaseUtils.hashEquals(SetFact.singleton(queryJoin), cost.getJoins());
             return null;
         }
+        assert !pushedKeys.isEmpty();
         ImSet<BaseJoin> keepJoins = cost.getJoins().removeIncl(queryJoin);
         ImMap<Z, BaseExpr> pushMap = queryJoin.getJoins().filterIncl(pushedKeys);
 
@@ -872,18 +987,20 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
     }
 
     private <K extends BaseExpr, Z> CostStat getCost(final QueryJoin pushJoin, final boolean pushLargeDepth, final boolean needNotNulls, MAddMap<BaseJoin, Stat> joinStats, MAddMap<BaseJoin, Cost> indexedStats, final MAddMap<BaseExpr, PropStat> exprStats, MAddMap<BaseJoin, DistinctKeys> keyDistinctStats, ImSet<Edge> edges, final KeyStat keyStat, final StatType type) {
-        // отдельно считаем cost
-        final GreedyTreeBuilding.CalculateCost<BaseJoin, CostStat, Edge<K>> costCalc = getCostFunc(pushJoin, exprStats, needNotNulls, keyStat, type);
-
         CostStat result;
         CostStat pushCost = null;
         assert joinStats.size() > 0;
+
+        List<Collection<Edge<K>>> edgesIn = new ArrayList<>(); // только для lookAhead 
+
         final GreedyTreeBuilding<BaseJoin, CostStat, Edge<K>> treeBuilding = new GreedyTreeBuilding<>();
         for (int i = 0, size = joinStats.size(); i < size; i++) {
             BaseJoin join = joinStats.getKey(i);
 
+            BitSet inJoins = new BitSet();
             BitSet adjJoins = new BitSet();
-            JoinCostStat joinCost = new JoinCostStat(join, new StatKeys(indexedStats.get(join), joinStats.getValue(i), keyDistinctStats.get(join)), adjJoins);
+            StatKeys statKeys = new StatKeys(indexedStats.get(join), joinStats.getValue(i), keyDistinctStats.get(join));
+            JoinCostStat joinCost = new JoinCostStat(join, statKeys, inJoins, adjJoins, pushJoin != null ? new PushCost(statKeys, statKeys.getCost(), true, null) : null);
 
             if (pushJoin != null && BaseUtils.hashEquals(join, pushJoin))
                 pushCost = joinCost;
@@ -891,7 +1008,9 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
             treeBuilding.addVertex(join, joinCost);
 
             int vertexIndex = treeBuilding.getVertexIndex(join); // заполняем матрицу смежности
-            adjJoins.set(vertexIndex);
+            inJoins.set(vertexIndex);
+            
+            edgesIn.add(new ArrayList<Edge<K>>());
         }
 
         for (Edge edge : edges) {
@@ -901,8 +1020,17 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
             int toIndex = treeBuilding.getVertexIndex(edge.getTo());
             treeBuilding.getVertexCost(fromIndex).adjJoins.set(toIndex);
             treeBuilding.getVertexCost(toIndex).adjJoins.set(fromIndex);
+            
+            edgesIn.get(toIndex).add(edge);
         }
 
+        // только для lookAhead
+        List<CostStat> costs = treeBuilding.getVertexCosts();
+        List<Collection<Edge<K>>> edgesOut = treeBuilding.getAdjList();
+        
+        // отдельно считаем cost
+        final GreedyTreeBuilding.CalculateCost<BaseJoin, CostStat, Edge<K>> costCalc = getCostFunc(pushJoin, exprStats, needNotNulls, keyStat, type, costs, edgesOut, edgesIn);
+        
         GreedyTreeBuilding.TreeNode<BaseJoin, CostStat> compute;
         if (pushJoin != null) {
             assert joinStats.containsKey(pushJoin);
@@ -911,21 +1039,23 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
 
             compute = treeBuilding.computeWithVertex(pushJoin, costCalc, new GreedyTreeBuilding.TreeCutComparator<CostStat>() {
                 public int compare(CostStat a, CostStat b) {
-                    return a.pushCompareTo(b, pushLargeDepth);
+                    return a.pushCompareTo(b, pushJoin, pushLargeDepth);
                 }});
         } else
             compute = treeBuilding.compute(costCalc);
         result = compute.node.getCost();
 
-        if(pushJoin != null && pushCost.pushCompareTo(result, pushLargeDepth) <= 0) // так как текущий computeWithVertex всегда берет хоть одно ребро
+        if(pushJoin != null && pushCost.pushCompareTo(result, pushJoin, pushLargeDepth) <= 0) // так как текущий computeWithVertex всегда берет хоть одно ребро
             return pushCost;
         else
             return result;
     }
 
-    private static MergeCostStat max = new MergeCostStat(null, null, null, null, null, null, 0, null, null, null, null, null);
+    private static MergeCostStat max = new MergeCostStat(null, null, null, null, null, null, null, null, 0
+                                                            , null, null, null, null, null
+                                                        );
 
-    private static <K extends BaseExpr, Z> GreedyTreeBuilding.CalculateCost<BaseJoin, CostStat, Edge<K>> getCostFunc(final QueryJoin pushJoin, final MAddMap<BaseExpr, PropStat> exprStats, final boolean needNotNulls, final KeyStat keyStat, final StatType type) {
+    private static <K extends BaseExpr, Z> GreedyTreeBuilding.CalculateCost<BaseJoin, CostStat, Edge<K>> getCostFunc(final QueryJoin pushJoin, final MAddMap<BaseExpr, PropStat> exprStats, final boolean needNotNulls, final KeyStat keyStat, final StatType type, final List<CostStat> costs, final List<Collection<Edge<K>>> edgesOut, final List<Collection<Edge<K>>> edgesIn) {
         return new GreedyTreeBuilding.CalculateCost<BaseJoin, CostStat, Edge<K>>() {
 
                 @Override
@@ -936,7 +1066,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
                     CostStat aCostStat = a.getCost();
                     CostStat bCostStat = b.getCost();
 
-                    if(!aCostStat.adjJoins.intersects(bCostStat.adjJoins))
+                    if(!aCostStat.adjacentWithCommon(bCostStat))
                         return max;
 
                     if (aCostStat.compareTo(bCostStat) > 0) { // будем считать что у a cost меньше то есть он "левый"
@@ -989,11 +1119,13 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
                     Cost aCost = aCostStat.getCost();
                     Cost bCost = bCostStat.getCost();
                     Cost newCost = (b.getVertex() != null ? aCost.min(bCost) : aCost.or(bCost)).or(new Cost(newStat)); // если есть vertex - может протолкнуться иначе нет
-                    BitSet newAdjJoins = or(aCostStat.adjJoins, bCostStat.adjJoins);
+                    BitSet newInJoins = or(aCostStat.inJoins, bCostStat.inJoins);
+                    BitSet newAdjJoins = orRemove(aCostStat.adjJoins, bCostStat.adjJoins, newInJoins);
 
-                    return new MergeCostStat(newCost, newStat, newAdjJoins,
-                            bCost, aAdjStat, bAdjStat, aCostStat.getJoins().size() + bCostStat.getJoins().size(),
-                            aCostStat, bCostStat, aEdgeStats, bEdgeStats, edgesList);
+                    return new MergeCostStat(newCost, newStat, newInJoins, newAdjJoins,
+                            aCost, bCost, aAdjStat, bAdjStat, aCostStat.getJoins().size() + bCostStat.getJoins().size()
+//                            , aCostStat, bCostStat, aEdgeStats, bEdgeStats, edgesList
+                    );
                 }
 
                 public CostStat calculate(GreedyTreeBuilding.Node<BaseJoin, CostStat> a, GreedyTreeBuilding.Node<BaseJoin, CostStat> b, Iterable<Edge<K>> edges) {
@@ -1010,8 +1142,57 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
                         aCostStat = bCostStat;
                         bCostStat = tCost;
                     }
+                    
+                    assert BaseUtils.nullHashEquals(bCostStat.getJoin(), b.getVertex());
+                    MergeCostStat result = calculateCost(aCostStat, bCostStat, edges); // assert 
+                    
+                    // LOOK AHEAD для декартового произведения
+                    if(!aCostStat.adjacent(bCostStat) && aCostStat.adjacentCommon(bCostStat)) { // последняя проверка нужна, так как если не осталось adjacentWithCommon, начинают выбираться "чистые" декартовы произведения
+                        BitSet common = and(aCostStat.adjJoins, bCostStat.adjJoins);
 
-                    BaseJoin<Z> bv = b.getVertex();
+                        Cost lookAheadCost = lookAheadCost(result, common);
+                        if(lookAheadCost != null) {
+                            assert result.getCost().rows.less(lookAheadCost.rows);
+                            result = new MergeCostStat(lookAheadCost, result);
+                        }
+                    }
+
+                    return result;                    
+                }
+
+                Cost lookAheadCost(MergeCostStat result, BitSet commonJoins) {
+                    final ImSet<BaseJoin> resultJoins = result.getJoins();
+    
+                    // предварительная оптимизация
+                    Cost minPushedCost = null;
+                    for (int i = commonJoins.nextSetBit(0); i != -1; i = commonJoins.nextSetBit(i + 1)) {
+                        CostStat leafCostStat = costs.get(i);
+                        if (leafCostStat.compareTo(result) > 0) { // по идее обратного быть не должно, так как скорее всего это соединение должно было быть выбрано а не декартово произведение
+                            Iterable<Edge<K>> filteredEdges = BaseUtils.mergeIterables(
+                                BaseUtils.filterIterable(edgesOut.get(i), new SFunctionSet<Edge<K>>() {
+                                public boolean contains(Edge<K> element) {
+                                    return resultJoins.contains(element.getTo());
+                                }
+                            }), BaseUtils.filterIterable(edgesIn.get(i), new SFunctionSet<Edge<K>>() {
+                                public boolean contains(Edge<K> element) {
+                                    return resultJoins.contains(element.getFrom());
+                                }
+                            }));
+                            Cost pushedCost = calculateCost(result, leafCostStat, filteredEdges).getCost();
+                            
+                            if(result.getCost().rows.less(pushedCost.rows)) {
+                                minPushedCost = minPushedCost == null ? pushedCost : minPushedCost.min(pushedCost); 
+                            } else
+                                return null;
+                        }
+                    }
+                    return minPushedCost;
+                }
+    
+                MergeCostStat calculateCost(CostStat aCostStat, CostStat bCostStat, Iterable<Edge<K>> edges) {
+                    assert aCostStat.compareTo(bCostStat) <= 0;
+                    BaseJoin<Z> bv = bCostStat.getJoin();
+                            
                     Cost aCost = aCostStat.getCost(); // не предполагает изменение
                     Cost bBaseCost = bCostStat.getCost();
                     AddValue<BaseExpr, Stat> minStat = minStat();
@@ -1085,10 +1266,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
                     }
 
                     // PUSH COST (STATS)
-                    ImSet pushedKeys = null;
-                    StatKeys pushedJoinStatKeys = null;
-                    if(bv != null && !edgesList.isEmpty()) { // последнее - оптимизация
-                        boolean useQueryStatAdjust = bv instanceof QueryJoin;
+                    if(bv != null && (!edgesList.isEmpty() || pushJoin != null)) { // последнее - оптимизация
 
                         MExclMap<Z, Stat> mKeys = MapFact.mExclMapMax(adjEdges);
                         MExclMap<Z, Stat> mNotNullKeys = MapFact.mExclMapMax(adjEdges);
@@ -1130,9 +1308,9 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
 
                         ImSet<BaseExpr> usedNotNulls = SetFact.EMPTY();
                         StatKeys<Z> pushedStatKeys;
-                        Result<ImSet<Z>> rPushedKeys = pushJoin != null && BaseUtils.hashEquals(bv, pushJoin) ? new Result<ImSet<Z>>() : null;
+                        Result<ImSet<Z>> rPushedKeys = pushJoin != null ? new Result<ImSet<Z>>() : null;
                         Result<ImSet<BaseExpr>> rPushedProps = needNotNulls ? new Result<ImSet<BaseExpr>>() : null;
-                        if (useQueryStatAdjust) { // для query join можно протолкнуть внутрь предикаты
+                        if (bv instanceof QueryJoin) { // для query join можно протолкнуть внутрь предикаты
                             pushedStatKeys = ((QueryJoin) bv).getPushedStatKeys(type, aCost, aStat, pushKeys, pushNotNullKeys, rPushedKeys);
 
                             pushedStatKeys = pushedStatKeys.min(bJoinCost.statKeys); // по идее push должен быть меньше, но из-за несовершенства статистики и отсутствия проталкивания в таблицу (pushedJoin присоединятся к маленьким join'ам и может немного увеличивать cost / stat), после "проталкивания в таблицу" можно попробовать вернуть assertion
@@ -1152,26 +1330,26 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
                                 usedNotNulls = mNotNullProps.immutable().filter(rPushedProps.result);
                             assert bAdjStat.lessEquals(pushedStatKeys.getRows());//
                         }
-
-                        bCostStat = new JoinCostStat<>(bv, pushedStatKeys, usedNotNulls, bJoinCost.adjJoins);
-
-                        if (rPushedKeys != null) {
-                            pushedKeys = rPushedKeys.result; // теоретически можно и все ребра (в смысле что предикаты лишними не бывают ???)
-                            pushedJoinStatKeys = pushedStatKeys;
-                        }
+    
+                        bCostStat = new JoinCostStat<>(bv, pushedStatKeys, usedNotNulls, bJoinCost.inJoins, bJoinCost.adjJoins, 
+                                            pushJoin != null ? new PushCost(pushedStatKeys, aCost, false, rPushedKeys.result) : null); // теоретически можно и все ребра (в смысле что предикаты лишними не бывают ???)
                     }
-
+    
                     // STAT ESTIMATE
-                    Result<Stat> rAAdjStat = new Result<>(); Result<Stat> rBAdjStat = new Result<>();
+                    Result<Stat> rAAdjStat = new Result<>();
+                    Result<Stat> rBAdjStat = new Result<>();
                     Stat newStat = calcEstJoinStat(aAdjStat, bAdjStat, adjEdges, aEdgeStats, bEdgeStats, true, rAAdjStat, rBAdjStat);
-                    aAdjStat = rAAdjStat.result; bAdjStat = rBAdjStat.result;
+                    aAdjStat = rAAdjStat.result;
+                    bAdjStat = rBAdjStat.result;
                     Cost newCost = aCost.or(bCostStat.getCost()).or(new Cost(newStat));
-
+    
                     ImMap<BaseJoin, DistinctKeys> newKeyStats = aCostStat.getKeyStats().addExcl(bCostStat.getKeyStats());
                     ImMap<BaseJoin, Stat> newJoinStats = reduceIntermediateStats(newStat.min(aAdjStat), aCostStat).addExcl(reduceIntermediateStats(newStat.min(bAdjStat), bCostStat)); // также фильтруем по notNull
                     ImSet<BaseExpr> newUsedNotNulls = aCostStat.usedNotNulls.addExcl(bCostStat.usedNotNulls);
-                    BitSet newAdjJoins = or(aCostStat.adjJoins, bCostStat.adjJoins);
-
+                    BitSet newInJoins = or(aCostStat.inJoins, bCostStat.inJoins);
+                    BitSet newAdjJoins = orRemove(aCostStat.adjJoins, bCostStat.adjJoins, newInJoins);
+                    ImMap<QueryJoin, PushCost> newPushCosts = pushJoin != null ? CostStat.addPushCosts(aCostStat.pushCosts, bCostStat.pushCosts) : null;
+    
                     MMap<BaseExpr, Stat> mPropAdjStats = MapFact.mMap(minStat); // ключи не считаем, так как используются один раз. NotNull'ы не нужны, так как статистика уже редуцировалась
                     for (int k = 0, size = exprs.size(); k < size; k++) {
                         int i = exprs.getValue(k);
@@ -1191,18 +1369,32 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
                             mPropAdjStats.add(exprs.getKey(k), keyStat);
                     }
                     ImMap<BaseExpr, Stat> newPropStats = aCostStat.getPropStats().addExcl(bCostStat.getPropStats()).merge(mPropAdjStats.immutable(), minStat);
-
-                    return new MergeCostStat(newCost, newStat, newAdjJoins,
-                            bBaseCost, aAdjStat, bAdjStat, newJoinStats.size(),
-                            newJoinStats, newKeyStats, newPropStats, pushedKeys, pushedJoinStatKeys, newUsedNotNulls,
-                            aCostStat, bCostStat, aEdgeStats, bEdgeStats, edgesList);
+    
+                    return new MergeCostStat(newCost, newStat, newInJoins, newAdjJoins,
+                            aCost, bBaseCost, aAdjStat, bAdjStat, newJoinStats.size(),
+                            newJoinStats, newKeyStats, newPropStats, newPushCosts, newUsedNotNulls
+//                            , aCostStat, bCostStat, aEdgeStats, bEdgeStats, edgesList
+                                            );
                 }
-            };
+        };
     }
 
     private static BitSet or(BitSet a, BitSet b) {
         BitSet result = (BitSet) a.clone();
         result.or(b);
+        return result;
+    }
+
+    private static BitSet and(BitSet a, BitSet b) {
+        BitSet result = (BitSet) a.clone();
+        result.and(b);
+        return result;
+    }
+    
+    private static BitSet orRemove(BitSet a, BitSet b, BitSet remove) {
+        BitSet result = (BitSet) a.clone();
+        result.or(b);
+        result.andNot(remove);
         return result;
     }
 

@@ -149,7 +149,7 @@ public abstract class FormulaWhere<WhereType extends Where> extends AbstractWher
     protected abstract <K extends BaseExpr> GroupJoinsWheres calculateGroupJoinsWheres(ImSet<K> keepStat, StatType statType, KeyStat keyStat, ImOrderSet<Expr> orderTop, GroupJoinsWheres.Type type);
 
     protected static <K extends BaseExpr> GroupJoinsWheres packIntermediate(GroupJoinsWheres result, GroupJoinsWheres.Type type, ImSet<K> keepStat, StatType statType, KeyStat keyStat, Where where, ImOrderSet<Expr> orderTop) {
-        return result.pack(keepStat, statType, keyStat, type, where, true, orderTop);
+        return result.pack(keepStat, statType, keyStat, type, where, true, orderTop, false);
     }   
     
     public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(ImSet<K> keepStat, StatType statType, KeyStat keyStat, ImOrderSet<Expr> orderTop, GroupJoinsWheres.Type type) {
