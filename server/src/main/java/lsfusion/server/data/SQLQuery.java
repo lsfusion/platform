@@ -23,6 +23,7 @@ import lsfusion.server.data.type.NullReader;
 import lsfusion.server.data.type.ParseInterface;
 import lsfusion.server.data.type.Reader;
 import lsfusion.server.session.SessionTableUsage;
+import lsfusion.server.stack.StackMessage;
 import org.apache.commons.lang3.StringUtils;
 
 import java.sql.PreparedStatement;
@@ -281,6 +282,7 @@ public class SQLQuery extends SQLCommand<ResultHandler<String, String>> {
         return env;
     }
 
+    @StackMessage("{message.subquery.materialize}")
     public MaterializedQuery materialize(final SQLSession session, final DynamicExecuteEnvironment subQueryExecEnv, final OperationOwner owner, final ImMap<SQLQuery, MaterializedQuery> materializedQueries, final ImMap<String, ParseInterface> queryParams, final int transactTimeout) throws SQLException, SQLHandledException {
         Result<Integer> actual = new Result<>();
         final MaterializedQuery.Owner tableOwner = new MaterializedQuery.Owner();

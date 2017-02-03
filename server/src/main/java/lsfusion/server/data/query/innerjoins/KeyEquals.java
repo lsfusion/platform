@@ -150,13 +150,13 @@ public class KeyEquals extends WrapMap<KeyEqual, Where> {
         return where;
     }
 
-    public <K extends BaseExpr> ImCol<GroupJoinsWhere> getWhereJoins(ImSet<K> keepStat, StatType statType, ImOrderSet<Expr> orderTop, GroupJoinsWheres.Type type) {
+    public <K extends BaseExpr> ImCol<GroupJoinsWhere> getWhereJoins(ImSet<K> keepStat, StatType statType, ImOrderSet<Expr> orderTop, GroupJoinsWheres.Type type, boolean forcePackReduce) {
         MCol<GroupJoinsWhere> result = ListFact.mCol();
         for(int i=0,size=size();i<size;i++) {
             KeyEqual keyEqual = getKey(i); // keyEqual закидывается в статистику так как keepStat не всегда translate'ся
             Where where = getValue(i);
             KeyStat keyStat = keyEqual.getKeyStat(where);
-            where.groupJoinsWheres(keepStat, statType, keyStat, orderTop, type).pack(keepStat, statType, keyStat, type, where, false, orderTop).fillList(keyEqual, result, orderTop);
+            where.groupJoinsWheres(keepStat, statType, keyStat, orderTop, type).pack(keepStat, statType, keyStat, type, where, false, orderTop, forcePackReduce).toList(keyEqual, result, orderTop);
         }
         return result.immutableCol();
     }
@@ -195,7 +195,7 @@ public class KeyEquals extends WrapMap<KeyEqual, Where> {
     }
 
     public <K extends BaseExpr> Pair<ImCol<GroupJoinsWhere>, Boolean> getWhereJoins(boolean tryExclusive, ImSet<K> keepStat, StatType type, ImOrderSet<Expr> orderTop) {
-        ImCol<GroupJoinsWhere> whereJoins = getWhereJoins(keepStat, type, orderTop, GroupJoinsWheres.Type.WHEREJOINS);
+        ImCol<GroupJoinsWhere> whereJoins = getWhereJoins(keepStat, type, orderTop, GroupJoinsWheres.Type.WHEREJOINS, false);
         if(!tryExclusive || whereJoins.size()<=1 || whereJoins.size() > Settings.get().getLimitExclusiveCount())
             return new Pair<>(whereJoins, whereJoins.size() <= 1);
         ImList<GroupJoinsWhere> sortedWhereJoins = GroupWhere.sort(whereJoins);
@@ -220,7 +220,7 @@ public class KeyEquals extends WrapMap<KeyEqual, Where> {
     }
 
     public <K extends BaseExpr> ImCol<GroupSplitWhere<K>> getSplitJoins(final ImSet<K> keepStat, final StatType type) {
-        return getWhereJoins(keepStat, type, SetFact.<Expr>EMPTYORDER(), GroupJoinsWheres.Type.STAT_WITH_WHERE).mapColValues(new GetValue<GroupSplitWhere<K>, GroupJoinsWhere>() {
+        return getWhereJoins(keepStat, type, SetFact.<Expr>EMPTYORDER(), GroupJoinsWheres.Type.STAT_WITH_WHERE, false).mapColValues(new GetValue<GroupSplitWhere<K>, GroupJoinsWhere>() {
             public GroupSplitWhere<K> getMapValue(GroupJoinsWhere whereJoin) {
                 return new GroupSplitWhere<>(whereJoin.keyEqual, whereJoin.getStatKeys(keepStat, type), whereJoin.where);
             }
@@ -228,8 +228,8 @@ public class KeyEquals extends WrapMap<KeyEqual, Where> {
     }
 
     // no Where (и no UpWheres но пока все равно считается)
-    public <K extends BaseExpr> ImCol<GroupJoinsWhere> getWhereJoins(final ImSet<K> keepStat, final StatType statType) {
-        return getWhereJoins(keepStat, statType, SetFact.<Expr>EMPTYORDER(), GroupJoinsWheres.Type.STAT_ONLY);
+    public <K extends BaseExpr> ImCol<GroupJoinsWhere> getWhereJoins(final ImSet<K> keepStat, final StatType statType, boolean forcePackReduce) {
+        return getWhereJoins(keepStat, statType, SetFact.<Expr>EMPTYORDER(), GroupJoinsWheres.Type.STAT_ONLY, forcePackReduce);
     }
 
     public <K extends BaseExpr> ImCol<GroupSplitWhere<K>> getSplitJoins(boolean exclusive, ImSet<K> keepStat, StatType statType, GroupStatType type) {

@@ -5,6 +5,7 @@ import lsfusion.base.ImmutableObject;
 import lsfusion.base.SymmPair;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
+import lsfusion.base.col.interfaces.immutable.ImCol;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
@@ -123,14 +124,14 @@ public class GroupJoinsWheres extends DNFWheres<WhereJoins, GroupJoinsWheres.Val
     public GroupJoinsWheres(ImMap<WhereJoins, Value> map, Type type) {
         this(map, type.noWhere());
     }
-
-    public <K extends BaseExpr> GroupJoinsWheres pack(ImSet<K> keepStat, StatType statType, KeyStat keyStat, Type type, Where where, boolean intermediate, ImOrderSet<Expr> orderTop) {
+    
+    public <K extends BaseExpr> GroupJoinsWheres pack(ImSet<K> keepStat, StatType statType, KeyStat keyStat, Type type, Where where, boolean intermediate, ImOrderSet<Expr> orderTop, boolean forceReduce) {
         assert !intermediate || isExceededIntermediatePackThreshold();
 
 //        if(Settings.get().isPackStatBackwardCompatibility() && intermediate && type.isStat()) // !!! НЕПРАВИЛЬНАЯ ОПТИМИЗАЦИЯ, смотри коммент внизу, самый быстрый способ сохранить статистику, проверка на intermediate чтобы не было рекурсии
 //            return new GroupJoinsWheres(new StatKeysJoin<K>(getStatKeys(keepStat, keyStat, statType)), where, type);
 
-        GroupJoinsWheres result = pack(keepStat, keyStat, statType, type.isStat() || intermediate); // savestat нужно для более правильной статистикой, для intermediate тоже важна статистика так как сверху могут добавиться еще and'ы, а значит некоторые node'ы уйти и статистика может потеряться
+        GroupJoinsWheres result = pack(keepStat, keyStat, statType, type.isStat() || intermediate, forceReduce); // savestat нужно для более правильной статистикой, для intermediate тоже важна статистика так как сверху могут добавиться еще and'ы, а значит некоторые node'ы уйти и статистика может потеряться
 //        GroupJoinsWheres result = packMeans(keepStat, keyStat, intermediate);
         if(result.size() == 1) { // оптимизация
             Value value = result.singleValue();
@@ -149,35 +150,39 @@ public class GroupJoinsWheres extends DNFWheres<WhereJoins, GroupJoinsWheres.Val
         return size() > Settings.get().getLimitWhereJoinsCount() * degree || getComplexity(true) > Settings.get().getLimitWhereJoinsComplexity() * degree;
     }
 
-    public boolean fitsPackThreshold() {
-        return !(size() > Settings.get().getLimitWhereJoinsCount() || (!noWhere && getComplexity(true) > Settings.get().getLimitWhereJoinsComplexity()));
+    public boolean fitsPackThreshold(boolean forceReduce) {
+        int size = size();
+        if(forceReduce && size > 1)
+            return false;            
+        return !(size > Settings.get().getLimitWhereJoinsCount() || (!noWhere && getComplexity(true) > Settings.get().getLimitWhereJoinsComplexity()));
     }
 
     public boolean fitsCollapseStatsThreshold() {
         return !(size() > Settings.get().getCollapseStatsCount() || (!noWhere && getComplexity(true) > Settings.get().getCollapseStatsComplexity()));
     }
 
-    private <K extends BaseExpr> GroupJoinsWheres pack(ImSet<K> keepStat, KeyStat keyStat, StatType type, boolean saveStat) {
-
+    private <K extends BaseExpr> GroupJoinsWheres pack(ImSet<K> keepStat, KeyStat keyStat, StatType type, boolean saveStat, boolean forceReduce) {
+        assert saveStat || !forceReduce; // forceReduce имеет смысл только при сохранении статистики
+        
         GroupJoinsWheres result = this;
-        if(saveStat && result.fitsPackThreshold())
+        if(saveStat && result.fitsPackThreshold(forceReduce))
             return result;
 
         boolean collapseStats = !fitsCollapseStatsThreshold();
         if(!collapseStats) {
             result = result.packMeans(keepStat, keyStat, type, true);
-            if (result.fitsPackThreshold())
+            if (result.fitsPackThreshold(forceReduce))
                 return result;
         }
 
         // оптимизация, так как packMeans быстрее packReduce, для не saveStat не стоит делать так как при A, AB, BC, где B маленький предикат логичнее A, B получить чем A, BC
         if(saveStat == collapseStats) {
             result = result.packMeans(keepStat, keyStat, type, saveStat);
-            if (result.fitsPackThreshold())
+            if (result.fitsPackThreshold(forceReduce))
                 return result;
         }
 
-        return result.packReduce(keepStat, keyStat, type, saveStat, collapseStats);
+        return result.packReduce(keepStat, keyStat, type, saveStat, collapseStats, forceReduce);
     }
 
     // keepStat нужен чтобы можно было гарантировать что не образуется case с недостающим WhereJoin существенно влияющим на статистику
@@ -215,14 +220,17 @@ public class GroupJoinsWheres extends DNFWheres<WhereJoins, GroupJoinsWheres.Val
     
     private abstract static class CEntry extends ImmutableObject {
         public final WhereJoins where;
+        public final int cost;
         public final int rows;
         public final int orderTopCount;
         public final int childrenCount;
 
         public <K extends BaseExpr> CEntry(WhereJoins where, ImSet<K> keepStat, KeyStat keyStat, StatType type) {
             this.where = where;
-            
-            rows = where.getPackStatKeys(keepStat, keyStat, type).getRows().getWeight();
+
+            StatKeys<K> statKeys = where.getPackStatKeys(keepStat, keyStat, type);
+            cost = statKeys.getCost().rows.getWeight();
+            rows = statKeys.getRows().getWeight();
             orderTopCount = where.getOrderTopCount();
             childrenCount = where.getAllChildrenCount();
         }
@@ -241,26 +249,26 @@ public class GroupJoinsWheres extends DNFWheres<WhereJoins, GroupJoinsWheres.Val
     }    
     
     // минимум изменения, абсолютной статистики, количества сршдвкутэjd    
-    private static int[] getPriority(int rdmin, int oc, int rdmax, int r, int c, boolean collapseStats) {
+    private static int[] getPriority(int cdmin, int rdmin, int oc, int cdnax, int rdmax, int ct, int r, int c, boolean collapseStats) {
         if(collapseStats)
-            return new int[] {rdmin, oc, rdmax, r, c};
+            return new int[] {cdmin, rdmin, oc, cdnax, rdmax, ct, r, c};
 
-        return new int[] {rdmin, oc, 0, rdmin == 0 ? 0 : r, c};
+        return new int[] {cdmin, rdmin, oc, 0, cdmin == 0 ? 0 : ct, rdmin == 0 ? 0 : r, c};
     }
 
     private static int[] getMaxPriority(boolean collapseStats) {
-        return getPriority(Stat.AGGR.getWeight(), 0, 0, 0, 0, collapseStats);
+        return getPriority(Stat.AGGR.getWeight(), Stat.AGGR.getWeight(), 0, 0, 0, 0, 0, 0, collapseStats);
     }
 
     private static int[] getMinPriority(boolean collapseStats, boolean saveStat) {
         if(collapseStats) {
             if (saveStat)
-                return getPriority(0, 0, 0, Integer.MAX_VALUE, Integer.MAX_VALUE, collapseStats); // при сохранении статистики главное не терять статистику
+                return getPriority(0, 0, 0, 0, 0, Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MAX_VALUE, collapseStats); // при сохранении статистики главное не терять статистику
             else
-                return getPriority(0, 0, Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MAX_VALUE, collapseStats); // при не сохранении статистики надо хотя бы чтобы одна сохранилась поддержать
+                return getPriority(0, 0, 0, Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MAX_VALUE, collapseStats); // при не сохранении статистики надо хотя бы чтобы одна сохранилась поддержать
         }
 
-        return getPriority(0, 0, 0, 0, 0, collapseStats);
+        return getPriority(0, 0, 0, 0, 0, 0, 0, 0, collapseStats);
     }
 
     private static int compare(int[] priorities1, int[] priorities2) {
@@ -311,6 +319,20 @@ public class GroupJoinsWheres extends DNFWheres<WhereJoins, GroupJoinsWheres.Val
             return BaseUtils.max(rows - w1, rows - w2);
         }
 
+        protected int getCostMinDiff() {
+            int w1 = original.first.cost;
+            int w2 = original.second.cost;
+//            assert rows >= w1 && rows >= w2; // возможно как и в pushWhere будет нарушаться
+            return BaseUtils.min(cost - w1, cost - w2);
+        }
+
+        protected int getCostMaxDiff() {
+            int w1 = original.first.cost;
+            int w2 = original.second.cost;
+//            assert rows >= w1 && rows >= w2; // возможно как и в pushWhere будет нарушаться
+            return BaseUtils.max(cost - w1, cost - w2);
+        }
+
         protected int[] getPriority() {
             if(priority == null) {
                 int cm = childrenCount;
@@ -323,7 +345,7 @@ public class GroupJoinsWheres extends DNFWheres<WhereJoins, GroupJoinsWheres.Val
                 assert ocm <= oc1 && ocm <= oc2;
 
                 assert cm <= c1 && cm <= c2;
-                priority = GroupJoinsWheres.getPriority(getRowMinDiff(), BaseUtils.min(oc1 - ocm, oc2 - ocm), getRowMaxDiff(), rows, BaseUtils.min(c1 - cm, c2 - cm), collapseStats);
+                priority = GroupJoinsWheres.getPriority(getCostMinDiff(), getRowMinDiff(), BaseUtils.min(oc1 - ocm, oc2 - ocm), getCostMaxDiff(), getRowMaxDiff(), cost, rows, BaseUtils.min(c1 - cm, c2 - cm), collapseStats);
             }
             return priority;
         }
@@ -340,11 +362,15 @@ public class GroupJoinsWheres extends DNFWheres<WhereJoins, GroupJoinsWheres.Val
     }
     
     // эвристика с приоритезацией
-    private <K extends BaseExpr> GroupJoinsWheres packReduce(ImSet<K> keepStat, KeyStat keyStat, StatType type, boolean saveStat, boolean collapseStats) {
+    private <K extends BaseExpr> GroupJoinsWheres packReduce(ImSet<K> keepStat, KeyStat keyStat, StatType type, boolean saveStat, boolean collapseStats, boolean forceReduce) {
         if(!Settings.get().isCompileMeans())
             return this;
 
-        int limit = Settings.get().getLimitWhereJoinsCount(); // пока только на count смотрим, так как complexity высчитываем в конце
+        int limit;
+        if(forceReduce)
+            limit = 1;
+        else
+            limit = Settings.get().getLimitWhereJoinsCount(); // пока только на count смотрим, так как complexity высчитываем в конце
         int limitIgnoreSaveStats = Settings.get().getLimitIgnoreSaveStatsCount();
         int[] maxPriority = getMaxPriority(collapseStats);
         int[] minPriority = getMinPriority(collapseStats, saveStat);
@@ -389,7 +415,7 @@ public class GroupJoinsWheres extends DNFWheres<WhereJoins, GroupJoinsWheres.Val
             
             CMerged entry = priority.poll();
 
-            if(saveStat && (entry.getRowMaxDiff() > 0 && current.size() <= limitIgnoreSaveStats)) // в intermediate нельзя вообще сливать с разной статистикой, потому как перейдем к большей статистике, а на самом деле она может collapse'ся потом, при and not этого условия
+            if(saveStat && ((entry.getCostMaxDiff() > 0 || entry.getRowMaxDiff() > 0) && current.size() <= limitIgnoreSaveStats)) // в intermediate нельзя вообще сливать с разной статистикой, потому как перейдем к большей статистике, а на самом деле она может collapse'ся потом, при and not этого условия
                 break;
             int[] currentPriority = entry.getPriority();
             if(compare(currentPriority, maxPriority) >= 0) // не теряем ключи никогда
@@ -440,7 +466,7 @@ public class GroupJoinsWheres extends DNFWheres<WhereJoins, GroupJoinsWheres.Val
             }}), noWhere);
     }
 
-    public void fillList(KeyEqual keyEqual, MCol<GroupJoinsWhere> col, ImOrderSet<Expr> orderTop) {
+    public void toList(KeyEqual keyEqual, MCol<GroupJoinsWhere> col, ImOrderSet<Expr> orderTop) {
         for(int i=0,size=size();i<size;i++) {
             Value value = getValue(i);
             col.add(new GroupJoinsWhere(keyEqual, getKey(i), value.upWheres, value.where, orderTop));
