@@ -57,11 +57,15 @@ public class EvalActionProperty<P extends PropertyInterface> extends SystemExpli
                 runAction.execute(context);
             }
         } catch (EvalUtils.EvaluationException | RecognitionException e) {
-            context.delayUserInteraction(new MessageClientAction(e.getMessage(), "Parse error"));
+            context.delayUserInteraction(new MessageClientAction(getMessage(e), "Parse error"));
             throw new RuntimeException(e);
         } catch (Exception e) {
-            context.delayUserInteraction(new MessageClientAction(e.getMessage(), "Execution error"));
+            context.delayUserInteraction(new MessageClientAction(getMessage(e), "Execution error"));
             throw new RuntimeException(e);
         }
+    }
+
+    private String getMessage(Exception e) {
+        return e.getMessage() == null ? String.valueOf(e) : e.getMessage();
     }
 }
