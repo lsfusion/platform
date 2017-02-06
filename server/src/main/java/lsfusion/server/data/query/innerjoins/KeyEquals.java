@@ -219,8 +219,8 @@ public class KeyEquals extends WrapMap<KeyEqual, Where> {
         }
     }
 
-    public <K extends BaseExpr> ImCol<GroupSplitWhere<K>> getSplitJoins(final ImSet<K> keepStat, final StatType type) {
-        return getWhereJoins(keepStat, type, SetFact.<Expr>EMPTYORDER(), GroupJoinsWheres.Type.STAT_WITH_WHERE, false).mapColValues(new GetValue<GroupSplitWhere<K>, GroupJoinsWhere>() {
+    public <K extends BaseExpr> ImCol<GroupSplitWhere<K>> getSplitJoins(final ImSet<K> keepStat, final StatType type, boolean forcePackReduce) {
+        return getWhereJoins(keepStat, type, SetFact.<Expr>EMPTYORDER(), GroupJoinsWheres.Type.STAT_WITH_WHERE, forcePackReduce).mapColValues(new GetValue<GroupSplitWhere<K>, GroupJoinsWhere>() {
             public GroupSplitWhere<K> getMapValue(GroupJoinsWhere whereJoin) {
                 return new GroupSplitWhere<>(whereJoin.keyEqual, whereJoin.getStatKeys(keepStat, type), whereJoin.where);
             }
@@ -234,7 +234,7 @@ public class KeyEquals extends WrapMap<KeyEqual, Where> {
 
     public <K extends BaseExpr> ImCol<GroupSplitWhere<K>> getSplitJoins(boolean exclusive, ImSet<K> keepStat, StatType statType, GroupStatType type) {
         // получаем GroupJoinsWhere, конвертим в GroupSplitWhere, группируем по type'у (через MapWhere), упорядочиваем по complexity
-        ImCol<GroupSplitWhere<K>> statJoins = type.group(getSplitJoins(keepStat, statType), false, this);
+        ImCol<GroupSplitWhere<K>> statJoins = type.group(getSplitJoins(keepStat, statType, type.forcePackReduce()), false, this);
         if(!exclusive || statJoins.size()<=1) // если не нужно notExclusive || один элемент
             return statJoins;
 

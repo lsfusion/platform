@@ -134,9 +134,11 @@ public enum GroupType implements AggrType {
             case SUM:
                 assert exprs.size()==1 && orders.size()==0;
                 String exprSource = exprs.get(0);
-                ClassReader classReader = exprReaders.get(0);
-                if(classReader instanceof NullReader) // если null cast'им, на самом деле это частично хак, так как может протолкнуться условие, но emptyselect не получится, а empty будет конкретное выражение (возможно тоже самое нужно для partition и т.п.)
-                    exprSource = type.getCast(exprSource, syntax, typeEnv);
+                if(exprReaders != null) {
+                    ClassReader classReader = exprReaders.get(0);
+                    if (classReader instanceof NullReader) // если null cast'им, на самом деле это частично хак, так как может протолкнуться условие, но emptyselect не получится, а empty будет конкретное выражение (возможно тоже самое нужно для partition и т.п.)
+                        exprSource = type.getCast(exprSource, syntax, typeEnv);
+                }
                 return syntax.getNotZero("SUM(" + exprSource + ")", type, typeEnv);
             case STRING_AGG:
                 assert exprs.size()==2;

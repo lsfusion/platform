@@ -366,12 +366,15 @@ public class GroupJoinsWheres extends DNFWheres<WhereJoins, GroupJoinsWheres.Val
         if(!Settings.get().isCompileMeans())
             return this;
 
+        int limitIgnoreSaveStats;
         int limit;
-        if(forceReduce)
-            limit = 1;
-        else
+        if(forceReduce) {
+            limit = Settings.get().getLimitGroupWhereJoinsCount();
+            limitIgnoreSaveStats = Settings.get().getLimitGroupIgnoreSaveStatsCount();
+        } else {
             limit = Settings.get().getLimitWhereJoinsCount(); // пока только на count смотрим, так как complexity высчитываем в конце
-        int limitIgnoreSaveStats = Settings.get().getLimitIgnoreSaveStatsCount();
+            limitIgnoreSaveStats = Settings.get().getLimitIgnoreSaveStatsCount();
+        }
         int[] maxPriority = getMaxPriority(collapseStats);
         int[] minPriority = getMinPriority(collapseStats, saveStat);
 

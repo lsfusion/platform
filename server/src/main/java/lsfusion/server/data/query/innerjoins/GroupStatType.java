@@ -60,6 +60,10 @@ public enum GroupStatType {
 
     }
 
+    public boolean forcePackReduce() { // при ALL нет смысла reduce'ть, а при NONE нельзя
+        return this == STAT;
+    } 
+    
     public <K> ImCol<GroupSplitWhere<K>> group(ImCol<GroupSplitWhere<K>> statJoins, boolean noWhere, ImMap<KeyEqual, Where> keyEquals) { // statJoins - в NONE группировке
         switch(this) {
             case NONE:

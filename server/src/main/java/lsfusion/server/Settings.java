@@ -116,6 +116,9 @@ public class Settings {
 
     private int limitIgnoreSaveStatsCount = 999999;
 
+    private int limitGroupWhereJoinsCount = 1; // сворачиваем до конца пока сворачивается
+    private int limitGroupIgnoreSaveStatsCount = 5; // оставлчем не больше 5, иначе сложность создаваемого GroupExpr растет экспоненциально 
+
     private boolean singleInstance;
 
     private boolean busyDialog = true;
@@ -642,6 +645,22 @@ public class Settings {
 
     public void setLimitIgnoreSaveStatsCount(int limitIgnoreSaveStatsCount) {
         this.limitIgnoreSaveStatsCount = limitIgnoreSaveStatsCount;
+    }
+
+    public int getLimitGroupWhereJoinsCount() {
+        return limitGroupWhereJoinsCount;
+    }
+
+    public void setLimitGroupWhereJoinsCount(int limitGroupWhereJoinsCount) {
+        this.limitGroupWhereJoinsCount = limitGroupWhereJoinsCount;
+    }
+
+    public int getLimitGroupIgnoreSaveStatsCount() {
+        return limitGroupIgnoreSaveStatsCount;
+    }
+
+    public void setLimitGroupIgnoreSaveStatsCount(int limitGroupIgnoreSaveStatsCount) {
+        this.limitGroupIgnoreSaveStatsCount = limitGroupIgnoreSaveStatsCount;
     }
 
     public int getLimitWhereJoinsComplexity() {
