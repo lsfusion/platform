@@ -319,7 +319,18 @@ public class EmailReceiver {
                 }
             } else {
                 Object content = bp.getContent();
-                body = content instanceof MimeMultipart ? getMultipartBody(subjectEmail, (Multipart) content).message : String.valueOf(content);
+                if (content instanceof BASE64DecoderStream) {
+                    byte[] byteArray = IOUtils.readBytesFromStream((BASE64DecoderStream) content);
+                    String fileName = bp.getFileName();
+                    if (fileName != null) {
+                        String[] fileNameAndExt = fileName.split("\\.");
+                        String fileExtension = fileNameAndExt.length > 1 ? fileNameAndExt[fileNameAndExt.length - 1] : "";
+                        attachments.put(fileName, BaseUtils.mergeFileAndExtension(byteArray, fileExtension.getBytes()));
+                    }
+                } else if (content instanceof MimeMultipart) {
+                    body = getMultipartBody(subjectEmail, (Multipart) content).message;
+                } else
+                    body = String.valueOf(content);
             }
         }
         return new MultipartBody(body, attachments);
