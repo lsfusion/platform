@@ -13,8 +13,10 @@ import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.ClassReader;
 import lsfusion.server.data.type.ConcatenateType;
+import lsfusion.server.data.type.NullReader;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
+import lsfusion.server.logics.NullValue;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.*;
 
@@ -131,7 +133,11 @@ public enum GroupType implements AggrType {
                 return syntax.getAnyValueFunc() + "(" + exprs.get(0) + ")";
             case SUM:
                 assert exprs.size()==1 && orders.size()==0;
-                return syntax.getNotZero("SUM(" + exprs.get(0) + ")", type, typeEnv);
+                String exprSource = exprs.get(0);
+                ClassReader classReader = exprReaders.get(0);
+                if(classReader instanceof NullReader) // если null cast'им, на самом деле это частично хак, так как может протолкнуться условие, но emptyselect не получится, а empty будет конкретное выражение (возможно тоже самое нужно для partition и т.п.)
+                    exprSource = type.getCast(exprSource, syntax, typeEnv);
+                return syntax.getNotZero("SUM(" + exprSource + ")", type, typeEnv);
             case STRING_AGG:
                 assert exprs.size()==2;
                 return type.getCast(syntax.getOrderGroupAgg(this, exprs, exprReaders, orders, typeEnv), syntax, typeEnv); // тут точная ширина не нужна главное чтобы не больше

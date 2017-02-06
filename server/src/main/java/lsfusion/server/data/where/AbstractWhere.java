@@ -308,9 +308,9 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
     public <K extends BaseExpr> ImCol<GroupSplitWhere<K>> getSplitJoins(ImSet<K> keys, StatType statType, boolean exclusive, GroupStatType type) {
         return getKeyEquals().getSplitJoins(exclusive, keys, statType, type);
     }
-
-    public <K extends BaseExpr> ImCol<GroupJoinsWhere> getWhereJoins(ImSet<K> keys, StatType statType) {
-        return getKeyEquals().getWhereJoins(keys, statType);
+    
+    public <K extends BaseExpr> ImCol<GroupJoinsWhere> getWhereJoins(ImSet<K> keys, StatType statType, boolean groupPackStat) {
+        return getKeyEquals().getWhereJoins(keys, statType, groupPackStat);
     }
 
     public <K extends Expr> ImCol<GroupSplitWhere<K>> getSplitJoins(final boolean exclusive, ImSet<K> exprs, final StatType statType, final GroupStatType type) {
@@ -330,11 +330,11 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
         }.proceed(this, exprs.toMap());
     }
 
-    public <K extends Expr> GroupExprWhereJoins<K> getGroupWhereJoins(ImSet<K> exprs, final StatType statType) {
+    public <K extends Expr> GroupExprWhereJoins<K> getGroupWhereJoins(ImSet<K> exprs, final StatType statType, final boolean forcePackReduce) {
         return new ExclPullWheres<GroupExprWhereJoins<K>, K, Where>() {
             protected GroupExprWhereJoins<K> proceedBase(Where data, ImMap<K, BaseExpr> map) {
                 return GroupExprWhereJoins.create(data.and(Expr.getWhere(map)).getWhereJoins(
-                        map.values().toSet(), statType), map);
+                        map.values().toSet(), statType, forcePackReduce), map);
             }
 
             protected GroupExprWhereJoins<K> initEmpty() {
@@ -349,7 +349,7 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
 
     @IdentityLazy
     public <K extends BaseExpr> ImCol<GroupJoinsWhere> getPushedWhereJoins(ImSet<K> keys, StatType statType) {
-        return getWhereJoins(keys, statType);
+        return getWhereJoins(keys, statType, false);
     }
 
     public <K extends BaseExpr> StatKeys<K> getPushedStatKeys(final ImSet<K> groups, final StatType type, final StatKeys<KeyExpr> pushStatKeys) { // assertion что ключи groups входят в это where

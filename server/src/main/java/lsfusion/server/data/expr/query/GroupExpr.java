@@ -6,11 +6,9 @@ import lsfusion.base.Result;
 import lsfusion.base.SFunctionSet;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
-import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.col.interfaces.mutable.MList;
-import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndexValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetStaticValue;
@@ -32,8 +30,6 @@ import lsfusion.server.data.expr.where.pull.ExprPullWheres;
 import lsfusion.server.data.query.*;
 import lsfusion.server.data.query.innerjoins.*;
 import lsfusion.server.data.query.stat.StatKeys;
-import lsfusion.server.data.query.stat.WhereJoin;
-import lsfusion.server.data.query.stat.WhereJoins;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.translator.KeyExprTranslator;
 import lsfusion.server.data.translator.MapTranslate;
@@ -246,7 +242,7 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
     public GroupJoin getInnerJoin() {
         final Where queryWhere = query.getWhere();
 
-        GroupExprWhereJoins<Expr> groupWhereJoins = queryWhere.getGroupWhereJoins(group.keys(), StatType.GROUP_SPLIT);
+        GroupExprWhereJoins<Expr> groupWhereJoins = queryWhere.getGroupWhereJoins(group.keys(), StatType.GROUP_SPLIT, Settings.get().isGroupStatExprWhereJoins());
 
         ImSet<KeyExpr> innerKeys = getInner().getQueryKeys();
 
