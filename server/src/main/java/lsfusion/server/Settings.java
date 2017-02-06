@@ -54,11 +54,8 @@ public class Settings {
     // будет ли оптимизатор разбивать группирующие выражения, чтобы не было FULL JOIN и UNION ALL
     private boolean splitSelectGroupInnerJoins = false;
 
-    // будет ли оптимизатор разбивать inner join'ы по статистике в группировке (чем меньше разбиений, тем больше группируются вычисления одного показателя, но меньшая вероятность сгруппировать разные показатели)
-    private boolean splitGroupStatInnerJoins = true; // потом эту
-    
-    // групировать ли inner join'ы в группировочном выражении по статистике (чем больше группируем, тем теоретически меньше точность проталкивания, с другой стороны лучше группируются вычисления)
-    private boolean groupStatExprWhereJoins = true; // сначала выключать эту опцию
+    // будет ли оптимизатор разбивать inner join'ы по статистике
+    private boolean splitGroupStatInnerJoins = false;
 
     // будет ли оптимизатор разбивать группирующие выражения на максимум, так чтобы в группируемом выражении не было бы Case'ов
     private boolean splitGroupSelectExprcases = false;
@@ -370,14 +367,6 @@ public class Settings {
 
     public void setSplitGroupStatInnerJoins(boolean splitGroupStatInnerJoins) {
         this.splitGroupStatInnerJoins = splitGroupStatInnerJoins;
-    }
-
-    public boolean isGroupStatExprWhereJoins() {
-        return groupStatExprWhereJoins;
-    }
-
-    public void setGroupStatExprWhereJoins(boolean groupStatExprWhereJoins) {
-        this.groupStatExprWhereJoins = groupStatExprWhereJoins;
     }
 
     public boolean isUseFJInsteadOfUnion() {

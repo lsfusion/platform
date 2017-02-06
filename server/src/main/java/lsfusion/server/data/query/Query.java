@@ -228,7 +228,6 @@ public class Query<K,V> extends IQuery<K,V> {
     }
 
     @ContextTwin
-    @StackMessage("{message.core.query.pack}")
     public IQuery<K,V> calculatePack() {
         return new Query<>(this, true);
     }
