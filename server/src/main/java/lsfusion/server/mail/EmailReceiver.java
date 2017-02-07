@@ -227,7 +227,7 @@ public class EmailReceiver {
                     String subjectEmail = message.getSubject();
                     Object messageContent = getEmailContent(message);
                     MultipartBody messageEmail = messageContent instanceof Multipart ? getMultipartBody(subjectEmail, (Multipart) messageContent) :
-                            messageContent instanceof BASE64DecoderStream ? getMultipartBody64(subjectEmail, (BASE64DecoderStream) messageContent, message.getFileName()) :
+                            messageContent instanceof BASE64DecoderStream ? getMultipartBody64(subjectEmail, (BASE64DecoderStream) messageContent, MimeUtility.decodeText(message.getFileName())) :
                                     messageContent instanceof String ? new MultipartBody((String) messageContent, null) : null;
                     if (messageEmail == null) {
                         messageEmail = new MultipartBody(messageContent == null ? null : String.valueOf(messageContent), null);
@@ -321,12 +321,10 @@ public class EmailReceiver {
                 Object content = bp.getContent();
                 if (content instanceof BASE64DecoderStream) {
                     byte[] byteArray = IOUtils.readBytesFromStream((BASE64DecoderStream) content);
-                    String fileName = bp.getFileName();
-                    if (fileName != null) {
-                        String[] fileNameAndExt = fileName.split("\\.");
-                        String fileExtension = fileNameAndExt.length > 1 ? fileNameAndExt[fileNameAndExt.length - 1] : "";
-                        attachments.put(fileName, BaseUtils.mergeFileAndExtension(byteArray, fileExtension.getBytes()));
-                    }
+                    String fileName = MimeUtility.decodeText(bp.getFileName());
+                    String[] fileNameAndExt = fileName.split("\\.");
+                    String fileExtension = fileNameAndExt.length > 1 ? fileNameAndExt[fileNameAndExt.length - 1] : "";
+                    attachments.put(fileName, BaseUtils.mergeFileAndExtension(byteArray, fileExtension.getBytes()));
                 } else if (content instanceof MimeMultipart) {
                     body = getMultipartBody(subjectEmail, (Multipart) content).message;
                 } else
