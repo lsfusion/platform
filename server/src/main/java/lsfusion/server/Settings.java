@@ -1823,7 +1823,7 @@ public class Settings {
     }
 
     private int conflictSleepThreshold = 3; // начинать засыпать после попытки включительно
-    private int conflictSleepTimeCoeff = 1; // кол-во попыток умноженное на это время (порог ожидания)
+    private double conflictSleepTimeDegree = 2; // кол-во попыток в степени этого времени (порог ожидания)
 
     public int getConflictSleepThreshold() {
         return conflictSleepThreshold;
@@ -1833,12 +1833,12 @@ public class Settings {
         this.conflictSleepThreshold = conflictSleepThreshold;
     }
 
-    public int getConflictSleepTimeCoeff() {
-        return conflictSleepTimeCoeff;
+    public double getConflictSleepTimeDegree() {
+        return conflictSleepTimeDegree;
     }
 
-    public void setConflictSleepTimeCoeff(int conflictSleepTimeCoeff) {
-        this.conflictSleepTimeCoeff = conflictSleepTimeCoeff;
+    public void setConflictSleepTimeDegree(double conflictSleepTimeDegree) {
+        this.conflictSleepTimeDegree = conflictSleepTimeDegree;
     }
 
     private int deadLockThreshold = 0; // после какой попытки начинать управлять deadLock приоритетом

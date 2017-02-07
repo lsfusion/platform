@@ -1854,25 +1854,25 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                     }
                 }
 
-                // update conflicts
                 if(t instanceof SQLConflictException) {
-                    Integer attempts = attemptCountMap.get(((SQLConflictException) t).getDescription(true));
-                    if(attempts != null && attempts >= settings.getConflictSleepThreshold())
-                        try {
-                            ServerLoggers.sqlHandLogger.info("Sleep started after conflict updates : " + attempts);
-                            Thread.sleep(attempts * settings.getConflictSleepTimeCoeff() * 1000);
-                            ServerLoggers.sqlHandLogger.info("Sleep ended after conflict updates : " + attempts);
-                        } catch (InterruptedException e) {
-                            ThreadUtils.interruptThread(sql, Thread.currentThread()); // тут SQL
+                    SQLConflictException conflict = (SQLConflictException) t;
+                    Integer attempts = attemptCountMap.get(conflict.getDescription(true));
+                    if(attempts != null) {
+                        if(conflict.updateConflict) { // update conflicts
+                            if (attempts >= settings.getConflictSleepThreshold())
+                                try {
+                                    ServerLoggers.sqlHandLogger.info("Sleep started after conflict updates : " + attempts);
+                                    Thread.sleep((long) (BaseUtils.pow(settings.getConflictSleepTimeDegree(), attempts) * 1000));
+                                    ServerLoggers.sqlHandLogger.info("Sleep ended after conflict updates : " + attempts);
+                                } catch (InterruptedException e) {
+                                    ThreadUtils.interruptThread(sql, Thread.currentThread()); // тут SQL
+                                }
+                        } else { // dead locks
+                            if(attempts >= settings.getDeadLockThreshold()) {
+                                deadLockPriority = true;
+                                ServerLoggers.sqlHandLogger.info("Using deterministic dead-lock : " + attempts + ", " + deadLockPriority);
+                            }
                         }
-                }
-
-                // dead locks
-                if(t instanceof SQLConflictException) {
-                    Integer attempts = attemptCountMap.get(((SQLConflictException) t).getDescription(false));
-                    if(attempts != null && attempts >= settings.getDeadLockThreshold()) {
-                        deadLockPriority = true;
-                        ServerLoggers.sqlHandLogger.info("Using deterministic dead-lock : " + attempts + ", " + deadLockPriority);
                     }
                 }
 
