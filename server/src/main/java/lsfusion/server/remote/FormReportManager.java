@@ -10,6 +10,7 @@ import lsfusion.interop.form.ReportGenerationData;
 import lsfusion.server.SystemProperties;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.entity.CalcPropertyObjectEntity;
+import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.entity.GroupObjectHierarchy;
 import lsfusion.server.form.instance.*;
 import lsfusion.server.form.view.FormView;
@@ -71,35 +72,32 @@ public class FormReportManager<T extends BusinessLogics<T>, F extends FormInstan
                  
             }
         } else {
-            Set<Integer> hidedGroupsId = new HashSet<>();
-            for (GroupObjectInstance group : form.getGroups()) {
-                if (group.curClassView == ClassViewType.HIDE || groupId != null && groupId != group.getID()) {
-                    hidedGroupsId.add(group.getID());
-                }
-            }
             try {
-                ReportDesignGenerator generator = new ReportDesignGenerator(richDesign, getReportHierarchy(groupId), 
-                        hidedGroupsId, userPreferences, toExcel, null, groupId, groupId != null ? form : null);
-                Map<String, JasperDesign> designs = generator.generate();
                 String sid = getDefaultReportSID(toExcel, groupId);
-                String reportName;
+                Map<String, JasperDesign> designs = getReportDesignsMap(toExcel, groupId, userPreferences, null);
                 for (Map.Entry<String, JasperDesign> entry : designs.entrySet()) {
                     String id = entry.getKey();
-                    reportName = getAutoReportName(id, sid);
+                    String reportName = getAutoReportName(id, sid);
                     new File(reportName).getParentFile().mkdirs();
+                    
                     JRXmlWriter.writeReport(JasperCompileManager.compileReport(entry.getValue()), reportName, "UTF-8");
+                    
                     ret.put(
                             SystemProperties.userDir + "/" + reportName,
                             SystemProperties.userDir + "/target/classes/reports/custom/" + sid
-                    );
-
-                }
+                    );                }
 
             } catch (JRException e) {
                 throw new RuntimeException(localize("{form.instance.error.creating.design}"), e);
             }
         }
         return ret;
+    }
+
+    public Map<String, JasperDesign> getReportDesignsMap(boolean toExcel, Integer groupId, FormUserPreferences userPreferences, Map<String, LinkedHashSet<List<Object>>> columnGroupObjects) throws JRException {
+        ReportDesignGenerator generator = new ReportDesignGenerator(richDesign, getReportHierarchy(groupId),
+                getHiddenGroups(groupId), userPreferences, toExcel, columnGroupObjects, groupId, groupId != null ? form : null);
+        return generator.generate();
     }
 
     public ReportGenerationData getReportData(boolean toExcel) {
@@ -134,10 +132,14 @@ public class FormReportManager<T extends BusinessLogics<T>, F extends FormInstan
 
     public GroupObjectHierarchy.ReportHierarchy getReportHierarchy(Integer groupId, boolean forceGroupNonJoinable) {
         if (groupId == null) {
-            return form.entity.getReportHierarchy(forceGroupNonJoinable);
+            return getFormEntity().getReportHierarchy(forceGroupNonJoinable);
         } else {
-            return form.entity.getSingleGroupReportHierarchy(groupId, forceGroupNonJoinable);
+            return getFormEntity().getSingleGroupReportHierarchy(groupId, forceGroupNonJoinable);
         }
+    }
+
+    public FormEntity<T> getFormEntity() {
+        return form.entity;
     }
 
     private Set<Integer> getGridGroups(Integer groupId) {
@@ -212,26 +214,17 @@ public class FormReportManager<T extends BusinessLogics<T>, F extends FormInstan
     }
 
     private Map<String, JasperDesign> getReportDesigns(boolean toExcel, Integer groupId, FormUserPreferences userPreferences, Map<String, LinkedHashSet<List<Object>>> columnGroupObjects) {
-        String sid = getDefaultReportSID(toExcel, groupId);
         Map<String, JasperDesign> customDesigns = getCustomReportDesigns(toExcel, groupId);
         if (customDesigns != null) {
             return customDesigns;
         }
 
-        Set<Integer> hidedGroupsId = new HashSet<>();
-        for (GroupObjectInstance group : form.getGroups()) {
-            if (group.curClassView == ClassViewType.HIDE || groupId != null && groupId != group.getID()) {
-                hidedGroupsId.add(group.getID());
-            }
-        }
         try {
-            ReportDesignGenerator generator = new ReportDesignGenerator(richDesign, getReportHierarchy(groupId), 
-                    hidedGroupsId, userPreferences, toExcel, columnGroupObjects, groupId, groupId != null ? form : null);
-            Map<String, JasperDesign> designs = generator.generate();
+            String sid = getDefaultReportSID(toExcel, groupId);
+            Map<String, JasperDesign> designs = getReportDesignsMap(toExcel, groupId, userPreferences, columnGroupObjects);
             for (Map.Entry<String, JasperDesign> entry : designs.entrySet()) {
                 String id = entry.getKey();
                 String reportName = getAutoReportName(id, sid);
-
                 new File(reportName).getParentFile().mkdirs();
 
                 JRXmlWriter.writeReport(JasperCompileManager.compileReport(entry.getValue()), reportName, "UTF-8");
@@ -240,6 +233,16 @@ public class FormReportManager<T extends BusinessLogics<T>, F extends FormInstan
         } catch (JRException e) {
             throw new RuntimeException(localize("{form.instance.error.creating.design}"), e);
         }
+    }
+
+    private Set<Integer> getHiddenGroups(Integer groupId) {
+        Set<Integer> hidedGroupsId = new HashSet<>();
+        for (GroupObjectInstance group : form.getGroups()) {
+            if (group.curClassView == ClassViewType.HIDE || groupId != null && groupId != group.getID()) {
+                hidedGroupsId.add(group.getID());
+            }
+        }
+        return hidedGroupsId;
     }
 
     private InputStream getCustomReportInputStream(String sid, GroupObjectHierarchy.ReportNode node, boolean toExcel, Integer groupId) throws SQLException, SQLHandledException {
@@ -251,7 +254,7 @@ public class FormReportManager<T extends BusinessLogics<T>, F extends FormInstan
             }
         }
         if (iStream == null && node == null) {
-            String resourceName = getReportPathPropStreamResourceName(form.entity.reportPathProp, toExcel, groupId);
+            String resourceName = getReportPathPropStreamResourceName(getFormEntity().reportPathProp, toExcel, groupId);
             if (resourceName != null) {
                 iStream = getClass().getResourceAsStream(resourceName);
             }
@@ -283,7 +286,7 @@ public class FormReportManager<T extends BusinessLogics<T>, F extends FormInstan
                     resourceName = getReportPathPropStreamResourceName(node.second.getGroupList().get(0).reportPathProp, toExcel, groupId);
                 }
                 if (resourceName == null && node.second == null) {
-                    resourceName = getReportPathPropStreamResourceName(form.entity.reportPathProp, toExcel, groupId);
+                    resourceName = getReportPathPropStreamResourceName(getFormEntity().reportPathProp, toExcel, groupId);
                 }
                 if (resourceName == null) {
                     resourceName = "/" + findCustomReportDesignName(node.first, getDefaultReportSID(toExcel, groupId));

@@ -84,7 +84,7 @@ public class OldProperty<T extends PropertyInterface> extends SessionCalcPropert
     @Override
     public void finalizeAroundInit() {
         super.finalizeAroundInit();
-        hideOlds(); // для multi-threading'а
+        hideOlds(); // для multi-threading'а, возможно правильнее подсчитывать getLinks в ActionProperty, но похоже что разницы никакой, а там небольшая проблема с кжшами (links)
     }
 
     @Override

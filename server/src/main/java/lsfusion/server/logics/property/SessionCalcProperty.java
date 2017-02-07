@@ -28,4 +28,9 @@ public abstract class SessionCalcProperty<T extends PropertyInterface> extends S
     public ImSet<SessionCalcProperty> getSessionCalcDepends(boolean events) {
         return super.getSessionCalcDepends(events).addExcl(this); // вызываем super так как могут быть вычисляемые события внутри (желательно для SetOrDropped оптимизации)
     }
+
+    @Override
+    public boolean aspectDebugHasAlotKeys() {
+        return property instanceof AggregateProperty && ((AggregateProperty) property).hasAlotKeys();
+    }
 }

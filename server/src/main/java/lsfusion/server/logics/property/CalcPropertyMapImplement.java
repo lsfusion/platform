@@ -137,6 +137,16 @@ public class CalcPropertyMapImplement<P extends PropertyInterface, T extends Pro
         return property.readClasses(context.getSession(), mapping.join(interfaceValues), context.getModifier(), context.getQueryEnv());
     }
 
+    @Override
+    public boolean mapHasAlotKeys() {
+        return property instanceof AggregateProperty && ((AggregateProperty) property).hasAlotKeys();
+    }
+
+    @Override
+    public int mapEstComplexity() {
+        return property.getEstComplexity();
+    }
+
     public ImSet<DataProperty> mapChangeProps() {
         return property.getChangeProps();
     }

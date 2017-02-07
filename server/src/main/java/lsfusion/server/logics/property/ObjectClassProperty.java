@@ -3,20 +3,14 @@ package lsfusion.server.logics.property;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.interop.ClassViewType;
+import lsfusion.server.SystemProperties;
 import lsfusion.server.caches.IdentityInstanceLazy;
 import lsfusion.server.classes.BaseClass;
-import lsfusion.server.classes.CustomClass;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.where.WhereBuilder;
-import lsfusion.server.form.entity.FormEntity;
-import lsfusion.server.form.entity.ObjectEntity;
-import lsfusion.server.form.entity.PropertyDrawEntity;
-import lsfusion.server.form.entity.PropertyObjectInterfaceEntity;
 import lsfusion.server.logics.i18n.LocalizedString;
-import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.actions.ChangeClassActionProperty;
 import lsfusion.server.session.Modifier;
 import lsfusion.server.session.PropertyChanges;
@@ -61,5 +55,10 @@ public class ObjectClassProperty extends AggregateProperty<ClassPropertyInterfac
     @Override
     public String getChangeExtSID() {
         return "OBJECT";
+    }
+
+    @Override
+    public boolean aspectDebugHasAlotKeys() { // оптимизация см. CaseUnionProperty 
+        return false;
     }
 }

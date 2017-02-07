@@ -55,7 +55,7 @@ public class ReportDesignGenerator {
 
     private static final int defaultPageMargin = 20;
 
-    private final FormInstance form;
+    private final FormInstance form; // нужен только для выгрузки grid'а в excel showif'ы определить
     
     private int pageWidth;
     private int pageUsableWidth;

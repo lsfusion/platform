@@ -140,6 +140,14 @@ public class PropertyInterface<P extends PropertyInterface<P>> extends IdentityO
         return SetFact.EMPTY();
     }
 
+    public boolean mapHasAlotKeys() {
+        return true;
+    }
+
+    public int mapEstComplexity() {
+        return 0;
+    }
+
     public boolean mapIsComplex() {
         return false;
     }

@@ -8,6 +8,7 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
+import lsfusion.server.SystemProperties;
 import lsfusion.server.caches.IdentityStartLazy;
 import lsfusion.server.caches.IdentityStrongLazy;
 import lsfusion.server.classes.ValueClass;
@@ -36,6 +37,7 @@ import lsfusion.server.session.PropertyChange;
 import lsfusion.server.session.PropertyChanges;
 import lsfusion.server.session.StructChanges;
 
+import java.util.Comparator;
 import java.util.List;
 
 public class CaseUnionProperty extends IncrementUnionProperty {
@@ -449,6 +451,27 @@ public class CaseUnionProperty extends IncrementUnionProperty {
                    return true;
             }
         }
+        return false;
+    }
+
+    @Override
+    public boolean aspectDebugHasAlotKeys() { // оптимизация, так как hasAlotKeys единственный кто в debug вызывает getExpr и на очень сложных свойствах это сжирает время (процентов 10 от времени старта)
+        ImList<CalcCase<Interface>> cases = getCases();
+        ImList<CalcCase<Interface>> simpleCases = cases.filterList(new SFunctionSet<CalcCase<Interface>>() {
+            public boolean contains(CalcCase<Interface> element) {
+                return element.isSimple() || element.isClassSimple();
+            }
+        });
+        for (CalcCase<Interface> aCase : simpleCases.getCol().sort(new Comparator<CalcCase<Interface>>() {
+            public int compare(CalcCase<Interface> o1, CalcCase<Interface> o2) {
+                return Long.compare(o1.implement.mapEstComplexity(), o2.implement.mapEstComplexity());
+            }
+        })) {
+            if (aCase.implement.mapHasAlotKeys())
+                return true;
+        }
+        if (simpleCases.size() != cases.size())
+            return super.aspectDebugHasAlotKeys(); // значит есть WHERE, то есть AND
         return false;
     }
 }

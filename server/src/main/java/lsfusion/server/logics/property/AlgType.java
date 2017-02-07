@@ -36,6 +36,7 @@ public interface AlgType {
     AlgInfoType defaultType = useInfer ? InferType.PREVBASE : CalcClassType.PREVBASE;
     AlgType caseCheckType = useInfer ? InferType.PREVSAME : CalcClassType.PREVSAME; // вопрос, так как возможно нужна сильнее логика разгребать
     AlgInfoType checkType = defaultType;
+    AlgInfoType statAlotType = defaultType;
     AlgInfoType hintType = CalcType.EXPR.getAlgInfo();
     AlgInfoType drillType = defaultType;
     AlgInfoType syncType = defaultType; // тоже желательно совпадать с настройкой для classValueWhere

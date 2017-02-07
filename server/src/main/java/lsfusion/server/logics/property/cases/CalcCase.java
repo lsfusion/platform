@@ -1,10 +1,7 @@
 package lsfusion.server.logics.property.cases;
 
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
-import lsfusion.server.logics.property.CalcPropertyInterfaceImplement;
-import lsfusion.server.logics.property.CaseUnionProperty;
-import lsfusion.server.logics.property.PropertyInterface;
-import lsfusion.server.logics.property.UnionProperty;
+import lsfusion.server.logics.property.*;
 
 public class CalcCase<T extends PropertyInterface> extends Case<T, CalcPropertyInterfaceImplement<T>, CalcPropertyInterfaceImplement<T>> {
     
@@ -18,6 +15,10 @@ public class CalcCase<T extends PropertyInterface> extends Case<T, CalcPropertyI
 
     public boolean isSimple() { // дебильновато конечно, но не хочется классы плодить пока
         return where == implement;
+    }
+
+    public boolean isClassSimple() { // дебильновато конечно, но не хочется классы плодить пока
+        return implement instanceof CalcPropertyMapImplement && ((CalcPropertyMapImplement) implement).mapClassProperty().equalsMap(where);
     }
 
     public <P extends PropertyInterface> CalcCase<P> map(ImRevMap<T, P> map) {

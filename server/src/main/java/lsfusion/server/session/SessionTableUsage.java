@@ -176,10 +176,6 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K>, TableOwner {
         return read(session.sql, session.env, MapFact.<V, Boolean>EMPTYORDER());
     }
 
-    public ImOrderMap<ImMap<K, Object>, ImMap<V, Object>> read(FormInstance formInstance, ImOrderMap<V, Boolean> orders) throws SQLException, SQLHandledException {
-        return read(formInstance.session.sql, formInstance.getQueryEnv(), orders);
-    }
-
     public ImOrderMap<ImMap<K, Object>, ImMap<V, Object>> read(SQLSession session, QueryEnvironment env, ImOrderMap<V, Boolean> orders) throws SQLException, SQLHandledException {
         return read(MapFact.<K, DataObject>EMPTY(), session, env, orders);
     }

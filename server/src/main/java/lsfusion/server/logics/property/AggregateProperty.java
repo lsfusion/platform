@@ -8,6 +8,7 @@ import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndexValue;
 import lsfusion.interop.Compare;
 import lsfusion.server.Settings;
+import lsfusion.server.SystemProperties;
 import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.caches.IdentityStartLazy;
 import lsfusion.server.classes.BaseClass;
@@ -15,10 +16,12 @@ import lsfusion.server.data.*;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.NullableKeyExpr;
+import lsfusion.server.data.expr.query.DistinctKeys;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.expr.query.StatType;
 import lsfusion.server.data.query.Query;
 import lsfusion.server.data.query.QueryBuilder;
+import lsfusion.server.data.query.stat.Cost;
 import lsfusion.server.data.query.stat.StatKeys;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassWhere;
@@ -138,8 +141,8 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Cal
         return calculateExpr(joinImplement, CalcType.EXPR, PropertyChanges.EMPTY, null);
     }
 
-    public Expr calculateStatExpr(ImMap<T, ? extends Expr> joinImplement) { // вызывается до stored, поэтому чтобы не было проблем с кэшами, сделано так
-        return calculateExpr(joinImplement, CalcType.STAT, PropertyChanges.EMPTY, null);
+    public Expr calculateStatExpr(ImMap<T, ? extends Expr> joinImplement, boolean alotHeur) { // вызывается до stored, поэтому чтобы не было проблем с кэшами, сделано так
+        return calculateExpr(joinImplement, alotHeur ? CalcType.STAT_ALOT : CalcType.STAT, PropertyChanges.EMPTY, null);
     }
 
     public Expr calculateInconsistentExpr(ImMap<T, ? extends Expr> joinImplement) { // вызывается до stored, поэтому чтобы не было проблем с кэшами, сделано так
@@ -231,17 +234,33 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Cal
             }});
     }
 
+    public StatKeys<T> getInterfaceClassStats() {
+        return getInterfaceClassStats(false);
+    }
+    
     @IdentityStartLazy
     @StackMessage("{message.core.property.get.interface.class.stats}")
     @ThisMessage
-    public StatKeys<T> getInterfaceClassStats() {
+    public StatKeys<T> getInterfaceClassStats(boolean alotHeur) {
         ImRevMap<T,KeyExpr> mapKeys = getMapKeys();
-        Where where = calculateStatExpr(mapKeys).getWhere();
+        Where where = calculateStatExpr(mapKeys, alotHeur).getWhere();
         mapKeys = mapKeys.filterInclValuesRev(BaseUtils.<ImSet<KeyExpr>>immutableCast(where.getOuterKeys()));
         return where.getFullStatKeys(mapKeys.valuesSet(), StatType.PROP_STATS).mapBack(mapKeys);
     }
 
     public boolean hasAlotKeys() {
+//        if(1==1) return false;
+        if(SystemProperties.isDebug) {
+            if (!isFull(AlgType.statAlotType))
+                return true;
+            if (isStored())
+                return false;
+            return aspectDebugHasAlotKeys();
+        }
         return Stat.ALOT.lessEquals(getInterfaceClassStats().getRows());
+    }
+
+    public boolean aspectDebugHasAlotKeys() {
+        return Stat.ALOT.lessEquals(getInterfaceClassStats(true).getRows());
     }
 }

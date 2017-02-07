@@ -15,7 +15,10 @@ import lsfusion.interop.form.FormUserPreferences;
 import lsfusion.interop.form.GroupObjectUserPreferences;
 import lsfusion.interop.form.ReportConstants;
 import lsfusion.server.Settings;
+import lsfusion.server.classes.BaseClass;
+import lsfusion.server.data.QueryEnvironment;
 import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.data.SQLSession;
 import lsfusion.server.data.query.Join;
 import lsfusion.server.data.query.Query;
 import lsfusion.server.data.query.QueryBuilder;
@@ -24,6 +27,7 @@ import lsfusion.server.form.entity.GroupObjectEntity;
 import lsfusion.server.form.entity.GroupObjectHierarchy;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.property.CalcProperty;
+import lsfusion.server.session.DataSession;
 import lsfusion.server.session.Modifier;
 import lsfusion.server.session.SessionTableUsage;
 import lsfusion.server.stack.ParamMessage;
@@ -116,7 +120,7 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
             newQuery.and(parentJoin.getWhere());
         }
 
-        Modifier modifier = form.getModifier();
+        Modifier modifier = getModifier();
         for (GroupObjectInstance group : groups) {
             if (groupId == null || groupId.equals(group.getID())) {
                 boolean inParent = parentGroups.contains(group);
@@ -193,11 +197,15 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
             }});
 
         Query<ObjectInstance, Pair<Object, PropertyType>> query = createQuery(groups, parentGroups, parentTable, orders, propTypes);
+        DataSession session = getSession();
+        QueryEnvironment queryEnv = getQueryEnv();
+        BaseClass baseClass = getBaseClass();
+        SQLSession sql = session.sql;
         SessionTableUsage<ObjectInstance, Pair<Object, PropertyType>> reportTable = new SessionTableUsage<>(
-                form.session.sql, query, form.BL.LM.baseClass, form.getQueryEnv(), keyTypes, propTypes.result);
+                sql, query, baseClass, queryEnv, keyTypes, propTypes.result);
 
         try {
-            ImOrderMap<ImMap<ObjectInstance, Object>, ImMap<Pair<Object, PropertyType>, Object>> resultData = reportTable.read(form, orders.result);
+            ImOrderMap<ImMap<ObjectInstance, Object>, ImMap<Pair<Object, PropertyType>, Object>> resultData = reportTable.read(sql, getQueryEnv(), orders.result);
 
             List<Pair<String, PropertyReaderInstance>> propertyList = new ArrayList<>();
             for(PropertyDrawInstance property : filterProperties(groups.getSet())) {
@@ -243,8 +251,24 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
 
             iterateChildReports(hierarchy.getChildNodes(node), groups, reportTable);
         } finally {
-            reportTable.drop(form.session.sql, form.session.getOwner());
+            reportTable.drop(sql, session.getOwner());
         }
+    }
+
+    private BaseClass getBaseClass() {
+        return form.BL.LM.baseClass;
+    }
+
+    private QueryEnvironment getQueryEnv() {
+        return form.getQueryEnv();
+    }
+
+    private DataSession getSession() {
+        return form.session;
+    }
+
+    private Modifier getModifier() {
+        return form.getModifier();
     }
 
     // В отчет по одной группе объектов не добавляем свойства, которые идут в панель  
@@ -341,7 +365,7 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
         QueryBuilder<ObjectInstance, Object> query = new QueryBuilder<>(objects);
         MOrderMap<Object, Boolean> mQueryOrders = MapFact.mOrderMap();
 
-        Modifier modifier = form.getModifier();
+        Modifier modifier = getModifier();
         for (GroupObjectInstance group : groups) {
             query.and(group.getWhere(query.getMapExprs(), modifier));
 
@@ -367,7 +391,7 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
             query.addProperty(property.footerReader, property.propertyFooter.getExpr(query.getMapExprs(), modifier));
         }
 
-        return query.execute(form, mQueryOrders.immutableOrder(), 0);
+        return query.execute(getSession().sql, mQueryOrders.immutableOrder(), 0, getQueryEnv());
     }
 
     private Set<GroupObjectInstance> getPropertyDependencies(PropertyDrawInstance<?> property) {

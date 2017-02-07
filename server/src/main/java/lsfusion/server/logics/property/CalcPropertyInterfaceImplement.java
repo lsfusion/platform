@@ -44,6 +44,9 @@ public interface CalcPropertyInterfaceImplement<P extends PropertyInterface> ext
 
     boolean ignoreReadOnlyPolicy();
 
+    boolean mapHasAlotKeys();
+    int mapEstComplexity();
+    
     ImSet<DataProperty> mapChangeProps();
     boolean mapIsComplex();
     long mapComplexity();

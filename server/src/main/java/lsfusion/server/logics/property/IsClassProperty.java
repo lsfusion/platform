@@ -11,6 +11,7 @@ import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
+import lsfusion.server.SystemProperties;
 import lsfusion.server.caches.ManualLazy;
 import lsfusion.server.classes.*;
 import lsfusion.server.data.expr.Expr;
@@ -182,5 +183,10 @@ public class IsClassProperty extends AggregateProperty<ClassPropertyInterface> {
     @Override
     public boolean ignoreReadOnlyPolicy() {
         return true;
+    }
+
+    @Override
+    public boolean aspectDebugHasAlotKeys() { // оптимизация см. CaseUnionProperty
+        return getInterfaceClass() instanceof DataClass;
     }
 }

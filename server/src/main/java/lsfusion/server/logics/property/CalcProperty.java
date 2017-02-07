@@ -11,6 +11,7 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.interop.Compare;
 import lsfusion.server.Settings;
+import lsfusion.server.SystemProperties;
 import lsfusion.server.caches.*;
 import lsfusion.server.classes.*;
 import lsfusion.server.classes.sets.AndClassSet;
@@ -401,13 +402,13 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         return !noOld();
     }
 
-    protected Expr getVirtualTableExpr(ImMap<T, ? extends Expr> joinImplement, CalcClassType classType) {
+    protected Expr getVirtualTableExpr(ImMap<T, ? extends Expr> joinImplement, AlgType classType) {
         VirtualTable<T> virtualTable = getVirtualTable(classType);
         return virtualTable.join(virtualTable.mapFields.join(joinImplement)).getExpr(virtualTable.propValue);
     }
 
     @IdentityStrongLazy
-    public VirtualTable<T> getVirtualTable(CalcClassType classType) {
+    public VirtualTable<T> getVirtualTable(AlgType classType) {
         return new VirtualTable<>(this, classType);
     }
 
@@ -467,7 +468,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         public final ImRevMap<KeyField, P> mapFields;
         public final PropertyField propValue;
 
-        public VirtualTable(final CalcProperty<P> property, CalcClassType classType) {
+        public VirtualTable(final CalcProperty<P> property, AlgType algType) {
             super(property.getSID());
             
             ImRevMap<P, KeyField> revMapFields = property.interfaces.mapRevValues(new GetValue<KeyField, P>() {
@@ -480,8 +481,8 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
             propValue = new PropertyField("value", property.getType());
             properties = SetFact.singleton(propValue);
 
-            classes = property.getClassWhere(classType).remap(revMapFields);
-            propertyClasses = MapFact.singleton(propValue, property.getClassValueWhere(classType).remap(MapFact.<Object, Field>addRevExcl(revMapFields, "value", propValue)));
+            classes = property.getClassWhere(algType).remap(revMapFields);
+            propertyClasses = MapFact.singleton(propValue, property.getClassValueWhere(algType).remap(MapFact.<Object, Field>addRevExcl(revMapFields, "value", propValue)));
         }
 
         public TableStatKeys getTableStatKeys() {
@@ -623,6 +624,10 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         if(recDepends == null)
             recDepends = calculateRecDepends();
         return recDepends;
+    }
+    
+    public int getEstComplexity() {
+        return getRecDepends().size();
     }
 
     public ImSet<CalcProperty> calculateRecDepends() {
@@ -827,6 +832,12 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
                 return changedExpr.ifElse(changedExprWhere.toWhere(), getExpr(joinImplement));
             }
         }
+        
+        if(calcType.isStatAlot() && explicitClasses != null && this instanceof AggregateProperty && !((AggregateProperty)this).hasAlotKeys()) {
+            assert SystemProperties.isDebug;
+            assert !hasChanges(propChanges) && modify == null;
+            return getVirtualTableExpr(joinImplement, AlgType.statAlotType); // тут собственно смысл в том чтобы класс брать из сигнатуры и не высчитывать
+        }                    
 
         return calculateExpr(joinImplement, calcType, propChanges, changedWhere);
     }
