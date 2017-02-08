@@ -227,7 +227,7 @@ public class EmailReceiver {
                     String subjectEmail = message.getSubject();
                     Object messageContent = getEmailContent(message);
                     MultipartBody messageEmail = messageContent instanceof Multipart ? getMultipartBody(subjectEmail, (Multipart) messageContent) :
-                            messageContent instanceof BASE64DecoderStream ? getMultipartBody64(subjectEmail, (BASE64DecoderStream) messageContent, MimeUtility.decodeText(message.getFileName())) :
+                            messageContent instanceof BASE64DecoderStream ? getMultipartBody64(subjectEmail, (BASE64DecoderStream) messageContent, decodeFileName(message.getFileName())) :
                                     messageContent instanceof String ? new MultipartBody((String) messageContent, null) : null;
                     if (messageEmail == null) {
                         messageEmail = new MultipartBody(messageContent == null ? null : String.valueOf(messageContent), null);
@@ -293,7 +293,7 @@ public class EmailReceiver {
             BodyPart bp = mp.getBodyPart(i);
             String disp = bp.getDisposition();
             if (disp != null && (disp.equalsIgnoreCase(BodyPart.ATTACHMENT))) {
-                String fileName = MimeUtility.decodeText(bp.getFileName());
+                String fileName = decodeFileName(bp.getFileName());
                 String[] fileNameAndExt = fileName.split("\\.");
                 String fileExtension = fileNameAndExt.length > 1 ? fileNameAndExt[fileNameAndExt.length - 1] : "";
                 
@@ -321,7 +321,7 @@ public class EmailReceiver {
                 Object content = bp.getContent();
                 if (content instanceof BASE64DecoderStream) {
                     byte[] byteArray = IOUtils.readBytesFromStream((BASE64DecoderStream) content);
-                    String fileName = MimeUtility.decodeText(bp.getFileName());
+                    String fileName = decodeFileName(bp.getFileName());
                     String[] fileNameAndExt = fileName.split("\\.");
                     String fileExtension = fileNameAndExt.length > 1 ? fileNameAndExt[fileNameAndExt.length - 1] : "";
                     attachments.put(fileName, BaseUtils.mergeFileAndExtension(byteArray, fileExtension.getBytes()));
@@ -341,6 +341,10 @@ public class EmailReceiver {
         String fileExtension = fileNameAndExt.length > 1 ? fileNameAndExt[fileNameAndExt.length - 1] : "";
         attachments.put(filename, BaseUtils.mergeFileAndExtension(byteArray, fileExtension.getBytes()));
         return new MultipartBody(subjectEmail, attachments);
+    }
+
+    private String decodeFileName(String value) throws UnsupportedEncodingException {
+        return value == null ? "attachment.txt" : MimeUtility.decodeText(value);
     }
 
     private class MultipartBody {
