@@ -79,8 +79,8 @@ public class ReceiveEmailActionProperty extends ScriptingActionProperty {
                             isPop3Account, deleteMessagesAccount, lastDaysAccount);
 
                 } catch (Exception e) {
-                    logError(context, localize("{mail.failed.to.receive.mail}") + " " + nameAccount + " : " + e.toString());
-                    e.printStackTrace();
+                    logError(context, localize("{mail.failed.to.receive.mail}") + " " + nameAccount);
+                    logger.error(localize("{mail.failed.to.receive.mail}"), e);
                 }
             }
         } else {
