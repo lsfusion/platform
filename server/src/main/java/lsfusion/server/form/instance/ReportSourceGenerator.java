@@ -83,13 +83,13 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
         }
     }
 
-    public Map<String, ReportData> generate() throws SQLException, SQLHandledException {
-        iterateChildReports(hierarchy.getRootNodes(), SetFact.<GroupObjectInstance>EMPTYORDER(), null);
+    public Map<String, ReportData> generate(boolean custom) throws SQLException, SQLHandledException {
+        iterateChildReports(hierarchy.getRootNodes(), SetFact.<GroupObjectInstance>EMPTYORDER(), null, custom);
         return sources;
     }
 
     private Query<ObjectInstance, Pair<Object, PropertyType>> createQuery(ImOrderSet<GroupObjectInstance> groups, ImOrderSet<GroupObjectInstance> parentGroups, SessionTableUsage<ObjectInstance,
-            Pair<Object, PropertyType>> parentTable, Result<ImOrderMap<Pair<Object, PropertyType>, Boolean>> orders, Result<ImMap<Pair<Object, PropertyType>, Type>> types) throws SQLException, SQLHandledException {
+            Pair<Object, PropertyType>> parentTable, Result<ImOrderMap<Pair<Object, PropertyType>, Boolean>> orders, Result<ImMap<Pair<Object, PropertyType>, Type>> types, boolean custom) throws SQLException, SQLHandledException {
 
         assert parentTable == null || BaseUtils.hashEquals(GroupObjectInstance.getObjects(parentGroups.getSet()),parentTable.getMapKeys().keys());
 
@@ -144,8 +144,8 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
             }
         }
 
-        Set<PropertyDrawInstance> parentProps = subReportTableOptimization && parentJoin != null ? new HashSet<>(filterProperties(parentGroups.getSet())) : new HashSet<PropertyDrawInstance>();
-        for(PropertyDrawInstance<?> property : filterProperties(groups.getSet())) {
+        Set<PropertyDrawInstance> parentProps = subReportTableOptimization && parentJoin != null ? new HashSet<>(filterProperties(parentGroups.getSet(), custom)) : new HashSet<PropertyDrawInstance>();
+        for(PropertyDrawInstance<?> property : filterProperties(groups.getSet(), custom)) {
             boolean inParent = parentProps.contains(property);
             if (property.getColumnGroupObjects().isEmpty()) {
                 addProperty(property, property.getDrawInstance(), PropertyType.PLAIN, modifier, inParent, parentJoin, newQuery, mTypes);
@@ -171,14 +171,14 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
         return propertyObject;
     }
 
-    private void iterateChildReports(List<ReportNode> children, ImOrderSet<GroupObjectInstance> parentGroups, SessionTableUsage<ObjectInstance, Pair<Object, PropertyType>> parentTable) throws SQLException, SQLHandledException {
+    private void iterateChildReports(List<ReportNode> children, ImOrderSet<GroupObjectInstance> parentGroups, SessionTableUsage<ObjectInstance, Pair<Object, PropertyType>> parentTable, boolean custom) throws SQLException, SQLHandledException {
         for (ReportNode node : children) {
-            iterateChildReport(node, parentGroups, parentTable);
+            iterateChildReport(node, parentGroups, parentTable, custom);
         }
     }
 
     @StackMessage("{message.form.read.report.node}")
-    private void iterateChildReport(@ParamMessage ReportNode node, ImOrderSet<GroupObjectInstance> parentGroups, SessionTableUsage<ObjectInstance, Pair<Object, PropertyType>> parentTable) throws SQLException, SQLHandledException {
+    private void iterateChildReport(@ParamMessage ReportNode node, ImOrderSet<GroupObjectInstance> parentGroups, SessionTableUsage<ObjectInstance, Pair<Object, PropertyType>> parentTable, boolean custom) throws SQLException, SQLHandledException {
         String sid = node.getID();
         List<GroupObjectEntity> groupList = node.getGroupList();
         MOrderExclSet<GroupObjectInstance> mLocalGroups = SetFact.mOrderExclSet(groupList.size()); // пограничные List'ы
@@ -196,7 +196,7 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
                 return value.getType();
             }});
 
-        Query<ObjectInstance, Pair<Object, PropertyType>> query = createQuery(groups, parentGroups, parentTable, orders, propTypes);
+        Query<ObjectInstance, Pair<Object, PropertyType>> query = createQuery(groups, parentGroups, parentTable, orders, propTypes, custom);
         DataSession session = getSession();
         QueryEnvironment queryEnv = getQueryEnv();
         BaseClass baseClass = getBaseClass();
@@ -208,7 +208,7 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
             ImOrderMap<ImMap<ObjectInstance, Object>, ImMap<Pair<Object, PropertyType>, Object>> resultData = reportTable.read(sql, getQueryEnv(), orders.result);
 
             List<Pair<String, PropertyReaderInstance>> propertyList = new ArrayList<>();
-            for(PropertyDrawInstance property : filterProperties(groups.getSet())) {
+            for(PropertyDrawInstance property : filterProperties(groups.getSet(), custom)) {
                 propertyList.add(new Pair<String, PropertyReaderInstance>(property.getsID(), property));
                 if (property.propertyCaption != null) {
                     propertyList.add(new Pair<String, PropertyReaderInstance>(property.getsID(), property.captionReader));
@@ -225,7 +225,7 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
                 ImMap<Pair<Object, PropertyType>, Object> resultValue = resultData.getValue(i);
 
                 List<Object> propertyValues = new ArrayList<>();
-                for(PropertyDrawInstance property : filterProperties(groups.getSet())) {
+                for(PropertyDrawInstance property : filterProperties(groups.getSet(), custom)) {
                     propertyValues.add(resultValue.get(new Pair<Object, PropertyType>(property, PropertyType.PLAIN)));
                     if (property.propertyCaption != null) {
                         propertyValues.add(resultValue.get(new Pair<Object, PropertyType>(property, PropertyType.CAPTION)));
@@ -235,7 +235,7 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
                     }
                 }
 
-                List<ObjectInstance> objectsList = keyList.toJavaList(); 
+                List<ObjectInstance> objectsList = keyList.toJavaList();
                 List<Object> keys = BaseUtils.mapList(objectsList, resultData.getKey(i));
                 if (groupId != null) {
                     for (int keyIndex = 0; keyIndex < objectsList.size(); ++keyIndex) {
@@ -249,7 +249,7 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
 
             sources.put(sid, data);
 
-            iterateChildReports(hierarchy.getChildNodes(node), groups, reportTable);
+            iterateChildReports(hierarchy.getChildNodes(node), groups, reportTable, custom);
         } finally {
             reportTable.drop(sql, session.getOwner());
         }
@@ -276,13 +276,14 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
         return groupId == null || !groupId.equals(property.toDraw.getID()) || property.getForceViewType() != ClassViewType.PANEL;     
     } 
     
-    private List<PropertyDrawInstance> filterProperties(ImSet<GroupObjectInstance> filterGroups) {
+    private List<PropertyDrawInstance> filterProperties(ImSet<GroupObjectInstance> filterGroups, boolean custom) {
         List<PropertyDrawInstance> resultList = new ArrayList<>();
         for (PropertyDrawInstance property : form.properties) {
             GroupObjectInstance applyGroup = property.propertyObject.getApplyObject();
             // Отдельно рассматриваем случай свойства без параметров
             if (((applyGroup == null || property.toDraw == applyGroup) && property.toDraw != null && filterGroups.contains(property.toDraw) && validForGroupReports(property)) ||  
-                (property.toDraw == null && applyGroup == null && property.propertyObject.property instanceof CalcProperty && property.propertyObject.property.getInterfaceCount() == 0)) {
+                    (property.toDraw == null && applyGroup == null && property.propertyObject.property instanceof CalcProperty && property.propertyObject.property.getInterfaceCount() == 0) ||
+                    (property.toDraw != applyGroup && custom)) {
                 boolean add = true;
                 
                 if (userPreferences != null && property.toDraw != null) {

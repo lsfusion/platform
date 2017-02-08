@@ -1698,6 +1698,35 @@ importActionDefinitionBody[List<TypedParameter> context, boolean dynamic] return
 		('WHERE' whereExpr=propertyExpression[context, dynamic])?
 	;
 
+importFormActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
+@init {
+	ImportSourceFormat format = null;
+	LPWithParams sheet = null;
+	LPWithParams memo = null;
+	String separator = null;
+	boolean noHeader = false;
+	String charset = null;
+	boolean attr = false;
+    FormEntity form = null;
+}
+@after {
+	if (inPropParseState()) {
+	    if($type.format == ImportSourceFormat.CSV)
+            $property = self.addScriptedImportFormCSVActionProperty(form, noHeader, charset, separator);
+    	else if($type.format == ImportSourceFormat.DBF)
+        	$property = self.addScriptedImportFormDBFActionProperty(form, charset);
+	    else if($type.format == ImportSourceFormat.XML)
+    		$property = self.addScriptedImportFormXMLActionProperty(form, attr);
+    	else if($type.format == ImportSourceFormat.JSON)
+    	    $property = self.addScriptedImportFormJSONActionProperty(form);
+
+	}
+}
+	:	'IMPORT'
+	    (namespace=ID '.')? formSName=ID { if (inPropParseState()) { form = self.findForm(($namespace == null ? "" : $namespace.text + ".") + $formSName.text); }}
+	    type = importSourceFormat [context, dynamic] { format = $type.format; sheet = $type.sheet; memo = $type.memo; separator = $type.separator; noHeader = $type.noHeader; attr = $type.attr; charset = $type.charset; }
+	;
+
 newThreadActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
 @init {
 	List<LPWithParams> props = new ArrayList<LPWithParams>();
@@ -1772,6 +1801,7 @@ importSourceFormat [List<TypedParameter> context, boolean dynamic] returns [Impo
 	|	'DBF'	{ $format = ImportSourceFormat.DBF; } ('MEMO' memoProperty = propertyExpression[context, dynamic] {$memo = $memoProperty.property; })? ('CHARSET' charsetVal = stringLiteral { $charset = $charsetVal.val; })?
 	|	'CSV'	{ $format = ImportSourceFormat.CSV; } (separatorVal = stringLiteral { $separator = $separatorVal.val; })? ('NOHEADER' { $noHeader = true; })? ('CHARSET' charsetVal = stringLiteral { $charset = $charsetVal.val; })?
 	|	'XML'	{ $format = ImportSourceFormat.XML; } ('ATTR' { $attr = true; })?
+	|	'JSON'	{ $format = ImportSourceFormat.JSON; }
 	|	'JDBC'	{ $format = ImportSourceFormat.JDBC; }
 	|	'MDB'	{ $format = ImportSourceFormat.MDB; }
 	;
@@ -2162,6 +2192,7 @@ keepContextActionDB[List<TypedParameter> context, boolean dynamic] returns [LPWi
 	|	readADB=readActionDefinitionBody[context, dynamic] { $property = $readADB.property; }
 	|	writeADB=writeActionDefinitionBody[context, dynamic] { $property = $writeADB.property; }
 	|	importADB=importActionDefinitionBody[context, dynamic] { $property = $importADB.property; }
+	|	importFormADB=importFormActionDefinitionBody[context, dynamic] { $property = $importFormADB.property; }
 	|	newThreadADB=newThreadActionDefinitionBody[context, dynamic] { $property = $newThreadADB.property; }
 	|	newExecutorADB=newExecutorActionDefinitionBody[context, dynamic] { $property = $newExecutorADB.property; }
 	|	activeFormADB=activeFormActionDefinitionBody[context, dynamic] { $property = $activeFormADB.property; }
@@ -2216,6 +2247,7 @@ formActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns 
 	FormPrintType printType = null;
 	LPWithParams printerProperty = null;
 	FormExportType exportType = null;
+	boolean noHeader = false;
 	String separator = null;
 	String charset = null;
 	String contextObjectName = null;
@@ -2226,7 +2258,7 @@ formActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns 
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedFAProp($mf.formEntity, $mf.input, $mf.objects, $mf.mapping, contextObjectName, contextProperty, initFilterPropertyName, initFilterPropertyMapping, modalityType, manageSession, checkOnOk, showDrop, noCancel, printType, printerProperty, exportType, separator, charset, readOnly);
+		$property = self.addScriptedFAProp($mf.formEntity, $mf.input, $mf.objects, $mf.mapping, contextObjectName, contextProperty, initFilterPropertyName, initFilterPropertyMapping, modalityType, manageSession, checkOnOk, showDrop, noCancel, printType, printerProperty, exportType, noHeader, separator, charset, readOnly);
 	}
 }
 	:	'FORM' mf=mappedForm[context,dynamic]
@@ -2238,7 +2270,7 @@ formActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns 
 		|	'SHOWDROP' { showDrop = true; }
 		|	'NOCANCEL' { noCancel = true; }
 		|	print = formPrintTypeLiteral[context, dynamic] { printType = $print.val; printerProperty = $print.printerProperty; }
-		|	export = formExportTypeLiteral { exportType = $export.val; separator = $export.separator; charset = $export.charset; }
+		|	export = formExportTypeLiteral { exportType = $export.val; noHeader = $export.noHeader; separator = $export.separator; charset = $export.charset; }
 		|	'READONLY' { readOnly = true; }
 		)*
 	;
@@ -3911,7 +3943,7 @@ formPrintTypeLiteral[List<TypedParameter> context, boolean dynamic] returns [For
 		)
 	;
 	
-formExportTypeLiteral returns [FormExportType val, String separator, String charset]
+formExportTypeLiteral returns [FormExportType val, boolean noHeader, String separator, String charset]
 	:	'EXPORT'
 		(	'DOC'  { $val = FormExportType.DOC; }
 		|	'DOCX' { $val = FormExportType.DOCX; }
@@ -3920,7 +3952,7 @@ formExportTypeLiteral returns [FormExportType val, String separator, String char
 		|	'XLSX' { $val = FormExportType.XLSX; }
 		|   'XML' { $val = FormExportType.XML; }
 	    |   'JSON' { $val = FormExportType.JSON; }
-	    |   'CSV' { $val = FormExportType.CSV; } (separatorVal = stringLiteral { $separator = $separatorVal.val; })? ('CHARSET' charsetVal = stringLiteral { $charset = $charsetVal.val; })?
+	    |   'CSV' { $val = FormExportType.CSV; } ('NOHEADER' { $noHeader = true; })? (separatorVal = stringLiteral { $separator = $separatorVal.val; })? ('CHARSET' charsetVal = stringLiteral { $charset = $charsetVal.val; })?
 	    |   'DBF' { $val = FormExportType.DBF; } ('CHARSET' charsetVal = stringLiteral { $charset = $charsetVal.val; })?
 		)
 	;	

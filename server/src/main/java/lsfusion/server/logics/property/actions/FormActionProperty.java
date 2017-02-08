@@ -58,6 +58,7 @@ public class FormActionProperty extends SystemExplicitActionProperty {
     private final FormPrintType printType;
     private CalcPropertyInterfaceImplement<ClassPropertyInterface> printerProperty;
     private final FormExportType exportType;
+    private final boolean noHeader;
     private final String separator;
     private final String charset;
 
@@ -128,6 +129,7 @@ public class FormActionProperty extends SystemExplicitActionProperty {
                               CalcPropertyMapImplement printer,
                               ImOrderSet<PropertyInterface> innerInterfaces,
                               FormExportType exportType,
+                              boolean noHeader,
                               String separator,
                               String charset,
                               ConcreteCustomClass formResultClass,
@@ -160,6 +162,7 @@ public class FormActionProperty extends SystemExplicitActionProperty {
         this.showDrop = showDrop;
         this.printType = printType;
         this.exportType = exportType;
+        this.noHeader = noHeader;
         this.separator = separator;
         this.charset = charset;
         this.manageSession = manageSession;
@@ -253,7 +256,7 @@ public class FormActionProperty extends SystemExplicitActionProperty {
                     } else if (exportType == FormExportType.JSON) {
                         formExportFile.change(BaseUtils.mergeFileAndExtension(new JSONFormExporter(newFormManager.getReportData(toExcel, true)).export(), "json".getBytes()), context);
                     } else if (exportType == FormExportType.CSV) {
-                        Map<String, byte[]> files = new CSVFormExporter(newFormManager.getReportData(toExcel, true), separator, charset).export();
+                        Map<String, byte[]> files = new CSVFormExporter(newFormManager.getReportData(toExcel, true), noHeader, separator, charset).export();
                         boolean first = true;
                         for(Map.Entry<String, byte[]> entry : files.entrySet()) {
                             byte[] fileBytes = BaseUtils.mergeFileAndExtension(entry.getValue(), "csv".getBytes());

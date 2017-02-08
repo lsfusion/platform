@@ -10,14 +10,16 @@ import java.io.PrintWriter;
 import java.util.*;
 
 public class CSVFormExporter extends PlainFormExporter {
+    private boolean noHeader;
     private String separator;
     private String charset;
     private Map<String, String> lastRecordsMap = new ArrayMap<>();
     private Map<String, PrintWriter> writersMap = null;
     private Map<String, File> filesMap = null;
 
-    public CSVFormExporter(ReportGenerationData reportData, String separator, String charset) {
+    public CSVFormExporter(ReportGenerationData reportData, boolean noHeader, String separator, String charset) {
         super(reportData);
+        this.noHeader = noHeader;
         this.separator = separator == null ? "|" : separator;
         this.charset = charset == null ? "UTF-8" : charset;
     }
@@ -59,6 +61,8 @@ public class CSVFormExporter extends PlainFormExporter {
             writer = new PrintWriter(file, charset);
             filesMap.put(id, file);
             writersMap.put(id, writer);
+            if(!noHeader)
+                writer.println(getHeaders(node, id));
         }
         List<Object> values = new ArrayList<>();
         for (Map.Entry<String, List<AbstractNode>> childEntry : node.getChildren()) {
@@ -81,6 +85,17 @@ public class CSVFormExporter extends PlainFormExporter {
             if(!values.isEmpty())
                 writer.println();
         }
+    }
+
+    private String getHeaders(Node node, String id) {
+        String headers = "";
+        for (Map.Entry<String, List<AbstractNode>> field : node.getChildren()) {
+            AbstractNode leafNode = field.getValue().get(0);
+            if (leafNode instanceof Leaf && ((Leaf) leafNode).getType().toDraw.equals(id)) {
+                headers += (headers.isEmpty() ? "" : separator) + (((Leaf) field.getValue().get(0)).getKey());
+            }
+        }
+        return headers;
     }
 
     private void closeWriters() {

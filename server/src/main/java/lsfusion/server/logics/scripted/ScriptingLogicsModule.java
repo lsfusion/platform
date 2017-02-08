@@ -56,6 +56,10 @@ import lsfusion.server.logics.property.actions.flow.ListCaseActionProperty;
 import lsfusion.server.logics.property.actions.flow.ReturnActionProperty;
 import lsfusion.server.logics.property.actions.importing.ImportDataActionProperty;
 import lsfusion.server.logics.property.actions.importing.csv.ImportCSVDataActionProperty;
+import lsfusion.server.logics.property.actions.importing.csv.ImportFormCSVDataActionProperty;
+import lsfusion.server.logics.property.actions.importing.dbf.ImportFormDBFDataActionProperty;
+import lsfusion.server.logics.property.actions.importing.json.ImportFormJSONDataActionProperty;
+import lsfusion.server.logics.property.actions.importing.xml.ImportFormXMLDataActionProperty;
 import lsfusion.server.logics.property.actions.importing.xml.ImportXMLDataActionProperty;
 import lsfusion.server.logics.property.group.AbstractGroup;
 import lsfusion.server.logics.table.ImplementTable;
@@ -2307,7 +2311,7 @@ public class ScriptingLogicsModule extends LogicsModule {
                                           String initFilterPropertyName, List<String> initFilterPropertyMapping,
                                           ModalityType modalityType, boolean manageSession,
                                           boolean checkOnOk, boolean showDrop, boolean noCancel,
-                                          FormPrintType printType, LPWithParams printerProperty, FormExportType exportType, String separator, String charset, boolean readonly) throws ScriptingErrorLog.SemanticErrorException {
+                                          FormPrintType printType, LPWithParams printerProperty, FormExportType exportType, boolean noHeader, String separator, String charset, boolean readonly) throws ScriptingErrorLog.SemanticErrorException {
         List<LPWithParams> propParams = new ArrayList<>();
         if(contextProperty != null) {
             propParams.add(contextProperty);
@@ -2331,7 +2335,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         LAP property = addFAProp(null, LocalizedString.create(""), form, input, objects.toArray(new ObjectEntity[objects.size()]), manageSession, noCancel, contextObject,
                                  contextProperty == null ? null : (CalcProperty)contextProperty.property.property,
                                  contextProperty != null, printerProperty != null, initFilterProperty, modalityType, checkOnOk, showDrop, printType,
-                                 exportType, separator, charset, readonly, true, getParamsPlainList(propParams).toArray());
+                                 exportType, noHeader, separator, charset, readonly, true, getParamsPlainList(propParams).toArray());
 
         if (mapping.size() > 0) {
             if (contextProperty != null) {
@@ -2533,6 +2537,22 @@ public class ScriptingLogicsModule extends LogicsModule {
     public LPWithParams addScriptedImportXMLActionProperty(LPWithParams fileProp, List<String> ids, List<PropertyUsage> propUsages, boolean attr) throws ScriptingErrorLog.SemanticErrorException {
         List<LCP> props = getProperties(propUsages);
         return addScriptedJoinAProp(addAProp(new ImportXMLDataActionProperty(fileProp.property.property.getValueClass(ClassType.valuePolicy), ids, props, attr, baseLM)), Collections.singletonList(fileProp));
+    }
+
+    public LPWithParams addScriptedImportFormCSVActionProperty(FormEntity formEntity, boolean noHeader, String charset, String separator) throws ScriptingErrorLog.SemanticErrorException {
+        return addScriptedJoinAProp(addAProp(new ImportFormCSVDataActionProperty(formEntity, noHeader, charset, separator)), Collections.<LPWithParams>emptyList());
+    }
+
+    public LPWithParams addScriptedImportFormDBFActionProperty(FormEntity formEntity, String charset) throws ScriptingErrorLog.SemanticErrorException {
+        return addScriptedJoinAProp(addAProp(new ImportFormDBFDataActionProperty(formEntity, charset)), Collections.<LPWithParams>emptyList());
+    }
+
+    public LPWithParams addScriptedImportFormXMLActionProperty(FormEntity formEntity, boolean attr) throws ScriptingErrorLog.SemanticErrorException {
+        return addScriptedJoinAProp(addAProp(new ImportFormXMLDataActionProperty(formEntity, attr)), Collections.<LPWithParams>emptyList());
+    }
+
+    public LPWithParams addScriptedImportFormJSONActionProperty(FormEntity formEntity) throws ScriptingErrorLog.SemanticErrorException {
+        return addScriptedJoinAProp(addAProp(new ImportFormJSONDataActionProperty(formEntity)), Collections.<LPWithParams>emptyList());
     }
 
     public LCP addScriptedTypeProp(String className, boolean bIs) throws ScriptingErrorLog.SemanticErrorException {

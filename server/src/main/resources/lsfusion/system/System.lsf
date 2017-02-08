@@ -123,6 +123,9 @@ formPageCount() = DATA LOCAL INTEGER ();
 formExportFile() = DATA LOCAL CUSTOMFILE ();
 formExportFiles = DATA LOCAL CUSTOMFILE (VARSTRING[100]);
 
+formImportFile() = DATA LOCAL CUSTOMFILE ();
+formImportFiles(id) = DATA LOCAL CUSTOMFILE (VARSTRING[100]);
+
 imported = DATA LOCAL BOOLEAN (INTEGER);
 importedString = DATA LOCAL BOOLEAN (VARSTRING[10]);
 

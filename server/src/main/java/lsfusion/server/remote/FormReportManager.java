@@ -334,7 +334,7 @@ public class FormReportManager<T extends BusinessLogics<T>, F extends FormInstan
 
     private byte[] getReportSourcesByteArray(ReportSourceGenerator<T> sourceGenerator, Result<Map<String, LinkedHashSet<List<Object>>>> columnGroupObjects, boolean custom) {
         try {
-            Map<String, ReportData> sources = sourceGenerator.generate();
+            Map<String, ReportData> sources = sourceGenerator.generate(custom);
             ReportSourceGenerator.ColumnGroupCaptionsData columnGroupCaptions = sourceGenerator.getColumnGroupCaptions();
             columnGroupObjects.set(columnGroupCaptions.columnData);
             ByteArrayOutputStream outStream = new ByteArrayOutputStream();

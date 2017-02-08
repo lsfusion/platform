@@ -5,10 +5,7 @@ import lsfusion.base.SFunctionSet;
 import lsfusion.base.TwinImmutableObject;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
-import lsfusion.server.logics.property.ActionProperty;
-import lsfusion.server.logics.property.CalcProperty;
-import lsfusion.server.logics.property.Property;
-import lsfusion.server.logics.property.PropertyInterface;
+import lsfusion.server.logics.property.*;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -66,6 +63,16 @@ public abstract class PropertyObjectEntity<P extends PropertyInterface, T extend
         for(PropertyObjectInterfaceEntity object : mapping.valueIt())
             if(object instanceof ObjectEntity)
                 result.add((ObjectEntity) object);
+        return result;
+    }
+
+    public Collection<ObjectEntity> getRemappedObjectInstances() {
+        Collection<ObjectEntity> result = new ArrayList<>();
+        for(Object value : ((JoinProperty) property).implement.mapping.valueIt()) {
+            PropertyObjectInterfaceEntity object = mapping.get((P) value);
+            if (object instanceof ObjectEntity)
+                result.add((ObjectEntity) object);
+        }
         return result;
     }
     
