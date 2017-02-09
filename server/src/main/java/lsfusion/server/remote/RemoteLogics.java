@@ -19,7 +19,10 @@ import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
 import lsfusion.server.SystemProperties;
 import lsfusion.server.auth.User;
-import lsfusion.server.classes.*;
+import lsfusion.server.classes.DynamicFormatFileClass;
+import lsfusion.server.classes.FileClass;
+import lsfusion.server.classes.StaticFormatFileClass;
+import lsfusion.server.classes.ValueClass;
 import lsfusion.server.context.ExecutionStack;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.lifecycle.LifecycleEvent;
@@ -308,7 +311,8 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
                 DataSession session = createSession();
                 ImMap<PropertyInterface, ValueClass> interfaceClasses = property.property.getInterfaceClasses(ClassType.filePolicy);
                 for (int i = 0; i < interfaces.size(); i++) {
-                    objects[i] = session.getDataObject(interfaceClasses.get(interfaces.get(i)), Integer.decode(params[i]));
+                    ValueClass valueClass = interfaceClasses.get(interfaces.get(i));
+                    objects[i] = session.getDataObject(valueClass, valueClass.getType().parseString(params[i]));
                 }
                 fileBytes = (byte[]) property.read(session, objects);
 
@@ -335,14 +339,8 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
 
                 DataObject[] objects = new DataObject[interfaces.size()];
                 for (int i = 0; i < interfaces.size(); i++) {
-                    Object objectValue = null;
                     ValueClass valueClass = interfaceClasses.get(interfaces.get(i));
-                    if (valueClass instanceof CustomClass) {
-                        objectValue = Integer.parseInt(params[i]);
-                    } else if (valueClass instanceof DataClass) {
-                        objectValue = ((DataClass) valueClass).parseString(params[i]);
-                    }
-                    objects[i] = session.getDataObject(valueClass, objectValue);
+                    objects[i] = session.getDataObject(valueClass, valueClass.getType().parseString(params[i]));
                 }
                 ExecutionStack stack = getStack();
                 property.execute(session, stack, objects);
