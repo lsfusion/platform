@@ -146,7 +146,7 @@ public abstract class LogicsAwareDispatchServlet<T extends RemoteLogicsInterface
             }
             return dispatch.execute(action);
         } catch (RemoteRetryException e) {
-            logger.error("Ошибка в LogicsAwareDispatchServlet.execute: ", e);
+            logger.error("Ошибка в LogicsAwareDispatchServlet.execute: " + e.maxTries, e);
             throw new RetryException(e.getMessage(), e.maxTries);
         } catch (MessageException e) {
             logger.error("Ошибка в LogicsAwareDispatchServlet.execute: ", e);
