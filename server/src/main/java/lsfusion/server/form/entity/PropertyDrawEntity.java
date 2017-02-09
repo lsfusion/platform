@@ -12,12 +12,15 @@ import lsfusion.base.col.interfaces.mutable.MOrderExclSet;
 import lsfusion.base.identity.IdentityObject;
 import lsfusion.interop.ClassViewType;
 import lsfusion.interop.PropertyEditType;
+import lsfusion.interop.form.PropertyReadType;
 import lsfusion.server.classes.CustomClass;
 import lsfusion.server.classes.DataClass;
+import lsfusion.server.classes.NumericClass;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.form.instance.InstanceFactory;
 import lsfusion.server.form.instance.Instantiable;
 import lsfusion.server.form.instance.PropertyDrawInstance;
+import lsfusion.server.form.instance.PropertyType;
 import lsfusion.server.form.view.DefaultFormView;
 import lsfusion.server.form.view.PropertyDrawView;
 import lsfusion.server.logics.i18n.LocalizedString;
@@ -35,7 +38,7 @@ import java.util.Map;
 
 import static lsfusion.interop.form.ServerResponse.*;
 
-public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObject implements Instantiable<PropertyDrawInstance> {
+public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObject implements Instantiable<PropertyDrawInstance>, PropertyReaderEntity {
 
     private PropertyEditType editType = PropertyEditType.EDITABLE;
 
@@ -387,5 +390,29 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 
     public String getNamespace() {
         return propertyObject == null || propertyObject.property == null ? "" : propertyObject.property.getNamespace();
+    }
+
+    public CalcPropertyObjectEntity getDrawInstance() {
+        return propertyObject.getDrawProperty();
+    }
+
+    @Override
+    public Object getProfiledObject() {
+        return this;
+    }
+
+    @Override
+    public byte getTypeID() {
+        return PropertyReadType.DRAW;
+    }
+
+    public Type getType() {
+        return propertyObject.property.getType();
+    }
+
+    @Override
+    public PropertyType getPropertyType() {
+        Type type = getType();
+        return new PropertyType(type.getSID(), toDraw == null ? "" : toDraw.getSID(), type.getCharLength().value, type instanceof NumericClass ? ((NumericClass) type).getPrecision() : 0);
     }
 }

@@ -23,6 +23,7 @@ import lsfusion.server.form.entity.CalcPropertyObjectEntity;
 import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.entity.ObjectEntity;
 import lsfusion.server.form.entity.PropertyDrawEntity;
+import lsfusion.server.form.entity.filter.FilterEntity;
 import lsfusion.server.form.entity.filter.NotNullFilterEntity;
 import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.form.instance.PropertyDrawInstance;
@@ -43,7 +44,7 @@ import java.sql.SQLException;
 import java.util.*;
 
 public abstract class ImportFormDataActionProperty extends SystemExplicitActionProperty {
-    private FormEntity formEntity;
+    private FormEntity<?> formEntity;
 
     public ImportFormDataActionProperty(ValueClass[] valueClasses, FormEntity formEntity) {
         super(valueClasses);
@@ -96,7 +97,7 @@ public abstract class ImportFormDataActionProperty extends SystemExplicitActionP
         }
 
         //добавляем фильтры
-        for (Object filter : formEntity.getFixedFilters()) {
+        for (FilterEntity filter : formEntity.getFixedFilters()) {
             if (filter instanceof NotNullFilterEntity) {
                 CalcPropertyObjectEntity property = ((NotNullFilterEntity) filter).property;
                 if (property.property instanceof DataProperty) {

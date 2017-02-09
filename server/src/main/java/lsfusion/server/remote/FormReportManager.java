@@ -31,17 +31,25 @@ import java.util.regex.Pattern;
 import static lsfusion.base.BaseUtils.serializeObject;
 import static lsfusion.server.context.ThreadLocalContext.localize;
 
-public class FormReportManager<T extends BusinessLogics<T>, F extends FormInstance<T>> {
+public class FormReportManager<T extends BusinessLogics<T>, PropertyDraw extends PropertyReaderInstance, GroupObject, PropertyObject, CalcPropertyObject extends Order, Order, Obj extends Order, PropertyReaderInstance> {
     private static final Logger systemLogger = Logger.getLogger("SystemLogger");
     
-    private final F form;
     private final String formSID;
     private final FormView richDesign;
 
-    public FormReportManager(F form) {
-        this.form = form;
-        formSID = form.entity.getSID().replace('.', '_');
-        this.richDesign = form.entity.getRichDesign();
+    private final FormReportInterface<PropertyDraw, GroupObject, PropertyObject, CalcPropertyObject, Order, Obj, PropertyReaderInstance> formInterface;
+
+    // backward compatibility, после merge'а в RC убрать
+    public FormReportManager(FormInstance form) {
+        formSID = null;
+        richDesign = null;
+        formInterface = null;
+    }
+
+    public FormReportManager(FormReportInterface<PropertyDraw, GroupObject, PropertyObject, CalcPropertyObject, Order, Obj, PropertyReaderInstance> formInterface) {
+        this.formInterface = formInterface;
+        formSID = formInterface.getEntity().getSID().replace('.', '_');
+        this.richDesign = formInterface.getEntity().getRichDesign();
     }
 
     public Map<String, String> getReportPath(final boolean toExcel, final Integer groupId, final FormUserPreferences userPreferences) {
@@ -96,7 +104,7 @@ public class FormReportManager<T extends BusinessLogics<T>, F extends FormInstan
 
     public Map<String, JasperDesign> getReportDesignsMap(boolean toExcel, Integer groupId, FormUserPreferences userPreferences, Map<String, LinkedHashSet<List<Object>>> columnGroupObjects) throws JRException {
         ReportDesignGenerator generator = new ReportDesignGenerator(richDesign, getReportHierarchy(groupId),
-                getHiddenGroups(groupId), userPreferences, toExcel, columnGroupObjects, groupId, groupId != null ? form : null);
+                getHiddenGroups(groupId), userPreferences, toExcel, columnGroupObjects, groupId, groupId != null ? formInterface.getFormInstance() : null);
         return generator.generate();
     }
 
@@ -119,7 +127,7 @@ public class FormReportManager<T extends BusinessLogics<T>, F extends FormInstan
         byte[] reportHierarchyByteArray = getReportHierarchyByteArray(groupReportHierarchy.getReportHierarchyMap());
         Result<Map<String, LinkedHashSet<List<Object>>>> columnGroupObjects = new Result<>();
         byte[] reportSourcesByteArray = getReportSourcesByteArray(
-                new ReportSourceGenerator<>(form, groupReportHierarchy, fullReportHierarchy, getGridGroups(groupId), groupId, userPreferences)
+                new ReportSourceGenerator<T, PropertyDraw, GroupObject, PropertyObject, CalcPropertyObject, Order, Obj, PropertyReaderInstance>(formInterface, groupReportHierarchy, fullReportHierarchy, getGridGroups(groupId), groupId, userPreferences)
         , columnGroupObjects, custom);
         byte[] reportDesignsByteArray = custom ? null : getReportDesignsByteArray(toExcel, groupId, userPreferences, columnGroupObjects.result);
 
@@ -139,14 +147,15 @@ public class FormReportManager<T extends BusinessLogics<T>, F extends FormInstan
     }
 
     public FormEntity<T> getFormEntity() {
-        return form.entity;
+        return formInterface.getEntity();
     }
 
     private Set<Integer> getGridGroups(Integer groupId) {
         Set<Integer> gridGroupsId = new HashSet<>();
-        for (GroupObjectInstance group : form.getGroups()) {
-            if (group.curClassView == ClassViewType.GRID && (groupId == null || groupId == group.getID())) {
-                gridGroupsId.add(group.getID());
+        for (GroupObject group : formInterface.getGroups()) {
+            int groupObjectID = formInterface.getGroupID(group);
+            if (formInterface.getGroupViewType(group) == ClassViewType.GRID && (groupId == null || groupId == groupObjectID)) {
+                gridGroupsId.add(groupObjectID);
             }
         }
         return gridGroupsId;
@@ -181,7 +190,7 @@ public class FormReportManager<T extends BusinessLogics<T>, F extends FormInstan
     private static final String tablePrefix = "table";
     private String getReportPrefix(boolean toExcel, Integer groupId) {
         String prefix = (toExcel ? xlsPrefix : "");
-        return prefix + (groupId == null ? "" : tablePrefix + form.getGroupObjectInstance(groupId).getSID() + "_");
+        return prefix + (groupId == null ? "" : tablePrefix + formInterface.getGroupSID(formInterface.getGroupByID(groupId)) + "_");
     }
 
     private String getDefaultReportSID(boolean toExcel, Integer groupId) {
@@ -237,9 +246,10 @@ public class FormReportManager<T extends BusinessLogics<T>, F extends FormInstan
 
     private Set<Integer> getHiddenGroups(Integer groupId) {
         Set<Integer> hidedGroupsId = new HashSet<>();
-        for (GroupObjectInstance group : form.getGroups()) {
-            if (group.curClassView == ClassViewType.HIDE || groupId != null && groupId != group.getID()) {
-                hidedGroupsId.add(group.getID());
+        for (GroupObject group : formInterface.getGroups()) {
+            int groupObjectID = formInterface.getGroupID(group);
+            if (formInterface.getGroupViewType(group) == ClassViewType.HIDE || groupId != null && groupId != groupObjectID) {
+                hidedGroupsId.add(groupObjectID);
             }
         }
         return hidedGroupsId;
@@ -268,8 +278,7 @@ public class FormReportManager<T extends BusinessLogics<T>, F extends FormInstan
 
     private String getReportPathPropStreamResourceName(CalcPropertyObjectEntity reportPathProp, boolean toExcel, Integer groupId) throws SQLException, SQLHandledException {
         if (reportPathProp != null) {
-            CalcPropertyObjectInstance propInstance = form.instanceFactory.getInstance(reportPathProp);
-            String reportPath = (String) propInstance.read(form);
+            String reportPath = (String) formInterface.read(reportPathProp);
             if (reportPath != null) {
                 return "/" + findCustomReportDesignName(getReportPrefix(toExcel, groupId) + reportPath.trim(), "");
             }
@@ -332,10 +341,10 @@ public class FormReportManager<T extends BusinessLogics<T>, F extends FormInstan
         return nodes;
     }
 
-    private byte[] getReportSourcesByteArray(ReportSourceGenerator<T> sourceGenerator, Result<Map<String, LinkedHashSet<List<Object>>>> columnGroupObjects, boolean custom) {
+    private byte[] getReportSourcesByteArray(ReportSourceGenerator<T, PropertyDraw, GroupObject, PropertyObject, CalcPropertyObject, Order, Obj, PropertyReaderInstance> sourceGenerator, Result<Map<String, LinkedHashSet<List<Object>>>> columnGroupObjects, boolean custom) {
         try {
             Map<String, ReportData> sources = sourceGenerator.generate(custom);
-            ReportSourceGenerator.ColumnGroupCaptionsData columnGroupCaptions = sourceGenerator.getColumnGroupCaptions();
+            ReportSourceGenerator.ColumnGroupCaptionsData<Obj> columnGroupCaptions = sourceGenerator.getColumnGroupCaptions();
             columnGroupObjects.set(columnGroupCaptions.columnData);
             ByteArrayOutputStream outStream = new ByteArrayOutputStream();
             DataOutputStream dataStream = new DataOutputStream(outStream);
@@ -343,7 +352,7 @@ public class FormReportManager<T extends BusinessLogics<T>, F extends FormInstan
             dataStream.writeInt(sources.size());
             for (Map.Entry<String, ReportData> source : sources.entrySet()) {
                 dataStream.writeUTF(source.getKey());
-                source.getValue().serialize(dataStream, custom);
+                source.getValue().serialize(dataStream, custom, formInterface);
             }
 
             int columnPropertiesCount = columnGroupCaptions.propertyObjects.size();
@@ -383,12 +392,12 @@ public class FormReportManager<T extends BusinessLogics<T>, F extends FormInstan
         }
     }
 
-    private void serializePropertyObjects(DataOutputStream stream, Map<String, List<ObjectInstance>> objects) throws IOException {
-        for (Map.Entry<String, List<ObjectInstance>> entry : objects.entrySet()) {
+    private void serializePropertyObjects(DataOutputStream stream, Map<String, List<Obj>> objects) throws IOException {
+        for (Map.Entry<String, List<Obj>> entry : objects.entrySet()) {
             stream.writeUTF(entry.getKey());
             stream.writeInt(entry.getValue().size());
-            for (ObjectInstance object : entry.getValue()) {
-                stream.writeInt(object.getID());
+            for (Obj object : entry.getValue()) {
+                stream.writeInt(formInterface.getObjectID(object));
             }
         }
     }

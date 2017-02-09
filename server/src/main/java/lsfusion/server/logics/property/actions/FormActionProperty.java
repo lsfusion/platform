@@ -36,6 +36,7 @@ import lsfusion.server.logics.property.actions.exporting.dbf.DBFFormExporter;
 import lsfusion.server.logics.property.actions.exporting.json.JSONFormExporter;
 import lsfusion.server.logics.property.actions.exporting.xml.XMLFormExporter;
 import lsfusion.server.remote.FormReportManager;
+import lsfusion.server.remote.InteractiveFormReportManager;
 import net.sf.jasperreports.engine.JRException;
 
 import java.io.IOException;
@@ -238,7 +239,7 @@ public class FormActionProperty extends SystemExplicitActionProperty {
             }
             String pName = printerProperty == null ? null : (String) printerProperty.read(context, context.getKeys());
             
-            FormReportManager newFormManager = new FormReportManager(newFormInstance);
+            FormReportManager newFormManager = new InteractiveFormReportManager(newFormInstance);
             if (exportType != null) {
                 try {
                     if (exportType == FormExportType.DOC) {

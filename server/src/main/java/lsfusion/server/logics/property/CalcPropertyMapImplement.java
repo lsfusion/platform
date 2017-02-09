@@ -16,6 +16,8 @@ import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.data.where.classes.ClassWhere;
+import lsfusion.server.form.entity.CalcPropertyObjectEntity;
+import lsfusion.server.form.entity.PropertyObjectInterfaceEntity;
 import lsfusion.server.form.instance.CalcPropertyObjectInstance;
 import lsfusion.server.form.instance.PropertyObjectInterfaceInstance;
 import lsfusion.server.logics.DataObject;
@@ -194,6 +196,10 @@ public class CalcPropertyMapImplement<P extends PropertyInterface, T extends Pro
 
     public CalcPropertyObjectInstance<P> mapObjects(ImMap<T, ? extends PropertyObjectInterfaceInstance> mapObjects) {
         return new CalcPropertyObjectInstance<>(property, mapping.join(mapObjects));
+    }
+
+    public CalcPropertyObjectEntity<P> mapEntityObjects(ImMap<T, ? extends PropertyObjectInterfaceEntity> mapObjects) {
+        return new CalcPropertyObjectEntity<>(property, mapping.join(mapObjects));
     }
 
     public <I extends PropertyInterface> void mapCheckExclusiveness(String caption, CalcPropertyMapImplement<I, T> implement, String implementCaption, String abstractInfo) {

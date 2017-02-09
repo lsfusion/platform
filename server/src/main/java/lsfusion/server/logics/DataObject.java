@@ -5,6 +5,7 @@ import lsfusion.base.SFunctionSet;
 import lsfusion.base.TwinImmutableObject;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.interop.Compare;
@@ -26,6 +27,7 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.data.type.TypeObject;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassWhere;
+import lsfusion.server.form.entity.GroupObjectEntity;
 import lsfusion.server.form.entity.ObjectEntity;
 import lsfusion.server.form.entity.PropertyObjectInterfaceEntity;
 import lsfusion.server.form.instance.GroupObjectInstance;
@@ -116,6 +118,11 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
         return object;
     }
 
+    @Override
+    public DataObject getObjectValue(ImMap<ObjectEntity, ObjectValue> mapObjects) {
+        return this;
+    }
+
     public static <K> ImMap<K, DataObject> filterDataObjects(ImMap<K, ? extends ObjectValue> map) {
         return BaseUtils.immutableCast(
                 ((ImMap<K, ObjectValue>)map).filterFnValues(new SFunctionSet<ObjectValue>() {
@@ -177,6 +184,10 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
     }
 
     public GroupObjectInstance getApplyObject() {
+        return null;
+    }
+
+    public GroupObjectEntity getApplyObject(ImOrderSet<GroupObjectEntity> groups) {
         return null;
     }
 
@@ -261,5 +272,10 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
         if(!shortName.isEmpty())
             result += "-" + shortName;
         return result;
+    }
+
+    @Override
+    public Expr getExpr(ImMap<ObjectEntity, ? extends Expr> mapExprs, Modifier modifier, ImMap<ObjectEntity, ObjectValue> mapObjects) {
+        return getExpr();
     }
 }

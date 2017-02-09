@@ -52,7 +52,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
     }
 
     public Type getType() {
-        return propertyObject.property.getType();
+        return entity.getType();
     }
     
     public boolean isSelector() {
@@ -117,8 +117,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
 
     @Override
     public PropertyType getPropertyType() {
-        Type type = getType();
-        return new PropertyType(type.getSID(), toDraw == null ? "" : toDraw.getSID(), type.getCharLength().value, type instanceof NumericClass ? ((NumericClass) type).getPrecision() : 0);
+        return entity.getPropertyType();
     }
 
     public ClassViewType getForceViewType() {

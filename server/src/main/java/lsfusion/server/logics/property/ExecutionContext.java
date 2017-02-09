@@ -38,6 +38,7 @@ import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.linear.LP;
 import lsfusion.server.logics.property.actions.FormEnvironment;
 import lsfusion.server.remote.FormReportManager;
+import lsfusion.server.remote.InteractiveFormReportManager;
 import lsfusion.server.session.*;
 import net.sf.jasperreports.engine.JRAbstractExporter;
 import net.sf.jasperreports.engine.JRException;
@@ -621,7 +622,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
 
         FormInstance remoteForm = createFormInstance(formEntity, MapFact.singleton(objectEntity, dataObject));
         try {
-            ReportGenerationData generationData = new FormReportManager<>(remoteForm).getReportData(false);
+            ReportGenerationData generationData = new InteractiveFormReportManager<>(remoteForm).getReportData(false);
             ReportGenerator report = new ReportGenerator(generationData);
             JasperPrint print = report.createReport(false, new HashMap());
             File tempFile = File.createTempFile("lsfReport", ".pdf");

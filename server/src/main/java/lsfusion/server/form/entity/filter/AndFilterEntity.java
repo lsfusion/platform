@@ -1,8 +1,16 @@
 package lsfusion.server.form.entity.filter;
 
+import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.data.expr.Expr;
+import lsfusion.server.data.where.Where;
 import lsfusion.server.form.entity.ObjectEntity;
 import lsfusion.server.form.instance.InstanceFactory;
 import lsfusion.server.form.instance.filter.FilterInstance;
+import lsfusion.server.logics.ObjectValue;
+import lsfusion.server.session.Modifier;
+
+import java.sql.SQLException;
 
 public class AndFilterEntity extends OpFilterEntity<AndFilterEntity> {
 
@@ -22,4 +30,8 @@ public class AndFilterEntity extends OpFilterEntity<AndFilterEntity> {
         return new AndFilterEntity(op1.getRemappedFilter(oldObject, newObject, instanceFactory), op2.getRemappedFilter(oldObject, newObject, instanceFactory));
     }
 
+    @Override
+    public Where getWhere(ImMap<ObjectEntity, ? extends Expr> mapKeys, ImMap<ObjectEntity, ObjectValue> mapObjects, Modifier modifier) throws SQLException, SQLHandledException {
+        return op1.getWhere(mapKeys, mapObjects, modifier).and(op2.getWhere(mapKeys, mapObjects, modifier));
+    }
 }

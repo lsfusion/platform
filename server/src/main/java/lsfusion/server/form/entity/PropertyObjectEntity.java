@@ -3,8 +3,13 @@ package lsfusion.server.form.entity;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.SFunctionSet;
 import lsfusion.base.TwinImmutableObject;
+import lsfusion.base.col.interfaces.immutable.ImCol;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
+import lsfusion.server.form.instance.CalcPropertyObjectInstance;
+import lsfusion.server.form.instance.GroupObjectInstance;
+import lsfusion.server.form.instance.ObjectInstance;
+import lsfusion.server.form.instance.PropertyObjectInterfaceInstance;
 import lsfusion.server.logics.property.*;
 
 import java.util.ArrayList;
@@ -56,6 +61,15 @@ public abstract class PropertyObjectEntity<P extends PropertyInterface, T extend
             }
         }
         return applyObject;
+    }
+
+    public abstract CalcPropertyObjectEntity<?> getDrawProperty();
+
+    public ImCol<ObjectEntity> getColObjectInstances() {
+        return BaseUtils.immutableCast(mapping.values().filterCol(new SFunctionSet<PropertyObjectInterfaceEntity>() {
+            public boolean contains(PropertyObjectInterfaceEntity element) {
+                return element instanceof ObjectEntity;
+            }}));
     }
 
     public Collection<ObjectEntity> getObjectInstances() {

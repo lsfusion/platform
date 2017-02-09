@@ -9,6 +9,7 @@ import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.LongMutable;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
+import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.col.interfaces.mutable.MOrderExclSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
@@ -24,14 +25,14 @@ import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.expr.query.StatType;
 import lsfusion.server.data.where.Where;
-import lsfusion.server.form.instance.GroupObjectInstance;
-import lsfusion.server.form.instance.InstanceFactory;
-import lsfusion.server.form.instance.Instantiable;
-import lsfusion.server.form.instance.ObjectInstance;
+import lsfusion.server.form.entity.filter.FilterEntity;
+import lsfusion.server.form.instance.*;
 import lsfusion.server.form.instance.filter.FilterInstance;
+import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.CalcPropertyRevImplement;
 import lsfusion.server.logics.property.ClassPropertyInterface;
+import lsfusion.server.logics.property.IsClassProperty;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.derived.DerivedProperty;
 import lsfusion.server.session.Modifier;
@@ -246,4 +247,44 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
     public String toString() {
         return getSID() + ": " + objects;
     }
+
+    public static ImSet<ObjectEntity> getObjects(ImSet<GroupObjectEntity> groups) {
+        MExclSet<ObjectEntity> mResult = SetFact.mExclSet();
+        for(GroupObjectEntity group : groups)
+            mResult.exclAddAll(group.getObjects());
+        return mResult.immutable();
+    }
+
+    public static ImOrderSet<ObjectEntity> getOrderObjects(ImOrderSet<GroupObjectEntity> groups) {
+        MOrderExclSet<ObjectEntity> mResult = SetFact.mOrderExclSet();
+        for(GroupObjectEntity group : groups)
+            mResult.exclAddAll(group.getOrderObjects());
+        return mResult.immutableOrder();
+    }
+    
+    private static Where getFilterWhere(ImMap<ObjectEntity, ? extends Expr> mapKeys, Modifier modifier, ImMap<ObjectEntity, ObjectValue> mapObjects, ImSet<FilterEntity> filters) throws SQLException, SQLHandledException {
+        Where where = Where.TRUE;
+        for(FilterEntity filt : filters)
+            where = where.and(filt.getWhere(mapKeys, mapObjects, modifier));
+        return where;
+    }
+
+    private static ImMap<ObjectEntity, ValueClass> getGridClasses(ImSet<ObjectEntity> objects) {
+        return objects.mapValues(new GetValue<ValueClass, ObjectEntity>() {
+            public ValueClass getMapValue(ObjectEntity value) {
+                return value.baseClass;
+            }});
+    }
+    public Where getClassWhere(ImMap<ObjectEntity, ? extends Expr> mapKeys, Modifier modifier) {
+        if(noClassFilter)
+            return Where.TRUE;
+        return IsClassProperty.getWhere(getGridClasses(getObjects()), mapKeys, modifier);
+    }
+
+    public Where getWhere(ImMap<ObjectEntity, ? extends Expr> mapKeys, Modifier modifier, ImMap<ObjectEntity, ObjectValue> mapObjects, ImSet<FilterEntity> filters) throws SQLException, SQLHandledException {
+        return getFilterWhere(mapKeys, modifier, mapObjects, filters).and(getClassWhere(mapKeys, modifier));
+    }
+
+    // хак, так как не все Map'ы поддерживают NULL
+    public static final GroupObjectEntity NULL = new GroupObjectEntity(); 
 }

@@ -27,8 +27,8 @@ import lsfusion.server.form.entity.GroupObjectEntity;
 import lsfusion.server.form.entity.GroupObjectHierarchy;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.property.CalcProperty;
+import lsfusion.server.logics.property.Property;
 import lsfusion.server.session.DataSession;
-import lsfusion.server.session.Modifier;
 import lsfusion.server.session.SessionTableUsage;
 import lsfusion.server.stack.ParamMessage;
 import lsfusion.server.stack.StackMessage;
@@ -44,68 +44,70 @@ import static lsfusion.server.form.entity.GroupObjectHierarchy.ReportNode;
  * Time: 10:50:30
  */
 
-public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
+public class ReportSourceGenerator<T extends BusinessLogics<T>, PropertyDraw extends PropertyReaderInstance, GroupObject, PropertyObject, CalcPropertyObject extends Order, Order, Obj extends Order, PropertyReaderInstance>  {
     // Иерархия генерируемого отчета. Отличается от полной иерархии при отчете для одной таблицы
     private GroupObjectHierarchy.ReportHierarchy hierarchy;
     // Полная иерархия формы
     private GroupObjectHierarchy.ReportHierarchy fullFormHierarchy;
-    private FormInstance<T> form;
+
+    private final FormSourceInterface<PropertyDraw, GroupObject, PropertyObject, CalcPropertyObject, Order, Obj, PropertyReaderInstance> formInterface;
+
     private Map<String, ReportData> sources = new HashMap<>();
     // ID группы при отчете для одной таблицы
     private final Integer groupId;
     private FormUserPreferences userPreferences;
     // ID тех групп, которые идут в отчет таблицей значений.
     private final Set<Integer> gridGroupsId;
-    private Map<Integer, GroupObjectInstance> idToInstance = new HashMap<>();
+    private Map<Integer, GroupObject> idToInstance = new HashMap<>();
 
-    public static class ColumnGroupCaptionsData {
+    public static class ColumnGroupCaptionsData<Obj> {
         // объекты, от которых зависит свойство
-        public final Map<String, List<ObjectInstance>> propertyObjects = new HashMap<>();
+        public final Map<String, List<Obj>> propertyObjects = new HashMap<>();
         // объекты, идущие в колонки
-        public final Map<String, List<ObjectInstance>> columnObjects = new HashMap<>();
+        public final Map<String, List<Obj>> columnObjects = new HashMap<>();
         // таблицы значений свойств, ключ в таблице - набор значений объектов из propertyObjects
         public final Map<String, Map<List<Object>, Object>> data = new HashMap<>();
         // наборы различных значений объектов из columnObjects, идущих в колонки
         public final Map<String, LinkedHashSet<List<Object>>> columnData = new HashMap<>();
     }
     
-    public ReportSourceGenerator(FormInstance<T> form, GroupObjectHierarchy.ReportHierarchy hierarchy,
+    public ReportSourceGenerator(FormSourceInterface<PropertyDraw, GroupObject, PropertyObject, CalcPropertyObject, Order, Obj, PropertyReaderInstance> formInterface, GroupObjectHierarchy.ReportHierarchy hierarchy,
                                  GroupObjectHierarchy.ReportHierarchy fullFormHierarchy, Set<Integer> gridGroupsId, Integer groupId, FormUserPreferences userPreferences) {
         this.hierarchy = hierarchy;
         this.fullFormHierarchy = fullFormHierarchy;
-        this.form = form;
+        this.formInterface = formInterface;
         this.gridGroupsId = gridGroupsId;
         this.groupId = groupId;
         this.userPreferences = userPreferences;
 
-        for (GroupObjectInstance group : form.getGroups()) {
-            idToInstance.put(group.getID(), group);
+        for (GroupObject group : formInterface.getOrderGroups()) {
+            idToInstance.put(formInterface.getGroupID(group), group);
         }
     }
 
     public Map<String, ReportData> generate(boolean custom) throws SQLException, SQLHandledException {
-        iterateChildReports(hierarchy.getRootNodes(), SetFact.<GroupObjectInstance>EMPTYORDER(), null, custom);
+        iterateChildReports(hierarchy.getRootNodes(), SetFact.<GroupObject>EMPTYORDER(), null, custom);
         return sources;
     }
 
-    private Query<ObjectInstance, Pair<Object, PropertyType>> createQuery(ImOrderSet<GroupObjectInstance> groups, ImOrderSet<GroupObjectInstance> parentGroups, SessionTableUsage<ObjectInstance,
+    private Query<Obj, Pair<Object, PropertyType>> createQuery(ImOrderSet<GroupObject> groups, ImOrderSet<GroupObject> parentGroups, SessionTableUsage<Obj,
             Pair<Object, PropertyType>> parentTable, Result<ImOrderMap<Pair<Object, PropertyType>, Boolean>> orders, Result<ImMap<Pair<Object, PropertyType>, Type>> types, boolean custom) throws SQLException, SQLHandledException {
 
-        assert parentTable == null || BaseUtils.hashEquals(GroupObjectInstance.getObjects(parentGroups.getSet()),parentTable.getMapKeys().keys());
+        assert parentTable == null || BaseUtils.hashEquals(formInterface.getObjects(parentGroups.getSet()),parentTable.getMapKeys().keys());
 
-        QueryBuilder<ObjectInstance, Pair<Object, PropertyType>> newQuery;
+        QueryBuilder<Obj, Pair<Object, PropertyType>> newQuery;
         if (groupId == null) {
-            newQuery = new QueryBuilder<>(GroupObjectInstance.getObjects(groups.getSet()));
+            newQuery = new QueryBuilder<>(formInterface.getObjects(groups.getSet()));
         } else {
-            GroupObjectInstance ourGroup = null;
-            for (GroupObjectInstance group : groups) {
-                if (groupId.equals(group.getID())) {
+            GroupObject ourGroup = null;
+            for (GroupObject group : groups) {
+                if (groupId.equals(formInterface.getGroupID(group))) {
                     ourGroup = group;
                     break;
                 }
             }
             assert ourGroup != null;
-            newQuery = new QueryBuilder<>(ourGroup.objects);
+            newQuery = new QueryBuilder<>(formInterface.getObjects(ourGroup));
         }
         MExclMap<Pair<Object, PropertyType>, Type> mTypes = MapFact.mExclMap();
         MOrderExclMap<Pair<Object, PropertyType>, Boolean> mOrders = MapFact.mOrderExclMap();
@@ -120,42 +122,44 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
             newQuery.and(parentJoin.getWhere());
         }
 
-        Modifier modifier = getModifier();
-        for (GroupObjectInstance group : groups) {
-            if (groupId == null || groupId.equals(group.getID())) {
+        for (GroupObject group : groups) {
+            int groupObjectID = formInterface.getGroupID(group);
+            if (groupId == null || groupId.equals(groupObjectID)) {
                 boolean inParent = parentGroups.contains(group);
                 if(!(subReportTableOptimization && inParent)) {
-                    newQuery.and(group.getWhere(newQuery.getMapExprs(), modifier));
+                    newQuery.and(formInterface.getWhere(group, newQuery.getMapExprs()));
 
-                    if (!gridGroupsId.contains(group.getID())) {
-                        for (ObjectInstance object : group.objects) {
-                            newQuery.and(object.getExpr(newQuery.getMapExprs(), modifier).compare(object.getObjectValue().getExpr(), Compare.EQUALS));
+                    if (!gridGroupsId.contains(groupObjectID)) {
+                        for (Obj object : formInterface.getObjects(group)) {
+                            newQuery.and(formInterface.getExpr(object, newQuery.getMapExprs()).compare(formInterface.getObjectValue(object).getExpr(), Compare.EQUALS));
                         }
                     }
                 }
 
-                ImOrderMap<OrderInstance,Boolean> mergeOrders = group.orders.mergeOrder(group.getOrderObjects().toOrderMap(false));
+                ImOrderMap<Order,Boolean> mergeOrders = formInterface.getOrders(group).mergeOrder(formInterface.getOrderObjects(group).toOrderMap(false));
                 for(int i=0,size=mergeOrders.size();i<size;i++) {
-                    OrderInstance order = mergeOrders.getKey(i);
+                    Order order = mergeOrders.getKey(i);
 
-                    Pair<Object, PropertyType> orderObject = addProperty(order, order, PropertyType.ORDER, modifier, inParent, parentJoin, newQuery, mTypes);
+                    Pair<Object, PropertyType> orderObject = addProperty(order, order, PropertyType.ORDER, inParent, parentJoin, newQuery, mTypes);
                     mOrders.exclAdd(orderObject, mergeOrders.getValue(i));
                 }
             }
         }
 
-        Set<PropertyDrawInstance> parentProps = subReportTableOptimization && parentJoin != null ? new HashSet<>(filterProperties(parentGroups.getSet(), custom)) : new HashSet<PropertyDrawInstance>();
-        for(PropertyDrawInstance<?> property : filterProperties(groups.getSet(), custom)) {
+        Set<PropertyDraw> parentProps = subReportTableOptimization && parentJoin != null ? new HashSet<>(filterProperties(parentGroups.getSet(), custom)) : new HashSet<PropertyDraw>();
+        for(PropertyDraw property : filterProperties(groups.getSet(), custom)) {
             boolean inParent = parentProps.contains(property);
-            if (property.getColumnGroupObjects().isEmpty()) {
-                addProperty(property, property.getDrawInstance(), PropertyType.PLAIN, modifier, inParent, parentJoin, newQuery, mTypes);
+            if (formInterface.getColumnGroupObjects(property).isEmpty()) {
+                addProperty(property, formInterface.getDrawInstance(property), PropertyType.PLAIN, inParent, parentJoin, newQuery, mTypes);
 
-                if (property.propertyCaption != null) {
-                    addProperty(property, property.propertyCaption, PropertyType.CAPTION, modifier, inParent, parentJoin, newQuery, mTypes);
+                CalcPropertyObject propertyCaption = formInterface.getPropertyCaption(property);
+                if (propertyCaption != null) {
+                    addProperty(property, propertyCaption, PropertyType.CAPTION, inParent, parentJoin, newQuery, mTypes);
                 }
 
-                if (property.propertyFooter != null) {
-                    addProperty(property, property.propertyFooter, PropertyType.FOOTER, modifier, inParent, parentJoin, newQuery, mTypes);
+                CalcPropertyObject propertyFooter = formInterface.getPropertyFooter(property);
+                if (propertyFooter != null) {
+                    addProperty(property, propertyFooter, PropertyType.FOOTER, inParent, parentJoin, newQuery, mTypes);
                 }
             }
         }
@@ -164,83 +168,84 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
         return newQuery.getQuery();
     }
 
-    private Pair<Object, PropertyType> addProperty(Object property, OrderInstance pObject, PropertyType type, Modifier modifier, boolean inParent, Join<Pair<Object, PropertyType>> parentJoin, QueryBuilder<ObjectInstance, Pair<Object, PropertyType>> newQuery, MExclMap<Pair<Object, PropertyType>, Type> mTypes) throws SQLException, SQLHandledException {
+    private Pair<Object, PropertyType> addProperty(Object property, Order pObject, PropertyType type, boolean inParent, Join<Pair<Object, PropertyType>> parentJoin, QueryBuilder<Obj, Pair<Object, PropertyType>> newQuery, MExclMap<Pair<Object, PropertyType>, Type> mTypes) throws SQLException, SQLHandledException {
         Pair<Object, PropertyType> propertyObject = new Pair<>(property, type);
-        newQuery.addProperty(propertyObject, inParent ? parentJoin.getExpr(propertyObject) : pObject.getExpr(newQuery.getMapExprs(), modifier));
-        mTypes.exclAdd(propertyObject, pObject.getType());
+        newQuery.addProperty(propertyObject, inParent ? parentJoin.getExpr(propertyObject) : formInterface.getExpr(pObject, newQuery.getMapExprs()));
+        mTypes.exclAdd(propertyObject, formInterface.getType(pObject));
         return propertyObject;
     }
 
-    private void iterateChildReports(List<ReportNode> children, ImOrderSet<GroupObjectInstance> parentGroups, SessionTableUsage<ObjectInstance, Pair<Object, PropertyType>> parentTable, boolean custom) throws SQLException, SQLHandledException {
+    private void iterateChildReports(List<ReportNode> children, ImOrderSet<GroupObject> parentGroups, SessionTableUsage<Obj, Pair<Object, PropertyType>> parentTable, boolean custom) throws SQLException, SQLHandledException {
         for (ReportNode node : children) {
             iterateChildReport(node, parentGroups, parentTable, custom);
         }
     }
 
     @StackMessage("{message.form.read.report.node}")
-    private void iterateChildReport(@ParamMessage ReportNode node, ImOrderSet<GroupObjectInstance> parentGroups, SessionTableUsage<ObjectInstance, Pair<Object, PropertyType>> parentTable, boolean custom) throws SQLException, SQLHandledException {
+    private void iterateChildReport(@ParamMessage ReportNode node, ImOrderSet<GroupObject> parentGroups, SessionTableUsage<Obj, Pair<Object, PropertyType>> parentTable, boolean custom) throws SQLException, SQLHandledException {
         String sid = node.getID();
         List<GroupObjectEntity> groupList = node.getGroupList();
-        MOrderExclSet<GroupObjectInstance> mLocalGroups = SetFact.mOrderExclSet(groupList.size()); // пограничные List'ы
+        MOrderExclSet<GroupObject> mLocalGroups = SetFact.mOrderExclSet(groupList.size()); // пограничные List'ы
         for (GroupObjectEntity group : groupList) {
-            GroupObjectInstance groupInstance = idToInstance.get(group.getID());
+            GroupObject groupInstance = idToInstance.get(group.getID());
             mLocalGroups.exclAdd(groupInstance);
         }
 
-        ImOrderSet<GroupObjectInstance> groups = parentGroups.mergeOrder(mLocalGroups.immutableOrder()); // тут хрен поймешь excl или нет
+        ImOrderSet<GroupObject> groups = parentGroups.mergeOrder(mLocalGroups.immutableOrder()); // тут хрен поймешь excl или нет
 
         Result<ImOrderMap<Pair<Object, PropertyType>, Boolean>> orders = new Result<>();
         Result<ImMap<Pair<Object, PropertyType>, Type>> propTypes = new Result<>();
-        ImMap<ObjectInstance, Type> keyTypes = GroupObjectInstance.getObjects(groups.getSet()).mapValues(new GetValue<Type, ObjectInstance>() {
-            public Type getMapValue(ObjectInstance value) {
-                return value.getType();
+        ImMap<Obj, Type> keyTypes = formInterface.getObjects(groups.getSet()).mapValues(new GetValue<Type, Obj>() {
+            public Type getMapValue(Obj value) {
+                return formInterface.getType(value);
             }});
 
-        Query<ObjectInstance, Pair<Object, PropertyType>> query = createQuery(groups, parentGroups, parentTable, orders, propTypes, custom);
+        Query<Obj, Pair<Object, PropertyType>> query = createQuery(groups, parentGroups, parentTable, orders, propTypes, custom);
         DataSession session = getSession();
         QueryEnvironment queryEnv = getQueryEnv();
         BaseClass baseClass = getBaseClass();
         SQLSession sql = session.sql;
-        SessionTableUsage<ObjectInstance, Pair<Object, PropertyType>> reportTable = new SessionTableUsage<>(
+        SessionTableUsage<Obj, Pair<Object, PropertyType>> reportTable = new SessionTableUsage<>(
                 sql, query, baseClass, queryEnv, keyTypes, propTypes.result);
 
         try {
-            ImOrderMap<ImMap<ObjectInstance, Object>, ImMap<Pair<Object, PropertyType>, Object>> resultData = reportTable.read(sql, getQueryEnv(), orders.result);
+            ImOrderMap<ImMap<Obj, Object>, ImMap<Pair<Object, PropertyType>, Object>> resultData = reportTable.read(sql, getQueryEnv(), orders.result);
 
             List<Pair<String, PropertyReaderInstance>> propertyList = new ArrayList<>();
-            for(PropertyDrawInstance property : filterProperties(groups.getSet(), custom)) {
-                propertyList.add(new Pair<String, PropertyReaderInstance>(property.getsID(), property));
-                if (property.propertyCaption != null) {
-                    propertyList.add(new Pair<String, PropertyReaderInstance>(property.getsID(), property.captionReader));
+            for(PropertyDraw property : filterProperties(groups.getSet(), custom)) {
+                String psid = formInterface.getPSID(property);
+                propertyList.add(new Pair<String, PropertyReaderInstance>(psid, property));
+                if (formInterface.getPropertyCaption(property) != null) {
+                    propertyList.add(new Pair<String, PropertyReaderInstance>(psid, formInterface.getCaptionReader(property)));
                 }
-                if (property.propertyFooter != null) {
-                    propertyList.add(new Pair<String, PropertyReaderInstance>(property.getsID(), property.footerReader));
+                if (formInterface.getPropertyFooter(property) != null) {
+                    propertyList.add(new Pair<String, PropertyReaderInstance>(psid, formInterface.getFooterReader(property)));
                 }
             }
 
-            ImOrderSet<ObjectInstance> keyList = GroupObjectInstance.getOrderObjects(groups);
-            ReportData data = new ReportData(keyList.toJavaList(), propertyList);
+            ImOrderSet<Obj> keyList = formInterface.getOrderObjects(groups);
+            ReportData<Order, Obj, PropertyReaderInstance> data = new ReportData<>(keyList.toJavaList(), propertyList);
 
             for (int i=0,size=resultData.size();i<size;i++) {
                 ImMap<Pair<Object, PropertyType>, Object> resultValue = resultData.getValue(i);
 
                 List<Object> propertyValues = new ArrayList<>();
-                for(PropertyDrawInstance property : filterProperties(groups.getSet(), custom)) {
+                for(PropertyDraw property : filterProperties(groups.getSet(), custom)) {
                     propertyValues.add(resultValue.get(new Pair<Object, PropertyType>(property, PropertyType.PLAIN)));
-                    if (property.propertyCaption != null) {
+                    if (formInterface.getPropertyCaption(property) != null) {
                         propertyValues.add(resultValue.get(new Pair<Object, PropertyType>(property, PropertyType.CAPTION)));
                     }
-                    if (property.propertyFooter != null) {
+                    if (formInterface.getPropertyFooter(property) != null) {
                         propertyValues.add(resultValue.get(new Pair<Object, PropertyType>(property, PropertyType.FOOTER)));
                     }
                 }
 
-                List<ObjectInstance> objectsList = keyList.toJavaList();
+                List<Obj> objectsList = keyList.toJavaList();
                 List<Object> keys = BaseUtils.mapList(objectsList, resultData.getKey(i));
                 if (groupId != null) {
                     for (int keyIndex = 0; keyIndex < objectsList.size(); ++keyIndex) {
                         if (resultData.getKey(i).get(objectsList.get(keyIndex)) == null) {
-                            keys.set(keyIndex, objectsList.get(keyIndex).getObjectValue().getValue());
+                            keys.set(keyIndex, formInterface.getObjectValue(objectsList.get(keyIndex)).getValue());
                         }
                     }
                 }
@@ -256,47 +261,45 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
     }
 
     private BaseClass getBaseClass() {
-        return form.BL.LM.baseClass;
+        return formInterface.getBaseClass();
     }
 
     private QueryEnvironment getQueryEnv() {
-        return form.getQueryEnv();
+        return formInterface.getQueryEnv();
     }
 
     private DataSession getSession() {
-        return form.session;
+        return formInterface.getSession();
     }
 
-    private Modifier getModifier() {
-        return form.getModifier();
-    }
-
-    // В отчет по одной группе объектов не добавляем свойства, которые идут в панель  
-    private boolean validForGroupReports(PropertyDrawInstance property) {
-        return groupId == null || !groupId.equals(property.toDraw.getID()) || property.getForceViewType() != ClassViewType.PANEL;     
+    // В отчет по одной группе объектов не добавляем свойства, которые идут в панель
+    private boolean validForGroupReports(PropertyDraw property) {
+        return groupId == null || !groupId.equals(formInterface.getGroupID(formInterface.getToDraw(property))) || formInterface.getPViewType(property) != ClassViewType.PANEL;
     } 
     
-    private List<PropertyDrawInstance> filterProperties(ImSet<GroupObjectInstance> filterGroups, boolean custom) {
-        List<PropertyDrawInstance> resultList = new ArrayList<>();
-        for (PropertyDrawInstance property : form.properties) {
-            GroupObjectInstance applyGroup = property.propertyObject.getApplyObject();
+    private List<PropertyDraw> filterProperties(ImSet<GroupObject> filterGroups, boolean custom) {
+        List<PropertyDraw> resultList = new ArrayList<>();
+        for (PropertyDraw property : formInterface.getProperties()) {
+            GroupObject applyGroup = formInterface.getApplyObject(formInterface.getPropertyObject(property));
             // Отдельно рассматриваем случай свойства без параметров
-            if (((applyGroup == null || property.toDraw == applyGroup) && property.toDraw != null && filterGroups.contains(property.toDraw) && validForGroupReports(property)) ||  
-                    (property.toDraw == null && applyGroup == null && property.propertyObject.property instanceof CalcProperty && property.propertyObject.property.getInterfaceCount() == 0) ||
-                    (property.toDraw != applyGroup && custom)) {
+            GroupObject toDraw = formInterface.getToDraw(property);
+            Property pProperty;
+            if (((applyGroup == null || toDraw == applyGroup) && toDraw != null && filterGroups.contains(toDraw) && validForGroupReports(property)) ||
+                (toDraw == null && applyGroup == null && (pProperty = formInterface.getProperty(formInterface.getPropertyObject(property))) instanceof CalcProperty && pProperty.getInterfaceCount() == 0) ||
+                (toDraw != applyGroup && custom)) {
                 boolean add = true;
                 
-                if (userPreferences != null && property.toDraw != null) {
-                    GroupObjectUserPreferences groupObjectPreferences = userPreferences.getUsedPreferences(property.toDraw.getSID());
+                if (userPreferences != null && toDraw != null) {
+                    GroupObjectUserPreferences groupObjectPreferences = userPreferences.getUsedPreferences(formInterface.getGroupSID(toDraw));
                     if (groupObjectPreferences != null) {
-                        ColumnUserPreferences columnUP = groupObjectPreferences.getColumnUserPreferences().get(property.getsID());
+                        ColumnUserPreferences columnUP = groupObjectPreferences.getColumnUserPreferences().get(formInterface.getPSID(property));
                         if (columnUP != null && columnUP.userHide != null && columnUP.userHide) {
                             add = false;    
                         }
                     }
                 }
                 
-                if (groupId != null && !form.isPropertyShown(property)) {
+                if (groupId != null && !formInterface.isPropertyShown(property)) {
                     add = false;
                 }
                 
@@ -308,16 +311,16 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
         return resultList;
     }
 
-    public ColumnGroupCaptionsData getColumnGroupCaptions() throws SQLException, SQLHandledException {
-        ColumnGroupCaptionsData resultData = new ColumnGroupCaptionsData();
+    public ColumnGroupCaptionsData<Obj> getColumnGroupCaptions() throws SQLException, SQLHandledException {
+        ColumnGroupCaptionsData<Obj> resultData = new ColumnGroupCaptionsData<Obj>();
 
-        for (PropertyDrawInstance<?> property : form.properties) {
-            ImOrderSet<GroupObjectInstance> columnGroupObjects = property.getOrderColumnGroupObjects();
+        for (PropertyDraw property : formInterface.getProperties()) {
+            ImOrderSet<GroupObject> columnGroupObjects = formInterface.getOrderColumnGroupObjects(property);
             if (columnGroupObjects.size() > 0) {
-                ImOrderSet<GroupObjectInstance> groups = getNeededGroupsForColumnProp(property);
-                ImOrderMap<ImMap<ObjectInstance, Object>, ImMap<Object, Object>> qResult = getColumnPropQueryResult(groups, property);
+                ImOrderSet<GroupObject> groups = getNeededGroupsForColumnProp(property);
+                ImOrderMap<ImMap<Obj, Object>, ImMap<Object, Object>> qResult = getColumnPropQueryResult(groups, property);
 
-                ImCol<ObjectInstance> propObjects = property.propertyObject.getObjectInstances();
+                ImCol<Obj> propObjects = formInterface.getPObjects(formInterface.getPropertyObject(property));
 
                 Map<List<Object>, Object> data = new HashMap<>();
                 Map<List<Object>, Object> captionData = new HashMap<>();
@@ -325,80 +328,82 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
                 LinkedHashSet<List<Object>> columnData = new LinkedHashSet<>();
 
                 for (int i=0,size=qResult.size();i<size;i++) {
-                    ImMap<ObjectInstance, Object> key = qResult.getKey(i); ImMap<Object, Object> value = qResult.getValue(i);
+                    ImMap<Obj, Object> key = qResult.getKey(i); ImMap<Object, Object> value = qResult.getValue(i);
 
                     List<Object> values = new ArrayList<>();
-                    for (ObjectInstance object : propObjects) {
+                    for (Obj object : propObjects) {
                         values.add(key.get(object));
                     }
                     data.put(values, value.get(property));
-                    if (property.propertyCaption != null) {
-                        captionData.put(values, value.get(property.captionReader));
+                    if (formInterface.getPropertyCaption(property) != null) {
+                        captionData.put(values, value.get(formInterface.getCaptionReader(property)));
                     }
-                    if (property.propertyFooter != null) {
-                        footerData.put(values, value.get(property.footerReader));
+                    if (formInterface.getPropertyFooter(property) != null) {
+                        footerData.put(values, value.get(formInterface.getPropertyFooter(property)));
                     }
 
                     List<Object> columnValues = new ArrayList<>();
-                    for (ObjectInstance object : GroupObjectInstance.getOrderObjects(columnGroupObjects)) {
+                    for (Obj object : formInterface.getOrderObjects(columnGroupObjects)) {
                         columnValues.add(key.get(object));
                     }
                     columnData.add(columnValues);
                 }
 
-                resultData.propertyObjects.put(property.getsID(), propObjects.toList().toJavaList());
-                resultData.columnObjects.put(property.getsID(), GroupObjectInstance.getOrderObjects(columnGroupObjects).toJavaList());
-                resultData.data.put(property.getsID(), data);
-                if (property.propertyCaption != null) {
-                    resultData.data.put(property.getsID() + ReportConstants.headerSuffix, captionData);
+                String psid = formInterface.getPSID(property);
+                resultData.propertyObjects.put(psid, propObjects.toList().toJavaList());
+                resultData.columnObjects.put(psid, formInterface.getOrderObjects(columnGroupObjects).toJavaList());
+                resultData.data.put(psid, data);
+                if (formInterface.getPropertyCaption(property) != null) {
+                    resultData.data.put(psid + ReportConstants.headerSuffix, captionData);
                 }
-                if (property.propertyFooter != null) {
-                    resultData.data.put(property.getsID() + ReportConstants.footerSuffix, footerData);
+                if (formInterface.getPropertyFooter(property) != null) {
+                    resultData.data.put(psid + ReportConstants.footerSuffix, footerData);
                 }
-                resultData.columnData.put(property.getsID(), columnData);
+                resultData.columnData.put(psid, columnData);
             }
         }
         return resultData;
     }
 
-    private ImOrderMap<ImMap<ObjectInstance, Object>, ImMap<Object, Object>> getColumnPropQueryResult(ImOrderSet<GroupObjectInstance> groups, PropertyDrawInstance<?> property) throws SQLException, SQLHandledException {
-        ImSet<ObjectInstance> objects = GroupObjectInstance.getObjects(groups.getSet());
-        QueryBuilder<ObjectInstance, Object> query = new QueryBuilder<>(objects);
+    private ImOrderMap<ImMap<Obj, Object>, ImMap<Object, Object>> getColumnPropQueryResult(ImOrderSet<GroupObject> groups, PropertyDraw property) throws SQLException, SQLHandledException {
+        ImSet<Obj> objects = formInterface.getObjects(groups.getSet());
+        QueryBuilder<Obj, Object> query = new QueryBuilder<>(objects);
         MOrderMap<Object, Boolean> mQueryOrders = MapFact.mOrderMap();
 
-        Modifier modifier = getModifier();
-        for (GroupObjectInstance group : groups) {
-            query.and(group.getWhere(query.getMapExprs(), modifier));
+        for (GroupObject group : groups) {
+            query.and(formInterface.getWhere(group, query.getMapExprs()));
 
-            ImOrderMap<OrderInstance, Boolean> groupOrders = group.orders.mergeOrder(group.getOrderObjects().toOrderMap(false));
+            ImOrderMap<Order, Boolean> groupOrders = formInterface.getOrders(group).mergeOrder(formInterface.getOrderObjects(group).toOrderMap(false));
             for (int i=0,size=groupOrders.size();i<size;i++) {
-                OrderInstance order = groupOrders.getKey(i);
-                query.addProperty(order, order.getExpr(query.getMapExprs(), modifier));
+                Order order = groupOrders.getKey(i);
+                query.addProperty(order, formInterface.getExpr(order, query.getMapExprs()));
                 mQueryOrders.add(order, groupOrders.getValue(i));
             }
 
-            if (group.curClassView != ClassViewType.GRID || (groupId != null && !(groupId.equals(group.getID()) || property.getColumnGroupObjects().contains(group)))) {
-                for (ObjectInstance object : group.objects) {
-                    query.and(object.getExpr(query.getMapExprs(), modifier).compare(object.getObjectValue().getExpr(), Compare.EQUALS));
+            if (formInterface.getGroupViewType(group) != ClassViewType.GRID || (groupId != null && !(groupId.equals(formInterface.getGroupID(group)) || formInterface.getColumnGroupObjects(property).contains(group)))) {
+                for (Obj object : formInterface.getObjects(group)) {
+                    query.and(formInterface.getExpr(object, query.getMapExprs()).compare(formInterface.getObjectValue(object).getExpr(), Compare.EQUALS));
                 }
             }
         }
 
-        query.addProperty(property, property.getDrawInstance().getExpr(query.getMapExprs(), modifier));
-        if (property.propertyCaption != null) {
-            query.addProperty(property.captionReader, property.propertyCaption.getExpr(query.getMapExprs(), modifier));
+        query.addProperty(property, formInterface.getExpr(formInterface.getDrawInstance(property), query.getMapExprs()));
+        CalcPropertyObject propertyCaption = formInterface.getPropertyCaption(property);
+        if (propertyCaption != null) {
+            query.addProperty(formInterface.getCaptionReader(property), formInterface.getExpr(propertyCaption, query.getMapExprs()));
         }
-        if (property.propertyFooter != null) {
-            query.addProperty(property.footerReader, property.propertyFooter.getExpr(query.getMapExprs(), modifier));
+        CalcPropertyObject propertyFooter = formInterface.getPropertyFooter(property);
+        if (propertyFooter != null) {
+            query.addProperty(formInterface.getFooterReader(property), formInterface.getExpr(propertyFooter, query.getMapExprs()));
         }
 
         return query.execute(getSession().sql, mQueryOrders.immutableOrder(), 0, getQueryEnv());
     }
 
-    private Set<GroupObjectInstance> getPropertyDependencies(PropertyDrawInstance<?> property) {
-        Set<GroupObjectInstance> groups = new HashSet<>();
-        for (ObjectInstance object : property.propertyObject.getObjectInstances()) {
-            groups.add(object.groupTo);
+    private Set<GroupObject> getPropertyDependencies(PropertyDraw property) {
+        Set<GroupObject> groups = new HashSet<>();
+        for (Obj object : formInterface.getPObjects(formInterface.getPropertyObject(property))) {
+            groups.add(formInterface.getGroupTo(object));
         }
         return groups;
     }
@@ -406,14 +411,15 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
     // получает все группы, от которых зависит свойство
     // включаются и дополнительные объекты, которые не используются (в частности fullFormHierarchy), но нужны чтобы найти ВСЕ разновидности групп в колонки
     // это конечно "избыточно", но пока так 
-    private ImOrderSet<GroupObjectInstance> getNeededGroupsForColumnProp(PropertyDrawInstance<?> property) {
-        Set<GroupObjectInstance> initialGroups = getPropertyDependencies(property);
-        MSet<GroupObjectInstance> groups = SetFact.mSet();
+    private ImOrderSet<GroupObject> getNeededGroupsForColumnProp(PropertyDraw property) {
+        Set<GroupObject> initialGroups = getPropertyDependencies(property);
+        MSet<GroupObject> groups = SetFact.mSet();
         
-        for (GroupObjectInstance group : initialGroups) {
-            ReportNode curNode = fullFormHierarchy.getReportNode(group.entity);
+        for (GroupObject group : initialGroups) {
+            GroupObjectEntity groupEntity = formInterface.getEntity(group);
+            ReportNode curNode = fullFormHierarchy.getReportNode(groupEntity);
             List<GroupObjectEntity> nodeGroups = curNode.getGroupList();
-            int groupIndex = nodeGroups.indexOf(group.entity);
+            int groupIndex = nodeGroups.indexOf(groupEntity);
             for (int i = 0; i <= groupIndex; i++) {
                 groups.add(idToInstance.get(nodeGroups.get(i).getID()));
             }
@@ -427,7 +433,7 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
             }
         }
 
-        return form.getOrderGroups().filterOrderIncl(groups.immutable());
+        return formInterface.getOrderGroups().filterOrderIncl(groups.immutable());
     }
 
     public enum PropertyType {PLAIN, ORDER, CAPTION, FOOTER, BACKGROUND}

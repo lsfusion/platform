@@ -22,6 +22,7 @@ import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.actions.SystemExplicitActionProperty;
 import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.remote.FormReportManager;
+import lsfusion.server.remote.InteractiveFormReportManager;
 import net.sf.jasperreports.engine.JRAbstractExporter;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRExporterParameter;
@@ -302,7 +303,7 @@ public class SendEmailActionProperty extends SystemExplicitActionProperty {
     private String createReportFile(FormInstance remoteForm, boolean inlineForm, AttachmentFormat attachmentFormat, Map<ByteArray, String> attachmentFiles) throws ClassNotFoundException, IOException, JRException {
 
         boolean toExcel = attachmentFormat != null && attachmentFormat.equals(AttachmentFormat.XLSX);
-        ReportGenerationData generationData = new FormReportManager<>(remoteForm).getReportData(toExcel);
+        ReportGenerationData generationData = new InteractiveFormReportManager<>(remoteForm).getReportData(toExcel);
 
         ReportGenerator report = new ReportGenerator(generationData);
         JasperPrint print = report.createReport(inlineForm || toExcel, attachmentFiles);

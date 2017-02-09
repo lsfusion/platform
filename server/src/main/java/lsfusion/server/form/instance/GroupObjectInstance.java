@@ -73,7 +73,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
     RowBackgroundReaderInstance rowBackgroundReader = new RowBackgroundReaderInstance();
     RowForegroundReaderInstance rowForegroundReader = new RowForegroundReaderInstance();
 
-    GroupObjectEntity entity;
+    public final GroupObjectEntity entity;
 
     public static ImSet<ObjectInstance> getObjects(ImSet<GroupObjectInstance> groups) {
         MExclSet<ObjectInstance> mResult = SetFact.mExclSet();

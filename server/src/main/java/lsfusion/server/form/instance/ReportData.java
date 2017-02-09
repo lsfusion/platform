@@ -2,6 +2,7 @@ package lsfusion.server.form.instance;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
+import lsfusion.server.remote.FormReportInterface;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -16,14 +17,14 @@ import java.util.Map;
  * Time: 15:46:31
  */
 
-public class ReportData {
-    private final List<ObjectInstance> keys;
-    private final List<Pair<String, PropertyReaderInstance>> properties;
-    private final Map<ObjectInstance, Integer> keyToIndex;
+public class ReportData<Order, Obj extends Order, PropertyReader> {
+    private final List<Obj> keys;
+    private final List<Pair<String, PropertyReader>> properties;
+    private final Map<Obj, Integer> keyToIndex;
     private final List<List<Object>> keyRows = new ArrayList<>();
     private final List<List<Object>> propRows = new ArrayList<>();
 
-    public ReportData(List<ObjectInstance> keys, List<Pair<String, PropertyReaderInstance>> properties) {
+    public ReportData(List<Obj> keys, List<Pair<String, PropertyReader>> properties) {
         this.keys = keys;
         keyToIndex = new HashMap<>();
         for (int i = 0; i < keys.size(); i++) {
@@ -50,22 +51,22 @@ public class ReportData {
 
     public int getRowCount() { return keyRows.size(); }
 
-    public void serialize(DataOutputStream outStream, boolean custom) throws IOException {
+    public void serialize(DataOutputStream outStream, boolean custom, FormReportInterface<?, ?, ?, ?, Order, Obj, PropertyReader> formInterface) throws IOException {
         outStream.writeBoolean(keyRows.size() == 0);
         if (keyRows.size() == 0 && !custom) return;
 
         outStream.writeInt(keys.size());
-        for(ObjectInstance object : keys) {
-            outStream.writeUTF(object.getsID());
-            outStream.writeInt(object.getID());
+        for(Obj object : keys) {
+            outStream.writeUTF(formInterface.getObjectSID(object));
+            outStream.writeInt(formInterface.getObjectID(object));
         }
 
         outStream.writeInt(properties.size());
-        for(Pair<String, PropertyReaderInstance> propertyData : properties) {
+        for(Pair<String, PropertyReader> propertyData : properties) {
             outStream.writeUTF(propertyData.first);
-            outStream.writeInt(propertyData.second.getTypeID());
-            outStream.writeInt(propertyData.second.getID());
-            PropertyType type = propertyData.second.getPropertyType();
+            outStream.writeInt(formInterface.getTypeID(propertyData.second));
+            outStream.writeInt(formInterface.getID(propertyData.second));
+            PropertyType type = formInterface.getPropertyType(propertyData.second);
             outStream.writeUTF(type == null ? "" : type.type);
             outStream.writeUTF(type == null ? "" : type.toDraw);
             outStream.writeInt(type == null ? 0 : type.length);

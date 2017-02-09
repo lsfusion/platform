@@ -1,6 +1,8 @@
 package lsfusion.server.form.entity;
 
 import lsfusion.base.BaseUtils;
+import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.identity.IdentityObject;
 import lsfusion.server.caches.IdentityInstanceLazy;
 import lsfusion.server.classes.CustomClass;
@@ -8,13 +10,18 @@ import lsfusion.server.classes.ValueClass;
 import lsfusion.server.classes.sets.AndClassSet;
 import lsfusion.server.classes.sets.ResolveClassSet;
 import lsfusion.server.context.ThreadLocalContext;
+import lsfusion.server.data.expr.Expr;
+import lsfusion.server.data.type.Type;
 import lsfusion.server.form.instance.InstanceFactory;
 import lsfusion.server.form.instance.PropertyObjectInterfaceInstance;
+import lsfusion.server.logics.NullValue;
+import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.actions.DefaultChangeObjectActionProperty;
 import lsfusion.server.logics.property.actions.ExplicitActionProperty;
+import lsfusion.server.session.Modifier;
 
 import java.util.Set;
 
@@ -83,5 +90,31 @@ public class ObjectEntity extends IdentityObject implements PropertyObjectInterf
 
     public ResolveClassSet getResolveClassSet() {
         return baseClass.getResolveSet();
+    }
+
+    @Override
+    public Type getType() {
+        return baseClass.getType();
+    }
+
+    @Override
+    public Expr getExpr(ImMap<ObjectEntity, ? extends Expr> mapExprs, Modifier modifier, ImMap<ObjectEntity, ObjectValue> mapObjects) {
+        ObjectValue objectValue = mapObjects.get(this);
+        if(objectValue != null)
+            return objectValue.getExpr();
+        return mapExprs.get(this);
+    }
+
+    @Override
+    public ObjectValue getObjectValue(ImMap<ObjectEntity, ObjectValue> mapObjects) {
+        ObjectValue objectValue = mapObjects.get(this);
+        if(objectValue != null)
+            return objectValue;
+        return NullValue.instance;
+    }
+
+    @Override
+    public GroupObjectEntity getApplyObject(ImOrderSet<GroupObjectEntity> groups) {
+        return groupTo;
     }
 }
