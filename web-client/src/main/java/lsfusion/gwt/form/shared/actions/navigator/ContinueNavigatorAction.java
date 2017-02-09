@@ -1,12 +1,12 @@
 package lsfusion.gwt.form.shared.actions.navigator;
 
 import lsfusion.gwt.base.shared.actions.NavigatorAction;
+import lsfusion.gwt.base.shared.actions.RequestAction;
 import lsfusion.gwt.form.shared.actions.form.ServerResponseResult;
-import net.customware.gwt.dispatch.shared.Action;
 
 import java.io.Serializable;
 
-public class ContinueNavigatorAction implements Action<ServerResponseResult>, NavigatorAction {
+public class ContinueNavigatorAction extends RequestAction<ServerResponseResult> implements NavigatorAction {
     public Serializable[] actionResults;
 
     public ContinueNavigatorAction() {}

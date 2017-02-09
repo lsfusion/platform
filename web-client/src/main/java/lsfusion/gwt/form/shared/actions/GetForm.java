@@ -1,11 +1,11 @@
 package lsfusion.gwt.form.shared.actions;
 
 import lsfusion.gwt.base.shared.actions.NavigatorAction;
-import net.customware.gwt.dispatch.shared.Action;
+import lsfusion.gwt.base.shared.actions.RequestAction;
 
 import java.util.Map;
 
-public class GetForm implements Action<GetFormResult>, NavigatorAction {
+public class GetForm extends RequestAction<GetFormResult> implements NavigatorAction {
     public String sid;
     public String canonicalName;
     public boolean isModal;

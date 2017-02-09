@@ -2,10 +2,10 @@ package lsfusion.gwt.form.shared.actions.navigator;
 
 import com.google.gwt.core.shared.SerializableThrowable;
 import lsfusion.gwt.base.shared.actions.NavigatorAction;
+import lsfusion.gwt.base.shared.actions.RequestAction;
 import lsfusion.gwt.base.shared.actions.VoidResult;
-import net.customware.gwt.dispatch.shared.Action;
 
-public class LogClientExceptionAction implements Action<VoidResult>, NavigatorAction {
+public class LogClientExceptionAction extends RequestAction<VoidResult> implements NavigatorAction {
     public String title;
     public SerializableThrowable throwable;
     

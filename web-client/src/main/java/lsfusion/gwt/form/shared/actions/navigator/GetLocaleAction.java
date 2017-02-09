@@ -1,10 +1,10 @@
 package lsfusion.gwt.form.shared.actions.navigator;
 
 import lsfusion.gwt.base.shared.actions.NavigatorAction;
-import net.customware.gwt.dispatch.shared.Action;
+import lsfusion.gwt.base.shared.actions.RequestAction;
 import net.customware.gwt.dispatch.shared.general.StringResult;
 
-public class GetLocaleAction implements Action<StringResult>, NavigatorAction {
+public class GetLocaleAction extends RequestAction<StringResult> implements NavigatorAction {
     public GetLocaleAction() {
     }
 }

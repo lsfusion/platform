@@ -8,6 +8,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.rpc.RpcRequestBuilder;
 import com.google.gwt.user.client.rpc.ServiceDefTarget;
 import lsfusion.gwt.base.client.GwtClientUtils;
+import lsfusion.gwt.base.shared.actions.RequestAction;
 import lsfusion.gwt.form.client.ErrorHandlingCallback;
 import lsfusion.gwt.form.client.GConnectionLostManager;
 import lsfusion.gwt.form.client.GExceptionManager;
@@ -58,6 +59,9 @@ public class DispatchAsyncWrapper extends AbstractDispatchAsync {
             requestTry++;
         }
         requestTries.put(action, requestTry);
+        if (action instanceof RequestAction) {
+            ((RequestAction) action).requestTry = requestTry;
+        }
 
         final Integer finalRequestTry = requestTry;
         getRealServiceInstance().execute(action, new AsyncCallback<Result>() {

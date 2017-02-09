@@ -1,10 +1,10 @@
 package lsfusion.gwt.form.shared.actions.navigator;
 
 import lsfusion.gwt.base.shared.actions.NavigatorAction;
+import lsfusion.gwt.base.shared.actions.RequestAction;
 import lsfusion.gwt.base.shared.actions.VoidResult;
-import net.customware.gwt.dispatch.shared.Action;
 
-public class SetCurrentForm implements Action<VoidResult>, NavigatorAction {
+public class SetCurrentForm extends RequestAction<VoidResult> implements NavigatorAction {
     public String formID;
 
     public SetCurrentForm() {

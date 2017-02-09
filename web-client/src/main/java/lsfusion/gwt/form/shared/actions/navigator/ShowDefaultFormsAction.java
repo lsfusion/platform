@@ -1,9 +1,9 @@
 package lsfusion.gwt.form.shared.actions.navigator;
 
 import lsfusion.gwt.base.shared.actions.NavigatorAction;
-import net.customware.gwt.dispatch.shared.Action;
+import lsfusion.gwt.base.shared.actions.RequestAction;
 
-public class ShowDefaultFormsAction implements Action<ShowDefaultFormsResult>, NavigatorAction {
+public class ShowDefaultFormsAction extends RequestAction<ShowDefaultFormsResult> implements NavigatorAction {
     @SuppressWarnings("UnusedDeclaration")
     public ShowDefaultFormsAction() {
     }

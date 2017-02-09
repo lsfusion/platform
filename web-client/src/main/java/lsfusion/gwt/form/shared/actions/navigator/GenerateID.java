@@ -1,8 +1,8 @@
 package lsfusion.gwt.form.shared.actions.navigator;
 
-import net.customware.gwt.dispatch.shared.Action;
+import lsfusion.gwt.base.shared.actions.RequestAction;
 
-public class GenerateID implements Action<GenerateIDResult> {
+public class GenerateID extends RequestAction<GenerateIDResult> {
     public GenerateID() {
     }
 }

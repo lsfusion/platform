@@ -1,10 +1,10 @@
 package lsfusion.gwt.form.shared.actions.form;
 
 import lsfusion.gwt.base.shared.actions.FormAction;
-import net.customware.gwt.dispatch.shared.Action;
+import lsfusion.gwt.base.shared.actions.RequestAction;
 import net.customware.gwt.dispatch.shared.Result;
 
-public class FormBoundAction<R extends Result> implements Action<R>, FormAction {
+public class FormBoundAction<R extends Result> extends RequestAction<R> implements FormAction {
     public String formSessionID;
 
     public FormBoundAction() {

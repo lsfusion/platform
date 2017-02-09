@@ -3,15 +3,12 @@ package lsfusion.gwt.base.server;
 import com.google.gwt.user.server.rpc.SerializationPolicy;
 import com.google.gwt.user.server.rpc.SerializationPolicyLoader;
 import lsfusion.gwt.base.server.dispatch.SecuredAction;
-import lsfusion.gwt.base.server.exceptions.RemoteDispatchException;
-import lsfusion.gwt.base.server.exceptions.RemoteFormDispatchException;
-import lsfusion.gwt.base.server.exceptions.RemoteNavigatorDispatchException;
 import lsfusion.gwt.base.server.exceptions.RemoteRetryException;
 import lsfusion.gwt.base.server.spring.BusinessLogicsProvider;
 import lsfusion.gwt.base.server.spring.NavigatorProvider;
-import lsfusion.gwt.base.shared.InvalidateException;
 import lsfusion.gwt.base.shared.MessageException;
 import lsfusion.gwt.base.shared.RetryException;
+import lsfusion.gwt.base.shared.actions.RequestAction;
 import lsfusion.interop.RemoteLogicsInterface;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
 import lsfusion.interop.remote.ClientCallBackInterface;
@@ -146,7 +143,11 @@ public abstract class LogicsAwareDispatchServlet<T extends RemoteLogicsInterface
             }
             return dispatch.execute(action);
         } catch (RemoteRetryException e) {
-            logger.error("Ошибка в LogicsAwareDispatchServlet.execute: " + e.maxTries, e);
+            String actionTry = "";
+            if(action instanceof RequestAction) {
+                actionTry = "\n" + action + " try: " + ((RequestAction) action).requestTry + ", maxTries: " + e.maxTries;
+            }
+            logger.error("Ошибка в LogicsAwareDispatchServlet.execute: " + actionTry, e);
             throw new RetryException(e.getMessage(), e.maxTries);
         } catch (MessageException e) {
             logger.error("Ошибка в LogicsAwareDispatchServlet.execute: ", e);
