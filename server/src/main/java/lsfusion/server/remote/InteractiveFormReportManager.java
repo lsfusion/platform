@@ -16,13 +16,12 @@ import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.session.DataSession;
-import lsfusion.server.session.Modifier;
 
 import java.sql.SQLException;
 
-public class InteractiveFormReportManager<T extends BusinessLogics<T>, F extends FormInstance<T>> extends FormReportManager<T, PropertyDrawInstance, GroupObjectInstance, PropertyObjectInstance, CalcPropertyObjectInstance, OrderInstance, ObjectInstance, PropertyReaderInstance> {
+public class InteractiveFormReportManager extends FormReportManager<PropertyDrawInstance, GroupObjectInstance, PropertyObjectInstance, CalcPropertyObjectInstance, OrderInstance, ObjectInstance, PropertyReaderInstance> {
     
-    public InteractiveFormReportManager(final F form) {
+    public InteractiveFormReportManager(final FormInstance form) {
         super(new FormReportInterface<PropertyDrawInstance, GroupObjectInstance, PropertyObjectInstance, CalcPropertyObjectInstance, OrderInstance, ObjectInstance, PropertyReaderInstance>() {
             @Override
             public FormEntity getEntity() {

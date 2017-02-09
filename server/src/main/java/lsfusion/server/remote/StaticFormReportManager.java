@@ -1,6 +1,8 @@
 package lsfusion.server.remote;
 
 import lsfusion.base.BaseUtils;
+import lsfusion.base.col.MapFact;
+import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.interop.ClassViewType;
 import lsfusion.interop.form.PropertyReadType;
@@ -14,21 +16,18 @@ import lsfusion.server.data.where.Where;
 import lsfusion.server.form.entity.*;
 import lsfusion.server.form.entity.filter.FilterEntity;
 import lsfusion.server.form.instance.FormInstance;
-import lsfusion.server.form.instance.PropertyDrawInstance;
 import lsfusion.server.form.instance.PropertyType;
-import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.NullValue;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.session.DataSession;
-import lsfusion.server.session.Modifier;
 
 import java.sql.SQLException;
 
-public class StaticFormReportManager<T extends BusinessLogics<T>> extends FormReportManager<T, PropertyDrawEntity, GroupObjectEntity, PropertyObjectEntity, CalcPropertyObjectEntity, OrderEntity, ObjectEntity, PropertyReaderEntity> {
+public class StaticFormReportManager extends FormReportManager<PropertyDrawEntity, GroupObjectEntity, PropertyObjectEntity, CalcPropertyObjectEntity, OrderEntity, ObjectEntity, PropertyReaderEntity> {
 
-    public StaticFormReportManager(final FormEntity<T> form, final ImMap<ObjectEntity, ObjectValue> mapObjects, final ExecutionContext<?> context) {
+    public StaticFormReportManager(final FormEntity<?> form, final ImMap<ObjectEntity, ObjectValue> mapObjects, final ExecutionContext<?> context) {
         super(new FormReportInterface<PropertyDrawEntity, GroupObjectEntity, PropertyObjectEntity, CalcPropertyObjectEntity, OrderEntity, ObjectEntity, PropertyReaderEntity>() {
             
             private ImMap<GroupObjectEntity, ImOrderMap<OrderEntity, Boolean>> ordersMap = BaseUtils.immutableCast(form.getFixedOrdersList().groupOrder(new BaseUtils.Group<GroupObjectEntity, OrderEntity<?>>() {
@@ -137,7 +136,10 @@ public class StaticFormReportManager<T extends BusinessLogics<T>> extends FormRe
 
             @Override
             public GroupObjectEntity getToDraw(PropertyDrawEntity propertyDrawEntity) {
-                return propertyDrawEntity.toDraw;
+                GroupObjectEntity toDraw = propertyDrawEntity.toDraw;
+                if(toDraw == null)
+                    toDraw = propertyDrawEntity.getToDraw(form);
+                return toDraw;
             }
 
             @Override
@@ -202,7 +204,10 @@ public class StaticFormReportManager<T extends BusinessLogics<T>> extends FormRe
 
             @Override
             public ImOrderMap<OrderEntity, Boolean> getOrders(GroupObjectEntity groupObjectEntity) {
-                return ordersMap.get(groupObjectEntity);
+                ImOrderMap<OrderEntity, Boolean> orders = ordersMap.get(groupObjectEntity);
+                if(orders == null)
+                    orders = MapFact.EMPTYORDER();
+                return orders;
             }
 
             @Override
@@ -315,7 +320,10 @@ public class StaticFormReportManager<T extends BusinessLogics<T>> extends FormRe
 
             @Override
             public Where getWhere(GroupObjectEntity groupObjectEntity, ImMap<ObjectEntity, Expr> mapExprs) throws SQLException, SQLHandledException {
-                return groupObjectEntity.getWhere(mapExprs, context.getModifier(), mapObjects, filtersMap.get(groupObjectEntity));
+                ImSet<FilterEntity> filters = filtersMap.get(groupObjectEntity);
+                if(filters == null)
+                    filters = SetFact.EMPTY();
+                return groupObjectEntity.getWhere(mapExprs, context.getModifier(), mapObjects, filters);
             }
 
             @Override

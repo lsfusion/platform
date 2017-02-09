@@ -15,6 +15,7 @@ import lsfusion.interop.ModalityType;
 import lsfusion.interop.action.MessageClientAction;
 import lsfusion.interop.action.ReportClientAction;
 import lsfusion.server.ServerLoggers;
+import lsfusion.server.Settings;
 import lsfusion.server.SystemProperties;
 import lsfusion.server.classes.ConcreteCustomClass;
 import lsfusion.server.classes.ValueClass;
@@ -37,6 +38,7 @@ import lsfusion.server.logics.property.actions.exporting.json.JSONFormExporter;
 import lsfusion.server.logics.property.actions.exporting.xml.XMLFormExporter;
 import lsfusion.server.remote.FormReportManager;
 import lsfusion.server.remote.InteractiveFormReportManager;
+import lsfusion.server.remote.StaticFormReportManager;
 import net.sf.jasperreports.engine.JRException;
 
 import java.io.IOException;
@@ -208,23 +210,19 @@ public class FormActionProperty extends SystemExplicitActionProperty {
             contextFilters = thisFormInstance.getContextFilters(contextObject, propertyValues, context.getChangingPropertyToDraw(), pullProps);
         }
 
-        final FormInstance newFormInstance = context.createFormInstance(form,
-                                                                        mapObjects.join(context.getKeys()),
-                                                                        context.getSession(),
-                                                                        modalityType.isModal(),
-                                                                        isAdd, manageSession,
-                                                                        checkOnOk,
-                                                                        showDrop,
-                                                                        printType == null && exportType == null,
-                                                                        contextFilters,
-                                                                        initFilterProperty,
-                                                                        pullProps.result,
-                                                                        readOnly);
+        boolean interactive = printType == null && exportType == null;
+        ImMap<ObjectEntity, ? extends ObjectValue> mapObjectValues = mapObjects.join(context.getKeys());
 
-        if(exportType == null && printType == null) // inteaction
+        boolean useInteractive = Settings.get().isUseInteractiveReportManagerInsteadOfStatic();
+
+        FormInstance newFormInstance = null;
+        if(interactive || useInteractive)
+            newFormInstance = context.createFormInstance(form, mapObjectValues, context.getSession(), modalityType.isModal(), isAdd, manageSession, checkOnOk, showDrop, interactive, contextFilters, initFilterProperty, pullProps.result, readOnly);
+
+        if(interactive) // inteaction
             context.requestFormUserInteraction(newFormInstance, modalityType, context.stack);
         else { // print / export
-            if (!newFormInstance.areObjectsFound()) {
+            if (useInteractive && !newFormInstance.areObjectsFound()) {
                 context.requestUserInteraction(
                     new MessageClientAction(ThreadLocalContext.localize(LocalizedString.create("{form.navigator.form.do.not.fit.for.specified.parameters}")),
                             ThreadLocalContext.localize(form.caption)));
@@ -239,7 +237,11 @@ public class FormActionProperty extends SystemExplicitActionProperty {
             }
             String pName = printerProperty == null ? null : (String) printerProperty.read(context, context.getKeys());
             
-            FormReportManager newFormManager = new InteractiveFormReportManager(newFormInstance);
+            FormReportManager newFormManager;
+            if(useInteractive)
+                newFormManager = new InteractiveFormReportManager(newFormInstance);
+            else
+                newFormManager = new StaticFormReportManager(form, BaseUtils.<ImMap<ObjectEntity, ObjectValue>>immutableCast(mapObjectValues), context);
             if (exportType != null) {
                 try {
                     if (exportType == FormExportType.DOC) {

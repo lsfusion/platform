@@ -2065,4 +2065,14 @@ public class Settings {
     public void setSubQueryInfiniteDepth(int subQueryInfiniteDepth) {
         this.subQueryInfiniteDepth = subQueryInfiniteDepth;
     }
+    
+    boolean useInteractiveReportManagerInsteadOfStatic = true; // потом нужно убрать
+
+    public boolean isUseInteractiveReportManagerInsteadOfStatic() {
+        return useInteractiveReportManagerInsteadOfStatic;
+    }
+
+    public void setUseInteractiveReportManagerInsteadOfStatic(boolean useInteractiveReportManagerInsteadOfStatic) {
+        this.useInteractiveReportManagerInsteadOfStatic = useInteractiveReportManagerInsteadOfStatic;
+    }
 }

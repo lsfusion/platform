@@ -622,7 +622,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
 
         FormInstance remoteForm = createFormInstance(formEntity, MapFact.singleton(objectEntity, dataObject));
         try {
-            ReportGenerationData generationData = new InteractiveFormReportManager<>(remoteForm).getReportData(false);
+            ReportGenerationData generationData = new InteractiveFormReportManager(remoteForm).getReportData(false);
             ReportGenerator report = new ReportGenerator(generationData);
             JasperPrint print = report.createReport(false, new HashMap());
             File tempFile = File.createTempFile("lsfReport", ".pdf");

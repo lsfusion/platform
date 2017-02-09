@@ -15,7 +15,6 @@ import lsfusion.server.form.entity.GroupObjectHierarchy;
 import lsfusion.server.form.instance.*;
 import lsfusion.server.form.view.FormView;
 import lsfusion.server.form.view.report.ReportDesignGenerator;
-import lsfusion.server.logics.BusinessLogics;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JasperCompileManager;
 import net.sf.jasperreports.engine.design.JasperDesign;
@@ -31,7 +30,7 @@ import java.util.regex.Pattern;
 import static lsfusion.base.BaseUtils.serializeObject;
 import static lsfusion.server.context.ThreadLocalContext.localize;
 
-public class FormReportManager<T extends BusinessLogics<T>, PropertyDraw extends PropertyReaderInstance, GroupObject, PropertyObject, CalcPropertyObject extends Order, Order, Obj extends Order, PropertyReaderInstance> {
+public class FormReportManager<PropertyDraw extends PropertyReaderInstance, GroupObject, PropertyObject, CalcPropertyObject extends Order, Order, Obj extends Order, PropertyReaderInstance> {
     private static final Logger systemLogger = Logger.getLogger("SystemLogger");
     
     private final String formSID;
@@ -127,7 +126,7 @@ public class FormReportManager<T extends BusinessLogics<T>, PropertyDraw extends
         byte[] reportHierarchyByteArray = getReportHierarchyByteArray(groupReportHierarchy.getReportHierarchyMap());
         Result<Map<String, LinkedHashSet<List<Object>>>> columnGroupObjects = new Result<>();
         byte[] reportSourcesByteArray = getReportSourcesByteArray(
-                new ReportSourceGenerator<T, PropertyDraw, GroupObject, PropertyObject, CalcPropertyObject, Order, Obj, PropertyReaderInstance>(formInterface, groupReportHierarchy, fullReportHierarchy, getGridGroups(groupId), groupId, userPreferences)
+                new ReportSourceGenerator<PropertyDraw, GroupObject, PropertyObject, CalcPropertyObject, Order, Obj, PropertyReaderInstance>(formInterface, groupReportHierarchy, fullReportHierarchy, getGridGroups(groupId), groupId, userPreferences)
         , columnGroupObjects, custom);
         byte[] reportDesignsByteArray = custom ? null : getReportDesignsByteArray(toExcel, groupId, userPreferences, columnGroupObjects.result);
 
@@ -146,7 +145,7 @@ public class FormReportManager<T extends BusinessLogics<T>, PropertyDraw extends
         }
     }
 
-    public FormEntity<T> getFormEntity() {
+    public FormEntity getFormEntity() {
         return formInterface.getEntity();
     }
 
@@ -341,7 +340,7 @@ public class FormReportManager<T extends BusinessLogics<T>, PropertyDraw extends
         return nodes;
     }
 
-    private byte[] getReportSourcesByteArray(ReportSourceGenerator<T, PropertyDraw, GroupObject, PropertyObject, CalcPropertyObject, Order, Obj, PropertyReaderInstance> sourceGenerator, Result<Map<String, LinkedHashSet<List<Object>>>> columnGroupObjects, boolean custom) {
+    private byte[] getReportSourcesByteArray(ReportSourceGenerator<PropertyDraw, GroupObject, PropertyObject, CalcPropertyObject, Order, Obj, PropertyReaderInstance> sourceGenerator, Result<Map<String, LinkedHashSet<List<Object>>>> columnGroupObjects, boolean custom) {
         try {
             Map<String, ReportData> sources = sourceGenerator.generate(custom);
             ReportSourceGenerator.ColumnGroupCaptionsData<Obj> columnGroupCaptions = sourceGenerator.getColumnGroupCaptions();

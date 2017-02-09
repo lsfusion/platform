@@ -53,7 +53,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
 
     public final F form;
     private final FormView richDesign;
-    public final InteractiveFormReportManager<T, F> reportManager;
+    public final InteractiveFormReportManager reportManager;
 
     private final WeakReference<RemoteFormListener> weakRemoteFormListener;
 
@@ -72,7 +72,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         setContext(new RemoteFormContext<>(this));
         this.form = form;
         this.richDesign = form.entity.getRichDesign();
-        this.reportManager = new InteractiveFormReportManager<>(form);
+        this.reportManager = new InteractiveFormReportManager(form);
         this.requestLock = new SequentialRequestLock();
 
         this.weakRemoteFormListener = new WeakReference<>(remoteFormListener);

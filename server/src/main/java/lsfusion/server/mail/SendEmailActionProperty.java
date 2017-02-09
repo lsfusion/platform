@@ -303,7 +303,7 @@ public class SendEmailActionProperty extends SystemExplicitActionProperty {
     private String createReportFile(FormInstance remoteForm, boolean inlineForm, AttachmentFormat attachmentFormat, Map<ByteArray, String> attachmentFiles) throws ClassNotFoundException, IOException, JRException {
 
         boolean toExcel = attachmentFormat != null && attachmentFormat.equals(AttachmentFormat.XLSX);
-        ReportGenerationData generationData = new InteractiveFormReportManager<>(remoteForm).getReportData(toExcel);
+        ReportGenerationData generationData = new InteractiveFormReportManager(remoteForm).getReportData(toExcel);
 
         ReportGenerator report = new ReportGenerator(generationData);
         JasperPrint print = report.createReport(inlineForm || toExcel, attachmentFiles);

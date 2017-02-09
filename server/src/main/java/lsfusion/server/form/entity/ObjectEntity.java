@@ -4,6 +4,7 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.identity.IdentityObject;
+import lsfusion.server.ServerLoggers;
 import lsfusion.server.caches.IdentityInstanceLazy;
 import lsfusion.server.classes.CustomClass;
 import lsfusion.server.classes.ValueClass;
@@ -99,10 +100,11 @@ public class ObjectEntity extends IdentityObject implements PropertyObjectInterf
 
     @Override
     public Expr getExpr(ImMap<ObjectEntity, ? extends Expr> mapExprs, Modifier modifier, ImMap<ObjectEntity, ObjectValue> mapObjects) {
-        ObjectValue objectValue = mapObjects.get(this);
-        if(objectValue != null)
-            return objectValue.getExpr();
-        return mapExprs.get(this);
+        Expr expr = mapExprs.get(this);
+        if(expr != null)
+            return expr;
+        ServerLoggers.assertLog(false, "EXPR SHOULD EXIST IN ALL USE CASES");
+        return mapObjects.get(this).getExpr();
     }
 
     @Override
