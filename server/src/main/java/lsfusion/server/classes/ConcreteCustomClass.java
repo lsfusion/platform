@@ -17,7 +17,6 @@ import lsfusion.server.data.SQLSession;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.StaticValueExpr;
 import lsfusion.server.data.query.QueryBuilder;
-import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.i18n.FormatLocalizedString;
 import lsfusion.server.logics.i18n.LocalizedString;
@@ -225,7 +224,7 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
         Map<String, String> reversedChanges = BaseUtils.reverse(sidChanges);
 
         for (ObjectInfo info : getStaticObjectsInfoIt()) {
-            String newSID = info.sid; // todo [dale]:
+            String newSID = info.sid; // todo [dale]: Тут (и вообще при синхронизации) мы используем SID (с подчеркиванием), хотя, наверное, можно уже переходить на канонические имена 
             ConcreteCustomClass usedClass;
             if ((usedClass = usedSIds.put(newSID, this)) != null)
                 throw new RuntimeException(ThreadLocalContext.localize(new FormatLocalizedString("{classes.objects.have.the.same.id}", newSID, caption, usedClass.caption)));

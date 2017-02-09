@@ -16,7 +16,7 @@ import java.io.IOException;
 
 public class ReportHTMLExporter extends JRHtmlExporter {
     // copy-paste from JRHTMLExporter
-    // todo [dale]: При обновлении версии JasperReports возможно понадобится merge c изменениями в JRHTMLExporter.
+    // todo: При обновлении версии JasperReports возможно понадобится merge c изменениями в JRHTMLExporter.
 
     protected void writeEmptyCell(JRExporterGridCell cell, int rowHeight) throws IOException
     {

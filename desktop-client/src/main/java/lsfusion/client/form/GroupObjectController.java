@@ -130,7 +130,6 @@ public class GroupObjectController extends AbstractGroupObjectController {
 
         addToToolbar(Box.createHorizontalStrut(5));
 
-        // todo [dale]: Можно ли избавиться от if'ов?
         if (groupObject.toolbar.showPrint && Main.module.isFull()) {
             addToToolbar(grid.createPrintGroupButton());
         }

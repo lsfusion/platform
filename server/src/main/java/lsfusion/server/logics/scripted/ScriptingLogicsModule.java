@@ -455,7 +455,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public List<ObjectEntity> findObjectEntities(FormEntity form, List<String> objectNames) throws ScriptingErrorLog.SemanticErrorException {
-        List<ObjectEntity> objects = new ArrayList<ObjectEntity>();;
+        List<ObjectEntity> objects = new ArrayList<>();
         for (int i = 0; i < objectNames.size(); i++) {
             objects.add(findObjectEntity(form, objectNames.get(i)));
         }
@@ -2658,7 +2658,9 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         Set<CalcProperty> props = new HashSet<>(); // функционально из-за exception'а не сделаешь
         for (PropertyUsage usage : propUsages) {
-            props.add(((LCP<?>)findLPByPropertyUsage(usage)).property); // todo [dale]: добавить семантическую ошибку
+            LP lp = findLPByPropertyUsage(usage);
+            checkCalculationProperty(lp);
+            props.add(((LCP<?>)lp).property); 
         }
         return props;
     }

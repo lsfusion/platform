@@ -25,7 +25,6 @@ public class RegularFilterView extends IdentityObject implements ServerIdentityS
     }
 
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
-        // todo [dale]: нужно протянуть нужную локаль  
         String name = ThreadLocalContext.localize(entity.name);
         pool.writeString(outStream, name);
         pool.writeObject(outStream, entity.key);
