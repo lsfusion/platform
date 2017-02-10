@@ -43,7 +43,7 @@ public class PropertyDrawView extends ComponentView {
     public String regexp;
     public String regexpMessage;
     public Long maxValue;
-    public boolean echoSymbols;
+    public Boolean echoSymbols;
     public boolean noSort;
 
     private int minimumCharWidth;
@@ -51,7 +51,7 @@ public class PropertyDrawView extends ComponentView {
     private int preferredCharWidth;
 
     public KeyStroke editKey;
-    public boolean showEditKey = true;
+    public Boolean showEditKey;
 
     public boolean drawAsync = false;
 

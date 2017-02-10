@@ -609,15 +609,15 @@ public abstract class Property<T extends PropertyInterface> extends AbstractProp
         private ImList<DefaultProcessor> processors = ListFact.EMPTY();
         
         public void proceedDefaultDraw(PropertyDrawEntity<?> entity, FormEntity<?> form) {
-            if (shouldBeLast != null)
-                entity.shouldBeLast = shouldBeLast;
-            if (forceViewType != null)
+            if (entity.shouldBeLast == null)
+                entity.shouldBeLast = BaseUtils.nvl(shouldBeLast, false);
+            if (entity.forceViewType == null)
                 entity.forceViewType = forceViewType;
-            if (askConfirm != null)
-                entity.askConfirm = askConfirm;
-            if (askConfirmMessage != null)
+            if (entity.askConfirm == null)
+                entity.askConfirm = BaseUtils.nvl(askConfirm, false);
+            if (entity.askConfirmMessage == null)
                 entity.askConfirmMessage = askConfirmMessage;
-            if (eventID != null)
+            if (entity.eventID == null)
                 entity.eventID = eventID;
             if (drawToToolbar)
                 entity.setDrawToToolbar(true);
@@ -631,55 +631,71 @@ public abstract class Property<T extends PropertyInterface> extends AbstractProp
             if(propertyView.getType() instanceof ActionClass)
                 propertyView.editOnSingleClick = Settings.get().getEditActionOnSingleClick();
 
-            if(minimumCharWidth != 0)
+            if(propertyView.getMinimumCharWidth() == 0)
                 propertyView.setMinimumCharWidth(minimumCharWidth);
-            if(maximumCharWidth != 0)
+            if(propertyView.getMaximumCharWidth() == 0)
                 propertyView.setMaximumCharWidth(maximumCharWidth);
-            if(preferredCharWidth != 0)
+            if(propertyView.getPreferredCharWidth() == 0)
                 propertyView.setPreferredCharWidth(preferredCharWidth);
-            if (iconPath != null) {
+            if (propertyView.design.imagePath == null && iconPath != null) {
                 propertyView.design.imagePath = iconPath;
                 propertyView.design.setImage(image);
             }
-            if (editKey != null)
+            if (propertyView.editKey == null)
                 propertyView.editKey = editKey;
-            if (showEditKey != null)
-                propertyView.showEditKey = showEditKey;
-            if (regexp != null)
+            if (propertyView.showEditKey == null)
+                propertyView.showEditKey = BaseUtils.nvl(showEditKey, true);
+            if (propertyView.regexp == null)
                 propertyView.regexp = regexp;
-            if (regexpMessage != null)
+            if (propertyView.regexpMessage == null)
                 propertyView.regexpMessage = regexpMessage;
-            if (echoSymbols != null)
-                propertyView.echoSymbols = echoSymbols;
+            if (propertyView.echoSymbols == null)
+                propertyView.echoSymbols = BaseUtils.nvl(echoSymbols, false);
             for(DefaultProcessor processor : processors)
                 processor.proceedDefaultDesign(propertyView);
         }
         
         public void inheritDrawOptions(DrawOptions options) {
-            setMinimumCharWidth(options.minimumCharWidth);
-            setMaximumCharWidth(options.maximumCharWidth);
-            setPreferredCharWidth(options.preferredCharWidth);
+            if(minimumCharWidth == 0)
+                setMinimumCharWidth(options.minimumCharWidth);
+            if(maximumCharWidth == 0)
+                setMaximumCharWidth(options.maximumCharWidth);
+            if(preferredCharWidth == 0)
+                setPreferredCharWidth(options.preferredCharWidth);
 
-            setImage(options.image);
-            setIconPath(options.iconPath);
+            if(iconPath == null) {
+                setImage(options.image);
+                setIconPath(options.iconPath);
+            }
             
-            setRegexp(options.regexp);
-            setRegexpMessage(options.regexpMessage);
-            setEchoSymbols(options.echoSymbols);
+            if(regexp == null)
+                setRegexp(options.regexp);
+            if(regexpMessage == null)
+                setRegexpMessage(options.regexpMessage);
+            if(echoSymbols == null)
+                setEchoSymbols(options.echoSymbols);
             
-            setAskConfirm(options.askConfirm);
-            setAskConfirmMessage(options.askConfirmMessage);
+            if(askConfirm == null)
+                setAskConfirm(options.askConfirm);
+            if(askConfirmMessage == null)
+                setAskConfirmMessage(options.askConfirmMessage);
             
-            setEventID(options.eventID);
+            if(eventID == null)
+                setEventID(options.eventID);
             
-            setEditKey(options.editKey);
-            setShowEditKey(options.showEditKey);
+            if(editKey == null)
+                setEditKey(options.editKey);
+            if(showEditKey == null)
+                setShowEditKey(options.showEditKey);
             
-            setDrawToToolbar(options.drawToToolbar);
+            if(!drawToToolbar)
+                setDrawToToolbar(options.drawToToolbar);
             
-            setShouldBeLast(options.shouldBeLast);
+            if(shouldBeLast == null)
+                setShouldBeLast(options.shouldBeLast);
             
-            setForceViewType(options.forceViewType);
+            if(forceViewType == null)
+                setForceViewType(options.forceViewType);
             
             processors = options.processors.addList(processors);
         }

@@ -339,7 +339,7 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
 
             CalcPropertyInterfaceImplement<Interface> objectIface = andImplement.mapping.get(andProp.objectInterface);
             if (objectIface instanceof CalcPropertyMapImplement) {
-                result = ((CalcPropertyMapImplement) objectIface).property.getAndProperties().addList(result); // сначала inherit'им верхние потом свои
+                result = result.addList(((CalcPropertyMapImplement) objectIface).property.getAndProperties()); // сначала inherit'им верхние потом свои
             }
         }
         return result;

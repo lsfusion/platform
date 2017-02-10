@@ -55,12 +55,12 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 
     public boolean optimisticAsync;
 
-    public boolean askConfirm;
+    public Boolean askConfirm;
     public String askConfirmMessage;
 
-    public boolean shouldBeLast = false;
-    public ClassViewType forceViewType = null;
-    public String eventID = null;
+    public Boolean shouldBeLast;
+    public ClassViewType forceViewType;
+    public String eventID;
 
     private String formPath;
     
