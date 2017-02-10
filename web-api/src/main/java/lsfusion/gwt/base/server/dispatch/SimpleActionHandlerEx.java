@@ -33,7 +33,7 @@ public abstract class SimpleActionHandlerEx<A extends Action<R>, R extends Resul
         } catch (RemoteMessageException rme) {
             throw new MessageException(rme.getMessage());
         } catch (IOException ioe) {
-            if (ioe instanceof RemoteException) { // пробуем послать повторный запрос
+            if (ioe instanceof RemoteException && !(ioe.getCause() instanceof ClassNotFoundException)) { // пробуем послать повторный запрос
                 throw new RemoteRetryException(ioe.getMessage(), (RemoteException) ioe, ExceptionUtils.getFatalRemoteExceptionCount(ioe));
             }
             throw new IODispatchException("Ошибка ввода/вывода при выполнении action: ", ioe);
