@@ -1785,8 +1785,8 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
     }
 
     // странная конечно эвристика, нужна чтобы f(a) IF g(a) наследовал draw options f(a), возможно в будущем надо убрать
-    public CalcProperty getAndProperty() {
-        return this;
+    public ImList<CalcProperty> getAndProperties() {
+        return ListFact.singleton((CalcProperty) this);
     }
 
     private boolean loggable;

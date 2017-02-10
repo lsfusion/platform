@@ -963,7 +963,8 @@ public abstract class LogicsModule {
         JoinProperty<?> property = new JoinProperty(caption, listInterfaces, implementChange, user,
                 mapCalcImplement(mainProp, listImplements));
 
-        property.drawOptions.inheritDrawOptions(mainProp.property.getAndProperty().drawOptions);
+        for(CalcProperty andProp : mainProp.property.getAndProperties())
+            property.drawOptions.inheritDrawOptions(andProp.drawOptions);
 
         return addProperty(group, persistent, new LCP<>(property, listInterfaces));
     }

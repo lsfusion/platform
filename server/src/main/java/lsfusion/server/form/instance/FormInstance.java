@@ -1989,10 +1989,6 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
             });
     }
 
-    public FormData getFormData(Collection<PropertyDrawInstance> propertyDraws, Set<GroupObjectInstance> classGroups) throws SQLException, SQLHandledException {
-        return getFormData(ListFact.fromJavaCol(propertyDraws).toSet(), SetFact.fromJavaSet(classGroups), 0);
-    }
-
     // считывает все данные с формы
     public FormData getFormData(ImSet<PropertyDrawInstance> propertyDraws, ImSet<GroupObjectInstance> classGroups, int orderTop) throws SQLException, SQLHandledException {
 

@@ -7,12 +7,10 @@ import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
-import lsfusion.interop.ClassViewType;
 import lsfusion.interop.Compare;
 import lsfusion.interop.form.ServerResponse;
 import lsfusion.server.caches.IdentityStartLazy;
 import lsfusion.server.caches.IdentityStrongLazy;
-import lsfusion.server.classes.CustomClass;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
@@ -20,17 +18,10 @@ import lsfusion.server.data.expr.query.GroupExpr;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
-import lsfusion.server.form.entity.FormEntity;
-import lsfusion.server.form.entity.ObjectEntity;
-import lsfusion.server.form.entity.PropertyDrawEntity;
-import lsfusion.server.form.entity.PropertyObjectInterfaceEntity;
 import lsfusion.server.form.entity.drilldown.DrillDownFormEntity;
 import lsfusion.server.form.entity.drilldown.JoinDrillDownFormEntity;
-import lsfusion.server.form.view.DefaultFormView;
-import lsfusion.server.form.view.PropertyDrawView;
 import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.i18n.LocalizedString;
-import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.actions.edit.DefaultChangeAggActionProperty;
 import lsfusion.server.logics.property.derived.DerivedProperty;
 import lsfusion.server.logics.property.infer.ExClassSet;
@@ -339,7 +330,8 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
     }
 
     @Override // см. базовый метод
-    public CalcProperty getAndProperty() {
+    public ImList<CalcProperty> getAndProperties() {
+        ImList<CalcProperty> result = super.getAndProperties();
         if (implement.property instanceof AndFormulaProperty) {
             AndFormulaProperty andProp = (AndFormulaProperty) implement.property;
             CalcPropertyImplement<AndFormulaProperty.Interface, CalcPropertyInterfaceImplement<Interface>> andImplement
@@ -347,10 +339,10 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
 
             CalcPropertyInterfaceImplement<Interface> objectIface = andImplement.mapping.get(andProp.objectInterface);
             if (objectIface instanceof CalcPropertyMapImplement) {
-                return ((CalcPropertyMapImplement) objectIface).property.getAndProperty();
+                result = ((CalcPropertyMapImplement) objectIface).property.getAndProperties().addList(result); // сначала inherit'им верхние потом свои
             }
         }
-        return super.getAndProperty();
+        return result;
     }
 
     @Override
