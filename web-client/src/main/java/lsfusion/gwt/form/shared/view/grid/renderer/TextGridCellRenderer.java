@@ -46,6 +46,7 @@ public class TextGridCellRenderer extends TextBasedGridCellRenderer {
             super.updateElement(div, value);
         } else {
             div.removeClassName("nullValueString");
+            div.getStyle().setWhiteSpace(Style.WhiteSpace.PRE_WRAP);
             div.setInnerHTML(EscapeUtils.sanitizeHtml((String) value));
         }
     }
