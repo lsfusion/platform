@@ -148,16 +148,15 @@ FORM mail 'Почта'
     
     OBJECTS e=Email
   
-    PROPERTIES(e) subject, fromAddress, toAddress, dateTimeSent, 
-                   dateTimeReceived, openEMLFile, message READONLY FORCE PANEL
+    PROPERTIES(e) READONLY subject, fromAddress, toAddress, dateTimeSent, 
+                   dateTimeReceived, openEMLFile EDITABLE, message FORCE PANEL
     PROPERTIES(e) DELETE
     PROPERTIES(a) FORCE PANEL receiveEmailAction TODRAW e 
     FILTERS account(e)==a
                     
     OBJECTS ae=AttachmentEmail
     
-    PROPERTIES(ae) imported, importError, name READONLY, 
-                    lastError SHOWIF showError(ae), openFile
+    PROPERTIES(ae) READONLY imported, importError, name, lastError SHOWIF showError(ae), openFile EDITABLE
     FILTERS email(ae)==e
     
     OBJECTS n=Notification
