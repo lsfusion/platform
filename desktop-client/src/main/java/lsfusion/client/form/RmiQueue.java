@@ -74,23 +74,13 @@ public class RmiQueue {
     }
 
     public static <T> T runRetryableRequest(Callable<T> request, AtomicBoolean abandoned) {
-        return runRetryableRequest(request, abandoned, 0);
-    }
-
-    public static <T> T runRetryableRequest(Callable<T> request, AtomicBoolean abandoned, int timeout) {
-        return runRetryableRequest(request, abandoned, false, timeout);    
-    }
-
-    public static <T> T runRetryableRequest(Callable<T> request, AtomicBoolean abandoned, boolean registeredFailure) {
-        return runRetryableRequest(request, abandoned, registeredFailure, 0);
+        return runRetryableRequest(request, abandoned, false);
     }
 
     private static AtomicLong reqIdGen = new AtomicLong();
 
-    private static ExecutorService executorService = Executors.newCachedThreadPool();
-    
     // вызывает request (предположительно remote) несколько раз, проблемы с целостностью предполагается что решается либо индексом, либо результат не так важен
-    public static <T> T runRetryableRequest(Callable<T> request, AtomicBoolean abandoned, boolean registeredFailure, int timeout) {
+    public static <T> T runRetryableRequest(Callable<T> request, AtomicBoolean abandoned, boolean registeredFailure) {
         int reqCount = 0;
         long reqId = reqIdGen.incrementAndGet();
         try {
@@ -98,18 +88,11 @@ public class RmiQueue {
                 if(abandoned.get()) // не вызываем call если уже клиент перестартовывает
                     throw new RemoteAbandonedException();
                 try {
-                    if (timeout > 0) {
-                        return executorService.submit(request).get(timeout, TimeUnit.MILLISECONDS);
-                    } else {
-                        return request.call();
-                    }
+                    return request.call();
                 } catch (Throwable t) {
                     if(abandoned.get()) // suppress'им все, failedRmiRequest'ы flush'ся отдельно
                         throw new RemoteAbandonedException();
 
-                    if (t instanceof TimeoutException) {
-                        t = new RemoteException("Timeout", t);
-                    }
                     if (t instanceof RemoteException) {
                         RemoteException remote = (RemoteException) t;
 
@@ -320,7 +303,6 @@ public class RmiQueue {
         if (logger.isDebugEnabled()) {
             logger.debug("Async request: " + request);
         }
-//        request.setTimeout(3000);
 
         execRmiRequestInternal(request);
 
@@ -493,7 +475,7 @@ public class RmiQueue {
                 public T call() throws Exception {
                     return request.doRequest();
                 }
-            }, abandoned, request.getTimeout());
+            }, abandoned);
         }
     }
 }

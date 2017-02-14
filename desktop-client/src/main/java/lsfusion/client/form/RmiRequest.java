@@ -11,16 +11,9 @@ public abstract class RmiRequest<T> {
     private long requestIndex = -1;
     private long lastReceivedRequestIndex = -1;
     private String name;
-    
-    private int timeout = 0;
 
     protected RmiRequest(String name) {
         this.name = name;
-    }
-
-    protected RmiRequest(String name, int timeout) {
-        this.name = name;
-        this.timeout = timeout;
     }
 
     public String getName() {
@@ -29,14 +22,6 @@ public abstract class RmiRequest<T> {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public void setTimeout(int timeout) {
-        this.timeout = timeout;
-    }
-
-    public int getTimeout() {
-        return timeout;
     }
 
     void setRequestIndex(long rmiRequestIndex) {

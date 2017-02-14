@@ -1563,10 +1563,6 @@ public class ClientFormController implements AsyncListener {
             super(formSID + ":" + name);
         }
 
-        protected RmiCheckNullFormRequest(String name, int timeout) {
-            super(formSID + ":" + name, timeout);
-        }
-
         @Override
         protected T doRequest(long requestIndex, long lastReceivedRequestIndex) throws RemoteException {
             RemoteFormInterface form = remoteForm;
@@ -1596,10 +1592,6 @@ public class ClientFormController implements AsyncListener {
     private abstract class ProcessServerResponseRmiRequest extends RmiCheckNullFormRequest<ServerResponse> {
         protected ProcessServerResponseRmiRequest(String name) {
             super(name);
-        }
-
-        protected ProcessServerResponseRmiRequest(String name, int timeout) {
-            super(name, timeout);
         }
 
         @Override
