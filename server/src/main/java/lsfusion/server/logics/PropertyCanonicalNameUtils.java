@@ -2,7 +2,6 @@ package lsfusion.server.logics;
 
 import lsfusion.server.classes.NumericClass;
 import lsfusion.server.classes.StringClass;
-import lsfusion.server.classes.sets.AndClassSet;
 import lsfusion.server.classes.sets.ResolveClassSet;
 
 import java.util.Arrays;
@@ -29,10 +28,15 @@ public final class PropertyCanonicalNameUtils {
     static public final String drillDownPrefix = "_DRILLDOWN_";
     static public final String objValuePrefix = "_OBJVALUE_";
 
+    /*  Позволяет создавать канонические имена, а также часть канонического имени, передавая
+     *  null в качестве пространства имен либо сигнатуры         
+     */
     static public String createName(String namespace, String name, List<ResolveClassSet> signature) {
         StringBuilder builder = new StringBuilder();
-        builder.append(namespace);
-        builder.append(".");
+        if (namespace != null) {
+            builder.append(namespace);
+            builder.append(".");
+        }
         builder.append(name);
         if (signature != null) {
             builder.append(signatureLBracket);

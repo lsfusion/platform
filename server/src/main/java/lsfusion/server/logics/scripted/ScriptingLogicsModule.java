@@ -68,10 +68,7 @@ import lsfusion.server.mail.SendEmailActionProperty;
 import lsfusion.server.mail.SendEmailActionProperty.FormStorageType;
 import lsfusion.server.session.DataSession;
 import lsfusion.server.session.LocalNestedType;
-import org.antlr.runtime.ANTLRFileStream;
-import org.antlr.runtime.ANTLRStringStream;
-import org.antlr.runtime.CharStream;
-import org.antlr.runtime.RecognitionException;
+import org.antlr.runtime.*;
 import org.apache.log4j.Logger;
 import org.codehaus.janino.SimpleCompiler;
 
@@ -295,7 +292,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             property = findLPByPropertyUsage(pUsage);            
         } else {
             List<ResolveClassSet> classes = getMappingClassesArray(form, mapping);
-            property = findLPByNameAndClasses(pUsage.name, classes);            
+            property = findLPByNameAndClasses(pUsage.name, pUsage.getSourceName(), classes);            
         }
         
         if (property.property.interfaces.size() != mapping.size()) {
@@ -405,41 +402,46 @@ public class ScriptingLogicsModule extends LogicsModule {
         PropertyUsageParser parser = new PropertyUsageParser(this, name);
         LP<?, ?> property = null;
         try {
-            property = findLPByNameAndClasses(parser.getCompoundName(), parser.getSignature());
+            property = findLPByNameAndClasses(parser.getCompoundName(), name, parser.getSignature());
         } catch (AbstractPropertyNameParser.ParseException e) {
             Throwables.propagate(e);
         }
         return property;
     }
 
-    public LP<?, ?> findLPByNameAndClasses(String name, ValueClass... classes) throws ScriptingErrorLog.SemanticErrorException {
+    public LP<?, ?> findLPByNameAndClasses(String name, String sourceName, ValueClass... classes) throws ScriptingErrorLog.SemanticErrorException {
         List<ResolveClassSet> classSets = new ArrayList<>();
         for (ValueClass cls : classes) {
             classSets.add(cls.getResolveSet());
         }
-        return findLPByNameAndClasses(name, classSets);
+        return findLPByNameAndClasses(name, sourceName, classSets);
     }
 
-    private LP<?, ?> findLPByNameAndClasses(String name, List<ResolveClassSet> params) throws ScriptingErrorLog.SemanticErrorException {
-        return findLPByNameAndClasses(name, params, false);
+    private LP<?, ?> findLPByNameAndClasses(String name, String sourceName, List<ResolveClassSet> params) throws ScriptingErrorLog.SemanticErrorException {
+        return findLPByNameAndClasses(name, sourceName, params, false);
     }
     
-    private LP<?, ?> findLPByNameAndClasses(String name, List<ResolveClassSet> params, boolean onlyAbstract) throws ScriptingErrorLog.SemanticErrorException {
-        LP<?, ?> property;
-        if (softMode && onlyAbstract)
-            property = implementLPResolver.resolve(name, params);
-        else {
-            property = directLPResolver.resolve(name, params);
-            if (property == null) {
-                property = indirectLPResolver.resolve(name, params);
+    private LP<?, ?> findLPByNameAndClasses(String name, String sourceName, List<ResolveClassSet> params, boolean onlyAbstract) throws ScriptingErrorLog.SemanticErrorException {
+        LP<?, ?> property = null;
+        try {
+            if (softMode && onlyAbstract)
+                property = implementLPResolver.resolve(name, params);
+            else {
+                property = directLPResolver.resolve(name, params);
+                if (property == null) {
+                    property = indirectLPResolver.resolve(name, params);
+                }
             }
-        }
+        } catch (LPResolver.AmbiguousPropertyError e) {
+            errLog.emitAmbiguousPropertyNameError(parser, e.items, sourceName == null ? name : sourceName);    
+        } 
         checkProperty(property, name);
         return property;
     }
     
     public LP<?, ?> findLPByPropertyUsage(PropertyUsage pUsage) throws ScriptingErrorLog.SemanticErrorException {
-        return findLPByNameAndClasses(pUsage.name, getParamClasses(pUsage));
+        // todo [dale]: Здесь нужно добавить параметр isAbstract, потому что поиск абстрактов может пойти и по этой ветке 
+        return findLPByNameAndClasses(pUsage.name, pUsage.getSourceName(), getParamClasses(pUsage));
     }
     
     public AbstractWindow findWindow(String name) throws ScriptingErrorLog.SemanticErrorException {
@@ -962,16 +964,16 @@ public class ScriptingLogicsModule extends LogicsModule {
         return getParamClassesByParamProperties(paramProps, params);
     }
 
-    private LP findJoinMainProp(String mainPropName, List<LPWithParams> paramProps, List<TypedParameter> context) throws ScriptingErrorLog.SemanticErrorException {
+    private LP findJoinMainProp(String mainPropName, String sourceName, List<LPWithParams> paramProps, List<TypedParameter> context) throws ScriptingErrorLog.SemanticErrorException {
         List<ResolveClassSet> classes = getParamClassesByParamProperties(paramProps, context);
-        return findLPByNameAndClasses(mainPropName, classes);
+        return findLPByNameAndClasses(mainPropName, sourceName, classes);
     }
     
     private LP findJoinMainProp(PropertyUsage mainProp, List<LPWithParams> paramProps, List<TypedParameter> context) throws ScriptingErrorLog.SemanticErrorException {
         if (mainProp.classNames != null) {
             return findLPByPropertyUsage(mainProp);
         } else {
-            return findJoinMainProp(mainProp.name, paramProps, context);
+            return findJoinMainProp(mainProp.name, mainProp.getSourceName(), paramProps, context);
         }
     }
 
@@ -983,7 +985,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         if (mainProp.classNames != null) {
             return findLPByPropertyUsage(mainProp); 
         } else {
-            return findLPByNameAndClasses(mainProp.name, getClassesFromTypedParams(params), onlyAbstract);
+            return findLPByNameAndClasses(mainProp.name, mainProp.getSourceName(), getClassesFromTypedParams(params), onlyAbstract);
         }
     }
     
@@ -2499,7 +2501,9 @@ public class ScriptingLogicsModule extends LogicsModule {
     private List<LCP> getProperties(List<PropertyUsage> propUsages) throws ScriptingErrorLog.SemanticErrorException {
         List<LCP> props = new ArrayList<>();
         for (PropertyUsage propUsage : propUsages) {
-            LCP<?> lcp = (LCP<?>) findLPByNameAndClasses(propUsage.name, Collections.<ResolveClassSet>singletonList(IntegerClass.instance));
+            // todo [dale]: Здесь идет поиск просто по именам свойств и фиксированный сигнатуре, но в грамматике используется PropertyUsage,
+            // которые предполагает возможное наличие сигнатуры, которая здесь вообще не учитывается
+            LCP<?> lcp = (LCP<?>) findLPByNameAndClasses(propUsage.name, propUsage.getSourceName(), Collections.<ResolveClassSet>singletonList(IntegerClass.instance));
 
 //            List<ResolveClassSet> paramClasses = getParamClasses(lcp);
 //            if (paramClasses.size() != 1 || paramClasses.get(0).getType() != IntegerClass.instance) {
@@ -3727,6 +3731,24 @@ public class ScriptingLogicsModule extends LogicsModule {
             this.name = name;
             this.classNames = classNames;
         }
+        
+        public String getSourceName() {
+            String result = null;
+            if (name != null) {
+                result = name;
+                if (classNames != null) {
+                    result += "[";
+                    for (String className : classNames) {
+                        if (!result.endsWith("[")) {
+                            result += ", ";
+                        } 
+                        result += className;
+                    }
+                    result += "]";
+                }
+            }
+            return result;
+        }
     }
     
     public class TypedParameter {
@@ -3830,6 +3852,14 @@ public class ScriptingLogicsModule extends LogicsModule {
         private final boolean filter;
         private final boolean prioritizeNotEquals;
         
+        class AmbiguousPropertyError extends ScriptingErrorLog.SemanticErrorException {
+            public List<FoundItem<LP<?, ?>>> items;
+            public AmbiguousPropertyError(IntStream input, List<FoundItem<LP<?, ?>>> items) {
+                super(input);
+                this.items = items;
+            }
+        }
+        
         public LPResolver(ModuleFinder<LP<?, ?>, List<ResolveClassSet>> finder, boolean filter, boolean prioritizeNotEquals) {
             super(finder);
             this.filter = filter;
@@ -3846,20 +3876,16 @@ public class ScriptingLogicsModule extends LogicsModule {
             FoundItem<LP<?, ?>> finalItem = new FoundItem<>(null, null);
             if (!result.isEmpty()) {
                 if (filter) {
-                    if(prioritizeNotEquals)
-                        result = prioritizeNotEquals(result, param); 
+                    if (prioritizeNotEquals) {
+                        result = prioritizeNotEquals(result, param);
+                    }
                     result = NamespacePropertyFinder.filterFoundProperties(result);
                 }
                 if (result.size() > 1) {
-                    List<LogicsModule> errorModules = new ArrayList<>();
-                    for (FoundItem<LP<?, ?>> item : result) {
-                        errorModules.add(item.module);
-                    }
-                    errLog.emitAmbiguousNameError(parser, errorModules, name); // todo [dale]: сделать нормальную ошибку                    
+                    throw new AmbiguousPropertyError(parser.getCurrentParser().input, result);
                 } else if (result.size() == 1) {
                     finalItem = result.get(0);
                 }
-                
             } 
             return finalItem;
         }

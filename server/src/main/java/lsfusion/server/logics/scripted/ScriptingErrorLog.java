@@ -2,6 +2,7 @@ package lsfusion.server.logics.scripted;
 
 import lsfusion.server.data.expr.formula.SQLSyntaxType;
 import lsfusion.server.logics.LogicsModule;
+import lsfusion.server.logics.NamespaceElementFinder;
 import lsfusion.server.logics.linear.LP;
 import org.antlr.runtime.BaseRecognizer;
 import org.antlr.runtime.IntStream;
@@ -436,6 +437,14 @@ public class ScriptingErrorLog {
                 msg = msg + ", ";
             }
             msg = msg + " " + modules.get(i).getName() + " (namespace " + modules.get(i).getNamespace() + ")";
+        }
+        emitSimpleError(parser, msg);
+    }
+
+    public void emitAmbiguousPropertyNameError(ScriptParser parser, List<NamespaceElementFinder.FoundItem<LP<?, ?>>> foundItems, String name) throws SemanticErrorException {
+        String msg = String.format("ambiguous name '%s', found properties:", name);
+        for (NamespaceElementFinder.FoundItem<LP<?, ?>> item : foundItems) {
+            msg += "\n\t" + item.value.property.toString();                
         }
         emitSimpleError(parser, msg);
     }

@@ -151,7 +151,7 @@ public class ScriptingFormEntity {
                 signature[index] = obj.baseClass;
                 ++index;
             }
-            return LM.findLPByNameAndClasses(property.name, signature);
+            return LM.findLPByNameAndClasses(property.name, property.getSourceName(), signature);
         }
     }
     
