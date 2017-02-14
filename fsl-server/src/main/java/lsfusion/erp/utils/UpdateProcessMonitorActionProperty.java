@@ -88,17 +88,20 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
         boolean activeSQL = processType.isEmpty() || processType.endsWith("activeSQL");
         boolean activeJava = processType.endsWith("activeJava");
 
+        boolean logSqlProcesses = Settings.get().isLogSqlProcesses();
+
         Map<Integer, List<Object>> sessionThreadMap = SQLSession.getSQLThreadMap();
 
         MSet<Thread> mSqlJavaActiveThreads = SetFact.mSet();
         MExclSet<String> mFreeSQLProcesses = SetFact.mExclSet();
         ImMap<String, List<Object>> sqlProcesses = syntaxType == SQLSyntaxType.POSTGRES ?
-                getPostgresProcesses(context, sessionThreadMap, mSqlJavaActiveThreads, mFreeSQLProcesses, activeSQL)
+                getPostgresProcesses(context, sessionThreadMap, mSqlJavaActiveThreads, mFreeSQLProcesses, activeSQL, logSqlProcesses)
                 : getMSSQLProcesses(context, sessionThreadMap, mSqlJavaActiveThreads, mFreeSQLProcesses, activeSQL);
         ImSet<Thread> sqlJavaActiveThreads = mSqlJavaActiveThreads.immutable();
         ImSet<String> freeSQLProcesses = mFreeSQLProcesses.immutable();
 
-        ImMap<String, List<Object>> javaProcesses = getJavaProcesses(activeSQL ? null : ThreadUtils.getAllThreads(), active || activeSQL ? sqlJavaActiveThreads : SetFact.<Thread>EMPTY(), active || activeJava, readAllocatedBytes);
+        ImMap<String, List<Object>> javaProcesses = getJavaProcesses(activeSQL ? null : ThreadUtils.getAllThreads(),
+                active || activeSQL ? sqlJavaActiveThreads : SetFact.<Thread>EMPTY(), active || activeJava, readAllocatedBytes, logSqlProcesses);
 
         // вырезаем "лишние" СУБД'ые процессы (которые нужны чисто чтобы видеть последние запросы)
         if(active) { // оставляем только javaProcesses + freeProcesses
@@ -372,7 +375,8 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
     }
 
     private ImMap<String, List<Object>> getPostgresProcesses(ExecutionContext context, Map<Integer, List<Object>> sessionThreadMap,
-                                                             MSet<Thread> javaThreads, MExclSet<String> mFreeSQLProcesses, boolean onlyActive)
+                                                             MSet<Thread> javaThreads, MExclSet<String> mFreeSQLProcesses, boolean onlyActive,
+                                                             boolean logSqlProcesses)
             throws SQLException, SQLHandledException, ScriptingErrorLog.SemanticErrorException {
         Map<Integer, List<Object>> lockingMap = getPostgresLockMap(context);
 
@@ -407,7 +411,15 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
         ImOrderMap rs = context.getSession().sql.executeSelect(originalQuery, OperationOwner.unknown, StaticExecuteEnvironmentImpl.EMPTY, (ImMap<String, ParseInterface>) MapFact.mExclMap(),
                 0, ((ImSet) keyNames).toRevMap(), (ImMap) keyReaders, ((ImSet) propertyNames).toRevMap(), (ImMap) propertyReaders);
 
-        boolean logSqlProcesses = Settings.get().isLogSqlProcesses();
+        if (logSqlProcesses) {
+            ServerLoggers.exInfoLogger.info("sessionThreadMap");
+            for (Map.Entry<Integer, List<Object>> entry : sessionThreadMap.entrySet()) {
+                Thread javaThread = (Thread) entry.getValue().get(0);
+                ServerLoggers.exInfoLogger.info(String.format("SQL ID: %s, Java ID: %s, User: %s, Computer: %s",
+                        entry.getKey(), javaThread != null ? javaThread.getId() : null, entry.getValue().get(5), entry.getValue().get(6)));
+            }
+        }
+
         MMap<String, List<Object>> mResultMap = MapFact.mMap(MapFact.<String, List<Object>>override());
         for (Object rsValue : rs.values()) {
 
@@ -532,10 +544,16 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
         return javaThread != null ? String.valueOf(javaThread.getId()) : ("s" + processId);
     }
 
-    private ImMap<String, List<Object>> getJavaProcesses(ImSet<Thread> allThreads, ImSet<Thread> sqlThreads, boolean onlyActive, boolean readAllocatedBytes) {
+    private ImMap<String, List<Object>> getJavaProcesses(ImSet<Thread> allThreads, ImSet<Thread> sqlThreads, boolean onlyActive, boolean readAllocatedBytes, boolean logSqlProcesses) {
         ImSet<Thread> threads;
         if(allThreads != null) {
             threads = allThreads;
+            if (logSqlProcesses) {
+                ServerLoggers.exInfoLogger.info("getAllThreads");
+                for (Thread entry : allThreads) {
+                    ServerLoggers.exInfoLogger.info(String.format("ID: %s", entry.getId()));
+                }
+            }
         } else {
             threads = sqlThreads;
         }
