@@ -320,7 +320,7 @@ public class RmiQueue {
         if (logger.isDebugEnabled()) {
             logger.debug("Async request: " + request);
         }
-        request.setTimeout(3000);
+//        request.setTimeout(3000);
 
         execRmiRequestInternal(request);
 
