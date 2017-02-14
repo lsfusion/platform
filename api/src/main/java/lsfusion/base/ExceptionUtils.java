@@ -1,15 +1,16 @@
 package lsfusion.base;
 
 import com.google.common.base.Throwables;
-import lsfusion.interop.exceptions.RemoteServerException;
 
 import java.io.ByteArrayOutputStream;
-import java.io.EOFException;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.net.SocketException;
-import java.net.SocketTimeoutException;
-import java.rmi.*;
+import java.rmi.ConnectException;
+import java.rmi.NoSuchObjectException;
+import java.rmi.RemoteException;
+import java.rmi.UnknownHostException;
+import java.util.concurrent.TimeoutException;
 
 public class ExceptionUtils {
     public static Throwable getRootCause(Throwable throwable) {
@@ -91,8 +92,13 @@ public class ExceptionUtils {
         t = getRootCause(t);
         
         // скорее всего уже не восстановимся сервел уничтожил объект на сервере
-        if(t instanceof NoSuchObjectException)
+        if (t instanceof NoSuchObjectException) {
             return 3;
+        } 
+        
+        if (t instanceof TimeoutException) {
+            return 3;
+        }
         
         // временная проблема со связью
         if(t instanceof ConnectException || t instanceof java.net.ConnectException || t instanceof SocketException || t instanceof UnknownHostException || t instanceof java.net.UnknownHostException) // проблема со связью ждем бесконечно

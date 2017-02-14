@@ -30,11 +30,17 @@ import lsfusion.server.form.instance.listener.RemoteFormListener;
 import lsfusion.server.form.navigator.LogInfo;
 import lsfusion.server.form.view.ContainerView;
 import lsfusion.server.form.view.FormView;
-import lsfusion.server.logics.*;
+import lsfusion.server.logics.BusinessLogics;
+import lsfusion.server.logics.DataObject;
+import lsfusion.server.logics.ObjectValue;
+import lsfusion.server.logics.ThreadUtils;
 import lsfusion.server.serialization.SerializationType;
 import lsfusion.server.serialization.ServerContext;
 import lsfusion.server.serialization.ServerSerializationPool;
 import org.apache.log4j.Logger;
+import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.annotation.Around;
+import org.aspectj.lang.annotation.Aspect;
 
 import java.io.*;
 import java.lang.ref.WeakReference;
@@ -65,6 +71,10 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     private final Map<Long, Integer> requestsContinueIndices = Collections.synchronizedMap(new HashMap<Long, Integer>());
 
     private long minReceivedRequestIndex = 0;
+
+    private static Map<Long, SyncExecution> syncExecuteServerInvocationMap = MapFact.mAddRemoveMap();
+    private static Map<Long, SyncExecution> syncContinueServerInvocationMap = MapFact.mAddRemoveMap();
+    private static Map<Long, SyncExecution> syncProcessRMIRequestMap = MapFact.mAddRemoveMap();
 
     public RemoteForm(F form, int port, RemoteFormListener remoteFormListener, ExecutionStack upStack) throws RemoteException {
         super(port);
@@ -849,7 +859,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         if (lastReceivedRequestIndex < 0) {
             recentResults.clear();
         } else {
-            for (long i = minReceivedRequestIndex; i <= lastReceivedRequestIndex; ++i) {
+            for (long i = minReceivedRequestIndex; i < lastReceivedRequestIndex; ++i) {
                 recentResults.remove(i);
             }
             minReceivedRequestIndex = lastReceivedRequestIndex;
@@ -1083,6 +1093,67 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         RemoteFormListener listener = getRemoteFormListener();
         if (listener != null) {
             listener.formClosed(this);
+        }
+    }
+    
+    
+    private static class SyncExecution {
+        private boolean executed;
+    }
+
+    @Aspect
+    public static class RemoteFormExecutionAspect {
+        private Object syncExecute(Map<Long, SyncExecution> syncMap, long requestIndex, ProceedingJoinPoint joinPoint) throws Throwable {
+            boolean needToWait = true;
+            SyncExecution obj;
+            Object result;
+
+            synchronized (syncMap) {
+                obj = syncMap.get(requestIndex);
+                if (obj == null) { // this thread will do the calculation
+                    obj = new SyncExecution();
+                    syncMap.put(requestIndex, obj);
+                    needToWait = false;
+                }
+            }
+
+            if(needToWait) {
+                synchronized (obj) {
+                    while(!obj.executed)
+                        obj.wait();
+                }
+            }
+
+            try {
+                result = joinPoint.proceed();
+            } finally {
+                if(!needToWait) {
+                    synchronized (obj) {
+                        obj.executed = true;
+                        obj.notifyAll();
+                    }
+                    synchronized (syncMap) {
+                        syncMap.remove(requestIndex);
+                    }
+                }
+            }
+
+            return result;
+        }
+        
+        @Around("execution(private lsfusion.interop.form.ServerResponse RemoteForm.executeServerInvocation(long, long, RemotePausableInvocation)) && args(requestIndex, lastReceivedRequestIndex, invocation)")
+        public Object execute(ProceedingJoinPoint joinPoint, long requestIndex, long lastReceivedRequestIndex, RemotePausableInvocation invocation) throws Throwable {
+            return syncExecute(syncExecuteServerInvocationMap, requestIndex, joinPoint);
+        }
+
+        @Around("execution(public lsfusion.interop.form.ServerResponse RemoteForm.continueServerInvocation(long, long, int, Object[])) && args(requestIndex, lastReceivedRequestIndex, continueIndex, actionResults)")
+        public Object execute(ProceedingJoinPoint joinPoint, long requestIndex, long lastReceivedRequestIndex, int continueIndex, final Object[] actionResults) throws Throwable {
+            return syncExecute(syncContinueServerInvocationMap, requestIndex, joinPoint);
+        }
+
+        @Around("execution(private Object RemoteForm.processRMIRequest(long, long, lsfusion.server.context.EExecutionStackCallable)) && args(requestIndex, lastReceivedRequestIndex, request)")
+        public Object execute(ProceedingJoinPoint joinPoint, long requestIndex, long lastReceivedRequestIndex, EExecutionStackCallable request) throws Throwable {
+            return syncExecute(syncProcessRMIRequestMap, requestIndex, joinPoint);
         }
     }
 }
