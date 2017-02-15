@@ -2230,7 +2230,7 @@ public abstract class LogicsModule {
         }
     }
 
-    public static class ImplementLPModuleFinder implements ModuleFinder<LP<?, ?>, List<ResolveClassSet>> {
+    public static class AbstractLPModuleFinder implements ModuleFinder<LP<?, ?>, List<ResolveClassSet>> {
         @Override
         public List<LP<?, ?>> resolveInModule(LogicsModule module, String simpleName, List<ResolveClassSet> classes)  {
             List<LP<?, ?>> result = new ArrayList<>();

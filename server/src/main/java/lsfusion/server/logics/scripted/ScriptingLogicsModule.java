@@ -106,7 +106,8 @@ public class ScriptingLogicsModule extends LogicsModule {
     private static final Logger scriptLogger = ServerLoggers.scriptLogger;
     
     private final CompoundNameResolver<LP<?, ?>, List<ResolveClassSet>> directLPResolver = new LPResolver(new LPModuleFinder(), true, false);
-    private final CompoundNameResolver<LP<?, ?>, List<ResolveClassSet>> implementLPResolver = new LPResolver(new ImplementLPModuleFinder(), true, true);
+    private final CompoundNameResolver<LP<?, ?>, List<ResolveClassSet>> abstractLPResolver = new LPResolver(new AbstractLPModuleFinder(), true, false);
+    private final CompoundNameResolver<LP<?, ?>, List<ResolveClassSet>> abstractNotEqualLPResolver = new LPResolver(new AbstractLPModuleFinder(), true, true);
     private final CompoundNameResolver<LP<?, ?>, List<ResolveClassSet>> indirectLPResolver = new LPResolver(new SoftLPModuleFinder(), false, false);
     private final CompoundNameResolver<AbstractGroup, ?> groupResolver = new CompoundNameResolver<>(new GroupNameModuleFinder());
     private final CompoundNameResolver<NavigatorElement, ?> navigatorResolver = new CompoundNameResolver<>(new NavigatorElementNameModuleFinder());
@@ -418,15 +419,19 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     private LP<?, ?> findLPByNameAndClasses(String name, String sourceName, List<ResolveClassSet> params) throws ScriptingErrorLog.SemanticErrorException {
-        return findLPByNameAndClasses(name, sourceName, params, false);
+        return findLPByNameAndClasses(name, sourceName, params, false, false);
     }
     
-    private LP<?, ?> findLPByNameAndClasses(String name, String sourceName, List<ResolveClassSet> params, boolean onlyAbstract) throws ScriptingErrorLog.SemanticErrorException {
+    private LP<?, ?> findLPByNameAndClasses(String name, String sourceName, List<ResolveClassSet> params, boolean onlyAbstract, boolean prioritizeNotEqual) throws ScriptingErrorLog.SemanticErrorException {
         LP<?, ?> property = null;
         try {
-            if (softMode && onlyAbstract)
-                property = implementLPResolver.resolve(name, params);
-            else {
+            if (softMode && onlyAbstract) {
+                if (prioritizeNotEqual) {
+                    property = abstractNotEqualLPResolver.resolve(name, params);
+                } else {
+                    property = abstractLPResolver.resolve(name, params);
+                }
+            } else {
                 property = directLPResolver.resolve(name, params);
                 if (property == null) {
                     property = indirectLPResolver.resolve(name, params);
@@ -440,8 +445,11 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
     
     public LP<?, ?> findLPByPropertyUsage(PropertyUsage pUsage) throws ScriptingErrorLog.SemanticErrorException {
-        // todo [dale]: Здесь нужно добавить параметр isAbstract, потому что поиск абстрактов может пойти и по этой ветке 
-        return findLPByNameAndClasses(pUsage.name, pUsage.getSourceName(), getParamClasses(pUsage));
+        return findLPByPropertyUsage(pUsage, false, false);
+    }
+
+    public LP<?, ?> findLPByPropertyUsage(PropertyUsage pUsage, boolean isAbstract, boolean prioritizeNotEquals) throws ScriptingErrorLog.SemanticErrorException {
+        return findLPByNameAndClasses(pUsage.name, pUsage.getSourceName(), getParamClasses(pUsage), isAbstract, prioritizeNotEquals);
     }
     
     public AbstractWindow findWindow(String name) throws ScriptingErrorLog.SemanticErrorException {
@@ -983,9 +991,9 @@ public class ScriptingLogicsModule extends LogicsModule {
     
     private LP findJoinMainProp(PropertyUsage mainProp, List<TypedParameter> params, boolean onlyAbstract) throws ScriptingErrorLog.SemanticErrorException {
         if (mainProp.classNames != null) {
-            return findLPByPropertyUsage(mainProp); 
+            return findLPByPropertyUsage(mainProp, onlyAbstract, false); 
         } else {
-            return findLPByNameAndClasses(mainProp.name, mainProp.getSourceName(), getClassesFromTypedParams(params), onlyAbstract);
+            return findLPByNameAndClasses(mainProp.name, mainProp.getSourceName(), getClassesFromTypedParams(params), onlyAbstract, true);
         }
     }
     
