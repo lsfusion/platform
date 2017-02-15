@@ -177,7 +177,7 @@ classSID 'SID класса ключа' = DATA VARSTRING[100] (TableKey);
 name 'Имя ключа' = DATA VARISTRING[20] (TableKey);
 quantity 'Количество разновидностей' = DATA INTEGER (TableKey);
 quantityTop 'Количество разновидностей (Top)' = DATA INTEGER (TableKey);
-overQuantity 'Количество разновидностей' (TableKey tableKey) = OVERRIDE quantityTop(tableKey), quantity(tableKey);
+overQuantity 'Количество разновидностей' (TableKey tableKey) = OVERRIDE quantity(tableKey), quantityTop(tableKey);
 
 CLASS TableColumn 'Колонка';
 TABLE tableColumn (TableColumn);
