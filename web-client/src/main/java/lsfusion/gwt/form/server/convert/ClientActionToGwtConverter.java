@@ -203,4 +203,9 @@ public class ClientActionToGwtConverter extends ObjectConverter {
     public GLoadLinkAction convertAction(LoadLinkClientAction action, LogicsAwareDispatchServlet servlet) throws IOException {
         return new GLoadLinkAction();
     }
+
+    @Converter(from = CopyToClipboardClientAction.class)
+    public GCopyToClipboardAction convertAction(CopyToClipboardClientAction action) {
+        return new GCopyToClipboardAction(action.value);
+    }
 }

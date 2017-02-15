@@ -58,4 +58,6 @@ public interface ClientActionDispatcher {
     void execute(ExceptionClientAction action);
 
     String execute(LoadLinkClientAction action);
+
+    boolean execute(CopyToClipboardClientAction action);
 }

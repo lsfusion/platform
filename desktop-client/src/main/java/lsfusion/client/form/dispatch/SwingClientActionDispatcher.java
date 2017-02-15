@@ -22,6 +22,7 @@ import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -475,5 +476,12 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
         }
         SystemUtils.saveCurrentDirectory(fileChooser.getSelectedFile());
         return result;
+    }
+
+    @Override
+    public boolean execute(CopyToClipboardClientAction action) {
+        if(action.value != null)
+            Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(action.value), null);
+        return true;
     }
 }
