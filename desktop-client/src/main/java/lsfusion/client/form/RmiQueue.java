@@ -92,7 +92,6 @@ public class RmiQueue {
     // вызывает request (предположительно remote) несколько раз, проблемы с целостностью предполагается что решается либо индексом, либо результат не так важен
     public static <T> T runRetryableRequest(Callable<T> request, AtomicBoolean abandoned, boolean registeredFailure, int timeout, RmiFutureInterface futureInterface) {
         int reqCount = 0;
-        int timeoutCounter = 0;
         long reqId = reqIdGen.incrementAndGet();
         try {
             do {
@@ -100,21 +99,23 @@ public class RmiQueue {
                     throw new RemoteAbandonedException();
                 try {
                     if (timeout > 0) {
-                        return executorService.submit(request).get(timeout, TimeUnit.MILLISECONDS);
+                        Future<T> future = executorService.submit(request);
+                        int timeoutCounter = 0;
+                        while (true) {
+                            try {
+                                return future.get(timeout, TimeUnit.MILLISECONDS);
+                            } catch (TimeoutException e) {
+                                if (timeoutCounter++ > 1 && futureInterface != null && futureInterface.isFirst()) {
+                                    throw new RemoteException("Timeout", e);
+                                }
+                            }
+                        }
                     } else {
                         return request.call();
                     }
                 } catch (Throwable t) {
                     if(abandoned.get()) // suppress'им все, failedRmiRequest'ы flush'ся отдельно
                         throw new RemoteAbandonedException();
-
-                    if (t instanceof TimeoutException) {
-                        if (timeoutCounter++ >= 2 && futureInterface != null && futureInterface.isFirst()) {
-                            t = new RemoteException("Timeout", t);
-                        } else {
-                            continue;
-                        }
-                    }
                     
                     if (t instanceof RemoteException) {
                         RemoteException remote = (RemoteException) t;
