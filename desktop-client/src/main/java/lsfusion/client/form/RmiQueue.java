@@ -74,15 +74,15 @@ public class RmiQueue {
     }
 
     public static <T> T runRetryableRequest(Callable<T> request, AtomicBoolean abandoned) {
-        return runRetryableRequest(request, abandoned, 0);
+        return runRetryableRequest(request, abandoned, 0, null);
     }
 
-    public static <T> T runRetryableRequest(Callable<T> request, AtomicBoolean abandoned, int timeout) {
-        return runRetryableRequest(request, abandoned, false, timeout);    
+    public static <T> T runRetryableRequest(Callable<T> request, AtomicBoolean abandoned, int timeout, RmiFutureInterface futureInterface) {
+        return runRetryableRequest(request, abandoned, false, timeout, futureInterface);    
     }
 
     public static <T> T runRetryableRequest(Callable<T> request, AtomicBoolean abandoned, boolean registeredFailure) {
-        return runRetryableRequest(request, abandoned, registeredFailure, 0);
+        return runRetryableRequest(request, abandoned, registeredFailure, 0, null);
     }
 
     private static AtomicLong reqIdGen = new AtomicLong();
@@ -90,8 +90,9 @@ public class RmiQueue {
     private static ExecutorService executorService = Executors.newCachedThreadPool();
     
     // вызывает request (предположительно remote) несколько раз, проблемы с целостностью предполагается что решается либо индексом, либо результат не так важен
-    public static <T> T runRetryableRequest(Callable<T> request, AtomicBoolean abandoned, boolean registeredFailure, int timeout) {
+    public static <T> T runRetryableRequest(Callable<T> request, AtomicBoolean abandoned, boolean registeredFailure, int timeout, RmiFutureInterface futureInterface) {
         int reqCount = 0;
+        int timeoutCounter = 0;
         long reqId = reqIdGen.incrementAndGet();
         try {
             do {
@@ -108,8 +109,13 @@ public class RmiQueue {
                         throw new RemoteAbandonedException();
 
                     if (t instanceof TimeoutException) {
-                        t = new RemoteException("Timeout", t);
+                        if (timeoutCounter++ >= 2 && futureInterface != null && futureInterface.isFirst()) {
+                            t = new RemoteException("Timeout", t);
+                        } else {
+                            continue;
+                        }
                     }
+                    
                     if (t instanceof RemoteException) {
                         RemoteException remote = (RemoteException) t;
 
@@ -200,7 +206,7 @@ public class RmiQueue {
             try {
                 RmiFuture<T> rmiFuture;
                 if (direct) {
-                    rmiFuture = new RmiFuture<>(request);
+                    rmiFuture = createRmiFuture(request);
                     rmiExecutor.execute(rmiFuture);
                 } else {
                     rmiFuture = execRmiRequestInternal(request);
@@ -247,7 +253,7 @@ public class RmiQueue {
             try {
                 final RmiFuture<T> rmiFuture;
                 if (direct) {
-                    rmiFuture = new RmiFuture<>(request);
+                    rmiFuture = createRmiFuture(request);
                     rmiExecutor.execute(rmiFuture);
                 } else {
                     rmiFuture = execRmiRequestInternal(request);
@@ -320,7 +326,7 @@ public class RmiQueue {
         if (logger.isDebugEnabled()) {
             logger.debug("Async request: " + request);
         }
-//        request.setTimeout(3000);
+        request.setTimeout(3000);
 
         execRmiRequestInternal(request);
 
@@ -355,8 +361,11 @@ public class RmiQueue {
             logger.debug("Executing request's thread: " + request);
         }
 
-        RmiFuture<T> rmiFuture = new RmiFuture<>(request);
+        RmiFuture<T> rmiFuture = createRmiFuture(request);
 
+        if (rmiFutures.isEmpty()) {
+            rmiFuture.setFirst(true);
+        }
         rmiFutures.add(rmiFuture);
         rmiExecutor.execute(rmiFuture);
 
@@ -426,19 +435,30 @@ public class RmiQueue {
         try {
             future.execCallback();
         } finally {
+            if (!rmiFutures.isEmpty()) {
+                rmiFutures.element().setFirst(false);
+            }
             if (rmiFutures.isEmpty() && asyncStarted) {
                 asyncStarted = false;
                 asyncListener.onAsyncFinished();
             }
         }
     }
+    
+    private <T> RmiFuture<T>  createRmiFuture(final RmiRequest<T> request) {
+        RequestCallable<T> requestCallable = new RequestCallable<>(request);
+        RmiFuture<T> future = new RmiFuture<>(request, requestCallable);
+        requestCallable.setFutureInterface(future);
+        return future;
+    }
 
-    public class RmiFuture<T> extends FutureTask<T> {
+    public class RmiFuture<T> extends FutureTask<T> implements RmiFutureInterface {
         private final RmiRequest<T> request;
         boolean executed;
+        private boolean first = false;
 
-        public RmiFuture(final RmiRequest<T> request) {
-            super(new RequestCallable<>(request));
+        public RmiFuture(final RmiRequest<T> request, final RequestCallable<T> requestCallable) {
+            super(requestCallable);
             this.request = request;
         }
 
@@ -478,13 +498,27 @@ public class RmiQueue {
                 request.onResponse(result);
             executed = true;
         }
+
+        @Override
+        public boolean isFirst() {
+            return first;
+        }
+        
+        public void setFirst(boolean first) {
+            this.first = first;
+        }
     }
 
     private class RequestCallable<T> implements Callable<T> {
         private final RmiRequest<T> request;
+        private RmiFutureInterface futureInterface;
 
         public RequestCallable(RmiRequest<T> request) {
             this.request = request;
+        }
+        
+        private void setFutureInterface(RmiFutureInterface futureInterface) {
+            this.futureInterface = futureInterface;
         }
 
         @Override
@@ -493,7 +527,11 @@ public class RmiQueue {
                 public T call() throws Exception {
                     return request.doRequest();
                 }
-            }, abandoned, request.getTimeout());
+            }, abandoned, request.getTimeout(), futureInterface);
         }
+    }
+    
+    private interface RmiFutureInterface {
+        boolean isFirst(); 
     }
 }

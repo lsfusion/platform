@@ -10,7 +10,6 @@ import java.rmi.ConnectException;
 import java.rmi.NoSuchObjectException;
 import java.rmi.RemoteException;
 import java.rmi.UnknownHostException;
-import java.util.concurrent.TimeoutException;
 
 public class ExceptionUtils {
     public static Throwable getRootCause(Throwable throwable) {
@@ -95,10 +94,6 @@ public class ExceptionUtils {
         if (t instanceof NoSuchObjectException) {
             return 3;
         } 
-        
-        if (t instanceof TimeoutException) {
-            return 3;
-        }
         
         // временная проблема со связью
         if(t instanceof ConnectException || t instanceof java.net.ConnectException || t instanceof SocketException || t instanceof UnknownHostException || t instanceof java.net.UnknownHostException) // проблема со связью ждем бесконечно
