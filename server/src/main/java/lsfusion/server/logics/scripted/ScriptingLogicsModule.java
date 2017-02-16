@@ -2465,7 +2465,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public LPWithParams addScriptedImportDBFActionProperty(LPWithParams fileProp, LPWithParams whereProp, LPWithParams memoProp, List<String> ids, List<PropertyUsage> propUsages, String charset) throws ScriptingErrorLog.SemanticErrorException {
-        List<LCP> props = getProperties(propUsages);
+        List<LCP> props = findLPsForImport(propUsages);
         List<LPWithParams> params = new ArrayList<>();
         params.add(fileProp);
         if(whereProp != null)
@@ -2479,7 +2479,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public LPWithParams addScriptedImportActionProperty(ImportSourceFormat format, LPWithParams fileProp, List<String> ids, List<PropertyUsage> propUsages) throws ScriptingErrorLog.SemanticErrorException {
-        List<LCP> props = getProperties(propUsages);
+        List<LCP> props = findLPsForImport(propUsages);
         return addScriptedJoinAProp(addAProp(ImportDataActionProperty.createProperty(fileProp.property.property.getValueClass(ClassType.valuePolicy), format, ids, props, baseLM)), Arrays.asList(fileProp));
     }
 
@@ -2506,25 +2506,26 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LPWithParams(property, allParams);
     }
 
-    private List<LCP> getProperties(List<PropertyUsage> propUsages) throws ScriptingErrorLog.SemanticErrorException {
+    private List<LCP> findLPsForImport(List<PropertyUsage> propUsages) throws ScriptingErrorLog.SemanticErrorException {
         List<LCP> props = new ArrayList<>();
         for (PropertyUsage propUsage : propUsages) {
-            // todo [dale]: Здесь идет поиск просто по именам свойств и фиксированный сигнатуре, но в грамматике используется PropertyUsage,
-            // которые предполагает возможное наличие сигнатуры, которая здесь вообще не учитывается
-            LCP<?> lcp = (LCP<?>) findLPByNameAndClasses(propUsage.name, propUsage.getSourceName(), Collections.<ResolveClassSet>singletonList(IntegerClass.instance));
-
-//            List<ResolveClassSet> paramClasses = getParamClasses(lcp);
-//            if (paramClasses.size() != 1 || paramClasses.get(0).getType() != IntegerClass.instance) {
-//                errLog.emitPropertyWithParamsExpected(getParser(), propUsage.name, "INTEGER");
-//            }
-
+            LCP<?> lcp;
+            if (propUsage.classNames == null) {
+                lcp = (LCP<?>) findLPByNameAndClasses(propUsage.name, propUsage.getSourceName(), Collections.<ResolveClassSet>singletonList(IntegerClass.instance));   
+            } else {
+                lcp = (LCP<?>) findLPByPropertyUsage(propUsage);
+                ValueClass[] paramClasses = lcp.getInterfaceClasses(ClassType.signaturePolicy);
+                if (paramClasses.length != 1 || paramClasses[0].getType() != IntegerClass.instance) {
+                    errLog.emitPropertyWithParamsExpected(getParser(), propUsage.name, "INTEGER");
+                }
+            }
             props.add(lcp);
         }
         return props;
     }
 
     public LPWithParams addScriptedImportExcelActionProperty(ImportSourceFormat format, LPWithParams fileProp, List<String> ids, List<PropertyUsage> propUsages, List<TypedParameter> context, LPWithParams sheetIndex) throws ScriptingErrorLog.SemanticErrorException {
-        List<LCP> props = getProperties(propUsages);
+        List<LCP> props = findLPsForImport(propUsages);
         ValueClass sheetIndexValueClass = null;
         if (sheetIndex != null) {
             if (sheetIndex.property == null) {
@@ -2542,12 +2543,12 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public LPWithParams addScriptedImportCSVActionProperty(LPWithParams fileProp, List<String> ids, List<PropertyUsage> propUsages, String separator, boolean noHeader, String charset) throws ScriptingErrorLog.SemanticErrorException {
-        List<LCP> props = getProperties(propUsages);
+        List<LCP> props = findLPsForImport(propUsages);
         return addScriptedJoinAProp(addAProp(new ImportCSVDataActionProperty(fileProp.property.property.getValueClass(ClassType.valuePolicy), ids, props, separator, noHeader, charset, baseLM)), Collections.singletonList(fileProp));
     }
 
     public LPWithParams addScriptedImportXMLActionProperty(LPWithParams fileProp, List<String> ids, List<PropertyUsage> propUsages, boolean attr) throws ScriptingErrorLog.SemanticErrorException {
-        List<LCP> props = getProperties(propUsages);
+        List<LCP> props = findLPsForImport(propUsages);
         return addScriptedJoinAProp(addAProp(new ImportXMLDataActionProperty(fileProp.property.property.getValueClass(ClassType.valuePolicy), ids, props, attr, baseLM)), Collections.singletonList(fileProp));
     }
 

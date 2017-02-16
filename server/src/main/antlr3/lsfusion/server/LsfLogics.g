@@ -2590,9 +2590,9 @@ inputActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns
 	}
 }
 	:	'INPUT'
-	        (ptype=PRIMITIVE_TYPE
-	        |
-	        ((ptype=PRIMITIVE_TYPE)? 'DEFAULT' pe=propertyExpression[context, dynamic]))
+		(	ptype=PRIMITIVE_TYPE
+		|	((ptype=PRIMITIVE_TYPE)? 'DEFAULT' pe=propertyExpression[context, dynamic])
+		)
 	;
 
 activeFormActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
