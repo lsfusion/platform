@@ -10,6 +10,7 @@ import java.rmi.ConnectException;
 import java.rmi.NoSuchObjectException;
 import java.rmi.RemoteException;
 import java.rmi.UnknownHostException;
+import java.util.concurrent.TimeoutException;
 
 public class ExceptionUtils {
     public static Throwable getRootCause(Throwable throwable) {
@@ -96,7 +97,12 @@ public class ExceptionUtils {
         } 
         
         // временная проблема со связью
-        if(t instanceof ConnectException || t instanceof java.net.ConnectException || t instanceof SocketException || t instanceof UnknownHostException || t instanceof java.net.UnknownHostException) // проблема со связью ждем бесконечно
+        if(t instanceof ConnectException 
+                || t instanceof java.net.ConnectException 
+                || t instanceof SocketException 
+                || t instanceof UnknownHostException 
+                || t instanceof java.net.UnknownHostException 
+                || t instanceof TimeoutException) // проблема со связью ждем бесконечно
             return 20;
         
         return 10; // неизвестно что
