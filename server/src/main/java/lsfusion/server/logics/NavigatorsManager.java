@@ -146,6 +146,7 @@ public class NavigatorsManager extends LogicsManager implements InitializingBean
                 businessLogics.systemEventsLM.connectionStatusConnection.change(businessLogics.systemEventsLM.connectionStatus.getObjectID("connectedConnection"), session, newConnection);
                 businessLogics.systemEventsLM.connectTimeConnection.change(businessLogics.timeLM.currentDateTime.read(session), session, newConnection);
                 businessLogics.systemEventsLM.remoteAddressConnection.change(navigator.getRemoteAddress(), session, newConnection);
+                businessLogics.systemEventsLM.launchConnection.change(businessLogics.systemEventsLM.currentLaunch.read(session), session, newConnection);
                 session.apply(businessLogics, stack);
             }
         }

@@ -61,9 +61,11 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
     public LCP screenSizeConnection;
     public LCP<PropertyInterface> connectionStatusConnection;
     public LCP connectTimeConnection;
+    public LCP launchConnection;
 
     public LCP currentConnection;
 
+    public LCP currentLaunch;
     public LCP computerLaunch;
     public LCP timeLaunch;
     public LCP revisionLaunch;
@@ -147,8 +149,10 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
         connectionStatusConnection = (LCP<PropertyInterface>) findProperty("connectionStatus[Connection]");
 
         connectTimeConnection = findProperty("connectTime[Connection]");
+        launchConnection = findProperty("launch[Connection]");
 
         // Логирование старта сервера
+        currentLaunch = findProperty("currentLaunch[]");
         computerLaunch = findProperty("computer[Launch]");
         timeLaunch = findProperty("time[Launch]");
         revisionLaunch = findProperty("revision[Launch]");

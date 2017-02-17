@@ -694,6 +694,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
                 systemEventsLM.computerLaunch.change(getServerComputer(), session, newLaunch);
                 systemEventsLM.timeLaunch.change(timeLM.currentDateTime.read(session), session, newLaunch);
                 systemEventsLM.revisionLaunch.change(getRevision(), session, newLaunch);
+                systemEventsLM.currentLaunch.change(newLaunch.object, session);
                 session.apply(businessLogics, getStack());
             }
         } catch (Exception e) {

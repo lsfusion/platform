@@ -493,6 +493,7 @@
     <bean id="executeOnStartedTask" class="lsfusion.server.logics.tasks.impl.ExecuteOnStartedTask">
         <property name="dependencies">
             <set>
+                <ref bean="logLaunchTask"/>
             </set>
         </property>
         <property name="reflectionManager" ref="reflectionManager"/>
@@ -618,7 +619,7 @@
                 <ref bean="syncGroupPropertiesTask"/>
                 <ref bean="syncGroupObjectsTask"/>
                 <ref bean="resetConnectionStatusTask"/>
-                <ref bean="logLaunchTask"/>
+                <!--<ref bean="logLaunchTask"/>-->
                 <ref bean="prereadCachesTask"/>
                 <ref bean="prereadPropertyCachesTask"/>
             </set>
