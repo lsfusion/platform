@@ -446,13 +446,13 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                         Result<Boolean> usedOuterPending = stackUsedOuterPendingJoins.pop();
                         exprJoin = translatePlainParam(exprJoin, translate);
 
-                        boolean havePending = usedPendingKeys.size() > translate.size();
-                        if(inner && (havePending || usedOuterPending.result != null)) { // какие-то ключи еще зависли, придется в implicitJoins закидывать
-                            assert !havePending || usedPendingKeys.intersect(SetFact.fromJavaSet(pending));
+                        boolean havePending = usedPendingKeys.size() > translate.size() || usedOuterPending.result != null;
+                        if(inner && havePending) { // какие-то ключи еще зависли, придется в implicitJoins закидывать
+                            assert usedPendingKeys.size() <= translate.size() || usedPendingKeys.intersect(SetFact.fromJavaSet(pending));
                             mImplicitJoins.add(exprJoin);
                         } else { // можно explicit join делать, перетранслировав usedPending
                             joinString = (joinString.length() == 0 ? "" : joinString + " AND ") + exprJoin;
-                            if(havePending)
+                            if(havePending) // если использовался другой outerPending, нужно и этот join докидывать ы outerPendingJoins иначе он будет раньше и не найдется использованный outerPending
                                 outerPending = true;
                         }
                     }
