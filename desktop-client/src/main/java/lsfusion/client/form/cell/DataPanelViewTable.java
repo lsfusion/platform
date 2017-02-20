@@ -8,15 +8,11 @@ import lsfusion.client.logics.ClientPropertyDraw;
 import java.awt.*;
 
 public class DataPanelViewTable extends SingleCellTable {
-    private final ClientFormController form;
-
     private Color backgroundColor;
     private Color foregroundColor;
 
     public DataPanelViewTable(ClientFormController form, ClientGroupObjectValue columnKey, ClientPropertyDraw property) {
-        super(columnKey);
-
-        this.form = form;
+        super(columnKey, form);
 
         setProperty(property);
     }

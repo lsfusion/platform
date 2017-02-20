@@ -1,5 +1,6 @@
 package lsfusion.client.form.dispatch;
 
+import lsfusion.client.form.DispatcherListener;
 import lsfusion.client.navigator.ClientNavigator;
 import lsfusion.interop.form.ServerResponse;
 
@@ -10,6 +11,13 @@ public class ClientNavigatorActionDispatcher extends SwingClientActionDispatcher
     private final ClientNavigator clientNavigator;
 
     public ClientNavigatorActionDispatcher(ClientNavigator clientNavigator) {
+        super(new DispatcherListener() {
+            @Override
+            public void dispatchingEnded() {}
+
+            @Override
+            public void dispatchingPostponedEnded(DispatcherInterface realDispatcher) {}
+        });
         this.clientNavigator = clientNavigator;
     }
 

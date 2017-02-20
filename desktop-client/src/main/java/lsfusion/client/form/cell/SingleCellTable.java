@@ -22,8 +22,8 @@ public abstract class SingleCellTable extends ClientPropertyTable {
 
     private final SingleCellTableModel model;
 
-    public SingleCellTable(ClientGroupObjectValue columnKey) {
-        super(new SingleCellTableModel(columnKey));
+    public SingleCellTable(ClientGroupObjectValue columnKey, ClientFormController form) {
+        super(new SingleCellTableModel(columnKey), form);
 
         model = (SingleCellTableModel) getModel();
 

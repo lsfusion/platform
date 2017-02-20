@@ -20,7 +20,7 @@ import static javax.swing.SwingUtilities.isRightMouseButton;
 import static lsfusion.client.SwingUtils.overrideSize;
 
 public class ActionPanelView extends JButton implements PanelView, EditPropertyHandler {
-    private final EditPropertyDispatcher editDispatcher = new EditPropertyDispatcher(this);
+    private final EditPropertyDispatcher editDispatcher;
     private final ClientPropertyContextMenuPopup menu = new ClientPropertyContextMenuPopup();
 
     private Color defaultBackground;
@@ -40,6 +40,8 @@ public class ActionPanelView extends JButton implements PanelView, EditPropertyH
         this.property = iproperty;
         this.columnKey = icolumnKey;
         this.form = iform;
+        
+        editDispatcher = new EditPropertyDispatcher(this, form.getDispatcherListener());
 
         setCaption(property.getCaption());
         setToolTip(property.getCaption());

@@ -6,6 +6,7 @@ import lsfusion.client.ClientLoggers;
 import lsfusion.client.Main;
 import lsfusion.client.SwingUtils;
 import lsfusion.client.exceptions.ClientExceptionManager;
+import lsfusion.client.form.dispatch.DispatcherInterface;
 import lsfusion.client.rmi.ConnectionLostManager;
 import lsfusion.interop.DaemonThreadFactory;
 import lsfusion.interop.exceptions.FatalHandledRemoteException;
@@ -25,7 +26,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import static lsfusion.client.exceptions.ClientExceptionManager.getRemoteExceptionCause;
 
-public class RmiQueue {
+public class RmiQueue implements DispatcherListener {
     private static final Logger logger = ClientLoggers.invocationLogger;
 
     private final static Object edtSyncBlocker = new Object();
@@ -42,6 +43,11 @@ public class RmiQueue {
 
     private long nextRmiRequestIndex = 0;
     private long lastReceivedRequestIndex = -1;
+    
+    private DispatcherInterface dispatcher;
+    
+    private boolean dispatchingInProgress;
+    private boolean dispatchingPostponed;
 
     private AtomicBoolean abandoned = new AtomicBoolean();
 
@@ -364,7 +370,7 @@ public class RmiQueue {
 
         RmiFuture<T> rmiFuture = createRmiFuture(request);
 
-        if (rmiFutures.isEmpty()) {
+        if (rmiFutures.isEmpty() && !dispatchingInProgress) {
             rmiFuture.setFirst(true);
         }
         rmiFutures.add(rmiFuture);
@@ -433,12 +439,14 @@ public class RmiQueue {
 
     private void execNextFutureCallback() throws Exception {
         RmiFuture future = rmiFutures.remove();
+        
+        dispatchingStarted();
+        
         try {
             future.execCallback();
         } finally {
-            if (!rmiFutures.isEmpty()) {
-                rmiFutures.element().setFirst(false);
-            }
+            dispatchingEnded();
+            
             if (rmiFutures.isEmpty() && asyncStarted) {
                 asyncStarted = false;
                 asyncListener.onAsyncFinished();
@@ -446,11 +454,53 @@ public class RmiQueue {
         }
     }
     
-    private <T> RmiFuture<T>  createRmiFuture(final RmiRequest<T> request) {
+    private <T> RmiFuture<T> createRmiFuture(final RmiRequest<T> request) {
         RequestCallable<T> requestCallable = new RequestCallable<>(request);
         RmiFuture<T> future = new RmiFuture<>(request, requestCallable);
         requestCallable.setFutureInterface(future);
         return future;
+    }
+
+
+    private void setNextFutureFirst() {
+        if (!rmiFutures.isEmpty()) {
+            rmiFutures.element().setFirst(true);
+        }
+    }
+
+    public void dispatchingStarted() {
+        dispatchingInProgress = true;
+    }
+
+    public void postponeDispatchingEnded() {
+        dispatchingPostponed = true;
+    }
+
+    public void dispatchingPostponedEnded(DispatcherInterface realDispatcher) {
+        dispatchingEnded(realDispatcher);
+    }
+
+    @Override
+    public void dispatchingEnded() {
+        dispatchingEnded(null);
+    }
+
+    public void dispatchingEnded(DispatcherInterface realDispatcher) {
+        if (realDispatcher != null) {
+            assert dispatchingPostponed;
+            dispatchingPostponed = false;
+        } else {
+            realDispatcher = dispatcher;
+        }
+
+        if (!realDispatcher.isDispatchingPaused() && !dispatchingPostponed) {
+            dispatchingInProgress = false;
+            setNextFutureFirst();
+        }
+    }
+
+    public void setDispatcher(DispatcherInterface dispatcher) {
+        this.dispatcher = dispatcher;
     }
 
     public class RmiFuture<T> extends FutureTask<T> implements RmiFutureInterface {

@@ -5,6 +5,7 @@ import com.google.common.base.Throwables;
 import lsfusion.base.Callback;
 import lsfusion.client.SwingUtils;
 import lsfusion.client.form.ClientFormController;
+import lsfusion.client.form.DispatcherListener;
 import lsfusion.client.form.EditPropertyHandler;
 import lsfusion.client.logics.ClientGroupObjectValue;
 import lsfusion.client.logics.ClientPropertyDraw;
@@ -35,7 +36,8 @@ public class EditPropertyDispatcher extends ClientFormActionDispatcher {
     private Object oldValue;
     private Callback<Object> updateEditValueCallback;
 
-    public EditPropertyDispatcher(EditPropertyHandler handler) {
+    public EditPropertyDispatcher(EditPropertyHandler handler, DispatcherListener dispatcherListener) {
+        super(dispatcherListener);
         this.handler = handler;
     }
 
@@ -84,7 +86,11 @@ public class EditPropertyDispatcher extends ClientFormActionDispatcher {
 
             editPerformed = true;
             ServerResponse response = form.executeEditAction(property, columnKey, actionSID);
-            return internalDispatchResponse(response);
+            try {
+                return internalDispatchResponse(response);
+            } finally {
+                dispatcherListener.dispatchingPostponedEnded(this);
+            }
         } catch (IOException ex) {
             throw Throwables.propagate(ex);
         } finally {

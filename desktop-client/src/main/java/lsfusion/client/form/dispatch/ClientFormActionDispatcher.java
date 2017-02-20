@@ -6,6 +6,7 @@ import lsfusion.client.ClientReportUtils;
 import lsfusion.client.Main;
 import lsfusion.client.dock.ClientFormDockable;
 import lsfusion.client.form.ClientFormController;
+import lsfusion.client.form.DispatcherListener;
 import lsfusion.interop.FormPrintType;
 import lsfusion.interop.ModalityType;
 import lsfusion.interop.action.*;
@@ -16,6 +17,10 @@ import java.io.IOException;
 import java.rmi.RemoteException;
 
 public abstract class ClientFormActionDispatcher extends SwingClientActionDispatcher {
+
+    public ClientFormActionDispatcher(DispatcherListener dispatcherListener) {
+        super(dispatcherListener);
+    }
 
     public abstract ClientFormController getFormController();
 

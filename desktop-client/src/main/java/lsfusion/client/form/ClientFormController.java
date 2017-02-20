@@ -164,17 +164,19 @@ public class ClientFormController implements AsyncListener {
         // Навигатор нужен, чтобы уведомлять его об изменениях активных объектов, чтобы он мог себя переобновлять
         clientNavigator = iclientNavigator;
 
-        actionDispatcher = new ClientFormActionDispatcher() {
-            @Override
-            public ClientFormController getFormController() {
-                return ClientFormController.this;
-            }
-        };
-
         try {
             form = new ClientSerializationPool().deserializeObject(new DataInputStream(new ByteArrayInputStream(remoteForm.getRichDesignByteArray())));
 
             rmiQueue = new RmiQueue(tableManager, serverMessageProvider, serverMessageListProvider, this);
+
+            actionDispatcher = new ClientFormActionDispatcher(rmiQueue) {
+                @Override
+                public ClientFormController getFormController() {
+                    return ClientFormController.this;
+                }
+            };
+            
+            rmiQueue.setDispatcher(actionDispatcher);
 
             formLayout = new ClientFormLayout(this, form.mainContainer);
 
@@ -218,6 +220,10 @@ public class ClientFormController implements AsyncListener {
 
     public ClientFormLayout getLayout() {
         return formLayout;
+    }
+    
+    public DispatcherListener getDispatcherListener() { 
+        return rmiQueue;
     }
 
     public ColorPreferences getColorPreferences() {
@@ -977,6 +983,11 @@ public class ClientFormController implements AsyncListener {
                     @Override
                     protected void onResponseGetFailed(long requestIndex, Exception e) throws Exception {
                         processServerResponse(new ServerResponse(requestIndex, new ClientAction[] {new ExceptionClientAction(e)}, isInServerInvocation(requestIndex)));
+                    }
+
+                    @Override
+                    protected void onResponse(long requestIndex, ServerResponse result) throws Exception {
+                        rmiQueue.postponeDispatchingEnded();                       
                     }
                 });
         return result == null ? ServerResponse.EMPTY : result;

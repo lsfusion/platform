@@ -15,6 +15,7 @@ public class SimpleChangePropertyDispatcher extends ClientFormActionDispatcher {
     private Object value = null;
 
     public SimpleChangePropertyDispatcher(ClientFormController form) {
+        super(form.getDispatcherListener());
         this.form = form;
     }
 
@@ -27,7 +28,12 @@ public class SimpleChangePropertyDispatcher extends ClientFormActionDispatcher {
         this.value = value;
 
         try {
-            dispatchResponse(getFormController().executeEditAction(property, columnKey, ServerResponse.CHANGE));
+            ServerResponse serverResponse = getFormController().executeEditAction(property, columnKey, ServerResponse.CHANGE);
+            try {
+                dispatchResponse(serverResponse);
+            } finally {
+                dispatcherListener.dispatchingPostponedEnded(this);
+            }
             return true;
         } catch (IOException ex) {
             throw Throwables.propagate(ex);

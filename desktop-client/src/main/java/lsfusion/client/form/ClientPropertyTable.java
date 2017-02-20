@@ -31,9 +31,11 @@ import static lsfusion.client.form.EditBindingMap.getPropertyEditActionSID;
 import static lsfusion.client.form.EditBindingMap.isEditableAwareEditEvent;
 
 public abstract class ClientPropertyTable extends JTable implements TableTransferHandler.TableInterface, CellTableInterface, EditPropertyHandler {
-    private final EditPropertyDispatcher editDispatcher = new EditPropertyDispatcher(this);
+    private final EditPropertyDispatcher editDispatcher;
     protected final EditBindingMap editBindingMap = new EditBindingMap();
     private final CellTableContextMenuHandler contextMenuHandler = new CellTableContextMenuHandler(this);
+    
+    protected final ClientFormController form;
 
     protected EventObject editEvent;
     protected int editRow;
@@ -43,8 +45,12 @@ public abstract class ClientPropertyTable extends JTable implements TableTransfe
     protected boolean editPerformed;
     protected boolean commitingValue;
 
-    protected ClientPropertyTable(TableModel model) {
+    protected ClientPropertyTable(TableModel model, ClientFormController form) {
         super(model);
+        
+        this.form = form;
+
+        editDispatcher = new EditPropertyDispatcher(this, form.getDispatcherListener());
 
         SwingUtils.setupClientTable(this);
 
@@ -71,7 +77,7 @@ public abstract class ClientPropertyTable extends JTable implements TableTransfe
     }
 
     public boolean editCellAt(int row, int column, EventObject e) {
-        if (!getForm().commitCurrentEditing()) {
+        if (!form.commitCurrentEditing()) {
             return false;
         }
 
@@ -126,7 +132,7 @@ public abstract class ClientPropertyTable extends JTable implements TableTransfe
 
         editorComp.requestFocusInWindow();
 
-        getForm().setCurrentEditingTable(this);
+        form.setCurrentEditingTable(this);
 
         return true;
     }
@@ -178,7 +184,7 @@ public abstract class ClientPropertyTable extends JTable implements TableTransfe
         quickLog("formTable.commitValue: " + value);
         commitingValue = true;
         editDispatcher.commitValue(value);
-        getForm().clearCurrentEditingTable(this);
+        form.clearCurrentEditingTable(this);
     }
 
     @Override
@@ -186,7 +192,7 @@ public abstract class ClientPropertyTable extends JTable implements TableTransfe
         quickLog("formTable.cancelEdit");
         internalRemoveEditor();
         editDispatcher.cancelEdit();
-        getForm().clearCurrentEditingTable(this);
+        form.clearCurrentEditingTable(this);
     }
 
     @SuppressWarnings("deprecation")
@@ -317,7 +323,7 @@ public abstract class ClientPropertyTable extends JTable implements TableTransfe
     }
 
     protected void quickLog(String msg) {
-//        if (getForm().isDialog()) {
+//        if (form.isDialog()) {
 //            return;
 //        }
 //        System.out.println("-------------------------------------------------");

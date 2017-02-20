@@ -52,7 +52,7 @@ import static lsfusion.client.form.EditBindingMap.getPropertyEditActionSID;
 import static lsfusion.client.form.EditBindingMap.isEditableAwareEditEvent;
 
 public class TreeGroupTable extends ClientFormTreeTable implements CellTableInterface, EditPropertyHandler {
-    private final EditPropertyDispatcher editDispatcher = new EditPropertyDispatcher(this);
+    private final EditPropertyDispatcher editDispatcher;
 
     private final EditBindingMap editBindingMap = new EditBindingMap();
 
@@ -95,6 +95,8 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
         form = iform;
         treeGroup = itreeGroup;
         plainTreeMode = itreeGroup.plainTreeMode;
+
+        editDispatcher = new EditPropertyDispatcher(this, form.getDispatcherListener());
 
         contextMenuHandler.install();
         setAutoCreateColumnsFromModel(false);

@@ -9,6 +9,7 @@ import lsfusion.client.MainFrame;
 import lsfusion.client.SwingUtils;
 import lsfusion.client.dock.ClientFormDockable;
 import lsfusion.client.form.ClientModalForm;
+import lsfusion.client.form.DispatcherListener;
 import lsfusion.client.form.classes.ClassDialog;
 import lsfusion.client.logics.classes.ClientObjectClass;
 import lsfusion.client.logics.classes.ClientTypeSerializer;
@@ -31,7 +32,7 @@ import java.rmi.RemoteException;
 import java.text.DecimalFormat;
 import java.util.EventObject;
 
-public abstract class SwingClientActionDispatcher implements ClientActionDispatcher {
+public abstract class SwingClientActionDispatcher implements ClientActionDispatcher, DispatcherInterface {
     private EventObject editEvent;
 
     private boolean dispatchingPaused;
@@ -40,6 +41,12 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
     Object[] currentActionResults = null;
     private int currentActionIndex = -1;
     private int currentContinueIndex = -1;
+
+    protected DispatcherListener dispatcherListener;
+
+    public SwingClientActionDispatcher(DispatcherListener dispatcherListener) {
+        this.dispatcherListener = dispatcherListener;
+    }
 
     public void dispatchResponse(ServerResponse serverResponse) throws IOException {
         assert serverResponse != null;
@@ -125,9 +132,16 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
         currentActionResults[currentActionIndex] = currentActionResult;
         try {
             dispatchResponse(currentServerResponse);
+            
+            dispatcherListener.dispatchingEnded();
         } catch (IOException e) {
             Throwables.propagate(e);
         }
+    }
+
+    @Override
+    public boolean isDispatchingPaused() {
+        return dispatchingPaused;
     }
 
     public void setEditEvent(EventObject editEvent) {

@@ -87,8 +87,6 @@ public class GridTable extends ClientPropertyTable {
     private final GridController gridController;
     private final GroupObjectController groupController;
 
-    // пока пусть GridTable напрямую общается с формой, а не через Controller, так как ей много о чем надо с ней говорить, а Controller будет просто бюрократию создавать
-    private final ClientFormController form;
     private boolean tabVertical = false;
 
     private int viewMoveInterval = 0;
@@ -133,7 +131,7 @@ public class GridTable extends ClientPropertyTable {
     private ThreadLocal<Boolean> threadLocalIsStopCellEditing = new ThreadLocal<>();
 
     public GridTable(final GridView igridView, ClientFormController iform, GridUserPreferences[] iuserPreferences) {
-        super(new GridTableModel());
+        super(new GridTableModel(), iform);
 
         tableHeader = new GridTableHeader(columnModel) {
             @Override
@@ -142,7 +140,6 @@ public class GridTable extends ClientPropertyTable {
             }
         };
 
-        form = iform;
         gridController = igridView.getGridController();
         groupController = gridController.getGroupController();
         groupObject = groupController.getGroupObject();
