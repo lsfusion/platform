@@ -2509,15 +2509,13 @@ public class ScriptingLogicsModule extends LogicsModule {
     private List<LCP> findLPsForImport(List<PropertyUsage> propUsages) throws ScriptingErrorLog.SemanticErrorException {
         List<LCP> props = new ArrayList<>();
         for (PropertyUsage propUsage : propUsages) {
-            LCP<?> lcp;
             if (propUsage.classNames == null) {
-                lcp = (LCP<?>) findLPByNameAndClasses(propUsage.name, propUsage.getSourceName(), Collections.<ResolveClassSet>singletonList(IntegerClass.instance));   
-            } else {
-                lcp = (LCP<?>) findLPByPropertyUsage(propUsage);
-                ValueClass[] paramClasses = lcp.getInterfaceClasses(ClassType.signaturePolicy);
-                if (paramClasses.length != 1 || paramClasses[0].getType() != IntegerClass.instance) {
-                    errLog.emitPropertyWithParamsExpected(getParser(), propUsage.name, "INTEGER");
-                }
+                propUsage.classNames = Collections.singletonList("INTEGER"); // делаем так для лучшего сообщения об ошибке 
+            } 
+            LCP<?> lcp = (LCP<?>) findLPByPropertyUsage(propUsage);
+            ValueClass[] paramClasses = lcp.getInterfaceClasses(ClassType.signaturePolicy);
+            if (paramClasses.length != 1 || paramClasses[0].getType() != IntegerClass.instance) {
+                errLog.emitPropertyWithParamsExpected(getParser(), propUsage.name, "INTEGER");
             }
             props.add(lcp);
         }
@@ -2898,6 +2896,9 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
         
         if (actionUsage != null) {
+            if (actionUsage.classNames == null) {
+                actionUsage.classNames = Collections.emptyList(); // делаем так для лучшего сообщения об ошибке
+            }
             LP findResult = findLPByPropertyUsage(actionUsage);
             checkNavigatorAction(findResult);
             newElement = addNavigatorAction(name, caption, (LAP<?>)findResult, point.toString());

@@ -3168,18 +3168,18 @@ singleParameterIndexList[List<TypedParameter> context, boolean dynamic] returns 
 	;
 
 
-mappedPropertyOrSimpleExprParam[List<TypedParameter> context] returns [LPWithParams property]
+mappedPropertyOrSimpleParamIndex[List<TypedParameter> context] returns [LPWithParams property]
     :   (   toProp=propertyUsage '(' params=singleParameterIndexList[context, true] ')' { if(inIndexParseState()) { $property = self.findIndexProp($toProp.propUsage, $params.props, context); } }
         |   param=singleParameterIndex[context, true] { $property = $param.property; }
         )
 ;
 
-nonEmptyMappedPropertyOrSimpleExprParamList[List<TypedParameter> context] returns [List<LPWithParams> props]
+nonEmptyMappedPropertyOrSimpleParamIndexList[List<TypedParameter> context] returns [List<LPWithParams> props]
 @init {
 	$props = new ArrayList<LPWithParams>();
 }
-	:	first=mappedPropertyOrSimpleExprParam[context] { $props.add($first.property); }
-		(',' next=mappedPropertyOrSimpleExprParam[context] { $props.add($next.property); })*
+	:	first=mappedPropertyOrSimpleParamIndex[context] { $props.add($first.property); }
+		(',' next=mappedPropertyOrSimpleParamIndex[context] { $props.add($next.property); })*
 	;
 
 indexStatement
@@ -3191,7 +3191,7 @@ indexStatement
 		self.addScriptedIndex(context, $list.props);
 	}	
 }
-	:	'INDEX' list=nonEmptyMappedPropertyOrSimpleExprParamList[context] ';'
+	:	'INDEX' list=nonEmptyMappedPropertyOrSimpleParamIndexList[context] ';'
 	;
 
 
