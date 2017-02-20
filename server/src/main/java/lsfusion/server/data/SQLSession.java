@@ -792,7 +792,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
             logger.info(String.format("Adding index started: %s", nameIndex));
         executeDDL("CREATE INDEX " + nameIndex + " ON " + table.getName(syntax) + " (" + columns + ")");
         if(logger != null)
-            logger.info(String.format("Adding index: %s, %sms", nameIndex, System.currentTimeMillis() - start));
+            logger.info(String.format("Adding index finished: %s, %sms", nameIndex, System.currentTimeMillis() - start));
     }
 
     public void dropIndex(Table table, ImOrderSet<KeyField> keyFields, ImOrderSet<String> fields, boolean order, boolean ifExists) throws SQLException {
