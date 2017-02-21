@@ -18,6 +18,7 @@ public class RichEditorWriter extends HTMLWriter {
 
     public RichEditorWriter(Writer w, HTMLDocument doc, int pos, int len) {
         super(w, doc, pos, len);
+        setLineLength(Integer.MAX_VALUE);
     }
 
     protected void writeAttributes(AttributeSet attr) throws IOException {
