@@ -126,6 +126,11 @@ public class DBManager extends LogicsManager implements InitializingBean {
     private final ThreadLocal<SQLSession> threadLocalSql;
 
     private final Map<ImList<CalcPropertyObjectInterfaceImplement<String>>, Boolean> indexes = new HashMap<>();
+    
+    private String defaultUserLanguage;
+    private String defaultUserCountry;
+    private String defaultUserTimeZone;
+    private Integer defaultTwoDigitYearStart;
 
     public DBManager() {
         super(DBMANAGER_ORDER);
@@ -315,7 +320,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
     public DataSession createSession(SQLSession sql, OperationOwner upOwner) throws SQLException {
         return createSession(sql,
                 new UserController() {
-                    public boolean changeCurrentUser(DataObject user) {
+                    public boolean changeCurrentUser(DataObject user, ExecutionStack stack) {
                         throw new RuntimeException("not supported");
                     }
 
@@ -966,6 +971,8 @@ public class DBManager extends LogicsManager implements InitializingBean {
             sql.popNoHandled();
         }
 
+        setDefaultUserLocalePreferences();
+        
         try (DataSession session = createSession()) {
             for (String sid : columnsToDrop.keySet()) {
                 DataObject object = session.addObject(reflectionLM.dropColumn);
@@ -984,6 +991,16 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
     }
 
+    private void setDefaultUserLocalePreferences() throws SQLException, SQLHandledException {
+        try (DataSession session = createSession()) {
+            businessLogics.authenticationLM.defaultLanguage.change(defaultUserLanguage, session);
+            businessLogics.authenticationLM.defaultCountry.change(defaultUserCountry, session);
+            businessLogics.authenticationLM.defaultTimeZone.change(defaultUserTimeZone, session);
+            businessLogics.authenticationLM.defaultTwoDigitYearStart.change(defaultTwoDigitYearStart, session);
+            session.apply(businessLogics, getStack());
+        } 
+    }
+    
     private void updateAggregationStats(List<CalcProperty> recalculateProperties, ImMap<String, Integer> tableStats) throws SQLException, SQLHandledException {
         Map<ImplementTable, List<CalcProperty>> calcPropertiesMap; // статистика для новых свойств
         if (Settings.get().isGroupByTables()) {
@@ -1507,9 +1524,10 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
     }
     
-    // todo [dale]: временная реализация для переименования
+    // Временная реализация для переименования
+    // issue #4672 Построение сигнатуры LOG-свойств
     // Проблема текущего способа: 
-    //   Каноническое имя log-свойств сейчас определяется не из сигнатуры базового свойства, а из getInterfaces, которые могут не совпадать с сигнатурой
+    // Каноническое имя log-свойств сейчас определяется не из сигнатуры базового свойства, а из getInterfaces, которые могут не совпадать с сигнатурой
     // В дальнейшем. когда сделаем нормальные канонические имена у log-свойств, можно перенести этот функционал в setUserLoggableProperties 
     // и добавлять изменения канонических имен log-свойств напрямую в storedPropertyCNChanges еще на том шаге
     private void addLogPropertiesToMigration(OldDBStructure oldData, DBVersion newDBVersion) {
@@ -2176,5 +2194,21 @@ public class DBManager extends LogicsManager implements InitializingBean {
             }
             return buf.toString();
         }
+    }
+
+    public void setDefaultUserLanguage(String defaultUserLanguage) {
+        this.defaultUserLanguage = defaultUserLanguage;
+    }
+
+    public void setDefaultUserCountry(String defaultUserCountry) {
+        this.defaultUserCountry = defaultUserCountry;
+    }
+
+    public void setDefaultUserTimeZone(String defaultUserTimeZone) {
+        this.defaultUserTimeZone = defaultUserTimeZone;
+    }
+
+    public void setDefaultTwoDigitYearStart(Integer defaultTwoDigitYearStart) {
+        this.defaultTwoDigitYearStart = defaultTwoDigitYearStart;
     }
 }

@@ -76,7 +76,10 @@ public class ReadFormRequestHandler implements HttpRequestHandler {
             Integer maximumMemory = (int) (Runtime.getRuntime().maxMemory() / 1048576);
             Integer freeMemory = (int) (Runtime.getRuntime().freeMemory() / 1048576);
             String javaVersion = SystemUtils.getJavaVersion() + " " + System.getProperty("sun.arch.data.model") + " bit";
-
+            
+            String language = Locale.getDefault().getLanguage();
+            String country = Locale.getDefault().getCountry();
+            
 //            String screenSize = null;
 //            Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
 //            if(dimension != null) {
@@ -86,7 +89,7 @@ public class ReadFormRequestHandler implements HttpRequestHandler {
             if (navigator == null)
                 navigator = bl.createNavigator(true, new NavigatorInfo(exportUser, exportPassword,
                         bl.getComputer(SystemUtils.getLocalHostName()), "127.0.0.1", osVersion, processor, architecture, cores,
-                        physicalMemory, totalMemory, maximumMemory, freeMemory, javaVersion, null), false);
+                        physicalMemory, totalMemory, maximumMemory, freeMemory, javaVersion, null, language, country), false);
 
             if (!bl.checkFormExportPermission(canonicalName)) {
 //                blProvider.invalidate();

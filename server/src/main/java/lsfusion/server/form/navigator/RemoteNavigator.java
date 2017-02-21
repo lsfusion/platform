@@ -17,7 +17,6 @@ import lsfusion.interop.form.ServerResponse;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
 import lsfusion.server.EnvStackRunnable;
 import lsfusion.server.ServerLoggers;
-import lsfusion.server.Settings;
 import lsfusion.server.auth.SecurityPolicy;
 import lsfusion.server.auth.User;
 import lsfusion.server.caches.IdentityLazy;
@@ -34,7 +33,6 @@ import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.entity.ObjectEntity;
 import lsfusion.server.form.instance.FormInstance;
-import lsfusion.server.form.instance.FormSessionScope;
 import lsfusion.server.form.instance.GroupObjectInstance;
 import lsfusion.server.form.instance.ObjectInstance;
 import lsfusion.server.form.instance.listener.CustomClassListener;
@@ -42,7 +40,9 @@ import lsfusion.server.form.instance.listener.FocusListener;
 import lsfusion.server.form.instance.listener.RemoteFormListener;
 import lsfusion.server.logics.*;
 import lsfusion.server.logics.SecurityManager;
-import lsfusion.server.logics.property.*;
+import lsfusion.server.logics.property.ActionProperty;
+import lsfusion.server.logics.property.CalcProperty;
+import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.remote.ContextAwarePendingRemoteObject;
 import lsfusion.server.remote.RemoteForm;
 import lsfusion.server.remote.RemoteLoggerAspect;
@@ -112,6 +112,9 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
 
     private String formID = null;
 
+    private String clientLanguage;
+    private String clientCountry;
+    
     // в настройку надо будет вынести : по группам, способ релевантности групп, какую релевантность отсекать
     public RemoteNavigator(LogicsInstance logicsInstance, boolean isFullClient, NavigatorInfo navigatorInfo, User currentUser, int port, ExecutionStack stack) throws RemoteException, ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException, SQLHandledException {
         super(port);
@@ -152,18 +155,21 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
 
         navigatorManager.navigatorCreated(stack, this, navigatorInfo);
         
-        loadLocalePreferences();
+        this.clientLanguage = navigatorInfo.language;
+        this.clientCountry = navigatorInfo.country;
+        
+        loadLocalePreferences(stack);
     }
 
     public boolean isFullClient() {
         return isFullClient;
     }
 
-    public boolean changeCurrentUser(DataObject user) throws SQLException, SQLHandledException {
+    public boolean changeCurrentUser(DataObject user, ExecutionStack stack) throws SQLException, SQLHandledException {
         Object newRole = securityManager.getUserMainRole(user);
         Object currentRole = securityManager.getUserMainRole(this.user);
         if (BaseUtils.nullEquals(newRole, currentRole)) {
-            setUser(user);
+            setUser(user, stack);
             Result<Integer> timeout = new Result<>();
             this.securityPolicy = getUserSecurityPolicy(timeout);
             this.transactionTimeout = timeout.result;
@@ -290,9 +296,9 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         }
     }
 
-    private void setUser(DataObject user) {
+    private void setUser(DataObject user, ExecutionStack stack) {
         this.user = user;
-        loadLocalePreferences();
+        loadLocalePreferences(stack);
     }
 
     @Aspect
@@ -323,9 +329,9 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
             this.weakThis = new WeakReference<>(navigator);
         }
 
-        public boolean changeCurrentUser(DataObject user) throws SQLException, SQLHandledException {
+        public boolean changeCurrentUser(DataObject user, ExecutionStack stack) throws SQLException, SQLHandledException {
             RemoteNavigator remoteNavigator = weakThis.get();
-            return remoteNavigator != null && remoteNavigator.changeCurrentUser(user);
+            return remoteNavigator != null && remoteNavigator.changeCurrentUser(user, stack);
         }
 
         public ObjectValue getCurrentUser() {
@@ -504,39 +510,33 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         return useBusyDialog;
     }
 
-    private void loadLocalePreferences() {
-        String language = null;
-        String country = null;
-        String timeZone = null;
+    private void loadLocalePreferences(ExecutionStack stack) {
+        String language = null, country = null, timeZone = null;
         Integer twoDigitYearStart = null;
-        boolean useClientLocale = false;
+        
         try (DataSession session = createSession()) {
-            language = (String) businessLogics.authenticationLM.languageCustomUser.read(session, user);
-            if (language == null) {
-                language = logicsInstance.getSettings().getLanguage();
-                country = logicsInstance.getSettings().getCountry();
-            } else {
-                country = (String) businessLogics.authenticationLM.countryCustomUser.read(session, user);
+            if (clientLanguage != null) {
+                businessLogics.authenticationLM.clientLanguage.change(clientLanguage, session, user);
+                businessLogics.authenticationLM.clientCountry.change(clientCountry, session, user);
             }
-            timeZone = (String) businessLogics.authenticationLM.timeZoneCustomUser.read(session, user);
-            twoDigitYearStart = (Integer) businessLogics.authenticationLM.twoDigitYearStartCustomUser.read(session, user);
-            useClientLocale = businessLogics.authenticationLM.useClientLocaleCustomUser.read(session, user) != null;
+            
+            language = (String) businessLogics.authenticationLM.userLanguage.read(session, user);
+            country = (String) businessLogics.authenticationLM.userCountry.read(session, user);
+            timeZone = (String) businessLogics.authenticationLM.userTimeZone.read(session, user);
+            twoDigitYearStart = (Integer) businessLogics.authenticationLM.userTwoDigitYearStart.read(session, user);
+            session.apply(businessLogics, stack);
         } catch (SQLException | SQLHandledException ignored) {
         }
-        this.userLocalePreferences = new LocalePreferences(language, country, timeZone, twoDigitYearStart, useClientLocale);
+        this.userLocalePreferences = new LocalePreferences(language, country, timeZone, twoDigitYearStart);
     }
     
     public LocalePreferences getLocalePreferences() throws RemoteException {
         return userLocalePreferences;
     }
 
-    public LocalePreferences getLocalLocalePreferences() {
-        return userLocalePreferences;
-    }
-
     public Locale getLocale() {
-        LocalePreferences pref = getLocalLocalePreferences();
-        if (pref != null && pref.useClientLocale && pref.language != null) {
+        LocalePreferences pref = userLocalePreferences;
+        if (pref != null && pref.language != null) {
             return new Locale(pref.language, pref.country == null ? "" : pref.country);
         }
         return Locale.getDefault();

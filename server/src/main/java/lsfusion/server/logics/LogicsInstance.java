@@ -128,17 +128,6 @@ public class LogicsInstance implements InitializingBean {
 
     public void setSettings(Settings settings) {
         this.settings = settings;
-        Locale serverLocale = Locale.getDefault();
-        if (settings != null && settings.getLanguage() != null) {
-            serverLocale = new Locale(settings.getLanguage(), settings.getCountry() == null ? "" : settings.getCountry());    
-        }
-        setServerLocale(serverLocale);
-    }
-
-    private void setServerLocale(Locale locale) {
-        if (locale != null) {
-            Locale.setDefault(locale);
-        }
         ApiResourceBundle.load(Locale.getDefault());
     }
     

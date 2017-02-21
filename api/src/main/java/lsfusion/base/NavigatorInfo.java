@@ -18,10 +18,12 @@ public class NavigatorInfo implements Serializable{
     public Integer freeMemory;
     public String javaVersion;
     public String screenSize;
-
+    public String language;
+    public String country;
+    
     public NavigatorInfo(String login, String password, int computer, String remoteAddress, String osVersion, String processor,
                          String architecture, Integer cores, Integer physicalMemory, Integer totalMemory, Integer maximumMemory,
-                         Integer freeMemory, String javaVersion, String screenSize) {
+                         Integer freeMemory, String javaVersion, String screenSize, String language, String country) {
         this.login = login;
         this.password = password;
         this.computer = computer;
@@ -36,5 +38,7 @@ public class NavigatorInfo implements Serializable{
         this.freeMemory = freeMemory;
         this.javaVersion = javaVersion;
         this.screenSize = screenSize;
+        this.language = language;
+        this.country = country;
     }
 }

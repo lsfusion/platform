@@ -7,7 +7,6 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.interop.GUIPreferences;
-import lsfusion.interop.LocalePreferences;
 import lsfusion.interop.RemoteLogicsInterface;
 import lsfusion.interop.VMOptions;
 import lsfusion.interop.event.IDaemonTask;
@@ -65,11 +64,6 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     private String displayName;
     private String name;
     
-    private Integer twoDigitYearStart;
-    private String userTimeZone;
-    private String userCountry;
-    private String userLanguage;
-    
     private String clientHideMenu;
 
     public void setBusinessLogics(BusinessLogics businessLogics) {
@@ -106,22 +100,6 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
 
     public void setName(String name) {
         this.name = name;
-    }
-    
-    public void setTwoDigitYearStart(Integer twoDigitYearStart) {
-        this.twoDigitYearStart = twoDigitYearStart;
-    }
-    
-    public void setUserTimeZone(String userTimeZone) {
-        this.userTimeZone = userTimeZone;
-    }
-    
-    public void setUserCountry(String userCountry) {
-        this.userCountry = userCountry;
-    }
-    
-    public void setUserLanguage(String userLanguage) {
-        this.userLanguage = userLanguage;
     }
     
     public void setClientHideMenu(String clientHideMenu) {
@@ -198,10 +176,6 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
         return new GUIPreferences(name, displayName, null, null, Boolean.parseBoolean(clientHideMenu));
     }
     
-    public LocalePreferences getDefaultLocalePreferences() throws RemoteException {
-        return new LocalePreferences(userLanguage, userCountry, userTimeZone, twoDigitYearStart, false);
-    }
-
     public int generateNewID() throws RemoteException {
         return BaseLogicsModule.generateStaticNewID();
     }

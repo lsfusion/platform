@@ -26,7 +26,7 @@ public class ReloginUserActionProperty extends ScriptingActionProperty {
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         DataObject user = context.getSingleDataKeyValue();
-        if (context.getSession().user.changeCurrentUser(user)) {
+        if (context.getSession().user.changeCurrentUser(user, context.stack)) {
             context.delayUserInterfaction(new UserChangedClientAction());
             ScriptingLogicsModule authenticationLM = context.getBL().getModule("Authentication");
             try {

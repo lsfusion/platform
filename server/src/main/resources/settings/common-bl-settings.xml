@@ -42,8 +42,6 @@
                 <entry key="disablePrereadValues" value="${settings.disablePrereadValues:}"/>
                 <entry key="disableSumGroupNotZero" value="${settings.disableSumGroupNotZero:}"/>
                 <entry key="usedChangesCacheLimit" value="${settings.usedChangesCacheLimit:}"/>
-                <entry key="language" value="${user.language:}"/>
-                <entry key="country" value="${user.country:}"/>
                 <entry key="splitIncrementApply" value="${settings.splitIncrementApply:}"/>
                 <entry key="statDegree" value="${settings.statDegree:}"/>
                 <entry key="barcodeLength" value="${settings.barcodeLength:}"/>
@@ -149,6 +147,10 @@
         <property name="denyDropTables" value="${db.denyDropTables:false}"/>
         <property name="dbNamingPolicy" value="${db.namingPolicy:}"/>
         <property name="dbMaxIdLength" value="${db.maxIdLength:}"/>
+        <property name="defaultTwoDigitYearStart" value="${user.twoDigitYearStart:}"/>
+        <property name="defaultUserTimeZone" value="${user.timeZone:}"/>
+        <property name="defaultUserLanguage" value="${user.language:}"/>
+        <property name="defaultUserCountry" value="${user.country:}"/>
     </bean>
 
     <bean id="reflectionManager" class="lsfusion.server.logics.ReflectionManager">
@@ -668,10 +670,6 @@
         <property name="securityManager" ref="securityManager"/>
         <property name="dbManager" ref="dbManager"/>
         <property name="clientVMOptions" ref="clientVMOptions"/>
-        <property name="twoDigitYearStart" value="${twoDigitYearStart:}"/>
-        <property name="userTimeZone" value="${user.timeZone:}"/>
-        <property name="userCountry" value="${user.country:}"/>
-        <property name="userLanguage" value="${user.language:}"/>
         <property name="displayName" value="${logics.displayName:}"/>
         <property name="clientHideMenu" value="${client.hideMenu:}"/>
     </bean>

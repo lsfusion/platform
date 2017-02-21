@@ -3,7 +3,6 @@ package lsfusion.client.remote.proxy;
 import lsfusion.base.NavigatorInfo;
 import lsfusion.interop.GUIPreferences;
 import lsfusion.interop.RemoteLogicsInterface;
-import lsfusion.interop.LocalePreferences;
 import lsfusion.interop.VMOptions;
 import lsfusion.interop.event.IDaemonTask;
 import lsfusion.interop.form.screen.ExternalScreen;
@@ -39,14 +38,6 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface> extends R
         GUIPreferences result = target.getGUIPreferences();
         logRemoteMethodEndCall("getGUIPreferences", result);
         return result;    
-    }
-
-    @Override
-    public LocalePreferences getDefaultLocalePreferences() throws RemoteException {
-        logRemoteMethodStartCall("getDefaultLocalePreferences");
-        LocalePreferences result = target.getDefaultLocalePreferences();
-        logRemoteMethodEndCall("getDefaultLocalePreferences", result);
-        return result;
     }
 
     public Integer getComputer(String hostname) throws RemoteException {
@@ -124,9 +115,9 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface> extends R
     }
 
     @Override
-    public void runAction(String sid, String... params) throws RemoteException {
+    public void runAction(String canonicalName, String... params) throws RemoteException {
         logRemoteMethodStartCall("runAction");
-        target.runAction(sid, params);
+        target.runAction(canonicalName, params);
         logRemoteMethodEndVoidCall("runAction");
     }
 

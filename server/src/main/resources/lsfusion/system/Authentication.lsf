@@ -104,11 +104,27 @@ userDNSuffixLDAP 'Суффикс для User DN' = DATA VARSTRING[100] ();
 useBusyDialogCustom 'Показывать BusyDialog' = DATA BOOLEAN (CustomUser);
 useBusyDialog () = useBusyDialogCustom[CustomUser](currentUser());
 
-language 'Язык локали' =  DATA VARSTRING[3] (CustomUser);
-country 'Страна локали' =  DATA VARSTRING[3] (CustomUser);
-timeZone 'Часовой пояс' =  DATA VARSTRING[30] (CustomUser);
-twoDigitYearStart 'Первый год двумя цифрами' =  DATA INTEGER (CustomUser);
-useClientLocale 'Использовать локаль клиента' =  DATA BOOLEAN (CustomUser);
+userLanguage 'Язык локали пользователя' = DATA VARSTRING[3] (CustomUser);
+userCountry 'Страна локали пользователя' = DATA VARSTRING[3] (CustomUser);
+userTimeZone 'Часовой пояс пользователя' = DATA VARSTRING[30] (CustomUser);
+userTwoDigitYearStart 'Первый год двумя цифрами пользователя' = DATA INTEGER (CustomUser);
+
+clientLanguage 'Язык локали клиента' = DATA VARSTRING[3] (CustomUser);
+clientCountry 'Страна локали клиента' = DATA VARSTRING[3] (CustomUser);
+useClientLocale 'Использовать локаль клиента' = DATA BOOLEAN (CustomUser);
+
+defaultUserLanguage 'Язык локали по умолчанию' = DATA VARSTRING[3] ();
+defaultUserCountry 'Страна локали по умолчанию' = DATA VARSTRING[3] ();
+defaultUserTimeZone 'Часовой пояс по умолчанию' = DATA VARSTRING[30] ();
+defaultUserTwoDigitYearStart 'Первый год двумя цифрами по умолчанию' = DATA INTEGER ();
+
+language 'Язык локали' (CustomUser user) = OVERRIDE defaultUserLanguage(), userLanguage(user), (clientLanguage(user) IF useClientLocale(user));
+country 'Страна локали' (CustomUser user) = IF useClientLocale(user) AND clientLanguage(user) 
+                                                                THEN clientCountry(user)
+                                                                ELSE IF userLanguage(user) THEN userCountry(user) ELSE defaultUserCountry();
+
+timeZone 'Часовой пояс' (CustomUser user) = OVERRIDE defaultUserTimeZone(), userTimeZone(user);
+twoDigitYearStart 'Первый год двумя цифрами' (CustomUser user) = OVERRIDE defaultUserTwoDigitYearStart(), userTwoDigitYearStart(user);
 
 deliveredNotificationAction = ACTION ABSTRACT LIST (CustomUser);
 
@@ -144,7 +160,7 @@ FORM customUser 'Пользователь'
     PROPERTIES(u) firstName, lastName, login,
     sha256Password ON CHANGE changeSHA256Password(u), email,
     forbidChangePassword, forbidEditProfile, isLocked, lastActivity, ignorePrintTypeCustom, useBusyDialogCustom,
-    allowExcessAllocatedBytes, language, country, timeZone, twoDigitYearStart, useClientLocale
+    allowExcessAllocatedBytes, language, country, timeZone, twoDigitYearStart, clientLanguage, clientCountry, useClientLocale
 
     EDIT CustomUser OBJECT u
 ;
@@ -167,10 +183,11 @@ FORM customUsers 'Пользователи'
     OBJECTS u=CustomUser
     PROPERTIES(u) READONLY name[Contact], login, email
     PROPERTIES(u) forbidChangePassword, forbidEditProfile, useBusyDialogCustom, allowExcessAllocatedBytes,
-                  language, country, timeZone, twoDigitYearStart, useClientLocale, isLocked READONLY,
+                  language, userLanguage, clientLanguage, country, userCountry, clientCountry, useClientLocale, 
+                  timeZone, userTimeZone, twoDigitYearStart, userTwoDigitYearStart, isLocked READONLY,
                   lastActivity, ADDFORM, EDITFORM FORCE PANEL, DELETE FORCE PANEL TOOLBAR
 
-    PROPERTIES() useLDAP, serverLDAP, portLDAP, baseDNLDAP, userDNSuffixLDAP, minHashLength
+    PROPERTIES() useLDAP, serverLDAP, portLDAP, baseDNLDAP, userDNSuffixLDAP, minHashLength, defaultUserLanguage, defaultUserCountry
 ;
 
 FORM customUsersDialog 'Пользователи'

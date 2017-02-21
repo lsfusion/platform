@@ -92,10 +92,6 @@ public class Settings {
 
     private int usedChangesCacheLimit = 20;
 
-    private String language;
-    
-    private String country;
-    
     // максимум сколько свойств вместе будет применяться в базу
     private int splitIncrementApply = 10;
 
@@ -527,22 +523,6 @@ public class Settings {
         this.usedChangesCacheLimit = usedChangesCacheLimit;
     }
 
-    public void setLanguage(String language) {
-        this.language = language;
-    }
-
-    public void setCountry(String country) {
-        this.country = country;
-    }
-    
-    public String getLanguage() {
-        return language;
-    }
-
-    public String getCountry() {
-        return country;
-    }
-    
     public int getSplitIncrementApply() {
         return splitIncrementApply;
     }

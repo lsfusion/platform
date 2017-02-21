@@ -18,8 +18,6 @@ public interface RemoteLogicsInterface extends PendingRemoteInterface {
     
     GUIPreferences getGUIPreferences() throws RemoteException;
     
-    LocalePreferences getDefaultLocalePreferences() throws RemoteException;
-
     RemoteNavigatorInterface createNavigator(boolean isFullClient, NavigatorInfo navigatorInfo, boolean forceCreateNew) throws RemoteException;
 
     Integer getComputer(String hostname) throws RemoteException;
@@ -36,9 +34,9 @@ public interface RemoteLogicsInterface extends PendingRemoteInterface {
 
     void remindPassword(String email, String localeLanguage) throws RemoteException;
 
-    byte[] readFile(String sid, String... params) throws RemoteException;
+    byte[] readFile(String canonicalName, String... params) throws RemoteException;
 
-    void runAction(String sid, String... params) throws RemoteException;
+    void runAction(String canonicalName, String... params) throws RemoteException;
 
     boolean checkDefaultViewPermission(String propertySid) throws RemoteException;
 

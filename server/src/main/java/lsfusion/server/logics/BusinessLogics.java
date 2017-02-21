@@ -138,8 +138,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     public TimeLogicsModule timeLM;
     public ScriptingLogicsModule evalScriptLM;
 
-    protected LogicsInstance logicsInstance;
-    
     private String topModule;
 
     private String orderDependencies;
@@ -936,8 +934,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         if (property.isNamed()) {
             String propertyCN = property.getCanonicalName();
             
-            // todo [dale]: тут есть потенциальное пересечение канонических имен, так как приходится разделять эти свойства только по имени
-            // и имя приходится создавать из канонического имени базового свойства, заменив спецсимволы на подчеркивания
+            // issue #1725 Потенциальное совпадение канонических имен различных свойств 
+            // Приходится разделять эти свойства только по имени, а имя приходится создавать из канонического имени 
+            // базового свойства, заменив спецсимволы на подчеркивания
             String setupPolicyActionName = PropertyCanonicalNameUtils.policyPropPrefix + PropertyCanonicalNameUtils.makeSafeName(propertyCN); 
             LAP<?> setupPolicyLAP = LM.addJoinAProp(LM.propertyPolicyGroup, LocalizedString.create("{logics.property.propertypolicy.action}"),
                     setupPolicyForPropByCN, LM.addCProp(StringClass.get(propertyCN.length()), LocalizedString.create(propertyCN, false)));
@@ -1002,7 +1001,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         }
     }
     
-    // todo [dale]: Временно сделал public для переименования log-свойств
+    // todo [dale]: Временно сделал public для переименования log-свойств (issue #1725)
     public static class NamedDecl {
         public final LP prop;
         public final String namespace;

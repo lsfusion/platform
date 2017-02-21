@@ -9,19 +9,17 @@ public class LocalePreferences implements Serializable {
     public String country;
     public String timeZone;
     public Integer twoDigitYearStart;
-    public boolean useClientLocale;
     
-    public LocalePreferences(String language, String country, String timeZone, Integer twoDigitYearStart, boolean useClientLocale) {
+    public LocalePreferences(String language, String country, String timeZone, Integer twoDigitYearStart) {
         this.language = language;
         this.country = country;
         this.timeZone = timeZone;
         this.twoDigitYearStart = twoDigitYearStart;
-        this.useClientLocale = useClientLocale;
     }
     
     public static LocalePreferences overrideDefaultWithUser(LocalePreferences defaultPreferences, LocalePreferences userPreferences) {
         assert defaultPreferences != null;
-        if (userPreferences == null || !userPreferences.useClientLocale) {
+        if (userPreferences == null) {
             return defaultPreferences;
         }
 
@@ -31,6 +29,6 @@ public class LocalePreferences implements Serializable {
         String timeZone = nvl(userPreferences.timeZone, defaultPreferences.timeZone);
         Integer twoDigitYearStart = nvl(userPreferences.twoDigitYearStart, defaultPreferences.twoDigitYearStart);
         
-        return new LocalePreferences(language, country, timeZone, twoDigitYearStart, true);    
+        return new LocalePreferences(language, country, timeZone, twoDigitYearStart);    
     }
 }

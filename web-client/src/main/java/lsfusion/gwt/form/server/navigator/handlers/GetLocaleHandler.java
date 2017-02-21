@@ -19,9 +19,7 @@ public class GetLocaleHandler extends LoggableActionHandler<GetLocaleAction, Str
 
     @Override
     public StringResult executeEx(GetLocaleAction action, ExecutionContext context) throws DispatchException, IOException {
-        LocalePreferences defaultPreferences = servlet.getLogics().getDefaultLocalePreferences();
-        LocalePreferences userPreferences = servlet.getNavigator().getLocalePreferences();
-        LocalePreferences preferences = LocalePreferences.overrideDefaultWithUser(defaultPreferences, userPreferences);
+        LocalePreferences preferences = servlet.getNavigator().getLocalePreferences();
         return new StringResult(preferences.language == null ? "" : preferences.language);
     }
 }

@@ -210,16 +210,14 @@ public class Main {
 
                     remoteNavigator = loginAction.getRemoteNavigator();
 
-                    LocalePreferences defaultPreferences = remoteLogics.getDefaultLocalePreferences();
                     LocalePreferences userPreferences = remoteNavigator.getLocalePreferences();
-                    LocalePreferences resultPreferences = LocalePreferences.overrideDefaultWithUser(defaultPreferences, userPreferences);
 
-                    if (resultPreferences.language != null) {
-                        Locale.setDefault(new Locale(resultPreferences.language, nvl(resultPreferences.country, "")));
+                    if (userPreferences.language != null) {
+                        Locale.setDefault(new Locale(userPreferences.language, nvl(userPreferences.country, "")));
                         ClientResourceBundle.clientResourceBundle = ResourceBundle.getBundle("ClientResourceBundle"); // чтобы подставлялась нужная локаль
                     }
 
-                    setupTimePreferences(resultPreferences.timeZone, resultPreferences.twoDigitYearStart);
+                    setupTimePreferences(userPreferences.timeZone, userPreferences.twoDigitYearStart);
 
                     computerId = loginAction.getComputerId();
                     configurationAccessAllowed = remoteNavigator.isConfigurationAccessAllowed();

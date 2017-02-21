@@ -11,7 +11,6 @@ import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.CurrentComputerFormulaProperty;
 import lsfusion.server.logics.property.CurrentUserFormulaProperty;
-import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 import lsfusion.server.session.DataSession;
 import org.antlr.runtime.RecognitionException;
@@ -59,12 +58,19 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
 
     public LCP useBusyDialog;
 
-    public LCP languageCustomUser;
-    public LCP countryCustomUser;
-    public LCP timeZoneCustomUser;
-    public LCP twoDigitYearStartCustomUser;
-    public LCP useClientLocaleCustomUser;
+    public LCP userLanguage;
+    public LCP userCountry;
+    public LCP userTimeZone;
+    public LCP userTwoDigitYearStart;
+    
+    public LCP clientLanguage;
+    public LCP clientCountry;
 
+    public LCP defaultLanguage;
+    public LCP defaultCountry;
+    public LCP defaultTimeZone;
+    public LCP defaultTwoDigitYearStart;
+    
     public LAP deliveredNotificationAction;
 
     public LAP generateLoginPassword;
@@ -123,25 +129,30 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
         minHashLength = findProperty("minHashLength[]");
         useLDAP = findProperty("useLDAP[]");
         serverLDAP = findProperty("serverLDAP[]");
-        portLDAP =  findProperty("portLDAP[]");
-        baseDNLDAP =  findProperty("baseDNLDAP[]");
-        userDNSuffixLDAP =  findProperty("userDNSuffixLDAP[]");
+        portLDAP = findProperty("portLDAP[]");
+        baseDNLDAP = findProperty("baseDNLDAP[]");
+        userDNSuffixLDAP = findProperty("userDNSuffixLDAP[]");
 
         useBusyDialog = findProperty("useBusyDialog[]");
 
-        languageCustomUser = findProperty("language[CustomUser]");
-        countryCustomUser = findProperty("country[CustomUser]");
-        timeZoneCustomUser = findProperty("timeZone[CustomUser]");
-        twoDigitYearStartCustomUser = findProperty("twoDigitYearStart[CustomUser]");
-        useClientLocaleCustomUser = findProperty("useClientLocale[CustomUser]");
+        userLanguage = findProperty("language[CustomUser]");
+        userCountry = findProperty("country[CustomUser]");
+        userTimeZone = findProperty("timeZone[CustomUser]");
+        userTwoDigitYearStart = findProperty("twoDigitYearStart[CustomUser]");
+        
+        clientCountry = findProperty("clientCountry[CustomUser]");
+        clientLanguage = findProperty("clientLanguage[CustomUser]");
 
+        defaultLanguage = findProperty("defaultUserLanguage[]");
+        defaultCountry = findProperty("defaultUserCountry[]");
+        defaultTimeZone = findProperty("defaultUserTimeZone[]");
+        defaultTwoDigitYearStart = findProperty("defaultUserTwoDigitYearStart[]");
+        
         deliveredNotificationAction = findAction("deliveredNotificationAction[CustomUser]");
 
         generateLoginPassword = findAction("generateLoginPassword[CustomUser]");
-
-
     }
-
+    
     public boolean checkPassword(DataObject userObject, String password, ExecutionStack stack) throws SQLException, SQLHandledException {
         boolean authenticated = true;
         try(DataSession session = createSession()) {
