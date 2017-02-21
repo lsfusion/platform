@@ -6,11 +6,11 @@ import lsfusion.base.SFunctionSet;
 import lsfusion.base.TwinImmutableObject;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
-import lsfusion.base.col.interfaces.immutable.ImList;
-import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.base.col.interfaces.immutable.ImOrderMap;
-import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.base.col.interfaces.immutable.*;
+import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.col.interfaces.mutable.MOrderFilterMap;
+import lsfusion.base.col.interfaces.mutable.MRevMap;
+import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndexValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
 import lsfusion.server.Settings;
@@ -26,6 +26,7 @@ import lsfusion.server.data.expr.where.pull.ExclExprPullWheres;
 import lsfusion.server.data.expr.where.pull.ExprPullWheres;
 import lsfusion.server.data.query.CompileSource;
 import lsfusion.server.data.query.innerjoins.KeyEqual;
+import lsfusion.server.data.translator.KeyExprTranslator;
 import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.translator.PartialKeyExprTranslator;
 import lsfusion.server.data.translator.ExprTranslator;
@@ -61,6 +62,15 @@ public class PartitionExpr extends AggrExpr<KeyExpr, PartitionType, PartitionExp
             return new Query(this, translator, restPartitions);
         }
 
+        public Query and(final Where where, ImSet<Expr> newPartitions) { // вот тут надо быть аккуратнее, предполагается что первое выражение попадет в getWhere, см. AggrType.getWhere
+            return new Query(exprs.mapListValues(new GetIndexValue<Expr, Expr>() {
+                public Expr getMapValue(int i, Expr value) {
+                    if(i==0)
+                        value = value.and(where);
+                    return value;
+                }
+            }), orders, ordersNotNull, newPartitions, type);
+        }
 
         @Override
         public boolean calcTwins(TwinImmutableObject o) {
@@ -202,13 +212,16 @@ public class PartitionExpr extends AggrExpr<KeyExpr, PartitionType, PartitionExp
         final KeyEqual keyEqual = query.getWhere().getKeyEquals().getSingle();
         if(!keyEqual.isEmpty()) {
             Result<ImMap<KeyExpr,BaseExpr>> restGroup = new Result<>();
-            Where keyWhere = CompareWhere.compare(group.splitKeys(new SFunctionSet<KeyExpr>() {
+            ImMap<KeyExpr, BaseExpr> keyExprValues = group.splitKeys(new SFunctionSet<KeyExpr>() {
                 public boolean contains(KeyExpr element) {
-                    return keyEqual.keyExprs.containsKey(element);
+                    BaseExpr baseExpr = keyEqual.keyExprs.get(element);
+                    return baseExpr != null && baseExpr.isValue(); // тут можно было бы и не isValue брать, translate'ить их и получать такой Where, но это сложнее + как-то сдедать так, чтобы не делать это для ключей созданных в transformPartitionExprsToKeys (можно просто выше проверку сделать)
                 }
-            }, restGroup), keyEqual.keyExprs);
-
-            return createKeyEqual(restGroup.result, query.translateExpr(keyEqual.getTranslator(), query.partitions)).and(keyWhere);
+            }, restGroup);
+            if(!keyExprValues.isEmpty()) {
+                Where keyWhere = CompareWhere.compare(keyExprValues, keyEqual.keyExprs);
+                return createKeyEqual(restGroup.result, query.translateExpr(keyEqual.getTranslator(), query.partitions)).and(keyWhere);
+            }
         }
         return createRemoveValues(group, query);
     }
@@ -251,7 +264,31 @@ public class PartitionExpr extends AggrExpr<KeyExpr, PartitionType, PartitionExp
         return create(new Query(exprs, orders, ordersNotNull, (ImSet<Expr>) partitions, partitionType), group);
     }
 
-    public static Expr create(final Query query, ImMap<KeyExpr, ? extends Expr> group) {
+    public static Expr create(Query query, ImMap<KeyExpr, ? extends Expr> group) {
+        if(Settings.get().isTransformPartitionExprsToKeys()) {
+            Result<ImSet<Expr>> rKeyPartitions = new Result<>();
+            ImSet<Expr> exprs = query.partitions.split(new SFunctionSet<Expr>() {
+                public boolean contains(Expr element) {
+                    return !(element instanceof KeyExpr);
+                }
+            }, rKeyPartitions);
+            if (!exprs.isEmpty()) {
+                KeyExprTranslator keyExprTranslator = new KeyExprTranslator(group);
+
+                ImRevMap<KeyExpr, Expr> virtualKeysMap = KeyExpr.getMapKeys(exprs).reverse();
+                ImSet<KeyExpr> virtualKeys = virtualKeysMap.keys();
+
+                Where andWhere = CompareWhere.compare(virtualKeysMap);
+                ImSet<Expr> newPartitions = rKeyPartitions.result.addExcl(virtualKeys);
+                query = query.and(andWhere, newPartitions);
+                group = keyExprTranslator.translate(virtualKeysMap).addExcl(group);
+            }
+        }
+        
+        return createExpr(query, group);
+    }
+
+    private static Expr createExpr(final Query query, ImMap<KeyExpr, ? extends Expr> group) {
         return new ExprPullWheres<KeyExpr>() {
             protected Expr proceedBase(ImMap<KeyExpr, BaseExpr> map) {
                 return createBase(map, query);

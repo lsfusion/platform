@@ -15,6 +15,6 @@ public interface AggrType {
 
     boolean canBeNull(); // может возвращать null если само выражение не null
     
-    Where getWhere(ImList<Expr> exprs); // вот тут надо быть аккуратнее, предполагается что первое выражение попадет в getWhere, см. GroupExpr.Query.and
-    Expr getMainExpr(ImList<Expr> exprs); // вот тут надо быть аккуратнее, предполагается что первое выражение попадет в getWhere, см. GroupExpr.Query.and
+    Where getWhere(ImList<Expr> exprs); // вот тут надо быть аккуратнее, предполагается что первое выражение попадет в getWhere, см. PartitionExpr - GroupExpr.Query.and
+    Expr getMainExpr(ImList<Expr> exprs); // вот тут надо быть аккуратнее, предполагается что первое выражение попадет в getWhere, см. PartitionExpr - GroupExpr.Query.and
 }

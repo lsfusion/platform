@@ -61,6 +61,10 @@ public abstract class CompareWhere<This extends CompareWhere<This>> extends Bina
         return where;
     }
 
+    public static <A extends Expr,B extends Expr> Where compare(ImMap<A, B> exprs) {
+        return compare(exprs.keys().toMap(), exprs);
+    }
+
     public static <K> Where compareExprValues(ImRevMap<K, KeyExpr> mapKeys, ImMap<K, ? extends Expr> mapValues) {
         return compare(mapKeys.filterIncl(mapValues.keys()), mapValues);
     }
