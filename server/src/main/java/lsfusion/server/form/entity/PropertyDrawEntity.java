@@ -422,7 +422,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
             result = toDraw.getSID();
         } else {
             for (ObjectEntity object : propertyObject.getMapObjectInstances().values()) {
-                if (object != null)
+                if (object != null && object.groupTo != null && object.groupTo.initClassView == ClassViewType.GRID)
                     result = object.getSID();
             }
         }
