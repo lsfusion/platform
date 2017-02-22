@@ -3952,7 +3952,7 @@ formExportTypeLiteral returns [FormExportType val, boolean noHeader, String sepa
 		|	'XLSX' { $val = FormExportType.XLSX; }
 		|   'XML' { $val = FormExportType.XML; }
 	    |   'JSON' { $val = FormExportType.JSON; }
-	    |   'CSV' { $val = FormExportType.CSV; } ('NOHEADER' { $noHeader = true; })? (separatorVal = stringLiteral { $separator = $separatorVal.val; })? ('CHARSET' charsetVal = stringLiteral { $charset = $charsetVal.val; })?
+	    |   'CSV' { $val = FormExportType.CSV; } (separatorVal = stringLiteral { $separator = $separatorVal.val; })? ('NOHEADER' { $noHeader = true; })? ('CHARSET' charsetVal = stringLiteral { $charset = $charsetVal.val; })?
 	    |   'DBF' { $val = FormExportType.DBF; } ('CHARSET' charsetVal = stringLiteral { $charset = $charsetVal.val; })?
 		)
 	;	
