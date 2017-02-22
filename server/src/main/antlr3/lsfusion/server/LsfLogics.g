@@ -2856,16 +2856,16 @@ terminalFlowActionDefinitionBody returns [LPWithParams property]
 ////////////////////////////////////////////////////////////////////////////////
 
 overrideStatement
+	:	overrideStatementWthoutSemicolon  // better error positioning
+		( {!self.semicolonNeeded()}?=>  | ';')
+	;
+
+overrideStatementWthoutSemicolon
 @init {
 	List<TypedParameter> context = new ArrayList<TypedParameter>();
 	boolean dynamic = true;
 	LPWithParams property = null;
 	LPWithParams when = null;
-}
-@after {
-	if (inPropParseState()) {
-		self.addImplementationToAbstract($prop.propUsage, $list.params, property, when);
-	}
 }
 	:	prop=propertyUsage
 		'(' list=typedParameterList ')' { context = $list.params; dynamic = false; }
@@ -2874,7 +2874,10 @@ overrideStatement
 		(	expr=propertyExpression[context, dynamic] { property = $expr.property; }
 		|	action=concreteActionDefinition[context, dynamic] { property = $action.property; }
 		)
-		( {!self.semicolonNeeded()}?=>  | ';')
+		{	if (inPropParseState()) {
+				self.addImplementationToAbstract($prop.propUsage, $list.params, property, when);
+			}
+		}		
 	;
 
 ////////////////////////////////////////////////////////////////////////////////

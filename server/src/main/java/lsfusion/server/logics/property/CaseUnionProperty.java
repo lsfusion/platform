@@ -8,7 +8,6 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
-import lsfusion.server.SystemProperties;
 import lsfusion.server.caches.IdentityStartLazy;
 import lsfusion.server.caches.IdentityStrongLazy;
 import lsfusion.server.classes.ValueClass;
@@ -336,8 +335,8 @@ public class CaseUnionProperty extends IncrementUnionProperty {
 
         CalcPropertyMapImplement<L, Interface> caseWhere = (CalcPropertyMapImplement<L, Interface>) addCase.where;
         CalcPropertyInterfaceImplement<Interface> caseImplement = (CalcPropertyInterfaceImplement<Interface>)addCase.implement;
-        String caseCaption = caseImplement.toString();
-        checkContainsAll(caseWhere.property, caseCaption, caseWhere.mapping, caseImplement);
+        String caseInfo = caseImplement.toString();
+        checkContainsAll(caseWhere.property, caseInfo, caseWhere.mapping, caseImplement, this.toString());
 
         addAbstractCase(addCase, version);
     }

@@ -68,9 +68,10 @@ public abstract class Property<T extends PropertyInterface> extends AbstractProp
     public LocalizedString caption;
 
     public String toString() {
-        String result = ThreadLocalContext.localize(caption);
-        if(canonicalName != null)
+        String result = "'" + ThreadLocalContext.localize(caption) + "'";
+        if (canonicalName != null) {
             result = result + " (" + canonicalName + ")";
+        }
         return result;
     }
 

@@ -378,7 +378,7 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
     @Override
     public String toString() {
         String result = super.toString();
-        if(debugInfo != null)
+        if (debugInfo != null)
            result += ":" + debugInfo;
         return result;
     }

@@ -84,7 +84,7 @@ public abstract class ListCaseActionProperty extends KeepContextActionProperty {
         try {
             caseProp.finalizeInit();
         } catch (CaseUnionProperty.NotFullyImplementedException e) {
-            throw new RuntimeException("Action is not fully implemented : " + this +  ", Calculated : " + e.fullClassValueWhere + ", Specified : " + e.classValueWhere);
+            throw new RuntimeException("Action is not fully implemented: " + this +  "\n\tCalculated: " + e.fullClassValueWhere + "\n\tSpecified: " + e.classValueWhere);
         } catch (ScriptParsingException e) {
             throw new ScriptParsingException("error finalizing abstract " + this + ":\n" + e.getMessage());
         }

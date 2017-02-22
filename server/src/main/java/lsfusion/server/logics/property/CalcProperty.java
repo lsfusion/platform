@@ -177,42 +177,42 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
     }
 
     // по выражениям проверяет
-    public <P extends PropertyInterface> void checkExclusiveness(String info, CalcProperty<P> property, String propertyInfo, ImRevMap<P, T> map, String abstractInfo) {
-        AlgType.caseCheckType.checkExclusiveness(this, info, property, propertyInfo, map, abstractInfo);
+    public <P extends PropertyInterface> void checkExclusiveness(String caseInfo, CalcProperty<P> property, String propertyInfo, ImRevMap<P, T> map, String abstractInfo) {
+        AlgType.caseCheckType.checkExclusiveness(this, caseInfo, property, propertyInfo, map, abstractInfo);
     }
 
-    public <P extends PropertyInterface> void inferCheckExclusiveness(String info, CalcProperty<P> property, String propertyInfo, ImRevMap<P, T> map, InferType inferType, String abstractInfo) {
+    public <P extends PropertyInterface> void inferCheckExclusiveness(String caseInfo, CalcProperty<P> property, String propertyInfo, ImRevMap<P, T> map, InferType inferType, String abstractInfo) {
         Inferred<T> classes = inferInterfaceClasses(inferType);
         Inferred<P> propClasses = property.inferInterfaceClasses(inferType);
         if(!classes.and(propClasses.map(map), inferType).isEmpty(inferType))
-            throw new ScriptParsingException("signature intersection of property\n\t" + info + " (" + this + ") with previosly defined implementation\n\t" + propertyInfo + " (" + property + ")\nfor abstract property " + abstractInfo + 
-                    "\n\tClasses 1 : " + ExClassSet.fromEx(classes.finishEx(inferType)) + ", \n\tClasses 2 : " + ExClassSet.fromEx(propClasses.finishEx(inferType)));
+            throw new ScriptParsingException("signature intersection of property\n\t" + caseInfo + " (" + this + ") with previosly defined implementation\n\t" + propertyInfo + " (" + property + ")\nfor abstract property " + abstractInfo + 
+                    "\n\tClasses 1: " + ExClassSet.fromEx(classes.finishEx(inferType)) + "\n\tClasses 2: " + ExClassSet.fromEx(propClasses.finishEx(inferType)));
     }
 
-    public <P extends PropertyInterface> void calcCheckExclusiveness(String info, CalcProperty<P> property, String propertyInfo, ImMap<P, T> map, CalcClassType calcType, String abstractInfo) {
+    public <P extends PropertyInterface> void calcCheckExclusiveness(String caseInfo, CalcProperty<P> property, String propertyInfo, ImMap<P, T> map, CalcClassType calcType, String abstractInfo) {
         ImRevMap<T, KeyExpr> mapKeys = getMapKeys();
         if(!calculateExpr(mapKeys, calcType).getWhere().and(property.calculateExpr(map.join(mapKeys), calcType).getWhere()).not().checkTrue())
-            throw new ScriptParsingException("signature intersection of property\n\t" + info + " (" + this + ") with previosly defined implementation\n\t" + propertyInfo + " (" + property + ")\nfor abstract property " + abstractInfo +
-                    "\n\tClasses 1 : " + getClassWhere(calcType) + ", \n\tClasses 2 : " + property.getClassWhere(calcType));
+            throw new ScriptParsingException("signature intersection of property\n\t" + caseInfo + " (" + this + ") with previosly defined implementation\n\t" + propertyInfo + " (" + property + ")\nfor abstract property " + abstractInfo +
+                    "\n\tClasses 1: " + getClassWhere(calcType) + "\n\tClasses 2: " + property.getClassWhere(calcType));
     }
 
-    public <P extends PropertyInterface> void checkContainsAll(CalcProperty<P> property, String caption, ImRevMap<P, T> map, CalcPropertyInterfaceImplement<T> value) {
-        AlgType.caseCheckType.checkContainsAll(this, property, caption, map, value);
+    public <P extends PropertyInterface> void checkContainsAll(CalcProperty<P> property, String caseInfo, ImRevMap<P, T> map, CalcPropertyInterfaceImplement<T> value, String abstractInfo) {
+        AlgType.caseCheckType.checkContainsAll(this, property, caseInfo, map, value, abstractInfo);
     }
 
-    public <P extends PropertyInterface> void inferCheckContainsAll(CalcProperty<P> property, String caption, ImRevMap<P, T> map, InferType inferType, CalcPropertyInterfaceImplement<T> value) {
+    public <P extends PropertyInterface> void inferCheckContainsAll(CalcProperty<P> property, String caseInfo, ImRevMap<P, T> map, InferType inferType, CalcPropertyInterfaceImplement<T> value, String abstractInfo) {
         ImMap<T, ExClassSet> interfaceClasses = getInferInterfaceClasses(inferType);
         ImMap<T, ExClassSet> interfacePropClasses = map.crossJoin(property.getInferInterfaceClasses(inferType));
 
         if(!containsAll(interfaceClasses, interfacePropClasses, false))
-            throw new ScriptParsingException("wrong signature of implementation " + caption + 
-                    " (specified " + ExClassSet.fromEx(interfacePropClasses) + ") for abstract property " + this + " (expected " + ExClassSet.fromEx(interfaceClasses) + ")");
+            throw new ScriptParsingException("wrong signature of implementation " + caseInfo + " (" + property + ")" + " for abstract property " + abstractInfo + 
+                    "\n\tspecified: " + ExClassSet.fromEx(interfacePropClasses) + "\n\texpected : " + ExClassSet.fromEx(interfaceClasses) + ")");
 
         ResolveClassSet valueClass = ExClassSet.fromEx(inferValueClass(interfaceClasses, inferType));
         ResolveClassSet propValueClass = ExClassSet.fromEx(value.mapInferValueClass(interfacePropClasses, inferType));
         if(!valueClass.containsAll(propValueClass, false))
-            throw new ScriptParsingException("wrong value class of implementation " + caption +
-                    " (specified " + propValueClass + ") for abstract property " + this + " (expected " + valueClass + ")");
+            throw new ScriptParsingException("wrong value class of implementation " + caseInfo + " (" + property + ")" + " for abstract property " + abstractInfo +
+                    "\n\tspecified: " + propValueClass + "\n\texpected : " + valueClass);
     }
     
     public ExClassSet inferJoinValueClass(ImMap<T, ExClassSet> extContext, boolean useExtContext, InferType inferType) {
@@ -256,19 +256,19 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         return ExClassSet.intersect(interfaces, interfaceClasses, interfacePropClasses);
     }
 
-    public <P extends PropertyInterface> void calcCheckContainsAll(CalcProperty<P> property, ImRevMap<P, T> map, CalcClassType calcType, CalcPropertyInterfaceImplement<T> value) {
+    public <P extends PropertyInterface> void calcCheckContainsAll(String caseInfo, CalcProperty<P> property, ImRevMap<P, T> map, CalcClassType calcType, CalcPropertyInterfaceImplement<T> value, String abstractInfo) {
         ClassWhere<T> classes = getClassWhere(calcType);
         ClassWhere<T> propClasses = new ClassWhere<>(property.getClassWhere(calcType),map);
         
         if(!propClasses.meansCompatible(classes)) {
-            throw new ScriptParsingException("wrong signature of implementation " + localize(caption) + " (specified " + propClasses + ") for abstract property " + this + " (expected " + classes + ")");
+            throw new ScriptParsingException("wrong signature of implementation " + caseInfo + "(" + this + ")" + " for abstract property " + abstractInfo + "\n\tspecified: " + propClasses + "\n\texpected : "  + classes);
         }
         
         AndClassSet valueClass = getValueClassSet();
         AndClassSet propValueClass = value.mapValueClassSet(propClasses);
         if(!valueClass.containsAll(propValueClass, false))
-            throw new ScriptParsingException("wrong value class of implementation " + localize(caption) +
-                    " (specified " + propValueClass + ") for abstract property " + this + " (expected " + valueClass + ")");
+            throw new ScriptParsingException("wrong value class of implementation " + caseInfo + "(" + this + ")" + " for abstract property " + abstractInfo + 
+                    "\n\tspecified: " + propValueClass + "\n\texpected : " + valueClass);
     }
 
     // assert что CaseUnion
@@ -294,7 +294,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         }
 
         if(!containsAll(propClasses, classes, true)) {
-            throw new CaseUnionProperty.NotFullyImplementedException("Property is not fully implemented : " + this +  ", Calculated : " + propClasses + ", Specified : " + classes, propClasses.toString(), classes.toString());
+            throw new CaseUnionProperty.NotFullyImplementedException("Property is not fully implemented: " + this +  "\n\tCalculated: " + propClasses + "\n\tSpecified : " + classes, propClasses.toString(), classes.toString());
         }
     }
 
@@ -309,7 +309,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         }
 
         if (!classes.meansCompatible(propClasses)) {
-            throw new CaseUnionProperty.NotFullyImplementedException("Property is not fully implemented : " + this +  ", Calculated : " + propClasses + ", Specified : " + classes, propClasses.toString(), classes.toString());
+            throw new CaseUnionProperty.NotFullyImplementedException("Property is not fully implemented: " + this +  "\n\tCalculated: " + propClasses + "\n\tSpecified : " + classes, propClasses.toString(), classes.toString());
         }
     }
 
@@ -1772,7 +1772,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
     public String toString() {
         String string = super.toString();
         if (debugInfo != null) {
-            string = string + " - " + debugInfo;
+            string = string + ":" + debugInfo;
         }
         return string;
     }
