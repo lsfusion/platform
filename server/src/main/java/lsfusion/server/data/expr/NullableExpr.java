@@ -20,10 +20,10 @@ public abstract class NullableExpr extends VariableSingleClassExpr implements Nu
         return Where.TRUE;
     }
 
-    @Override
-    public Where calculateNotNullWhere() { // assert result instanceof NotNull || result.isTrue()
-        return Where.TRUE;
-    }
+//    @Override // не правильно, так как у partition'а есть свои joins, и если их не учесть, при P(k, D(k)) - D(k) IS NOT NULL потеряется 
+//    public Where calculateNotNullWhere() { // assert result instanceof NotNull || result.isTrue()
+//        return Where.TRUE;
+//    }
 
     public abstract class NotNull extends NotNullWhere {
         protected BaseExpr getExpr() {

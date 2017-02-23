@@ -168,7 +168,7 @@ public class PartitionExpr extends AggrExpr<KeyExpr, PartitionType, PartitionExp
 
     @ParamLazy
     public Expr translate(ExprTranslator translator) {
-        return create(query, translator.translate(group));
+        return createExpr(query, translator.translate(group));
     }
 
     @Override
@@ -182,7 +182,7 @@ public class PartitionExpr extends AggrExpr<KeyExpr, PartitionType, PartitionExp
         ImMap<KeyExpr, Expr> packedGroup = packPushFollowFalse(group, falseWhere);
         Query packedQuery = query.pack();
         if(!(BaseUtils.hashEquals(packedQuery, query) && BaseUtils.hashEquals(packedGroup,group)))
-            return create(packedQuery, packedGroup);
+            return createExpr(packedQuery, packedGroup);
         else
             return this;
     }
@@ -296,9 +296,16 @@ public class PartitionExpr extends AggrExpr<KeyExpr, PartitionType, PartitionExp
         }.proceed(group);
     }
 
+
+    // можно было бы вообще hasNotNull завязать на canBeNull (а их на hasNotNull), но так как hasNotNull используется по сути в логике следствий, можно оставить так как есть пока 
+//    @Override
+//    public boolean hasNotNull() {
+//        return query.type.canBeNull();
+//    }
+
     @Override
     public AndClassSet getAndClassSet(ImMap<VariableSingleClassExpr, AndClassSet> and) {
-        if (!hasNotNull()) {
+        if (!query.type.canBeNull()) { // так как calculateNotNullWhere может вернуть случайно DataWhere (одного из своих joins) в getAndClassSet может потеряться класс
             Type type = getInner().getType();
             if(type instanceof DataClass)
                 return (AndClassSet) type;

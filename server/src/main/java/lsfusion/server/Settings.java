@@ -2057,7 +2057,7 @@ public class Settings {
     }
 
     // преобразует все partition'ы в ключи и "выносит их наружу" (добавляет избыточное связывание) - так улучшается push down (избыточное связывание может быть например по выражение vk=e, на которое есть предикат равенства снаружи e=0, в этом случае именно этот предикат и протолкнется) ну и теоретически статистика точнее, насчет sql пока не понятно (хотя с другой стороны больше не меньше, хотя с константами в partition у sql были вопросы) 
-    private boolean transformPartitionExprsToKeys = false;
+    private boolean transformPartitionExprsToKeys = true;
 
     public boolean isTransformPartitionExprsToKeys() {
         return transformPartitionExprsToKeys;
