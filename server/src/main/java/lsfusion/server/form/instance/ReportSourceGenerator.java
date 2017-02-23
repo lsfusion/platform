@@ -25,7 +25,6 @@ import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.form.entity.GroupObjectEntity;
 import lsfusion.server.form.entity.GroupObjectHierarchy;
-import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.session.DataSession;
@@ -339,7 +338,7 @@ public class ReportSourceGenerator<PropertyDraw extends PropertyReaderInstance, 
                         captionData.put(values, value.get(formInterface.getCaptionReader(property)));
                     }
                     if (formInterface.getPropertyFooter(property) != null) {
-                        footerData.put(values, value.get(formInterface.getPropertyFooter(property)));
+                        footerData.put(values, value.get(formInterface.getFooterReader(property)));
                     }
 
                     List<Object> columnValues = new ArrayList<>();
