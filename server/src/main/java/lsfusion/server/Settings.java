@@ -2046,7 +2046,7 @@ public class Settings {
         this.subQueryInfiniteDepth = subQueryInfiniteDepth;
     }
     
-    boolean useInteractiveReportManagerInsteadOfStatic = true; // потом нужно убрать
+    boolean useInteractiveReportManagerInsteadOfStatic = false; // потом нужно убрать
 
     public boolean isUseInteractiveReportManagerInsteadOfStatic() {
         return useInteractiveReportManagerInsteadOfStatic;
