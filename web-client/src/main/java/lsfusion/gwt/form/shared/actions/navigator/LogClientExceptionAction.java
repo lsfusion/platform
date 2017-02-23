@@ -28,4 +28,9 @@ public class LogClientExceptionAction extends RequestAction<VoidResult> implemen
         this.count = count;
         this.reqId = reqId;
     }
+
+    @Override
+    public boolean logRemoteException() {
+        return false;
+    }
 }
