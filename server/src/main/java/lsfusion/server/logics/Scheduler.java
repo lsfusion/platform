@@ -153,7 +153,7 @@ public class Scheduler extends MonitorServer implements InitializingBean {
                 Object afterFinish = ((ConcreteCustomClass) BL.schedulerLM.findClass("SchedulerStartType")).getDataObject("afterFinish").object;
                 boolean fixedDelay = afterFinish.equals(schedulerStartType);
 
-                if (startDate != null) {
+                if (startDate != null || runAtStart) {
                     schedulerLogger.info("Scheduled scheduler task: " + nameScheduledTask);
                     SchedulerTask task = new SchedulerTask(nameScheduledTask, readUserSchedulerTask(session, session.getModifier(), scheduledTaskObject, nameScheduledTask,
                             timeFrom, timeTo, daysOfWeek, daysOfMonth), scheduledTaskId, runAtStart, startDate, period, fixedDelay);
@@ -251,7 +251,7 @@ public class Scheduler extends MonitorServer implements InitializingBean {
             Set<String> daysOfMonth = daysOfMonthScheduledTask == null ? new HashSet<>() : new HashSet(Arrays.asList(daysOfMonthScheduledTask.split(",| ")));
             daysOfMonth.remove("");
 
-            if(startDate != null)
+            if(startDate != null || runAtStart)
                 tasks.add(new SchedulerTask(nameScheduledTask, readUserSchedulerTask(session, modifier, currentScheduledTaskObject, nameScheduledTask, timeFrom, timeTo,
                     daysOfWeekScheduledTask, daysOfMonthScheduledTask), scheduledTaskId, runAtStart, startDate, period, fixedDelay));
         }
@@ -341,7 +341,7 @@ public class Scheduler extends MonitorServer implements InitializingBean {
             this.startDate = startDate;
             this.period = period;
             this.fixedDelay = fixedDelay;
-            assert startDate != null || period != null;
+            assert startDate != null || period != null || runAtStart;
         }
 
         public ScheduledFuture execute(ScheduledExecutorService service) {
@@ -377,8 +377,8 @@ public class Scheduler extends MonitorServer implements InitializingBean {
                 else
                     scheduledFutureList.add(service.scheduleAtFixedRate(task, delay, longPeriod, TimeUnit.MILLISECONDS));
             } else {
-                assert start != null;
-                if (start > currentTime) {
+                assert start != null || runAtStart;
+                if (start != null && start > currentTime) {
                     scheduledFutureList.add(service.schedule(task, start - currentTime, TimeUnit.MILLISECONDS));
                 }
             }
