@@ -2362,7 +2362,10 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public LPWithParams addScriptedPrintFAProp(FormEntity form, List<ObjectEntity> objects, List<LPWithParams> mapping,
-                                           LPWithParams printerProperty, FormPrintType printType, PropertyUsage propUsage) throws ScriptingErrorLog.SemanticErrorException {
+                                           LPWithParams printerProperty, FormPrintType printType, PropertyUsage propUsage, Boolean syncType) throws ScriptingErrorLog.SemanticErrorException {
+        if(syncType == null)
+            syncType = false;
+
         List<LPWithParams> propParams = new ArrayList<>();
         if(printerProperty != null) {
             propParams.add(printerProperty);
@@ -2375,7 +2378,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             targetProp = (LCP<?>) findLPByPropertyUsage(propUsage);
 
         LAP property = addPFAProp(null, LocalizedString.create(""), form, objects.toArray(new ObjectEntity[objects.size()]),
-                printerProperty != null, printType, true, targetProp, getParamsPlainList(propParams).toArray());
+                printerProperty != null, printType, true, syncType, targetProp, getParamsPlainList(propParams).toArray());
 
         if (mapping.size() > 0) {
             return addScriptedJoinAProp(property, mapping);

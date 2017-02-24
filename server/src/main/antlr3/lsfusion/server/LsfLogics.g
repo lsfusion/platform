@@ -2294,20 +2294,29 @@ printActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns
 @init {
 	LPWithParams printerProperty = null;
 	FormPrintType printType = null;
+    Boolean syncType = null;
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedPrintFAProp($mf.formEntity, $mf.objects, $mf.mapping, printerProperty, printType, $pUsage.propUsage);
+		$property = self.addScriptedPrintFAProp($mf.formEntity, $mf.objects, $mf.mapping, printerProperty, printType, $pUsage.propUsage, syncType);
 	}
 }
 	:	'PRINT' mf=mappedForm[context,dynamic]
-		(	('AUTO' { printType = FormPrintType.AUTO; })? ('TO' pe = propertyExpression[context, dynamic] { printerProperty = $pe.property; })?
-		|	(('XLS'  { printType = FormPrintType.XLS; }
-		|	'XLSX' { printType = FormPrintType.XLSX; }
-		|	'PDF' { printType = FormPrintType.PDF; }
-		|	'DOC'  { printType = FormPrintType.DOC; }
-		|	'DOCX' { printType = FormPrintType.DOCX; }
-		) ('TO' pUsage=propertyUsage)?))		
+		(   ( // static
+            (   'XLS'  { printType = FormPrintType.XLS; }
+            |	'XLSX' { printType = FormPrintType.XLSX; }
+            |	'PDF' { printType = FormPrintType.PDF; }
+            |	'DOC'  { printType = FormPrintType.DOC; }
+            |	'DOCX' { printType = FormPrintType.DOCX; }
+            ) 
+            ('TO' pUsage=propertyUsage)?
+            )
+        |   ( // static - interactive
+		    (sync = syncTypeLiteral { syncType = $sync.val; })?
+            ('AUTO' { printType = FormPrintType.AUTO; })?
+            ('TO' pe = propertyExpression[context, dynamic] { printerProperty = $pe.property; })?            
+            )
+        )		
 	;
 	
 exportActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
@@ -2325,7 +2334,7 @@ exportActionDefinitionBody[List<TypedParameter> context, boolean dynamic] return
 	:	'EXPORT' mf=mappedForm[context,dynamic]
 		(	'XML' { exportType = FormExportType.XML; }
 	    |  	'JSON' { exportType = FormExportType.JSON; }
-		|  	'CSV' { exportType = FormExportType.CSV; } ('NOHEADER' { noHeader = true; })? (separatorVal = stringLiteral { separator = $separatorVal.val; })? ('CHARSET' charsetVal = stringLiteral { charset = $charsetVal.val; })?
+		|  	'CSV' { exportType = FormExportType.CSV; } (separatorVal = stringLiteral { separator = $separatorVal.val; })? ('NOHEADER' { noHeader = true; })? ('CHARSET' charsetVal = stringLiteral { charset = $charsetVal.val; })?
 	    |  	'DBF' { exportType = FormExportType.DBF; } ('CHARSET' charsetVal = stringLiteral { charset = $charsetVal.val; })?
 		)
 		('TO' pUsage=propertyUsage)?

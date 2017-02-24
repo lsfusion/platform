@@ -546,11 +546,11 @@ public abstract class LogicsModule {
     protected LAP addIFAProp(AbstractGroup group, LocalizedString caption, FormEntity form, ObjectEntity input, ObjectEntity[] objectsToSet, Boolean manageSession, boolean isAdd, ObjectEntity contextObject, CalcProperty contextProperty, boolean hasContextProperty, PropertyDrawEntity initFilterProperty, boolean syncType, WindowFormType windowType, boolean checkOnOk, boolean showDrop, boolean readonly, boolean allowNulls, Object... params) {
         return addProperty(group, new LAP(new FormInteractiveActionProperty(caption, form, objectsToSet, allowNulls, input, manageSession, isAdd, syncType, windowType, checkOnOk, showDrop, baseLM.formResult, baseLM.getFormResultProperty(), baseLM.getChosenValueProperty(), contextObject, contextProperty, initFilterProperty, readonly)));
     }
-    protected LAP addPFAProp(AbstractGroup group, LocalizedString caption, FormEntity form, ObjectEntity[] objectsToSet, boolean hasPrinterProperty, FormPrintType staticType, boolean allowNulls, LCP targetProp, Object... params) {
+    protected LAP addPFAProp(AbstractGroup group, LocalizedString caption, FormEntity form, ObjectEntity[] objectsToSet, boolean hasPrinterProperty, FormPrintType staticType, boolean allowNulls, boolean syncType, LCP targetProp, Object... params) {
         ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(getIntNum(params));
         ImList<PropertyInterfaceImplement<PropertyInterface>> readImplements = readImplements(listInterfaces, params);
         CalcPropertyMapImplement printer = hasPrinterProperty ? (CalcPropertyMapImplement) readImplements.get(0) : null;
-        return addProperty(group, new LAP(new PrintActionProperty(caption, form, objectsToSet, allowNulls, staticType, targetProp, printer, listInterfaces, baseLM.formPageCount)));
+        return addProperty(group, new LAP(new PrintActionProperty(caption, form, objectsToSet, allowNulls, staticType, syncType, targetProp, printer, listInterfaces, baseLM.formPageCount)));
     }
     protected LAP addEFAProp(AbstractGroup group, LocalizedString caption, FormEntity form, ObjectEntity[] objectsToSet, FormExportType staticType, boolean noHeader, String separator, String charset, boolean allowNulls, LCP targetProp, Object... params) {
         if(targetProp == null)
