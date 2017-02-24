@@ -527,7 +527,7 @@ public abstract class LogicsModule {
 
     // loggable, security, drilldown
     public LAP addMFAProp(LocalizedString caption, FormEntity form, ObjectEntity[] objectsToSet, boolean newSession) {
-        LAP result = addFAProp(caption, form, objectsToSet, null, false, ModalityType.MODAL);
+        LAP result = addIFAProp(caption, form, objectsToSet, null, false, true, WindowFormType.FLOAT);
         return addSessionScopeAProp(newSession ? FormSessionScope.NEWSESSION : FormSessionScope.OLDSESSION, result);
     }
 
@@ -536,18 +536,26 @@ public abstract class LogicsModule {
         return addDMFAProp(LocalizedString.create("sys"), form, manageSession, noCancel);
     }
     protected LAP addDMFAProp(LocalizedString caption, ClassFormEntity form, Boolean manageSession, boolean noCancel) {
-        return addFAProp(caption, form.form, new ObjectEntity[] {form.object}, manageSession, noCancel, ModalityType.DOCKED_MODAL);
+        return addIFAProp(caption, form.form, new ObjectEntity[] {form.object}, manageSession, noCancel, true, WindowFormType.DOCKED);
     }
 
-    protected LAP addFAProp(LocalizedString caption, FormEntity form, ObjectEntity[] objectsToSet, Boolean manageSession, boolean noCancel, ModalityType modalityType) {
-        return addFAProp(null, caption, form, null, objectsToSet, manageSession, noCancel, null, null, false, false, null, modalityType, false, false, null, null, false, null, null, false, false);
+    protected LAP addIFAProp(LocalizedString caption, FormEntity form, ObjectEntity[] objectsToSet, Boolean manageSession, boolean noCancel, boolean syncType, WindowFormType windowType) {
+        return addIFAProp(null, caption, form, null, objectsToSet, manageSession, noCancel, null, null, false, null, syncType, windowType, false, false, false, false);
     }
 
-    protected LAP addFAProp(AbstractGroup group, LocalizedString caption, FormEntity form, ObjectEntity input, ObjectEntity[] objectsToSet, Boolean manageSession, boolean isAdd, ObjectEntity contextObject, CalcProperty contextProperty, boolean hasContextProperty, boolean hasPrinterProperty, PropertyDrawEntity initFilterProperty, ModalityType modalityType, boolean checkOnOk, boolean showDrop, FormPrintType printType, FormExportType exportType, boolean noHeader, String separator, String charset, boolean readonly, boolean allowNulls, Object... params) {
+    protected LAP addIFAProp(AbstractGroup group, LocalizedString caption, FormEntity form, ObjectEntity input, ObjectEntity[] objectsToSet, Boolean manageSession, boolean isAdd, ObjectEntity contextObject, CalcProperty contextProperty, boolean hasContextProperty, PropertyDrawEntity initFilterProperty, boolean syncType, WindowFormType windowType, boolean checkOnOk, boolean showDrop, boolean readonly, boolean allowNulls, Object... params) {
+        return addProperty(group, new LAP(new FormInteractiveActionProperty(caption, form, objectsToSet, allowNulls, input, manageSession, isAdd, syncType, windowType, checkOnOk, showDrop, baseLM.formResult, baseLM.getFormResultProperty(), baseLM.getChosenValueProperty(), contextObject, contextProperty, initFilterProperty, readonly)));
+    }
+    protected LAP addPFAProp(AbstractGroup group, LocalizedString caption, FormEntity form, ObjectEntity[] objectsToSet, boolean hasPrinterProperty, FormPrintType staticType, boolean allowNulls, LCP targetProp, Object... params) {
         ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(getIntNum(params));
         ImList<PropertyInterfaceImplement<PropertyInterface>> readImplements = readImplements(listInterfaces, params);
-        CalcPropertyMapImplement printer = hasPrinterProperty ? (CalcPropertyMapImplement) readImplements.get(hasContextProperty ? 1 : 0) : null;
-        return addProperty(group, new LAP(new FormActionProperty(caption, form, input, objectsToSet, manageSession, isAdd, modalityType, checkOnOk, showDrop, printType, printer, listInterfaces, exportType, noHeader, separator, charset, baseLM.formResult, baseLM.getFormResultProperty(), baseLM.formPageCount, baseLM.formExportFile, baseLM.formExportFiles, baseLM.ignorePrintType, baseLM.getChosenValueProperty(), contextObject, contextProperty, initFilterProperty, readonly, allowNulls)));
+        CalcPropertyMapImplement printer = hasPrinterProperty ? (CalcPropertyMapImplement) readImplements.get(0) : null;
+        return addProperty(group, new LAP(new PrintActionProperty(caption, form, objectsToSet, allowNulls, staticType, targetProp, printer, listInterfaces, baseLM.formPageCount)));
+    }
+    protected LAP addEFAProp(AbstractGroup group, LocalizedString caption, FormEntity form, ObjectEntity[] objectsToSet, FormExportType staticType, boolean noHeader, String separator, String charset, boolean allowNulls, LCP targetProp, Object... params) {
+        if(targetProp == null)
+            targetProp = (staticType.isPlain() ? baseLM.formExportFiles : baseLM.formExportFile); 
+        return addProperty(group, new LAP(new ExportActionProperty(caption, form, objectsToSet, allowNulls, staticType, targetProp, noHeader, separator, charset)));
     }
 
     // ------------------- Change Class action ----------------- //
@@ -741,25 +749,25 @@ public abstract class LogicsModule {
 
     protected LAP addSessionScopeAProp(FormSessionScope sessionScope, LAP action) {
         if(sessionScope.isNewSession()) {
-            action = addNewSessionAProp(null, action, false, false, false, sessionScope == FormSessionScope.NESTEDSESSION);
+            action = addNewSessionAProp(null, action, false, false, sessionScope == FormSessionScope.NESTEDSESSION);
         }
         return action;
     }
 
     // ------------------- NEWSESSION ----------------- //
 
-    protected LAP addNewSessionAProp(AbstractGroup group, LAP action, boolean doApply, boolean singleApply, boolean newSQL, boolean isNested) {
-        return addNewSessionAProp(group, action, isNested, doApply, singleApply, newSQL, SetFact.<SessionDataProperty>EMPTY());
+    protected LAP addNewSessionAProp(AbstractGroup group, LAP action, boolean singleApply, boolean newSQL, boolean isNested) {
+        return addNewSessionAProp(group, action, isNested, singleApply, newSQL, SetFact.<SessionDataProperty>EMPTY());
     }
     
     protected LAP addNewSessionAProp(AbstractGroup group,
-                                     LAP action, boolean isNested, boolean doApply, boolean singleApply, boolean newSQL,
+                                     LAP action, boolean isNested, boolean singleApply, boolean newSQL,
                                      FunctionSet<SessionDataProperty> migrateSessionProps) {
         ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(action.listInterfaces.size());
         ActionPropertyMapImplement<?, PropertyInterface> actionImplement = mapActionListImplement(action, listInterfaces);
 
         NewSessionActionProperty actionProperty = new NewSessionActionProperty(
-                LocalizedString.create("sys"), listInterfaces, actionImplement, singleApply, newSQL, doApply, migrateSessionProps, isNested);
+                LocalizedString.create("sys"), listInterfaces, actionImplement, singleApply, newSQL, migrateSessionProps, isNested);
         
         actionProperty.drawOptions.inheritDrawOptions(action.property.drawOptions);
         actionProperty.inheritCaption(action.property);

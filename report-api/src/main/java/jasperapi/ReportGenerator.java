@@ -457,34 +457,21 @@ public class ReportGenerator {
         
         return res;
     }
-    
-    public static void exportToExcelAndOpen(ReportGenerationData generationData, FormPrintType type) {
+
+    public static void exportAndOpen(ReportGenerationData generationData, FormPrintType type) {
         try {
             assert type.isExcel();
-            File tempFile = (type == FormPrintType.XLSX ? exportToXlsx(generationData) : exportToXls(generationData));
-            
-            if (Desktop.isDesktopSupported()) {
-                Desktop.getDesktop().open(tempFile);
+            File tempFile = exportToFile(generationData, type);
+
+            try {
+                if (Desktop.isDesktopSupported()) {
+                    Desktop.getDesktop().open(tempFile);
+                }
+            } finally {
+                tempFile.deleteOnExit();
             }
-
-            tempFile.deleteOnExit();
         } catch (Exception e) {
-            throw new RuntimeException("Ошибка при экспорте в Excel", e);
-        }
-    }
-
-    public static void exportToPdfAndOpen(ReportGenerationData generationData) {
-        try {
-            File tempFile = exportToPdf(generationData);
-
-            if (Desktop.isDesktopSupported()) {
-                Desktop.getDesktop().open(tempFile);
-            }
-
-            tempFile.deleteOnExit();
-
-        } catch (Exception e) {
-            throw new RuntimeException("Ошибка при экспорте в PDF", e);
+            throw new RuntimeException("Ошибка при экспорте в " + type, e);
         }
     }
 
@@ -506,6 +493,25 @@ public class ReportGenerator {
 
     public static File exportToDocx(ReportGenerationData generationData) throws IOException, ClassNotFoundException, JRException {
         return exportToFile(generationData, new JRDocxExporter(), "docx", false);
+    }
+    
+    private static JRAbstractExporter getExporter(FormPrintType printType) {
+        switch (printType) {
+            case XLS:
+                return new JRXlsExporter();
+            case XLSX:
+                return new JRXlsxExporter();
+            case PDF:
+                return new JRPdfExporter();
+            case DOC:
+                return new JRDocxExporter();
+            case DOCX:
+                return new JRDocxExporter();
+        }
+        throw new UnsupportedOperationException();
+    }
+    public static File exportToFile(ReportGenerationData generationData, FormPrintType type) throws ClassNotFoundException, IOException, JRException {
+        return exportToFile(generationData, getExporter(type), type.getExtension(), type.isExcel());
     }
     
     private static File exportToFile(ReportGenerationData generationData, JRAbstractExporter exporter, String extension, boolean ignorePagination) throws IOException, JRException, ClassNotFoundException {

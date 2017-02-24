@@ -149,7 +149,7 @@ public class FileUtils {
             } else {
                 report = JasperExportManager.exportReportToPdf(generator.createReport(false, null));
             }
-            String fileName = "lsfReport" + BaseUtils.randomString(15) + "." + (type != null ? type.getFileExtension() : "pdf");
+            String fileName = "lsfReport" + BaseUtils.randomString(15) + "." + (type != null ? type.getExtension() : "pdf");
             File file = new File(APP_TEMP_FOLDER_URL, fileName);
             FileOutputStream fos = new FileOutputStream(file);
             fos.write(report);

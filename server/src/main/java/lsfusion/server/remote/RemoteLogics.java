@@ -169,7 +169,7 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
 
     @Override
     public Integer getApiVersion() throws RemoteException {
-        return 25;
+        return 26;
     }
 
     public GUIPreferences getGUIPreferences() throws RemoteException {

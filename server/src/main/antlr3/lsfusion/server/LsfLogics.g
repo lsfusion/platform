@@ -11,9 +11,11 @@ grammar LsfLogics;
 	import lsfusion.interop.form.layout.Alignment;
 	import lsfusion.interop.form.ServerResponse;
 	import lsfusion.interop.FormEventType;
+	import lsfusion.interop.FormStaticType;
 	import lsfusion.interop.FormPrintType;
 	import lsfusion.interop.FormExportType;
 	import lsfusion.interop.ModalityType;
+	import lsfusion.interop.WindowFormType;
 	import lsfusion.interop.ReflectionPropertyType;
 	import lsfusion.server.form.instance.FormSessionScope;
 	import lsfusion.server.data.expr.query.PartitionType;
@@ -2180,6 +2182,8 @@ keepContextActionDB[List<TypedParameter> context, boolean dynamic] returns [LPWi
 	|  	applyADB=applyActionDefinitionBody[context, dynamic] { $property = $applyADB.property; }
     |   cancelPDB=cancelActionDefinitionBody[context, dynamic] { $property = $cancelPDB.property; }
 	|	formADB=formActionDefinitionBody[context, dynamic] { $property = $formADB.property; }
+	|	printADB=printActionDefinitionBody[context, dynamic] { $property = $printADB.property; }
+	|	exportADB=exportActionDefinitionBody[context, dynamic] { $property = $exportADB.property; }
 	|	msgADB=messageActionDefinitionBody[context, dynamic] { $property = $msgADB.property; }
 	|	asyncADB=asyncUpdateActionDefinitionBody[context, dynamic] { $property = $asyncADB.property; }
 	|	seekADB=seekObjectActionDefinitionBody[context, dynamic] { $property = $seekADB.property; }
@@ -2240,16 +2244,14 @@ mappedForm[List<TypedParameter> context, boolean dynamic] returns [FormEntity fo
 formActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
 @init {
 	boolean manageSession = false;
-	ModalityType modalityType = ModalityType.DOCKED;
+	
+	Boolean syncType = null;
+	WindowFormType windowType = null;
+	
 	boolean checkOnOk = false;
 	boolean showDrop = false;
 	boolean noCancel = false;
-	FormPrintType printType = null;
-	LPWithParams printerProperty = null;
-	FormExportType exportType = null;
-	boolean noHeader = false;
-	String separator = null;
-	String charset = null;
+	
 	String contextObjectName = null;
 	LPWithParams contextProperty = null;
 	String initFilterPropertyName = null;
@@ -2258,21 +2260,75 @@ formActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns 
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedFAProp($mf.formEntity, $mf.input, $mf.objects, $mf.mapping, contextObjectName, contextProperty, initFilterPropertyName, initFilterPropertyMapping, modalityType, manageSession, checkOnOk, showDrop, noCancel, printType, printerProperty, exportType, noHeader, separator, charset, readOnly);
+		$property = self.addScriptedInteractiveFAProp($mf.formEntity, $mf.input, $mf.objects, $mf.mapping, contextObjectName, contextProperty, initFilterPropertyName, initFilterPropertyMapping, syncType, windowType, manageSession, checkOnOk, showDrop, noCancel, readOnly);
 	}
 }
 	:	'FORM' mf=mappedForm[context,dynamic]
-		(	'CONTEXTFILTER' objName=ID '=' contextPropertyExpr=propertyExpression[context, dynamic] { contextObjectName = $objName.text; contextProperty = $contextPropertyExpr.property; }
-		|	initFilter = initFilterDefinition { initFilterPropertyMapping = $initFilter.mapping; initFilterPropertyName = $initFilter.propName; }
+		(	
+		    sync = syncTypeLiteral { syncType = $sync.val; }
+		|   window = windowTypeLiteral { windowType = $window.val; }
+
 		|	'MANAGESESSION' { manageSession = true; }
-		|	modality = modalityTypeLiteral { modalityType = $modality.val; }
-		|	'CHECK' { checkOnOk = true; }
 		|	'SHOWDROP' { showDrop = true; }
 		|	'NOCANCEL' { noCancel = true; }
-		|	print = formPrintTypeLiteral[context, dynamic] { printType = $print.val; printerProperty = $print.printerProperty; }
-		|	export = formExportTypeLiteral { exportType = $export.val; noHeader = $export.noHeader; separator = $export.separator; charset = $export.charset; }
+
+        |	'CONTEXTFILTER' objName=ID '=' contextPropertyExpr=propertyExpression[context, dynamic] { contextObjectName = $objName.text; contextProperty = $contextPropertyExpr.property; }
+		|	initFilter = initFilterDefinition { initFilterPropertyMapping = $initFilter.mapping; initFilterPropertyName = $initFilter.propName; }
 		|	'READONLY' { readOnly = true; }
+		|	'CHECK' { checkOnOk = true; }
 		)*
+	;
+
+syncTypeLiteral returns [boolean val]
+	:	'WAIT' { $val = true; }
+	|	'NOWAIT' { $val = false; }
+	;
+
+windowTypeLiteral returns [WindowFormType val]
+	:	'FLOAT' { $val = WindowFormType.FLOAT; }
+	|	'DOCKED' { $val = WindowFormType.DOCKED; }
+	|	'DIALOG' { $val = WindowFormType.DIALOG; }
+	;
+
+printActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
+@init {
+	LPWithParams printerProperty = null;
+	FormPrintType printType = null;
+}
+@after {
+	if (inPropParseState()) {
+		$property = self.addScriptedPrintFAProp($mf.formEntity, $mf.objects, $mf.mapping, printerProperty, printType, $pUsage.propUsage);
+	}
+}
+	:	'PRINT' mf=mappedForm[context,dynamic]
+		(	('AUTO' { printType = FormPrintType.AUTO; })? ('TO' pe = propertyExpression[context, dynamic] { printerProperty = $pe.property; })?
+		|	(('XLS'  { printType = FormPrintType.XLS; }
+		|	'XLSX' { printType = FormPrintType.XLSX; }
+		|	'PDF' { printType = FormPrintType.PDF; }
+		|	'DOC'  { printType = FormPrintType.DOC; }
+		|	'DOCX' { printType = FormPrintType.DOCX; }
+		) ('TO' pUsage=propertyUsage)?))		
+	;
+	
+exportActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
+@init {
+	FormExportType exportType = null;
+	boolean noHeader = false;
+    String separator = null;
+	String charset = null;
+}
+@after {
+	if (inPropParseState()) {
+		$property = self.addScriptedExportFAProp($mf.formEntity, $mf.objects, $mf.mapping, exportType, noHeader, separator, charset, $pUsage.propUsage);
+	}
+}
+	:	'EXPORT' mf=mappedForm[context,dynamic]
+		(	'XML' { exportType = FormExportType.XML; }
+	    |  	'JSON' { exportType = FormExportType.JSON; }
+		|  	'CSV' { exportType = FormExportType.CSV; } ('NOHEADER' { noHeader = true; })? (separatorVal = stringLiteral { separator = $separatorVal.val; })? ('CHARSET' charsetVal = stringLiteral { charset = $charsetVal.val; })?
+	    |  	'DBF' { exportType = FormExportType.DBF; } ('CHARSET' charsetVal = stringLiteral { charset = $charsetVal.val; })?
+		)
+		('TO' pUsage=propertyUsage)?
 	;
 
 initFilterDefinition returns [String propName, List<String> mapping]
@@ -3933,33 +3989,6 @@ modalityTypeLiteral returns [ModalityType val]
 	|	'DIALOG' { $val = ModalityType.DIALOG_MODAL; }
 	;
 	
-formPrintTypeLiteral[List<TypedParameter> context, boolean dynamic] returns [FormPrintType val, LPWithParams printerProperty]
-@init {
-	$val = FormPrintType.PRINT;
-	LPWithParams printerProperty = null;
-} 
-	:	'PRINT'
-		(	('AUTO' { $val = FormPrintType.AUTO; })? ('TO' pe = propertyExpression[context, dynamic] { $printerProperty = $pe.property; })?
-		|	'XLS'  { $val = FormPrintType.XLS; }
-		|	'XLSX' { $val = FormPrintType.XLSX; }
-		|	'PDF' { $val = FormPrintType.PDF; }
-		)
-	;
-	
-formExportTypeLiteral returns [FormExportType val, boolean noHeader, String separator, String charset]
-	:	'EXPORT'
-		(	'DOC'  { $val = FormExportType.DOC; }
-		|	'DOCX' { $val = FormExportType.DOCX; }
-		|	'PDF'  { $val = FormExportType.PDF; }
-		|	'XLS' { $val = FormExportType.XLS; }
-		|	'XLSX' { $val = FormExportType.XLSX; }
-		|   'XML' { $val = FormExportType.XML; }
-	    |   'JSON' { $val = FormExportType.JSON; }
-	    |   'CSV' { $val = FormExportType.CSV; } (separatorVal = stringLiteral { $separator = $separatorVal.val; })? ('NOHEADER' { $noHeader = true; })? ('CHARSET' charsetVal = stringLiteral { $charset = $charsetVal.val; })?
-	    |   'DBF' { $val = FormExportType.DBF; } ('CHARSET' charsetVal = stringLiteral { $charset = $charsetVal.val; })?
-		)
-	;	
-
 emailRecipientTypeLiteral returns [Message.RecipientType val]
 	:	'TO'	{ $val = Message.RecipientType.TO; }
 	|	'CC'	{ $val = Message.RecipientType.CC; }

@@ -18,11 +18,10 @@ public class NewSessionActionProperty extends AroundAspectActionProperty {
     private final boolean isNested;
     private final boolean singleApply;
     private final boolean newSQL; 
-    private final boolean doApply;
 
     public <I extends PropertyInterface> NewSessionActionProperty(LocalizedString caption, ImOrderSet<I> innerInterfaces,
                                                                   ActionPropertyMapImplement<?, I> action, boolean singleApply,
-                                                                  boolean newSQL, boolean doApply,
+                                                                  boolean newSQL,
                                                                   FunctionSet<SessionDataProperty> migrateSessionProperties,
                                                                   boolean isNested) {
         super(caption, innerInterfaces, action);
@@ -31,7 +30,6 @@ public class NewSessionActionProperty extends AroundAspectActionProperty {
         this.newSQL = newSQL;
 
         this.isNested = isNested;
-        this.doApply = doApply;
         this.migrateSessionProperties = DataSession.adjustKeep(false, migrateSessionProperties);
 
 
@@ -92,10 +90,6 @@ public class NewSessionActionProperty extends AroundAspectActionProperty {
     protected void afterAspect(FlowResult result, ExecutionContext<PropertyInterface> context, ExecutionContext<PropertyInterface> innerContext) throws SQLException, SQLHandledException {
         if (!context.getSession().isInTransaction() && !newSQL) {
             migrateSessionProperties(innerContext.getSession(), context.getSession());
-        }
-
-        if (doApply) {
-            innerContext.apply();
         }
     }
 
