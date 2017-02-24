@@ -297,7 +297,7 @@ copyData(UserRole userRole, UserRole ur) = ACTION {
 copy 'Копировать'(UserRole userRole) = ACTION NEWSESSION {
     FOR ADDOBJ ur = UserRole DO {
         EXEC copyData(userRole, ur);
-        FORM userRole OBJECTS ur = ur MANAGESESSION DOCKEDMODAL;
+        FORM userRole OBJECTS ur = ur MANAGESESSION DOCKED;
     }
 } TOOLBAR;
 

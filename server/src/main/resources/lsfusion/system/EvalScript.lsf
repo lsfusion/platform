@@ -93,7 +93,7 @@ DESIGN chooseScriptName {
 }
 
 saveAsScriptAction 'Сохранить как'() = ACTION NEWSESSION {
-    FORM chooseScriptName MODAL;
+    FORM chooseScriptName ;
     IF formResult() == FormResult.ok THEN {
         FOR ADDOBJ s = Script DO {
             name(s) <- chosenString('name');
