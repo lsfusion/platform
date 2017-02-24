@@ -247,62 +247,12 @@ public class StaticFormReportManager extends FormReportManager<PropertyDrawEntit
 
             @Override
             public PropertyReaderEntity getCaptionReader(final PropertyDrawEntity propertyDrawEntity) {
-                return new PropertyReaderEntity() {
-                    @Override
-                    public byte getTypeID() {
-                        return PropertyReadType.CAPTION;
-                    }
-
-                    @Override
-                    public int getID() {
-                        return propertyDrawEntity.getID();
-                    }
-
-                    @Override
-                    public PropertyType getPropertyType() {
-                        return null;
-                    }
-
-                    @Override
-                    public Object getProfiledObject() {
-                        return propertyDrawEntity.propertyCaption;
-                    }
-
-                    @Override
-                    public String toString() {
-                        return ThreadLocalContext.localize("{logics.property.caption}") + "(" + propertyDrawEntity.toString() + ")";
-                    }
-                };
+                return propertyDrawEntity.captionReader;
             }
 
             @Override
             public PropertyReaderEntity getFooterReader(final PropertyDrawEntity propertyDrawEntity) {
-                return new PropertyReaderEntity() {
-                    @Override
-                    public byte getTypeID() {
-                        return PropertyReadType.FOOTER;
-                    }
-
-                    @Override
-                    public int getID() {
-                        return propertyDrawEntity.getID();
-                    }
-
-                    @Override
-                    public PropertyType getPropertyType() {
-                        return null;
-                    }
-
-                    @Override
-                    public Object getProfiledObject() {
-                        return propertyDrawEntity.propertyFooter;
-                    }
-
-                    @Override
-                    public String toString() {
-                        return ThreadLocalContext.localize("{logics.property.footer}") + "(" + propertyDrawEntity.toString() + ")";
-                    }
-                };
+                return propertyDrawEntity.footerReader;
             }
 
             @Override

@@ -73,7 +73,7 @@ public abstract class FormStaticActionProperty<T extends FormStaticType> extends
             }
 
             newFormManager = new InteractiveFormReportManager(newFormInstance);
-        }
+        } else
             newFormManager = new StaticFormReportManager(form, BaseUtils.<ImMap<ObjectEntity, ObjectValue>>immutableCast(mapObjectValues), context);
 
         boolean isExcel = staticType instanceof FormPrintType && ((FormPrintType) staticType).isExcel();

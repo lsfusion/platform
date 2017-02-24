@@ -16,6 +16,7 @@ import lsfusion.interop.form.PropertyReadType;
 import lsfusion.server.classes.CustomClass;
 import lsfusion.server.classes.DataClass;
 import lsfusion.server.classes.NumericClass;
+import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.form.instance.InstanceFactory;
 import lsfusion.server.form.instance.Instantiable;
@@ -78,6 +79,62 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     public CalcPropertyObjectEntity<?> propertyForeground;
 
     public PropertyDrawEntity quickFilterProperty;
+
+    public final PropertyReaderEntity captionReader = new PropertyReaderEntity() {
+        @Override
+        public byte getTypeID() {
+            return PropertyReadType.CAPTION;
+        }
+
+        @Override
+        public int getID() {
+            return PropertyDrawEntity.this.getID();
+        }
+
+        @Override
+        public PropertyType getPropertyType() {
+            return null;
+        }
+
+        @Override
+        public Object getProfiledObject() {
+            return PropertyDrawEntity.this.propertyCaption;
+        }
+
+        @Override
+        public String toString() {
+            return ThreadLocalContext.localize("{logics.property.caption}") + "(" + PropertyDrawEntity.this.toString() + ")";
+        }
+    };
+    
+    
+    public final PropertyReaderEntity footerReader = new PropertyReaderEntity() {
+        @Override
+        public byte getTypeID() {
+            return PropertyReadType.FOOTER;
+        }
+
+        @Override
+        public int getID() {
+            return PropertyDrawEntity.this.getID();
+        }
+
+        @Override
+        public PropertyType getPropertyType() {
+            return null;
+        }
+
+        @Override
+        public Object getProfiledObject() {
+            return PropertyDrawEntity.this.propertyFooter;
+        }
+
+        @Override
+        public String toString() {
+            return ThreadLocalContext.localize("{logics.property.footer}") + "(" + PropertyDrawEntity.this.toString() + ")";
+        }
+    };
+
 
     public PropertyDrawEntity() {
     }
