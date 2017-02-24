@@ -364,9 +364,9 @@ documentsClosedDate 'Дата закрытия документов' = DATA DATE
  
 dialogCloseDocumentsDate 'Закрыть документы'() = ACTION {
     IF documentsClosedDate() THEN
-        FORM dialogDate OBJECTS d = documentsClosedDate() MODAL
+        FORM dialogDate OBJECTS d = documentsClosedDate() 
     ELSE
-        FORM dialogDate MODAL;
+        FORM dialogDate ;
     IF formResult() == FormResult.ok THEN {
         documentsClosedDate() <- chosenDate('d');
         closeDocuments(chosenDate('d'));

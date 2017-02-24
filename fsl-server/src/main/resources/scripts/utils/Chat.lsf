@@ -241,7 +241,7 @@ editChatAction 'Редактировать' (Chat c) = ACTION {
     IF c IS UserRole THEN 
         MESSAGE 'Запрещено редактировать чат для роли!'
     ELSE
-        FORM editChat MODAL;
+        FORM editChat ;
 }
 
 //----------------------------FULL CHAT----------------------------//
@@ -462,7 +462,7 @@ replyChat 'Ответить' (Message m) = ACTION {
 
 openChat 'Перейти в чат' (Chat c, Message m) = ACTION {
     markSeenMessages(currentUser());
-    FORM fullChat DOCKED;
+    FORM fullChat NOWAIT;
     NEWSESSION { NEWTHREAD {
         ACTIVATE TAB recent FORM fullChat;
         SEEK fullChat.c = chat(m);
@@ -514,7 +514,7 @@ onClientStarted() += ACTION {
     IF sumUnreadMessages(currentUser()) > 0 THEN {
         deliveredNotificationAction(currentUser());
         apply();
-        FORM shortChat MODAL;
+        FORM shortChat ;
     }
 }
 
@@ -533,7 +533,7 @@ pushAction(BOOLEAN system, BOOLEAN notificate) = ACTION {
         ELSE {
             IF system OR notificate THEN {
                 NEWSESSION {
-                    FORM shortChat MODAL;
+                    FORM shortChat ;
                 }
             }
         }
