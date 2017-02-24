@@ -4,6 +4,7 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
+import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.interop.ClassViewType;
 import lsfusion.interop.form.PropertyReadType;
 import lsfusion.server.classes.BaseClass;
@@ -30,7 +31,14 @@ public class StaticFormReportManager extends FormReportManager<PropertyDrawEntit
     public StaticFormReportManager(final FormEntity<?> form, final ImMap<ObjectEntity, ObjectValue> mapObjects, final ExecutionContext<?> context) {
         super(new FormReportInterface<PropertyDrawEntity, GroupObjectEntity, PropertyObjectEntity, CalcPropertyObjectEntity, OrderEntity, ObjectEntity, PropertyReaderEntity>() {
             
-            private ImMap<GroupObjectEntity, ImOrderMap<OrderEntity, Boolean>> ordersMap = BaseUtils.immutableCast(form.getFixedOrdersList().groupOrder(new BaseUtils.Group<GroupObjectEntity, OrderEntity<?>>() {
+            private ImMap<GroupObjectEntity, ImOrderMap<OrderEntity, Boolean>> ordersMap = BaseUtils.immutableCast(form.getDefaultOrdersList().mapOrderKeyValues(new GetValue<OrderEntity<?>, PropertyDrawEntity<?>>() {
+                public OrderEntity<?> getMapValue(PropertyDrawEntity<?> value) {
+                    return (CalcPropertyObjectEntity<?>) value.propertyObject;
+                }
+            }, new GetValue<Boolean, Boolean>() {
+                public Boolean getMapValue(Boolean value) {
+                    return !value;
+                }}).mergeOrder(form.getFixedOrdersList()).groupOrder(new BaseUtils.Group<GroupObjectEntity, OrderEntity<?>>() {
                 @Override
                 public GroupObjectEntity group(OrderEntity<?> key) {
                     GroupObjectEntity groupObject = key.getApplyObject(form.getGroupsList());

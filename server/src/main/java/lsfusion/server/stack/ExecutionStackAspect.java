@@ -90,7 +90,7 @@ public class ExecutionStackAspect {
 
             Object result = joinPoint.proceed();
 
-            if (start > 0) {
+            if (start > 0 && PROFILER_ENABLED) {
                 long executionTime = System.nanoTime() - start;
                 FormInstance formInstance = ThreadLocalContext.getFormInstance();
                 assert stack.indexOf(item) == stack.size() - 1;
