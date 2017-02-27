@@ -11,10 +11,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.charset.Charset;
 import java.text.ParseException;
-import java.util.Collection;
-import java.util.Date;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 
 public class CustomDbfRecord {
 
@@ -178,7 +175,26 @@ public class CustomDbfRecord {
         if (s == null) {
             return null;
         }
-        return JdbfUtils.parseDate(s);
+        try {
+            return JdbfUtils.parseDate(s);
+        } catch (ParseException e) {
+            try {
+                //Дата может присылаться в формате кол-ва дней от неизвестной даты 3 байтами в обратном порядке
+                byte[] bytes = getBytes(fieldName);
+                int days = formatByte(bytes[2]) * 256 * 256 + formatByte(bytes[1]) * 256 + formatByte(bytes[0]);
+                Calendar cal = Calendar.getInstance();
+                cal.setTimeInMillis(0);
+                cal.add(Calendar.DATE, days - 2440588); //значение для 01.01.1970
+                return cal.getTime();
+            } catch (Exception e1) {
+                //если не получилось, шлём первоначальный exception
+                throw e;
+            }
+        }
+    }
+
+    private int formatByte(byte b) {
+        return b < 0 ? (256 + b) : b;
     }
 
     public BigDecimal getBigDecimal(String fieldName) {
