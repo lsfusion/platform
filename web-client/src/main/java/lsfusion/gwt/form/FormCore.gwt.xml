@@ -41,26 +41,27 @@
         ]]>
     </property-provider>
 
+    <!-- отключил лэйаут через таблицы по причине резкого снижения скорости отрисовки в Chrome 56 и Firefox ~51  -->
     <!-- GFormLayout implementation using flex css syntax. -->
     <replace-with class="lsfusion.gwt.form.client.form.ui.layout.flex.FlexFormLayoutImpl">
         <when-type-is class="lsfusion.gwt.form.client.form.ui.layout.GFormLayoutImpl"/>
-        <none>
-            <when-property-is name="user.agent" value="gecko1_8" />
-            <when-property-is name="user.agent" value="safari" />
-        </none>
+        <!--<none>-->
+            <!--<when-property-is name="user.agent" value="gecko1_8" />-->
+            <!--<when-property-is name="user.agent" value="safari" />-->
+        <!--</none>-->
     </replace-with>
 
     <!-- Tables-based GFormLayout implementation. -->
-    <replace-with class="lsfusion.gwt.form.client.form.ui.layout.table.TableFormLayoutImpl">
-        <when-type-is class="lsfusion.gwt.form.client.form.ui.layout.GFormLayoutImpl"/>
-        <any>
-            <when-property-is name="user.agent" value="gecko1_8" />
-            <when-property-is name="user.agent" value="safari" />
-        </any>
-        <!-- ignore ie11 for now -->
-        <!--<none>-->
-        <!--&lt;!&ndash; ie11 is using gecko1_8 permutation, but we need to use flex impl for ie &ndash;&gt;-->
-        <!--<when-property-is name="is.user.agent.ie11" value="true" />-->
-        <!--</none>-->
-    </replace-with>
+    <!--<replace-with class="lsfusion.gwt.form.client.form.ui.layout.table.TableFormLayoutImpl">-->
+        <!--<when-type-is class="lsfusion.gwt.form.client.form.ui.layout.GFormLayoutImpl"/>-->
+        <!--<any>-->
+            <!--<when-property-is name="user.agent" value="gecko1_8" />-->
+            <!--<when-property-is name="user.agent" value="safari" />-->
+        <!--</any>-->
+        <!--&lt;!&ndash; ignore ie11 for now &ndash;&gt;-->
+        <!--&lt;!&ndash;<none>&ndash;&gt;-->
+        <!--&lt;!&ndash;&lt;!&ndash; ie11 is using gecko1_8 permutation, but we need to use flex impl for ie &ndash;&gt;&ndash;&gt;-->
+        <!--&lt;!&ndash;<when-property-is name="is.user.agent.ie11" value="true" />&ndash;&gt;-->
+        <!--&lt;!&ndash;</none>&ndash;&gt;-->
+    <!--</replace-with>-->
 </module>
