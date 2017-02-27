@@ -159,7 +159,7 @@ public class PartitionExpr extends AggrExpr<KeyExpr, PartitionType, PartitionExp
     }
 
     public Where calculateNotNullWhere() {
-        return query.type.canBeNull() ? new NotNull() : super.calculateNotNullWhere();
+        return hasNotNull() ? new NotNull() : super.calculateNotNullWhere();
     }
 
     public String getSource(CompileSource compile) {
@@ -297,15 +297,16 @@ public class PartitionExpr extends AggrExpr<KeyExpr, PartitionType, PartitionExp
     }
 
 
-    // можно было бы вообще hasNotNull завязать на canBeNull (а их на hasNotNull), но так как hasNotNull используется по сути в логике следствий, можно оставить так как есть пока 
-//    @Override
-//    public boolean hasNotNull() {
-//        return query.type.canBeNull();
-//    }
+    // можно было бы вообще hasNotNull завязать на canBeNull (а их на hasNotNull), но так как hasNotNull используется по сути в логике следствий, можно оставить так как есть пока
+    // все же включим, так как есть проблема с AfterTranslateAspect, когда initTranslate два раза для такого не "настоящего" NotNull полученного в getWhere
+    @Override
+    public boolean hasNotNull() {
+        return query.type.canBeNull();
+    }
 
     @Override
     public AndClassSet getAndClassSet(ImMap<VariableSingleClassExpr, AndClassSet> and) {
-        if (!query.type.canBeNull()) { // так как calculateNotNullWhere может вернуть случайно DataWhere (одного из своих joins) в getAndClassSet может потеряться класс
+        if (!hasNotNull()) { // так как calculateNotNullWhere может вернуть случайно DataWhere (одного из своих joins) в getAndClassSet может потеряться класс
             Type type = getInner().getType();
             if(type instanceof DataClass)
                 return (AndClassSet) type;
