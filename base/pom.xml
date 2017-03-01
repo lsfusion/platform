@@ -330,11 +330,6 @@
                 <artifactId>mail</artifactId>
                 <version>${javax.mail.version}</version>
             </dependency>
-<!--            <dependency>
-                <groupId>javax.mail</groupId>
-                <artifactId>javax.mail-api</artifactId>
-                <version>${javax.mail-api.version}</version>
-            </dependency>-->
             <dependency>
                 <groupId>org.thavam</groupId>
                 <artifactId>blocking-map</artifactId>
