@@ -4,11 +4,13 @@ import jasperapi.ReportGenerator;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.IOUtils;
 import lsfusion.base.Result;
+import lsfusion.base.SFunctionSet;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
+import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.interop.FormExportType;
 import lsfusion.interop.FormPrintType;
 import lsfusion.interop.FormStaticType;
@@ -49,6 +51,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 // вообще по хорошему надо бы generiть интерфейсы, но тогда с DataChanges (из-за дебилизма generics в современных языках) будут проблемы
@@ -57,16 +60,17 @@ public abstract class FormActionProperty extends SystemExplicitActionProperty {
     public final FormEntity<?> form;
     public final ImRevMap<ObjectEntity, ClassPropertyInterface> mapObjects;
 
-    private static ValueClass[] getValueClasses(ObjectEntity[] objects, Property... extraProps) {
+    private static ValueClass[] getValueClasses(List<ObjectEntity> objects, Property... extraProps) {
         int extraPropInterfaces = 0;
         for(Property extraProp : extraProps)
             if(extraProp != null)
                 extraPropInterfaces += extraProp.interfaces.size();
-            
-        ValueClass[] valueClasses = new ValueClass[objects.length
+
+        int size = objects.size();
+        ValueClass[] valueClasses = new ValueClass[size
                 + extraPropInterfaces];
-        for (int i = 0; i < objects.length; i++) {
-            valueClasses[i] = objects[i].baseClass;
+        for (int i = 0; i < size; i++) {
+            valueClasses[i] = objects.get(i).baseClass;
         }
 
         for(Property extraProp : extraProps) 
@@ -74,36 +78,50 @@ public abstract class FormActionProperty extends SystemExplicitActionProperty {
                 ImMap<PropertyInterface, ValueClass> interfaceClasses = extraProp.getInterfaceClasses(ClassType.formPolicy);
                 ImOrderSet<PropertyInterface> propInterfaces = extraProp.getFriendlyPropertyOrderInterfaces();
                 for (int i = 0; i < propInterfaces.size(); ++i) {
-                    valueClasses[objects.length + i] = interfaceClasses.get(propInterfaces.get(i));
+                    valueClasses[size + i] = interfaceClasses.get(propInterfaces.get(i));
                 }
             }
         return valueClasses;
     }
 
     @Override
-    protected boolean allowNulls() { // temporary
-        return allowNullValue;
+    protected boolean allowNulls() {
+        throw new UnsupportedOperationException();
     }
+
+    @Override
+    protected boolean checkNulls(ImSet<ClassPropertyInterface> dataKeys) {
+        return !dataKeys.containsAll(notNullInterfaces);
+    }
+    
+    private final ImSet<ClassPropertyInterface> notNullInterfaces;
 
     //assert objects из form
     //assert getProperties одинаковой длины
     //getProperties привязаны к форме, содержащей свойство...
     public FormActionProperty(LocalizedString caption,
                               FormEntity form,
-                              final ObjectEntity[] objectsToSet,
-                              boolean allowNulls, Property... extraProps) {
+                              final List<ObjectEntity> objectsToSet,
+                              final List<Boolean> nulls,
+                              Property... extraProps) {
         super(caption, getValueClasses(objectsToSet, extraProps));
-        
-        this.allowNullValue = false; //allowNulls;
 
-        mapObjects = getOrderInterfaces()
-                .subOrder(0, objectsToSet.length)
-                .mapOrderRevKeys(new GetIndex<ObjectEntity>() { // такой же дебилизм и в SessionDataProperty
+        ImOrderSet<ClassPropertyInterface> objectInterfaces = getOrderInterfaces()
+                .subOrder(0, objectsToSet.size());
+
+        this.form = form;
+        mapObjects = objectInterfaces.mapOrderRevKeys(new GetIndex<ObjectEntity>() { // такой же дебилизм и в SessionDataProperty
                     public ObjectEntity getMapValue(int i) {
-                        return objectsToSet[i];
+                        return objectsToSet.get(i);
                     }
                 });
-        this.form = form;
+        notNullInterfaces = objectInterfaces.mapOrderValues(new GetIndex<Boolean>() {
+            public Boolean getMapValue(int i) {
+                return nulls.get(i);
+            }}).filterFnValues(new SFunctionSet<Boolean>() {
+            public boolean contains(Boolean element) {
+                return !element;
+            }}).keys();
     }
 
     protected abstract void executeCustom(ImMap<ObjectEntity, ? extends ObjectValue> mapObjectValues, ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException;

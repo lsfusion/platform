@@ -20,6 +20,7 @@ import net.sf.jasperreports.engine.JRException;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class PrintActionProperty extends FormStaticActionProperty<FormPrintType> {
@@ -32,15 +33,15 @@ public class PrintActionProperty extends FormStaticActionProperty<FormPrintType>
     
     public PrintActionProperty(LocalizedString caption,
                                     FormEntity form,
-                                    final ObjectEntity[] objectsToSet,
-                                    boolean allowNulls,
+                                    final List<ObjectEntity> objectsToSet,
+                                    final List<Boolean> nulls,
                                     FormPrintType staticType,
                                     boolean syncType,
                                     LCP formExportFile,
                                     CalcPropertyMapImplement printer,
                                     ImOrderSet<PropertyInterface> innerInterfaces,
                                     LCP formPageCount) {
-        super(caption, form, objectsToSet, allowNulls, staticType, formExportFile, printer == null ? null : printer.property);
+        super(caption, form, objectsToSet, nulls, staticType, formExportFile, printer == null ? null : printer.property);
 
         this.formPageCount = formPageCount;
         

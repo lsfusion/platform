@@ -38,13 +38,6 @@ public class FormReportManager<PropertyDraw extends PropertyReaderInstance, Grou
 
     private final FormReportInterface<PropertyDraw, GroupObject, PropertyObject, CalcPropertyObject, Order, Obj, PropertyReaderInstance> formInterface;
 
-    // backward compatibility, после merge'а в RC убрать
-    public FormReportManager(FormInstance form) {
-        formSID = null;
-        richDesign = null;
-        formInterface = null;
-    }
-
     public FormReportManager(FormReportInterface<PropertyDraw, GroupObject, PropertyObject, CalcPropertyObject, Order, Obj, PropertyReaderInstance> formInterface) {
         this.formInterface = formInterface;
         formSID = formInterface.getEntity().getSID().replace('.', '_');

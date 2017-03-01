@@ -37,7 +37,6 @@ import lsfusion.server.logics.SecurityManager;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.linear.LP;
 import lsfusion.server.logics.property.actions.FormEnvironment;
-import lsfusion.server.remote.FormReportManager;
 import lsfusion.server.remote.InteractiveFormReportManager;
 import lsfusion.server.session.*;
 import net.sf.jasperreports.engine.JRAbstractExporter;
@@ -533,8 +532,8 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         ThreadLocalContext.requestFormUserInteraction(remoteForm, modalityType, stack);
     }
 
-    public void writeRequested(ObjectValue chosenValue, Type type) throws SQLException, SQLHandledException {
-        getBL().LM.writeRequested(chosenValue, type, getEnv());
+    public void writeRequested(ObjectValue chosenValue, Type type, LCP targetProp) throws SQLException, SQLHandledException {
+        getBL().LM.writeRequested(chosenValue, type, getEnv(), targetProp);
     }
 
     public <R> R pushRequest(SQLCallable<R> callable) throws SQLException, SQLHandledException {

@@ -527,7 +527,7 @@ public abstract class LogicsModule {
 
     // loggable, security, drilldown
     public LAP addMFAProp(LocalizedString caption, FormEntity form, ObjectEntity[] objectsToSet, boolean newSession) {
-        LAP result = addIFAProp(caption, form, objectsToSet, null, false, true, WindowFormType.FLOAT);
+        LAP result = addIFAProp(caption, form, BaseUtils.toList(objectsToSet), null, false, true, WindowFormType.FLOAT);
         return addSessionScopeAProp(newSession ? FormSessionScope.NEWSESSION : FormSessionScope.OLDSESSION, result);
     }
 
@@ -536,26 +536,26 @@ public abstract class LogicsModule {
         return addDMFAProp(LocalizedString.create("sys"), form, manageSession, noCancel);
     }
     protected LAP addDMFAProp(LocalizedString caption, ClassFormEntity form, Boolean manageSession, boolean noCancel) {
-        return addIFAProp(caption, form.form, new ObjectEntity[] {form.object}, manageSession, noCancel, true, WindowFormType.DOCKED);
+        return addIFAProp(caption, form.form, Collections.singletonList(form.object), manageSession, noCancel, true, WindowFormType.DOCKED);
     }
 
-    protected LAP addIFAProp(LocalizedString caption, FormEntity form, ObjectEntity[] objectsToSet, Boolean manageSession, boolean noCancel, boolean syncType, WindowFormType windowType) {
-        return addIFAProp(null, caption, form, null, objectsToSet, manageSession, noCancel, null, null, false, null, syncType, windowType, false, false, false, false);
+    protected LAP addIFAProp(LocalizedString caption, FormEntity form, List<ObjectEntity> objectsToSet, Boolean manageSession, boolean noCancel, boolean syncType, WindowFormType windowType) {
+        return addIFAProp(null, caption, form, objectsToSet, Collections.nCopies(objectsToSet.size(), false), null, null, null, manageSession, noCancel, null, null, false, null, syncType, windowType, false, false, false);
     }
 
-    protected LAP addIFAProp(AbstractGroup group, LocalizedString caption, FormEntity form, ObjectEntity input, ObjectEntity[] objectsToSet, Boolean manageSession, boolean isAdd, ObjectEntity contextObject, CalcProperty contextProperty, boolean hasContextProperty, PropertyDrawEntity initFilterProperty, boolean syncType, WindowFormType windowType, boolean checkOnOk, boolean showDrop, boolean readonly, boolean allowNulls, Object... params) {
-        return addProperty(group, new LAP(new FormInteractiveActionProperty(caption, form, objectsToSet, allowNulls, input, manageSession, isAdd, syncType, windowType, checkOnOk, showDrop, baseLM.formResult, baseLM.getFormResultProperty(), baseLM.getChosenValueProperty(), contextObject, contextProperty, initFilterProperty, readonly)));
+    protected LAP addIFAProp(AbstractGroup group, LocalizedString caption, FormEntity form, List<ObjectEntity> objectsToSet, List<Boolean> nulls, List<ObjectEntity> inputObjects, List<LCP> inputProps, List<Boolean> inputNulls, Boolean manageSession, boolean isAdd, ObjectEntity contextObject, CalcProperty contextProperty, boolean hasContextProperty, PropertyDrawEntity initFilterProperty, boolean syncType, WindowFormType windowType, boolean checkOnOk, boolean showDrop, boolean readonly, Object... params) {
+        return addProperty(group, new LAP(new FormInteractiveActionProperty(caption, form, objectsToSet, nulls, inputObjects, inputProps, inputNulls, manageSession, isAdd, syncType, windowType, checkOnOk, showDrop, baseLM.formResult, baseLM.getFormResultProperty(), baseLM.getChosenValueProperty(), contextObject, contextProperty, initFilterProperty, readonly)));
     }
-    protected LAP addPFAProp(AbstractGroup group, LocalizedString caption, FormEntity form, ObjectEntity[] objectsToSet, boolean hasPrinterProperty, FormPrintType staticType, boolean allowNulls, boolean syncType, LCP targetProp, Object... params) {
+    protected LAP addPFAProp(AbstractGroup group, LocalizedString caption, FormEntity form, List<ObjectEntity> objectsToSet, List<Boolean> nulls, boolean hasPrinterProperty, FormPrintType staticType, boolean syncType, LCP targetProp, Object... params) {
         ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(getIntNum(params));
         ImList<PropertyInterfaceImplement<PropertyInterface>> readImplements = readImplements(listInterfaces, params);
         CalcPropertyMapImplement printer = hasPrinterProperty ? (CalcPropertyMapImplement) readImplements.get(0) : null;
-        return addProperty(group, new LAP(new PrintActionProperty(caption, form, objectsToSet, allowNulls, staticType, syncType, targetProp, printer, listInterfaces, baseLM.formPageCount)));
+        return addProperty(group, new LAP(new PrintActionProperty(caption, form, objectsToSet, nulls, staticType, syncType, targetProp, printer, listInterfaces, baseLM.formPageCount)));
     }
-    protected LAP addEFAProp(AbstractGroup group, LocalizedString caption, FormEntity form, ObjectEntity[] objectsToSet, FormExportType staticType, boolean noHeader, String separator, String charset, boolean allowNulls, LCP targetProp, Object... params) {
+    protected LAP addEFAProp(AbstractGroup group, LocalizedString caption, FormEntity form, List<ObjectEntity> objectsToSet, List<Boolean> nulls, FormExportType staticType, boolean noHeader, String separator, String charset, LCP targetProp, Object... params) {
         if(targetProp == null)
             targetProp = (staticType.isPlain() ? baseLM.formExportFiles : baseLM.formExportFile); 
-        return addProperty(group, new LAP(new ExportActionProperty(caption, form, objectsToSet, allowNulls, staticType, targetProp, noHeader, separator, charset)));
+        return addProperty(group, new LAP(new ExportActionProperty(caption, form, objectsToSet, nulls, staticType, targetProp, noHeader, separator, charset)));
     }
 
     // ------------------- Change Class action ----------------- //
@@ -820,12 +820,12 @@ public abstract class LogicsModule {
 
     // ------------------- Input ----------------- //
 
-    protected LP addInputAProp(AbstractGroup group, LocalizedString caption, DataClass dataClass, Object... params) {
-        return addJoinAProp(group, caption, addInputAProp(dataClass), params);
+    protected LP addInputAProp(AbstractGroup group, LocalizedString caption, DataClass dataClass, LCP<?> targetProp, Object... params) {
+        return addJoinAProp(group, caption, addInputAProp(dataClass, targetProp != null ? targetProp.property : null), params);
     }
     @IdentityStrongLazy
-    protected LAP addInputAProp(DataClass dataClass) {
-        return addProperty(null, new LAP(new InputActionProperty(LocalizedString.create("Input"), dataClass)));
+    protected LAP addInputAProp(DataClass dataClass, CalcProperty targetProp) { // так как у LCP нет 
+        return addProperty(null, new LAP(new InputActionProperty(LocalizedString.create("Input"), dataClass, targetProp != null ? new LCP(targetProp) : null)));
     }
 
     // ------------------- Constant ----------------- //

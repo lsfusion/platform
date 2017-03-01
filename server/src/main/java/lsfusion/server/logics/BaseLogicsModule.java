@@ -725,17 +725,20 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
             return getRequestedValueProperty().read(type, env);
 
         ObjectValue result = request.call();
-        writeRequested(result, type, env);
+        writeRequested(result, type, env, null);
         return result;
     }
     
-    public void writeRequested(ObjectValue chosenValue, Type type, ExecutionEnvironment env) throws SQLException, SQLHandledException {
+    public void writeRequested(ObjectValue chosenValue, Type type, ExecutionEnvironment env, LCP resultProp) throws SQLException, SQLHandledException {
         LCP<?> requestCanceledProperty = getRequestCanceledProperty();
         if (chosenValue == null) {
             requestCanceledProperty.change(true, env);
         } else {
             requestCanceledProperty.change((Object)null, env);
-            getRequestedValueProperty().write(type, chosenValue, env);
+            if(resultProp == null)
+                getRequestedValueProperty().write(type, chosenValue, env);
+            else
+                resultProp.change(chosenValue, env);
         }
     }
 }

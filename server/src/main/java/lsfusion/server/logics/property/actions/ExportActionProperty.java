@@ -23,6 +23,7 @@ import net.sf.jasperreports.engine.JRException;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Map;
 
 public class ExportActionProperty extends FormStaticActionProperty<FormExportType> {
@@ -34,14 +35,14 @@ public class ExportActionProperty extends FormStaticActionProperty<FormExportTyp
 
     public ExportActionProperty(LocalizedString caption,
                                     FormEntity form,
-                                    final ObjectEntity[] objectsToSet,
-                                    boolean allowNulls, 
+                                    List<ObjectEntity> objectsToSet,
+                                    List<Boolean> nulls, 
                                     FormExportType staticType,
                                     LCP formExportFile,
                                     boolean noHeader,
                                     String separator,
                                     String charset) {
-        super(caption, form, objectsToSet, allowNulls, staticType, formExportFile);
+        super(caption, form, objectsToSet, nulls, staticType, formExportFile);
         
         this.noHeader = noHeader;
         this.separator = separator;

@@ -31,6 +31,7 @@ import net.sf.jasperreports.engine.JRException;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public abstract class FormStaticActionProperty<T extends FormStaticType> extends FormActionProperty {
@@ -41,11 +42,11 @@ public abstract class FormStaticActionProperty<T extends FormStaticType> extends
     
     public FormStaticActionProperty(LocalizedString caption,
                                     FormEntity form,
-                                    final ObjectEntity[] objectsToSet,
-                                    boolean allowNulls, 
+                                    List<ObjectEntity> objectsToSet,
+                                    List<Boolean> nulls, 
                                     T staticType,
                                     LCP formExportFile, Property... extraProps) {
-        super(caption, form, objectsToSet, allowNulls, extraProps);
+        super(caption, form, objectsToSet, nulls, extraProps);
 
         this.staticType = staticType;
         this.formExportFile = formExportFile;

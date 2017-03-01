@@ -23,14 +23,21 @@ import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.*;
 
 import java.sql.SQLException;
+import java.util.List;
 
 public class FormInteractiveActionProperty extends FormActionProperty {
 
     // INPUT
-    public final ObjectEntity input;
+    private final List<ObjectEntity> inputObjects;
+    private final List<LCP> inputProps;    
+    private final List<Boolean> inputNulls;
     private final ConcreteCustomClass formResultClass;
     private final LCP formResultProperty;
     private final AnyValuePropertyHolder chosenValueProperty;
+
+    private boolean isInput() {
+        return inputObjects != null;
+    }
 
     private final boolean syncType;
     private final WindowFormType windowType;
@@ -63,7 +70,8 @@ public class FormInteractiveActionProperty extends FormActionProperty {
 
     public FormInteractiveActionProperty(LocalizedString caption,
                                          FormEntity form,
-                                         final ObjectEntity[] objectsToSet, boolean allowNulls, ObjectEntity input,
+                                         final List<ObjectEntity> objectsToSet, final List<Boolean> nulls,
+                                         List<ObjectEntity> inputObjects, List<LCP> inputProps, List<Boolean> inputNulls,
                                          Boolean manageSession,
                                          boolean isAdd,
                                          boolean syncType,
@@ -76,9 +84,12 @@ public class FormInteractiveActionProperty extends FormActionProperty {
                                          ObjectEntity contextObject,
                                          CalcProperty contextProperty,
                                          PropertyDrawEntity initFilterProperty, boolean readOnly) {
-        super(caption, form, objectsToSet, allowNulls, contextProperty);
+        super(caption, form, objectsToSet, nulls, contextProperty);
 
-        this.input = input;
+        assert inputObjects == null || syncType; // если ввод, то синхронный
+        this.inputObjects = inputObjects;
+        this.inputProps = inputProps;
+        this.inputNulls = inputNulls;
 
         this.formResultClass = formResultClass;
         this.formResultProperty = formResultProperty;
@@ -93,11 +104,22 @@ public class FormInteractiveActionProperty extends FormActionProperty {
 
         this.contextObject = contextObject;
         this.contextPropertyImplement = contextProperty == null ? null : contextProperty.getImplement(
-                getOrderInterfaces().subOrder(objectsToSet.length, interfaces.size())
+                getOrderInterfaces().subOrder(objectsToSet.size(), interfaces.size())
         );
         this.initFilterProperty = initFilterProperty;
         this.readOnly = readOnly;
         this.checkOnOk = checkOnOk;
+    }
+    
+    private boolean isShowDrop() {
+        if (showDrop) // temporary
+            return true;
+        if (isInput()) {
+            for(Boolean inputNull : inputNulls)
+                if (inputNull)
+                    return true;
+        }
+        return false;
     }
 
     protected boolean isVolatile() {
@@ -118,7 +140,7 @@ public class FormInteractiveActionProperty extends FormActionProperty {
             contextFilters = thisFormInstance.getContextFilters(contextObject, propertyValues, context.getChangingPropertyToDraw(), pullProps);
         }
 
-        FormInstance newFormInstance = context.createFormInstance(form, mapObjectValues, context.getSession(), syncType, isAdd, manageSession, checkOnOk, showDrop, true, contextFilters, initFilterProperty, pullProps.result, readOnly);
+        FormInstance newFormInstance = context.createFormInstance(form, mapObjectValues, context.getSession(), syncType, isAdd, manageSession, checkOnOk, isShowDrop(), true, contextFilters, initFilterProperty, pullProps.result, readOnly);
         context.requestFormUserInteraction(newFormInstance, getModalityType(), context.stack);
 
         if (syncType) {
@@ -135,13 +157,17 @@ public class FormInteractiveActionProperty extends FormActionProperty {
                 }
             }
 
-            if(input != null) {
-                ObjectInstance object = newFormInstance.instanceFactory.getInstance(input);
+            if(isInput()) {
+                for (int i = 0; i < inputObjects.size(); i++) {
+                    ObjectEntity inputObject = inputObjects.get(i);
+                    ObjectInstance object = newFormInstance.instanceFactory.getInstance(inputObject);
 
-                ObjectValue chosenValue = null;
-                if(formResult != FormCloseType.CLOSE)
-                    chosenValue = (formResult == FormCloseType.OK ? object.getObjectValue() : NullValue.instance);
-                context.writeRequested(chosenValue, object.getType());
+                    ObjectValue chosenValue = null;
+                    if (formResult != FormCloseType.CLOSE)
+                        chosenValue = (formResult == FormCloseType.OK ? object.getObjectValue() : NullValue.instance);
+
+                    context.writeRequested(chosenValue, object.getType(), inputProps.get(i));
+                }
             }
         }
     }

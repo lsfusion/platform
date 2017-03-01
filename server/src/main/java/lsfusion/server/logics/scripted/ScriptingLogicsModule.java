@@ -1485,7 +1485,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return prop;
     }
 
-    public LPWithParams addScriptedInputAProp(String typeId, LPWithParams oldValue) throws ScriptingErrorLog.SemanticErrorException {
+    public LPWithParams addScriptedInputAProp(String typeId, LPWithParams oldValue, PropertyUsage targetProp) throws ScriptingErrorLog.SemanticErrorException {
         assert !(typeId == null && oldValue == null);
         DataClass requestDataClass;
         if(typeId != null) {
@@ -1497,8 +1497,11 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
         if(oldValue == null)
             oldValue = new LPWithParams(baseLM.vnull, new ArrayList<Integer>());
+        LCP tprop = null;
+        if(targetProp != null)
+            tprop = (LCP<?>) findLPByPropertyUsage(targetProp);        
         List<Object> resultParams = getParamsPlainList(singletonList(oldValue));
-        return new LPWithParams(addInputAProp(null, LocalizedString.create(""), requestDataClass, resultParams.toArray()), oldValue.usedParams);
+        return new LPWithParams(addInputAProp(null, LocalizedString.create(""), requestDataClass, tprop, resultParams.toArray()), oldValue.usedParams);
     }
 
     public LPWithParams addScriptedRequestAProp(LPWithParams action, Type requestValueType) throws ScriptingErrorLog.SemanticErrorException {
@@ -2313,7 +2316,8 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new Time(h, m, 0);
     }
 
-    public LPWithParams addScriptedInteractiveFAProp(FormEntity form, ObjectEntity input, List<ObjectEntity> objects, List<LPWithParams> mapping,
+    public LPWithParams addScriptedInteractiveFAProp(FormEntity form, List<ObjectEntity> objects, List<Boolean> nulls, List<LPWithParams> mapping,
+                                                     List<String> objectInputIds, List<PropertyUsage> inputDestinations, List<Boolean> inputNulls, 
                                                      String contextObjectName, LPWithParams contextProperty,
                                                      String initFilterPropertyName, List<String> initFilterPropertyMapping,
                                                      Boolean syncType, WindowFormType windowType, boolean manageSession,
@@ -2321,7 +2325,9 @@ public class ScriptingLogicsModule extends LogicsModule {
         if(syncType == null)
             syncType = true;
         if(windowType == null) {
-            if(syncType)
+            if (objectInputIds != null)
+                windowType = WindowFormType.DIALOG;
+            else if(syncType)
                 windowType = WindowFormType.FLOAT;
             else
                 windowType = WindowFormType.DOCKED;
@@ -2343,11 +2349,23 @@ public class ScriptingLogicsModule extends LogicsModule {
                                  ? getPropertyDraw(this, form, initFilterPropertyName, version)
                                  : getPropertyDraw(this, form, PropertyDrawEntity.createSID(initFilterPropertyName, initFilterPropertyMapping), version);
         }
-
-        LAP property = addIFAProp(null, LocalizedString.create(""), form, input, objects.toArray(new ObjectEntity[objects.size()]), manageSession, noCancel, contextObject,
+        
+        List<ObjectEntity> inputObjects = null;
+        List<LCP> inputProps = null;
+        if(objectInputIds != null) { // INPUT
+            inputObjects = new ArrayList<>();
+            for(String objectInputId : objectInputIds)
+                inputObjects.add(findObjectEntity(form, objectInputId));
+            inputProps = new ArrayList<>();
+            for(PropertyUsage inputDestination : inputDestinations)
+                inputProps.add(inputDestination != null ? (LCP<?>) findLPByPropertyUsage(inputDestination) : null);
+        }
+        LAP property = addIFAProp(null, LocalizedString.create(""), form, objects, nulls,
+                                 inputObjects, inputProps, inputNulls,
+                                 manageSession, noCancel, contextObject,
                                  contextProperty == null ? null : (CalcProperty)contextProperty.property.property,
                                  contextProperty != null, initFilterProperty, syncType, windowType, checkOnOk, showDrop, 
-                                 readonly, true, getParamsPlainList(propParams).toArray());
+                                 readonly, getParamsPlainList(propParams).toArray());
 
         if (mapping.size() > 0) {
             if (contextProperty != null) {
@@ -2361,7 +2379,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public LPWithParams addScriptedPrintFAProp(FormEntity form, List<ObjectEntity> objects, List<LPWithParams> mapping,
+    public LPWithParams addScriptedPrintFAProp(FormEntity form, List<ObjectEntity> objects, List<Boolean> nulls, List<LPWithParams> mapping,
                                            LPWithParams printerProperty, FormPrintType printType, PropertyUsage propUsage, Boolean syncType) throws ScriptingErrorLog.SemanticErrorException {
         if(syncType == null)
             syncType = false;
@@ -2377,8 +2395,8 @@ public class ScriptingLogicsModule extends LogicsModule {
         if(propUsage != null)
             targetProp = (LCP<?>) findLPByPropertyUsage(propUsage);
 
-        LAP property = addPFAProp(null, LocalizedString.create(""), form, objects.toArray(new ObjectEntity[objects.size()]),
-                printerProperty != null, printType, true, syncType, targetProp, getParamsPlainList(propParams).toArray());
+        LAP property = addPFAProp(null, LocalizedString.create(""), form, objects, nulls,
+                printerProperty != null, printType, syncType, targetProp, getParamsPlainList(propParams).toArray());
 
         if (mapping.size() > 0) {
             return addScriptedJoinAProp(property, mapping);
@@ -2387,7 +2405,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public LPWithParams addScriptedExportFAProp(FormEntity form, List<ObjectEntity> objects, List<LPWithParams> mapping,
+    public LPWithParams addScriptedExportFAProp(FormEntity form, List<ObjectEntity> objects, List<Boolean> nulls, List<LPWithParams> mapping,
                                                FormExportType exportType, boolean noHeader, String separator, String charset, PropertyUsage propUsage) throws ScriptingErrorLog.SemanticErrorException {
         List<LPWithParams> propParams = new ArrayList<>();
         List<Integer> allParams = mergeAllParams(propParams);
@@ -2396,8 +2414,8 @@ public class ScriptingLogicsModule extends LogicsModule {
         if(propUsage != null)
             targetProp = (LCP<?>) findLPByPropertyUsage(propUsage);
 
-        LAP property = addEFAProp(null, LocalizedString.create(""), form, objects.toArray(new ObjectEntity[objects.size()]),
-                exportType, noHeader, separator, charset, true, targetProp, getParamsPlainList(propParams).toArray());
+        LAP property = addEFAProp(null, LocalizedString.create(""), form, objects, nulls,
+                exportType, noHeader, separator, charset, targetProp, getParamsPlainList(propParams).toArray());
 
         if (mapping.size() > 0) {
             return addScriptedJoinAProp(property, mapping);

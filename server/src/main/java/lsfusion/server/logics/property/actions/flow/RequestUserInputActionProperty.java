@@ -57,7 +57,7 @@ public class RequestUserInputActionProperty extends AroundAspectActionProperty {
                 ObjectValue chosenValue = null;
                 if (value != null && !value.equals(closeFormResultID)) // CLOSE
                     chosenValue = value.equals(dropFormResultID) ? NullValue.instance : chosenValueProperty.read(requestValueType, context, new DataObject(chosenKey)); // DROP / OK 
-                context.writeRequested(chosenValue, requestValueType);
+                context.writeRequested(chosenValue, requestValueType, null);
             }
         } 
 

@@ -1,6 +1,7 @@
 package lsfusion.server.logics.property.actions;
 
 import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.DataObject;
@@ -18,8 +19,6 @@ import java.sql.SQLException;
 
 // с явным задание классов параметров (where определяется этими классами)
 public abstract class ExplicitActionProperty extends BaseActionProperty<ClassPropertyInterface> {
-    public boolean allowNullValue;
-
     protected ExplicitActionProperty(ValueClass... classes) {
         this(LocalizedString.create("sys"), classes);
     }
@@ -30,12 +29,22 @@ public abstract class ExplicitActionProperty extends BaseActionProperty<ClassPro
 
     protected abstract void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException;
 
+    public boolean allowNullValue;
     protected abstract boolean allowNulls();
+    
+    protected boolean checkNulls(ImSet<ClassPropertyInterface> dataKeys) {
+        if (allowNullValue)
+            return false;
+
+        if (allowNulls())
+            return false;
+
+        return dataKeys.size() < interfaces.size();
+    }
 
     public final FlowResult aspectExecute(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
-        ImMap<ClassPropertyInterface, ? extends ObjectValue> keys = context.getKeys();
-        ImMap<ClassPropertyInterface,DataObject> dataKeys = DataObject.filterDataObjects(keys);
-        if(!allowNullValue && !allowNulls() && dataKeys.size() < keys.size())
+        ImMap<ClassPropertyInterface,DataObject> dataKeys = DataObject.filterDataObjects(context.getKeys());
+        if(checkNulls(dataKeys.keys()))
             proceedNullException();
         else
             if(IsClassProperty.fitInterfaceClasses(context.getSession().getCurrentClasses(dataKeys))) { // если подходит по классам выполнем
