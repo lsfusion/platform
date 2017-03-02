@@ -7,10 +7,7 @@ import lsfusion.base.Pair;
 import lsfusion.base.Processor;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
-import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.base.col.interfaces.immutable.ImOrderSet;
-import lsfusion.base.col.interfaces.immutable.ImRevMap;
-import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.interop.ModalityType;
 import lsfusion.interop.action.ClientAction;
@@ -532,8 +529,8 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         ThreadLocalContext.requestFormUserInteraction(remoteForm, modalityType, stack);
     }
 
-    public void writeRequested(ObjectValue chosenValue, Type type, LCP targetProp) throws SQLException, SQLHandledException {
-        getBL().LM.writeRequested(chosenValue, type, getEnv(), targetProp);
+    public void writeRequested(ImList<RequestResult> requestResults) throws SQLException, SQLHandledException {
+        getBL().LM.writeRequested(requestResults, getEnv());
     }
 
     public <R> R pushRequest(SQLCallable<R> callable) throws SQLException, SQLHandledException {

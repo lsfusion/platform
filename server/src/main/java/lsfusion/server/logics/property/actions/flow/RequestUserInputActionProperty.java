@@ -1,5 +1,6 @@
 package lsfusion.server.logics.property.actions.flow;
 
+import lsfusion.base.col.ListFact;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.server.classes.ConcreteCustomClass;
 import lsfusion.server.data.SQLHandledException;
@@ -10,10 +11,7 @@ import lsfusion.server.logics.NullValue;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.linear.LCP;
-import lsfusion.server.logics.property.ActionPropertyMapImplement;
-import lsfusion.server.logics.property.AnyValuePropertyHolder;
-import lsfusion.server.logics.property.ExecutionContext;
-import lsfusion.server.logics.property.PropertyInterface;
+import lsfusion.server.logics.property.*;
 
 import java.sql.SQLException;
 
@@ -57,7 +55,7 @@ public class RequestUserInputActionProperty extends AroundAspectActionProperty {
                 ObjectValue chosenValue = null;
                 if (value != null && !value.equals(closeFormResultID)) // CLOSE
                     chosenValue = value.equals(dropFormResultID) ? NullValue.instance : chosenValueProperty.read(requestValueType, context, new DataObject(chosenKey)); // DROP / OK 
-                context.writeRequested(chosenValue, requestValueType, null);
+                context.writeRequested(RequestResult.get(chosenValue, requestValueType, null));
             }
         } 
 

@@ -38,6 +38,7 @@ grammar LsfLogics;
 	import lsfusion.server.logics.scripted.ScriptingLogicsModule.LPWithParams;
 	import lsfusion.server.logics.scripted.ScriptingLogicsModule.TypedParameter;
 	import lsfusion.server.logics.scripted.ScriptingLogicsModule.PropertyUsage;
+	import lsfusion.server.logics.scripted.ScriptingLogicsModule.FormActionProps;
 	import lsfusion.server.logics.scripted.ScriptingLogicsModule.NavigatorElementOptions;
 	import lsfusion.server.logics.scripted.ScriptingFormEntity.RegularFilterInfo;
 	import lsfusion.server.mail.SendEmailActionProperty.FormStorageType;
@@ -2221,22 +2222,20 @@ contextIndependentActionDB returns [LPWithParams property, List<ResolveClassSet>
 	|	customADB=customActionDefinitionBody { $property.property = $customADB.property; $signature = $customADB.signature; }
 	;
 
-mappedForm[List<TypedParameter> context, boolean dynamic] returns [FormEntity formEntity, List<ObjectEntity> objects = new ArrayList<>(), List<LPWithParams> mapping = new ArrayList<>(), List<Boolean> nulls = new ArrayList<>()]
+mappedForm[List<TypedParameter> context, boolean dynamic] returns [FormEntity formEntity, List<ObjectEntity> objects = new ArrayList<>(), List<FormActionProps> props = new ArrayList<>()]
 @init {
     boolean edit = false;
-    boolean inputObjects = false;
     ClassFormEntity classForm = null;
     boolean isNull;
 }
 	:
 	(   (   formName=compoundID { if(inPropParseState()) { $formEntity = self.findForm($formName.sid); } }
-	        ('OBJECTS' list=formActionObjectList[context, dynamic] { if(inPropParseState()) { $objects = self.findObjectEntities($formEntity, $list.objects); } $mapping = $list.exprs; $nulls = $list.nulls; })?
+	        ('OBJECTS' list=formActionObjectList[context, dynamic] { if(inPropParseState()) { $objects = self.findObjectEntities($formEntity, $list.objects); } $props = $list.props; })?
 		)
 	    |
 	    (   ('DIALOG' | ('EDIT' { edit = true; } ))
 	         cls = classId { if(inPropParseState()) { classForm = self.findClassForm($cls.sid, edit); $formEntity = classForm.form; $objects = Collections.singletonList(classForm.object); } }
-	         ('OBJECT' pe=propertyExpression[context, dynamic] { $mapping = Collections.singletonList($pe.property); })?
-	         ( { isNull = false; } ('NULL' { isNull = true; })? { $nulls = Collections.singletonList(isNull); } )
+	         ('OBJECT' object=formActionProps[context, dynamic] { $props = Collections.singletonList($object.props); })?
 	    ))
 ;
 
@@ -2260,13 +2259,12 @@ formActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns 
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedInteractiveFAProp($mf.formEntity, $mf.objects, $mf.nulls, $mf.mapping, $inputList.objectIds, $inputList.tos, $inputList.nulls, contextObjectName, contextProperty, initFilterPropertyName, initFilterPropertyMapping, syncType, windowType, manageSession, checkOnOk, showDrop, noCancel, readOnly);
+		$property = self.addScriptedInteractiveFAProp($mf.formEntity, $mf.objects, $mf.props, contextObjectName, contextProperty, initFilterPropertyName, initFilterPropertyMapping, syncType, windowType, manageSession, checkOnOk, showDrop, noCancel, readOnly);
 	}
 }
 	:	'FORM' mf=mappedForm[context,dynamic]
 		(
-            ('INPUT' inputList = objectInputList )            
-		|   sync = syncTypeLiteral { syncType = $sync.val; }
+		    sync = syncTypeLiteral { syncType = $sync.val; }
 		|   window = windowTypeLiteral { windowType = $window.val; }
 
 		|	'MANAGESESSION' { manageSession = true; }
@@ -2278,14 +2276,6 @@ formActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns 
 		|	'READONLY' { readOnly = true; }
 		|	'CHECK' { checkOnOk = true; }
 		)*
-	;
-
-objectInputList returns [List<String> objectIds = new ArrayList<String>(), List<PropertyUsage> tos = new ArrayList<PropertyUsage>(), List<Boolean> nulls = new ArrayList<>()]
-    @init {
-	    boolean isNull;
-    }
-	:	(id=ID { isNull = false; } ('NULL' { isNull = true; } )? ('TO' pUsage=propertyUsage)? { $objectIds.add($id.text); $tos.add($pUsage.propUsage); $nulls.add(isNull); } 
-		(',' id=ID { isNull = false; } ('NULL' { isNull = true; } )? ('TO' pUsage=propertyUsage)? { $objectIds.add($id.text); $tos.add($pUsage.propUsage); $nulls.add(isNull); } )*)?
 	;
 
 syncTypeLiteral returns [boolean val]
@@ -2307,7 +2297,7 @@ printActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedPrintFAProp($mf.formEntity, $mf.objects, $mf.nulls, $mf.mapping, printerProperty, printType, $pUsage.propUsage, syncType);
+		$property = self.addScriptedPrintFAProp($mf.formEntity, $mf.objects, $mf.props, printerProperty, printType, $pUsage.propUsage, syncType);
 	}
 }
 	:	'PRINT' mf=mappedForm[context,dynamic]
@@ -2337,7 +2327,7 @@ exportActionDefinitionBody[List<TypedParameter> context, boolean dynamic] return
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedExportFAProp($mf.formEntity, $mf.objects, $mf.nulls, $mf.mapping, exportType, noHeader, separator, charset, $pUsage.propUsage);
+		$property = self.addScriptedExportFAProp($mf.formEntity, $mf.objects, $mf.props, exportType, noHeader, separator, charset, $pUsage.propUsage);
 	}
 }
 	:	'EXPORT' mf=mappedForm[context,dynamic]
@@ -2356,9 +2346,25 @@ initFilterDefinition returns [String propName, List<String> mapping]
 		)
 	;
 
-formActionObjectList[List<TypedParameter> context, boolean dynamic] returns [List<String> objects, List<LPWithParams> exprs, List<Boolean> nulls]
-	:	list=idEqualPEList[context, dynamic] { $objects = $list.ids; $exprs = $list.exprs; $nulls = $list.nulls; }
+formActionObjectList[List<TypedParameter> context, boolean dynamic] returns [List<String> objects = new ArrayList<>(), List<FormActionProps> props = new ArrayList<>() ]
+	:	id=ID { $objects.add($id.text); } fap=formActionProps[context, dynamic] { $props.add($fap.props); }  
+		(',' id=ID { $objects.add($id.text); } fap=formActionProps[context, dynamic] { $props.add($fap.props); })*
 	;
+
+formActionProps[List<TypedParameter> context, boolean dynamic] returns [FormActionProps props]
+@init {
+    LPWithParams in = null;
+    Boolean inNull = false;
+    boolean out = false;
+    Boolean outNull = false;
+    PropertyUsage outProp = null;    
+}
+@after {
+    $props = new FormActionProps(in, inNull, out, outNull, outProp);
+}
+    :   ('=' expr=propertyExpression[context, dynamic] { in = $expr.property; } ('NULL' { inNull = true; } )? )?
+        ('INPUT' { out = true; } ('NULL' { outNull = true; })? ('TO' pUsage=propertyUsage { outProp = $pUsage.propUsage; } )?)?
+    ;
 
 idEqualPEList[List<TypedParameter> context, boolean dynamic] returns [List<String> ids = new ArrayList<String>(), List<LPWithParams> exprs = new ArrayList<LPWithParams>(), List<Boolean> nulls = new ArrayList<Boolean>()]
 @init {

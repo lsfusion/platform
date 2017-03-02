@@ -3,6 +3,7 @@ package lsfusion.server.logics;
 import com.google.common.base.Throwables;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
+import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.identity.DefaultIDGenerator;
 import lsfusion.base.identity.IDGenerator;
 import lsfusion.interop.Compare;
@@ -725,20 +726,22 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
             return getRequestedValueProperty().read(type, env);
 
         ObjectValue result = request.call();
-        writeRequested(result, type, env, null);
+        writeRequested(RequestResult.get(result, type, null), env);
         return result;
     }
     
-    public void writeRequested(ObjectValue chosenValue, Type type, ExecutionEnvironment env, LCP resultProp) throws SQLException, SQLHandledException {
+    public void writeRequested(ImList<RequestResult> requestResults, ExecutionEnvironment env) throws SQLException, SQLHandledException {
         LCP<?> requestCanceledProperty = getRequestCanceledProperty();
-        if (chosenValue == null) {
+        if (requestResults == null) {
             requestCanceledProperty.change(true, env);
         } else {
             requestCanceledProperty.change((Object)null, env);
-            if(resultProp == null)
-                getRequestedValueProperty().write(type, chosenValue, env);
-            else
-                resultProp.change(chosenValue, env);
+            for(RequestResult requestResult : requestResults) {
+                if (requestResult.targetProp == null)
+                    getRequestedValueProperty().write(requestResult.type, requestResult.chosenValue, env);
+                else
+                    requestResult.targetProp.change(requestResult.chosenValue, env);
+            }
         }
     }
 }

@@ -540,7 +540,7 @@ public abstract class LogicsModule {
     }
 
     protected LAP addIFAProp(LocalizedString caption, FormEntity form, List<ObjectEntity> objectsToSet, Boolean manageSession, boolean noCancel, boolean syncType, WindowFormType windowType) {
-        return addIFAProp(null, caption, form, objectsToSet, Collections.nCopies(objectsToSet.size(), false), null, null, null, manageSession, noCancel, null, null, false, null, syncType, windowType, false, false, false);
+        return addIFAProp(null, caption, form, objectsToSet, Collections.nCopies(objectsToSet.size(), false), new ArrayList<ObjectEntity>(), new ArrayList<LCP>(), new ArrayList<Boolean>(), manageSession, noCancel, null, null, false, null, syncType, windowType, false, false, false);
     }
 
     protected LAP addIFAProp(AbstractGroup group, LocalizedString caption, FormEntity form, List<ObjectEntity> objectsToSet, List<Boolean> nulls, List<ObjectEntity> inputObjects, List<LCP> inputProps, List<Boolean> inputNulls, Boolean manageSession, boolean isAdd, ObjectEntity contextObject, CalcProperty contextProperty, boolean hasContextProperty, PropertyDrawEntity initFilterProperty, boolean syncType, WindowFormType windowType, boolean checkOnOk, boolean showDrop, boolean readonly, Object... params) {

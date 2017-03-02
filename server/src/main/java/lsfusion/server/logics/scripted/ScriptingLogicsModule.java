@@ -2316,16 +2316,38 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new Time(h, m, 0);
     }
 
-    public LPWithParams addScriptedInteractiveFAProp(FormEntity form, List<ObjectEntity> objects, List<Boolean> nulls, List<LPWithParams> mapping,
-                                                     List<String> objectInputIds, List<PropertyUsage> inputDestinations, List<Boolean> inputNulls, 
+    public LPWithParams addScriptedInteractiveFAProp(FormEntity form, List<ObjectEntity> allObjects, List<FormActionProps> allObjectProps, 
                                                      String contextObjectName, LPWithParams contextProperty,
                                                      String initFilterPropertyName, List<String> initFilterPropertyMapping,
                                                      Boolean syncType, WindowFormType windowType, boolean manageSession,
                                                      boolean checkOnOk, boolean showDrop, boolean noCancel, boolean readonly) throws ScriptingErrorLog.SemanticErrorException {
+        List<ObjectEntity> objects = new ArrayList<>();
+        List<LPWithParams> mapping = new ArrayList<>();
+        List<Boolean> nulls = new ArrayList<>();
+        
+        List<ObjectEntity> inputObjects = new ArrayList<>();
+        List<Boolean> inputNulls = new ArrayList<>();
+        List<LCP> inputProps = new ArrayList<>();
+
+        for (int i = 0; i < allObjects.size(); i++) {
+            ObjectEntity object = allObjects.get(i);
+            FormActionProps objectProp = allObjectProps.get(i);
+            if (objectProp.in != null) {
+                objects.add(object);
+                mapping.add(objectProp.in);
+                nulls.add(objectProp.inNull);
+            }
+            if (objectProp.out) {
+                inputObjects.add(object);
+                inputNulls.add(objectProp.outNull);
+                inputProps.add(objectProp.outProp != null ? (LCP<?>) findLPByPropertyUsage(objectProp.outProp) : null);
+            }
+        }
+        
         if(syncType == null)
             syncType = true;
         if(windowType == null) {
-            if (objectInputIds != null)
+            if (!inputObjects.isEmpty())
                 windowType = WindowFormType.DIALOG;
             else if(syncType)
                 windowType = WindowFormType.FLOAT;
@@ -2350,16 +2372,6 @@ public class ScriptingLogicsModule extends LogicsModule {
                                  : getPropertyDraw(this, form, PropertyDrawEntity.createSID(initFilterPropertyName, initFilterPropertyMapping), version);
         }
         
-        List<ObjectEntity> inputObjects = null;
-        List<LCP> inputProps = null;
-        if(objectInputIds != null) { // INPUT
-            inputObjects = new ArrayList<>();
-            for(String objectInputId : objectInputIds)
-                inputObjects.add(findObjectEntity(form, objectInputId));
-            inputProps = new ArrayList<>();
-            for(PropertyUsage inputDestination : inputDestinations)
-                inputProps.add(inputDestination != null ? (LCP<?>) findLPByPropertyUsage(inputDestination) : null);
-        }
         LAP property = addIFAProp(null, LocalizedString.create(""), form, objects, nulls,
                                  inputObjects, inputProps, inputNulls,
                                  manageSession, noCancel, contextObject,
@@ -2379,8 +2391,22 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public LPWithParams addScriptedPrintFAProp(FormEntity form, List<ObjectEntity> objects, List<Boolean> nulls, List<LPWithParams> mapping,
+    public LPWithParams addScriptedPrintFAProp(FormEntity form, List<ObjectEntity> allObjects, List<FormActionProps> allObjectProps,
                                            LPWithParams printerProperty, FormPrintType printType, PropertyUsage propUsage, Boolean syncType) throws ScriptingErrorLog.SemanticErrorException {
+        List<ObjectEntity> objects = new ArrayList<>();
+        List<LPWithParams> mapping = new ArrayList<>();
+        List<Boolean> nulls = new ArrayList<>();
+
+        for (int i = 0; i < allObjects.size(); i++) {
+            ObjectEntity object = allObjects.get(i);
+            FormActionProps objectProp = allObjectProps.get(i);
+            assert objectProp.in != null;
+            objects.add(object);
+            mapping.add(objectProp.in);
+            nulls.add(objectProp.inNull);
+            assert !objectProp.out;
+        }
+        
         if(syncType == null)
             syncType = false;
 
@@ -2405,8 +2431,23 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public LPWithParams addScriptedExportFAProp(FormEntity form, List<ObjectEntity> objects, List<Boolean> nulls, List<LPWithParams> mapping,
+    public LPWithParams addScriptedExportFAProp(FormEntity form, List<ObjectEntity> allObjects, List<FormActionProps> allObjectProps,
                                                FormExportType exportType, boolean noHeader, String separator, String charset, PropertyUsage propUsage) throws ScriptingErrorLog.SemanticErrorException {
+        List<ObjectEntity> objects = new ArrayList<>();
+        List<LPWithParams> mapping = new ArrayList<>();
+        List<Boolean> nulls = new ArrayList<>();
+
+        for (int i = 0; i < allObjects.size(); i++) {
+            ObjectEntity object = allObjects.get(i);
+            FormActionProps objectProp = allObjectProps.get(i);
+            assert objectProp.in != null;
+            objects.add(object);
+            mapping.add(objectProp.in);
+            nulls.add(objectProp.inNull);
+            assert !objectProp.out;
+        }
+
+
         List<LPWithParams> propParams = new ArrayList<>();
         List<Integer> allParams = mergeAllParams(propParams);
 
@@ -3850,7 +3891,24 @@ public class ScriptingLogicsModule extends LogicsModule {
             return null;
         }
     }
-    
+
+    public static class FormActionProps {
+        public LPWithParams in;
+        public Boolean inNull;
+
+        public boolean out;
+        public Boolean outNull;
+        public PropertyUsage outProp;
+
+        public FormActionProps(LPWithParams in, Boolean inNull, boolean out, Boolean outNull, PropertyUsage outProp) {
+            this.in = in;
+            this.inNull = inNull;
+            this.out = out;
+            this.outNull = outNull;
+            this.outProp = outProp;
+        }
+    }
+
     public class CompoundNameResolver<T, P> {
         private ModuleFinder<T, P> finder;
 

@@ -1,5 +1,6 @@
 package lsfusion.server.logics.property.actions;
 
+import lsfusion.base.col.ListFact;
 import lsfusion.server.classes.DataClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.type.Type;
@@ -8,6 +9,7 @@ import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
+import lsfusion.server.logics.property.RequestResult;
 
 import java.sql.SQLException;
 
@@ -32,7 +34,7 @@ public class InputActionProperty extends SystemExplicitActionProperty {
     @Override
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         ObjectValue userValue = context.inputUserData(dataClass, context.getSingleKeyValue().getValue());
-        context.writeRequested(userValue, dataClass, targetProp);
+        context.writeRequested(RequestResult.get(userValue, dataClass, targetProp));
     }
     
     @Override

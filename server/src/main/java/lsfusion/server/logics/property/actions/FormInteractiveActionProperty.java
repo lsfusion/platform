@@ -1,8 +1,11 @@
 package lsfusion.server.logics.property.actions;
 
 import lsfusion.base.Result;
+import lsfusion.base.col.ListFact;
+import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.interop.ModalityType;
 import lsfusion.interop.WindowFormType;
 import lsfusion.server.classes.ConcreteCustomClass;
@@ -34,10 +37,6 @@ public class FormInteractiveActionProperty extends FormActionProperty {
     private final ConcreteCustomClass formResultClass;
     private final LCP formResultProperty;
     private final AnyValuePropertyHolder chosenValueProperty;
-
-    private boolean isInput() {
-        return inputObjects != null;
-    }
 
     private final boolean syncType;
     private final WindowFormType windowType;
@@ -86,7 +85,7 @@ public class FormInteractiveActionProperty extends FormActionProperty {
                                          PropertyDrawEntity initFilterProperty, boolean readOnly) {
         super(caption, form, objectsToSet, nulls, contextProperty);
 
-        assert inputObjects == null || syncType; // если ввод, то синхронный
+        assert inputObjects.isEmpty() || syncType; // если ввод, то синхронный
         this.inputObjects = inputObjects;
         this.inputProps = inputProps;
         this.inputNulls = inputNulls;
@@ -114,11 +113,9 @@ public class FormInteractiveActionProperty extends FormActionProperty {
     private boolean isShowDrop() {
         if (showDrop) // temporary
             return true;
-        if (isInput()) {
-            for(Boolean inputNull : inputNulls)
-                if (inputNull)
-                    return true;
-        }
+        for(Boolean inputNull : inputNulls)
+            if (inputNull)
+                return true;
         return false;
     }
 
@@ -157,18 +154,19 @@ public class FormInteractiveActionProperty extends FormActionProperty {
                 }
             }
 
-            if(isInput()) {
+            ImList<RequestResult> result = null;
+            if(formResult != FormCloseType.CLOSE) {
+                MList<RequestResult> mResult = ListFact.mList(inputObjects.size());
                 for (int i = 0; i < inputObjects.size(); i++) {
                     ObjectEntity inputObject = inputObjects.get(i);
                     ObjectInstance object = newFormInstance.instanceFactory.getInstance(inputObject);
 
-                    ObjectValue chosenValue = null;
-                    if (formResult != FormCloseType.CLOSE)
-                        chosenValue = (formResult == FormCloseType.OK ? object.getObjectValue() : NullValue.instance);
-
-                    context.writeRequested(chosenValue, object.getType(), inputProps.get(i));
+                    ObjectValue chosenValue = (formResult == FormCloseType.OK ? object.getObjectValue() : NullValue.instance);
+                    mResult.add(new RequestResult(chosenValue, object.getType(), inputProps.get(i)));
                 }
+                result = mResult.immutableList();
             }
+            context.writeRequested(result);
         }
     }
 
