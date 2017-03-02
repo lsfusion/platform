@@ -1727,6 +1727,10 @@ public class DBManager extends LogicsManager implements InitializingBean {
         return null;
     }
 
+    public String getBackupFilePath(String dumpFileName) throws IOException, InterruptedException {
+        return adapter.getBackupFilePath(dumpFileName);
+    }
+
     public String backupDB(ExecutionContext context, String dumpFileName, List<String> excludeTables) throws IOException, InterruptedException {
         return adapter.backupDB(context, dumpFileName, excludeTables);
     }

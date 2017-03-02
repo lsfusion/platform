@@ -295,7 +295,11 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
     public String getCancelActiveTaskQuery(Integer pid) {
         return "";
     }
-    
+
+    public String getBackupFilePath(String dumpFileName) throws IOException, InterruptedException {
+        return null;
+    }
+
     public String backupDB(ExecutionContext context, String dumpFileName, List<String> excludeTables) throws IOException, InterruptedException {
         return null;
     }
