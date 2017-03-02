@@ -23,6 +23,7 @@
                               action="login_check<c:out value="${(empty param.targetUrl) ? '' : '?targetUrl='}${(empty param.targetUrl) ? '' : param.targetUrl}"/>" >
                             <fieldset>
                                 <p>
+                                    <img src="logo.jpg" alt="LSFusion">
                                     <label for="j_username">login</label>
                                     <input type="text" id="j_username" name="j_username" class="round full-width-input"/>
                                 </p>

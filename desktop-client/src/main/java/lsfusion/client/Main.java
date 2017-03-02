@@ -188,6 +188,9 @@ public class Main {
                     //UIManager.setLookAndFeel("com.jgoodies.looks.plastic.PlasticXPLookAndFeel");
                     UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 
+                    //пытаемся подгрузить лого со стандартными настройками подключения
+                    loadLogicsLogo();
+
                     LoginAction loginAction = LoginAction.getInstance();
                     if (!loginAction.login()) {
                         return;
@@ -265,6 +268,20 @@ public class Main {
                 }
             }
         });
+    }
+
+    private static void loadLogicsLogo() {
+        try {
+            String serverHost = getSystemPropertyWithJNLPFallback(LSFUSION_CLIENT_HOSTNAME);
+            String serverPort = getSystemPropertyWithJNLPFallback(LSFUSION_CLIENT_HOSTPORT);
+            String serverDB = getSystemPropertyWithJNLPFallback(LSFUSION_CLIENT_EXPORTNAME);
+            RemoteLogicsLoaderInterface remoteLoader = new ReconnectWorker(serverHost, serverPort, serverDB).connect();
+            if (remoteLoader != null) {
+                RemoteLogicsInterface remote = remoteLoader.getLogics();
+                logicsLogo = remote.getGUIPreferences().logicsLogo;
+            }
+        } catch (Throwable ignored) {
+        }
     }
 
     private static void setupTimePreferences(String userTimeZone, Integer twoDigitYearStart) throws RemoteException {

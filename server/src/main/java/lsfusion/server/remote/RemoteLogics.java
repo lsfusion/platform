@@ -34,9 +34,11 @@ import lsfusion.server.logics.property.ClassType;
 import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.session.DataSession;
 import org.apache.log4j.Logger;
+import org.apache.poi.util.IOUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
 
+import java.io.IOException;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -62,6 +64,7 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     private VMOptions clientVMOptions;
 
     private String displayName;
+    private String logicsLogo;
     private String name;
     
     private String clientHideMenu;
@@ -96,6 +99,10 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
 
     public void setDisplayName(String displayName) {
         this.displayName = displayName;
+    }
+
+    public void setLogicsLogo(String logicsLogo) {
+        this.logicsLogo = logicsLogo;
     }
 
     public void setName(String name) {
@@ -169,11 +176,18 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
 
     @Override
     public Integer getApiVersion() throws RemoteException {
-        return 26;
+        return 27;
     }
 
     public GUIPreferences getGUIPreferences() throws RemoteException {
-        return new GUIPreferences(name, displayName, null, null, Boolean.parseBoolean(clientHideMenu));
+        byte[] logicsLogoBytes = null;
+        try {
+            if (logicsLogo != null && !logicsLogo.isEmpty())
+                logicsLogoBytes = IOUtils.toByteArray(getClass().getResourceAsStream("/" + logicsLogo));
+        } catch (IOException e) {
+            logger.error("Error reading logics logo: ", e);
+        }
+        return new GUIPreferences(name, displayName, null, logicsLogoBytes, Boolean.parseBoolean(clientHideMenu));
     }
     
     public int generateNewID() throws RemoteException {
