@@ -46,7 +46,7 @@ public abstract class FormStaticActionProperty<T extends FormStaticType> extends
                                     List<Boolean> nulls, 
                                     T staticType,
                                     LCP formExportFile, Property... extraProps) {
-        super(caption, form, objectsToSet, nulls, extraProps);
+        super(caption, form, objectsToSet, nulls, false, extraProps);
 
         this.staticType = staticType;
         this.formExportFile = formExportFile;

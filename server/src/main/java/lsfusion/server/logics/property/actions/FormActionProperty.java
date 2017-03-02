@@ -102,7 +102,7 @@ public abstract class FormActionProperty extends SystemExplicitActionProperty {
     public FormActionProperty(LocalizedString caption,
                               FormEntity form,
                               final List<ObjectEntity> objectsToSet,
-                              final List<Boolean> nulls,
+                              final List<Boolean> nulls, boolean extraNotNull,
                               Property... extraProps) {
         super(caption, getValueClasses(objectsToSet, extraProps));
 
@@ -115,13 +115,18 @@ public abstract class FormActionProperty extends SystemExplicitActionProperty {
                         return objectsToSet.get(i);
                     }
                 });
-        notNullInterfaces = objectInterfaces.mapOrderValues(new GetIndex<Boolean>() {
+        ImSet<ClassPropertyInterface> notNullInterfaces = objectInterfaces.mapOrderValues(new GetIndex<Boolean>() {
             public Boolean getMapValue(int i) {
                 return nulls.get(i);
-            }}).filterFnValues(new SFunctionSet<Boolean>() {
+            }
+        }).filterFnValues(new SFunctionSet<Boolean>() {
             public boolean contains(Boolean element) {
                 return !element;
-            }}).keys();
+            }
+        }).keys();
+        if(extraNotNull)
+            notNullInterfaces = notNullInterfaces.addExcl(getOrderInterfaces().subOrder(objectsToSet.size(), interfaces.size()).getSet());
+        this.notNullInterfaces = notNullInterfaces;
     }
 
     protected abstract void executeCustom(ImMap<ObjectEntity, ? extends ObjectValue> mapObjectValues, ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException;

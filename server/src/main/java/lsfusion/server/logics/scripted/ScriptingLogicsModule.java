@@ -9,10 +9,7 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.base.col.interfaces.mutable.MExclMap;
-import lsfusion.base.col.interfaces.mutable.MExclSet;
-import lsfusion.base.col.interfaces.mutable.MOrderExclSet;
-import lsfusion.base.col.interfaces.mutable.MSet;
+import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.interop.*;
 import lsfusion.interop.form.layout.Alignment;
@@ -2317,7 +2314,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public LPWithParams addScriptedInteractiveFAProp(FormEntity form, List<ObjectEntity> allObjects, List<FormActionProps> allObjectProps, 
-                                                     String contextObjectName, LPWithParams contextProperty,
+                                                     String contextObjectName, LPWithParams contextObjectLP,
                                                      String initFilterPropertyName, List<String> initFilterPropertyMapping,
                                                      Boolean syncType, WindowFormType windowType, boolean manageSession,
                                                      boolean checkOnOk, boolean showDrop, boolean noCancel, boolean readonly) throws ScriptingErrorLog.SemanticErrorException {
@@ -2325,10 +2322,19 @@ public class ScriptingLogicsModule extends LogicsModule {
         List<LPWithParams> mapping = new ArrayList<>();
         List<Boolean> nulls = new ArrayList<>();
         
-        List<ObjectEntity> inputObjects = new ArrayList<>();
-        List<Boolean> inputNulls = new ArrayList<>();
-        List<LCP> inputProps = new ArrayList<>();
+        MList<ObjectEntity> mInputObjects = ListFact.mListMax(allObjects.size());
+        MList<Boolean> mInputNulls = ListFact.mListMax(allObjects.size());
+        MList<LCP> mInputProps = ListFact.mListMax(allObjects.size());
 
+        MList<ObjectEntity> mContextObjects = ListFact.mListMax(allObjects.size() + 1);
+        MList<CalcProperty> mContextProps = ListFact.mListMax(allObjects.size() + 1);
+        List<LPWithParams> contextLPs = new ArrayList<>(); 
+        if(contextObjectName != null) { // deprecated
+            mContextObjects.add(findObjectEntity(form, contextObjectName));
+            mContextProps.add((CalcProperty)contextObjectLP.property.property);
+            contextLPs.add(contextObjectLP);
+        }
+                
         for (int i = 0; i < allObjects.size(); i++) {
             ObjectEntity object = allObjects.get(i);
             FormActionProps objectProp = allObjectProps.get(i);
@@ -2338,12 +2344,28 @@ public class ScriptingLogicsModule extends LogicsModule {
                 nulls.add(objectProp.inNull);
             }
             if (objectProp.out) {
-                inputObjects.add(object);
-                inputNulls.add(objectProp.outNull);
-                inputProps.add(objectProp.outProp != null ? (LCP<?>) findLPByPropertyUsage(objectProp.outProp) : null);
+                mInputObjects.add(object);
+                mInputNulls.add(objectProp.outNull);
+                mInputProps.add(objectProp.outProp != null ? (LCP<?>) findLPByPropertyUsage(objectProp.outProp) : null);
+            }
+            if(objectProp.contextFilter) {
+                LPWithParams contextProp = objectProp.contextProp;
+                if(contextProp == null)
+                    contextProp = objectProp.in;
+                assert contextProp != null;
+                
+                mContextObjects.add(object);
+                mContextProps.add((CalcProperty)contextProp.property.property);
+                contextLPs.add(contextProp);
             }
         }
-        
+        ImList<ObjectEntity> inputObjects = mInputObjects.immutableList();
+        ImList<Boolean> inputNulls = mInputNulls.immutableList();
+        ImList<LCP> inputProps = mInputProps.immutableList();
+
+        ImList<ObjectEntity> contextObjects = mContextObjects.immutableList();
+        ImList<CalcProperty> contextProps = mContextProps.immutableList();
+
         if(syncType == null)
             syncType = true;
         if(windowType == null) {
@@ -2356,13 +2378,11 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
             
         List<LPWithParams> propParams = new ArrayList<>();
-        if(contextProperty != null) {
-            propParams.add(contextProperty);
-            checkCalculationProperty(contextProperty.property);
+        for(LPWithParams contextLP : contextLPs) {
+            propParams.add(contextLP);
+            checkCalculationProperty(contextLP.property);
         }
         List<Integer> allParams = mergeAllParams(propParams);
-
-        ObjectEntity contextObject = contextObjectName == null ? null : findObjectEntity(form, contextObjectName);
 
         Version version = getVersion();
         PropertyDrawEntity initFilterProperty = null;
@@ -2374,17 +2394,16 @@ public class ScriptingLogicsModule extends LogicsModule {
         
         LAP property = addIFAProp(null, LocalizedString.create(""), form, objects, nulls,
                                  inputObjects, inputProps, inputNulls,
-                                 manageSession, noCancel, contextObject,
-                                 contextProperty == null ? null : (CalcProperty)contextProperty.property.property,
-                                 contextProperty != null, initFilterProperty, syncType, windowType, checkOnOk, showDrop, 
+                                 manageSession, noCancel,
+                                 contextObjects, contextProps,
+                                 initFilterProperty, syncType, windowType, checkOnOk, showDrop, 
                                  readonly, getParamsPlainList(propParams).toArray());
 
         if (mapping.size() > 0) {
-            if (contextProperty != null) {
-                for (int usedParam : contextProperty.usedParams) {
+            for(LPWithParams contextLP : contextLPs)
+                for (int usedParam : contextLP.usedParams) {
                     mapping.add(new LPWithParams(null, singletonList(usedParam)));
                 }
-            }
             return addScriptedJoinAProp(property, mapping);
         } else {
             return new LPWithParams(property, allParams);
@@ -2404,7 +2423,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             objects.add(object);
             mapping.add(objectProp.in);
             nulls.add(objectProp.inNull);
-            assert !objectProp.out;
+            assert !objectProp.out && !objectProp.contextFilter;
         }
         
         if(syncType == null)
@@ -2444,7 +2463,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             objects.add(object);
             mapping.add(objectProp.in);
             nulls.add(objectProp.inNull);
-            assert !objectProp.out;
+            assert !objectProp.out && !objectProp.contextFilter;
         }
 
 
@@ -3900,12 +3919,17 @@ public class ScriptingLogicsModule extends LogicsModule {
         public Boolean outNull;
         public PropertyUsage outProp;
 
-        public FormActionProps(LPWithParams in, Boolean inNull, boolean out, Boolean outNull, PropertyUsage outProp) {
+        public boolean contextFilter;
+        public LPWithParams contextProp;
+
+        public FormActionProps(LPWithParams in, Boolean inNull, boolean out, Boolean outNull, PropertyUsage outProp, boolean contextFilter, LPWithParams contextProp) {
             this.in = in;
             this.inNull = inNull;
             this.out = out;
             this.outNull = outNull;
             this.outProp = outProp;
+            this.contextFilter = contextFilter;
+            this.contextProp = contextProp;
         }
     }
 

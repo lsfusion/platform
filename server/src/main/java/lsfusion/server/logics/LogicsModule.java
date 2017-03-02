@@ -540,11 +540,11 @@ public abstract class LogicsModule {
     }
 
     protected LAP addIFAProp(LocalizedString caption, FormEntity form, List<ObjectEntity> objectsToSet, Boolean manageSession, boolean noCancel, boolean syncType, WindowFormType windowType) {
-        return addIFAProp(null, caption, form, objectsToSet, Collections.nCopies(objectsToSet.size(), false), new ArrayList<ObjectEntity>(), new ArrayList<LCP>(), new ArrayList<Boolean>(), manageSession, noCancel, null, null, false, null, syncType, windowType, false, false, false);
+        return addIFAProp(null, caption, form, objectsToSet, Collections.nCopies(objectsToSet.size(), false), ListFact.<ObjectEntity>EMPTY(), ListFact.<LCP>EMPTY(), ListFact.<Boolean>EMPTY(), manageSession, noCancel, ListFact.<ObjectEntity>EMPTY(), ListFact.<CalcProperty>EMPTY(), null, syncType, windowType, false, false, false);
     }
 
-    protected LAP addIFAProp(AbstractGroup group, LocalizedString caption, FormEntity form, List<ObjectEntity> objectsToSet, List<Boolean> nulls, List<ObjectEntity> inputObjects, List<LCP> inputProps, List<Boolean> inputNulls, Boolean manageSession, boolean isAdd, ObjectEntity contextObject, CalcProperty contextProperty, boolean hasContextProperty, PropertyDrawEntity initFilterProperty, boolean syncType, WindowFormType windowType, boolean checkOnOk, boolean showDrop, boolean readonly, Object... params) {
-        return addProperty(group, new LAP(new FormInteractiveActionProperty(caption, form, objectsToSet, nulls, inputObjects, inputProps, inputNulls, manageSession, isAdd, syncType, windowType, checkOnOk, showDrop, baseLM.formResult, baseLM.getFormResultProperty(), baseLM.getChosenValueProperty(), contextObject, contextProperty, initFilterProperty, readonly)));
+    protected LAP addIFAProp(AbstractGroup group, LocalizedString caption, FormEntity form, List<ObjectEntity> objectsToSet, List<Boolean> nulls, ImList<ObjectEntity> inputObjects, ImList<LCP> inputProps, ImList<Boolean> inputNulls, Boolean manageSession, boolean isAdd, ImList<ObjectEntity> contextObjects, ImList<CalcProperty> contextProperties, PropertyDrawEntity initFilterProperty, boolean syncType, WindowFormType windowType, boolean checkOnOk, boolean showDrop, boolean readonly, Object... params) {
+        return addProperty(group, new LAP(new FormInteractiveActionProperty(caption, form, objectsToSet, nulls, inputObjects, inputProps, inputNulls, contextObjects, contextProperties, manageSession, isAdd, syncType, windowType, checkOnOk, showDrop, baseLM.formResult, baseLM.getFormResultProperty(), baseLM.getChosenValueProperty(), initFilterProperty, readonly)));
     }
     protected LAP addPFAProp(AbstractGroup group, LocalizedString caption, FormEntity form, List<ObjectEntity> objectsToSet, List<Boolean> nulls, boolean hasPrinterProperty, FormPrintType staticType, boolean syncType, LCP targetProp, Object... params) {
         ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(getIntNum(params));

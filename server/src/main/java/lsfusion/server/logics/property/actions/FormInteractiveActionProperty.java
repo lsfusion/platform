@@ -2,10 +2,13 @@ package lsfusion.server.logics.property.actions;
 
 import lsfusion.base.Result;
 import lsfusion.base.col.ListFact;
+import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MList;
+import lsfusion.base.col.interfaces.mutable.MSet;
+import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.interop.ModalityType;
 import lsfusion.interop.WindowFormType;
 import lsfusion.server.classes.ConcreteCustomClass;
@@ -31,9 +34,9 @@ import java.util.List;
 public class FormInteractiveActionProperty extends FormActionProperty {
 
     // INPUT
-    private final List<ObjectEntity> inputObjects;
-    private final List<LCP> inputProps;    
-    private final List<Boolean> inputNulls;
+    private final ImList<ObjectEntity> inputObjects;
+    private final ImList<LCP> inputProps;    
+    private final ImList<Boolean> inputNulls;
     private final ConcreteCustomClass formResultClass;
     private final LCP formResultProperty;
     private final AnyValuePropertyHolder chosenValueProperty;
@@ -61,8 +64,8 @@ public class FormInteractiveActionProperty extends FormActionProperty {
     private final boolean isAdd;
 
     // CONTEXT
-    private final ObjectEntity contextObject;
-    private final CalcPropertyMapImplement<PropertyInterface, ClassPropertyInterface> contextPropertyImplement;
+    private final ImList<ObjectEntity> contextObjects;
+    private final ImList<CalcPropertyMapImplement<PropertyInterface, ClassPropertyInterface>> contextPropertyImplements;
     private final PropertyDrawEntity initFilterProperty;
     private final boolean readOnly;
     private final boolean checkOnOk;
@@ -70,7 +73,8 @@ public class FormInteractiveActionProperty extends FormActionProperty {
     public FormInteractiveActionProperty(LocalizedString caption,
                                          FormEntity form,
                                          final List<ObjectEntity> objectsToSet, final List<Boolean> nulls,
-                                         List<ObjectEntity> inputObjects, List<LCP> inputProps, List<Boolean> inputNulls,
+                                         ImList<ObjectEntity> inputObjects, ImList<LCP> inputProps, ImList<Boolean> inputNulls,
+                                         ImList<ObjectEntity> contextObjects, ImList<CalcProperty> contextProperties,
                                          Boolean manageSession,
                                          boolean isAdd,
                                          boolean syncType,
@@ -80,10 +84,8 @@ public class FormInteractiveActionProperty extends FormActionProperty {
                                          ConcreteCustomClass formResultClass,
                                          LCP formResultProperty,
                                          AnyValuePropertyHolder chosenValueProperty,
-                                         ObjectEntity contextObject,
-                                         CalcProperty contextProperty,
                                          PropertyDrawEntity initFilterProperty, boolean readOnly) {
-        super(caption, form, objectsToSet, nulls, contextProperty);
+        super(caption, form, objectsToSet, nulls, true, contextProperties.toArray(new CalcProperty[contextProperties.size()]));
 
         assert inputObjects.isEmpty() || syncType; // если ввод, то синхронный
         this.inputObjects = inputObjects;
@@ -101,10 +103,15 @@ public class FormInteractiveActionProperty extends FormActionProperty {
         this.manageSession = manageSession;
         this.isAdd = isAdd;
 
-        this.contextObject = contextObject;
-        this.contextPropertyImplement = contextProperty == null ? null : contextProperty.getImplement(
-                getOrderInterfaces().subOrder(objectsToSet.size(), interfaces.size())
-        );
+        this.contextObjects = contextObjects;
+        this.contextPropertyImplements = contextProperties.mapListValues(new GetValue<CalcPropertyMapImplement<PropertyInterface, ClassPropertyInterface>, CalcProperty>() {
+            public CalcPropertyMapImplement<PropertyInterface, ClassPropertyInterface> getMapValue(CalcProperty value) {
+                return value.getImplement(
+                        getOrderInterfaces().subOrder(objectsToSet.size(), interfaces.size())
+                );
+            }
+        });
+        
         this.initFilterProperty = initFilterProperty;
         this.readOnly = readOnly;
         this.checkOnOk = checkOnOk;
@@ -126,17 +133,8 @@ public class FormInteractiveActionProperty extends FormActionProperty {
     @Override
     protected void executeCustom(ImMap<ObjectEntity, ? extends ObjectValue> mapObjectValues, ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         Result<ImSet<PullChangeProperty>> pullProps = new Result<>();
-        ImSet<FilterEntity> contextFilters = null;
-        if (contextPropertyImplement != null) {
-            final CalcPropertyValueImplement<PropertyInterface> propertyValues = contextPropertyImplement.mapObjectValues(context.getKeys());
-            if(propertyValues == null) { // вообще должно \ может проверяться на уровне allowNulls, но он целиком для всех параметров, поэтому пока так
-                proceedNullException();
-                return;
-            }
-            final FormInstance thisFormInstance = context.getFormInstance(false, true);
-            contextFilters = thisFormInstance.getContextFilters(contextObject, propertyValues, context.getChangingPropertyToDraw(), pullProps);
-        }
-
+        ImSet<FilterEntity> contextFilters = getContextFilters(context, pullProps);
+        
         FormInstance newFormInstance = context.createFormInstance(form, mapObjectValues, context.getSession(), syncType, isAdd, manageSession, checkOnOk, isShowDrop(), true, contextFilters, initFilterProperty, pullProps.result, readOnly);
         context.requestFormUserInteraction(newFormInstance, getModalityType(), context.stack);
 
@@ -168,6 +166,20 @@ public class FormInteractiveActionProperty extends FormActionProperty {
             }
             context.writeRequested(result);
         }
+    }
+
+    private ImSet<FilterEntity> getContextFilters(ExecutionContext<ClassPropertyInterface> context, Result<ImSet<PullChangeProperty>> pullProps) {
+        MSet<FilterEntity> mContextFilters = SetFact.mSet();
+        for(int i=0,size=contextObjects.size();i<size;i++) {
+            ObjectEntity contextObject = contextObjects.get(i);
+            CalcPropertyMapImplement<PropertyInterface, ClassPropertyInterface> contextPropertyImplement = contextPropertyImplements.get(i);
+            
+            final CalcPropertyValueImplement<PropertyInterface> propertyValues = contextPropertyImplement.mapObjectValues(context.getKeys());
+            assert propertyValues != null; // extraNotNull - true
+            final FormInstance thisFormInstance = context.getFormInstance(false, true);
+            mContextFilters.addAll(thisFormInstance.getContextFilters(contextObject, propertyValues, context.getChangingPropertyToDraw(), pullProps));
+        }
+        return mContextFilters.immutable();
     }
 
     @Override

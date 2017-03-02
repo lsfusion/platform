@@ -2357,13 +2357,17 @@ formActionProps[List<TypedParameter> context, boolean dynamic] returns [FormActi
     Boolean inNull = false;
     boolean out = false;
     Boolean outNull = false;
-    PropertyUsage outProp = null;    
+    PropertyUsage outProp = null;
+
+    boolean contextFilter = false;
+    LPWithParams contextProp = null;
 }
 @after {
-    $props = new FormActionProps(in, inNull, out, outNull, outProp);
+    $props = new FormActionProps(in, inNull, out, outNull, outProp, contextFilter, contextProp);
 }
     :   ('=' expr=propertyExpression[context, dynamic] { in = $expr.property; } ('NULL' { inNull = true; } )? )?
         ('INPUT' { out = true; } ('NULL' { outNull = true; })? ('TO' pUsage=propertyUsage { outProp = $pUsage.propUsage; } )?)?
+        ('CONSTRAINTFILTER' { contextFilter = true; } ('=' consExpr=propertyExpression[context, dynamic])? { contextProp = $consExpr.property; } )?
     ;
 
 idEqualPEList[List<TypedParameter> context, boolean dynamic] returns [List<String> ids = new ArrayList<String>(), List<LPWithParams> exprs = new ArrayList<LPWithParams>(), List<Boolean> nulls = new ArrayList<Boolean>()]
