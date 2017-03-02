@@ -212,15 +212,16 @@ public class PartitionExpr extends AggrExpr<KeyExpr, PartitionType, PartitionExp
         final KeyEqual keyEqual = query.getWhere().getKeyEquals().getSingle();
         if(!keyEqual.isEmpty()) {
             Result<ImMap<KeyExpr,BaseExpr>> restGroup = new Result<>();
-            ImMap<KeyExpr, BaseExpr> keyExprValues = group.splitKeys(new SFunctionSet<KeyExpr>() {
+            ImMap<KeyExpr, BaseExpr> groupValues = group.splitKeys(new SFunctionSet<KeyExpr>() {
                 public boolean contains(KeyExpr element) {
                     BaseExpr baseExpr = keyEqual.keyExprs.get(element);
                     return baseExpr != null && baseExpr.isValue(); // тут можно было бы и не isValue брать, translate'ить их и получать такой Where, но это сложнее + как-то сдедать так, чтобы не делать это для ключей созданных в transformPartitionExprsToKeys (можно просто выше проверку сделать)
                 }
             }, restGroup);
-            if(!keyExprValues.isEmpty()) {
-                Where keyWhere = CompareWhere.compare(keyExprValues, keyEqual.keyExprs);
-                return createKeyEqual(restGroup.result, query.translateExpr(keyEqual.getTranslator(), query.partitions)).and(keyWhere);
+            if(!groupValues.isEmpty()) {
+                ImMap<KeyExpr, BaseExpr> keyExprValues = keyEqual.keyExprs.filterIncl(groupValues.keys());
+                Where keyWhere = CompareWhere.compare(groupValues, keyExprValues);
+                return createKeyEqual(restGroup.result, query.translateExpr(new PartialKeyExprTranslator(keyExprValues, true), query.partitions)).and(keyWhere);
             }
         }
         return createRemoveValues(group, query);
