@@ -46,6 +46,7 @@ name 'Имя файла' = DATA VARSTRING[100] (Backup);
 fileLog 'Адрес лога файла' = DATA VARSTRING[200] (Backup);
 fileDeleted 'Файл удалён' = DATA BOOLEAN (Backup);
 log 'Лог' = DATA TEXT (Backup);
+notSucceeded 'Не завершён' (Backup b) = NOT log(b);
 
 backupFileName 'Имя файла резервной копии' = DATA LOCAL VARSTRING[100] ();
 backupFilePath 'Файл резервной копии' = DATA LOCAL VARSTRING[200]();
@@ -60,8 +61,9 @@ FORM backup 'Резервное копирование'
     PROPERTIES() saveFirstDayBackups, maxQuantityBackups, saveMondayBackups
     PROPERTIES() TODRAW b FORCE PANEL decimateBackupsAction, makeBackupAction, makePartialBackupAction
     PROPERTIES(b) save TODRAW b FORCE PANEL
-    PROPERTIES(b) READONLY partial, date, time, file, fileDeleted, log FORCE PANEL
+    PROPERTIES(b) READONLY partial, date, time, file, fileDeleted, notSucceeded, log FORCE PANEL
     PROPERTIES(b) deleteAction
+    FILTERGROUP notDeleted FILTER 'Только не удалённые' NOT notSucceeded(b) DEFAULT 
     
     OBJECTS t1 = Table
     PROPERTIES(t1) sid, exclude

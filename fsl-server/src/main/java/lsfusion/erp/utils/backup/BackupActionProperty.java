@@ -47,18 +47,18 @@ public class BackupActionProperty extends ScriptingActionProperty {
 
             List<String> excludeTables = partial ? getExcludeTables(context) : new ArrayList<String>();
 
-            String backupFilePath = context.getDbManager().backupDB(context, backupFileName, excludeTables);
+            String backupFilePath = context.getDbManager().getBackupFilePath(backupFileName);
             if (backupFilePath != null) {
                 String backupFileLogPath = backupFilePath + ".log";
                 String backupFileExtension = backupFilePath.substring(backupFilePath.lastIndexOf("."), backupFilePath.length());
 
                 DataObject backupObject = session.addObject((ConcreteCustomClass) findClass("Backup"));
+                Integer backupObjectValue = (Integer) backupObject.getValue();
                 findProperty("date[Backup]").change(new java.sql.Date(currentTime), session, backupObject);
                 findProperty("time[Backup]").change(new java.sql.Time(currentTime), session, backupObject);
                 findProperty("file[Backup]").change(backupFilePath, session, backupObject);
                 findProperty("name[Backup]").change(backupFileName + backupFileExtension, session, backupObject);
                 findProperty("fileLog[Backup]").change(backupFileLogPath, session, backupObject);
-                findProperty("log[Backup]").change(readFileToString(backupFileLogPath), session, backupObject);
 
                 if(partial) {
                     findProperty("partial[Backup]").change(true, session, backupObject);
@@ -71,9 +71,13 @@ public class BackupActionProperty extends ScriptingActionProperty {
 
                 session.apply(context);
 
+                context.getDbManager().backupDB(context, backupFileName, excludeTables);
+
                 findProperty("backupFilePath[]").change(backupFilePath, context.getSession());
                 findProperty("backupFileName[]").change(backupFileName + backupFileExtension, context.getSession());
 
+                findProperty("log[Backup]").change(readFileToString(backupFileLogPath), session, session.getDataObject(findClass("Backup"), backupObjectValue));
+                session.apply(context);
             }
         } catch (Exception e) {
             throw Throwables.propagate(e);
