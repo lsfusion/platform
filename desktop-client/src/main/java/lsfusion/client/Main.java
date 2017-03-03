@@ -189,7 +189,7 @@ public class Main {
                     UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 
                     //пытаемся подгрузить лого со стандартными настройками подключения
-                    loadLogicsLogo();
+                    //loadLogicsLogo();
 
                     LoginAction loginAction = LoginAction.getInstance();
                     if (!loginAction.login()) {
