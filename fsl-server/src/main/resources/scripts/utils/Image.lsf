@@ -1,0 +1,14 @@
+MODULE Image;
+
+REQUIRE System;
+
+resizedImage = DATA LOCAL IMAGEFILE ();
+resizeImage = ACTION CUSTOM 'lsfusion.erp.utils.image.ResizeImageActionProperty' (IMAGEFILE, DOUBLE);
+
+//sampleResizeAction = ACTION {
+//    REQUEST IMAGEFILE INPUT;
+//    IF requestedImageFile() THEN {
+//        resizeImage(requestedImageFile(), 2);
+//        OPENFILE resizedImage();
+//    }
+//}
