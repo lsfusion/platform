@@ -57,8 +57,12 @@ public final class LoginAction {
         String serverDB = getSystemPropertyWithJNLPFallback(LSFUSION_CLIENT_EXPORTNAME);
         String userName = getSystemPropertyWithJNLPFallback(LSFUSION_CLIENT_USER);
         String password = getSystemPropertyWithJNLPFallback(LSFUSION_CLIENT_PASSWORD);
-        loginInfo = new LoginInfo(serverHost, serverPort, serverDB, userName, password);
+        loginInfo = LoginDialog.restoreLoginData(new LoginInfo(serverHost, serverPort, serverDB, userName, password, false));
 
+        //loginDialog = new LoginDialog(loginInfo);
+    }
+
+    public void initLoginDialog() {
         loginDialog = new LoginDialog(loginInfo);
     }
 

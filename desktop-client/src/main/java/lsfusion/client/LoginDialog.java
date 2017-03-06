@@ -46,7 +46,7 @@ public class LoginDialog extends JDialog {
         super(null, "lsFusion", java.awt.Dialog.ModalityType.TOOLKIT_MODAL);
         imageLabel.setIcon(Main.getLogo());
 
-        loginInfo = restoreLoginData(defaultLoginInfo);
+        loginInfo = defaultLoginInfo;
         setContentPane(contentPane);
         setAlwaysOnTop(true);
         setModal(true);
@@ -55,6 +55,8 @@ public class LoginDialog extends JDialog {
         setResizable(false);
 
         initUIHandlers();
+
+        savePassword.setSelected(loginInfo.getSavePwd());
 
         if (loginInfo.getServerHost() != null) {
             StringBuilder server = new StringBuilder(loginInfo.getServerHost());
@@ -241,7 +243,7 @@ public class LoginDialog extends JDialog {
         } else {
             serverInfo = getServerInfo(item.toString());
         }
-        result = loginInfo = new LoginInfo(serverInfo.getHostName(), String.valueOf(serverInfo.getPort()), String.valueOf(serverDB.getSelectedItem()), loginField.getText(), new String(passwordField.getPassword()));
+        result = loginInfo = new LoginInfo(serverInfo.getHostName(), String.valueOf(serverInfo.getPort()), String.valueOf(serverDB.getSelectedItem()), loginField.getText(), new String(passwordField.getPassword()), savePassword.isSelected());
 
         storeServerData();
         setVisible(false);
@@ -266,7 +268,7 @@ public class LoginDialog extends JDialog {
         }
     }
 
-    private LoginInfo restoreLoginData(LoginInfo loginInfo) {
+    public static LoginInfo restoreLoginData(LoginInfo loginInfo) {
         try {
             File file = SystemUtils.getUserFile(configName, false);
             if (file.exists()) {
@@ -291,8 +293,7 @@ public class LoginDialog extends JDialog {
                 if (serverDB.isEmpty()) {
                     serverDB = "default";
                 }
-                String savePwd = scanner.hasNextLine() ? scanner.nextLine() : "";
-                savePassword.setSelected(Boolean.valueOf(savePwd));
+                Boolean savePwd = Boolean.valueOf(scanner.hasNextLine() ? scanner.nextLine() : "");
                 String password = "";
                 if (scanner.hasNextLine()) {
                     password = scanner.nextLine();
@@ -303,7 +304,7 @@ public class LoginDialog extends JDialog {
                     password = loginInfo.getPassword();
                 }
 
-                return new LoginInfo(serverHost, serverPort, serverDB, userName, password);
+                return new LoginInfo(serverHost, serverPort, serverDB, userName, password, savePwd);
             }
         } catch (IOException e) {
             e.printStackTrace();

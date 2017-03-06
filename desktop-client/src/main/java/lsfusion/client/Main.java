@@ -188,10 +188,13 @@ public class Main {
                     //UIManager.setLookAndFeel("com.jgoodies.looks.plastic.PlasticXPLookAndFeel");
                     UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 
-                    //пытаемся подгрузить лого со стандартными настройками подключения
-                    //loadLogicsLogo();
-
                     LoginAction loginAction = LoginAction.getInstance();
+
+                    //пытаемся подгрузить лого
+                    loadLogicsLogo(loginAction.loginInfo);
+
+                    loginAction.initLoginDialog();
+
                     if (!loginAction.login()) {
                         return;
                     }
@@ -270,12 +273,9 @@ public class Main {
         });
     }
 
-    private static void loadLogicsLogo() {
+    private static void loadLogicsLogo(LoginInfo loginInfo) {
         try {
-            String serverHost = getSystemPropertyWithJNLPFallback(LSFUSION_CLIENT_HOSTNAME);
-            String serverPort = getSystemPropertyWithJNLPFallback(LSFUSION_CLIENT_HOSTPORT);
-            String serverDB = getSystemPropertyWithJNLPFallback(LSFUSION_CLIENT_EXPORTNAME);
-            RemoteLogicsLoaderInterface remoteLoader = new ReconnectWorker(serverHost, serverPort, serverDB).connect();
+            RemoteLogicsLoaderInterface remoteLoader = new ReconnectWorker(loginInfo.getServerHost(), loginInfo.getServerPort(), loginInfo.getServerDB()).connect();
             if (remoteLoader != null) {
                 RemoteLogicsInterface remote = remoteLoader.getLogics();
                 logicsLogo = remote.getGUIPreferences().logicsLogo;
