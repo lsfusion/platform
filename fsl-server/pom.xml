@@ -72,5 +72,10 @@
             <artifactId>netlib</artifactId>
             <version>0.0.5</version>
         </dependency>
+        <dependency>
+            <groupId>net.coobird</groupId>
+            <artifactId>thumbnailator</artifactId>
+            <version>0.4.7</version>
+        </dependency>
     </dependencies>
 </project>
