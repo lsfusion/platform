@@ -34,14 +34,15 @@ public class ResizeImageActionProperty extends ScriptingActionProperty {
         try {
 
             byte[] inputFile = (byte[]) context.getKeyValue(fileInterface).getValue();
-            Integer scale = (Integer) context.getKeyValue(scaleInterface).getValue();
+            Double scale = (Double) context.getKeyValue(scaleInterface).getValue();
 
             File outputFile = null;
             try {
                 outputFile = File.createTempFile("resized", ".jpg");
-                Thumbnails.of(new ByteArrayInputStream(inputFile)).scale((double) 1 / scale).toFile(outputFile);
-
-                findProperty("resizedImage[]").change(IOUtils.getFileBytes(outputFile), context);
+                if(scale != 0) {
+                    Thumbnails.of(new ByteArrayInputStream(inputFile)).scale((double) 1 / scale).toFile(outputFile);
+                    findProperty("resizedImage[]").change(IOUtils.getFileBytes(outputFile), context);
+                }
             } finally {
                 if (outputFile != null && !outputFile.delete())
                     outputFile.deleteOnExit();
