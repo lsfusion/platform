@@ -70,9 +70,9 @@ public final class ReconnectWorker extends SwingWorker<RemoteLogicsLoaderInterfa
         dlg.dispose();
     }
 
-    public RemoteLogicsLoaderInterface connect() throws Throwable {
+    public RemoteLogicsLoaderInterface connect(boolean show) throws Throwable {
         execute();
-        dlg.setVisible(true);
+        dlg.setVisible(show);
 
         try {
             return get();

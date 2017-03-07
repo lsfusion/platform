@@ -275,7 +275,7 @@ public class Main {
 
     private static void loadLogicsLogo(LoginInfo loginInfo) {
         try {
-            RemoteLogicsLoaderInterface remoteLoader = new ReconnectWorker(loginInfo.getServerHost(), loginInfo.getServerPort(), loginInfo.getServerDB()).connect();
+            RemoteLogicsLoaderInterface remoteLoader = new ReconnectWorker(loginInfo.getServerHost(), loginInfo.getServerPort(), loginInfo.getServerDB()).connect(false);
             if (remoteLoader != null) {
                 RemoteLogicsInterface remote = remoteLoader.getLogics();
                 logicsLogo = remote.getGUIPreferences().logicsLogo;
