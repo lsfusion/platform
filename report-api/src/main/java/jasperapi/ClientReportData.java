@@ -32,9 +32,6 @@ public class ClientReportData implements JRDataSource {
     private Map<String, List<Integer>> compositeColumnObjects;
     private Map<String, List<List<Object>>> compositeColumnValues;
 
-    public static final String beginMarker = "[";
-    public static final String endMarker = "]";
-
     private final Map<ByteArray, String> files;
 
     public ClientReportData(DataInputStream inStream, Map<ByteArray, String> files, boolean custom) throws IOException {
@@ -147,7 +144,7 @@ public class ClientReportData implements JRDataSource {
             ReportPropertyData  propertyID = properties.get(fieldName);
             if (propertyID != null) {
                 value = rows.get(currentKeyRow).get(propertyID);
-            } else if (fieldName.endsWith(endMarker)) { 
+            } else if (fieldName.endsWith(endIndexMarker)) { 
                 Pair<Integer, String> extractData = extractFieldData(fieldName);
                 int index = extractData.first;
                 String realFieldName = extractData.second;
@@ -235,9 +232,9 @@ public class ClientReportData implements JRDataSource {
     }
 
     private Pair<Integer, String> extractFieldData(String id) {
-        int markerPos = id.substring(0, id.length() - endMarker.length()).lastIndexOf(beginMarker);
+        int markerPos = id.substring(0, id.length() - endIndexMarker.length()).lastIndexOf(beginIndexMarker);
         if (markerPos == -1) return new Pair<>(-1, "");
-        String indexString = id.substring(markerPos + beginMarker.length(), id.length() - endMarker.length());
+        String indexString = id.substring(markerPos + beginIndexMarker.length(), id.length() - endIndexMarker.length());
         String realFieldName = id.substring(0, markerPos);
         return new Pair<>(Integer.parseInt(indexString), realFieldName);
     }

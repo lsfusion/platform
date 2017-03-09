@@ -26,9 +26,10 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import static lsfusion.interop.form.ReportConstants.footerSuffix;
-import static lsfusion.interop.form.ReportConstants.headerSuffix;
+import static lsfusion.interop.form.ReportConstants.*;
 
 /**
  * User: DAle
@@ -267,42 +268,176 @@ public class ReportGenerator {
         return objects;
     }
 
-    private void transformDesigns(boolean ignorePagination) {
+    private void transformDesigns(boolean ignorePagination) throws JRException {
         for (JasperDesign design : designs.values()) {
             transformDesign(design, ignorePagination);
             design.setIgnorePagination(ignorePagination);
         }
     }
 
-    private void transformDesign(JasperDesign design, boolean ignorePagination) {
-        transformBand(design, design.getTitle(), ignorePagination);
-        transformBand(design, design.getPageHeader(), ignorePagination);
-        transformBand(design, design.getColumnHeader(), ignorePagination);
-        transformBand(design, design.getColumnFooter(), ignorePagination);
-        transformBand(design, design.getPageFooter(), ignorePagination);
-        transformBand(design, design.getLastPageFooter(), ignorePagination);
-        transformBand(design, design.getSummary(), ignorePagination);
+    private String indexSuffix(int i) {
+        return beginIndexMarker + i + endIndexMarker;
+    }
+    
+    public static final Pattern fieldPattern = Pattern.compile("\\$F\\{[\\w.\\[\\](),]+\\}");
 
-        transformSection(design, design.getDetailSection(), ignorePagination);
-        for (JRGroup group : design.getGroups()) {
-            transformSection(design, group.getGroupHeaderSection(), ignorePagination);
-            transformSection(design, group.getGroupFooterSection(), ignorePagination);
+    private String getFieldName(String fieldString) {
+        return fieldString.substring(3, fieldString.length() - 1);
+    }
+    
+    // "fieldName.header" -> "fieldName"
+    private String getBaseFieldNameFromName(String fieldName) {
+        if (fieldName.endsWith(headerSuffix)) {
+            return fieldName.substring(0, fieldName.length() - headerSuffix.length());
+        } else if (fieldName.endsWith(footerSuffix)) {
+            return fieldName.substring(0, fieldName.length() - footerSuffix.length());
+        } else {
+            return fieldName;
         }
     }
-
-    private void transformSection(JasperDesign design, JRSection section, boolean ignorePagination) {
+    
+    // "$F{fieldName.header}" -> "fieldName" 
+    private String getBaseFieldName(String fieldString) {
+        return getBaseFieldNameFromName(getFieldName(fieldString));
+    }
+    
+    private boolean isColumnPropertyField(String fieldName) {
+        String baseFieldName = getBaseFieldNameFromName(fieldName);
+        return compositeColumnValues.containsKey(baseFieldName);
+    }
+    
+    private String findColumnFieldName(JRExpression expr) {
+        String exprText = expr.getText();
+        Matcher match = fieldPattern.matcher(exprText);
+        while (match.find()) {
+            String fieldName = getFieldName(match.group());
+            if (isColumnPropertyField(fieldName)) {
+                return fieldName;
+            }
+        }
+        return null;
+    }
+    
+    private String findFieldNameToSplitStyle(JRStyle style) {
+        final JRConditionalStyle[] condStyles = style.getConditionalStyles();
+        if (condStyles != null) {
+            for (JRConditionalStyle condStyle : condStyles) {
+                String columnFieldName = findColumnFieldName(condStyle.getConditionExpression());
+                if (columnFieldName != null) {
+                    return columnFieldName;
+                } 
+            }
+        }
+        return null;
+    }
+    
+    private void transformExpression(JRDesignExpression expr, int index) {
+        String exprText = expr.getText();
+        Set<String> columnFieldsStr = new HashSet<>();
+        Matcher match = fieldPattern.matcher(exprText);
+        while (match.find()) {  
+            String fieldStr = match.group();
+            if (isColumnPropertyField(getFieldName(fieldStr))) {
+                columnFieldsStr.add(fieldStr);
+            }
+        }
+        
+        for (String fieldStr : columnFieldsStr) {
+            String newFieldStr = fieldStr.substring(0, fieldStr.length() - 1) + indexSuffix(index) + "}";
+            exprText = exprText.replace(fieldStr, newFieldStr);
+        }
+        expr.setText(exprText);
+    }
+    
+    private void transformStyleExpressions(JRDesignStyle style, int index) {
+        final JRConditionalStyle[] condStyles = style.getConditionalStyles();
+        if (condStyles != null) {
+            for (JRConditionalStyle condStyle : condStyles) {
+                if (condStyle.getConditionExpression() instanceof JRDesignExpression) {
+                    transformExpression((JRDesignExpression) condStyle.getConditionExpression(), index);
+                }                
+            }
+        }
+    }
+    
+    private Set<String> transformColumnDependentStyles(JasperDesign design) throws JRException {
+        Set<String> styleNames = new HashSet<>();
+        for (JRStyle style : design.getStyles()) {
+            if (style instanceof JRDesignStyle) {
+                String fieldName = findFieldNameToSplitStyle(style);
+                if (fieldName != null) {
+                    String baseFieldName = getBaseFieldNameFromName(fieldName);
+                    styleNames.add(style.getName());
+                    for (int i = 0; i < compositeColumnValues.get(baseFieldName).size(); ++i) {
+                        JRDesignStyle newStyle = (JRDesignStyle) style.clone();
+                        newStyle.setName(style.getName() + indexSuffix(i));
+                        transformStyleExpressions(newStyle, i);
+                        design.addStyle(newStyle);
+                    }
+                }
+            }
+        }
+        return styleNames;
+    } 
+    
+    private List<JRBand> getBands(JRSection section) {
         if (section instanceof JRDesignSection) {
-            JRDesignSection designSection = (JRDesignSection) section;
-            List bands = designSection.getBandsList();
-            for (Object band : bands) {
-                if (band instanceof JRBand) {
-                    transformBand(design, (JRBand) band, ignorePagination);
+            return ((JRDesignSection) section).getBandsList();
+        } else {
+            return Collections.emptyList();
+        }
+    }
+    
+    private List<JRBand> getBands(JasperDesign design) {
+        List<JRBand> bands = new ArrayList<>();
+        bands.add(design.getTitle());
+        bands.add(design.getPageHeader());
+        bands.add(design.getColumnHeader());
+        bands.add(design.getColumnFooter());
+        bands.add(design.getPageFooter());
+        bands.add(design.getLastPageFooter());
+        bands.add(design.getSummary());
+        
+        bands.addAll(getBands(design.getDetailSection()));
+        
+        for (JRGroup group : design.getGroups()) {
+            bands.addAll(getBands(group.getGroupHeaderSection()));
+            bands.addAll(getBands(group.getGroupFooterSection()));
+        }
+        return bands;
+    }
+    
+    private void transformFields(JasperDesign design) throws JRException {
+        for (JRField f : design.getFields()) {
+            if (f instanceof JRDesignField) {
+                JRDesignField field = (JRDesignField) f;
+                String fieldName = field.getName();
+                String baseFieldName = getBaseFieldNameFromName(fieldName);
+                if (compositeColumnValues.containsKey(baseFieldName)) { 
+                    JRField removedField = design.removeField(fieldName);
+
+                    for (int i = 0; i < compositeColumnValues.get(baseFieldName).size(); ++i) {
+                        String newFieldName = fieldName + indexSuffix(i);
+                        JRDesignField designField = new JRDesignField();
+                        designField.setName(newFieldName);
+                        designField.setValueClassName(removedField.getValueClassName());
+
+                        design.addField(designField);
+                    }                        
                 }
             }
         }
     }
 
-    private void transformBand(JasperDesign design, JRBand band, boolean ignorePagination) {
+    private void transformDesign(JasperDesign design, boolean ignorePagination) throws JRException {
+        Set<String> transformedStyleNames = transformColumnDependentStyles(design);
+        transformFields(design);
+        for (JRBand band : getBands(design)) {
+            transformBand(design, band, ignorePagination, transformedStyleNames);
+        }
+    }
+
+    private void transformBand(JasperDesign design, JRBand band, boolean ignorePagination, Set<String> transformedStyleNames) {
         if (band instanceof JRDesignBand) {
             JRDesignBand designBand = (JRDesignBand) band;
             List<JRDesignElement> toDelete = new ArrayList<>();
@@ -325,7 +460,7 @@ public class ReportGenerator {
                 if (element instanceof JRDesignTextField) {
                     JRDesignTextField textField = (JRDesignTextField) element;
                     if (textField.getExpression() != null) {
-                        transformTextField(design, textField, fieldsInGroup, toAdd, toDelete);
+                        transformTextField(design, textField, fieldsInGroup, toAdd, toDelete, transformedStyleNames);
                     }
                 } else if (ignorePagination && element instanceof JRDesignBreak) {
                     toDelete.add((JRDesignBreak) element);
@@ -340,55 +475,45 @@ public class ReportGenerator {
         }
     }
 
-    private void transformTextField(JasperDesign design, JRDesignTextField textField, Map<String, List<JRDesignTextField>> fieldsInGroup,
-                                    List<JRDesignElement> toAdd, List<JRDesignElement> toDelete) {
-        String exprText = textField.getExpression().getText();
-        String id = null;
-        if (exprText.startsWith("$F{") && exprText.endsWith("}")) {
-            id = exprText.substring(3, exprText.length()-1);
-        } else if (exprText.startsWith("\"") && exprText.endsWith("\"")) {
-            id = exprText.substring(1, exprText.length()-1);
+    private void transformTextFieldExpressions(JRDesignTextField oldField, JRDesignTextField newField, int i) {
+        if (oldField.getExpression() != null) {
+            JRDesignExpression subExpr = new JRDesignExpression(oldField.getExpression().getText());
+            transformExpression(subExpr, i);
+            newField.setExpression(subExpr);
         }
         
-        boolean setPrintWhen = textField.getPrintWhenExpression() != null && textField.getPrintWhenExpression().getText() != null && textField.getPrintWhenExpression().getText().equals(exprText); 
+        if (oldField.getPrintWhenExpression() != null && oldField.getPrintWhenExpression().getText() != null) {
+            JRDesignExpression subPWExpr = new JRDesignExpression(oldField.getPrintWhenExpression().getText());
+            transformExpression(subPWExpr, i);
+            newField.setPrintWhenExpression(subPWExpr);
+        }
 
-        if (id != null) {
-            String dataId = id;
-            if (id.endsWith(headerSuffix)) {
-                dataId = id.substring(0, id.length() - headerSuffix.length());
-            } else if (id.endsWith(footerSuffix)) {
-                dataId = id.substring(0, id.length() - footerSuffix.length());
-            }
-            if (compositeColumnValues.containsKey(dataId)) {
-                toDelete.add(textField);
-                JRField removedField = design.removeField(id);
-                int newFieldsCount = compositeColumnValues.get(dataId).size();
-                if (newFieldsCount > 0) {
-                    List<JRDesignTextField> subFields = makeFieldPartition(textField, newFieldsCount, fieldsInGroup);
+        if (oldField.getPatternExpression() != null && oldField.getPatternExpression().getText() != null) {
+            JRDesignExpression subPatExpr = new JRDesignExpression(oldField.getPatternExpression().getText());
+            transformExpression(subPatExpr, i);
+            newField.setPatternExpression(subPatExpr);
+        }
+    }
+    
+    private void transformTextField(JasperDesign design, JRDesignTextField textField, Map<String, List<JRDesignTextField>> fieldsInGroup,
+                                    List<JRDesignElement> toAdd, List<JRDesignElement> toDelete, Set<String> transformedStyleNames) {
+        String fieldName = findColumnFieldName(textField.getExpression());
 
-                    for (int i = 0; i < newFieldsCount; i++) {
-                        JRDesignExpression subExpr = new JRDesignExpression();
-                        if (exprText.startsWith("\"")) {  // caption без property
-                            subExpr.setText(exprText);
-                        } else {
-                            String fieldName = id + ClientReportData.beginMarker + i + ClientReportData.endMarker;
-                            subExpr.setText("$F{" + fieldName + "}");
-                            JRDesignField designField = new JRDesignField();
-                            designField.setName(fieldName);
-                            designField.setValueClassName(removedField.getValueClassName());
+        if (fieldName != null) {
+            String baseFieldName = getBaseFieldNameFromName(fieldName);
+            toDelete.add(textField);
+            int newFieldsCount = compositeColumnValues.get(baseFieldName).size();
+            if (newFieldsCount > 0) {
+                List<JRDesignTextField> subFields = makeTextFieldPartition(textField, newFieldsCount, fieldsInGroup);
+                String oldStyleName = textField.getStyle() == null ? null : textField.getStyle().getName();
 
-                            try {
-                                design.addField(designField);
-                            } catch (JRException e) {
-                                throw new RuntimeException(e);
-                            }
-                        }
-                        subFields.get(i).setExpression(subExpr);
-                        if (setPrintWhen)
-                            subFields.get(i).setPrintWhenExpression(subExpr);
+                for (int i = 0; i < newFieldsCount; i++) {
+                    transformTextFieldExpressions(textField, subFields.get(i), i);
+                    if (oldStyleName != null && transformedStyleNames.contains(oldStyleName)) {
+                        subFields.get(i).setStyle(design.getStylesMap().get(oldStyleName + indexSuffix(i)));
                     }
-                    toAdd.addAll(subFields);
                 }
+                toAdd.addAll(subFields);
             }
         }
         if (textField.getPattern() == null) {
@@ -431,7 +556,7 @@ public class ReportGenerator {
     }
 
     // Разбивает поле на cnt полей с примерно одинаковой шириной
-    private static List<JRDesignTextField> makeFieldPartition(JRDesignTextField textField, int cnt, Map<String, List<JRDesignTextField>> fields) {
+    private static List<JRDesignTextField> makeTextFieldPartition(JRDesignTextField textField, int cnt, Map<String, List<JRDesignTextField>> fields) {
         List<JRDesignTextField> res = new ArrayList<>();
 
         Rectangle boundRect = getBoundRectangle(textField, fields);
