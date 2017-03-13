@@ -401,7 +401,7 @@ META defineDocumentHeaderClosed (objectClass)
 
     open 'Открыть' (objectClass o) = ACTION NEWSESSION { isClosed(o) <- NULL; apply(); } TOOLBAR CONFIRM;
     
-    skipClose = ABSTRACT BOOLEAN (objectClass);
+    skipClose = ABSTRACT CASE BOOLEAN (objectClass);
     closeDocuments(DATE date) += ACTION isClosed(objectClass o) <- TRUE WHERE date(o) < date AND date IS DATE AND NOT skipClose(o);
 END
 
