@@ -2,6 +2,7 @@ package lsfusion.client.form.dispatch;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
+import lsfusion.base.IOUtils;
 import lsfusion.base.SystemUtils;
 import lsfusion.client.Log;
 import lsfusion.client.Main;
@@ -17,6 +18,7 @@ import lsfusion.client.remote.proxy.RemoteFormProxy;
 import lsfusion.interop.ModalityType;
 import lsfusion.interop.action.*;
 import lsfusion.interop.form.ServerResponse;
+import org.apache.commons.io.FileUtils;
 
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
@@ -31,6 +33,8 @@ import java.io.*;
 import java.rmi.RemoteException;
 import java.text.DecimalFormat;
 import java.util.EventObject;
+import java.util.HashMap;
+import java.util.Map;
 
 public abstract class SwingClientActionDispatcher implements ClientActionDispatcher, DispatcherInterface {
     private EventObject editEvent;
@@ -497,5 +501,49 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
         if(action.value != null)
             Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(action.value), null);
         return true;
+    }
+
+    @Override
+    public Map<String, byte[]> execute(UserLogsClientAction action) {
+        Map<String, byte[]> result = new HashMap<>();
+        File logDir = new File(SystemUtils.getUserDir().getAbsolutePath() + "/logs/");
+        File[] logFiles = logDir.listFiles();
+        if (logFiles != null) {
+            for (File logFile : logFiles) {
+                try {
+                    result.put(logFile.getName(), IOUtils.getFileBytes(logFile));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return result;
+    }
+
+    @Override
+    public byte[] execute(ThreadDumpClientAction action) {
+        String text = "";
+        for(StackTraceElement[] stackTrace : Thread.getAllStackTraces().values())
+            text += stackTraceToString(stackTrace) + "\n";
+        File file = null;
+        try {
+            file = File.createTempFile("threaddump", ".txt");
+            FileUtils.writeStringToFile(file, text);
+            return IOUtils.getFileBytes(file);
+        } catch (IOException e) {
+            return null;
+        } finally {
+            if(file != null && !file.delete())
+                file.deleteOnExit();
+        }
+    }
+
+    private String stackTraceToString(StackTraceElement[] stackTrace) {
+        StringBuilder sb = new StringBuilder();
+        for (StackTraceElement element : stackTrace) {
+            sb.append(element.toString());
+            sb.append("\n");
+        }
+        return sb.toString();
     }
 }

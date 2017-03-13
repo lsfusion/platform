@@ -1,5 +1,7 @@
 package lsfusion.interop.action;
 
+import java.util.Map;
+
 // такая дебильная схема с Dispatcher'ом чтобы модульность не нарушать
 public interface ClientActionDispatcher {
 
@@ -60,4 +62,8 @@ public interface ClientActionDispatcher {
     String execute(LoadLinkClientAction action);
 
     boolean execute(CopyToClipboardClientAction action);
+
+    Map<String, byte[]> execute(UserLogsClientAction action);
+
+    byte[] execute(ThreadDumpClientAction action);
 }
