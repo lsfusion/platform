@@ -221,6 +221,9 @@ public class Main {
                     if (userPreferences.language != null) {
                         Locale.setDefault(new Locale(userPreferences.language, nvl(userPreferences.country, "")));
                         ClientResourceBundle.clientResourceBundle = ResourceBundle.getBundle("ClientResourceBundle"); // чтобы подставлялась нужная локаль
+                        
+                        UIManager.getDefaults().setDefaultLocale(Locale.getDefault());
+                        UIManager.getLookAndFeelDefaults().setDefaultLocale(Locale.getDefault());
                     }
 
                     setupTimePreferences(userPreferences.timeZone, userPreferences.twoDigitYearStart);
