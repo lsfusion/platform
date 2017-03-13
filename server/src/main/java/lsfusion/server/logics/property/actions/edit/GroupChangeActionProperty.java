@@ -41,14 +41,13 @@ public class GroupChangeActionProperty extends AroundAspectActionProperty {
     protected FlowResult aroundAspect(final ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
         final ImOrderSet<ImMap<ObjectInstance, DataObject>> groupKeys = getObjectGroupKeys(context); // читаем вначале, чтобы избежать эффекта последействия и влияния его на хинты
 
-        LCP canceled = context.getBL().LM.getRequestCanceledProperty(); // canceled оптимизация
-        canceled.change((Object)null, context);
+        context.getBL().LM.getRequestCanceledProperty().change((Object)null, context);
 
         FlowResult flowResult = proceed(context);// вызываем CHANGE (для текущего)
         if (!flowResult.equals(FlowResult.FINISH))
             return flowResult;
 
-        if(canceled.read(context) != null) // canceled оптимизация
+        if(context.isRequestCanceled()) // canceled оптимизация
             return FlowResult.FINISH;
             
         return context.pushRequest(new SQLCallable<FlowResult>() {

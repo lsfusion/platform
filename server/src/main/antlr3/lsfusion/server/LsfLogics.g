@@ -2662,10 +2662,10 @@ requestInputActionDefinitionBody[List<TypedParameter> context, boolean dynamic] 
 requestActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedRequestAProp($aDB.property, null);
+		$property = self.addScriptedRequestAProp($aDB.property, $dDB.property);
 	}
 }
-	:	'REQUEST' aDB=innerActionDefinitionBody[context, dynamic]
+	:	'REQUEST' aDB=innerActionDefinitionBody[context, dynamic] 'DO' dDB=innerActionDefinitionBody[context, dynamic]
 	;
 
 inputActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]

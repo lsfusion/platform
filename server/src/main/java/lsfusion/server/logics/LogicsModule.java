@@ -808,13 +808,13 @@ public abstract class LogicsModule {
         return addAProp(group, new RequestUserDataActionProperty(caption, dataClass));
     }
 
-    protected LP addRequestAProp(AbstractGroup group, LocalizedString caption, LAP action, Type requestValueType) {
-        ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(action.listInterfaces.size());
-        ActionPropertyMapImplement<?, PropertyInterface> actionImplement = mapActionListImplement(action, listInterfaces);
+    protected LP addRequestAProp(AbstractGroup group, LocalizedString caption, Object... params) {
+        ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(getIntNum(params));
+        ImList<PropertyInterfaceImplement<PropertyInterface>> readImplements = readImplements(listInterfaces, params);
+        assert readImplements.size() == 2;
 
-        return addProperty(group, new LAP(
-                new RequestActionProperty(caption, listInterfaces, actionImplement,
-                        requestValueType))
+        return addProperty(group, new LAP(new RequestActionProperty(caption, listInterfaces, 
+                (ActionPropertyMapImplement<?, PropertyInterface>) readImplements.get(0), (ActionPropertyMapImplement<?, PropertyInterface>) readImplements.get(1)))
         );
     }
 

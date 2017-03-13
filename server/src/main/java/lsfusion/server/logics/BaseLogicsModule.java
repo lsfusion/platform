@@ -708,8 +708,12 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         }
     }
 
-    public boolean isRequest(ExecutionEnvironment env) throws SQLException, SQLHandledException {
+    public boolean isRequestPushed(ExecutionEnvironment env) throws SQLException, SQLHandledException {
         return getRequestPushedProperty().read(env) != null;
+    }
+
+    public boolean isRequestCanceled(ExecutionEnvironment env) throws SQLException, SQLHandledException {
+        return getRequestCanceledProperty().read(env) != null;
     }
 
     public <R> R pushRequestedValue(ObjectValue value, Type type, ExecutionEnvironment env, SQLCallable<R> callable) throws SQLException, SQLHandledException {
@@ -722,7 +726,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
 
     // defaultchange'и + обратная совместимость
     public ObjectValue getRequestedValue(Type type, ExecutionEnvironment env, SQLCallable<ObjectValue> request) throws SQLException, SQLHandledException {
-        if(isRequest(env))
+        if(isRequestPushed(env))
             return getRequestedValueProperty().read(type, env);
 
         ObjectValue result = request.call();

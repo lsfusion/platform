@@ -31,7 +31,6 @@ import lsfusion.server.form.instance.*;
 import lsfusion.server.form.instance.listener.CustomClassListener;
 import lsfusion.server.logics.*;
 import lsfusion.server.logics.SecurityManager;
-import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.linear.LP;
 import lsfusion.server.logics.property.actions.FormEnvironment;
 import lsfusion.server.remote.InteractiveFormReportManager;
@@ -563,9 +562,14 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
 //    }
 
 
-    public boolean isRequest() throws SQLException, SQLHandledException {
+    public boolean isRequestPushed() throws SQLException, SQLHandledException {
         assertNotUserInteractionInTransaction();
-        return getBL().LM.isRequest(getEnv());
+        return getBL().LM.isRequestPushed(getEnv());
+    }
+
+    public boolean isRequestCanceled() throws SQLException, SQLHandledException {
+        assertNotUserInteractionInTransaction();
+        return getBL().LM.isRequestCanceled(getEnv());
     }
 
     public ObjectValue requestUser(Type type, SQLCallable<ObjectValue> request) throws SQLException, SQLHandledException {

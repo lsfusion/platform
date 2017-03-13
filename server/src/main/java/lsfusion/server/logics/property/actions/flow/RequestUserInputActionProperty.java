@@ -43,7 +43,7 @@ public class RequestUserInputActionProperty extends AroundAspectActionProperty {
 
     @Override
     protected FlowResult aroundAspect(ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
-        boolean isRequest = context.isRequest();
+        boolean isRequest = context.isRequestPushed();
         if (!isRequest) {
             proceed(context);
 

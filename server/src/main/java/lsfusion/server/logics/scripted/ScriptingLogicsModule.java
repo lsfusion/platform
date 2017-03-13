@@ -1501,8 +1501,14 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LPWithParams(addInputAProp(null, LocalizedString.create(""), requestDataClass, tprop, resultParams.toArray()), oldValue.usedParams);
     }
 
-    public LPWithParams addScriptedRequestAProp(LPWithParams action, Type requestValueType) throws ScriptingErrorLog.SemanticErrorException {
-        return new LPWithParams(addRequestAProp(null, LocalizedString.create(""), (LAP<?>) action.property, requestValueType), newArrayList(action.usedParams));
+    public LPWithParams addScriptedRequestAProp(LPWithParams requestAction, LPWithParams doAction) throws ScriptingErrorLog.SemanticErrorException {
+        List<LPWithParams> propParams = new ArrayList<>();
+        propParams.add(requestAction);
+        propParams.add(doAction);
+
+        List<Integer> allParams = mergeAllParams(propParams);
+        LP result = addRequestAProp(null, LocalizedString.create(""), getParamsPlainList(propParams).toArray());
+        return new LPWithParams(result, allParams);
     }
 
     public LPWithParams addScriptedActiveFormAProp(String formName) throws ScriptingErrorLog.SemanticErrorException {

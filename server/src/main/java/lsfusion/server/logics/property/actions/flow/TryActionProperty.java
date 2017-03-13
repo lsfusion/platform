@@ -64,12 +64,6 @@ public class TryActionProperty extends KeepContextActionProperty {
 
 
     @Override
-    public ImMap<CalcProperty, Boolean> aspectUsedExtProps() {
-        MSet<CalcProperty> used = SetFact.mSet();
-        return used.immutable().toMap(false).merge(super.aspectUsedExtProps(), addValue);
-    }
-
-    @Override
     public Type getFlowSimpleRequestInputType(boolean optimistic, boolean inRequest) {
         Type tryType = tryAction.property.getSimpleRequestInputType(optimistic, inRequest);
         Type finallyType = finallyAction == null ? null : finallyAction.property.getSimpleRequestInputType(optimistic, inRequest);
