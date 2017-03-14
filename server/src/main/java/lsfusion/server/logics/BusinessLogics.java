@@ -5,6 +5,7 @@ import lsfusion.base.*;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
+import lsfusion.base.col.implementations.HMap;
 import lsfusion.base.col.implementations.HSet;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.*;
@@ -1119,7 +1120,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             if (property instanceof ActionProperty && !((ActionProperty) property).getEvents().isEmpty()) { // вырежем Action'ы без Event'ов, они нигде не используются, а дают много компонент связности
                 ImMap<CalcProperty, Boolean> change = ((ActionProperty<?>) property).getChangeExtProps();
                 for (int i = 0, size = change.size(); i < size; i++) // вообще говоря DataProperty и IsClassProperty
-                    change.getKey(i).addActionChangeProp(new Pair<Property<?>, LinkType>(property, change.getValue(i) ? LinkType.RECCHANGE : LinkType.DEPEND));
+                    change.getKey(i).addActionChangeProp(new Pair<ActionProperty<?>, LinkType>((ActionProperty<?>) property, change.getValue(i) ? LinkType.RECCHANGE : LinkType.DEPEND));
             }
         }
     }
@@ -1185,19 +1186,40 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     private final static Comparator<Property> comparator = new PropComparator(false);
 
 
+    private static int compare(LinkType aType, Property aProp, LinkType bType, Property bProp) {
+        int compare = Integer.compare(aType.getNum(), bType.getNum());
+        if(compare != 0) // меньше тот у кого связь слабее (num больше)
+            return -compare;
+        
+        return strictComparator.compare(aProp, bProp);        
+    }
+    // ищем вершину в компоненту (нужно для детерминированности, иначе можно было бы с findMinCycle совместить) - вершину с самыми слабыми исходящими связями (эвристика, потом возможно надо все же объединить все с findMinCycle и искать минимальный цикл с минимальным вырезаемым типом ребра)
+    private static Property<?> findMinProperty(HMap<Property, LinkType> component) {
+        Property minProp = null;
+        LinkType minLinkType = null; 
+        for (int i = 0; i < component.size; i++) {
+            Property prop = component.getKey(i);
+            LinkType linkType = component.getValue(i);
+            if(minProp == null || compare(minLinkType, minProp, linkType, prop) > 0) {
+                minProp = prop;
+                minLinkType = linkType;
+            }
+        }
+        return minProp;
+    }
+    
     // ищем компоненту (нужно для детерминированности, иначе можно было бы с findMinCycle совместить)
-    private static void findComponent(Property<?> property, MAddMap<Property, HSet<Link>> linksMap, HSet<Property> proceeded, HSet<Property> component, Result<Property> minProperty) {
-        if (component.add(property))
+    private static void findComponent(Property<?> property, LinkType linkType, MAddMap<Property, HSet<Link>> linksMap, HSet<Property> proceeded, HMap<Property, LinkType> component) {
+        boolean checked = component.containsKey(property);
+        component.add(property, linkType);
+        if (checked)
             return;
-
-        if(minProperty.result == null || strictComparator.compare(minProperty.result, property) > 0)
-            minProperty.set(property);
 
         HSet<Link> linksIn = linksMap.get(property);
         for (int i = 0; i < linksIn.size; i++) {
             Link link = linksIn.get(i);
             if (!proceeded.contains(link.from)) { // если не в верхней компоненте
-                findComponent(link.from, linksMap, proceeded, component, minProperty);
+                findComponent(link.from, link.type, linksMap, proceeded, component);
             }
         }
     }
@@ -1219,7 +1241,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         return strictComparator.compare(cycle1.get(0).from, cycle2.get(0).from);
     }
 
-    private static List<Link> findMinCycle(Property<?> property, MAddMap<Property, HSet<Link>> linksMap, HSet<Property> component) {
+    private static List<Link> findMinCycle(Property<?> property, MAddMap<Property, HSet<Link>> linksMap, ImSet<Property> component) {
         // поиск в ширину
         HSet<Property> inQueue = new HSet<>();
         Link[] queue = new Link[component.size()];
@@ -1298,37 +1320,39 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     }
 
     // upComponent нужен так как изначально неизвестны все элементы
-    private static HSet<Property> buildList(HSet<Property> props, HSet<Property> exclude, HSet<Link> removedLinks, MOrderExclSet<Property> mResult, boolean events) {
+    private static HSet<Property> buildList(ImSet<Property> props, HSet<Property> exclude, HSet<Link> removedLinks, MOrderExclSet<Property> mResult, boolean events) {
         HSet<Property> proceeded;
 
         List<Property> order = new ArrayList<>();
         MAddMap<Property, HSet<Link>> linksMap = MapFact.mAddOverrideMap();
-        for (int i = 0; i < props.size; i++) {
+        for (int i = 0, size = props.size(); i < size ; i++) {
             Property property = props.get(i);
             if (linksMap.get(property) == null) // проверка что не было
                 buildOrder(property, linksMap, order, removedLinks, exclude == null, exclude != null ? exclude : props, events, false, false);
         }
 
-        Result<Property> minProperty = new Result<>();
         proceeded = new HSet<>();
         for (int i = 0; i < order.size(); i++) { // тут нужн
             Property orderProperty = order.get(order.size() - 1 - i);
             if (!proceeded.contains(orderProperty)) {
-                minProperty.set(null);
-                HSet<Property> innerComponent = new HSet<>();
-                findComponent(orderProperty, linksMap, proceeded, innerComponent, minProperty);
-                assert innerComponent.size > 0;
-                if (innerComponent.size == 1) // если цикла нет все ОК
+                HMap<Property, LinkType> innerComponentOutTypes = new HMap<Property, LinkType>(LinkType.<Property>minLinkAdd());                
+                findComponent(orderProperty, LinkType.MAX, linksMap, proceeded, innerComponentOutTypes);
+
+                Property minProperty = findMinProperty(innerComponentOutTypes);
+                ImSet<Property> innerComponent = innerComponentOutTypes.keys();
+                        
+                assert innerComponent.size() > 0;
+                if (innerComponent.size() == 1) // если цикла нет все ОК
                     mResult.exclAdd(innerComponent.single());
                 else { // нашли цикл
                     // assert что minProperty один из ActionProperty.getChangeExtProps
-                    List<Link> minCycle = findMinCycle(minProperty.result, linksMap, innerComponent);
-                    assert BaseUtils.hashEquals(minCycle.get(0).from, minProperty.result) && BaseUtils.hashEquals(minCycle.get(minCycle.size()-1).to, minProperty.result);
+                    List<Link> minCycle = findMinCycle(minProperty, linksMap, innerComponent);
+                    assert BaseUtils.hashEquals(minCycle.get(0).from, minProperty) && BaseUtils.hashEquals(minCycle.get(minCycle.size()-1).to, minProperty);
 
                     Link minLink = getMinLink(minCycle);
                     removedLinks.exclAdd(minLink);
 
-//                    printCycle("test", minLink, innerComponent, minCycle);
+//                    printCycle("Features", minLink, innerComponent, minCycle);
                     if (minLink.type.equals(LinkType.DEPEND)) { // нашли сильный цикл
                         MOrderExclSet<Property> mCycle = SetFact.mOrderExclSet();
                         buildList(innerComponent, null, removedLinks, mCycle, events);
@@ -1348,7 +1372,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         return proceeded;
     }
 
-    private static void printCycle(String property, Link minLink, HSet<Property> innerComponent, List<Link> minCycle) {
+    private static void printCycle(String property, Link minLink, ImSet<Property> innerComponent, List<Link> minCycle) {
 
         int showCycle = 0;
 

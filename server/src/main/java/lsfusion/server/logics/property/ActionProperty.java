@@ -314,17 +314,27 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
 //        mResult.add(new Pair<Property<?>, LinkType>(getWhereProperty().property, hasFlow(ChangeFlowType.NEWSESSION) ? LinkType.RECUSED : LinkType.USEDACTION));
 
         ImSet<CalcProperty> depend = getStrongUsed();
-        for(int i=0,size=depend.size();i<size;i++)
-            mResult.add(new Pair<Property<?>, LinkType>(depend.get(i), LinkType.DEPEND));
+        for(int i=0,size=depend.size();i<size;i++) {
+            CalcProperty property = depend.get(i);
+            mResult.add(new Pair<Property<?>, LinkType>(property, isRecursiveStrongUsed(property) ? LinkType.GOAFTERREC : LinkType.DEPEND));
+        }
         return mResult.immutableCol();
     }
 
-    public ImSet<CalcProperty> strongUsed = SetFact.EMPTY();
+    private ImSet<CalcProperty> strongUsed = SetFact.EMPTY();
     public void addStrongUsed(ImSet<CalcProperty> properties) { // чисто для лексикографики
         strongUsed = strongUsed.merge(properties);
     }
     public ImSet<CalcProperty> getStrongUsed() {
         return strongUsed;
+    }
+    private ImSet<CalcProperty> recursiveStrongUsed = SetFact.EMPTY();
+    public void checkRecursiveStrongUsed(CalcProperty property) {
+        if(strongUsed.contains(property))
+            recursiveStrongUsed = recursiveStrongUsed.merge(property);  
+    }
+    public boolean isRecursiveStrongUsed(CalcProperty property) { // при рекурсии ослабим связь, но не удалим, чтобы была в той же компоненте связности, но при этом не было цикла
+        return recursiveStrongUsed.contains(property);
     }
 
     public <V extends PropertyInterface> ActionPropertyMapImplement<P, V> getImplement(ImOrderSet<V> list) {

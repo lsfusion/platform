@@ -640,9 +640,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
 
     private MCol<Pair<Property<?>, LinkType>> actionChangeProps; // только у Data и IsClassProperty, чисто для лексикографики
     public <T extends PropertyInterface> void addActionChangeProp(Pair<Property<T>, LinkType> pair) {
-        if(((ActionProperty<?>)pair.first).strongUsed.contains(CalcProperty.this)) { // в явную задана связь
-            pair = new Pair<>(pair.first, pair.second.decrease()); // ослабим связь, но не удалим, чтобы была в той же компоненте связности, но при этом не было цикла
-        }
+        ((ActionProperty<?>) pair.first).checkRecursiveStrongUsed(this);
 
         if(actionChangeProps==null)
             actionChangeProps = ListFact.mCol();
