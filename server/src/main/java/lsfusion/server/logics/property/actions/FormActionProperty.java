@@ -134,4 +134,9 @@ public abstract class FormActionProperty extends SystemExplicitActionProperty {
     protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         executeCustom(mapObjects.join(context.getKeys()), context);
     }
+
+    @Override
+    protected boolean isVolatile() {
+        return true;
+    }
 }
