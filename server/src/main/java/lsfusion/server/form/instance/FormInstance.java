@@ -327,10 +327,19 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         } else {
             int prevOwners = updateSessionOwner(true, stack);
             
-            if(manageSession == null && prevOwners == 0) { // если нет owner'ов
-                adjManageSession = true; 
-                environmentIncrement.add(FormEntity.manageSession, PropertyChange.<ClassPropertyInterface>STATIC(true));
+            if(manageSession == null) {
+                if(prevOwners == 0) { // если нет owner'ов
+                    adjManageSession = true; 
+                    environmentIncrement.add(FormEntity.manageSession, PropertyChange.<ClassPropertyInterface>STATIC(true));
+                }
+            } else {
+                if(manageSession != (prevOwners == 0))
+                    ServerLoggers.exInfoLogger.info("EXPLICIT MANAGESESSION : " + this + " " + manageSession + " " + prevOwners);
             }
+
+            boolean heurAdd = heuristicIsAdd(mapObjects);
+            if(isAdd != heurAdd)
+                ServerLoggers.exInfoLogger.info("EXPLICIT CANCEL : " + this + " " + isAdd + " " + heurAdd);
 
             this.mapObjects = null;
         }
@@ -342,6 +351,17 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         fireOnInit(stack);
 
         ServerLoggers.remoteLifeLog("FORM OPEN : " + this);
+    }
+    
+    private boolean heuristicIsAdd(ImMap<ObjectEntity, ? extends ObjectValue> mapObjects) {
+        for(int i=0,size = mapObjects.size();i<size;i++) {
+            ObjectEntity object = mapObjects.getKey(i);
+            ObjectValue value = mapObjects.getValue(i);
+
+            if (value instanceof DataObject && !((DataObject) value).objectClass.inSet(object.baseClass.getUpSet()))
+                return true;
+        }
+        return false;
     }
 
     private void fillContainerShowIfs(MExclMap<ContainerView, CalcPropertyObjectInstance<?>> mContainerShowIfs, ContainerView container) {

@@ -54,11 +54,13 @@ public class Settings {
     // будет ли оптимизатор разбивать группирующие выражения, чтобы не было FULL JOIN и UNION ALL
     private boolean splitSelectGroupInnerJoins = false;
 
-    // будет ли оптимизатор разбивать inner join'ы по статистике в группировке (чем меньше разбиений, тем больше группируются вычисления одного показателя, но меньшая вероятность сгруппировать разные показатели)
-    private boolean splitGroupStatInnerJoins = true; // потом эту
-    
+    // при включенных нижних двух, дальнейшая настройка limitGroup* константы
     // групировать ли inner join'ы в группировочном выражении по статистике (чем больше группируем, тем теоретически меньше точность проталкивания, с другой стороны лучше группируются вычисления)
-    private boolean groupStatExprWhereJoins = true; // сначала выключать эту опцию
+    private boolean groupStatExprWhereJoins = true; // сначала выключать эту опцию 
+
+    // будет ли оптимизатор разбивать inner join'ы по статистике в группировке (чем меньше разбиений, тем больше группируются вычисления одного показателя, но меньшая вероятность сгруппировать разные показатели)
+    // при включенном может быть проблема с GROUP MAX по объектному типа, для них при разбиении делаются IF ELSE ( а не (+), так как тогда нужен вывод классов а он требует булеву логику), что может приводить к экспоненте 
+    private boolean splitGroupStatInnerJoins = true; // потом эту
 
     // будет ли оптимизатор разбивать группирующие выражения на максимум, так чтобы в группируемом выражении не было бы Case'ов
     private boolean splitGroupSelectExprcases = false;
@@ -112,6 +114,7 @@ public class Settings {
 
     private int limitIgnoreSaveStatsCount = 999999;
 
+    // имеет смысл когда включены или groupStatExprWhereJoins или splitGroupStatInnerJoins
     private int limitGroupWhereJoinsCount = 1; // сворачиваем до конца пока сворачивается
     private int limitGroupIgnoreSaveStatsCount = 5; // оставлчем не больше 5, иначе сложность создаваемого GroupExpr растет экспоненциально 
 
