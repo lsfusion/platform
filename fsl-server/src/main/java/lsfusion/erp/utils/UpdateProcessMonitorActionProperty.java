@@ -253,7 +253,7 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
 
         ImMap<ImMap<String, DataObject>, ImMap<LCP, ObjectValue>> rows = processes.mapKeyValues(new GetValue<ImMap<String, DataObject>, String>() {
             public ImMap<String, DataObject> getMapValue(String value) {
-                return MapFact.singleton("key", new DataObject(value));
+                return MapFact.singleton("key", new DataObject(value, StringClass.get(10)));
             }
         }, new GetKeyValue<ImMap<LCP, ObjectValue>, String, List<Object>>() {
             public ImMap<LCP, ObjectValue> getMapValue(String key, List<Object> value) {
