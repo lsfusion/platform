@@ -19,7 +19,7 @@ import java.sql.SQLException;
 public class DataObjectInstance extends ObjectInstance {
 
     DataClass dataClass;
-    ObjectValue value = null;
+    ObjectValue value = NullValue.instance;
 
     public DataObjectInstance(ObjectEntity entity, DataClass dataClass) {
         super(entity);
