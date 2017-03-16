@@ -1,6 +1,7 @@
 package lsfusion.server.form.instance;
 
-import com.google.common.base.Throwables;
+import com.google.common.base.*;
+import com.google.common.base.Objects;
 import lsfusion.base.*;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
@@ -17,10 +18,7 @@ import lsfusion.interop.action.ConfirmClientAction;
 import lsfusion.interop.action.EditNotPerformedClientAction;
 import lsfusion.interop.action.HideFormClientAction;
 import lsfusion.interop.action.LogMessageClientAction;
-import lsfusion.interop.form.ColorPreferences;
-import lsfusion.interop.form.ColumnUserPreferences;
-import lsfusion.interop.form.FormUserPreferences;
-import lsfusion.interop.form.GroupObjectUserPreferences;
+import lsfusion.interop.form.*;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.auth.ChangePropertySecurityPolicy;
 import lsfusion.server.auth.SecurityPolicy;
@@ -72,11 +70,13 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static lsfusion.base.BaseUtils.deserializeObject;
 import static lsfusion.base.BaseUtils.systemLogger;
 import static lsfusion.interop.ClassViewType.GRID;
 import static lsfusion.interop.ClassViewType.HIDE;
+import static lsfusion.interop.ClassViewType.PANEL;
 import static lsfusion.interop.Order.*;
 import static lsfusion.interop.form.ServerResponse.*;
 import static lsfusion.server.form.instance.GroupObjectInstance.*;
@@ -319,27 +319,29 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         this.session.registerForm(this);
 
         boolean adjManageSession = manageSession == null ? false : manageSession;
-        environmentIncrement = createEnvironmentIncrement(isModal, isDialog, isAdd, adjManageSession, entity.isReadOnly(), showDrop);
+        readOnly = readOnly || entity.isReadOnly();
+        environmentIncrement = createEnvironmentIncrement(isModal, isDialog, isAdd, adjManageSession, readOnly, showDrop);
 
         if (!interactive) {
             endApply(stack);
             this.mapObjects = mapObjects;
         } else {
             int prevOwners = updateSessionOwner(true, stack);
-            
+     
+            boolean heurManageSession = heuristicManageSession(prevOwners, readOnly); 
             if(manageSession == null) {
-                if(prevOwners == 0) { // если нет owner'ов
+                if(heurManageSession) { // если нет owner'ов
                     adjManageSession = true; 
                     environmentIncrement.add(FormEntity.manageSession, PropertyChange.<ClassPropertyInterface>STATIC(true));
                 }
             } else {
-                if(manageSession != (prevOwners == 0))
-                    ServerLoggers.exInfoLogger.info("EXPLICIT MANAGESESSION : " + this + " " + manageSession + " " + prevOwners);
+                if(manageSession != heurManageSession)
+                    regAutoDiff("MANAGESESSION", manageSession, heurManageSession);
             }
 
             boolean heurAdd = heuristicIsAdd(mapObjects);
             if(isAdd != heurAdd)
-                ServerLoggers.exInfoLogger.info("EXPLICIT CANCEL : " + this + " " + isAdd + " " + heurAdd);
+                regAutoDiff("CANCEL", isAdd, heurAdd);
 
             this.mapObjects = null;
         }
@@ -353,12 +355,53 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         ServerLoggers.remoteLifeLog("FORM OPEN : " + this);
     }
     
+    public static class DiffForm {
+        public final String type;
+        public final FormEntity entity;
+        public final Boolean explicit;
+        public final Boolean heur;
+
+        public DiffForm(String type, FormEntity entity, Boolean explicit, Boolean heur) {
+            this.type = type;
+            this.entity = entity;
+            this.explicit = explicit;
+            this.heur = heur;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            DiffForm diffForm = (DiffForm) o;
+            return com.google.common.base.Objects.equal(type, diffForm.type) &&
+                    Objects.equal(entity, diffForm.entity) &&
+                    Objects.equal(explicit, diffForm.explicit) &&
+                    Objects.equal(heur, diffForm.heur);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hashCode(type, entity, explicit, heur);
+        }
+    }
+    public static ConcurrentHashMap<DiffForm, Boolean> diffForms = MapFact.getGlobalConcurrentHashMap();
+    private void regAutoDiff(String type, boolean explicit, boolean heur) {
+        diffForms.put(new DiffForm(type, entity, explicit, heur), true);
+    }
+
+    private boolean heuristicManageSession(int prevOwners, boolean readOnly) {
+        if(prevOwners > 0)
+            return false;
+        
+        return !readOnly; 
+    }
+
     private boolean heuristicIsAdd(ImMap<ObjectEntity, ? extends ObjectValue> mapObjects) {
         for(int i=0,size = mapObjects.size();i<size;i++) {
             ObjectEntity object = mapObjects.getKey(i);
             ObjectValue value = mapObjects.getValue(i);
 
-            if (value instanceof DataObject && !((DataObject) value).objectClass.inSet(object.baseClass.getUpSet()))
+            if (object.groupTo.initClassView == PANEL && value instanceof DataObject && !((DataObject) value).objectClass.inSet(object.baseClass.getUpSet()))
                 return true;
         }
         return false;

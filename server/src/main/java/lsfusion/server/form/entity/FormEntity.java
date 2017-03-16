@@ -16,6 +16,7 @@ import lsfusion.interop.ClassViewType;
 import lsfusion.interop.FormEventType;
 import lsfusion.interop.ModalityType;
 import lsfusion.interop.PropertyEditType;
+import lsfusion.interop.form.ServerResponse;
 import lsfusion.server.Settings;
 import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.classes.LogicalClass;
@@ -379,7 +380,10 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     @IdentityLazy
     public boolean isReadOnly() {
         for (PropertyDrawEntity property : getPropertyDrawsIt()) {
-            if (!property.isReadOnly() && !(property.propertyObject.property instanceof NewSessionActionProperty)) {
+            if (!property.isReadOnly() &&
+//                property.getEditAction(ServerResponse.CHANGE) != null
+                !(property.propertyObject.property instanceof NewSessionActionProperty) && 
+                !(property.propertyObject.property instanceof SessionDataProperty)) {
                 return false;
             }
         }

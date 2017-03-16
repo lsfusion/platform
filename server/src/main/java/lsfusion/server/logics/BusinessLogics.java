@@ -51,6 +51,7 @@ import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.form.entity.FormEntity;
+import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.form.instance.listener.CustomClassListener;
 import lsfusion.server.form.navigator.LogInfo;
 import lsfusion.server.form.navigator.NavigatorElement;
@@ -2315,6 +2316,13 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             for (AllocatedInfo info : infos) {
                 allocatedBytesLogger.info(info);
             }
+            
+            // временно сюда лог
+            HashMap<FormInstance.DiffForm, Boolean> diffForms = new HashMap<>(FormInstance.diffForms);
+            String diffLog = "" + '\n';
+            for(FormInstance.DiffForm diffForm : diffForms.keySet())
+                diffLog += "EXPLICIT " + diffForm.type + " " + diffForm.explicit + " " + diffForm.entity + " " + diffForm.heur; 
+            ServerLoggers.exInfoLogger.info(diffLog);
 
             if (logTotal) {
                 allocatedBytesLogger.info(String.format("Exceeded: sum: %s, \t\t\tmissed-hit: All: %s-%s, %s",
