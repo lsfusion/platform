@@ -380,8 +380,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     @IdentityLazy
     public boolean isReadOnly() {
         for (PropertyDrawEntity property : getPropertyDrawsIt()) {
-            if (!property.isReadOnly() &&
-//                property.getEditAction(ServerResponse.CHANGE) != null
+            if (property.getEditAction(ServerResponse.CHANGE, this) != null && !property.isSelector() && 
                 !(property.propertyObject.property instanceof NewSessionActionProperty) && 
                 !(property.propertyObject.property instanceof SessionDataProperty)) {
                 return false;
