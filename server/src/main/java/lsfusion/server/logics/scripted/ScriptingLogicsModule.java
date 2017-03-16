@@ -2592,7 +2592,9 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public LPWithParams addScriptedWriteActionProperty(LPWithParams sourcePathProp, LPWithParams sourceProp) throws ScriptingErrorLog.SemanticErrorException {
         checkCalculationProperty(sourceProp.property);
-        return addScriptedJoinAProp(addAProp(new WriteActionProperty(sourcePathProp.property.property.getValueClass(ClassType.valuePolicy), (LCP)sourceProp.property)), Collections.singletonList(sourcePathProp));
+        return addScriptedJoinAProp(addAProp(new WriteActionProperty(sourceProp.property.property.getType(),
+                sourcePathProp.property.property.getValueClass(ClassType.valuePolicy),
+                sourceProp.property.property.getValueClass(ClassType.valuePolicy))), Arrays.asList(sourcePathProp, sourceProp));
     }
 
     public LPWithParams addScriptedImportDBFActionProperty(LPWithParams fileProp, LPWithParams whereProp, LPWithParams memoProp, List<String> ids, List<PropertyUsage> propUsages, String charset) throws ScriptingErrorLog.SemanticErrorException {

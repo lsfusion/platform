@@ -5,18 +5,12 @@ import com.jcraft.jsch.*;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.IOUtils;
 import lsfusion.server.ServerLoggers;
-import lsfusion.server.classes.DynamicFormatFileClass;
-import lsfusion.server.classes.StaticFormatFileClass;
-import lsfusion.server.classes.StringClass;
-import lsfusion.server.classes.ValueClass;
+import lsfusion.server.classes.*;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.DataObject;
-import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
-import lsfusion.server.logics.scripted.ScriptingActionProperty;
-import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 
@@ -25,12 +19,12 @@ import java.sql.SQLException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class WriteActionProperty extends SystemExplicitActionProperty{
-    private final LCP<?> sourceProp;
+public class WriteActionProperty extends SystemExplicitActionProperty {
+    private final Type sourcePropertyType;
 
-    public WriteActionProperty(ValueClass valueClass, LCP<?> sourceProp) {
-        super(valueClass);
-        this.sourceProp = sourceProp;
+    public WriteActionProperty(Type sourcePropertyType, ValueClass... valueClasses) {
+        super(valueClasses);
+        this.sourcePropertyType = sourcePropertyType;
     }
 
     @Override
@@ -40,13 +34,15 @@ public class WriteActionProperty extends SystemExplicitActionProperty{
 
     @Override
     protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
-        DataObject value = context.getDataKeys().getValue(0);
-        assert value.getType() instanceof StringClass;
+        DataObject pathObject = context.getDataKeys().getValue(0);
+        assert pathObject.getType() instanceof StringClass;
+        String path = (String) pathObject.object;
 
-        String path = (String) value.object;
-        byte[] fileBytes = (byte[]) sourceProp.read(context);
+        DataObject sourceObject = context.getDataKeys().getValue(1);
+        assert sourceObject.getType() instanceof FileClass;
+        byte[] fileBytes = (byte[]) sourceObject.object;
+
         String extension = null;
-        Type sourcePropertyType = sourceProp.property.getType();
         if (fileBytes != null) {
             if (sourcePropertyType instanceof StaticFormatFileClass) {
                 extension = ((StaticFormatFileClass) sourcePropertyType).getOpenExtension(fileBytes);
@@ -131,7 +127,7 @@ public class WriteActionProperty extends SystemExplicitActionProperty{
 
             FTPClient ftpClient = new FTPClient();
             ftpClient.setConnectTimeout(3600000); //1 hour = 3600 sec
-            if(charset != null)
+            if (charset != null)
                 ftpClient.setControlEncoding(charset);
             try {
 
@@ -143,7 +139,7 @@ public class WriteActionProperty extends SystemExplicitActionProperty{
                     InputStream inputStream = new FileInputStream(file);
                     boolean done = ftpClient.storeFile(remoteFile, inputStream);
                     inputStream.close();
-                    if(done)
+                    if (done)
                         ServerLoggers.importLogger.info(String.format("Successful writing file to %s", path));
                     else {
                         ServerLoggers.importLogger.error(String.format("Failed writing file to %s", path));
@@ -195,16 +191,16 @@ public class WriteActionProperty extends SystemExplicitActionProperty{
                 channel = session.openChannel("sftp");
                 channel.connect();
                 channelSftp = (ChannelSftp) channel;
-                if(charset != null)
+                if (charset != null)
                     channelSftp.setFilenameEncoding(charset);
                 channelSftp.cd(remoteFile.getParent().replace("\\", "/"));
                 channelSftp.put(new FileInputStream(file), remoteFile.getName());
             } finally {
-                if(channelSftp != null)
+                if (channelSftp != null)
                     channelSftp.exit();
-                if(channel != null)
+                if (channel != null)
                     channel.disconnect();
-                if(session != null)
+                if (session != null)
                     session.disconnect();
             }
         } else {
