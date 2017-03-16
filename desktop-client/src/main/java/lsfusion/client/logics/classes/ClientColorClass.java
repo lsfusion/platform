@@ -67,4 +67,9 @@ public class ClientColorClass extends ClientDataClass implements ClientTypeClass
     public int getPreferredWidth(int prefCharWidth, FontMetrics fontMetrics) {
         return 50;
     }
+
+    @Override
+    public int getMinimumWidth(int minCharWidth, FontMetrics fontMetrics) {
+        return 15;
+    }
 }
