@@ -35,6 +35,7 @@ import lsfusion.server.data.translator.KeyExprTranslator;
 import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.translator.ExprTranslator;
 import lsfusion.server.data.type.ClassReader;
+import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.OrWhere;
 import lsfusion.server.data.where.Where;
@@ -388,12 +389,16 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
     public static <K> Expr create(ImMap<K, ? extends Expr> group, ImList<Expr> exprs, ImOrderMap<Expr, Boolean> orders, boolean ordersNotNull, GroupType type, ImMap<K, ? extends Expr> implement) {
         return createTypeAdjust(group, new Query(exprs, orders, ordersNotNull, type), implement);
     }
+    
+    private static <K> Type getType(ImMap<K, ? extends Expr> group, Query query) {
+        return query.getType(getWhere(group));
+    }
 
     // вытаскивает из outer Case'ы
     public static <K> Expr createTypeAdjust(ImMap<K, ? extends Expr> group, Query query, ImMap<K, ? extends Expr> implement) {
         assert group.keys().equals(implement.keys());
 
-        if(query.type.isSelect() && !query.type.isSelectNotInWhere() && query.getType(getWhere(group)) instanceof LogicalClass)
+        if(query.type.isSelect() && !query.type.isSelectNotInWhere() && getType(group, query) instanceof LogicalClass)
             query = new Query(query.exprs, query.orders, query.ordersNotNull, GroupType.ANY);
         return createOuterCases(group, query, implement);
     }
@@ -579,10 +584,13 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
     }
 
     // "определяет" разбивать на innerJoins или нет
-    private static ImCol<Pair<KeyEqual, Where>> getSplitJoins(final Where where, GroupType type, ImMap<BaseExpr, Expr> outerInner) {
+    private static ImCol<Pair<KeyEqual, Where>> getSplitJoins(final Where where, GroupType type, ImMap<BaseExpr, Expr> outerInner, boolean forceAll) {
         assert type.hasAdd();
 
         GroupStatType splitType = type.splitInnerJoins() ? GroupStatType.NONE : (Settings.get().isSplitGroupStatInnerJoins() ? GroupStatType.STAT : GroupStatType.ALL);
+        if(forceAll)
+            splitType = GroupStatType.ALL;
+        
         boolean exclusive = type.exclusive();
         
         if(splitType.equals(GroupStatType.ALL)) { // оптимизация
@@ -606,7 +614,8 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
 
         if(query.type.hasAdd()) {
             Expr result = CaseExpr.NULL;
-            ImCol<Pair<KeyEqual, Where>> splitJoins = getSplitJoins(query.getWhere(), query.type, outerInner);
+            ImCol<Pair<KeyEqual, Where>> splitJoins = getSplitJoins(query.getWhere(), query.type, outerInner, 
+                                            query.type.isMaxMin() && !Settings.get().isSplitGroupStatMaxMinObjectType() && getType(outerInner, query) instanceof ObjectType);
             for(Pair<KeyEqual, Where> innerWhere : splitJoins) {
                 Expr innerResult;
                 if(!innerWhere.first.isEmpty()) { // translatе'им expr

@@ -59,8 +59,12 @@ public class Settings {
     private boolean groupStatExprWhereJoins = true; // сначала выключать эту опцию 
 
     // будет ли оптимизатор разбивать inner join'ы по статистике в группировке (чем меньше разбиений, тем больше группируются вычисления одного показателя, но меньшая вероятность сгруппировать разные показатели)
-    // при включенном может быть проблема с GROUP MAX по объектному типа, для них при разбиении делаются IF ELSE ( а не (+), так как тогда нужен вывод классов а он требует булеву логику), что может приводить к экспоненте 
+    // при включенном может быть проблема с GROUP MAX по объектному типу, для них при разбиении делаются IF ELSE ( а не аналог (+), так как тогда нужен вывод классов а он требует булеву логику), что может приводить к экспоненте
+    // для борьбы с этой проблемой пока выключается нижняя опция
     private boolean splitGroupStatInnerJoins = true; // потом эту
+
+    // смотри верхнюю опцию
+    private boolean splitGroupStatMaxMinObjectType = false;
 
     // будет ли оптимизатор разбивать группирующие выражения на максимум, так чтобы в группируемом выражении не было бы Case'ов
     private boolean splitGroupSelectExprcases = false;
@@ -372,6 +376,14 @@ public class Settings {
 
     public void setSplitGroupStatInnerJoins(boolean splitGroupStatInnerJoins) {
         this.splitGroupStatInnerJoins = splitGroupStatInnerJoins;
+    }
+
+    public boolean isSplitGroupStatMaxMinObjectType() {
+        return splitGroupStatMaxMinObjectType;
+    }
+
+    public void setSplitGroupStatMaxMinObjectType(boolean splitGroupStatMaxMinObjectType) {
+        this.splitGroupStatMaxMinObjectType = splitGroupStatMaxMinObjectType;
     }
 
     public boolean isGroupStatExprWhereJoins() {

@@ -94,6 +94,10 @@ public enum GroupType implements AggrType {
     public boolean hasAdd() {
         return this!=STRING_AGG && this!=AGGAR_SETADD && this!=LAST;
     }
+    
+    public boolean isMaxMin() {
+        return this == MAX || this == MIN;
+    }
 
     // если не комутативен и не инвариантен к появляению в выборке null'а
     public boolean nullsNotAllowed() {
