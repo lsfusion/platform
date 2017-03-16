@@ -31,11 +31,11 @@ public class HeaderPanel extends Panel implements RequiresResize {
 
     private boolean layoutScheduled = false;
 
-    public HeaderPanel() {
-        this(DEFAULT_HEADER_HEIGHT, DEFAULT_FOOTER_HEIGHT);
+    public HeaderPanel(boolean flexible) {
+        this(DEFAULT_HEADER_HEIGHT, DEFAULT_FOOTER_HEIGHT, flexible);
     }
 
-    public HeaderPanel(int initialHeaderHeight, int initialFooterHeight) {
+    public HeaderPanel(int initialHeaderHeight, int initialFooterHeight, boolean flexible) {
         lastContentTop = initialHeaderHeight;
         lastContentBottom = initialFooterHeight;
 
@@ -46,17 +46,17 @@ public class HeaderPanel extends Panel implements RequiresResize {
         setElement(elem);
 
         // Create the header container.
-        headerContainer = createContainer();
+        headerContainer = createContainer(flexible);
         headerContainer.getStyle().setTop(0, Style.Unit.PX);
         elem.appendChild(headerContainer);
 
         // Create the footer container.
-        footerContainer = createContainer();
+        footerContainer = createContainer(flexible);
         footerContainer.getStyle().setBottom(0.0, Style.Unit.PX);
         elem.appendChild(footerContainer);
 
         // Create the content container.
-        contentContainer = createContainer();
+        contentContainer = createContainer(flexible);
         contentContainer.getStyle().setOverflow(Style.Overflow.HIDDEN);
         contentContainer.getStyle().setTop(lastContentTop, Style.Unit.PX);
         contentContainer.getStyle().setBottom(lastContentBottom, Style.Unit.PX);
@@ -188,12 +188,16 @@ public class HeaderPanel extends Panel implements RequiresResize {
         }
     }
 
-    private Element createContainer() {
+    private Element createContainer(boolean flexible) {
         Element container = Document.get().createDivElement().cast();
-        container.getStyle().setPosition(Style.Position.ABSOLUTE);
         container.getStyle().setDisplay(Style.Display.NONE);
-        container.getStyle().setLeft(0.0, Style.Unit.PX);
-        container.getStyle().setRight(0.0, Style.Unit.PX);
+
+        // для flex-layout'а. убираем position:absolute для грида в контенерах, у которых в иерархии предков есть скролл или flex=0. грид будет занимать всё место, которое ему нужно
+        if (flexible) {
+            container.getStyle().setPosition(Style.Position.ABSOLUTE);
+            container.getStyle().setLeft(0.0, Style.Unit.PX);
+            container.getStyle().setRight(0.0, Style.Unit.PX);
+        }
         return container;
     }
 

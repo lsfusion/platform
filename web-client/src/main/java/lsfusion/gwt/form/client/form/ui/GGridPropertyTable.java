@@ -59,8 +59,8 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
 
     public static final GGridPropertyTableResource GGRID_RESOURCES = GWT.create(GGridPropertyTableResource.class);
 
-    public GGridPropertyTable(GFormController iform, GFont font) {
-        super(iform, GGRID_RESOURCES);
+    public GGridPropertyTable(GFormController iform, GFont font, boolean flexible) {
+        super(iform, GGRID_RESOURCES, flexible);
         
         this.font = font;
 

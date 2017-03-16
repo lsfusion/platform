@@ -35,7 +35,11 @@ public class GGridController {
 
         ResizableSimplePanel panel = new ResizableSimplePanel(table);
         panel.setStyleName("gridResizePanel");
-        setupFillParent(panel.getElement(), table.getElement());
+
+        // для flex-layout'а. убираем position:absolute для грида в контенерах, у которых в иерархии предков есть скролл или flex=0. грид будет занимать всё место, которое ему нужно
+        if (grid.isInFlexible()) {
+            setupFillParent(panel.getElement(), table.getElement());
+        }
 
         gridView = layoutImpl.createGridView(grid, panel);
     }

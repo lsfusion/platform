@@ -36,13 +36,16 @@ public class FlexSplitPanel extends SplitPanelBase<FlexPanel> {
         firstChild = child;
 
         Style style = widget.getElement().getStyle();
-        style.setPosition(Style.Position.ABSOLUTE);
-        style.setTop(child.marginTop, Style.Unit.PX);
-        style.setLeft(child.marginLeft, Style.Unit.PX);
-        if (vertical) {
-            style.setRight(child.marginRight, Style.Unit.PX);
-        } else {
-            style.setBottom(child.marginBottom, Style.Unit.PX);
+        // для flex-layout'а. убираем position:absolute для грида в контенерах, у которых в иерархии предков есть скролл или flex=0. грид будет занимать всё место, которое ему нужно
+        if (child.isInFlexible()) {
+            style.setPosition(Style.Position.ABSOLUTE);
+            style.setTop(child.marginTop, Style.Unit.PX);
+            style.setLeft(child.marginLeft, Style.Unit.PX);
+            if (vertical) {
+                style.setRight(child.marginRight, Style.Unit.PX);
+            } else {
+                style.setBottom(child.marginBottom, Style.Unit.PX);
+            }
         }
         panel.add(firstWidget, 0);
     }
@@ -52,13 +55,16 @@ public class FlexSplitPanel extends SplitPanelBase<FlexPanel> {
         secondChild = child;
 
         Style style = widget.getElement().getStyle();
-        style.setPosition(Style.Position.ABSOLUTE);
-        style.setBottom(child.marginBottom, Style.Unit.PX);
-        style.setRight(child.marginRight, Style.Unit.PX);
-        if (vertical) {
-            style.setLeft(child.marginLeft, Style.Unit.PX);
-        } else {
-            style.setTop(child.marginTop, Style.Unit.PX);
+        // для flex-layout'а. убираем position:absolute для грида в контенерах, у которых в иерархии предков есть скролл или flex=0. грид будет занимать всё место, которое ему нужно
+        if (child.isInFlexible()) {
+            style.setPosition(Style.Position.ABSOLUTE);
+            style.setBottom(child.marginBottom, Style.Unit.PX);
+            style.setRight(child.marginRight, Style.Unit.PX);
+            if (vertical) {
+                style.setLeft(child.marginLeft, Style.Unit.PX);
+            } else {
+                style.setTop(child.marginTop, Style.Unit.PX);
+            }
         }
 
         int index = firstWidget == null ? 1 : 2;

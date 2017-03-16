@@ -46,6 +46,10 @@ public class GTreeGroupController extends GAbstractGroupObjectController {
         addFilterButton();
     }
     
+    public GTreeGroup getTreeGroup() {
+        return treeGroup;
+    }
+    
     public GFont getFont() {
         return treeGroup.font;
     }

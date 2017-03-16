@@ -92,7 +92,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
     private double lastQuickSearchTime = 0;
 
     public GGridTable(GFormController iform, GGroupObjectController igroupController, GGridController gridController, GGridUserPreferences[] iuserPreferences) {
-        super(iform, null);
+        super(iform, null, igroupController.groupObject.grid.isInFlexible());
 
         this.groupObjectController = igroupController;
         this.groupObject = igroupController.groupObject;

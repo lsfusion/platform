@@ -45,7 +45,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     private GTreeGroupController treeGroupController;
 
     public GTreeTable(GFormController iformController, GForm iform, GTreeGroupController treeGroupController) {
-        super(iformController, treeGroupController.getFont());
+        super(iformController, treeGroupController.getFont(), treeGroupController.getTreeGroup().isInFlexible());
 
         this.treeGroupController = treeGroupController;
 
