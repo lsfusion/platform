@@ -5,10 +5,12 @@ import java.io.Serializable;
 public class VMOptions implements Serializable {
     private String initHeapSize;
     private String maxHeapSize;
+    private String maxHeapFreeRatio;
 
-    public VMOptions(String initHeapSize, String maxHeapSize) {
+    public VMOptions(String initHeapSize, String maxHeapSize, String maxHeapFreeRatio) {
         this.initHeapSize = initHeapSize;
         this.maxHeapSize = maxHeapSize;
+        this.maxHeapFreeRatio = maxHeapFreeRatio;
     }
 
     public String getInitHeapSize() {
@@ -25,5 +27,13 @@ public class VMOptions implements Serializable {
 
     public void setMaxHeapSize(String maxHeapSize) {
         this.maxHeapSize = maxHeapSize;
+    }
+
+    public String getMaxHeapFreeRatio() {
+        return maxHeapFreeRatio;
+    }
+
+    public void setMaxHeapFreeRatio(String maxHeapFreeRatio) {
+        this.maxHeapFreeRatio = maxHeapFreeRatio;
     }
 }
