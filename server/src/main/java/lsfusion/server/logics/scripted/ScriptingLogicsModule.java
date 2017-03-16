@@ -434,7 +434,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         } catch (LPResolver.AmbiguousPropertyError e) {
             errLog.emitAmbiguousPropertyNameError(parser, e.items, sourceName == null ? name : sourceName);    
         } 
-        checkProperty(property, sourceName == null ? name : sourceName);
+        checkProperty(property, name);
         return property;
     }
     
@@ -1495,12 +1495,8 @@ public class ScriptingLogicsModule extends LogicsModule {
         if(oldValue == null)
             oldValue = new LPWithParams(baseLM.vnull, new ArrayList<Integer>());
         LCP tprop = null;
-        if(targetProp != null) {
-            if (targetProp.classNames == null) {
-                targetProp.classNames = Collections.emptyList(); // делаем так для лучшего сообщения об ошибке 
-            }
-            tprop = (LCP<?>) findLPByPropertyUsage(targetProp);
-        }
+        if(targetProp != null)
+            tprop = (LCP<?>) findLPByPropertyUsage(targetProp);        
         List<Object> resultParams = getParamsPlainList(singletonList(oldValue));
         return new LPWithParams(addInputAProp(null, LocalizedString.create(""), requestDataClass, tprop, resultParams.toArray()), oldValue.usedParams);
     }
