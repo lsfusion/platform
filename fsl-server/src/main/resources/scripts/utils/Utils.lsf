@@ -135,7 +135,7 @@ END
 
 // --------------------------------------------- Диалоги --------------------------------- //
 
-FORM dialogString 'Выбор строку'
+FORM dialogString 'Выбор строки'
     OBJECTS s = VARSTRING[200] FIXED PANEL
     PROPERTIES(s) objValue = OBJVALUE
 ;

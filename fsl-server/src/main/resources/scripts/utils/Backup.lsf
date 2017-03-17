@@ -63,7 +63,8 @@ FORM backup 'Резервное копирование'
     PROPERTIES(b) save TODRAW b FORCE PANEL
     PROPERTIES(b) READONLY partial, date, time, file, fileDeleted, notSucceeded, log FORCE PANEL
     PROPERTIES(b) deleteAction
-    FILTERGROUP notDeleted FILTER 'Только не удалённые' NOT notSucceeded(b) DEFAULT 
+    FILTERGROUP notDeleted FILTER 'Только не удалённые' NOT fileDeleted(b) DEFAULT 
+    FILTERGROUP succeeded FILTER 'Только завершённые' log(b) DEFAULT 
     
     OBJECTS t1 = Table
     PROPERTIES(t1) sid, exclude
