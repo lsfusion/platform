@@ -26,6 +26,10 @@ public abstract class StaticExpr<C extends ConcreteClass> extends StaticClassExp
         return objectClass;
     }
 
+    public ConcreteClass getStaticClass(KeyType keyType) {
+        return getStaticClass();
+    }
+
     public Type getType(KeyType keyType) {
         return objectClass.getType();
     }

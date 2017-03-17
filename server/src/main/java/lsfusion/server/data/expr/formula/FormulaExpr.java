@@ -7,6 +7,7 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
+import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.caches.hash.HashContext;
 import lsfusion.server.classes.ConcreteClass;
 import lsfusion.server.classes.DataClass;
@@ -106,11 +107,12 @@ public class FormulaExpr extends StaticClassExpr implements FormulaExprInterface
         });
     }
 
-    public static ConcreteClass getStaticClass(FormulaExprInterface expr) {
+    public static ConcreteClass getStaticClass(FormulaExprInterface expr, KeyType keyType) {
         FormulaClass result = getStaticValueClass(expr);
         if(result != null)
             return result;
-        return (DataClass)((Expr)expr).getSelfType();
+        Type type = keyType == null ? ((Expr) expr).getSelfType() : ((Expr) expr).getType(keyType);
+        return (DataClass) type;
     }
 
     private static FormulaClass getStaticValueClass(FormulaExprInterface expr) {
@@ -188,9 +190,14 @@ public class FormulaExpr extends StaticClassExpr implements FormulaExprInterface
         return toString(this);
     }
 
+    @IdentityLazy
     public ConcreteClass getStaticClass() {
-        return getStaticClass(this);
+        return getStaticClass(null);
     }
+    public ConcreteClass getStaticClass(KeyType keyType) {
+        return getStaticClass(this, keyType);
+    }
+
     public AndClassSet getAndClassSet(ImMap<VariableSingleClassExpr, AndClassSet> and) {
         return getFormulaAndClassSet(this, and);
     }

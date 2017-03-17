@@ -74,8 +74,7 @@ public class LinearExpr extends UnionExpr {
         return map.packFollowFalse(where);
     }
 
-    @IdentityLazy
-    public IntegralClass getStaticClass() {
-        return map.getType();
+    public IntegralClass getStaticClass(KeyType keyType) {
+        return map.getType(keyType);
     }
 }

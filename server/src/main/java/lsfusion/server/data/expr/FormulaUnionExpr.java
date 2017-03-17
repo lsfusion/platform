@@ -43,8 +43,8 @@ public class FormulaUnionExpr extends UnionExpr {
         return create(new FormulaUnionExpr(formula, exprs));
     }
 
-    public DataClass getStaticClass() {
-        return (DataClass) formula.getType(new SelfListExprType(exprs));
+    public DataClass getStaticClass(KeyType keyType) {
+        return (DataClass) formula.getType(ListExprType.create(keyType, exprs));
     }
 
     protected ImCol<Expr> getParams() {
@@ -76,11 +76,7 @@ public class FormulaUnionExpr extends UnionExpr {
 
     public static Expr resolveObjectType(FormulaImpl impl, ImList<Expr> exprs, final KeyType keyType) {
         if(impl instanceof MaxFormulaImpl && !((MaxFormulaImpl)impl).notObjectType) {
-            Type compatibleType = AbstractFormulaImpl.getCompatibleType(keyType==null ? new SelfListExprType(exprs): new ContextListExprType(exprs) {
-                public KeyType getKeyType() {
-                    return keyType;
-                }
-            }, CompatibleTypeConversion.instance);
+            Type compatibleType = AbstractFormulaImpl.getCompatibleType(ListExprType.create(keyType, exprs), CompatibleTypeConversion.instance);
             if(compatibleType == null)
                 return null;
 

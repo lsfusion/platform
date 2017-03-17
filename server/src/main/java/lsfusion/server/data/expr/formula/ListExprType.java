@@ -17,4 +17,12 @@ public abstract class ListExprType implements ExprType {
     public int getExprCount() {
         return exprs.size();
     }
+    
+    public static ListExprType create(final KeyType keyType, ImList<? extends Expr> exprs) {
+        return keyType == null ? new SelfListExprType(exprs) : new ContextListExprType(exprs) {
+            public KeyType getKeyType() {
+                return keyType;
+            }
+        };
+    }
 }

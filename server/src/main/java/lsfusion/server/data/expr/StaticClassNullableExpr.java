@@ -23,11 +23,16 @@ import lsfusion.server.data.where.classes.ClassExprWhere;
 import lsfusion.server.logics.property.ObjectClassField;
 
 public abstract class StaticClassNullableExpr extends NullableExpr implements StaticClassExprInterface {
-
-    public abstract ConcreteClass getStaticClass();
+    
+    @IdentityLazy
+    public ConcreteClass getStaticClass() {
+        return getStaticClass(null);
+    }
+    
+    public abstract ConcreteClass getStaticClass(KeyType keyType);
 
     public Type getType(KeyType keyType) {
-        return getStaticClass().getType();
+        return getStaticClass(keyType).getType();
     }
     public Stat getTypeStat(KeyStat keyStat, boolean forJoin) {
         return getStaticClass().getTypeStat(forJoin);

@@ -59,13 +59,14 @@ public class FormulaNullableExpr extends StaticClassNullableExpr implements Form
         return FormulaExpr.toString(this);
     }
 
-    public ConcreteClass getStaticClass() {
-        return FormulaExpr.getStaticClass(this);
+    public ConcreteClass getStaticClass(KeyType keyType) {
+        return FormulaExpr.getStaticClass(this, keyType);
     }
     public AndClassSet getAndClassSet(ImMap<VariableSingleClassExpr, AndClassSet> and) {
         return FormulaExpr.getFormulaAndClassSet(this, and);
     }
 
+    @Override
     public Type getType(final KeyType keyType) {
         return FormulaExpr.getType(this, keyType);
     }

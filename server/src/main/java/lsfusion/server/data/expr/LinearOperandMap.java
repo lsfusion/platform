@@ -5,6 +5,7 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.server.caches.hash.HashContext;
 import lsfusion.server.classes.IntegralClass;
 import lsfusion.server.data.expr.formula.AbstractFormulaImpl;
+import lsfusion.server.data.expr.formula.ListExprType;
 import lsfusion.server.data.expr.formula.SelfListExprType;
 import lsfusion.server.data.query.CompileSource;
 import lsfusion.server.data.translator.MapTranslate;
@@ -17,8 +18,8 @@ public class LinearOperandMap extends WrapMap<Expr,Integer> {
         super(map);
     }
 
-    public IntegralClass getType() {
-        return (IntegralClass) AbstractFormulaImpl.getCompatibleType(new SelfListExprType(keys().toList()), CompatibleTypeConversion.instance);
+    public IntegralClass getType(KeyType keyType) {
+        return (IntegralClass) AbstractFormulaImpl.getCompatibleType(ListExprType.create(keyType, keys().toList()), CompatibleTypeConversion.instance);
     }
 
     public int hashOuter(HashContext hashContext) {
@@ -46,7 +47,7 @@ public class LinearOperandMap extends WrapMap<Expr,Integer> {
             else
                 linearWhere = linearWhere.or(operand.getKey().getWhere());*/
         }
-        return compile.syntax.getNotZero(source, getType(), compile.env);//"(CASE WHEN " + linearWhere.getSource(compile) + (orderWhere.size()==0?"":" OR "+BaseUtils.toString(orderWhere," OR ")) + " THEN " + (source.length()==0?"0":source) + " ELSE " + SQLSyntax.NULL + " END)";
+        return compile.syntax.getNotZero(source, getType(compile.keyType), compile.env);//"(CASE WHEN " + linearWhere.getSource(compile) + (orderWhere.size()==0?"":" OR "+BaseUtils.toString(orderWhere," OR ")) + " THEN " + (source.length()==0?"0":source) + " ELSE " + SQLSyntax.NULL + " END)";
     }
 
     public String toString() {
