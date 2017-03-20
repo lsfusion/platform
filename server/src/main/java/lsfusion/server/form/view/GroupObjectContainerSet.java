@@ -1,92 +1,87 @@
-package lsfusion.interop.form.layout;
+package lsfusion.server.form.view;
+
+import lsfusion.interop.form.layout.*;
+import lsfusion.server.logics.i18n.LocalizedString;
+
+import static lsfusion.interop.form.layout.ContainerConstants.*;
 
 // в этот класс вынесено автоматическое создание контейнеров при создании GroupObject
-public class GroupObjectContainerSet<C extends AbstractContainer<C, T>, T extends AbstractComponent<C, T>> {
+public class GroupObjectContainerSet {
+    private ContainerView groupContainer;
+    private ContainerView gridContainer;
+    private ContainerView panelContainer;
+    private ContainerView panelPropsContainer;
+    private ContainerView controlsContainer;
+    private ContainerView rightControlsContainer;
+    private ContainerView filtersContainer;
+    private ContainerView toolbarPropsContainer;
 
-    public static final String GROUP_CONTAINER = ".box";
-    public static final String TREE_GROUP_CONTAINER = ".box";
-    public static final String GRID_CONTAINER = ".grid.box";
-    public static final String PANEL_CONTAINER = ".panel";
-    public static final String PANEL_PROPS_CONTAINER = ".panel.props";
-    public static final String FILTERS_CONTAINER = ".filters";
-    public static final String TOOLBAR_PROPS_CONTAINER = ".toolbar.props.box";
-    public static final String CONTROLS_CONTAINER = ".controls";
-    public static final String CONTROLS_RIGHT_CONTAINER = ".controls.right";
-
-    private C groupContainer;
-    private C gridContainer;
-    private C panelContainer;
-    private C panelPropsContainer;
-    private C controlsContainer;
-    private C rightControlsContainer;
-    private C filtersContainer;
-    private C toolbarPropsContainer;
-
-    public C getGroupContainer() {
+    public ContainerView getGroupContainer() {
         return groupContainer;
     }
 
-    public C getGridContainer() {
+    public ContainerView getGridContainer() {
         return gridContainer;
     }
 
-    public C getPanelContainer() {
+    public ContainerView getPanelContainer() {
         return panelContainer;
     }
 
-    public C getPanelPropsContainer() {
+    public ContainerView getPanelPropsContainer() {
         return panelPropsContainer;
     }
 
-    public C getControlsContainer() {
+    public ContainerView getControlsContainer() {
         return controlsContainer;
     }
 
-    public C getRightControlsContainer() {
+    public ContainerView getRightControlsContainer() {
         return rightControlsContainer;
     }
 
-    public C getFiltersContainer() {
+    public ContainerView getFiltersContainer() {
         return filtersContainer;
     }
 
-    public C getToolbarPropsContainer() {
+    public ContainerView getToolbarPropsContainer() {
         return toolbarPropsContainer;
     }
 
-    public static <C extends AbstractContainer<C, T>, T extends AbstractComponent<C, T>> GroupObjectContainerSet<C, T> create(AbstractGroupObject<T> group, ContainerFactory<C> factory) {
-        return create(group, factory, ContainerAdder.<C, T>DEFAULT()); 
+    public static GroupObjectContainerSet create(GroupObjectView group, ContainerFactory<ContainerView> factory) {
+        return create(group, factory, ContainerAdder.<ContainerView, ComponentView, LocalizedString>DEFAULT()); 
     }
-    public static <C extends AbstractContainer<C, T>, T extends AbstractComponent<C, T>> GroupObjectContainerSet<C, T> create(AbstractGroupObject<T> group, ContainerFactory<C> factory, ContainerAdder<C, T> adder) {
+    public static GroupObjectContainerSet create(GroupObjectView group, ContainerFactory<ContainerView> factory, 
+                                                 ContainerAdder<ContainerView, ComponentView, LocalizedString> adder) {
 
-        GroupObjectContainerSet<C, T> set = new GroupObjectContainerSet<>();
+        GroupObjectContainerSet set = new GroupObjectContainerSet();
 
         set.groupContainer = factory.createContainer(); // контейнер всей группы
         set.groupContainer.setCaption(group.getCaption());
-        set.groupContainer.setDescription("{form.layout.group.objects}");
+        set.groupContainer.setDescription(LocalizedString.create("{form.layout.group.objects}"));
         set.groupContainer.setSID(group.getSID() + GROUP_CONTAINER);
 
         set.gridContainer = factory.createContainer(); // контейнер грида внутрь
-        set.gridContainer.setDescription("{form.layout.grid.part}");
+        set.gridContainer.setDescription(LocalizedString.create("{form.layout.grid.part}"));
         set.gridContainer.setSID(group.getSID() + GRID_CONTAINER);
 
         set.panelContainer = factory.createContainer(); // контейнер панели
-        set.panelContainer.setDescription("{form.layout.panel}");
+        set.panelContainer.setDescription(LocalizedString.create("{form.layout.panel}"));
         set.panelContainer.setSID(group.getSID() + PANEL_CONTAINER);
 
         set.panelPropsContainer = factory.createContainer();
         set.panelPropsContainer.setSID(group.getSID() + PANEL_PROPS_CONTAINER);
 
         set.controlsContainer = factory.createContainer(); // контейнер всех управляющих объектов
-        set.controlsContainer.setDescription("{form.layout.control.objects}");
+        set.controlsContainer.setDescription(LocalizedString.create("{form.layout.control.objects}"));
         set.controlsContainer.setSID(group.getSID() + CONTROLS_CONTAINER);
 
         set.toolbarPropsContainer = factory.createContainer(); // контейнер тулбара
-        set.toolbarPropsContainer.setDescription("{form.layout.toolbar.props.container}");
+        set.toolbarPropsContainer.setDescription(LocalizedString.create("{form.layout.toolbar.props.container}"));
         set.toolbarPropsContainer.setSID(group.getSID() + TOOLBAR_PROPS_CONTAINER);
 
         set.filtersContainer = factory.createContainer(); // контейнер фильтров
-        set.filtersContainer.setDescription("{form.layout.filters.container}");
+        set.filtersContainer.setDescription(LocalizedString.create("{form.layout.filters.container}"));
         set.filtersContainer.setSID(group.getSID() + FILTERS_CONTAINER);
 
         set.rightControlsContainer = factory.createContainer();
@@ -96,10 +91,10 @@ public class GroupObjectContainerSet<C extends AbstractContainer<C, T>, T extend
         set.groupContainer.setChildrenAlignment(Alignment.LEADING);
         set.groupContainer.setAlignment(FlexAlignment.STRETCH);
         set.groupContainer.setFlex(1);
-        adder.add(set.groupContainer, (T) set.gridContainer);
-        adder.add(set.groupContainer, (T) set.controlsContainer);
-        adder.add(set.groupContainer, (T) group.getFilter());
-        adder.add(set.groupContainer, (T) set.panelContainer);
+        adder.add(set.groupContainer, set.gridContainer);
+        adder.add(set.groupContainer, set.controlsContainer);
+        adder.add(set.groupContainer, group.getFilter());
+        adder.add(set.groupContainer, set.panelContainer);
 
         set.gridContainer.setType(ContainerType.HORIZONTAL_SPLIT_PANE);
         set.gridContainer.setAlignment(FlexAlignment.STRETCH);
@@ -109,16 +104,16 @@ public class GroupObjectContainerSet<C extends AbstractContainer<C, T>, T extend
         set.controlsContainer.setType(ContainerType.CONTAINERH);
         set.controlsContainer.setAlignment(FlexAlignment.STRETCH);
         set.controlsContainer.setChildrenAlignment(Alignment.LEADING);
-        adder.add(set.controlsContainer, (T) group.getToolbar());
-        adder.add(set.controlsContainer, (T) set.rightControlsContainer);
+        adder.add(set.controlsContainer, group.getToolbar());
+        adder.add(set.controlsContainer, set.rightControlsContainer);
 
         set.rightControlsContainer.setType(ContainerType.CONTAINERH);
         set.rightControlsContainer.setAlignment(FlexAlignment.CENTER);
         set.rightControlsContainer.setChildrenAlignment(Alignment.TRAILING);
         set.rightControlsContainer.setFlex(1);
-        adder.add(set.rightControlsContainer, (T) set.filtersContainer);
-        adder.add(set.rightControlsContainer, (T) set.toolbarPropsContainer);
-        adder.add(set.rightControlsContainer, (T) group.getShowType());
+        adder.add(set.rightControlsContainer, set.filtersContainer);
+        adder.add(set.rightControlsContainer, set.toolbarPropsContainer);
+        adder.add(set.rightControlsContainer, group.getShowType());
 
         set.filtersContainer.setType(ContainerType.CONTAINERH);
         set.filtersContainer.setAlignment(FlexAlignment.CENTER);
@@ -130,7 +125,7 @@ public class GroupObjectContainerSet<C extends AbstractContainer<C, T>, T extend
         set.panelContainer.setType(ContainerType.CONTAINERV);
         set.panelContainer.setAlignment(FlexAlignment.STRETCH);
         set.panelContainer.setChildrenAlignment(Alignment.LEADING);
-        adder.add(set.panelContainer, (T) set.panelPropsContainer);
+        adder.add(set.panelContainer, set.panelPropsContainer);
 
         set.panelPropsContainer.setType(ContainerType.COLUMNS);
         set.panelPropsContainer.setColumns(4);

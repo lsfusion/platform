@@ -1,6 +1,6 @@
 package lsfusion.interop.form.layout;
 
-public interface AbstractFunction<C extends AbstractContainer<C, T>, T extends AbstractComponent<C, T>> extends AbstractComponent<C,T> {
+public interface AbstractFunction extends AbstractComponent {
 
     void setCaption(String caption);
     void setIconPath(String iconPath);

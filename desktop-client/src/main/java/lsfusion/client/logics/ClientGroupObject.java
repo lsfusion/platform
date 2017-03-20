@@ -14,7 +14,7 @@ import lsfusion.client.serialization.ClientSerializationPool;
 import lsfusion.interop.ClassViewType;
 import lsfusion.interop.form.PropertyReadType;
 import lsfusion.interop.form.layout.AbstractGroupObject;
-import lsfusion.interop.form.layout.GroupObjectContainerSet;
+import lsfusion.interop.form.layout.ContainerConstants;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class ClientGroupObject extends IdentityObject implements ClientIdentitySerializable, AbstractGroupObject<ClientComponent> {
+public class ClientGroupObject extends IdentityObject implements ClientIdentitySerializable, AbstractGroupObject<ClientComponent, String> {
 
     public ClientTreeGroup parent;
     public boolean isRecursive;
@@ -165,7 +165,7 @@ public class ClientGroupObject extends IdentityObject implements ClientIdentityS
     }
 
     public ClientContainer getClientComponent(ClientContainer parent) {
-        return parent.findContainerBySID(getSID() + GroupObjectContainerSet.GROUP_CONTAINER);
+        return parent.findContainerBySID(getSID() + ContainerConstants.GROUP_CONTAINER);
     }
 
     // по аналогии с сервером

@@ -23,7 +23,7 @@ import java.util.Map;
 
 public class ClientForm extends ContextIdentityObject implements LogicsSupplier,
                                                                  ClientCustomSerializable,
-                                                                 AbstractForm<ClientContainer, ClientComponent>,
+                                                                 AbstractForm<ClientContainer, ClientComponent, String>,
                                                                  ApplicationContextHolder {
 
     public KeyStroke keyStroke = null;

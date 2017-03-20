@@ -1,8 +1,8 @@
 package lsfusion.interop.form.layout;
 
-public interface AbstractGroupObject<T extends AbstractComponent> {
+public interface AbstractGroupObject<T extends AbstractComponent, Str> {
 
-    String getCaption();
+    Str getCaption();
     int getID();
     String getSID();
 

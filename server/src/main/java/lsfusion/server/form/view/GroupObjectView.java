@@ -2,9 +2,9 @@ package lsfusion.server.form.view;
 
 import lsfusion.base.identity.IDGenerator;
 import lsfusion.interop.form.layout.AbstractGroupObject;
-import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.form.entity.GroupObjectEntity;
 import lsfusion.server.form.entity.ObjectEntity;
+import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.serialization.ServerIdentitySerializable;
 import lsfusion.server.serialization.ServerSerializationPool;
 
@@ -13,7 +13,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 
-public class GroupObjectView extends ArrayList<ObjectView> implements ServerIdentitySerializable, AbstractGroupObject<ComponentView> {
+public class GroupObjectView extends ArrayList<ObjectView> implements ServerIdentitySerializable, AbstractGroupObject<ComponentView, LocalizedString> {
 
     public GroupObjectEntity entity;
 
@@ -50,9 +50,9 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
         filter = new FilterView(idGen.idShift());
     }
 
-    public String getCaption() {
+    public LocalizedString getCaption() {
         if (size() > 0)
-            return ThreadLocalContext.localize(get(0).getCaption());
+            return get(0).getCaption();
         else
             return null;
     }

@@ -30,7 +30,7 @@ import java.sql.SQLException;
 
 import static java.lang.Math.max;
 
-public class ComponentView extends IdentityObject implements ServerIdentitySerializable, AbstractComponent<ContainerView, ComponentView> {
+public class ComponentView extends IdentityObject implements ServerIdentitySerializable, AbstractComponent {
 
     public ComponentDesign design = new ComponentDesign();
 

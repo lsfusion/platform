@@ -14,7 +14,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TreeGroupView extends ComponentView implements ServerIdentitySerializable, AbstractTreeGroup<ContainerView, ComponentView> {
+public class TreeGroupView extends ComponentView implements ServerIdentitySerializable, AbstractTreeGroup<ComponentView> {
     public List<GroupObjectView> groups = new ArrayList<>();
 
     public TreeGroupEntity entity;

@@ -5,7 +5,10 @@ import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 import lsfusion.interop.KeyStrokes;
 import lsfusion.interop.PropertyEditType;
-import lsfusion.interop.form.layout.*;
+import lsfusion.interop.form.layout.Alignment;
+import lsfusion.interop.form.layout.ContainerFactory;
+import lsfusion.interop.form.layout.ContainerType;
+import lsfusion.interop.form.layout.FlexAlignment;
 import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.entity.GroupObjectEntity;
 import lsfusion.server.form.entity.PropertyDrawEntity;
@@ -90,7 +93,7 @@ public class DefaultFormView extends FormView {
         creationPath = entity.creationPath;
         autoRefresh = entity.autoRefresh;
 
-        FormContainerSet<ContainerView, ComponentView> formSet = FormContainerSet.fillContainers(this, containerFactory, new ContainerView.VersionContainerAdder(version));
+        FormContainerSet formSet = FormContainerSet.fillContainers(this, containerFactory, new ContainerView.VersionContainerAdder(version));
         setComponentSID(formSet.getFormButtonContainer(), formSet.getFormButtonContainer().getSID(), version);
         setComponentSID(formSet.getNoGroupPanelContainer(), formSet.getNoGroupPanelContainer().getSID(), version);
         setComponentSID(formSet.getNoGroupPanelPropsContainer(), formSet.getNoGroupPanelPropsContainer().getSID(), version);
@@ -203,7 +206,7 @@ public class DefaultFormView extends FormView {
     }
 
     private void addGroupObjectView(GroupObjectView groupObject, Version version) {
-        GroupObjectContainerSet<ContainerView, ComponentView> groupSet = GroupObjectContainerSet.create(groupObject, containerFactory, new ContainerView.VersionContainerAdder(version));
+        GroupObjectContainerSet groupSet = GroupObjectContainerSet.create(groupObject, containerFactory, new ContainerView.VersionContainerAdder(version));
 
         mainContainer.add(groupSet.getGroupContainer(), version);
 
@@ -247,7 +250,7 @@ public class DefaultFormView extends FormView {
     }
 
     private void addTreeGroupView(TreeGroupView treeGroup, Version version) {
-        TreeGroupContainerSet<ContainerView, ComponentView> treeSet = TreeGroupContainerSet.create(treeGroup, containerFactory, new ContainerView.VersionContainerAdder(version));
+        TreeGroupContainerSet treeSet = TreeGroupContainerSet.create(treeGroup, containerFactory, new ContainerView.VersionContainerAdder(version));
 
         treeContainers.put(treeGroup, treeSet.getTreeContainer());
         setComponentSID(treeSet.getTreeContainer(), treeSet.getTreeContainer().getSID(), version);

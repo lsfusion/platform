@@ -17,7 +17,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-public class ContainerView extends ComponentView implements AbstractContainer<ContainerView, ComponentView> {
+public class ContainerView extends ComponentView implements AbstractContainer<ComponentView, LocalizedString> {
 
     public NFOrderSet<ComponentView> children = NFFact.orderSet();
 
@@ -47,12 +47,12 @@ public class ContainerView extends ComponentView implements AbstractContainer<Co
         this.main = main;
     }
 
-    public void setCaption(String caption) {
-        this.caption = LocalizedString.create(caption);
+    public void setCaption(LocalizedString caption) {
+        this.caption = caption;
     }
 
-    public void setDescription(String description) {
-        this.description = LocalizedString.create(description);
+    public void setDescription(LocalizedString description) {
+        this.description = description;
     }
 
     public boolean isTabbedPane() {
@@ -103,7 +103,7 @@ public class ContainerView extends ComponentView implements AbstractContainer<Co
         comp.setContainer(this, version);
     }
 
-    public static class VersionContainerAdder extends ContainerAdder<ContainerView, ComponentView> {
+    public static class VersionContainerAdder extends ContainerAdder<ContainerView, ComponentView, LocalizedString> {
         private final Version version;
 
         public VersionContainerAdder(Version version) {

@@ -15,7 +15,7 @@ import java.util.List;
 
 import static lsfusion.interop.form.layout.ContainerType.*;
 
-public class ClientContainer extends ClientComponent implements AbstractContainer<ClientContainer, ClientComponent> {
+public class ClientContainer extends ClientComponent implements AbstractContainer<ClientComponent, String> {
 
     private String caption;
     private String description;

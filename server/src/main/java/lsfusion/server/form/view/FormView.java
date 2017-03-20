@@ -40,7 +40,7 @@ import java.util.Map;
 
 import static java.util.Collections.synchronizedMap;
 
-public class FormView extends IdentityObject implements ServerCustomSerializable, AbstractForm<ContainerView, ComponentView> {
+public class FormView extends IdentityObject implements ServerCustomSerializable, AbstractForm<ContainerView, ComponentView, LocalizedString> {
 
     // нужен для того, чтобы генерировать уникальный идентификаторы объектам рисования, для передачи их клиенту
     protected final IDGenerator idGenerator = new DefaultIDGenerator();
