@@ -25,6 +25,7 @@ grammar LsfLogics;
 	import lsfusion.server.form.view.GroupObjectView;
 	import lsfusion.server.form.view.PropertyDrawView;
 	import lsfusion.server.classes.sets.ResolveClassSet;
+	import lsfusion.server.classes.DataClass;
 	import lsfusion.server.session.LocalNestedType;
 	import lsfusion.server.logics.i18n.LocalizedString;
 	import lsfusion.server.logics.mutables.Version;
@@ -2166,6 +2167,9 @@ extendContextActionDB[List<TypedParameter> context, boolean dynamic] returns [LP
 	|	classADB=changeClassActionDefinitionBody[context] { $property = $classADB.property; }
 	|	delADB=deleteActionDefinitionBody[context] { $property = $delADB.property; }
 	|	addADB=addObjectActionDefinitionBody[context] { $property = $addADB.property; }
+	|	dialogADB=dialogActionDefinitionBody[context] { $property = $dialogADB.property; }
+	|	inputxADB=inputxActionDefinitionBody[context] { $property = $inputxADB.property; }
+	|	confirmxADB=confirmxActionDefinitionBody[context] { $property = $confirmxADB.property; }
 	;
 	
 keepContextActionDB[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
@@ -2225,17 +2229,19 @@ contextIndependentActionDB returns [LPWithParams property, List<ResolveClassSet>
 mappedForm[List<TypedParameter> context, boolean dynamic] returns [FormEntity formEntity, List<ObjectEntity> objects = new ArrayList<>(), List<FormActionProps> props = new ArrayList<>()]
 @init {
     boolean edit = false;
+    FormEntity form = null;
     ClassFormEntity classForm = null;
+    ObjectEntity classObject = null;
     boolean isNull;
 }
 	:
-	(   (   formName=compoundID { if(inPropParseState()) { $formEntity = self.findForm($formName.sid); } }
-	        ('OBJECTS' list=formActionObjectList[context, dynamic] { if(inPropParseState()) { $objects = self.findObjectEntities($formEntity, $list.objects); } $props = $list.props; })?
+	(   (   formName=compoundID { if(inPropParseState()) { form = self.findForm($formName.sid); $formEntity = form; } }
+	        ('OBJECTS' list=formActionObjectList[form, context, dynamic] { $objects = $list.objects; $props = $list.props; })?
 		)
 	    |
 	    (   ('DIALOG' | ('EDIT' { edit = true; } ))
-	         cls = classId { if(inPropParseState()) { classForm = self.findClassForm($cls.sid, edit); $formEntity = classForm.form; $objects = Collections.singletonList(classForm.object); } }
-	         ('OBJECT' object=formActionProps[context, dynamic] { $props = Collections.singletonList($object.props); })?
+	         cls = classId { if(inPropParseState()) { classForm = self.findClassForm($cls.sid, edit); $formEntity = classForm.form; classObject=classForm.object; $objects = Collections.singletonList(classObject); } }
+	         ('OBJECT' object=formActionProps[classObject, context, dynamic] { $props = Collections.singletonList($object.props); })?
 	    ))
 ;
 
@@ -2262,7 +2268,7 @@ formActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns 
 		$property = self.addScriptedInteractiveFAProp($mf.formEntity, $mf.objects, $mf.props, contextObjectName, contextProperty, initFilterPropertyName, initFilterPropertyMapping, syncType, windowType, manageSession, checkOnOk, showDrop, noCancel, readOnly);
 	}
 }
-	:	'FORM' mf=mappedForm[context,dynamic]
+	:	('SHOW' | 'FORM') mf=mappedForm[context,dynamic]
 		(
 		    sync = syncTypeLiteral { syncType = $sync.val; }
 		|   window = windowTypeLiteral { windowType = $window.val; }
@@ -2277,6 +2283,40 @@ formActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns 
 		|	'CHECK' { checkOnOk = true; }
 		)*
 	;
+
+dialogActionDefinitionBody[List<TypedParameter> context] returns [LPWithParams property]
+@init {
+	WindowFormType windowType = null;
+
+	List<TypedParameter> newContext = new ArrayList<TypedParameter>(context);
+
+	boolean manageSession = false;
+	boolean noCancel = false;
+
+	boolean checkOnOk = false;
+	
+	boolean readOnly = false;
+}
+@after {
+	if (inPropParseState()) {
+		$property = self.addScriptedDialogFAProp($mf.formEntity, $mf.objects, $mf.props, windowType, manageSession, checkOnOk, noCancel, readOnly, $dDB.property, context, newContext);
+	}
+}
+	:	'DIALOG' mf=mappedForm[newContext, false]
+		(    window = windowTypeLiteral { windowType = $window.val; }
+
+		|	'MANAGESESSION' { manageSession = true; }
+		|	'NOCANCEL' { noCancel = true; }
+
+		|	'READONLY' { readOnly = true; }
+		|	'CHECK' { checkOnOk = true; }
+		)*
+		dDB=doInputBody[newContext]
+	;
+	
+doInputBody[List<TypedParameter> context]  returns [LPWithParams property]
+    :	('DO' dDB=innerActionDefinitionBody[context, false] { $property = $dDB.property; } ) | 'INREQUEST'
+;
 
 syncTypeLiteral returns [boolean val]
 	:	'WAIT' { $val = true; }
@@ -2346,16 +2386,20 @@ initFilterDefinition returns [String propName, List<String> mapping]
 		)
 	;
 
-formActionObjectList[List<TypedParameter> context, boolean dynamic] returns [List<String> objects = new ArrayList<>(), List<FormActionProps> props = new ArrayList<>() ]
-	:	id=ID { $objects.add($id.text); } fap=formActionProps[context, dynamic] { $props.add($fap.props); }  
-		(',' id=ID { $objects.add($id.text); } fap=formActionProps[context, dynamic] { $props.add($fap.props); })*
+formActionObjectList[FormEntity formEntity, List<TypedParameter> context, boolean dynamic] returns [List<ObjectEntity> objects = new ArrayList<>(), List<FormActionProps> props = new ArrayList<>() ]
+@init {
+    ObjectEntity object = null;
+}
+	:	id=ID { if(inPropParseState()) { object=self.findObjectEntity(formEntity, $id.text); $objects.add(object); } } fap=formActionProps[object, context, dynamic] { $props.add($fap.props); }  
+		(',' id=ID { if(inPropParseState()) { object=self.findObjectEntity(formEntity, $id.text); $objects.add(object); } } fap=formActionProps[object, context, dynamic] { $props.add($fap.props); })*
 	;
 
-formActionProps[List<TypedParameter> context, boolean dynamic] returns [FormActionProps props]
+formActionProps[ObjectEntity object, List<TypedParameter> context, boolean dynamic] returns [FormActionProps props]
 @init {
     LPWithParams in = null;
     Boolean inNull = false;
     boolean out = false;
+    Integer outParamNum = null;
     Boolean outNull = false;
     PropertyUsage outProp = null;
 
@@ -2363,11 +2407,15 @@ formActionProps[List<TypedParameter> context, boolean dynamic] returns [FormActi
     LPWithParams contextProp = null;
 }
 @after {
-    $props = new FormActionProps(in, inNull, out, outNull, outProp, contextFilter, contextProp);
+    $props = new FormActionProps(in, inNull, out, outParamNum, outNull, outProp, contextFilter, contextProp);
 }
     :   ('=' expr=propertyExpression[context, dynamic] { in = $expr.property; } ('NULL' { inNull = true; } )? )?
-        ('INPUT' { out = true; } ('NULL' { outNull = true; })? ('TO' pUsage=propertyUsage { outProp = $pUsage.propUsage; } )?)?
-        ('CONSTRAINTFILTER' { contextFilter = true; } ('=' consExpr=propertyExpression[context, dynamic])? { contextProp = $consExpr.property; } )?
+        ('INPUT' { out = true; }
+            (varID=ID { if(inPropParseState()) { outParamNum = self.getParamIndex(self.new TypedParameter(object.baseClass, $varID.text), context, true, insideRecursion); } } )?
+            ('NULL' { outNull = true; })? 
+            ('TO' pUsage=propertyUsage { outProp = $pUsage.propUsage; } )?)?
+            ('CONSTRAINTFILTER' { contextFilter = true; } ('=' consExpr=propertyExpression[context, dynamic])? { contextProp = $consExpr.property; } 
+        )?
     ;
 
 idEqualPEList[List<TypedParameter> context, boolean dynamic] returns [List<String> ids = new ArrayList<String>(), List<LPWithParams> exprs = new ArrayList<LPWithParams>(), List<Boolean> nulls = new ArrayList<Boolean>()]
@@ -2522,6 +2570,16 @@ confirmActionDefinitionBody[List<TypedParameter> context, boolean dynamic] retur
 	}
 }
 	:	'CONFIRM' pe=propertyExpression[context, dynamic]
+	;
+	
+confirmxActionDefinitionBody[List<TypedParameter> context] returns [LPWithParams property]
+@after {
+	if (inPropParseState()) {
+		$property = self.addScriptedConfirmxProp(context, $pe.property, $dDB.property);
+	}
+}
+	:	'CONFIRMX' pe=propertyExpression[context, false]
+        dDB=doInputBody[context]
 	;
 		
 messageActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
@@ -2682,6 +2740,36 @@ inputActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns
 		)
 		('TO' pUsage=propertyUsage)?
 	;
+
+inputxActionDefinitionBody[List<TypedParameter> context] returns [LPWithParams property]
+@init {
+	List<TypedParameter> newContext = new ArrayList<TypedParameter>(context);
+}
+@after {
+	if (inPropParseState()) {
+		$property = self.addScriptedInputAProp($in.dataClass, $in.initValue, $pUsage.propUsage, $dDB.property, context, newContext);
+	}
+}
+	:	'INPUTX'
+	    in=mappedInput[newContext]
+		('TO' pUsage=propertyUsage)?
+        dDB=doInputBody[newContext]
+	;
+	
+mappedInput[List<TypedParameter> context] returns [DataClass dataClass, LPWithParams initValue]
+@after {
+	if (inPropParseState()) {
+		$dataClass = self.getInputDataClass($varID.text, context, $ptype.text, $pe.property, insideRecursion);
+		$initValue = $pe.property;
+	}
+}
+    :    
+    (varID=ID '=')?
+    (ptype=PRIMITIVE_TYPE
+    |	
+    pe=propertyExpression[context, false]
+    )    
+;
 
 activeFormActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
 @after {

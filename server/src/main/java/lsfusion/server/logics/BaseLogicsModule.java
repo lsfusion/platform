@@ -575,7 +575,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     }
 
     @IdentityStrongLazy
-    private AnyValuePropertyHolder getRequestedValueProperty() {
+    public AnyValuePropertyHolder getRequestedValueProperty() {
         return addAnyValuePropertyHolder("requested", "Requested");
     }
 

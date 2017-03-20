@@ -1501,6 +1501,34 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LPWithParams(addInputAProp(null, LocalizedString.create(""), requestDataClass, tprop, resultParams.toArray()), oldValue.usedParams);
     }
 
+    public DataClass getInputDataClass(String paramName, List<TypedParameter> context, String typeId, LPWithParams oldValue, boolean insideRecursion) throws ScriptingErrorLog.SemanticErrorException {
+        DataClass requestDataClass;
+        if(typeId != null) {
+            requestDataClass = ClassCanonicalNameUtils.getScriptedDataClass(typeId);
+        } else {
+            ValueClass valueClass = oldValue.property.property.getValueClass(ClassType.valuePolicy);
+            checkInputDataClass(valueClass);
+            requestDataClass = (DataClass) valueClass;
+        }
+
+        if(paramName != null)
+            getParamIndex(new TypedParameter(requestDataClass, paramName), context, true, insideRecursion);
+        return requestDataClass;
+    }
+
+    public LPWithParams addScriptedInputAProp(DataClass requestDataClass, LPWithParams oldValue, PropertyUsage targetProp, LPWithParams doAction, List<TypedParameter> oldContext, List<TypedParameter> newContext) throws ScriptingErrorLog.SemanticErrorException {
+        LCP tprop = getInputProp(targetProp, requestDataClass);
+
+        LAP property = addInputAProp(requestDataClass, (LCP<?>) tprop != null ? ((LCP<?>) tprop).property : null);
+
+        if(oldValue == null)
+            oldValue = new LPWithParams(baseLM.vnull, new ArrayList<Integer>());
+        LPWithParams inputAction = addScriptedJoinAProp(property, Collections.singletonList(oldValue));
+
+        return proceedDoClause(doAction, oldContext, newContext, ListFact.singleton(tprop), inputAction);
+    }
+
+
     public LPWithParams addScriptedRequestAProp(LPWithParams requestAction, LPWithParams doAction) throws ScriptingErrorLog.SemanticErrorException {
         List<LPWithParams> propParams = new ArrayList<>();
         propParams.add(requestAction);
@@ -1587,6 +1615,14 @@ public class ScriptingLogicsModule extends LogicsModule {
         List<Object> resultParams = getParamsPlainList(singletonList(msgProp));
         LAP asyncLAP = addConfirmAProp("lsFusion", resultParams.toArray());
         return new LPWithParams(asyncLAP, msgProp.usedParams);
+    }
+    
+    public LPWithParams addScriptedConfirmxProp(List<TypedParameter> context, LPWithParams msgProp, LPWithParams doAction) throws ScriptingErrorLog.SemanticErrorException {
+        List<Object> resultParams = getParamsPlainList(singletonList(msgProp));
+        LAP asyncLAP = addConfirmAProp("lsFusion", resultParams.toArray());
+        LPWithParams inputAction = new LPWithParams(asyncLAP, msgProp.usedParams);
+                
+        return proceedDoClause(doAction, context, context, ListFact.<LCP>EMPTY(), inputAction);
     }
 
     public LPWithParams addScriptedMessageProp(LPWithParams msgProp, boolean noWait) {
@@ -2414,6 +2450,165 @@ public class ScriptingLogicsModule extends LogicsModule {
         } else {
             return new LPWithParams(property, allParams);
         }
+    }
+
+    private LCP<?> getInputProp(PropertyUsage targetProp, Type type) throws ScriptingErrorLog.SemanticErrorException {
+        return targetProp != null ? (LCP<?>) findLPByPropertyUsage(targetProp) : baseLM.getRequestedValueProperty().getLCP(type);
+    }
+    
+    public LPWithParams addScriptedDialogFAProp(FormEntity form, List<ObjectEntity> allObjects, List<FormActionProps> allObjectProps,
+                                                WindowFormType windowType, boolean manageSession,
+                                                boolean checkOnOk, boolean noCancel, boolean readonly, LPWithParams doAction, List<TypedParameter> oldContext, List<TypedParameter> newContext) throws ScriptingErrorLog.SemanticErrorException {
+
+        List<ObjectEntity> objects = new ArrayList<>();
+        List<LPWithParams> mapping = new ArrayList<>();
+        List<Boolean> nulls = new ArrayList<>();
+
+        MList<ObjectEntity> mInputObjects = ListFact.mListMax(allObjects.size());
+        MList<Boolean> mInputNulls = ListFact.mListMax(allObjects.size());
+        MList<LCP> mInputProps = ListFact.mListMax(allObjects.size());
+        
+        MList<LCP> mInputParamProps = ListFact.mListMax(allObjects.size());
+
+        MList<ObjectEntity> mContextObjects = ListFact.mListMax(allObjects.size() + 1);
+        MList<CalcProperty> mContextProps = ListFact.mListMax(allObjects.size() + 1);
+        List<LPWithParams> contextLPs = new ArrayList<>();
+
+        for (int i = 0; i < allObjects.size(); i++) {
+            ObjectEntity object = allObjects.get(i);
+            FormActionProps objectProp = allObjectProps.get(i);
+            if (objectProp.in != null) {
+                objects.add(object);
+                mapping.add(objectProp.in);
+                nulls.add(objectProp.inNull);
+            }
+            if (objectProp.out) {
+                mInputObjects.add(object);
+                mInputNulls.add(objectProp.outNull);
+                LCP<?> outProp = getInputProp(objectProp.outProp, object.getType());
+                mInputProps.add(outProp);
+                
+                if(objectProp.outParamNum != null) {
+                    mInputParamProps.add(outProp);
+                }
+            }
+            if(objectProp.contextFilter) {
+                LPWithParams contextProp = objectProp.contextProp;
+                if(contextProp == null)
+                    contextProp = objectProp.in;
+                assert contextProp != null;
+                
+                mContextObjects.add(object);
+                mContextProps.add((CalcProperty)contextProp.property.property);
+                contextLPs.add(contextProp);
+            }
+        }
+        ImList<ObjectEntity> inputObjects = mInputObjects.immutableList();
+        ImList<Boolean> inputNulls = mInputNulls.immutableList();
+        ImList<LCP> inputProps = mInputProps.immutableList();
+
+        ImList<LCP> inputParamProps = mInputParamProps.immutableList();
+
+        ImList<ObjectEntity> contextObjects = mContextObjects.immutableList();
+        ImList<CalcProperty> contextProps = mContextProps.immutableList();
+
+        if(windowType == null) {
+            if (!inputObjects.isEmpty())
+                windowType = WindowFormType.DIALOG;
+            else 
+                windowType = WindowFormType.FLOAT;
+        }
+
+        List<LPWithParams> propParams = new ArrayList<>();
+        for(LPWithParams contextLP : contextLPs) {
+            propParams.add(contextLP);
+            checkCalculationProperty(contextLP.property);
+        }
+        List<Integer> allParams = mergeAllParams(propParams);
+
+        LAP property = addIFAProp(null, LocalizedString.create(""), form, objects, nulls,
+                                 inputObjects, inputProps, inputNulls,
+                                 manageSession, noCancel,
+                                 contextObjects, contextProps,
+                                null, true, windowType, checkOnOk, false,
+                                 readonly, getParamsPlainList(propParams).toArray());
+
+        LPWithParams formAction;
+        if (mapping.size() > 0) {
+            for(LPWithParams contextLP : contextLPs)
+                for (int usedParam : contextLP.usedParams) {
+                    mapping.add(new LPWithParams(null, singletonList(usedParam)));
+                }
+            formAction = addScriptedJoinAProp(property, mapping);
+        } else {
+            formAction = new LPWithParams(property, allParams);
+        }
+
+        return proceedDoClause(doAction, oldContext, newContext, inputParamProps, formAction);
+    }
+
+    private LPWithParams proceedDoClause(LPWithParams doAction, List<TypedParameter> oldContext, List<TypedParameter> newContext, ImList<LCP> inputParamProps, LPWithParams inputAction) throws ScriptingErrorLog.SemanticErrorException {
+        if (doAction != null) {
+            doAction = extendDoParams(doAction, newContext, oldContext.size(), inputParamProps);
+            return addScriptedRequestAProp(inputAction, doAction);
+        } else {
+            return inputAction;
+        }
+    }
+
+//    private int findOldParam(List<TypedParameter> params, ImList<Integer> inputParams, Result<ImList<LCP>> rInputParamProps) throws ScriptingErrorLog.SemanticErrorException {
+//        ImOrderSet<Integer> paramsSet = inputParams.toOrderExclSet();
+//        MList<LCP> mInputParamProps = ListFact.mList(inputParams.size());
+//        int paramOld = params.size() - inputParams.size();
+//        for(int i = params.size()-1; i >= paramOld; i--) {
+//            int paramIndex = paramsSet.indexOf(i);
+//            if(paramIndex < 0) 
+//                errLog.emitExtendParamUsage(parser, params.get(i).paramName);
+//            
+//            mInputParamProps.add(rInputParamProps.result.get(paramIndex));            
+//        }
+//        rInputParamProps.set(mInputParamProps.immutableList().reverseList());
+//        return paramOld;
+//    }
+    
+    private LPWithParams nullExec(LPWithParams doAction, int param) throws ScriptingErrorLog.SemanticErrorException {
+        List<LPWithParams> params = new ArrayList<>();
+        boolean found = false;
+        for(int usedParam : doAction.usedParams) 
+            if(usedParam == param){
+                found = true;
+                params.add(new LPWithParams(baseLM.vnull, new ArrayList<Integer>()));
+            } else
+                params.add(new LPWithParams(null, Collections.singletonList(usedParam)));
+            
+        if(!found) // не было проб
+            return null;
+        return addScriptedJoinAProp(doAction.property, params);
+    }
+    
+    // recursive
+    private LPWithParams extendDoParams(LPWithParams doAction, List<TypedParameter> context, int paramOld, ImList<LCP> resultProps) throws ScriptingErrorLog.SemanticErrorException {
+        
+        List<TypedParameter> currentContext = new ArrayList<>(context);
+        int paramNum;
+        while((paramNum = currentContext.size() - 1) >= paramOld) {
+            // remove'им параметр
+            List<TypedParameter> removedContext = new ArrayList<>(currentContext);
+            removedContext.remove(paramNum);
+
+            LPWithParams nullExec = nullExec(doAction, paramNum); // передает NULL в качестве параметра
+            if(nullExec != null) { // нет параметра нет проблемы
+                LPWithParams paramLP = new LPWithParams(null, Collections.singletonList(paramNum));
+                LPWithParams resultLP = new LPWithParams(resultProps.get(paramNum - paramOld), new ArrayList<Integer>());
+
+                doAction = addScriptedForAProp(removedContext, addScriptedEqualityProp("==", paramLP, resultLP), new ArrayList<LPWithParams>(), doAction,
+                        nullExec, null, null, false, false, null, false, currentContext);
+            }
+
+            currentContext = removedContext;
+        }
+        
+        return doAction;
     }
 
     public LPWithParams addScriptedPrintFAProp(FormEntity form, List<ObjectEntity> allObjects, List<FormActionProps> allObjectProps,
@@ -3920,20 +4115,22 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public static class FormActionProps {
-        public LPWithParams in;
-        public Boolean inNull;
+        public final LPWithParams in;
+        public final Boolean inNull;
 
-        public boolean out;
-        public Boolean outNull;
-        public PropertyUsage outProp;
+        public final boolean out;
+        public final Integer outParamNum; 
+        public final Boolean outNull;
+        public final PropertyUsage outProp;
 
-        public boolean contextFilter;
-        public LPWithParams contextProp;
+        public final boolean contextFilter;
+        public final LPWithParams contextProp;
 
-        public FormActionProps(LPWithParams in, Boolean inNull, boolean out, Boolean outNull, PropertyUsage outProp, boolean contextFilter, LPWithParams contextProp) {
+        public FormActionProps(LPWithParams in, Boolean inNull, boolean out, Integer outParamNum, Boolean outNull, PropertyUsage outProp, boolean contextFilter, LPWithParams contextProp) {
             this.in = in;
             this.inNull = inNull;
             this.out = out;
+            this.outParamNum = outParamNum;
             this.outNull = outNull;
             this.outProp = outProp;
             this.contextFilter = contextFilter;
