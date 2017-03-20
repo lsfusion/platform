@@ -287,7 +287,10 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         }
 
         for (int i = 0, size = mapObjects.size(); i < size; i++) {
-            forceChangeObject(instanceFactory.getInstance(mapObjects.getKey(i)), mapObjects.getValue(i));
+            ObjectValue value = mapObjects.getValue(i);
+            if(value instanceof DataObject) {
+                forceChangeObject(instanceFactory.getInstance(mapObjects.getKey(i)), value);
+            }
         }
 
         //устанавливаем фильтры и порядки по умолчанию...
