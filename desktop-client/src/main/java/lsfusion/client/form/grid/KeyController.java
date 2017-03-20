@@ -28,7 +28,7 @@ public class KeyController {
     }
 
     public void startRecording(int firstIndex) {
-        if (firstIndex == -1)
+        if (firstIndex == -1 || table.getRowCount() <= 0)
             return;
         if (!isRecording) {
             values.clear();
