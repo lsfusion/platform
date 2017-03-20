@@ -25,17 +25,20 @@ import java.util.regex.Pattern;
 
 public class ListFilesActionProperty extends ScriptingActionProperty {
     private final ClassPropertyInterface pathInterface;
+    private final ClassPropertyInterface charsetInterface;
 
     public ListFilesActionProperty(ScriptingLogicsModule LM, ValueClass... classes) throws ScriptingErrorLog.SemanticErrorException {
         super(LM, classes);
 
         Iterator<ClassPropertyInterface> i = interfaces.iterator();
         pathInterface = i.next();
+        charsetInterface = i.next();
     }
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
 
         String path = (String) context.getDataKeyValue(pathInterface).object;
+        String charset = (String) context.getDataKeyValue(charsetInterface).object;
 
         try {
             if (path != null) {
@@ -49,7 +52,7 @@ public class ListFilesActionProperty extends ScriptingActionProperty {
                     if (type.equals("file")) {
                         filesList = getFilesList(url);
                     } else if (type.equals("ftp")) {
-                        filesList = getFTPFilesList(path);
+                        filesList = getFTPFilesList(path, charset);
                     }
                     if (filesList != null) {
 
@@ -90,7 +93,7 @@ public class ListFilesActionProperty extends ScriptingActionProperty {
         return result;
     }
 
-    private Map<String, Boolean> getFTPFilesList(String path) throws IOException {
+    private Map<String, Boolean> getFTPFilesList(String path, String charset) throws IOException {
         //*ftp://username:password@host:port/path*//*
         Pattern connectionStringPattern = Pattern.compile("ftp:\\/\\/(.*):(.*)@([^\\/:]*)(?::([^\\/]*))?(?:\\/(.*))?");
         Matcher connectionStringMatcher = connectionStringPattern.matcher(path);
@@ -104,7 +107,7 @@ public class ListFilesActionProperty extends ScriptingActionProperty {
             FTPClient ftpClient = new FTPClient();
             try {
                 ftpClient.setConnectTimeout(60000); //1 minute = 60 sec
-                ftpClient.setControlEncoding("UTF-8");
+                ftpClient.setControlEncoding(charset);
                 ftpClient.connect(server, port);
                 ftpClient.login(username, password);
                 ftpClient.enterLocalPassiveMode();
