@@ -3,10 +3,7 @@ package lsfusion.gwt.base.client.ui;
 import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.user.client.ui.ComplexPanel;
-import com.google.gwt.user.client.ui.ProvidesResize;
-import com.google.gwt.user.client.ui.RequiresResize;
-import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.base.client.Dimension;
 
 import static lsfusion.gwt.base.client.GwtClientUtils.calculateStackPreferredSize;
@@ -127,6 +124,11 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
 
         // Physical attach.
         Element childElement = widget.getElement();
+        
+        // выставляем скроллам flex-basis равным "0", т.к. иначе, с "auto", он требует себе всё пространство, необходимое его потомкам - растягивается 
+        if (widget instanceof ScrollPanel) {
+            flexBasis = "0";
+        }
 
         LayoutData layoutData = impl.insertChild(parentElement, childElement, beforeIndex, alignment, flex, flexBasis);
         widget.setLayoutData(layoutData);
