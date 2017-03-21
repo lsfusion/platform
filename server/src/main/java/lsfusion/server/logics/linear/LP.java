@@ -32,6 +32,7 @@ public abstract class LP<T extends PropertyInterface, P extends Property<T>> {
     public LP(P property, ImOrderSet<T> listInterfaces) {
         this.property = property;
         this.listInterfaces = listInterfaces;
+        assert property.interfaces.size() == listInterfaces.size();
     }
 
     public ImMap<T, ObjectValue> getMapValues(final ObjectValue... objects) {
