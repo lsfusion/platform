@@ -21,12 +21,13 @@ public class ReadLogoRequestHandler implements HttpRequestHandler {
 
     @Override
     public void handleRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        byte[] logo;
+        byte[] logo = null;
         try {
             logo = blProvider.getLogics().getGUIPreferences().logicsLogo;
-        } catch (Exception e) {
-            logo = IOUtils.toByteArray(context.getResourceAsStream("/splash.jpg"));
+        } catch (Exception ignored) {
         }
+        if(logo == null)
+            logo = IOUtils.toByteArray(context.getResourceAsStream("/splash.jpg"));
         response.setContentType("application/jpg");
         response.addHeader("Content-Disposition", "attachment; filename=logo.jpg");
         response.getOutputStream().write(BaseUtils.getFile(logo));
