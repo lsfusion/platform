@@ -141,28 +141,6 @@ public class FileUtils {
         return null;
     }
 
-    public static String saveFileInCurrentDir(String fileName, byte[] fileBytes) {
-        try {
-            if (fileBytes != null) {
-                File file = new File(fileName);
-                FileOutputStream f = new FileOutputStream(file);
-                f.write(fileBytes);
-                f.close();
-                return fileName;
-            }
-        } catch (IOException e) {
-            return null;
-        }
-        return null;
-    }
-
-    public static void copyFile(String source, String dest) {
-        try {
-            Files.copy(new File(source).toPath(), new File(dest).toPath());
-        } catch (IOException ignored) {
-        }
-    }
-
     public static String exportReport(FormPrintType type, ReportGenerationData reportData) {
         try {
             ReportGenerator generator = new ReportGenerator(reportData);

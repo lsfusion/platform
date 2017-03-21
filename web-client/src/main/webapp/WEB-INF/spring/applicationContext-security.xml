@@ -38,10 +38,9 @@
     </b:bean>
 
     <!-- Form login configuration -->
-    <b:bean id="entryPoint" class="lsfusion.gwt.form.client.dispatch.CustomLoginUrlAuthenticationEntryPoint">
+    <b:bean id="entryPoint" class="org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint">
         <b:property name="useForward" value="true"/>
         <b:property name="loginFormUrl" value="/login.jsp"/>
-        <b:constructor-arg ref="blProvider"/>
     </b:bean>
 
     <b:bean id="successLoginHandler" class="org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler" >
@@ -89,6 +88,8 @@
     <b:bean id="captchaHandler" class="lsfusion.gwt.base.server.captcha.ImageCaptchaRequestHandler"/>
 
     <b:bean id="readFileHandler" class="lsfusion.gwt.base.server.spring.ReadFileRequestHandler"/>
+
+    <b:bean id="readLogoHandler" class="lsfusion.gwt.base.server.spring.ReadLogoRequestHandler"/>
 
     <b:bean id="readFormHandler" class="lsfusion.gwt.base.server.spring.ReadFormRequestHandler"/>
 

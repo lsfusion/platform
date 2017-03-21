@@ -14,6 +14,7 @@ import java.rmi.NoSuchObjectException;
 import java.rmi.NotBoundException;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 import static lsfusion.client.ClientResourceBundle.getString;
 
@@ -75,7 +76,7 @@ public final class ReconnectWorker extends SwingWorker<RemoteLogicsLoaderInterfa
         dlg.setVisible(show);
 
         try {
-            return get();
+            return show ? get() : get(3000, TimeUnit.MILLISECONDS);
         } catch (ExecutionException e) {
             throw e.getCause();
         }
