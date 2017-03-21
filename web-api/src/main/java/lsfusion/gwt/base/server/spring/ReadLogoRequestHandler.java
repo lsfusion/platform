@@ -24,7 +24,8 @@ public class ReadLogoRequestHandler implements HttpRequestHandler {
         byte[] logo = null;
         try {
             logo = blProvider.getLogics().getGUIPreferences().logicsLogo;
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            blProvider.invalidate();
         }
         if(logo == null)
             logo = IOUtils.toByteArray(context.getResourceAsStream("/splash.jpg"));
