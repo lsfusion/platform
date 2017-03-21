@@ -27,5 +27,9 @@ public class ClientPropertyFilter {
         compare.serialize(outStream);
         value.serialize(outStream);
         outStream.writeBoolean(junction);
-    }    
+    }
+
+    public Compare getDefaultCompare() {
+        return property.defaultCompare != null ? property.defaultCompare : property.baseType.getDefaultCompare();
+    }
 }

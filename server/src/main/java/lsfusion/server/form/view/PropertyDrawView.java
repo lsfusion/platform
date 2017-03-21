@@ -4,6 +4,7 @@ import lsfusion.base.OrderedMap;
 import lsfusion.base.Pair;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
+import lsfusion.interop.Compare;
 import lsfusion.interop.form.ReportConstants;
 import lsfusion.interop.form.screen.ExternalScreen;
 import lsfusion.interop.form.screen.ExternalScreenConstraints;
@@ -45,6 +46,7 @@ public class PropertyDrawView extends ComponentView {
     public Long maxValue;
     public Boolean echoSymbols;
     public boolean noSort;
+    public Compare defaultCompare;
 
     private int minimumCharWidth;
     private int maximumCharWidth;
@@ -176,6 +178,7 @@ public class PropertyDrawView extends ComponentView {
         pool.writeLong(outStream, maxValue);
         outStream.writeBoolean(echoSymbols);
         outStream.writeBoolean(noSort);
+        serializeCompare(outStream);
         outStream.writeInt(getMinimumCharWidth());
         outStream.writeInt(getMaximumCharWidth());
         outStream.writeInt(getPreferredCharWidth());
@@ -298,6 +301,13 @@ public class PropertyDrawView extends ComponentView {
         outStream.writeBoolean(notNull || entity.propertyObject.property.isSetNotNull());
     }
 
+    private void serializeCompare(DataOutputStream outStream) throws IOException {
+        if(defaultCompare != null)
+            defaultCompare.serialize(outStream);
+        else
+            outStream.writeByte(-1);
+    }
+
     private OrderedMap<String, LocalizedString> filterContextMenuItems(OrderedMap<String, LocalizedString> contextMenuBindings, ServerContext context) {
         if (contextMenuBindings == null || contextMenuBindings.size() == 0) {
             return null;
@@ -325,6 +335,7 @@ public class PropertyDrawView extends ComponentView {
         maxValue = pool.readLong(inStream);
         echoSymbols = inStream.readBoolean();
         noSort = inStream.readBoolean();
+        defaultCompare = Compare.deserialize(inStream);
 
         setMinimumCharWidth(inStream.readInt());
         setMaximumCharWidth(inStream.readInt());

@@ -164,7 +164,7 @@ public class GFilterConditionView extends ResizableHorizontalPanel implements GF
             valueView.propertyChanged(condition.property);
         }
         compareView.setItems(condition.property.baseType.getFilterCompares());
-        compareView.setSelectedItem(condition.property.baseType.getDefaultCompare());
+        compareView.setSelectedItem(condition.getDefaultCompare());
         condition.compare = (GCompare) compareView.getSelectedItem();
 
         handler.conditionChanged();

@@ -24,4 +24,8 @@ public class GPropertyFilter {
 
         return filterDTO;
     }
+
+    public GCompare getDefaultCompare() {
+        return property.defaultCompare != null ? property.defaultCompare : property.baseType.getDefaultCompare();
+    }
 }

@@ -183,7 +183,7 @@ public class QueryConditionView extends JPanel implements FilterValueListener {
         }
         compareView.setModel(new DefaultComboBoxModel(filter.property.baseType.getFilterCompares()));
         compareView.setSelectedItem(null); //чтобы сработал itemStateChanged при автоматическом выборе '='
-        compareView.setSelectedItem(filter.property.baseType.getDefaultCompare());
+        compareView.setSelectedItem(filter.getDefaultCompare());
 
         add(delButton, BorderLayout.EAST);
 

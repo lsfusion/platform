@@ -8,6 +8,7 @@ import lsfusion.gwt.form.shared.view.changes.GGroupObjectValue;
 import lsfusion.gwt.form.shared.view.classes.GClass;
 import lsfusion.gwt.form.shared.view.classes.GStringType;
 import lsfusion.gwt.form.shared.view.classes.GType;
+import lsfusion.gwt.form.shared.view.filter.GCompare;
 import lsfusion.gwt.form.shared.view.grid.EditManager;
 import lsfusion.gwt.form.shared.view.grid.editor.GridCellEditor;
 import lsfusion.gwt.form.shared.view.grid.renderer.GridCellRenderer;
@@ -63,6 +64,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
 
     public boolean echoSymbols;
     public boolean noSort;
+    public GCompare defaultCompare;
 
     public GKeyStroke editKey;
     public boolean showEditKey;

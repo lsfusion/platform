@@ -11,6 +11,7 @@ import lsfusion.gwt.base.client.ui.GKeyStroke;
 import lsfusion.gwt.form.server.FileUtils;
 import lsfusion.gwt.form.shared.view.*;
 import lsfusion.gwt.form.shared.view.classes.GClass;
+import lsfusion.gwt.form.shared.view.filter.GCompare;
 import lsfusion.gwt.form.shared.view.reader.*;
 import lsfusion.interop.ClassViewType;
 import lsfusion.interop.FontInfo;
@@ -298,6 +299,8 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         propertyDraw.echoSymbols = clientPropertyDraw.echoSymbols;
 
         propertyDraw.noSort = clientPropertyDraw.noSort;
+        if(clientPropertyDraw.defaultCompare != null)
+            propertyDraw.defaultCompare = GCompare.get(clientPropertyDraw.defaultCompare.ordinal());
 
         propertyDraw.editKey = convertOrCast(clientPropertyDraw.editKey);
         propertyDraw.showEditKey = clientPropertyDraw.showEditKey;

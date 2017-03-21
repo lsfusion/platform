@@ -10,6 +10,7 @@ import lsfusion.client.form.cell.PanelView;
 import lsfusion.client.logics.classes.*;
 import lsfusion.client.serialization.ClientIdentitySerializable;
 import lsfusion.client.serialization.ClientSerializationPool;
+import lsfusion.interop.Compare;
 import lsfusion.interop.PropertyEditType;
 import lsfusion.interop.form.ColorPreferences;
 import lsfusion.interop.form.PropertyReadType;
@@ -64,6 +65,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public Long maxValue;
     public boolean echoSymbols;
     public boolean noSort;
+    public Compare defaultCompare;
 
     public KeyStroke editKey;
     public boolean showEditKey;
@@ -346,6 +348,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         pool.writeLong(outStream, maxValue);
         outStream.writeBoolean(echoSymbols);
         outStream.writeBoolean(noSort);
+        defaultCompare.serialize(outStream);
         outStream.writeInt(minimumCharWidth);
         outStream.writeInt(maximumCharWidth);
         outStream.writeInt(preferredCharWidth);
@@ -382,6 +385,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         maxValue = pool.readLong(inStream);
         echoSymbols = inStream.readBoolean();
         noSort = inStream.readBoolean();
+        defaultCompare = Compare.deserialize(inStream);
         minimumCharWidth = inStream.readInt();
         maximumCharWidth = inStream.readInt();
         preferredCharWidth = inStream.readInt();
