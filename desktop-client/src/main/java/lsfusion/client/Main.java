@@ -185,9 +185,6 @@ public class Main {
             @Override
             public void run() {
                 try {
-                    //UIManager.setLookAndFeel("com.jgoodies.looks.plastic.PlasticXPLookAndFeel");
-                    UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-
                     LoginAction loginAction = LoginAction.getInstance();
 
                     //пытаемся подгрузить лого
@@ -219,11 +216,15 @@ public class Main {
                     LocalePreferences userPreferences = remoteNavigator.getLocalePreferences();
 
                     if (userPreferences.language != null) {
-                        Locale.setDefault(new Locale(userPreferences.language, nvl(userPreferences.country, "")));
+                        Locale userLocale = new Locale(userPreferences.language, nvl(userPreferences.country, ""));
+                        Locale.setDefault(userLocale);
                         ClientResourceBundle.clientResourceBundle = ResourceBundle.getBundle("ClientResourceBundle"); // чтобы подставлялась нужная локаль
                         
-                        UIManager.getDefaults().setDefaultLocale(Locale.getDefault());
-                        UIManager.getLookAndFeelDefaults().setDefaultLocale(Locale.getDefault());
+                        UIManager.getDefaults().setDefaultLocale(userLocale);
+                        UIManager.getLookAndFeelDefaults().setDefaultLocale(userLocale);
+
+                        JFileChooser.setDefaultLocale(userLocale);
+                        JColorChooser.setDefaultLocale(userLocale);
                     }
 
                     setupTimePreferences(userPreferences.timeZone, userPreferences.twoDigitYearStart);
@@ -376,6 +377,8 @@ public class Main {
         // через сколько после скрытия тултипа снова ждать Initial Delay до показа нового (не в рамках одного компонента)
         ToolTipManager.sharedInstance().setReshowDelay(0);
         ToolTipManager.sharedInstance().setDismissDelay(Integer.MAX_VALUE);
+
+        UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         
         // при первом использовании rich-editora во время редактирования, его создание тормозит...
         // возможно, где-то внутри кэшируются какие-то lazy-ресурсы... Чтобы это не напрягало на форме, создаём компонент вхолостую здесь
