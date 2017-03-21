@@ -713,6 +713,10 @@ public class DerivedProperty {
         return DerivedProperty.createXUnion(innerInterfaces, ifTrue, ifFalse);
     }
 
+    public static SessionDataProperty createInputDataProp(ValueClass valueClass) {
+        return new SessionDataProperty(LocalizedString.create("sys"), valueClass);
+    }
+
     public static <T extends PropertyInterface> CalcPropertyMapImplement<ClassPropertyInterface, T> createForDataProp(ImMap<T, ValueClass> interfaces, ValueClass valueClass, MSet<SessionDataProperty> mLocals) {
         ImOrderMap<T, ValueClass> orderInterfaces = interfaces.toOrderMap();
         ImOrderSet<T> listInterfaces = orderInterfaces.keyOrderSet();

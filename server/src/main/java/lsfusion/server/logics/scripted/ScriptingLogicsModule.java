@@ -55,6 +55,7 @@ import lsfusion.server.logics.property.actions.importing.dbf.ImportFormDBFDataAc
 import lsfusion.server.logics.property.actions.importing.json.ImportFormJSONDataActionProperty;
 import lsfusion.server.logics.property.actions.importing.xml.ImportFormXMLDataActionProperty;
 import lsfusion.server.logics.property.actions.importing.xml.ImportXMLDataActionProperty;
+import lsfusion.server.logics.property.derived.DerivedProperty;
 import lsfusion.server.logics.property.group.AbstractGroup;
 import lsfusion.server.logics.table.ImplementTable;
 import lsfusion.server.mail.AttachmentFormat;
@@ -1516,8 +1517,9 @@ public class ScriptingLogicsModule extends LogicsModule {
         return requestDataClass;
     }
 
-    public LPWithParams addScriptedInputAProp(DataClass requestDataClass, LPWithParams oldValue, PropertyUsage targetProp, LPWithParams doAction, List<TypedParameter> oldContext, List<TypedParameter> newContext) throws ScriptingErrorLog.SemanticErrorException {
-        LCP tprop = getInputProp(targetProp, requestDataClass);
+    // inputx
+    public LPWithParams addScriptedInputxAProp(DataClass requestDataClass, LPWithParams oldValue, PropertyUsage targetProp, LPWithParams doAction, List<TypedParameter> oldContext, List<TypedParameter> newContext) throws ScriptingErrorLog.SemanticErrorException {
+        LCP tprop = getInputProp(targetProp, requestDataClass, null);
 
         LAP property = addInputAProp(requestDataClass, (LCP<?>) tprop != null ? ((LCP<?>) tprop).property : null);
 
@@ -2452,8 +2454,20 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    private LCP<?> getInputProp(PropertyUsage targetProp, Type type) throws ScriptingErrorLog.SemanticErrorException {
-        return targetProp != null ? (LCP<?>) findLPByPropertyUsage(targetProp) : baseLM.getRequestedValueProperty().getLCP(type);
+    private LCP<?> getInputProp(PropertyUsage targetProp, ValueClass valueClass, Set<CalcProperty> usedProps) throws ScriptingErrorLog.SemanticErrorException {
+        if(targetProp != null) {
+            LCP<?> result = (LCP<?>) findLPByPropertyUsage(targetProp);
+            usedProps.add(result.property);
+            return result;
+        }
+
+        if(valueClass instanceof DataClass) {
+            LCP<?> requested = baseLM.getRequestedValueProperty().getLCP((DataClass)valueClass);
+            if(usedProps == null || usedProps.add(requested.property))
+                return requested;
+        }
+        // уже был или Object - генерим новое
+        return new LCP(DerivedProperty.createInputDataProp(valueClass));
     }
     
     public LPWithParams addScriptedDialogFAProp(FormEntity form, List<ObjectEntity> allObjects, List<FormActionProps> allObjectProps,
@@ -2474,6 +2488,8 @@ public class ScriptingLogicsModule extends LogicsModule {
         MList<CalcProperty> mContextProps = ListFact.mListMax(allObjects.size() + 1);
         List<LPWithParams> contextLPs = new ArrayList<>();
 
+        Set<CalcProperty> usedProps = new HashSet<>();
+
         for (int i = 0; i < allObjects.size(); i++) {
             ObjectEntity object = allObjects.get(i);
             FormActionProps objectProp = allObjectProps.get(i);
@@ -2485,7 +2501,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             if (objectProp.out) {
                 mInputObjects.add(object);
                 mInputNulls.add(objectProp.outNull);
-                LCP<?> outProp = getInputProp(objectProp.outProp, object.getType());
+                LCP<?> outProp = getInputProp(objectProp.outProp, object.baseClass, usedProps);
                 mInputProps.add(outProp);
                 
                 if(objectProp.outParamNum != null) {
