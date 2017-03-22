@@ -63,7 +63,7 @@ public abstract class FormStaticActionProperty<T extends FormStaticType> extends
 
         FormReportManager newFormManager;
 
-        if(Settings.get().isUseInteractiveReportManagerInsteadOfStatic()) {
+        if(Settings.get().isUseInteractiveReportManagerInsteadOfStatic() && !SystemProperties.isDebug) {
             FormInstance newFormInstance = context.createFormInstance(form, mapObjectValues);
             
             if (!newFormInstance.areObjectsFound()) {
