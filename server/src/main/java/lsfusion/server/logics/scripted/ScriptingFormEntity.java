@@ -266,12 +266,12 @@ public class ScriptingFormEntity {
                 ObjectEntity obj = getSingleMappingObject(mapping);
                 property = LM.getObjValueProp(form, obj);
                 objects = new PropertyObjectInterfaceEntity[]{obj};
-            } else if (propertyName.equals("ADDOBJ")) {
+            } else if (propertyName.equals("ADDOBJ") && !propertyOptions.isNewSession()) {
                 ObjectEntity obj = getSingleCustomClassMappingObject(propertyName, mapping);
                 CustomClass explicitClass = getSingleAddClass(pUsage);
                 property = LM.getAddObjectAction(form, obj, explicitClass);
                 objects = new PropertyObjectInterfaceEntity[]{};
-            } else if (propertyName.equals("ADDFORM") || propertyName.equals("ADDSESSIONFORM") || propertyName.equals("ADDNESTEDFORM")) {
+            } else if (propertyName.equals("ADDFORM") || propertyName.equals("ADDSESSIONFORM") || propertyName.equals("ADDNESTEDFORM") || (propertyName.equals("ADDOBJ") && propertyOptions.isNewSession())) {
                 ObjectEntity obj = getSingleCustomClassMappingObject(propertyName, mapping);
                 CustomClass explicitClass = getSingleAddClass(pUsage);
                 FormSessionScope scope = override(propertyOptions, getAddFormActionScope(propertyName));
