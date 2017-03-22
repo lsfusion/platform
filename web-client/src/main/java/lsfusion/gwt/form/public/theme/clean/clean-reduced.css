@@ -900,7 +900,7 @@ select {
 
 .gwt-TabBar {
     background: #ccc;
-    padding-top: 6px;
+    padding-top: 5px;
 }
 .gwt-TabBar .gwt-TabBarFirst {
     width: 5px;  /* first tab distance from the left */
@@ -909,6 +909,7 @@ select {
 }
 .gwt-TabBar .gwt-TabBarItem {
     margin-left: 4px;
+    margin-top: 1px;
     padding: 4px 8px 4px 8px;
     cursor: pointer;
     cursor: hand;

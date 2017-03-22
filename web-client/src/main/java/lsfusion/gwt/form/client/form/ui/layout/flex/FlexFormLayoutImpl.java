@@ -1,5 +1,7 @@
 package lsfusion.gwt.form.client.form.ui.layout.flex;
 
+import com.google.gwt.dom.client.Style;
+import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.base.client.ui.FlexPanel;
@@ -33,7 +35,9 @@ public class FlexFormLayoutImpl extends GFormLayoutImpl {
 
     @Override
     public void setupMainContainer(Widget mainContainerWidget) {
-        setupFillParent(mainContainerWidget.getElement());
+        Element mainContainerElement = mainContainerWidget.getElement();
+        mainContainerElement.getStyle().setOverflow(Style.Overflow.AUTO);
+        setupFillParent(mainContainerElement);
     }
 
     @Override

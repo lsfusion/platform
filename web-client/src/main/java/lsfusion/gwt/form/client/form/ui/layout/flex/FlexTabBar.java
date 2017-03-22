@@ -29,6 +29,7 @@ public class FlexTabBar extends Composite implements HasBeforeSelectionHandlers<
         sinkEvents(Event.ONCLICK);
 
         setStyleName("gwt-TabBar");
+        getElement().getStyle().setProperty("flexWrap", "wrap");
 
         Label first = new Label();
         Label rest = new Label();
