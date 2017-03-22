@@ -363,13 +363,9 @@ closeDocuments = ACTION ABSTRACT LIST (DATE);
 documentsClosedDate 'Дата закрытия документов' = DATA DATE();
  
 dialogCloseDocumentsDate 'Закрыть документы'() = ACTION {
-    IF documentsClosedDate() THEN
-        FORM dialogDate OBJECTS d = documentsClosedDate() 
-    ELSE
-        FORM dialogDate ;
-    IF formResult() == FormResult.ok THEN {
-        documentsClosedDate() <- chosenDate('d');
-        closeDocuments(chosenDate('d'));
+    DIALOG dialogDate OBJECTS d = documentsClosedDate() NULL INPUT DO {
+        documentsClosedDate() <- d;
+        closeDocuments(d);
         apply();
     }
 }
