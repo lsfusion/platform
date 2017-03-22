@@ -243,15 +243,14 @@ DESIGN reloginLoginUser {
 }
 
 reloginLoginUser() = ACTION {
-    FORM reloginLoginUser ;
-    IF formResult() == FormResult.ok THEN {
+    DIALOG reloginLoginUser OBJECTS login INPUT, password INPUT DO {
         LOCAL user = CustomUser();
-        ASSIGN user() <- customUser(chosenString('login'));
+        ASSIGN user() <- customUser(login);
         IF user() THEN {
             IF isLocked(user()) THEN {
                 MESSAGE 'Данный пользователь заблокирован';
             } ELSE {
-                EXEC calculateBase64Hash('SHA-256', chosenString('password'));
+                EXEC calculateBase64Hash('SHA-256', password);
                 IF sha256Password(user()) == calculatedHash() THEN {
                     EXEC relogin(user());
                     IF userChanged() THEN {
@@ -289,12 +288,11 @@ DESIGN reloginPasswordUser {
 }
 
 reloginPassword(CustomUser customUser) = ACTION {
-    FORM reloginPasswordUser ;
-    IF formResult() == FormResult.ok THEN {
+    DIALOG reloginPasswordUser OBJECTS password INPUT DO {
         IF isLocked(customUser) THEN {
             MESSAGE 'Данный пользователь заблокирован';
         }  ELSE {
-                EXEC calculateBase64Hash('SHA-256', chosenString('password'));
+                EXEC calculateBase64Hash('SHA-256', password);
                 IF sha256Password(customUser)==calculatedHash() THEN {
                     EXEC relogin(customUser);
                     IF userChanged() THEN {
@@ -348,19 +346,19 @@ DESIGN changePasswordUser {
 
 changePassword(CustomUser customUser) = ACTION {
     FORM changePasswordUser ;
-    IF formResult() == FormResult.ok THEN {
-            EXEC calculateBase64Hash('SHA-256', chosenString('old'));
+    DIALOG changePasswordUser OBJECTS old INPUT, new1 INPUT,new2 INPUT DO {
+            EXEC calculateBase64Hash('SHA-256', old);
             IF  calculatedHash() != sha256Password(customUser) THEN {
                 MESSAGE 'Неверный старый пароль (хэш)';
                 BREAK;
             }
 
-        IF chosenString('new1') != chosenString('new2') THEN {
+        IF new1 != new2 THEN {
             MESSAGE 'Введённые пароли не совпадают';
             BREAK;
         }
         //ASSIGN passwordCustomUser(customUser) <- chosenString('new1');
-        EXEC calculateBase64Hash('SHA-256', chosenString('new1'));
+        EXEC calculateBase64Hash('SHA-256', new1);
         ASSIGN sha256Password(customUser) <- calculatedHash();
         MESSAGE 'Пароль изменён';
         }

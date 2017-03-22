@@ -93,10 +93,9 @@ DESIGN chooseScriptName {
 }
 
 saveAsScriptAction 'Сохранить как'() = ACTION NEWSESSION {
-    FORM chooseScriptName ;
-    IF formResult() == FormResult.ok THEN {
+    DIALOG chooseScriptName OBJECTS name INPUT DO {
         FOR ADDOBJ s = Script DO {
-            name(s) <- chosenString('name');
+            name(s) <- name;
             text(s) <- scriptStorage();
             dateTime(s) <- currentDateTime();
         }
