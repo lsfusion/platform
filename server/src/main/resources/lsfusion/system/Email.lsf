@@ -144,7 +144,7 @@ FORM mail 'Почта'
     PROPERTIES(a) name, smtpHost, smtpPort, nameReceiveAccountType, receiveHost, receivePort, nameEncryptedConnectionType,
                   fromAddress, password, blindCarbonCopy, deleteMessages, lastDays,
                   isDefaultNotification, isDefaultInbox, disable 
-    PROPERTIES(a) FORCE PANEL ADDOBJ, DELETE TOOLBAR
+    PROPERTIES(a) FORCE PANEL ADDOBJ, DELETESESSION TOOLBAR
     
     OBJECTS e=Email
   
