@@ -241,7 +241,7 @@ editChatAction 'Редактировать' (Chat c) = ACTION {
     IF c IS UserRole THEN 
         MESSAGE 'Запрещено редактировать чат для роли!'
     ELSE
-        FORM editChat ;
+        SHOW editChat ;
 }
 
 //----------------------------FULL CHAT----------------------------//
@@ -287,7 +287,7 @@ deleteMessage 'Удалить сообщение' (Message m) = ACTION {
 FORM fullChat 'Чат'
     OBJECTS c = Chat
     PROPERTIES(c) READONLY name ON SHORTCUT editChatAction(c), lastMessageDateTime, unreadMessages BACKGROUND backgroundUnread(c)
-    PROPERTIES(c) FORCE PANEL TOOLBAR ADDFORM, DELETE SHOWIF isEmpty(c)
+    PROPERTIES(c) FORCE PANEL TOOLBAR NEWSESSION NEW, DELETE SHOWIF isEmpty(c)
     PROPERTIES(c) READONLYIF readonlyFullChat(c) FORCE PANEL newMessage ON CHANGE saveNewMessage(c), notificate, 
                   loadAttachment SHOWIF showLoadAttachment(c), deleteAttachment SHOWIF showDeleteAttachment(c)
     
@@ -317,7 +317,7 @@ FORM fullChat 'Чат'
         
     FILTERS in(c), chat(m) == c AND (NOT chatNotFound() OR recentVisible()), status(m, currentUser())
     
-    DIALOG Chat OBJECT c
+    LIST Chat OBJECT c
 ;
 
 DESIGN fullChat {
@@ -462,7 +462,7 @@ replyChat 'Ответить' (Message m) = ACTION {
 
 openChat 'Перейти в чат' (Chat c, Message m) = ACTION {
     markSeenMessages(currentUser());
-    FORM fullChat NOWAIT;
+    SHOW fullChat NOWAIT;
     NEWSESSION { NEWTHREAD {
         ACTIVATE TAB recent FORM fullChat;
         SEEK fullChat.c = chat(m);
@@ -514,7 +514,7 @@ onClientStarted() += ACTION {
     IF sumUnreadMessages(currentUser()) > 0 THEN {
         deliveredNotificationAction(currentUser());
         apply();
-        FORM shortChat ;
+        SHOW shortChat ;
     }
 }
 
@@ -533,7 +533,7 @@ pushAction(BOOLEAN system, BOOLEAN notificate) = ACTION {
         ELSE {
             IF system OR notificate THEN {
                 NEWSESSION {
-                    FORM shortChat ;
+                    SHOW shortChat ;
                 }
             }
         }

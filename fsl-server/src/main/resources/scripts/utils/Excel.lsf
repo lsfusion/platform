@@ -36,7 +36,7 @@ FORM template 'Шаблон Excel'
     PROPERTIES (t) loadFile, openFile
 
     OBJECTS te = TemplateEntry
-    PROPERTIES (te) key, description, value, ADDOBJ, DELETESESSION
+    PROPERTIES (te) key, description, value, NEW, DELETE
     PROPERTIES (t) TODRAW te FORCE PANEL TOOLBAR openProcess
 
     FILTERS template (te) == t
@@ -69,7 +69,7 @@ FORM templates 'Шаблоны Excel'
 
     OBJECTS t = Template
     PROPERTIES (t) READONLY name, id
-    PROPERTIES (t) ADDFORM, EDITFORM, DELETE
+    PROPERTIES (t) NEWSESSION NEW, EDIT, DELETE
 
     OBJECTS te = TemplateEntry
     PROPERTIES (te) READONLY key, description, value
@@ -81,9 +81,9 @@ FORM dialogTemplates 'Шаблоны Excel'
 
     OBJECTS t = Template
     PROPERTIES (t) READONLY name, id
-    PROPERTIES (t) ADDFORM, EDITFORM, DELETE
+    PROPERTIES (t) NEWSESSION NEW, EDIT, DELETE
 
-    DIALOG Template OBJECT t
+    LIST Template OBJECT t
 ;
 DESIGN dialogTemplates {
     main {

@@ -47,7 +47,7 @@ META defineHistorizable(property, propPostfix, caption, type, object, objectIden
         PROPERTY(name(a)) { focusable = FALSE; }
     }
 
-    add###property 'Добавить' (###object object) = ACTION FORM add###property###object###propPostfix OBJECTS a = object  TOOLBAR IMAGE 'add.png' EDITKEY 'INSERT';
+    add###property 'Добавить' (###object object) = ACTION SHOW add###property###object###propPostfix OBJECTS a = object  TOOLBAR IMAGE 'add.png' EDITKEY 'INSERT';
 
     FORM dialog###property###object###propPostfix caption
         OBJECTS a=###object FIXED PANEL, d=DATE
@@ -58,7 +58,7 @@ META defineHistorizable(property, propPostfix, caption, type, object, objectIden
         PROPERTY(name(a)) { focusable = FALSE; }
     }
 
-    dialog###property caption (###object object) = ACTION FORM dialog###property###object###propPostfix OBJECTS a = object  SHORTCUT property[###object] ASON CHANGE property[###object];
+    dialog###property caption (###object object) = ACTION SHOW dialog###property###object###propPostfix OBJECTS a = object  SHORTCUT property[###object] ASON CHANGE property[###object];
 END
 
 // ---------------------------------- Свойство объект-дата для (пример, стат.класса)------------------------------------------ //
@@ -83,7 +83,7 @@ META defineHistorizableCustom(property, caption, type, typeIdentity, classIdenti
         PROPERTY(typeIdentity(a)) { focusable = FALSE; }
     }
 
-    add###property 'Добавить' (###object object) = ACTION FORM add###property###object OBJECTS a = object  TOOLBAR IMAGE 'add.png' EDITKEY 'INSERT';
+    add###property 'Добавить' (###object object) = ACTION SHOW add###property###object OBJECTS a = object  TOOLBAR IMAGE 'add.png' EDITKEY 'INSERT';
 
     FORM dialog###property###object caption
         OBJECTS a=###object FIXED PANEL, d=DATE
@@ -94,7 +94,7 @@ META defineHistorizableCustom(property, caption, type, typeIdentity, classIdenti
         PROPERTY(typeIdentity(a)) { focusable = FALSE; }
     }
 
-    dialog###property caption (###object object) = ACTION FORM dialog###property###object OBJECTS a = object  SHORTCUT typeIdentity###classIdentity###property[###object] ASON CHANGE typeIdentity###classIdentity###property[###object];
+    dialog###property caption (###object object) = ACTION SHOW dialog###property###object OBJECTS a = object  SHORTCUT typeIdentity###classIdentity###property[###object] ASON CHANGE typeIdentity###classIdentity###property[###object];
 END
 
 // ----------------------------------- Свойство объект1-объект2-дата------------------------------------------ //
@@ -120,7 +120,7 @@ META defineHistorizable(property, caption, type, object1, object1Identity, objec
         PROPERTY(name(b)) { focusable = FALSE; }
     }
 
-    add###property 'Добавить' (###object1 object1, ###object2 object2) = ACTION FORM add###property###object1###object2 OBJECTS a = object1, b = object2  TOOLBAR IMAGE 'add.png' EDITKEY 'INSERT';
+    add###property 'Добавить' (###object1 object1, ###object2 object2) = ACTION SHOW add###property###object1###object2 OBJECTS a = object1, b = object2  TOOLBAR IMAGE 'add.png' EDITKEY 'INSERT';
 
     FORM dialog###property###object1###object2 caption
         OBJECTS a=###object1 FIXED PANEL, b=###object2 FIXED PANEL, d=DATE
@@ -132,6 +132,6 @@ META defineHistorizable(property, caption, type, object1, object1Identity, objec
         PROPERTY(name(b)) { focusable = FALSE; }
     }
 
-    dialog###property caption (###object1 object1, ###object2 object2) = ACTION FORM dialog###property###object1###object2 OBJECTS a = object1, b = object2  SHORTCUT property[###object1,###object2] ASON CHANGE property[###object1,###object2];
-    overDialog###property##Date caption (###object1 object1, ###object2 object2) = ACTION FORM dialog###property###object1###object2 OBJECTS a = object1, b = object2  SHORTCUT over###property[###object1,###object2,DATE];
+    dialog###property caption (###object1 object1, ###object2 object2) = ACTION SHOW dialog###property###object1###object2 OBJECTS a = object1, b = object2  SHORTCUT property[###object1,###object2] ASON CHANGE property[###object1,###object2];
+    overDialog###property##Date caption (###object1 object1, ###object2 object2) = ACTION SHOW dialog###property###object1###object2 OBJECTS a = object1, b = object2  SHORTCUT over###property[###object1,###object2,DATE];
 END

@@ -59,7 +59,7 @@ FORM processTypes 'Фильтры процессов'
     OBJECTS t = ProcessType
     PROPERTIES(t) READONLY staticCaption
     
-    DIALOG ProcessType OBJECT t
+    LIST ProcessType OBJECT t
 ;
 
 getActiveTasksAction 'Обновить список активных процессов' = ACTION CUSTOM 'lsfusion.erp.utils.GetActiveTasksActionProperty' () TOOLBAR;

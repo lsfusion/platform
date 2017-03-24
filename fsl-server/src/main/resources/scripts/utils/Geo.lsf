@@ -14,7 +14,7 @@ CLASS MapProvider 'Использовать карты' {
 FORM mapProviders
     OBJECTS m = MapProvider
     PROPERTIES(m) READONLY staticCaption
-    DIALOG MapProvider OBJECT m
+    LIST MapProvider OBJECT m
 ;
 
 calculateUserMapProvider = DATA MapProvider ();

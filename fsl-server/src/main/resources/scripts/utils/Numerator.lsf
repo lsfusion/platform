@@ -80,15 +80,15 @@ FORM numerator 'Нумератор'
 FORM numerators 'Нумераторы'
     OBJECTS n = Numerator
     PROPERTIES(n) READONLY name, series, minValue, maxValue, stringLength, curValue, curStringValue
-    PROPERTIES(n)          ADDFORM, EDITFORM, DELETE FORCE PANEL TOOLBAR
+    PROPERTIES(n)          NEWSESSION NEW, EDIT, DELETE FORCE PANEL TOOLBAR
 
-    DIALOG Numerator OBJECT n
+    LIST Numerator OBJECT n
 ;
 
 FORM defaultNumerators 'Нумераторы'
     OBJECTS n = Numerator
     PROPERTIES(n) READONLY name, series, minValue, maxValue, stringLength, curValue, curStringValue
-    PROPERTIES(n)          ADDFORM, EDITFORM, DELETE FORCE PANEL TOOLBAR
+    PROPERTIES(n)          NEWSESSION NEW, EDIT, DELETE FORCE PANEL TOOLBAR
 ;
 
 DESIGN defaultNumerators {

@@ -112,7 +112,7 @@ FORM backups 'Резервные копии'
     OBJECTS b=Backup
     PROPERTIES(b) READONLY partial, name, file, fileDeleted
     FILTERS NOT fileDeleted(b)
-    DIALOG Backup OBJECT b
+    LIST Backup OBJECT b
 ;
 
 FORM customRestore 'Восстановление данных'
