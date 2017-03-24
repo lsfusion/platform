@@ -8,7 +8,7 @@ loadDefaultScheduledTasks 'Загрузить стандартные задан�
 @implementLoadDefaultData(loadDefaultScheduledTasks);
 
 loadDefaultScheduledTask 'Добавить стандартное задание планировщика'(VARSTRING[100] iname, DATETIME startTime, INTEGER integer, SchedulerStartType type) = ACTION {
-    FOR ADDOBJ s = ScheduledTask DO {
+    FOR NEW s = ScheduledTask DO {
         name(s) <- iname;
         active(s) <- TRUE ;
         startDate(s) <- startTime;
@@ -18,7 +18,7 @@ loadDefaultScheduledTask 'Добавить стандартное задание
 }
 
 loadDefaultScheduledTaskDetail 'Добавить стандартное задание планировщика (действия)'(VARSTRING[100] iname, INTEGER order, VARSTRING[512] prop) = ACTION {
-    FOR ADDOBJ d = ScheduledTaskDetail DO {
+    FOR NEW d = ScheduledTaskDetail DO {
         order(d) <- order;
         active(d) <- TRUE;
         property(d) <- propertyCanonicalName(prop);         

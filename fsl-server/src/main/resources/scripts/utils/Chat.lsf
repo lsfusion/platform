@@ -98,7 +98,7 @@ showDeleteAttachment (Chat c) = attachment(c);
 
 onStarted() += ACTION {
 
-    FOR NOT chat('system') ADDOBJ c = Chat DO {
+    FOR NOT chat('system') NEW c = Chat DO {
         id(c) <- 'system';
         dataName(c) <- 'Все'; 
     }
@@ -140,7 +140,7 @@ stopEditing(Chat c) = ACTION {
 }
 
 sendMessage 'Написать в чат' (Chat chat, TEXT message, BOOLEAN system) = ACTION {
-    FOR ADDOBJ m = Message DO {
+    FOR NEW m = Message DO {
         chat(m) <- chat;
         dateTime(m) <- currentDateTime();
         author(m) <- currentUser();
@@ -411,7 +411,7 @@ sendMessage 'Написать пользователю' (CustomUser user) = ACTI
     LOCAL chat = Chat();
     chat() <- chatIn(user, currentUser());
     IF NOT chat() THEN {
-        FOR ADDOBJ chat = Chat DO {
+        FOR NEW chat = Chat DO {
             in(chat, user) <- TRUE;
             in(chat, currentUser) <- TRUE WHERE currentUser == currentUser();
             newMessage(chat) <- defaultNewMessage();
