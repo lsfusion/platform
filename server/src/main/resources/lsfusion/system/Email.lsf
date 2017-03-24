@@ -11,7 +11,7 @@ CLASS EncryptedConnectionTypeStatus 'Тип шифрованного подкл�
 FORM encryptedConnectionTypeStatuses
     OBJECTS s = EncryptedConnectionTypeStatus
     PROPERTIES(s) READONLY staticCaption
-    DIALOG EncryptedConnectionTypeStatus OBJECT s
+    LIST EncryptedConnectionTypeStatus OBJECT s
 ;
 
 CLASS ReceiveAccountType 'Тип учётной записи' {
@@ -22,7 +22,7 @@ CLASS ReceiveAccountType 'Тип учётной записи' {
 FORM receiveAccountTypes
     OBJECTS r = ReceiveAccountType
     PROPERTIES(r) READONLY staticCaption
-    DIALOG ReceiveAccountType OBJECT r
+    LIST ReceiveAccountType OBJECT r
 ;
 
 CLASS Notification 'Уведомление';
@@ -104,9 +104,9 @@ FORM accounts 'E-mail аккаунты'
     PROPERTIES(a) READONLY name, password, fromAddress, smtpHost, smtpPort, nameReceiveAccountType, receiveHost,
                   receivePort, nameEncryptedConnectionType, blindCarbonCopy, deleteMessages, lastDays,
                   isDefaultNotification, disable
-    PROPERTIES(a) ADDFORM, EDITFORM, DELETE TOOLBAR
+    PROPERTIES(a) NEWSESSION NEW, EDIT, DELETE TOOLBAR
 
-    DIALOG Account OBJECT a
+    LIST Account OBJECT a
 ;
 
 CLASS AttachmentEmail 'Вложение';
@@ -144,13 +144,13 @@ FORM mail 'Почта'
     PROPERTIES(a) name, smtpHost, smtpPort, nameReceiveAccountType, receiveHost, receivePort, nameEncryptedConnectionType,
                   fromAddress, password, blindCarbonCopy, deleteMessages, lastDays,
                   isDefaultNotification, isDefaultInbox, disable 
-    PROPERTIES(a) FORCE PANEL ADDOBJ, DELETESESSION TOOLBAR
+    PROPERTIES(a) FORCE PANEL NEW, DELETE TOOLBAR
     
     OBJECTS e=Email
   
     PROPERTIES(e) READONLY subject, fromAddress, toAddress, dateTimeSent, 
                    dateTimeReceived, openEMLFile EDITABLE, message FORCE PANEL
-    PROPERTIES(e) DELETE
+    PROPERTIES(e) NEWSESSION DELETE
     PROPERTIES(a) FORCE PANEL receiveEmailAction TODRAW e 
     FILTERS account(e)==a
                     
@@ -163,7 +163,7 @@ FORM mail 'Почта'
     OBJECTS p=Property
         
     PROPERTIES(n, p) in
-    PROPERTIES(n) subject, text FORCE PANEL, emailFrom, emailTo, emailToCC, emailToBC, isEvent, ADDOBJ
+    PROPERTIES(n) subject, text FORCE PANEL, emailFrom, emailTo, emailToCC, emailToBC, isEvent, NEW
     PROPERTIES(p) READONLY caption, canonicalName
     ORDER BY canonicalName(p)
         

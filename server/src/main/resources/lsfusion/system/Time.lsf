@@ -106,7 +106,7 @@ FORM months 'Месяца'
     OBJECTS m = Month
     PROPERTIES(m) staticCaption, number
     ORDER BY number(m)
-    DIALOG Month OBJECT m
+    LIST Month OBJECT m
 ;
 
 // --------------------------------- Дни недели ------------------------ //
@@ -148,7 +148,7 @@ FORM DOWs 'Дни недели'
     OBJECTS d = DOW
     PROPERTIES(d) READONLY staticCaption, number
     ORDER BY number(d)
-    DIALOG DOW OBJECT d
+    LIST DOW OBJECT d
 ;
 
 DOW 'День недели (ИД)' (number) = GROUP AGGR DOW dow BY number(dow);

@@ -381,7 +381,7 @@ scope {
 	;
 
 dialogFormDeclaration
-	:	'DIALOG' cid=classId 'OBJECT' oid=ID
+	:	'LIST' cid=classId 'OBJECT' oid=ID
 		{
 			if (inPropParseState()) {
 				$formStatement::form.setAsDialogForm($cid.sid, $oid.text, self.getVersion());
@@ -763,19 +763,14 @@ formPropertyUsage returns [PropertyUsage propUsage]
        (
           (
              (
-                cid='ADDOBJ'      { systemName = $cid.text; }
-             |  cid='ADDFORM'     { systemName = $cid.text; }
-             |  cid='ADDNESTEDFORM'    { systemName = $cid.text; }
-             |  cid='ADDSESSIONFORM'   { systemName = $cid.text; }
+                cid='NEW'      { systemName = $cid.text; }
+             |  cid='NEWEDIT'     { systemName = $cid.text; }
              )
              ( '[' clId=compoundID ']'  { signature = Collections.singletonList($clId.sid); } )?
           )
-          |  cid='EDITFORM'    { systemName = $cid.text; }
-          |  cid='EDITNESTEDFORM'   { systemName = $cid.text; }
-          |  cid='EDITSESSIONFORM'  { systemName = $cid.text; }
+          |  cid='EDIT'    { systemName = $cid.text; }
           |  cid='OBJVALUE'    { systemName = $cid.text; }
           |  cid='DELETE'      { systemName = $cid.text; }
-          |  cid='DELETESESSION'    { systemName = $cid.text; }
        ) { $propUsage = new PropertyUsage(systemName, signature); }
    ;
 
@@ -2240,7 +2235,7 @@ mappedForm[List<TypedParameter> context, boolean introduceParams, boolean dynami
 	        ('OBJECTS' list=formActionObjectList[form, context, introduceParams, dynamic] { $objects = $list.objects; $props = $list.props; })?
 		)
 	    |
-	    (   ('DIALOG' | ('EDIT' { edit = true; } ))
+	    (   ('LIST' | ('EDIT' { edit = true; } ))
 	         cls = classId { if(inPropParseState()) { classForm = self.findClassForm($cls.sid, edit); $formEntity = classForm.form; classObject=classForm.object; $objects = Collections.singletonList(classObject); } }
 	         ('OBJECT' object=formActionProps["object", classObject, context, introduceParams, dynamic] { $props = Collections.singletonList($object.props); })?
 	    ))
@@ -2269,7 +2264,7 @@ formActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns 
 		$property = self.addScriptedInteractiveFAProp($mf.formEntity, $mf.objects, $mf.props, contextObjectName, contextProperty, initFilterPropertyName, initFilterPropertyMapping, syncType, windowType, manageSession, checkOnOk, showDrop, noCancel, readOnly);
 	}
 }
-	:	('SHOW' | 'FORM') mf=mappedForm[context, false, dynamic]
+	:	'SHOW' mf=mappedForm[context, false, dynamic]
 		(
 		    sync = syncTypeLiteral { syncType = $sync.val; }
 		|   window = windowTypeLiteral { windowType = $window.val; }

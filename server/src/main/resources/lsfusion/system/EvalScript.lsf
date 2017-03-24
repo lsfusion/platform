@@ -144,7 +144,7 @@ FORM script 'Скрипт'
     OBJECTS r = Row FIXED GRID
     PROPERTIES(r) string1, string2, string3, string4, string5, string6, string7, string8, string9, string10 
     PROPERTIES(r) numeric1, numeric2, numeric3, numeric4, numeric5, date1, date2, date3
-    PROPERTIES(r) ADDOBJ, DELETESESSION
+    PROPERTIES(r) NEW, DELETE
 ;
 
 DESIGN script {
@@ -193,13 +193,13 @@ FORM scriptsLog 'Скрипты'
     
     OBJECTS s=Script
     PROPERTIES(s) name, text READONLY, dateTime READONLY 
-    PROPERTIES(s) DELETE FORCE PANEL TOOLBAR
+    PROPERTIES(s) NEWSESSION DELETE FORCE PANEL TOOLBAR
     ORDER BY dateTime(s) DESC
 
     FILTERGROUP user FILTER 'Только пользовательские' name(s) 'F9'
     FILTERGROUP succeeded FILTER 'Только без ошибок' succeeded(s) 'F10' DEFAULT
 
-    DIALOG Script OBJECT s
+    LIST Script OBJECT s
 ;
 
 NAVIGATOR {

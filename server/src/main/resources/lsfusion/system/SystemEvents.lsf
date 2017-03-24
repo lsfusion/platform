@@ -58,7 +58,7 @@ CLASS ConnectionStatus 'Статус подключения' {
 FORM connectionStatuses
     OBJECTS s = ConnectionStatus
     PROPERTIES(s) READONLY staticCaption
-    DIALOG ConnectionStatus OBJECT s
+    LIST ConnectionStatus OBJECT s
 ;
 
 TABLE connection (Connection);

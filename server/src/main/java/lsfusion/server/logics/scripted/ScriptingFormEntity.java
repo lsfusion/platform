@@ -259,6 +259,7 @@ public class ScriptingFormEntity {
             String alias = aliases.get(i);
 
             FormPropertyOptions propertyOptions = commonOptions.overrideWith(options.get(i));
+            FormSessionScope scope = override(propertyOptions, FormSessionScope.OLDSESSION);
 
             LP property;
             PropertyObjectInterfaceEntity[] objects;;
@@ -266,25 +267,22 @@ public class ScriptingFormEntity {
                 ObjectEntity obj = getSingleMappingObject(mapping);
                 property = LM.getObjValueProp(form, obj);
                 objects = new PropertyObjectInterfaceEntity[]{obj};
-            } else if (propertyName.equals("ADDOBJ")) {
+            } else if (propertyName.equals("NEW") && scope == OLDSESSION) {
                 ObjectEntity obj = getSingleCustomClassMappingObject(propertyName, mapping);
                 CustomClass explicitClass = getSingleAddClass(pUsage);
                 property = LM.getAddObjectAction(form, obj, explicitClass);
                 objects = new PropertyObjectInterfaceEntity[]{};
-            } else if (propertyName.equals("ADDFORM") || propertyName.equals("ADDSESSIONFORM") || propertyName.equals("ADDNESTEDFORM")) {
+            } else if (propertyName.equals("NEWEDIT") || (propertyName.equals("NEW") && scope != OLDSESSION)) {
                 ObjectEntity obj = getSingleCustomClassMappingObject(propertyName, mapping);
                 CustomClass explicitClass = getSingleAddClass(pUsage);
-                FormSessionScope scope = override(propertyOptions, getAddFormActionScope(propertyName));
                 property = LM.getAddFormAction(form, obj, explicitClass, scope, version);
                 objects = new PropertyObjectInterfaceEntity[]{};
-            } else if (propertyName.equals("EDITFORM") || propertyName.equals("EDITSESSIONFORM") || propertyName.equals("EDITNESTEDFORM")) {
+            } else if (propertyName.equals("EDIT")) {
                 ObjectEntity obj = getSingleCustomClassMappingObject(propertyName, mapping);
-                FormSessionScope scope = override(propertyOptions, getEditFormActionScope(propertyName));
                 property = LM.getEditFormAction(obj, scope, version);
                 objects = new PropertyObjectInterfaceEntity[]{obj};
-            } else if (propertyName.equals("DELETE") || propertyName.equals("DELETESESSION")) {
+            } else if (propertyName.equals("DELETE")) {
                 ObjectEntity obj = getSingleCustomClassMappingObject(propertyName, mapping);
-                FormSessionScope scope = override(propertyOptions, propertyName.equals("DELETESESSION") ? FormSessionScope.OLDSESSION : FormSessionScope.NEWSESSION);
                 property = LM.getDeleteAction(obj, scope);
                 objects = new PropertyObjectInterfaceEntity[]{obj};
             } else {
@@ -309,25 +307,11 @@ public class ScriptingFormEntity {
     }
 
     private static FormSessionScope getAddFormActionScope(String name) {
-        if ("ADDFORM".equals(name)) {
-            return NEWSESSION;
-        } else if ("ADDSESSIONFORM".equals(name)) {
-            return OLDSESSION;
-        } else if ("ADDNESTEDFORM".equals(name)) {
-            return NESTEDSESSION;
-        }
-        throw new IllegalStateException("incorrect EDITFORM action name");
+        return OLDSESSION;
     }
 
     private static FormSessionScope getEditFormActionScope(String name) {
-        if ("EDITFORM".equals(name)) {
-            return NEWSESSION;
-        } else if ("EDITSESSIONFORM".equals(name)) {
-            return OLDSESSION;
-        } else if ("EDITNESTEDFORM".equals(name)) {
-            return NESTEDSESSION;
-        }
-        throw new IllegalStateException("incorrect EDITFORM action name");
+        return OLDSESSION;
     }
 
     private void checkSingleParam(int size) throws ScriptingErrorLog.SemanticErrorException {

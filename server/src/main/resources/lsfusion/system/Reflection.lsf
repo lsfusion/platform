@@ -92,7 +92,7 @@ CLASS PropertyDrawShowStatus 'Показ свойства' {
 FORM propertyDrawShowStatuses
     OBJECTS s = PropertyDrawShowStatus
     PROPERTIES(s) staticCaption
-    DIALOG PropertyDrawShowStatus OBJECT s
+    LIST PropertyDrawShowStatus OBJECT s
 ;
 
 TABLE formPropertyDraw (Form, PropertyDraw);

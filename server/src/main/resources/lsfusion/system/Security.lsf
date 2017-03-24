@@ -184,7 +184,7 @@ CLASS DefaultForms 'Отображение форм при запуске' {
 FORM defaultForms 'Отображение форм при запуске'
     OBJECTS df = DefaultForms
     PROPERTIES(df) READONLY staticCaption
-    DIALOG DefaultForms OBJECT df
+    LIST DefaultForms OBJECT df
 ;
 
 defaultForms 'Отображение форм при запуске' = DATA DefaultForms (UserRole);
@@ -297,7 +297,7 @@ copyData(UserRole userRole, UserRole ur) = ACTION {
 copy 'Копировать'(UserRole userRole) = ACTION NEWSESSION {
     FOR ADDOBJ ur = UserRole DO {
         EXEC copyData(userRole, ur);
-        FORM userRole OBJECTS ur = ur MANAGESESSION DOCKED;
+        SHOW userRole OBJECTS ur = ur MANAGESESSION DOCKED;
     }
 } TOOLBAR;
 
@@ -429,13 +429,13 @@ FORM userRoles 'Роли'
     OBJECTS ur=UserRole
     PROPERTIES(ur) READONLY name, sid
     PROPERTIES(ur) copy FORCE PANEL
-    PROPERTIES(ur) ADDFORM, EDITFORM, DELETE
+    PROPERTIES(ur) NEWSESSION NEW, EDIT, DELETE
 ;
 
 FORM userRolesDialog 'Роли'
     OBJECTS ur=UserRole
     PROPERTIES(ur) READONLY name, sid
-    DIALOG UserRole OBJECT ur
+    LIST UserRole OBJECT ur
 ;
 
 FORM propertyPolicy 'Политика безопасности для свойства'

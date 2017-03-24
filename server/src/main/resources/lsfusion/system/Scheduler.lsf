@@ -11,7 +11,7 @@ CLASS SchedulerStartType 'Отсчёт времени' {
 FORM schedulerStartTypes 'Способ отсчета времени'
     OBJECTS s = SchedulerStartType
     PROPERTIES(s) READONLY staticCaption
-    DIALOG SchedulerStartType OBJECT s
+    LIST SchedulerStartType OBJECT s
 ;
 
 DESIGN schedulerStartTypes {
@@ -126,13 +126,13 @@ FORM scheduledTask 'Планировщик'
     OBJECTS t=ScheduledTask
     PROPERTIES (t) active, name, timeFrom, timeTo, startDate, period,
                     nameSchedulerStartType, runAtStart, daysOfMonth FORCE PANEL, executeScheduledTask, setupScheduledTask
-    PROPERTIES (t) ADDOBJ, DELETESESSION
+    PROPERTIES (t) NEW, DELETE
          
     OBJECTS td=ScheduledTaskDetail
     PROPERTIES (td) active, ignoreExceptions, order, captionProperty, 
                     canonicalNameProperty, parameter, classProperty, 
                     returnProperty, timeout, script FORCE PANEL
-    PROPERTIES (td) ADDOBJ, DELETESESSION
+    PROPERTIES (td) NEW, DELETE
     
     OBJECTS tl=ScheduledTaskLog LAST
     PROPERTIES (tl) READONLY property, result, exceptionOccurred, isMessages, date

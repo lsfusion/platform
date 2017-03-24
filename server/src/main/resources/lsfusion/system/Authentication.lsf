@@ -26,16 +26,16 @@ FORM computer 'Рабочее место'
 FORM computers 'Рабочие места'
     OBJECTS c = Computer
     PROPERTIES(c) READONLY hostname, scannerComPort, scannerSingleRead, useDiscountCardReader
-    PROPERTIES(c) ADDFORM, EDITFORM, DELETE
+    PROPERTIES(c) NEWSESSION NEW, EDIT, DELETE
 ;
 
 FORM computersDialog 'Рабочие места'
     OBJECTS c = Computer
     
     PROPERTIES(c) READONLY hostname, scannerComPort, scannerSingleRead, useDiscountCardReader
-    PROPERTIES(c) ADDFORM, EDITFORM, DELETE FORCE PANEL TOOLBAR
+    PROPERTIES(c) NEWSESSION NEW, EDIT, DELETE FORCE PANEL TOOLBAR
     
-    DIALOG Computer OBJECT c     
+    LIST Computer OBJECT c     
 ;
 DESIGN computersDialog { main{ preferredSize = (1024, 768); }}
 
@@ -182,10 +182,10 @@ DESIGN customUser {
 FORM customUsers 'Пользователи'
     OBJECTS u=CustomUser
     PROPERTIES(u) READONLY name[Contact], login, email
-    PROPERTIES(u) forbidChangePassword, forbidEditProfile, useBusyDialogCustom, allowExcessAllocatedBytes,
+    PROPERTIES(u) NEWSESSION forbidChangePassword, forbidEditProfile, useBusyDialogCustom, allowExcessAllocatedBytes,
                   language, userLanguage, clientLanguage, country, userCountry, clientCountry, useClientLocale, 
                   timeZone, userTimeZone, twoDigitYearStart, userTwoDigitYearStart, isLocked READONLY,
-                  lastActivity, ADDFORM, EDITFORM FORCE PANEL, DELETE FORCE PANEL TOOLBAR
+                  lastActivity, NEW, EDIT FORCE PANEL, DELETE FORCE PANEL TOOLBAR
 
     PROPERTIES() useLDAP, serverLDAP, portLDAP, baseDNLDAP, userDNSuffixLDAP, minHashLength, defaultUserLanguage, defaultUserCountry
 ;
@@ -194,7 +194,7 @@ FORM customUsersDialog 'Пользователи'
     OBJECTS u=CustomUser
     PROPERTIES(u) READONLY name[Contact], login, email
 
-    DIALOG CustomUser OBJECT u
+    LIST CustomUser OBJECT u
 ;
 
 DESIGN customUsersDialog { main{ preferredSize = (1024, 768); }}
@@ -345,7 +345,7 @@ DESIGN changePasswordUser {
 }
 
 changePassword(CustomUser customUser) = ACTION {
-    FORM changePasswordUser ;
+    SHOW changePasswordUser ;
     DIALOG changePasswordUser OBJECTS old INPUT, new1 INPUT,new2 INPUT DO {
             EXEC calculateBase64Hash('SHA-256', old);
             IF  calculatedHash() != sha256Password(customUser) THEN {
