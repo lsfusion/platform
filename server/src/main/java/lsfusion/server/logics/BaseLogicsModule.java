@@ -30,6 +30,7 @@ import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.mutables.NFFact;
+import lsfusion.server.logics.mutables.NFLazy;
 import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.actions.FormAddObjectActionProperty;
@@ -575,6 +576,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     }
 
     @IdentityStrongLazy
+    @NFLazy
     public AnyValuePropertyHolder getRequestedValueProperty() {
         return addAnyValuePropertyHolder("requested", "Requested");
     }

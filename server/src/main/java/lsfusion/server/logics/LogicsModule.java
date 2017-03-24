@@ -1576,6 +1576,7 @@ public abstract class LogicsModule {
         return baseLM.getConfirmedProperty();
     }
 
+    @NFLazy
     public AnyValuePropertyHolder getChosenValueProperty() {
         return baseLM.getChosenValueProperty();
     }
