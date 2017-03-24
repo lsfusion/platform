@@ -249,7 +249,7 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
         return ifProp == null || ifProp.mapIsFull(getExtendInterfaces());
     }
 
-    private boolean isHackAdd() { // хак который используется только для реализации агрегаций, когда генерится FOR ADDOBJ t, затем CHANGE CLASS t TO X, который компиляция сворачивать в FOR ADDOBJ t=X (непонятно какой конкретный класс по умолчанию подставлять)  
+    private boolean isHackAdd() { // хак который используется только для реализации агрегаций, когда генерится FOR NEW t, затем CHANGE CLASS t TO X, который компиляция сворачивать в FOR NEW t=X (непонятно какой конкретный класс по умолчанию подставлять)
         return addObject != null && !(addClass instanceof ConcreteCustomClass);
     }
     
@@ -299,7 +299,7 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
         if(allNoInline && !hackAdd)
             return null;
 
-        if (addObject != null) { // "компиляция" ADDOBJ
+        if (addObject != null) { // "компиляция" NEW
             // сначала проверим если первый в списке CHANGE CLASS, тогда заберем его в FOR
             ImList<ActionPropertyMapImplement<?, I>> list = action.getList();
 

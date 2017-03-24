@@ -642,7 +642,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         setAddActionOptions(result, obj);
         
         if (formEntity.getCanonicalName() != null) {
-            String name = "_ADDOBJ_" + formEntity.getCanonicalName().replace('.', '_') + "_" + obj.getSID() + (explicitClass != null ? getClassPrefix(cls) : "");
+            String name = "_NEW_" + formEntity.getCanonicalName().replace('.', '_') + "_" + obj.getSID() + (explicitClass != null ? getClassPrefix(cls) : "");
             makePropertyPublic(result, name, cls.getResolveSet());
         }
         return result;

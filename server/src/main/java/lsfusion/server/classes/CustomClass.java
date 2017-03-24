@@ -443,7 +443,7 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
         return property;
     }
 
-    // использование в aspectChangeExtProps у ADDOBJ, ChangeClass и т.п.
+    // использование в aspectChangeExtProps у NEW, ChangeClass и т.п.
     public void fillChangedProps(MExclSet<CalcProperty> mSet, IncrementType type) {
         getProperty().fillChangedProps(mSet, type);
     }

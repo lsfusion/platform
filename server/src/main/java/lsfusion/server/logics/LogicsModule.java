@@ -1678,7 +1678,7 @@ public abstract class LogicsModule {
         LCP<ClassPropertyInterface> addedProperty = new LCP<ClassPropertyInterface>(baseLM.getAddedObjectProperty());
 
         LAP result = addListAProp(
-                            addAddObjAProp(cls, true, 0, false, true, addedProperty), // ADDOBJ (FORM with AUTOSET), addAddObjAProp(cls, false, true, 0, false, true, addedProperty),
+                            addAddObjAProp(cls, true, 0, false, true, addedProperty), // NEW (FORM with AUTOSET), addAddObjAProp(cls, false, true, 0, false, true, addedProperty),
                             addJoinAProp(addListAProp( // так хитро делается чтобы заnest'ить addedProperty (иначе apply его сбрасывает)
                                     addDMFAProp(form, null, true), 1, // FORM EDIT class OBJECT prm
                                     addSetPropertyAProp(1, false, 1, addedProperty, 1), 1), // addedProperty <- prm 

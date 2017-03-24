@@ -2489,7 +2489,7 @@ addObjectActionDefinitionBody[List<TypedParameter> context] returns [LPWithParam
 		$property = self.addScriptedAddObjProp(context, $cid.sid, toPropUsage, toPropMapping, condition, newContext);
 	}
 }
-	:	'ADDOBJ' cid=classId
+	:	'NEW' cid=classId
 		('WHERE' pe=propertyExpression[newContext, true] { condition = $pe.property; })?
 		('TO' toProp=propertyUsage '(' params=singleParameterList[newContext, false] ')' { toPropUsage = $toProp.propUsage; toPropMapping = $params.props; } )?
 	;
@@ -2977,7 +2977,7 @@ forAddObjClause[List<TypedParameter> context] returns [Integer paramCnt, String 
 		$paramCnt = self.getParamIndex(self.new TypedParameter($className, varName), context, true, insideRecursion);
 	}
 }
-	:	'ADDOBJ'
+	:	'NEW'
 		(varID=ID '=' {varName = $varID.text;})?
 		addClass=classId { $className = $addClass.sid; }
 	;
