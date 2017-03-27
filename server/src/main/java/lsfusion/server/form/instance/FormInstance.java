@@ -404,7 +404,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
             ObjectEntity object = mapObjects.getKey(i);
             ObjectValue value = mapObjects.getValue(i);
 
-            if (object.groupTo.initClassView == PANEL && value instanceof DataObject && !((DataObject) value).objectClass.inSet(object.baseClass.getUpSet()))
+            if (object.groupTo.isPanel() && value instanceof DataObject && !((DataObject) value).objectClass.inSet(object.baseClass.getUpSet()))
                 return true;
         }
         return false;
@@ -1799,16 +1799,16 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         MAddExclMap<PropertyReaderInstance, ComponentView> hiddenNotSureShown = MapFact.mAddExclMap();
         final MOrderExclMap<PropertyReaderInstance, ImSet<GroupObjectInstance>> mShowIfs = MapFact.mOrderExclMap();
         for (PropertyDrawInstance drawProperty : properties) {
-            ClassViewType curClassView = drawProperty.getCurClassView();
-            if (curClassView == HIDE) continue;
+            ClassViewType curClassView = drawProperty.getGroupClassView();
+            if (curClassView.isHidden()) continue;
 
             ClassViewType forceViewType = drawProperty.getForceViewType();
-            if (forceViewType != null && forceViewType == HIDE) continue;
+            if (forceViewType != null && forceViewType.isHidden()) continue;
 
             ImSet<GroupObjectInstance> propRowColumnGrids = drawProperty.getColumnGroupObjectsInGridView();
             ImSet<GroupObjectInstance> propRowGrids;
             Boolean newInInterface = null;
-            if (curClassView == GRID && (forceViewType == null || forceViewType == GRID) &&
+            if (curClassView.isGrid() && (forceViewType == null || forceViewType.isGrid()) &&
                     drawProperty.propertyObject.isInInterface(propRowGrids = propRowColumnGrids.addExcl(drawProperty.toDraw), forceViewType != null)) {
                 // в grid'е
                 newInInterface = true;
@@ -2001,13 +2001,12 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
         for (GroupObjectInstance group : getGroups()) {
             boolean groupHidden = isHidden(group);
+            ImSet<GroupObjectInstance> gridGroups = (group.curClassView.isGrid() ? SetFact.singleton(group) : SetFact.<GroupObjectInstance>EMPTY());
             if (group.propertyBackground != null) {
-                ImSet<GroupObjectInstance> gridGroups = (group.curClassView == GRID ? SetFact.singleton(group) : SetFact.<GroupObjectInstance>EMPTY());
                 if (refresh || (group.updated & UPDATED_CLASSVIEW) != 0 || propertyUpdated(group.propertyBackground, gridGroups, changedProps, groupHidden))
                     mReadProperties.exclAdd(group.rowBackgroundReader, gridGroups);
             }
             if (group.propertyForeground != null) {
-                ImSet<GroupObjectInstance> gridGroups = (group.curClassView == GRID ? SetFact.singleton(group) : SetFact.<GroupObjectInstance>EMPTY());
                 if (refresh || (group.updated & UPDATED_CLASSVIEW) != 0 || propertyUpdated(group.propertyForeground, gridGroups, changedProps, groupHidden))
                     mReadProperties.exclAdd(group.rowForegroundReader, gridGroups);
             }
@@ -2031,16 +2030,6 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                 pendingHidden.remove(propertyReader);
             }
         }
-    }
-
-    // возвращает какие объекты на форме показываются
-    private Set<GroupObjectInstance> getPropertyGroups() {
-        Set<GroupObjectInstance> reportObjects = new HashSet<>();
-        for (GroupObjectInstance group : getGroups())
-            if (group.curClassView != HIDE)
-                reportObjects.add(group);
-
-        return reportObjects;
     }
 
     public FormData getFormData(int orderTop) throws SQLException, SQLHandledException {
@@ -2087,7 +2076,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                     mQueryOrders.add(object, false);
                 }
 
-                if (group.curClassView == ClassViewType.PANEL) {
+                if (group.curClassView.isPanel()) {
                     for (ObjectInstance object : group.objects) {
                         query.and(object.getExpr(query.getMapExprs(), getModifier()).compare(object.getObjectValue().getExpr(), Compare.EQUALS));
                     }

@@ -357,7 +357,7 @@ public class GridController {
     }
 
     public boolean isVisible() {
-        return !forceHidden && groupController.classView == ClassViewType.GRID;
+        return !forceHidden && groupController.classView.isGrid();
     }
 
     public void update() {

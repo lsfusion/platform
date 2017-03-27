@@ -273,7 +273,7 @@ public class ReportSourceGenerator<PropertyDraw extends PropertyReaderInstance, 
 
     // В отчет по одной группе объектов не добавляем свойства, которые идут в панель
     private boolean validForGroupReports(PropertyDraw property) {
-        return groupId == null || !groupId.equals(formInterface.getGroupID(formInterface.getToDraw(property))) || formInterface.getPViewType(property) != ClassViewType.PANEL;
+        return !(groupId != null && groupId.equals(formInterface.getGroupID(formInterface.getToDraw(property))) && formInterface.getPViewType(property).isPanel());
     } 
     
     private List<PropertyDraw> filterProperties(ImSet<GroupObject> filterGroups, boolean custom) {
@@ -379,7 +379,7 @@ public class ReportSourceGenerator<PropertyDraw extends PropertyReaderInstance, 
                 mQueryOrders.add(order, groupOrders.getValue(i));
             }
 
-            if (formInterface.getGroupViewType(group) != ClassViewType.GRID || (groupId != null && !(groupId.equals(formInterface.getGroupID(group)) || formInterface.getColumnGroupObjects(property).contains(group)))) {
+            if (!formInterface.getGroupViewType(group).isGrid() || (groupId != null && !(groupId.equals(formInterface.getGroupID(group)) || formInterface.getColumnGroupObjects(property).contains(group)))) {
                 for (Obj object : formInterface.getObjects(group)) {
                     query.and(formInterface.getExpr(object, query.getMapExprs()).compare(formInterface.getObjectValue(object).getExpr(), Compare.EQUALS));
                 }

@@ -142,7 +142,7 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
         super(ID, sID != null ? sID : "groupObj" + ID);
     }
 
-    public ClassViewType initClassView = GRID;
+    public ClassViewType initClassView = DEFAULT;
     public List<ClassViewType> banClassView = new ArrayList<>();
     public Integer pageSize;
 
@@ -190,9 +190,17 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
         initClassView = type;
     }
 
+    public void setPanelClassView() {
+        setSingleClassView(ClassViewType.PANEL);
+    }
+    
+    public void setGridClassView() {
+        setSingleClassView(ClassViewType.GRID);
+    }
+
     public void setSingleClassView(ClassViewType type) {
         setInitClassView(type);
-        banClassView.addAll(BaseUtils.toList(PANEL, GRID, HIDE));
+        banClassView.addAll(BaseUtils.toList(ClassViewType.getAllTypes()));
         banClassView.remove(type);
     }
 
@@ -200,8 +208,16 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
         return !banClassView.contains(type);
     }
 
+    public boolean isPanel() {
+        return initClassView.isPanel();
+    }
     public boolean isForcedPanel() {
-        return initClassView == PANEL && !isAllowedClassView(GRID) && !isAllowedClassView(HIDE);
+        if(!isPanel())
+            return false;
+        for(ClassViewType type : ClassViewType.getAllTypes())
+            if(!type.isPanel() && isAllowedClassView(type))
+                return false;
+        return true;
     }
 
     private boolean finalizedObjects;

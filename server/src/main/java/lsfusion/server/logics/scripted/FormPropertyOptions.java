@@ -21,7 +21,6 @@ public class FormPropertyOptions {
     private PropertyEditType editType;
     private Boolean hintNoUpdate;
     private Boolean hintTable;
-    private Boolean drawToToolbar;
     private Boolean optimisticAsync;
     private Columns columns;
     private CalcPropertyObjectEntity showIf;
@@ -160,14 +159,6 @@ public class FormPropertyOptions {
         this.hintTable = hintTable;
     }
 
-    public Boolean getDrawToToolbar() {
-        return drawToToolbar;
-    }
-
-    public void setDrawToToolbar(Boolean drawToToolbar) {
-        this.drawToToolbar = drawToToolbar;
-    }
-
     public Boolean getOptimisticAsync() {
         return optimisticAsync;
     }
@@ -268,7 +259,6 @@ public class FormPropertyOptions {
         merged.setEditType(nvl(overrides.getEditType(), editType));
         merged.setHintNoUpdate(nvl(overrides.getHintNoUpdate(), hintNoUpdate));
         merged.setHintTable(nvl(overrides.getHintTable(), hintTable));
-        merged.setDrawToToolbar(nvl(overrides.getDrawToToolbar(), drawToToolbar));
         merged.setOptimisticAsync(nvl(overrides.getOptimisticAsync(), optimisticAsync));
         merged.setColumns(nvl(overrides.getColumns(), columns));
         merged.setShowIf(nvl(overrides.getShowIf(), showIf));

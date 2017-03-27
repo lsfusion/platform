@@ -3,7 +3,6 @@ package lsfusion.server.form.entity;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
-import lsfusion.interop.ClassViewType;
 import lsfusion.interop.PropertyEditType;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.form.entity.filter.NotNullFilterEntity;
@@ -59,7 +58,7 @@ public class LogFormEntity<T extends BusinessLogics<T>> extends FormEntity<T> {
             String sID = "param" + index;
 
             GroupObjectEntity paramGroup = new GroupObjectEntity(genID(), sID + "Group");
-            paramGroup.setSingleClassView(ClassViewType.PANEL);
+            paramGroup.setPanelClassView();
 
             ObjectEntity obj = new ObjectEntity(genID(), sID, valueClass, valueClass.getCaption());
             entities[index-1] = obj;

@@ -52,8 +52,6 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     private OrderedMap<String, LocalizedString> contextMenuBindings;
     private Map<String, ActionPropertyObjectEntity<?>> editActions;
 
-    private boolean drawToToolbar = false;
-
     public boolean optimisticAsync;
 
     public Boolean askConfirm;
@@ -397,21 +395,18 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         return toDraw==null?form.getNFApplyObject(propertyObject.getObjectInstances(), version):toDraw;
     }
 
-    public boolean isDrawToToolbar() {
-        return drawToToolbar;
+    public boolean isToolbar() {
+        if (forceViewType != null)
+            return forceViewType.isToolbar();
+
+        return toDraw != null && toDraw.initClassView.isToolbar();
+
     }
 
     public boolean isForcedPanel() {
-        return forceViewType == ClassViewType.PANEL;
+        return forceViewType != null && forceViewType.isPanel();
     }
 
-    public void setDrawToToolbar(boolean drawToToolbar) {
-        this.drawToToolbar = drawToToolbar;
-        if (drawToToolbar) {
-            forceViewType = ClassViewType.PANEL;
-        }
-    }
-    
     static public String createSID(String name, List<String> mapping) {
         StringBuilder sidBuilder = new StringBuilder();
         sidBuilder.append(name);
@@ -479,7 +474,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
             result = toDraw.getSID();
         } else {
             for (ObjectEntity object : propertyObject.getMapObjectInstances().values()) {
-                if (object != null && object.groupTo != null && object.groupTo.initClassView == ClassViewType.GRID)
+                if (object != null && object.groupTo != null && object.groupTo.initClassView.isGrid())
                     result = object.getSID();
             }
         }

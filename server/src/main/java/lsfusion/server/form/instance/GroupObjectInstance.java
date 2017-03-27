@@ -159,7 +159,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
     public Integer order = 0;
 
     // классовый вид включен или нет
-    public ClassViewType curClassView = ClassViewType.GRID;
+    public ClassViewType curClassView = ClassViewType.DEFAULT;
 
     // закэшированные
 
@@ -629,7 +629,8 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         if (keyTable == null) // в общем то только для hidden'а но может и потом понадобиться
             keyTable = createKeyTable();
 
-        if (curClassView == HIDE) return null;
+        if (curClassView.isHidden()) return null;
+        boolean isGrid = curClassView.isGrid();
 
         // если изменились класс грида или представление
         boolean updateFilters = refresh || (updated & (UPDATED_GRIDCLASS | UPDATED_CLASSVIEW)) != 0;
@@ -818,7 +819,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
                 }
             }
 
-            if (!updateKeys && curClassView == GRID && !currentObject.isEmpty() && (updated & (UPDATED_OBJECT | UPDATED_PAGESIZE)) != 0) { // скроллирование
+            if (!updateKeys && isGrid && !currentObject.isEmpty() && (updated & (UPDATED_OBJECT | UPDATED_PAGESIZE)) != 0) { // скроллирование
                 int keyNum = keys.indexOf(currentObject);
                 if (upKeys && keyNum < getPageSize()) { // если меньше PageSize осталось и сверху есть ключи
                     updateKeys = true;
@@ -850,7 +851,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
             updated = (updated | UPDATED_KEYS);
 
-            if (curClassView != GRID) { // панель
+            if (!isGrid) { // панель
                 ImMap<ObjectInstance, DataObject> readKeys = orderSeeks.readKeys(sql, env, modifier, baseClass, reallyChanged);
                 updateViewProperty(execEnv, readKeys);
                 return readKeys;

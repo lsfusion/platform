@@ -32,7 +32,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
     // в какой "класс" рисоваться, ессно один из Object.GroupTo должен быть ToDraw
     public GroupObjectInstance toDraw; // не null, кроме когда без параметров в FormInstance проставляется
 
-    public ClassViewType getCurClassView() {
+    public ClassViewType getGroupClassView() {
         return toDraw != null ? toDraw.curClassView : ClassViewType.PANEL;
     }
 
@@ -46,7 +46,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
     public ImSet<GroupObjectInstance> getColumnGroupObjectsInGridView() {
         return getColumnGroupObjects().filterFn(new SFunctionSet<GroupObjectInstance>() {
             public boolean contains(GroupObjectInstance element) {
-                return element.curClassView == GRID;
+                return element.curClassView.isGrid();
             }
         });
     }

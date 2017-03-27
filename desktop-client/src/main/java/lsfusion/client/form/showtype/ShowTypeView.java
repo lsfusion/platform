@@ -13,17 +13,16 @@ import java.awt.event.ActionListener;
 import java.util.List;
 
 public class ShowTypeView extends JPanel {
-    private final static ImageIcon gridIcon = new ImageIcon(ShowTypeView.class.getResource("/images/view_grid.png"));
-    private final static ImageIcon panelIcon = new ImageIcon(ShowTypeView.class.getResource("/images/view_panel.png"));
-    private final static ImageIcon hideIcon = new ImageIcon(ShowTypeView.class.getResource("/images/view_hide.png"));
-
-    private final JButton gridButton;
-    private final JButton panelButton;
-    private final JButton hideButton;
+    private final ClassViewType[] types = new ClassViewType[] {ClassViewType.GRID, ClassViewType.PANEL, ClassViewType.HIDE};
+    private final ImageIcon[] icons = new ImageIcon[] {new ImageIcon(ShowTypeView.class.getResource("/images/view_grid.png")),
+                                                 new ImageIcon(ShowTypeView.class.getResource("/images/view_panel.png")),
+                                                 new ImageIcon(ShowTypeView.class.getResource("/images/view_hide.png"))};
+    private JButton[] buttons = new JButton[3];
+    
     private final ShowTypeController controller;
     private final List<ClassViewType> banClassView;
 
-    private ClassViewType classView = ClassViewType.HIDE;
+    private ClassViewType classView = types[types.length - 1];
 
     public ShowTypeView(ShowTypeController controller, ClientShowType showType, List<ClassViewType> banClassView) {
         this.controller = controller;
@@ -31,10 +30,9 @@ public class ShowTypeView extends JPanel {
 
         setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
 
-        add(gridButton = createShowTypeButton(ClassViewType.GRID, gridIcon));
-        add(panelButton = createShowTypeButton(ClassViewType.PANEL, panelIcon));
-        add(hideButton = createShowTypeButton(ClassViewType.HIDE, hideIcon));
-
+        for(int i=0;i<types.length;i++)
+            add(buttons[i] = createShowTypeButton(types[i], icons[i]));
+            
         setPreferredSize(new Dimension((ToolbarGridButton.DEFAULT_SIZE.width + 1) * 3, ToolbarGridButton.DEFAULT_SIZE.height));
 
         showType.installMargins(this);
@@ -49,13 +47,11 @@ public class ShowTypeView extends JPanel {
     public void setClassView(ClassViewType iclassView) {
         classView = iclassView;
 
-        panelButton.setBorderPainted(classView != ClassViewType.PANEL);
-        gridButton.setBorderPainted(classView != ClassViewType.GRID);
-        hideButton.setBorderPainted(classView != ClassViewType.HIDE);
+        for(int i=0;i<types.length;i++)
+            buttons[i].setBorderPainted(classView != types[i]);
 
-        panelButton.setVisible(!banClassView.contains(ClassViewType.PANEL));
-        gridButton.setVisible(!banClassView.contains(ClassViewType.GRID));
-        hideButton.setVisible(!banClassView.contains(ClassViewType.HIDE));
+        for(int i=0;i<types.length;i++)
+            buttons[i].setVisible(!banClassView.contains(types[i]));
 
         setVisible(banClassView.size() < 2);
     }

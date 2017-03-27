@@ -376,7 +376,9 @@ public class ScriptingFormEntity {
 
         property.propertyReadOnly = options.getReadOnlyIf();
         if (options.getForceViewType() != null) {
-            property.forceViewType = options.getForceViewType();
+            // хак
+            if(!(property.forceViewType != null && property.forceViewType.isToolbar() && options.getForceViewType().isPanel())) // не заменяем TOOLBAR -> PANEL
+                property.forceViewType = options.getForceViewType();
         }
         if (options.getToDraw() != null) {
             property.toDraw = options.getToDraw();
@@ -390,11 +392,6 @@ public class ScriptingFormEntity {
         Boolean hintTable = options.getHintTable();
         if (hintTable != null && hintTable) {
             form.addHintsIncrementTable(version, (CalcProperty) property.propertyObject.property);
-        }
-
-        Boolean drawToToolbar = options.getDrawToToolbar();
-        if (drawToToolbar != null && drawToToolbar) {
-            property.setDrawToToolbar(true);
         }
 
         Boolean optimisticAsync = options.getOptimisticAsync();

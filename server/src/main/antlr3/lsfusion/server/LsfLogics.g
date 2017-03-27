@@ -525,7 +525,7 @@ formGroupObjectViewType returns [ClassViewType type, boolean isInitType]
 	;
 
 classViewType returns [ClassViewType type]
-	: 	('PANEL' {$type = ClassViewType.PANEL;} | 'GRID' {$type = ClassViewType.GRID;})
+	: 	('PANEL' {$type = ClassViewType.PANEL;} | 'GRID' {$type = ClassViewType.GRID;} | 'TOOLBAR' {$type = ClassViewType.TOOLBAR;} )
 	;
 
 formGroupObjectPageSize returns [Integer value = null]
@@ -612,7 +612,6 @@ formPropertyOptionsList returns [FormPropertyOptions options]
 	:	(	editType = propertyEditTypeLiteral { $options.setEditType($editType.val); }
 		|	'HINTNOUPDATE' { $options.setHintNoUpdate(true); }
 		|	'HINTTABLE' { $options.setHintTable(true); }
-		|	'TOOLBAR' { $options.setDrawToToolbar(true); }
         |   (('NEWSESSION' | 'NESTEDSESSION' { $options.setNested(true); } ) { $options.setNewSession(true); })
 		|	'OPTIMISTICASYNC' { $options.setOptimisticAsync(true); }
 		|	'COLUMNS' (columnsName=stringLiteral)? '(' ids=nonEmptyIdList ')' { $options.setColumns($columnsName.text, getGroupObjectsList($ids.ids, self.getVersion())); }
@@ -622,7 +621,7 @@ formPropertyOptionsList returns [FormPropertyOptions options]
 		|	'FOREGROUND' propObj=formCalcPropertyObject { $options.setForeground($propObj.property); }
 		|	'HEADER' propObj=formCalcPropertyObject { $options.setHeader($propObj.property); }
 		|	'FOOTER' propObj=formCalcPropertyObject { $options.setFooter($propObj.property); }
-		|	'FORCE' viewType=classViewType { $options.setForceViewType($viewType.type); }
+		|	'FORCE'? viewType=classViewType { $options.setForceViewType($viewType.type); }
 		|	'TODRAW' toDraw=formGroupObjectEntity { $options.setToDraw($toDraw.groupObject); }
 		|	'BEFORE' pdraw=formPropertyDraw { $options.setNeighbourPropertyDraw($pdraw.property, $pdraw.text); $options.setNeighbourType(false); }
 		|	'AFTER'  pdraw=formPropertyDraw { $options.setNeighbourPropertyDraw($pdraw.property, $pdraw.text); $options.setNeighbourType(true); }
@@ -1875,7 +1874,7 @@ propertyOptions[LP property, String propertyName, LocalizedString caption, List<
 		|	'NOHINT' { noHint = true; }
 		|	'TABLE' tbl = compoundID { table = $tbl.sid; }
 		|	shortcutSetting [property, caption != null ? caption : LocalizedString.create(propertyName)]
-		|	toolbarSetting [property]
+		|	forceViewTypeSetting [property]
 		|	fixedCharWidthSetting [property]
 		|	minCharWidthSetting [property]
 		|	maxCharWidthSetting [property]
@@ -1923,13 +1922,13 @@ asonEditActionSetting [LP property]
 	:	'ASON' et=formEventType usage=propertyUsage 
 	;
 
-toolbarSetting [LP property]
+forceViewTypeSetting [LP property]
 @after {
 	if (inPropParseState()) {
-		self.setDrawToToolbar(property);
+		self.setForceViewType(property, $viewType.type);
 	}
 }
-	:	'TOOLBAR'
+	:	viewType=classViewType
 	;
 
 fixedCharWidthSetting [LP property]

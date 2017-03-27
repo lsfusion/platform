@@ -1699,9 +1699,7 @@ public abstract class LogicsModule {
 
     protected void setAddActionOptions(LAP property, final ObjectEntity objectEntity) {
 
-        property.setDrawToToolbar(true);
-        property.setShouldBeLast(true);
-        property.setForceViewType(ClassViewType.PANEL);
+        setFormActions(property);
 
         property.setImage("add.png");
         property.setEditKey(KeyStrokes.getAddActionPropertyKeyStroke());
@@ -1732,14 +1730,18 @@ public abstract class LogicsModule {
 
         return addSessionScopeAProp(scope, result);
     }
+    
+    private void setFormActions(LAP result) {
+        result.setShouldBeLast(true);
+        result.setForceViewType(ClassViewType.TOOLBAR);
+    }
 
     private void setEditActionOptions(LAP result) {
+        setFormActions(result);
+        
         result.setImage("edit.png");
-        result.setShouldBeLast(true);
         result.setEditKey(KeyStrokes.getEditActionPropertyKeyStroke());
         result.setShowEditKey(false);
-        result.setDrawToToolbar(true);
-        result.setForceViewType(ClassViewType.PANEL);
     }
 
     public LAP addProp(ActionProperty prop) {

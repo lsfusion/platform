@@ -4,20 +4,34 @@ import java.util.ArrayList;
 import java.util.List;
 
 public enum ClassViewType {
-    PANEL, GRID, HIDE;
+    PANEL, TOOLBAR, GRID, HIDE;
 
-    public static List typeNameList(){
-        List list = new ArrayList();
-        for(int i=0; i < ClassViewType.values().length; i++){
-            list.add(ClassViewType.values()[i].toString());
-        }
-        return list;
+    public static ClassViewType[] getAllTypes() {
+        return ClassViewType.values();        
     }
 
     public static ClassViewType switchView(ClassViewType initClassView) {
-        if (initClassView == GRID)
+        if (initClassView.isGrid())
             return PANEL;
         else
             return GRID;
+    }
+    
+    public static ClassViewType DEFAULT = GRID;
+    
+    public boolean isPanel() {
+        return this == PANEL || this == TOOLBAR;
+    }
+
+    public boolean isToolbar() {
+        return this == TOOLBAR;
+    }
+
+    public boolean isGrid() {
+        return this == GRID;
+    }
+
+    public boolean isHidden() {
+        return this == HIDE;
     }
 }

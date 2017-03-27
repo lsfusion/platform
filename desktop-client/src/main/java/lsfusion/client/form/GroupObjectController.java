@@ -36,7 +36,7 @@ public class GroupObjectController extends AbstractGroupObjectController {
 
     private final Map<ClientObject, ObjectController> objects = new HashMap<>();
 
-    public ClassViewType classView = ClassViewType.GRID;
+    public ClassViewType classView = ClassViewType.DEFAULT;
 
     public GroupObjectController(LogicsSupplier ilogicsSupplier, ClientFormController iform, ClientFormLayout formLayout) throws IOException {
         this(null, ilogicsSupplier, iform, formLayout, null);
@@ -185,7 +185,7 @@ public class GroupObjectController extends AbstractGroupObjectController {
 
         // Затем подгружаем новые данные
 
-        if (classView == ClassViewType.GRID) {
+        if (isGrid()) {
             if (fc.gridObjects.containsKey(groupObject)) {
                 setRowKeysAndCurrentObject(fc.gridObjects.get(groupObject), fc.objects.get(groupObject));
             }
@@ -246,7 +246,7 @@ public class GroupObjectController extends AbstractGroupObjectController {
     }
 
     public void modifyGroupObject(ClientGroupObjectValue gridObject, boolean add, int position) {
-        assert classView == ClassViewType.GRID;
+        assert classView.isGrid();
 
         grid.modifyGridObject(gridObject, add, position); // assert что grid!=null
 
@@ -320,15 +320,19 @@ public class GroupObjectController extends AbstractGroupObjectController {
     }
 
     public void updateRowBackgroundValues(Map<ClientGroupObjectValue, Object> rowBackground) {
-        if (classView == ClassViewType.GRID) {
+        if (isGrid()) {
             grid.updateRowBackgroundValues(rowBackground);
         } else {
             panel.updateRowBackgroundValue((Color)BaseUtils.singleValue(rowBackground));
         }
     }
 
+    public boolean isGrid() {
+        return classView.isGrid();
+    }
+    
     public void updateRowForegroundValues(Map<ClientGroupObjectValue, Object> rowForeground) {
-        if (classView == ClassViewType.GRID) {
+        if (isGrid()) {
             grid.updateRowForegroundValues(rowForeground);
         } else {
             panel.updateRowForegroundValue((Color)BaseUtils.singleValue(rowForeground));
@@ -496,6 +500,6 @@ public class GroupObjectController extends AbstractGroupObjectController {
         }
 
         panel.update();
-        panel.setVisible(classView != ClassViewType.HIDE);
+        panel.setVisible(!classView.isHidden());
     }
 }

@@ -598,9 +598,6 @@ public abstract class Property<T extends PropertyInterface> extends AbstractProp
         private Boolean showEditKey;
 
         // для всех
-        private boolean drawToToolbar;
-
-        // для всех
         private Boolean shouldBeLast;
 
         // для всех
@@ -620,8 +617,6 @@ public abstract class Property<T extends PropertyInterface> extends AbstractProp
                 entity.askConfirmMessage = askConfirmMessage;
             if (entity.eventID == null)
                 entity.eventID = eventID;
-            if (drawToToolbar)
-                entity.setDrawToToolbar(true);
             for(DefaultProcessor processor : processors)
                 processor.proceedDefaultDraw(entity, form);
         }
@@ -688,9 +683,6 @@ public abstract class Property<T extends PropertyInterface> extends AbstractProp
                 setEditKey(options.editKey);
             if(showEditKey == null)
                 setShowEditKey(options.showEditKey);
-            
-            if(!drawToToolbar)
-                setDrawToToolbar(options.drawToToolbar);
             
             if(shouldBeLast == null)
                 setShouldBeLast(options.shouldBeLast);
@@ -769,10 +761,6 @@ public abstract class Property<T extends PropertyInterface> extends AbstractProp
 
         public void setShowEditKey(Boolean showEditKey) {
             this.showEditKey = showEditKey;
-        }
-
-        public void setDrawToToolbar(boolean drawToToolbar) {
-            this.drawToToolbar = drawToToolbar;
         }
 
         public void setShouldBeLast(Boolean shouldBeLast) {

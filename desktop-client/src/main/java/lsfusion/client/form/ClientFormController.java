@@ -667,7 +667,7 @@ public class ClientFormController implements AsyncListener {
 
         for (Map.Entry<ClientGroupObject, ClassViewType> entry : formChanges.classViews.entrySet()) {
             ClassViewType classView = entry.getValue();
-            if (classView != ClassViewType.GRID) {
+            if (!classView.isGrid()) {
                 currentGridObjects.remove(entry.getKey());
             }
         }
@@ -877,7 +877,7 @@ public class ClientFormController implements AsyncListener {
     public boolean isAsyncModifyObject(ClientPropertyDraw property) {
         if (property.addRemove != null) {
             GroupObjectController controller = controllers.get(property.addRemove.first.groupObject);
-            if (controller != null && controller.classView == ClassViewType.GRID) {
+            if (controller != null && controller.isGrid()) {
                 return true;
             }
         }

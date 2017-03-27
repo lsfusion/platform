@@ -146,7 +146,7 @@ public class FormReportManager<PropertyDraw extends PropertyReaderInstance, Grou
         Set<Integer> gridGroupsId = new HashSet<>();
         for (GroupObject group : formInterface.getGroups()) {
             int groupObjectID = formInterface.getGroupID(group);
-            if (formInterface.getGroupViewType(group) == ClassViewType.GRID && (groupId == null || groupId == groupObjectID)) {
+            if (formInterface.getGroupViewType(group).isGrid() && (groupId == null || groupId == groupObjectID)) {
                 gridGroupsId.add(groupObjectID);
             }
         }
@@ -240,7 +240,7 @@ public class FormReportManager<PropertyDraw extends PropertyReaderInstance, Grou
         Set<Integer> hidedGroupsId = new HashSet<>();
         for (GroupObject group : formInterface.getGroups()) {
             int groupObjectID = formInterface.getGroupID(group);
-            if (formInterface.getGroupViewType(group) == ClassViewType.HIDE || groupId != null && groupId != groupObjectID) {
+            if (formInterface.getGroupViewType(group).isHidden() || groupId != null && groupId != groupObjectID) {
                 hidedGroupsId.add(groupObjectID);
             }
         }

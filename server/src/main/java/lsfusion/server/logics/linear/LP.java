@@ -151,10 +151,6 @@ public abstract class LP<T extends PropertyInterface, P extends Property<T>> {
         property.drawOptions.setEchoSymbols(echoSymbols);
     }
 
-    public void setDrawToToolbar(boolean drawToToolbar) {
-        property.drawOptions.setDrawToToolbar(drawToToolbar);
-    }
-
     public void setShouldBeLast(boolean shouldBeLast) {
         property.drawOptions.setShouldBeLast(shouldBeLast);
     }

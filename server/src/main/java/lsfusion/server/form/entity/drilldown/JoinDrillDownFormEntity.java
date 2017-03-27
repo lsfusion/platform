@@ -3,7 +3,6 @@ package lsfusion.server.form.entity.drilldown;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.mutable.MMap;
-import lsfusion.interop.ClassViewType;
 import lsfusion.interop.Compare;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.form.entity.ObjectEntity;
@@ -48,7 +47,7 @@ public class JoinDrillDownFormEntity<I extends PropertyInterface> extends DrillD
                 if (intImpl instanceof CalcPropertyMapImplement) {
                     //добавляем дополнительный объект, если на входе - свойство
                     ObjectEntity innerObject  = addSingleGroupObject(implClasses.get(iFace), version);
-                    innerObject.groupTo.setSingleClassView(ClassViewType.PANEL);
+                    innerObject.groupTo.setPanelClassView();
                     mImplObjects.add(iFace, innerObject);
     
                     //добавляем фильтр для этого объекта и соотв. свойства

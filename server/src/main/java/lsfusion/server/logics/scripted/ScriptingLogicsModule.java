@@ -836,8 +836,8 @@ public class ScriptingLogicsModule extends LogicsModule {
         onEditLAP.setAsEditActionFor(editActionSID, mainProperty);
     }
 
-    public void setDrawToToolbar(LP property) {
-        property.setDrawToToolbar(true);
+    public void setForceViewType(LP property, ClassViewType viewType) {
+        property.setForceViewType(viewType);
     }
 
     public void setFixedCharWidth(LP property, Integer fixedCharWidth) {

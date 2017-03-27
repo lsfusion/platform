@@ -3,7 +3,6 @@ package lsfusion.server.form.entity.drilldown;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.mutable.MMap;
-import lsfusion.interop.ClassViewType;
 import lsfusion.interop.PropertyEditType;
 import lsfusion.interop.form.layout.FlexAlignment;
 import lsfusion.server.classes.ValueClass;
@@ -41,7 +40,7 @@ public class DrillDownFormEntity<I extends PropertyInterface, P extends CalcProp
         for (I pi : property.getReflectionOrderInterfaces()) {
             ObjectEntity paramObject  = addSingleGroupObject(interfaceClasses.get(pi), version, LM.recognizeGroup, true);
             addPropertyDraw(LM.getObjValueProp(this, paramObject), version, paramObject);
-            paramObject.groupTo.setSingleClassView(ClassViewType.PANEL);
+            paramObject.groupTo.setPanelClassView();
 
             interfaceObjects.add(pi, paramObject);
             paramObjects[i++] = paramObject;
