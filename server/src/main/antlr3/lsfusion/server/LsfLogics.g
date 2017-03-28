@@ -2404,7 +2404,7 @@ formActionProps[String objectName, ObjectEntity object, List<TypedParameter> con
     $props = new FormActionProps(in, inNull, out, outParamNum, outNull, outProp, contextFilter, contextProp);
 }
     :   ('=' expr=propertyExpression[context, dynamic] { in = $expr.property; } ('NULL' { inNull = true; } )? )?
-        ('INPUT' { out = true; }
+        ('INPUT' { out = true; inNull = true; }
             varID=ID?
             { if(newContext!=null && inPropParseState()) { outParamNum = self.getParamIndex(self.new TypedParameter(object.baseClass, $varID.text != null ? $varID.text : objectName), newContext, true, insideRecursion); } }
             ('NULL' { outNull = true; })? 
