@@ -363,7 +363,7 @@ closeDocuments = ACTION ABSTRACT LIST (DATE);
 documentsClosedDate 'Дата закрытия документов' = DATA DATE();
  
 dialogCloseDocumentsDate 'Закрыть документы'() = ACTION {
-    DIALOG dialogDate OBJECTS d = documentsClosedDate() NULL INPUT DO {
+    DIALOG dialogDate OBJECTS d = documentsClosedDate() INPUT DO {
         documentsClosedDate() <- d;
         closeDocuments(d);
         apply();
