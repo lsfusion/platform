@@ -27,8 +27,6 @@ import lsfusion.server.logics.property.actions.SystemExplicitActionProperty;
 import lsfusion.server.logics.property.actions.importing.dbf.ImportDBFDataActionProperty;
 import lsfusion.server.logics.property.actions.importing.jdbc.ImportJDBCDataActionProperty;
 import lsfusion.server.logics.property.actions.importing.mdb.ImportMDBDataActionProperty;
-import lsfusion.server.logics.property.actions.importing.xls.ImportXLSDataActionProperty;
-import lsfusion.server.logics.property.actions.importing.xlsx.ImportXLSXDataActionProperty;
 import lsfusion.server.session.PropertyChange;
 import lsfusion.server.session.SingleKeyTableUsage;
 import org.jdom.JDOMException;
@@ -37,7 +35,10 @@ import org.xBaseJ.xBaseJException;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.text.ParseException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public abstract class ImportDataActionProperty extends SystemExplicitActionProperty {
 
@@ -74,14 +75,6 @@ public abstract class ImportDataActionProperty extends SystemExplicitActionPrope
         for (int i = 0; i < MAX_COLUMN; ++i) {
             XLSColumnsMapping.put(XLSColumnByIndex(i), i);
         }
-    }
-    
-    public static ImportDataActionProperty createExcelProperty(ValueClass valueClass, ImportSourceFormat format, List<String> ids, List<LCP> properties, ValueClass sheetIndex, BaseLogicsModule baseLM) {
-        if (format == ImportSourceFormat.XLS) {
-            return new ImportXLSDataActionProperty(sheetIndex == null ? new ValueClass[] {valueClass} : new ValueClass[] {valueClass, sheetIndex} , ids, properties, baseLM);
-        } else if (format == ImportSourceFormat.XLSX) {
-            return new ImportXLSXDataActionProperty(sheetIndex == null ? new ValueClass[] {valueClass} : new ValueClass[] {valueClass, sheetIndex}, ids, properties, baseLM);
-        } else return null;
     }
 
     public static ImportDataActionProperty createDBFProperty(ValueClass valueClass, ValueClass wheresClass, ValueClass memoClass, List<String> ids, List<LCP> properties, String charset, BaseLogicsModule baseLM) {

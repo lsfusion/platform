@@ -53,6 +53,7 @@ import lsfusion.server.logics.property.actions.importing.csv.ImportCSVDataAction
 import lsfusion.server.logics.property.actions.importing.csv.ImportFormCSVDataActionProperty;
 import lsfusion.server.logics.property.actions.importing.dbf.ImportFormDBFDataActionProperty;
 import lsfusion.server.logics.property.actions.importing.json.ImportFormJSONDataActionProperty;
+import lsfusion.server.logics.property.actions.importing.xls.ImportXLSDataActionProperty;
 import lsfusion.server.logics.property.actions.importing.xml.ImportFormXMLDataActionProperty;
 import lsfusion.server.logics.property.actions.importing.xml.ImportXMLDataActionProperty;
 import lsfusion.server.logics.property.derived.DerivedProperty;
@@ -2884,8 +2885,9 @@ public class ScriptingLogicsModule extends LogicsModule {
                 errLog.emitImportNonIntegralSheetError(parser);
             }
         }
-        return addScriptedJoinAProp(addAProp(ImportDataActionProperty.createExcelProperty(fileProp.property.property.getValueClass(ClassType.valuePolicy),
-                format, ids, props, sheetIndexValueClass, baseLM)), sheetIndex == null ? Collections.singletonList(fileProp) : Lists.newArrayList(fileProp, sheetIndex));
+        ValueClass valueClass = fileProp.property.property.getValueClass(ClassType.valuePolicy);
+        return addScriptedJoinAProp(addAProp(new ImportXLSDataActionProperty(sheetIndex == null ? new ValueClass[]{valueClass} : new ValueClass[]{valueClass, sheetIndexValueClass},
+                        ids, props, baseLM, format)), sheetIndex == null ? Collections.singletonList(fileProp) : Lists.newArrayList(fileProp, sheetIndex));
     }
 
     public LPWithParams addScriptedImportCSVActionProperty(LPWithParams fileProp, List<String> ids, List<PropertyUsage> propUsages, String separator, boolean noHeader, String charset) throws ScriptingErrorLog.SemanticErrorException {
