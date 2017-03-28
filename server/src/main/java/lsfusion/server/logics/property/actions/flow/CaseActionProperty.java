@@ -5,6 +5,7 @@ import lsfusion.base.col.ListFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MList;
+import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.Settings;
 import lsfusion.server.classes.CustomClass;
@@ -31,7 +32,7 @@ import static lsfusion.server.logics.property.derived.DerivedProperty.createForA
 
 public class CaseActionProperty extends ListCaseActionProperty {
 
-    public static <I extends PropertyInterface> ActionProperty createIf(LocalizedString caption, boolean not, ImOrderSet<I> innerInterfaces, CalcPropertyMapImplement<?, I> ifProp, ActionPropertyMapImplement<?, I> trueAction, ActionPropertyMapImplement<?, I> falseAction) {
+    public static <I extends PropertyInterface> ActionProperty createIf(LocalizedString caption, boolean not, ImOrderSet<I> innerInterfaces, CalcPropertyInterfaceImplement<I> ifProp, ActionPropertyMapImplement<?, I> trueAction, ActionPropertyMapImplement<?, I> falseAction) {
         assert trueAction != null;
         if(not) // просто not'им if
             ifProp = DerivedProperty.createNot(ifProp);
@@ -126,10 +127,12 @@ public class CaseActionProperty extends ListCaseActionProperty {
 
     @Override
     public ImMap<CalcProperty, Boolean> aspectUsedExtProps() {
-        return getCases().mapListValues(new GetValue<CalcProperty, ActionCase<PropertyInterface>>() {
-            public CalcProperty getMapValue(ActionCase<PropertyInterface> value) {
-                return value.where.property;
-            }}).toOrderSet().getSet().toMap(false).merge(super.aspectUsedExtProps(), addValue);
+        ImList<ActionCase<PropertyInterface>> cases = getCases();
+        MSet<CalcProperty> mWhereProps = SetFact.mSetMax(cases.size());
+        for(ActionCase<PropertyInterface> aCase : cases)
+            if(aCase.where instanceof CalcPropertyMapImplement)
+                mWhereProps.add(((CalcPropertyMapImplement) aCase.where).property);
+        return mWhereProps.immutable().toMap(false).merge(super.aspectUsedExtProps(), addValue);
     }
 
     @Override
@@ -151,7 +154,7 @@ public class CaseActionProperty extends ListCaseActionProperty {
     @Override
     public <T extends PropertyInterface, PW extends PropertyInterface> CalcProperty getPushWhere(ImRevMap<PropertyInterface, T> mapping, ImSet<T> context, boolean ordersNotNull) {
         assert hasPushFor(mapping, context, ordersNotNull);
-        return getCases().single().where.property;
+        return ForActionProperty.getPushWhere(getCases().single().where);
     }
     @Override
     public <T extends PropertyInterface, PW extends PropertyInterface> ActionPropertyMapImplement<?, T> pushFor(ImRevMap<PropertyInterface, T> mapping, ImSet<T> context, CalcPropertyMapImplement<PW, T> push, ImOrderMap<CalcPropertyInterfaceImplement<T>, Boolean> orders, boolean ordersNotNull) {

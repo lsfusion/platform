@@ -17,7 +17,7 @@ import static lsfusion.server.logics.property.derived.DerivedProperty.createForA
 
 public class IfActionProperty extends KeepContextActionProperty {
 
-    private final CalcPropertyMapImplement<?, PropertyInterface> ifProp;
+    private final CalcPropertyInterfaceImplement<PropertyInterface> ifProp;
     private final ActionPropertyMapImplement<?, PropertyInterface> trueAction;
     private final ActionPropertyMapImplement<?, PropertyInterface> falseAction;
 
@@ -115,7 +115,7 @@ public class IfActionProperty extends KeepContextActionProperty {
     @Override
     public <T extends PropertyInterface, PW extends PropertyInterface> CalcProperty getPushWhere(ImRevMap<PropertyInterface, T> mapping, ImSet<T> context, boolean ordersNotNull) {
         assert hasPushFor(mapping, context, ordersNotNull);
-        return ifProp.property;
+        return ForActionProperty.getPushWhere(ifProp);
     }
     @Override
     public <T extends PropertyInterface, PW extends PropertyInterface> ActionPropertyMapImplement<?, T> pushFor(ImRevMap<PropertyInterface, T> mapping, ImSet<T> context, CalcPropertyMapImplement<PW, T> push, ImOrderMap<CalcPropertyInterfaceImplement<T>, Boolean> orders, boolean ordersNotNull) {

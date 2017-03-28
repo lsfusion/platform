@@ -410,10 +410,16 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
     public <T extends PropertyInterface, PW extends PropertyInterface> boolean hasPushFor(ImRevMap<PropertyInterface, T> mapping, ImSet<T> context, boolean ordersNotNull) {
         return elseAction==null && !hasFlow(ChangeFlowType.BREAK) && ForActionProperty.this.ordersNotNull == ordersNotNull && elseAction == null && !recursive; // потом отработаем эти случаи
     }
+    
+    // nullable
+    public static <I extends PropertyInterface> CalcProperty getPushWhere(CalcPropertyInterfaceImplement<I> where) {
+        return where instanceof CalcPropertyMapImplement ? ((CalcPropertyMapImplement) where).property : DerivedProperty.createTrue().property; // тут не null должен возвращаться 
+    }
+    
     @Override
     public <T extends PropertyInterface, PW extends PropertyInterface> CalcProperty getPushWhere(ImRevMap<PropertyInterface, T> mapping, ImSet<T> context, boolean ordersNotNull) {
         assert hasPushFor(mapping, context, ordersNotNull);
-        return ifProp !=null ? ifProp.property : DerivedProperty.createTrue().property; // тут не null должен возвращаться
+        return getPushWhere(ifProp);
     }
     @Override
     public <T extends PropertyInterface, PW extends PropertyInterface> ActionPropertyMapImplement<?, T> pushFor(ImRevMap<PropertyInterface, T> mapping, ImSet<T> context, CalcPropertyMapImplement<PW, T> push, ImOrderMap<CalcPropertyInterfaceImplement<T>, Boolean> orders, boolean ordersNotNull) {

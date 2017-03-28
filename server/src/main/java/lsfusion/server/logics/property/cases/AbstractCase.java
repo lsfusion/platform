@@ -299,7 +299,7 @@ public abstract class AbstractCase<P extends PropertyInterface, W extends CalcPr
             public ActionCase<P> getMapValue(AbstractActionCase<P> value) {
                 return new ActionCase<>(value);
             }
-        }, new AbstractWrapper<P, CalcPropertyMapImplement<?, P>, ActionPropertyMapImplement<?, P>, ActionCase<P>>() {
+        }, new AbstractWrapper<P, CalcPropertyInterfaceImplement<P>, ActionPropertyMapImplement<?, P>, ActionCase<P>>() {
             public ActionCase<P> proceedSet(ImSet<ActionCase<P>> elements) {
                 return createInnerActionCase(interfaces, elements.toList(), true);
             }
