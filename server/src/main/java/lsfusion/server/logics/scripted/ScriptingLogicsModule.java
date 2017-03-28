@@ -1619,12 +1619,16 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LPWithParams(asyncLAP, msgProp.usedParams);
     }
     
-    public LPWithParams addScriptedConfirmxProp(List<TypedParameter> context, LPWithParams msgProp, LPWithParams doAction) throws ScriptingErrorLog.SemanticErrorException {
+    public LPWithParams addScriptedConfirmxProp(LPWithParams msgProp, LPWithParams doAction, boolean yesNo, List<TypedParameter> oldContext, List<TypedParameter> newContext) throws ScriptingErrorLog.SemanticErrorException {
+        LCP targetProp = null;
+        if(yesNo)
+            targetProp = getInputProp(null, LogicalClass.instance, null);
+        
         List<Object> resultParams = getParamsPlainList(singletonList(msgProp));
-        LAP asyncLAP = addConfirmAProp("lsFusion", resultParams.toArray());
+        LAP asyncLAP = addConfirmAProp("lsFusion", yesNo, targetProp, resultParams.toArray());
         LPWithParams inputAction = new LPWithParams(asyncLAP, msgProp.usedParams);
                 
-        return proceedDoClause(doAction, context, context, ListFact.<LCP>EMPTY(), inputAction);
+        return proceedDoClause(doAction, oldContext, newContext, yesNo ? ListFact.singleton(targetProp) : ListFact.<LCP>EMPTY(), inputAction);
     }
 
     public LPWithParams addScriptedMessageProp(LPWithParams msgProp, boolean noWait) {

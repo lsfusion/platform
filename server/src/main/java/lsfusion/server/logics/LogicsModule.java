@@ -1442,17 +1442,22 @@ public abstract class LogicsModule {
 
     // ------------------- CONFIRM ----------------- //
 
+
     protected LAP addConfirmAProp(String title, Object... params) {
-        return addConfirmAProp(null, LocalizedString.create(""), title, params);
+        return addConfirmAProp(title, false, null, params);
     }
 
-    protected LAP addConfirmAProp(AbstractGroup group, LocalizedString caption, String title, Object... params) {
-        return addJoinAProp(group, caption, addConfirmAProp(title), params);
+    protected LAP addConfirmAProp(String title, boolean yesNo, LCP targetProp, Object... params) {
+        return addConfirmAProp(null, LocalizedString.create(""), title, yesNo, targetProp, params);
+    }
+
+    protected LAP addConfirmAProp(AbstractGroup group, LocalizedString caption, String title, boolean yesNo, LCP<?> targetProp, Object... params) {
+        return addJoinAProp(group, caption, addConfirmAProp(title, yesNo, targetProp != null ? targetProp.property : null), params);
     }
 
     @IdentityStrongLazy
-    protected LAP addConfirmAProp(String title) {
-        return addProperty(null, new LAP(new ConfirmActionProperty(LocalizedString.create("Confirm"), title, getConfirmedProperty())));
+    protected LAP addConfirmAProp(String title, boolean yesNo, CalcProperty property) {
+        return addProperty(null, new LAP(new ConfirmActionProperty(LocalizedString.create("Confirm"), title, getConfirmedProperty(), yesNo, property != null ? new LCP(property) : null)));
     }
 
     // ------------------- Async Update Action ----------------- //
