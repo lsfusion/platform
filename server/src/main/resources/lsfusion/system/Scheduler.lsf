@@ -125,13 +125,13 @@ FORM scheduledTask 'Планировщик'
 
     OBJECTS t=ScheduledTask
     PROPERTIES (t) active, name, timeFrom, timeTo, startDate, period,
-                    nameSchedulerStartType, runAtStart, daysOfMonth FORCE PANEL, executeScheduledTask, setupScheduledTask
+                    nameSchedulerStartType, runAtStart, daysOfMonth PANEL, executeScheduledTask, setupScheduledTask
     PROPERTIES (t) NEW, DELETE
          
     OBJECTS td=ScheduledTaskDetail
     PROPERTIES (td) active, ignoreExceptions, order, captionProperty, 
                     canonicalNameProperty, parameter, classProperty, 
-                    returnProperty, timeout, script FORCE PANEL
+                    returnProperty, timeout, script PANEL
     PROPERTIES (td) NEW, DELETE
     
     OBJECTS tl=ScheduledTaskLog LAST

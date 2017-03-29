@@ -428,7 +428,7 @@ DESIGN securityPolicy {
 FORM userRoles 'Роли'
     OBJECTS ur=UserRole
     PROPERTIES(ur) READONLY name, sid
-    PROPERTIES(ur) copy FORCE PANEL
+    PROPERTIES(ur) copy PANEL
     PROPERTIES(ur) NEWSESSION NEW, EDIT, DELETE
 ;
 

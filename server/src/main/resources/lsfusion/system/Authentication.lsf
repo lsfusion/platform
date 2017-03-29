@@ -33,7 +33,7 @@ FORM computersDialog 'Рабочие места'
     OBJECTS c = Computer
     
     PROPERTIES(c) READONLY hostname, scannerComPort, scannerSingleRead, useDiscountCardReader
-    PROPERTIES(c) NEWSESSION NEW, EDIT, DELETE FORCE PANEL TOOLBAR
+    PROPERTIES(c) NEWSESSION NEW, EDIT, DELETE TOOLBAR
     
     LIST Computer OBJECT c     
 ;
@@ -185,7 +185,7 @@ FORM customUsers 'Пользователи'
     PROPERTIES(u) NEWSESSION forbidChangePassword, forbidEditProfile, useBusyDialogCustom, allowExcessAllocatedBytes,
                   language, userLanguage, clientLanguage, country, userCountry, clientCountry, useClientLocale, 
                   timeZone, userTimeZone, twoDigitYearStart, userTwoDigitYearStart, isLocked READONLY,
-                  lastActivity, NEW, EDIT FORCE PANEL, DELETE FORCE PANEL TOOLBAR
+                  lastActivity, NEW, EDIT PANEL, DELETE TOOLBAR
 
     PROPERTIES() useLDAP, serverLDAP, portLDAP, baseDNLDAP, userDNSuffixLDAP, minHashLength, defaultUserLanguage, defaultUserCountry
 ;

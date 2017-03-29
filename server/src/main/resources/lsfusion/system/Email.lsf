@@ -144,14 +144,14 @@ FORM mail 'Почта'
     PROPERTIES(a) name, smtpHost, smtpPort, nameReceiveAccountType, receiveHost, receivePort, nameEncryptedConnectionType,
                   fromAddress, password, blindCarbonCopy, deleteMessages, lastDays,
                   isDefaultNotification, isDefaultInbox, disable 
-    PROPERTIES(a) FORCE PANEL NEW, DELETE TOOLBAR
+    PROPERTIES(a) PANEL NEW, DELETE TOOLBAR
     
     OBJECTS e=Email
   
     PROPERTIES(e) READONLY subject, fromAddress, toAddress, dateTimeSent, 
-                   dateTimeReceived, openEMLFile EDITABLE, message FORCE PANEL
+                   dateTimeReceived, openEMLFile EDITABLE, message PANEL
     PROPERTIES(e) NEWSESSION DELETE
-    PROPERTIES(a) FORCE PANEL receiveEmailAction TODRAW e 
+    PROPERTIES(a) PANEL receiveEmailAction TODRAW e 
     FILTERS account(e)==a
                     
     OBJECTS ae=AttachmentEmail
@@ -163,7 +163,7 @@ FORM mail 'Почта'
     OBJECTS p=Property
         
     PROPERTIES(n, p) in
-    PROPERTIES(n) subject, text FORCE PANEL, emailFrom, emailTo, emailToCC, emailToBC, isEvent, NEW
+    PROPERTIES(n) subject, text PANEL, emailFrom, emailTo, emailToCC, emailToBC, isEvent, NEW
     PROPERTIES(p) READONLY caption, canonicalName
     ORDER BY canonicalName(p)
         

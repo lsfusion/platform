@@ -193,7 +193,7 @@ FORM scriptsLog 'Скрипты'
     
     OBJECTS s=Script
     PROPERTIES(s) name, text READONLY, dateTime READONLY 
-    PROPERTIES(s) NEWSESSION DELETE FORCE PANEL TOOLBAR
+    PROPERTIES(s) NEWSESSION DELETE TOOLBAR
     ORDER BY dateTime(s) DESC
 
     FILTERGROUP user FILTER 'Только пользовательские' name(s) 'F9'
