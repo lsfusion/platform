@@ -57,6 +57,7 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
     public LCP userDNSuffixLDAP;
 
     public LCP useBusyDialog;
+    public LCP useRequestTimeout;
 
     public LCP userLanguage;
     public LCP userCountry;
@@ -134,6 +135,7 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
         userDNSuffixLDAP = findProperty("userDNSuffixLDAP[]");
 
         useBusyDialog = findProperty("useBusyDialog[]");
+        useRequestTimeout = findProperty("useRequestTimeout[]");
 
         userLanguage = findProperty("language[CustomUser]");
         userCountry = findProperty("country[CustomUser]");

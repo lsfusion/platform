@@ -1574,8 +1574,8 @@ public class ClientFormController implements AsyncListener {
             super(formSID + ":" + name);
         }
 
-        protected RmiCheckNullFormRequest(String name, int timeout) {
-            super(formSID + ":" + name, timeout);
+        protected RmiCheckNullFormRequest(String name, boolean useTimeout) {
+            super(formSID + ":" + name, useTimeout);
         }
 
         @Override
@@ -1609,8 +1609,8 @@ public class ClientFormController implements AsyncListener {
             super(name);
         }
 
-        protected ProcessServerResponseRmiRequest(String name, int timeout) {
-            super(name, timeout);
+        protected ProcessServerResponseRmiRequest(String name, boolean useTimeout) {
+            super(name, useTimeout);
         }
 
         @Override

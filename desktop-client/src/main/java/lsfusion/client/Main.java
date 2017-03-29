@@ -90,6 +90,8 @@ public class Main {
 
     static SingleInstance singleInstance;
     public static boolean busyDialog;
+    public static boolean useRequestTimeout;
+    
     public static Integer apiVersion = null;
 
     public static void start(final String[] args, ModuleFactory startModule) {
@@ -264,6 +266,8 @@ public class Main {
                     }
 
                     busyDialog = remoteLogics.isBusyDialog() || remoteNavigator.isBusyDialog();
+                    
+                    useRequestTimeout = remoteNavigator.isUseRequestTimeout();
 
                     ((DockableMainFrame) frame).executeAction("SystemEvents.onClientStarted[]", 0, null);
 

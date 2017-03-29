@@ -104,6 +104,9 @@ userDNSuffixLDAP 'Суффикс для User DN' = DATA VARSTRING[100] ();
 useBusyDialogCustom 'Показывать BusyDialog' = DATA BOOLEAN (CustomUser);
 useBusyDialog () = useBusyDialogCustom[CustomUser](currentUser());
 
+useRequestTimeout 'Использовать таймаут в запросах' = DATA BOOLEAN(CustomUser); 
+useRequestTimeout() = useRequestTimeout[CustomUser](currentUser());
+
 userLanguage 'Язык локали пользователя' = DATA VARSTRING[3] (CustomUser);
 userCountry 'Страна локали пользователя' = DATA VARSTRING[3] (CustomUser);
 userTimeZone 'Часовой пояс пользователя' = DATA VARSTRING[30] (CustomUser);
@@ -159,7 +162,7 @@ FORM customUser 'Пользователь'
     OBJECTS u=CustomUser FIXED PANEL
     PROPERTIES(u) firstName, lastName, login,
     sha256Password ON CHANGE changeSHA256Password(u), email,
-    forbidChangePassword, forbidEditProfile, isLocked, lastActivity, ignorePrintTypeCustom, useBusyDialogCustom,
+    forbidChangePassword, forbidEditProfile, isLocked, lastActivity, ignorePrintTypeCustom, useBusyDialogCustom, useRequestTimeout,
     allowExcessAllocatedBytes, language, country, timeZone, twoDigitYearStart, clientLanguage, clientCountry, useClientLocale
 
     EDIT CustomUser OBJECT u
@@ -182,7 +185,7 @@ DESIGN customUser {
 FORM customUsers 'Пользователи'
     OBJECTS u=CustomUser
     PROPERTIES(u) READONLY name[Contact], login, email
-    PROPERTIES(u) NEWSESSION forbidChangePassword, forbidEditProfile, useBusyDialogCustom, allowExcessAllocatedBytes,
+    PROPERTIES(u) NEWSESSION forbidChangePassword, forbidEditProfile, useBusyDialogCustom, useRequestTimeout, allowExcessAllocatedBytes,
                   language, userLanguage, clientLanguage, country, userCountry, clientCountry, useClientLocale, 
                   timeZone, userTimeZone, twoDigitYearStart, userTwoDigitYearStart, isLocked READONLY,
                   lastActivity, NEW, EDIT PANEL, DELETE TOOLBAR
@@ -202,7 +205,7 @@ DESIGN customUsersDialog { main{ preferredSize = (1024, 768); }}
 FORM editProfile 'Редактировать профиль' IMAGE '/images/editReport.png'
     OBJECTS u=CustomUser FIXED PANEL
     PROPERTIES(u) login READONLY
-    PROPERTIES(u) READONLYIF forbidEditProfile(u) firstName, lastName, email, useBusyDialogCustom, allowExcessAllocatedBytes
+    PROPERTIES(u) READONLYIF forbidEditProfile(u) firstName, lastName, email, useBusyDialogCustom, useRequestTimeout, allowExcessAllocatedBytes
 
     FILTERS u==currentUser()
 ;

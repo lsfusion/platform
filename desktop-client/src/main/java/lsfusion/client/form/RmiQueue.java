@@ -80,15 +80,15 @@ public class RmiQueue implements DispatcherListener {
     }
 
     public static <T> T runRetryableRequest(Callable<T> request, AtomicBoolean abandoned) {
-        return runRetryableRequest(request, abandoned, 0, null);
+        return runRetryableRequest(request, abandoned, false, null);
     }
 
-    public static <T> T runRetryableRequest(Callable<T> request, AtomicBoolean abandoned, int timeout, RmiFutureInterface futureInterface) {
-        return runRetryableRequest(request, abandoned, false, timeout, futureInterface);    
+    public static <T> T runRetryableRequest(Callable<T> request, AtomicBoolean abandoned, boolean useTimeout, RmiFutureInterface futureInterface) {
+        return runRetryableRequest(request, abandoned, false, useTimeout, futureInterface);    
     }
 
     public static <T> T runRetryableRequest(Callable<T> request, AtomicBoolean abandoned, boolean registeredFailure) {
-        return runRetryableRequest(request, abandoned, registeredFailure, 0, null);
+        return runRetryableRequest(request, abandoned, registeredFailure, false, null);
     }
 
     private static AtomicLong reqIdGen = new AtomicLong();
@@ -96,23 +96,25 @@ public class RmiQueue implements DispatcherListener {
     private static ExecutorService executorService = Executors.newCachedThreadPool();
     
     // вызывает request (предположительно remote) несколько раз, проблемы с целостностью предполагается что решается либо индексом, либо результат не так важен
-    public static <T> T runRetryableRequest(Callable<T> request, AtomicBoolean abandoned, boolean registeredFailure, int timeout, RmiFutureInterface futureInterface) {
+    public static <T> T runRetryableRequest(Callable<T> request, AtomicBoolean abandoned, boolean registeredFailure, boolean useTimeout, RmiFutureInterface futureInterface) {
         int reqCount = 0;
+        int powerBase = 2;
+        int exponent = 0;
         long reqId = reqIdGen.incrementAndGet();
         try {
             do {
                 if(abandoned.get()) // не вызываем call если уже клиент перестартовывает
                     throw new RemoteAbandonedException();
                 try {
-                    if (timeout > 0) {
+                    if (Main.useRequestTimeout && useTimeout) {
                         Future<T> future = executorService.submit(request);
-                        int timeoutCounter = 0;
                         while (true) {
                             try {
-                                return future.get(timeout, TimeUnit.MILLISECONDS);
+                                return future.get((long) Math.pow(powerBase, exponent), TimeUnit.SECONDS);
                             } catch (TimeoutException e) {
-                                if (timeoutCounter++ > 1 && futureInterface != null && futureInterface.isFirst()) {
-                                    throw new RemoteException("Timeout", e);
+                                if (futureInterface != null && futureInterface.isFirst()) {
+                                    exponent++;
+                                    throw e; // переотправляем
                                 }
                             }
                         }
@@ -149,7 +151,7 @@ public class RmiQueue implements DispatcherListener {
                         }
                     }
 
-                    if (t != null) {
+                    if (t != null && !(t instanceof TimeoutException)) { // пробуем послать еще раз, т.к. скорее всего завис ответ
                         throw Throwables.propagate(t);
                     }
                 }
@@ -333,7 +335,7 @@ public class RmiQueue implements DispatcherListener {
         if (logger.isDebugEnabled()) {
             logger.debug("Async request: " + request);
         }
-        request.setTimeout(3000);
+        request.setUseTimeout(true);
 
         execRmiRequestInternal(request);
 
@@ -578,7 +580,7 @@ public class RmiQueue implements DispatcherListener {
                 public T call() throws Exception {
                     return request.doRequest();
                 }
-            }, abandoned, request.getTimeout(), futureInterface);
+            }, abandoned, request.getUseTimeout(), futureInterface);
         }
     }
     

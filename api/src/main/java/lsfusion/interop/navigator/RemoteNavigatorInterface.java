@@ -53,6 +53,8 @@ public interface RemoteNavigatorInterface extends PendingRemoteInterface {
     boolean isConfigurationAccessAllowed() throws RemoteException;
 
     boolean isBusyDialog() throws RemoteException;
+    
+    boolean isUseRequestTimeout() throws RemoteException;
 
     LocalePreferences getLocalePreferences() throws RemoteException;
 }

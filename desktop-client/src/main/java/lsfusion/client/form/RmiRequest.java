@@ -12,15 +12,15 @@ public abstract class RmiRequest<T> {
     private long lastReceivedRequestIndex = -1;
     private String name;
     
-    private int timeout = 0;
+    private boolean useTimeout = false;
 
     protected RmiRequest(String name) {
         this.name = name;
     }
 
-    protected RmiRequest(String name, int timeout) {
+    protected RmiRequest(String name, boolean useTimeout) {
         this.name = name;
-        this.timeout = timeout;
+        this.useTimeout = useTimeout;
     }
 
     public String getName() {
@@ -31,12 +31,12 @@ public abstract class RmiRequest<T> {
         this.name = name;
     }
 
-    public void setTimeout(int timeout) {
-        this.timeout = timeout;
+    public void setUseTimeout(boolean useTimeout) {
+        this.useTimeout = useTimeout;
     }
 
-    public int getTimeout() {
-        return timeout;
+    public boolean getUseTimeout() {
+        return useTimeout;
     }
 
     void setRequestIndex(long rmiRequestIndex) {

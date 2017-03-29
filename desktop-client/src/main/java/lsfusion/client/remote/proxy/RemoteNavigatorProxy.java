@@ -175,6 +175,11 @@ public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface> extends Re
     }
 
     @Override
+    public boolean isUseRequestTimeout() throws RemoteException {
+        return target.isUseRequestTimeout();
+    }
+
+    @Override
     public LocalePreferences getLocalePreferences() throws RemoteException {
         return target.getLocalePreferences();
     }

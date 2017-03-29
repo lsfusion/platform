@@ -510,6 +510,16 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         return useBusyDialog;
     }
 
+    @Override
+    public boolean isUseRequestTimeout() throws RemoteException {
+        boolean useRequestTimeout = false;
+        try (DataSession session = createSession()) {
+            useRequestTimeout = businessLogics.authenticationLM.useRequestTimeout.read(session) != null;
+        } catch (SQLException | SQLHandledException ignored) {
+        }
+        return useRequestTimeout;
+    }
+
     private void loadLocalePreferences(ExecutionStack stack) {
         String language = null, country = null, timeZone = null;
         Integer twoDigitYearStart = null;
