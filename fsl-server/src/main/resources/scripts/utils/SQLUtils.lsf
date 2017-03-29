@@ -246,7 +246,7 @@ FORM processMonitor 'Монитор процессов'
                            stackTraceJavaProcess, lockOwnerIdProcess, lockOwnerNameProcess, isDisabledNestLoopProcess, queryTimeoutProcess, 
                            idSQLProcess, copyFullQuerySQLProcess EDITABLE
     PROPERTIES(i) TOOLBAR cancelProcess, killProcess, cancelJavaProcess SHOWIF showExtraButtons(i), killJavaProcess SHOWIF showExtraButtons(i)                       
-    PROPERTIES(i) copiedFullQuerySQLProcess SHOWIF copiedFullQuerySQLProcess(i) FORCE PANEL
+    PROPERTIES(i) copiedFullQuerySQLProcess SHOWIF copiedFullQuerySQLProcess(i) PANEL
     FILTERS idThreadProcess(i), NOT statusJavaProcess(i) OR statusJavaProcess(i) != 'BLOCKED'
     EVENTS ON INIT setDefaultProcessType()
     

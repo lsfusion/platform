@@ -37,7 +37,7 @@ FORM template 'Шаблон Excel'
 
     OBJECTS te = TemplateEntry
     PROPERTIES (te) key, description, value, NEW, DELETE
-    PROPERTIES (t) TODRAW te FORCE PANEL TOOLBAR openProcess
+    PROPERTIES (t) TODRAW te TOOLBAR openProcess
 
     FILTERS template (te) == t
 

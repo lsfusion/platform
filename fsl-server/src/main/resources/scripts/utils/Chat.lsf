@@ -287,8 +287,8 @@ deleteMessage 'Удалить сообщение' (Message m) = ACTION {
 FORM fullChat 'Чат'
     OBJECTS c = Chat
     PROPERTIES(c) READONLY name ON SHORTCUT editChatAction(c), lastMessageDateTime, unreadMessages BACKGROUND backgroundUnread(c)
-    PROPERTIES(c) FORCE PANEL TOOLBAR NEWSESSION NEW, DELETE SHOWIF isEmpty(c)
-    PROPERTIES(c) READONLYIF readonlyFullChat(c) FORCE PANEL newMessage ON CHANGE saveNewMessage(c), notificate, 
+    PROPERTIES(c) TOOLBAR NEWSESSION NEW, DELETE SHOWIF isEmpty(c)
+    PROPERTIES(c) READONLYIF readonlyFullChat(c) PANEL newMessage ON CHANGE saveNewMessage(c), notificate, 
                   loadAttachment SHOWIF showLoadAttachment(c), deleteAttachment SHOWIF showDeleteAttachment(c)
     
     EVENTS ON INIT markSeenOnChange(c)
@@ -306,8 +306,8 @@ FORM fullChat 'Чат'
     FILTERS u != currentUser(), login(u), lastActivity(u)
     ORDER BY lastMessageDateTime(u) DESC
     
-    PROPERTIES(c, u) FORCE PANEL sendMessage SHOWIF noEditingMessage(c)
-    PROPERTIES(c) FORCE PANEL saveMessage SHOWIF editingMessage(c)
+    PROPERTIES(c, u) PANEL sendMessage SHOWIF noEditingMessage(c)
+    PROPERTIES(c) PANEL saveMessage SHOWIF editingMessage(c)
     
     OBJECTS m = Message LAST
     PROPERTIES(m) READONLY BACKGROUND backgroundMessage(m) nameAuthor, showText ON SHORTCUT editMessage(c, m) ON SHORTCUT deleteMessage(m) 
@@ -480,7 +480,7 @@ openChat 'Перейти в чат' (Message m) = ACTION {
 FORM shortChat 'Новое сообщение' DOCKEDMODAL
 OBJECTS m = Message LAST
 PROPERTIES(m) READONLY nameShortChat, showText, dateTime
-PROPERTIES(m) FORCE PANEL reply READONLYIF readonly(m), replyChat SHOWIF editable(m), notificate SHOWIF editable(m), openChat
+PROPERTIES(m) PANEL reply READONLYIF readonly(m), replyChat SHOWIF editable(m), notificate SHOWIF editable(m), openChat
 PROPERTIES() closeChat
 FILTERS in(chat(m)), status(m, currentUser()), status(m, currentUser()) != MessageStatus.seen
 EVENTS ON CLOSE markSeenOnChange(m)
