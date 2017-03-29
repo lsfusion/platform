@@ -106,13 +106,13 @@ public class RmiQueue implements DispatcherListener {
                 if(abandoned.get()) // не вызываем call если уже клиент перестартовывает
                     throw new RemoteAbandonedException();
                 try {
-                    if (Main.useRequestTimeout && useTimeout) {
+                    if (Main.useRequestTimeout && useTimeout && futureInterface != null) {
                         Future<T> future = executorService.submit(request);
                         while (true) {
                             try {
                                 return future.get((long) Math.pow(powerBase, exponent), TimeUnit.SECONDS);
                             } catch (TimeoutException e) {
-                                if (futureInterface != null && futureInterface.isFirst()) {
+                                if (futureInterface.isFirst()) {
                                     exponent++;
                                     throw e; // переотправляем
                                 }
