@@ -19,6 +19,7 @@ import lsfusion.gwt.form.shared.view.reader.*;
 import java.util.*;
 
 import static lsfusion.gwt.base.client.GwtClientUtils.isShowing;
+import static lsfusion.gwt.form.shared.view.GClassViewType.DEFAULT;
 import static lsfusion.gwt.form.shared.view.GClassViewType.GRID;
 
 public class GGroupObjectController extends GAbstractGroupObjectController {
@@ -28,7 +29,7 @@ public class GGroupObjectController extends GAbstractGroupObjectController {
     private GGridController grid;
     private GShowTypeView showTypeView;
 
-    private GClassViewType classView = GRID;
+    private GClassViewType classView = DEFAULT;
 
     private GCountQuantityButton quantityButton;
     private GCalculateSumButton sumButton;
@@ -190,7 +191,7 @@ public class GGroupObjectController extends GAbstractGroupObjectController {
             }
         }
 
-        if (classView == GRID) {
+        if (classView.isGrid()) {
             ArrayList<GGroupObjectValue> keys = fc.gridObjects.get(groupObject);
             if (keys != null && grid != null) {
                 grid.getTable().setKeys(keys);
@@ -355,7 +356,7 @@ public class GGroupObjectController extends GAbstractGroupObjectController {
         }
 
         panel.update();
-        panel.setVisible(classView != GClassViewType.HIDE);
+        panel.setVisible(!classView.isHidden());
     }
 
     public void beforeHidingGrid() {
@@ -377,7 +378,7 @@ public class GGroupObjectController extends GAbstractGroupObjectController {
     }
 
     public boolean isInGridClassView() {
-        return classView == GRID;
+        return classView.isGrid();
     }
 
     public boolean isGridEmpty() {
@@ -471,7 +472,7 @@ public class GGroupObjectController extends GAbstractGroupObjectController {
     }
 
     public void modifyGroupObject(GGroupObjectValue key, boolean add, int position) {
-        assert classView == GRID;
+        assert classView.isGrid();
 
         grid.modifyGridObject(key, add, position);
     }

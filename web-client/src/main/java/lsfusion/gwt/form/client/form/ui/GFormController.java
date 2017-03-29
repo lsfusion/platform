@@ -460,7 +460,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         if (hasColumnGroupObjects) {
             for (Map.Entry<GGroupObject, GClassViewType> entry : fc.classViews.entrySet()) {
                 GClassViewType classView = entry.getValue();
-                if (classView != GClassViewType.GRID) {
+                if (!classView.isGrid()) {
                     currentGridObjects.remove(entry.getKey());
                 }
             }
