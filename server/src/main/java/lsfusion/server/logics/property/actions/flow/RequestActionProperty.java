@@ -66,12 +66,16 @@ public class RequestActionProperty extends KeepContextActionProperty {
             return result;
 
         boolean isRequestCanceled = context.isRequestCanceled();
-        if (!isRequestCanceled)
-            result = context.popRequest(new SQLCallable<FlowResult>() {
-                public FlowResult call() throws SQLException, SQLHandledException {
-                    return doAction.execute(context);
-                }
-            });
+        if (!isRequestCanceled) {
+            if (isRequestPushed) { // оптимизация
+                result = context.popRequest(new SQLCallable<FlowResult>() {
+                    public FlowResult call() throws SQLException, SQLHandledException {
+                        return doAction.execute(context);
+                    }
+                });
+            } else
+                result = doAction.execute(context);
+        }
 
         return result;
     }
