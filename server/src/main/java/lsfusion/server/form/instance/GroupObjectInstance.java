@@ -1011,19 +1011,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
     }
 
     public ImOrderMap<ImMap<ObjectInstance, DataObject>, ImMap<OrderInstance, ObjectValue>> readKeys(SQLSession session, QueryEnvironment env, final Modifier modifier, BaseClass baseClass) throws SQLException, SQLHandledException {
-        if(curClassView.isHidden())
-            return MapFact.EMPTYORDER();
-        
-        SeekObjects seekObjects = new SeekObjects(MapFact.<OrderInstance, ObjectValue>EMPTY(), false);
-        if(curClassView.isGrid())
-            return seekObjects.executeOrders(session, env, modifier, baseClass, 0, true, null);
-        else {
-            Pair<ImMap<ObjectInstance, DataObject>, ImMap<OrderInstance, ObjectValue>> objects = seekObjects.readObjects(session, env, modifier, baseClass, null);
-            if(objects != null)
-                return MapFact.singletonOrder(objects.first, objects.second);
-            else
-                return MapFact.EMPTYORDER();
-        }
+        return new SeekObjects(MapFact.<OrderInstance, ObjectValue>EMPTY(), false).executeOrders(session, env, modifier, baseClass, 0, true, null);
     }
 
     public class SeekObjects {

@@ -31,15 +31,18 @@ public class GroupChangeActionProperty extends AroundAspectActionProperty {
         finalizeInit();
     }
 
-    private ImOrderSet<ImMap<ObjectInstance, DataObject>> getObjectGroupKeys(ExecutionContext context) throws SQLException, SQLHandledException {
-        GroupObjectInstance groupObject = context.getChangingPropertyToDraw();
+    private static ImOrderSet<ImMap<ObjectInstance, DataObject>> getObjectGroupKeys(GroupObjectInstance groupObject, ExecutionContext context) throws SQLException, SQLHandledException {
         DataSession session = context.getSession();
         return groupObject.readKeys(session.sql, context.getQueryEnv(), context.getModifier(), session.baseClass).keyOrderSet();
     }
 
     @Override
     protected FlowResult aroundAspect(final ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
-        final ImOrderSet<ImMap<ObjectInstance, DataObject>> groupKeys = getObjectGroupKeys(context); // читаем вначале, чтобы избежать эффекта последействия и влияния его на хинты
+        GroupObjectInstance groupObject = context.getChangingPropertyToDraw();
+        if(!groupObject.curClassView.isGrid())
+            return proceed(context);
+
+        final ImOrderSet<ImMap<ObjectInstance, DataObject>> groupKeys = getObjectGroupKeys(groupObject, context); // читаем вначале, чтобы избежать эффекта последействия и влияния его на хинты
 
         context.getBL().LM.getRequestCanceledProperty().change((Object)null, context);
 
