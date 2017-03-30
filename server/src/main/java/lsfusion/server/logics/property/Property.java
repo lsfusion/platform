@@ -607,9 +607,6 @@ public abstract class Property<T extends PropertyInterface> extends AbstractProp
         private ImList<DefaultProcessor> processors = ListFact.EMPTY();
         
         public void proceedDefaultDraw(PropertyDrawEntity<?> entity, FormEntity<?> form) {
-            for(DefaultProcessor processor : processors)
-                processor.proceedDefaultDraw(entity, form);
-
             if (entity.shouldBeLast == null)
                 entity.shouldBeLast = BaseUtils.nvl(shouldBeLast, false);
             if (entity.forceViewType == null)
@@ -620,12 +617,12 @@ public abstract class Property<T extends PropertyInterface> extends AbstractProp
                 entity.askConfirmMessage = askConfirmMessage;
             if (entity.eventID == null)
                 entity.eventID = eventID;
+
+            for(DefaultProcessor processor : processors)
+                processor.proceedDefaultDraw(entity, form);
         }
 
         public void proceedDefaultDesign(PropertyDrawView propertyView) {
-            for(DefaultProcessor processor : processors)
-                processor.proceedDefaultDesign(propertyView);
-
             if(propertyView.getType() instanceof LogicalClass)
                 propertyView.editOnSingleClick = Settings.get().getEditLogicalOnSingleClick();
             if(propertyView.getType() instanceof ActionClass)
@@ -651,6 +648,9 @@ public abstract class Property<T extends PropertyInterface> extends AbstractProp
                 propertyView.regexpMessage = regexpMessage;
             if (propertyView.echoSymbols == null)
                 propertyView.echoSymbols = BaseUtils.nvl(echoSymbols, false);
+
+            for(DefaultProcessor processor : processors)
+                processor.proceedDefaultDesign(propertyView);
         }
         
         public void inheritDrawOptions(DrawOptions options) {
