@@ -9,6 +9,7 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.*;
+import lsfusion.interop.ClassViewType;
 import lsfusion.server.caches.IdentityInstanceLazy;
 import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.caches.IdentityStartLazy;
@@ -20,6 +21,9 @@ import lsfusion.server.classes.sets.ResolveClassSet;
 import lsfusion.server.context.ExecutionStack;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.type.Type;
+import lsfusion.server.form.entity.FormEntity;
+import lsfusion.server.form.entity.PropertyDrawEntity;
+import lsfusion.server.form.view.PropertyDrawView;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.debug.*;
@@ -60,6 +64,17 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
 
     public ActionProperty(LocalizedString caption, ImOrderSet<P> interfaces) {
         super(caption, interfaces);
+
+        drawOptions.addProcessor(new DefaultProcessor() {
+            @Override
+            public void proceedDefaultDraw(PropertyDrawEntity entity, FormEntity<?> form) {
+                entity.forceViewType = ClassViewType.PANEL;
+            }
+
+            @Override
+            public void proceedDefaultDesign(PropertyDrawView propertyView) {
+            }
+        });
     }
 
     public final static AddValue<CalcProperty, Boolean> addValue = new SymmAddValue<CalcProperty, Boolean>() {

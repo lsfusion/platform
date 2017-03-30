@@ -376,9 +376,7 @@ public class ScriptingFormEntity {
 
         property.propertyReadOnly = options.getReadOnlyIf();
         if (options.getForceViewType() != null) {
-            // хак
-            if(!(property.forceViewType != null && property.forceViewType.isToolbar() && options.getForceViewType().isPanel())) // не заменяем TOOLBAR -> PANEL
-                property.forceViewType = options.getForceViewType();
+            property.forceViewType = options.getForceViewType();
         }
         if (options.getToDraw() != null) {
             property.toDraw = options.getToDraw();

@@ -290,7 +290,7 @@ changeNotNullQuantity(TableColumn tc) = ACTION {
 FORM physicalModel 'Таблицы'
     OBJECTS t=Table
     PROPERTIES(t) READONLY sid, rows, sparseColumns
-    PROPERTIES(t) recalculateColumnsAggregations, checkClasses, recalculateClasses, notRecalculateStats, recalculateStats, skipVacuum
+    PROPERTIES(t) GRID recalculateColumnsAggregations, checkClasses, recalculateClasses, notRecalculateStats, recalculateStats, skipVacuum
 
     OBJECTS tk=TableKey
     PROPERTIES(tk) READONLY class, classSID, name, quantity EDITABLE, quantityTop
@@ -298,12 +298,12 @@ FORM physicalModel 'Таблицы'
     OBJECTS tc=TableColumn
     PROPERTIES(tc) READONLY sid, caption, canonicalName, annotation, property, return, quantity EDITABLE ON CHANGE changeQuantity(tc), quantityTop,
                    notNullQuantity EDITABLE ON CHANGE changeNotNullQuantity(tc), percentNotNull, lastRecalculateProperty
-    PROPERTIES(tc) notRecalculate, recalculateAggregation, recalculateAggregationWithDependencies, 
+    PROPERTIES(tc) GRID notRecalculate, recalculateAggregation, recalculateAggregationWithDependencies, 
             recalculateAggregationWithDependents, checkAggregation
 
     OBJECTS dc=DropColumn
     PROPERTIES(dc) READONLY sidTable, sid, time, revision
-    PROPERTIES(dc) drop
+    PROPERTIES(dc) drop GRID
 
     FILTERGROUP filtersForm
         FILTER 'Фильтр по таблице' table(tc)==t 'F8' DEFAULT

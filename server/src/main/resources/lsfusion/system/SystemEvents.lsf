@@ -143,7 +143,7 @@ openThreadDump 'Открыть ThreadDump' (CustomUser user) = ACTION {
     }
 }
 
-EXTEND FORM customUsers PROPERTIES(u) reconnect, shutdown, 
+EXTEND FORM customUsers PROPERTIES(u) GRID reconnect, shutdown, 
                                       requestUserLogs, openUserLogs, requestThreadDump, openThreadDump;
 
 @defineLog (Connection, 'подключений', log, connectDate);
@@ -257,7 +257,7 @@ DESIGN connections{
 FORM  exceptions 'Журнал ошибок'
 
     OBJECTS e=Exception LAST
-    PROPERTIES(e) FOREGROUND foregroundNonFatal(e) BACKGROUND backgroundNonFatal(e) READONLY message, client GRID, login GRID, type, date, reqId, count, abandoned
+    PROPERTIES(e) FOREGROUND foregroundNonFatal(e) BACKGROUND backgroundNonFatal(e) READONLY message, client , login , type, date, reqId PANEL, count PANEL, abandoned PANEL
     PROPERTIES(e) READONLY PANEL erTrace, lsfStackTrace
 ;
 

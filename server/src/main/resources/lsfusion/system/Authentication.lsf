@@ -26,14 +26,14 @@ FORM computer 'Рабочее место'
 FORM computers 'Рабочие места'
     OBJECTS c = Computer
     PROPERTIES(c) READONLY hostname, scannerComPort, scannerSingleRead, useDiscountCardReader
-    PROPERTIES(c) NEWSESSION NEW, EDIT, DELETE
+    PROPERTIES(c) NEWSESSION NEW, EDIT, DELETE GRID
 ;
 
 FORM computersDialog 'Рабочие места'
     OBJECTS c = Computer
     
     PROPERTIES(c) READONLY hostname, scannerComPort, scannerSingleRead, useDiscountCardReader
-    PROPERTIES(c) NEWSESSION NEW, EDIT, DELETE TOOLBAR
+    PROPERTIES(c) NEWSESSION NEW, EDIT, DELETE 
     
     LIST Computer OBJECT c     
 ;
@@ -188,7 +188,7 @@ FORM customUsers 'Пользователи'
     PROPERTIES(u) NEWSESSION forbidChangePassword, forbidEditProfile, useBusyDialogCustom, useRequestTimeout, allowExcessAllocatedBytes,
                   language, userLanguage, clientLanguage, country, userCountry, clientCountry, useClientLocale, 
                   timeZone, userTimeZone, twoDigitYearStart, userTwoDigitYearStart, isLocked READONLY,
-                  lastActivity, NEW, EDIT PANEL, DELETE TOOLBAR
+                  lastActivity, NEW, EDIT PANEL, DELETE 
 
     PROPERTIES() useLDAP, serverLDAP, portLDAP, baseDNLDAP, userDNSuffixLDAP, minHashLength, defaultUserLanguage, defaultUserCountry
 ;

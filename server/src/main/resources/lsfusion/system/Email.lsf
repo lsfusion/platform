@@ -104,7 +104,7 @@ FORM accounts 'E-mail аккаунты'
     PROPERTIES(a) READONLY name, password, fromAddress, smtpHost, smtpPort, nameReceiveAccountType, receiveHost,
                   receivePort, nameEncryptedConnectionType, blindCarbonCopy, deleteMessages, lastDays,
                   isDefaultNotification, disable
-    PROPERTIES(a) NEWSESSION NEW, EDIT, DELETE TOOLBAR
+    PROPERTIES(a) NEWSESSION NEW, EDIT, DELETE 
 
     LIST Account OBJECT a
 ;
@@ -144,19 +144,19 @@ FORM mail 'Почта'
     PROPERTIES(a) name, smtpHost, smtpPort, nameReceiveAccountType, receiveHost, receivePort, nameEncryptedConnectionType,
                   fromAddress, password, blindCarbonCopy, deleteMessages, lastDays,
                   isDefaultNotification, isDefaultInbox, disable 
-    PROPERTIES(a) PANEL NEW, DELETE TOOLBAR
+    PROPERTIES(a)  NEW, DELETE 
     
     OBJECTS e=Email
   
     PROPERTIES(e) READONLY subject, fromAddress, toAddress, dateTimeSent, 
-                   dateTimeReceived, openEMLFile EDITABLE, message PANEL
-    PROPERTIES(e) NEWSESSION DELETE
-    PROPERTIES(a) PANEL receiveEmailAction TODRAW e 
+                   dateTimeReceived, openEMLFile EDITABLE GRID, message PANEL
+    PROPERTIES(e) NEWSESSION DELETE GRID
+    PROPERTIES(a)  receiveEmailAction TODRAW e 
     FILTERS account(e)==a
                     
     OBJECTS ae=AttachmentEmail
     
-    PROPERTIES(ae) READONLY imported, importError, name, lastError SHOWIF showError(ae), openFile EDITABLE
+    PROPERTIES(ae) READONLY imported, importError, name, lastError SHOWIF showError(ae), openFile EDITABLE GRID
     FILTERS email(ae)==e
     
     OBJECTS n=Notification

@@ -247,9 +247,6 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
         finalizedObjects = true;
         this.objects = objects;
     }
-    public GroupObjectEntity(int ID, ImOrderSet<ObjectEntity> objects) {
-        this(ID, objects, false);
-    }
 
     public GroupObjectEntity(int ID, ImOrderSet<ObjectEntity> objects, boolean noClassFilter) {
         this(ID, (String)null);

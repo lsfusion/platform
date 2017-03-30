@@ -1667,8 +1667,9 @@ public abstract class LogicsModule {
     }
 
     protected void setDeleteActionOptions(LAP property) {
+        setFormActions(property);
+
         property.setImage("delete.png");
-        property.setShouldBeLast(true);
         property.setEditKey(KeyStrokes.getDeleteActionPropertyKeyStroke());
         property.setShowEditKey(false);
     }
@@ -2382,10 +2383,6 @@ public abstract class LogicsModule {
 
     public RegularFilterGroupEntity newRegularFilterGroupEntity(int id) {
         return new RegularFilterGroupEntity(id, getVersion());
-    }
-
-    public ObjectEntity addFormSingleGroupObject(FormEntity form, ValueClass baseClass, Object... groups) {
-        return form.addSingleGroupObject(baseClass, getVersion(), groups);
     }
 
     public void addFormHintsIncrementTable(FormEntity form, LCP... lps) {

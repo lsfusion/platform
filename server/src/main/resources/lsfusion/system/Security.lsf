@@ -429,7 +429,7 @@ FORM userRoles 'Роли'
     OBJECTS ur=UserRole
     PROPERTIES(ur) READONLY name, sid
     PROPERTIES(ur) copy PANEL
-    PROPERTIES(ur) NEWSESSION NEW, EDIT, DELETE
+    PROPERTIES(ur) NEWSESSION NEW, EDIT, DELETE GRID
 ;
 
 FORM userRolesDialog 'Роли'

@@ -9,6 +9,7 @@ import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
+import lsfusion.interop.ClassViewType;
 import lsfusion.interop.Compare;
 import lsfusion.server.Settings;
 import lsfusion.server.SystemProperties;
@@ -36,9 +37,12 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.data.where.classes.ClassWhere;
+import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.entity.ObjectEntity;
+import lsfusion.server.form.entity.PropertyDrawEntity;
 import lsfusion.server.form.entity.drilldown.DrillDownFormEntity;
 import lsfusion.server.form.instance.FormInstance;
+import lsfusion.server.form.view.PropertyDrawView;
 import lsfusion.server.logics.*;
 import lsfusion.server.logics.debug.CalcPropertyDebugInfo;
 import lsfusion.server.logics.i18n.FormatLocalizedString;
@@ -315,6 +319,18 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
 
     protected CalcProperty(LocalizedString caption, ImOrderSet<T> interfaces) {
         super(caption, interfaces);
+
+        drawOptions.addProcessor(new DefaultProcessor() {
+            @Override
+            public void proceedDefaultDraw(PropertyDrawEntity entity, FormEntity<?> form) {
+                entity.forceViewType = ClassViewType.GRID;
+            }
+
+            @Override
+            public void proceedDefaultDesign(PropertyDrawView propertyView) {
+            }
+        });
+
     }
 
     public void change(ExecutionContext context, Object value) throws SQLException, SQLHandledException {

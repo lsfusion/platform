@@ -124,15 +124,15 @@ FORM scheduledTask 'Планировщик'
     PROPERTIES() threadCountScheduler
 
     OBJECTS t=ScheduledTask
-    PROPERTIES (t) active, name, timeFrom, timeTo, startDate, period,
+    PROPERTIES (t) GRID active, name, timeFrom, timeTo, startDate, period,
                     nameSchedulerStartType, runAtStart, daysOfMonth PANEL, executeScheduledTask, setupScheduledTask
-    PROPERTIES (t) NEW, DELETE
+    PROPERTIES (t) NEW, DELETE GRID
          
     OBJECTS td=ScheduledTaskDetail
     PROPERTIES (td) active, ignoreExceptions, order, captionProperty, 
                     canonicalNameProperty, parameter, classProperty, 
                     returnProperty, timeout, script PANEL
-    PROPERTIES (td) NEW, DELETE
+    PROPERTIES (td) NEW, DELETE GRID
     
     OBJECTS tl=ScheduledTaskLog LAST
     PROPERTIES (tl) READONLY property, result, exceptionOccurred, isMessages, date
@@ -147,7 +147,7 @@ FORM scheduledTask 'Планировщик'
     PROPERTIES (dow) number, staticCaption 
     PROPERTIES (dow, t) in 
     
-    PROPERTIES () stopSchedulerApply SHOWIF isStartedScheduler() TOOLBAR, runSetupSchedulerApply SHOWIF isStoppedScheduler() TOOLBAR
+    PROPERTIES () TOOLBAR stopSchedulerApply SHOWIF isStartedScheduler() , runSetupSchedulerApply SHOWIF isStoppedScheduler() 
     
     ORDER BY number(dow)
     
