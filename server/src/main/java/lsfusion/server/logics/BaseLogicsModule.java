@@ -699,10 +699,14 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     // REQUEST / INPUT BLOCK
     
     public <R> R pushRequest(ExecutionEnvironment env, SQLCallable<R> callable) throws SQLException, SQLHandledException {
-        LCP requestPushed = getRequestPushedProperty();
         getRequestCanceledProperty().change((Object)null, env);
+        return pushPopRequestValue(true, env, callable);
+    }
+
+    public <R> R pushPopRequestValue(boolean push, ExecutionEnvironment env, SQLCallable<R> callable) throws SQLException, SQLHandledException {
+        LCP requestPushed = getRequestPushedProperty();
         Object prevValue = requestPushed.read(env);
-        requestPushed.change(true, env);
+        requestPushed.change(push ? true : null, env);
         try {
             return callable.call();
         } finally {

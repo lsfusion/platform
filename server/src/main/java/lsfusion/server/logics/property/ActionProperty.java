@@ -471,7 +471,7 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
     }
 
     public void execute(ImMap<P, ? extends ObjectValue> keys, ExecutionEnvironment env, ExecutionStack stack, FormEnvironment<P> formEnv) throws SQLException, SQLHandledException {
-        env.execute(this, keys, formEnv, null, null, stack);
+        env.execute(this, keys, formEnv, null, stack);
     }
 
     public ValueClass getValueClass(ClassType classType) {

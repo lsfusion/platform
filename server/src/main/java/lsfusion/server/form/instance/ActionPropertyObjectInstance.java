@@ -3,7 +3,6 @@ package lsfusion.server.form.instance;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.DataObject;
-import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.property.ActionProperty;
 import lsfusion.server.logics.property.ActionPropertyValueImplement;
 import lsfusion.server.context.ExecutionStack;
@@ -24,8 +23,8 @@ public class ActionPropertyObjectInstance<P extends PropertyInterface> extends P
         return new ActionPropertyObjectInstance<>(property, remapSkippingEqualsObjectInstances(mapKeyValues));
     }
 
-    public FlowResult execute(ExecutionEnvironment env, ExecutionStack stack, ObjectValue pushValue, DataObject pushAdd, PropertyDrawInstance changingProperty, FormInstance formInstance) throws SQLException, SQLHandledException {
-        return env.execute(property, getInterfaceValues(), new FormEnvironment<>(mapping, changingProperty, formInstance), pushValue, pushAdd, stack);
+    public FlowResult execute(ExecutionEnvironment env, ExecutionStack stack, DataObject pushAdd, PropertyDrawInstance changingProperty, FormInstance formInstance) throws SQLException, SQLHandledException {
+        return env.execute(property, getInterfaceValues(), new FormEnvironment<>(mapping, changingProperty, formInstance), pushAdd, stack);
     }
 
     public CalcPropertyObjectInstance<?> getDrawProperty() {

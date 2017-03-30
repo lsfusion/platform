@@ -74,9 +74,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import static lsfusion.base.BaseUtils.deserializeObject;
 import static lsfusion.base.BaseUtils.systemLogger;
-import static lsfusion.interop.ClassViewType.GRID;
-import static lsfusion.interop.ClassViewType.HIDE;
-import static lsfusion.interop.ClassViewType.PANEL;
 import static lsfusion.interop.Order.*;
 import static lsfusion.interop.form.ServerResponse.*;
 import static lsfusion.server.form.instance.GroupObjectInstance.*;
@@ -1039,7 +1036,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         final ActionPropertyObjectInstance remappedEditAction = editAction.getRemappedPropertyObject(keys);
         BL.LM.pushRequestedValue(pushChange, pushChangeType, this, new SQLCallable<FlowResult>() {
             public FlowResult call() throws SQLException, SQLHandledException {
-                return remappedEditAction.execute(FormInstance.this, stack, null, pushAdd, property, FormInstance.this);
+                return remappedEditAction.execute(FormInstance.this, stack, pushAdd, property, FormInstance.this);
             }
         });
     }

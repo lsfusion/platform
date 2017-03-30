@@ -144,7 +144,6 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         }
     }
 
-    private final ObjectValue pushedUserInput;
     private final DataObject pushedAddObject; // чисто для асинхронного добавления объектов
 
     private final ExecutionEnvironment env;
@@ -174,12 +173,11 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
 //    } 
 //
     public ExecutionContext(ImMap<P, ? extends ObjectValue> keys, ExecutionEnvironment env, ExecutionStack stack) {
-        this(keys, null, null, env, null, null, stack);
+        this(keys, null, env, null, null, stack);
     }
 
-    public ExecutionContext(ImMap<P, ? extends ObjectValue> keys, ObjectValue pushedUserInput, DataObject pushedAddObject, ExecutionEnvironment env, ScheduledExecutorService executorService, FormEnvironment<P> form, ExecutionStack stack) {
+    public ExecutionContext(ImMap<P, ? extends ObjectValue> keys, DataObject pushedAddObject, ExecutionEnvironment env, ScheduledExecutorService executorService, FormEnvironment<P> form, ExecutionStack stack) {
         this.keys = keys;
-        this.pushedUserInput = pushedUserInput;
         this.pushedAddObject = pushedAddObject;
         this.env = env;
         this.executorService = executorService;
@@ -188,7 +186,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
     }
     
     public ExecutionContext<P> override() { // для дебаггера
-        return new ExecutionContext<>(keys, pushedUserInput, pushedAddObject, env, executorService, form, stack);
+        return new ExecutionContext<>(keys, pushedAddObject, env, executorService, form, stack);
     }
 
     public void setParamsToInterfaces(ImRevMap<String, P> paramsToInterfaces) {
@@ -468,39 +466,35 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
     }
 
     public ExecutionContext<P> override(ExecutionEnvironment newEnv) {
-        return new ExecutionContext<>(keys, pushedUserInput, pushedAddObject, newEnv, executorService, form, stack);
+        return new ExecutionContext<>(keys, pushedAddObject, newEnv, executorService, form, stack);
     }
 
     public ExecutionContext<P> override(ScheduledExecutorService newExecutorService) {
-        return new ExecutionContext<>(keys, pushedUserInput, pushedAddObject, env, newExecutorService, form, stack);
+        return new ExecutionContext<>(keys, pushedAddObject, env, newExecutorService, form, stack);
     }
 
     public ExecutionContext<P> override(ExecutionEnvironment newEnv, ExecutionStack stack) {
-        return new ExecutionContext<>(keys, pushedUserInput, pushedAddObject, newEnv, executorService, form, stack);
+        return new ExecutionContext<>(keys, pushedAddObject, newEnv, executorService, form, stack);
     }
 
     public ExecutionContext<P> override(ExecutionStack stack) {
-        return new ExecutionContext<>(keys, pushedUserInput, pushedAddObject, env, executorService, form, stack);
+        return new ExecutionContext<>(keys, pushedAddObject, env, executorService, form, stack);
     }
 
     public <T extends PropertyInterface> ExecutionContext<T> override(ImMap<T, ? extends ObjectValue> keys, ImMap<T, ? extends CalcPropertyInterfaceImplement<P>> mapInterfaces) {
-        return override(keys, form!=null ? form.mapJoin(mapInterfaces) : null, pushedUserInput);
+        return override(keys, form!=null ? form.mapJoin(mapInterfaces) : null);
     }
 
     public <T extends PropertyInterface> ExecutionContext<T> map(ImRevMap<T, P> mapping) {
-        return override(mapping.join(keys), form!=null ? form.map(mapping) : null, pushedUserInput);
+        return override(mapping.join(keys), form!=null ? form.map(mapping) : null);
     }
 
     public ExecutionContext<P> override(ImMap<P, ? extends ObjectValue> keys) {
-        return override(keys, form, pushedUserInput);
+        return override(keys, form);
     }
 
     public <T extends PropertyInterface> ExecutionContext<T> override(ImMap<T, ? extends ObjectValue> keys, FormEnvironment<T> form) {
-        return override(keys, form, pushedUserInput);
-    }
-
-    public <T extends PropertyInterface> ExecutionContext<T> override(ImMap<T, ? extends ObjectValue> keys, FormEnvironment<T> form, ObjectValue pushedUserInput) {
-        return new ExecutionContext<>(keys, pushedUserInput, pushedAddObject, env, executorService, form, stack);
+        return new ExecutionContext<>(keys, pushedAddObject, env, executorService, form, stack);
     }
 
     public QueryEnvironment getQueryEnv() {
@@ -536,14 +530,14 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         return getBL().LM.pushRequest(getEnv(), callable);
     }
 
+    public <R> R popRequest(SQLCallable<R> callable) throws SQLException, SQLHandledException {
+        return getBL().LM.pushPopRequestValue(false, getEnv(), callable);
+    }
+
     public <R> R pushRequestedValue(ObjectValue pushValue, Type pushType, SQLCallable<R> callable) throws SQLException, SQLHandledException {
         return getBL().LM.pushRequestedValue(pushValue, pushType, getEnv(), callable);
     }
     
-    public ObjectValue getPushedUserInput() {
-        return pushedUserInput;
-    }
-
     // чтение пользователя
     public ObjectValue requestUserObject(final DialogRequest dialog) throws SQLException, SQLHandledException { // null если canceled
         return requestUser(ObjectType.instance, new SQLCallable<ObjectValue>() {

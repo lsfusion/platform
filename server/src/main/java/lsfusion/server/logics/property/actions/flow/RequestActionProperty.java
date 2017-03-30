@@ -9,6 +9,7 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.caches.IdentityInstanceLazy;
+import lsfusion.server.data.SQLCallable;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.i18n.LocalizedString;
@@ -54,7 +55,7 @@ public class RequestActionProperty extends KeepContextActionProperty {
     }
 
     @Override
-    public FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
+    public FlowResult aspectExecute(final ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
         FlowResult result = FlowResult.FINISH;
 
         boolean isRequestPushed = context.isRequestPushed();
@@ -66,7 +67,11 @@ public class RequestActionProperty extends KeepContextActionProperty {
 
         boolean isRequestCanceled = context.isRequestCanceled();
         if (!isRequestCanceled)
-            result = doAction.execute(context);
+            result = context.popRequest(new SQLCallable<FlowResult>() {
+                public FlowResult call() throws SQLException, SQLHandledException {
+                    return doAction.execute(context);
+                }
+            });
 
         return result;
     }
