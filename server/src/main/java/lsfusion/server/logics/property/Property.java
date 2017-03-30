@@ -18,6 +18,7 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.col.lru.LRUSVSMap;
 import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.interop.ClassViewType;
+import lsfusion.interop.form.ServerResponse;
 import lsfusion.server.Settings;
 import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.caches.ManualLazy;
@@ -108,6 +109,8 @@ public abstract class Property<T extends PropertyInterface> extends AbstractProp
         this.caption = caption;
         this.interfaces = interfaces.getSet();
         this.orderInterfaces = interfaces;
+
+        setContextMenuAction(ServerResponse.GROUP_CHANGE, LocalizedString.create("{logics.property.groupchange}"));
 
 //        notFinalized.put(this, ExceptionUtils.getStackTrace());
     }
