@@ -41,7 +41,7 @@ FORM template 'Шаблон Word'
     PROPERTIES (t) loadFile, openFile
 
     OBJECTS te = TemplateEntry
-    PROPERTIES (te) isTable, key, description, value, NEW, DELETE
+    PROPERTIES (te) isTable, key, description, value, NEW, DELETE GRID
     PROPERTIES (t) TODRAW te TOOLBAR openProcess
 
     FILTERS template (te) == t
@@ -75,7 +75,7 @@ FORM templates 'Шаблоны Word'
 
     OBJECTS t = Template
     PROPERTIES (t) READONLY name, id
-    PROPERTIES (t) NEWSESSION NEW, EDIT, DELETE
+    PROPERTIES (t) NEWSESSION NEW, EDIT, DELETE GRID
 
     OBJECTS te = TemplateEntry
     PROPERTIES (te) READONLY isTable, key, description, value
@@ -86,7 +86,7 @@ FORM dialogTemplates 'Шаблоны Word'
 
     OBJECTS t = Template
     PROPERTIES (t) READONLY name, id
-    PROPERTIES (t) NEWSESSION NEW, EDIT, DELETE
+    PROPERTIES (t) NEWSESSION NEW, EDIT, DELETE GRID
 
     LIST Template OBJECT t
 ;

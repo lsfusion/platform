@@ -42,7 +42,7 @@ FORM language 'Язык'
 FORM languages 'Языки'
     OBJECTS l = Language
     PROPERTIES(l) READONLY name, locale
-    PROPERTIES(l)          NEWSESSION NEW, EDIT, DELETE
+    PROPERTIES(l)          NEWSESSION NEW, EDIT, DELETE GRID
 
     LIST Language OBJECT l
 ;
@@ -136,7 +136,7 @@ FORM dictionary 'Словарь'
     PROPERTIES(d) name, insensitive, nameLanguageFrom, nameLanguageTo
 
     OBJECTS e = DictionaryEntry
-    PROPERTIES(e) term, translation, translateTerm, NEW, DELETE
+    PROPERTIES(e) term, translation, translateTerm GRID, NEW, DELETE GRID
     FILTERS       dictionary(e) == d
 
     EDIT Dictionary OBJECT d
@@ -172,7 +172,7 @@ FORM dictionaries 'Словари'
     OBJECTS d = Dictionary
     PROPERTIES(d) READONLY name, insensitive, nameLanguageFrom, nameLanguageTo
 
-    PROPERTIES(d) NEWSESSION NEW, EDIT, DELETE
+    PROPERTIES(d) NEWSESSION NEW, EDIT, DELETE GRID
 
     LIST Dictionary OBJECT d
 ;

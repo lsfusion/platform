@@ -19,7 +19,7 @@ FORM activeJavaThreads 'Активные java-потоки'
     OBJECTS i = INTEGER
     PROPERTIES(i) READONLY idActiveJavaThread, stackTraceActiveJavaThread, nameActiveJavaThread, computerActiveJavaThread, 
                            userActiveJavaThread, statusActiveJavaThread, lockNameActiveJavaThread, lockOwnerIdActiveJavaThread, lockOwnerNameActiveJavaThread
-    PROPERTIES(i) cancelActiveJavaThreadAction
+    PROPERTIES(i) cancelActiveJavaThreadAction GRID
     PROPERTIES() getActiveJavaThreadsAction TOOLBAR TODRAW i
     FILTERS idActiveJavaThread(i)
 ;
