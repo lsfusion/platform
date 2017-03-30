@@ -60,7 +60,7 @@ FORM backup 'Резервное копирование'
     OBJECTS b = Backup
     PROPERTIES() saveFirstDayBackups, maxQuantityBackups, saveMondayBackups
     PROPERTIES() TODRAW b  decimateBackupsAction, makeBackupAction, makePartialBackupAction
-    PROPERTIES(b) save TODRAW b PANEL
+    PROPERTIES(b) save PANEL
     PROPERTIES(b) READONLY partial, date, time, file, fileDeleted, notSucceeded, log PANEL
     PROPERTIES(b) deleteAction GRID
     FILTERGROUP notDeleted FILTER 'Только не удалённые' NOT fileDeleted(b) DEFAULT 
