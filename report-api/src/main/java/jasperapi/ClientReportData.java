@@ -67,7 +67,10 @@ public class ClientReportData implements JRDataSource {
                 Map<ReportPropertyData, Object> propValues = new HashMap<>();
                 for (String propName : propertyNames) {
                     Object propValue = BaseUtils.deserializeObject(inStream);
-                    propValues.put(properties.get(propName), propValue);
+                    ReportPropertyData property = properties.get(propName);
+                    if(propValue == null && isBoolean(property))
+                        propValue = false;
+                    propValues.put(property, propValue);
                 }
                 keyRows.add(objectValues);
                 rows.put(objectValues, propValues);
@@ -76,6 +79,10 @@ public class ClientReportData implements JRDataSource {
         iterator = keyRows.listIterator();
 
         this.files = files;
+    }
+
+    private boolean isBoolean(ReportPropertyData property) {
+        return property != null && property.propertyType != null && property.propertyType.equals("BOOLEAN");
     }
 
     public List<String> getPropertyNames() {
