@@ -117,7 +117,34 @@ shutdown 'Отключить' (CustomUser user) = ACTION {
         }
 } CONFIRM;
 
-EXTEND FORM customUsers PROPERTIES(u) GRID reconnect, shutdown;
+fileUserLogs = DATA CUSTOMFILE (Connection);
+userLogs () = ACTION CUSTOM 'lsfusion.server.logics.systemevents.UserLogsActionProperty' ();
+requestUserLogs 'Запросить логи' (CustomUser user) = ACTION {
+    FOR user(Connection conn) == user AND connectionStatus(conn) == ConnectionStatus.connectedConnection DO {
+        NEWSESSION NEWTHREAD userLogs() CONNECTION conn;
+    }
+}
+openUserLogs 'Открыть логи' (CustomUser user) = ACTION {
+    FOR user(Connection conn) == user AND connectionStatus(conn) == ConnectionStatus.connectedConnection DO {
+        OPENFILE fileUserLogs(conn);
+    }
+}
+
+fileThreadDump = DATA CUSTOMFILE (Connection);
+threadDump () = ACTION CUSTOM 'lsfusion.server.logics.systemevents.ThreadDumpActionProperty' ();
+requestThreadDump 'Запросить ThreadDump' (CustomUser user) = ACTION {
+    FOR user(Connection conn) == user AND connectionStatus(conn) == ConnectionStatus.connectedConnection DO {
+        NEWSESSION NEWTHREAD threadDump() CONNECTION conn;
+    }
+}
+openThreadDump 'Открыть ThreadDump' (CustomUser user) = ACTION {
+    FOR user(Connection conn) == user AND connectionStatus(conn) == ConnectionStatus.connectedConnection DO {
+        OPENFILE fileThreadDump(conn);
+    }
+}
+
+EXTEND FORM customUsers PROPERTIES(u) GRID reconnect, shutdown, 
+                                      requestUserLogs, openUserLogs, requestThreadDump, openThreadDump;
 
 @defineLog (Connection, 'подключений', log, connectDate);
 
