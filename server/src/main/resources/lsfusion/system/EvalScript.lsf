@@ -54,8 +54,8 @@ preRunScript() = ACTION {
         LOCAL script = Script ();
         script() <- textScript(localText());
         IF NOT script() THEN {
-            NEW Script; 
-            script() <- addedObject();
+            FOR NEW s = Script DO 
+                script() <- s;
             saveTextScript(script(), scriptStorage());
         }
         updateDateTimeScript(script());
