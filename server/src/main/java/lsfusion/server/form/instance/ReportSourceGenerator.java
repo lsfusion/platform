@@ -273,7 +273,8 @@ public class ReportSourceGenerator<PropertyDraw extends PropertyReaderInstance, 
 
     // В отчет по одной группе объектов не добавляем свойства, которые идут в панель
     private boolean validForGroupReports(PropertyDraw property) {
-        return !(groupId != null && groupId.equals(formInterface.getGroupID(formInterface.getToDraw(property))) && formInterface.getPViewType(property).isPanel());
+        ClassViewType pViewType;
+        return !(groupId != null && groupId.equals(formInterface.getGroupID(formInterface.getToDraw(property))) && (pViewType=formInterface.getPViewType(property))!= null && pViewType.isPanel());
     } 
     
     private List<PropertyDraw> filterProperties(ImSet<GroupObject> filterGroups, boolean custom) {
