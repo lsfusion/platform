@@ -89,7 +89,7 @@ public class ClientFormController implements AsyncListener {
     };
 
     private final RmiQueue rmiQueue;
-    private final SimpleChangePropertyDispatcher simpleDispatcher = new SimpleChangePropertyDispatcher(this);
+    private final SimpleChangePropertyDispatcher simpleDispatcher;
 
     private volatile RemoteFormInterface remoteForm;
 
@@ -177,6 +177,8 @@ public class ClientFormController implements AsyncListener {
             };
             
             rmiQueue.setDispatcher(actionDispatcher);
+
+            simpleDispatcher = new SimpleChangePropertyDispatcher(this);
 
             formLayout = new ClientFormLayout(this, form.mainContainer);
 
