@@ -32,7 +32,8 @@ public class SimpleChangePropertyDispatcher extends ClientFormActionDispatcher {
             try {
                 dispatchResponse(serverResponse);
             } finally {
-                dispatcherListener.dispatchingPostponedEnded(this);
+                if (dispatcherListener != null)
+                    dispatcherListener.dispatchingPostponedEnded(this);
             }
             return true;
         } catch (IOException ex) {
