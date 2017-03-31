@@ -188,7 +188,7 @@ FORM customUsers 'Пользователи'
     PROPERTIES(u) NEWSESSION forbidChangePassword, forbidEditProfile, useBusyDialogCustom, useRequestTimeout, allowExcessAllocatedBytes,
                   language, userLanguage, clientLanguage, country, userCountry, clientCountry, useClientLocale, 
                   timeZone, userTimeZone, twoDigitYearStart, userTwoDigitYearStart, isLocked READONLY,
-                  lastActivity, NEW, EDIT PANEL, DELETE 
+                  lastActivity, NEW, EDIT , DELETE 
 
     PROPERTIES() useLDAP, serverLDAP, portLDAP, baseDNLDAP, userDNSuffixLDAP, minHashLength, defaultUserLanguage, defaultUserCountry
 ;

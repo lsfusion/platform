@@ -319,19 +319,6 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
 
     protected CalcProperty(LocalizedString caption, ImOrderSet<T> interfaces) {
         super(caption, interfaces);
-
-        drawOptions.addProcessor(new DefaultProcessor() {
-            @Override
-            public void proceedDefaultDraw(PropertyDrawEntity entity, FormEntity<?> form) {
-                if(entity.forceViewType == null)
-                    entity.forceViewType = ClassViewType.GRID;
-            }
-
-            @Override
-            public void proceedDefaultDesign(PropertyDrawView propertyView) {
-            }
-        });
-
     }
 
     public void change(ExecutionContext context, Object value) throws SQLException, SQLHandledException {
