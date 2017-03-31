@@ -787,9 +787,15 @@ public abstract class GroupingDialog extends JDialog {
                 Dispatch.put(fieldDispatch, "Caption", new Variant(caption + "*"));
             }
 
-            for (int i = pivotColumns.size(); i > 0; i--) {
+            //сначала получаем все Fields из HiddenFields, так как при проставлении Orientation они уходят из HiddenFields
+            List<Dispatch> fieldDispatchList = new ArrayList<>();
+            for (int i = 1; i <= pivotColumns.size(); i++) {
                 Dispatch fieldDispatch = Dispatch.call(pivotTableWizard, "HiddenFields", new Variant(i + 1)).toDispatch();
-                Dispatch.put(fieldDispatch, "Orientation", new Variant(pivotColumns.get(i) ? xlColumnField : xlRowField));
+                fieldDispatchList.add(fieldDispatch);
+            }
+            for (int i = 0; i < fieldDispatchList.size(); i++) {
+                Dispatch fieldDispatch = fieldDispatchList.get(i);
+                Dispatch.put(fieldDispatch, "Orientation", new Variant(pivotColumns.get(i + 1) ? xlColumnField : xlRowField));
             }
 
             Dispatch field = Dispatch.get(pivotTableWizard, "DataPivotField").toDispatch();
