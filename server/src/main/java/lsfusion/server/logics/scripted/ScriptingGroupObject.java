@@ -34,15 +34,11 @@ public class ScriptingGroupObject {
         this.events = events;
     }
 
-    public ScriptingGroupObject(String name, List<String> objects, List<String> classes, List<LocalizedString> captions, List<ActionPropertyObjectEntity> events, ClassViewType viewType, boolean isInitType) {
-        this(name, objects, classes, captions, events);
-
+    public void setViewType(ClassViewType viewType) {
         this.viewType = viewType;
-        this.isInitType = isInitType;
     }
 
-    public void setViewType(ClassViewType viewType, boolean isInitType) {
-        this.viewType = viewType;
+    public void setInitType(boolean isInitType) {
         this.isInitType = isInitType;
     }
 

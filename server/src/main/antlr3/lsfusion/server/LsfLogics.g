@@ -487,7 +487,8 @@ formGroupObjectDeclaration returns [ScriptingGroupObject groupObject]
 	; 
 
 formGroupObjectOptions[ScriptingGroupObject groupObject]
-	:	(	viewType=formGroupObjectViewType { $groupObject.setViewType($viewType.type, $viewType.isInitType); }
+	:	(	viewType=formGroupObjectViewType { $groupObject.setViewType($viewType.type); }
+		|	initViewType=formGroupObjectInitViewType { $groupObject.setInitType($initViewType.isInitType); }
 		|	pageSize=formGroupObjectPageSize { $groupObject.setPageSize($pageSize.value); }
 		|	update=formGroupObjectUpdate { $groupObject.setUpdateType($update.updateType); }
 		|	relative=formGroupObjectRelativePosition { $groupObject.setNeighbourGroupObject($relative.groupObject, $relative.isRightNeighbour); }
@@ -519,9 +520,13 @@ formCommonGroupObject returns [ScriptingGroupObject groupObject]
 		}
 	;
 
-formGroupObjectViewType returns [ClassViewType type, boolean isInitType]
-	: 	('INIT' {$isInitType = true;} | 'FIXED' {$isInitType = false;})
+formGroupObjectViewType returns [ClassViewType type]
+	:
 		viewType=classViewType { $type = $viewType.type; }
+	;
+
+formGroupObjectInitViewType returns [boolean isInitType]
+	: 	('INIT' {$isInitType = true;} | 'FIXED' {$isInitType = false;})
 	;
 
 classViewType returns [ClassViewType type]
