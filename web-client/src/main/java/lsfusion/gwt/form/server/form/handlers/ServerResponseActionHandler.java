@@ -34,7 +34,7 @@ public abstract class ServerResponseActionHandler<A extends Action<ServerRespons
                               ? clientActionConverter.convertAction(serverResponse.actions[i], form, servlet)
                               : clientActionConverter.convertAction(serverResponse.actions[i], servlet);
                 } catch (Exception e) {
-                    resultActions[i] = new GThrowExceptionAction(new IllegalStateException("Can't convert server action: ", e));
+                    resultActions[i] = new GThrowExceptionAction(new IllegalStateException("Can't convert server action: " + e.getMessage(), e));
                 }
             }
         }
