@@ -344,7 +344,7 @@ averageMaxUsedMemoryDateFrom 'Средняя использованная пам
     [=GROUP SUM subtractSeconds(DATETIME dFrom, DATETIME dTo) BY Computer computer, DATETIME limitDFrom, DATETIME limitDTo IF maxUsedMemoryFromTo(computer, dFrom, dTo) AND limitDFrom < dFrom AND limitDTo > dTo] (computer, limitDFrom, limitDTo);        
 
 FORM pings 'Журнал клиентских приложений'
-    OBJECTS limits = (limitDFrom = DATETIME, limitDTo = DATETIME) FIXED PANEL, c = Computer, dates = (dFrom = DATETIME, dTo = DATETIME)
+    OBJECTS limits = (limitDFrom = DATETIME, limitDTo = DATETIME) PANEL, c = Computer, dates = (dFrom = DATETIME, dTo = DATETIME)
     PROPERTIES(c) READONLY hostname, remoteAddress, osVersion, processor, architecture, cores, 
                            physicalMemory, totalMemory, maximumMemory, freeMemory,
                            javaVersion, is64Java                                       

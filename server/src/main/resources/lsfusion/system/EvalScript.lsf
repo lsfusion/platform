@@ -76,7 +76,7 @@ formExecution 'Показать форму' () = ACTION { TRY { preRunScript(); 
 javaActionBodyExecution 'Выполнить Java-код' () = ACTION { TRY { preRunScript(); EVAL CONCAT ' ', 'run() = ACTION CUSTOM <\{ ', scriptStorage(), ' \}>;'; afterRunScript(); } CATCH; };
 
 FORM chooseScriptName 'Сохранить как'
-    OBJECTS name = VARSTRING[100] FIXED PANEL
+    OBJECTS name = VARSTRING[100] PANEL
     PROPERTIES valueName = OBJVALUE(name)
 ;
 
@@ -134,14 +134,14 @@ date2 'Дата 2' = DATA DATE (Row);
 date3 'Дата 3' = DATA DATE (Row);
 
 FORM script 'Скрипт'
-    OBJECTS s = Script FIXED PANEL
+    OBJECTS s = Script PANEL
     PROPERTIES(s) dateTime, name SELECTOR EVENTS ON CHANGE s updateStorage(s)
     PROPERTIES() scriptStorage,
                  scriptExecution, actionBodyExecution, formExecution, javaActionBodyExecution, saveAsScriptAction
     PROPERTIES(s) saveAction
     ORDER BY dateTime(s) DESC
                  
-    OBJECTS r = Row FIXED GRID
+    OBJECTS r = Row GRID
     PROPERTIES(r) string1, string2, string3, string4, string5, string6, string7, string8, string9, string10 
     PROPERTIES(r) numeric1, numeric2, numeric3, numeric4, numeric5, date1, date2, date3
     PROPERTIES(r) NEW, DELETE GRID
@@ -183,7 +183,7 @@ DESIGN script {
 }
 
 FORM scriptLog 'Скрипт'
-    OBJECTS s = Script FIXED PANEL
+    OBJECTS s = Script PANEL
     PROPERTIES(s) name, text, dateTime
 
     EDIT Script OBJECT s

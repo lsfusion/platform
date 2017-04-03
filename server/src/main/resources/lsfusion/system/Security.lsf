@@ -257,7 +257,7 @@ EXTEND FORM customUsers
 ;
 
 FORM userRole 'Роль'
-    OBJECTS ur = UserRole FIXED PANEL
+    OBJECTS ur = UserRole PANEL
     PROPERTIES(ur) name, sid
     EDIT UserRole OBJECT ur
 ;
@@ -439,7 +439,7 @@ FORM userRolesDialog 'Роли'
 ;
 
 FORM propertyPolicy 'Политика безопасности для свойства'
-    OBJECTS p=Property FIXED PANEL, ur=UserRole
+    OBJECTS p=Property PANEL, ur=UserRole
     PROPERTIES(p) READONLY caption, canonicalName
     PROPERTIES(ur) READONLY name, sid
     PROPERTIES(p) permitView, forbidView, permitChange, forbidChange, userLoggable, isSetNotNull

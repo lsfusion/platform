@@ -91,7 +91,7 @@ receiveEmailAction 'Получить почту' = ACTION CUSTOM 'lsfusion.serve
 emailSent 'Отправлено' = DATA LOCAL BOOLEAN ();
 
 FORM account 'E-mail аккаунт'
-    OBJECTS a = Account FIXED PANEL
+    OBJECTS a = Account PANEL
     PROPERTIES(a) name, password, fromAddress, smtpHost, smtpPort, nameReceiveAccountType, receiveHost,
                   receivePort, nameEncryptedConnectionType, blindCarbonCopy, deleteMessages, lastDays, 
                   isDefaultNotification, isDefaultInbox, disable
@@ -128,7 +128,7 @@ lastError 'Последняя ошибка при импорте файла' = D
 
 FORM remindUserPass 'Напоминание пароля'
 
-    OBJECTS u=CustomUser FIXED PANEL
+    OBJECTS u=CustomUser PANEL
     PROPERTIES(u) READONLY login, name[Contact]
 ;
 

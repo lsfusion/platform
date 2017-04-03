@@ -17,7 +17,7 @@ scannerSingleRead 'Одно событие на весь штрих-код' = DA
 useDiscountCardReader 'Включить считыватель дисконтных карт' = DATA BOOLEAN (Computer);
 
 FORM computer 'Рабочее место'
-    OBJECTS c = Computer FIXED PANEL
+    OBJECTS c = Computer PANEL
     PROPERTIES(c) hostname, scannerComPort, scannerSingleRead, useDiscountCardReader
     
     EDIT Computer OBJECT c
@@ -159,7 +159,7 @@ changeSHA256Password(CustomUser customUser) = ACTION {
 }
 
 FORM customUser 'Пользователь'
-    OBJECTS u=CustomUser FIXED PANEL
+    OBJECTS u=CustomUser PANEL
     PROPERTIES(u) firstName, lastName, login,
     sha256Password ON CHANGE changeSHA256Password(u), email,
     forbidChangePassword, forbidEditProfile, isLocked, lastActivity, ignorePrintTypeCustom, useBusyDialogCustom, useRequestTimeout,
@@ -203,7 +203,7 @@ FORM customUsersDialog 'Пользователи'
 DESIGN customUsersDialog { main{ preferredSize = (1024, 768); }}
 
 FORM editProfile 'Редактировать профиль' IMAGE '/images/editReport.png'
-    OBJECTS u=CustomUser FIXED PANEL
+    OBJECTS u=CustomUser PANEL
     PROPERTIES(u) login READONLY
     PROPERTIES(u) READONLYIF forbidEditProfile(u) firstName, lastName, email, useBusyDialogCustom, useRequestTimeout, allowExcessAllocatedBytes
 
@@ -222,7 +222,7 @@ userChanged() = DATA LOCAL BOOLEAN();
 
 // Смена пользователя по логину и паролю
 FORM reloginLoginUser 'Сменить пользователя'
-    OBJECTS data = (login = STRING[30], password = STRING[30]) FIXED PANEL
+    OBJECTS data = (login = STRING[30], password = STRING[30]) PANEL
     PROPERTIES valueLogin = OBJVALUE(login), valuePassword = OBJVALUE(password)
 ;
 
@@ -272,7 +272,7 @@ reloginLoginUser() = ACTION {
 
 // Смена пользователя по паролю
 FORM reloginPasswordUser 'Сменить пользователя'
-    OBJECTS password = STRING[30] FIXED PANEL
+    OBJECTS password = STRING[30] PANEL
     PROPERTIES valuePassword = OBJVALUE(password)
 ;
 
@@ -311,10 +311,10 @@ reloginPassword(CustomUser customUser) = ACTION {
 // ---------------- Действия по изменению даннных пользователя ------------------- //
 
 FORM changePasswordUser 'Сменить пароль'
-    OBJECTS u=CustomUser FIXED PANEL
+    OBJECTS u=CustomUser PANEL
     PROPERTIES(u) READONLY login
 
-    OBJECTS passwords = (old = STRING[30], new1 = STRING[30], new2 = STRING[30]) FIXED PANEL
+    OBJECTS passwords = (old = STRING[30], new1 = STRING[30], new2 = STRING[30]) PANEL
     PROPERTIES valueOld = OBJVALUE(old), valueNew1 = OBJVALUE(new1), valueNew2 = OBJVALUE(new2)
 
     FILTERS u==currentUser()

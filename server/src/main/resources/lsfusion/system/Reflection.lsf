@@ -348,7 +348,7 @@ FORM forms 'Формы'
     TREE treeFormObject tf=NavigatorElement PARENT parent
     PROPERTIES(tf) READONLY canonicalName, caption
 
-    OBJECTS u=CustomUser FIXED PANEL
+    OBJECTS u=CustomUser PANEL
     PROPERTIES(u) SELECTOR firstName, lastName, login
 
     OBJECTS g=GroupObject
