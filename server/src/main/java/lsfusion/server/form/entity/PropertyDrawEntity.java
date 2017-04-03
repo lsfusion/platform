@@ -395,10 +395,11 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         return toDraw==null?form.getNFApplyObject(propertyObject.getObjectInstances(), version):toDraw;
     }
 
-    public boolean isToolbar() {
+    public boolean isToolbar(FormEntity formEntity) {
         if (forceViewType != null)
             return forceViewType.isToolbar();
 
+        GroupObjectEntity toDraw = getToDraw(formEntity);
         return toDraw != null && toDraw.initClassView.isToolbar();
 
     }
