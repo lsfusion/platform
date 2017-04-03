@@ -137,7 +137,7 @@ END
 // --------------------------------------------- Диалоги --------------------------------- //
 
 FORM dialogString 'Выбор строки'
-    OBJECTS s = VARSTRING[200] FIXED PANEL
+    OBJECTS s = VARSTRING[200] PANEL
     PROPERTIES(s) objValue = OBJVALUE
 ;
 
@@ -154,7 +154,7 @@ DESIGN dialogString {
 }
 
 FORM dialogDate 'Выбор даты'
-    OBJECTS d = DATE FIXED PANEL
+    OBJECTS d = DATE PANEL
     PROPERTIES(d) objValue = OBJVALUE
 ;
 
@@ -172,7 +172,7 @@ DESIGN dialogDate {
 }
 
 FORM dialogInteger 'Выбор числа'
-    OBJECTS i = INTEGER FIXED PANEL
+    OBJECTS i = INTEGER PANEL
     PROPERTIES(i) objValue = OBJVALUE
 ;
 
@@ -185,7 +185,7 @@ DESIGN dialogInteger {
 }
 
 FORM dialogNumeric 'Выбор числа'
-    OBJECTS n = NUMERIC[20,7] FIXED PANEL
+    OBJECTS n = NUMERIC[20,7] PANEL
     PROPERTIES(n) objValue = OBJVALUE
 ;
 

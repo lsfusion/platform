@@ -71,7 +71,7 @@ incrementValueSession 'Увеличить значение'(Numerator numerator)
 }
 
 FORM numerator 'Нумератор'
-    OBJECTS n = Numerator FIXED PANEL
+    OBJECTS n = Numerator PANEL
     PROPERTIES(n) name, series, minValue, maxValue, stringLength, curValue, curStringValue
 
     EDIT Numerator OBJECT n

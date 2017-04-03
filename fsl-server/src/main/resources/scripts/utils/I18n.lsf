@@ -33,7 +33,7 @@ name 'Наименование' = DATA VARISTRING[50](Language);
 locale 'Locale' = DATA STRING[5] (Language);
 
 FORM language 'Язык'
-    OBJECTS l = Language FIXED PANEL
+    OBJECTS l = Language PANEL
     PROPERTIES(l) name, locale
 
     EDIT Language OBJECT l
@@ -132,7 +132,7 @@ languageName 'Название (иностр.)' = DATA VARISTRING[110] (MultiLan
 // ---------------------------------------------- Словари --------------------------------------------- //
 
 FORM dictionary 'Словарь'
-    OBJECTS d = Dictionary FIXED PANEL
+    OBJECTS d = Dictionary PANEL
     PROPERTIES(d) name, insensitive, nameLanguageFrom, nameLanguageTo
 
     OBJECTS e = DictionaryEntry

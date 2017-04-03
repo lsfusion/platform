@@ -31,7 +31,7 @@ value 'Значение' = DATA LOCAL TEXT (TemplateEntry);
 
 FORM template 'Шаблон Excel'
 
-    OBJECTS t = Template FIXED PANEL
+    OBJECTS t = Template PANEL
     PROPERTIES (t) name, id
     PROPERTIES (t) loadFile, openFile
 

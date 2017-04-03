@@ -226,7 +226,7 @@ FORM profiler 'Профилировщик'
     PROPERTIES (f)  BACKGROUND background(f) dataFilter, canonicalName READONLY
 
 //список
-    OBJECTS ihs = ProfilerIndex FIXED GRID
+    OBJECTS ihs = ProfilerIndex GRID
     FILTERS active(ihs)
 
     OBJECTS ohs = ProfileObject
@@ -235,7 +235,7 @@ FORM profiler 'Профилировщик'
     FILTERS order(ohs)
 
 //raw data
-    OBJECTS i = ProfilerIndex FIXED GRID
+    OBJECTS i = ProfilerIndex GRID
     FILTERS active(i)
     
     OBJECTS g = (po1 = ProfileObject, po2 = ProfileObject, user = User, form = ProfileForm)
@@ -256,7 +256,7 @@ FORM profiler 'Профилировщик'
                         totalSQLTime SHOWIF isTotalSQLTime(), inherentTimeNoWait SHOWIF isInherentTimeNoWait(), inherentJavaTime SHOWIF isInherentJavaTime()
     ORDER BY order(down) DESC
     
-    OBJECTS iupToDown = ProfilerIndex FIXED GRID
+    OBJECTS iupToDown = ProfilerIndex GRID
     FILTERS active(iupToDown)
     
     OBJECTS upToDown=ProfileObject
@@ -268,7 +268,7 @@ FORM profiler 'Профилировщик'
     FILTERGROUP  upToDown
         FILTER 'Дополнительные' parent(upToDown) != down 'F6'
     
-    OBJECTS idownWithUsers = ProfilerIndex FIXED GRID
+    OBJECTS idownWithUsers = ProfilerIndex GRID
     FILTERS active(idownWithUsers)    
     
     OBJECTS downWithUsers = (downWD = ProfileObject, uWD = User, fWD = ProfileForm)
@@ -284,7 +284,7 @@ FORM profiler 'Профилировщик'
                              totalSQLTime SHOWIF isTotalSQLTime(), inherentTimeNoWait SHOWIF isInherentTimeNoWait(), inherentJavaTime SHOWIF isInherentJavaTime()
     ORDER BY order(up) DESC
     
-    OBJECTS idownToUp = ProfilerIndex FIXED GRID
+    OBJECTS idownToUp = ProfilerIndex GRID
     FILTERS active(iupToDown)
     
     OBJECTS downToUp=ProfileObject

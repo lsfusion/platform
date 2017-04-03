@@ -212,7 +212,7 @@ includeCurrentUserInChat (Chat c) = ACTION {
 }
  
 FORM addChat 'Создать чат'
-    OBJECTS c = Chat FIXED PANEL
+    OBJECTS c = Chat PANEL
     PROPERTIES (c) name
     
     OBJECTS u = CustomUser
@@ -227,7 +227,7 @@ FORM addChat 'Создать чат'
 ;  
   
 FORM editChat 'Чат'
-    OBJECTS c = Chat FIXED PANEL
+    OBJECTS c = Chat PANEL
     PROPERTIES (c) name
     
     OBJECTS u = CustomUser

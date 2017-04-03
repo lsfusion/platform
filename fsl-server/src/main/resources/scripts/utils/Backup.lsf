@@ -126,7 +126,7 @@ FORM customRestore 'Восстановление данных'
     FILTERS table(tc) == t
 
     
-    OBJECTS b = Backup FIXED PANEL
+    OBJECTS b = Backup PANEL
     PROPERTIES(b) name SELECTOR, customRestore
     ORDER BY name(b) DESC
 ;

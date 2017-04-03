@@ -36,7 +36,7 @@ templateEntryKeyEntryIdTemplate (string1, string2) = GROUP AGGR TemplateEntry te
 
 FORM template 'Шаблон Word'
 
-    OBJECTS t = Template FIXED PANEL
+    OBJECTS t = Template PANEL
     PROPERTIES (t) name, id
     PROPERTIES (t) loadFile, openFile
 
