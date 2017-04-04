@@ -2,13 +2,13 @@ MODULE Backup;
 
 REQUIRE System, Reflection, SchedulerDefaultData;
 
-makeBackup 'Копировать'= ACTION CUSTOM 'lsfusion.erp.utils.backup.BackupActionProperty' () TOOLBAR;
-makeBackupAction 'Копировать' = ACTION {
+makeBackup 'Создать копию'= ACTION CUSTOM 'lsfusion.erp.utils.backup.BackupActionProperty' () TOOLBAR;
+makeBackupAction 'Создать копию' = ACTION {
     makeBackup();
     formRefresh();
 }
-makePartialBackup 'Копировать (оперативно)'= ACTION CUSTOM 'lsfusion.erp.utils.backup.PartialBackupActionProperty' () TOOLBAR;
-makePartialBackupAction 'Копировать (оперативно)' = ACTION {
+makePartialBackup 'Создать копию (оперативно)'= ACTION CUSTOM 'lsfusion.erp.utils.backup.PartialBackupActionProperty' () TOOLBAR;
+makePartialBackupAction 'Создать копию (оперативно)' = ACTION {
     makePartialBackup();
     formRefresh();
 }
