@@ -223,7 +223,7 @@ userChanged() = DATA LOCAL BOOLEAN();
 // Смена пользователя по логину и паролю
 FORM reloginLoginUser 'Сменить пользователя'
     OBJECTS data = (login = STRING[30], password = STRING[30]) PANEL
-    PROPERTIES valueLogin = OBJVALUE(login), valuePassword = OBJVALUE(password)
+    PROPERTIES valueLogin = VALUE(login), valuePassword = VALUE(password)
 ;
 
 DESIGN reloginLoginUser {
@@ -273,7 +273,7 @@ reloginLoginUser() = ACTION {
 // Смена пользователя по паролю
 FORM reloginPasswordUser 'Сменить пользователя'
     OBJECTS password = STRING[30] PANEL
-    PROPERTIES valuePassword = OBJVALUE(password)
+    PROPERTIES valuePassword = VALUE(password)
 ;
 
 DESIGN reloginPasswordUser {
@@ -315,7 +315,7 @@ FORM changePasswordUser 'Сменить пароль'
     PROPERTIES(u) READONLY login
 
     OBJECTS passwords = (old = STRING[30], new1 = STRING[30], new2 = STRING[30]) PANEL
-    PROPERTIES valueOld = OBJVALUE(old), valueNew1 = OBJVALUE(new1), valueNew2 = OBJVALUE(new2)
+    PROPERTIES valueOld = VALUE(old), valueNew1 = VALUE(new1), valueNew2 = VALUE(new2)
 
     FILTERS u==currentUser()
 ;

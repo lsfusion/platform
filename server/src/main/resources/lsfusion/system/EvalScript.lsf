@@ -77,7 +77,7 @@ javaActionBodyExecution 'Выполнить Java-код' () = ACTION { TRY { pre
 
 FORM chooseScriptName 'Сохранить как'
     OBJECTS name = VARSTRING[100] PANEL
-    PROPERTIES valueName = OBJVALUE(name)
+    PROPERTIES valueName = VALUE(name)
 ;
 
 DESIGN chooseScriptName {

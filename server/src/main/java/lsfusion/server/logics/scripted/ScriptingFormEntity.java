@@ -260,7 +260,7 @@ public class ScriptingFormEntity {
 
             LP property;
             PropertyObjectInterfaceEntity[] objects;;
-            if (propertyName.equals("OBJVALUE")) {
+            if (propertyName.equals("VALUE")) {
                 ObjectEntity obj = getSingleMappingObject(mapping);
                 property = LM.getObjValueProp(form, obj);
                 objects = new PropertyObjectInterfaceEntity[]{obj};

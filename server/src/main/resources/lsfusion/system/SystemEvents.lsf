@@ -348,7 +348,7 @@ FORM pings 'Журнал клиентских приложений'
     PROPERTIES(c) READONLY hostname, remoteAddress, osVersion, processor, architecture, cores, 
                            physicalMemory, totalMemory, maximumMemory, freeMemory,
                            javaVersion, is64Java                                       
-    PROPERTIES dFromObj = OBJVALUE(dFrom), dToObj = OBJVALUE(dTo), limitDFromObj = OBJVALUE(limitDFrom), limitDToObj = OBJVALUE(limitDTo),
+    PROPERTIES dFromObj = VALUE(dFrom), dToObj = VALUE(dTo), limitDFromObj = VALUE(limitDFrom), limitDToObj = VALUE(limitDTo),
                limitPing() TODRAW limits, limitMaxTotalMemory() TODRAW limits, limitMaxUsedMemory() TODRAW limits, subtractSeconds(dFrom, dTo)
     PROPERTIES(c, limitDFrom, limitDTo) TODRAW c averagePingDateFrom, averageMaxTotalMemoryDateFrom, averageMaxUsedMemoryDateFrom, 
                                                  limitPingSum, limitMaxTotalMemorySum, limitMaxUsedMemorySum

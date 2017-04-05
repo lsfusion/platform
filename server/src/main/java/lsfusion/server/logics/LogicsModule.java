@@ -1625,7 +1625,7 @@ public abstract class LogicsModule {
         );
     }
 
-    // ---------------------- OBJVALUE ---------------------- //
+    // ---------------------- VALUE ---------------------- //
 
     public LCP getObjValueProp(FormEntity formEntity, ObjectEntity obj) {
         return baseLM.getObjValueProp(formEntity, obj);

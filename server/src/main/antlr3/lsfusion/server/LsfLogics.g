@@ -776,7 +776,7 @@ formPropertyUsage returns [PropertyUsage propUsage]
              ( '[' clId=compoundID ']'  { signature = Collections.singletonList($clId.sid); } )?
           )
           |  cid='EDIT'    { systemName = $cid.text; }
-          |  cid='OBJVALUE'    { systemName = $cid.text; }
+          |  cid='VALUE'    { systemName = $cid.text; }
           |  cid='DELETE'      { systemName = $cid.text; }
        ) { $propUsage = new PropertyUsage(systemName, signature); }
    ;
