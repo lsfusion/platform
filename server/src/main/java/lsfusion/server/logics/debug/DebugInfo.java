@@ -39,7 +39,7 @@ public class DebugInfo {
         this.point = debugPoint;
     }
     
-    protected DebugInfo(DebugPoint debugPoint, int debuggerLine, int debuggerOffset) {
+    protected DebugInfo(DebugPoint debugPoint, Integer debuggerLine, Integer debuggerOffset) {
         this(debugPoint);
         this.debuggerLine = debuggerLine;
         this.debuggerOffset = debuggerOffset;

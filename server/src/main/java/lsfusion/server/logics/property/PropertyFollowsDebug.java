@@ -1,19 +1,19 @@
 package lsfusion.server.logics.property;
 
-import lsfusion.server.logics.debug.ActionDebugInfo;
+import lsfusion.server.logics.debug.DebugInfo;
 
 public class PropertyFollowsDebug {
     public final boolean isTrue;
-    public final ActionDebugInfo debugInfo;
+    public final DebugInfo.DebugPoint debugPoint;
     public final boolean isFull;
 
-    public PropertyFollowsDebug(boolean isTrue, ActionDebugInfo debugInfo) {
-        this(isTrue, false, debugInfo);
+    public PropertyFollowsDebug(boolean isTrue, DebugInfo.DebugPoint debugPoint) {
+        this(isTrue, false, debugPoint);
     }
 
-    public PropertyFollowsDebug(boolean isTrue, boolean isFull, ActionDebugInfo debugInfo) {
+    public PropertyFollowsDebug(boolean isTrue, boolean isFull, DebugInfo.DebugPoint debugPoint) {
         this.isTrue = isTrue;
         this.isFull = isFull;
-        this.debugInfo = debugInfo;
+        this.debugPoint = debugPoint;
     }
 }

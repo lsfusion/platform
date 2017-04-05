@@ -55,7 +55,6 @@ grammar LsfLogics;
     import lsfusion.server.logics.property.actions.ChangeEvent;
 	import lsfusion.server.logics.property.BooleanDebug;
 	import lsfusion.server.logics.property.PropertyFollowsDebug;
-	import lsfusion.server.logics.debug.ActionDebugInfo;
 	import lsfusion.server.logics.debug.DebugInfo;
 	import javax.mail.Message;
 
@@ -150,6 +149,10 @@ grammar LsfLogics;
 
 	public DebugInfo.DebugPoint getCurrentDebugPoint(boolean previous) {
 		return self.getParser().getGlobalDebugPoint(self.getName(), previous);
+	}
+
+	public DebugInfo.DebugPoint getEventDebugPoint() {
+		return getCurrentDebugPoint();
 	}
 
 	public void setObjectProperty(Object propertyReceiver, String propertyName, Object propertyValue) throws ScriptingErrorLog.SemanticErrorException {
@@ -1894,7 +1897,7 @@ propertyOptions[LP property, String propertyName, LocalizedString caption, List<
 		|	indexSetting [property]
 		|	aggPropSetting [property]
 		|	s=notNullSetting { 
-		    		notNull = new BooleanDebug($s.debugInfo);
+		    		notNull = new BooleanDebug($s.debugPoint);
 		    		notNullResolve = $s.toResolve; 
 		    		notNullEvent = $s.event; 
 			}	
@@ -2064,18 +2067,18 @@ aggPropSetting [LP property]
 	:	'AGGPROP'
 	;
 
-notNullSetting returns [ActionDebugInfo debugInfo, BooleanDebug toResolve = null, Event event]
+notNullSetting returns [DebugInfo.DebugPoint debugPoint, BooleanDebug toResolve = null, Event event]
 @init {
-    $debugInfo = self.getEventStackDebugInfo();
+    $debugPoint = getEventDebugPoint();
 }
 	:	'NOT' 'NULL' 
-	    (dt = notNullDeleteSetting { $toResolve = new BooleanDebug($dt.debugInfo); })? 
+	    (dt = notNullDeleteSetting { $toResolve = new BooleanDebug($dt.debugPoint); })? 
 	    et=baseEvent { $event = $et.event; }
 	;
 
-notNullDeleteSetting returns [ActionDebugInfo debugInfo]
+notNullDeleteSetting returns [DebugInfo.DebugPoint debugPoint]
 @init {
-    $debugInfo = self.getEventStackDebugInfo();
+    $debugPoint = getEventDebugPoint();
 }
     :   'DELETE'
 	;
@@ -2310,11 +2313,12 @@ dialogActionDefinitionBody[List<TypedParameter> context] returns [LPWithParams p
 		|	'READONLY' { readOnly = true; }
 		|	'CHECK' { checkOnOk = true; }
 		)*
-		dDB=doInputBody[newContext]
+		dDB=doInputBody[context, newContext]
 	;
 	
-doInputBody[List<TypedParameter> context]  returns [LPWithParams property]
-    :	('DO' dDB=innerActionDefinitionBody[context, false] { $property = $dDB.property; } ) | 'INREQUEST'
+doInputBody[List<TypedParameter> oldContext, List<TypedParameter> newContext]  returns [LPWithParams property]
+        // modifyContextFlowActionDefinitionBody[oldContext, newContext, false, false] - used explicit modifyContextFlowActionDefinitionBodyCreated to support CHANGE clauses
+    :	('DO' dDB=innerActionDefinitionBody[newContext, false] { $property = $dDB.property; } ) | 'INREQUEST'
 ;
 
 syncTypeLiteral returns [boolean val]
@@ -2406,19 +2410,34 @@ formActionProps[String objectName, ObjectEntity object, List<TypedParameter> con
     Boolean outNull = false;
     PropertyUsage outProp = null;
 
-    boolean contextFilter = false;
-    LPWithParams contextProp = null;
+    LPWithParams changeProp = null;
+
+    boolean assign = false;
+    boolean constraintFilter = false;
+
+    DebugInfo.DebugPoint assignDebugPoint = null;
 }
 @after {
-    $props = new FormActionProps(in, inNull, out, outParamNum, outNull, outProp, contextFilter, contextProp);
+    $props = new FormActionProps(in, inNull, out, outParamNum, outNull, outProp, constraintFilter, assign, changeProp, assignDebugPoint);
 }
     :   ('=' expr=propertyExpression[context, dynamic] { in = $expr.property; } ('NULL' { inNull = true; } )? )?
-        ('INPUT' { out = true; inNull = true; }
+        (
+            (   'INPUT'
+                |
+                (
+                { assignDebugPoint = getCurrentDebugPoint(); }
+                'CHANGE' { assign = true; outNull = true; constraintFilter = true; }
+                ('=' consExpr=propertyExpression[context, dynamic])? { changeProp = $consExpr.property; }
+                ('NOCONSTRAINTFILTER' { constraintFilter = false; } )?
+                ('NOASSIGN' { assign = false; assignDebugPoint = null; } )?
+                )
+            )
+            { out = true; inNull = true; }
             varID=ID?
             { if(newContext!=null && inPropParseState()) { outParamNum = self.getParamIndex(self.new TypedParameter(object.baseClass, $varID.text != null ? $varID.text : objectName), newContext, true, insideRecursion); } }
             ('NULL' { outNull = true; })? 
-            ('TO' pUsage=propertyUsage { outProp = $pUsage.propUsage; } )?)?
-            ('CONSTRAINTFILTER' { contextFilter = true; } ('=' consExpr=propertyExpression[context, dynamic])? { contextProp = $consExpr.property; } 
+            ('TO' pUsage=propertyUsage { outProp = $pUsage.propUsage; } )?
+            (('CONSTRAINTFILTER' { constraintFilter = true; } ) ('=' consExpr=propertyExpression[context, dynamic] { changeProp = $consExpr.property; } )?)?
         )?
     ;
 
@@ -2590,7 +2609,7 @@ confirmxActionDefinitionBody[List<TypedParameter> context] returns [LPWithParams
         pe=propertyExpression[context, false]
         { newContext = new ArrayList<TypedParameter>(context); }
 	    ((varID=ID { if (inPropParseState()) { self.getParamIndex(self.new TypedParameter("BOOLEAN", $varID.text), newContext, true, insideRecursion); } } '=')? 'YESNO' { yesNo = true;} )?
-        dDB=doInputBody[newContext]
+        dDB=doInputBody[context, newContext]
 	;
 		
 messageActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
@@ -2755,16 +2774,19 @@ inputActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns
 inputxActionDefinitionBody[List<TypedParameter> context] returns [LPWithParams property]
 @init {
 	List<TypedParameter> newContext = new ArrayList<TypedParameter>(context);
+	boolean assign = false;
+	DebugInfo.DebugPoint assignDebugPoint = null;
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedInputxAProp($in.dataClass, $in.initValue, $pUsage.propUsage, $dDB.property, context, newContext);
+		$property = self.addScriptedInputxAProp($in.dataClass, $in.initValue, $pUsage.propUsage, $dDB.property, context, newContext, assign, assignDebugPoint);
 	}
 }
 	:	'INPUTX'
 	    in=mappedInput[newContext]
+        ( { assignDebugPoint = getCurrentDebugPoint(); } 'CHANGE' { assign = true; } )?
 		('TO' pUsage=propertyUsage)?
-        dDB=doInputBody[newContext]
+        dDB=doInputBody[context, newContext]
 	;
 	
 mappedInput[List<TypedParameter> context] returns [DataClass dataClass, LPWithParams initValue]
@@ -2777,7 +2799,7 @@ mappedInput[List<TypedParameter> context] returns [DataClass dataClass, LPWithPa
     :    
     ((varID=ID '=')? ptype=PRIMITIVE_TYPE)
     |	
-    (varID=ID '=' pe=propertyExpression[context, false])
+    ((varID=ID '=')? pe=propertyExpression[context, false])
 ;
 
 activeFormActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
@@ -3074,14 +3096,14 @@ constraintStatement
 @init {
 	boolean checked = false;
 	List<PropertyUsage> propUsages = null;
-	ActionDebugInfo debugInfo = null; 
+	DebugInfo.DebugPoint debugPoint = null; 
 	if (inPropParseState()) {
-		debugInfo = self.getEventStackDebugInfo();
+		debugPoint = getEventDebugPoint();
 	}
 }
 @after {
 	if (inPropParseState()) {
-		self.addScriptedConstraint($expr.property.property, $et.event, checked, propUsages, $message.property.property, debugInfo);
+		self.addScriptedConstraint($expr.property.property, $et.event, checked, propUsages, $message.property.property, debugPoint);
 	}
 }
 	:	'CONSTRAINT'
@@ -3126,14 +3148,14 @@ followsStatement
 		';'
 ;
 	
-followsClause[List<TypedParameter> context] returns [LPWithParams prop, Event event = Event.APPLY, ActionDebugInfo debug, List<PropertyFollowsDebug> pfollows = new ArrayList<PropertyFollowsDebug>()] 
+followsClause[List<TypedParameter> context] returns [LPWithParams prop, Event event = Event.APPLY, DebugInfo.DebugPoint debug, List<PropertyFollowsDebug> pfollows = new ArrayList<PropertyFollowsDebug>()] 
 @init {
-    $debug = self.getEventStackDebugInfo();
+    $debug = getEventDebugPoint();
 }
     :	expr = propertyExpression[context, false] 
 		('RESOLVE' 
-			('LEFT' {$pfollows.add(new PropertyFollowsDebug(true, self.getEventStackDebugInfo()));})?
-			('RIGHT' {$pfollows.add(new PropertyFollowsDebug(false, self.getEventStackDebugInfo()));})?
+			('LEFT' {$pfollows.add(new PropertyFollowsDebug(true, getEventDebugPoint()));})?
+			('RIGHT' {$pfollows.add(new PropertyFollowsDebug(false, getEventDebugPoint()));})?
 			et=baseEvent { $event = $et.event; } 
 		)? { $prop = $expr.property; }
 ;
@@ -3179,10 +3201,10 @@ eventStatement
 	List<TypedParameter> context = new ArrayList<TypedParameter>();
 	List<LPWithParams> orderProps = new ArrayList<LPWithParams>();
 	boolean descending = false;
-	ActionDebugInfo debug = null;
+	DebugInfo.DebugPoint debug = null;
 	
 	if (inPropParseState()) {
-		debug = self.getEventStackDebugInfo(); 
+		debug = getEventDebugPoint(); 
 	}
 }
 @after {

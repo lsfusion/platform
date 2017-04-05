@@ -1,12 +1,12 @@
 package lsfusion.server.logics.property;
 
-import lsfusion.server.logics.debug.ActionDebugInfo;
+import lsfusion.server.logics.debug.DebugInfo;
 
 public class BooleanDebug {
 
-    public final ActionDebugInfo debugInfo;
+    public final DebugInfo.DebugPoint debugPoint;
 
-    public BooleanDebug(ActionDebugInfo debugInfo) {
-        this.debugInfo = debugInfo;
+    public BooleanDebug(DebugInfo.DebugPoint debugPoint) {
+        this.debugPoint = debugPoint;
     }
 }

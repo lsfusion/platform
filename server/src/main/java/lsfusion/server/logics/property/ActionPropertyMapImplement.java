@@ -11,6 +11,7 @@ import lsfusion.server.form.instance.PropertyObjectInterfaceInstance;
 import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.debug.ActionDebugInfo;
+import lsfusion.server.logics.debug.DebugInfo;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.property.actions.flow.CaseActionProperty;
 import lsfusion.server.logics.property.actions.flow.ChangeFlowType;
@@ -40,7 +41,7 @@ public class ActionPropertyMapImplement<P extends PropertyInterface, T extends P
         return new ActionPropertyMapImplement<>(property, mapping.join(remap));
     }
 
-    public <L extends PropertyInterface> void mapEventAction(LogicsModule lm, CalcPropertyMapImplement<L, T> where, Event event, boolean resolve, ActionDebugInfo debugInfo) {
+    public <L extends PropertyInterface> void mapEventAction(LogicsModule lm, CalcPropertyMapImplement<L, T> where, Event event, boolean resolve, DebugInfo.DebugPoint debugInfo) {
         lm.addEventAction(property, where.map(mapping.reverse()), MapFact.<CalcPropertyInterfaceImplement<P>, Boolean>EMPTYORDER(), false, event, resolve, debugInfo);
     }
 
