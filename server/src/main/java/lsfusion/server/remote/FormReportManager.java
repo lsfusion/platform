@@ -4,9 +4,9 @@ import com.google.common.base.Throwables;
 import lsfusion.base.Pair;
 import lsfusion.base.ResourceList;
 import lsfusion.base.Result;
-import lsfusion.interop.ClassViewType;
 import lsfusion.interop.form.FormUserPreferences;
 import lsfusion.interop.form.ReportGenerationData;
+import lsfusion.interop.form.ReportGenerationDataType;
 import lsfusion.server.SystemProperties;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.entity.CalcPropertyObjectEntity;
@@ -101,27 +101,30 @@ public class FormReportManager<PropertyDraw extends PropertyReaderInstance, Grou
     }
 
     public ReportGenerationData getReportData(boolean toExcel) {
-        return getReportData(null, toExcel, false, null);
+        return getReportData(null, toExcel, ReportGenerationDataType.DEFAULT, null);
     }
 
-    public ReportGenerationData getReportData(boolean toExcel, boolean custom) {
-        return getReportData(null, toExcel, custom, null);
+    public ReportGenerationData getReportData(boolean toExcel, ReportGenerationDataType reportType) {
+        return getReportData(null, toExcel, reportType, null);
     }
 
     public ReportGenerationData getReportData(Integer groupId, boolean toExcel, FormUserPreferences userPreferences) {
-        return getReportData(groupId, toExcel, false, userPreferences);
+        return getReportData(groupId, toExcel, ReportGenerationDataType.DEFAULT, userPreferences);
     }
 
-    public ReportGenerationData getReportData(Integer groupId, boolean toExcel, boolean custom, FormUserPreferences userPreferences) {
-        GroupObjectHierarchy.ReportHierarchy groupReportHierarchy = getReportHierarchy(groupId, custom);
-        GroupObjectHierarchy.ReportHierarchy fullReportHierarchy = getReportHierarchy(null, custom);
+    public ReportGenerationData getReportData(Integer groupId, boolean toExcel, ReportGenerationDataType reportType, FormUserPreferences userPreferences) {
+        GroupObjectHierarchy.ReportHierarchy groupReportHierarchy = getReportHierarchy(groupId, !reportType.isDefault());
+         
+        GroupObjectHierarchy.ReportHierarchy fullReportHierarchy = getReportHierarchy(null, !reportType.isDefault());
 
         byte[] reportHierarchyByteArray = getReportHierarchyByteArray(groupReportHierarchy.getReportHierarchyMap());
         Result<Map<String, LinkedHashSet<List<Object>>>> columnGroupObjects = new Result<>();
-        byte[] reportSourcesByteArray = getReportSourcesByteArray(
-                new ReportSourceGenerator<PropertyDraw, GroupObject, PropertyObject, CalcPropertyObject, Order, Obj, PropertyReaderInstance>(formInterface, groupReportHierarchy, fullReportHierarchy, getGridGroups(groupId), groupId, userPreferences)
-        , columnGroupObjects, custom);
-        byte[] reportDesignsByteArray = custom ? null : getReportDesignsByteArray(toExcel, groupId, userPreferences, columnGroupObjects.result);
+        ReportSourceGenerator<PropertyDraw, GroupObject, PropertyObject, CalcPropertyObject, Order, Obj, PropertyReaderInstance> sourceGenerator =
+                new ReportSourceGenerator<>(formInterface, groupReportHierarchy, fullReportHierarchy, getGridGroups(groupId), groupId, userPreferences);
+        byte[] reportSourcesByteArray = getReportSourcesByteArray(sourceGenerator, columnGroupObjects, reportType);
+        byte[] reportDesignsByteArray = reportType.isExport() ? null :
+                reportType.isPrint() ? getPropertyCaptionsMapByteArray(sourceGenerator, reportType) :
+                        getReportDesignsByteArray(toExcel, groupId, userPreferences, columnGroupObjects.result);
 
         return new ReportGenerationData(reportHierarchyByteArray, reportDesignsByteArray, reportSourcesByteArray);
     }
@@ -333,9 +336,9 @@ public class FormReportManager<PropertyDraw extends PropertyReaderInstance, Grou
         return nodes;
     }
 
-    private byte[] getReportSourcesByteArray(ReportSourceGenerator<PropertyDraw, GroupObject, PropertyObject, CalcPropertyObject, Order, Obj, PropertyReaderInstance> sourceGenerator, Result<Map<String, LinkedHashSet<List<Object>>>> columnGroupObjects, boolean custom) {
+    private byte[] getReportSourcesByteArray(ReportSourceGenerator<PropertyDraw, GroupObject, PropertyObject, CalcPropertyObject, Order, Obj, PropertyReaderInstance> sourceGenerator, Result<Map<String, LinkedHashSet<List<Object>>>> columnGroupObjects, ReportGenerationDataType reportType) {
         try {
-            Map<String, ReportData> sources = sourceGenerator.generate(custom);
+            Map<String, ReportData> sources = sourceGenerator.generate(reportType);
             ReportSourceGenerator.ColumnGroupCaptionsData<Obj> columnGroupCaptions = sourceGenerator.getColumnGroupCaptions();
             columnGroupObjects.set(columnGroupCaptions.columnData);
             ByteArrayOutputStream outStream = new ByteArrayOutputStream();
@@ -344,7 +347,7 @@ public class FormReportManager<PropertyDraw extends PropertyReaderInstance, Grou
             dataStream.writeInt(sources.size());
             for (Map.Entry<String, ReportData> source : sources.entrySet()) {
                 dataStream.writeUTF(source.getKey());
-                source.getValue().serialize(dataStream, custom, formInterface);
+                source.getValue().serialize(dataStream, reportType, formInterface);
             }
 
             int columnPropertiesCount = columnGroupCaptions.propertyObjects.size();
@@ -378,6 +381,21 @@ public class FormReportManager<PropertyDraw extends PropertyReaderInstance, Grou
                 }
             }
 
+            return outStream.toByteArray();
+        } catch (Throwable e) {
+            throw Throwables.propagate(e);
+        }
+    }
+
+    private byte[] getPropertyCaptionsMapByteArray(ReportSourceGenerator<PropertyDraw, GroupObject, PropertyObject, CalcPropertyObject, Order, Obj, PropertyReaderInstance> sourceGenerator, ReportGenerationDataType reportType) {
+        try {
+            ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+            Map<String, ReportData> sources = sourceGenerator.generate(reportType);
+            Map<String, Map<String, String>> propertyCaptionsMap = new HashMap<>();
+            for (Map.Entry<String, ReportData> source : sources.entrySet()) {
+                propertyCaptionsMap.put(source.getKey(), source.getValue().getPropertyCaptionsMap());
+            }
+            new ObjectOutputStream(outStream).writeObject(propertyCaptionsMap);
             return outStream.toByteArray();
         } catch (Throwable e) {
             throw Throwables.propagate(e);

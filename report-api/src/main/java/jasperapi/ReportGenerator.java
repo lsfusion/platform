@@ -6,6 +6,7 @@ import lsfusion.base.Pair;
 import lsfusion.interop.FormPrintType;
 import lsfusion.interop.form.ReportConstants;
 import lsfusion.interop.form.ReportGenerationData;
+import lsfusion.interop.form.ReportGenerationDataType;
 import net.sf.jasperreports.engine.*;
 import net.sf.jasperreports.engine.design.*;
 import net.sf.jasperreports.engine.export.JRPdfExporter;
@@ -181,24 +182,29 @@ public class ReportGenerator {
         return new Pair<>(rootID, hierarchy);
     }
 
+    public static Map<String, Map<String, String>> retrievePropertyCaptions(ReportGenerationData generationData) throws IOException, ClassNotFoundException {
+        ObjectInputStream objStream = new ObjectInputStream(new ByteArrayInputStream(generationData.reportDesignData));
+        return (Map<String, Map<String, String>>) objStream.readObject();
+    }
+
     private static Map<String, JasperDesign> retrieveReportDesigns(ReportGenerationData generationData) throws IOException, ClassNotFoundException {
         ObjectInputStream objStream = new ObjectInputStream(new ByteArrayInputStream(generationData.reportDesignData));
         return (Map<String, JasperDesign>) objStream.readObject();
     }
 
     public static SourcesGenerationOutput retrieveReportSources(ReportGenerationData generationData, Map<ByteArray, String> files) throws IOException {
-        return retrieveReportSources(generationData, files, false);
+        return retrieveReportSources(generationData, files, ReportGenerationDataType.DEFAULT);
     }
 
     //corresponding serialization is in lsfusion.server.remote.FormReportManager.getReportSourcesByteArray()
-    public static SourcesGenerationOutput retrieveReportSources(ReportGenerationData generationData, Map<ByteArray, String> files, boolean custom) throws IOException {
+    public static SourcesGenerationOutput retrieveReportSources(ReportGenerationData generationData, Map<ByteArray, String> files, ReportGenerationDataType reportType) throws IOException {
         SourcesGenerationOutput output = new SourcesGenerationOutput();
         DataInputStream dataStream = new DataInputStream(new ByteArrayInputStream(generationData.reportSourceData));
         int size = dataStream.readInt();
         output.data = new HashMap<>();
         for (int i = 0; i < size; i++) {
             String sid = dataStream.readUTF();
-            ClientReportData reportData = new ClientReportData(dataStream, files, custom);
+            ClientReportData reportData = new ClientReportData(dataStream, files, reportType);
             output.data.put(sid, reportData);
         }
 

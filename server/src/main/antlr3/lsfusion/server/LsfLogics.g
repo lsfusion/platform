@@ -2349,6 +2349,10 @@ printActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns
             ) 
             ('TO' pUsage=propertyUsage)?
             )
+        |   (
+                'SHOW' { printType = FormPrintType.SHOW; }
+                (sync = syncTypeLiteral { syncType = $sync.val; })?
+            )
         |   ( // static - interactive
 		    (sync = syncTypeLiteral { syncType = $sync.val; })?
             ('AUTO' { printType = FormPrintType.AUTO; })?

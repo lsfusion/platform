@@ -8,6 +8,7 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.interop.form.ReportConstants;
 import lsfusion.interop.form.ReportGenerationData;
+import lsfusion.interop.form.ReportGenerationDataType;
 
 import javax.xml.stream.XMLStreamException;
 import java.io.IOException;
@@ -19,7 +20,7 @@ public abstract class FormExporter {
 
     public FormExporter(ReportGenerationData reportData) {
         try {
-            this.data = ReportGenerator.retrieveReportSources(reportData, null, true).data;
+            this.data = ReportGenerator.retrieveReportSources(reportData, null, ReportGenerationDataType.EXPORT).data;
             this.formHierarchy = ReportGenerator.retrieveReportHierarchy(reportData.reportHierarchyData);
         } catch (IOException | ClassNotFoundException e) {
             throw Throwables.propagate(e);

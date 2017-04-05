@@ -10,6 +10,7 @@ import lsfusion.interop.FormStaticType;
 import lsfusion.interop.action.MessageClientAction;
 import lsfusion.interop.action.ReportClientAction;
 import lsfusion.interop.form.ReportGenerationData;
+import lsfusion.interop.form.ReportGenerationDataType;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
 import lsfusion.server.SystemProperties;
@@ -78,7 +79,7 @@ public abstract class FormStaticActionProperty<T extends FormStaticType> extends
             newFormManager = new StaticFormReportManager(form, BaseUtils.<ImMap<ObjectEntity, ObjectValue>>immutableCast(mapObjectValues), context);
 
         boolean isExcel = staticType instanceof FormPrintType && ((FormPrintType) staticType).isExcel();
-        ReportGenerationData reportData = newFormManager.getReportData(isExcel, staticType instanceof FormExportType);
+        ReportGenerationData reportData = newFormManager.getReportData(isExcel, ReportGenerationDataType.get(staticType));
 
         if (formExportFile != null) {
             try {

@@ -5,6 +5,7 @@ import lsfusion.base.ByteArray;
 import lsfusion.base.DateConverter;
 import lsfusion.base.Pair;
 import lsfusion.interop.form.PropertyReadType;
+import lsfusion.interop.form.ReportGenerationDataType;
 import net.sf.jasperreports.engine.JRDataSource;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRField;
@@ -34,9 +35,9 @@ public class ClientReportData implements JRDataSource {
 
     private final Map<ByteArray, String> files;
 
-    public ClientReportData(DataInputStream inStream, Map<ByteArray, String> files, boolean custom) throws IOException {
+    public ClientReportData(DataInputStream inStream, Map<ByteArray, String> files, ReportGenerationDataType reportType) throws IOException {
 
-        if (!inStream.readBoolean() || custom) {
+        if (!inStream.readBoolean() || !reportType.isDefault()) {
             int objectCnt = inStream.readInt();
             for (int i = 0; i < objectCnt; i++) {
                 String name = inStream.readUTF();
