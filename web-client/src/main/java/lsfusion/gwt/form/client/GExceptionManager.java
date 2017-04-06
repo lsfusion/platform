@@ -68,9 +68,8 @@ public class GExceptionManager {
 
     public static void flushUnreportedThrowables() {
         synchronized (unreportedThrowables) {
-            for (final Iterator<Throwable> iterator = unreportedThrowables.iterator(); iterator.hasNext(); ) {
-                final Throwable t = iterator.next();
-
+            final List<Throwable> stillUnreported = new ArrayList<>(unreportedThrowables);
+            for (final Throwable t : unreportedThrowables) {
                 NavigatorDispatchAsync.Instance.get().execute(new LogClientExceptionAction("Unreported client error", toSerializable(t)), new ErrorHandlingCallback<VoidResult>() {
                     @Override
                     public void failure(Throwable caught) {
@@ -79,10 +78,12 @@ public class GExceptionManager {
 
                     @Override
                     public void success(VoidResult result) {
-                        iterator.remove();
+                        stillUnreported.remove(t);
                     }
                 });
             }
+            unreportedThrowables.clear();
+            unreportedThrowables.addAll(stillUnreported);
         }
     }
 
