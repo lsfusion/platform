@@ -337,6 +337,7 @@ DESIGN profiler {
                 fill = 1;
                 NEW pT{
                     type = SPLITV;
+                    fill = 1;
                     MOVE pT.tree.box{fill = 2;};
                     NEW tabDownUsers{
                         type = TABBED;
@@ -347,6 +348,7 @@ DESIGN profiler {
                 }
                 NEW pB {
                     type = SPLITV;
+                    fill = 1;
                     MOVE pB.tree.box{fill = 2;};
                     MOVE downToUp.box{fill = 1;};
                 }
