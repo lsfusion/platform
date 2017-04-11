@@ -42,13 +42,16 @@ public class GroupObjectController extends AbstractGroupObjectController {
         this(null, ilogicsSupplier, iform, formLayout, null);
     }
 
-    public GroupObjectController(ClientGroupObject igroupObject, LogicsSupplier ilogicsSupplier, ClientFormController iform, ClientFormLayout formLayout, GridUserPreferences[] userPreferences) throws IOException {
+    public GroupObjectController(ClientGroupObject igroupObject, LogicsSupplier ilogicsSupplier, ClientFormController iform, final ClientFormLayout formLayout, GridUserPreferences[] userPreferences) throws IOException {
         super(iform, ilogicsSupplier, formLayout, igroupObject == null ? null : igroupObject.toolbar);
         groupObject = igroupObject;
 
         panel = new PanelController(form, formLayout) {
-            protected void addGroupObjectActions(JComponent comp) {
+            protected void addGroupObjectActions(final JComponent comp) {
                 GroupObjectController.this.addGroupObjectActions(comp);
+                if(filter != null) {
+                    filter.getView().addActionsToPanelInputMap(comp);
+                }
             }
         };
 

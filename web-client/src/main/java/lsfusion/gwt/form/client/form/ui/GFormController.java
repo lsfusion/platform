@@ -168,6 +168,10 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         formsController.dropCurForm(this);
     }
 
+    public GGroupObjectController getController(GGroupObject groupObject) {
+        return controllers.get(groupObject);
+    }
+
     public GFormLayout getFormLayout() {
         return formLayout;
     }

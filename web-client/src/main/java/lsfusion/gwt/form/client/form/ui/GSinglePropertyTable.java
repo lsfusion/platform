@@ -1,7 +1,9 @@
 package lsfusion.gwt.form.client.form.ui;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.user.client.Event;
 import lsfusion.gwt.base.client.GwtClientUtils;
+import lsfusion.gwt.base.client.ui.GKeyStroke;
 import lsfusion.gwt.base.shared.GwtSharedUtils;
 import lsfusion.gwt.cellview.client.Column;
 import lsfusion.gwt.cellview.client.cell.Cell;
@@ -15,6 +17,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static com.google.gwt.dom.client.Style.Unit;
+import static lsfusion.gwt.base.client.GwtClientUtils.stopPropagation;
 
 public class GSinglePropertyTable extends GPropertyTable<Object> {
     /**
@@ -188,5 +191,26 @@ public class GSinglePropertyTable extends GPropertyTable<Object> {
 
     @Override
     public void selectNextCellInColumn(boolean down) {
+    }
+
+    @Override
+    protected void onBrowserEvent2(Event event) {
+        GGroupObjectController groupController = form.getController(property.groupObject);
+        if (groupController != null) {
+            if (GKeyStroke.isAddFilterEvent(event)) {
+                stopPropagation(event);
+                groupController.addFilter();
+            } else if (GKeyStroke.isRemoveAllFiltersEvent(event)) {
+                stopPropagation(event);
+                groupController.removeFilters();
+            } else if (GKeyStroke.isReplaceFilterEvent(event)) {
+                stopPropagation(event);
+                groupController.replaceFilter();
+            } else {
+                super.onBrowserEvent2(event);
+            }
+        } else {
+            super.onBrowserEvent2(event);
+        }
     }
 }
