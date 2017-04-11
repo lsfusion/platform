@@ -477,7 +477,7 @@ openChat 'Перейти в чат' (Message m) = {
     openChat(chat(m), m);
 };
 
-FORM shortChat 'Новое сообщение' DOCKEDMODAL
+FORM shortChat 'Новое сообщение'
 OBJECTS m = Message LAST
 PROPERTIES(m) READONLY nameShortChat, showText, dateTime
 PROPERTIES(m) PANEL reply READONLYIF readonly(m), replyChat SHOWIF editable(m), notificate SHOWIF editable(m), openChat
@@ -514,7 +514,7 @@ onClientStarted() += {
     IF sumUnreadMessages(currentUser()) > 0 THEN {
         deliveredNotificationAction(currentUser());
         apply();
-        SHOW shortChat ;
+        SHOW shortChat DOCKED;
     }
 }
 
@@ -533,7 +533,7 @@ pushAction(BOOLEAN system, BOOLEAN notificate) = {
         ELSE {
             IF system OR notificate THEN {
                 NEWSESSION {
-                    SHOW shortChat ;
+                    SHOW shortChat DOCKED;
                 }
             }
         }
