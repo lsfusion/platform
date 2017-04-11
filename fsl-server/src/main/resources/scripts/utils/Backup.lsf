@@ -3,19 +3,19 @@ MODULE Backup;
 REQUIRE System, Reflection, SchedulerDefaultData;
 
 makeBackup 'Создать копию'= ACTION CUSTOM 'lsfusion.erp.utils.backup.BackupActionProperty' () TOOLBAR;
-makeBackupAction 'Создать копию' = ACTION {
+makeBackupAction 'Создать копию' = {
     makeBackup();
     formRefresh();
 }
 makePartialBackup 'Создать копию (оперативно)'= ACTION CUSTOM 'lsfusion.erp.utils.backup.PartialBackupActionProperty' () TOOLBAR;
-makePartialBackupAction 'Создать копию (оперативно)' = ACTION {
+makePartialBackupAction 'Создать копию (оперативно)' = {
     makePartialBackup();
     formRefresh();
 }
 save 'Скачать'= ACTION CUSTOM 'lsfusion.erp.utils.backup.SaveBackupActionProperty' (Backup) TOOLBAR;
 delete 'Удалить'= ACTION CUSTOM 'lsfusion.erp.utils.backup.DeleteBackupActionProperty' (Backup);
 
-deleteAction 'Удалить' (Backup b) = ACTION {
+deleteAction 'Удалить' (Backup b) = {
     delete(b);
     formRefresh();
 } CONFIRM;
@@ -24,7 +24,7 @@ saveMondayBackups 'Оставлять бэкап за понедельник (о
 saveFirstDayBackups 'Оставлять бэкап за первое число месяца (старше месяца)' = DATA BOOLEAN ();
 maxQuantityBackups 'Максимальное число сохраняемых бэкапов' = DATA INTEGER ();
 decimateBackups 'Проредить'= ACTION CUSTOM 'lsfusion.erp.utils.backup.DecimateBackupsActionProperty' () TOOLBAR CONFIRM;
-decimateBackupsAction 'Проредить' = ACTION {
+decimateBackupsAction 'Проредить' = {
     decimateBackups();
     formRefresh();
 }
@@ -138,7 +138,7 @@ NAVIGATOR {
     }
 }
 
-loadDefaultScheduledTasks () += ACTION  {    
+loadDefaultScheduledTasks () += {    
     loadDefaultScheduledTask ('Резервное копирование', 2014_07_01_01:00, 86400, SchedulerStartType.afterStart);
     loadDefaultScheduledTaskDetail ('Резервное копирование', 1, 'Backup.makeBackup[]');
     loadDefaultScheduledTaskDetail ('Резервное копирование', 2, 'Backup.decimateBackups[]');        

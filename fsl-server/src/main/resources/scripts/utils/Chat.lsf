@@ -53,8 +53,8 @@ nameShortChat 'Чат' (Message message) = IF isDialog(chat(message)) THEN nameC
 
 attachment 'Вложение' = DATA CUSTOMFILE (Message);
 hasAttachment 'Вл.' (Message m) = IF attachment(m) THEN TRUE MAXCHARWIDTH 1 PREFCHARWIDTH 1;
-loadAttachment 'Прикрепить вложение' (Message m) = ACTION LOADFILE attachment(m);
-openAttachment 'Открыть вложение' (Message m) = ACTION {
+loadAttachment 'Прикрепить вложение' (Message m) = { LOADFILE attachment(m); }
+openAttachment 'Открыть вложение' (Message m) = {
     IF attachment(m) THEN {
         OPENFILE attachment(m);
     } ELSE {
@@ -91,12 +91,12 @@ noEditingMessage (Chat chat) = NOT editingMessage(chat);
 notificate 'С уведомлением' = DATA LOCAL NESTED BOOLEAN (Chat);
 
 attachment 'Вложение' = DATA LOCAL NESTED CUSTOMFILE (Chat);
-loadAttachment 'Прикрепить вложение' (Chat c) = ACTION LOADFILE attachment(c);
-deleteAttachment 'Удалить вложение' (Chat c) = ACTION { attachment(c) <- NULL; } IMAGE 'deleteChat.png';
+loadAttachment 'Прикрепить вложение' (Chat c) = { LOADFILE attachment(c); }
+deleteAttachment 'Удалить вложение' (Chat c) = { attachment(c) <- NULL; } IMAGE 'deleteChat.png';
 showLoadAttachment (Chat c) = NOT attachment(c);
 showDeleteAttachment (Chat c) = attachment(c);
 
-onStarted() += ACTION {
+onStarted() += {
 
     FOR NOT chat('system') NEW c = Chat DO {
         id(c) <- 'system';
@@ -109,11 +109,11 @@ onStarted() += ACTION {
 
 }
 
-setSeenMessageUser(Message m, CustomUser user, BOOLEAN system) = ACTION {
+setSeenMessageUser(Message m, CustomUser user, BOOLEAN system) = {
     status(m, user) <- IF system THEN MessageStatus.sent ELSE MessageStatus.seen;
 }
 
-markSeenOnChangeMessages (Chat chat, CustomUser user) = ACTION {
+markSeenOnChangeMessages (Chat chat, CustomUser user) = {
     LOCAL needApply = BOOLEAN();
     FOR in(chat) AND chat(Message m) == chat AND (status(m, user) == MessageStatus.sent OR status(m, user) == MessageStatus.delivered) DO {
         status(m, user) <- MessageStatus.seen;
@@ -124,13 +124,13 @@ markSeenOnChangeMessages (Chat chat, CustomUser user) = ACTION {
     }
 };
 
-editMessageText (Message m, Chat c) = ACTION {
+editMessageText (Message m, Chat c) = {
     lastEditDateTime(m) <- currentDateTime();
     text(m) <- newMessage(c);
     attachment(m) <- attachment(c);
 }
 
-stopEditing(Chat c) = ACTION {
+stopEditing(Chat c) = {
     IF editingMessage(c) THEN {
     editingMessage(c) <- NULL;
     chatNewMessage(c) <- NULL;
@@ -139,7 +139,7 @@ stopEditing(Chat c) = ACTION {
     }
 }
 
-sendMessage 'Написать в чат' (Chat chat, TEXT message, BOOLEAN system) = ACTION {
+sendMessage 'Написать в чат' (Chat chat, TEXT message, BOOLEAN system) = {
     FOR NEW m = Message DO {
         chat(m) <- chat;
         dateTime(m) <- currentDateTime();
@@ -149,7 +149,7 @@ sendMessage 'Написать в чат' (Chat chat, TEXT message, BOOLEAN syste
         attachment(m) <- attachment(chat);
         attachment(chat) <- NULL;
         IF chatNotFound() THEN
-            defaultNewMessage() <- NULL
+            defaultNewMessage() <- NULL;
         ELSE
             chatNewMessage(chat) <- NULL; 
         
@@ -175,11 +175,11 @@ sendMessage 'Отправить' = ACTION ABSTRACT LIST (Chat, CustomUser) EDITK
 saveMessage 'Сохранить' = ACTION ABSTRACT LIST (Chat) EDITKEY 'ctrl ENTER';
 
 sendRestartMessage 'Отправить сообщение об остановке сервера' = DATA BOOLEAN ();
-sendRestartServerMessage 'Отправить сообщение об остановке сервера' () = ACTION sendMessage(chat('system'), 'Сервер будет остановлен через 5 минут!\nСохраните текущую работу и выйдите из приложения.', TRUE);
-restartServer() += ACTION { IF sendRestartMessage() THEN sendRestartServerMessage(); }
+sendRestartServerMessage 'Отправить сообщение об остановке сервера' () = { sendMessage(chat('system'), 'Сервер будет остановлен через 5 минут!\nСохраните текущую работу и выйдите из приложения.', TRUE); }
+restartServer() += { IF sendRestartMessage() THEN sendRestartServerMessage(); }
 
-sendCancelRestartServerMessage 'Отправить сообщение об отмене остановки сервера' () = ACTION sendMessage(chat('system'), 'Остановка сервера отменена', TRUE);
-cancelRestartServer() += ACTION { IF sendRestartMessage() THEN sendCancelRestartServerMessage(); }
+sendCancelRestartServerMessage 'Отправить сообщение об отмене остановки сервера' () = { sendMessage(chat('system'), 'Остановка сервера отменена', TRUE); }
+cancelRestartServer() += { IF sendRestartMessage() THEN sendCancelRestartServerMessage(); }
 
 EXTEND FORM admin PROPERTIES() sendRestartMessage;
 
@@ -191,23 +191,23 @@ DESIGN admin {
 
 seekChat = ACTION ABSTRACT(CustomUser);
   
-saveNewMessage(Chat c) = ACTION {
+saveNewMessage(Chat c) = {
     REQUEST TEXT INPUT;
     IF requestedText() THEN {
         newMessage(c) <- requestedText();
         IF chatNotFound() THEN
-            defaultNewMessage() <- newMessage(c)
+            defaultNewMessage() <- newMessage(c);
         ELSE 
             chatNewMessage(c) <- newMessage(c);
     }
     
 }  
   
-includeUserInChat (CustomUser u, Chat c) = ACTION {
+includeUserInChat (CustomUser u, Chat c) = {
     in(c, u) <- TRUE;
 }    
   
-includeCurrentUserInChat (Chat c) = ACTION {
+includeCurrentUserInChat (Chat c) = {
     includeUserInChat(currentUser(), c);
 }
  
@@ -237,9 +237,9 @@ FORM editChat 'Чат'
     FILTERGROUP in FILTER 'Включены в чат' in(c,u) DEFAULT
 ;  
 
-editChatAction 'Редактировать' (Chat c) = ACTION {
+editChatAction 'Редактировать' (Chat c) = {
     IF c IS UserRole THEN 
-        MESSAGE 'Запрещено редактировать чат для роли!'
+        MESSAGE 'Запрещено редактировать чат для роли!';
     ELSE
         SHOW editChat ;
 }
@@ -260,22 +260,22 @@ backgroundUser (CustomUser user) = IF online(user) THEN RGB(0, 255, 0) ELSE IF a
 
 backgroundMessage (Message m) = IF NOT own(m) THEN RGB(255, 255, 255) ELSE IF seenCount(m) < 2 THEN RGB(247, 247, 247) ELSE RGB(240, 244, 248);
 
-markSeenMessages (CustomUser user) = ACTION {
+markSeenMessages (CustomUser user) = {
     FOR in(chat(Message m)) AND status(m, user) == MessageStatus.delivered DO {
         status(m, user) <- MessageStatus.seen;
     }
 };
 
-markSeenOnChange(Chat c) += ACTION {
+markSeenOnChange(Chat c) += {
     markSeenOnChangeMessages(c, currentUser());
     seekLastMessageInFullChat();
 };
 
-markSeenOnChange(Message m) = ACTION { 
+markSeenOnChange(Message m) = { 
     markSeenOnChangeMessages(chat(m), currentUser());
 };
 
-deleteMessage 'Удалить сообщение' (Message m) = ACTION {
+deleteMessage 'Удалить сообщение' (Message m) = {
     IF own(m) THEN {
         IF subtractSeconds(dateTime(m), currentDateTime()) < 3600 THEN {
             DELETE m;
@@ -391,7 +391,7 @@ DESIGN fullChat {
     }           
 }
 
-editMessage (Chat c, Message m) += ACTION {
+editMessage (Chat c, Message m) += {
     IF own(m) THEN {
         IF subtractSeconds(dateTime(m), currentDateTime()) < 3600 THEN {
             newMessage(c) <- text(m);
@@ -402,12 +402,12 @@ editMessage (Chat c, Message m) += ACTION {
     } ELSE MESSAGE 'Запрещено редактировать чужие сообщения!';
 }
 
-sendMessage 'Написать в чат' (Chat chat) = ACTION {
+sendMessage 'Написать в чат' (Chat chat) = {
     IF newMessage(chat) OR attachment(chat) THEN
         sendMessage(chat, newMessage(chat), NULL);
 }
 
-sendMessage 'Написать пользователю' (CustomUser user) = ACTION {
+sendMessage 'Написать пользователю' (CustomUser user) = {
     LOCAL chat = Chat();
     chat() <- chatIn(user, currentUser());
     IF NOT chat() THEN {
@@ -421,7 +421,7 @@ sendMessage 'Написать пользователю' (CustomUser user) = ACTI
     } ELSE sendMessage(chat());
 }
 
-saveMessage(Chat c) += ACTION {
+saveMessage(Chat c) += {
     IF editingMessage(c) THEN {
         editMessageText(editingMessage(c), c);
         chatNewMessage(c) <- NULL;
@@ -432,13 +432,13 @@ saveMessage(Chat c) += ACTION {
 
 //----------------------------SHORT CHAT----------------------------//
 
-deliveredNotificationAction(CustomUser user) += ACTION {
+deliveredNotificationAction(CustomUser user) += {
     FOR in(chat(Message m)) AND status(m, user) == MessageStatus.sent DO {
         status(m, user) <- MessageStatus.delivered;
     }
 }
 
-closeChat 'Закрыть' = ACTION { 
+closeChat 'Закрыть' = { 
     markSeenMessages(currentUser());
     apply(); 
     formClose();
@@ -446,7 +446,7 @@ closeChat 'Закрыть' = ACTION {
 
 reply 'Ответ' = DATA LOCAL TEXT (Message);
 notificate 'С уведомлением' = DATA LOCAL BOOLEAN (Message); 
-replyChat 'Ответить' (Chat c, Message m) = ACTION {
+replyChat 'Ответить' (Chat c, Message m) = {
     IF(reply(m)) THEN {
         markSeenMessages(currentUser());
         newMessage(c) <- reply(m);
@@ -456,11 +456,11 @@ replyChat 'Ответить' (Chat c, Message m) = ACTION {
     }
 };
 
-replyChat 'Ответить' (Message m) = ACTION { 
+replyChat 'Ответить' (Message m) = { 
     replyChat(chat(m), m);
 } EDITKEY 'ctrl ENTER';
 
-openChat 'Перейти в чат' (Chat c, Message m) = ACTION {
+openChat 'Перейти в чат' (Chat c, Message m) = {
     markSeenMessages(currentUser());
     SHOW fullChat NOWAIT;
     NEWSESSION { NEWTHREAD {
@@ -473,7 +473,7 @@ openChat 'Перейти в чат' (Chat c, Message m) = ACTION {
     formClose();
 };
 
-openChat 'Перейти в чат' (Message m) = ACTION {
+openChat 'Перейти в чат' (Message m) = {
     openChat(chat(m), m);
 };
 
@@ -510,7 +510,7 @@ DESIGN shortChat {
     }      
 }  
 
-onClientStarted() += ACTION {
+onClientStarted() += {
     IF sumUnreadMessages(currentUser()) > 0 THEN {
         deliveredNotificationAction(currentUser());
         apply();
@@ -518,7 +518,7 @@ onClientStarted() += ACTION {
     }
 }
 
-pushAction(BOOLEAN system, BOOLEAN notificate) = ACTION {
+pushAction(BOOLEAN system, BOOLEAN notificate) = {
     ACTIVE FORM fullChat;
     IF isActiveForm() AND NOT system THEN {
         seekLastMessageInFullChat();
@@ -540,22 +540,22 @@ pushAction(BOOLEAN system, BOOLEAN notificate) = ACTION {
     }
 }
 
-seekLastMessageInFullChat() += ACTION {
+seekLastMessageInFullChat() += {
     SEEK LAST fullChat.m;
 }
 
-pushNotification (CustomUser user, BOOLEAN system, BOOLEAN notificate) += ACTION {
+pushNotification (CustomUser user, BOOLEAN system, BOOLEAN notificate) += {
     FOR user(Connection conn) == user AND connectionStatus(conn) == ConnectionStatus.connectedConnection AND conn != currentConnection() DO {
-        NEWSESSION { NEWTHREAD pushAction(system AS BOOLEAN, notificate AS BOOLEAN) CONNECTION conn; }
+        NEWSESSION { NEWTHREAD pushAction(system AS BOOLEAN, notificate AS BOOLEAN); CONNECTION conn; }
     }
 }
 
 recentVisible() += ACTIVE TAB recent FORM fullChat;
-sendMessage(Chat chat, CustomUser user) += ACTION {
-    IF recentVisible() THEN sendMessage(chat) ELSE sendMessage(user);
+sendMessage(Chat chat, CustomUser user) += {
+    IF recentVisible() THEN sendMessage(chat); ELSE sendMessage(user);
 }
 
-seekChat(CustomUser user) += ACTION {
+seekChat(CustomUser user) += {
     LOCAL chat = Chat();
     chat() <- chatIn(user, currentUser());
     IF NOT chat() THEN {

@@ -29,7 +29,7 @@ NAVIGATOR {
 }
 
 META implementLoadDefaultData (property)
-    loadDefaultData () += ACTION property();
+    loadDefaultData () += { property(); }
     EXTEND FORM defaultData
         PROPERTIES() property
     ;

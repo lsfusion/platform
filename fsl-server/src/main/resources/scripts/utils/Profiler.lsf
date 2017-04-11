@@ -10,7 +10,7 @@ TABLE profileObject(ProfileObject);
 TABLE profileData(ProfileObject, ProfileObject, User, ProfileForm);
 
 text 'Действие' = DATA TEXT (ProfileObject) IN recognize;
-onStarted() += ACTION {
+onStarted() += {
     text(ProfileObject po) <- staticCaption(ProfileObject.top) WHERE po == ProfileObject.top;
 }
 profileObject = GROUP AGGR ProfileObject profileObject BY text(profileObject) PERSISTENT;
@@ -34,10 +34,10 @@ squaresSum 'Сумма квадратов времени выполнения' =
 isStartedProfiler 'Запущен'  = DATA BOOLEAN ();
 isStoppedProfiler 'Остановлен' () = NOT isStartedProfiler();
 
-onStarted() += ACTION isStartedProfiler() <- NULL;
+onStarted() += { isStartedProfiler() <- NULL; }
 
 doStartProfiler 'Запустить профилировщик' () = ACTION CUSTOM 'lsfusion.erp.utils.StartProfilerActionProperty';
-startProfiler 'Запустить профилировщик' () = ACTION {
+startProfiler 'Запустить профилировщик' () = {
     totalTime(ProfileObject p1, ProfileObject p2, User u, ProfileForm f) <- NULL;
     totalSQLTime(ProfileObject p1, ProfileObject p2, User u, ProfileForm f) <- NULL; 
     totalUserInteractionTime(ProfileObject p1, ProfileObject p2, User u, ProfileForm f) <- NULL; 
@@ -54,7 +54,7 @@ startProfiler 'Запустить профилировщик' () = ACTION {
 
 doStopProfiler 'Остановить профилировщик' () = ACTION CUSTOM 'lsfusion.erp.utils.StopProfilerActionProperty';
 
-stopProfiler 'Остановить профилировщик' () = ACTION {
+stopProfiler 'Остановить профилировщик' () = {
     doStopProfiler();
     isStartedProfiler() <- NULL;
     APPLY {};
@@ -62,7 +62,7 @@ stopProfiler 'Остановить профилировщик' () = ACTION {
 
 id(User user) = INTEGER(user AS User) PERSISTENT INDEXED; 
 
-writeProfilerBatch () = ACTION {
+writeProfilerBatch () = {
     FOR [= GROUP SUM 1 IF callCount(TEXT t1, TEXT t2, INTEGER u, VARSTRING[100] f) BY t1](TEXT t1) AND NOT profileObject(t1) INLINE NEW p = ProfileObject DO {
         text(p) <- t1;    
     }     
@@ -203,7 +203,7 @@ child(ProfileObject up) = IF NOT up == selectedTop() THEN
         OVERRIDE ProfileObject.top IF up IS ProfileObject,
             [=GROUP LAST ProfileObject down IF link(ProfileObject up, down) AND pathFrom(selectedTop(), down) BY up ORDER order(up, down)](up);
        
-initFilters() = ACTION {
+initFilters() = {
     order() <- ProfilerIndex.totalTimeNoWait;
     active(ProfilerIndex i) <- TRUE WHERE i == ProfilerIndex.totalTimeNoWait OR i == ProfilerIndex.totalSQLTime OR i == ProfilerIndex.inherentJavaTime OR i == ProfilerIndex.callCount;
 }
@@ -362,7 +362,7 @@ DESIGN profiler {
     MOVE functions.box;
 }
 
-setSelected 'Посмотреть дерево вызовов'(ProfileObject po) = ACTION {
+setSelected 'Посмотреть дерево вызовов'(ProfileObject po) = {
     dataSelectedTop() <- po;
     ACTIVATE TAB call FORM profiler;
 } SHORTCUT text[ProfileObject];

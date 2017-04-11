@@ -32,16 +32,18 @@ curStringValue 'Тек. значение (строка)' (Numerator numerator) =
 
 incrementedValue = DATA LOCAL NESTED VARSTRING[28] ();
 
-incrementValue 'Увеличить значение'(Numerator numerator) = ACTION NEWSESSION {
-    incrementedValue() <- NULL;
-    IF curValue(numerator) >= maxValue(numerator) THEN
-        MESSAGE 'Счетчик нумератора ' + name(numerator) + ' достиг максимального значения. Обратитесь к администратору.'
-    ELSE {
-        APPLY {
-            incrementedValue() <- curStringValue(numerator);
-            curValue(numerator) <- curValue(numerator) + 1;
-        }
-    };
+incrementValue 'Увеличить значение'(Numerator numerator) = {
+	NEWSESSION {
+	    incrementedValue() <- NULL;
+	    IF curValue(numerator) >= maxValue(numerator) THEN
+	        MESSAGE 'Счетчик нумератора ' + name(numerator) + ' достиг максимального значения. Обратитесь к администратору.';
+	    ELSE {
+	        APPLY {
+	            incrementedValue() <- curStringValue(numerator);
+	            curValue(numerator) <- curValue(numerator) + 1;
+	        }
+	    };
+	}
 };
 
 // -------------- Генерация счетчиков на форме с целью выноса из общей транзакции для уменьшения вероятности CONFLICT UPDATE
@@ -49,7 +51,7 @@ incrementValue 'Увеличить значение'(Numerator numerator) = ACTI
 @defineOption(generateNumberOnForm, 'Генерировать номер до общей транзакции', numerator);
 
 META addEventGenerateNumberOnForm(form, o, object)
-    generateNumber (###object ob)= ACTION {
+    generateNumber (###object ob)= {
         IF generateNumberOnForm() AND numerator(ob) AND NOT number(ob) THEN {
             incrementValue(numerator(ob));
             number(ob) <- incrementedValue();
@@ -63,9 +65,9 @@ END
 
 // --------------
 
-incrementValueSession 'Увеличить значение'(Numerator numerator) = ACTION {
+incrementValueSession 'Увеличить значение'(Numerator numerator) = {
     IF curValue(numerator) >= maxValue(numerator) THEN
-        MESSAGE 'Счетчик нумератора достиг максимального значения. Обратитесь к администратору.'
+        MESSAGE 'Счетчик нумератора достиг максимального значения. Обратитесь к администратору.';
     ELSE
         ASSIGN curValue(numerator) <- curValue(numerator) + 1;
 }
@@ -159,7 +161,7 @@ META defineNumerated(class)
     numerator 'Нумератор (ИД)' = DATA Numerator (class);
     nameNumerator 'Нумератор' (class o) = name(numerator(o)) IN numbered MINCHARWIDTH 7 PREFCHARWIDTH 15;
 
-    generateSeriesNumber 'Сгенерировать номер'(class o) = ACTION {
+    generateSeriesNumber 'Сгенерировать номер'(class o) = {
         number(o) <- curStringValue(numerator(o));
         series(o) <- series(numerator(o));
         incrementValueSession(numerator(o));
@@ -193,7 +195,7 @@ META defineNumeratedDefaultPrefix(class, captionV, seriesV, prefix)
         PROPERTIES() name##prefix##DefaultNumerator##class = nameDefaultNumerator##class
     ;
     
-    loadDefaultNumerators() += ACTION {
+    loadDefaultNumerators() += {
         FOR NEW n = Numerator DO {
             ASSIGN name(n) <- captionV;
             ASSIGN series(n) <- seriesV;
@@ -218,7 +220,7 @@ META defineNumerated(object1, object2)
     numerator = DATA Numerator (###object1, ###object2);
     nameNumerator 'Нумератор' (###object1 object1, ###object2 object2) = name(numerator(object1, object2)) MINCHARWIDTH 7 PREFCHARWIDTH 15;
 
-    setValueSessionNumerated 'Сгенерировать номер'(###object1 object1, ###object2 object2) = ACTION {
+    setValueSessionNumerated 'Сгенерировать номер'(###object1 object1, ###object2 object2) = {
         ASSIGN number(object1, object2) <- curStringValue(numerator(object1, object2));
         ASSIGN series(object1, object2) <- series(numerator(object1, object2));
         EXEC incrementValueSession(numerator(object1, object2));

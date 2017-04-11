@@ -7,16 +7,16 @@ TABLE template(Template);
 
 name 'Имя' = DATA VARSTRING[100] (Template);
 file 'Файл шаблона' (Template) = DATA WORDFILE (Template);
-loadFile 'Загрузить шаблон'(Template t) = ACTION LOADFILE file(t);
-openFile 'Открыть шаблон'(Template t) = ACTION OPENFILE file(t);
+loadFile 'Загрузить шаблон'(Template t) = { LOADFILE file(t); }
+openFile 'Открыть шаблон'(Template t) = { OPENFILE file(t); }
 id 'Идентификатор' = DATA VARISTRING[100] (Template) MINCHARWIDTH 5 MAXCHARWIDTH 10 PREFCHARWIDTH 10;
 
 process = ACTION CUSTOM 'lsfusion.erp.utils.word.ProcessTemplateActionProperty' (Template);
 
 resultTemplate = DATA LOCAL WORDFILE ();
-openResultTemplate () = ACTION OPENFILE resultTemplate();
+openResultTemplate () = { OPENFILE resultTemplate(); }
 
-openProcess 'Сгенерировать документ'(Template template) = ACTION {
+openProcess 'Сгенерировать документ'(Template template) = {
     process(template);
     openResultTemplate();
 }

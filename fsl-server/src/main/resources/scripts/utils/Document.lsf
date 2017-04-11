@@ -316,12 +316,16 @@ META defineDocumentHeaderPosted(objectClass)
     postedComputer(objectClass o) <- currentComputer() WHEN SET(isPosted(o));
     postedHostnameComputer 'Проведен на компьютере' (objectClass o) = hostname(postedComputer(o)) IN posted;
 
-    prePost 'Провести' (objectClass o) = ACTION isPosted(o) <- TRUE;
+    prePost 'Провести' (objectClass o) = { isPosted(o) <- TRUE; }
     post 'Провести' (objectClass o) = 
-        ACTION NEWSESSION { isPosted(o) <- TRUE; apply(); } TOOLBAR CONFIRM;
+        {
+	NEWSESSION { isPosted(o) <- TRUE; apply(); }
+} TOOLBAR CONFIRM;
 
     unpost 'Распровести' (objectClass o) = 
-        ACTION NEWSESSION { isPosted(o) <- NULL; apply(); } TOOLBAR CONFIRM;
+        {
+	NEWSESSION { isPosted(o) <- NULL; apply(); }
+} TOOLBAR CONFIRM;
 END
 
 META defineDocumentAbstractHeaderPosted (objectClass)
@@ -362,7 +366,7 @@ closeDocuments = ACTION ABSTRACT LIST (DATE);
 
 documentsClosedDate 'Дата закрытия документов' = DATA DATE();
  
-dialogCloseDocumentsDate 'Закрыть документы'() = ACTION {
+dialogCloseDocumentsDate 'Закрыть документы'() = {
     DIALOG dialogDate OBJECTS d = documentsClosedDate() INPUT DO {
         documentsClosedDate() <- d;
         closeDocuments(d);
@@ -393,12 +397,16 @@ META defineDocumentHeaderClosed (objectClass)
     isClosed 'Закрыт' = DATA BOOLEAN (objectClass);
     isOpened 'Не закрыт' (objectClass o) = o IS objectClass AND NOT isClosed(o) PERSISTENT;
 
-    close 'Закрыть' (objectClass o) = ACTION NEWSESSION { isClosed(o) <- TRUE; apply(); } TOOLBAR CONFIRM;
+    close 'Закрыть' (objectClass o) = {
+	NEWSESSION { isClosed(o) <- TRUE; apply(); }
+} TOOLBAR CONFIRM;
 
-    open 'Открыть' (objectClass o) = ACTION NEWSESSION { isClosed(o) <- NULL; apply(); } TOOLBAR CONFIRM;
+    open 'Открыть' (objectClass o) = {
+	NEWSESSION { isClosed(o) <- NULL; apply(); }
+} TOOLBAR CONFIRM;
     
     skipClose = ABSTRACT CASE BOOLEAN (objectClass);
-    closeDocuments(DATE date) += ACTION isClosed(objectClass o) <- TRUE WHERE date(o) < date AND date IS DATE AND NOT skipClose(o);
+    closeDocuments(DATE date) += { isClosed(objectClass o) <- TRUE WHERE date(o) < date AND date IS DATE AND NOT skipClose(o); }
 END
 
 META defineDocumentAbstractHeaderClosed (objectClass)
@@ -411,7 +419,7 @@ META defineDocumentInterfaceHeaderClosed (objectClass)
     @defineDocumentAbstractHeaderClosed(objectClass);
     @defineDocumentHeaderClosed(User##objectClass);
     isClosed(User##objectClass o) += isClosed(o);
-    close(User##objectClass o) += ACTION isClosed(o) <- TRUE;
+    close(User##objectClass o) += { isClosed(o) <- TRUE; }
 END
 
 META defineDocumentDetailClosed (object, detailClass)
@@ -462,7 +470,7 @@ META defineDocumentDetailSortOrder (object, detailClass)
     sortOrder 'Порядок сортировки' (d) = ABSTRACT VARSTRING[100] (detailClass);
     sortOrder##detailClass = GROUP SUM 1 IF sortOrder(detailClass d) BY object(d);
     
-    updateSortOrder 'Сортировать'(detailClass detail) = ACTION {
+    updateSortOrder 'Сортировать'(detailClass detail) = {
         IF sortOrder##detailClass(object(detail)) THEN {    
             LOCAL int = INTEGER();
             int() <- NULL;
@@ -501,7 +509,7 @@ END
 
 // Action'ы
 META defineDocumentDetailActionsCustom (object, detailClass)
-    delete##detailClass 'Очистить'(###object o) = ACTION {
+    delete##detailClass 'Очистить'(###object o) = {
         //FOR object##detailClass (d) == o DO {
         DELETE detailClass d WHERE object (d) == o;
         //}
@@ -509,7 +517,7 @@ META defineDocumentDetailActionsCustom (object, detailClass)
 END
 
 META defineDocumentDetailActions (object, detailClass)
-    delete##detailClass 'Очистить'(###object o) = ACTION {
+    delete##detailClass 'Очистить'(###object o) = {
         //FOR object##detailClass (d) == o DO {
         DELETE detailClass d WHERE object (d) == o;
         //}
