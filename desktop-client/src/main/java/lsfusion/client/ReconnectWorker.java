@@ -155,5 +155,11 @@ public final class ReconnectWorker extends SwingWorker<RemoteLogicsLoaderInterfa
         public void setAttemptNumber(int n) {
             lbMessage.setText(getString("connect.message", n));
         }
+
+        @Override
+        public void dispose() {
+            super.dispose();
+            cancel(true);
+        }
     }
 }
