@@ -400,7 +400,7 @@ public class ActionPropertyDebugger implements DebuggerService {
             paramString += param;
         }
 
-        String script = "evalStub(" + paramString + ") = ACTION " + action;
+        String script = "evalStub(" + paramString + ") = {" + action + " } ";
 
         watchHack.set(false);
 

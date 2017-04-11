@@ -75,8 +75,8 @@ afterRunScript() = {
 
 scriptExecution 'Выполнить скрипт' () = { TRY { preRunScript(); EVAL scriptStorage(); afterRunScript(); } CATCH; }
 
-actionBodyExecution 'Выполнить действие' () = { TRY { preRunScript(); EVAL CONCAT ' ', 'run() = ACTION \{', scriptStorage(), ';\n\};'; afterRunScript(); } CATCH; };
-formExecution 'Показать форму' () = { TRY { preRunScript(); EVAL CONCAT ' ', 'FORM form', scriptStorage(), ';\nrun() = ACTION SHOW form NOWAIT;'; afterRunScript(); } CATCH; };
+actionBodyExecution 'Выполнить действие' () = { TRY { preRunScript(); EVAL CONCAT ' ', 'run() = \{', scriptStorage(), ';\n\};'; afterRunScript(); } CATCH; };
+formExecution 'Показать форму' () = { TRY { preRunScript(); EVAL CONCAT ' ', 'FORM form', scriptStorage(), ';\nrun() = { SHOW form NOWAIT; }'; afterRunScript(); } CATCH; };
 javaActionBodyExecution 'Выполнить Java-код' () = { TRY { preRunScript(); EVAL CONCAT ' ', 'run() = ACTION CUSTOM <\{ ', scriptStorage(), ' \}>;'; afterRunScript(); } CATCH; };
 
 FORM chooseScriptName 'Сохранить как'
