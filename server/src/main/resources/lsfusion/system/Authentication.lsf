@@ -157,9 +157,10 @@ unlock(Object object) = {
 }
 
 changeSHA256Password(CustomUser customUser) = {
-    REQUEST STRING[30] INPUT;
-    EXEC calculateBase64Hash('SHA-256', requestedString());
-    ASSIGN sha256Password(customUser) <- calculatedHash();
+    INPUTX st=STRING[30] DO {
+        EXEC calculateBase64Hash('SHA-256', st);
+        ASSIGN sha256Password(customUser) <- calculatedHash();
+    }
 }
 
 FORM customUser 'Пользователь'
