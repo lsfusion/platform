@@ -192,15 +192,15 @@ DESIGN admin {
 seekChat = ACTION ABSTRACT(CustomUser);
   
 saveNewMessage(Chat c) = {
-    REQUEST TEXT INPUT;
-    IF requestedText() THEN {
-        newMessage(c) <- requestedText();
-        IF chatNotFound() THEN
-            defaultNewMessage() <- newMessage(c);
-        ELSE 
-            chatNewMessage(c) <- newMessage(c);
-    }
-    
+    INPUTX t=TEXT DO {
+        IF requestedText() THEN {
+            newMessage(c) <- requestedText();
+            IF chatNotFound() THEN
+                defaultNewMessage() <- newMessage(c);
+            ELSE 
+                chatNewMessage(c) <- newMessage(c);
+        }
+    }    
 }  
   
 includeUserInChat (CustomUser u, Chat c) = {
