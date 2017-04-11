@@ -270,9 +270,9 @@ changeQuantity(Property p, INTEGER q) = {
 }
 
 changeQuantity(TableColumn tc) = {
-    REQUEST INTEGER INPUT;
-        IF requestedInteger() THEN {
-            changeQuantity(property(tc), requestedInteger());
+    INPUTX int = INTEGER DO
+        IF int THEN {
+            changeQuantity(property(tc), int);
         }      
 }
 
@@ -281,9 +281,9 @@ changeNotNullQuantity(Property p, INTEGER q) = {
 }
 
 changeNotNullQuantity(TableColumn tc) = {
-    REQUEST INTEGER INPUT;
-        IF requestedInteger() THEN {
-            changeNotNullQuantity(property(tc), requestedInteger());
+    INPUTX int = INTEGER DO
+        IF int THEN {
+            changeNotNullQuantity(property(tc), int);
         }      
 }
 
