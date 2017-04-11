@@ -27,10 +27,12 @@ GROUP propertyPolicy 'Свойства политики безопасности
 
 canceled 'Canceled' = DATA LOCAL BOOLEAN ();
 
-apply = ACTION APPLY {};
-cancel = ACTION CANCEL;
+apply = {
+	APPLY {}
+};
+cancel = { CANCEL; }
 onStarted = ACTION ABSTRACT LIST ();
-empty() = ACTION {};
+empty() = {};
 
 upper = FORMULA 'upper($1)';    
 subtractSeconds(DATETIME dateTimeFrom, DATETIME dateTimeTo) = [= FORMULA INTEGER PG 'extract (\'epoch\' from (($1)-($2)))', MS 'DATEDIFF(s, $2, $1)'](dateTimeTo AS DATETIME, dateTimeFrom AS DATETIME);
@@ -64,7 +66,7 @@ dropNoCancelInTransaction() = ACTION CUSTOM <{ context.getSession().setNoCancelI
 setNoEventsInTransaction() = ACTION CUSTOM <{ context.getSession().setNoEventsInTransaction(true); }>;
 dropNoEventsInTransaction() = ACTION CUSTOM <{ context.getSession().setNoEventsInTransaction(false); }>;
 
-check() = ACTION {
+check() = {
     applyOnlyCheck();
     
     TRY { 
@@ -75,7 +77,7 @@ check() = ACTION {
 }
 
 executeLocalEvents = ACTION CUSTOM 'lsfusion.server.logics.property.actions.ExecuteLocalEventsActionProperty' (TEXT);
-executeLocalEvents() = ACTION executeLocalEvents(NULL);
+executeLocalEvents() = { executeLocalEvents(NULL); }
 
 staticName 'Статическое имя' = DATA STRING[250] (Object);
 nameStatic (name) = GROUP MAX Object object BY staticName(object);
@@ -136,12 +138,12 @@ downloadFile 'Скопировать файл на клиент' = ACTION CUSTOM
 loadDownloadedLibrary 'Загрузить скачанную библиотеку' = ACTION CUSTOM 'lsfusion.server.lib.LoadDownloadedLibraryActionProperty' (VARSTRING[100]);
 loadDownloadedFont 'Загрузить шрифт' = ACTION CUSTOM 'lsfusion.server.lib.LoadDownloadedFontActionProperty' (VARSTRING[100]);
 
-loadLibrary 'Загрузить библиотеку' (path)  = ACTION {
+loadLibrary 'Загрузить библиотеку' (path)  = {
     downloadFile(path);
     loadDownloadedLibrary(path);
 }
 
-loadFont 'Загрузить шрифт' (path)  = ACTION {
+loadFont 'Загрузить шрифт' (path)  = {
     downloadFile(path);
     loadDownloadedFont(path);
 }
@@ -204,7 +206,7 @@ FORM networkPathForm 'Выбор сетевого пути'
     PROPERTIES() networkPath, loadNetworkPath;
 
 META defineLinkDialog (object, class)
-    dialog###object(class o) = ACTION {
+    dialog###object(class o) = {
         networkPath() <- VARSTRING[255] (object(o));
         SHOW networkPathForm ;
         IF formResult() == FormResult.ok THEN {

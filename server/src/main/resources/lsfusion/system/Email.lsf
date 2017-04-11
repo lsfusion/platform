@@ -83,7 +83,7 @@ dateTimeSent 'Дата отправки' = DATA DATETIME (Email);
 dateTimeReceived 'Дата получения' = DATA DATETIME (Email);
 message 'Сообщение' = DATA RICHTEXT (Email);
 emlFile 'Файл EML' = DATA CUSTOMFILE (Email);
-openEMLFile 'Открыть файл EML' (Email email) = ACTION OPENFILE emlFile (email);
+openEMLFile 'Открыть файл EML' (Email email) = { OPENFILE emlFile (email); }
 
 receiveEmailAction 'Получить всю почту' = ACTION CUSTOM 'lsfusion.server.mail.ReceiveEmailActionProperty' ();
 receiveEmailAction 'Получить почту' = ACTION CUSTOM 'lsfusion.server.mail.ReceiveEmailAccountActionProperty' (Account);
@@ -123,7 +123,7 @@ email = DATA Email (AttachmentEmail);
 attachmentEmail (id, email) = GROUP AGGR AttachmentEmail attachment BY id (attachment), id(email(attachment)) WHERE attachment IS AttachmentEmail; 
 name 'Имя файла' = DATA VARSTRING[255] (AttachmentEmail);
 file 'Файл' = DATA CUSTOMFILE (AttachmentEmail);
-openFile 'Файл' (AttachmentEmail attachmentEmail) = ACTION OPENFILE file(attachmentEmail);
+openFile 'Файл' (AttachmentEmail attachmentEmail) = { OPENFILE file(attachmentEmail); }
 lastError 'Последняя ошибка при импорте файла' = DATA TEXT (AttachmentEmail);
 
 FORM remindUserPass 'Напоминание пароля'
@@ -132,10 +132,10 @@ FORM remindUserPass 'Напоминание пароля'
     PROPERTIES(u) READONLY login, name[Contact]
 ;
 
-emailUserPass 'Напоминание пароля' (Contact user) = ACTION EMAIL
+emailUserPass 'Напоминание пароля' (Contact user) = { EMAIL
                                SUBJECT 'Напоминание пароля' IF user IS CustomUser
                                TO email(user)
-                               INLINE remindUserPass OBJECTS u = user;
+                               INLINE remindUserPass OBJECTS u = user; }
 
 FORM mail 'Почта' 
 

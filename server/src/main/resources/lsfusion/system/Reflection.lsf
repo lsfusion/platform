@@ -213,20 +213,20 @@ recalculateAggregation 'Пересчитать агрегации' = ACTION CUST
 recalculateAggregationWithDependencies 'Пересчитать агрегации (+зависимости)' = ACTION CUSTOM 'lsfusion.server.logics.reflection.RecalculateTableColumnWithDependenciesActionProperty' (TableColumn);
 recalculateAggregationWithDependents 'Пересчитать агрегации (+зависимые)' = ACTION CUSTOM 'lsfusion.server.logics.reflection.RecalculateTableColumnWithDependentsActionProperty' (TableColumn);
 checkAggregation 'Проверить агрегации' = ACTION CUSTOM 'lsfusion.server.logics.reflection.CheckTableColumnActionProperty' (TableColumn);
-checkAggregation(VARISTRING[100] string) = ACTION checkAggregation(tableColumnSID(string));
+checkAggregation(VARISTRING[100] string) = { checkAggregation(tableColumnSID(string)); }
 dropDB = ACTION CUSTOM 'lsfusion.server.logics.reflection.DropColumnActionProperty' (DropColumn);
-drop 'Окончательно удалить колонку' (DropColumn cl) = ACTION {
+drop 'Окончательно удалить колонку' (DropColumn cl) = {
     dropDB(cl);
     DELETE cl;
 }
 
-recalculateColumnsAggregations 'Пересчитать агрегации колонок' (Table table) = ACTION {
+recalculateColumnsAggregations 'Пересчитать агрегации колонок' (Table table) = {
     FOR table == table(TableColumn tableColumn) AND tableColumn IS TableColumn DO {
         recalculateAggregation(tableColumn);    
     }
 }
 checkClasses 'Проверить классы таблицы' = ACTION CUSTOM 'lsfusion.server.logics.reflection.CheckTableClassesActionProperty' (Table);
-checkClasses(VARISTRING[100] string) = ACTION checkClasses(table(string));
+checkClasses(VARISTRING[100] string) = { checkClasses(table(string)); }
 recalculateClasses 'Пересчитать классы таблицы' = ACTION CUSTOM 'lsfusion.server.logics.reflection.RecalculateTableClassesActionProperty' (Table);
 notRecalculateStats 'Не пересчитывать статистику таблицы' = DATA BOOLEAN (Table);
 notRecalculateStats 'Не пересчитывать статистику таблицы' (VARISTRING[100] sid) = notRecalculateStats(tableSID(sid));
@@ -265,22 +265,22 @@ sum 'Суммировать' = DATA BOOLEAN (FormGrouping, PropertyDraw);
 max 'Максимум' = DATA BOOLEAN (FormGrouping, PropertyDraw);
 pivot 'Pivot' = DATA BOOLEAN (FormGrouping, PropertyDraw);
 
-changeQuantity(Property p, INTEGER q) = ACTION {
+changeQuantity(Property p, INTEGER q) = {
     quantity(p) <- q;
 }
 
-changeQuantity(TableColumn tc) = ACTION {
+changeQuantity(TableColumn tc) = {
     REQUEST INTEGER INPUT;
         IF requestedInteger() THEN {
             changeQuantity(property(tc), requestedInteger());
         }      
 }
 
-changeNotNullQuantity(Property p, INTEGER q) = ACTION {
+changeNotNullQuantity(Property p, INTEGER q) = {
     notNullQuantity(p) <- q;
 }
 
-changeNotNullQuantity(TableColumn tc) = ACTION {
+changeNotNullQuantity(TableColumn tc) = {
     REQUEST INTEGER INPUT;
         IF requestedInteger() THEN {
             changeNotNullQuantity(property(tc), requestedInteger());

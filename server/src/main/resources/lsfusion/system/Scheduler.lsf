@@ -85,12 +85,12 @@ date 'Время'= DATA DATETIME (ScheduledClientTaskLog);
 isMessages 'Сообщения' (ScheduledTaskLog stl)= TRUE IF [=GROUP SUM 1 IF message(ScheduledClientTaskLog stcl) BY scheduledTaskLog(stcl)](stl) AND NOT exceptionOccurred(stl);
 
 stopScheduler 'Остановить планировщик' = ACTION CUSTOM 'lsfusion.server.scheduler.StopSchedulerActionProperty' ();
-stopSchedulerApply 'Остановить планировщик' = ACTION {
+stopSchedulerApply 'Остановить планировщик' = {
     stopScheduler();
     apply();
 }
 runSetupScheduler 'Запустить планировщик' = ACTION CUSTOM 'lsfusion.server.scheduler.SetupSchedulerActionProperty' ();
-runSetupSchedulerApply 'Запустить планировщик' = ACTION {
+runSetupSchedulerApply 'Запустить планировщик' = {
     runSetupScheduler();
     apply();
 }
@@ -99,10 +99,10 @@ isStoppedScheduler 'Остановлен' () = NOT isStartedScheduler();
 
 threadCountScheduler 'Кол-во потоков' = DATA INTEGER ();
 
-onStarted() += ACTION runSetupScheduler();
+onStarted() += { runSetupScheduler(); }
 
 scriptText 'Скрипт' () = DATA LOCAL TEXT ();
-evalScript 'Выполнить скрипт' () = ACTION EVAL scriptText();
+evalScript 'Выполнить скрипт' () = { EVAL scriptText(); }
                                          
 changedSchedulerTask (ScheduledTask t) = GROUP SUM 1 IF (((CHANGED (runAtStart(ScheduledTask t)) OR CHANGED (startDate(t)) OR CHANGED (timeFrom(t)) 
                                          OR CHANGED (timeTo(t)) OR CHANGED (period(t)) OR CHANGED (daysOfMonth(t))

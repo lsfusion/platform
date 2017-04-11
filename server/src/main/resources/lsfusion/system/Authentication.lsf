@@ -79,13 +79,13 @@ ignorePrintType() += ignorePrintTypeCustom(currentUser());
 
 calculateBase64Hash 'Вычислить Base64 хэш' = ACTION CUSTOM 'lsfusion.server.logics.authentication.CalculateBase64HashActionProperty' (STRING[10], STRING[30]);
 logOut (restart, reconnect) = ACTION CUSTOM 'lsfusion.server.logics.authentication.LogOutActionProperty' (BOOLEAN, BOOLEAN);
-shutdown 'Отключить' = ACTION {
+shutdown 'Отключить' = {
     logOut(NULL, NULL);
 }
-reconnect 'Переподключить' = ACTION {
+reconnect 'Переподключить' = {
     logOut(TRUE, TRUE);
 }
-restart 'Выйти' = ACTION {
+restart 'Выйти' = {
     logOut(TRUE, NULL);
 }
 
@@ -134,25 +134,29 @@ deliveredNotificationAction = ACTION ABSTRACT LIST (CustomUser);
 locked = DATA User (Object);
 lockResult = DATA LOCAL NESTED BOOLEAN ();
 
-lock(Object object) = ACTION NEWSESSION {    
-    lockResult() <- NULL;
-    APPLY SERIALIZABLE {
-        IF NOT object THEN
-            RETURN;
-        IF locked(object) THEN {
-            cancel();
-        } ELSE {
-            locked(object) <- currentUser();
-            lockResult() <- TRUE;
-        }
-    }
+lock(Object object) = {
+	NEWSESSION {    
+	    lockResult() <- NULL;
+	    APPLY SERIALIZABLE {
+	        IF NOT object THEN
+	            RETURN;
+	        IF locked(object) THEN {
+	            cancel();
+	        } ELSE {
+	            locked(object) <- currentUser();
+	            lockResult() <- TRUE;
+	        }
+	    }
+	}
 }
 
-unlock(Object object) = ACTION NEWSESSION { 
-    APPLY locked(object) <- NULL;
+unlock(Object object) = {
+	NEWSESSION { 
+	    APPLY locked(object) <- NULL;
+	}
 }
 
-changeSHA256Password(CustomUser customUser) = ACTION {
+changeSHA256Password(CustomUser customUser) = {
     REQUEST STRING[30] INPUT;
     EXEC calculateBase64Hash('SHA-256', requestedString());
     ASSIGN sha256Password(customUser) <- calculatedHash();
@@ -245,7 +249,7 @@ DESIGN reloginLoginUser {
     }
 }
 
-reloginLoginUser() = ACTION {
+reloginLoginUser() = {
     DIALOG reloginLoginUser OBJECTS login INPUT, password INPUT DO {
         LOCAL user = CustomUser();
         ASSIGN user() <- customUser(login);
@@ -290,7 +294,7 @@ DESIGN reloginPasswordUser {
     }
 }
 
-reloginPassword(CustomUser customUser) = ACTION {
+reloginPassword(CustomUser customUser) = {
     DIALOG reloginPasswordUser OBJECTS password INPUT DO {
         IF isLocked(customUser) THEN {
             MESSAGE 'Данный пользователь заблокирован';
@@ -347,7 +351,7 @@ DESIGN changePasswordUser {
     }
 }
 
-changePassword(CustomUser customUser) = ACTION {
+changePassword(CustomUser customUser) = {
     SHOW changePasswordUser ;
     DIALOG changePasswordUser OBJECTS old INPUT, new1 INPUT,new2 INPUT DO {
             EXEC calculateBase64Hash('SHA-256', old);
@@ -367,7 +371,7 @@ changePassword(CustomUser customUser) = ACTION {
         }
 }
 
-changePassword() = ACTION {
+changePassword() = {
       IF forbidChangePassword(currentUser()) THEN {
         MESSAGE 'Вы не можете изменить свой пароль';
       }
