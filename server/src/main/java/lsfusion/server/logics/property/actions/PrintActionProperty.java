@@ -13,6 +13,7 @@ import lsfusion.interop.action.ReportClientAction;
 import lsfusion.interop.form.ReportGenerationData;
 import lsfusion.interop.form.ReportGenerationDataType;
 import lsfusion.server.SystemProperties;
+import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.entity.ObjectEntity;
@@ -104,9 +105,9 @@ public class PrintActionProperty extends FormStaticActionProperty<FormPrintType>
                         break;
                 }
                 if(syncType)
-                    context.requestUserInteraction(new LogMessageClientAction(form.caption.getSourceString(), titleRow, dataRows, !context.getSession().isNoCancelInTransaction()));
+                    context.requestUserInteraction(new LogMessageClientAction(ThreadLocalContext.localize(form.caption), titleRow, dataRows, !context.getSession().isNoCancelInTransaction()));
                 else
-                    context.delayUserInteraction(new LogMessageClientAction(form.caption.getSourceString(), titleRow, dataRows, !context.getSession().isNoCancelInTransaction()));
+                    context.delayUserInteraction(new LogMessageClientAction(ThreadLocalContext.localize(form.caption), titleRow, dataRows, !context.getSession().isNoCancelInTransaction()));
 
             }
         } catch (Exception e) {
