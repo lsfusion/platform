@@ -157,7 +157,7 @@ unlock(Object object) = {
 }
 
 changeSHA256Password(CustomUser customUser) = {
-    INPUTX st=STRING[30] DO {
+    INPUT st=STRING[30] DO {
         EXEC calculateBase64Hash('SHA-256', st);
         ASSIGN sha256Password(customUser) <- calculatedHash();
     }
