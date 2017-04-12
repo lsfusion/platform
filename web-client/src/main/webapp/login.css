@@ -82,6 +82,10 @@ a:hover {
     width: 95%;
 }
 
+.image-center {
+    text-align: center;
+}
+
 .image-right {
     background-position: right center;
     padding-right: 3em;

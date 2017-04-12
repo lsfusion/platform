@@ -22,8 +22,9 @@
                               method="POST"
                               action="login_check<c:out value="${(empty param.targetUrl) ? '' : '?targetUrl='}${(empty param.targetUrl) ? '' : param.targetUrl}"/>" >
                             <fieldset>
+                                <div class="image-center"><img src="readLogo" alt="LSFusion"></div>
                                 <p>
-                                    <img src="readLogo" alt="LSFusion">
+                                    <br/>
                                     <label for="j_username">login</label>
                                     <input type="text" id="j_username" name="j_username" class="round full-width-input"/>
                                 </p>
