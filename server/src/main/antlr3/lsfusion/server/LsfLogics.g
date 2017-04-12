@@ -1741,7 +1741,7 @@ newThreadActionDefinitionBody[List<TypedParameter> context, boolean dynamic] ret
 		$property = self.addScriptedNewThreadActionProperty($aDB.property, $connExpr.property, $periodExpr.property, $delayExpr.property);
 	}
 }
-	:	'NEWTHREAD' aDB=innerActionDefinitionBody[context, dynamic] 
+	:	'NEWTHREAD' aDB=keepContextFlowActionDefinitionBody[context, dynamic]
 	    (
 	    	(   'CONNECTION' connExpr=propertyExpression[context, dynamic]
 		    |   'SCHEDULE' ('PERIOD' periodExpr=propertyExpression[context, dynamic])? ('DELAY' delayExpr=propertyExpression[context, dynamic])? 
@@ -1760,7 +1760,7 @@ newExecutorActionDefinitionBody[List<TypedParameter> context, boolean dynamic] r
 		$property = self.addScriptedNewExecutorActionProperty($aDB.property, $threadsExpr.property);
 	}
 }
-	:	'NEWEXECUTOR' aDB=innerActionDefinitionBody[context, dynamic] 'THREADS' threadsExpr=propertyExpression[context, dynamic] ';'
+	:	'NEWEXECUTOR' aDB=keepContextFlowActionDefinitionBody[context, dynamic] 'THREADS' threadsExpr=propertyExpression[context, dynamic] ';'
 	;
 
 newSessionActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
@@ -1780,7 +1780,7 @@ newSessionActionDefinitionBody[List<TypedParameter> context, boolean dynamic] re
 		|	'NESTEDSESSION' { isNested = true; }
 		)	
 		('SINGLE' { singleApply = true; })? 
-		aDB=innerActionDefinitionBody[context, dynamic] 
+		aDB=keepContextFlowActionDefinitionBody[context, dynamic]
 	; 
 
 nonEmptyPropertyUsageListWithIds returns [List<String> ids, List<PropertyUsage> propUsages]
@@ -2155,7 +2155,7 @@ modifyContextFlowActionDefinitionBody[List<TypedParameter> oldContext, List<Type
     :	aDB=actionDefinitionBody[newContext, dynamic, true] { $property = $aDB.property; $signature = $aDB.signature; }
 	;
 
-innerActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property, List<ResolveClassSet> signature]
+keepContextFlowActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property, List<ResolveClassSet> signature]
     :	aDB=actionDefinitionBody[context, dynamic, false] { $property = $aDB.property; $signature = $aDB.signature; }
 	;
 
@@ -2205,7 +2205,7 @@ recursiveKeepContextActionDB[List<TypedParameter> context, boolean dynamic] retu
 	|	multiADB=multiActionDefinitionBody[context, dynamic] { $property = $multiADB.property; }	
 	|	applyADB=applyActionDefinitionBody[context, dynamic] { $property = $applyADB.property; }
     |   newThreadADB=newThreadActionDefinitionBody[context, dynamic] { $property = $newThreadADB.property; } // mixed
-	|	newExecutorADB=newExecutorActionDefinitionBody[context, dynamic] { $property = $newExecutorADB.property; } // mixed, recursive but allways semi
+	|	newExecutorADB=newExecutorActionDefinitionBody[context, dynamic] { $property = $newExecutorADB.property; } // mixed, recursive but always semi
 ;
 
 // always semi in the end
@@ -2248,8 +2248,9 @@ leafKeepContextActionDB[List<TypedParameter> context, boolean dynamic] returns [
 	|	importFormADB=importFormActionDefinitionBody[context, dynamic] { $property = $importFormADB.property; }
 	|	activeFormADB=activeFormActionDefinitionBody[context, dynamic] { $property = $activeFormADB.property; }
 	|	activateADB=activateActionDefinitionBody[context, dynamic] { $property = $activateADB.property; }
+	|	emptyADB=emptyActionDefinitionBody[context, dynamic] { $property = $emptyADB.property; }
 	;
-	
+
 contextIndependentActionDB returns [LPWithParams property, List<ResolveClassSet> signature]
 @init {
 	$property = new LPWithParams(null, new ArrayList<Integer>());
@@ -2287,6 +2288,15 @@ mappedForm[List<TypedParameter> context, List<TypedParameter> newContext, boolea
 	    ))
 ;
 
+
+emptyActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
+@after {
+    if (inPropParseState()) {
+        $property = new LPWithParams(self.baseLM.empty, new ArrayList<Integer>());
+    }
+}
+    :
+    ;
 
 formActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
 @init {
@@ -2358,7 +2368,7 @@ dialogActionDefinitionBody[List<TypedParameter> context] returns [LPWithParams p
 	
 doInputBody[List<TypedParameter> oldContext, List<TypedParameter> newContext]  returns [LPWithParams property]
         // modifyContextFlowActionDefinitionBody[oldContext, newContext, false, false] - used explicit modifyContextFlowActionDefinitionBodyCreated to support CHANGE clauses
-    :	('DO' dDB=innerActionDefinitionBody[newContext, false] { $property = $dDB.property; } ) | ';'
+    :	('DO' dDB=keepContextFlowActionDefinitionBody[newContext, false] { $property = $dDB.property; } ) | ';'
 ;
 
 syncTypeLiteral returns [boolean val]
@@ -2771,7 +2781,7 @@ requestActionDefinitionBody[List<TypedParameter> context, boolean dynamic] retur
 		$property = self.addScriptedRequestAProp($aDB.property, $dDB.property);
 	}
 }
-	:	'REQUEST' aDB=innerActionDefinitionBody[context, dynamic] 'DO' dDB=innerActionDefinitionBody[context, dynamic]
+	:	'REQUEST' aDB=keepContextFlowActionDefinitionBody[context, dynamic] 'DO' dDB=keepContextFlowActionDefinitionBody[context, dynamic]
 	;
 
 inputActionDefinitionBody[List<TypedParameter> context] returns [LPWithParams property]
@@ -2841,9 +2851,8 @@ listActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns 
 	}
 }
 	:	'{'
-			(	(aDB=innerActionDefinitionBody[context, dynamic] { props.add($aDB.property); })
+			(	(aDB=keepContextFlowActionDefinitionBody[context, dynamic] { props.add($aDB.property); })
 			|	def=localDataPropertyDefinition ';' { localProps.add($def.property); }
-			|	emptyStatement
 			)*
 		'}'
 	;
@@ -2919,8 +2928,8 @@ tryActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [
 		$property = self.addScriptedTryAProp($tryADB.property, $finallyADB.property);
 	}
 }
-	:	'TRY' tryADB=innerActionDefinitionBody[context, dynamic] 
-		( 'FINALLY' finallyADB=innerActionDefinitionBody[context, dynamic] )?
+	:	'TRY' tryADB=keepContextFlowActionDefinitionBody[context, dynamic]
+		( 'FINALLY' finallyADB=keepContextFlowActionDefinitionBody[context, dynamic] )?
 	;
 
 ifActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
@@ -2930,8 +2939,8 @@ ifActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [L
 	}
 }
 	:	'IF' expr=propertyExpression[context, dynamic] 
-		'THEN' thenADB=innerActionDefinitionBody[context, dynamic]
-		('ELSE' elseADB=innerActionDefinitionBody[context, dynamic])?
+		'THEN' thenADB=keepContextFlowActionDefinitionBody[context, dynamic]
+		('ELSE' elseADB=keepContextFlowActionDefinitionBody[context, dynamic])?
 	;
 
 caseActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property] 
@@ -2948,12 +2957,12 @@ caseActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns 
 }
 	:	'CASE' (opt=exclusiveOverrideOption { isExclusive = $opt.isExclusive; })?
 			( branch=actionCaseBranchBody[context, dynamic] { whenProps.add($branch.whenProperty); thenActions.add($branch.thenAction); } )+
-			('ELSE' elseAct=innerActionDefinitionBody[context, dynamic] { elseAction = $elseAct.property; })?
+			('ELSE' elseAct=keepContextFlowActionDefinitionBody[context, dynamic] { elseAction = $elseAct.property; })?
 	;
 
 actionCaseBranchBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams whenProperty, LPWithParams thenAction]
 	:	'WHEN' whenExpr=propertyExpression[context, dynamic] { $whenProperty = $whenExpr.property; }
-		'THEN' thenAct=innerActionDefinitionBody[context, dynamic] { $thenAction = $thenAct.property; }
+		'THEN' thenAct=keepContextFlowActionDefinitionBody[context, dynamic] { $thenAction = $thenAct.property; }
 	;
 
 applyActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
@@ -2972,7 +2981,7 @@ applyActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns
         (mps=nestedPropertiesSelector { keepAllSessionProps = $mps.all; keepSessionProps = $mps.props; })?
         ('SINGLE' { single = true; })?
         ('SERIALIZABLE' { serializable = true; })?
-        applyADB=innerActionDefinitionBody[context, dynamic]
+        applyADB=keepContextFlowActionDefinitionBody[context, dynamic]
 	;
 
 cancelActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
@@ -3041,7 +3050,7 @@ forActionPropertyDefinitionBody[List<TypedParameter> context] returns [LPWithPar
 		in = inlineStatement[newContext]
 		(addObj=forAddObjClause[newContext])?
 		'DO' actDB=modifyContextFlowActionDefinitionBody[context, newContext, false, false]
-		( {!recursive}?=> 'ELSE' elseActDB=innerActionDefinitionBody[context, false])?
+		( {!recursive}?=> 'ELSE' elseActDB=keepContextFlowActionDefinitionBody[context, false])?
 	;
 
 terminalFlowActionDefinitionBody returns [LPWithParams property]
@@ -3925,8 +3934,8 @@ nonEmptyActionPDBList[List<TypedParameter> context, boolean dynamic] returns [Li
 @init {
 	$props = new ArrayList<LPWithParams>();
 }
-	:	first=innerActionDefinitionBody[context, dynamic] { $props.add($first.property); }
-		(',' next=innerActionDefinitionBody[context, dynamic] { $props.add($next.property); })* 
+	:	first=keepContextFlowActionDefinitionBody[context, dynamic] { $props.add($first.property); }
+		(',' next=keepContextFlowActionDefinitionBody[context, dynamic] { $props.add($next.property); })*
 	; 
 
 propertyExpressionList[List<TypedParameter> context, boolean dynamic] returns [List<LPWithParams> props] 
