@@ -101,18 +101,22 @@ public class FormReportManager<PropertyDraw extends PropertyReaderInstance, Grou
     }
 
     public ReportGenerationData getReportData(boolean toExcel) {
-        return getReportData(null, toExcel, ReportGenerationDataType.DEFAULT, null);
+        return getReportData(null, toExcel, ReportGenerationDataType.DEFAULT, null, 0);
     }
 
-    public ReportGenerationData getReportData(boolean toExcel, ReportGenerationDataType reportType) {
-        return getReportData(null, toExcel, reportType, null);
+    public ReportGenerationData getReportData(boolean toExcel, ReportGenerationDataType reportType, int selectTop) {
+        return getReportData(null, toExcel, reportType, null, selectTop);
     }
 
     public ReportGenerationData getReportData(Integer groupId, boolean toExcel, FormUserPreferences userPreferences) {
-        return getReportData(groupId, toExcel, ReportGenerationDataType.DEFAULT, userPreferences);
+        return getReportData(groupId, toExcel, ReportGenerationDataType.DEFAULT, userPreferences, 0);
     }
 
-    public ReportGenerationData getReportData(Integer groupId, boolean toExcel, ReportGenerationDataType reportType, FormUserPreferences userPreferences) {
+    public ReportGenerationData getReportData(Integer groupId, boolean toExcel, FormUserPreferences userPreferences, int selectTop) {
+        return getReportData(groupId, toExcel, ReportGenerationDataType.DEFAULT, userPreferences, selectTop);
+    }
+
+    public ReportGenerationData getReportData(Integer groupId, boolean toExcel, ReportGenerationDataType reportType, FormUserPreferences userPreferences, int selectTop) {
         GroupObjectHierarchy.ReportHierarchy groupReportHierarchy = getReportHierarchy(groupId, !reportType.isDefault());
          
         GroupObjectHierarchy.ReportHierarchy fullReportHierarchy = getReportHierarchy(null, !reportType.isDefault());
@@ -121,7 +125,7 @@ public class FormReportManager<PropertyDraw extends PropertyReaderInstance, Grou
         Result<Map<String, LinkedHashSet<List<Object>>>> columnGroupObjects = new Result<>();
         ReportSourceGenerator<PropertyDraw, GroupObject, PropertyObject, CalcPropertyObject, Order, Obj, PropertyReaderInstance> sourceGenerator =
                 new ReportSourceGenerator<>(formInterface, groupReportHierarchy, fullReportHierarchy, getGridGroups(groupId), groupId, userPreferences);
-        byte[] reportSourcesByteArray = getReportSourcesByteArray(sourceGenerator, columnGroupObjects, reportType);
+        byte[] reportSourcesByteArray = getReportSourcesByteArray(sourceGenerator, columnGroupObjects, reportType, selectTop);
         byte[] reportDesignsByteArray = reportType.isExport() ? null :
                 reportType.isPrint() ? getPropertyCaptionsMapByteArray(sourceGenerator, reportType) :
                         getReportDesignsByteArray(toExcel, groupId, userPreferences, columnGroupObjects.result);
@@ -336,9 +340,9 @@ public class FormReportManager<PropertyDraw extends PropertyReaderInstance, Grou
         return nodes;
     }
 
-    private byte[] getReportSourcesByteArray(ReportSourceGenerator<PropertyDraw, GroupObject, PropertyObject, CalcPropertyObject, Order, Obj, PropertyReaderInstance> sourceGenerator, Result<Map<String, LinkedHashSet<List<Object>>>> columnGroupObjects, ReportGenerationDataType reportType) {
+    private byte[] getReportSourcesByteArray(ReportSourceGenerator<PropertyDraw, GroupObject, PropertyObject, CalcPropertyObject, Order, Obj, PropertyReaderInstance> sourceGenerator, Result<Map<String, LinkedHashSet<List<Object>>>> columnGroupObjects, ReportGenerationDataType reportType, int selectTop) {
         try {
-            Map<String, ReportData> sources = sourceGenerator.generate(reportType);
+            Map<String, ReportData> sources = sourceGenerator.generate(reportType, selectTop);
             ReportSourceGenerator.ColumnGroupCaptionsData<Obj> columnGroupCaptions = sourceGenerator.getColumnGroupCaptions();
             columnGroupObjects.set(columnGroupCaptions.columnData);
             ByteArrayOutputStream outStream = new ByteArrayOutputStream();

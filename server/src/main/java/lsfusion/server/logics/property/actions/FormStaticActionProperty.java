@@ -2,13 +2,10 @@ package lsfusion.server.logics.property.actions;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.base.col.interfaces.immutable.ImOrderSet;
-import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.interop.FormExportType;
 import lsfusion.interop.FormPrintType;
 import lsfusion.interop.FormStaticType;
 import lsfusion.interop.action.MessageClientAction;
-import lsfusion.interop.action.ReportClientAction;
 import lsfusion.interop.form.ReportGenerationData;
 import lsfusion.interop.form.ReportGenerationDataType;
 import lsfusion.server.ServerLoggers;
@@ -40,17 +37,32 @@ public abstract class FormStaticActionProperty<T extends FormStaticType> extends
     protected final T staticType;
     
     private final LCP formExportFile;
-    
+
+    private Integer selectTop;
+
     public FormStaticActionProperty(LocalizedString caption,
                                     FormEntity form,
                                     List<ObjectEntity> objectsToSet,
-                                    List<Boolean> nulls, 
+                                    List<Boolean> nulls,
                                     T staticType,
-                                    LCP formExportFile, Property... extraProps) {
+                                    LCP formExportFile,
+                                    Property... extraProps) {
+        this(caption, form, objectsToSet, nulls, staticType, formExportFile, null, extraProps);
+    }
+
+    public FormStaticActionProperty(LocalizedString caption,
+                                    FormEntity form,
+                                    List<ObjectEntity> objectsToSet,
+                                    List<Boolean> nulls,
+                                    T staticType,
+                                    LCP formExportFile,
+                                    Integer selectTop,
+                                    Property... extraProps) {
         super(caption, form, objectsToSet, nulls, false, extraProps);
 
         this.staticType = staticType;
         this.formExportFile = formExportFile;
+        this.selectTop = selectTop;
     }
     
     protected abstract Map<String, byte[]> exportPlain(ReportGenerationData reportData) throws IOException; // multiple files
@@ -79,7 +91,8 @@ public abstract class FormStaticActionProperty<T extends FormStaticType> extends
             newFormManager = new StaticFormReportManager(form, BaseUtils.<ImMap<ObjectEntity, ObjectValue>>immutableCast(mapObjectValues), context);
 
         boolean isExcel = staticType instanceof FormPrintType && ((FormPrintType) staticType).isExcel();
-        ReportGenerationData reportData = newFormManager.getReportData(isExcel, ReportGenerationDataType.get(staticType));
+        int top = selectTop == null ? staticType == FormPrintType.SHOW ? 30 : 0 : selectTop;
+        ReportGenerationData reportData = newFormManager.getReportData(isExcel, ReportGenerationDataType.get(staticType), top);
 
         if (formExportFile != null) {
             try {

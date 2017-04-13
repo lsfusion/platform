@@ -40,11 +40,12 @@ public class PrintActionProperty extends FormStaticActionProperty<FormPrintType>
                                final List<Boolean> nulls,
                                FormPrintType staticType,
                                boolean syncType,
+                               Integer top,
                                LCP formExportFile,
                                CalcPropertyMapImplement printer,
                                ImOrderSet<PropertyInterface> innerInterfaces,
                                LCP formPageCount) {
-        super(caption, form, objectsToSet, nulls, staticType, formExportFile, printer == null ? null : printer.property);
+        super(caption, form, objectsToSet, nulls, staticType, formExportFile, top, printer == null ? null : printer.property);
 
         this.formPageCount = formPageCount;
 
@@ -95,14 +96,15 @@ public class PrintActionProperty extends FormStaticActionProperty<FormPrintType>
                     titleRow.add(propertyCaptions.get(title));
                 }
                 List<List<String>> dataRows = new ArrayList();
-                for (Map<ReportPropertyData, Object> row : clientData.getRows().values()) {
-                    List<String> dataRow = new ArrayList<>();
-                    for(int i = 0; i < titles.size(); i++) {
-                        dataRow.add(String.valueOf(row.get(properties.get(titles.get(i)))));
+                for (HashMap<Integer, Object> keyRow : clientData.getKeyRows()) {
+                    Map<ReportPropertyData, Object> row = clientData.getRows().get(keyRow);
+                    if(row != null) {
+                        List<String> dataRow = new ArrayList<>();
+                        for (int i = 0; i < titles.size(); i++) {
+                            dataRow.add(String.valueOf(row.get(properties.get(titles.get(i)))));
+                        }
+                        dataRows.add(dataRow);
                     }
-                    dataRows.add(dataRow);
-                    if(dataRows.size() >= 30)
-                        break;
                 }
                 if(syncType)
                     context.requestUserInteraction(new LogMessageClientAction(ThreadLocalContext.localize(form.caption), titleRow, dataRows, !context.getSession().isNoCancelInTransaction()));

@@ -169,7 +169,7 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K>, TableOwner {
     }
 
     public ImCol<ImMap<V, Object>> read(DataSession session, ImMap<K, DataObject> mapValues) throws SQLException, SQLHandledException {
-        return read(mapValues, session.sql, session.env, MapFact.<V, Boolean>EMPTYORDER()).values();
+        return read(mapValues, session.sql, session.env, MapFact.<V, Boolean>EMPTYORDER(), 0).values();
     }
 
     public ImOrderMap<ImMap<K, Object>, ImMap<V, Object>> read(DataSession session) throws SQLException, SQLHandledException {
@@ -177,15 +177,19 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K>, TableOwner {
     }
 
     public ImOrderMap<ImMap<K, Object>, ImMap<V, Object>> read(SQLSession session, QueryEnvironment env, ImOrderMap<V, Boolean> orders) throws SQLException, SQLHandledException {
-        return read(MapFact.<K, DataObject>EMPTY(), session, env, orders);
+        return read(MapFact.<K, DataObject>EMPTY(), session, env, orders, 0);
     }
 
-    public ImOrderMap<ImMap<K, Object>, ImMap<V, Object>> read(ImMap<K, DataObject> mapValues, SQLSession session, QueryEnvironment env, ImOrderMap<V, Boolean> orders) throws SQLException, SQLHandledException {
+    public ImOrderMap<ImMap<K, Object>, ImMap<V, Object>> read(SQLSession session, QueryEnvironment env, ImOrderMap<V, Boolean> orders, int selectTop) throws SQLException, SQLHandledException {
+        return read(MapFact.<K, DataObject>EMPTY(), session, env, orders, selectTop);
+    }
+
+    public ImOrderMap<ImMap<K, Object>, ImMap<V, Object>> read(ImMap<K, DataObject> mapValues, SQLSession session, QueryEnvironment env, ImOrderMap<V, Boolean> orders, int selectTop) throws SQLException, SQLHandledException {
         QueryBuilder<K, V> query = new QueryBuilder<>(mapKeys.valuesSet(), mapValues);
         Join<V> tableJoin = join(query.getMapExprs());
         query.addProperties(tableJoin.getExprs());
         query.and(tableJoin.getWhere());
-        return query.execute(session, orders, 0, env);
+        return query.execute(session, orders, selectTop, env);
     }
 
     public ImSet<Object> readDistinct(V prop, SQLSession session, OperationOwner owner) throws SQLException, SQLHandledException {

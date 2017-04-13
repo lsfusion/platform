@@ -549,11 +549,11 @@ public abstract class LogicsModule {
     protected LAP addIFAProp(AbstractGroup group, LocalizedString caption, FormEntity form, List<ObjectEntity> objectsToSet, List<Boolean> nulls, ImList<ObjectEntity> inputObjects, ImList<LCP> inputProps, ImList<Boolean> inputNulls, Boolean manageSession, boolean isAdd, ImList<ObjectEntity> contextObjects, ImList<CalcProperty> contextProperties, PropertyDrawEntity initFilterProperty, boolean syncType, WindowFormType windowType, boolean checkOnOk, boolean showDrop, boolean readonly, Object... params) {
         return addProperty(group, new LAP(new FormInteractiveActionProperty(caption, form, objectsToSet, nulls, inputObjects, inputProps, inputNulls, contextObjects, contextProperties, manageSession, isAdd, syncType, windowType, checkOnOk, showDrop, baseLM.formResult, baseLM.getFormResultProperty(), baseLM.getChosenValueProperty(), initFilterProperty, readonly)));
     }
-    protected LAP addPFAProp(AbstractGroup group, LocalizedString caption, FormEntity form, List<ObjectEntity> objectsToSet, List<Boolean> nulls, boolean hasPrinterProperty, FormPrintType staticType, boolean syncType, LCP targetProp, Object... params) {
+    protected LAP addPFAProp(AbstractGroup group, LocalizedString caption, FormEntity form, List<ObjectEntity> objectsToSet, List<Boolean> nulls, boolean hasPrinterProperty, FormPrintType staticType, boolean syncType, Integer selectTop, LCP targetProp, Object... params) {
         ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(getIntNum(params));
         ImList<PropertyInterfaceImplement<PropertyInterface>> readImplements = readImplements(listInterfaces, params);
         CalcPropertyMapImplement printer = hasPrinterProperty ? (CalcPropertyMapImplement) readImplements.get(0) : null;
-        return addProperty(group, new LAP(new PrintActionProperty(caption, form, objectsToSet, nulls, staticType, syncType, targetProp, printer, listInterfaces, baseLM.formPageCount)));
+        return addProperty(group, new LAP(new PrintActionProperty(caption, form, objectsToSet, nulls, staticType, syncType, selectTop, targetProp, printer, listInterfaces, baseLM.formPageCount)));
     }
     protected LAP addEFAProp(AbstractGroup group, LocalizedString caption, FormEntity form, List<ObjectEntity> objectsToSet, List<Boolean> nulls, FormExportType staticType, boolean noHeader, String separator, String charset, LCP targetProp, Object... params) {
         if(targetProp == null)

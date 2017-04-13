@@ -82,7 +82,10 @@ public class ReportSourceGenerator<PropertyDraw extends PropertyReaderInstance, 
     }
 
     public Map<String, ReportData> generate(ReportGenerationDataType reportType) throws SQLException, SQLHandledException {
-        iterateChildReports(hierarchy.getRootNodes(), SetFact.<GroupObject>EMPTYORDER(), null, reportType);
+        return generate(reportType, 0);
+    }
+    public Map<String, ReportData> generate(ReportGenerationDataType reportType, int selectTop) throws SQLException, SQLHandledException {
+        iterateChildReports(hierarchy.getRootNodes(), SetFact.<GroupObject>EMPTYORDER(), null, reportType, selectTop);
         return sources;
     }
 
@@ -171,14 +174,14 @@ public class ReportSourceGenerator<PropertyDraw extends PropertyReaderInstance, 
         return propertyObject;
     }
 
-    private void iterateChildReports(List<ReportNode> children, ImOrderSet<GroupObject> parentGroups, SessionTableUsage<Obj, Pair<Object, PropertyType>> parentTable, ReportGenerationDataType reportType) throws SQLException, SQLHandledException {
+    private void iterateChildReports(List<ReportNode> children, ImOrderSet<GroupObject> parentGroups, SessionTableUsage<Obj, Pair<Object, PropertyType>> parentTable, ReportGenerationDataType reportType, int selectTop) throws SQLException, SQLHandledException {
         for (ReportNode node : children) {
-            iterateChildReport(node, parentGroups, parentTable, reportType);
+            iterateChildReport(node, parentGroups, parentTable, reportType, selectTop);
         }
     }
 
     @StackMessage("{message.form.read.report.node}")
-    private void iterateChildReport(@ParamMessage ReportNode node, ImOrderSet<GroupObject> parentGroups, SessionTableUsage<Obj, Pair<Object, PropertyType>> parentTable, ReportGenerationDataType reportType) throws SQLException, SQLHandledException {
+    private void iterateChildReport(@ParamMessage ReportNode node, ImOrderSet<GroupObject> parentGroups, SessionTableUsage<Obj, Pair<Object, PropertyType>> parentTable, ReportGenerationDataType reportType, int selectTop) throws SQLException, SQLHandledException {
         String sid = node.getID();
         List<GroupObjectEntity> groupList = node.getGroupList();
         MOrderExclSet<GroupObject> mLocalGroups = SetFact.mOrderExclSet(groupList.size()); // пограничные List'ы
@@ -205,7 +208,7 @@ public class ReportSourceGenerator<PropertyDraw extends PropertyReaderInstance, 
                 sql, query, baseClass, queryEnv, keyTypes, propTypes.result);
 
         try {
-            ImOrderMap<ImMap<Obj, Object>, ImMap<Pair<Object, PropertyType>, Object>> resultData = reportTable.read(sql, getQueryEnv(), orders.result);
+            ImOrderMap<ImMap<Obj, Object>, ImMap<Pair<Object, PropertyType>, Object>> resultData = reportTable.read(sql, getQueryEnv(), orders.result, selectTop);
 
             List<Pair<String, PropertyReaderInstance>> propertyList = new ArrayList<>();
             for(PropertyDraw property : filterProperties(groups.getSet(), reportType)) {
@@ -250,7 +253,7 @@ public class ReportSourceGenerator<PropertyDraw extends PropertyReaderInstance, 
 
             sources.put(sid, data);
 
-            iterateChildReports(hierarchy.getChildNodes(node), groups, reportTable, reportType);
+            iterateChildReports(hierarchy.getChildNodes(node), groups, reportTable, reportType, selectTop);
         } finally {
             reportTable.drop(sql, session.getOwner());
         }

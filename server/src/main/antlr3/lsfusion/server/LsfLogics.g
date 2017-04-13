@@ -2416,10 +2416,11 @@ printActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns
 	LPWithParams printerProperty = null;
 	FormPrintType printType = null;
     Boolean syncType = null;
+    Integer selectTop = null;
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedPrintFAProp($mf.formEntity, $mf.objects, $mf.props, printerProperty, printType, $pUsage.propUsage, syncType);
+		$property = self.addScriptedPrintFAProp($mf.formEntity, $mf.objects, $mf.props, printerProperty, printType, $pUsage.propUsage, syncType, selectTop);
 	}
 }
 	:	'PRINT' mf=mappedForm[context, null, dynamic]
@@ -2435,6 +2436,7 @@ printActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns
         |   (
                 'SHOW' { printType = FormPrintType.SHOW; }
                 (sync = syncTypeLiteral { syncType = $sync.val; })?
+                ('TOP' top = intLiteral { selectTop = $top.val; } )?
             )
         |   ( // static - interactive
 		    (sync = syncTypeLiteral { syncType = $sync.val; })?
