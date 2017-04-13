@@ -28,9 +28,7 @@ GROUP propertyPolicy 'Свойства политики безопасности
 canceled 'Canceled' = DATA LOCAL BOOLEAN ();
 empty() = {};
 
-apply = {
-	APPLY {}
-};
+apply = { APPLY; }
 cancel = { CANCEL; }
 onStarted = ACTION ABSTRACT LIST ();
 
