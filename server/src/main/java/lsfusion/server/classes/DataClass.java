@@ -39,12 +39,12 @@ import java.io.IOException;
 import java.util.Random;
 
 public abstract class DataClass<T> extends AbstractType<T> implements StaticClass, FormulaClass, ValueClassSet, OrClassSet, ResolveClassSet {
-    private static MAddExclMap<String, DataClass> sidToClass = MapFact.mBigStrongMap();
+//    private static MAddExclMap<String, DataClass> sidToClass = MapFact.mBigStrongMap();
     protected LocalizedString caption;
 
     public static void storeClass(DataClass... classes) {
-        for(DataClass cls : classes)
-            sidToClass.exclAdd(cls.getSID(), cls);
+//        for(DataClass cls : classes)
+//            sidToClass.exclAdd(cls.getSID(), cls);
     }
 
     protected DataClass(LocalizedString caption) {
@@ -225,9 +225,9 @@ public abstract class DataClass<T> extends AbstractType<T> implements StaticClas
         return this;
     }
 
-    public static DataClass findDataClass(String sid) {
-        return sidToClass.get(sid);        
-    }
+//    public static DataClass findDataClass(String sid) {
+//        return sidToClass.get(sid);
+//    }
 
     public Object getInfiniteValue(boolean min) {
         throw new RuntimeException("not supported");
