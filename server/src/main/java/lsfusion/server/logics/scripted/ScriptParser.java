@@ -178,11 +178,6 @@ public class ScriptParser {
         }
     }
 
-    public boolean semicolonNeeded() {
-        String prevToken = getCurrentParser().input.LT(-1).getText();
-        return !("}".equals(prevToken) || ";".equals(prevToken));
-    }
-
     public boolean isInsideNonEnabledMeta() {
         return insideNonEnabledMeta;
     }

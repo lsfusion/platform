@@ -26,13 +26,13 @@ GROUP drillDown 'Действия детализации' : root;
 GROUP propertyPolicy 'Свойства политики безопасности' : root;
 
 canceled 'Canceled' = DATA LOCAL BOOLEAN ();
+empty() = {};
 
 apply = {
 	APPLY {}
 };
 cancel = { CANCEL; }
 onStarted = ACTION ABSTRACT LIST ();
-empty() = {};
 
 upper = FORMULA 'upper($1)';    
 subtractSeconds(DATETIME dateTimeFrom, DATETIME dateTimeTo) = [= FORMULA INTEGER PG 'extract (\'epoch\' from (($1)-($2)))', MS 'DATEDIFF(s, $2, $1)'](dateTimeTo AS DATETIME, dateTimeFrom AS DATETIME);

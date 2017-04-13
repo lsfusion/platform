@@ -56,6 +56,7 @@ grammar LsfLogics;
 	import lsfusion.server.logics.property.BooleanDebug;
 	import lsfusion.server.logics.property.PropertyFollowsDebug;
 	import lsfusion.server.logics.debug.DebugInfo;
+	import lsfusion.server.logics.property.PropertySettings;
 	import javax.mail.Message;
 
 	import lsfusion.server.form.entity.GroupObjectProp;
@@ -932,6 +933,10 @@ propertyStatement
 	List<ResolveClassSet> signature = null; 
 	boolean dynamic = true;
 	DebugInfo.DebugPoint point = getCurrentDebugPoint();
+	
+	String propertyName = null;
+	LocalizedString caption = null;
+	PropertySettings ps = null;
 }
 @after {
 	if (inPropParseState()) {
@@ -940,11 +945,26 @@ propertyStatement
 	}
 }
 	:	declaration=propertyDeclaration { if ($declaration.params != null) { context = $declaration.params; dynamic = false; } }
+	    {
+	        propertyName = $declaration.name;
+	        caption = $declaration.caption;
+	    }
 		'=' 
-		(	pdef=propertyDefinition[context, dynamic] { property = $pdef.property; signature = $pdef.signature; }
-		|	adef=actionDefinition[context, dynamic] { property = $adef.property; signature = $adef.signature; })
-		opt=propertyOptions[property, $declaration.name, $declaration.caption, context, signature] { property = $opt.realProperty; }
-		( {!self.semicolonNeeded()}?=>  | ';')
+		(	(   pdef=propertyDefinition[context, dynamic] { property = $pdef.property; signature = $pdef.signature; }
+            |	'ACTION' ciADB=contextIndependentActionDB { if(inPropParseState()) { property = $ciADB.property; signature = $ciADB.signature; } }
+            )
+            ((opt=propertyOptions[property, propertyName, caption, context, signature] { ps = $opt.ps; } ) | ';')
+        |
+            aDB=listTopContextDependentActionDefinitionBody[context, dynamic, true] { if (inPropParseState()) { property = $aDB.property.property; signature = $aDB.signature; }}
+            (opt=propertyOptions[property, propertyName, caption, context, signature]  { ps = $opt.ps; } )?
+        )
+        {
+            if (inPropParseState() && property != null) { // not native
+                if(ps == null)
+                    ps = new PropertySettings();
+                property = self.addSettingsToProperty(property, propertyName, caption, context, signature, ps.groupName, ps.isPersistent, ps.isComplex, ps.noHint, ps.table, ps.notNull, ps.notNullResolve, ps.notNullEvent, ps.annotation, ps.isLoggable);
+            }
+        }
 	;
 
 propertyDefinition[List<TypedParameter> context, boolean dynamic] returns [LP property, List<ResolveClassSet> signature]
@@ -953,11 +973,6 @@ propertyDefinition[List<TypedParameter> context, boolean dynamic] returns [LP pr
 	|	'NATIVE' classId '(' clist=classIdList ')' { if (inPropParseState()) { $signature = self.createClassSetsFromClassNames($clist.ids); }}
 	;
 
-actionDefinition[List<TypedParameter> context, boolean dynamic] returns [LP property, List<ResolveClassSet> signature]
-	:	actD=concreteActionDefinition[context, dynamic] { if (inPropParseState()) { $property = $actD.property.property; $signature = $actD.signature; } }	
-	|	abstractActionDef=abstractActionDefinition { $property = $abstractActionDef.property; $signature = $abstractActionDef.signature; }
-	|	'ACTION' 'NATIVE' '(' clist=classIdList ')' { if (inPropParseState()) { $signature = self.createClassSetsFromClassNames($clist.ids); }}
-	;
 
 propertyDeclaration returns [String name, LocalizedString caption, List<TypedParameter> params]
 	:	propNameCaption=simpleNameWithCaption { $name = $propNameCaption.name; $caption = $propNameCaption.caption; }
@@ -1390,15 +1405,14 @@ abstractActionDefinition returns [LP property, List<ResolveClassSet> signature]
     boolean isLast = true;
 	boolean isChecked = false;
 	ListCaseActionProperty.AbstractType type = ListCaseActionProperty.AbstractType.MULTI;
-	DebugInfo.DebugPoint point = getCurrentDebugPoint();
 }
 @after {
 	if (inPropParseState()) {
 		$signature = self.createClassSetsFromClassNames($paramClassNames.ids); 
-		$property = self.addScriptedAbstractActionProp(type, $paramClassNames.ids, isExclusive, isChecked, isLast, point);
+		$property = self.addScriptedAbstractActionProp(type, $paramClassNames.ids, isExclusive, isChecked, isLast);
 	}
 }
-	:	'ACTION' 'ABSTRACT' 
+	:	'ABSTRACT'
 		(
 			(('CASE' { type = ListCaseActionProperty.AbstractType.CASE; isExclusive = false; }
 			|	'MULTI'	{ type = ListCaseActionProperty.AbstractType.MULTI; isExclusive = true; }) (opt=abstractExclusiveOverrideOption { isExclusive = $opt.isExclusive; isLast = $opt.isLast;})?)
@@ -1848,7 +1862,8 @@ inlineProperty returns [LP property]
 }
 	:	'[' '='	(	expr=propertyExpression[newContext, true] { if (inPropParseState()) { self.checkNecessaryProperty($expr.property); $property = $expr.property.property; signature = self.getClassesFromTypedParams(newContext); } }
 				|	ciPD=contextIndependentPD[true] { $property = $ciPD.property; signature = $ciPD.signature; }
-				|	cAD=concreteActionDefinition[newContext, true] { if (inPropParseState()) { $property = $cAD.property.property; signature = $cAD.signature; }}
+                |   aDB=listTopContextDependentActionDefinitionBody[newContext, true, true] { if (inPropParseState()) { $property = $aDB.property.property; signature = $aDB.signature; }}
+                |	'ACTION' ciADB=contextIndependentActionDB { if (inPropParseState()) { $property = $ciADB.property; signature = $ciADB.signature; } }
 				)
 		']'
 	;
@@ -1857,55 +1872,86 @@ propertyName returns [String name]
 	:	id=compoundID { $name = $id.sid; }
 	;
 
-propertyOptions[LP property, String propertyName, LocalizedString caption, List<TypedParameter> context, List<ResolveClassSet> signature] returns [LP realProperty]
+propertyOptions[LP property, String propertyName, LocalizedString caption, List<TypedParameter> context, List<ResolveClassSet> signature] returns [PropertySettings ps = new PropertySettings()]
+   //	non-LL : ( semiPropertyOption | nonSemiPropertyOption )* (semiPropertyOption ';' | nonSemiPropertyOption)
+	:       recursivePropertyOptions[property, propertyName, caption, $ps, context] 
+	;
+
+recursivePropertyOptions[LP property, String propertyName, LocalizedString caption, PropertySettings ps, List<TypedParameter> context]
+	:       semiPropertyOption[property, propertyName, caption, ps, context] (';' | recursivePropertyOptions[property, propertyName, caption, ps, context]) 
+	    |   nonSemiPropertyOption[property, propertyName, caption, ps, context] recursivePropertyOptions[property, propertyName, caption, ps, context]?
+	;
+
+semiPropertyOption[LP property, String propertyName, LocalizedString caption, PropertySettings ps, List<TypedParameter> context]
+    :
+            inSetting [ps]
+        |	persistentSetting [ps]
+        |	complexSetting [ps]
+        |	noHintSetting [ps]
+        |	tableSetting [ps]
+        |	shortcutSetting [property, caption != null ? caption : LocalizedString.create(propertyName)]
+        |	forceViewTypeSetting [property]
+        |	fixedCharWidthSetting [property]
+        |	minCharWidthSetting [property]
+        |	maxCharWidthSetting [property]
+        |	prefCharWidthSetting [property]
+        |	imageSetting [property]
+        |	editKeySetting [property]
+        |	autosetSetting [property]
+        |	confirmSetting [property]
+        |	regexpSetting [property]
+        |	loggableSetting [ps]
+        |	echoSymbolsSetting [property]
+        |	indexSetting [property]
+        |	aggPropSetting [property]
+        |	setNotNullSetting [ps]
+        |	asonEditActionSetting [property]
+        |	eventIdSetting [property]
+        |   '@@' ann = ID { ps.annotation = $ann.text; }
+    ;
+
+nonSemiPropertyOption[LP property, String propertyName, LocalizedString caption, PropertySettings ps, List<TypedParameter> context]
+    :
+        onEditEventSetting [property, context]
+    ;
+
+inSetting [PropertySettings ps]
+	:	'IN' name=compoundID { ps.groupName = $name.sid; }
+	;
+persistentSetting [PropertySettings ps]
+	:	'PERSISTENT' { ps.isPersistent = true; }
+	;
+complexSetting [PropertySettings ps]
+	:	'COMPLEX' { ps.isComplex = true; }
+	;
+noHintSetting [PropertySettings ps]
+	:	'NOHINT' { ps.noHint = true; }
+	;
+tableSetting [PropertySettings ps]
+	:	'TABLE' tbl = compoundID { ps.table = $tbl.sid; }
+	;
+loggableSetting [PropertySettings ps]
+	:	'LOGGABLE'  { ps.isLoggable = true; }
+	;
+setNotNullSetting [PropertySettings ps]
+    :   s=notNullSetting {
+                        ps.notNull = new BooleanDebug($s.debugPoint);
+                        ps.notNullResolve = $s.toResolve;
+                        ps.notNullEvent = $s.event;
+        			}
+    ;
+annotationSetting [PropertySettings ps]
+	:
+	    '@@' ann = ID { ps.annotation = $ann.text; }
+	;
+
+notNullSetting returns [DebugInfo.DebugPoint debugPoint, BooleanDebug toResolve = null, Event event]
 @init {
-	String groupName = null;
-	String table = null;
-	boolean isPersistent = false;
-	boolean isComplex = false;
-	boolean noHint = false;
-	Boolean isLoggable = null;
-	BooleanDebug notNull = null;
-	BooleanDebug notNullResolve = null;
-	Event notNullEvent = null;
-	String annotation = null;
+    $debugPoint = getEventDebugPoint();
 }
-@after {
-	if (inPropParseState() && property != null) { // not native
-		$realProperty = self.addSettingsToProperty(property, propertyName, caption, context, signature, groupName, isPersistent, isComplex, noHint, table, notNull, notNullResolve, notNullEvent, annotation);
-		self.makeLoggable(property, isLoggable);
-	}
-}
-	: 	(	'IN' name=compoundID { groupName = $name.sid; }
-		|	'PERSISTENT' { isPersistent = true; }
-		|	'COMPLEX' { isComplex = true; }
-		|	'NOHINT' { noHint = true; }
-		|	'TABLE' tbl = compoundID { table = $tbl.sid; }
-		|	shortcutSetting [property, caption != null ? caption : LocalizedString.create(propertyName)]
-		|	forceViewTypeSetting [property]
-		|	fixedCharWidthSetting [property]
-		|	minCharWidthSetting [property]
-		|	maxCharWidthSetting [property]
-		|	prefCharWidthSetting [property]
-		|	imageSetting [property]
-		|	editKeySetting [property]
-		|	autosetSetting [property]
-		|	confirmSetting [property]
-		|	regexpSetting [property]
-		|	loggableSetting { isLoggable = true; }
-		|	echoSymbolsSetting [property]
-		|	indexSetting [property]
-		|	aggPropSetting [property]
-		|	s=notNullSetting { 
-		    		notNull = new BooleanDebug($s.debugPoint);
-		    		notNullResolve = $s.toResolve; 
-		    		notNullEvent = $s.event; 
-			}	
-		|	onEditEventSetting [property, context]
-		|	asonEditActionSetting [property]
-		|	eventIdSetting [property]
-		|   '@@' ann = ID { annotation = $ann.text; }
-		)*
+	:	'NOT' 'NULL'
+	    (dt = notNullDeleteSetting { $toResolve = new BooleanDebug($dt.debugPoint); })?
+	    et=baseEvent { $event = $et.event; }
 	;
 
 
@@ -2036,10 +2082,6 @@ regexpSetting [LP property]
 		(mess = stringLiteral { message = $mess.val; })?
 	;
 
-loggableSetting
-	:	'LOGGABLE'
-	;
-
 echoSymbolsSetting [LP property]
 @after {
 	if (inPropParseState()) {
@@ -2065,15 +2107,6 @@ aggPropSetting [LP property]
 	}
 }
 	:	'AGGPROP'
-	;
-
-notNullSetting returns [DebugInfo.DebugPoint debugPoint, BooleanDebug toResolve = null, Event event]
-@init {
-    $debugPoint = getEventDebugPoint();
-}
-	:	'NOT' 'NULL' 
-	    (dt = notNullDeleteSetting { $toResolve = new BooleanDebug($dt.debugPoint); })? 
-	    et=baseEvent { $event = $et.event; }
 	;
 
 notNullDeleteSetting returns [DebugInfo.DebugPoint debugPoint]
@@ -2112,12 +2145,6 @@ eventIdSetting [LP property]
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////// ACTION PROPERTIES ///////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
-
-concreteActionDefinition[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property, List<ResolveClassSet> signature]
-	:	(	aDB=listTopContextDependentActionDefinitionBody[context, dynamic, true] { if (inPropParseState()) { $property = $aDB.property; $signature = $aDB.signature; }}
-		|	'ACTION' ciADB=contextIndependentActionDB { $property = $ciADB.property; $signature = $ciADB.signature; }
-		)
-	;
 
 // "multiple inheritance" of topContextDependentActionDefinitionBody
 listTopContextDependentActionDefinitionBody[List<TypedParameter> context, boolean dynamic, boolean needFullContext] returns [LPWithParams property, List<ResolveClassSet> signature]
@@ -2166,7 +2193,7 @@ actionDefinitionBody[List<TypedParameter> context, boolean dynamic, boolean modi
 @after{
 	if (inPropParseState()) {
 		DebugInfo.DebugPoint endPoint = getCurrentDebugPoint(true);
-		self.actionPropertyDefinitionBodyCreated($property, point, endPoint, modifyContext);
+		self.actionPropertyDefinitionBodyCreated($property, point, endPoint, modifyContext, null);
 		
 		$signature = self.getClassesFromTypedParams(context);
 	}
@@ -2251,22 +2278,25 @@ leafKeepContextActionDB[List<TypedParameter> context, boolean dynamic] returns [
 	|	emptyADB=emptyActionDefinitionBody[context, dynamic] { $property = $emptyADB.property; }
 	;
 
-contextIndependentActionDB returns [LPWithParams property, List<ResolveClassSet> signature]
+contextIndependentActionDB returns [LP property, List<ResolveClassSet> signature]
 @init {
-	$property = new LPWithParams(null, new ArrayList<Integer>());
 	DebugInfo.DebugPoint point = getCurrentDebugPoint();
+	Boolean needToCreateDelegate = null;
 }
 @after{
 	if (inPropParseState()) {
+	    LPWithParams lpWithParams = new LPWithParams($property, new ArrayList<Integer>());
 		DebugInfo.DebugPoint endPoint = getCurrentDebugPoint(true);
-		self.actionPropertyDefinitionBodyCreated($property, point, endPoint, false);
+		self.actionPropertyDefinitionBodyCreated(lpWithParams, point, endPoint, false, needToCreateDelegate);
 
-        self.topContextActionPropertyDefinitionBodyCreated($property);
+        self.topContextActionPropertyDefinitionBodyCreated(lpWithParams);
 	}
 }
-	:	addformADB=addFormActionDefinitionBody { $property.property = $addformADB.property; $signature = $addformADB.signature; }
-	|	editformADB=editFormActionDefinitionBody { $property.property = $editformADB.property; $signature = $editformADB.signature; }
-	|	customADB=customActionDefinitionBody { $property.property = $customADB.property; $signature = $customADB.signature; }
+	:	addformADB=addFormActionDefinitionBody { $property = $addformADB.property; $signature = $addformADB.signature; }
+	|	editformADB=editFormActionDefinitionBody { $property = $editformADB.property; $signature = $editformADB.signature; }
+	|	customADB=customActionDefinitionBody { $property = $customADB.property; $signature = $customADB.signature; }
+    |	abstractActionDef=abstractActionDefinition { $property = $abstractActionDef.property; $signature = $abstractActionDef.signature; needToCreateDelegate = false; } // to debug into implementation immediately, without stepping on abstract declaration
+	|	'NATIVE' '(' clist=classIdList ')' { if (inPropParseState()) { $property = null; $signature = self.createClassSetsFromClassNames($clist.ids); }}
 	;
 
 mappedForm[List<TypedParameter> context, List<TypedParameter> newContext, boolean dynamic] returns [FormEntity formEntity, List<ObjectEntity> objects = new ArrayList<>(), List<FormActionProps> props = new ArrayList<>()]
@@ -2292,7 +2322,7 @@ mappedForm[List<TypedParameter> context, List<TypedParameter> newContext, boolea
 emptyActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
 @after {
     if (inPropParseState()) {
-        $property = new LPWithParams(self.baseLM.empty, new ArrayList<Integer>());
+        $property = new LPWithParams(self.baseLM.getEmpty(), new ArrayList<Integer>());
     }
 }
     :
@@ -3072,11 +3102,6 @@ terminalFlowActionDefinitionBody returns [LPWithParams property]
 ////////////////////////////////////////////////////////////////////////////////
 
 overrideStatement
-	:	overrideStatementWithoutSemicolon  // better error positioning
-		( {!self.semicolonNeeded()}?=>  | ';')
-	;
-
-overrideStatementWithoutSemicolon
 @init {
 	List<TypedParameter> context = new ArrayList<TypedParameter>();
 	boolean dynamic = true;
@@ -3092,8 +3117,8 @@ overrideStatementWithoutSemicolon
 		'(' list=typedParameterList ')' { context = $list.params; dynamic = false; }
 		'+='
 		('WHEN' whenExpr=propertyExpression[context, dynamic] 'THEN' { when = $whenExpr.property; })?
-		(	expr=propertyExpression[context, dynamic] { property = $expr.property; }
-		|	action=concreteActionDefinition[context, dynamic] { property = $action.property; }
+		(	(expr=propertyExpression[context, dynamic] { property = $expr.property; } ';')
+		|	action=listTopContextDependentActionDefinitionBody[context, dynamic, true] { property = $action.property; }
 		)
 	;
 

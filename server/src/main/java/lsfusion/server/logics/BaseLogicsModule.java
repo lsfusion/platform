@@ -272,6 +272,25 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         return null;
     }
 
+    @IdentityLazy
+    public LCP<?> getCanceled() {
+        try {
+            return findProperty("canceled[]");
+        } catch (ScriptingErrorLog.SemanticErrorException e) {
+            throw Throwables.propagate(e);
+        }
+    }
+
+    @IdentityLazy
+    public LAP<?> getEmpty() {
+        try {
+            return findAction("empty[]");
+        } catch (ScriptingErrorLog.SemanticErrorException e) {
+            throw Throwables.propagate(e);
+        }
+    }
+
+
     public PropertyDBNamePolicy getDBNamePolicy() {
         return propertyDBNamePolicy;
     }
@@ -372,12 +391,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
 
         // через JOIN (не операторы)
 
-        canceled = findProperty("canceled[]");
-
         apply = findAction("apply[]");
         cancel = findAction("cancel[]");
-
-        empty = findAction("empty[]");
 
         onStarted = findAction("onStarted[]");
 

@@ -1,6 +1,5 @@
 package lsfusion.server.logics.property.actions.flow;
 
-import com.google.common.base.Throwables;
 import lsfusion.base.FunctionSet;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.SetFact;
@@ -18,7 +17,6 @@ import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.derived.DerivedProperty;
-import lsfusion.server.logics.scripted.ScriptingErrorLog;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -29,7 +27,7 @@ public class ApplyActionProperty extends KeepContextActionProperty {
     private final FunctionSet<SessionDataProperty> keepSessionProperties;
     private final boolean serializable;
 
-    public <I extends PropertyInterface> ApplyActionProperty(BaseLogicsModule LM, ActionPropertyMapImplement<?, I> action,
+    public <I extends PropertyInterface> ApplyActionProperty(BaseLogicsModule<?> LM, ActionPropertyMapImplement<?, I> action,
                                                              LocalizedString caption, ImOrderSet<I> innerInterfaces,
                                                              FunctionSet<SessionDataProperty> keepSessionProperties, boolean serializable) {
         super(caption, innerInterfaces.size());
@@ -37,20 +35,12 @@ public class ApplyActionProperty extends KeepContextActionProperty {
         this.serializable = serializable;
 
         this.action = action.map(getMapInterfaces(innerInterfaces).reverse());
-        this.canceled = getCanceled(LM).property;
+        this.canceled = LM.getCanceled().property;
         
         finalizeInit();
     }
     
-    private LCP<?> getCanceled(BaseLogicsModule lm) {
-        try {
-            return lm.findProperty("canceled[]");
-        } catch (ScriptingErrorLog.SemanticErrorException e) {
-            throw Throwables.propagate(e);
-        }
-    }
-
-    @Override
+        @Override
     protected ImMap<CalcProperty, Boolean> aspectChangeExtProps() {
         return super.aspectChangeExtProps().replaceValues(true);
     }

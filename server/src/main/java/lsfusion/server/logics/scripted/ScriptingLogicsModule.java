@@ -579,7 +579,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return addAUProp(null, false, isExclusive, isChecked, isLast, type, LocalizedString.create(""), value, params);
     }
 
-    public LP addScriptedAbstractActionProp(ListCaseActionProperty.AbstractType type, List<String> paramClasses, boolean isExclusive, boolean isChecked, boolean isLast, DebugInfo.DebugPoint point) throws ScriptingErrorLog.SemanticErrorException {
+    public LP addScriptedAbstractActionProp(ListCaseActionProperty.AbstractType type, List<String> paramClasses, boolean isExclusive, boolean isChecked, boolean isLast) throws ScriptingErrorLog.SemanticErrorException {
         ValueClass[] params = new ValueClass[paramClasses.size()];
         for (int i = 0; i < paramClasses.size(); i++) {
             params[i] = findClass(paramClasses.get(i));
@@ -590,7 +590,6 @@ public class ScriptingLogicsModule extends LogicsModule {
         } else {
             result = addAbstractCaseAProp(type, isExclusive, isChecked, isLast, params);
         }
-        setDebugInfo(false, point, result.property);
         return result;
     }
 
@@ -738,9 +737,10 @@ public class ScriptingLogicsModule extends LogicsModule {
         return paramClasses;
     }
     
-    public LP addSettingsToProperty(LP property, String name, LocalizedString caption, List<TypedParameter> params, List<ResolveClassSet> signature, 
+    public LP addSettingsToProperty(LP baseProperty, String name, LocalizedString caption, List<TypedParameter> params, List<ResolveClassSet> signature, 
                                       String groupName, boolean isPersistent, boolean isComplex, boolean noHint, String tableName, BooleanDebug notNull, 
-                                      BooleanDebug notNullResolve, Event notNullEvent, String annotation) throws ScriptingErrorLog.SemanticErrorException {
+                                      BooleanDebug notNullResolve, Event notNullEvent, String annotation, boolean isLoggable) throws ScriptingErrorLog.SemanticErrorException {
+        LP property = baseProperty;
         checkDuplicateProperty(name, signature);
 
         property.property.annotation = annotation;
@@ -799,6 +799,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 //                checkClassWhere((LCP) property, name);
 //            }
         }
+        makeLoggable(baseProperty, isLoggable);
         return property;
     }
 
@@ -885,8 +886,8 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public void makeLoggable(LP property, Boolean isLoggable) throws ScriptingErrorLog.SemanticErrorException {
-        if (isLoggable != null && isLoggable && property != null) {
+    public void makeLoggable(LP property, boolean isLoggable) throws ScriptingErrorLog.SemanticErrorException {
+        if (isLoggable && property != null) {
             checkCalculationProperty(property);
             ((LCP) property).makeLoggable(this, BL.systemEventsLM);
         }
@@ -3362,18 +3363,18 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public void actionPropertyDefinitionBodyCreated(LPWithParams lpWithParams, DebugInfo.DebugPoint startPoint, DebugInfo.DebugPoint endPoint, boolean modifyContext) throws ScriptingErrorLog.SemanticErrorException {
+    public void actionPropertyDefinitionBodyCreated(LPWithParams lpWithParams, DebugInfo.DebugPoint startPoint, DebugInfo.DebugPoint endPoint, boolean modifyContext, Boolean needToCreateDelegate) throws ScriptingErrorLog.SemanticErrorException {
         if (lpWithParams.property != null) {
             checkActionProperty(lpWithParams.property);
-            setDebugInfo(lpWithParams, startPoint, endPoint, modifyContext);
+            setDebugInfo(lpWithParams, startPoint, endPoint, modifyContext, needToCreateDelegate);
         }
     }
 
-    public static void setDebugInfo(LPWithParams lpWithParams, DebugInfo.DebugPoint startPoint, DebugInfo.DebugPoint endPoint, boolean modifyContext) {
+    public static void setDebugInfo(LPWithParams lpWithParams, DebugInfo.DebugPoint startPoint, DebugInfo.DebugPoint endPoint, boolean modifyContext, Boolean needToCreateDelegate) {
         //noinspection unchecked
         LAP<PropertyInterface> lAction = (LAP<PropertyInterface>) lpWithParams.property;
         ActionProperty property = (ActionProperty) lAction.property;
-        setDebugInfo(null, startPoint, endPoint, modifyContext, property);
+        setDebugInfo(needToCreateDelegate, startPoint, endPoint, modifyContext, property);
     }
 
     public static void setDebugInfo(Boolean needToCreateDelegate, DebugInfo.DebugPoint point, ActionProperty property) {
@@ -4000,10 +4001,6 @@ public class ScriptingLogicsModule extends LogicsModule {
             }
             prioritySet.add(namespaceName);
         }
-    }
-
-    public boolean semicolonNeeded() {
-        return parser.semicolonNeeded();
     }
 
     public void setPropertyScriptInfo(LP property, String script, DebugInfo.DebugPoint point) {
