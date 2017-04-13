@@ -1,6 +1,6 @@
 MODULE Email;
 
-REQUIRE System, Reflection, Service;
+REQUIRE System, Reflection;
 
 GROUP email 'Настройки почтового сервера' : public;   //rootGroup
 
@@ -85,8 +85,6 @@ dateTimeReceived 'Дата получения' = DATA DATETIME (Email);
 message 'Сообщение' = DATA RICHTEXT (Email);
 emlFile 'Файл EML' = DATA CUSTOMFILE (Email);
 openEMLFile 'Открыть файл EML' (Email email) = { OPENFILE emlFile (email); }
-
-@defineLog (Email, 'входящей почты', log, dateSent);
 
 receiveEmailAction 'Получить всю почту' = ACTION CUSTOM 'lsfusion.server.mail.ReceiveEmailActionProperty' ();
 receiveEmailAction 'Получить почту' = ACTION CUSTOM 'lsfusion.server.mail.ReceiveEmailAccountActionProperty' (Account);

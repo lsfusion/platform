@@ -205,6 +205,8 @@ DESIGN options {
     }
 }
 
+@defineLog (Email, 'входящей почты', log, dateSent);
+
 countDaysClearFusionTempFiles 'За сколько дней хранить временные файлы lsfusion' = DATA INTEGER (); 
 clearFusionTempFiles = ACTION CUSTOM 'lsfusion.server.logics.service.ClearFusionTempFilesActionProperty' ();
 EXTEND FORM options PROPERTIES countDaysClearFusionTempFiles();
