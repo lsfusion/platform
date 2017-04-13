@@ -57,7 +57,7 @@ doStopProfiler 'Остановить профилировщик' () = ACTION CUS
 stopProfiler 'Остановить профилировщик' () = {
     doStopProfiler();
     isStartedProfiler() <- NULL;
-    APPLY {};
+    APPLY;
 }
 
 id(User user) = INTEGER(user AS User) PERSISTENT INDEXED; 
