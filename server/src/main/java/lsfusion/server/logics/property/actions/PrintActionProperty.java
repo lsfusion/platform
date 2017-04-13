@@ -69,8 +69,8 @@ public class PrintActionProperty extends FormStaticActionProperty<FormPrintType>
 
     @Override
     protected void exportClient(ExecutionContext<ClassPropertyInterface> context, ReportGenerationData reportData, Map<String, String> reportPath) throws SQLException, SQLHandledException {
-        if (staticType == FormPrintType.SHOW) {
-            printShow(context, reportData);
+        if (staticType == FormPrintType.MESSAGE) {
+            printMessage(context, reportData);
         } else {
             String pName = printerProperty == null ? null : (String) printerProperty.read(context, context.getKeys());
             Object pageCount = context.requestUserInteraction(new ReportClientAction(reportPath, syncType, reportData, (FormPrintType) staticType, pName, SystemProperties.isDebug));
@@ -78,7 +78,7 @@ public class PrintActionProperty extends FormStaticActionProperty<FormPrintType>
         }
     }
 
-    private void printShow(ExecutionContext context, ReportGenerationData reportData) {
+    private void printMessage(ExecutionContext context, ReportGenerationData reportData) {
 
         try {
 

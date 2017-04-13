@@ -2,7 +2,7 @@ package lsfusion.interop;
 
 
 public enum FormPrintType implements FormStaticType {
-    PRINT, AUTO, XLSX, XLS, PDF, DOC, DOCX, SHOW;
+    PRINT, AUTO, XLSX, XLS, PDF, DOC, DOCX, MESSAGE;
     
     public boolean isExcel() {
         return this == XLS || this == XLSX;

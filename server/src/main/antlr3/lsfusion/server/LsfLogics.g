@@ -2434,7 +2434,7 @@ printActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns
             ('TO' pUsage=propertyUsage)?
             )
         |   (
-                'SHOW' { printType = FormPrintType.SHOW; }
+                'MESSAGE' { printType = FormPrintType.MESSAGE; }
                 (sync = syncTypeLiteral { syncType = $sync.val; })?
                 ('TOP' top = intLiteral { selectTop = $top.val; } )?
             )
