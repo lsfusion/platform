@@ -196,7 +196,7 @@ META defineNumeratedDefaultPrefix(class, captionV, seriesV, prefix)
     ;
     
     loadDefaultNumerators() += {
-        FOR NEW n = Numerator DO {
+        NEW n = Numerator {
             ASSIGN name(n) <- captionV;
             ASSIGN series(n) <- seriesV;
             ASSIGN minValue(n) <- 1L;
@@ -248,7 +248,7 @@ META defineNumeratedDefault (object1, object2, property, captionV, seriesV)
     }
 
     loadDefaultNumerators() += ACTION () {
-        FOR NEW n = Numerator DO {
+        NEW n = Numerator {
             nameNumerator(n) <- captionV;
             seriesNumerator(n) <- seriesV;
             minValueNumerator(n) <- 1L;

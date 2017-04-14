@@ -140,7 +140,7 @@ stopEditing(Chat c) = {
 }
 
 sendMessage 'Написать в чат' (Chat chat, TEXT message, BOOLEAN system) = {
-    FOR NEW m = Message DO {
+    NEW m = Message {
         chat(m) <- chat;
         dateTime(m) <- currentDateTime();
         author(m) <- currentUser();
@@ -411,7 +411,7 @@ sendMessage 'Написать пользователю' (CustomUser user) = {
     LOCAL chat = Chat();
     chat() <- chatIn(user, currentUser());
     IF NOT chat() THEN {
-        FOR NEW chat = Chat DO {
+        NEW chat = Chat {
             in(chat, user) <- TRUE;
             in(chat, currentUser) <- TRUE WHERE currentUser == currentUser();
             newMessage(chat) <- defaultNewMessage();
