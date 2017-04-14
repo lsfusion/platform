@@ -193,8 +193,8 @@ seekChat = ACTION ABSTRACT(CustomUser);
   
 saveNewMessage(Chat c) = {
     INPUT t=TEXT DO {
-        IF requestedText() THEN {
-            newMessage(c) <- requestedText();
+        IF t THEN {
+            newMessage(c) <- t;
             IF chatNotFound() THEN
                 defaultNewMessage() <- newMessage(c);
             ELSE 
