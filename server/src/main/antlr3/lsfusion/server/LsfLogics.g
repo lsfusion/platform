@@ -2219,6 +2219,7 @@ recursiveExtendContextActionDB[List<TypedParameter> context, boolean dynamic] re
 	:	forADB=forActionPropertyDefinitionBody[context] { $property = $forADB.property; }
 	|	dialogADB=dialogActionDefinitionBody[context] { $property = $dialogADB.property; } // mixed, input
 	|	inputADB=inputActionDefinitionBody[context] { $property = $inputADB.property; } // mixed, input
+	|	newADB=newActionDefinitionBody[context] { $property = $newADB.property; }
 	;
 
 recursiveKeepContextActionDB[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
@@ -2251,7 +2252,7 @@ leafExtendContextActionDB[List<TypedParameter> context, boolean dynamic] returns
 	:	setADB=assignActionDefinitionBody[context] { $property = $setADB.property; }
 	|	classADB=changeClassActionDefinitionBody[context] { $property = $classADB.property; }
 	|	delADB=deleteActionDefinitionBody[context] { $property = $delADB.property; }
-	|	addADB=addObjectActionDefinitionBody[context] { $property = $addADB.property; }
+	|	addADB=newWhereActionDefinitionBody[context] { $property = $addADB.property; }
 	;
 
 leafKeepContextActionDB[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
@@ -2584,7 +2585,7 @@ editFormActionDefinitionBody returns [LP property, List<ResolveClassSet> signatu
         cls=classId
 	;
 
-addObjectActionDefinitionBody[List<TypedParameter> context] returns [LPWithParams property]
+newWhereActionDefinitionBody[List<TypedParameter> context] returns [LPWithParams property]
 @init {
 	List<TypedParameter> newContext = new ArrayList<TypedParameter>(context);
 	LPWithParams condition = null;
@@ -2597,8 +2598,25 @@ addObjectActionDefinitionBody[List<TypedParameter> context] returns [LPWithParam
 	}
 }
 	:	'NEW' cid=classId
-		('WHERE' pe=propertyExpression[newContext, true] { condition = $pe.property; })?
+		'WHERE' pe=propertyExpression[newContext, true] { condition = $pe.property; }
 		('TO' toProp=propertyUsage '(' params=singleParameterList[newContext, false] ')' { toPropUsage = $toProp.propUsage; toPropMapping = $params.props; } )?
+	;
+
+newActionDefinitionBody[List<TypedParameter> context] returns [LPWithParams property]
+@init {
+	List<TypedParameter> newContext = new ArrayList<TypedParameter>(context);
+
+	String varName = "added";
+}
+@after {
+	if (inPropParseState()) {
+        $property = self.addScriptedNewAProp(context, $actDB.property, $addObj.paramCnt, $addObj.className, newContext);
+	}
+}
+	:
+	    addObj=forAddObjClause[newContext]
+//        ('TO' pUsage=propertyUsage)?
+   		actDB=modifyContextFlowActionDefinitionBody[context, newContext, false, false]
 	;
 
 emailActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
@@ -3074,11 +3092,11 @@ forActionPropertyDefinitionBody[List<TypedParameter> context] returns [LPWithPar
 	:	(	'FOR' 
 		| 	'WHILE' { recursive = true; }
 		)
-		(expr=propertyExpression[newContext, true]
+		expr=propertyExpression[newContext, true]
 		('ORDER'
 			('DESC' { descending = true; } )? 
 			ordExprs=nonEmptyPropertyExpressionList[newContext, false] { orders = $ordExprs.props; }
-		)?)?
+		)?
 		in = inlineStatement[newContext]
 		(addObj=forAddObjClause[newContext])?
 		'DO' actDB=modifyContextFlowActionDefinitionBody[context, newContext, false, false]

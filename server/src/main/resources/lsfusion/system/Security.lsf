@@ -296,7 +296,7 @@ copyData(UserRole userRole, UserRole ur) = {
 
 copy 'Копировать'(UserRole userRole) = {
 	NEWSESSION {
-	    FOR NEW ur = UserRole DO {
+	    NEW ur = UserRole {
 	        EXEC copyData(userRole, ur);
 	        SHOW userRole OBJECTS ur = ur MANAGESESSION DOCKED;
 	    }

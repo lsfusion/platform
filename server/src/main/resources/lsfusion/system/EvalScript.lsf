@@ -56,7 +56,7 @@ preRunScript() = {
         LOCAL script = Script ();
         script() <- textScript(localText());
         IF NOT script() THEN {
-            FOR NEW s = Script DO 
+            NEW s = Script 
                 script() <- s;
             saveTextScript(script(), scriptStorage());
         }
@@ -99,7 +99,7 @@ DESIGN chooseScriptName {
 saveAsScriptAction 'Сохранить как'() = {
 	NEWSESSION {
 	    DIALOG chooseScriptName OBJECTS name INPUT DO {
-	        FOR NEW s = Script DO {
+	        NEW s = Script {
 	            name(s) <- name;
 	            text(s) <- scriptStorage();
 	            dateTime(s) <- currentDateTime();
