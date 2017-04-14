@@ -34,7 +34,6 @@ import lsfusion.server.form.navigator.NavigatorAction;
 import lsfusion.server.form.navigator.NavigatorElement;
 import lsfusion.server.form.view.PropertyDrawView;
 import lsfusion.server.form.window.AbstractWindow;
-import lsfusion.server.logics.debug.ActionDebugInfo;
 import lsfusion.server.logics.debug.ActionDelegationType;
 import lsfusion.server.logics.debug.ActionPropertyDebugger;
 import lsfusion.server.logics.debug.DebugInfo;
@@ -2134,7 +2133,7 @@ public abstract class LogicsModule {
     public void addFormActions(FormEntity form, ObjectEntity object, FormSessionScope scope) {
         Version version = getVersion();
         form.addPropertyDraw(getAddFormAction(form, object, null, scope, version), version);
-        form.addPropertyDraw(getEditFormAction(object, scope, version), version, object);
+        form.addPropertyDraw(getEditFormAction(object, null, scope, version), version, object);
         form.addPropertyDraw(getDeleteAction(object, scope), version, object);
     }
 
@@ -2145,8 +2144,10 @@ public abstract class LogicsModule {
         return baseLM.getAddFormAction(cls, contextForm, contextObject, scope, cls.getEditForm(baseLM, version));
     }
 
-    public LAP getEditFormAction(ObjectEntity object, FormSessionScope scope, Version version) {
-        CustomClass cls = (CustomClass) object.baseClass;
+    public LAP getEditFormAction(ObjectEntity object, CustomClass explicitClass, FormSessionScope scope, Version version) {
+        CustomClass cls = explicitClass;
+        if(cls == null)
+            cls = (CustomClass) object.baseClass;
         return baseLM.getEditFormAction(cls, scope, cls.getEditForm(baseLM, version));
     }
 

@@ -206,8 +206,7 @@ FORM networkPathForm 'Выбор сетевого пути'
 META defineLinkDialog (object, class)
     dialog###object(class o) = {
         networkPath() <- VARSTRING[255] (object(o));
-        SHOW networkPathForm ;
-        IF formResult() == FormResult.ok THEN {
+        DIALOG networkPathForm DO {
             object(o) <- IMAGELINK (networkPath()); 
         }
     } ASON CHANGE object[class];

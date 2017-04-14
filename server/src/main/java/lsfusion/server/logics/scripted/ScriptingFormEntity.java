@@ -276,7 +276,8 @@ public class ScriptingFormEntity {
                 objects = new PropertyObjectInterfaceEntity[]{};
             } else if (propertyName.equals("EDIT")) {
                 ObjectEntity obj = getSingleCustomClassMappingObject(propertyName, mapping);
-                property = LM.getEditFormAction(obj, scope, version);
+                CustomClass explicitClass = getSingleAddClass(pUsage);
+                property = LM.getEditFormAction(obj, explicitClass, scope, version);
                 objects = new PropertyObjectInterfaceEntity[]{obj};
             } else if (propertyName.equals("DELETE")) {
                 ObjectEntity obj = getSingleCustomClassMappingObject(propertyName, mapping);

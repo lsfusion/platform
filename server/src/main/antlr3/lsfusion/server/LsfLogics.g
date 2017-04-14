@@ -771,11 +771,11 @@ formPropertyUsage returns [PropertyUsage propUsage]
           (
              (
                 cid='NEW'      { systemName = $cid.text; }
-             |  cid='NEWEDIT'     { systemName = $cid.text; }
+             |  cid='NEWEDIT'  { systemName = $cid.text; }
+             |  cid='EDIT'    { systemName = $cid.text; }
              )
              ( '[' clId=compoundID ']'  { signature = Collections.singletonList($clId.sid); } )?
           )
-          |  cid='EDIT'    { systemName = $cid.text; }
           |  cid='VALUE'    { systemName = $cid.text; }
           |  cid='DELETE'      { systemName = $cid.text; }
        ) { $propUsage = new PropertyUsage(systemName, signature); }

@@ -605,13 +605,11 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     }
 
     @Override
-    @IdentityStrongLazy
     public LCP getIsActiveFormProperty() {
         return isActiveForm;
     }
 
     @Override
-    @IdentityStrongLazy
     public LCP getFormResultProperty() {
         return formResultProp;
     }

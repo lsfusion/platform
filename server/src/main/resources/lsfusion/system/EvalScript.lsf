@@ -56,7 +56,7 @@ preRunScript() = {
         LOCAL script = Script ();
         script() <- textScript(localText());
         IF NOT script() THEN {
-            NEW s = Script 
+            NEW s = Script
                 script() <- s;
             saveTextScript(script(), scriptStorage());
         }
