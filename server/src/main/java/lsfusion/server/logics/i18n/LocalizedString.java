@@ -223,11 +223,11 @@ public class LocalizedString {
     }
     
     public static LocalizedString concat(LocalizedString leftString, String rightString) {
-        return concat(leftString, new LocalizedString(rightString, false));
+        return concat(leftString, create(rightString, false));
     }
 
     public static LocalizedString concat(String leftString, LocalizedString rightString) {
-        return concat(new LocalizedString(leftString, false), rightString);
+        return concat(create(leftString, false), rightString);
     }
     
     public static LocalizedString concatList(Object... strings) {
@@ -237,7 +237,7 @@ public class LocalizedString {
             if (nextString instanceof LocalizedString) {
                 next = (LocalizedString) nextString;
             } else if (nextString instanceof String) {
-                next = new LocalizedString((String) nextString, false);
+                next = create((String) nextString, false);
             } else {
                 assert false;
             }
