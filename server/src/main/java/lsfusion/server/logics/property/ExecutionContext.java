@@ -24,8 +24,8 @@ import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.form.entity.FormEntity;
+import lsfusion.server.form.entity.ManageSessionType;
 import lsfusion.server.form.entity.ObjectEntity;
-import lsfusion.server.form.entity.PropertyDrawEntity;
 import lsfusion.server.form.entity.filter.FilterEntity;
 import lsfusion.server.form.instance.*;
 import lsfusion.server.form.instance.listener.CustomClassListener;
@@ -601,15 +601,15 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
     }
 
     public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session) throws SQLException, SQLHandledException {
-        return createFormInstance(formEntity, mapObjects, session, false, false, false, false, false, false, null, null, null, false);
+        return createFormInstance(formEntity, mapObjects, session, false, FormEntity.DEFAULT_NOCANCEL, ManageSessionType.NOMANAGESESSION, false, false, false, null, null, false);
     }
 
     public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects) throws SQLException, SQLHandledException {
         return createFormInstance(formEntity, mapObjects, getSession());
     }
 
-    public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, boolean isAdd, Boolean manageSession, boolean checkOnOk, boolean showDrop, boolean interactive, ImSet<FilterEntity> contextFilters, PropertyDrawEntity initFilterProperty, ImSet<PullChangeProperty> pullProps, boolean readonly) throws SQLException, SQLHandledException {
-        return ThreadLocalContext.createFormInstance(formEntity, mapObjects, stack, session, isModal, isAdd, manageSession, checkOnOk, showDrop, interactive, contextFilters, initFilterProperty, pullProps, readonly);
+    public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, Boolean noCancel, ManageSessionType manageSession, boolean checkOnOk, boolean showDrop, boolean interactive, ImSet<FilterEntity> contextFilters, ImSet<PullChangeProperty> pullProps, boolean readonly) throws SQLException, SQLHandledException {
+        return ThreadLocalContext.createFormInstance(formEntity, mapObjects, stack, session, isModal, noCancel, manageSession, checkOnOk, showDrop, interactive, contextFilters, pullProps, readonly);
     }
 
     public File generateFileFromForm(BusinessLogics BL, FormEntity formEntity, ObjectEntity objectEntity, DataObject dataObject) throws SQLException, SQLHandledException {

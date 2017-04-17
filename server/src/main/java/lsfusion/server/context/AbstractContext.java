@@ -20,8 +20,8 @@ import lsfusion.server.classes.CustomClass;
 import lsfusion.server.classes.DataClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.entity.FormEntity;
+import lsfusion.server.form.entity.ManageSessionType;
 import lsfusion.server.form.entity.ObjectEntity;
-import lsfusion.server.form.entity.PropertyDrawEntity;
 import lsfusion.server.form.entity.filter.FilterEntity;
 import lsfusion.server.form.instance.FormCloseType;
 import lsfusion.server.form.instance.FormInstance;
@@ -155,13 +155,13 @@ public abstract class AbstractContext implements Context {
         return s.getString(locale, getLogicsInstance().getBusinessLogics().getLocalizer());
     }
 
-    public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, boolean isAdd, Boolean manageSession, ExecutionStack stack, boolean checkOnOk, boolean showDrop, boolean interactive, ImSet<FilterEntity> contextFilters, PropertyDrawEntity initFilterProperty, ImSet<PullChangeProperty> pullProps, boolean readonly) throws SQLException, SQLHandledException {
+    public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, Boolean noCancel, ManageSessionType manageSession, ExecutionStack stack, boolean checkOnOk, boolean showDrop, boolean interactive, ImSet<FilterEntity> contextFilters, ImSet<PullChangeProperty> pullProps, boolean readonly) throws SQLException, SQLHandledException {
         return new FormInstance(formEntity, getLogicsInstance(),
                 session,
                 getSecurityPolicy(), getFocusListener(), getClassListener(),
                 getComputer(stack), getConnection(), mapObjects, stack, isModal,
-                isAdd, manageSession,
-                checkOnOk, showDrop, interactive, contextFilters, initFilterProperty, pullProps, readonly, getLocale());
+                noCancel, manageSession,
+                checkOnOk, showDrop, interactive, contextFilters, pullProps, readonly, getLocale());
     }
 
     public RemoteForm createRemoteForm(FormInstance formInstance, ExecutionStack stack) {

@@ -12,8 +12,8 @@ import lsfusion.server.classes.CustomClass;
 import lsfusion.server.classes.DataClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.entity.FormEntity;
+import lsfusion.server.form.entity.ManageSessionType;
 import lsfusion.server.form.entity.ObjectEntity;
-import lsfusion.server.form.entity.PropertyDrawEntity;
 import lsfusion.server.form.entity.filter.FilterEntity;
 import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.form.instance.listener.CustomClassListener;
@@ -112,8 +112,8 @@ public class ThreadLocalContext {
         return get().getFormInstance();
     }
 
-    public static FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, ExecutionStack stack, DataSession session, boolean isModal, boolean isAdd, Boolean manageSession, boolean checkOnOk, boolean showDrop, boolean interactive, ImSet<FilterEntity> contextFilters, PropertyDrawEntity initFilterProperty, ImSet<PullChangeProperty> pullProps, boolean readonly) throws SQLException, SQLHandledException {
-        return get().createFormInstance(formEntity, mapObjects, session, isModal, isAdd, manageSession, stack, checkOnOk, showDrop, interactive, contextFilters, initFilterProperty, pullProps, readonly);
+    public static FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, ExecutionStack stack, DataSession session, boolean isModal, Boolean noCancel, ManageSessionType manageSession, boolean checkOnOk, boolean showDrop, boolean interactive, ImSet<FilterEntity> contextFilters, ImSet<PullChangeProperty> pullProps, boolean readonly) throws SQLException, SQLHandledException {
+        return get().createFormInstance(formEntity, mapObjects, session, isModal, noCancel, manageSession, stack, checkOnOk, showDrop, interactive, contextFilters, pullProps, readonly);
     }
 
     public static ObjectValue requestUserObject(DialogRequest dialogRequest, ExecutionStack stack) throws SQLException, SQLHandledException {

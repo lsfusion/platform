@@ -20,6 +20,7 @@ import lsfusion.interop.action.HideFormClientAction;
 import lsfusion.interop.action.LogMessageClientAction;
 import lsfusion.interop.form.*;
 import lsfusion.server.ServerLoggers;
+import lsfusion.server.Settings;
 import lsfusion.server.auth.ChangePropertySecurityPolicy;
 import lsfusion.server.auth.SecurityPolicy;
 import lsfusion.server.caches.ManualLazy;
@@ -58,9 +59,7 @@ import lsfusion.server.logics.property.derived.OnChangeProperty;
 import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.profiler.ProfiledObject;
 import lsfusion.server.session.*;
-import lsfusion.server.stack.ParamMessage;
-import lsfusion.server.stack.StackMessage;
-import lsfusion.server.stack.ThisMessage;
+import lsfusion.server.stack.*;
 
 import javax.swing.*;
 import java.awt.*;
@@ -130,8 +129,6 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     protected Map<PropertyDrawInstance, Boolean> isShown = new HashMap<>();
     protected Map<ContainerView, Boolean> isContainerShown = new HashMap<>();
 
-    public final PropertyDrawEntity initFilterPropertyDraw;
-
     private final boolean checkOnOk;
 
     private final boolean isModal;
@@ -158,12 +155,11 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                         FocusListener<T> focusListener, CustomClassListener classListener,
                         PropertyObjectInterfaceInstance computer, DataObject connection,
                         ImMap<ObjectEntity, ? extends ObjectValue> mapObjects,
-                        ExecutionStack stack, boolean isModal, boolean isAdd, Boolean manageSession, boolean checkOnOk,
+                        ExecutionStack stack, boolean isModal, Boolean noCancel, ManageSessionType manageSession, boolean checkOnOk,
                         boolean showDrop, boolean interactive,
                         ImSet<FilterEntity> contextFilters,
-                        PropertyDrawEntity initFilterPropertyDraw,
                         ImSet<PullChangeProperty> pullProps, boolean readOnly, Locale locale) throws SQLException, SQLHandledException {
-        this(entity, logicsInstance, session, securityPolicy, focusListener, classListener, computer, connection, mapObjects, stack, isModal, isAdd, manageSession, checkOnOk, showDrop, interactive, false, contextFilters, initFilterPropertyDraw, pullProps, readOnly, locale);
+        this(entity, logicsInstance, session, securityPolicy, focusListener, classListener, computer, connection, mapObjects, stack, isModal, noCancel, manageSession, checkOnOk, showDrop, interactive, false, contextFilters, pullProps, readOnly, locale);
     }
 
     public FormInstance(FormEntity<T> entity, LogicsInstance logicsInstance, DataSession session, SecurityPolicy securityPolicy,
@@ -171,10 +167,9 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                         PropertyObjectInterfaceInstance computer, DataObject connection,
                         ImMap<ObjectEntity, ? extends ObjectValue> mapObjects,
                         ExecutionStack stack,
-                        boolean isModal, boolean isAdd, Boolean manageSession, boolean checkOnOk,
+                        boolean isModal, Boolean noCancel, ManageSessionType manageSession, boolean checkOnOk,
                         boolean showDrop, boolean interactive, boolean isDialog,
                         ImSet<FilterEntity> contextFilters,
-                        PropertyDrawEntity initFilterPropertyDraw,
                         ImSet<PullChangeProperty> pullProps,
                         boolean readOnly, Locale locale) throws SQLException, SQLHandledException {
         this.isModal = isModal;
@@ -186,8 +181,6 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         this.logicsInstance = logicsInstance;
         this.BL = (T) logicsInstance.getBusinessLogics();
         this.securityPolicy = securityPolicy;
-
-        this.initFilterPropertyDraw = initFilterPropertyDraw;
 
         this.pullProps = pullProps;
 
@@ -317,10 +310,24 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         applyFilters();
 
         this.session.registerForm(this);
-
-        boolean adjManageSession = manageSession == null ? false : manageSession;
+        
+        if(interactive) {            
+            boolean heurNoCancel = heuristicNoCancel(mapObjects);
+            if(noCancel == null)
+                noCancel = heurNoCancel;
+            else {
+                if (noCancel != heurNoCancel)
+                    regAutoDiff("CANCEL", noCancel, heurNoCancel);
+                
+                if(Settings.get().isEnableHeurNoCancel())
+                    noCancel = heurNoCancel;
+            }
+        } else 
+            noCancel = false; // temp
+        
+        boolean adjManageSession = manageSession != ManageSessionType.AUTO && manageSession.isManageSession();
         readOnly = readOnly || entity.isReadOnly();
-        environmentIncrement = createEnvironmentIncrement(isModal, isDialog, isAdd, adjManageSession, readOnly, showDrop);
+        environmentIncrement = createEnvironmentIncrement(isModal, isDialog, noCancel, adjManageSession, readOnly, showDrop);
 
         if (!interactive) {
             endApply(stack);
@@ -329,19 +336,23 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
             int prevOwners = updateSessionOwner(true, stack);
      
             boolean heurManageSession = heuristicManageSession(prevOwners, readOnly); 
-            if(manageSession == null) {
+            if(manageSession == ManageSessionType.AUTO) {
                 if(heurManageSession) { // если нет owner'ов
                     adjManageSession = true; 
                     environmentIncrement.add(FormEntity.manageSession, PropertyChange.<ClassPropertyInterface>STATIC(true));
                 }
             } else {
-                if(manageSession != heurManageSession)
-                    regAutoDiff("MANAGESESSION", manageSession, heurManageSession);
+                if(!manageSession.isX()) {
+                    boolean isManageSession = manageSession.isManageSession();
+                    if (isManageSession != heurManageSession) {
+                        regAutoDiff("MANAGESESSION", isManageSession, heurManageSession);
+                    }
+                    
+                    if(Settings.get().isEnableHeurManageSession()) {
+                         adjManageSession = heurManageSession;
+                    }
+                }
             }
-
-            boolean heurAdd = heuristicIsAdd(mapObjects);
-            if(isAdd != heurAdd)
-                regAutoDiff("CANCEL", isAdd, heurAdd);
 
             this.mapObjects = null;
         }
@@ -358,12 +369,14 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     public static class DiffForm {
         public final String type;
         public final FormEntity entity;
+        public final String stackString;
         public final Boolean explicit;
         public final Boolean heur;
 
-        public DiffForm(String type, FormEntity entity, Boolean explicit, Boolean heur) {
+        public DiffForm(String type, FormEntity entity, String stackString, Boolean explicit, Boolean heur) {
             this.type = type;
             this.entity = entity;
+            this.stackString = stackString;
             this.explicit = explicit;
             this.heur = heur;
         }
@@ -373,20 +386,31 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
             DiffForm diffForm = (DiffForm) o;
-            return com.google.common.base.Objects.equal(type, diffForm.type) &&
+            return Objects.equal(type, diffForm.type) &&
                     Objects.equal(entity, diffForm.entity) &&
+                    Objects.equal(stackString, diffForm.stackString) &&
                     Objects.equal(explicit, diffForm.explicit) &&
                     Objects.equal(heur, diffForm.heur);
         }
 
         @Override
         public int hashCode() {
-            return Objects.hashCode(type, entity, explicit, heur);
+            return Objects.hashCode(type, entity, stackString, explicit, heur);
         }
     }
     public static ConcurrentHashMap<DiffForm, Boolean> diffForms = MapFact.getGlobalConcurrentHashMap();
     private void regAutoDiff(String type, boolean explicit, boolean heur) {
-        diffForms.put(new DiffForm(type, entity, explicit, heur), true);
+        Stack<ExecutionStackItem> stack = ExecutionStackAspect.getStack();
+        String stackString = "";
+        if(stack != null) {
+            int logSize = Settings.get().getLogHeurStackSize();
+            for(int i=0,size=stack.size();i<size;i++) {
+                if(i >= logSize)
+                    break;
+                stackString = (stackString.isEmpty() ? "" : stackString + '\n') + stack.get(i).toString();
+            }
+        }
+        diffForms.put(new DiffForm(type, entity, stackString, explicit, heur), true);
     }
 
     private boolean heuristicManageSession(int prevOwners, boolean readOnly) {
@@ -396,7 +420,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         return !readOnly; 
     }
 
-    private boolean heuristicIsAdd(ImMap<ObjectEntity, ? extends ObjectValue> mapObjects) {
+    private boolean heuristicNoCancel(ImMap<ObjectEntity, ? extends ObjectValue> mapObjects) {
         for(int i=0,size = mapObjects.size();i<size;i++) {
             ObjectEntity object = mapObjects.getKey(i);
             ObjectValue value = mapObjects.getValue(i);
@@ -2254,8 +2278,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                                 instanceFactory.computer, instanceFactory.connection,
                                 MapFact.singleton(dialogEntity, dialogValue),
                                 outerStack,
-                                true, false, false, false, true, true, true,
-                                additionalFilters, initFilterPropertyDraw, pullProps, false, locale);
+                                true, FormEntity.DEFAULT_NOCANCEL, ManageSessionType.NOMANAGESESSION, false, true, true, true,
+                                additionalFilters, pullProps, false, locale);
     }
 
     // ---------------------------------------- Events ----------------------------------------

@@ -2331,24 +2331,19 @@ emptyActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns
 
 formActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
 @init {
-	boolean manageSession = false;
 	
 	Boolean syncType = null;
 	WindowFormType windowType = null;
-	
-	boolean checkOnOk = false;
-	boolean showDrop = false;
-	boolean noCancel = false;
-	
-	String contextObjectName = null;
-	LPWithParams contextProperty = null;
-	String initFilterPropertyName = null;
-	List<String> initFilterPropertyMapping = null;
+
+    ManageSessionType manageSession = ManageSessionType.NOMANAGESESSION; // temporary, should be AUTO
+	Boolean noCancel = FormEntity.DEFAULT_NOCANCEL; // temporary, should be NULL
+
 	boolean readOnly = false;
+	boolean checkOnOk = false;
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedInteractiveFAProp($mf.formEntity, $mf.objects, $mf.props, contextObjectName, contextProperty, initFilterPropertyName, initFilterPropertyMapping, syncType, windowType, manageSession, checkOnOk, showDrop, noCancel, readOnly);
+		$property = self.addScriptedInteractiveFAProp($mf.formEntity, $mf.objects, $mf.props, syncType, windowType, manageSession, checkOnOk, noCancel, readOnly);
 	}
 }
 	:	'SHOW' mf=mappedForm[context, null, dynamic]
@@ -2356,12 +2351,9 @@ formActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns 
 		    sync = syncTypeLiteral { syncType = $sync.val; }
 		|   window = windowTypeLiteral { windowType = $window.val; }
 
-		|	'MANAGESESSION' { manageSession = true; }
-		|	'SHOWDROP' { showDrop = true; }
-		|	'NOCANCEL' { noCancel = true; }
+        |	ms=manageSessionClause { manageSession = $ms.result; }
+		|	nc=noCancelClause { noCancel = $nc.result; }
 
-        |	'CONTEXTFILTER' objName=ID '=' contextPropertyExpr=propertyExpression[context, dynamic] { contextObjectName = $objName.text; contextProperty = $contextPropertyExpr.property; }
-		|	initFilter = initFilterDefinition { initFilterPropertyMapping = $initFilter.mapping; initFilterPropertyName = $initFilter.propName; }
 		|	'READONLY' { readOnly = true; }
 		|	'CHECK' { checkOnOk = true; }
 		)*
@@ -2373,8 +2365,8 @@ dialogActionDefinitionBody[List<TypedParameter> context] returns [LPWithParams p
 
 	List<TypedParameter> newContext = new ArrayList<TypedParameter>(context);
 
-	boolean manageSession = false;
-	boolean noCancel = false;
+	ManageSessionType manageSession = ManageSessionType.NOMANAGESESSION; // temporary, should be AUTO
+	Boolean noCancel = FormEntity.DEFAULT_NOCANCEL; // temporary, should be NULL
 
 	boolean checkOnOk = false;
 	
@@ -2388,8 +2380,8 @@ dialogActionDefinitionBody[List<TypedParameter> context] returns [LPWithParams p
 	:	'DIALOG' mf=mappedForm[context, newContext, false]
 		(    window = windowTypeLiteral { windowType = $window.val; }
 
-		|	'MANAGESESSION' { manageSession = true; }
-		|	'NOCANCEL' { noCancel = true; }
+		|	ms=manageSessionClause { manageSession = $ms.result; }
+		|	nc=noCancelClause { noCancel = $nc.result; }
 
 		|	'READONLY' { readOnly = true; }
 		|	'CHECK' { checkOnOk = true; }
@@ -2397,6 +2389,18 @@ dialogActionDefinitionBody[List<TypedParameter> context] returns [LPWithParams p
 		dDB=doInputBody[context, newContext]
 	;
 	
+manageSessionClause returns [ManageSessionType result]
+    :       'MANAGESESSION' { $result = ManageSessionType.MANAGESESSION; }
+        |   'NOMANAGESESSION' { $result = ManageSessionType.NOMANAGESESSION; }
+        |   'MANAGESESSIONX' { $result = ManageSessionType.MANAGESESSIONX; }
+        |   'NOMANAGESESSIONX' { $result = ManageSessionType.NOMANAGESESSIONX; }
+    ;
+
+noCancelClause returns [boolean result]
+    :       'CANCEL' { $result = false; }
+        |   'NOCANCEL' { $result = true; }
+    ;
+
 doInputBody[List<TypedParameter> oldContext, List<TypedParameter> newContext]  returns [LPWithParams property]
         // modifyContextFlowActionDefinitionBody[oldContext, newContext, false, false] - used explicit modifyContextFlowActionDefinitionBodyCreated to support CHANGE clauses
     :	('DO' dDB=keepContextFlowActionDefinitionBody[newContext, false] { $property = $dDB.property; } ) | (';' { if(inPropParseState()) { $property = new LPWithParams(self.baseLM.getEmpty(), new ArrayList<Integer>());  } })

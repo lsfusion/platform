@@ -55,6 +55,8 @@ import java.util.List;
 
 public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T> {
     private final static Logger logger = Logger.getLogger(FormEntity.class);
+    
+    public static boolean DEFAULT_NOCANCEL = false;
 
     public static final IsFullClientFormulaProperty isFullClient = IsFullClientFormulaProperty.instance;
     public static final IsDebugFormulaProperty isDebug = IsDebugFormulaProperty.instance;

@@ -13,10 +13,7 @@ import lsfusion.interop.ModalityType;
 import lsfusion.interop.WindowFormType;
 import lsfusion.server.classes.ConcreteCustomClass;
 import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.form.entity.FormEntity;
-import lsfusion.server.form.entity.GroupObjectEntity;
-import lsfusion.server.form.entity.ObjectEntity;
-import lsfusion.server.form.entity.PropertyDrawEntity;
+import lsfusion.server.form.entity.*;
 import lsfusion.server.form.entity.filter.FilterEntity;
 import lsfusion.server.form.instance.FormCloseType;
 import lsfusion.server.form.instance.FormInstance;
@@ -59,14 +56,12 @@ public class FormInteractiveActionProperty extends FormActionProperty {
     }
 
     // SYSTEM ACTIONS
-    private final Boolean manageSession;
-    private final boolean showDrop;
-    private final boolean isAdd;
+    private final ManageSessionType manageSession;
+    private final Boolean noCancel;
 
     // CONTEXT
     private final ImList<ObjectEntity> contextObjects;
     private final ImList<CalcPropertyMapImplement<PropertyInterface, ClassPropertyInterface>> contextPropertyImplements;
-    private final PropertyDrawEntity initFilterProperty;
     private final boolean readOnly;
     private final boolean checkOnOk;
 
@@ -75,16 +70,15 @@ public class FormInteractiveActionProperty extends FormActionProperty {
                                          final List<ObjectEntity> objectsToSet, final List<Boolean> nulls,
                                          ImList<ObjectEntity> inputObjects, ImList<LCP> inputProps, ImList<Boolean> inputNulls,
                                          ImList<ObjectEntity> contextObjects, ImList<CalcProperty> contextProperties,
-                                         Boolean manageSession,
-                                         boolean isAdd,
+                                         ManageSessionType manageSession,
+                                         Boolean noCancel,
                                          boolean syncType,
                                          WindowFormType windowType,
                                          boolean checkOnOk,
-                                         boolean showDrop,
                                          ConcreteCustomClass formResultClass,
                                          LCP formResultProperty,
                                          AnyValuePropertyHolder chosenValueProperty,
-                                         PropertyDrawEntity initFilterProperty, boolean readOnly) {
+                                         boolean readOnly) {
         super(caption, form, objectsToSet, nulls, true, contextProperties.toArray(new CalcProperty[contextProperties.size()]));
 
         assert inputObjects.isEmpty() || syncType; // если ввод, то синхронный
@@ -99,9 +93,8 @@ public class FormInteractiveActionProperty extends FormActionProperty {
         this.syncType = syncType;
         this.windowType = windowType;
 
-        this.showDrop = showDrop;
         this.manageSession = manageSession;
-        this.isAdd = isAdd;
+        this.noCancel = noCancel;
 
         this.contextObjects = contextObjects;
         this.contextPropertyImplements = contextProperties.mapListValues(new GetValue<CalcPropertyMapImplement<PropertyInterface, ClassPropertyInterface>, CalcProperty>() {
@@ -112,14 +105,11 @@ public class FormInteractiveActionProperty extends FormActionProperty {
             }
         });
         
-        this.initFilterProperty = initFilterProperty;
         this.readOnly = readOnly;
         this.checkOnOk = checkOnOk;
     }
     
     private boolean isShowDrop() {
-        if (showDrop) // temporary
-            return true;
         for(Boolean inputNull : inputNulls)
             if (inputNull)
                 return true;
@@ -135,7 +125,7 @@ public class FormInteractiveActionProperty extends FormActionProperty {
         Result<ImSet<PullChangeProperty>> pullProps = new Result<>();
         ImSet<FilterEntity> contextFilters = getContextFilters(context, pullProps);
         
-        FormInstance newFormInstance = context.createFormInstance(form, mapObjectValues, context.getSession(), syncType, isAdd, manageSession, checkOnOk, isShowDrop(), true, contextFilters, initFilterProperty, pullProps.result, readOnly);
+        FormInstance newFormInstance = context.createFormInstance(form, mapObjectValues, context.getSession(), syncType, noCancel, manageSession, checkOnOk, isShowDrop(), true, contextFilters, pullProps.result, readOnly);
         context.requestFormUserInteraction(newFormInstance, getModalityType(), context.stack);
 
         if (syncType) {
@@ -184,6 +174,6 @@ public class FormInteractiveActionProperty extends FormActionProperty {
 
     @Override
     public boolean ignoreReadOnlyPolicy() {
-        return !isAdd;
+        return !(noCancel != null && noCancel);
     }
 }

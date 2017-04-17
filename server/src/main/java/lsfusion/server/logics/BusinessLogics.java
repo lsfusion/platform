@@ -2321,7 +2321,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             HashMap<FormInstance.DiffForm, Boolean> diffForms = new HashMap<>(FormInstance.diffForms);
             String diffLog = "" + '\n';
             for(FormInstance.DiffForm diffForm : diffForms.keySet())
-                diffLog += "EXPLICIT " + diffForm.type + " " + diffForm.explicit + " " + diffForm.entity + " " + diffForm.heur + '\n'; 
+                diffLog += "EXPLICIT " + diffForm.type + " " + diffForm.explicit + " " + diffForm.entity + " " + diffForm.stackString + " " + diffForm.heur + '\n'; 
             ServerLoggers.exInfoLogger.info(diffLog);
 
             if (logTotal) {

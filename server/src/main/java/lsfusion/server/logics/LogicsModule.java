@@ -529,24 +529,24 @@ public abstract class LogicsModule {
 
     // loggable, security, drilldown
     public LAP addMFAProp(LocalizedString caption, FormEntity form, ObjectEntity[] objectsToSet, boolean newSession) {
-        LAP result = addIFAProp(caption, form, BaseUtils.toList(objectsToSet), null, false, true, WindowFormType.FLOAT);
+        LAP result = addIFAProp(caption, form, BaseUtils.toList(objectsToSet), ManageSessionType.AUTO, FormEntity.DEFAULT_NOCANCEL, true, WindowFormType.FLOAT);
         return addSessionScopeAProp(newSession ? FormSessionScope.NEWSESSION : FormSessionScope.OLDSESSION, result);
     }
 
     // edit (add)
-    protected LAP addDMFAProp(ClassFormEntity form, Boolean manageSession, boolean noCancel) {
+    protected LAP addDMFAProp(ClassFormEntity form, ManageSessionType manageSession, Boolean noCancel) {
         return addDMFAProp(LocalizedString.create("sys"), form, manageSession, noCancel);
     }
-    protected LAP addDMFAProp(LocalizedString caption, ClassFormEntity form, Boolean manageSession, boolean noCancel) {
+    protected LAP addDMFAProp(LocalizedString caption, ClassFormEntity form, ManageSessionType manageSession, boolean noCancel) {
         return addIFAProp(caption, form.form, Collections.singletonList(form.object), manageSession, noCancel, true, WindowFormType.DOCKED);
     }
 
-    protected LAP addIFAProp(LocalizedString caption, FormEntity form, List<ObjectEntity> objectsToSet, Boolean manageSession, boolean noCancel, boolean syncType, WindowFormType windowType) {
-        return addIFAProp(null, caption, form, objectsToSet, Collections.nCopies(objectsToSet.size(), false), ListFact.<ObjectEntity>EMPTY(), ListFact.<LCP>EMPTY(), ListFact.<Boolean>EMPTY(), manageSession, noCancel, ListFact.<ObjectEntity>EMPTY(), ListFact.<CalcProperty>EMPTY(), null, syncType, windowType, false, false, false);
+    protected LAP addIFAProp(LocalizedString caption, FormEntity form, List<ObjectEntity> objectsToSet, ManageSessionType manageSession, Boolean noCancel, boolean syncType, WindowFormType windowType) {
+        return addIFAProp(null, caption, form, objectsToSet, Collections.nCopies(objectsToSet.size(), false), ListFact.<ObjectEntity>EMPTY(), ListFact.<LCP>EMPTY(), ListFact.<Boolean>EMPTY(), manageSession, noCancel, ListFact.<ObjectEntity>EMPTY(), ListFact.<CalcProperty>EMPTY(), syncType, windowType, false, false);
     }
 
-    protected LAP addIFAProp(AbstractGroup group, LocalizedString caption, FormEntity form, List<ObjectEntity> objectsToSet, List<Boolean> nulls, ImList<ObjectEntity> inputObjects, ImList<LCP> inputProps, ImList<Boolean> inputNulls, Boolean manageSession, boolean isAdd, ImList<ObjectEntity> contextObjects, ImList<CalcProperty> contextProperties, PropertyDrawEntity initFilterProperty, boolean syncType, WindowFormType windowType, boolean checkOnOk, boolean showDrop, boolean readonly, Object... params) {
-        return addProperty(group, new LAP(new FormInteractiveActionProperty(caption, form, objectsToSet, nulls, inputObjects, inputProps, inputNulls, contextObjects, contextProperties, manageSession, isAdd, syncType, windowType, checkOnOk, showDrop, baseLM.formResult, baseLM.getFormResultProperty(), baseLM.getChosenValueProperty(), initFilterProperty, readonly)));
+    protected LAP addIFAProp(AbstractGroup group, LocalizedString caption, FormEntity form, List<ObjectEntity> objectsToSet, List<Boolean> nulls, ImList<ObjectEntity> inputObjects, ImList<LCP> inputProps, ImList<Boolean> inputNulls, ManageSessionType manageSession, Boolean noCancel, ImList<ObjectEntity> contextObjects, ImList<CalcProperty> contextProperties, boolean syncType, WindowFormType windowType, boolean checkOnOk, boolean readonly, Object... params) {
+        return addProperty(group, new LAP(new FormInteractiveActionProperty(caption, form, objectsToSet, nulls, inputObjects, inputProps, inputNulls, contextObjects, contextProperties, manageSession, noCancel, syncType, windowType, checkOnOk, baseLM.formResult, baseLM.getFormResultProperty(), baseLM.getChosenValueProperty(), readonly)));
     }
     protected LAP addPFAProp(AbstractGroup group, LocalizedString caption, FormEntity form, List<ObjectEntity> objectsToSet, List<Boolean> nulls, boolean hasPrinterProperty, FormPrintType staticType, boolean syncType, Integer selectTop, LCP targetProp, Object... params) {
         ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(getIntNum(params));
@@ -1689,7 +1689,7 @@ public abstract class LogicsModule {
         LAP result = addListAProp(
                             addAddObjAProp(cls, true, 0, false, true, addedProperty), // NEW (FORM with AUTOSET), addAddObjAProp(cls, false, true, 0, false, true, addedProperty),
                             addJoinAProp(addListAProp( // так хитро делается чтобы заnest'ить addedProperty (иначе apply его сбрасывает)
-                                    addDMFAProp(form, null, true), 1, // FORM EDIT class OBJECT prm
+                                    addDMFAProp(form, ManageSessionType.AUTO, true), 1, // FORM EDIT class OBJECT prm
                                     addSetPropertyAProp(1, false, 1, addedProperty, 1), 1), // addedProperty <- prm 
                             addedProperty)); // FORM EDIT class OBJECT prm
 
@@ -1732,7 +1732,7 @@ public abstract class LogicsModule {
     }
 
     protected LAP addEditFormAction(FormSessionScope scope, ClassFormEntity form) {
-        LAP result = addDMFAProp(LocalizedString.create("{logics.edit}"), form, null, false);
+        LAP result = addDMFAProp(LocalizedString.create("{logics.edit}"), form, ManageSessionType.AUTO, FormEntity.DEFAULT_NOCANCEL);
 
         setEditActionOptions(result);
 

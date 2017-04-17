@@ -146,7 +146,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
      * что он отработаывает как ImmutableMethod через createAndExecute
      */
     public Integer getInitFilterPropertyDraw() throws RemoteException {
-        return form.initFilterPropertyDraw == null ? null : form.initFilterPropertyDraw.getID();
+        return null; // deprecated
     }
 
     /**

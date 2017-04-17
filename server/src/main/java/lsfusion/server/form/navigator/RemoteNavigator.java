@@ -31,6 +31,7 @@ import lsfusion.server.data.SQLSession;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.form.entity.FormEntity;
+import lsfusion.server.form.entity.ManageSessionType;
 import lsfusion.server.form.entity.ObjectEntity;
 import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.form.instance.GroupObjectInstance;
@@ -709,8 +710,8 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
             try(DataSession session = createSession()) {
                 return context.createRemoteForm(
                         context.createFormInstance(formEntity, MapFact.<ObjectEntity, DataObject>EMPTY(), session,
-                                isModal, false, true, stack, false, false, interactive, null,
-                                null, null, false),
+                                isModal, FormEntity.DEFAULT_NOCANCEL, ManageSessionType.MANAGESESSION, stack, false, false, interactive, null,
+                                null, false),
                         stack);
             }
         } catch (SQLException | SQLHandledException e) {

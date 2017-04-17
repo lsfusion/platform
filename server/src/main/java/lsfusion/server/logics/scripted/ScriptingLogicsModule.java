@@ -2376,10 +2376,8 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public LPWithParams addScriptedInteractiveFAProp(FormEntity form, List<ObjectEntity> allObjects, List<FormActionProps> allObjectProps, 
-                                                     String contextObjectName, LPWithParams contextObjectLP,
-                                                     String initFilterPropertyName, List<String> initFilterPropertyMapping,
-                                                     Boolean syncType, WindowFormType windowType, boolean manageSession,
-                                                     boolean checkOnOk, boolean showDrop, boolean noCancel, boolean readonly) throws ScriptingErrorLog.SemanticErrorException {
+                                                     Boolean syncType, WindowFormType windowType, ManageSessionType manageSession,
+                                                     boolean checkOnOk, Boolean noCancel, boolean readonly) throws ScriptingErrorLog.SemanticErrorException {
         List<ObjectEntity> objects = new ArrayList<>();
         List<LPWithParams> mapping = new ArrayList<>();
         List<Boolean> nulls = new ArrayList<>();
@@ -2391,11 +2389,6 @@ public class ScriptingLogicsModule extends LogicsModule {
         MList<ObjectEntity> mContextObjects = ListFact.mListMax(allObjects.size() + 1);
         MList<CalcProperty> mContextProps = ListFact.mListMax(allObjects.size() + 1);
         List<LPWithParams> contextLPs = new ArrayList<>(); 
-        if(contextObjectName != null) { // deprecated
-            mContextObjects.add(findObjectEntity(form, contextObjectName));
-            mContextProps.add((CalcProperty)contextObjectLP.property.property);
-            contextLPs.add(contextObjectLP);
-        }
                 
         for (int i = 0; i < allObjects.size(); i++) {
             ObjectEntity object = allObjects.get(i);
@@ -2446,20 +2439,12 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
         List<Integer> allParams = mergeAllParams(propParams);
 
-        Version version = getVersion();
-        PropertyDrawEntity initFilterProperty = null;
-        if (initFilterPropertyName != null) {
-            initFilterProperty = initFilterPropertyMapping == null
-                                 ? getPropertyDraw(this, form, initFilterPropertyName, version)
-                                 : getPropertyDraw(this, form, PropertyDrawEntity.createSID(initFilterPropertyName, initFilterPropertyMapping), version);
-        }
-        
         LAP property = addIFAProp(null, LocalizedString.create(""), form, objects, nulls,
                                  inputObjects, inputProps, inputNulls,
                                  manageSession, noCancel,
                                  contextObjects, contextProps,
-                                 initFilterProperty, syncType, windowType, checkOnOk, showDrop, 
-                                 readonly, getParamsPlainList(propParams).toArray());
+                syncType, windowType, checkOnOk,
+                readonly, getParamsPlainList(propParams).toArray());
 
         if (mapping.size() > 0) {
             for(LPWithParams contextLP : contextLPs)
@@ -2489,8 +2474,8 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
     
     public LPWithParams addScriptedDialogFAProp(FormEntity form, List<ObjectEntity> allObjects, List<FormActionProps> allObjectProps,
-                                                WindowFormType windowType, boolean manageSession,
-                                                boolean checkOnOk, boolean noCancel, boolean readonly, LPWithParams doAction, List<TypedParameter> oldContext, List<TypedParameter> newContext) throws ScriptingErrorLog.SemanticErrorException {
+                                                WindowFormType windowType, ManageSessionType manageSession,
+                                                boolean checkOnOk, Boolean noCancel, boolean readonly, LPWithParams doAction, List<TypedParameter> oldContext, List<TypedParameter> newContext) throws ScriptingErrorLog.SemanticErrorException {
 
         List<ObjectEntity> objects = new ArrayList<>();
         List<LPWithParams> mapping = new ArrayList<>();
@@ -2568,8 +2553,8 @@ public class ScriptingLogicsModule extends LogicsModule {
                                  inputObjects, inputProps, inputNulls,
                                  manageSession, noCancel,
                                  contextObjects, contextProps,
-                                null, true, windowType, checkOnOk, false,
-                                 readonly, getParamsPlainList(propParams).toArray());
+                true, windowType, checkOnOk,
+                readonly, getParamsPlainList(propParams).toArray());
 
         LPWithParams formAction;
         if (mapping.size() > 0) {
