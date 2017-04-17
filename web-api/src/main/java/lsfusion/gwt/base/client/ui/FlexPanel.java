@@ -57,6 +57,10 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
     public boolean isHorizontal() {
         return !isVertical();
     }
+    
+    public double getFlexShrink() {
+        return 0;
+    }
 
     @Override
     public void setVisible(boolean nVisible) {
@@ -129,20 +133,25 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
         if (widget instanceof ScrollPanel) {
             flexBasis = "0";
         }
+        
+        double flexShrink = 0;
+        if (widget instanceof FlexPanel) {
+            flexShrink = ((FlexPanel) widget).getFlexShrink();
+        }
 
-        LayoutData layoutData = impl.insertChild(parentElement, childElement, beforeIndex, alignment, flex, flexBasis);
+        LayoutData layoutData = impl.insertChild(parentElement, childElement, beforeIndex, alignment, flex, flexShrink, flexBasis);
         widget.setLayoutData(layoutData);
 
         // Adopt.
         adopt(widget);
     }
 
-    public void setChildConstraints(Widget w, GFlexAlignment alignment, double flex, String flexBasis) {
+    public void setChildConstraints(Widget w, GFlexAlignment alignment, double flex, double flexShrink, String flexBasis) {
         int index = getWidgetIndex(w);
         if (index != -1) {
             LayoutData layoutData = (LayoutData) w.getLayoutData();
             Element childElement = w.getElement();
-            impl.setFlex(layoutData, childElement, flex, flexBasis);
+            impl.setFlex(layoutData, childElement, flex, flexShrink, flexBasis);
             impl.setAlignment(layoutData, childElement, alignment);
         }
     }
@@ -152,9 +161,13 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
     }
 
     public void setChildFlex(Widget w, double flex, String flexBasis) {
+        setChildFlex(w, flex, 0, flexBasis);
+    }
+
+    public void setChildFlex(Widget w, double flex, double flexShrink, String flexBasis) {
         int index = getWidgetIndex(w);
         if (index != -1) {
-            impl.setFlex((LayoutData) w.getLayoutData(), w.getElement(), flex, flexBasis);
+            impl.setFlex((LayoutData) w.getLayoutData(), w.getElement(), flex, flexShrink, flexBasis);
         }
     }
 

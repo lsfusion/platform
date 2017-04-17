@@ -3,6 +3,7 @@ package lsfusion.gwt.form.client.form.ui.layout.flex;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.base.client.ui.FlexPanel;
+import lsfusion.gwt.base.client.ui.GFlexAlignment;
 import lsfusion.gwt.form.client.form.ui.layout.SplitPanelBase;
 import lsfusion.gwt.form.shared.view.GComponent;
 
@@ -12,63 +13,31 @@ public class FlexSplitPanel extends SplitPanelBase<FlexPanel> {
     private GComponent secondChild;
 
     public FlexSplitPanel(boolean vertical) {
-        super(vertical, new Panel());
+        super(vertical, new Panel(vertical));
         ((Panel)panel).setSplitPanel(this);
-        panel.getElement().getStyle().setPosition(Style.Position.RELATIVE);
     }
 
     @Override
     protected void addSplitterImpl(Splitter splitter) {
-        Style splitterStyle = splitter.getElement().getStyle();
-        splitterStyle.setPosition(Style.Position.ABSOLUTE);
-        if (vertical) {
-            splitterStyle.setLeft(0, Style.Unit.PX);
-            splitterStyle.setRight(0, Style.Unit.PX);
-        } else {
-            splitterStyle.setTop(0, Style.Unit.PX);
-            splitterStyle.setBottom(0, Style.Unit.PX);
-        }
-        panel.add(splitter);
+        panel.add(splitter, GFlexAlignment.STRETCH);
     }
 
     @Override
     protected void addFirstWidgetImpl(GComponent child, Widget widget) {
         firstChild = child;
-
+        panel.add(firstWidget, 0, GFlexAlignment.STRETCH, 0);
         Style style = widget.getElement().getStyle();
-        // для flex-layout'а. убираем position:absolute для грида в контенерах, у которых в иерархии предков есть скролл или flex=0. грид будет занимать всё место, которое ему нужно
-        if (child.isInFlexible()) {
-            style.setPosition(Style.Position.ABSOLUTE);
-            style.setTop(child.marginTop, Style.Unit.PX);
-            style.setLeft(child.marginLeft, Style.Unit.PX);
-            if (vertical) {
-                style.setRight(child.marginRight, Style.Unit.PX);
-            } else {
-                style.setBottom(child.marginBottom, Style.Unit.PX);
-            }
-        }
-        panel.add(firstWidget, 0);
+        style.setOverflowY(vertical ? Style.Overflow.AUTO : Style.Overflow.HIDDEN);
+        style.setOverflowX(vertical ? Style.Overflow.HIDDEN : Style.Overflow.AUTO);
     }
 
     @Override
     protected void addSecondWidgetImpl(GComponent child, Widget widget) {
         secondChild = child;
-
+        panel.add(widget, firstWidget == null ? 1 : 2, GFlexAlignment.STRETCH, 0);
         Style style = widget.getElement().getStyle();
-        // для flex-layout'а. убираем position:absolute для грида в контенерах, у которых в иерархии предков есть скролл или flex=0. грид будет занимать всё место, которое ему нужно
-        if (child.isInFlexible()) {
-            style.setPosition(Style.Position.ABSOLUTE);
-            style.setBottom(child.marginBottom, Style.Unit.PX);
-            style.setRight(child.marginRight, Style.Unit.PX);
-            if (vertical) {
-                style.setLeft(child.marginLeft, Style.Unit.PX);
-            } else {
-                style.setTop(child.marginTop, Style.Unit.PX);
-            }
-        }
-
-        int index = firstWidget == null ? 1 : 2;
-        panel.add(widget, index);
+        style.setOverflowY(vertical ? Style.Overflow.AUTO : Style.Overflow.HIDDEN);
+        style.setOverflowX(vertical ? Style.Overflow.HIDDEN : Style.Overflow.AUTO);
     }
 
     @Override
@@ -76,12 +45,6 @@ public class FlexSplitPanel extends SplitPanelBase<FlexPanel> {
         int availableSize = getAvailableSize();
 
         int size1 = (int) Math.max(0, availableSize * ratio);
-
-        if (vertical) {
-            splitter.getElement().getStyle().setTop(size1, Style.Unit.PX);
-        } else {
-            splitter.getElement().getStyle().setLeft(size1, Style.Unit.PX);
-        }
 
         if (firstWidget != null) {
             int sizeToSet1 = Math.max(0, size1 - firstChild.getMargins(vertical));
@@ -103,9 +66,18 @@ public class FlexSplitPanel extends SplitPanelBase<FlexPanel> {
 
     private static class Panel extends FlexPanel {
         FlexSplitPanel splitPanel;
+        
+        public Panel(boolean vertical) {
+            super(vertical);
+        }
 
         private void setSplitPanel(FlexSplitPanel splitPanel) {
             this.splitPanel = splitPanel;
+        }
+
+        @Override
+        public double getFlexShrink() {
+            return isVertical() ? 1 : 0;
         }
 
         @Override
