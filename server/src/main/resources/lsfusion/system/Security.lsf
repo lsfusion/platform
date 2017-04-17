@@ -28,8 +28,8 @@ EXTEND FORM customUsers
 mainRole[User](CustomUser u) <- defaultMainRole() WHEN SET(u IS CustomUser);
 
 in 'Вкл.' = DATA BOOLEAN (CustomUser, UserRole);
-has 'Вкл.' (User user, UserRole role) = mainRole(user) == role OR in(user, role);
-hasUserRoleCustom(user) = GROUP MAX has(User user, UserRole role) BY user;
+has 'Вкл.' (User user, UserRole role) = mainRole(user) == role OR in(user, role) PERSISTENT;
+hasUserRoleCustom(user) = GROUP SUM 1 IF has(User user, UserRole role) BY user PERSISTENT;
 
 CONSTRAINT DROPPED(UserRole r IS UserRole) AND PREV(has(User user, r))
     MESSAGE 'Запрещено удалять используемую роль';
@@ -113,9 +113,6 @@ permitView 'Разрешить просмотр группы свойств' (Us
 
 dataPermitView 'Разрешить просмотр свойства' = DATA BOOLEAN (UserRole, Property);
 permitView 'Разрешить просмотр свойства' (UserRole userRole, Property property) = OVERRIDE levelPermitView (userRole, parent(property)), dataPermitView (userRole, property) PERSISTENT;
-permitView 'Разрешить просмотр свойства' (User user, Property property) = permitView(mainRole(user), property) PERSISTENT;
-overPermitView 'Разрешить просмотр свойства' (user, property) = 
-    GROUP MAX permitView(UserRole userRole, Property property) IF has(User user, userRole) BY user, property;
 
 dataForbidView 'Запретить просмотр группы свойств' = DATA BOOLEAN (UserRole, PropertyGroup);
 
@@ -128,16 +125,13 @@ forbidView 'Запретить просмотр группы свойств' (Us
 
 dataForbidView 'Запретить просмотр свойства' = DATA BOOLEAN (UserRole, Property);
 forbidView 'Запретить просмотр свойства' (UserRole userRole, Property property) = OVERRIDE levelForbidView (userRole, parent(property)), dataForbidView (userRole, property) PERSISTENT;
-forbidView 'Запретить просмотр свойства' (User user, Property property) = forbidView(mainRole(user), property) PERSISTENT;
+fullForbidView (Property property) = (forbidView(property) AND NOT permitView(property)); 
 
-fullForbidView (UserRole userRole, Property property) = (OVERRIDE 
-    forbidView(property) AND NOT permitView(property),
-    forbidView(userRole, property)) AND NOT permitView(userRole, property);
+forbidView = GROUP SUM 1 IF has(User user, UserRole userRole) AND forbidView(userRole, Property property) BY user, property;
+permitView = GROUP SUM 1 IF has(User user, UserRole userRole) AND permitView(userRole, Property property) BY user, property;
 
 fullForbidView (User user, Property property) = 
-    IF hasUserRoleCustom(user)
-       THEN TRUE IF NOT [=GROUP SUM 1 IF NOT fullForbidView(UserRole userRole, property) AND has(User user, userRole) BY user, property] (user, property)
-       ELSE forbidView(property) AND NOT permitView(property);
+    (fullForbidView(property) OR hasUserRoleCustom(user) == forbidView (user, property)) AND NOT permitView(user, property);
          
 dataPermitChange 'Разрешить изменение группы свойств' = DATA BOOLEAN (UserRole, PropertyGroup);
 
@@ -150,9 +144,7 @@ permitChange 'Разрешить изменение группы свойств'
 
 dataPermitChange 'Разрешить изменение свойства' = DATA BOOLEAN (UserRole, Property);
 permitChange 'Разрешить изменение свойства' (UserRole userRole, Property property) = OVERRIDE levelPermitChange (userRole, parent(property)), dataPermitChange (userRole, property) PERSISTENT;
-permitChange 'Разрешить изменение свойства' (User user, Property property) = permitChange (mainRole(user), property) PERSISTENT;
-overPermitChange 'Разрешить изменение свойства' (user, property) = 
-    GROUP MAX permitChange(UserRole userRole, Property property) IF has(User user, userRole) BY user, property;
+fullForbidChange (Property property) = (forbidChange(property) AND NOT permitChange(property));
     
 dataForbidChange 'Запретить изменение группы свойств' = DATA BOOLEAN (UserRole, PropertyGroup);
 
@@ -165,17 +157,13 @@ forbidChange 'Запретить изменение группы свойств'
 
 dataForbidChange 'Запретить изменение свойства' = DATA BOOLEAN (UserRole, Property);
 forbidChange 'Запретить изменение свойства' (UserRole userRole, Property property) = OVERRIDE levelForbidChange (userRole, parent(property)), dataForbidChange (userRole, property) PERSISTENT;
-forbidChange 'Запретить изменение свойства' (User user, Property property) = forbidChange (mainRole(user), property) PERSISTENT;
 
-fullForbidChange (UserRole userRole, Property property) = (OVERRIDE 
-    forbidChange(property) AND NOT permitChange(property),
-    forbidChange(userRole, property)) AND NOT permitChange(userRole, property);
+forbidChange = GROUP SUM 1 IF has(User user, UserRole userRole) AND forbidChange(userRole, Property property) BY user, property;
+permitChange = GROUP SUM 1 IF has(User user, UserRole userRole) AND permitChange(userRole, Property property) BY user, property;
 
 fullForbidChange (User user, Property property) = 
-    IF hasUserRoleCustom(user)
-       THEN TRUE IF NOT [=GROUP SUM 1 IF NOT fullForbidChange(UserRole userRole, property) AND has(User user, userRole) BY user, property] (user, property)
-       ELSE forbidChange(property) AND NOT permitChange(property);
-    
+    (fullForbidChange(property) OR hasUserRoleCustom(user) == forbidChange (user, property)) AND NOT permitChange(user, property);
+
 CLASS DefaultForms 'Отображение форм при запуске' {
     none 'Не восстанавливать формы',
     restore 'Отображать сохранённые формы',
