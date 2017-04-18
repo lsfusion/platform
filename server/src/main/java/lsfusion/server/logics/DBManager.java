@@ -927,7 +927,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
             if(!migrateReflectionProperties(oldDBStructure))
                 throw new RuntimeException("Error while migrating reflection properties and actions");
 
-            if(newDBStructure.version >= 23 && oldDBStructure.version < 23) {
+            if(newDBStructure.version >= 24 && oldDBStructure.version < 24) {
                 startLogger.info("Migrating ADDFORMS access");
                 if (!migrateAccessProperties())
                     throw new RuntimeException("Error while migrating ADDFORMS access");
@@ -2044,7 +2044,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
     private class NewDBStructure extends DBStructure<Field> {
 
         public <P extends PropertyInterface> NewDBStructure(DBVersion dbVersion) {
-            version = 23;
+            version = 24;
             this.dbVersion = dbVersion;
 
             tables.putAll(getIndicesMap());

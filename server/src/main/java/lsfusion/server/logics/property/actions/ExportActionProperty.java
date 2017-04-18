@@ -1,18 +1,14 @@
 package lsfusion.server.logics.property.actions;
 
-import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.interop.FormExportType;
-import lsfusion.interop.FormStaticType;
 import lsfusion.interop.form.ReportGenerationData;
 import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.form.entity.FormEntity;
-import lsfusion.server.form.entity.ObjectEntity;
+import lsfusion.server.form.entity.FormSelector;
+import lsfusion.server.form.entity.ObjectSelector;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.linear.LCP;
-import lsfusion.server.logics.property.CalcPropertyMapImplement;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
-import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.logics.property.actions.exporting.HierarchicalFormExporter;
 import lsfusion.server.logics.property.actions.exporting.PlainFormExporter;
 import lsfusion.server.logics.property.actions.exporting.csv.CSVFormExporter;
@@ -26,7 +22,7 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
-public class ExportActionProperty extends FormStaticActionProperty<FormExportType> {
+public class ExportActionProperty<O extends ObjectSelector> extends FormStaticActionProperty<O, FormExportType> {
 
     // csv
     private final boolean noHeader;
@@ -34,8 +30,8 @@ public class ExportActionProperty extends FormStaticActionProperty<FormExportTyp
     private final String charset;
 
     public ExportActionProperty(LocalizedString caption,
-                                    FormEntity form,
-                                    List<ObjectEntity> objectsToSet,
+                                    FormSelector<O> form,
+                                    List<O> objectsToSet,
                                     List<Boolean> nulls, 
                                     FormExportType staticType,
                                     LCP formExportFile,
@@ -75,7 +71,7 @@ public class ExportActionProperty extends FormStaticActionProperty<FormExportTyp
     }
 
     @Override
-    protected void exportClient(ExecutionContext<ClassPropertyInterface> context, ReportGenerationData reportData, Map<String, String> reportPath) throws SQLException, SQLHandledException {
+    protected void exportClient(ExecutionContext<ClassPropertyInterface> context, LocalizedString caption, ReportGenerationData reportData, Map<String, String> reportPath) throws SQLException, SQLHandledException {
         throw new UnsupportedOperationException();
     }
 }

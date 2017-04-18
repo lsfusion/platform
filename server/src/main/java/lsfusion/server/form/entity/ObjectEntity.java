@@ -28,7 +28,7 @@ import java.util.Set;
 
 import static lsfusion.server.logics.i18n.LocalizedString.create;
 
-public class ObjectEntity extends IdentityObject implements PropertyObjectInterfaceEntity {
+public class ObjectEntity extends IdentityObject implements PropertyObjectInterfaceEntity, ObjectSelector {
 
     public GroupObjectEntity groupTo;
 

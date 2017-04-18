@@ -5,6 +5,7 @@ import lsfusion.base.col.ListFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.base.col.interfaces.mutable.MSet;
@@ -28,10 +29,10 @@ import lsfusion.server.logics.property.*;
 import java.sql.SQLException;
 import java.util.List;
 
-public class FormInteractiveActionProperty extends FormActionProperty {
+public class FormInteractiveActionProperty<O extends ObjectSelector> extends FormActionProperty<O> {
 
     // INPUT
-    private final ImList<ObjectEntity> inputObjects;
+    private final ImList<O> inputObjects;
     private final ImList<LCP> inputProps;    
     private final ImList<Boolean> inputNulls;
     private final ConcreteCustomClass formResultClass;
@@ -60,16 +61,16 @@ public class FormInteractiveActionProperty extends FormActionProperty {
     private final Boolean noCancel;
 
     // CONTEXT
-    private final ImList<ObjectEntity> contextObjects;
+    private final ImList<O> contextObjects;
     private final ImList<CalcPropertyMapImplement<PropertyInterface, ClassPropertyInterface>> contextPropertyImplements;
     private final boolean readOnly;
     private final boolean checkOnOk;
 
     public FormInteractiveActionProperty(LocalizedString caption,
-                                         FormEntity form,
-                                         final List<ObjectEntity> objectsToSet, final List<Boolean> nulls,
-                                         ImList<ObjectEntity> inputObjects, ImList<LCP> inputProps, ImList<Boolean> inputNulls,
-                                         ImList<ObjectEntity> contextObjects, ImList<CalcProperty> contextProperties,
+                                         FormSelector<O> form,
+                                         final List<O> objectsToSet, final List<Boolean> nulls,
+                                         ImList<O> inputObjects, ImList<LCP> inputProps, ImList<Boolean> inputNulls,
+                                         ImList<O> contextObjects, ImList<CalcProperty> contextProperties,
                                          ManageSessionType manageSession,
                                          Boolean noCancel,
                                          boolean syncType,
@@ -121,9 +122,11 @@ public class FormInteractiveActionProperty extends FormActionProperty {
     }
 
     @Override
-    protected void executeCustom(ImMap<ObjectEntity, ? extends ObjectValue> mapObjectValues, ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+    protected void executeCustom(FormEntity<?> form, ImMap<ObjectEntity, ? extends ObjectValue> mapObjectValues, ExecutionContext<ClassPropertyInterface> context, ImRevMap<ObjectEntity, O> mapResolvedObjects) throws SQLException, SQLHandledException {
+        ImRevMap<O, ObjectEntity> mapRevResolvedObjects = mapResolvedObjects.reverse();
+
         Result<ImSet<PullChangeProperty>> pullProps = new Result<>();
-        ImSet<FilterEntity> contextFilters = getContextFilters(context, pullProps);
+        ImSet<FilterEntity> contextFilters = getContextFilters(context, pullProps, mapRevResolvedObjects);
         
         FormInstance newFormInstance = context.createFormInstance(form, mapObjectValues, context.getSession(), syncType, noCancel, manageSession, checkOnOk, isShowDrop(), true, contextFilters, pullProps.result, readOnly);
         context.requestFormUserInteraction(newFormInstance, getModalityType(), context.stack);
@@ -144,9 +147,10 @@ public class FormInteractiveActionProperty extends FormActionProperty {
 
             ImList<RequestResult> result = null;
             if(formResult != FormCloseType.CLOSE) {
-                MList<RequestResult> mResult = ListFact.mList(inputObjects.size());
-                for (int i = 0; i < inputObjects.size(); i++) {
-                    ObjectEntity inputObject = inputObjects.get(i);
+                ImList<ObjectEntity> resolvedInputObjects = inputObjects.mapList(mapRevResolvedObjects);
+                MList<RequestResult> mResult = ListFact.mList(resolvedInputObjects.size());
+                for (int i = 0; i < resolvedInputObjects.size(); i++) {
+                    ObjectEntity inputObject = resolvedInputObjects.get(i);
                     ObjectInstance object = newFormInstance.instanceFactory.getInstance(inputObject);
 
                     ObjectValue chosenValue = (formResult == FormCloseType.OK ? object.getObjectValue() : NullValue.instance);
@@ -158,10 +162,11 @@ public class FormInteractiveActionProperty extends FormActionProperty {
         }
     }
 
-    private ImSet<FilterEntity> getContextFilters(ExecutionContext<ClassPropertyInterface> context, Result<ImSet<PullChangeProperty>> pullProps) {
+    private ImSet<FilterEntity> getContextFilters(ExecutionContext<ClassPropertyInterface> context, Result<ImSet<PullChangeProperty>> pullProps, ImRevMap<O, ObjectEntity> mapResolvedObjects) {
         MSet<FilterEntity> mContextFilters = SetFact.mSet();
-        for(int i=0,size=contextObjects.size();i<size;i++) {
-            ObjectEntity contextObject = contextObjects.get(i);
+        ImList<ObjectEntity> resolvedContextObjects = contextObjects.mapList(mapResolvedObjects);
+        for(int i=0,size=resolvedContextObjects.size();i<size;i++) {
+            ObjectEntity contextObject = resolvedContextObjects.get(i);
             CalcPropertyMapImplement<PropertyInterface, ClassPropertyInterface> contextPropertyImplement = contextPropertyImplements.get(i);
             
             final CalcPropertyValueImplement<PropertyInterface> propertyValues = contextPropertyImplement.mapObjectValues(context.getKeys());

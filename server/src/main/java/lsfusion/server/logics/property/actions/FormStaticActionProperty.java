@@ -2,6 +2,7 @@ package lsfusion.server.logics.property.actions;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.interop.FormExportType;
 import lsfusion.interop.FormPrintType;
 import lsfusion.interop.FormStaticType;
@@ -14,7 +15,9 @@ import lsfusion.server.SystemProperties;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.entity.FormEntity;
+import lsfusion.server.form.entity.FormSelector;
 import lsfusion.server.form.entity.ObjectEntity;
+import lsfusion.server.form.entity.ObjectSelector;
 import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
@@ -32,7 +35,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public abstract class FormStaticActionProperty<T extends FormStaticType> extends FormActionProperty {
+public abstract class FormStaticActionProperty<O extends ObjectSelector, T extends FormStaticType> extends FormActionProperty<O> {
 
     protected final T staticType;
     
@@ -41,8 +44,8 @@ public abstract class FormStaticActionProperty<T extends FormStaticType> extends
     private Integer selectTop;
 
     public FormStaticActionProperty(LocalizedString caption,
-                                    FormEntity form,
-                                    List<ObjectEntity> objectsToSet,
+                                    FormSelector<O> form,
+                                    List<O> objectsToSet,
                                     List<Boolean> nulls,
                                     T staticType,
                                     LCP formExportFile,
@@ -51,8 +54,8 @@ public abstract class FormStaticActionProperty<T extends FormStaticType> extends
     }
 
     public FormStaticActionProperty(LocalizedString caption,
-                                    FormEntity form,
-                                    List<ObjectEntity> objectsToSet,
+                                    FormSelector<O> form,
+                                    List<O> objectsToSet,
                                     List<Boolean> nulls,
                                     T staticType,
                                     LCP formExportFile,
@@ -68,11 +71,11 @@ public abstract class FormStaticActionProperty<T extends FormStaticType> extends
     protected abstract Map<String, byte[]> exportPlain(ReportGenerationData reportData) throws IOException; // multiple files
     protected abstract byte[] exportHierarchical(ReportGenerationData reportData) throws JRException, IOException, ClassNotFoundException; // single file    
 
-    protected abstract void exportClient(ExecutionContext<ClassPropertyInterface> context, ReportGenerationData reportData, Map<String, String> reportPath) throws SQLException, SQLHandledException;
+    protected abstract void exportClient(ExecutionContext<ClassPropertyInterface> context, LocalizedString caption, ReportGenerationData reportData, Map<String, String> reportPath) throws SQLException, SQLHandledException;
 
 
     @Override
-    protected void executeCustom(ImMap<ObjectEntity, ? extends ObjectValue> mapObjectValues, ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+    protected void executeCustom(FormEntity<?> form, ImMap<ObjectEntity, ? extends ObjectValue> mapObjectValues, ExecutionContext<ClassPropertyInterface> context, ImRevMap<ObjectEntity, O> mapResolvedObjects) throws SQLException, SQLHandledException {
 
         FormReportManager newFormManager;
 
@@ -111,7 +114,7 @@ public abstract class FormStaticActionProperty<T extends FormStaticType> extends
             }
         } else { // assert printType != null;
             Map<String, String> reportPath = SystemProperties.isDebug ? newFormManager.getReportPath(staticType instanceof FormPrintType && ((FormPrintType) staticType).isExcel(), null, null) : new HashMap<>();
-            exportClient(context, reportData, reportPath);
+            exportClient(context, form.caption, reportData, reportPath);
         }
     }
 }

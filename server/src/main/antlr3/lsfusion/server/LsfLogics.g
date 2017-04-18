@@ -26,6 +26,8 @@ grammar LsfLogics;
 	import lsfusion.server.form.view.PropertyDrawView;
 	import lsfusion.server.classes.sets.ResolveClassSet;
 	import lsfusion.server.classes.DataClass;
+	import lsfusion.server.classes.CustomClass;
+	import lsfusion.server.classes.ValueClass;
 	import lsfusion.server.session.LocalNestedType;
 	import lsfusion.server.logics.i18n.LocalizedString;
 	import lsfusion.server.logics.mutables.Version;
@@ -2300,22 +2302,29 @@ contextIndependentActionDB returns [LP property, List<ResolveClassSet> signature
 	|	'NATIVE' '(' clist=classIdList ')' { if (inPropParseState()) { $property = null; $signature = self.createClassSetsFromClassNames($clist.ids); }}
 	;
 
-mappedForm[List<TypedParameter> context, List<TypedParameter> newContext, boolean dynamic] returns [FormEntity formEntity, List<ObjectEntity> objects = new ArrayList<>(), List<FormActionProps> props = new ArrayList<>()]
+mappedForm[List<TypedParameter> context, List<TypedParameter> newContext, boolean dynamic] returns [MappedForm mapped, List<FormActionProps> props = new ArrayList<>()]
 @init {
-    boolean edit = false;
     FormEntity form = null;
-    ClassFormEntity classForm = null;
-    ObjectEntity classObject = null;
-    boolean isNull;
+
+    CustomClass mappedCls = null;
+    boolean edit = false;
 }
 	:
-	(   (   formName=compoundID { if(inPropParseState()) { form = self.findForm($formName.sid); $formEntity = form; } }
-	        ('OBJECTS' list=formActionObjectList[form, context, newContext, dynamic] { $objects = $list.objects; $props = $list.props; })?
+	(   (   formName=compoundID { if(inPropParseState()) { form = self.findForm($formName.sid); } } 
+	        ('OBJECTS' list=formActionObjectList[form, context, newContext, dynamic] { $props = $list.props; })?
+	        {
+	            if(inPropParseState())
+	                $mapped = MappedForm.create(form, $list.objects != null ? $list.objects : new ArrayList<ObjectEntity>());
+	        }
 		)
 	    |
 	    (   ('LIST' | ('EDIT' { edit = true; } ))
-	         cls = classId { if(inPropParseState()) { classForm = self.findClassForm($cls.sid, edit); $formEntity = classForm.form; classObject=classForm.object; $objects = Collections.singletonList(classObject); } }
-	         ('OBJECT' object=formActionProps["object", classObject, context, newContext, dynamic] { $props = Collections.singletonList($object.props); })?
+	         cls = classId { if(inPropParseState()) { mappedCls = (CustomClass)self.findClass($cls.sid); } }
+	         ('OBJECT' object=formActionProps["object", mappedCls, context, newContext, dynamic] { $props = Collections.singletonList($object.props); })?
+	        {
+	            if(inPropParseState())
+	                $mapped = MappedForm.create(mappedCls, edit);
+	        }
 	    ))
 ;
 
@@ -2343,7 +2352,7 @@ formActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns 
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedInteractiveFAProp($mf.formEntity, $mf.objects, $mf.props, syncType, windowType, manageSession, checkOnOk, noCancel, readOnly);
+		$property = self.addScriptedShowFAProp($mf.mapped, $mf.props, syncType, windowType, manageSession, checkOnOk, noCancel, readOnly);
 	}
 }
 	:	'SHOW' mf=mappedForm[context, null, dynamic]
@@ -2374,7 +2383,7 @@ dialogActionDefinitionBody[List<TypedParameter> context] returns [LPWithParams p
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedDialogFAProp($mf.formEntity, $mf.objects, $mf.props, windowType, manageSession, checkOnOk, noCancel, readOnly, $dDB.property, context, newContext);
+		$property = self.addScriptedDialogFAProp($mf.mapped, $mf.props, windowType, manageSession, checkOnOk, noCancel, readOnly, $dDB.property, context, newContext);
 	}
 }
 	:	'DIALOG' mf=mappedForm[context, newContext, false]
@@ -2425,7 +2434,7 @@ printActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedPrintFAProp($mf.formEntity, $mf.objects, $mf.props, printerProperty, printType, $pUsage.propUsage, syncType, selectTop);
+		$property = self.addScriptedPrintFAProp($mf.mapped, $mf.props, printerProperty, printType, $pUsage.propUsage, syncType, selectTop);
 	}
 }
 	:	'PRINT' mf=mappedForm[context, null, dynamic]
@@ -2460,7 +2469,7 @@ exportActionDefinitionBody[List<TypedParameter> context, boolean dynamic] return
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedExportFAProp($mf.formEntity, $mf.objects, $mf.props, exportType, noHeader, separator, charset, $pUsage.propUsage);
+		$property = self.addScriptedExportFAProp($mf.mapped, $mf.props, exportType, noHeader, separator, charset, $pUsage.propUsage);
 	}
 }
 	:	'EXPORT' mf=mappedForm[context, null, dynamic]
@@ -2483,11 +2492,11 @@ formActionObjectList[FormEntity formEntity, List<TypedParameter> context, List<T
 @init {
     ObjectEntity object = null;
 }
-	:	id=ID { if(inPropParseState()) { object=self.findObjectEntity(formEntity, $id.text); $objects.add(object); } } fap=formActionProps[$id.text, object, context, newContext, dynamic] { $props.add($fap.props); }
-		(',' id=ID { if(inPropParseState()) { object=self.findObjectEntity(formEntity, $id.text); $objects.add(object); } } fap=formActionProps[$id.text, object, context, newContext, dynamic] { $props.add($fap.props); })*
+	:	id=ID { if(inPropParseState()) { object=self.findObjectEntity(formEntity, $id.text); $objects.add(object); } } fap=formActionProps[$id.text, object != null ? object.baseClass : null, context, newContext, dynamic] { $props.add($fap.props); }
+		(',' id=ID { if(inPropParseState()) { object=self.findObjectEntity(formEntity, $id.text); $objects.add(object); } } fap=formActionProps[$id.text, object != null ? object.baseClass : null, context, newContext, dynamic] { $props.add($fap.props); })*
 	;
 
-formActionProps[String objectName, ObjectEntity object, List<TypedParameter> context, List<TypedParameter> newContext, boolean dynamic] returns [FormActionProps props]
+formActionProps[String objectName, ValueClass objectClass, List<TypedParameter> context, List<TypedParameter> newContext, boolean dynamic] returns [FormActionProps props]
 @init {
     LPWithParams in = null;
     Boolean inNull = false;
@@ -2520,7 +2529,7 @@ formActionProps[String objectName, ObjectEntity object, List<TypedParameter> con
             )
             { out = true; inNull = true; }
             varID=ID?
-            { if(newContext!=null && inPropParseState()) { outParamNum = self.getParamIndex(self.new TypedParameter(object.baseClass, $varID.text != null ? $varID.text : objectName), newContext, true, insideRecursion); } }
+            { if(newContext!=null && inPropParseState()) { outParamNum = self.getParamIndex(self.new TypedParameter(objectClass, $varID.text != null ? $varID.text : objectName), newContext, true, insideRecursion); } }
             ('NULL' { outNull = true; })? 
             ('TO' pUsage=propertyUsage { outProp = $pUsage.propUsage; } )?
             (('CONSTRAINTFILTER' { constraintFilter = true; } ) ('=' consExpr=propertyExpression[context, dynamic] { changeProp = $consExpr.property; } )?)?

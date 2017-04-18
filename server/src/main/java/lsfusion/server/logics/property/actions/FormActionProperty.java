@@ -1,66 +1,28 @@
 package lsfusion.server.logics.property.actions;
 
-import jasperapi.ReportGenerator;
-import lsfusion.base.BaseUtils;
-import lsfusion.base.IOUtils;
-import lsfusion.base.Result;
-import lsfusion.base.SFunctionSet;
+import lsfusion.base.*;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
-import lsfusion.interop.FormExportType;
-import lsfusion.interop.FormPrintType;
-import lsfusion.interop.FormStaticType;
-import lsfusion.interop.ModalityType;
-import lsfusion.interop.action.MessageClientAction;
-import lsfusion.interop.action.ReportClientAction;
-import lsfusion.interop.form.ReportGenerationData;
-import lsfusion.server.ServerLoggers;
-import lsfusion.server.Settings;
-import lsfusion.server.SystemProperties;
-import lsfusion.server.classes.ConcreteCustomClass;
 import lsfusion.server.classes.ValueClass;
-import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.entity.*;
-import lsfusion.server.form.entity.filter.FilterEntity;
-import lsfusion.server.form.instance.FormCloseType;
-import lsfusion.server.form.instance.FormInstance;
-import lsfusion.server.form.instance.ObjectInstance;
-import lsfusion.server.logics.DataObject;
-import lsfusion.server.logics.NullValue;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.i18n.LocalizedString;
-import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.*;
-import lsfusion.server.logics.property.actions.exporting.HierarchicalFormExporter;
-import lsfusion.server.logics.property.actions.exporting.PlainFormExporter;
-import lsfusion.server.logics.property.actions.exporting.csv.CSVFormExporter;
-import lsfusion.server.logics.property.actions.exporting.dbf.DBFFormExporter;
-import lsfusion.server.logics.property.actions.exporting.json.JSONFormExporter;
-import lsfusion.server.logics.property.actions.exporting.xml.XMLFormExporter;
-import lsfusion.server.remote.FormReportManager;
-import lsfusion.server.remote.InteractiveFormReportManager;
-import lsfusion.server.remote.StaticFormReportManager;
-import net.sf.jasperreports.engine.JRException;
 
-import java.io.IOException;
 import java.sql.SQLException;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 // вообще по хорошему надо бы generiть интерфейсы, но тогда с DataChanges (из-за дебилизма generics в современных языках) будут проблемы
-public abstract class FormActionProperty extends SystemExplicitActionProperty {
+public abstract class FormActionProperty<O extends ObjectSelector> extends SystemExplicitActionProperty {
 
-    public final FormEntity<?> form;
-    public final ImRevMap<ObjectEntity, ClassPropertyInterface> mapObjects;
+    public final FormSelector<O> form;
+    public final ImRevMap<O, ClassPropertyInterface> mapObjects;
 
-    private static ValueClass[] getValueClasses(List<ObjectEntity> objects, Property... extraProps) {
+    private static <O extends ObjectSelector> ValueClass[] getValueClasses(FormSelector<O> form, List<O> objects, Property... extraProps) {
         int extraPropInterfaces = 0;
         for(Property extraProp : extraProps)
             if(extraProp != null)
@@ -70,7 +32,7 @@ public abstract class FormActionProperty extends SystemExplicitActionProperty {
         ValueClass[] valueClasses = new ValueClass[size
                 + extraPropInterfaces];
         for (int i = 0; i < size; i++) {
-            valueClasses[i] = objects.get(i).baseClass;
+            valueClasses[i] = form.getBaseClass(objects.get(i));
         }
 
         for(Property extraProp : extraProps) 
@@ -100,18 +62,18 @@ public abstract class FormActionProperty extends SystemExplicitActionProperty {
     //assert getProperties одинаковой длины
     //getProperties привязаны к форме, содержащей свойство...
     public FormActionProperty(LocalizedString caption,
-                              FormEntity form,
-                              final List<ObjectEntity> objectsToSet,
+                              FormSelector<O> form,
+                              final List<O> objectsToSet,
                               final List<Boolean> nulls, boolean extraNotNull,
                               Property... extraProps) {
-        super(caption, getValueClasses(objectsToSet, extraProps));
+        super(caption, getValueClasses(form, objectsToSet, extraProps));
 
         ImOrderSet<ClassPropertyInterface> objectInterfaces = getOrderInterfaces()
                 .subOrder(0, objectsToSet.size());
 
         this.form = form;
-        mapObjects = objectInterfaces.mapOrderRevKeys(new GetIndex<ObjectEntity>() { // такой же дебилизм и в SessionDataProperty
-                    public ObjectEntity getMapValue(int i) {
+        mapObjects = objectInterfaces.mapOrderRevKeys(new GetIndex<O>() { // такой же дебилизм и в SessionDataProperty
+                    public O getMapValue(int i) {
                         return objectsToSet.get(i);
                     }
                 });
@@ -129,10 +91,14 @@ public abstract class FormActionProperty extends SystemExplicitActionProperty {
         this.notNullInterfaces = notNullInterfaces;
     }
 
-    protected abstract void executeCustom(ImMap<ObjectEntity, ? extends ObjectValue> mapObjectValues, ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException;
+    protected abstract void executeCustom(FormEntity<?> form, ImMap<ObjectEntity, ? extends ObjectValue> mapObjectValues, ExecutionContext<ClassPropertyInterface> context, ImRevMap<ObjectEntity, O> mapResolvedObjects) throws SQLException, SQLHandledException;
 
     protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
-        executeCustom(mapObjects.join(context.getKeys()), context);
+        ImMap<O, ? extends ObjectValue> mapObjectValues = mapObjects.join(context.getKeys());
+        Pair<FormEntity, ImRevMap<ObjectEntity, O>> resolvedForm = form.getForm(context.getBL().LM, context.getSession(), mapObjectValues);
+        if(resolvedForm == null)
+            return;
+        executeCustom(resolvedForm.first, resolvedForm.second.join(mapObjectValues), context, resolvedForm.second);
     }
 
     @Override

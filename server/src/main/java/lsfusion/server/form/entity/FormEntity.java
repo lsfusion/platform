@@ -1,9 +1,6 @@
 package lsfusion.server.form.entity;
 
-import lsfusion.base.AddSet;
-import lsfusion.base.BaseUtils;
-import lsfusion.base.FunctionSet;
-import lsfusion.base.Subsets;
+import lsfusion.base.*;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
@@ -12,7 +9,6 @@ import lsfusion.base.col.interfaces.mutable.MCol;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
-import lsfusion.interop.ClassViewType;
 import lsfusion.interop.FormEventType;
 import lsfusion.interop.ModalityType;
 import lsfusion.interop.PropertyEditType;
@@ -32,6 +28,7 @@ import lsfusion.server.form.view.DefaultFormView;
 import lsfusion.server.form.view.FormView;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.BusinessLogics;
+import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
@@ -44,6 +41,7 @@ import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.actions.flow.NewSessionActionProperty;
 import lsfusion.server.logics.property.group.AbstractGroup;
 import lsfusion.server.logics.property.group.AbstractNode;
+import lsfusion.server.session.DataSession;
 import org.apache.log4j.Logger;
 
 import java.io.DataOutputStream;
@@ -53,7 +51,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
-public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T> {
+public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T> implements FormSelector<ObjectEntity> {
     private final static Logger logger = Logger.getLogger(FormEntity.class);
     
     public static boolean DEFAULT_NOCANCEL = false;
@@ -1282,11 +1280,19 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         }
     }
 
+    public ValueClass getBaseClass(ObjectEntity object) {
+        return object.baseClass;
+    }
+
     public Collection<ObjectEntity> getObjects() {
         List<ObjectEntity> objects = new ArrayList<>();
         for (GroupObjectEntity group : getGroupsIt())
             for (ObjectEntity object : group.getObjects())
                 objects.add(object);
         return objects;
+    }
+
+    public Pair<FormEntity, ImRevMap<ObjectEntity, ObjectEntity>> getForm(BaseLogicsModule<?> LM, DataSession session, ImMap<ObjectEntity, ? extends ObjectValue> mapObjectValues) {
+        return new Pair<>((FormEntity)this, mapObjectValues.keys().toRevMap());
     }
 }

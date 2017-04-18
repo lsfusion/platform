@@ -23,6 +23,7 @@ import lsfusion.server.classes.sets.ResolveClassSet;
 import lsfusion.server.classes.sets.ResolveUpClassSet;
 import lsfusion.server.classes.sets.UpClassSet;
 import lsfusion.server.context.ThreadLocalContext;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;
@@ -30,6 +31,8 @@ import lsfusion.server.form.entity.*;
 import lsfusion.server.form.instance.CustomObjectInstance;
 import lsfusion.server.form.instance.ObjectInstance;
 import lsfusion.server.logics.BaseLogicsModule;
+import lsfusion.server.logics.DataObject;
+import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.debug.ClassDebugInfo;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.mutables.NFFact;
@@ -39,9 +42,11 @@ import lsfusion.server.logics.mutables.interfaces.NFOrderSet;
 import lsfusion.server.logics.mutables.interfaces.NFProperty;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.actions.ChangeClassActionProperty;
+import lsfusion.server.session.DataSession;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -358,7 +363,51 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
             });
         }
 
-        public ClassFormEntity getNFForm(BaseLogicsModule LM, Version version) {
+        public ClassFormEntity getPolyForm(final BaseLogicsModule LM, ConcreteCustomClass concreteClass) {
+            if(CustomClass.this instanceof ConcreteCustomClass && !hasPolyForm())
+                return getForm(LM);
+            if(concreteClass == null) // нет объекта вызываем default (по сути если не передается объект)
+                return getForm(LM);
+
+            assert concreteClass.isChild(CustomClass.this);
+            return getFormHolder(concreteClass).getRecPolyForm(CustomClass.this);
+        }
+        
+        @IdentityLazy
+        protected boolean hasPolyForm() { // есть ли у child'ов хоть одна определенная форма
+            ClassFormEntity setForm = form.get(); // хотя с default'ом все равно есть опасность для верхних классов у которых изменится логика polyForm, лучше отдельно кэш сделать
+            if(setForm != null && !(setForm.form instanceof BaseClassFormEntity)) // вторая проверка временно до удаления миграции
+                return true;
+            
+            for(CustomClass child : getChildrenIt())
+                if(getFormHolder(child).hasPolyForm())
+                    return true;
+            return false;
+        }
+        
+        protected abstract ClassFormHolder getFormHolder(CustomClass cls);
+
+        // бежим по children в детерминированном порядке от которого зависит concreteClass (если он есть) и ищем подходящую форму
+        @IdentityLazy
+        private ClassFormEntity getRecPolyForm(CustomClass baseClass) {
+            ClassFormEntity polyForm = form.get();  // хотя с default'ом все равно есть опасность для верхних классов у которых изменится логика polyForm, лучше отдельно кэш сделать
+            if(polyForm != null && !(polyForm.form instanceof BaseClassFormEntity)) // вторая проверка временно до удаления миграции
+                return polyForm;
+
+            if(BaseUtils.hashEquals(CustomClass.this, baseClass)) // оптимизация
+                return null;
+                
+            for(CustomClass parentClass : getParentsListIt())
+                if(parentClass.isChild(baseClass)) {
+                    ClassFormEntity parentForm = getFormHolder(parentClass).getRecPolyForm(baseClass);
+                    if(parentForm != null)
+                        return parentForm;
+                }
+            
+            return null;
+        }        
+
+        public ClassFormEntity getNFForm(BaseLogicsModule LM, Version version) { // temp
             ClassFormEntity classForm = form.getNF(version);
             if (classForm != null) {
                 return classForm;
@@ -387,6 +436,11 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
 
     private ClassFormHolder dialogFormHolder = new ClassFormHolder() {
         @Override
+        protected ClassFormHolder getFormHolder(CustomClass cls) {
+            return cls.dialogFormHolder;
+        }
+
+        @Override
         protected ClassFormEntity createDefaultForm(BaseLogicsModule LM) {
             DialogFormEntity dialogFormEntity = new DialogFormEntity(LM, CustomClass.this);
             return new ClassFormEntity(dialogFormEntity, dialogFormEntity.object);
@@ -394,6 +448,11 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
     };
 
     private ClassFormHolder editFormHolder = new ClassFormHolder() {
+        @Override
+        protected ClassFormHolder getFormHolder(CustomClass cls) {
+            return cls.editFormHolder;
+        }
+
         @Override
         protected ClassFormEntity createDefaultForm(BaseLogicsModule LM) {
             EditFormEntity editFormEntity = new EditFormEntity(LM, CustomClass.this);
@@ -408,9 +467,9 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
     public ClassFormEntity getDialogForm(BaseLogicsModule LM) {
         return dialogFormHolder.getForm(LM);
     }
-    public ClassFormEntity getDialogForm(BaseLogicsModule LM, Version version) {
-        return dialogFormHolder.getNFForm(LM, version);
-    }
+//    public ClassFormEntity getDialogForm(BaseLogicsModule LM, Version version) {
+//        return dialogFormHolder.getNFForm(LM, version);
+//    }
 
     public void setDialogForm(FormEntity form, ObjectEntity object, Version version) {
         dialogFormHolder.setForm(new ClassFormEntity(form, object), version);
@@ -419,11 +478,18 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
     /**
      * используется для редактирования конкретного объекта данного класса
      * @param LM
+     * @param session
      */
-    public ClassFormEntity getEditForm(BaseLogicsModule LM) {
-        return editFormHolder.getForm(LM);
+    public ClassFormEntity getEditForm(BaseLogicsModule LM, DataSession session, ObjectValue concreteObject) throws SQLException, SQLHandledException {
+        ConcreteCustomClass concreteCustomClass = null;
+        
+        ConcreteClass concreteClass = null;
+        if(concreteObject instanceof DataObject && (concreteClass = session.getCurrentClass((DataObject)concreteObject)) instanceof ConcreteCustomClass)
+            concreteCustomClass = (ConcreteCustomClass) concreteClass;
+            
+        return editFormHolder.getPolyForm(LM, concreteCustomClass);
     }
-    public ClassFormEntity getEditForm(BaseLogicsModule LM, Version version) {
+    public ClassFormEntity getEditForm(BaseLogicsModule LM, Version version) { // temporary for migration
         return editFormHolder.getNFForm(LM, version);
     }
 

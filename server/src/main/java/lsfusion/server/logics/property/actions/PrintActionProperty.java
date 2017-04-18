@@ -15,8 +15,8 @@ import lsfusion.interop.form.ReportGenerationDataType;
 import lsfusion.server.SystemProperties;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.form.entity.FormEntity;
-import lsfusion.server.form.entity.ObjectEntity;
+import lsfusion.server.form.entity.FormSelector;
+import lsfusion.server.form.entity.ObjectSelector;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.*;
@@ -26,7 +26,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.*;
 
-public class PrintActionProperty extends FormStaticActionProperty<FormPrintType> {
+public class PrintActionProperty<O extends ObjectSelector> extends FormStaticActionProperty<O, FormPrintType> {
 
     private CalcPropertyInterfaceImplement<ClassPropertyInterface> printerProperty;
 
@@ -35,8 +35,8 @@ public class PrintActionProperty extends FormStaticActionProperty<FormPrintType>
     private final boolean syncType; // static interactive
 
     public PrintActionProperty(LocalizedString caption,
-                               FormEntity form,
-                               final List<ObjectEntity> objectsToSet,
+                               FormSelector<O> form,
+                               final List<O> objectsToSet,
                                final List<Boolean> nulls,
                                FormPrintType staticType,
                                boolean syncType,
@@ -68,9 +68,9 @@ public class PrintActionProperty extends FormStaticActionProperty<FormPrintType>
     }
 
     @Override
-    protected void exportClient(ExecutionContext<ClassPropertyInterface> context, ReportGenerationData reportData, Map<String, String> reportPath) throws SQLException, SQLHandledException {
+    protected void exportClient(ExecutionContext<ClassPropertyInterface> context, LocalizedString caption, ReportGenerationData reportData, Map<String, String> reportPath) throws SQLException, SQLHandledException {
         if (staticType == FormPrintType.MESSAGE) {
-            printMessage(context, reportData);
+            printMessage(caption, context, reportData);
         } else {
             String pName = printerProperty == null ? null : (String) printerProperty.read(context, context.getKeys());
             Object pageCount = context.requestUserInteraction(new ReportClientAction(reportPath, syncType, reportData, (FormPrintType) staticType, pName, SystemProperties.isDebug));
@@ -78,7 +78,7 @@ public class PrintActionProperty extends FormStaticActionProperty<FormPrintType>
         }
     }
 
-    private void printMessage(ExecutionContext context, ReportGenerationData reportData) {
+    private void printMessage(LocalizedString caption, ExecutionContext context, ReportGenerationData reportData) {
 
         try {
 
@@ -106,10 +106,11 @@ public class PrintActionProperty extends FormStaticActionProperty<FormPrintType>
                         dataRows.add(dataRow);
                     }
                 }
+                LogMessageClientAction action = new LogMessageClientAction(ThreadLocalContext.localize(caption), titleRow, dataRows, !context.getSession().isNoCancelInTransaction());
                 if(syncType)
-                    context.requestUserInteraction(new LogMessageClientAction(ThreadLocalContext.localize(form.caption), titleRow, dataRows, !context.getSession().isNoCancelInTransaction()));
+                    context.requestUserInteraction(action);
                 else
-                    context.delayUserInteraction(new LogMessageClientAction(ThreadLocalContext.localize(form.caption), titleRow, dataRows, !context.getSession().isNoCancelInTransaction()));
+                    context.delayUserInteraction(action);
 
             }
         } catch (Exception e) {

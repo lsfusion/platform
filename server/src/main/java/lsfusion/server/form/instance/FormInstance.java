@@ -2214,16 +2214,21 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         return new DialogRequestAdapter() {
             @Override
             protected FormInstance doCreateDialog() throws SQLException, SQLHandledException {
-                CustomClass objectClass = propertyValues.getDialogClass(session);
-                ClassFormEntity<T> classForm = objectClass.getEditForm(BL.LM);
-
                 ObjectValue currentObject = propertyValues.readClasses(FormInstance.this);
+                if(!(currentObject instanceof DataObject)) // force notnull для edit'а по сути
+                    return null;
+                
+                CustomClass objectClass = propertyValues.getDialogClass(session);
+                ClassFormEntity<T> classForm = objectClass.getEditForm(BL.LM, getSession(), currentObject);
+                if(classForm == null)
+                    return null;                        
+
 //                if (currentObject == null && objectClass instanceof ConcreteCustomClass) {
 //                    currentObject = addObject((ConcreteCustomClass)objectClass).object;
 //                }
 
                 dialogObject = classForm.object;
-                return currentObject == null ? null : createDialogInstance(classForm.form, dialogObject, currentObject, null, null, null, stack);
+                return createDialogInstance(classForm.form, dialogObject, currentObject, null, null, null, stack);
             }
         };
     }
