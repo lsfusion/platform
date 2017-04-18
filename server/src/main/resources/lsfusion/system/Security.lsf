@@ -5,6 +5,7 @@ REQUIRE System, Reflection, Email;
 CLASS UserRole 'Роль';
 TABLE userRole (UserRole);
 TABLE customUserRole (CustomUser, UserRole);
+TABLE userUserRole (User, UserRole);
 TABLE userRoleProperty (UserRole, Property);
 TABLE userRolePropertyGroup (UserRole, PropertyGroup);
 TABLE userProperty (User, Property);
