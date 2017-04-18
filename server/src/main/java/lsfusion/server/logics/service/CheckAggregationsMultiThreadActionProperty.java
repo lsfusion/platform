@@ -3,7 +3,7 @@ package lsfusion.server.logics.service;
 import lsfusion.interop.action.MessageClientAction;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.logics.ServiceLogicsModule;
-import lsfusion.server.logics.i18n.FormatLocalizedString;
+import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.tasks.GroupPropertiesSingleTask;
 import lsfusion.server.logics.tasks.impl.recalculate.CheckAggregationsTask;
 
@@ -27,7 +27,7 @@ public class CheckAggregationsMultiThreadActionProperty extends MultiThreadActio
 
     @Override
     protected MessageClientAction createMessageClientAction(GroupPropertiesSingleTask task, boolean errorOccurred) {
-        return new MessageClientAction(localize(new FormatLocalizedString(errorOccurred ? "{logics.check.failed}" : "{logics.check.completed}",
+        return new MessageClientAction(localize(LocalizedString.createFormatted(errorOccurred ? "{logics.check.failed}" : "{logics.check.completed}",
                 localize("{logics.checking.aggregations}"))) + task.getMessages(), localize("{logics.checking.aggregations}"), true);
     }
 }

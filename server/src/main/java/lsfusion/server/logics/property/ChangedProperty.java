@@ -40,7 +40,7 @@ public class ChangedProperty<T extends PropertyInterface> extends SessionCalcPro
     }
 
     public ChangedProperty(CalcProperty<T> property, IncrementType type, PrevScope scope) {
-        super(LocalizedString.create("(" + type + ") " + property, false), property, scope);
+        super(LocalizedString.concat("(" + type + ") ", property.localizedToString()), property, scope);
         this.type = type;
 
         property.getOld(scope);// чтобы зарегить old

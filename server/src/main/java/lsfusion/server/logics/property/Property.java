@@ -68,6 +68,14 @@ public abstract class Property<T extends PropertyInterface> extends AbstractProp
     // вот отсюда идут свойства, которые отвечают за логику представлений и подставляются автоматически для PropertyDrawEntity и PropertyDrawView
     public LocalizedString caption;
 
+    public LocalizedString localizedToString() {
+        LocalizedString result = LocalizedString.concatList("'", caption, "'");
+        if (canonicalName != null) {
+            result = LocalizedString.concat(result, " (" + canonicalName + ")");
+        }
+        return result;
+    } 
+    
     public String toString() {
         String result = "'" + ThreadLocalContext.localize(caption) + "'";
         if (canonicalName != null) {

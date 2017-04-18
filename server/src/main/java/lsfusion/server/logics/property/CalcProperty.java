@@ -45,7 +45,6 @@ import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.form.view.PropertyDrawView;
 import lsfusion.server.logics.*;
 import lsfusion.server.logics.debug.CalcPropertyDebugInfo;
-import lsfusion.server.logics.i18n.FormatLocalizedString;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
@@ -1278,7 +1277,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         // запишем в DataProperty
         for(DataProperty dataProperty : getChangeProps()) {
             if(Settings.get().isCheckUniqueEvent() && dataProperty.event!=null)
-                throw new RuntimeException(ThreadLocalContext.localize(new FormatLocalizedString("{logics.property.already.has.event}", dataProperty)));
+                throw new RuntimeException(ThreadLocalContext.localize(LocalizedString.createFormatted("{logics.property.already.has.event}", dataProperty)));
             dataProperty.event = event;
         }
     }
@@ -1783,6 +1782,17 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         return (CalcPropertyDebugInfo) debugInfo;
     }
 
+    @Override 
+    public LocalizedString localizedToString() {
+        LocalizedString string = super.localizedToString();
+        
+        if (debugInfo != null) {
+            string = LocalizedString.concat(string, ":" + debugInfo);
+        }
+        return string;
+        
+    }
+    
     @Override
     public String toString() {
         String string = super.toString();

@@ -7,7 +7,7 @@ import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ReflectionLogicsModule;
-import lsfusion.server.logics.i18n.FormatLocalizedString;
+import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
@@ -42,6 +42,6 @@ public class CheckTableClassesActionProperty extends ScriptingActionProperty {
             }
         });
 
-        context.delayUserInterfaction(new MessageClientAction(localize(new FormatLocalizedString("{logics.check.completed}", localize("{logics.checking.data.classes}"))) + '\n' + '\n' + message.result, localize("{logics.checking.data.classes}"), true));
+        context.delayUserInterfaction(new MessageClientAction(localize(LocalizedString.createFormatted("{logics.check.completed}", localize("{logics.checking.data.classes}"))) + '\n' + '\n' + message.result, localize("{logics.checking.data.classes}"), true));
     }
 }

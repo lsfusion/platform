@@ -1,10 +1,12 @@
 package lsfusion.server.logics.i18n;
 
-import lsfusion.base.BaseUtils;
 import lsfusion.server.caches.IdentityStartLazy;
 import lsfusion.server.context.ThreadLocalContext;
 
+import java.text.MessageFormat;
 import java.util.Locale;
+
+import static lsfusion.base.BaseUtils.nvl;
 
 /**
  *  Интернационализируемая строка.
@@ -21,7 +23,7 @@ import java.util.Locale;
  */
 
 
-public class LocalizedString {
+public final class LocalizedString {
     public interface Localizer {
         String localize(String source, Locale locale);
     }
@@ -32,7 +34,10 @@ public class LocalizedString {
     private final String source;
     private boolean needToBeLocalized;
     
-    protected LocalizedString(String source) {
+    private boolean isFormatted;
+    private Object[] params = null;
+    
+    private LocalizedString(String source) {
         if (canBeOptimized(source)) {
             this.source = removeEscapeSymbols(source);
             this.needToBeLocalized = false;
@@ -42,12 +47,19 @@ public class LocalizedString {
         }
     }
 
-    protected LocalizedString(String source, boolean needToBeLocalized) {
-        assert source != null;
-        this.source = source;
-        this.needToBeLocalized = needToBeLocalized;
+    private LocalizedString(String source, boolean needToBeLocalized) {
+        this(source, needToBeLocalized, false);
     }
 
+    private LocalizedString(String source, boolean needToBeLocalized, boolean isFormatted, Object... params) {
+        assert source != null;
+        
+        this.source = source;
+        this.needToBeLocalized = needToBeLocalized;
+        this.isFormatted = isFormatted;
+        this.params = params;
+    }
+    
     public boolean needToBeLocalized() {
         return needToBeLocalized;
     }
@@ -63,9 +75,21 @@ public class LocalizedString {
             return getSourceString();
         }
         
-        if(localizer == null)
-            localizer = emptyLocalizer; 
-        return localizer.localize(source, locale);
+        if (localizer == null) {
+            localizer = emptyLocalizer;
+        }
+        
+        String result = localizer.localize(source, locale);
+        if (isFormatted) {
+            // Необходимо преобразовать строку, чтобы ее можно было передать в MessageFormat
+            // Для этого мы заменяем одиночные кавычки двойными (этим мы лишаемся функциональности, позволяющей экранировать скобки кавычками)
+            // Затем экранируем кавычками все фигурные строки, которые не выглядят как {5} (число в фигурных скобках)
+            result = result.replace("'", "''").replace("{", "'{'").replace("}", "'}'").replaceAll("'\\{'(\\d+)'\\}'", "{$1}");
+            return MessageFormat.format(result, params);
+        } else {
+            return result;
+        }
+
     }
 
     public String getSourceString() {
@@ -129,8 +153,14 @@ public class LocalizedString {
     public boolean equals(Object obj) {
         assert !(obj instanceof String);
         if (this == obj) return true;
-        if (!(obj instanceof LocalizedString)) return false;
-        return source.equals(((LocalizedString)obj).source);
+        if (!(obj instanceof LocalizedString)) {
+            return false;
+        } else {
+            LocalizedString other = (LocalizedString)obj;
+            return  source.equals(other.source) && 
+                    needToBeLocalized() == other.needToBeLocalized() && 
+                    isFormatted == other.isFormatted;
+        }
     }
 
     /**
@@ -156,6 +186,11 @@ public class LocalizedString {
         public LocalizedString create(String source, boolean needToBeLocalized) {
             return new LocalizedString(source, needToBeLocalized);
         }
+        
+        @IdentityStartLazy
+        public LocalizedString createFormatted(String source, Object... params) {
+            return new LocalizedString(source, true, true, params);
+        }
     }
     
     /**
@@ -177,6 +212,13 @@ public class LocalizedString {
         }
         return Instancer.instance.create(source, needToBeLocalized);
     } 
+    
+    public static LocalizedString createFormatted(String source, Object... params) {
+        if (source == null) {
+            return null;
+        }
+        return Instancer.instance.createFormatted(source, params);
+    }
     
     private static boolean canBeOptimized(String s) {
         for (int i = 0; i < s.length(); ++i) {
@@ -208,7 +250,7 @@ public class LocalizedString {
     }
     
     public static LocalizedString concat(LocalizedString leftString, LocalizedString rightString) {
-        if (leftString == null || rightString == null) return BaseUtils.nvl(leftString, rightString);
+        if (leftString == null || rightString == null) return nvl(leftString, rightString);
         
         boolean leftNTBL = leftString.needToBeLocalized();
         boolean rightNTBL = rightString.needToBeLocalized();
@@ -218,8 +260,16 @@ public class LocalizedString {
         }
         
         String left = leftNTBL ? leftString.getSourceString() : escapeForLocalization(leftString.getSourceString()); 
-        String right = rightNTBL ? rightString.getSourceString() : escapeForLocalization(rightString.getSourceString());        
-        return create(left + right, true);
+        String right = rightNTBL ? rightString.getSourceString() : escapeForLocalization(rightString.getSourceString());
+        
+        assert !leftString.isFormatted || !rightString.isFormatted : "two formatted LocalizedStrings concatenated";
+        boolean isFormatted = leftString.isFormatted || rightString.isFormatted;
+        if (isFormatted) {
+            Object[] params = (leftString.isFormatted ? leftString.params : rightString.params);
+            return createFormatted(left + right, params);
+        } else {
+            return create(left + right, true);
+        }
     }
     
     public static LocalizedString concat(LocalizedString leftString, String rightString) {

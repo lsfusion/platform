@@ -16,7 +16,6 @@ import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.query.Join;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
-import lsfusion.server.logics.i18n.FormatLocalizedString;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.session.DataChanges;
@@ -50,7 +49,7 @@ public class CycleGroupProperty<I extends PropertyInterface, P extends PropertyI
             cycleCaption = ((CalcPropertyMapImplement<?, I>)groupProperty).property.toString();
         else
             cycleCaption = groupProperty.toString();
-        constraint.caption = new FormatLocalizedString("{logics.property.derived.violate.property.uniqueness.for.objects}", cycleCaption);
+        constraint.caption = LocalizedString.createFormatted("{logics.property.derived.violate.property.uniqueness.for.objects}", cycleCaption);
         return constraint;
     }
 

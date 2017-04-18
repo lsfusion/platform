@@ -41,7 +41,7 @@ import lsfusion.server.form.navigator.*;
 import lsfusion.server.integration.*;
 import lsfusion.server.lifecycle.LifecycleEvent;
 import lsfusion.server.lifecycle.LogicsManager;
-import lsfusion.server.logics.i18n.FormatLocalizedString;
+import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.mutables.NFLazy;
 import lsfusion.server.logics.property.*;
@@ -770,7 +770,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
                                 sql.addColumn(newTable, newProperty.property.field);
                                 // делаем запрос на перенос
 
-                                startLogger.info(localize(new FormatLocalizedString("{logics.info.property.is.transferred.from.table.to.table}", newProperty.property.field, newProperty.property.caption, oldProperty.tableName, newProperty.tableName)));
+                                startLogger.info(localize(LocalizedString.createFormatted("{logics.info.property.is.transferred.from.table.to.table}", newProperty.property.field, newProperty.property.caption, oldProperty.tableName, newProperty.tableName)));
                                 newProperty.property.mapTable.table.moveColumn(sql, newProperty.property.field, oldTable,
                                         foundInterfaces.join((ImMap<PropertyInterface, KeyField>) newProperty.property.mapTable.mapKeys), oldTable.findProperty(oldProperty.getDBName()));
                                 startLogger.info("Done");
@@ -863,7 +863,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 copyObjects.addProperty(table.findProperty(classProp.getDBName()), mExpr.getFinal());
                 copyObjects.and(moveWhere);
 
-                startLogger.info(localize(new FormatLocalizedString("{logics.info.objects.are.transferred.from.tables.to.table}", classProp.tableName, mCopyFromTables.immutable().toString())));
+                startLogger.info(localize(LocalizedString.createFormatted("{logics.info.objects.are.transferred.from.tables.to.table}", classProp.tableName, mCopyFromTables.immutable().toString())));
                 sql.modifyRecords(new ModifyQuery(table, copyObjects.getQuery(), OperationOwner.unknown, TableOwner.global));
             }
             ImMap<String, ImSet<Integer>> toClean = MapFact.mergeMaps(toCopy.values(), ASet.<String, Integer>addMergeSet());
@@ -881,7 +881,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 dropClassObjects.addProperty(oldField, Expr.NULL);
                 dropClassObjects.and(moveWhere);
 
-                startLogger.info(localize(new FormatLocalizedString("{logics.info.objects.are.removed.from.table}", classProp.tableName)));
+                startLogger.info(localize(LocalizedString.createFormatted("{logics.info.objects.are.removed.from.table}", classProp.tableName)));
                 sql.updateRecords(new ModifyQuery(table, dropClassObjects.getQuery(), OperationOwner.unknown, TableOwner.global));
             }
 
@@ -2027,9 +2027,9 @@ public class DBManager extends LogicsManager implements InitializingBean {
                     ImRevMap<String, KeyField> mapKeys = propertyImplement.mapping.crossJoin(property.mapTable.mapKeys);
 
                     if (!BaseUtils.hashEquals(baseIndexTable, indexTable))
-                        throw new RuntimeException(localize(new FormatLocalizedString("{logics.policy.forbidden.to.create.indexes.on.properties.in.different.tables}", baseProperty, property)));
+                        throw new RuntimeException(localize(LocalizedString.createFormatted("{logics.policy.forbidden.to.create.indexes.on.properties.in.different.tables}", baseProperty, property)));
                     if (!BaseUtils.hashEquals(baseMapKeys, mapKeys))
-                        throw new RuntimeException(localize(new FormatLocalizedString("{logics.policy.forbidden.to.create.indexes.on.properties.with.different.mappings}", baseProperty, property, baseMapKeys, mapKeys)));
+                        throw new RuntimeException(localize(LocalizedString.createFormatted("{logics.policy.forbidden.to.create.indexes.on.properties.with.different.mappings}", baseProperty, property, baseMapKeys, mapKeys)));
                     field = property.field;
                 } else {
                     field = baseMapKeys.get(((CalcPropertyObjectImplement<String>)indexField).object);
