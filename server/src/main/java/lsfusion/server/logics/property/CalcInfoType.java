@@ -1,8 +1,7 @@
 package lsfusion.server.logics.property;
 
 import lsfusion.base.col.interfaces.immutable.ImCol;
-import lsfusion.base.col.interfaces.immutable.ImList;
-import lsfusion.base.col.interfaces.immutable.ImRevMap;
+import lsfusion.base.col.interfaces.immutable.ImSet;
 
 // вычисление empty, full, notnull, классов
 public class CalcInfoType extends CalcClassType implements AlgInfoType {
@@ -19,8 +18,8 @@ public class CalcInfoType extends CalcClassType implements AlgInfoType {
         return property.calcFull(checkInterfaces, this);
     }
 
-    public <P extends PropertyInterface> boolean isNotNull(CalcProperty<P> property) {
-        return property.calcNotNull(this);
+    public <P extends PropertyInterface> boolean isNotNull(ImSet<P> checkInterfaces, CalcProperty<P> property) {
+        return property.calcNotNull(checkInterfaces, this);
     }
 
     @Override

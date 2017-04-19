@@ -1,20 +1,28 @@
 package lsfusion.server.logics.property.actions.flow;
 
 import lsfusion.base.BaseUtils;
+import lsfusion.base.Result;
+import lsfusion.base.SFunctionSet;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
+import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
+import lsfusion.server.caches.IdentityLazy;
+import lsfusion.server.classes.ConcreteClass;
 import lsfusion.server.classes.CustomClass;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.classes.sets.OrObjectClassSet;
 import lsfusion.server.classes.sets.ResolveClassSet;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.type.Type;
+import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.logics.BusinessLogics;
+import lsfusion.server.logics.DataObject;
+import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.mutables.NFFact;
 import lsfusion.server.logics.mutables.Version;
@@ -135,10 +143,60 @@ public class CaseActionProperty extends ListCaseActionProperty {
         return mWhereProps.immutable().toMap(false).merge(super.aspectUsedExtProps(), addValue);
     }
 
+    @IdentityLazy
+    private ImList<ActionCase<PropertyInterface>> getOptimizedCases(final ImMap<PropertyInterface, ConcreteClass> currentClasses, final ImSet<PropertyInterface> nulls) throws SQLException, SQLHandledException {
+        return getCases().filterList(new SFunctionSet<ActionCase<PropertyInterface>>() {
+            @Override
+            public boolean contains(ActionCase<PropertyInterface> element) {
+                CalcPropertyInterfaceImplement<PropertyInterface> where = element.where;
+                if(where instanceof CalcPropertyMapImplement) {
+                    CalcPropertyMapImplement<?, PropertyInterface> mapWhere = (CalcPropertyMapImplement<?, PropertyInterface>) where;
+                    if (mapWhere.mapIsFull(currentClasses.keys())) { // тут надо найти по-хорошему найти full подмножество, но пока и такой оптимизации достаточно
+                        // isFull => isNotNull
+                        if (mapWhere.mapClassWhere(ClassType.casePolicy).and(new ClassWhere<>(currentClasses)).isFalse()) // и классы не пересекаются
+                            return false;
+                    } else {
+                        if(mapWhere.mapIsNotNull(nulls)) // тут надо по-хорошему по одному интерфейсу проверить, но пока и такой оптимизации достаточно   
+                            return false;
+                    }
+                }
+                return true;
+            }
+        });
+    }
+    
+    private boolean checkOptimizedCases(ExecutionContext<PropertyInterface> context, ImList<ActionCase<PropertyInterface>> optimizedCases) throws SQLException, SQLHandledException {
+        ImSet<ActionCase<PropertyInterface>> setCases = optimizedCases.toOrderSet().getSet();
+        for(ActionCase<PropertyInterface> aCase : getCases())
+            if(!setCases.contains(aCase)) {
+                if(aCase.where.read(context, context.getKeys()) != null) {
+                    ServerLoggers.assertLog(false, "OPTIMIZED CASES ASSERTION : PROPERTY - " + this + ", CASE - " + aCase);
+                    return false;
+                }
+            }
+        return true;
+    }
+    
+    // проверяет на классы и notNull
+    private ImList<ActionCase<PropertyInterface>> getOptimizedCases(ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
+        ImList<ActionCase<PropertyInterface>> cases = getCases();
+        if(cases.size() < Settings.get().getClassOptimizationActionCasesCount())
+            return cases;
+
+        // берем current classes
+        ImMap<PropertyInterface, ? extends ObjectValue> keys = context.getKeys();
+        Result<ImSet<PropertyInterface>> rNulls = new Result<>();
+        ImMap<PropertyInterface, DataObject> dataObjects = DataObject.splitDataObjects(keys, rNulls);
+        ImList<ActionCase<PropertyInterface>> result = getOptimizedCases(context.getSession().getCurrentClasses(dataObjects), rNulls.result);
+        // todo: wrap into assert
+        checkOptimizedCases(context, result);
+        return result;
+    }
+    
     @Override
     public FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
         FlowResult result = FlowResult.FINISH;
-        for(ActionCase<PropertyInterface> aCase : getCases()) {
+        for(ActionCase<PropertyInterface> aCase : getOptimizedCases(context)) {
             if(aCase.where.read(context, context.getKeys()) != null) {
                 result = aCase.implement.execute(context);
                 break;

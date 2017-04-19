@@ -102,6 +102,16 @@ public class CalcPropertyMapImplement<P extends PropertyInterface, T extends Pro
         return mapping.rightCrossJoin(property.getInterfaceClasses(classType));
     }
 
+    public boolean mapIsNotNull(ImSet<T> interfaces) {
+        if(interfaces.isEmpty()) // оптимизация
+            return true;
+
+        ImSet<P> checkInterfaces = mapping.filterValues(interfaces).keys();
+
+        // если все собрали интерфейсы
+        return checkInterfaces.size() >= interfaces.size() && property.isNotNull(checkInterfaces, AlgType.actionType);
+    }
+
     public boolean mapIsFull(ImSet<T> interfaces) {
         if(interfaces.isEmpty()) // оптимизация
             return true;

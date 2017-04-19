@@ -1,6 +1,7 @@
 package lsfusion.server.logics;
 
 import lsfusion.base.BaseUtils;
+import lsfusion.base.Result;
 import lsfusion.base.SFunctionSet;
 import lsfusion.base.TwinImmutableObject;
 import lsfusion.base.col.SetFact;
@@ -130,6 +131,18 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
                         return element instanceof DataObject;
                     }
                 }));
+    }
+
+    public static <K, O extends ObjectValue> ImMap<K, DataObject> splitDataObjects(ImMap<K, O> map, Result<ImSet<K>> rNulls) {
+        Result<ImMap<K, O>> rNullsMap = new Result<>();
+        ImMap<K, O> result = map.splitKeys(new SFunctionSet<K>() {
+            @Override
+            public boolean contains(K element) {
+                return false;
+            }
+        }, rNullsMap);
+        rNulls.set(rNullsMap.result.keys());
+        return BaseUtils.immutableCast(result);
     }
 
     public static <K> ImMap<K, DataObject> onlyDataObjects(ImMap<K, ? extends ObjectValue> map) {

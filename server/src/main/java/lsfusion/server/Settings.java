@@ -1980,6 +1980,16 @@ public class Settings {
     public void setDisableRegisterChanges(boolean disableRegisterChanges) {
         this.disableRegisterChanges = disableRegisterChanges;
     }
+    
+    private int classOptimizationActionCasesCount = 3;
+
+    public int getClassOptimizationActionCasesCount() {
+        return classOptimizationActionCasesCount;
+    }
+
+    public void setClassOptimizationActionCasesCount(int classOptimizationActionCasesCount) {
+        this.classOptimizationActionCasesCount = classOptimizationActionCasesCount;
+    }
 
     private boolean subReportTableOptimization = true;
 

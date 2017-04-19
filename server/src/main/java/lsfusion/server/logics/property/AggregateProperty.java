@@ -16,12 +16,10 @@ import lsfusion.server.data.*;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.NullableKeyExpr;
-import lsfusion.server.data.expr.query.DistinctKeys;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.expr.query.StatType;
 import lsfusion.server.data.query.Query;
 import lsfusion.server.data.query.QueryBuilder;
-import lsfusion.server.data.query.stat.Cost;
 import lsfusion.server.data.query.stat.StatKeys;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassWhere;
@@ -216,7 +214,7 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Cal
 
     @Override
     @IdentityLazy
-    protected boolean calcNotNull(CalcInfoType calcType) {
+    protected boolean calcNotNull(ImSet<T> checkInterfaces, CalcInfoType calcType) {
         Pair<ImRevMap<T, NullableKeyExpr>, Expr> query = calculateQueryExpr(calcType); // оптимизация
         return query.second.getWhere().means(Expr.getWhere(query.first));
     }

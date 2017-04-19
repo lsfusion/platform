@@ -1028,9 +1028,9 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
     }
 
     @IdentityStartLazy
-    private boolean checkInferNotNull() {
-        boolean calcNotNull = calcNotNull(CalcClassType.PREVBASE);
-        boolean inferNotNull = inferNotNull(InferType.PREVBASE);
+    private boolean checkInferNotNull(ImSet<T> checkInterfaces) {
+        boolean calcNotNull = calcNotNull(checkInterfaces, CalcClassType.PREVBASE);
+        boolean inferNotNull = inferNotNull(checkInterfaces, InferType.PREVBASE);
         if(calcNotNull != inferNotNull) {
             System.out.println(this + " NOTNULL, CALC : " + calcNotNull + ", INF : " + inferNotNull);
             return false;
@@ -1669,6 +1669,15 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         return algType.isFull(this, checkInterfaces);
     }
 
+    public boolean isNotNull(ImSet<T> checkInterfaces, AlgInfoType algType) {
+        if(isFull(checkInterfaces, algType))
+            return true;
+
+        if(AlgType.checkInferCalc) checkInferNotNull(checkInterfaces);
+        return algType.isNotNull(checkInterfaces, this);
+    }
+
+
     @IdentityLazy
     public boolean inferFull(ImCol<T> checkInterfaces, InferInfoType inferType) {
         return inferInterfaceClasses(inferType).isFull(checkInterfaces, inferType);
@@ -1698,22 +1707,18 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
     public boolean isFull(AlgInfoType calcType) { // обозначает что можно вывести классы всех параметров, используется в частности для материализации (stored, hints) чтобы знать типы колонок, или даже в subQuery (для статистики)
         return isFull(interfaces, calcType);
     }
-    
-    public boolean isNotNull(AlgInfoType algType) { // обозначает что при null одном из параметров - null значение
-        if(isFull(algType))
-            return true;
-        
-        if(AlgType.checkInferCalc) checkInferNotNull();
-        return algType.isNotNull(this);
-    }
 
-    protected boolean calcNotNull(CalcInfoType calcType) {
+    public boolean isNotNull(AlgInfoType algType) { // обозначает что при null одном из параметров - null значение
+        return isNotNull(interfaces, algType);
+    }
+        
+    protected boolean calcNotNull(ImSet<T> checkInterfaces, CalcInfoType calcType) {
         return true;
     }
 
     @IdentityLazy
-    public boolean inferNotNull(InferInfoType inferType) {
-        return inferInterfaceClasses(inferType).isNotNull(interfaces, inferType);
+    public boolean inferNotNull(ImSet<T> checkInterfaces, InferInfoType inferType) {
+        return inferInterfaceClasses(inferType).isNotNull(checkInterfaces, inferType);
     }
 
     public boolean isDrillFull() {
