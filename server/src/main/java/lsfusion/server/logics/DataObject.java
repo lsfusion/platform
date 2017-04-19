@@ -8,6 +8,7 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.interop.Compare;
 import lsfusion.server.caches.ManualLazy;
@@ -135,10 +136,10 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
 
     public static <K, O extends ObjectValue> ImMap<K, DataObject> splitDataObjects(ImMap<K, O> map, Result<ImSet<K>> rNulls) {
         Result<ImMap<K, O>> rNullsMap = new Result<>();
-        ImMap<K, O> result = map.splitKeys(new SFunctionSet<K>() {
+        ImMap<K, O> result = map.splitKeys(new GetKeyValue<Boolean, K, O>() {
             @Override
-            public boolean contains(K element) {
-                return false;
+            public Boolean getMapValue(K key, O value) {
+                return value instanceof DataObject;
             }
         }, rNullsMap);
         rNulls.set(rNullsMap.result.keys());
