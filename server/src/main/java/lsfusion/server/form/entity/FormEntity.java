@@ -179,7 +179,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         BaseLogicsModule baseLM = ThreadLocalContext.getBusinessLogics().LM;
 
 //        printActionPropertyDraw = addPropertyDraw(baseLM.getFormPrint(), version);
-        editActionPropertyDraw = addPropertyDraw(baseLM.getFormEdit(), version);
+        editActionPropertyDraw = addPropertyDraw(baseLM.getFormEditReport(), version);
 //        xlsActionPropertyDraw = addPropertyDraw(baseLM.getFormXls(), version);
         refreshActionPropertyDraw = addPropertyDraw(baseLM.getFormRefresh(), version);
         applyActionPropertyDraw = addPropertyDraw(baseLM.getFormApply(), version);

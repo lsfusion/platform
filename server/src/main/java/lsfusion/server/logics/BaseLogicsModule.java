@@ -129,11 +129,9 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     public LCP statCustomObjectClass; 
 
     private LCP addedObject;
-    public LCP confirmed;
     private LCP requestCanceled;
     private LCP requestPushed;
     private LCP isActiveForm;
-    private LCP formResultProp;
     public LCP formPageCount;
     public LCP formExportFile;
     public LCP formExportFiles;
@@ -194,9 +192,9 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     }
 
     @IdentityLazy
-    public LAP getFormEdit() {
+    public LAP getFormEditReport() {
         try {
-            return formEdit = findAction("formEdit[]");
+            return formEdit = findAction("formEditReport[]");
         } catch (ScriptingErrorLog.SemanticErrorException e) {
             Throwables.propagate(e);
         }
@@ -271,6 +269,24 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
             Throwables.propagate(e);
         }
         return null;
+    }
+
+    @IdentityLazy
+    public LAP<?> getFormEdit() {
+        try {
+            return findAction("formEdit[Object]");
+        } catch (ScriptingErrorLog.SemanticErrorException e) {
+            throw Throwables.propagate(e);
+        }
+    }
+
+    @IdentityLazy
+    public LAP<?> getFormDelete() {
+        try {
+            return findAction("formDelete[Object]");
+        } catch (ScriptingErrorLog.SemanticErrorException e) {
+            throw Throwables.propagate(e);
+        }
     }
 
     @IdentityLazy
@@ -400,11 +416,9 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         seek = findAction("seek[Object]");
         
         addedObject = findProperty("addedObject[]");
-        confirmed = findProperty("confirmed[]");
         requestCanceled = findProperty("requestCanceled[]");
         requestPushed = findProperty("requestPushed[]");
         isActiveForm = findProperty("isActiveForm[]");
-        formResultProp = findProperty("formResult[]");
         formPageCount = findProperty("formPageCount[]");
         formExportFile = findProperty("formExportFile[]");
         formExportFiles = findProperty("formExportFiles[VARSTRING[100]]");
@@ -581,11 +595,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     }
 
     @Override
-    public LCP getConfirmedProperty() {
-        return confirmed;
-    }
-
-    @Override
     @IdentityStrongLazy
     public AnyValuePropertyHolder getChosenValueProperty() {
         return addAnyValuePropertyHolder("chosen", "Chosen", StringClass.get(100));
@@ -610,9 +619,22 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         return isActiveForm;
     }
 
-    @Override
-    public LCP getFormResultProperty() {
-        return formResultProp;
+    @IdentityLazy
+    public LCP<?> getFormResultProperty() {
+        try {
+            return findProperty("formResult[]");
+        } catch (ScriptingErrorLog.SemanticErrorException e) {
+            throw Throwables.propagate(e);
+        }
+    }
+    
+    @IdentityLazy
+    public LCP<?> getConfirmedProperty() {
+        try {
+            return findProperty("confirmed[]");
+        } catch (ScriptingErrorLog.SemanticErrorException e) {
+            throw Throwables.propagate(e);
+        }
     }
 
     @Override

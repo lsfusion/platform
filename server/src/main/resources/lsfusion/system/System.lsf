@@ -38,7 +38,7 @@ subtractSeconds(DATETIME dateTimeFrom, DATETIME dateTimeTo) = [= FORMULA INTEGER
 formApply '{action.form.save}' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.form.FormApplyActionProperty' ();
 formCancel '{action.form.cancel}' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.form.FormCancelActionProperty' ();
 formPrint '{action.form.print}' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.form.RunReportPrintActionProperty' ();
-formEdit '{action.form.edit}' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.form.EditReportActionProperty' ();
+formEditReport '{action.form.edit}' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.form.EditReportActionProperty' ();
 formXls '{action.form.xlsExport}' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.form.RunReportXlsActionProperty' ();
 formDrop '{action.form.drop}' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.form.DropActionProperty' ();
 formRefresh '{action.form.refresh}' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.form.RefreshActionProperty' ();
@@ -176,6 +176,23 @@ END
 @defineAnyValue(chosen, STRING[100]);
 
 isActiveForm = DATA LOCAL BOOLEAN ();
+
+edit 'Редактировать' = ACTION ABSTRACT MULTI OVERRIDE (Object) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' HIDE TOOLBAR;
+edit(Object o) += { SHOW EDIT Object OBJECT =o DOCKED; }
+formEdit(Object o) = { edit(o); }
+
+// private, only for interactive usage (for other purposes use operator DELETE)
+delete 'Удалить' = ACTION ABSTRACT MULTI OVERRIDE (Object) IMAGE 'delete.png' EDITKEY 'DELETE' HIDE TOOLBAR;
+delete(Object o) += { DELETE o; } 
+formDelete(Object o) = {
+    IF sessionOwners() THEN
+        delete(o);
+    ELSE 
+        CONFIRM '{form.instance.do.you.really.want.to.take.action} \'{logics.delete}\'' DO {
+            delete(o);
+            APPLY;
+        }
+}
 
 META applicationForm(sid, name)
     FORM sid name;

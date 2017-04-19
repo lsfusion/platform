@@ -527,16 +527,26 @@ public abstract class LogicsModule {
 
     // ------------------- Form actions ----------------- //
 
+
+    protected LAP addFormAProp(LocalizedString caption, CustomClass cls, LAP action) {
+        return addIfAProp(caption, is(cls), 1, action, 1);
+    }
+
+    protected LAP addEditAProp(LocalizedString caption, CustomClass cls) {
+        return addFormAProp(caption, cls, baseLM.getFormEdit());
+    }
+
+    protected LAP addDeleteAProp(LocalizedString caption, CustomClass cls) {
+        return addFormAProp(caption, cls, baseLM.getFormDelete());
+    }
+
     // loggable, security, drilldown
     public LAP addMFAProp(LocalizedString caption, FormEntity form, ObjectEntity[] objectsToSet, boolean newSession) {
         LAP result = addIFAProp(caption, form, BaseUtils.toList(objectsToSet), ManageSessionType.AUTO, FormEntity.DEFAULT_NOCANCEL, true, WindowFormType.FLOAT);
         return addSessionScopeAProp(newSession ? FormSessionScope.NEWSESSION : FormSessionScope.OLDSESSION, result);
     }
 
-    // edit (add)
-    protected LAP addDMFAProp(CustomClass customClass, ManageSessionType manageSession, Boolean noCancel) {
-        return addDMFAProp(LocalizedString.create("sys"), customClass, manageSession, noCancel);
-    }
+    // temporary - should be changed to addEditAProp / getFormEdit
     protected LAP addDMFAProp(LocalizedString caption, CustomClass cls, ManageSessionType manageSession, boolean noCancel) {
         MappedForm<ClassFormSelector.VirtualObject> mappedForm = MappedForm.create(cls, true);
         return addIFAProp(caption, mappedForm.form, mappedForm.objects, manageSession, noCancel, true, WindowFormType.DOCKED);
@@ -1653,17 +1663,19 @@ public abstract class LogicsModule {
     // ---------------------- Delete Object ---------------------- //
 
     public LAP addDeleteAction(CustomClass cls, FormSessionScope scope) {
-        LAP delete = addChangeClassAProp(baseClass.unknown, 1, 0, false, true, 1, is(cls), 1);
-
-        LAP<?> result = addIfAProp(LocalizedString.create("{logics.delete}"), baseLM.sessionOwners, // IF sessionOwners() THEN 
-                delete, 1, // DELETE
-                addListAProp( // ELSE
-                        addConfirmAProp("lsFusion", addCProp(StringClass.text, LocalizedString.create("{form.instance.do.you.really.want.to.take.action} '{logics.delete}'"))), // CONFIRM
-                        addIfAProp(baseLM.confirmed, // IF confirmed() THEN
-                                addListAProp(
-                                        delete, 1, // DELETE
-                                        baseLM.apply), 1), 1 // apply()
-                ), 1);
+//        LAP delete = addChangeClassAProp(baseClass.unknown, 1, 0, false, true, 1, is(cls), 1);
+//
+//        LAP<?> result = addIfAProp(LocalizedString.create("{logics.delete}"), baseLM.sessionOwners, // IF sessionOwners() THEN 
+//                delete, 1, // DELETE
+//                addListAProp( // ELSE
+//                        addConfirmAProp("lsFusion", addCProp(StringClass.text, LocalizedString.create("{form.instance.do.you.really.want.to.take.action} '{logics.delete}'"))), // CONFIRM
+//                        addIfAProp(baseLM.confirmed, // IF confirmed() THEN
+//                                addListAProp(
+//                                        delete, 1, // DELETE
+//                                        baseLM.apply), 1), 1 // apply()
+//                ), 1);
+        
+        LAP<?> result = addDeleteAProp(LocalizedString.create("{logics.delete}"), cls);
 
         result.property.setSimpleDelete(true);
         setDeleteActionOptions(result);
@@ -1691,7 +1703,7 @@ public abstract class LogicsModule {
         LAP result = addListAProp(
                             addAddObjAProp(cls, true, 0, false, true, addedProperty), // NEW (FORM with AUTOSET), addAddObjAProp(cls, false, true, 0, false, true, addedProperty),
                             addJoinAProp(addListAProp( // так хитро делается чтобы заnest'ить addedProperty (иначе apply его сбрасывает)
-                                    addDMFAProp(cls, ManageSessionType.AUTO, true), 1, // FORM EDIT class OBJECT prm
+                                    addDMFAProp(LocalizedString.create("sys"), cls, ManageSessionType.AUTO, true), 1, // FORM EDIT class OBJECT prm
                                     addSetPropertyAProp(1, false, 1, addedProperty, 1), 1), // addedProperty <- prm 
                             addedProperty)); // FORM EDIT class OBJECT prm
 
@@ -1733,7 +1745,7 @@ public abstract class LogicsModule {
     }
 
     protected LAP addEditFormAction(FormSessionScope scope, CustomClass customClass) {
-        LAP result = addDMFAProp(LocalizedString.create("{logics.edit}"), customClass, ManageSessionType.AUTO, FormEntity.DEFAULT_NOCANCEL);
+        LAP result = addEditAProp(LocalizedString.create("{logics.edit}"), customClass);
 
         setEditActionOptions(result);
 
