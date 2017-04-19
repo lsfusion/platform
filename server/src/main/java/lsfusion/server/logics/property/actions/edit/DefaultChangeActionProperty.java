@@ -91,9 +91,12 @@ public class DefaultChangeActionProperty<P extends PropertyInterface> extends Sy
                     changeValue = context.requestUserData((DataClass) changeType, oldValue);
                 } else if (changeType instanceof ObjectType) {
                     if (ServerResponse.EDIT_OBJECT.equals(editActionSID)) {
-                        context.requestUserObject(
-                                formInstance.createObjectEditorDialogRequest(propertyValues, context.stack)
-                        );
+                        ObjectValue currentObject = propertyValues.readClasses(context);
+                        if(currentObject instanceof DataObject) // force notnull для edit'а по сути
+                            context.getBL().LM.getFormEdit().execute(context, currentObject);
+//                        context.requestUserObject(
+//                                formInstance.createObjectEditorDialogRequest(propertyValues, context.stack)
+//                        );
                         return;
                     }
 

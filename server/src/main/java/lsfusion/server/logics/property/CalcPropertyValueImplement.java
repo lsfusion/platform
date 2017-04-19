@@ -31,6 +31,10 @@ public class CalcPropertyValueImplement<P extends PropertyInterface> extends Cal
         return property.readClasses(form, mapping);
     }
 
+    public ObjectValue readClasses(ExecutionContext context) throws SQLException, SQLHandledException {
+        return property.readClasses(context, mapping);
+    }
+
     public CustomClass getDialogClass(DataSession session) throws SQLException, SQLHandledException {
         return property.getDialogClass(mapping, session.getCurrentClasses(mapping));
     }
