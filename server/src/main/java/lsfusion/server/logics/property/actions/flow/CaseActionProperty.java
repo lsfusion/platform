@@ -68,7 +68,7 @@ public class CaseActionProperty extends ListCaseActionProperty {
 
         CalcPropertyMapImplement<?, PropertyInterface> where =  action.mapWhereProperty();
         ExplicitActionCase<PropertyInterface> addCase;
-        if(type == AbstractType.CASE)
+        if(type == AbstractType.MULTI)
             addCase = new ExplicitActionCase<>((CalcPropertyMapImplement<?, PropertyInterface>) where.mapClassProperty(), action, signature);
         else
             addCase = new ExplicitActionCase<>(where, action);
