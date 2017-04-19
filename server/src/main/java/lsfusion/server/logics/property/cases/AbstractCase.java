@@ -70,9 +70,9 @@ public abstract class AbstractCase<P extends PropertyInterface, W extends CalcPr
     }
     
     public static <P extends PropertyInterface, W extends CalcPropertyInterfaceImplement<P>, 
-            M extends PropertyInterfaceImplement<P>, F extends Case<P, W, M>, A extends AbstractCase<P, W, M>> FinalizeResult<F> finalizeCases(NFList<A> cases, GetValue<F, A> translator, final AbstractWrapper<P, W, M, F> wrapper, final GetValue<Graph<F>, M> abstractReader, boolean hasImplicit, boolean explicitExclusive) {
+            M extends PropertyInterfaceImplement<P>, F extends Case<P, W, M>, A extends AbstractCase<P, W, M>> FinalizeResult<F> finalizeCases(NFList<A> cases, GetValue<F, A> translator, final AbstractWrapper<P, W, M, F> wrapper, final GetValue<Graph<F>, M> abstractReader, boolean areClassCases, boolean explicitExclusive) {
         ImList<A> list = cases.getList();
-        if(!hasImplicit || explicitExclusive) { // если не делать explicitExclusive вместо ошибки, начинает работать как если бы exclusive'а не было и платформа сама бы выбирала (впрочем обратная ветка уже работает стабильно)
+        if(!areClassCases || explicitExclusive) { // если не делать explicitExclusive вместо ошибки, начинает работать как если бы exclusive'а не было и платформа сама бы выбирала (впрочем обратная ветка уже работает стабильно)
             return new FinalizeResult<>(list.mapListValues(translator), explicitExclusive, null);
         }
 
@@ -294,7 +294,7 @@ public abstract class AbstractCase<P extends PropertyInterface, W extends CalcPr
         return new CalcCase<>(createUnionWhere(interfaces, cases, isExclusive), DerivedProperty.createUnion(interfaces, isExclusive, cases));
     }
     
-    public static <P extends PropertyInterface> FinalizeResult<ActionCase<P>> finalizeActionCases(final ImSet<P> interfaces, NFList<AbstractActionCase<P>> cases, boolean hasImplicit, boolean explicitExclusiveness) {
+    public static <P extends PropertyInterface> FinalizeResult<ActionCase<P>> finalizeActionCases(final ImSet<P> interfaces, NFList<AbstractActionCase<P>> cases, boolean areClassCases, boolean explicitExclusiveness) {
         return finalizeCases(cases, new GetValue<ActionCase<P>, AbstractActionCase<P>>() {
             public ActionCase<P> getMapValue(AbstractActionCase<P> value) {
                 return new ActionCase<>(value);
@@ -311,10 +311,10 @@ public abstract class AbstractCase<P extends PropertyInterface, W extends CalcPr
             public Graph<ActionCase<P>> getMapValue(ActionPropertyMapImplement<?, P> value) {
                 return value.mapAbstractGraph();
             }
-        }, hasImplicit, explicitExclusiveness);
+        }, areClassCases, explicitExclusiveness);
     }
 
-    public static <P extends PropertyInterface> FinalizeResult<CalcCase<P>> finalizeCalcCases(final ImSet<P> interfaces, NFList<AbstractCalcCase<P>> cases, boolean hasImplicit, boolean explicitExclusiveness) {
+    public static <P extends PropertyInterface> FinalizeResult<CalcCase<P>> finalizeCalcCases(final ImSet<P> interfaces, NFList<AbstractCalcCase<P>> cases, boolean areClassCases, boolean explicitExclusiveness) {
         return finalizeCases(cases, new GetValue<CalcCase<P>, AbstractCalcCase<P>>() {
             public CalcCase<P> getMapValue(AbstractCalcCase<P> value) {
                 return new CalcCase<>(value);
@@ -331,7 +331,7 @@ public abstract class AbstractCase<P extends PropertyInterface, W extends CalcPr
             public Graph<CalcCase<P>> getMapValue(CalcPropertyInterfaceImplement<P> value) {
                 return value.mapAbstractGraph();
             }
-        }, hasImplicit, explicitExclusiveness);
+        }, areClassCases, explicitExclusiveness);
     }
 
     // оптимизация

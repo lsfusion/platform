@@ -262,7 +262,7 @@ public class DerivedProperty {
 
         ImList<CalcPropertyInterfaceImplement<UnionProperty.Interface>> operands =
                 DerivedProperty.mapCalcImplements(mapInterfaces, (ImList<CalcPropertyInterfaceImplement<T>>) props);
-        CaseUnionProperty unionProperty = new CaseUnionProperty(LocalizedString.create("sys"), revMapInterfaces.keys().toOrderSet(), operands, false, isExclusive, true);
+        CaseUnionProperty unionProperty = new CaseUnionProperty(LocalizedString.create("sys"), revMapInterfaces.keys().toOrderSet(), operands, false, isExclusive, false);
         return new CalcPropertyMapImplement<>(unionProperty, revMapInterfaces);
     }
 
@@ -743,7 +743,7 @@ public class DerivedProperty {
 
     public static <L extends PropertyInterface> ActionPropertyMapImplement<?, L> createCaseAction(ImSet<L> innerInterfaces, boolean isExclusive, ImList<ActionCase<L>> cases) {
         ImOrderSet<L> listInterfaces = innerInterfaces.toOrderSet();
-        ActionProperty actionProperty = new CaseActionProperty(LocalizedString.create("sys"), false, listInterfaces, cases);
+        ActionProperty actionProperty = new CaseActionProperty(LocalizedString.create("sys"), isExclusive, listInterfaces, cases);
         return actionProperty.getImplement(listInterfaces);
     }
 

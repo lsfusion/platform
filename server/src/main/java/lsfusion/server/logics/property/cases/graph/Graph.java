@@ -189,11 +189,11 @@ public class Graph<T> {
             ImSet<T> zeroNodes = graphComp.getZeroOutNodes();
             Comp<T> recGraphComp = graphComp.removeNodes(zeroNodes).buildComps();
 
-            ImList<NodeSetComp<T>> graphResult = ListFact.add(zeroNodes.mapSetValues(new GetValue<NodeComp<T>, T>() {
+            ImList<NodeSetComp<T>> graphResult = ListFact.add(recGraphComp.getList(), zeroNodes.mapSetValues(new GetValue<NodeComp<T>, T>() {
                 public NodeComp<T> getMapValue(T value) {
                     return new NodeComp<>(value);
                 }
-            }).toList(), recGraphComp.getList());
+            }).toList());
             mResult.exclAddAll(ListComp.create(graphResult).getSet());
         }
         
