@@ -98,7 +98,7 @@ public abstract class FormActionProperty<O extends ObjectSelector> extends Syste
         Pair<FormEntity, ImRevMap<ObjectEntity, O>> resolvedForm = form.getForm(context.getBL().LM, context.getSession(), mapObjectValues);
         if(resolvedForm == null)
             return;
-        executeCustom(resolvedForm.first, resolvedForm.second.join(mapObjectValues), context, resolvedForm.second);
+        executeCustom(resolvedForm.first, resolvedForm.second.rightJoin(mapObjectValues), context, resolvedForm.second);
     }
 
     @Override

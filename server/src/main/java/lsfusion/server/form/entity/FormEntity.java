@@ -6,6 +6,7 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.LongMutable;
 import lsfusion.base.col.interfaces.mutable.MCol;
+import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
@@ -1284,15 +1285,15 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         return object.baseClass;
     }
 
-    public Collection<ObjectEntity> getObjects() {
-        List<ObjectEntity> objects = new ArrayList<>();
+    @IdentityLazy
+    public ImSet<ObjectEntity> getObjects() {
+        MExclSet<ObjectEntity> mObjects = SetFact.mExclSet();
         for (GroupObjectEntity group : getGroupsIt())
-            for (ObjectEntity object : group.getObjects())
-                objects.add(object);
-        return objects;
+            mObjects.exclAddAll(group.getObjects());
+        return mObjects.immutable();
     }
 
     public Pair<FormEntity, ImRevMap<ObjectEntity, ObjectEntity>> getForm(BaseLogicsModule<?> LM, DataSession session, ImMap<ObjectEntity, ? extends ObjectValue> mapObjectValues) {
-        return new Pair<>((FormEntity)this, mapObjectValues.keys().toRevMap());
+        return new Pair<>((FormEntity)this, getObjects().toRevMap());
     }
 }
