@@ -353,7 +353,6 @@ DESIGN changePasswordUser {
 }
 
 changePassword(CustomUser customUser) = {
-    SHOW changePasswordUser ;
     DIALOG changePasswordUser OBJECTS old INPUT, new1 INPUT,new2 INPUT DO {
             EXEC calculateBase64Hash('SHA-256', old);
             IF  calculatedHash() != sha256Password(customUser) THEN {
