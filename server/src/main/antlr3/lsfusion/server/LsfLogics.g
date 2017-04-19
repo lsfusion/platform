@@ -2403,6 +2403,7 @@ manageSessionClause returns [ManageSessionType result]
         |   'NOMANAGESESSION' { $result = ManageSessionType.NOMANAGESESSION; }
         |   'MANAGESESSIONX' { $result = ManageSessionType.MANAGESESSIONX; }
         |   'NOMANAGESESSIONX' { $result = ManageSessionType.NOMANAGESESSIONX; }
+        |   'AUTO' { $result = ManageSessionType.AUTO; }
     ;
 
 noCancelClause returns [boolean result]

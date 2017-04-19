@@ -529,7 +529,7 @@ public abstract class LogicsModule {
 
 
     protected LAP addFormAProp(LocalizedString caption, CustomClass cls, LAP action) {
-        return addIfAProp(caption, is(cls), 1, action, 1);
+        return addIfAProp(caption, is(cls), 1, action, 1); // по идее можно просто exec сделать, но на всякий случай
     }
 
     protected LAP addEditAProp(LocalizedString caption, CustomClass cls) {
