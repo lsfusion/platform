@@ -177,7 +177,7 @@ END
 
 isActiveForm = DATA LOCAL BOOLEAN ();
 
-edit 'Редактировать' = ACTION ABSTRACT MULTI OVERRIDE (Object) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' HIDE TOOLBAR;
+edit 'Редактировать' = ACTION ABSTRACT MULTI OVERRIDE FIRST (Object) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' HIDE TOOLBAR;
 edit(Object o) += { SHOW EDIT Object OBJECT =o AUTO DOCKED; }
 formEdit(Object o) = { edit(o); }
 
