@@ -151,14 +151,13 @@ public class CaseActionProperty extends ListCaseActionProperty {
                 CalcPropertyInterfaceImplement<PropertyInterface> where = element.where;
                 if(where instanceof CalcPropertyMapImplement) {
                     CalcPropertyMapImplement<?, PropertyInterface> mapWhere = (CalcPropertyMapImplement<?, PropertyInterface>) where;
-                    if (mapWhere.mapIsFull(currentClasses.keys())) { // тут надо найти по-хорошему найти full подмножество, но пока и такой оптимизации достаточно
+                    if (!currentClasses.isEmpty() && mapWhere.mapIsFull(currentClasses.keys())) { // тут надо найти по-хорошему найти full подмножество, но пока и такой оптимизации достаточно
                         // isFull => isNotNull
                         if (mapWhere.mapClassWhere(ClassType.casePolicy).and(new ClassWhere<>(currentClasses)).isFalse()) // и классы не пересекаются
                             return false;
-                    } else {
-                        if(!nulls.isEmpty() && mapWhere.mapIsNotNull(nulls)) // тут надо по-хорошему по одному интерфейсу проверить, но пока и такой оптимизации достаточно   
-                            return false;
                     }
+                    if(!nulls.isEmpty() && mapWhere.mapIsNotNull(nulls)) // тут надо по-хорошему по одному интерфейсу проверить, но пока и такой оптимизации достаточно   
+                        return false;
                 }
                 return true;
             }
