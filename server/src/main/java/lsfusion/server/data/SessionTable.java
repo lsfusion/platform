@@ -607,7 +607,7 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
                     ImRevMap<KeyField, KeyExpr> groupKeys = tableKeys.filterInclRev(remainKeys);
                     moveData.and(GroupExpr.create(groupKeys, prevJoin.getWhere(), moveData.getMapExprs()).getWhere());
                     for (PropertyField prop : remainProps)
-                        moveData.addProperty(prop, GroupExpr.create(groupKeys, prevJoin.getExpr(prop), GroupType.ANY, moveData.getMapExprs()));
+                        moveData.addProperty(prop, GroupExpr.create(groupKeys, prevJoin.getExpr(prop), GroupType.ASSERTSINGLE(), moveData.getMapExprs())); // не может быть недетерминированности, так как просто копирование из таблицы в таблицу
                 }
                 session.insertSessionSelect(name, moveData.getQuery(), DataSession.emptyEnv(opOwner), owner);
                 session.returnTemporaryTable(SessionTable.this, owner, opOwner);

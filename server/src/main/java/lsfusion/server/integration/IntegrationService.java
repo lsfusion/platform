@@ -14,6 +14,7 @@ import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
+import lsfusion.server.data.expr.ValueExpr;
 import lsfusion.server.data.expr.query.GroupExpr;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.expr.where.cases.CaseExpr;
@@ -138,8 +139,8 @@ public class IntegrationService {
             }
 
             deleteWhere = deleteWhere.and(GroupExpr.create(MapFact.singleton("key", groupExpr),
-                                       delete.deleteProperty.property.getExpr(mvDeleteExprs.immutableValue(), session.getModifier()),
-                                       GroupType.ANY, MapFact.singleton("key", keyExpr)).getWhere());
+                                       ValueExpr.get(delete.deleteProperty.property.getExpr(mvDeleteExprs.immutableValue(), session.getModifier()).getWhere()),
+                                       GroupType.LOGICAL(), MapFact.singleton("key", keyExpr)).getWhere());
 
             session.changeClass(new ClassChange(keyExpr, deleteWhere, CaseExpr.NULL));
         }

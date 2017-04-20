@@ -548,7 +548,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
             mPropertyExprs.exclAddAll(parentExprs);
 
-            mPropertyExprs.exclAdd("expandable", GroupExpr.create(parentExprs, ValueExpr.TRUE, GroupType.ANY, mapKeys.filter(parentExprs.keys())));
+            mPropertyExprs.exclAdd("expandable", GroupExpr.create(parentExprs, ValueExpr.TRUE, GroupType.LOGICAL(), mapKeys.filter(parentExprs.keys()))); // boolean
             if (treeGroup != null) {
                 GroupObjectInstance subGroup = treeGroup.getDownTreeGroup(this);
                 if (subGroup != null) {
@@ -592,7 +592,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         Expr validSubElementExpr = IfExpr.create(subGroupWhere, ValueExpr.TRUE, ValueExpr.NULL);
 
         final ImMap<ObjectInstance, KeyExpr> upKeys = mapKeys.remove(objects);
-        return GroupExpr.create(upKeys, validSubElementExpr, GroupType.ANY, outerMapKeys);
+        return GroupExpr.create(upKeys, validSubElementExpr, GroupType.LOGICAL(), outerMapKeys); // boolean
     }
 
     public void change(SessionChanges session, ImMap<ObjectInstance, DataObject> value, FormInstance eventForm, ExecutionStack stack) throws SQLException, SQLHandledException {

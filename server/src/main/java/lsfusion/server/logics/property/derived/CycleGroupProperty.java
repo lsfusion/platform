@@ -27,7 +27,7 @@ public class CycleGroupProperty<I extends PropertyInterface, P extends PropertyI
 
     @Override
     public GroupType getGroupType() {
-        return GroupType.ANY;
+        return GroupType.ASSERTSINGLE();
     }
 
     final CalcProperty<P> toChange;

@@ -195,7 +195,7 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K>, TableOwner {
     public ImSet<Object> readDistinct(V prop, SQLSession session, OperationOwner owner) throws SQLException, SQLHandledException {
         ImRevMap<K, KeyExpr> mapKeys = getMapKeys();
         KeyExpr key = new KeyExpr("key");
-        Expr groupExpr = GroupExpr.create(MapFact.singleton("key", join(mapKeys).getExpr(prop)), ValueExpr.TRUE, GroupType.ANY, MapFact.<String, Expr>singleton("key", key));
+        Expr groupExpr = GroupExpr.create(MapFact.singleton("key", join(mapKeys).getExpr(prop)), ValueExpr.TRUE, GroupType.LOGICAL(), MapFact.<String, Expr>singleton("key", key));
         return new Query<>(MapFact.singletonRev("key", key), groupExpr.getWhere()).execute(session, owner).keyOrderSet().getSet().mapSetValues(new GetValue<Object, ImMap<String, Object>>() {
             public Object getMapValue(ImMap<String, Object> value) {
                 return value.singleValue();

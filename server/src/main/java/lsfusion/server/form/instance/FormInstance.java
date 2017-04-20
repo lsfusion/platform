@@ -1226,7 +1226,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                 currentList = toMax.getValue(i - separator);
 
                 if (property.getType() instanceof FileClass || property.getType() instanceof LinkClass) {
-                    groupType = GroupType.ANY;
+                    groupType = GroupType.ASSERTSINGLE(); // тут на самом деле никакой не ASSERT но возможно очень важно с точки зрения производительности
                 }
             }
             for (ImMap<ObjectInstance, DataObject> columnKeys : currentList) {

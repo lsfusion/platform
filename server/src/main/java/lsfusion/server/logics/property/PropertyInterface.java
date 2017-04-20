@@ -13,6 +13,7 @@ import lsfusion.server.caches.LazyInit;
 import lsfusion.server.classes.sets.AndClassSet;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.PullExpr;
+import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.data.where.classes.ClassWhere;
@@ -100,7 +101,7 @@ public class PropertyInterface<P extends PropertyInterface<P>> extends IdentityO
 
     public Expr changeExpr;
 
-    public DataChanges mapJoinDataChanges(ImMap<P, ? extends Expr> mapKeys, Expr expr, Where where, WhereBuilder changedWhere, PropertyChanges propChanges) {
+    public DataChanges mapJoinDataChanges(ImMap<P, ? extends Expr> mapKeys, Expr expr, Where where, GroupType type, WhereBuilder changedWhere, PropertyChanges propChanges) {
         return DataChanges.EMPTY;
     }
 

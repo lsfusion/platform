@@ -105,7 +105,7 @@ public class ImportProperty <P extends PropertyInterface> {
         ImRevMap<P, KeyExpr> mapKeys = implement.property.getMapKeys();
         ImMap<P, Expr> importKeyExprs = getImplementExprs(implement.mapping, addedKeys, importExprs, modifier);
 
-        Expr changeExpr = GroupExpr.create(importKeyExprs, importExpr, groupType != null ? groupType : GroupType.ANY, mapKeys);
+        Expr changeExpr = GroupExpr.create(importKeyExprs, importExpr, groupType != null ? groupType : GroupType.CHANGE(), mapKeys);
 
         Where changeWhere;
         if (replaceNull)

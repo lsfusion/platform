@@ -1197,11 +1197,11 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         return getDataChanges(new PropertyChange<>(mapKeys, toNull ? CaseExpr.NULL : getChangeExpr(), CompareWhere.compare(mapKeys, getChangeExprs())), changes, null);
     }
 
-    protected DataChanges getJoinDataChanges(ImMap<T, ? extends Expr> implementExprs, Expr expr, Where where, PropertyChanges propChanges, WhereBuilder changedWhere) {
+    protected DataChanges getJoinDataChanges(ImMap<T, ? extends Expr> implementExprs, Expr expr, Where where, GroupType groupType, PropertyChanges propChanges, WhereBuilder changedWhere) {
         ImRevMap<T, KeyExpr> mapKeys = getMapKeys();
         WhereBuilder changedImplementWhere = cascadeWhere(changedWhere);
         DataChanges result = getDataChanges(new PropertyChange<>(mapKeys,
-                GroupExpr.create(implementExprs, expr, where, GroupType.ANY, mapKeys),
+                GroupExpr.create(implementExprs, expr, where, groupType, mapKeys),
                 GroupExpr.create(implementExprs, where, mapKeys).getWhere()),
                 propChanges, changedImplementWhere);
         if (changedWhere != null)

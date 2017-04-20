@@ -355,11 +355,11 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
     }
 
     public static <K> Expr create(ImMap<K, ? extends Expr> group, Where where, ImMap<K, ? extends Expr> implement, boolean top) {
-        return create(group, top ? new ValueExpr(1, IntegerClass.instance).and(where) : ValueExpr.get(where), top ? GroupType.SUM : GroupType.ANY, implement, null);
+        return create(group, top ? new ValueExpr(1, IntegerClass.instance).and(where) : ValueExpr.get(where), top ? GroupType.SUM : GroupType.LOGICAL(), implement, null); // boolean
     }
 
     public static <K> Expr create(ImMap<K,? extends Expr> group, Where where, ImMap<K,? extends Expr> implement) {
-        return create(group, ValueExpr.get(where), GroupType.ANY, implement, null);
+        return create(group, ValueExpr.get(where), GroupType.LOGICAL(), implement, null); // boolean
     }
 
     public static <K> Expr create(ImMap<K,? extends Expr> group, Expr expr,Where where,GroupType type,ImMap<K,? extends Expr> implement) {
@@ -399,7 +399,7 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
         assert group.keys().equals(implement.keys());
 
         if(query.type.isSelect() && !query.type.isSelectNotInWhere() && getType(group, query) instanceof LogicalClass)
-            query = new Query(query.exprs, query.orders, query.ordersNotNull, GroupType.ANY);
+            query = new Query(query.exprs, query.orders, query.ordersNotNull, GroupType.LOGICAL()); // boolean
         return createOuterCases(group, query, implement);
     }
 

@@ -22,6 +22,22 @@ import lsfusion.server.logics.property.*;
 
 public enum GroupType implements AggrType {
     SUM, MAX, MIN, ANY, STRING_AGG, AGGAR_SETADD, LAST;
+    
+    public static GroupType LOGICAL() {
+        return ANY;
+    }
+    
+    public static GroupType CHANGE() {
+        return MAX;
+    }
+
+    public static GroupType ASSERTSINGLE_CHANGE() {
+        return ASSERTSINGLE();
+    }
+
+    public static GroupType ASSERTSINGLE() {
+        return ANY;
+    }
 
     public <T extends PropertyInterface> GroupProperty<T> createProperty(LocalizedString caption, ImSet<T> innerInterfaces, CalcPropertyInterfaceImplement<T> property, ImSet<? extends CalcPropertyInterfaceImplement<T>> interfaces) {
         switch (this) {

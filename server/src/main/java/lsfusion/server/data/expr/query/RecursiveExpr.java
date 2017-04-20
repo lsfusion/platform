@@ -167,7 +167,7 @@ public class RecursiveExpr extends QueryExpr<KeyExpr, RecursiveExpr.Query, Recur
         RecursiveExpr expr = new RecursiveExpr(new Query(mapIterate, initial, step, cyclePossible), restGroup.result);
         RecursiveJoin innerJoin = expr.getInnerJoin();
         if(innerJoin.isOnlyInitial()) // чтобы кэшировалось
-            return GroupExpr.create(restGroup.result.keys().toMap(), initial, innerJoin.isLogical() ? GroupType.ANY : GroupType.SUM, restGroup.result);
+            return GroupExpr.create(restGroup.result.keys().toMap(), initial, innerJoin.isLogical() ? GroupType.LOGICAL() : GroupType.SUM, restGroup.result); // boolean
 
         return BaseExpr.create(expr);
     }

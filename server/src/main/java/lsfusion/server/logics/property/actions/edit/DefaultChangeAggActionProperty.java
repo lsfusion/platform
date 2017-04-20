@@ -62,12 +62,13 @@ public class DefaultChangeAggActionProperty<P extends PropertyInterface> extends
             KeyExpr keyExpr = new KeyExpr("key");
             Expr aggExpr = aggProp.getExpr(MapFact.singleton(aggProp.interfaces.single(), keyExpr), context.getModifier());
             Expr groupExpr;
+            GroupType groupType = GroupType.ASSERTSINGLE_CHANGE();
             if(readValue.isNull()) {
                 groupExpr = GroupExpr.create(
                         MapFact.<String, Expr>EMPTY(),
                         keyExpr,
                         keyExpr.isUpClass(aggClass).and(aggExpr.getWhere().not()),
-                        GroupType.ANY,
+                        groupType,
                         MapFact.<String, Expr>EMPTY()
                 );
             } else {
@@ -75,7 +76,7 @@ public class DefaultChangeAggActionProperty<P extends PropertyInterface> extends
                         MapFact.singleton(0, aggExpr),
                         keyExpr,
                         keyExpr.isUpClass(aggClass),
-                        GroupType.ANY,
+                        groupType,
                         MapFact.singleton(0, readValue.getExpr())
                 );
             }

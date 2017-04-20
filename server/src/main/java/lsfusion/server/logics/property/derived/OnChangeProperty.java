@@ -129,7 +129,7 @@ public class OnChangeProperty<T extends PropertyInterface,P extends PropertyInte
 
         WhereBuilder onChangeWhere = new WhereBuilder();
         Expr resultExpr = GroupExpr.create(mapExprs, onChange.getExpr(mOnChangeExprs.immutable(),
-                calcType, toChange.getChangeModifier(propChanges, false), onChangeWhere), onChangeWhere.toWhere(), GroupType.ANY, joinImplement.filterIncl(mapExprs.keys()));
+                calcType, toChange.getChangeModifier(propChanges, false), onChangeWhere), onChangeWhere.toWhere(), GroupType.LOGICAL(), joinImplement.filterIncl(mapExprs.keys())); // filters (constraints)
         if(changedWhere!=null) changedWhere.add(resultExpr.getWhere());
         return resultExpr;
     }

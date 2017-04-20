@@ -169,7 +169,7 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
         Expr toChangeExpr = valueImp.mapExpr(mapExprs, propChanges);
         Where toChangeWhere = change.expr.getWhere();
         return changeImp.mapJoinDataChanges(mapExprs, toChangeExpr.and(toChangeWhere), // меняем на новое значение, если надо и скидываем в null если было какое-то
-                change.where.and(toChangeWhere.or(toChangeExpr.compare(changeImp.mapExpr(mapExprs, propChanges), Compare.EQUALS))), changedWhere, propChanges);
+                change.where.and(toChangeWhere.or(toChangeExpr.compare(changeImp.mapExpr(mapExprs, propChanges), Compare.EQUALS))), GroupType.ASSERTSINGLE_CHANGE(), changedWhere, propChanges);
     }
     
     // для And - data changes, тут чтобы не мусорить в Property
@@ -248,18 +248,18 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
         if(andInterface!=null) {
             ImMap<Interface, Expr> mapExprs = change.getMapExprs();
             return implement.mapping.get(andInterface).mapJoinDataChanges(mapExprs, change.expr,
-                    change.where.and(getAndWhere(this, mapExprs, propChanges)), changedWhere, propChanges);
+                    change.where.and(getAndWhere(this, mapExprs, propChanges)), GroupType.ASSERTSINGLE_CHANGE(), changedWhere, propChanges);
         }
 
         if(implementChange) // groupBy'им выбирая max
-            return implement.property.getJoinDataChanges(getJoinImplements(change.getMapExprs(), propChanges, null), change.expr, change.where, propChanges, changedWhere); //.map(mapInterfaces)
+            return implement.property.getJoinDataChanges(getJoinImplements(change.getMapExprs(), propChanges, null), change.expr, change.where, GroupType.CHANGE(), propChanges, changedWhere); //.map(mapInterfaces)
 
         if(implement.mapping.size() == 1 && implement.property.aggProp) {
             // пока тупо MGProp'им назад
             CalcPropertyMapImplement<?, Interface> implementSingle = (CalcPropertyMapImplement<?, Interface>) implement.mapping.singleValue();
             KeyExpr keyExpr = new KeyExpr("key");
             Expr groupExpr = GroupExpr.create(MapFact.singleton(0, implement.property.getExpr(MapFact.singleton(implement.property.interfaces.single(), keyExpr), propChanges)),
-                    keyExpr, keyExpr.isUpClass(implementSingle.property.getValueClass(ClassType.editPolicy)), GroupType.ANY, MapFact.singleton(0, change.expr));
+                    keyExpr, keyExpr.isUpClass(implementSingle.property.getValueClass(ClassType.editPolicy)), GroupType.ASSERTSINGLE_CHANGE(), MapFact.singleton(0, change.expr));
             return implementSingle.mapDataChanges(
                     new PropertyChange<>(change, groupExpr), changedWhere, propChanges);
         }

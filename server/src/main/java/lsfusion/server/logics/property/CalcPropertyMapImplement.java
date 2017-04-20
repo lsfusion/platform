@@ -13,6 +13,7 @@ import lsfusion.server.classes.ValueClass;
 import lsfusion.server.classes.sets.AndClassSet;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.Expr;
+import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.data.where.classes.ClassWhere;
@@ -170,8 +171,8 @@ public class CalcPropertyMapImplement<P extends PropertyInterface, T extends Pro
         return property.getComplexity();
     }
 
-    public DataChanges mapJoinDataChanges(ImMap<T, ? extends Expr> mapKeys, Expr expr, Where where, WhereBuilder changedWhere, PropertyChanges propChanges) {
-        return property.getJoinDataChanges(mapping.join(mapKeys), expr, where, propChanges, changedWhere);
+    public DataChanges mapJoinDataChanges(ImMap<T, ? extends Expr> mapKeys, Expr expr, Where where, GroupType type, WhereBuilder changedWhere, PropertyChanges propChanges) {
+        return property.getJoinDataChanges(mapping.join(mapKeys), expr, where, type, propChanges, changedWhere);
     }
 
     public void fill(MSet<T> interfaces, MSet<CalcPropertyMapImplement<?, T>> properties) {
