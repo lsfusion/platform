@@ -156,7 +156,7 @@ public class CaseActionProperty extends ListCaseActionProperty {
                         if (mapWhere.mapClassWhere(ClassType.casePolicy).and(new ClassWhere<>(currentClasses)).isFalse()) // и классы не пересекаются
                             return false;
                     } else {
-                        if(mapWhere.mapIsNotNull(nulls)) // тут надо по-хорошему по одному интерфейсу проверить, но пока и такой оптимизации достаточно   
+                        if(!nulls.isEmpty() && mapWhere.mapIsNotNull(nulls)) // тут надо по-хорошему по одному интерфейсу проверить, но пока и такой оптимизации достаточно   
                             return false;
                     }
                 }
@@ -190,7 +190,7 @@ public class CaseActionProperty extends ListCaseActionProperty {
         ImList<ActionCase<PropertyInterface>> result = getOptimizedCases(context.getSession().getCurrentClasses(dataObjects), rNulls.result);
         // todo: wrap into assert
         checkOptimizedCases(context, result);
-        return result;
+        return cases;
     }
     
     @Override
