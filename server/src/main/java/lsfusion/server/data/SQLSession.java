@@ -2954,8 +2954,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
                         break;
                 }
             } finally {
-                for (Connection notUsedConnection : notUsedNewConnections.values())
-                    notUsedConnection.close();
+                for (Map.Entry<ConnectionPool, Connection> notUsedConnection : notUsedNewConnections.entrySet())
+                    notUsedConnection.getKey().closeRestartConnection(notUsedConnection.getValue());
             }
         } catch (Throwable t) { // временно так, чтобы не останавливался restartConnections никогда
             logger.error("GLOBAL RESTART CONNECTIONS ERROR", t);
@@ -3055,7 +3055,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
                 }
 
                 // закрываем старое соединение
-                privateConnection.sql.close();
+                connectionPool.closeRestartConnection(privateConnection.sql);
 
                 noError = true;
 
@@ -3084,7 +3084,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
             }
         } finally {
             if(!noError)
-                newConnection.close();
+                connectionPool.closeRestartConnection(newConnection);
         }
         return true;
     }

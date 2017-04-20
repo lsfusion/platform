@@ -1990,9 +1990,19 @@ public class Settings {
     public void setClassOptimizationActionCasesCount(int classOptimizationActionCasesCount) {
         this.classOptimizationActionCasesCount = classOptimizationActionCasesCount;
     }
+    
+    private boolean extendedSQLConnectionLog = false;
+
+    public boolean isExtendedSQLConnectionLog() {
+        return extendedSQLConnectionLog;
+    }
+
+    public void setExtendedSQLConnectionLog(boolean extendedSQLConnectionLog) {
+        this.extendedSQLConnectionLog = extendedSQLConnectionLog;
+    }
 
     private boolean subReportTableOptimization = true;
-
+    
     public boolean isSubReportTableOptimization() {
         return subReportTableOptimization;
     }

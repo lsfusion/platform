@@ -54,7 +54,7 @@ public abstract class AbstractConnectionPool implements ConnectionPool {
         }
 
         protected void close(ExConnection rerun) throws SQLException {
-            rerun.close();
+            closeExConnection(rerun);
         }
     }
 
@@ -64,7 +64,7 @@ public abstract class AbstractConnectionPool implements ConnectionPool {
         }
 
         protected void close(Connection rerun) throws SQLException {
-            rerun.close();
+            closeConnection(rerun);
         }
     }
 
@@ -150,7 +150,7 @@ public abstract class AbstractConnectionPool implements ConnectionPool {
 
             protected void after(List<ExConnection> run) throws SQLException {
                 for(ExConnection connection : run)
-                    connection.close();
+                    closeExConnection(connection);
             }
         }.execute();
     }
@@ -160,11 +160,15 @@ public abstract class AbstractConnectionPool implements ConnectionPool {
         if(freeConnections.size() < Settings.get().getFreeConnections())
             freeConnections.push(connection);
         else
-            connection.close();
+            closeExConnection(connection);
     }
 
     public ExConnection newExConnection() throws SQLException {
         return new ExConnection(newConnection(), new SQLTemporaryPool());
+    }
+    
+    public void closeExConnection(ExConnection connection) throws SQLException {
+        closeConnection(connection.sql);
     }
 
     protected void prepareConnection(Connection connection) {
@@ -178,7 +182,7 @@ public abstract class AbstractConnectionPool implements ConnectionPool {
             prepareConnection(newConnection);
             SQLSession.setACID(newConnection, false, (SQLSyntax)this);
 
-            ServerLoggers.sqlConnectionLogger.info("NEW CONNECTION : " + ((PGConnection)newConnection).getBackendPID() + ", Time : " + (System.currentTimeMillis() - l));
+            logConnection("NEW", l, ((PGConnection)newConnection).getBackendPID());
 
             return newConnection;
         } catch (ClassNotFoundException | IllegalAccessException | InstantiationException e) {
@@ -186,9 +190,32 @@ public abstract class AbstractConnectionPool implements ConnectionPool {
         }
     }
 
+    public void closeConnection(Connection connection) throws SQLException {
+        long l = System.currentTimeMillis();
+
+        int backendPID = ((PGConnection) connection).getBackendPID();
+
+        connection.close();
+
+        logConnection("CLOSE", l, backendPID);
+    }
+
+    private void logConnection(String type, long l, int backendPID) {
+        String message = type + " CONNECTION : " + backendPID + ", Time : " + (System.currentTimeMillis() - l);
+        if(Settings.get().isExtendedSQLConnectionLog())
+            ServerLoggers.sqlConnectionLog(message);
+        else
+            ServerLoggers.sqlConnectionLogger.info(message);
+    }
+
     @Override
     public Connection newRestartConnection() throws SQLException {
         return newConnection();
+    }
+
+    @Override
+    public void closeRestartConnection(Connection connection) throws SQLException {
+        closeConnection(connection);
     }
 
     public ExConnection getPrivate(final MutableObject object) throws SQLException {
@@ -216,7 +243,7 @@ public abstract class AbstractConnectionPool implements ConnectionPool {
 
     public void returnPrivate(final MutableObject object, final ExConnection connection) throws SQLException {
         if(Settings.get().isDisablePoolConnections()) {
-            connection.close();
+            closeExConnection(connection);
             return;
         }
 
@@ -238,7 +265,7 @@ public abstract class AbstractConnectionPool implements ConnectionPool {
 
             protected void after(ExConnection run) throws SQLException {
                 if(run != null)
-                    run.close();
+                    closeExConnection(run);
             }
         }.execute();
     }

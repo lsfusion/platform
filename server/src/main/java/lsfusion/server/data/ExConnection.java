@@ -28,12 +28,7 @@ public class ExConnection {
             lastLogLevel = logLevel;
         }
     }
-    
-    public void close() throws SQLException {
-        ServerLoggers.sqlLogger.info("CONNECTION CLOSE " + sql);
-        sql.close();
-    }
-    
+
     public void checkClosed() throws SQLException {
         ServerLoggers.assertLog(!sql.isClosed(), "CONNECTION IS ALREADY CLOSED " + sql);
     }

@@ -119,6 +119,10 @@ public class ServerLoggers {
         remoteLogger.info(message + '\n' + ExceptionUtils.getStackTrace());
     }
 
+    public static void sqlConnectionLog(String message) {
+        sqlConnectionLogger.info(message + '\n' + ExceptionUtils.getStackTrace());
+    }
+
     private static Map<Integer, Boolean> userExLogs = MapFact.getGlobalConcurrentHashMap();
 
     public static void setUserExLog(Integer user, Boolean enabled) {
