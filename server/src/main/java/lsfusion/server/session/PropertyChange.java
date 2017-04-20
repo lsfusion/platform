@@ -32,6 +32,8 @@ import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.PropertyInterface;
+import lsfusion.server.stack.ParamMessage;
+import lsfusion.server.stack.StackMessage;
 
 import java.sql.SQLException;
 
@@ -287,8 +289,9 @@ public class PropertyChange<T extends PropertyInterface> extends AbstractInnerCo
     public SinglePropertyTableUsage<T> materialize(CalcProperty<T> property, DataSession session) throws SQLException, SQLHandledException {
         return materialize(property, session.sql, session.baseClass, session.env);
     }
-    
-    public SinglePropertyTableUsage<T> materialize(CalcProperty<T> property, SQLSession sql, BaseClass baseClass, QueryEnvironment env) throws SQLException, SQLHandledException {
+
+    @StackMessage("{message.property.materialize}")
+    public SinglePropertyTableUsage<T> materialize(@ParamMessage CalcProperty<T> property, SQLSession sql, BaseClass baseClass, QueryEnvironment env) throws SQLException, SQLHandledException {
         SinglePropertyTableUsage<T> result = property.createChangeTable();
         writeRows(result, sql, baseClass, env, SessionTable.matLocalQuery);
         return result;
