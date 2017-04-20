@@ -36,6 +36,7 @@ import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.math.BigDecimal;
 import java.text.Format;
 import java.text.NumberFormat;
 import java.text.ParseException;
@@ -988,13 +989,18 @@ public class GridTable extends ClientPropertyTable {
         if (quantity > 1) {
             int numbers = selectionController.getNumbersQuantity();
             if (numbers > 1) {
-                Double sum = selectionController.getSum();
-                NumberFormat format = java.text.NumberFormat.getNumberInstance();
-                groupController.updateSelectionInfo(quantity, format.format(sum), format.format(sum / numbers));
+                BigDecimal sum = selectionController.getSum();
+                groupController.updateSelectionInfo(quantity, format(sum), format(sum.divide(BigDecimal.valueOf(numbers), sum.scale())));
                 return;
             }
         }
         groupController.updateSelectionInfo(quantity, null, null);
+    }
+
+    private String format(BigDecimal number) {
+        NumberFormat nf = NumberFormat.getNumberInstance();
+        nf.setMaximumFractionDigits(number.scale());
+        return nf.format(number);
     }
 
     public String getSelectedTable() throws ParseException {

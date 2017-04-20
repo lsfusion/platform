@@ -5,6 +5,7 @@ import lsfusion.base.Pair;
 import lsfusion.client.logics.ClientGroupObjectValue;
 import lsfusion.client.logics.ClientPropertyDraw;
 
+import java.math.BigDecimal;
 import java.text.ParseException;
 import java.util.*;
 
@@ -371,13 +372,17 @@ public class GridSelectionController {
         return quantity;
     }
 
-    public Double getSum() {
-        double sum = 0;
+    public BigDecimal getSum() {
+        BigDecimal sum = BigDecimal.ZERO;
         for (Pair<ClientPropertyDraw, ClientGroupObjectValue> propertyColumn : mergedSelection.keySet()) {
             for (ClientGroupObjectValue key : mergedSelection.get(propertyColumn).keySet()) {
                 Object value = mergedSelection.get(propertyColumn).get(key);
-                if (value instanceof Number) {
-                    sum += ((Number) value).doubleValue();
+                if(value != null) {
+                    if (value instanceof BigDecimal)
+                        sum = sum.add((BigDecimal) value);
+                    else if (value instanceof Number) {
+                        sum = sum.add(BigDecimal.valueOf(((Number) value).doubleValue()));
+                    }
                 }
             }
         }
