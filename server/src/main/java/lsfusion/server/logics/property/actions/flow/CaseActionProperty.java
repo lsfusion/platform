@@ -189,7 +189,7 @@ public class CaseActionProperty extends ListCaseActionProperty {
         ImList<ActionCase<PropertyInterface>> result = getOptimizedCases(context.getSession().getCurrentClasses(dataObjects), rNulls.result);
         // todo: wrap into assert
         checkOptimizedCases(context, result);
-        return cases;
+        return result;
     }
     
     @Override
