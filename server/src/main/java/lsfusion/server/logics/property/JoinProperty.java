@@ -62,13 +62,13 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
     }
     
     public JoinProperty(LocalizedString caption, ImOrderSet<Interface> interfaces, CalcPropertyImplement<T, CalcPropertyInterfaceImplement<Interface>> implement) {
-        this(caption, interfaces, false, false, implement);
+        this(caption, interfaces, false, implement);
     }
-    public JoinProperty(LocalizedString caption, ImOrderSet<Interface> interfaces, boolean implementChange, boolean user, CalcPropertyImplement<T, CalcPropertyInterfaceImplement<Interface>> implement) {
+    public JoinProperty(LocalizedString caption, ImOrderSet<Interface> interfaces, boolean user, CalcPropertyImplement<T, CalcPropertyInterfaceImplement<Interface>> implement) {
         super(caption, interfaces);
         this.implement = implement;
         this.user = user;
-        this.implementChange = implementChange || isIdentity(this.interfaces, implement);
+        this.implementChange = isIdentity(this.interfaces, implement);
 
         finalizeInit();
     }
@@ -252,7 +252,7 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
         }
 
         if(implementChange) // groupBy'им выбирая max
-            return implement.property.getJoinDataChanges(getJoinImplements(change.getMapExprs(), propChanges, null), change.expr, change.where, GroupType.CHANGE(), propChanges, changedWhere); //.map(mapInterfaces)
+            return implement.property.getJoinDataChanges(getJoinImplements(change.getMapExprs(), propChanges, null), change.expr, change.where, GroupType.ASSERTSINGLE_CHANGE(), propChanges, changedWhere); // пока implementChange = identity
 
         if(implement.mapping.size() == 1 && implement.property.aggProp) {
             // пока тупо MGProp'им назад

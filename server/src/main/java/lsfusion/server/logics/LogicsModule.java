@@ -970,22 +970,22 @@ public abstract class LogicsModule {
     }
 
     protected LCP addJProp(boolean persistent, boolean user, LocalizedString caption, LCP mainProp, Object... params) {
-        return addJProp(null, false, persistent, user, caption, mainProp, params);
+        return addJProp(null, persistent, user, caption, mainProp, params);
     }
 
     protected LCP addJProp(AbstractGroup group, LocalizedString caption, LCP mainProp, Object... params) {
-        return addJProp(group, false, false, caption, mainProp, params);
+        return addJProp(group, false, caption, mainProp, params);
     }
 
-    protected LCP addJProp(AbstractGroup group, boolean implementChange, boolean persistent, LocalizedString caption, LCP mainProp, Object... params) {
-        return addJProp(group, implementChange, persistent, false, caption, mainProp, params);
+    protected LCP addJProp(AbstractGroup group, boolean persistent, LocalizedString caption, LCP mainProp, Object... params) {
+        return addJProp(group, persistent, false, caption, mainProp, params);
     }
 
-    protected LCP addJProp(AbstractGroup group, boolean implementChange, boolean persistent, boolean user, LocalizedString caption, LCP<?> mainProp, Object... params) {
+    protected LCP addJProp(AbstractGroup group, boolean persistent, boolean user, LocalizedString caption, LCP<?> mainProp, Object... params) {
 
         ImOrderSet<JoinProperty.Interface> listInterfaces = JoinProperty.getInterfaces(getIntNum(params));
         ImList<CalcPropertyInterfaceImplement<JoinProperty.Interface>> listImplements = readCalcImplements(listInterfaces, params);
-        JoinProperty<?> property = new JoinProperty(caption, listInterfaces, implementChange, user,
+        JoinProperty<?> property = new JoinProperty(caption, listInterfaces, user,
                 mapCalcImplement(mainProp, listImplements));
 
         for(CalcProperty andProp : mainProp.property.getAndProperties())
