@@ -25,6 +25,7 @@ import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.*;
+import lsfusion.server.logics.property.actions.AddObjectActionProperty;
 import lsfusion.server.logics.property.actions.ChangeClassActionProperty;
 import lsfusion.server.logics.property.derived.DerivedProperty;
 import lsfusion.server.session.DataSession;
@@ -257,6 +258,14 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
     @IdentityLazy
     protected boolean forceCompile() {
         return isHackAdd() | !forIsFull(); // очень тормозит
+    }
+
+    @Override
+    protected ImMap<CalcProperty, Boolean> aspectChangeExtProps() {
+        ImMap<CalcProperty, Boolean> result = super.aspectChangeExtProps();
+        if(addObject != null) // может быть, из-за break, noinline и т.п.
+            result = result.merge(AddObjectActionProperty.getChangeExtProps(addClass), addValue);
+        return result;
     }
 
     @Override

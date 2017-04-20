@@ -1,8 +1,10 @@
 package lsfusion.server.logics.property.actions;
 
+import lsfusion.base.Pair;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
+import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetExValue;
 import lsfusion.interop.ClassViewType;
@@ -85,13 +87,18 @@ public class AddObjectActionProperty<T extends PropertyInterface, I extends Prop
 
     @Override
     public ImMap<CalcProperty, Boolean> aspectChangeExtProps() {
-        MMap<CalcProperty, Boolean> result = MapFact.mMap(addValue);
+        ImMap<CalcProperty, Boolean> result = getChangeExtProps(valueClass);
         if(this.result!=null)
-            result.addAll(this.result.property.getChangeProps().toMap(false));
-        result.addAll(valueClass.getParentSetProps().toMap(false));
-        result.addAll(valueClass.getDataProps().toMap(false));
-        result.add(valueClass.getBaseClass().getObjectClassProperty(), false);
-        return result.immutable();
+            result = result.merge(this.result.property.getChangeProps().toMap(false), addValue);
+        return result;
+    }
+    
+    public static ImMap<CalcProperty, Boolean> getChangeExtProps(CustomClass valueClass) {
+        MExclMap<CalcProperty, Boolean> mResult = MapFact.mExclMap();
+        mResult.exclAddAll(valueClass.getParentSetProps().toMap(false));
+        mResult.exclAddAll(valueClass.getDataProps().toMap(false));
+        mResult.exclAdd(valueClass.getBaseClass().getObjectClassProperty(), false);
+        return mResult.immutable();
     }
 
     @Override
