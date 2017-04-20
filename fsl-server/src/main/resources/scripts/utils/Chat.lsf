@@ -514,7 +514,7 @@ onClientStarted() += {
     IF sumUnreadMessages(currentUser()) > 0 THEN {
         deliveredNotificationAction(currentUser());
         apply();
-        SHOW shortChat DOCKED;
+        SHOW shortChat;
     }
 }
 
@@ -533,7 +533,7 @@ pushAction(BOOLEAN system, BOOLEAN notificate) = {
         ELSE {
             IF system OR notificate THEN {
                 NEWSESSION {
-                    SHOW shortChat DOCKED;
+                    SHOW shortChat;
                 }
             }
         }
