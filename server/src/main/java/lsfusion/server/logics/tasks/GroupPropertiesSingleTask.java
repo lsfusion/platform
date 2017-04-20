@@ -57,7 +57,8 @@ public abstract class GroupPropertiesSingleTask<T> extends GroupSingleTask<T> {
     protected void runTask(final T element) throws RecognitionException {
         String caption = getTaskCaption(element);
 
-        String currentTask = String.format(caption + ": %s", element);
+        //integer - exclusiveness task
+        String currentTask = element instanceof Integer ? caption : String.format(caption + ": %s", element);
         checkContext();
         currentTasks.add(currentTask);
 
