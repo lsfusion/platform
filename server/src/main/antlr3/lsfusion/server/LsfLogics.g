@@ -2383,7 +2383,7 @@ dialogActionDefinitionBody[List<TypedParameter> context] returns [LPWithParams p
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedDialogFAProp($mf.mapped, $mf.props, windowType, manageSession, checkOnOk, noCancel, readOnly, $dDB.property, context, newContext);
+		$property = self.addScriptedDialogFAProp($mf.mapped, $mf.props, windowType, manageSession, checkOnOk, noCancel, readOnly, $dDB.property, $dDB.elseProperty, context, newContext);
 	}
 }
 	:	'DIALOG' mf=mappedForm[context, newContext, false]
@@ -2411,9 +2411,10 @@ noCancelClause returns [boolean result]
         |   'NOCANCEL' { $result = true; }
     ;
 
-doInputBody[List<TypedParameter> oldContext, List<TypedParameter> newContext]  returns [LPWithParams property]
+doInputBody[List<TypedParameter> oldContext, List<TypedParameter> newContext]  returns [LPWithParams property, LPWithParams elseProperty]
         // modifyContextFlowActionDefinitionBody[oldContext, newContext, false, false] - used explicit modifyContextFlowActionDefinitionBodyCreated to support CHANGE clauses
-    :	('DO' dDB=keepContextFlowActionDefinitionBody[newContext, false] { $property = $dDB.property; } ) | (';' { if(inPropParseState()) { $property = new LPWithParams(self.baseLM.getEmpty(), new ArrayList<Integer>());  } })
+    :	(('DO' dDB=keepContextFlowActionDefinitionBody[newContext, false] { $property = $dDB.property; } ) ('ELSE' eDB=keepContextFlowActionDefinitionBody[newContext, false] { $elseProperty = $eDB.property; } )?)
+     | (';' { if(inPropParseState()) { $property = new LPWithParams(self.baseLM.getEmpty(), new ArrayList<Integer>());  } })
 ;
 
 syncTypeLiteral returns [boolean val]
@@ -2706,7 +2707,7 @@ confirmActionDefinitionBody[List<TypedParameter> context] returns [LPWithParams 
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedConfirmxProp($pe.property, $dDB.property, yesNo, context, newContext);
+		$property = self.addScriptedConfirmxProp($pe.property, $dDB.property, $dDB.elseProperty, yesNo, context, newContext);
 	}
 }
 	:	('CONFIRM' | 'ASK')
@@ -2842,10 +2843,11 @@ focusActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns
 requestActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedRequestAProp($aDB.property, $dDB.property);
+		$property = self.addScriptedRequestAProp($aDB.property, $dDB.property, $eDB.property);
 	}
 }
 	:	'REQUEST' aDB=keepContextFlowActionDefinitionBody[context, dynamic] 'DO' dDB=keepContextFlowActionDefinitionBody[context, dynamic]
+	    ('ELSE' eDB=keepContextFlowActionDefinitionBody[context, dynamic])?
 	;
 
 inputActionDefinitionBody[List<TypedParameter> context] returns [LPWithParams property]
@@ -2856,7 +2858,7 @@ inputActionDefinitionBody[List<TypedParameter> context] returns [LPWithParams pr
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedInputxAProp($in.dataClass, $in.initValue, $pUsage.propUsage, $dDB.property, context, newContext, assign, assignDebugPoint);
+		$property = self.addScriptedInputxAProp($in.dataClass, $in.initValue, $pUsage.propUsage, $dDB.property, $dDB.elseProperty, context, newContext, assign, assignDebugPoint);
 	}
 }
 	:	'INPUT'

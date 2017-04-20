@@ -826,10 +826,12 @@ public abstract class LogicsModule {
     protected LP addRequestAProp(AbstractGroup group, LocalizedString caption, Object... params) {
         ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(getIntNum(params));
         ImList<PropertyInterfaceImplement<PropertyInterface>> readImplements = readImplements(listInterfaces, params);
-        assert readImplements.size() == 2;
+        assert readImplements.size() >= 2;
 
+        ActionPropertyMapImplement<?, PropertyInterface> elseAction =  readImplements.size() == 3 ? (ActionPropertyMapImplement<?, PropertyInterface>) readImplements.get(2) : null;
         return addProperty(group, new LAP(new RequestActionProperty(caption, listInterfaces, 
-                (ActionPropertyMapImplement<?, PropertyInterface>) readImplements.get(0), (ActionPropertyMapImplement<?, PropertyInterface>) readImplements.get(1)))
+                (ActionPropertyMapImplement<?, PropertyInterface>) readImplements.get(0), (ActionPropertyMapImplement<?, PropertyInterface>) readImplements.get(1),
+                elseAction))
         );
     }
 

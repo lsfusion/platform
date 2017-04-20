@@ -1519,7 +1519,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     // inputx
-    public LPWithParams addScriptedInputxAProp(DataClass requestDataClass, LPWithParams oldValue, PropertyUsage targetProp, LPWithParams doAction, List<TypedParameter> oldContext, List<TypedParameter> newContext, boolean assign, DebugInfo.DebugPoint assignDebugPoint) throws ScriptingErrorLog.SemanticErrorException {
+    public LPWithParams addScriptedInputxAProp(DataClass requestDataClass, LPWithParams oldValue, PropertyUsage targetProp, LPWithParams doAction, LPWithParams elseAction, List<TypedParameter> oldContext, List<TypedParameter> newContext, boolean assign, DebugInfo.DebugPoint assignDebugPoint) throws ScriptingErrorLog.SemanticErrorException {
         LCP tprop = getInputProp(targetProp, requestDataClass, null);
 
         LAP property = addInputAProp(requestDataClass, (LCP<?>) tprop != null ? ((LCP<?>) tprop).property : null);
@@ -1528,15 +1528,17 @@ public class ScriptingLogicsModule extends LogicsModule {
             oldValue = new LPWithParams(baseLM.vnull, new ArrayList<Integer>());
         LPWithParams inputAction = addScriptedJoinAProp(property, Collections.singletonList(oldValue));
 
-        return proceedDoClause(doAction, oldContext, newContext, ListFact.singleton(tprop), inputAction,
+        return proceedDoClause(doAction, elseAction, oldContext, newContext, ListFact.singleton(tprop), inputAction,
                 ListFact.singleton(assign ? new Pair<>(oldValue, assignDebugPoint) : null));
     }
 
 
-    public LPWithParams addScriptedRequestAProp(LPWithParams requestAction, LPWithParams doAction) throws ScriptingErrorLog.SemanticErrorException {
+    public LPWithParams addScriptedRequestAProp(LPWithParams requestAction, LPWithParams doAction, LPWithParams elseAction) throws ScriptingErrorLog.SemanticErrorException {
         List<LPWithParams> propParams = new ArrayList<>();
         propParams.add(requestAction);
         propParams.add(doAction);
+        if(elseAction != null)
+            propParams.add(elseAction);
 
         List<Integer> allParams = mergeAllParams(propParams);
         LP result = addRequestAProp(null, LocalizedString.create(""), getParamsPlainList(propParams).toArray());
@@ -1610,7 +1612,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LPWithParams(asyncLAP, msgProp.usedParams);
     }
     
-    public LPWithParams addScriptedConfirmxProp(LPWithParams msgProp, LPWithParams doAction, boolean yesNo, List<TypedParameter> oldContext, List<TypedParameter> newContext) throws ScriptingErrorLog.SemanticErrorException {
+    public LPWithParams addScriptedConfirmxProp(LPWithParams msgProp, LPWithParams doAction, LPWithParams elseAction, boolean yesNo, List<TypedParameter> oldContext, List<TypedParameter> newContext) throws ScriptingErrorLog.SemanticErrorException {
         LCP targetProp = null;
         if(yesNo)
             targetProp = getInputProp(null, LogicalClass.instance, null);
@@ -1619,7 +1621,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         LAP asyncLAP = addConfirmAProp("lsFusion", yesNo, targetProp, resultParams.toArray());
         LPWithParams inputAction = new LPWithParams(asyncLAP, msgProp.usedParams);
                 
-        return proceedDoClause(doAction, oldContext, newContext, yesNo ? ListFact.singleton(targetProp) : ListFact.<LCP>EMPTY(), inputAction, yesNo ? ListFact.<Pair<LPWithParams, DebugInfo.DebugPoint>>singleton(null) : ListFact.<Pair<LPWithParams, DebugInfo.DebugPoint>>EMPTY());
+        return proceedDoClause(doAction, elseAction, oldContext, newContext, yesNo ? ListFact.singleton(targetProp) : ListFact.<LCP>EMPTY(), inputAction, yesNo ? ListFact.<Pair<LPWithParams, DebugInfo.DebugPoint>>singleton(null) : ListFact.<Pair<LPWithParams, DebugInfo.DebugPoint>>EMPTY());
     }
 
     public LPWithParams addScriptedMessageProp(LPWithParams msgProp, boolean noWait) {
@@ -2425,7 +2427,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     public <O extends ObjectSelector> LPWithParams addScriptedDialogFAProp(
                                                 MappedForm<O> mapped, List<FormActionProps> allObjectProps,
                                                 WindowFormType windowType, ManageSessionType manageSession,
-                                                boolean checkOnOk, Boolean noCancel, boolean readonly, LPWithParams doAction, List<TypedParameter> oldContext, List<TypedParameter> newContext) throws ScriptingErrorLog.SemanticErrorException {
+                                                boolean checkOnOk, Boolean noCancel, boolean readonly, LPWithParams doAction, LPWithParams elseAction, List<TypedParameter> oldContext, List<TypedParameter> newContext) throws ScriptingErrorLog.SemanticErrorException {
 
         List<O> objects = new ArrayList<>();
         List<LPWithParams> mapping = new ArrayList<>();
@@ -2518,13 +2520,13 @@ public class ScriptingLogicsModule extends LogicsModule {
             formAction = new LPWithParams(property, allParams);
         }
 
-        return proceedDoClause(doAction, oldContext, newContext, inputProps, formAction, assignProps);
+        return proceedDoClause(doAction, elseAction, oldContext, newContext, inputProps, formAction, assignProps);
     }
 
-    private LPWithParams proceedDoClause(LPWithParams doAction, List<TypedParameter> oldContext, List<TypedParameter> newContext, ImList<LCP> inputParamProps, LPWithParams inputAction, ImList<Pair<LPWithParams, DebugInfo.DebugPoint>> assignProps) throws ScriptingErrorLog.SemanticErrorException {
+    private LPWithParams proceedDoClause(LPWithParams doAction, LPWithParams elseAction, List<TypedParameter> oldContext, List<TypedParameter> newContext, ImList<LCP> inputParamProps, LPWithParams inputAction, ImList<Pair<LPWithParams, DebugInfo.DebugPoint>> assignProps) throws ScriptingErrorLog.SemanticErrorException {
         if (doAction != null) {
             doAction = extendDoParams(doAction, newContext, oldContext.size(), inputParamProps, assignProps);
-            return addScriptedRequestAProp(inputAction, doAction);
+            return addScriptedRequestAProp(inputAction, doAction, elseAction);
         } else {
             return inputAction;
         }

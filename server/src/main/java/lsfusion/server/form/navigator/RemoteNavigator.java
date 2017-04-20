@@ -158,7 +158,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         
         this.clientLanguage = navigatorInfo.language;
         this.clientCountry = navigatorInfo.country;
-        
+
         loadLocalePreferences(stack);
     }
 
@@ -780,7 +780,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
 
     @Override
     public byte[] getNavigatorTree() throws RemoteException {
-        
+
         ImOrderMap<NavigatorElement<T>, List<String>> elements = businessLogics.LM.root.getChildrenMap(securityPolicy);
 
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();

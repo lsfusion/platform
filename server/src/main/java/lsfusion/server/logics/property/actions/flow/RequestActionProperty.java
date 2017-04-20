@@ -22,13 +22,16 @@ public class RequestActionProperty extends KeepContextActionProperty {
     
     private final ActionPropertyMapImplement<?, PropertyInterface> requestAction;
     private final ActionPropertyMapImplement<?, PropertyInterface> doAction;
+    private final ActionPropertyMapImplement<?, PropertyInterface> elseAction;
 
-    public <I extends PropertyInterface> RequestActionProperty(LocalizedString caption, ImOrderSet<I> innerInterfaces, ActionPropertyMapImplement<?, I> requestAction, ActionPropertyMapImplement<?, I> doAction) {
+    public <I extends PropertyInterface> RequestActionProperty(LocalizedString caption, ImOrderSet<I> innerInterfaces, ActionPropertyMapImplement<?, I> requestAction,
+                                                               ActionPropertyMapImplement<?, I> doAction, ActionPropertyMapImplement<?, I> elseAction) {
         super(caption, innerInterfaces.size());
 
         final ImRevMap<I, PropertyInterface> mapInterfaces = getMapInterfaces(innerInterfaces).reverse();
         this.requestAction = requestAction.map(mapInterfaces);
         this.doAction = doAction.map(mapInterfaces);
+        this.elseAction = elseAction != null ? elseAction.map(mapInterfaces) : null;
 
         finalizeInit();
     }
@@ -39,6 +42,8 @@ public class RequestActionProperty extends KeepContextActionProperty {
         MList<ActionPropertyMapImplement<?, PropertyInterface>> actions = ListFact.mList();
         actions.add(requestAction);
         actions.add(doAction);
+        if(elseAction != null)
+            actions.add(elseAction);
 
         ImList<CalcPropertyInterfaceImplement<PropertyInterface>> listWheres =
                 ((ImList<ActionPropertyMapImplement<?, PropertyInterface>>)actions).mapListValues(
@@ -51,7 +56,9 @@ public class RequestActionProperty extends KeepContextActionProperty {
 
 
     public ImSet<ActionProperty> getDependActions() {
-        return SetFact.<ActionProperty>toSet(requestAction.property, doAction.property);
+        return elseAction != null ?
+                SetFact.<ActionProperty>toSet(requestAction.property, doAction.property, elseAction.property) :
+                SetFact.<ActionProperty>toSet(requestAction.property, doAction.property);
     }
 
     @Override
@@ -75,7 +82,8 @@ public class RequestActionProperty extends KeepContextActionProperty {
                 });
             } else
                 result = doAction.execute(context);
-        }
+        } else if(elseAction != null)
+            result = elseAction.execute(context);
 
         return result;
     }
@@ -87,7 +95,7 @@ public class RequestActionProperty extends KeepContextActionProperty {
 
     @Override
     public boolean ignoreReadOnlyPolicy() {
-        return requestAction.property.ignoreReadOnlyPolicy() && doAction.property.ignoreReadOnlyPolicy();
+        return requestAction.property.ignoreReadOnlyPolicy() && doAction.property.ignoreReadOnlyPolicy() && (elseAction == null || elseAction.property.ignoreReadOnlyPolicy());
     }
 
 }
