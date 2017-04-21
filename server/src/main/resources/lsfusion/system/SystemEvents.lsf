@@ -205,6 +205,7 @@ is64Java '64-битная java' (Computer computer) = is64Java(lastConnection(co
 countDaysClearPings 'За сколько дней хранить статистику пингов и памяти' = DATA INTEGER (); 
 
 onClientStarted = ACTION ABSTRACT LIST ();
+onWebClientStarted = ACTION ABSTRACT LIST ();
     
 EXTEND FORM options PROPERTIES countDaysClearPings();
 DESIGN options { log { MOVE PROPERTY(countDaysClearPings());} }    
