@@ -201,7 +201,7 @@ public abstract class AbstractConnectionPool implements ConnectionPool {
     }
 
     private void logConnection(String type, long l, int backendPID) {
-        String message = type + " CONNECTION : " + backendPID + ", Time : " + (System.currentTimeMillis() - l);
+        String message = type + " CONNECTION : " + backendPID + (l > 0 ? ", Time : " + (System.currentTimeMillis() - l) : "");
         if(Settings.get().isExtendedSQLConnectionLog())
             ServerLoggers.sqlConnectionLog(message);
         else
@@ -232,8 +232,10 @@ public abstract class AbstractConnectionPool implements ConnectionPool {
                         freeConnection = rerun;
                     else
                         return null;
-                } else
+                } else {
                     freeConnection = freeConnections.pop();
+                    logConnection("NEW CONNECTION FROM CACHE (size : " + freeConnections.size() + ")", -1, ((PGConnection) freeConnection).getBackendPID());
+                }
 
                 usedConnections.put(freeConnection, new WeakReference<>(object));
                 return freeConnection;
@@ -255,9 +257,10 @@ public abstract class AbstractConnectionPool implements ConnectionPool {
                     assert connection.sql.getAutoCommit();
 
                     // assert что synchronized lock
-                    if (freeConnections.size() < Settings.get().getFreeConnections())
+                    if (freeConnections.size() < Settings.get().getFreeConnections()) {
                         freeConnections.push(connection);
-                    else
+                        logConnection("CLOSE CONNECTION TO CACHE (size : " + freeConnections.size() + ")", -1, ((PGConnection) connection).getBackendPID());
+                    } else
                         return connection;
                 }
                 return null;
