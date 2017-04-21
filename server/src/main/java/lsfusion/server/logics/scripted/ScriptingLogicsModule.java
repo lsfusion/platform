@@ -89,7 +89,6 @@ import static lsfusion.base.BaseUtils.*;
 import static lsfusion.server.logics.NamespaceElementFinder.FoundItem;
 import static lsfusion.server.logics.PropertyUtils.*;
 import static lsfusion.server.logics.scripted.AlignmentUtils.*;
-import static lsfusion.server.logics.scripted.ScriptingFormEntity.getPropertyDraw;
 
 /**
  * User: DAle
@@ -436,7 +435,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         } catch (LPResolver.AmbiguousPropertyError e) {
             errLog.emitAmbiguousPropertyNameError(parser, e.items, sourceName == null ? name : sourceName);    
         } 
-        checkProperty(property, name);
+        checkProperty(property, sourceName == null ? name : sourceName);
         return property;
     }
     
@@ -1001,6 +1000,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     public LPWithParams addScriptedJProp(LP mainProp, List<LPWithParams> paramProps) throws ScriptingErrorLog.SemanticErrorException {
         return addScriptedJProp(false, mainProp, paramProps);
     }
+    
     public LPWithParams addScriptedJProp(boolean user, LP mainProp, List<LPWithParams> paramProps) throws ScriptingErrorLog.SemanticErrorException {
         checkCalculationProperty(mainProp);
         checkParamCount(mainProp, paramProps.size());
@@ -1497,8 +1497,12 @@ public class ScriptingLogicsModule extends LogicsModule {
         if(oldValue == null)
             oldValue = new LPWithParams(baseLM.vnull, new ArrayList<Integer>());
         LCP tprop = null;
-        if(targetProp != null)
-            tprop = (LCP<?>) findLPByPropertyUsage(targetProp);        
+        if (targetProp != null) {
+            if (targetProp.classNames == null) {
+                targetProp.classNames = Collections.emptyList(); // делаем так для лучшего сообщения об ошибке 
+            }
+            tprop = (LCP<?>) findLPByPropertyUsage(targetProp);
+        }
         List<Object> resultParams = getParamsPlainList(singletonList(oldValue));
         return new LPWithParams(addInputAProp(null, LocalizedString.create(""), requestDataClass, tprop, resultParams.toArray()), oldValue.usedParams);
     }
