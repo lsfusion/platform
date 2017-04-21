@@ -25,7 +25,7 @@ public class FlexSplitPanel extends SplitPanelBase<FlexPanel> {
     @Override
     protected void addFirstWidgetImpl(GComponent child, Widget widget) {
         firstChild = child;
-        panel.add(firstWidget, 0, GFlexAlignment.STRETCH, 0);
+        panel.add(firstWidget, 0, GFlexAlignment.STRETCH, 1);
         Style style = widget.getElement().getStyle();
         style.setOverflowY(vertical ? Style.Overflow.AUTO : Style.Overflow.HIDDEN);
         style.setOverflowX(vertical ? Style.Overflow.HIDDEN : Style.Overflow.AUTO);
@@ -34,7 +34,7 @@ public class FlexSplitPanel extends SplitPanelBase<FlexPanel> {
     @Override
     protected void addSecondWidgetImpl(GComponent child, Widget widget) {
         secondChild = child;
-        panel.add(widget, firstWidget == null ? 1 : 2, GFlexAlignment.STRETCH, 0);
+        panel.add(widget, firstWidget == null ? 1 : 2, GFlexAlignment.STRETCH, 1);
         Style style = widget.getElement().getStyle();
         style.setOverflowY(vertical ? Style.Overflow.AUTO : Style.Overflow.HIDDEN);
         style.setOverflowX(vertical ? Style.Overflow.HIDDEN : Style.Overflow.AUTO);
@@ -46,7 +46,7 @@ public class FlexSplitPanel extends SplitPanelBase<FlexPanel> {
 
         int size1 = (int) Math.max(0, availableSize * ratio);
 
-        if (firstWidget != null) {
+        if (firstWidget != null && firstWidget.isVisible() && (secondWidget != null && secondWidget.isVisible())) {
             int sizeToSet1 = Math.max(0, size1 - firstChild.getMargins(vertical));
             if (vertical) {
                 firstWidget.getElement().getStyle().setHeight(sizeToSet1, Style.Unit.PX);
@@ -54,7 +54,7 @@ public class FlexSplitPanel extends SplitPanelBase<FlexPanel> {
                 firstWidget.getElement().getStyle().setWidth(sizeToSet1, Style.Unit.PX);
             }
         }
-        if (secondWidget != null) {
+        if (secondWidget != null && secondWidget.isVisible() && (firstWidget != null && firstWidget.isVisible())) {
             int sizeToSet2 = Math.max(0, availableSize - size1 - secondChild.getMargins(vertical));
             if (vertical) {
                 secondWidget.getElement().getStyle().setHeight(sizeToSet2, Style.Unit.PX);
