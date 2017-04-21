@@ -277,10 +277,13 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
         ImSet<I> context = mapInterfaces.valuesSet();
         assert innerInterfaces.size() > context.size();
         boolean allNoInline = (innerInterfaces.size() == context.size() + noInline.size() + (addObject != null ? 1 : 0));
+        
+        if(noInline.size() > 0 && !orders.isEmpty()) // пока этот случай не поддерживается
+            allNoInline = true;
 
         if(!allNoInline && noInline.size() > 0) {
             assert !noInline.intersect(context);
-            assert orders.isEmpty();
+            assert orders.isEmpty(); // см. проверку сверху
 
             MList<ActionPropertyMapImplement<?, I>> mResult = ListFact.mList();
             ImSet<I> extNoInline = context.addExcl(noInline);
