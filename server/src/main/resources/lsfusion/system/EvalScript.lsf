@@ -73,7 +73,7 @@ afterRunScript() = {
 }
 
 
-scriptExecution 'Выполнить скрипт' () = { TRY { preRunScript(); EVAL scriptStorage(); afterRunScript(); } }
+scriptExecution 'Выполнить скрипт' () = { preRunScript(); EVAL scriptStorage(); afterRunScript(); }
 
 actionBodyExecution 'Выполнить действие' () = { preRunScript(); EVAL CONCAT ' ', 'run() = \{', scriptStorage(), ';\n\};'; afterRunScript(); };
 formExecution 'Показать форму' () = { preRunScript(); EVAL CONCAT ' ', 'FORM form', scriptStorage(), ';\nrun() = \{ SHOW form NOWAIT; \}'; afterRunScript(); };
