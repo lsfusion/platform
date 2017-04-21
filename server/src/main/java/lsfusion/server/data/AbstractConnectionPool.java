@@ -234,7 +234,7 @@ public abstract class AbstractConnectionPool implements ConnectionPool {
                         return null;
                 } else {
                     freeConnection = freeConnections.pop();
-                    logConnection("NEW CONNECTION FROM CACHE (size : " + freeConnections.size() + ")", -1, ((PGConnection) freeConnection).getBackendPID());
+                    logConnection("NEW CONNECTION FROM CACHE (size : " + freeConnections.size() + ")", -1, ((PGConnection) freeConnection.sql).getBackendPID());
                 }
 
                 usedConnections.put(freeConnection, new WeakReference<>(object));
@@ -259,7 +259,7 @@ public abstract class AbstractConnectionPool implements ConnectionPool {
                     // assert что synchronized lock
                     if (freeConnections.size() < Settings.get().getFreeConnections()) {
                         freeConnections.push(connection);
-                        logConnection("CLOSE CONNECTION TO CACHE (size : " + freeConnections.size() + ")", -1, ((PGConnection) connection).getBackendPID());
+                        logConnection("CLOSE CONNECTION TO CACHE (size : " + freeConnections.size() + ")", -1, ((PGConnection) connection.sql).getBackendPID());
                     } else
                         return connection;
                 }
