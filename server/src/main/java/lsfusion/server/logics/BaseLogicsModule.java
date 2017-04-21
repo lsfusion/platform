@@ -272,9 +272,27 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     }
 
     @IdentityLazy
+    public LAP<?> getPolyEdit() {
+        try {
+            return findAction("edit[Object]");
+        } catch (ScriptingErrorLog.SemanticErrorException e) {
+            throw Throwables.propagate(e);
+        }
+    }
+
+    @IdentityLazy
     public LAP<?> getFormEdit() {
         try {
             return findAction("formEdit[Object]");
+        } catch (ScriptingErrorLog.SemanticErrorException e) {
+            throw Throwables.propagate(e);
+        }
+    }
+
+    @IdentityLazy
+    public LAP<?> getPolyDelete() {
+        try {
+            return findAction("delete[Object]");
         } catch (ScriptingErrorLog.SemanticErrorException e) {
             throw Throwables.propagate(e);
         }

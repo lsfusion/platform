@@ -32,6 +32,7 @@ public class ClassFormSelector implements FormSelector<ClassFormSelector.Virtual
     public ClassFormSelector(CustomClass cls, boolean edit) {
         this.cls = cls;
         this.edit = edit;
+        cls.markUsed(edit);
     }
 
     @Override

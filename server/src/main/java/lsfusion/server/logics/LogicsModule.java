@@ -533,6 +533,7 @@ public abstract class LogicsModule {
     }
 
     protected LAP addEditAProp(LocalizedString caption, CustomClass cls) {
+        cls.markUsed(true);
         return addFormAProp(caption, cls, baseLM.getFormEdit());
     }
 

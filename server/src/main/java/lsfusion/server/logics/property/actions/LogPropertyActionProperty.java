@@ -93,43 +93,7 @@ public class LogPropertyActionProperty<P extends PropertyInterface> extends Syst
                 }
 
             }
-    /*        for (FormRow formRow : formRows) {
-                ImMap<ImSet<ObjectInstance>, ImSet<PropertyDrawInstance>> groupRows = formRow.values.keys().group(new BaseUtils.Group<ImSet<ObjectInstance>, PropertyDrawInstance>() {
-                    public ImSet<ObjectInstance> group(PropertyDrawInstance property) { // группируем по объектам
-                        return property.propertyObject.mapping.values().toSet();
-                    }});
-                List<String> propertyRow = new ArrayList<String>();
-                for (int i=0,size=groupRows.size();i<size;i++) {
-                    String idResult = "";
-                    String titleResult = "";
-                    for (ObjectInstance objSet : groupRows.getKey(i)) {
-                        String id = "id=" + String.valueOf(formRow.keys.get(objSet));
-                        ConcreteCustomClass currentClass = ((CustomObjectInstance) objSet).currentClass;
-                        String caption = (currentClass == null ? "" : currentClass.getCaption());
-                        idResult = (idResult.length() == 0 ? "" : idResult + ", ") + caption + ": " + id;
-                        titleResult += (titleResult.length() == 0 ? "" : ", ") + caption;
-                    }
-                    propertyRow.add(idResult);
-                    titleRow = new ArrayList<String>();
-                    titleRow.add(titleResult);
-
-                    for (PropertyDrawInstance prop : groupRows.getValue(i)) {
-                        propertyRow.add(BaseUtils.toCaption(formRow.values.get(prop)));
-                        titleRow.add(prop.toString());
-                    }
-                    data.add(propertyRow);
-                }
-            }*/
             context.delayUserInteraction(new LogMessageClientAction(caption == null ? (property.toString() + " :") : caption, titleRow, data, !context.getSession().isNoCancelInTransaction()));
         }
-
-        // todo : Раскомментить для использования форм....
-        // todo: пока это не будет работать, т.к. мы не можем вызвать блокирующий requestUserInteraction, т.к. находимся в транзакции
-        // todo: но вызывать delayUserInteraction тоже бессмысленно, т.к. к моменту показа формы всё состояние, которое привело к констрейнту - откатиться вместе с откатом транзакции
-//        DataSession session = context.getSession();
-//        PropertyFormEntity form = new PropertyFormEntity(context.getBL().LM, property, recognizeGroup);
-//        FormInstance<?> formInstance = context.createFormInstance(form, MapFact.<ObjectEntity, DataObject>EMPTY(), session, false, FormSessionScope.OLDSESSION, false, false, true, null);
-//        RemoteForm newRemoteForm = context.createRemoteForm(formInstance);
-//        context.delayUserInteraction(new FormClientAction(form.getSID(), newRemoteForm, ModalityType.MODAL));
     }
 }

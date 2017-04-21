@@ -15,6 +15,7 @@ import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.classes.ConcreteClass;
 import lsfusion.server.classes.CustomClass;
 import lsfusion.server.classes.ValueClass;
+import lsfusion.server.classes.sets.AndClassSet;
 import lsfusion.server.classes.sets.OrObjectClassSet;
 import lsfusion.server.classes.sets.ResolveClassSet;
 import lsfusion.server.data.SQLHandledException;
@@ -144,7 +145,7 @@ public class CaseActionProperty extends ListCaseActionProperty {
     }
 
     @IdentityLazy
-    private ImList<ActionCase<PropertyInterface>> getOptimizedCases(final ImMap<PropertyInterface, ConcreteClass> currentClasses, final ImSet<PropertyInterface> nulls) throws SQLException, SQLHandledException {
+    public ImList<ActionCase<PropertyInterface>> getOptimizedCases(final ImMap<PropertyInterface, ? extends AndClassSet> currentClasses, final ImSet<PropertyInterface> nulls) {
         return getCases().filterList(new SFunctionSet<ActionCase<PropertyInterface>>() {
             @Override
             public boolean contains(ActionCase<PropertyInterface> element) {

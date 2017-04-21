@@ -38,7 +38,7 @@ public enum GroupType implements AggrType {
     }
     
     public static GroupType MAXCHECK(Type type) {
-        if (type instanceof FileClass || type instanceof LinkClass)
+        if (type instanceof FileClass || type instanceof LinkClass)  // для File MAX not supported
             return ANY;
 
         return MAX; 

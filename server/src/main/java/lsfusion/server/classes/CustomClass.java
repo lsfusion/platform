@@ -5,6 +5,7 @@ import lsfusion.base.ImmutableObject;
 import lsfusion.base.SFunctionSet;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
+import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
@@ -35,6 +36,7 @@ import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.debug.ClassDebugInfo;
 import lsfusion.server.logics.i18n.LocalizedString;
+import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.mutables.NFFact;
 import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.mutables.interfaces.NFDefault;
@@ -42,6 +44,8 @@ import lsfusion.server.logics.mutables.interfaces.NFOrderSet;
 import lsfusion.server.logics.mutables.interfaces.NFProperty;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.actions.ChangeClassActionProperty;
+import lsfusion.server.logics.property.actions.flow.CaseActionProperty;
+import lsfusion.server.logics.property.cases.ActionCase;
 import lsfusion.server.session.DataSession;
 
 import java.io.DataOutputStream;
@@ -354,6 +358,7 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
 
     private abstract class ClassFormHolder {
         private NFProperty<ClassFormEntity> form = NFFact.property();
+        private boolean isUsed = false;
 
         public ClassFormEntity getForm(final BaseLogicsModule LM) {
             return form.getDefault(new NFDefault<ClassFormEntity>() {
@@ -364,13 +369,47 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
         }
 
         public ClassFormEntity getPolyForm(final BaseLogicsModule LM, ConcreteCustomClass concreteClass) {
-            if(CustomClass.this instanceof ConcreteCustomClass && !hasPolyForm())
-                return getForm(LM);
+            // deprecated ветка 
+//            if(CustomClass.this instanceof ConcreteCustomClass && !hasPolyForm())
+//                return getForm(LM);
+            
             if(concreteClass == null) // нет объекта вызываем default (по сути если не передается объект)
                 return getForm(LM);
 
             assert concreteClass.isChild(CustomClass.this);
-            return getFormHolder(concreteClass).getRecPolyForm(CustomClass.this);
+            ClassFormEntity recPolyForm = getFormHolder(concreteClass).getRecPolyForm(CustomClass.this);
+            if(recPolyForm == null) { // нет формы, запускаем эвристику с определением default
+                if(getFormHolder(concreteClass).hasDefaultForm(LM))
+                    return getForm(LM);
+            }
+            return recPolyForm;
+        }
+        
+        protected abstract LAP<?> getPolyAction(BaseLogicsModule LM);
+
+        // если есть хоть один child poly form или реализация в полиморфного метода
+        protected boolean hasImplementation(BaseLogicsModule LM) {
+            if(hasPolyForm())
+                return true;
+
+            CaseActionProperty polyAction = (CaseActionProperty) getPolyAction(LM).property;
+            ImList<ActionCase<PropertyInterface>> cases = polyAction.getOptimizedCases(MapFact.singleton(polyAction.interfaces.single(), getUpSet()), SetFact.<PropertyInterface>EMPTY());
+            if(cases.size() > 1) // если есть edit кроме default'ого поведения
+                return true;
+            
+            return false;            
+        }
+        
+        @IdentityLazy
+        protected boolean hasDefaultForm(BaseLogicsModule LM) {
+            if(isUsed)
+                return !hasImplementation(LM); // выходим сразу, так как если есть implementation то и у остальных isUsed будет 
+            
+            for(CustomClass child : getParentsIt())
+                if(getFormHolder(child).hasDefaultForm(LM))
+                    return true;
+            
+            return false;            
         }
         
         @IdentityLazy
@@ -441,6 +480,11 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
         }
 
         @Override
+        protected LAP<?> getPolyAction(BaseLogicsModule LM) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
         protected ClassFormEntity createDefaultForm(BaseLogicsModule LM) {
             DialogFormEntity dialogFormEntity = new DialogFormEntity(LM, CustomClass.this);
             return new ClassFormEntity(dialogFormEntity, dialogFormEntity.object);
@@ -454,11 +498,27 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
         }
 
         @Override
+        protected LAP<?> getPolyAction(BaseLogicsModule LM) {
+            return LM.getPolyEdit();
+        }
+
+        @Override
         protected ClassFormEntity createDefaultForm(BaseLogicsModule LM) {
             EditFormEntity editFormEntity = new EditFormEntity(LM, CustomClass.this);
             return new ClassFormEntity(editFormEntity, editFormEntity.object);
         }
     };
+
+
+    public void markUsed(boolean edit) {
+        if(this instanceof BaseClass) // default реализацию edit исключаем из этой эвристики (SHOW OBJECT Object) 
+            return;
+        
+        if(edit)
+            editFormHolder.isUsed = true;
+        else
+            dialogFormHolder.isUsed = true;
+    }
 
     /**
      * используются при редактировании свойства даного класса из диалога, т.е. фактически для выбора объекта данного класса
