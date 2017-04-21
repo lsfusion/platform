@@ -1220,14 +1220,10 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                 property = (PropertyDrawInstance) sumObject;
                 currentList = toSum.getValue(i);
             } else {
-                groupType = GroupType.MAX;
-
                 property = toMax.getKey(i - separator);
                 currentList = toMax.getValue(i - separator);
 
-                if (property.getType() instanceof FileClass || property.getType() instanceof LinkClass) {
-                    groupType = GroupType.ASSERTSINGLE(); // тут на самом деле никакой не ASSERT но возможно очень важно с точки зрения производительности
-                }
+                groupType = GroupType.MAXCHECK(property.getType());
             }
             for (ImMap<ObjectInstance, DataObject> columnKeys : currentList) {
                 idIndex++;

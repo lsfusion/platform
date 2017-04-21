@@ -9,6 +9,7 @@ import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.query.GroupExpr;
 import lsfusion.server.data.expr.query.GroupType;
+import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.logics.property.CalcPropertyImplement;
 import lsfusion.server.logics.property.PropertyInterface;
@@ -97,15 +98,19 @@ public class ImportProperty <P extends PropertyInterface> {
 
         Expr importExpr;
         SessionModifier modifier = session.getModifier();
-        if (converter != null)
+        Type importType;
+        if (converter != null) {
             importExpr = converter.property.getExpr(getImplementExprs(converter.mapping, addedKeys, importExprs, modifier), modifier);
-        else
+            importType = converter.property.getType();
+        } else {
             importExpr = importField.getExpr(importExprs);
+            importType = importField.getType();
+        }
 
         ImRevMap<P, KeyExpr> mapKeys = implement.property.getMapKeys();
         ImMap<P, Expr> importKeyExprs = getImplementExprs(implement.mapping, addedKeys, importExprs, modifier);
 
-        Expr changeExpr = GroupExpr.create(importKeyExprs, importExpr, groupType != null ? groupType : GroupType.CHANGE(), mapKeys);
+        Expr changeExpr = GroupExpr.create(importKeyExprs, importExpr, groupType != null ? groupType : GroupType.CHANGE(importType), mapKeys);
 
         Where changeWhere;
         if (replaceNull)

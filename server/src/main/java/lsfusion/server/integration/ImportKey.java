@@ -109,7 +109,7 @@ public class ImportKey<P extends PropertyInterface> implements ImportKeyInterfac
         Expr interfaceKeyExpr = getExpr(importExprs, modifier);
         return GroupExpr.create(MapFact.singleton("key", interfaceKeyExpr),
                 interfaceKeyExpr,
-                GroupType.CHANGE(),
+                GroupType.CHANGE(implement.property.getType()),
                 MapFact.singleton("key", intraKeyExpr));
     }
 }

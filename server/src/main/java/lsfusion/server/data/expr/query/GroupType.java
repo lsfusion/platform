@@ -5,8 +5,10 @@ import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.Settings;
+import lsfusion.server.classes.FileClass;
 import lsfusion.server.classes.IntegralClass;
 import lsfusion.server.classes.StringClass;
+import lsfusion.server.classes.link.LinkClass;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.query.CompileOrder;
 import lsfusion.server.data.query.TypeEnvironment;
@@ -27,12 +29,19 @@ public enum GroupType implements AggrType {
         return ANY;
     }
     
-    public static GroupType CHANGE() {
-        return MAX;
+    public static GroupType CHANGE(Type type) {
+        return MAXCHECK(type);
     }
 
     public static GroupType ASSERTSINGLE_CHANGE() {
         return ASSERTSINGLE();
+    }
+    
+    public static GroupType MAXCHECK(Type type) {
+        if (type instanceof FileClass || type instanceof LinkClass)
+            return ANY;
+
+        return MAX; 
     }
 
     public static GroupType ASSERTSINGLE() {
