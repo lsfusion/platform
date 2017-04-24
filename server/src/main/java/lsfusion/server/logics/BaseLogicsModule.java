@@ -46,7 +46,6 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * User: DAle
@@ -494,8 +493,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     }
 
     @IdentityStrongLazy
-    public <P extends PropertyInterface> PropertyFormEntity<T> getLogForm(CalcProperty<P> property) {
-        PropertyFormEntity<T> form = new PropertyFormEntity<>(this, property, recognizeGroup);
+    public <P extends PropertyInterface> PropertyFormEntity<T> getLogForm(CalcProperty<P> property, CalcProperty messageProperty) { // messageProperty - nullable
+        PropertyFormEntity<T> form = new PropertyFormEntity<>(this, property, messageProperty, recognizeGroup);
         addFormEntity(form);
         return form;
     }

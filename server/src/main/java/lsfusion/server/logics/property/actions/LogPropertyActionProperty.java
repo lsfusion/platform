@@ -1,14 +1,11 @@
 package lsfusion.server.logics.property.actions;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.interop.action.LogMessageClientAction;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.form.entity.ObjectEntity;
 import lsfusion.server.form.instance.*;
-import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
@@ -36,7 +33,7 @@ public class LogPropertyActionProperty<P extends PropertyInterface> extends Syst
 
     protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
 
-        try (FormInstance<?> formInstance = context.createFormInstance(context.getBL().LM.getLogForm(property))) {
+        try (FormInstance<?> formInstance = context.createFormInstance(context.getBL().LM.getLogForm(property, null))) {
             formInstance.local = true;
             
             String caption = messageProperty == null ? null : (String) messageProperty.read(context);

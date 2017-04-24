@@ -1,5 +1,6 @@
 package lsfusion.server.form.entity;
 
+import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
@@ -17,10 +18,14 @@ import lsfusion.server.logics.property.group.AbstractGroup;
 
 public class PropertyFormEntity<T extends BusinessLogics<T>> extends FormEntity<T> {
 
-    public <P extends PropertyInterface> PropertyFormEntity(BaseLogicsModule<? extends BusinessLogics<?>> LM, CalcProperty<P> property, AbstractGroup recognizeGroup) {
-        super(null, null, LM.getVersion());
+    public <P extends PropertyInterface, X extends PropertyInterface> PropertyFormEntity(BaseLogicsModule<? extends BusinessLogics<?>> LM, CalcProperty<P> property, CalcProperty<X> messageProperty, AbstractGroup recognizeGroup) {
+        super(null, property.caption, LM.getVersion());
 
         Version version = LM.getVersion();
+        
+        if(messageProperty != null) {
+            addPropertyDraw(messageProperty, MapFact.<X, PropertyObjectInterfaceEntity>EMPTY(), version);
+        }
 
         ImMap<P,ValueClass> interfaceClasses = property.getInterfaceClasses(ClassType.logPolicy);
         boolean prev = property.usePrevHeur();
@@ -29,7 +34,7 @@ public class PropertyFormEntity<T extends BusinessLogics<T>> extends FormEntity<
             public ObjectEntity getMapValue(ValueClass value) {
                 return new ObjectEntity(genID(), value, LocalizedString.create(value.toString(), false));
             }});
-
+        
         GroupObjectEntity groupObject = new GroupObjectEntity(genID(), mapObjects.valuesSet().toOrderSet(), prev);
         addGroupObject(groupObject, version);
 

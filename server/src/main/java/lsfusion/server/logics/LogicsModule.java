@@ -1920,10 +1920,13 @@ public abstract class LogicsModule {
         property.checkChange = type;
         property.checkProperties = checkProperties;
 
+        ActionPropertyMapImplement<ClassPropertyInterface, ClassPropertyInterface> logAction = new LogPropertyActionProperty<T>(property, messageProperty).getImplement();
+        //  PRINT OUT property MESSAGE NOWAIT;
+//        logAction = (ActionPropertyMapImplement<ClassPropertyInterface, ClassPropertyInterface>) addPFAProp(null, property.caption, new OutFormSelector<T>(property, messageProperty), new ArrayList<ObjectSelector>(), new ArrayList<Boolean>(), false, FormPrintType.MESSAGE, false, 30, null).property.getImplement();
         ActionPropertyMapImplement<?, ClassPropertyInterface> constraintAction =
                 DerivedProperty.createListAction(
                         SetFact.<ClassPropertyInterface>EMPTY(),
-                        ListFact.toList(new LogPropertyActionProperty<T>(property, messageProperty).getImplement(),
+                        ListFact.toList(logAction,
                                 baseLM.cancel.property.getImplement(SetFact.<ClassPropertyInterface>EMPTYORDER())
                         )
                 );
