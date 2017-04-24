@@ -100,6 +100,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
 
     private LAP watch;
 
+    public LAP seek;
+
     public LAP sleep;
     public LAP applyOnlyWithoutRecalc;
     public LAP applyAll;
@@ -428,6 +430,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
 
         onStarted = findAction("onStarted[]");
 
+        seek = findAction("seek[Object]");
+        
         addedObject = findProperty("addedObject[]");
         requestCanceled = findProperty("requestCanceled[]");
         requestPushed = findProperty("requestPushed[]");

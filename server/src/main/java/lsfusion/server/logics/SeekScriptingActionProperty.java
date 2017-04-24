@@ -11,7 +11,6 @@ import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.entity.ObjectEntity;
 import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.form.instance.ObjectInstance;
-import lsfusion.server.form.instance.PropertyObjectInterfaceInstance;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
@@ -33,8 +32,7 @@ public class SeekScriptingActionProperty extends ScriptingActionProperty {
         ImSet<ObjectInstance> objects;
         ObjectValue value;
 
-        PropertyObjectInterfaceInstance objectInstance = context.getSingleObjectInstance();
-        if (objectInstance == null) {
+        if (context.getSingleObjectInstance() == null) {
             DataObject dataValue = context.getSingleDataKeyValue();
             final ConcreteClass keyClass = context.getSession().getCurrentClass(dataValue);
             objects = form.getObjects().filterFn(new SFunctionSet<ObjectInstance>() {
@@ -43,13 +41,8 @@ public class SeekScriptingActionProperty extends ScriptingActionProperty {
                 }});
             value = dataValue;
         } else {
-            if(objectInstance instanceof ObjectInstance) {
-                objects = SetFact.singleton((ObjectInstance) objectInstance);
-                value = context.getSingleKeyValue();
-            } else {
-                objects = SetFact.EMPTY();
-                value = NullValue.instance;
-            }
+            objects = SetFact.EMPTY();
+            value = NullValue.instance;
         }
 
         boolean firstObject = true;
