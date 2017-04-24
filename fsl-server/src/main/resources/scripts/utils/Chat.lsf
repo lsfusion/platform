@@ -19,8 +19,8 @@ readonly 'Только чтение' = DATA BOOLEAN (Chat, CustomUser);
 readonly 'Только чтение' (Chat c) = readonly(c, currentUser());
 
 dataName 'Имя' = DATA VARISTRING[100] (Chat);
-nameOrLogin 'Пользователь' (CustomUser user) = OVERRIDE login(user), name(user);
-name 'Имя' (Chat chat) = (OVERRIDE IF chat IS UserRole THEN 'Роль: ' + Security.name(chat) ELSE [=GROUP CONCAT nameOrLogin(CustomUser user), ', ' IF in(chat, user) AND (NOT isDialog(chat) OR NOT user == currentUser()) BY chat](chat), dataName(chat)) MINCHARWIDTH 15 PREFCHARWIDTH 30;
+nameOrLogin 'Пользователь' (CustomUser user) = OVERRIDE name(user), login(user);
+name 'Имя' (Chat chat) = (OVERRIDE dataName(chat), IF chat IS UserRole THEN 'Роль: ' + Security.name(chat) ELSE [=GROUP CONCAT nameOrLogin(CustomUser user), ', ' IF in(chat, user) AND (NOT isDialog(chat) OR NOT user == currentUser()) BY chat](chat)) MINCHARWIDTH 15 PREFCHARWIDTH 30;
 
 CLASS MessageStatus {
     sent 'Отправлено',

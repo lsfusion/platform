@@ -132,13 +132,13 @@ order 'Порядок'(ProfileObject p1, ProfileObject p2, User u, ProfileForm f
 
 dataInFilter 'Отм' = DATA LOCAL NESTED BOOLEAN (User);
 inFilter 'Отм' = DATA LOCAL NESTED BOOLEAN (UserRole);
-overFilter 'Отм' = OVERRIDE [=GROUP SUM 1 IF in(User u, UserRole r) AND inFilter(r) BY u](User u) > 0, inFilter(mainRole(u)), dataInFilter(u);
-inFilter 'Отм' (User u) = OVERRIDE NOT [=GROUP SUM 1 IF overFilter(User u)]() AND u IS User, overFilter(u);
+overFilter 'Отм' = OVERRIDE dataInFilter(u), inFilter(mainRole(u)), [=GROUP SUM 1 IF in(User u, UserRole r) AND inFilter(r) BY u](User u) > 0;
+inFilter 'Отм' (User u) = OVERRIDE overFilter(u), NOT [=GROUP SUM 1 IF overFilter(User u)]() AND u IS User;
 background(User u) = IF inFilter(u) THEN RGB(220,220,220);
 
 dataFilter 'Отм' = DATA LOCAL NESTED BOOLEAN (ProfileForm);
 countDataFilterForm = GROUP SUM 1 IF dataFilter(ProfileForm f);
-inFilter 'Отм' (ProfileForm f) = OVERRIDE f IS ProfileForm AND NOT countDataFilterForm(), dataFilter(f);
+inFilter 'Отм' (ProfileForm f) = OVERRIDE dataFilter(f), f IS ProfileForm AND NOT countDataFilterForm();
 background(ProfileForm u) = IF inFilter(u) THEN RGB(220,220,220);
 
 inFilter 'Отм' (User u, ProfileForm f) = inFilter(u) AND inFilter(f);
@@ -189,19 +189,19 @@ order 'Порядок' (ProfileObject po, User u, ProfileForm f) = value(po, u, 
 
 //интерфейс
 dataSelectedTop = DATA LOCAL ProfileObject();
-selectedTop = OVERRIDE ProfileObject.top, dataSelectedTop();
+selectedTop = OVERRIDE dataSelectedTop(), ProfileObject.top;
 nameSelectedTop 'Действие' = VARSTRING[1000](text(selectedTop()));
 
 pathTo(ProfileObject a, ProfileObject b) = RECURSION a AS ProfileObject == b STEP TRUE IF link($b, b) CYCLES YES; // из a можно дойти в b
 pathFrom(ProfileObject a, ProfileObject b) = RECURSION a AS ProfileObject == b STEP TRUE IF link(b, $b) CYCLES YES; // из a можно дойти в b
 
 parent(ProfileObject down) = IF NOT down == selectedTop() THEN 
-        OVERRIDE ProfileObject.top IF down IS ProfileObject, 
-            [=GROUP LAST ProfileObject up IF link(up, ProfileObject down) AND pathTo(selectedTop(), up) BY down ORDER order(up, down)](down);
+        OVERRIDE [=GROUP LAST ProfileObject up IF link(up, ProfileObject down) AND pathTo(selectedTop(), up) BY down ORDER order(up, down)](down), 
+            ProfileObject.top IF down IS ProfileObject;
         
 child(ProfileObject up) = IF NOT up == selectedTop() THEN 
-        OVERRIDE ProfileObject.top IF up IS ProfileObject,
-            [=GROUP LAST ProfileObject down IF link(ProfileObject up, down) AND pathFrom(selectedTop(), down) BY up ORDER order(up, down)](up);
+        OVERRIDE [=GROUP LAST ProfileObject down IF link(ProfileObject up, down) AND pathFrom(selectedTop(), down) BY up ORDER order(up, down)](up),
+            ProfileObject.top IF up IS ProfileObject;
        
 initFilters() = {
     order() <- ProfilerIndex.totalTimeNoWait;

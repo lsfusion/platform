@@ -18,9 +18,9 @@ FORM mapProviders
 ;
 
 calculateUserMapProvider = DATA MapProvider ();
-calculateMapProvider = OVERRIDE MapProvider.yandex, calculateUserMapProvider();
+calculateMapProvider = OVERRIDE calculateUserMapProvider(), MapProvider.yandex;
 showUserMapProvider = DATA MapProvider ();
-showMapProvider = OVERRIDE MapProvider.yandex, showUserMapProvider();
+showMapProvider = OVERRIDE showUserMapProvider(), MapProvider.yandex;
 useTor 'Использовать для карт Tor' = DATA BOOLEAN ();
 
 nameCalculateUserMapProvider 'Использовать карты (для расчёта)' () = staticCaption(calculateUserMapProvider());
@@ -33,7 +33,7 @@ nameCountry 'Страна' (poi) = ABSTRACT VARISTRING[50] (POI) PERSISTENT;
 mainAddress 'Адрес' = ABSTRACT VARISTRING[100] (POI) PERSISTENT;
 additionalAddress 'Адрес' = ABSTRACT VARISTRING[100] (POI) PERSISTENT;
 
-address 'Адрес' (POI poi) = OVERRIDE mainAddress(poi), additionalAddress(poi); 
+address 'Адрес' (POI poi) = OVERRIDE additionalAddress(poi), mainAddress(poi); 
 
 latitude 'Координата X' = ABSTRACT NUMERIC[10,5] (POI);
 longitude 'Координата Y' = ABSTRACT NUMERIC[10,5] (POI);

@@ -196,17 +196,17 @@ END
 
 META defineDocumentDetailDataTimePrefix (object, detailClass, prefix, caption)
     prefix##DataDate =  DATA DATE (detailClass);
-    prefix##Date 'Дата'##caption (detailClass d) = OVERRIDE prefix##Date(object(d)), prefix##DataDate(d) PERSISTENT;
+    prefix##Date 'Дата'##caption (detailClass d) = OVERRIDE prefix##DataDate(d), prefix##Date(object(d)) PERSISTENT;
     prefix##DataTime =  DATA TIME (detailClass);
-    prefix##Time 'Время'##caption (detailClass d) = OVERRIDE prefix##Time(object(d)), prefix##DataTime(d) PERSISTENT;
+    prefix##Time 'Время'##caption (detailClass d) = OVERRIDE prefix##DataTime(d), prefix##Time(object(d)) PERSISTENT;
     prefix##DateTime 'Дата/время'##caption (detailClass d) = dateTimeToDateTime(prefix##Date(d), prefix##Time(d)) PERSISTENT;
 END
 
 META defineDocumentAbstractDetailDataTimePrefix (object, detailClass, prefix, caption)
     prefix##DataDate =  ABSTRACT DATE (detailClass);
-    prefix##Date 'Дата'##caption (detailClass d) = OVERRIDE prefix##Date(object(d)), prefix##DataDate(d) PERSISTENT;
+    prefix##Date 'Дата'##caption (detailClass d) = OVERRIDE prefix##DataDate(d), prefix##Date(object(d)) PERSISTENT;
     prefix##DataTime =  ABSTRACT TIME (detailClass);
-    prefix##Time 'Время'##caption (detailClass d) = OVERRIDE prefix##Time(object(d)), prefix##DataTime(d) PERSISTENT;
+    prefix##Time 'Время'##caption (detailClass d) = OVERRIDE prefix##DataTime(d), prefix##Time(object(d)) PERSISTENT;
     prefix##DateTime 'Дата/время'##caption (detailClass d) = dateTimeToDateTime(prefix##Date(d), prefix##Time(d)) PERSISTENT;
 END
 
@@ -455,7 +455,7 @@ META defineDocumentDetailIndex (object, detailClass)
     defaultIndex 'Номер строки (авт.)' (detailClass d) =
         PARTITION SUM 1 BY object(d)
         ORDER d MINCHARWIDTH 4 PREFCHARWIDTH 4;
-    index 'Номер строки' (detailClass d) = OVERRIDE defaultIndex(d), dataIndex(d) IN recognize;  
+    index 'Номер строки' (detailClass d) = OVERRIDE dataIndex(d), defaultIndex(d) IN recognize;  
 END
 
 META defineDocumentDetailIndexPersistent (object, detailClass)
@@ -463,7 +463,7 @@ META defineDocumentDetailIndexPersistent (object, detailClass)
     defaultIndex 'Номер строки (авт.)' (detailClass d) =
         PARTITION SUM 1 BY object(d)
         ORDER d MINCHARWIDTH 4 PREFCHARWIDTH 4;
-    index 'Номер строки' (detailClass d) = OVERRIDE defaultIndex(d), dataIndex(d) IN recognize PERSISTENT;  
+    index 'Номер строки' (detailClass d) = OVERRIDE dataIndex(d), defaultIndex(d) IN recognize PERSISTENT;  
 END
 
 META defineDocumentDetailSortOrder (object, detailClass)
