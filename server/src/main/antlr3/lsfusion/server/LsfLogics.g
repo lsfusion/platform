@@ -2858,7 +2858,7 @@ inputActionDefinitionBody[List<TypedParameter> context] returns [LPWithParams pr
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedInputxAProp($in.dataClass, $in.initValue, $pUsage.propUsage, $dDB.property, $dDB.elseProperty, context, newContext, assign, assignDebugPoint);
+		$property = self.addScriptedInputAProp($in.dataClass, $in.initValue, $pUsage.propUsage, $dDB.property, $dDB.elseProperty, context, newContext, assign, assignDebugPoint);
 	}
 }
 	:	'INPUT'

@@ -324,6 +324,15 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         }
     }
 
+    @IdentityLazy
+    public LAP<?> getEmptyObject() {
+        try {
+            return findAction("empty[Object]");
+        } catch (ScriptingErrorLog.SemanticErrorException e) {
+            throw Throwables.propagate(e);
+        }
+    }
+
 
     public PropertyDBNamePolicy getDBNamePolicy() {
         return propertyDBNamePolicy;

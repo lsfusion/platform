@@ -419,7 +419,14 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
     public DataObject addObject(ConcreteCustomClass cls) throws SQLException, SQLHandledException {
         return getSession().addObject(cls, pushedAddObject);
     }
-    
+
+    public DataObject addObject(ConcreteCustomClass cls, boolean autoSet) throws SQLException, SQLHandledException {
+        if(autoSet)
+            return addObjectAutoSet(cls);
+        else
+            return addObject(cls);
+    }
+
     public DataObject addObjectAutoSet(ConcreteCustomClass cls) throws SQLException, SQLHandledException {
         return getSession().addObjectAutoSet(cls, pushedAddObject, getBL(), getClassListener());
     }

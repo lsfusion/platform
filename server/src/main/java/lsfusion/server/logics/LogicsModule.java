@@ -24,7 +24,6 @@ import lsfusion.server.data.expr.StringAggUnionProperty;
 import lsfusion.server.data.expr.formula.*;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.expr.query.PartitionType;
-import lsfusion.server.data.type.Type;
 import lsfusion.server.form.entity.*;
 import lsfusion.server.form.entity.drilldown.DrillDownFormEntity;
 import lsfusion.server.form.entity.filter.FilterEntity;
@@ -694,7 +693,7 @@ public abstract class LogicsModule {
 
     // ------------------- For action ----------------- //
 
-    protected LAP addForAProp(AbstractGroup group, LocalizedString caption, boolean ascending, boolean ordersNotNull, boolean recursive, boolean hasElse, int resInterfaces, CustomClass addClass, boolean hasCondition, int noInline, boolean forceInline, Object... params) {
+    protected LAP addForAProp(AbstractGroup group, LocalizedString caption, boolean ascending, boolean ordersNotNull, boolean recursive, boolean hasElse, int resInterfaces, CustomClass addClass, boolean autoSet, boolean hasCondition, int noInline, boolean forceInline, Object... params) {
         ImOrderSet<PropertyInterface> innerInterfaces = genInterfaces(getIntNum(params));
         ImList<PropertyInterfaceImplement<PropertyInterface>> readImplements = readImplements(innerInterfaces, params);
 
@@ -718,7 +717,7 @@ public abstract class LogicsModule {
         ImSet<PropertyInterface> noInlineInterfaces = BaseUtils.<ImList<PropertyInterface>>immutableCast(readImplements.subList(implCnt - noInline, implCnt)).toOrderExclSet().getSet();
 
         return addProperty(group, new LAP<>(
-                new ForActionProperty<>(caption, innerInterfaces.getSet(), mapInterfaces, ifProp, orders, ordersNotNull, action, elseAction, addedInterface, addClass, recursive, noInlineInterfaces, forceInline))
+                new ForActionProperty<>(caption, innerInterfaces.getSet(), mapInterfaces, ifProp, orders, ordersNotNull, action, elseAction, addedInterface, addClass, autoSet, recursive, noInlineInterfaces, forceInline))
         );
     }
 
@@ -808,21 +807,6 @@ public abstract class LogicsModule {
     }
 
     // ------------------- Request action ----------------- //
-
-    protected LP addRequestUserInputAProp(AbstractGroup group, LocalizedString caption, LAP action, Type requestValueType, String chosenKey) {
-        ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(action.listInterfaces.size());
-        ActionPropertyMapImplement<?, PropertyInterface> actionImplement = mapActionListImplement(action, listInterfaces);
-
-        return addProperty(group, new LAP(
-                new RequestUserInputActionProperty(caption, listInterfaces, actionImplement,
-                        requestValueType, chosenKey,
-                        baseLM.getChosenValueProperty(), baseLM.formResult, baseLM.getFormResultProperty()))
-        );
-    }
-
-    protected LAP addRequestUserDataAProp(AbstractGroup group, LocalizedString caption, DataClass dataClass) {
-        return addAProp(group, new RequestUserDataActionProperty(caption, dataClass));
-    }
 
     protected LP addRequestAProp(AbstractGroup group, LocalizedString caption, Object... params) {
         ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(getIntNum(params));
@@ -1703,19 +1687,39 @@ public abstract class LogicsModule {
     protected LAP addAddFormAction(CustomClass cls, ObjectEntity contextObject, FormSessionScope scope) {
         LCP<ClassPropertyInterface> addedProperty = new LCP<ClassPropertyInterface>(baseLM.getAddedObjectProperty());
 
-        LAP result = addListAProp(
-                            addAddObjAProp(cls, true, 0, false, true, addedProperty), // NEW (FORM with AUTOSET), addAddObjAProp(cls, false, true, 0, false, true, addedProperty),
-                            addJoinAProp(addListAProp( // так хитро делается чтобы заnest'ить addedProperty (иначе apply его сбрасывает)
-                                    addDMFAProp(LocalizedString.create("sys"), cls, ManageSessionType.AUTO, true), 1, // FORM EDIT class OBJECT prm
-                                    addSetPropertyAProp(1, false, 1, addedProperty, 1), 1), // addedProperty <- prm 
-                            addedProperty)); // FORM EDIT class OBJECT prm
+        LocalizedString caption = LocalizedString.create("sys");
 
-        LCP formResultProperty = baseLM.getFormResultProperty();
-        result = addListAProp(LocalizedString.create("{logics.add}"), result,
-                addIfAProp(addJProp(baseLM.equals2, formResultProperty, addCProp(baseLM.formResult, "ok")), // IF formResult == ok
-                        (contextObject != null ? addJoinAProp(addOSAProp(contextObject, true, 1), addedProperty) : baseLM.getEmpty()), // THEN (contextObject != null) SEEK exf.o prm
-                        (addIfAProp(baseLM.sessionOwners, addJoinAProp(getDeleteAction(cls, contextObject, FormSessionScope.OLDSESSION), addedProperty)))) // ELSE IF sessionOwners DELETE prm, // предполагается что если нет
-                         );
+        // NEW AUTOSET x=X DO {
+        //      REQUEST
+        //          edit(x);
+        //      DO
+        //          SEEK co=x;
+        //      ELSE
+        //          IF sessionOwners THEN
+        //              DELETE x;
+        // }
+
+        LAP result = addForAProp(null, LocalizedString.create("{logics.add}"), false, false, false, false, 0, cls, true, false, 0, false,
+                1, //NEW x=X
+                addRequestAProp(null, caption, // REQUEST
+                        addDMFAProp(caption, cls, ManageSessionType.AUTO, true), 1, // edit(x);
+                        (contextObject != null ? addOSAProp(contextObject, true, 1) : baseLM.getEmptyObject()), 1, // DO SEEK co = x
+                        addIfAProp(baseLM.sessionOwners, getDeleteAction(cls, contextObject, FormSessionScope.OLDSESSION), 1), 1 // ELSE IF seekOwners THEN DELETE x
+                ), 1
+        );
+//        LAP result = addListAProp(
+//                            addAddObjAProp(cls, true, 0, false, true, addedProperty), // NEW (FORM with AUTOSET), addAddObjAProp(cls, false, true, 0, false, true, addedProperty),
+//                            addJoinAProp(addListAProp( // так хитро делается чтобы заnest'ить addedProperty (иначе apply его сбрасывает)
+//                                    addDMFAProp(caption, cls, ManageSessionType.AUTO, true), 1, // FORM EDIT class OBJECT prm
+//                                    addSetPropertyAProp(1, false, 1, addedProperty, 1), 1), // addedProperty <- prm
+//                            addedProperty)); // FORM EDIT class OBJECT prm
+//
+//        LCP formResultProperty = baseLM.getFormResultProperty();
+//        result = addListAProp(LocalizedString.create("{logics.add}"), result,
+//                addIfAProp(addJProp(baseLM.equals2, formResultProperty, addCProp(baseLM.formResult, "ok")), // IF formResult == ok
+//                        (contextObject != null ? addJoinAProp(addOSAProp(contextObject, true, 1), addedProperty) : baseLM.getEmpty()), // THEN (contextObject != null) SEEK exf.o prm
+//                        (addIfAProp(baseLM.sessionOwners, addJoinAProp(getDeleteAction(cls, contextObject, FormSessionScope.OLDSESSION), addedProperty)))) // ELSE IF sessionOwners DELETE prm, // предполагается что если нет
+//                         );
 
         setAddActionOptions(result, contextObject);
         

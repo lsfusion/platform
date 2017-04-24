@@ -1467,45 +1467,6 @@ public class ScriptingLogicsModule extends LogicsModule {
         LAP<?> sessionLP = addNewSessionAProp(null, (LAP) action.property, isNested, singleApply, newSQL, getMigrateProps(migrateSessionProps, migrateAllSessionProps));
         return new LPWithParams(sessionLP, action.usedParams);
     }
-    
-    public LPWithParams addScriptedRequestUserInputAProp(String typeId, String chosenKey, LPWithParams action) throws ScriptingErrorLog.SemanticErrorException {
-        Type requestValueType = getPredefinedType(typeId);
-
-        LPWithParams prop = null;
-        if (action == null) {
-            if (!(requestValueType instanceof DataClass)) {
-                errLog.emitRequestUserInputDataTypeError(parser, typeId);
-            } else {
-                prop = new LPWithParams(addRequestUserDataAProp(null, LocalizedString.create(""), (DataClass) requestValueType), new ArrayList<Integer>());
-            }
-        } else {
-            prop = new LPWithParams(addRequestUserInputAProp(null, LocalizedString.create(""), (LAP<?>) action.property, requestValueType, chosenKey), newArrayList(action.usedParams));
-        }
-        return prop;
-    }
-
-    public LPWithParams addScriptedInputAProp(String typeId, LPWithParams oldValue, PropertyUsage targetProp) throws ScriptingErrorLog.SemanticErrorException {
-        assert !(typeId == null && oldValue == null);
-        DataClass requestDataClass;
-        if(typeId != null) {
-            requestDataClass = ClassCanonicalNameUtils.getScriptedDataClass(typeId);
-        } else {
-            ValueClass valueClass = oldValue.property.property.getValueClass(ClassType.valuePolicy);
-            checkInputDataClass(valueClass);
-            requestDataClass = (DataClass) valueClass;
-        }
-        if(oldValue == null)
-            oldValue = new LPWithParams(baseLM.vnull, new ArrayList<Integer>());
-        LCP tprop = null;
-        if (targetProp != null) {
-            if (targetProp.classNames == null) {
-                targetProp.classNames = Collections.emptyList(); // делаем так для лучшего сообщения об ошибке 
-            }
-            tprop = (LCP<?>) findLPByPropertyUsage(targetProp);
-        }
-        List<Object> resultParams = getParamsPlainList(singletonList(oldValue));
-        return new LPWithParams(addInputAProp(null, LocalizedString.create(""), requestDataClass, tprop, resultParams.toArray()), oldValue.usedParams);
-    }
 
     public DataClass getInputDataClass(String paramName, List<TypedParameter> context, String typeId, LPWithParams oldValue, boolean insideRecursion) throws ScriptingErrorLog.SemanticErrorException {
         DataClass requestDataClass;
@@ -1522,8 +1483,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return requestDataClass;
     }
 
-    // inputx
-    public LPWithParams addScriptedInputxAProp(DataClass requestDataClass, LPWithParams oldValue, PropertyUsage targetProp, LPWithParams doAction, LPWithParams elseAction, List<TypedParameter> oldContext, List<TypedParameter> newContext, boolean assign, DebugInfo.DebugPoint assignDebugPoint) throws ScriptingErrorLog.SemanticErrorException {
+    public LPWithParams addScriptedInputAProp(DataClass requestDataClass, LPWithParams oldValue, PropertyUsage targetProp, LPWithParams doAction, LPWithParams elseAction, List<TypedParameter> oldContext, List<TypedParameter> newContext, boolean assign, DebugInfo.DebugPoint assignDebugPoint) throws ScriptingErrorLog.SemanticErrorException {
         LCP tprop = getInputProp(targetProp, requestDataClass, null);
 
         LAP property = addInputAProp(requestDataClass, (LCP<?>) tprop != null ? ((LCP<?>) tprop).property : null);
@@ -1983,7 +1943,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         allCreationParams.addAll(noInline);
 
         LP result = addForAProp(null, LocalizedString.create(""), !descending, ordersNotNull, recursive, elseAction != null, usedParams.size(),
-                                addClassName != null ? (CustomClass) findClass(addClassName) : null, condition != null, noInline.size(), forceInline, 
+                                addClassName != null ? (CustomClass) findClass(addClassName) : null, false, condition != null, noInline.size(), forceInline,
                                 getParamsPlainList(allCreationParams).toArray());
         return new LPWithParams(result, usedParams);
     }

@@ -129,11 +129,7 @@ public class AddObjectActionProperty<T extends PropertyInterface, I extends Prop
         try {
             PropertyChange<I> resultChange;
             if(where==null) { // оптимизация, один объект добавляем
-                DataObject addObject;
-                if(autoSet)
-                    addObject = context.addObjectAutoSet(readClass);
-                else
-                    addObject = context.addObject(readClass);
+                DataObject addObject = context.addObject(readClass, autoSet);
                 resultChange = new PropertyChange<>(addObject);
             } else {
                 if(result!=null)
