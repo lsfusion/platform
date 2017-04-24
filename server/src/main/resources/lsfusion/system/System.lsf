@@ -86,20 +86,20 @@ objectClassName 'Класс объекта' (Object o) = staticCaption(objectCla
 prevObjectClassName 'Класс объекта' (Object o) = staticCaption(PREV(objectClass(o)));
 
 defaultBackgroundColor 'Цвет фона по умолчанию при выделении' = DATA COLOR ();
-defaultOverrideBackgroundColor 'Цвет фона по умолчанию при выделении' = OVERRIDE RGB(255, 255, 0), defaultBackgroundColor() PERSISTENT;
+defaultOverrideBackgroundColor 'Цвет фона по умолчанию при выделении' = OVERRIDE defaultBackgroundColor(), RGB(255, 255, 0) PERSISTENT;
 defaultForegroundColor 'Цвет шрифта по умолчанию при выделении' = DATA COLOR ();
-defaultOverrideForegroundColor 'Цвет шрифта по умолчанию при выделении' = OVERRIDE RGB(255, 0, 0), defaultForegroundColor() PERSISTENT;
+defaultOverrideForegroundColor 'Цвет шрифта по умолчанию при выделении' = OVERRIDE defaultForegroundColor(), RGB(255, 0, 0) PERSISTENT;
 
 selectedRowBackgroundColor 'Цвет фона ряда при выделении' = DATA COLOR ();
-overrideSelectedRowBackgroundColor 'Цвет фона ряда при выделении' = OVERRIDE RGB(249, 249, 255), selectedRowBackgroundColor();
+overrideSelectedRowBackgroundColor 'Цвет фона ряда при выделении' = OVERRIDE selectedRowBackgroundColor(), RGB(249, 249, 255);
 selectedRowBorderColor 'Цвет границы ряда при выделении' = DATA COLOR ();
-overrideSelectedRowBorderColor 'Цвет границы ряда при выделении' = OVERRIDE RGB(175, 175, 255), selectedRowBorderColor();
+overrideSelectedRowBorderColor 'Цвет границы ряда при выделении' = OVERRIDE selectedRowBorderColor(), RGB(175, 175, 255);
 selectedCellBackgroundColor 'Цвет фона ячейки при выделении' = DATA COLOR ();
-overrideSelectedCellBackgroundColor 'Цвет фона ячейки при выделении' = OVERRIDE RGB(237, 238, 244), selectedCellBackgroundColor();
+overrideSelectedCellBackgroundColor 'Цвет фона ячейки при выделении' = OVERRIDE selectedCellBackgroundColor(), RGB(237, 238, 244);
 focusedCellBackgroundColor 'Цвет фона ячейки при фокусировании' = DATA COLOR ();
-overrideFocusedCellBackgroundColor 'Цвет фона ячейки при фокусировании' = OVERRIDE RGB(237, 238, 244), focusedCellBackgroundColor();
+overrideFocusedCellBackgroundColor 'Цвет фона ячейки при фокусировании' = OVERRIDE focusedCellBackgroundColor(), RGB(237, 238, 244);
 focusedCellBorderColor 'Цвет границы ячейки при фокусировании' = DATA COLOR ();
-overrideFocusedCellBorderColor 'Цвет границы ячейки при фокусировании' = OVERRIDE RGB(98, 98, 255), focusedCellBorderColor();
+overrideFocusedCellBorderColor 'Цвет границы ячейки при фокусировании' = OVERRIDE focusedCellBorderColor(), RGB(98, 98, 255);
   
 customReportCharWidth 'Ширина символа в пикселах в отчетах' = DATA INTEGER ();
 customReportRowHeight 'Высота поля в пикселах в отчетах' = DATA INTEGER ();
@@ -107,8 +107,8 @@ customReportRowHeight 'Высота поля в пикселах в отчета
 defaultReportCharWidth = 8;
 defaultReportRowHeight = 18;    
    
-reportCharWidth 'Ширина символа в пикселах в отчетах' = OVERRIDE defaultReportCharWidth(), customReportCharWidth();      
-reportRowHeight 'Высота поля в пикселах в отчетах' = OVERRIDE defaultReportRowHeight(), customReportRowHeight();
+reportCharWidth 'Ширина символа в пикселах в отчетах' = OVERRIDE customReportCharWidth(), defaultReportCharWidth();      
+reportRowHeight 'Высота поля в пикселах в отчетах' = OVERRIDE customReportRowHeight(), defaultReportRowHeight();
 reportNotToStretch 'Не растягивать поле по вертикали' = DATA BOOLEAN (); 
 reportToStretch 'Растягивать поле по вертикали' = NOT reportNotToStretch();
 

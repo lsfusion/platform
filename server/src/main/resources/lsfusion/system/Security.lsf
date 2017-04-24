@@ -60,10 +60,10 @@ levelPermitViewParent (propertyGroup) =
           BY propertyGroup PERSISTENT;
 
 levelPermitView = TRUE IF levelPermitViewParent (PropertyGroup propertyGroup);
-permitView 'Разрешить просмотр группы свойств' (PropertyGroup propertyGroup) = OVERRIDE levelPermitView (propertyGroup), dataPermitView (propertyGroup);
+permitView 'Разрешить просмотр группы свойств' (PropertyGroup propertyGroup) = OVERRIDE dataPermitView (propertyGroup), levelPermitView (propertyGroup);
 
 dataPermitView 'Разрешить просмотр свойства' = DATA BOOLEAN (Property);
-permitView 'Разрешить просмотр свойства' (Property property) = OVERRIDE levelPermitView (parent(property)), dataPermitView (property) PERSISTENT;
+permitView 'Разрешить просмотр свойства' (Property property) = OVERRIDE dataPermitView (property), levelPermitView (parent(property)) PERSISTENT;
 
 dataForbidView 'Запретить просмотр группы свойств' = DATA BOOLEAN (PropertyGroup);
 
@@ -72,10 +72,10 @@ levelForbidViewParent (propertyGroup) =
           BY propertyGroup PERSISTENT;
 
 levelForbidView = TRUE IF levelForbidViewParent (PropertyGroup propertyGroup);
-forbidView 'Запретить просмотр группы свойств' (PropertyGroup propertyGroup) = OVERRIDE levelForbidView (propertyGroup), dataForbidView (propertyGroup);
+forbidView 'Запретить просмотр группы свойств' (PropertyGroup propertyGroup) = OVERRIDE dataForbidView (propertyGroup), levelForbidView (propertyGroup);
 
 dataForbidView 'Запретить просмотр свойства' = DATA BOOLEAN (Property);
-forbidView 'Запретить просмотр свойства' (Property property) = OVERRIDE levelForbidView (parent(property)), dataForbidView (property) PERSISTENT;
+forbidView 'Запретить просмотр свойства' (Property property) = OVERRIDE dataForbidView (property), levelForbidView (parent(property)) PERSISTENT;
 
 dataPermitChange 'Разрешить изменение группы свойств' = DATA BOOLEAN (PropertyGroup);
 
@@ -84,10 +84,10 @@ levelPermitChangeParent (propertyGroup) =
           BY propertyGroup PERSISTENT;
 
 levelPermitChange = TRUE IF levelPermitChangeParent (PropertyGroup propertyGroup);
-permitChange 'Разрешить изменение группы свойств' (PropertyGroup propertyGroup) = OVERRIDE levelPermitChange (propertyGroup), dataPermitChange (propertyGroup);
+permitChange 'Разрешить изменение группы свойств' (PropertyGroup propertyGroup) = OVERRIDE dataPermitChange (propertyGroup), levelPermitChange (propertyGroup);
 
 dataPermitChange 'Разрешить изменение свойства' = DATA BOOLEAN (Property);
-permitChange 'Разрешить изменение свойства' (Property property) = OVERRIDE levelPermitChange (parent(property)), dataPermitChange (property) PERSISTENT;
+permitChange 'Разрешить изменение свойства' (Property property) = OVERRIDE dataPermitChange (property), levelPermitChange (parent(property)) PERSISTENT;
 
 dataForbidChange 'Запретить изменение группы свойств' = DATA BOOLEAN (PropertyGroup);
 
@@ -96,12 +96,12 @@ levelForbidChangeParent (propertyGroup) =
           BY propertyGroup PERSISTENT;
 
 levelForbidChange = TRUE IF levelForbidChangeParent (PropertyGroup propertyGroup);
-forbidChange 'Запретить изменение группы свойств' (PropertyGroup propertyGroup) = OVERRIDE levelForbidChange (propertyGroup), dataForbidChange (propertyGroup);
+forbidChange 'Запретить изменение группы свойств' (PropertyGroup propertyGroup) = OVERRIDE dataForbidChange (propertyGroup), levelForbidChange (propertyGroup);
 
 dataForbidChange 'Запретить изменение свойства' = DATA BOOLEAN (Property);
-forbidChange 'Запретить изменение свойства' (Property property) = OVERRIDE levelForbidChange (parent(property)), dataForbidChange (property) PERSISTENT;
+forbidChange 'Запретить изменение свойства' (Property property) = OVERRIDE dataForbidChange (property), levelForbidChange (parent(property)) PERSISTENT;
 
-notNullPermission (Property property) = OVERRIDE permitView(property), forbidView(property), permitChange(property), forbidChange(property) PERSISTENT INDEXED;
+notNullPermission (Property property) = OVERRIDE forbidChange(property), permitChange(property), forbidView(property), permitView(property) PERSISTENT INDEXED;
 
 dataPermitView 'Разрешить просмотр группы свойств' = DATA BOOLEAN (UserRole, PropertyGroup);
 
@@ -110,10 +110,10 @@ levelPermitViewParent (userRole, propertyGroup) =
           BY userRole, propertyGroup PERSISTENT;
 
 levelPermitView = TRUE IF levelPermitViewParent (UserRole userRole, PropertyGroup propertyGroup);
-permitView 'Разрешить просмотр группы свойств' (UserRole userRole, PropertyGroup propertyGroup) = OVERRIDE levelPermitView (userRole, propertyGroup), dataPermitView (userRole, propertyGroup) PERSISTENT;
+permitView 'Разрешить просмотр группы свойств' (UserRole userRole, PropertyGroup propertyGroup) = OVERRIDE dataPermitView (userRole, propertyGroup), levelPermitView (userRole, propertyGroup) PERSISTENT;
 
 dataPermitView 'Разрешить просмотр свойства' = DATA BOOLEAN (UserRole, Property);
-permitView 'Разрешить просмотр свойства' (UserRole userRole, Property property) = OVERRIDE levelPermitView (userRole, parent(property)), dataPermitView (userRole, property) PERSISTENT;
+permitView 'Разрешить просмотр свойства' (UserRole userRole, Property property) = OVERRIDE dataPermitView (userRole, property), levelPermitView (userRole, parent(property)) PERSISTENT;
 
 dataForbidView 'Запретить просмотр группы свойств' = DATA BOOLEAN (UserRole, PropertyGroup);
 
@@ -122,10 +122,10 @@ levelForbidViewParent (userRole, propertyGroup) =
           BY userRole, propertyGroup PERSISTENT;
 
 levelForbidView = TRUE IF levelForbidViewParent (UserRole userRole, PropertyGroup propertyGroup);
-forbidView 'Запретить просмотр группы свойств' (UserRole userRole, PropertyGroup propertyGroup) = OVERRIDE levelForbidView (userRole, propertyGroup), dataForbidView (userRole, propertyGroup) PERSISTENT;
+forbidView 'Запретить просмотр группы свойств' (UserRole userRole, PropertyGroup propertyGroup) = OVERRIDE dataForbidView (userRole, propertyGroup), levelForbidView (userRole, propertyGroup) PERSISTENT;
 
 dataForbidView 'Запретить просмотр свойства' = DATA BOOLEAN (UserRole, Property);
-forbidView 'Запретить просмотр свойства' (UserRole userRole, Property property) = OVERRIDE levelForbidView (userRole, parent(property)), dataForbidView (userRole, property) PERSISTENT;
+forbidView 'Запретить просмотр свойства' (UserRole userRole, Property property) = OVERRIDE dataForbidView (userRole, property), levelForbidView (userRole, parent(property)) PERSISTENT;
 fullForbidView (Property property) = (forbidView(property) AND NOT permitView(property)); 
 
 forbidView = GROUP SUM 1 IF has(User user, UserRole userRole) AND forbidView(userRole, Property property) BY user, property;
@@ -141,10 +141,10 @@ levelPermitChangeParent (userRole, propertyGroup) =
           BY userRole, propertyGroup PERSISTENT;
 
 levelPermitChange = TRUE IF levelPermitChangeParent (UserRole userRole, PropertyGroup propertyGroup);
-permitChange 'Разрешить изменение группы свойств' (UserRole userRole, PropertyGroup propertyGroup) = OVERRIDE levelPermitChange (userRole, propertyGroup), dataPermitChange (userRole, propertyGroup) PERSISTENT;
+permitChange 'Разрешить изменение группы свойств' (UserRole userRole, PropertyGroup propertyGroup) = OVERRIDE dataPermitChange (userRole, propertyGroup), levelPermitChange (userRole, propertyGroup) PERSISTENT;
 
 dataPermitChange 'Разрешить изменение свойства' = DATA BOOLEAN (UserRole, Property);
-permitChange 'Разрешить изменение свойства' (UserRole userRole, Property property) = OVERRIDE levelPermitChange (userRole, parent(property)), dataPermitChange (userRole, property) PERSISTENT;
+permitChange 'Разрешить изменение свойства' (UserRole userRole, Property property) = OVERRIDE dataPermitChange (userRole, property), levelPermitChange (userRole, parent(property)) PERSISTENT;
 fullForbidChange (Property property) = (forbidChange(property) AND NOT permitChange(property));
     
 dataForbidChange 'Запретить изменение группы свойств' = DATA BOOLEAN (UserRole, PropertyGroup);
@@ -154,10 +154,10 @@ levelForbidChangeParent (userRole, propertyGroup) =
           BY userRole, propertyGroup PERSISTENT;
 
 levelForbidChange = TRUE IF levelForbidChangeParent (UserRole userRole, PropertyGroup propertyGroup);
-forbidChange 'Запретить изменение группы свойств' (UserRole userRole, PropertyGroup propertyGroup) = OVERRIDE levelForbidChange (userRole, propertyGroup), dataForbidChange (userRole, propertyGroup) PERSISTENT;
+forbidChange 'Запретить изменение группы свойств' (UserRole userRole, PropertyGroup propertyGroup) = OVERRIDE dataForbidChange (userRole, propertyGroup), levelForbidChange (userRole, propertyGroup) PERSISTENT;
 
 dataForbidChange 'Запретить изменение свойства' = DATA BOOLEAN (UserRole, Property);
-forbidChange 'Запретить изменение свойства' (UserRole userRole, Property property) = OVERRIDE levelForbidChange (userRole, parent(property)), dataForbidChange (userRole, property) PERSISTENT;
+forbidChange 'Запретить изменение свойства' (UserRole userRole, Property property) = OVERRIDE dataForbidChange (userRole, property), levelForbidChange (userRole, parent(property)) PERSISTENT;
 
 forbidChange = GROUP SUM 1 IF has(User user, UserRole userRole) AND forbidChange(userRole, Property property) BY user, property;
 permitChange = GROUP SUM 1 IF has(User user, UserRole userRole) AND permitChange(userRole, Property property) BY user, property;

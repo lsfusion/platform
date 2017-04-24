@@ -301,7 +301,7 @@ name 'Имя настройки' = DATA VARSTRING[100] (ReflectionProperty);
 reflectionProperty (name) = GROUP AGGR ReflectionProperty reflectionProperty BY name(reflectionProperty);
 baseValue 'Сохранённое значение' = DATA VARSTRING[100] (ReflectionProperty);
 defaultValue 'Значение по умолчанию' = DATA VARSTRING[100] (ReflectionProperty);
-value 'Значение' (ReflectionProperty reflectionProperty) = OVERRIDE defaultValue(reflectionProperty), baseValue(reflectionProperty);
+value 'Значение' (ReflectionProperty reflectionProperty) = OVERRIDE baseValue(reflectionProperty), defaultValue(reflectionProperty);
 
 readReflectionPropertiesAction 'Прочитать настройки свойств' = ACTION CUSTOM 'lsfusion.server.logics.service.reflection.ReadReflectionPropertiesActionProperty' ();
 onStarted() += { readReflectionPropertiesAction(); }

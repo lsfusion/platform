@@ -52,7 +52,7 @@ fromAddressDefaultNotificationAccount 'Адрес для отправки уве
 
 isDefaultInbox 'Использовать для отправки/получения сообщений' = DATA BOOLEAN (Account);
 defaultInboxAccount 'E-mail аккаунт для отправки/получения сообщений' = GROUP MAX Account account IF isDefaultInbox(account);
-inboxAccount (VARSTRING[100] fromAddress) = OVERRIDE defaultInboxAccount(), accountFromAddress(fromAddress);
+inboxAccount (VARSTRING[100] fromAddress) = OVERRIDE accountFromAddress(fromAddress), defaultInboxAccount();
 
 smtpHost 'SMTP хост' = DATA VARSTRING[50](Account);
 smtpPort 'SMTP порт' = DATA VARSTRING[10](Account);

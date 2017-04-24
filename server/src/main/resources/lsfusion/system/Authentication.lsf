@@ -121,13 +121,13 @@ defaultUserCountry 'Страна локали по умолчанию' = DATA VA
 defaultUserTimeZone 'Часовой пояс по умолчанию' = DATA VARSTRING[30] ();
 defaultUserTwoDigitYearStart 'Первый год двумя цифрами по умолчанию' = DATA INTEGER ();
 
-language 'Язык локали' (CustomUser user) = OVERRIDE defaultUserLanguage(), userLanguage(user), (clientLanguage(user) IF useClientLocale(user));
+language 'Язык локали' (CustomUser user) = OVERRIDE (clientLanguage(user) IF useClientLocale(user)), userLanguage(user), defaultUserLanguage();
 country 'Страна локали' (CustomUser user) = IF useClientLocale(user) AND clientLanguage(user) 
                                                                 THEN clientCountry(user)
                                                                 ELSE IF userLanguage(user) THEN userCountry(user) ELSE defaultUserCountry();
 
-timeZone 'Часовой пояс' (CustomUser user) = OVERRIDE defaultUserTimeZone(), userTimeZone(user);
-twoDigitYearStart 'Первый год двумя цифрами' (CustomUser user) = OVERRIDE defaultUserTwoDigitYearStart(), userTwoDigitYearStart(user);
+timeZone 'Часовой пояс' (CustomUser user) = OVERRIDE userTimeZone(user), defaultUserTimeZone();
+twoDigitYearStart 'Первый год двумя цифрами' (CustomUser user) = OVERRIDE userTwoDigitYearStart(user), defaultUserTwoDigitYearStart();
 
 deliveredNotificationAction = ACTION ABSTRACT LIST (CustomUser);
 

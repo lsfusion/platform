@@ -1309,7 +1309,7 @@ public abstract class LogicsModule {
                 property = new SumUnionProperty(caption, listInterfaces, mMapOperands.immutable());
                 break;
             case OVERRIDE:
-                property = new CaseUnionProperty(caption, listInterfaces, listOperands, false, false, true);
+                property = new CaseUnionProperty(caption, listInterfaces, listOperands, false, false, false);
                 break;
             case XOR:
                 property = new XorUnionProperty(caption, listInterfaces, listOperands);
