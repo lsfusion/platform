@@ -174,7 +174,6 @@ META defineAnyValue(name, param)
 END
 
 @defineAnyValue(requested, );
-@defineAnyValue(chosen, STRING[100]);
 
 isActiveForm = DATA LOCAL BOOLEAN ();
 

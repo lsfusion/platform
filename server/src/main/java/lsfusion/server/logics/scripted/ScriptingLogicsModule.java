@@ -1570,13 +1570,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return getScriptEditFormAction((CustomClass) cls, scope);
     }
 
-    public LPWithParams addScriptedConfirmProp(LPWithParams msgProp) {
-        List<Object> resultParams = getParamsPlainList(singletonList(msgProp));
-        LAP asyncLAP = addConfirmAProp("lsFusion", resultParams.toArray());
-        return new LPWithParams(asyncLAP, msgProp.usedParams);
-    }
-    
-    public LPWithParams addScriptedConfirmxProp(LPWithParams msgProp, LPWithParams doAction, LPWithParams elseAction, boolean yesNo, List<TypedParameter> oldContext, List<TypedParameter> newContext) throws ScriptingErrorLog.SemanticErrorException {
+    public LPWithParams addScriptedConfirmProp(LPWithParams msgProp, LPWithParams doAction, LPWithParams elseAction, boolean yesNo, List<TypedParameter> oldContext, List<TypedParameter> newContext) throws ScriptingErrorLog.SemanticErrorException {
         LCP targetProp = null;
         if(yesNo)
             targetProp = getInputProp(null, LogicalClass.instance, null);

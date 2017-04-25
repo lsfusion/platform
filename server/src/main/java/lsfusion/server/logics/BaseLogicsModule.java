@@ -58,8 +58,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     // classes
     public BaseClass baseClass;
 
-    public ConcreteCustomClass formResult;
-
     // groups
     public AbstractGroup actionGroup;
     public AbstractGroup drillDownGroup;
@@ -347,8 +345,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         baseClass = addBaseClass(transformNameToSID("Object"), LocalizedString.create("{logics.object}"));
         
         super.initClasses();
-
-        formResult = (ConcreteCustomClass) findClass("FormResult");
     }
 
     @Override
@@ -620,12 +616,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         return (SessionDataProperty) addedObject.property;
     }
 
-    @Override
-    @IdentityStrongLazy
-    public AnyValuePropertyHolder getChosenValueProperty() {
-        return addAnyValuePropertyHolder("chosen", "Chosen", StringClass.get(100));
-    }
-
     @IdentityStrongLazy
     @NFLazy
     public AnyValuePropertyHolder getRequestedValueProperty() {
@@ -645,15 +635,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         return isActiveForm;
     }
 
-    @IdentityLazy
-    public LCP<?> getFormResultProperty() {
-        try {
-            return findProperty("formResult[]");
-        } catch (ScriptingErrorLog.SemanticErrorException e) {
-            throw Throwables.propagate(e);
-        }
-    }
-    
     @IdentityLazy
     public LCP<?> getConfirmedProperty() {
         try {

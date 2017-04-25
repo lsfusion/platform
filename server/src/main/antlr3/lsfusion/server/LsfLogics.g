@@ -2707,7 +2707,7 @@ confirmActionDefinitionBody[List<TypedParameter> context] returns [LPWithParams 
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedConfirmxProp($pe.property, $dDB.property, $dDB.elseProperty, yesNo, context, newContext);
+		$property = self.addScriptedConfirmProp($pe.property, $dDB.property, $dDB.elseProperty, yesNo, context, newContext);
 	}
 }
 	:	('CONFIRM' | 'ASK')

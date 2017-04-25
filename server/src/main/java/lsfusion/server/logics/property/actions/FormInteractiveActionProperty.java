@@ -12,7 +12,6 @@ import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.interop.ModalityType;
 import lsfusion.interop.WindowFormType;
-import lsfusion.server.classes.ConcreteCustomClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.entity.*;
 import lsfusion.server.form.entity.filter.FilterEntity;
@@ -35,9 +34,6 @@ public class FormInteractiveActionProperty<O extends ObjectSelector> extends For
     private final ImList<O> inputObjects;
     private final ImList<LCP> inputProps;    
     private final ImList<Boolean> inputNulls;
-    private final ConcreteCustomClass formResultClass;
-    private final LCP formResultProperty;
-    private final AnyValuePropertyHolder chosenValueProperty;
 
     private final boolean syncType;
     private final WindowFormType windowType;
@@ -76,9 +72,6 @@ public class FormInteractiveActionProperty<O extends ObjectSelector> extends For
                                          boolean syncType,
                                          WindowFormType windowType,
                                          boolean checkOnOk,
-                                         ConcreteCustomClass formResultClass,
-                                         LCP formResultProperty,
-                                         AnyValuePropertyHolder chosenValueProperty,
                                          boolean readOnly) {
         super(caption, form, objectsToSet, nulls, true, contextProperties.toArray(new CalcProperty[contextProperties.size()]));
 
@@ -86,10 +79,6 @@ public class FormInteractiveActionProperty<O extends ObjectSelector> extends For
         this.inputObjects = inputObjects;
         this.inputProps = inputProps;
         this.inputNulls = inputNulls;
-
-        this.formResultClass = formResultClass;
-        this.formResultProperty = formResultProperty;
-        this.chosenValueProperty = chosenValueProperty;
 
         this.syncType = syncType;
         this.windowType = windowType;
@@ -135,15 +124,6 @@ public class FormInteractiveActionProperty<O extends ObjectSelector> extends For
             //для немодальных форм следующее бессмысленно, т.к. они остаются открытыми...
 
             FormCloseType formResult = newFormInstance.getFormResult();
-            formResultProperty.change(formResultClass.getDataObject(formResult.asString()), context);
-
-            for (GroupObjectEntity group : form.getGroupsIt()) {
-                for (ObjectEntity object : group.getObjects()) {
-                    chosenValueProperty.write(
-                            object.baseClass.getType(), newFormInstance.instanceFactory.getInstance(object).getObjectValue(), context, new DataObject(object.getSID())
-                    );
-                }
-            }
 
             ImList<RequestResult> result = null;
             if(formResult != FormCloseType.CLOSE) {

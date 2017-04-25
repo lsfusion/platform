@@ -559,7 +559,7 @@ public abstract class LogicsModule {
         return addIFAProp(group, caption, form, objectsToSet, nulls, ListFact.<O>EMPTY(), ListFact.<LCP>EMPTY(), ListFact.<Boolean>EMPTY(), manageSession, noCancel, ListFact.<O>EMPTY(), ListFact.<CalcProperty>EMPTY(), syncType, windowType, checkOnOk, readonly, params);
     }
     protected <O extends ObjectSelector> LAP addIFAProp(AbstractGroup group, LocalizedString caption, FormSelector<O> form, List<O> objectsToSet, List<Boolean> nulls, ImList<O> inputObjects, ImList<LCP> inputProps, ImList<Boolean> inputNulls, ManageSessionType manageSession, Boolean noCancel, ImList<O> contextObjects, ImList<CalcProperty> contextProperties, boolean syncType, WindowFormType windowType, boolean checkOnOk, boolean readonly, Object... params) {
-        return addProperty(group, new LAP(new FormInteractiveActionProperty<O>(caption, form, objectsToSet, nulls, inputObjects, inputProps, inputNulls, contextObjects, contextProperties, manageSession, noCancel, syncType, windowType, checkOnOk, baseLM.formResult, baseLM.getFormResultProperty(), baseLM.getChosenValueProperty(), readonly)));
+        return addProperty(group, new LAP(new FormInteractiveActionProperty<O>(caption, form, objectsToSet, nulls, inputObjects, inputProps, inputNulls, contextObjects, contextProperties, manageSession, noCancel, syncType, windowType, checkOnOk, readonly)));
     }
     protected <O extends ObjectSelector> LAP addPFAProp(AbstractGroup group, LocalizedString caption, FormSelector<O> form, List<O> objectsToSet, List<Boolean> nulls, boolean hasPrinterProperty, FormPrintType staticType, boolean syncType, Integer selectTop, LCP targetProp, Object... params) {
         ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(getIntNum(params));
@@ -1445,10 +1445,6 @@ public abstract class LogicsModule {
     // ------------------- CONFIRM ----------------- //
 
 
-    protected LAP addConfirmAProp(String title, Object... params) {
-        return addConfirmAProp(title, false, null, params);
-    }
-
     protected LAP addConfirmAProp(String title, boolean yesNo, LCP targetProp, Object... params) {
         return addConfirmAProp(null, LocalizedString.create(""), title, yesNo, targetProp, params);
     }
@@ -1583,17 +1579,8 @@ public abstract class LogicsModule {
         return baseLM.getConfirmedProperty();
     }
 
-    @NFLazy
-    public AnyValuePropertyHolder getChosenValueProperty() {
-        return baseLM.getChosenValueProperty();
-    }
-
     public LCP getIsActiveFormProperty() {
         return baseLM.getIsActiveFormProperty();
-    }
-
-    public LCP getFormResultProperty() {
-        return baseLM.getFormResultProperty();
     }
 
     public AnyValuePropertyHolder addAnyValuePropertyHolder(String sidPrefix, String captionPrefix, ValueClass... classes) {
