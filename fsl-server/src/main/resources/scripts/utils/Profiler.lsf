@@ -132,7 +132,7 @@ order 'Порядок'(ProfileObject p1, ProfileObject p2, User u, ProfileForm f
 
 dataInFilter 'Отм' = DATA LOCAL NESTED BOOLEAN (User);
 inFilter 'Отм' = DATA LOCAL NESTED BOOLEAN (UserRole);
-overFilter 'Отм' = OVERRIDE dataInFilter(u), inFilter(mainRole(u)), [=GROUP SUM 1 IF in(User u, UserRole r) AND inFilter(r) BY u](User u) > 0;
+overFilter 'Отм' = OVERRIDE dataInFilter(User u), inFilter(mainRole(u)), [=GROUP SUM 1 IF in(User u, UserRole r) AND inFilter(r) BY u](u) > 0;
 inFilter 'Отм' (User u) = OVERRIDE overFilter(u), NOT [=GROUP SUM 1 IF overFilter(User u)]() AND u IS User;
 background(User u) = IF inFilter(u) THEN RGB(220,220,220);
 

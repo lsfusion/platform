@@ -35,7 +35,7 @@ META defineHistorizable(property, propPostfix, caption, type, object, objectIden
                                                                          ORDER dateIn
                                                                          WHERE data###property(object, dateIn) AND dateIn <= (date AS DATE) IN group;
 
-    over###property caption = OVERRIDE data###property(object, date), property(###object object, DATE date) IN group;
+    over###property caption = OVERRIDE data###property(###object object, DATE date), property(object, date) IN group;
 
     property caption (###object object) = property(object, currentDate()) IN group;
 
@@ -107,7 +107,7 @@ META defineHistorizable(property, caption, type, object1, object1Identity, objec
               ORDER dateIn
               WHERE data###property(object1, object2, dateIn) AND dateIn <= (date AS DATE) IN group;
 
-    over###property caption = OVERRIDE data###property(object1, object2, date), property(###object1 object1, ###object2 object2, DATE date);
+    over###property caption = OVERRIDE data###property(###object1 object1, ###object2 object2, DATE date), property(object1, object2, date);
 
     property caption (###object1 object1, ###object2 object2) = property(object1, object2, currentDate()) IN group;
 
