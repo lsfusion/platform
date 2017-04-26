@@ -191,7 +191,7 @@ public class ScriptingFormEntity {
         return LM.getNFObjectEntityByName(form, name);
     }
 
-    public MappedProperty getPropertyWithMapping(ScriptingLogicsModule.PropertyUsage pUsage, List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
+    public MappedProperty getPropertyWithMapping(ScriptingLogicsModule.AbstractPropertyUsage pUsage, List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
         return LM.getPropertyWithMapping(form, pUsage, mapping);
     }
 
@@ -244,47 +244,51 @@ public class ScriptingFormEntity {
         return scope;
     }
 
-    public void addScriptedPropertyDraws(List<ScriptingLogicsModule.PropertyUsage> properties, List<String> aliases, List<List<String>> mappings, FormPropertyOptions commonOptions, List<FormPropertyOptions> options, Version version, List<DebugInfo.DebugPoint> points) throws ScriptingErrorLog.SemanticErrorException {
+    public void addScriptedPropertyDraws(List<? extends ScriptingLogicsModule.AbstractPropertyUsage> properties, List<String> aliases, List<List<String>> mappings, FormPropertyOptions commonOptions, List<FormPropertyOptions> options, Version version, List<DebugInfo.DebugPoint> points) throws ScriptingErrorLog.SemanticErrorException {
         assert properties.size() == mappings.size();
 
         boolean reverse = commonOptions.getNeighbourPropertyDraw() != null && commonOptions.isRightNeighbour();
         
         for (int i = reverse ? properties.size() - 1 : 0; (reverse ? i >= 0 : i < properties.size()); i = reverse ? i - 1 : i + 1) {
             List<String> mapping = mappings.get(i);
-            ScriptingLogicsModule.PropertyUsage pUsage = properties.get(i);
-            String propertyName = pUsage.name;
+            ScriptingLogicsModule.AbstractPropertyUsage pDrawUsage = properties.get(i);
             String alias = aliases.get(i);
 
             FormPropertyOptions propertyOptions = commonOptions.overrideWith(options.get(i));
             FormSessionScope scope = override(propertyOptions, FormSessionScope.OLDSESSION);
-
-            LP property;
-            PropertyObjectInterfaceEntity[] objects;;
-            if (propertyName.equals("VALUE")) {
-                ObjectEntity obj = getSingleMappingObject(mapping);
-                property = LM.getObjValueProp(form, obj);
-                objects = new PropertyObjectInterfaceEntity[]{obj};
-            } else if (propertyName.equals("NEW") && scope == OLDSESSION) {
-                ObjectEntity obj = getSingleCustomClassMappingObject(propertyName, mapping);
-                CustomClass explicitClass = getSingleAddClass(pUsage);
-                property = LM.getAddObjectAction(form, obj, explicitClass);
-                objects = new PropertyObjectInterfaceEntity[]{};
-            } else if (propertyName.equals("NEWEDIT") || (propertyName.equals("NEW") && scope != OLDSESSION)) {
-                ObjectEntity obj = getSingleCustomClassMappingObject(propertyName, mapping);
-                CustomClass explicitClass = getSingleAddClass(pUsage);
-                property = LM.getAddFormAction(form, obj, explicitClass, scope, version);
-                objects = new PropertyObjectInterfaceEntity[]{};
-            } else if (propertyName.equals("EDIT")) {
-                ObjectEntity obj = getSingleCustomClassMappingObject(propertyName, mapping);
-                CustomClass explicitClass = getSingleAddClass(pUsage);
-                property = LM.getEditFormAction(obj, explicitClass, scope, version);
-                objects = new PropertyObjectInterfaceEntity[]{obj};
-            } else if (propertyName.equals("DELETE")) {
-                ObjectEntity obj = getSingleCustomClassMappingObject(propertyName, mapping);
-                property = LM.getDeleteAction(obj, scope);
-                objects = new PropertyObjectInterfaceEntity[]{obj};
-            } else {
-                MappedProperty prop = getPropertyWithMapping(pUsage, mapping);
+            
+            LP property = null;
+            PropertyObjectInterfaceEntity[] objects = null;
+            if(pDrawUsage instanceof ScriptingLogicsModule.PropertyUsage) {
+                ScriptingLogicsModule.PropertyUsage pUsage = (ScriptingLogicsModule.PropertyUsage) pDrawUsage;
+                String propertyName = pUsage.name;
+                if (propertyName.equals("VALUE")) {
+                    ObjectEntity obj = getSingleMappingObject(mapping);
+                    property = LM.getObjValueProp(form, obj);
+                    objects = new PropertyObjectInterfaceEntity[]{obj};
+                } else if (propertyName.equals("NEW") && scope == OLDSESSION) {
+                    ObjectEntity obj = getSingleCustomClassMappingObject(propertyName, mapping);
+                    CustomClass explicitClass = getSingleAddClass(pUsage);
+                    property = LM.getAddObjectAction(form, obj, explicitClass);
+                    objects = new PropertyObjectInterfaceEntity[]{};
+                } else if (propertyName.equals("NEWEDIT") || (propertyName.equals("NEW") && scope != OLDSESSION)) {
+                    ObjectEntity obj = getSingleCustomClassMappingObject(propertyName, mapping);
+                    CustomClass explicitClass = getSingleAddClass(pUsage);
+                    property = LM.getAddFormAction(form, obj, explicitClass, scope, version);
+                    objects = new PropertyObjectInterfaceEntity[]{};
+                } else if (propertyName.equals("EDIT")) {
+                    ObjectEntity obj = getSingleCustomClassMappingObject(propertyName, mapping);
+                    CustomClass explicitClass = getSingleAddClass(pUsage);
+                    property = LM.getEditFormAction(obj, explicitClass, scope, version);
+                    objects = new PropertyObjectInterfaceEntity[]{obj};
+                } else if (propertyName.equals("DELETE")) {
+                    ObjectEntity obj = getSingleCustomClassMappingObject(propertyName, mapping);
+                    property = LM.getDeleteAction(obj, scope);
+                    objects = new PropertyObjectInterfaceEntity[]{obj};
+                }
+            }            
+            if(property == null) { 
+                MappedProperty prop = getPropertyWithMapping(pDrawUsage, mapping);
                 checkPropertyParameters(prop.property, prop.mapping);
                 property = prop.property;
                 objects = prop.mapping;
@@ -566,11 +570,11 @@ public class ScriptingFormEntity {
         }
     }
 
-    public CalcPropertyObjectEntity addCalcPropertyObject(ScriptingLogicsModule.PropertyUsage property, List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
+    public CalcPropertyObjectEntity addCalcPropertyObject(ScriptingLogicsModule.AbstractPropertyUsage property, List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
         return addCalcPropertyObject(LM, form, property, mapping);
     }
 
-    public static CalcPropertyObjectEntity addCalcPropertyObject(ScriptingLogicsModule LM, FormEntity form, ScriptingLogicsModule.PropertyUsage property, List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
+    public static CalcPropertyObjectEntity addCalcPropertyObject(ScriptingLogicsModule LM, FormEntity form, ScriptingLogicsModule.AbstractPropertyUsage property, List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
         MappedProperty prop = LM.getPropertyWithMapping(form, property, mapping);
         PropertyObjectEntity propObject = form.addPropertyObject(prop.property, prop.mapping);
         if (!(propObject instanceof CalcPropertyObjectEntity)) {
@@ -579,7 +583,7 @@ public class ScriptingFormEntity {
         return (CalcPropertyObjectEntity) propObject;
     }
 
-    public ActionPropertyObjectEntity addActionPropertyObject(ScriptingLogicsModule.PropertyUsage property, List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
+    public ActionPropertyObjectEntity addActionPropertyObject(ScriptingLogicsModule.AbstractPropertyUsage property, List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
         PropertyObjectEntity propObject = addPropertyObject(property, mapping);
         if (!(propObject instanceof ActionPropertyObjectEntity)) {
             LM.getErrLog().emitNotActionPropertyError(LM.getParser());
@@ -587,7 +591,7 @@ public class ScriptingFormEntity {
         return (ActionPropertyObjectEntity) propObject;
     }
 
-    public PropertyObjectEntity addPropertyObject(ScriptingLogicsModule.PropertyUsage property, List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
+    public PropertyObjectEntity addPropertyObject(ScriptingLogicsModule.AbstractPropertyUsage property, List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
         MappedProperty prop = getPropertyWithMapping(property, mapping);
         return form.addPropertyObject(prop.property, prop.mapping);
     }

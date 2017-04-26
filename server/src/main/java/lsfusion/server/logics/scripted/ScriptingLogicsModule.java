@@ -282,13 +282,18 @@ public class ScriptingLogicsModule extends LogicsModule {
         return obj;
     }
 
-    public MappedProperty getPropertyWithMapping(FormEntity form, PropertyUsage pUsage, List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
+    public MappedProperty getPropertyWithMapping(FormEntity form, AbstractPropertyUsage pDrawUsage, List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
         LP<?, ?> property;
-        if (pUsage.classNames != null) {
-            property = findLPByPropertyUsage(pUsage);            
+        if(pDrawUsage instanceof PropertyUsage) {
+            PropertyUsage pUsage = (PropertyUsage) pDrawUsage;
+            if (pUsage.classNames != null) {
+                property = findLPByPropertyUsage(pUsage);
+            } else {
+                List<ResolveClassSet> classes = getMappingClassesArray(form, mapping);
+                property = findLPByNameAndClasses(pUsage.name, pUsage.getSourceName(), classes);
+            }
         } else {
-            List<ResolveClassSet> classes = getMappingClassesArray(form, mapping);
-            property = findLPByNameAndClasses(pUsage.name, pUsage.getSourceName(), classes);            
+            property = ((LPUsage)pDrawUsage).lp;
         }
         
         if (property.property.interfaces.size() != mapping.size()) {
@@ -541,7 +546,10 @@ public class ScriptingLogicsModule extends LogicsModule {
     public void addScriptedForm(ScriptingFormEntity form, DebugInfo.DebugPoint point) {
         FormEntity formEntity = addFormEntity(form.getForm());
         formEntity.creationPath = point.toString();
-        formEntity.finalizeInit(getVersion());
+    }
+
+    public void finalizeScriptedForm(ScriptingFormEntity form) {
+        form.getForm().finalizeInit(getVersion());
     }
 
     public ScriptingFormEntity getFormForExtending(String name) throws ScriptingErrorLog.SemanticErrorException {
@@ -4008,7 +4016,19 @@ public class ScriptingLogicsModule extends LogicsModule {
         return errLog.toString();
     }
 
-    public static class PropertyUsage {
+    public static interface AbstractPropertyUsage {
+        
+    }     
+    
+    public static class LPUsage implements AbstractPropertyUsage {
+        public final LP lp;
+
+        public LPUsage(LP lp) {
+            this.lp = lp;
+        }
+    }
+    
+    public static class PropertyUsage implements AbstractPropertyUsage {
         public String name;
         public List<String> classNames;
         

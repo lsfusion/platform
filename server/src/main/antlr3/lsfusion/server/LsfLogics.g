@@ -32,6 +32,8 @@ grammar LsfLogics;
 	import lsfusion.server.logics.i18n.LocalizedString;
 	import lsfusion.server.logics.mutables.Version;
 	import lsfusion.server.logics.linear.LP;
+	import lsfusion.server.logics.linear.LAP;
+	import lsfusion.server.logics.linear.LCP;
 	import lsfusion.server.logics.property.Cycle;
 	import lsfusion.server.logics.property.ImportSourceFormat;
 	import lsfusion.server.logics.scripted.*;
@@ -41,6 +43,8 @@ grammar LsfLogics;
 	import lsfusion.server.logics.scripted.ScriptingLogicsModule.LPWithParams;
 	import lsfusion.server.logics.scripted.ScriptingLogicsModule.TypedParameter;
 	import lsfusion.server.logics.scripted.ScriptingLogicsModule.PropertyUsage;
+	import lsfusion.server.logics.scripted.ScriptingLogicsModule.AbstractPropertyUsage;
+	import lsfusion.server.logics.scripted.ScriptingLogicsModule.LPUsage;
 	import lsfusion.server.logics.scripted.ScriptingLogicsModule.FormActionProps;
 	import lsfusion.server.logics.scripted.ScriptingLogicsModule.NavigatorElementOptions;
 	import lsfusion.server.logics.scripted.ScriptingFormEntity.RegularFilterInfo;
@@ -167,13 +171,6 @@ grammar LsfLogics;
 	public List<GroupObjectEntity> getGroupObjectsList(List<String> ids, Version version) throws ScriptingErrorLog.SemanticErrorException {
 		if (inPropParseState()) {
 			return $formStatement::form.getGroupObjectsList(ids, version);
-		}
-		return null;
-	}
-
-	public MappedProperty getPropertyWithMapping(PropertyUsage pUsage, List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
-		if (inPropParseState()) {
-			return $formStatement::form.getPropertyWithMapping(pUsage, mapping);
 		}
 		return null;
 	}
@@ -364,10 +361,10 @@ scope {
 }
 @after {
 	if (inPropParseState() && initialDeclaration) {
-		self.addScriptedForm($formStatement::form, point);
+		self.finalizeScriptedForm($formStatement::form);
 	}
 }
-	:	(	declaration=formDeclaration { $formStatement::form = $declaration.form; initialDeclaration = true; }
+	:	(	declaration=formDeclaration { $formStatement::form = $declaration.form; initialDeclaration = true; if(inPropParseState()) self.addScriptedForm($formStatement::form, point); }
 		|	extDecl=extendingFormDeclaration { $formStatement::form = $extDecl.form; }
 		)
 		(	formGroupObjectsList
@@ -583,7 +580,7 @@ formObjectDeclaration returns [String name, String className, LocalizedString ca
 	
 formPropertiesList
 @init {
-	List<PropertyUsage> properties = new ArrayList<>();
+	List<? extends AbstractPropertyUsage> properties = new ArrayList<>();
 	List<String> aliases = new ArrayList<>();
 	List<List<String>> mapping = new ArrayList<>();
 	List<DebugInfo.DebugPoint> points = new ArrayList<>();
@@ -647,51 +644,96 @@ formPropertyDraw returns [PropertyDrawEntity property]
 	|	prop=mappedPropertyDraw { if (inPropParseState()) $property = $formStatement::form.getPropertyDraw($prop.name, $prop.mapping, self.getVersion()); }
 	;
 
-formMappedPropertiesList returns [List<String> aliases, List<PropertyUsage> properties, List<List<String>> mapping, List<FormPropertyOptions> options, List<DebugInfo.DebugPoint> points]
+formMappedPropertiesList returns [List<String> aliases, List<AbstractPropertyUsage> properties, List<List<String>> mapping, List<FormPropertyOptions> options, List<DebugInfo.DebugPoint> points]
 @init {
 	$aliases = new ArrayList<String>();
-	$properties = new ArrayList<PropertyUsage>();
+	$properties = new ArrayList<AbstractPropertyUsage>();
 	$mapping = new ArrayList<List<String>>();
 	$options = new ArrayList<FormPropertyOptions>();
 	$points = new ArrayList<DebugInfo.DebugPoint>(); 
 	String alias = null;
+	LP lp = null;
+	List<String> mapping = null;
 }
-	:	{ alias = null; $points.add(getCurrentDebugPoint()); }
-		(id=ID '=' { alias = $id.text; })?
-		mappedProp=formMappedProperty opts=formPropertyOptionsList
+	:	
+		{ alias = null; $points.add(getCurrentDebugPoint()); }
+		(		
+				(id=ID '=' { alias = $id.text; })? mappedProp=formMappedProperty 
+				{
+        			$properties.add($mappedProp.propUsage);
+		        	$mapping.add($mappedProp.mapping);
+				} 
+			| 	
+			    (
+			    (id=ID { alias = $id.text; } )?
+			    '='
+			    (       expr=formExprDeclaration { lp = $expr.property; mapping = $expr.mapping; }
+			        |   action=formActionDeclaration { lp = $action.property; mapping = $action.mapping; })
+                )
+                {
+                    $properties.add(new LPUsage(lp));
+                    $mapping.add(mapping);
+                } 
+		)
+		opts=formPropertyOptionsList
 		{
 			$aliases.add(alias);
-			$properties.add($mappedProp.propUsage);
-			$mapping.add($mappedProp.mapping);
 			$options.add($opts.options);
 		}
 		(','
-			{ alias = null; $points.add(getCurrentDebugPoint()); }
-			(id=ID '=' { alias = $id.text; })?
-			mappedProp=formMappedProperty opts=formPropertyOptionsList
-			{
-				$aliases.add(alias);
-				$properties.add($mappedProp.propUsage);
-				$mapping.add($mappedProp.mapping);
-				$options.add($opts.options);
-			}
+            { alias = null; $points.add(getCurrentDebugPoint()); }
+            (		
+                    (id=ID '=' { alias = $id.text; })? mappedProp=formMappedProperty 
+                    {
+                        $properties.add($mappedProp.propUsage);
+                        $mapping.add($mappedProp.mapping);
+                    } 
+                | 	
+                    (
+                    (id=ID { alias = $id.text; } )?
+                    '='
+                    (       expr=formExprDeclaration { lp = $expr.property; mapping = $expr.mapping; }
+                        |   action=formActionDeclaration { lp = $action.property; mapping = $action.mapping; })
+                    )
+                    {
+                        $properties.add(new LPUsage(lp));
+                        $mapping.add(mapping);
+                    }
+            )
+            opts=formPropertyOptionsList
+            {
+                $aliases.add(alias);
+                $options.add($opts.options);
+            }
 		)*
 	;
 
 formCalcPropertyObject returns [CalcPropertyObjectEntity property = null]
-	:	mProperty=formMappedProperty
+@init {
+    AbstractPropertyUsage propUsage;
+    List<String> mapping;
+}
+	:	    mProperty=formMappedProperty { propUsage = $mProperty.propUsage; mapping = $mProperty.mapping; }
+	    |
+	        expr=formExprDeclaration { propUsage = new LPUsage($expr.property); mapping = $expr.mapping; }
 		{
 			if (inPropParseState()) {
-				$property = $formStatement::form.addCalcPropertyObject($mProperty.propUsage, $mProperty.mapping);
+				$property = $formStatement::form.addCalcPropertyObject(propUsage, mapping);
 			}
 		}
 	;
 
 formActionPropertyObject returns [ActionPropertyObjectEntity action = null]
-	:	mProperty=formMappedProperty
+@init {
+    AbstractPropertyUsage propUsage;
+    List<String> mapping;
+}
+	:	    mProperty=formMappedProperty { propUsage = $mProperty.propUsage; mapping = $mProperty.mapping; }
+	    |
+	        mAction=formActionDeclaration { propUsage = new LPUsage($mAction.property); mapping = $mAction.mapping; }
 		{
 			if (inPropParseState()) {
-				$action = $formStatement::form.addActionPropertyObject($mProperty.propUsage, $mProperty.mapping);
+				$action = $formStatement::form.addActionPropertyObject(propUsage, mapping);
 			}
 		}
 	;
@@ -795,8 +837,8 @@ formFiltersList
 	}
 }
 	:	'FILTERS'
-		decl=formFilterDeclaration { properties.add($decl.property); propertyMappings.add($decl.mapping);}
-	    (',' decl=formFilterDeclaration { properties.add($decl.property); propertyMappings.add($decl.mapping);})*
+		decl=formExprDeclaration { properties.add($decl.property); propertyMappings.add($decl.mapping);}
+	    (',' decl=formExprDeclaration { properties.add($decl.property); propertyMappings.add($decl.mapping);})*
 	;
 
 formHintsList
@@ -880,15 +922,15 @@ formRegularFilterDeclaration returns [RegularFilterInfo filter]
 @init {
 	String key = null;
 }
-    :   'FILTER' caption=localizedStringLiteral fd=formFilterDeclaration (keystroke=stringLiteral {key = $keystroke.val;})? setDefault=filterSetDefault
+    :   'FILTER' caption=localizedStringLiteral fd=formExprDeclaration (keystroke=stringLiteral {key = $keystroke.val;})? setDefault=filterSetDefault
         {
             $filter = new RegularFilterInfo($caption.val, key, $fd.property, $fd.mapping, $setDefault.isDefault);
         }
     ;
 	
-formFilterDeclaration returns [LP property, List<String> mapping] 
+formExprDeclaration returns [LP property, List<String> mapping] 
 @init {
-	List<TypedParameter> context = null;
+	List<TypedParameter> context = new ArrayList<TypedParameter>();
 	if (inPropParseState()) {
 		context = $formStatement::form.getTypedObjectsNames(self.getVersion());
 	}
@@ -899,6 +941,21 @@ formFilterDeclaration returns [LP property, List<String> mapping]
 	}	
 }
 	:	expr=propertyExpression[context, false] { if (inPropParseState()) { self.checkNecessaryProperty($expr.property); $property = $expr.property.property; } }
+	;
+
+formActionDeclaration returns [LP property, List<String> mapping] 
+@init {
+	List<TypedParameter> context = new ArrayList<TypedParameter>();
+	if (inPropParseState()) {
+		context = $formStatement::form.getTypedObjectsNames(self.getVersion());
+	}
+}
+@after {
+	if (inPropParseState()) {
+		$mapping = self.getUsedNames(context, $action.property.usedParams);
+	}	
+}
+	:	action=listTopContextDependentActionDefinitionBody[context, false, true] { if (inPropParseState()) { $property = $action.property.property; } }
 	;
 	
 filterSetDefault returns [boolean isDefault = false]
