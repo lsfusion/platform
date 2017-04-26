@@ -37,6 +37,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.Format;
 import java.text.NumberFormat;
 import java.text.ParseException;
@@ -990,7 +991,7 @@ public class GridTable extends ClientPropertyTable {
             int numbers = selectionController.getNumbersQuantity();
             if (numbers > 1) {
                 BigDecimal sum = selectionController.getSum();
-                groupController.updateSelectionInfo(quantity, format(sum), format(sum.divide(BigDecimal.valueOf(numbers), sum.scale())));
+                groupController.updateSelectionInfo(quantity, format(sum), format(sum.divide(BigDecimal.valueOf(numbers), sum.scale(), RoundingMode.HALF_UP)));
                 return;
             }
         }
