@@ -1,5 +1,6 @@
 package lsfusion.erp.utils;
 
+import lsfusion.base.BaseUtils;
 import lsfusion.interop.action.BeepClientAction;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
@@ -30,7 +31,7 @@ public class BeepActionProperty extends ScriptingActionProperty {
         final byte[] inputFile = (byte[]) context.getKeyValue(fileInterface).getValue();
         boolean async = context.getKeyValue(asyncInterface).getValue() != null;
         if(inputFile != null) {
-            context.delayUserInteraction(new BeepClientAction(inputFile, async));
+            context.delayUserInteraction(new BeepClientAction(BaseUtils.getFile(inputFile), async));
         }
     }
 
