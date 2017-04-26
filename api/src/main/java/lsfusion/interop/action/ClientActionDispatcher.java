@@ -66,4 +66,7 @@ public interface ClientActionDispatcher {
     Map<String, byte[]> execute(UserLogsClientAction action);
 
     byte[] execute(ThreadDumpClientAction action);
+
+    void execute(BeepClientAction action);
+
 }

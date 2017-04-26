@@ -20,9 +20,7 @@ import lsfusion.interop.action.*;
 import lsfusion.interop.form.ServerResponse;
 import org.apache.commons.io.FileUtils;
 
-import javax.sound.sampled.AudioInputStream;
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.Clip;
+import javax.sound.sampled.*;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.datatransfer.StringSelection;
@@ -545,5 +543,30 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
             sb.append("\n");
         }
         return sb.toString();
+    }
+
+    @Override
+    public void execute(final BeepClientAction action) {
+        if (action.async) {
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    beep(action.file);
+                }
+            }).run();
+        } else {
+            beep(action.file);
+        }
+    }
+
+    private void beep(byte[] inputFile) {
+        try {
+            Clip clip = AudioSystem.getClip();
+            AudioInputStream inputStream = AudioSystem.getAudioInputStream(new ByteArrayInputStream(BaseUtils.getFile(inputFile)));
+            clip.open(inputStream);
+            clip.start();
+        } catch (LineUnavailableException | IOException | UnsupportedAudioFileException e) {
+            throw Throwables.propagate(e);
+        }
     }
 }
