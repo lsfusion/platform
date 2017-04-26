@@ -77,11 +77,13 @@ public class EmailReceiver {
             QueryBuilder<Object, Object> emailQuery = new QueryBuilder<>(emailKeys);
             emailQuery.addProperty("fromAddressEmail", LM.findProperty("fromAddress[Email]").getExpr(emailExpr));
             emailQuery.addProperty("dateTimeSentEmail", LM.findProperty("dateTimeSent[Email]").getExpr(emailExpr));
+            emailQuery.addProperty("subjectEmail", LM.findProperty("subject[Email]").getExpr(emailExpr));
             emailQuery.and(LM.findProperty("fromAddress[Email]").getExpr(emailExpr).getWhere());
 
             ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> emailResult = emailQuery.execute(context);
             for(ImMap<Object, Object> entry : emailResult.values()) {
-                skipEmails.add(getEmailId((Timestamp) entry.get("dateTimeSentEmail"), (String) entry.get("fromAddressEmail")));
+                skipEmails.add(getEmailId((Timestamp) entry.get("dateTimeSentEmail"), (String) entry.get("fromAddressEmail"),
+                        (String) entry.get("subjectEmail")));
             }
 
         } catch (Exception e) {
@@ -221,10 +223,10 @@ public class EmailReceiver {
             Timestamp dateTimeSentEmail = getSentDate(message);
             if(minDateTime == null || dateTimeSentEmail == null || minDateTime.compareTo(dateTimeSentEmail) <= 0) {
                 String fromAddressEmail = ((InternetAddress) message.getFrom()[0]).getAddress();
-                String idEmail = getEmailId(dateTimeSentEmail, fromAddressEmail);
+                String subjectEmail = message.getSubject();
+                String idEmail = getEmailId(dateTimeSentEmail, fromAddressEmail, subjectEmail);
                 if(!skipEmails.contains(idEmail)) {
                     message.setFlag(deleteMessagesAccount ? Flags.Flag.DELETED : Flags.Flag.SEEN, true);
-                    String subjectEmail = message.getSubject();
                     Object messageContent = getEmailContent(message);
                     MultipartBody messageEmail = messageContent instanceof Multipart ? getMultipartBody(subjectEmail, (Multipart) messageContent) :
                             messageContent instanceof BASE64DecoderStream ? getMultipartBody64(subjectEmail, (BASE64DecoderStream) messageContent, decodeFileName(message.getFileName())) :
@@ -282,8 +284,8 @@ public class EmailReceiver {
         return out.toByteArray();
     }
 
-    private String getEmailId(Timestamp dateTime, String fromAddress) {
-        return (dateTime == null ? "" : dateTime.getTime()) + fromAddress;
+    private String getEmailId(Timestamp dateTime, String fromAddress, String subject) {
+        return String.format("%s/%s/%s", dateTime == null ? "" : dateTime.getTime(), fromAddress, subject == null ? "" : subject);
     }
 
     private MultipartBody getMultipartBody(String subjectEmail, Multipart mp) throws IOException, MessagingException {
