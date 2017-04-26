@@ -82,7 +82,7 @@ public class Settings {
 
     private boolean editActionOnSingleClick = false;
 
-    private int freeConnections = 5;
+    private int freeConnections = 12;
 
     private boolean commonUnique = true; // потому как в таком случае все common connection'ы начинают блокировать друг друга, поэтому схема с private pool'ом правильней
 
