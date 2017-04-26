@@ -208,4 +208,9 @@ public class ClientActionToGwtConverter extends ObjectConverter {
     public GCopyToClipboardAction convertAction(CopyToClipboardClientAction action) {
         return new GCopyToClipboardAction(action.value);
     }
+
+    @Converter(from = BeepClientAction.class)
+    public GBeepAction convertAction(BeepClientAction action) {
+        return new GBeepAction(FileUtils.saveFile(action.file, "wav"));
+    }
 }

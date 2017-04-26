@@ -562,7 +562,7 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
     private void beep(byte[] inputFile) {
         try {
             Clip clip = AudioSystem.getClip();
-            AudioInputStream inputStream = AudioSystem.getAudioInputStream(new ByteArrayInputStream(BaseUtils.getFile(inputFile)));
+            AudioInputStream inputStream = AudioSystem.getAudioInputStream(new ByteArrayInputStream(inputFile));
             clip.open(inputStream);
             clip.start();
         } catch (LineUnavailableException | IOException | UnsupportedAudioFileException e) {

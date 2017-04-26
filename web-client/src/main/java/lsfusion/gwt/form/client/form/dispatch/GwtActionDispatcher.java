@@ -1,5 +1,6 @@
 package lsfusion.gwt.form.client.form.dispatch;
 
+import com.google.gwt.media.client.Audio;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import lsfusion.gwt.base.client.GwtClientUtils;
@@ -223,5 +224,15 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
     @Override
     public String execute(GLoadLinkAction action) {
         return null;
+    }
+
+    @Override
+    public void execute(final GBeepAction action) {
+        String fileUrl = GwtClientUtils.getWebAppBaseURL() + "downloadFile?name=" + action.filePath;
+        Audio beep = Audio.createIfSupported();
+        if (beep != null) {
+            beep.setSrc(fileUrl);
+            beep.play();
+        }
     }
 }

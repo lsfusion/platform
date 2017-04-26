@@ -40,4 +40,6 @@ public interface GActionDispatcher {
     void execute(GActivateTabAction action);
 
     String execute(GLoadLinkAction action);
+
+    void execute(GBeepAction action);
 }
