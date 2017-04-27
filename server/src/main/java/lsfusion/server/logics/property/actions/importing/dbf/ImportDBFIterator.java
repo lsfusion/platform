@@ -67,10 +67,13 @@ class ImportDBFIterator extends ImportIterator {
                         Boolean bool = record.getBoolean(fieldMapping.get(column));
                         listRow.add(bool == null ? null : String.valueOf(bool));
                     } else {
-                        if (record.getField(fieldMapping.get(column)).getType() == DbfFieldTypeEnum.Memo) {
+                        DbfFieldTypeEnum fieldType = record.getField(fieldMapping.get(column)).getType();
+                        if (fieldType == DbfFieldTypeEnum.Double) {
+                            Double d = record.getDouble(fieldMapping.get(column));
+                            listRow.add(d == null ? null : String.valueOf(d));
+                        } else if (fieldType == DbfFieldTypeEnum.Memo) {
                             listRow.add(record.getMemoAsString(fieldMapping.get(column), Charset.forName(charset)));
-                        }
-                        else
+                        } else
                             listRow.add(record.getString(fieldMapping.get(column), charset));
                     }
                 }

@@ -7,6 +7,8 @@ import net.iryndin.jdbf.reader.MemoReader;
 import net.iryndin.jdbf.util.BitUtils;
 import net.iryndin.jdbf.util.JdbfUtils;
 
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.charset.Charset;
@@ -214,6 +216,33 @@ public class CustomDbfRecord {
         //MathContext mc = new MathContext(f.getNumberOfDecimalPlaces());
         //return new BigDecimal(s, mc);
         return new BigDecimal(s);
+    }
+
+    public Double getDouble(String fieldName) {
+        try {
+            byte[] bytes = getBytes(fieldName);
+            reverse(bytes);
+            DataInputStream stream = new DataInputStream(new ByteArrayInputStream(bytes));
+            return stream.readDouble();
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private void reverse(byte[] array) {
+        if (array == null) {
+            return;
+        }
+        int i = 0;
+        int j = array.length - 1;
+        byte tmp;
+        while (j > i) {
+            tmp = array[j];
+            array[j] = array[i];
+            array[i] = tmp;
+            j--;
+            i++;
+        }
     }
 
     public Boolean getBoolean(String fieldName) {
