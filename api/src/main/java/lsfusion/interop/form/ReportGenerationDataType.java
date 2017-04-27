@@ -21,6 +21,6 @@ public enum ReportGenerationDataType {
     }
 
     public boolean isDefault() {
-        return this == DEFAULT;
+        return this != EXPORT;
     }
 }
