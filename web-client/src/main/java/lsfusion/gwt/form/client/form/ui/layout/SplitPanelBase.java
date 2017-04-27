@@ -81,7 +81,7 @@ public abstract class SplitPanelBase<P extends Panel> {
     }
 
     protected int getAvailableSize() {
-        return (vertical ? panel.getOffsetHeight() : panel.getOffsetWidth()) - (splitter.isVisible() ? splitterSize : 0);
+        return (vertical ? panel.getOffsetHeight() : panel.getOffsetWidth()) - (splitter.isVisible() ? splitterSize : 0) - 2; // не удалось найти точную причину цикличной перерисовки формы с расширением сплит-панелей. поэтому делаем поправку на 2px
     }
 
     public int getSplitterSize() {
@@ -192,11 +192,11 @@ public abstract class SplitPanelBase<P extends Panel> {
             if (vertical) {
                 draggerElement.getStyle().setLeft(0, Style.Unit.PX);
                 draggerElement.getStyle().setRight(0, Style.Unit.PX);
-                draggerElement.getStyle().setHeight(5, Style.Unit.PX);
+                draggerElement.getStyle().setHeight(splitterSize, Style.Unit.PX);
             } else {
                 draggerElement.getStyle().setTop(0, Style.Unit.PX);
                 draggerElement.getStyle().setBottom(0, Style.Unit.PX);
-                draggerElement.getStyle().setWidth(5, Style.Unit.PX);
+                draggerElement.getStyle().setWidth(splitterSize, Style.Unit.PX);
             }
 
             panel.getElement().appendChild(draggerElement);
