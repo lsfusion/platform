@@ -17,7 +17,7 @@ public enum ReportGenerationDataType {
     }
 
     public boolean isPrint() {
-        return this == PRINT;
+        return false;
     }
 
     public boolean isDefault() {
