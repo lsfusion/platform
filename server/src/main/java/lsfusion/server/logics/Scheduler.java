@@ -614,7 +614,7 @@ public class Scheduler extends MonitorServer implements InitializingBean {
         }
 
         public class SchedulerContext extends WrapperContext {
-
+            private String logMessage = null;
             @Override
             public void delayUserInteraction(ClientAction action) {
                 String message = null;
@@ -636,12 +636,18 @@ public class Scheduler extends MonitorServer implements InitializingBean {
                         throw Throwables.propagate(e);
                     }
                 }
+                logMessage = message;
                 try {
                     super.delayUserInteraction(action);
                 } catch (Exception e) {
                     schedulerLogger.error("Error while executing delayUserInteraction in SchedulerContext", e);
                     afterFinishErrorOccurred = true;
                 }
+            }
+
+            @Override
+            public String getLogMessage() {
+                return logMessage;
             }
         }
     }
