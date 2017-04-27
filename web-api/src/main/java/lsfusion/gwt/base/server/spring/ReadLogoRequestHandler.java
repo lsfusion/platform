@@ -31,6 +31,6 @@ public class ReadLogoRequestHandler implements HttpRequestHandler {
             logo = IOUtils.toByteArray(context.getResourceAsStream("/splash.jpg"));
         response.setContentType("application/jpg");
         response.addHeader("Content-Disposition", "attachment; filename=logo.jpg");
-        response.getOutputStream().write(BaseUtils.getFile(logo));
+        response.getOutputStream().write(logo);
     }
 }
