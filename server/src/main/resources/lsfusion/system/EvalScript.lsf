@@ -73,11 +73,11 @@ afterRunScript() = {
 }
 
 
-scriptExecution 'Выполнить скрипт' () = { preRunScript(); EVAL scriptStorage(); afterRunScript(); }
+scriptExecution 'Выполнить скрипт' () = { TRY { preRunScript(); EVAL scriptStorage(); afterRunScript(); } }
 
-actionBodyExecution 'Выполнить действие' () = { preRunScript(); EVAL CONCAT ' ', 'run() = \{', scriptStorage(), ';\n\};'; afterRunScript(); };
-formExecution 'Показать форму' () = { preRunScript(); EVAL CONCAT ' ', 'FORM form', scriptStorage(), ';\nrun() = \{ SHOW form NOWAIT; \}'; afterRunScript(); };
-javaActionBodyExecution 'Выполнить Java-код' () = { preRunScript(); EVAL CONCAT ' ', 'run() = ACTION CUSTOM <\{ ', scriptStorage(), ' \}>;'; afterRunScript(); };
+actionBodyExecution 'Выполнить действие' () = { TRY { preRunScript(); EVAL CONCAT ' ', 'run() = \{', scriptStorage(), ';\n\};'; afterRunScript(); } };
+formExecution 'Показать форму' () = { TRY { preRunScript(); EVAL CONCAT ' ', 'FORM form', scriptStorage(), ';\nrun() = \{ SHOW form NOWAIT; \}'; afterRunScript(); } };
+javaActionBodyExecution 'Выполнить Java-код' () = { TRY { preRunScript(); EVAL CONCAT ' ', 'run() = ACTION CUSTOM <\{ ', scriptStorage(), ' \}>;'; afterRunScript(); } };
 
 FORM chooseScriptName 'Сохранить как'
     OBJECTS name = VARSTRING[100] PANEL
