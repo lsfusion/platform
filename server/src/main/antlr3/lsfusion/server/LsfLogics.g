@@ -713,9 +713,11 @@ formCalcPropertyObject returns [CalcPropertyObjectEntity property = null]
     AbstractPropertyUsage propUsage;
     List<String> mapping;
 }
-	:	    mProperty=formMappedProperty { propUsage = $mProperty.propUsage; mapping = $mProperty.mapping; }
+	:	(
+	        mProperty=formMappedProperty { propUsage = $mProperty.propUsage; mapping = $mProperty.mapping; }
 	    |
 	        expr=formExprDeclaration { propUsage = new LPUsage($expr.property); mapping = $expr.mapping; }
+        )
 		{
 			if (inPropParseState()) {
 				$property = $formStatement::form.addCalcPropertyObject(propUsage, mapping);
@@ -728,9 +730,11 @@ formActionPropertyObject returns [ActionPropertyObjectEntity action = null]
     AbstractPropertyUsage propUsage;
     List<String> mapping;
 }
-	:	    mProperty=formMappedProperty { propUsage = $mProperty.propUsage; mapping = $mProperty.mapping; }
-	    |
-	        mAction=formActionDeclaration { propUsage = new LPUsage($mAction.property); mapping = $mAction.mapping; }
+	:	(
+	            mProperty=formMappedProperty { propUsage = $mProperty.propUsage; mapping = $mProperty.mapping; }
+	        |
+	            mAction=formActionDeclaration { propUsage = new LPUsage($mAction.property); mapping = $mAction.mapping; }
+        )
 		{
 			if (inPropParseState()) {
 				$action = $formStatement::form.addActionPropertyObject(propUsage, mapping);
