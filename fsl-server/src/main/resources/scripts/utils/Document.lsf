@@ -603,7 +603,7 @@ END
 // ----- Description ----- //
 META defineDocumentHeaderDescription(objectClass, caption)
     description 'Название документа' (objectClass o) =
-        caption + ' № ' + seriesNumber(o) + ' от ' + date(o) MINCHARWIDTH 30 PREFCHARWIDTH 50;
+        CONCAT ' ', caption, '№ ' + seriesNumber(o), 'от ' + date(o) MINCHARWIDTH 30 PREFCHARWIDTH 50;
 END
 META defineDocumentAbstractHeaderDescription(objectClass)
     description 'Название документа' = ABSTRACT VARSTRING[200] (objectClass) MINCHARWIDTH 30 PREFCHARWIDTH 50 PERSISTENT;
