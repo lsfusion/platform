@@ -710,8 +710,8 @@ formMappedPropertiesList returns [List<String> aliases, List<AbstractPropertyUsa
 
 formCalcPropertyObject returns [CalcPropertyObjectEntity property = null]
 @init {
-    AbstractPropertyUsage propUsage;
-    List<String> mapping;
+    AbstractPropertyUsage propUsage = null;
+    List<String> mapping = null;
 }
 	:	(
 	        mProperty=formMappedProperty { propUsage = $mProperty.propUsage; mapping = $mProperty.mapping; }
@@ -727,8 +727,8 @@ formCalcPropertyObject returns [CalcPropertyObjectEntity property = null]
 
 formActionPropertyObject returns [ActionPropertyObjectEntity action = null]
 @init {
-    AbstractPropertyUsage propUsage;
-    List<String> mapping;
+    AbstractPropertyUsage propUsage = null;
+    List<String> mapping = null;
 }
 	:	(
 	            mProperty=formMappedProperty { propUsage = $mProperty.propUsage; mapping = $mProperty.mapping; }
