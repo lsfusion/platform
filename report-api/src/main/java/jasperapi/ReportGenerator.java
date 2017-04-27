@@ -193,7 +193,7 @@ public class ReportGenerator {
     }
 
     public static SourcesGenerationOutput retrieveReportSources(ReportGenerationData generationData, Map<ByteArray, String> files) throws IOException {
-        return retrieveReportSources(generationData, files, ReportGenerationDataType.DEFAULT);
+        return retrieveReportSources(generationData, files, ReportGenerationDataType.PRINTJASPER);
     }
 
     //corresponding serialization is in lsfusion.server.remote.FormReportManager.getReportSourcesByteArray()
@@ -591,7 +591,6 @@ public class ReportGenerator {
 
     public static void exportAndOpen(ReportGenerationData generationData, FormPrintType type) {
         try {
-            assert type.isExcel();
             File tempFile = exportToFile(generationData, type);
 
             try {

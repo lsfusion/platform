@@ -56,7 +56,7 @@ public class ReportData<Order, Obj extends Order, PropertyReader> {
 
     public void serialize(DataOutputStream outStream, ReportGenerationDataType reportType, FormReportInterface<?, ?, ?, ?, Order, Obj, PropertyReader> formInterface) throws IOException {
         outStream.writeBoolean(keyRows.size() == 0);
-        if (keyRows.size() == 0 && reportType.isDefault()) return;
+        if (keyRows.size() == 0 && reportType.isPrintJasper()) return;
 
         outStream.writeInt(keys.size());
         for(Obj object : keys) {

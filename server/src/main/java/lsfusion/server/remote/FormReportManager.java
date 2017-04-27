@@ -101,7 +101,7 @@ public class FormReportManager<PropertyDraw extends PropertyReaderInstance, Grou
     }
 
     public ReportGenerationData getReportData(boolean toExcel) {
-        return getReportData(null, toExcel, ReportGenerationDataType.DEFAULT, null, 0);
+        return getReportData(null, toExcel, ReportGenerationDataType.PRINTJASPER, null, 0);
     }
 
     public ReportGenerationData getReportData(boolean toExcel, ReportGenerationDataType reportType, int selectTop) {
@@ -109,17 +109,17 @@ public class FormReportManager<PropertyDraw extends PropertyReaderInstance, Grou
     }
 
     public ReportGenerationData getReportData(Integer groupId, boolean toExcel, FormUserPreferences userPreferences) {
-        return getReportData(groupId, toExcel, ReportGenerationDataType.DEFAULT, userPreferences, 0);
+        return getReportData(groupId, toExcel, ReportGenerationDataType.PRINTJASPER, userPreferences, 0);
     }
 
     public ReportGenerationData getReportData(Integer groupId, boolean toExcel, FormUserPreferences userPreferences, int selectTop) {
-        return getReportData(groupId, toExcel, ReportGenerationDataType.DEFAULT, userPreferences, selectTop);
+        return getReportData(groupId, toExcel, ReportGenerationDataType.PRINTJASPER, userPreferences, selectTop);
     }
 
     public ReportGenerationData getReportData(Integer groupId, boolean toExcel, ReportGenerationDataType reportType, FormUserPreferences userPreferences, int selectTop) {
-        GroupObjectHierarchy.ReportHierarchy groupReportHierarchy = getReportHierarchy(groupId, !reportType.isDefault());
+        GroupObjectHierarchy.ReportHierarchy groupReportHierarchy = getReportHierarchy(groupId, !reportType.isPrintJasper());
          
-        GroupObjectHierarchy.ReportHierarchy fullReportHierarchy = getReportHierarchy(null, !reportType.isDefault());
+        GroupObjectHierarchy.ReportHierarchy fullReportHierarchy = getReportHierarchy(null, !reportType.isPrintJasper());
 
         byte[] reportHierarchyByteArray = getReportHierarchyByteArray(groupReportHierarchy.getReportHierarchyMap());
         Result<Map<String, LinkedHashSet<List<Object>>>> columnGroupObjects = new Result<>();
@@ -127,7 +127,7 @@ public class FormReportManager<PropertyDraw extends PropertyReaderInstance, Grou
                 new ReportSourceGenerator<>(formInterface, groupReportHierarchy, fullReportHierarchy, getGridGroups(groupId), groupId, userPreferences);
         byte[] reportSourcesByteArray = getReportSourcesByteArray(sourceGenerator, columnGroupObjects, reportType, selectTop);
         byte[] reportDesignsByteArray = reportType.isExport() ? null :
-                reportType.isPrint() ? getPropertyCaptionsMapByteArray(sourceGenerator, reportType) :
+                reportType.isPrintMessage() ? getPropertyCaptionsMapByteArray(sourceGenerator, reportType) :
                         getReportDesignsByteArray(toExcel, groupId, userPreferences, columnGroupObjects.result);
 
         return new ReportGenerationData(reportHierarchyByteArray, reportDesignsByteArray, reportSourcesByteArray);

@@ -82,7 +82,7 @@ public class PrintActionProperty<O extends ObjectSelector> extends FormStaticAct
 
         try {
 
-            Map<String, ClientReportData> data = ReportGenerator.retrieveReportSources(reportData, null, ReportGenerationDataType.PRINT).data;
+            Map<String, ClientReportData> data = ReportGenerator.retrieveReportSources(reportData, null, ReportGenerationDataType.PRINTMESSAGE).data;
             Map<String, Map<String, String>> propertyCaptionsMap = ReportGenerator.retrievePropertyCaptions(reportData);
             assert data.size() == 1;
             for (Map.Entry<String, ClientReportData> dataEntry : data.entrySet()) {

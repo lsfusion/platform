@@ -286,7 +286,7 @@ public class ReportSourceGenerator<PropertyDraw extends PropertyReaderInstance, 
             Property pProperty;
             if (((applyGroup == null || toDraw == applyGroup) && toDraw != null && filterGroups.contains(toDraw) && validForGroupReports(property)) ||
                 (toDraw == null && applyGroup == null && (pProperty = formInterface.getProperty(formInterface.getPropertyObject(property))) instanceof CalcProperty && pProperty.getInterfaceCount() == 0) ||
-                (toDraw != applyGroup && !reportType.isDefault())) {
+                (toDraw != applyGroup && !reportType.isPrintJasper())) {
                 boolean add = true;
                 
                 if (userPreferences != null && toDraw != null) {

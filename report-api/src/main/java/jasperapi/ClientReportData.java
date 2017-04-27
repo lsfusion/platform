@@ -37,7 +37,7 @@ public class ClientReportData implements JRDataSource {
 
     public ClientReportData(DataInputStream inStream, Map<ByteArray, String> files, ReportGenerationDataType reportType) throws IOException {
 
-        if (!inStream.readBoolean() || !reportType.isDefault()) {
+        if (!inStream.readBoolean() || !reportType.isPrintJasper()) {
             int objectCnt = inStream.readInt();
             for (int i = 0; i < objectCnt; i++) {
                 String name = inStream.readUTF();
