@@ -128,7 +128,7 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
         });
     }
 
-    private static SessionData write(final SQLSession session, final ImOrderSet<KeyField> keys, final ImSet<PropertyField> properties, IQuery<KeyField, PropertyField> query, BaseClass baseClass, final QueryEnvironment env, final TableOwner owner, boolean updateClasses) throws SQLException, SQLHandledException {
+    private static SessionData write(final SQLSession session, final ImOrderSet<KeyField> keys, final ImSet<PropertyField> properties, IQuery<KeyField, PropertyField> query, BaseClass baseClass, final QueryEnvironment env, final TableOwner owner, boolean updateClasses, final int selectTop) throws SQLException, SQLHandledException {
 
         assert properties.equals(query.getProperties());
 
@@ -157,7 +157,7 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
         SessionTable table = session.createTemporaryTable(keys.filterOrderIncl(query.getMapKeys().keys()), query.getProperties(), null, null, null, new FillTemporaryTable() { // статистика обновится в readSingleValues / removeFields
             public Integer fill(String name) throws SQLException, SQLHandledException {
 //                ServerLoggers.assertLog(session.getCount(name, opOwner)==0, "TEMPORARY TABLE SHOULD BE EMPTY");
-                return session.insertSessionSelect(name, insertQuery, env, owner);
+                return session.insertSessionSelect(name, insertQuery, env, owner, selectTop);
             }
         }, getQueryClasses(query), owner, opOwner);
 
@@ -201,6 +201,10 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
     }
 
     public SessionData rewrite(SQLSession session, IQuery<KeyField, PropertyField> query, BaseClass baseClass, QueryEnvironment env, TableOwner owner, boolean updateClasses) throws SQLException, SQLHandledException {
+       return rewrite(session, query, baseClass, env, owner, updateClasses, 0);
+    }
+
+    public SessionData rewrite(SQLSession session, IQuery<KeyField, PropertyField> query, BaseClass baseClass, QueryEnvironment env, TableOwner owner, boolean updateClasses, int selectTop) throws SQLException, SQLHandledException {
         boolean dropBefore = !Settings.get().isAlwaysDropSessionTableAfter() && !used(query);
         OperationOwner opOwner = env.getOpOwner();
         if(dropBefore)
@@ -208,7 +212,7 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
 
         SessionData result;
         try {
-            result = write(session, getOrderKeys(), getProperties(), query, baseClass, env, owner, updateClasses);
+            result = write(session, getOrderKeys(), getProperties(), query, baseClass, env, owner, updateClasses, selectTop);
         } catch (SQLHandledException e) {
             rollDrop(session, owner, opOwner);
             throw e;

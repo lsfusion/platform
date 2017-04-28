@@ -62,6 +62,10 @@ public class CompileOptions<V> extends TwinImmutableObject {
         this(syntax, LimitOptions.NOLIMIT, SubQueryContext.EMPTY, false, false, castTypes);
     }
 
+    public CompileOptions(SQLSyntax syntax, ImMap<V, Type> castTypes, int top) {
+        this(syntax, LimitOptions.get(top), SubQueryContext.EMPTY, false, false, castTypes);
+    }
+
     protected boolean calcTwins(TwinImmutableObject o) {
         return syntax.equals(((CompileOptions)o).syntax) && limit.equals(((CompileOptions)o).limit) && subcontext.equals(((CompileOptions)o).subcontext) && recursive == ((CompileOptions)o).recursive && noInline == ((CompileOptions)o).noInline && BaseUtils.nullEquals(castTypes, ((CompileOptions)o).castTypes);
     }

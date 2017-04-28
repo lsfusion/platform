@@ -84,7 +84,7 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K>, TableOwner {
 //    public String stack;
 
     public SessionTableUsage(SQLSession sql, final Query<K,V> query, BaseClass baseClass, QueryEnvironment env,
-                             final ImMap<K, Type> keyTypes, final ImMap<V, Type> propertyTypes) throws SQLException, SQLHandledException { // здесь порядок особо не важен, так как assert что getUsage'а не будет
+                             final ImMap<K, Type> keyTypes, final ImMap<V, Type> propertyTypes, int selectTop) throws SQLException, SQLHandledException { // здесь порядок особо не важен, так как assert что getUsage'а не будет
         this(query.mapKeys.keys().toOrderSet(), query.properties.keys().toOrderSet(), new Type.Getter<K>() {
             public Type getType(K key) {
                 return keyTypes.get(key);
@@ -94,7 +94,7 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K>, TableOwner {
                 return propertyTypes.get(key);
             }
         });
-        writeRows(sql, query, baseClass, env, SessionTable.matExprLocalQuery);
+        writeRows(sql, query, baseClass, env, SessionTable.matExprLocalQuery, selectTop);
     }
 
     public Join<V> join(ImMap<K, ? extends Expr> joinImplement) {
@@ -142,7 +142,11 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K>, TableOwner {
     }
 
     public void writeRows(SQLSession session, IQuery<K, V> query, BaseClass baseClass, QueryEnvironment env, boolean updateClasses) throws SQLException, SQLHandledException {
-        table = table.rewrite(session, query.map(mapKeys, mapProps), baseClass, env, this, updateClasses);
+        writeRows(session, query, baseClass, env, updateClasses, 0);
+    }
+
+    public void writeRows(SQLSession session, IQuery<K, V> query, BaseClass baseClass, QueryEnvironment env, boolean updateClasses, int selectTop) throws SQLException, SQLHandledException {
+        table = table.rewrite(session, query.map(mapKeys, mapProps), baseClass, env, this, updateClasses, selectTop);
     }
 
     // добавляет ряды которых не было в таблице, или modify'ит

@@ -205,10 +205,10 @@ public class ReportSourceGenerator<PropertyDraw extends PropertyReaderInstance, 
         BaseClass baseClass = getBaseClass();
         SQLSession sql = session.sql;
         SessionTableUsage<Obj, Pair<Object, PropertyType>> reportTable = new SessionTableUsage<>(
-                sql, query, baseClass, queryEnv, keyTypes, propTypes.result);
+                sql, query, baseClass, queryEnv, keyTypes, propTypes.result, selectTop);
 
         try {
-            ImOrderMap<ImMap<Obj, Object>, ImMap<Pair<Object, PropertyType>, Object>> resultData = reportTable.read(sql, getQueryEnv(), orders.result, selectTop);
+            ImOrderMap<ImMap<Obj, Object>, ImMap<Pair<Object, PropertyType>, Object>> resultData = reportTable.read(sql, getQueryEnv(), orders.result);
 
             List<Pair<String, PropertyReaderInstance>> propertyList = new ArrayList<>();
             for(PropertyDraw property : filterProperties(groups.getSet(), reportType)) {
