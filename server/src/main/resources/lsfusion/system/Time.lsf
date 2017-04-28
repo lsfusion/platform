@@ -104,7 +104,7 @@ currentMonth 'Тек. месяц' = extractMonthNumber (currentDate());
 
 FORM months 'Месяца'
     OBJECTS m = Month
-    PROPERTIES(m) staticCaption, number
+    PROPERTIES(m) READONLY staticCaption, number
     ORDER BY number(m)
     LIST Month OBJECT m
 ;
