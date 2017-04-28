@@ -222,8 +222,9 @@ public class CustomDbfRecord {
         try {
             byte[] bytes = getBytes(fieldName);
             reverse(bytes);
-            DataInputStream stream = new DataInputStream(new ByteArrayInputStream(bytes));
-            return stream.readDouble();
+            try(DataInputStream stream = new DataInputStream(new ByteArrayInputStream(bytes))) {
+                return stream.readDouble();
+            }
         } catch (Exception e) {
             return null;
         }
