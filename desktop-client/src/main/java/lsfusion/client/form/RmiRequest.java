@@ -1,5 +1,6 @@
 package lsfusion.client.form;
 
+import lsfusion.base.Pair;
 import lsfusion.client.ClientLoggers;
 import org.apache.log4j.Logger;
 
@@ -12,15 +13,19 @@ public abstract class RmiRequest<T> {
     private long lastReceivedRequestIndex = -1;
     private String name;
     
-    private boolean useTimeout = false;
+    /**
+     * first - power base;
+     * second - offset coefficient
+     */
+    private Pair<Integer, Integer> timeoutParams;
 
     protected RmiRequest(String name) {
         this.name = name;
     }
 
-    protected RmiRequest(String name, boolean useTimeout) {
+    protected RmiRequest(String name, Pair<Integer, Integer> timeoutParams) {
         this.name = name;
-        this.useTimeout = useTimeout;
+        this.timeoutParams = timeoutParams;
     }
 
     public String getName() {
@@ -31,12 +36,16 @@ public abstract class RmiRequest<T> {
         this.name = name;
     }
 
-    public void setUseTimeout(boolean useTimeout) {
-        this.useTimeout = useTimeout;
+    /**
+     * first - power base;
+     * second - offset coefficient
+     */
+    public void setTimeoutParams(Pair<Integer, Integer> timeoutParams) {
+        this.timeoutParams = timeoutParams;
     }
 
-    public boolean getUseTimeout() {
-        return useTimeout;
+    public Pair<Integer, Integer> getTimeoutParams() {
+        return timeoutParams;
     }
 
     void setRequestIndex(long rmiRequestIndex) {

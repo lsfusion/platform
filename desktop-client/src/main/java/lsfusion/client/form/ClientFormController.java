@@ -4,10 +4,7 @@ import com.google.common.base.Throwables;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Table;
-import lsfusion.base.BaseUtils;
-import lsfusion.base.EProvider;
-import lsfusion.base.ERunnable;
-import lsfusion.base.OrderedMap;
+import lsfusion.base.*;
 import lsfusion.base.identity.DefaultIDGenerator;
 import lsfusion.base.identity.IDGenerator;
 import lsfusion.client.EditReportInvoker;
@@ -1576,8 +1573,8 @@ public class ClientFormController implements AsyncListener {
             super(formSID + ":" + name);
         }
 
-        protected RmiCheckNullFormRequest(String name, boolean useTimeout) {
-            super(formSID + ":" + name, useTimeout);
+        protected RmiCheckNullFormRequest(String name, Pair<Integer, Integer> timeoutParams) {
+            super(formSID + ":" + name, timeoutParams);
         }
 
         @Override
@@ -1611,8 +1608,8 @@ public class ClientFormController implements AsyncListener {
             super(name);
         }
 
-        protected ProcessServerResponseRmiRequest(String name, boolean useTimeout) {
-            super(name, useTimeout);
+        protected ProcessServerResponseRmiRequest(String name, Pair<Integer, Integer> timeoutParams) {
+            super(name, timeoutParams);
         }
 
         @Override

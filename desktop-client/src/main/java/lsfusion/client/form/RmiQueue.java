@@ -80,15 +80,15 @@ public class RmiQueue implements DispatcherListener {
     }
 
     public static <T> T runRetryableRequest(Callable<T> request, AtomicBoolean abandoned) {
-        return runRetryableRequest(request, abandoned, false, null);
+        return runRetryableRequest(request, abandoned, null, null);
     }
 
-    public static <T> T runRetryableRequest(Callable<T> request, AtomicBoolean abandoned, boolean useTimeout, RmiFutureInterface futureInterface) {
-        return runRetryableRequest(request, abandoned, false, useTimeout, futureInterface);    
+    public static <T> T runRetryableRequest(Callable<T> request, AtomicBoolean abandoned, Pair<Integer, Integer> timeoutParams, RmiFutureInterface futureInterface) {
+        return runRetryableRequest(request, abandoned, false, timeoutParams, futureInterface);    
     }
 
     public static <T> T runRetryableRequest(Callable<T> request, AtomicBoolean abandoned, boolean registeredFailure) {
-        return runRetryableRequest(request, abandoned, registeredFailure, false, null);
+        return runRetryableRequest(request, abandoned, registeredFailure, null, null);
     }
 
     private static AtomicLong reqIdGen = new AtomicLong();
@@ -96,9 +96,8 @@ public class RmiQueue implements DispatcherListener {
     private static ExecutorService executorService = Executors.newCachedThreadPool();
     
     // вызывает request (предположительно remote) несколько раз, проблемы с целостностью предполагается что решается либо индексом, либо результат не так важен
-    public static <T> T runRetryableRequest(Callable<T> request, AtomicBoolean abandoned, boolean registeredFailure, boolean useTimeout, RmiFutureInterface futureInterface) {
+    public static <T> T runRetryableRequest(Callable<T> request, AtomicBoolean abandoned, boolean registeredFailure, Pair<Integer, Integer> timeoutParams, RmiFutureInterface futureInterface) {
         int reqCount = 0;
-        int powerBase = 2;
         int exponent = 0;
         long reqId = reqIdGen.incrementAndGet();
         try {
@@ -106,11 +105,11 @@ public class RmiQueue implements DispatcherListener {
                 if(abandoned.get()) // не вызываем call если уже клиент перестартовывает
                     throw new RemoteAbandonedException();
                 try {
-                    if (Main.useRequestTimeout && useTimeout && futureInterface != null) {
+                    if (Main.useRequestTimeout && timeoutParams != null && futureInterface != null) {
                         Future<T> future = executorService.submit(request);
                         while (true) {
                             try {
-                                return future.get((long) Math.pow(powerBase, exponent), TimeUnit.SECONDS);
+                                return future.get((long) (timeoutParams.second * Math.pow(timeoutParams.first, exponent)), TimeUnit.SECONDS);
                             } catch (TimeoutException e) {
                                 if (futureInterface.isFirst()) {
                                     exponent++;
@@ -189,6 +188,8 @@ public class RmiQueue implements DispatcherListener {
         if (logger.isDebugEnabled()) {
             logger.debug("Sync request: " + request);
         }
+        
+        request.setTimeoutParams(new Pair<>(3, 20));
 
         return blockingRequest(request, false);
     }
@@ -335,7 +336,7 @@ public class RmiQueue implements DispatcherListener {
         if (logger.isDebugEnabled()) {
             logger.debug("Async request: " + request);
         }
-        request.setUseTimeout(true);
+        request.setTimeoutParams(new Pair<>(2, 1));
 
         execRmiRequestInternal(request);
 
@@ -580,7 +581,7 @@ public class RmiQueue implements DispatcherListener {
                 public T call() throws Exception {
                     return request.doRequest();
                 }
-            }, abandoned, request.getUseTimeout(), futureInterface);
+            }, abandoned, request.getTimeoutParams(), futureInterface);
         }
     }
     
