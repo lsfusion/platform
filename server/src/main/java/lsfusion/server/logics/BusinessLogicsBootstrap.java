@@ -79,7 +79,7 @@ public class BusinessLogicsBootstrap {
                       new int[]{settings.getLRUOftenProceedBucket(), settings.getLRURareProceedBucket()});
     }*/
 
-    public static boolean enableDumpThreadsOnClose = true;
+    public static boolean enableDumpThreadsOnClose = false;
     public synchronized static void stop() {
         if (!stopped) {
             logger.info("Server is stopping...");
