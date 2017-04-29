@@ -1027,6 +1027,8 @@ public class ScriptingLogicsModule extends LogicsModule {
         switch (op) {
             case "==":
                 return baseLM.equals2;
+            case "=":
+                return baseLM.equals2;
             case "!=":
                 return baseLM.diff2;
             case ">":

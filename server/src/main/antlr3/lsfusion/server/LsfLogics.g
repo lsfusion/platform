@@ -1134,7 +1134,7 @@ equalityPE[List<TypedParameter> context, boolean dynamic] returns [LPWithParams 
 	}
 }
 	:	lhs=relationalPE[context, dynamic] { leftProp = $lhs.property; }
-		(operand=EQ_OPERAND { op = $operand.text; }
+		((operand=EQ_OPERAND { op = $operand.text; } | operand='=' { op = $operand.text; })
 		rhs=relationalPE[context, dynamic] { rightProp = $rhs.property; })?
 	;
 
@@ -2939,7 +2939,7 @@ mappedInput[List<TypedParameter> context] returns [DataClass dataClass, LPWithPa
     :    
     ((varID=ID '=')? ptype=PRIMITIVE_TYPE)
     |	
-    ((varID=ID '=')? pe=propertyExpression[context, false])
+    ((varID=ID)? '=' pe=propertyExpression[context, false])
 ;
 
 activeFormActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
