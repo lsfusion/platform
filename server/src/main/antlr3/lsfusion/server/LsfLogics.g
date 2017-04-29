@@ -2393,7 +2393,7 @@ mappedForm[List<TypedParameter> context, List<TypedParameter> newContext, boolea
 	    |
 	    (   ('LIST' | ('EDIT' { edit = true; } ))
 	         cls = classId { if(inPropParseState()) { mappedCls = (CustomClass)self.findClass($cls.sid); } }
-	         ('OBJECT' object=formActionProps["object", mappedCls, context, newContext, dynamic] { $props = Collections.singletonList($object.props); })?
+	         (object=formActionProps["object", mappedCls, context, newContext, dynamic] { $props = Collections.singletonList($object.props); })
 	        {
 	            if(inPropParseState())
 	                $mapped = MappedForm.create(mappedCls, edit);
@@ -2476,7 +2476,7 @@ manageSessionClause returns [ManageSessionType result]
         |   'NOMANAGESESSION' { $result = ManageSessionType.NOMANAGESESSION; }
         |   'MANAGESESSIONX' { $result = ManageSessionType.MANAGESESSIONX; }
         |   'NOMANAGESESSIONX' { $result = ManageSessionType.NOMANAGESESSIONX; }
-        |   'AUTO' { $result = ManageSessionType.AUTO; }
+        |   'AUTOX' { $result = ManageSessionType.AUTO; }
     ;
 
 noCancelClause returns [boolean result]
