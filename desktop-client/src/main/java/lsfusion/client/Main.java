@@ -635,7 +635,7 @@ public class Main {
             }
 
             public void openInExcel(ReportGenerationData generationData) {
-                ReportGenerator.exportAndOpen(generationData, FormPrintType.XLSX);
+                ReportGenerator.exportAndOpen(generationData, FormPrintType.XLSX, true);
             }
 
             public boolean isFull() {

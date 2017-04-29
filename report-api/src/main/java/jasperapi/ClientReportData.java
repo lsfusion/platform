@@ -35,7 +35,7 @@ public class ClientReportData implements JRDataSource {
 
     private final Map<ByteArray, String> files;
 
-    public ClientReportData(DataInputStream inStream, Map<ByteArray, String> files, ReportGenerationDataType reportType) throws IOException {
+    public ClientReportData(DataInputStream inStream, Map<ByteArray, String> files, ReportGenerationDataType reportType, boolean fixBoolean) throws IOException {
 
         if (!inStream.readBoolean() || !reportType.isPrintJasper()) {
             int objectCnt = inStream.readInt();
@@ -69,7 +69,7 @@ public class ClientReportData implements JRDataSource {
                 for (String propName : propertyNames) {
                     Object propValue = BaseUtils.deserializeObject(inStream);
                     ReportPropertyData property = properties.get(propName);
-                    if(propValue == null && isBoolean(property))
+                    if(fixBoolean && propValue == null && isBoolean(property))
                         propValue = false;
                     propValues.put(property, propValue);
                 }
