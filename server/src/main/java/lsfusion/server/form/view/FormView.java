@@ -169,7 +169,8 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         }
 
         for (PropertyDrawEntity property : entity.getNFPropertyDrawsListIt(version)) {
-            addPropertyDrawBase(property, version);
+            PropertyDrawView view = addPropertyDrawBase(property, version);
+            view.caption = property.initCaption;
         }
 
         for (RegularFilterGroupEntity filterGroup : entity.getNFRegularFilterGroupsListIt(version)) {

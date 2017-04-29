@@ -63,6 +63,8 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 
     private String formPath;
     
+    public LocalizedString initCaption = null; // чисто техническая особенность реализации
+    
     // предполагается что propertyObject ссылается на все (хотя и не обязательно)
     public String columnsName;
     public Object columnGroupObjects = SetFact.mOrderExclSet();

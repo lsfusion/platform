@@ -19,6 +19,7 @@ import lsfusion.server.form.entity.filter.NotNullFilterEntity;
 import lsfusion.server.form.entity.filter.RegularFilterEntity;
 import lsfusion.server.form.entity.filter.RegularFilterGroupEntity;
 import lsfusion.server.form.instance.FormSessionScope;
+import lsfusion.server.form.view.PropertyDrawView;
 import lsfusion.server.logics.debug.DebugInfo;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.linear.LAP;
@@ -244,7 +245,7 @@ public class ScriptingFormEntity {
         return scope;
     }
 
-    public void addScriptedPropertyDraws(List<? extends ScriptingLogicsModule.AbstractPropertyUsage> properties, List<String> aliases, List<List<String>> mappings, FormPropertyOptions commonOptions, List<FormPropertyOptions> options, Version version, List<DebugInfo.DebugPoint> points) throws ScriptingErrorLog.SemanticErrorException {
+    public void addScriptedPropertyDraws(List<? extends ScriptingLogicsModule.AbstractPropertyUsage> properties, List<String> aliases, List<LocalizedString> captions, List<List<String>> mappings, FormPropertyOptions commonOptions, List<FormPropertyOptions> options, Version version, List<DebugInfo.DebugPoint> points) throws ScriptingErrorLog.SemanticErrorException {
         assert properties.size() == mappings.size();
 
         boolean reverse = commonOptions.getNeighbourPropertyDraw() != null && commonOptions.isRightNeighbour();
@@ -253,6 +254,7 @@ public class ScriptingFormEntity {
             List<String> mapping = mappings.get(i);
             ScriptingLogicsModule.AbstractPropertyUsage pDrawUsage = properties.get(i);
             String alias = aliases.get(i);
+            LocalizedString caption = captions.get(i);
 
             FormPropertyOptions propertyOptions = commonOptions.overrideWith(options.get(i));
             FormSessionScope scope = override(propertyOptions, FormSessionScope.OLDSESSION);
@@ -300,7 +302,11 @@ public class ScriptingFormEntity {
             applyPropertyOptions(propertyDraw, propertyOptions, version);
 
             // Добавляем PropertyDrawView в FormView, если он уже был создан
-            form.addPropertyDrawView(propertyDraw, version);
+            PropertyDrawView view = form.addPropertyDrawView(propertyDraw, version);
+            if(view != null)
+                view.caption = caption;
+            else
+                propertyDraw.initCaption = caption; 
 
             movePropertyDraw(propertyDraw, propertyOptions, version);
 

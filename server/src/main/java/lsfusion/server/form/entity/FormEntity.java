@@ -27,6 +27,7 @@ import lsfusion.server.form.navigator.NavigatorElement;
 import lsfusion.server.form.view.ComponentView;
 import lsfusion.server.form.view.DefaultFormView;
 import lsfusion.server.form.view.FormView;
+import lsfusion.server.form.view.PropertyDrawView;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.ObjectValue;
@@ -633,11 +634,12 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         return newPropertyDraw;
     }
 
-    public void addPropertyDrawView(PropertyDrawEntity propertyDraw, Version version) {
+    public PropertyDrawView addPropertyDrawView(PropertyDrawEntity propertyDraw, Version version) {
         FormView richDesign = getNFRichDesign(version);
         if (richDesign != null) {
-            richDesign.addPropertyDraw(propertyDraw, version);
+            return richDesign.addPropertyDraw(propertyDraw, version);
         }
+        return null;
     }
 
     public void movePropertyDrawTo(PropertyDrawEntity property, PropertyDrawEntity newNeighbour, boolean isRightNeighbour, Version version) {

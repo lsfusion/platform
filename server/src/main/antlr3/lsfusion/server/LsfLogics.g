@@ -571,8 +571,8 @@ formMultiGroupObjectDeclaration returns [String groupName, List<String> objectNa
 	;
 
 
-formObjectDeclaration returns [String name, String className, LocalizedString caption, ActionPropertyObjectEntity event] 
-	:	(objectName=ID { $name = $objectName.text; } '=')?	
+formObjectDeclaration returns [String name, String className, LocalizedString caption, ActionPropertyObjectEntity event]
+	:	(objectName=ID { $name = $objectName.text; } '=')?
 		id=classId { $className = $id.sid; }
 		(c=localizedStringLiteral { $caption = $c.val; })?
 		('ON' 'CHANGE' faprop=formActionPropertyObject { $event = $faprop.action; })?
@@ -582,6 +582,7 @@ formPropertiesList
 @init {
 	List<? extends AbstractPropertyUsage> properties = new ArrayList<>();
 	List<String> aliases = new ArrayList<>();
+	List<LocalizedString> captions = new ArrayList<>();	
 	List<List<String>> mapping = new ArrayList<>();
 	List<DebugInfo.DebugPoint> points = new ArrayList<>();
 	FormPropertyOptions commonOptions = null;
@@ -589,7 +590,7 @@ formPropertiesList
 }
 @after {
 	if (inPropParseState()) {
-		$formStatement::form.addScriptedPropertyDraws(properties, aliases, mapping, commonOptions, options, self.getVersion(), points);
+		$formStatement::form.addScriptedPropertyDraws(properties, aliases, captions, mapping, commonOptions, options, self.getVersion(), points);
 	}
 }
 	:	'PROPERTIES' '(' objects=idList ')' opts=formPropertyOptionsList list=formPropertyUList
@@ -597,6 +598,7 @@ formPropertiesList
 			commonOptions = $opts.options;
 			properties = $list.properties;
 			aliases = $list.aliases;
+			captions = $list.captions;
 			mapping = Collections.nCopies(properties.size(), $objects.ids);
 			options = $list.options;
 			points = $list.points;
@@ -606,12 +608,14 @@ formPropertiesList
 			commonOptions = $opts.options;
 			properties = $mappedList.properties;
 			aliases = $mappedList.aliases;
+			captions = $mappedList.captions;
 			mapping = $mappedList.mapping;
 			options = $mappedList.options;
 			points = $mappedList.points;
 		}
 	;	
 
+// потенциально две проблемы с убиранием =pE -> (a=)?pe | pe решается простым lookahead, два pe подряд SHOWIF pe pe, факторится с ? так чтобы formPropertyOptionsList заканчивался на pe а дальше formMappedProperty | pe после чего formMappedProperty lookahead'ся 
 formPropertyOptionsList returns [FormPropertyOptions options]
 @init {
 	$options = new FormPropertyOptions();
@@ -644,28 +648,30 @@ formPropertyDraw returns [PropertyDrawEntity property]
 	|	prop=mappedPropertyDraw { if (inPropParseState()) $property = $formStatement::form.getPropertyDraw($prop.name, $prop.mapping, self.getVersion()); }
 	;
 
-formMappedPropertiesList returns [List<String> aliases, List<AbstractPropertyUsage> properties, List<List<String>> mapping, List<FormPropertyOptions> options, List<DebugInfo.DebugPoint> points]
+formMappedPropertiesList returns [List<String> aliases, List<LocalizedString> captions, List<AbstractPropertyUsage> properties, List<List<String>> mapping, List<FormPropertyOptions> options, List<DebugInfo.DebugPoint> points]
 @init {
 	$aliases = new ArrayList<String>();
+	$captions = new ArrayList<LocalizedString>();
 	$properties = new ArrayList<AbstractPropertyUsage>();
 	$mapping = new ArrayList<List<String>>();
 	$options = new ArrayList<FormPropertyOptions>();
 	$points = new ArrayList<DebugInfo.DebugPoint>(); 
 	String alias = null;
+	LocalizedString caption = null;
 	LP lp = null;
 	List<String> mapping = null;
 }
 	:	
 		{ alias = null; $points.add(getCurrentDebugPoint()); }
 		(		
-				(id=ID '=' { alias = $id.text; })? mappedProp=formMappedProperty 
+				(id=simpleNameOrWithCaption '=' { alias = $id.name; caption = $id.caption; })? mappedProp=formMappedProperty 
 				{
         			$properties.add($mappedProp.propUsage);
 		        	$mapping.add($mappedProp.mapping);
 				} 
 			| 	
 			    (
-			    (id=ID { alias = $id.text; } )?
+			    (id=simpleNameOrWithCaption { alias = $id.name; caption = $id.caption; })?
 			    '='
 			    (       expr=formExprDeclaration { lp = $expr.property; mapping = $expr.mapping; }
 			        |   action=formActionDeclaration { lp = $action.property; mapping = $action.mapping; })
@@ -678,19 +684,20 @@ formMappedPropertiesList returns [List<String> aliases, List<AbstractPropertyUsa
 		opts=formPropertyOptionsList
 		{
 			$aliases.add(alias);
+			$captions.add(caption);
 			$options.add($opts.options);
 		}
 		(','
             { alias = null; $points.add(getCurrentDebugPoint()); }
             (		
-                    (id=ID '=' { alias = $id.text; })? mappedProp=formMappedProperty 
+                    (id=simpleNameOrWithCaption '=' { alias = $id.name; caption = $id.caption; })? mappedProp=formMappedProperty 
                     {
                         $properties.add($mappedProp.propUsage);
                         $mapping.add($mappedProp.mapping);
                     } 
                 | 	
                     (
-                    (id=ID { alias = $id.text; } )?
+                    (id=simpleNameOrWithCaption { alias = $id.name; caption = $id.caption; })?
                     '='
                     (       expr=formExprDeclaration { lp = $expr.property; mapping = $expr.mapping; }
                         |   action=formActionDeclaration { lp = $action.property; mapping = $action.mapping; })
@@ -703,6 +710,7 @@ formMappedPropertiesList returns [List<String> aliases, List<AbstractPropertyUsa
             opts=formPropertyOptionsList
             {
                 $aliases.add(alias);
+    			$captions.add(caption);
                 $options.add($opts.options);
             }
 		)*
@@ -779,28 +787,32 @@ mappedPropertyDraw returns [String name, List<String> mapping]
 		')'
 	;
 
-formPropertyUList returns [List<String> aliases, List<PropertyUsage> properties, List<FormPropertyOptions> options, List<DebugInfo.DebugPoint> points]
+formPropertyUList returns [List<String> aliases, List<LocalizedString> captions, List<PropertyUsage> properties, List<FormPropertyOptions> options, List<DebugInfo.DebugPoint> points]
 @init {
 	$aliases = new ArrayList<String>();
+	$captions = new ArrayList<LocalizedString>();
 	$properties = new ArrayList<PropertyUsage>();
 	$options = new ArrayList<FormPropertyOptions>();
 	$points = new ArrayList<DebugInfo.DebugPoint>();
 	String alias = null;
+	LocalizedString caption = null;
 }
 	:	{ alias = null; $points.add(getCurrentDebugPoint()); }
-		(id=ID '=' { alias = $id.text; })?
+		(id=simpleNameOrWithCaption '=' { alias = $id.name; caption = $id.caption; })?
 		pu=formPropertyUsage opts=formPropertyOptionsList
 		{
 			$aliases.add(alias);
+			$captions.add(caption);
 			$properties.add($pu.propUsage);
 			$options.add($opts.options);
 		}
 		(','
 			{ alias = null; $points.add(getCurrentDebugPoint()); }
-			(id=ID '=' { alias = $id.text; })?
+			(id=simpleNameOrWithCaption '=' { alias = $id.name; caption = $id.caption; })?
 			pu=formPropertyUsage opts=formPropertyOptionsList
 			{
 				$aliases.add(alias);
+				$captions.add(caption);
 				$properties.add($pu.propUsage);
 				$options.add($opts.options);
 			}
@@ -3951,6 +3963,14 @@ typedParameter returns [TypedParameter param]
 simpleNameWithCaption returns [String name, LocalizedString caption] 
 	:	simpleName=ID { $name = $simpleName.text; }
 		(captionStr=localizedStringLiteral { $caption = $captionStr.val; })?
+	;
+
+simpleNameOrWithCaption returns [String name, LocalizedString caption] 
+	:	(   simpleName=ID { $name = $simpleName.text; }
+		    (captionStr=localizedStringLiteral { $caption = $captionStr.val; })?
+        )
+        |
+            (captionStr=localizedStringLiteral { $caption = $captionStr.val; })
 	;
 	
 idList returns [List<String> ids] 

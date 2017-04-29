@@ -86,6 +86,11 @@ public class SumGroupProperty<I extends PropertyInterface> extends AddGroupPrope
     }
 
     @Override
+    protected boolean noIncrement() {
+        return false;
+    }
+
+    @Override
     protected DataChanges calculateDataChanges(PropertyChange<Interface<I>> propertyChange, WhereBuilder changedWhere, PropertyChanges propChanges) {
         if(distribute != null) {
             // создаем распределяющее свойство от этого, moidfier который меняет это свойство на PropertyChange, получаем значение распределяющего и условие на изменение
