@@ -1689,9 +1689,9 @@ public abstract class LogicsModule {
         LAP result = addForAProp(null, LocalizedString.create("{logics.add}"), false, false, false, false, 0, cls, true, false, 0, false,
                 1, //NEW x=X
                 addRequestAProp(null, caption, // REQUEST
-                        addDMFAProp(caption, cls, ManageSessionType.AUTO, true), 1, // edit(x);
+                        baseLM.getFormEdit(), 1, // edit(x);
                         (contextObject != null ? addOSAProp(contextObject, true, 1) : baseLM.getEmptyObject()), 1, // DO SEEK co = x
-                        addIfAProp(baseLM.sessionOwners, getDeleteAction(cls, contextObject, FormSessionScope.OLDSESSION), 1), 1 // ELSE IF seekOwners THEN DELETE x
+                        addIfAProp(baseLM.sessionOwners, baseLM.getFormDelete(), 1), 1 // ELSE IF seekOwners THEN delete(x)
                 ), 1
         );
 //        LAP result = addListAProp(
