@@ -397,7 +397,7 @@ public class FormReportManager<PropertyDraw extends PropertyReaderInstance, Grou
             Map<String, ReportData> sources = sourceGenerator.generate(reportType);
             Map<String, Map<String, String>> propertyCaptionsMap = new HashMap<>();
             for (Map.Entry<String, ReportData> source : sources.entrySet()) {
-                propertyCaptionsMap.put(source.getKey(), source.getValue().getPropertyCaptionsMap());
+                propertyCaptionsMap.put(source.getKey(), source.getValue().getPropertyCaptionsMap(getFormEntity().getRichDesign()));
             }
             new ObjectOutputStream(outStream).writeObject(propertyCaptionsMap);
             return outStream.toByteArray();

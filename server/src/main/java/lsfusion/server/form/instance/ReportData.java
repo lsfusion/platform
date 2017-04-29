@@ -5,6 +5,7 @@ import lsfusion.base.Pair;
 import lsfusion.interop.form.ReportGenerationDataType;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.form.entity.PropertyDrawEntity;
+import lsfusion.server.form.view.FormView;
 import lsfusion.server.remote.FormReportInterface;
 
 import java.io.DataOutputStream;
@@ -87,10 +88,10 @@ public class ReportData<Order, Obj extends Order, PropertyReader> {
         }
     }
 
-    public Map<String, String> getPropertyCaptionsMap() throws IOException {
+    public Map<String, String> getPropertyCaptionsMap(FormView formView) throws IOException {
         Map<String, String> propertyCaptionsMap = new HashMap<>();
         for (Pair<String, PropertyReader> propertyData : properties) {
-            propertyCaptionsMap.put(propertyData.first, ThreadLocalContext.localize(((PropertyDrawEntity) propertyData.second).propertyObject.property.caption));
+            propertyCaptionsMap.put(propertyData.first, ThreadLocalContext.localize(formView.getProperty(((PropertyDrawEntity) propertyData.second)).getCaption()));
         }
         return propertyCaptionsMap;
     }
