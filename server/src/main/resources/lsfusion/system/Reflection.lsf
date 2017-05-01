@@ -8,7 +8,7 @@ TABLE propertyGroup (PropertyGroup);
 TABLE propertyGroupPropertyGroup (PropertyGroup, PropertyGroup);
 parent 'Родит. группа' = DATA PropertyGroup (PropertyGroup);
 level 'Уровень' (PropertyGroup child, PropertyGroup parent) = RECURSION 1l IF child IS PropertyGroup AND parent == child
-                                                                      STEP 2l IF parent == parent($parent) PERSISTENT;
+                                                                      STEP 2l IF parent == parent($parent) MATERIALIZED;
 
 caption 'Имя' = DATA VARSTRING[250] (PropertyGroup);
 number 'Номер' = DATA INTEGER (PropertyGroup);
@@ -30,7 +30,7 @@ canonicalName 'Каноническое имя формы' = DATA VARSTRING[100]
 number 'Номер' = DATA INTEGER (NavigatorElement);
 navigatorElement 'Форма' (sID) = GROUP AGGR NavigatorElement navigatorElement BY sid(navigatorElement) WHERE navigatorElement IS NavigatorElement;
 TABLE navigatorElementNames (VARSTRING[100]);
-navigatorElementCanonicalName 'Форма' (sid) = GROUP AGGR NavigatorElement navigatorElement BY canonicalName(navigatorElement) WHERE navigatorElement IS NavigatorElement PERSISTENT TABLE navigatorElementNames; // для profiler'а
+navigatorElementCanonicalName 'Форма' (sid) = GROUP AGGR NavigatorElement navigatorElement BY canonicalName(navigatorElement) WHERE navigatorElement IS NavigatorElement MATERIALIZED TABLE navigatorElementNames; // для profiler'а
 parent 'Родит. форма' = DATA NavigatorElement (NavigatorElement);
 is (NavigatorElement navigatorElement) = navigatorElement IS NavigatorElement AND NOT navigatorElement IS Form AND NOT navigatorElement IS NavigatorAction;
 is (Form form) = form IS Form;

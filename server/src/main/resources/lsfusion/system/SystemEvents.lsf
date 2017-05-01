@@ -84,7 +84,7 @@ javaVersion 'Версия java' = DATA VARSTRING[100] (Connection);
 is64Java '64-битная java' = DATA BOOLEAN (Connection);
 screenSize 'Разрешение экрана' = DATA VARSTRING[20] (Connection);
 
-countConnection 'Кол-во подключений' = GROUP SUM 1 BY user(Connection connection) PERSISTENT; 
+countConnection 'Кол-во подключений' = GROUP SUM 1 BY user(Connection connection) MATERIALIZED; 
 CONSTRAINT DROPPED(CustomUser u IS CustomUser) AND PREV(countConnection(u))
     MESSAGE 'Запрещено удалять пользователей, которые подключались к системе';
 
@@ -126,7 +126,7 @@ requestUserLogs 'Запросить логи' (CustomUser user) = {
 }
 openUserLogs 'Открыть логи' (CustomUser user) = {
     FOR user(Connection conn) == user AND connectionStatus(conn) == ConnectionStatus.connectedConnection DO {
-        OPENFILE fileUserLogs(conn);
+        OPEN fileUserLogs(conn);
     }
 }
 
@@ -139,7 +139,7 @@ requestThreadDump 'Запросить ThreadDump' (CustomUser user) = {
 }
 openThreadDump 'Открыть ThreadDump' (CustomUser user) = {
     FOR user(Connection conn) == user AND connectionStatus(conn) == ConnectionStatus.connectedConnection DO {
-        OPENFILE fileThreadDump(conn);
+        OPEN fileThreadDump(conn);
     }
 }
 

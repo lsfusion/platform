@@ -84,7 +84,7 @@ dateSent 'Дата отправки' = DATE(dateTimeSent(Email e));
 dateTimeReceived 'Дата получения' = DATA DATETIME (Email);
 message 'Сообщение' = DATA RICHTEXT (Email);
 emlFile 'Файл EML' = DATA CUSTOMFILE (Email);
-openEMLFile 'Открыть файл EML' (Email email) = { OPENFILE emlFile (email); }
+openEMLFile 'Открыть файл EML' (Email email) = { OPEN emlFile (email); }
 
 receiveEmailAction 'Получить всю почту' = ACTION CUSTOM 'lsfusion.server.mail.ReceiveEmailActionProperty' ();
 receiveEmailAction 'Получить почту' = ACTION CUSTOM 'lsfusion.server.mail.ReceiveEmailAccountActionProperty' (Account);
@@ -124,7 +124,7 @@ email = DATA Email (AttachmentEmail);
 attachmentEmail (id, email) = GROUP AGGR AttachmentEmail attachment BY id (attachment), id(email(attachment)) WHERE attachment IS AttachmentEmail; 
 name 'Имя файла' = DATA VARSTRING[255] (AttachmentEmail);
 file 'Файл' = DATA CUSTOMFILE (AttachmentEmail);
-openFile 'Файл' (AttachmentEmail attachmentEmail) = { OPENFILE file(attachmentEmail); }
+openFile 'Файл' (AttachmentEmail attachmentEmail) = { OPEN file(attachmentEmail); }
 lastError 'Последняя ошибка при импорте файла' = DATA TEXT (AttachmentEmail);
 
 FORM remindUserPass 'Напоминание пароля'

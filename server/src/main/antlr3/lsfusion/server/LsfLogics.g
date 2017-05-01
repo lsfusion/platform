@@ -2007,7 +2007,7 @@ inSetting [PropertySettings ps]
 	:	'IN' name=compoundID { ps.groupName = $name.sid; }
 	;
 persistentSetting [PropertySettings ps]
-	:	'PERSISTENT' { ps.isPersistent = true; }
+	:	'MATERIALIZED' { ps.isPersistent = true; }
 	;
 complexSetting [PropertySettings ps]
 	:	'COMPLEX' { ps.isComplex = true; }
@@ -2860,8 +2860,8 @@ fileActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns 
 }
 	:	(
 			'LOADFILE' { actionType = FileActionType.LOAD; } pe=propertyExpression[context, dynamic] { fileProp = $pe.property; } 
-		| 	'OPENFILE' { actionType = FileActionType.OPEN; } pe=propertyExpression[context, dynamic] { fileProp = $pe.property; }
-		|	'SAVEFILE' { actionType = FileActionType.SAVE; } pe=propertyExpression[context, dynamic] { fileProp = $pe.property; } ('NAME' npe=propertyExpression[context, dynamic] { fileNameProp = $npe.property; })?
+		| 	'OPEN' { actionType = FileActionType.OPEN; } pe=propertyExpression[context, dynamic] { fileProp = $pe.property; }
+		|	'SAVE' { actionType = FileActionType.SAVE; } pe=propertyExpression[context, dynamic] { fileProp = $pe.property; } ('NAME' npe=propertyExpression[context, dynamic] { fileNameProp = $npe.property; })?
 		) 
 	;
 
@@ -3428,7 +3428,7 @@ baseEvent returns [Event event]
 		$event = self.createScriptedEvent(baseEvent, ids, puAfters);
 	}
 }
-	:	('GLOBAL' { baseEvent = SystemEvent.APPLY; } | 'SESSION' { baseEvent = SystemEvent.SESSION; })?
+	:	('GLOBAL' { baseEvent = SystemEvent.APPLY; } | 'LOCAL' { baseEvent = SystemEvent.SESSION; })?
 		('FORMS' (neIdList=nonEmptyCompoundIdList { ids = $neIdList.ids; }) )?
 		('GOAFTER' (nePropList=nonEmptyPropertyUsageList { puAfters = $nePropList.propUsages; }) )?
 	;

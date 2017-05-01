@@ -87,9 +87,9 @@ objectClassName 'Класс объекта' (Object o) = staticCaption(objectCla
 prevObjectClassName 'Класс объекта' (Object o) = staticCaption(PREV(objectClass(o)));
 
 defaultBackgroundColor 'Цвет фона по умолчанию при выделении' = DATA COLOR ();
-defaultOverrideBackgroundColor 'Цвет фона по умолчанию при выделении' = OVERRIDE defaultBackgroundColor(), RGB(255, 255, 0) PERSISTENT;
+defaultOverrideBackgroundColor 'Цвет фона по умолчанию при выделении' = OVERRIDE defaultBackgroundColor(), RGB(255, 255, 0) MATERIALIZED;
 defaultForegroundColor 'Цвет шрифта по умолчанию при выделении' = DATA COLOR ();
-defaultOverrideForegroundColor 'Цвет шрифта по умолчанию при выделении' = OVERRIDE defaultForegroundColor(), RGB(255, 0, 0) PERSISTENT;
+defaultOverrideForegroundColor 'Цвет шрифта по умолчанию при выделении' = OVERRIDE defaultForegroundColor(), RGB(255, 0, 0) MATERIALIZED;
 
 selectedRowBackgroundColor 'Цвет фона ряда при выделении' = DATA COLOR ();
 overrideSelectedRowBackgroundColor 'Цвет фона ряда при выделении' = OVERRIDE selectedRowBackgroundColor(), RGB(249, 249, 255);
