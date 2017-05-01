@@ -126,4 +126,9 @@ public class ActionPropertyMapImplement<P extends PropertyInterface, T extends P
     public int hashMap() {
         return 31 * property.hashCode() + mapping.hashCode();
     }
+
+    public String toString() {
+        return property.toString() + " {" + mapping + "}";
+    }
+
 }
