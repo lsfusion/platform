@@ -86,7 +86,7 @@ translateText 'Перевести'() = {
 
 translate  = ACTION CUSTOM 'lsfusion.erp.utils.i18n.TranslateDictionaryActionProperty' (Dictionary, TEXT);
 
-WHEN SESSION CHANGED (translationInput()) AND Dictionary dictionary IS Dictionary DO EXEC translate(dictionary, translationInput());
+WHEN LOCAL CHANGED (translationInput()) AND Dictionary dictionary IS Dictionary DO EXEC translate(dictionary, translationInput());
 
 FORM translation 'Перевод'
     PROPERTIES() translationInput, translationResult, nameLanguageFromTranslation, nameLanguageToTranslation,

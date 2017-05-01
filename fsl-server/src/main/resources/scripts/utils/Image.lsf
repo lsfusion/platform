@@ -9,6 +9,6 @@ resizeImage = ACTION CUSTOM 'lsfusion.erp.utils.image.ResizeImageActionProperty'
 //    REQUEST IMAGEFILE INPUT;
 //    IF requestedImageFile() THEN {
 //        resizeImage(requestedImageFile(), 2);
-//        OPENFILE resizedImage();
+//        OPEN resizedImage();
 //    }
 //}

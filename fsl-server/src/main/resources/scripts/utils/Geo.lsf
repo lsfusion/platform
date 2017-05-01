@@ -26,12 +26,12 @@ useTor 'Использовать для карт Tor' = DATA BOOLEAN ();
 nameCalculateUserMapProvider 'Использовать карты (для расчёта)' () = staticCaption(calculateUserMapProvider());
 nameShowUserMapProvider 'Использовать карты (для показа)' () = staticCaption(showUserMapProvider());
 
-name 'Название'= ABSTRACT VARISTRING[200] (POI) PERSISTENT;
+name 'Название'= ABSTRACT VARISTRING[200] (POI) MATERIALIZED;
 
-nameCountry 'Страна' (poi) = ABSTRACT VARISTRING[50] (POI) PERSISTENT;
+nameCountry 'Страна' (poi) = ABSTRACT VARISTRING[50] (POI) MATERIALIZED;
 
-mainAddress 'Адрес' = ABSTRACT VARISTRING[100] (POI) PERSISTENT;
-additionalAddress 'Адрес' = ABSTRACT VARISTRING[100] (POI) PERSISTENT;
+mainAddress 'Адрес' = ABSTRACT VARISTRING[100] (POI) MATERIALIZED;
+additionalAddress 'Адрес' = ABSTRACT VARISTRING[100] (POI) MATERIALIZED;
 
 address 'Адрес' (POI poi) = OVERRIDE additionalAddress(poi), mainAddress(poi); 
 
@@ -54,7 +54,7 @@ calculateCoordinates 'Рассчитать координаты'(POI POI)= {
     recalculateDistance(POI);
 
 }
-WHEN SESSION (SETCHANGED(nameCountry(POI POI)) OR SETCHANGED(address(POI))) AND autoSynchronizeCoordinates() DO EXEC calculateCoordinates(POI);
+WHEN LOCAL (SETCHANGED(nameCountry(POI POI)) OR SETCHANGED(address(POI))) AND autoSynchronizeCoordinates() DO EXEC calculateCoordinates(POI);
 
 recalculateAllDistances 'Пересчитать все расстояния'() = {
     FOR POI p IS POI DO {

@@ -56,7 +56,7 @@ hasAttachment 'Вл.' (Message m) = IF attachment(m) THEN TRUE MAXCHARWIDTH 1 PR
 loadAttachment 'Прикрепить вложение' (Message m) = { LOADFILE attachment(m); }
 openAttachment 'Открыть вложение' (Message m) = {
     IF attachment(m) THEN {
-        OPENFILE attachment(m);
+        OPEN attachment(m);
     } ELSE {
         MESSAGE 'Вложение отсутствует!';
     }

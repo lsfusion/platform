@@ -37,7 +37,7 @@ META defineDocumentAbstractRelation(object, detailClass, caption)
 END
 
 META defineDocumentAbstractRelation(object, objectClass, detailClass, caption)
-    object = ABSTRACT objectClass (detailClass) PERSISTENT INDEXED;
+    object = ABSTRACT objectClass (detailClass) MATERIALIZED INDEXED;
     in(###object o, detailClass d) = object(d) == o;
 
     @defineDocumentHeaderCount(object, detailClass);
@@ -72,7 +72,7 @@ END
 // Итоги
 META defineDocumentHeaderCount (object, detailClass, caption)
     count##detailClass 'Кол-во строк'###caption (o) =
-        GROUP SUM 1 BY object(detailClass d) PERSISTENT IN documentSum;
+        GROUP SUM 1 BY object(detailClass d) MATERIALIZED IN documentSum;
 END
 
 META defineDocumentHeaderCount (object, detailClass)
@@ -88,29 +88,29 @@ END
 META defineDocumentHeaderTimePrefix (objectClass, prefix, caption)
     prefix###date 'Дата'##caption = DATA DATE (objectClass) IN documentHeader INDEXED;
     prefix###time 'Время'##caption = DATA TIME (objectClass) IN documentHeader;
-    prefix###dateTime 'Дата/время'##caption (objectClass o) = dateTimeToDateTime(prefix###date(o), prefix###time(o)) PERSISTENT INDEXED;
+    prefix###dateTime 'Дата/время'##caption (objectClass o) = dateTimeToDateTime(prefix###date(o), prefix###time(o)) MATERIALIZED INDEXED;
 END
 
 META deriveDocumentHeaderTimePrefix (objectClass, prefix)
-    WHEN SESSION SET(objectClass o IS objectClass) DO {
+    WHEN LOCAL SET(objectClass o IS objectClass) DO {
         IF o IS objectClass AND NOT prefix###date(o) THEN prefix###date(o) <- currentDate();
         IF o IS objectClass AND NOT prefix###time(o) THEN prefix###time(o) <- currentTime();
     };
-    WHEN SESSION CHANGED(prefix###date(objectClass o)) AND NOT CHANGED(prefix###time(o)) DO {
+    WHEN LOCAL CHANGED(prefix###date(objectClass o)) AND NOT CHANGED(prefix###time(o)) DO {
         prefix###time(o) <- IF prefix###date(o) > currentDate() THEN 00:00 ELSE currentTime();
     } 
 END
 
 META deriveDocumentHeaderTimeBeforePrefix (objectClass, prefix)
-    WHEN SESSION CHANGED(prefix##Date(objectClass o)) AND NOT prefix##Time(o) DO {
+    WHEN LOCAL CHANGED(prefix##Date(objectClass o)) AND NOT prefix##Time(o) DO {
         prefix##Time(o) <- 23:59;
     } 
 END
 
 META defineDocumentAbstractHeaderTimePrefix (objectClass, prefix, caption)
-    prefix###date 'Дата'##caption = ABSTRACT DATE (objectClass) IN documentHeader PERSISTENT INDEXED;
-    prefix###time 'Время'##caption = ABSTRACT TIME (objectClass) IN documentHeader PERSISTENT;
-    prefix###dateTime 'Дата/время'##caption (objectClass o) = dateTimeToDateTime(prefix###date(o), prefix###time(o)) PERSISTENT;
+    prefix###date 'Дата'##caption = ABSTRACT DATE (objectClass) IN documentHeader MATERIALIZED INDEXED;
+    prefix###time 'Время'##caption = ABSTRACT TIME (objectClass) IN documentHeader MATERIALIZED;
+    prefix###dateTime 'Дата/время'##caption (objectClass o) = dateTimeToDateTime(prefix###date(o), prefix###time(o)) MATERIALIZED;
 END
 
 META defineDocumentInterfaceHeaderTimePrefix(objectClass, prefix, caption)
@@ -136,7 +136,7 @@ META defineDocumentInterfaceHeaderTime(objectClass)
 END
 
 META defineDocumentDetailTimePrefix (object, detailClass, prefix, caption)
-    prefix###dateTime 'Дата/время'##caption (detailClass d) = prefix###dateTime(object(d)) PERSISTENT MINCHARWIDTH 10 PREFCHARWIDTH 15;
+    prefix###dateTime 'Дата/время'##caption (detailClass d) = prefix###dateTime(object(d)) MATERIALIZED MINCHARWIDTH 10 PREFCHARWIDTH 15;
     prefix###date 'Дата'##caption (detailClass d) = prefix###date(object(d));
     prefix###time 'Время'##caption (detailClass d) = prefix###time(object(d));
 END
@@ -196,18 +196,18 @@ END
 
 META defineDocumentDetailDataTimePrefix (object, detailClass, prefix, caption)
     prefix##DataDate =  DATA DATE (detailClass);
-    prefix##Date 'Дата'##caption (detailClass d) = OVERRIDE prefix##DataDate(d), prefix##Date(object(d)) PERSISTENT;
+    prefix##Date 'Дата'##caption (detailClass d) = OVERRIDE prefix##DataDate(d), prefix##Date(object(d)) MATERIALIZED;
     prefix##DataTime =  DATA TIME (detailClass);
-    prefix##Time 'Время'##caption (detailClass d) = OVERRIDE prefix##DataTime(d), prefix##Time(object(d)) PERSISTENT;
-    prefix##DateTime 'Дата/время'##caption (detailClass d) = dateTimeToDateTime(prefix##Date(d), prefix##Time(d)) PERSISTENT;
+    prefix##Time 'Время'##caption (detailClass d) = OVERRIDE prefix##DataTime(d), prefix##Time(object(d)) MATERIALIZED;
+    prefix##DateTime 'Дата/время'##caption (detailClass d) = dateTimeToDateTime(prefix##Date(d), prefix##Time(d)) MATERIALIZED;
 END
 
 META defineDocumentAbstractDetailDataTimePrefix (object, detailClass, prefix, caption)
     prefix##DataDate =  ABSTRACT DATE (detailClass);
-    prefix##Date 'Дата'##caption (detailClass d) = OVERRIDE prefix##DataDate(d), prefix##Date(object(d)) PERSISTENT;
+    prefix##Date 'Дата'##caption (detailClass d) = OVERRIDE prefix##DataDate(d), prefix##Date(object(d)) MATERIALIZED;
     prefix##DataTime =  ABSTRACT TIME (detailClass);
-    prefix##Time 'Время'##caption (detailClass d) = OVERRIDE prefix##DataTime(d), prefix##Time(object(d)) PERSISTENT;
-    prefix##DateTime 'Дата/время'##caption (detailClass d) = dateTimeToDateTime(prefix##Date(d), prefix##Time(d)) PERSISTENT;
+    prefix##Time 'Время'##caption (detailClass d) = OVERRIDE prefix##DataTime(d), prefix##Time(object(d)) MATERIALIZED;
+    prefix##DateTime 'Дата/время'##caption (detailClass d) = dateTimeToDateTime(prefix##Date(d), prefix##Time(d)) MATERIALIZED;
 END
 
 META defineDocumentInterfaceDetailDataTimePrefix (object, detailClass, prefix, caption)
@@ -240,7 +240,7 @@ META defineDocumentHeaderDatePrefix (objectClass, prefix, caption)
     prefix##Date 'Дата'##caption = DATA DATE (objectClass) IN documentHeader;
 END
 META defineDocumentAbstractHeaderDatePrefix (objectClass, prefix, caption)
-    prefix##Date 'Дата'##caption = ABSTRACT DATE (objectClass) IN documentHeader PERSISTENT;
+    prefix##Date 'Дата'##caption = ABSTRACT DATE (objectClass) IN documentHeader MATERIALIZED;
 END
 META defineDocumentInterfaceHeaderDatePrefix(objectClass, prefix, caption)
     @defineDocumentAbstractHeaderDatePrefix(objectClass, prefix, caption);
@@ -248,7 +248,7 @@ META defineDocumentInterfaceHeaderDatePrefix(objectClass, prefix, caption)
     prefix##Date(User##objectClass o) += prefix##Date(o);
 END
 META defineDocumentDetailDatePrefix (object, detailClass, prefix, caption)
-    prefix##Date 'Дата'##caption (detailClass d) = prefix##Date(object(d)) PERSISTENT;
+    prefix##Date 'Дата'##caption (detailClass d) = prefix##Date(object(d)) MATERIALIZED;
 END
 META defineDocumentInterfaceDetailDatePrefix (object, detailClass, prefix, caption)
     @defineDocumentDetailDatePrefix(object, detailClass, prefix, caption);
@@ -265,10 +265,10 @@ END
 
 // Примечание
 META defineDocumentHeaderNote (objectClass)
-    note 'Примечание' = DATA VARISTRING[100] (objectClass) MINCHARWIDTH 30 PREFCHARWIDTH 50 IN documentPrm PERSISTENT;
+    note 'Примечание' = DATA VARISTRING[100] (objectClass) MINCHARWIDTH 30 PREFCHARWIDTH 50 IN documentPrm MATERIALIZED;
 END
 META defineDocumentAbstractHeaderNote (objectClass)
-    note 'Примечание' = ABSTRACT VARISTRING[100] (objectClass) MINCHARWIDTH 30 PREFCHARWIDTH 50 IN documentPrm PERSISTENT;
+    note 'Примечание' = ABSTRACT VARISTRING[100] (objectClass) MINCHARWIDTH 30 PREFCHARWIDTH 50 IN documentPrm MATERIALIZED;
 END
 META defineDocumentInterfaceHeaderNote(objectClass)
     @defineDocumentAbstractHeaderNote(objectClass);
@@ -303,7 +303,7 @@ GROUP posted 'Проведен' : base;
 
 META defineDocumentHeaderPosted(objectClass)
     isPosted 'Проведен' (o) = DATA BOOLEAN (objectClass);
-    isDraft 'Не проведен' (objectClass o) = o IS objectClass AND NOT isPosted(o) PERSISTENT;
+    isDraft 'Не проведен' (objectClass o) = o IS objectClass AND NOT isPosted(o) MATERIALIZED;
 
     postedTime 'Время проведения' = DATA DATETIME (objectClass) IN posted;
     postedTime(objectClass o) <- currentDateTime() WHEN SET(isPosted(o));
@@ -329,8 +329,8 @@ META defineDocumentHeaderPosted(objectClass)
 END
 
 META defineDocumentAbstractHeaderPosted (objectClass)
-    isPosted 'Проведен' (o) = ABSTRACT BOOLEAN(objectClass) PERSISTENT;
-    isDraft 'Не проведен' (objectClass o) = o IS objectClass AND NOT isPosted(o) PERSISTENT;
+    isPosted 'Проведен' (o) = ABSTRACT BOOLEAN(objectClass) MATERIALIZED;
+    isDraft 'Не проведен' (objectClass o) = o IS objectClass AND NOT isPosted(o) MATERIALIZED;
 END
 META defineDocumentInterfaceHeaderPosted (objectClass)
     @defineDocumentAbstractHeaderPosted(objectClass);
@@ -339,7 +339,7 @@ META defineDocumentInterfaceHeaderPosted (objectClass)
 END
 
 META defineDocumentDetailPosted (object, detailClass)
-    isPosted 'Проведен' (detailClass d) = isPosted(object(d)) PERSISTENT;
+    isPosted 'Проведен' (detailClass d) = isPosted(object(d)) MATERIALIZED;
     isNotPosted 'Не проведен' (detailClass d) = d IS detailClass AND NOT isPosted(d);
 END
 
@@ -395,7 +395,7 @@ END
 
 META defineDocumentHeaderClosed (objectClass)
     isClosed 'Закрыт' = DATA BOOLEAN (objectClass);
-    isOpened 'Не закрыт' (objectClass o) = o IS objectClass AND NOT isClosed(o) PERSISTENT;
+    isOpened 'Не закрыт' (objectClass o) = o IS objectClass AND NOT isClosed(o) MATERIALIZED;
 
     close 'Закрыть' (objectClass o) = {
 	NEWSESSION { isClosed(o) <- TRUE; apply(); }
@@ -410,8 +410,8 @@ META defineDocumentHeaderClosed (objectClass)
 END
 
 META defineDocumentAbstractHeaderClosed (objectClass)
-    isClosed 'Закрыт' = ABSTRACT BOOLEAN(objectClass) PERSISTENT;
-    isOpened 'Не закрыт' (objectClass o) = o IS objectClass AND NOT isClosed(o) PERSISTENT INDEXED;
+    isClosed 'Закрыт' = ABSTRACT BOOLEAN(objectClass) MATERIALIZED;
+    isOpened 'Не закрыт' (objectClass o) = o IS objectClass AND NOT isClosed(o) MATERIALIZED INDEXED;
     close 'Закрыть' (o) = ACTION ABSTRACT LIST (objectClass);
 END
 
@@ -463,7 +463,7 @@ META defineDocumentDetailIndexPersistent (object, detailClass)
     defaultIndex 'Номер строки (авт.)' (detailClass d) =
         PARTITION SUM 1 BY object(d)
         ORDER d MINCHARWIDTH 4 PREFCHARWIDTH 4;
-    index 'Номер строки' (detailClass d) = OVERRIDE dataIndex(d), defaultIndex(d) IN recognize PERSISTENT;  
+    index 'Номер строки' (detailClass d) = OVERRIDE dataIndex(d), defaultIndex(d) IN recognize MATERIALIZED;  
 END
 
 META defineDocumentDetailSortOrder (object, detailClass)
@@ -491,7 +491,7 @@ META defineDocumentDetailSortOrder(object)
 END
 
 META defineDocumentAbstractDetailIndex(detailClass)
-    index 'Номер строки' (d) = ABSTRACT INTEGER (detailClass) IN base PERSISTENT;
+    index 'Номер строки' (d) = ABSTRACT INTEGER (detailClass) IN base MATERIALIZED;
 END
 
 META defineDocumentInterfaceDetailIndex (object, detailClass)
@@ -606,7 +606,7 @@ META defineDocumentHeaderDescription(objectClass, caption)
         CONCAT ' ', caption, '№ ' + seriesNumber(o), 'от ' + date(o) MINCHARWIDTH 30 PREFCHARWIDTH 50;
 END
 META defineDocumentAbstractHeaderDescription(objectClass)
-    description 'Название документа' = ABSTRACT VARSTRING[200] (objectClass) MINCHARWIDTH 30 PREFCHARWIDTH 50 PERSISTENT;
+    description 'Название документа' = ABSTRACT VARSTRING[200] (objectClass) MINCHARWIDTH 30 PREFCHARWIDTH 50 MATERIALIZED;
 END
 META defineDocumentInterfaceHeaderDescription(objectClass, caption)
     @defineDocumentAbstractHeaderDescription(objectClass);
@@ -711,7 +711,7 @@ META defineDocumentDetailQuantityCustomPrefix (detail, prefix, caption)
     prefix###quantity 'Кол-во'###caption = DATA NUMERIC[16,5] (###detail);
 END
 META defineDocumentAbstractDetailQuantityCustomPrefix (detail, prefix, caption)
-    prefix###quantity 'Кол-во'###caption = ABSTRACT NUMERIC[16,5] (###detail) PERSISTENT;
+    prefix###quantity 'Кол-во'###caption = ABSTRACT NUMERIC[16,5] (###detail) MATERIALIZED;
 END
 META defineDocumentInterfaceDetailQuantityCustomPrefix (detail, prefix, caption)
     @defineDocumentAbstractDetailQuantityCustomPrefix(detail, prefix, caption);
@@ -752,7 +752,7 @@ END
 // Итоги
 
 META defineDocumentHeaderQuantityCustomPrefix (object, detail, prefix, caption)
-    prefix###quantity###detail 'Кол-во (всего)'###caption (object) = GROUP SUM prefix###quantity(###detail idetail) BY object(idetail) IN documentSum PERSISTENT;
+    prefix###quantity###detail 'Кол-во (всего)'###caption (object) = GROUP SUM prefix###quantity(###detail idetail) BY object(idetail) IN documentSum MATERIALIZED;
 END
 META defineDocumentInterfaceHeaderQuantityCustomPrefix (object, detail, prefix, caption)
     @defineDocumentHeaderQuantityCustomPrefix (object, detail, prefix, caption);
@@ -788,7 +788,7 @@ META defineDocumentDetailPriceCustomPrefix (detail, prefix, caption)
     prefix###price 'Цена'###caption = DATA NUMERIC[16,4] (###detail);
 END
 META defineDocumentAbstractDetailPriceCustomPrefix (detail, prefix, caption)
-    prefix###price 'Цена'###caption = ABSTRACT NUMERIC[16,4] (###detail) PERSISTENT;
+    prefix###price 'Цена'###caption = ABSTRACT NUMERIC[16,4] (###detail) MATERIALIZED;
 END
 META defineDocumentInterfaceDetailPriceCustomPrefix (detail, prefix, caption)
     @defineDocumentAbstractDetailPriceCustomPrefix(detail, prefix, caption);
@@ -867,7 +867,7 @@ META defineDocumentDetailDataSumCustomPrefix (detail, prefix, caption)
     prefix###sum 'Сумма'###caption = DATA NUMERIC[18,4] (###detail);
 END
 META defineDocumentAbstractDetailDataSumCustomPrefix (detail, prefix, caption)
-    prefix###sum 'Сумма'###caption = ABSTRACT NUMERIC[18,4] (###detail) PERSISTENT;
+    prefix###sum 'Сумма'###caption = ABSTRACT NUMERIC[18,4] (###detail) MATERIALIZED;
 END
 
 META defineDocumentInterfaceDetailDataSumCustomPrefix (detail, prefix, caption)
@@ -970,7 +970,7 @@ META defineDocumentDetailMarkupCustomPrefix (detail, prefix, caption)
     prefix###markup 'Надбавка,%'###caption = DATA NUMERIC[8,3] (###detail);
 END
 META defineDocumentAbstractDetailMarkupCustomPrefix (detail, prefix, caption)
-    prefix###markup 'Надбавка,%'###caption = ABSTRACT NUMERIC[8,3] (###detail) PERSISTENT;
+    prefix###markup 'Надбавка,%'###caption = ABSTRACT NUMERIC[8,3] (###detail) MATERIALIZED;
 END
 META defineDocumentInterfaceDetailMarkupCustomPrefix (detail, prefix, caption)
     @defineDocumentAbstractDetailMarkupCustomPrefix(detail, prefix, caption);
@@ -992,7 +992,7 @@ META defineDocumentDetailMarkupSumCustomPrefix (detail, prefix, caption)
     prefix###markupSum 'Сумма надбавки'###caption = DATA NUMERIC[18,4] (###detail);
 END
 META defineDocumentAbstractDetailMarkupSumCustomPrefix (detail, prefix, caption)
-    prefix###markupSum 'Сумма надбавки'###caption = ABSTRACT NUMERIC[18,4] (###detail) PERSISTENT;
+    prefix###markupSum 'Сумма надбавки'###caption = ABSTRACT NUMERIC[18,4] (###detail) MATERIALIZED;
 END
 META defineDocumentInterfaceDetailMarkupSumCustomPrefix (detail, prefix, caption)
     @defineDocumentAbstractDetailMarkupSumCustomPrefix(detail, prefix, caption);
@@ -1019,7 +1019,7 @@ META defineDocumentHeaderProperty(object, property, caption)
     property caption (object) = DATA BOOLEAN(###object) IN documentPrm;
 END
 META defineDocumentAbstractHeaderProperty(object, property, caption)
-    property caption (object) = ABSTRACT BOOLEAN(###object) PERSISTENT IN documentPrm;
+    property caption (object) = ABSTRACT BOOLEAN(###object) MATERIALIZED IN documentPrm;
 END
 META defineDocumentInterfaceHeaderProperty (object, property, caption)
     @defineDocumentAbstractHeaderProperty (object, property, caption);
@@ -1160,12 +1160,12 @@ END
 
 // Quantity
 META defineDocumentAggregationDetailQuantity (primObject, aggrObject)
-    quantity 'Кол-во' (###aggrObject##Detail detail) = quantity(primObject##Detail(detail)) PERSISTENT;
+    quantity 'Кол-во' (###aggrObject##Detail detail) = quantity(primObject##Detail(detail)) MATERIALIZED;
 END
 
 // Property
 META defineDocumentAggregationDetailProperty (primObject, aggrObject, propertyPrim, propertyAggr, caption)
-    propertyPrim caption (###aggrObject##Detail detail) = propertyPrim(primObject##Detail(detail)) PERSISTENT;
+    propertyPrim caption (###aggrObject##Detail detail) = propertyPrim(primObject##Detail(detail)) MATERIALIZED;
 END
 META defineDocumentAggregationDetailProperty (primObject, aggrObject, property, caption)
     @defineDocumentAggregationDetailProperty (primObject, aggrObject, property, property, caption);

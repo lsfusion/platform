@@ -13,7 +13,7 @@ text 'Действие' = DATA TEXT (ProfileObject) IN recognize;
 onStarted() += {
     text(ProfileObject po) <- staticCaption(ProfileObject.top) WHERE po == ProfileObject.top;
 }
-profileObject = GROUP AGGR ProfileObject profileObject BY text(profileObject) PERSISTENT;
+profileObject = GROUP AGGR ProfileObject profileObject BY text(profileObject) MATERIALIZED;
 
 totalTime 'Суммарное время выполнения' = DATA LOCAL LONG (TEXT, TEXT, INTEGER, VARSTRING[100]);
 totalSQLTime 'Суммарное время выполнения SQL' = DATA LOCAL LONG (TEXT, TEXT, INTEGER, VARSTRING[100]);  
@@ -60,7 +60,7 @@ stopProfiler 'Остановить профилировщик' () = {
     APPLY;
 }
 
-id(User user) = INTEGER(user AS User) PERSISTENT INDEXED; 
+id(User user) = INTEGER(user AS User) MATERIALIZED INDEXED; 
 
 writeProfilerBatch () = {
     FOR [= GROUP SUM 1 IF callCount(TEXT t1, TEXT t2, INTEGER u, VARSTRING[100] f) BY t1](TEXT t1) AND NOT profileObject(t1) INLINE NEW p = ProfileObject DO {

@@ -111,7 +111,7 @@ cancelSQLProcess 'Снять SQL-процесс' = ACTION CUSTOM 'lsfusion.erp.u
 processType 'Фильтр процессов'= DATA LOCAL ProcessType();
 nameProcessType 'Фильтр процессов' () = staticName(processType()) PREFCHARWIDTH 15;
 captionProcessType 'Фильтр процессов' () = staticCaption(processType());
-WHEN SESSION CHANGED (processType()) DO EXEC updateProcessMonitorAction();
+WHEN LOCAL CHANGED (processType()) DO EXEC updateProcessMonitorAction();
  
 idThreadProcess 'ID потока процесса' = DATA LOCAL VARSTRING[10] (VARSTRING[10]);
 

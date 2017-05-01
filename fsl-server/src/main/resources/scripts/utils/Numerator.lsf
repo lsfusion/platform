@@ -114,12 +114,12 @@ NAVIGATOR {
 GROUP numbered 'Нумератор' : recognize;
 
 META defineNumberedAbstract(class)
-    number 'Номер' = ABSTRACT VARSTRING[28] (class) IN numbered PERSISTENT MINCHARWIDTH 7;
-    series 'Серия' = ABSTRACT STRING[2] (class) IN numbered PERSISTENT FIXEDCHARWIDTH 3; 
+    number 'Номер' = ABSTRACT VARSTRING[28] (class) IN numbered MATERIALIZED MINCHARWIDTH 7;
+    series 'Серия' = ABSTRACT STRING[2] (class) IN numbered MATERIALIZED FIXEDCHARWIDTH 3; 
 
     seriesNumber 'Серия/Номер' (class o) = 
         CONCAT '', series(o), number(o) 
-        MINCHARWIDTH 7 PREFCHARWIDTH 15 MAXCHARWIDTH 20 INDEXED PERSISTENT;
+        MINCHARWIDTH 7 PREFCHARWIDTH 15 MAXCHARWIDTH 20 INDEXED MATERIALIZED;
         
 END
 
@@ -153,7 +153,7 @@ META defineNumbered(class)
 
     seriesNumber 'Серия/Номер' (class o) = 
         CONCAT '', series(o), number(o) 
-        MINCHARWIDTH 7 PREFCHARWIDTH 15 MAXCHARWIDTH 20 INDEXED PERSISTENT;
+        MINCHARWIDTH 7 PREFCHARWIDTH 15 MAXCHARWIDTH 20 INDEXED MATERIALIZED;
         
 END
 
@@ -215,7 +215,7 @@ META defineNumerated(object1, object2)
 
     number 'Номер' = DATA VARSTRING[28] (###object1, ###object2) MINCHARWIDTH 7;
     series 'Серия' = DATA STRING[2] (###object1, ###object2) FIXEDCHARWIDTH 3;
-    seriesNumber 'Серия/Номер' (###object1 object1, ###object2 object2) = CONCAT '', series(object1, object2), number(object1, object2) MINCHARWIDTH 7 PREFCHARWIDTH 15 MAXCHARWIDTH 20 PERSISTENT;
+    seriesNumber 'Серия/Номер' (###object1 object1, ###object2 object2) = CONCAT '', series(object1, object2), number(object1, object2) MINCHARWIDTH 7 PREFCHARWIDTH 15 MAXCHARWIDTH 20 MATERIALIZED;
 
     numerator = DATA Numerator (###object1, ###object2);
     nameNumerator 'Нумератор' (###object1 object1, ###object2 object2) = name(numerator(object1, object2)) MINCHARWIDTH 7 PREFCHARWIDTH 15;

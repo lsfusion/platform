@@ -18,7 +18,7 @@ META defineExternalizableAbstract (object, type)
 END
 
 META defineExternalizableAbstract (object, type, prefix)
-    id 'Код' = ABSTRACT type (###object) PERSISTENT INDEXED MINCHARWIDTH 10 PREFCHARWIDTH 15;
+    id 'Код' = ABSTRACT type (###object) MATERIALIZED INDEXED MINCHARWIDTH 10 PREFCHARWIDTH 15;
     object (id) = GROUP AGGR (###object object) BY id (object);
 END
 

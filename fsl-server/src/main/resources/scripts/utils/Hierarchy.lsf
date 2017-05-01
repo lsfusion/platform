@@ -16,7 +16,7 @@ META defineHierarchy (object, class)
 END
 
 META defineHierarchyAbstract (object, class)
-    parent = ABSTRACT class (class) PERSISTENT;
+    parent = ABSTRACT class (class) MATERIALIZED;
     @defineHierarchyCustom(object, class);
 END
 
@@ -24,7 +24,7 @@ META defineHierarchyCustom (object, class)
     nameParent 'Родительский объект' = name(parent(class object)) IN base;
 
     level 'Уровень' (class child, class parent) = RECURSION 1l IF child IS class AND parent == child
-                                                                  STEP 2l IF parent == parent($parent) PERSISTENT;
+                                                                  STEP 2l IF parent == parent($parent) MATERIALIZED;
 
     object (child, level) = GROUP MAX class parent IF LONG level == level(class child, parent)
                                                    BY child, level;
@@ -33,22 +33,22 @@ META defineHierarchyCustom (object, class)
 
     levelRoot 'Уровень' (class child, class parent) = PARTITION SUM 1 IF level(child, parent)
                                                                       BY child
-                                                                      ORDER DESC level(child, parent) PERSISTENT;
+                                                                      ORDER DESC level(child, parent) MATERIALIZED;
     object##Root (child, level) = GROUP NAGGR class parent BY class child, levelRoot(child, parent);  
 
     isParent 'Является потомком' (class child, class parent) = TRUE IF level(child, parent);
 
-    childNumber 'Кол-во непосредственных потомков' (object) = GROUP SUM 1 BY parent(class child) PERSISTENT;
+    childNumber 'Кол-во непосредственных потомков' (object) = GROUP SUM 1 BY parent(class child) MATERIALIZED;
 
-    descendantNumber 'Кол-во всех потомков' (object) = GROUP SUM 1 IF isParent(class child, class parent) BY parent PERSISTENT;
+    descendantNumber 'Кол-во всех потомков' (object) = GROUP SUM 1 IF isParent(class child, class parent) BY parent MATERIALIZED;
 
-    isLeaf 'Лист' (class object) = object IS class AND NOT childNumber(object) PERSISTENT;
+    isLeaf 'Лист' (class object) = object IS class AND NOT childNumber(object) MATERIALIZED;
 
     isParentLeaf (class child, class parent) = isParent(child, parent) AND isLeaf(child);
 
     canonicalName 'Полное имя' (class object) = VARISTRING[255](
                            [= GROUP CONCAT name(class parent), ' / ' BY class child ORDER DESC level(child, parent)](object))
-                           MINCHARWIDTH 50 MAXCHARWIDTH 100 PREFCHARWIDTH 100 PERSISTENT;
+                           MINCHARWIDTH 50 MAXCHARWIDTH 100 PREFCHARWIDTH 100 MATERIALIZED;
 END
 
 META defineHierarchyFilter(object, class, property)
@@ -59,12 +59,12 @@ META defineHierarchyFilter(object, class, property)
 END
 
 META defineHierarchyPlain(object)
-    object##1 (###object child) = object##Root(child, 1) PERSISTENT;    
-    object##2 (###object child) = object##Root(child, 2) PERSISTENT;    
-    object##3 (###object child) = object##Root(child, 3) PERSISTENT;    
-    object##4 (###object child) = object##Root(child, 4) PERSISTENT;    
-    object##5 (###object child) = object##Root(child, 5) PERSISTENT;    
-    object##6 (###object child) = object##Root(child, 6) PERSISTENT;    
+    object##1 (###object child) = object##Root(child, 1) MATERIALIZED;    
+    object##2 (###object child) = object##Root(child, 2) MATERIALIZED;    
+    object##3 (###object child) = object##Root(child, 3) MATERIALIZED;    
+    object##4 (###object child) = object##Root(child, 4) MATERIALIZED;    
+    object##5 (###object child) = object##Root(child, 5) MATERIALIZED;    
+    object##6 (###object child) = object##Root(child, 6) MATERIALIZED;    
 END
 
 META defineHierarchyPlainOrder(object, property, prefixName, prefix)
