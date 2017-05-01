@@ -41,8 +41,6 @@ import java.util.List;
 
 public class CaseUnionProperty extends IncrementUnionProperty {
 
-    public static final boolean ABSTRACTDEFAULTLAST = true;
-
     // immutable реализация
     public CaseUnionProperty(LocalizedString caption, ImOrderSet<Interface> interfaces, boolean isExclusive, ImList<CalcCase<Interface>> cases) {
         super(caption, interfaces);

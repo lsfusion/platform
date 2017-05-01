@@ -1462,7 +1462,7 @@ nestedLocalModifier returns[LocalNestedType nestedType = null]
 abstractPropertyDefinition returns [LP property, List<ResolveClassSet> signature]
 @init {
 	boolean isExclusive = true;
-	boolean isLast = CaseUnionProperty.ABSTRACTDEFAULTLAST;
+	boolean isLast = false;
 	boolean isChecked = false;
 	CaseUnionProperty.Type type = CaseUnionProperty.Type.MULTI;	
 }
@@ -1490,7 +1490,7 @@ abstractPropertyDefinition returns [LP property, List<ResolveClassSet> signature
 abstractActionDefinition returns [LP property, List<ResolveClassSet> signature]
 @init {
 	boolean isExclusive = true;
-	boolean isLast = CaseUnionProperty.ABSTRACTDEFAULTLAST;
+	boolean isLast = true;
 	boolean isChecked = false;
 	ListCaseActionProperty.AbstractType type = ListCaseActionProperty.AbstractType.MULTI;
 }
@@ -1502,8 +1502,8 @@ abstractActionDefinition returns [LP property, List<ResolveClassSet> signature]
 }
 	:	'ABSTRACT'
 		(
-			(('CASE' { type = ListCaseActionProperty.AbstractType.CASE; isExclusive = false; }
-			|	'MULTI'	{ type = ListCaseActionProperty.AbstractType.MULTI; isExclusive = true; }) (opt=abstractExclusiveOverrideOption { isExclusive = $opt.isExclusive; if($opt.isLast!=null) isLast = $opt.isLast;})?)
+			(('CASE' { type = ListCaseActionProperty.AbstractType.CASE; isExclusive = false; isLast = false; }
+			|	'MULTI'	{ type = ListCaseActionProperty.AbstractType.MULTI; isExclusive = true; isLast = false; }) (opt=abstractExclusiveOverrideOption { isExclusive = $opt.isExclusive; if($opt.isLast!=null) isLast = $opt.isLast;})?)
 		|	('LIST' { type = ListCaseActionProperty.AbstractType.LIST; } (acopt=abstractCaseAddOption { isLast = $acopt.isLast; } )?)
 		)?
 		('CHECKED' { isChecked = true; })?
