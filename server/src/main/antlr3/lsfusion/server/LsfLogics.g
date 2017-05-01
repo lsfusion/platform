@@ -797,7 +797,7 @@ formPropertyUList returns [List<String> aliases, List<LocalizedString> captions,
 	String alias = null;
 	LocalizedString caption = null;
 }
-	:	{ alias = null; $points.add(getCurrentDebugPoint()); }
+	:	{ alias = null; caption = null; $points.add(getCurrentDebugPoint()); }
 		(id=simpleNameOrWithCaption '=' { alias = $id.name; caption = $id.caption; })?
 		pu=formPropertyUsage opts=formPropertyOptionsList
 		{
@@ -807,7 +807,7 @@ formPropertyUList returns [List<String> aliases, List<LocalizedString> captions,
 			$options.add($opts.options);
 		}
 		(','
-			{ alias = null; $points.add(getCurrentDebugPoint()); }
+			{ alias = null; caption = null; $points.add(getCurrentDebugPoint()); }
 			(id=simpleNameOrWithCaption '=' { alias = $id.name; caption = $id.caption; })?
 			pu=formPropertyUsage opts=formPropertyOptionsList
 			{
