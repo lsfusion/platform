@@ -170,7 +170,7 @@ public class CaseActionProperty extends ListCaseActionProperty {
         for(ActionCase<PropertyInterface> aCase : getCases())
             if(!setCases.contains(aCase)) {
                 if(aCase.where.read(context, context.getKeys()) != null) {
-                    ServerLoggers.assertLog(false, "OPTIMIZED CASES ASSERTION : PROPERTY - " + this + ", CASE - " + aCase);
+                    ServerLoggers.assertLog(false, "OPTIMIZED CASES ASSERTION : PROPERTY - " + this + ", CASE - " + aCase + ", PARAMS - " + context.getKeys());
                     return false;
                 }
             }
