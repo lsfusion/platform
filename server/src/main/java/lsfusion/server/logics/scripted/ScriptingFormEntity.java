@@ -291,6 +291,8 @@ public class ScriptingFormEntity {
             }            
             if(property == null) { 
                 MappedProperty prop = getPropertyWithMapping(pDrawUsage, mapping);
+                if(alias != null && pDrawUsage instanceof ScriptingLogicsModule.LPUsage)
+                    LM.makePropertyPublic(form, alias, ((ScriptingLogicsModule.LPUsage)pDrawUsage));
                 checkPropertyParameters(prop.property, prop.mapping);
                 property = prop.property;
                 objects = prop.mapping;

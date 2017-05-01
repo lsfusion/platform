@@ -743,6 +743,14 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
         return paramClasses;
     }
+
+    public boolean checkPropertyIsNew(LPUsage property) {
+        return !property.lp.property.getSID().equals(lastOpimizedJPropSID);
+    }
+    public void makePropertyPublic(FormEntity form, String alias, LPUsage lpUsage) {
+        String name = "_FORM_" + form.getCanonicalName().replace('.', '_') + "_" + alias;
+        makePropertyPublic(lpUsage.lp, name, lpUsage.signature);
+    }
     
     public LP addSettingsToProperty(LP baseProperty, String name, LocalizedString caption, List<TypedParameter> params, List<ResolveClassSet> signature, 
                                       String groupName, boolean isPersistent, boolean isComplex, boolean noHint, String tableName, BooleanDebug notNull, 
@@ -2552,7 +2560,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
             LPWithParams nullExec = nullExec(doAction, paramNum); // передает NULL в качестве параметра
             if(nullExec != null) { // нет параметра нет проблемы
-                modifyContextFlowActionPropertyDefinitionBodyCreated(doAction, currentContext, removedContext, null, false);
+                modifyContextFlowActionPropertyDefinitionBodyCreated(doAction, currentContext, removedContext, false);
 
                 LPWithParams resultLP = new LPWithParams(resultProps.get(paramNum - paramOld), new ArrayList<Integer>());
 
@@ -3324,8 +3332,8 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public LPWithParams modifyContextFlowActionPropertyDefinitionBodyCreated(LPWithParams lpWithParams,
-                                                    List<TypedParameter> newContext, List<TypedParameter> oldContext,
-                                                    List<ResolveClassSet> signature, boolean needFullContext) throws ScriptingErrorLog.SemanticErrorException {
+                                                                             List<TypedParameter> newContext, List<TypedParameter> oldContext,
+                                                                             boolean needFullContext) throws ScriptingErrorLog.SemanticErrorException {
         boolean isDebug = debugger.isEnabled();
         
         if(isDebug || needFullContext) {
@@ -4024,9 +4032,14 @@ public class ScriptingLogicsModule extends LogicsModule {
     
     public static class LPUsage implements AbstractPropertyUsage {
         public final LP lp;
+        public final List<ResolveClassSet> signature;
 
         public LPUsage(LP lp) {
+            this(lp, null);
+        }
+        public LPUsage(LP lp, List<ResolveClassSet> signature) {
             this.lp = lp;
+            this.signature = signature;
         }
     }
     
