@@ -662,7 +662,7 @@ formMappedPropertiesList returns [List<String> aliases, List<LocalizedString> ca
 	List<String> mapping = null;
 }
 	:	
-		{ alias = null; $points.add(getCurrentDebugPoint()); }
+		{ alias = null; caption = null; $points.add(getCurrentDebugPoint()); }
 		(		
 				(id=simpleNameOrWithCaption '=' { alias = $id.name; caption = $id.caption; })? mappedProp=formMappedProperty 
 				{
@@ -688,7 +688,7 @@ formMappedPropertiesList returns [List<String> aliases, List<LocalizedString> ca
 			$options.add($opts.options);
 		}
 		(','
-            { alias = null; $points.add(getCurrentDebugPoint()); }
+            { alias = null; caption = null; $points.add(getCurrentDebugPoint()); }
             (		
                     (id=simpleNameOrWithCaption '=' { alias = $id.name; caption = $id.caption; })? mappedProp=formMappedProperty 
                     {
