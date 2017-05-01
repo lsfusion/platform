@@ -1462,7 +1462,7 @@ nestedLocalModifier returns[LocalNestedType nestedType = null]
 abstractPropertyDefinition returns [LP property, List<ResolveClassSet> signature]
 @init {
 	boolean isExclusive = true;
-	boolean isLast = true;
+	boolean isLast = CaseUnionProperty.ABSTRACTDEFAULTLAST;
 	boolean isChecked = false;
 	CaseUnionProperty.Type type = CaseUnionProperty.Type.MULTI;	
 }
@@ -1478,7 +1478,7 @@ abstractPropertyDefinition returns [LP property, List<ResolveClassSet> signature
 			|	'MULTI'	{ type = CaseUnionProperty.Type.MULTI; isExclusive = true; } 
 			|   'VALUE' { type = CaseUnionProperty.Type.VALUE; isExclusive = false; } 
 			)
-			(opt=abstractExclusiveOverrideOption { isExclusive = $opt.isExclusive; isLast = $opt.isLast;})?
+			(opt=abstractExclusiveOverrideOption { isExclusive = $opt.isExclusive; if($opt.isLast != null) isLast = $opt.isLast;})?
 		)?
 		('CHECKED' { isChecked = true; })?
 		returnClass=classId
@@ -1490,7 +1490,7 @@ abstractPropertyDefinition returns [LP property, List<ResolveClassSet> signature
 abstractActionDefinition returns [LP property, List<ResolveClassSet> signature]
 @init {
 	boolean isExclusive = true;
-    boolean isLast = true;
+	boolean isLast = CaseUnionProperty.ABSTRACTDEFAULTLAST;
 	boolean isChecked = false;
 	ListCaseActionProperty.AbstractType type = ListCaseActionProperty.AbstractType.MULTI;
 }
@@ -1503,7 +1503,7 @@ abstractActionDefinition returns [LP property, List<ResolveClassSet> signature]
 	:	'ABSTRACT'
 		(
 			(('CASE' { type = ListCaseActionProperty.AbstractType.CASE; isExclusive = false; }
-			|	'MULTI'	{ type = ListCaseActionProperty.AbstractType.MULTI; isExclusive = true; }) (opt=abstractExclusiveOverrideOption { isExclusive = $opt.isExclusive; isLast = $opt.isLast;})?)
+			|	'MULTI'	{ type = ListCaseActionProperty.AbstractType.MULTI; isExclusive = true; }) (opt=abstractExclusiveOverrideOption { isExclusive = $opt.isExclusive; if($opt.isLast!=null) isLast = $opt.isLast;})?)
 		|	('LIST' { type = ListCaseActionProperty.AbstractType.LIST; } (acopt=abstractCaseAddOption { isLast = $acopt.isLast; } )?)
 		)?
 		('CHECKED' { isChecked = true; })?
@@ -4179,7 +4179,7 @@ exclusiveOverrideOption returns [boolean isExclusive]
 	|	'EXCLUSIVE'{ $isExclusive = true; } 
 	;
 
-abstractExclusiveOverrideOption returns [boolean isExclusive, boolean isLast = true]
+abstractExclusiveOverrideOption returns [boolean isExclusive, Boolean isLast = null]
 	:	('OVERRIDE' { $isExclusive = false; } (acopt = abstractCaseAddOption {$isLast = $acopt.isLast; } )? )
 	|	'EXCLUSIVE'{ $isExclusive = true; }
 	;
