@@ -25,6 +25,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.postgresql.Driver;
 import org.postgresql.PGConnection;
 import org.postgresql.core.BaseConnection;
+import org.postgresql.jdbc.AutoSave;
 import org.postgresql.util.PSQLException;
 
 import java.io.File;
@@ -502,7 +503,8 @@ public class PostgreDataAdapter extends DataAdapter {
 
     @Override
     protected void prepareConnection(Connection connection) {
-        ((PGConnection)connection).setPrepareThreshold(2);
+//        ((PGConnection)connection).setPrepareThreshold(2);
+        ((PGConnection)connection).setAutosave(AutoSave.NEVER); // AutoSave used for fixing cached plan, however we can restart transaction by ourself so we do not need this overhead
     }
 
     @Override
