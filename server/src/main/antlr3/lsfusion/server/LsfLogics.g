@@ -1490,7 +1490,7 @@ abstractPropertyDefinition returns [LP property, List<ResolveClassSet> signature
 abstractActionDefinition returns [LP property, List<ResolveClassSet> signature]
 @init {
 	boolean isExclusive = true;
-	boolean isLast = false;
+	boolean isLast = true;
 	boolean isChecked = false;
 	ListCaseActionProperty.AbstractType type = ListCaseActionProperty.AbstractType.MULTI;
 }
@@ -1502,8 +1502,8 @@ abstractActionDefinition returns [LP property, List<ResolveClassSet> signature]
 }
 	:	'ABSTRACT'
 		(
-			(('CASE' { type = ListCaseActionProperty.AbstractType.CASE; isExclusive = false; }
-			|	'MULTI'	{ type = ListCaseActionProperty.AbstractType.MULTI; isExclusive = true; }) (opt=abstractExclusiveOverrideOption { isExclusive = $opt.isExclusive; if($opt.isLast!=null) isLast = $opt.isLast;})?)
+			(('CASE' { type = ListCaseActionProperty.AbstractType.CASE; isExclusive = false; isLast = false; }
+			|	'MULTI'	{ type = ListCaseActionProperty.AbstractType.MULTI; isExclusive = true; isLast = false; }) (opt=abstractExclusiveOverrideOption { isExclusive = $opt.isExclusive; if($opt.isLast!=null) isLast = $opt.isLast;})?)
 		|	('LIST' { type = ListCaseActionProperty.AbstractType.LIST; } (acopt=abstractCaseAddOption { isLast = $acopt.isLast; } )?)
 		)?
 		('CHECKED' { isChecked = true; })?
@@ -2709,7 +2709,7 @@ newActionDefinitionBody[List<TypedParameter> context] returns [LPWithParams prop
 }
 @after {
 	if (inPropParseState()) {
-        $property = self.addScriptedNewAProp(context, $actDB.property, $addObj.paramCnt, $addObj.className, newContext);
+        $property = self.addScriptedNewAProp(context, $actDB.property, $addObj.paramCnt, $addObj.className, $addObj.autoset, newContext);
 	}
 }
 	:
@@ -3161,7 +3161,7 @@ multiActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns
 		actList=nonEmptyActionPDBList[context, dynamic]
 	;
 
-forAddObjClause[List<TypedParameter> context] returns [Integer paramCnt, String className]
+forAddObjClause[List<TypedParameter> context] returns [Integer paramCnt, String className, Boolean autoset = false]
 @init {
 	String varName = "added";
 }
@@ -3173,6 +3173,7 @@ forAddObjClause[List<TypedParameter> context] returns [Integer paramCnt, String 
 	:	'NEW'
 		(varID=ID '=' {varName = $varID.text;})?
 		addClass=classId { $className = $addClass.sid; }
+        ('AUTOSET' { $autoset = true; } )?
 	;
 
 forActionPropertyDefinitionBody[List<TypedParameter> context] returns [LPWithParams property]
@@ -3186,7 +3187,7 @@ forActionPropertyDefinitionBody[List<TypedParameter> context] returns [LPWithPar
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedForAProp(context, $expr.property, orders, $actDB.property, $elseActDB.property, $addObj.paramCnt, $addObj.className, recursive, descending, $in.noInline, $in.forceInline, newContext);
+		$property = self.addScriptedForAProp(context, $expr.property, orders, $actDB.property, $elseActDB.property, $addObj.paramCnt, $addObj.className, $addObj.autoset, recursive, descending, $in.noInline, $in.forceInline, newContext);
 	}	
 }
 	:	(	'FOR' 
