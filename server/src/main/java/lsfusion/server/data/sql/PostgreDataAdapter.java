@@ -515,7 +515,7 @@ public class PostgreDataAdapter extends DataAdapter {
     @Override
     public void setLogLevel(Connection connection, int level) {
         ensureLogLevel(level);
-        ((BaseConnection)connection).getLogger().setLogLevel(level);
+//        ((BaseConnection)connection).getLogger().setLogLevel(level);
     }
 
     @Override
@@ -524,7 +524,7 @@ public class PostgreDataAdapter extends DataAdapter {
         {
             DriverManager.setLogWriter(new PrintWriter(new Log4jWriter(ServerLoggers.jdbcLogger), false));
         }
-        Driver.setLogLevel(logLevel);
+  //      Driver.setLogLevel(logLevel);
     }
 
     @Override
