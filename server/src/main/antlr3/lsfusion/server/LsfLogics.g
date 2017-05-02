@@ -1490,7 +1490,7 @@ abstractPropertyDefinition returns [LP property, List<ResolveClassSet> signature
 abstractActionDefinition returns [LP property, List<ResolveClassSet> signature]
 @init {
 	boolean isExclusive = true;
-	boolean isLast = true;
+	boolean isLast = false;
 	boolean isChecked = false;
 	ListCaseActionProperty.AbstractType type = ListCaseActionProperty.AbstractType.MULTI;
 }
