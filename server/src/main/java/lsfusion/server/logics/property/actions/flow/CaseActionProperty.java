@@ -188,8 +188,7 @@ public class CaseActionProperty extends ListCaseActionProperty {
         Result<ImSet<PropertyInterface>> rNulls = new Result<>();
         ImMap<PropertyInterface, DataObject> dataObjects = DataObject.splitDataObjects(keys, rNulls);
         ImList<ActionCase<PropertyInterface>> result = getOptimizedCases(context.getSession().getCurrentClasses(dataObjects), rNulls.result);
-        // todo: wrap into assert
-        checkOptimizedCases(context, result);
+        assert checkOptimizedCases(context, result);
         return result;
     }
     
