@@ -126,6 +126,8 @@ public interface SQLSyntax {
     boolean isUpdateConflict(SQLException e);
 
     boolean isUniqueViolation(SQLException e);
+    
+    String getRetryWithReason(SQLException e);
 
     boolean isTimeout(SQLException e);
 

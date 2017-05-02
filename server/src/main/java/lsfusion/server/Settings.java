@@ -232,6 +232,16 @@ public class Settings {
 
     private int dialogTransactionTimeout = 5000;
 
+    private int tooMuchRetryAttempts = 3;
+
+    public int getTooMuchRetryAttempts() {
+        return tooMuchRetryAttempts;
+    }
+
+    public void setTooMuchRetryAttempts(int tooMuchRetryAttempts) {
+        this.tooMuchRetryAttempts = tooMuchRetryAttempts;
+    }
+
     private String disableExplicitVolatileStats = "";
     private int tooMuchAttempts = 15;
     private boolean enableAdjustSelectivity = false; // включает повышение selectivity при volatile stats для операторов >, пока были непостоянные случаи, поэтому выключен

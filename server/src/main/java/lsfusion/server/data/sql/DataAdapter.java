@@ -512,6 +512,10 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
         return false;
     }
 
+    public String getRetryWithReason(SQLException e) {
+        return null;
+    }
+
     public String getRandom() {
         return "random()";
     }

@@ -492,6 +492,15 @@ public class PostgreDataAdapter extends DataAdapter {
     }
 
     @Override
+    public String getRetryWithReason(SQLException e) {
+        String sqlState = e.getSQLState();
+        String message;
+        if(sqlState.equals("0A000") && (message = e.getMessage()).contains("cached plan"))
+            return message;
+        return null;
+    }
+
+    @Override
     protected void prepareConnection(Connection connection) {
         ((PGConnection)connection).setPrepareThreshold(2);
     }

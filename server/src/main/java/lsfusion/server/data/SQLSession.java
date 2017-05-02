@@ -1573,6 +1573,10 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         if(syntax.isUniqueViolation(e))
             handled = new SQLUniqueViolationException(false);
 
+        String reason = syntax.getRetryWithReason(e);
+        if(reason != null)
+            handled = new SQLRetryException(reason);
+
         if(syntax.isTimeout(e))
             handled = new SQLTimeoutException(isTransactTimeout, isForcedCancel());
         
