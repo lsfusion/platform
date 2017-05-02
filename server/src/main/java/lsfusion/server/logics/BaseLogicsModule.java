@@ -86,16 +86,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
 
     public LCP minus;
 
-    private LAP formPrint;
-    private LAP formEdit;
-    private LAP formXls;
-    private LAP formDrop;
-    private LAP formRefresh;
-    private LAP formApply;
-    private LAP formCancel;
-    private LAP formOk;
-    private LAP formClose;
-
     private LAP watch;
 
     public LAP sleep;
@@ -179,7 +169,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     @IdentityLazy
     public LAP getFormPrint() {
         try {
-            return formPrint = findAction("formPrint[]");
+            return findAction("formPrint[]");
         } catch (ScriptingErrorLog.SemanticErrorException e) {
             Throwables.propagate(e);
         }
@@ -189,7 +179,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     @IdentityLazy
     public LAP getFormEditReport() {
         try {
-            return formEdit = findAction("formEditReport[]");
+            return findAction("formEditReport[]");
         } catch (ScriptingErrorLog.SemanticErrorException e) {
             Throwables.propagate(e);
         }
@@ -199,7 +189,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     @IdentityLazy
     public LAP getFormXls() {
         try {
-            return formXls = findAction("formXls[]");
+            return findAction("formXls[]");
         } catch (ScriptingErrorLog.SemanticErrorException e) {
             Throwables.propagate(e);
         }
@@ -209,7 +199,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     @IdentityLazy
     public LAP getFormDrop() {
         try {
-            return formDrop = findAction("formDrop[]");
+            return findAction("formDrop[]");
         } catch (ScriptingErrorLog.SemanticErrorException e) {
             Throwables.propagate(e);
         }
@@ -219,7 +209,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     @IdentityLazy
     public LAP getFormRefresh() {
         try {
-            return formRefresh = findAction("formRefresh[]");
+            return findAction("formRefresh[]");
         } catch (ScriptingErrorLog.SemanticErrorException e) {
             Throwables.propagate(e);
         }
@@ -229,7 +219,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     @IdentityLazy
     public LAP getFormApply() {
         try {
-            return formApply = findAction("formApply[]");
+            return findAction("formApply[]");
         } catch (ScriptingErrorLog.SemanticErrorException e) {
             Throwables.propagate(e);
         }
@@ -239,7 +229,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     @IdentityLazy
     public LAP getFormCancel() {
         try {
-            return formCancel = findAction("formCancel[]");
+            return findAction("formCancel[]");
         } catch (ScriptingErrorLog.SemanticErrorException e) {
             Throwables.propagate(e);
         }
@@ -249,7 +239,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     @IdentityLazy
     public LAP getFormOk() {
         try {
-            return formOk = findAction("formOk[]");
+            return findAction("formOk[]");
         } catch (ScriptingErrorLog.SemanticErrorException e) {
             Throwables.propagate(e);
         }
@@ -259,7 +249,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     @IdentityLazy
     public LAP getFormClose() {
         try {
-            return formClose = findAction("formClose[]");
+            return findAction("formClose[]");
         } catch (ScriptingErrorLog.SemanticErrorException e) {
             Throwables.propagate(e);
         }
