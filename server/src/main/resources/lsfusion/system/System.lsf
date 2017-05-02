@@ -2,12 +2,6 @@ MODULE System;
 
 NAMESPACE System;
 
-CLASS FormResult 'Результат вызова формы' {
-    drop 'Сбросить',
-    ok 'Принять',
-    close 'Закрыть'
-}
-
 CLASS NATIVE Object;
 CLASS NATIVE CustomObjectClass;
 objectClass = NATIVE CustomObjectClass (Object);
@@ -119,7 +113,6 @@ addedObject() = DATA LOCAL Object ();
 confirmed() = DATA LOCAL BOOLEAN ();
 requestCanceled() = DATA LOCAL BOOLEAN ();
 requestPushed() = DATA LOCAL BOOLEAN ();
-formResult() = DATA LOCAL FormResult ();
 formPageCount() = DATA LOCAL INTEGER ();
 formExportFile() = DATA LOCAL CUSTOMFILE ();
 formExportFiles = DATA LOCAL CUSTOMFILE (VARSTRING[100]);
