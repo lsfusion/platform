@@ -236,10 +236,12 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
                 temporaryTablesLock.unlock();
             throw Throwables.propagate(t);
         }
+        debugConnection = resultConnection;
         return resultConnection;
     }
 
     public void returnConnection(ExConnection connection, OperationOwner owner) throws SQLException {
+        debugConnection = null;
         if(privateConnection !=null) { // вернутся / изменится не может так как explicitNeedPrivate включен
             assert privateConnection == connection;
             // по сути lockTryCommon, но так как в getConnection lockNeedPrivate - нельзя использовать, оставим здесь этот код в явную
@@ -263,7 +265,10 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
 
     private ExConnection privateConnection = null;
     
+    private ExConnection debugConnection = null; // executing connection, usually private, but sometimes common
     public ExConnection getDebugConnection() {
+        if(debugConnection != null)
+            return debugConnection;
         return privateConnection;
     }
 
