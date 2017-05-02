@@ -46,7 +46,7 @@ public class FlexSplitPanel extends SplitPanelBase<FlexPanel> {
 
         int size1 = (int) Math.max(0, availableSize * ratio);
 
-        if (firstWidget != null && firstWidget.isVisible() && (secondWidget != null && secondWidget.isVisible())) {
+        if (firstWidget != null && firstWidget.isVisible()) {
             int sizeToSet1 = Math.max(0, size1 - firstChild.getMargins(vertical));
             if (vertical) {
                 firstWidget.getElement().getStyle().setHeight(sizeToSet1, Style.Unit.PX);
@@ -54,7 +54,7 @@ public class FlexSplitPanel extends SplitPanelBase<FlexPanel> {
                 firstWidget.getElement().getStyle().setWidth(sizeToSet1, Style.Unit.PX);
             }
         }
-        if (secondWidget != null && secondWidget.isVisible() && (firstWidget != null && firstWidget.isVisible())) {
+        if (secondWidget != null && secondWidget.isVisible()) {
             int sizeToSet2 = Math.max(0, availableSize - size1 - secondChild.getMargins(vertical));
             if (vertical) {
                 secondWidget.getElement().getStyle().setHeight(sizeToSet2, Style.Unit.PX);
