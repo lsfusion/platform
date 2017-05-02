@@ -1903,11 +1903,11 @@ public class ScriptingLogicsModule extends LogicsModule {
         return keepProps;
     }
 
-    public LPWithParams addScriptedNewAProp(List<TypedParameter> oldContext, LPWithParams action, Integer addNum, String addClassName, List<TypedParameter> newContext) throws ScriptingErrorLog.SemanticErrorException {
-        return addScriptedForAProp(oldContext, null, new ArrayList<LPWithParams>(), action, null, addNum, addClassName, false, false, new ArrayList<LPWithParams>(), false, newContext);
+    public LPWithParams addScriptedNewAProp(List<TypedParameter> oldContext, LPWithParams action, Integer addNum, String addClassName, Boolean autoSet, List<TypedParameter> newContext) throws ScriptingErrorLog.SemanticErrorException {
+        return addScriptedForAProp(oldContext, null, new ArrayList<LPWithParams>(), action, null, addNum, addClassName, autoSet, false, false, new ArrayList<LPWithParams>(), false, newContext);
     }
     
-    public LPWithParams addScriptedForAProp(List<TypedParameter> oldContext, LPWithParams condition, List<LPWithParams> orders, LPWithParams action, LPWithParams elseAction, Integer addNum, String addClassName, boolean recursive, boolean descending, List<LPWithParams> noInline, boolean forceInline, List<TypedParameter> newContext) throws ScriptingErrorLog.SemanticErrorException {
+    public LPWithParams addScriptedForAProp(List<TypedParameter> oldContext, LPWithParams condition, List<LPWithParams> orders, LPWithParams action, LPWithParams elseAction, Integer addNum, String addClassName, Boolean autoSet, boolean recursive, boolean descending, List<LPWithParams> noInline, boolean forceInline, List<TypedParameter> newContext) throws ScriptingErrorLog.SemanticErrorException {
         boolean ordersNotNull = (condition != null ? doesExtendContext(singletonList(condition), orders) : !orders.isEmpty());
 
         List<LPWithParams> creationParams = new ArrayList<>();
@@ -1955,7 +1955,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         allCreationParams.addAll(noInline);
 
         LP result = addForAProp(null, LocalizedString.create(""), !descending, ordersNotNull, recursive, elseAction != null, usedParams.size(),
-                                addClassName != null ? (CustomClass) findClass(addClassName) : null, false, condition != null, noInline.size(), forceInline,
+                                addClassName != null ? (CustomClass) findClass(addClassName) : null, autoSet != null ? autoSet : false, condition != null, noInline.size(), forceInline,
                                 getParamsPlainList(allCreationParams).toArray());
         return new LPWithParams(result, usedParams);
     }
@@ -2565,7 +2565,7 @@ public class ScriptingLogicsModule extends LogicsModule {
                 LPWithParams resultLP = new LPWithParams(resultProps.get(paramNum - paramOld), new ArrayList<Integer>());
 
                 doAction = addScriptedForAProp(removedContext, addScriptedEqualityProp("==", paramLP, resultLP), new ArrayList<LPWithParams>(), doAction,
-                        nullExec, null, null, false, false, null, false, currentContext);
+                        nullExec, null, null, false, false, false, null, false, currentContext);
             }
 
             currentContext = removedContext;
