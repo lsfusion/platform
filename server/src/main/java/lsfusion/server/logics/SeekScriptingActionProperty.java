@@ -41,6 +41,7 @@ public class SeekScriptingActionProperty extends ScriptingActionProperty {
                 }});
             value = dataValue;
         } else {
+            ServerLoggers.assertLog(false, "SCRIPTING SEEK IS ALWAYS WITHOUT OBJECT");
             objects = SetFact.EMPTY();
             value = NullValue.instance;
         }
