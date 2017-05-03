@@ -8,6 +8,7 @@ import lsfusion.gwt.base.client.EscapeUtils;
 import lsfusion.gwt.base.client.GwtClientUtils;
 import lsfusion.gwt.cellview.client.Column;
 import lsfusion.gwt.cellview.client.Header;
+import lsfusion.gwt.cellview.client.HeaderPanel;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
 
 import static com.google.gwt.dom.client.BrowserEvents.*;
@@ -19,7 +20,6 @@ import static lsfusion.gwt.base.shared.GwtSharedUtils.nullEquals;
 
 public class GGridPropertyTableHeader extends Header<String> {
     private static final int ANCHOR_WIDTH = 10;
-    private static final int MAX_HEADER_HEIGHT = 30; // должна быть равна .dataGridHeaderCell { height: ...; }
 
     private final GGridPropertyTable table;
 
@@ -142,11 +142,12 @@ public class GGridPropertyTableHeader extends Header<String> {
     @Override
     public void renderDom(TableCellElement th) {
         th.addClassName("positionRelative");
+        th.getStyle().setHeight(headerHeight >= 0 ? headerHeight : HeaderPanel.DEFAULT_HEADER_HEIGHT, Style.Unit.PX);
         
         Boolean sortDir = table.getSortDirection(this);
         String escapedCaption = getEscapedCaption();
 
-        int maxHeight = headerHeight > 0 ? headerHeight : MAX_HEADER_HEIGHT;
+        int maxHeight = headerHeight >= 0 ? headerHeight : HeaderPanel.DEFAULT_HEADER_HEIGHT;
         DivElement div = Document.get().createDivElement();
         div.getStyle().setProperty("maxHeight", maxHeight, Style.Unit.PX);
         div.getStyle().setOverflow(Style.Overflow.HIDDEN);

@@ -12,7 +12,7 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 public class HeaderPanel extends Panel implements RequiresResize {
-    public final static int DEFAULT_HEADER_HEIGHT = 36;
+    public final static int DEFAULT_HEADER_HEIGHT = 34;
     public final static int DEFAULT_FOOTER_HEIGHT = 0;
 
     private Widget content;
@@ -30,13 +30,16 @@ public class HeaderPanel extends Panel implements RequiresResize {
     private int lastContentBottom;
 
     private boolean layoutScheduled = false;
+    
+    private boolean flexible; // если !flexible, то нет смысла проставлять top, margin-top, etc., т.к. position = static
 
     public HeaderPanel(boolean flexible) {
         this(DEFAULT_HEADER_HEIGHT, DEFAULT_FOOTER_HEIGHT, flexible);
     }
 
     public HeaderPanel(int initialHeaderHeight, int initialFooterHeight, boolean flexible) {
-        lastContentTop = initialHeaderHeight;
+        this.flexible = flexible;
+        lastContentTop = initialHeaderHeight >= 0 ? initialHeaderHeight : DEFAULT_HEADER_HEIGHT;
         lastContentBottom = initialFooterHeight;
 
         // Create the outer element
@@ -47,24 +50,31 @@ public class HeaderPanel extends Panel implements RequiresResize {
 
         // Create the header container.
         headerContainer = createContainer(flexible);
-        headerContainer.getStyle().setTop(0, Style.Unit.PX);
+        if (flexible) {
+            headerContainer.getStyle().setTop(0, Style.Unit.PX);
+        }
         elem.appendChild(headerContainer);
 
         // Create the footer container.
         footerContainer = createContainer(flexible);
-        footerContainer.getStyle().setBottom(0.0, Style.Unit.PX);
+        if (flexible) {
+            footerContainer.getStyle().setBottom(0.0, Style.Unit.PX);
+        }
         elem.appendChild(footerContainer);
 
         // Create the content container.
         contentContainer = createContainer(flexible);
         contentContainer.getStyle().setOverflow(Style.Overflow.HIDDEN);
-        contentContainer.getStyle().setTop(lastContentTop, Style.Unit.PX);
-        contentContainer.getStyle().setBottom(lastContentBottom, Style.Unit.PX);
+        if (flexible) {
+            contentContainer.getStyle().setTop(lastContentTop, Style.Unit.PX);
+            contentContainer.getStyle().setBottom(lastContentBottom, Style.Unit.PX);
+            contentContainer.getStyle().setMarginTop(lastContentTop > 0 ? 2 : 0, Style.Unit.PX);
+        }
         elem.appendChild(contentContainer);
     }
 
     public void setFixedHeaderHeight(int fixedHeaderHeight) {
-        this.fixedHeaderHeight = fixedHeaderHeight;
+        this.fixedHeaderHeight = fixedHeaderHeight >= 0 ? fixedHeaderHeight : DEFAULT_HEADER_HEIGHT;
         scheduledLayout();
     }
 
@@ -232,11 +242,16 @@ public class HeaderPanel extends Panel implements RequiresResize {
         }
 
         if (contentTop != lastContentTop) {
-            contentContainer.getStyle().setTop(contentTop, Style.Unit.PX);
+            if (flexible) {
+                contentContainer.getStyle().setTop(contentTop, Style.Unit.PX);
+                contentContainer.getStyle().setMarginTop(contentTop > 0 ? 2 : 0, Style.Unit.PX);
+            }
             lastContentTop = contentTop;
         }
         if (contentBottom != lastContentBottom) {
-            contentContainer.getStyle().setBottom(contentBottom, Style.Unit.PX);
+            if (flexible) {
+                contentContainer.getStyle().setBottom(contentBottom, Style.Unit.PX);
+            }
             lastContentBottom = contentBottom;
         }
 

@@ -12,7 +12,7 @@ public class GridView extends ComponentView {
     public boolean tabVertical = false;
     public boolean autoHide = false;
     private boolean quickSearch = false;
-    public int headerHeight = 0;
+    public int headerHeight = -1;
 
     public GroupObjectView groupObject;
 

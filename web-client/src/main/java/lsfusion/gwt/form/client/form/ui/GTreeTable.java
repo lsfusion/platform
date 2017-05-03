@@ -10,6 +10,7 @@ import lsfusion.gwt.base.client.GwtClientUtils;
 import lsfusion.gwt.base.shared.GwtSharedUtils;
 import lsfusion.gwt.cellview.client.Column;
 import lsfusion.gwt.cellview.client.DataGrid;
+import lsfusion.gwt.cellview.client.HeaderPanel;
 import lsfusion.gwt.cellview.client.KeyboardRowChangedEvent;
 import lsfusion.gwt.cellview.client.cell.Cell;
 import lsfusion.gwt.cellview.client.cell.CellPreviewEvent;
@@ -57,6 +58,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
             }
         };
         GGridPropertyTableHeader header = new GGridPropertyTableHeader(this, "Дерево");
+        header.setHeaderHeight(HeaderPanel.DEFAULT_HEADER_HEIGHT);
         createdFields.add("treeColumn");
         headers.add(header);
         addColumn(column, header);
@@ -92,6 +94,8 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
                 return tree.getColumnProperty(column);
             }
         };
+
+        setFixedHeaderHeight(HeaderPanel.DEFAULT_HEADER_HEIGHT);
     }
 
     public void removeProperty(GGroupObject group, GPropertyDraw property) {
@@ -113,7 +117,9 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         if (index > -1) {
             if (!createdFields.contains(property.sID)) {
                 Column<GTreeGridRecord, Object> gridColumn = createGridColumn(property);
-                GGridPropertyTableHeader header = new GGridPropertyTableHeader(this, property.getCaptionOrEmpty(), property.getTooltipText(property.getCaptionOrEmpty()));
+                String propertyCaption = property.getCaptionOrEmpty();
+                GGridPropertyTableHeader header = new GGridPropertyTableHeader(this, propertyCaption, property.getTooltipText(propertyCaption));
+                header.setHeaderHeight(HeaderPanel.DEFAULT_HEADER_HEIGHT);
 
                 headers.add(index, header);
                 insertColumn(index, gridColumn, header);

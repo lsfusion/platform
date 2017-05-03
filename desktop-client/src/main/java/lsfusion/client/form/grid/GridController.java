@@ -14,7 +14,6 @@ import lsfusion.client.logics.ClientGroupObject;
 import lsfusion.client.logics.ClientGroupObjectValue;
 import lsfusion.client.logics.ClientPropertyDraw;
 import lsfusion.client.logics.classes.ClientIntegralClass;
-import lsfusion.interop.ClassViewType;
 import lsfusion.interop.FontInfo;
 import lsfusion.interop.FormGrouping;
 import lsfusion.interop.Order;
@@ -68,10 +67,6 @@ public class GridController {
         Integer headerHeight = table.getUserHeaderHeight();
         if(headerHeight != null)
             clientGrid.setHeaderHeight(headerHeight);
-    }
-
-    public void setHeaderHeight(Integer headerHeight) {
-        clientGrid.setHeaderHeight(headerHeight == null ? 0 : headerHeight);
     }
 
     public boolean containsProperty(ClientPropertyDraw property) {

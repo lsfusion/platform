@@ -583,7 +583,7 @@ public abstract class UserPreferencesDialog extends JDialog {
     private Integer getHeaderHeight() {
         try {
             int headerHeight = Integer.parseInt(headerHeightField.getText());
-            return headerHeight != 0 ? headerHeight : null;
+            return headerHeight >= 0 ? headerHeight : null;
         } catch (Exception e) {
             return null;
         }
