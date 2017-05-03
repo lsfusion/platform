@@ -151,6 +151,7 @@ public class GridSelectionController {
 
     private void modifyTemporaryValues(int currentRow) {
         int previousRow = table.getSelectedRow();
+        currentRow = Math.min(currentRow, table.getRowKeys().size() - 1);  // IndexOutOfBoundsException fix
         if (currentRow != -1 && previousRow != -1) {
             int start = temporaryValues.isEmpty() ? previousRow : table.getRowKeys().indexOf(BaseUtils.lastSetElement(temporaryValues.keySet()));
             start = directionDown ? start + 1 : start - 1;
