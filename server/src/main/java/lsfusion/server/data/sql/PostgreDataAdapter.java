@@ -27,6 +27,8 @@ import org.postgresql.PGConnection;
 import org.postgresql.core.BaseConnection;
 import org.postgresql.jdbc.AutoSave;
 import org.postgresql.util.PSQLException;
+import org.postgresql.util.PSQLState;
+import org.postgresql.util.ServerErrorMessage;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -494,17 +496,40 @@ public class PostgreDataAdapter extends DataAdapter {
 
     @Override
     public String getRetryWithReason(SQLException e) {
-        String sqlState = e.getSQLState();
-        String message;
-        if(sqlState.equals("0A000") && (message = e.getMessage()).contains("cached plan"))
-            return message;
+        if(willHealViaReparse(e))
+            return e.getMessage();
         return null;
+    }
+
+    private boolean willHealViaReparse(SQLException e) {
+        // copy from QueryExecutorBase willHealViaReparse
+        if (PSQLState.INVALID_SQL_STATEMENT_NAME.getState().equals(e.getSQLState())) {
+            return true;
+        }
+        if (!PSQLState.NOT_IMPLEMENTED.getState().equals(e.getSQLState())) {
+            return false;
+        }
+
+        if (!(e instanceof PSQLException)) {
+            return false;
+        }
+
+        PSQLException pe = (PSQLException) e;
+
+        ServerErrorMessage serverErrorMessage = pe.getServerErrorMessage();
+        if (serverErrorMessage == null) {
+            return false;
+        }
+        // "cached plan must not change result type"
+        String routine = pe.getServerErrorMessage().getRoutine();
+        return "RevalidateCachedQuery".equals(routine) // 9.2+
+                || "RevalidateCachedPlan".equals(routine); // <= 9.1
     }
 
     @Override
     protected void prepareConnection(Connection connection) {
 //        ((PGConnection)connection).setPrepareThreshold(2);
-        ((PGConnection)connection).setAutosave(AutoSave.NEVER); // AutoSave used for fixing cached plan, however we can restart transaction by ourself so we do not need this overhead
+        //((PGConnection)connection).setAutosave(AutoSave.NEVER); // enabled by default AutoSave used for fixing cached plan, however we can restart transaction by ourself so we do not need this overhead
     }
 
     @Override
