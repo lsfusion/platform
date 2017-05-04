@@ -1946,11 +1946,11 @@ public class BaseUtils {
         });
     }
 
-    public static void openFile(byte[] data, String extension) throws IOException {
-        File file = File.createTempFile("lsf", "." + extension);
-        FileOutputStream f = new FileOutputStream(file);
-        f.write(data);
-        f.close();
+    public static void openFile(byte[] data, String name, String extension) throws IOException {
+        File file = name != null ? new File(System.getProperty("java.io.tmpdir") + "/" + name + "." + extension) : File.createTempFile("lsf", "." + extension);
+        try (FileOutputStream f = new FileOutputStream(file)) {
+            f.write(data);
+        }
         Desktop.getDesktop().open(file);
     }
 

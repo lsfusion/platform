@@ -172,7 +172,7 @@ public class ClientActionToGwtConverter extends ObjectConverter {
 
     @Converter(from = OpenFileClientAction.class)
     public GOpenFileAction convertAction(OpenFileClientAction action) {
-        return new GOpenFileAction(FileUtils.saveFile(action.file, action.extension));
+        return new GOpenFileAction(FileUtils.saveFile(action.file, action.name, action.extension));
     }
 
     @Converter(from = SaveFileClientAction.class)

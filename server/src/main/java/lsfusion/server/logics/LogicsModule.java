@@ -1489,22 +1489,22 @@ public abstract class LogicsModule {
 
     // ------------------- OPEN FILE ----------------- //
 
-    protected LAP addOFAProp(LCP lp) {
-        return addOFAProp(null, LocalizedString.create("ofa"), lp);
-    }
-
-    protected LAP addOFAProp(AbstractGroup group, LocalizedString caption, LCP lp) { // обернем сразу в and
-        return addProperty(group, new LAP(new OpenActionProperty(caption, lp)));
+    protected LAP addOFAProp(ValueClass prop, ValueClass nameProp) {
+        List<ValueClass> valueClasses = new ArrayList<>();
+        valueClasses.add(prop);
+        if(nameProp != null)
+            valueClasses.add(nameProp);
+        return addProperty(null, new LAP(new OpenActionProperty(LocalizedString.create("ofa"), valueClasses.toArray(new ValueClass[valueClasses.size()]))));
     }
 
     // ------------------- SAVE FILE ----------------- //
 
-    protected LAP addSFAProp(LCP lp, LCP nameLP) {
-        return addSFAProp(null, LocalizedString.create("sfa"), lp, nameLP);
-    }
-
-    protected LAP addSFAProp(AbstractGroup group, LocalizedString caption, LCP lp, LCP nameProp) {
-        return addProperty(group, new LAP(new SaveActionProperty(caption, lp, nameProp)));
+    protected LAP addSFAProp(ValueClass prop, ValueClass nameProp) {
+        List<ValueClass> valueClasses = new ArrayList<>();
+        valueClasses.add(prop);
+        if(nameProp != null)
+            valueClasses.add(nameProp);
+        return addProperty(null, new LAP(new SaveActionProperty(LocalizedString.create("sfa"), valueClasses.toArray(new ValueClass[valueClasses.size()]))));
     }
 
     // ------------------- EVAL ----------------- //

@@ -126,7 +126,7 @@ requestUserLogs 'Запросить логи' (CustomUser user) = {
 }
 openUserLogs 'Открыть логи' (CustomUser user) = {
     FOR user(Connection conn) == user AND connectionStatus(conn) == ConnectionStatus.connectedConnection DO {
-        OPEN fileUserLogs(conn);
+        OPEN fileUserLogs(conn) NAME userLogin(conn) + '-log';
     }
 }
 
@@ -139,7 +139,7 @@ requestThreadDump 'Запросить ThreadDump' (CustomUser user) = {
 }
 openThreadDump 'Открыть ThreadDump' (CustomUser user) = {
     FOR user(Connection conn) == user AND connectionStatus(conn) == ConnectionStatus.connectedConnection DO {
-        OPEN fileThreadDump(conn);
+        OPEN fileThreadDump(conn) NAME userLogin(conn) + '-dump';
     }
 }
 

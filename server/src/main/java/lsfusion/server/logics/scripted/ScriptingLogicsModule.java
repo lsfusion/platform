@@ -1184,19 +1184,26 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public LPWithParams addScriptedFileAProp(FileActionType actionType, LPWithParams property, LPWithParams fileNameProp) {
+    public LPWithParams addScriptedFileAProp(FileActionType actionType, LPWithParams property, LPWithParams fileNameProp) throws ScriptingErrorLog.SemanticErrorException {
+        List<LPWithParams> params = new ArrayList<>();
+        params.add(property);
+        if(fileNameProp != null)
+            params.add(fileNameProp);
+
         LAP<?> res;
         switch (actionType) {
             case LOAD:
                 res = addLFAProp((LCP) property.property);
-                break;
+                return new LPWithParams(res, property.usedParams);
             case OPEN:
-                res = addOFAProp((LCP) property.property);
+                res = addOFAProp(property.property.property.getValueClass(ClassType.valuePolicy),
+                        fileNameProp == null ? null : fileNameProp.property.property.getValueClass(ClassType.valuePolicy));
                 break;
             default: // SAVE
-                res = addSFAProp((LCP) property.property, fileNameProp != null ? (LCP) fileNameProp.property : null);
+                res = addSFAProp(property.property.property.getValueClass(ClassType.valuePolicy),
+                        fileNameProp == null ? null : fileNameProp.property.property.getValueClass(ClassType.valuePolicy));
         }
-        return new LPWithParams(res, property.usedParams);
+        return addScriptedJoinAProp(res, params);
     }
 
     public LP addScriptedCustomActionProp(String javaClassName, List<String> classes, boolean allowNullValue) throws ScriptingErrorLog.SemanticErrorException {

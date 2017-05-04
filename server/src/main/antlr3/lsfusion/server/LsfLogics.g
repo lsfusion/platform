@@ -2860,7 +2860,7 @@ fileActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns 
 }
 	:	(
 			'LOADFILE' { actionType = FileActionType.LOAD; } pe=propertyExpression[context, dynamic] { fileProp = $pe.property; } 
-		| 	'OPEN' { actionType = FileActionType.OPEN; } pe=propertyExpression[context, dynamic] { fileProp = $pe.property; }
+		| 	'OPEN' { actionType = FileActionType.OPEN; } pe=propertyExpression[context, dynamic] { fileProp = $pe.property; } ('NAME' npe=propertyExpression[context, dynamic] { fileNameProp = $npe.property; })?
 		|	'SAVE' { actionType = FileActionType.SAVE; } pe=propertyExpression[context, dynamic] { fileProp = $pe.property; } ('NAME' npe=propertyExpression[context, dynamic] { fileNameProp = $npe.property; })?
 		) 
 	;
