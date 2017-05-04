@@ -154,7 +154,7 @@ public class StopProfilerActionProperty extends ScriptingActionProperty {
 
     @StackProgress
     private void writeBatch(final ImOrderSet<KeyField> keys, ImOrderSet<LCP> props, ImMap<ImMap<KeyField, DataObject>, ImMap<LCP, ObjectValue>> data, ExecutionContext context, @StackProgress ProgressBar progress) throws SQLException, SQLHandledException {
-        SessionTableUsage<KeyField, LCP> importTable = new SessionTableUsage<>(keys, props, new Type.Getter<KeyField>() {
+        SessionTableUsage<KeyField, LCP> importTable = new SessionTableUsage<>("stopprof", keys, props, new Type.Getter<KeyField>() {
             @Override
             public Type getType(KeyField key) {
                 return key.type;

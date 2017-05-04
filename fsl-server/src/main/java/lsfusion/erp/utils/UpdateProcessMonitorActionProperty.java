@@ -261,7 +261,7 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
             }
         });
 
-        SingleKeyTableUsage<LCP> importTable = new SingleKeyTableUsage<>(StringClass.get(10), props, new Type.Getter<LCP>() {
+        SingleKeyTableUsage<LCP> importTable = new SingleKeyTableUsage<>("updpm:wr", StringClass.get(10), props, new Type.Getter<LCP>() {
             @Override
             public Type getType(LCP key) {
                 return key.property.getType();

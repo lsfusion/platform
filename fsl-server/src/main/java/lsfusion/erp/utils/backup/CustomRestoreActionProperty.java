@@ -230,7 +230,7 @@ public class CustomRestoreActionProperty extends ScriptingActionProperty {
         ImOrderSet<KeyField> keySet = SetFact.EMPTYORDER();
         for(int i = 0; i < keySize; i++)
             keySet = keySet.addOrderExcl(new KeyField("key" + i, IntegerClass.instance));
-        SessionTableUsage<KeyField, LP> importTable = new SessionTableUsage(keySet/*SetFact.singletonOrder("key")*/, props, new Type.Getter<KeyField>() {
+        SessionTableUsage<KeyField, LP> importTable = new SessionTableUsage("custrest", keySet/*SetFact.singletonOrder("key")*/, props, new Type.Getter<KeyField>() {
             public Type getType(KeyField key) {
                 return IntegerClass.instance;
             }
