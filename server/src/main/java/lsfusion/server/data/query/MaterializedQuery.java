@@ -23,7 +23,12 @@ public class MaterializedQuery {
         return "(SELECT " + mapFields + " FROM " + syntax.getQueryName(tableName, null, envString, usedRecursion) + ")";
     }
 
-    public static class Owner implements TableOwner {}
+    public static class Owner implements TableOwner {
+        @Override
+        public String getDebugInfo() {
+            return "matquery";
+        }
+    }
 
     public MaterializedQuery(String tableName, String mapFields, ImOrderSet<KeyField> keyFields, ImSet<PropertyField> propFields, int count, long timeExec, Owner owner) {
         this.tableName = tableName;

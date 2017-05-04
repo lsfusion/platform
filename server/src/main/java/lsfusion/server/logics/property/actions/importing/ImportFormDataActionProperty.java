@@ -1,6 +1,5 @@
 package lsfusion.server.logics.property.actions.importing;
 
-import lsfusion.base.OrderedMap;
 import lsfusion.base.Pair;
 import lsfusion.base.ProgressBar;
 import lsfusion.base.col.MapFact;
@@ -39,7 +38,6 @@ import lsfusion.server.session.SessionTableUsage;
 import lsfusion.server.stack.StackProgress;
 
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.*;
 
@@ -218,7 +216,7 @@ public abstract class ImportFormDataActionProperty extends SystemExplicitActionP
     private void writeBatch(final List<KeyField> keys, List<Property> props, ImMap<ImMap<KeyField, DataObject>, ImMap<Property, ObjectValue>> data, ExecutionContext context, @StackProgress ProgressBar progress) throws SQLException, SQLHandledException {
         ImOrderSet<KeyField> keySet = SetFact.fromJavaOrderSet(keys);
         SessionTableUsage<KeyField, Property> importTable =
-                new SessionTableUsage(keySet, SetFact.fromJavaOrderSet(props), new Type.Getter<KeyField>() {
+                new SessionTableUsage("impformdata", keySet, SetFact.fromJavaOrderSet(props), new Type.Getter<KeyField>() {
                     @Override
                     public Type getType(KeyField key) {
                         return key.type;

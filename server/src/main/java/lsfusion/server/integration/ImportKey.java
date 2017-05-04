@@ -94,13 +94,13 @@ public class ImportKey<P extends PropertyInterface> implements ImportKeyInterfac
     // не будет виден CGProp, который тут неявно assert'ися но это и не важно
     @StackMessage("{message.synchronize.key}")
     @ThisMessage
-    public SinglePropertyTableUsage<P> synchronize(DataSession session, SingleKeyTableUsage<ImportField> importTable) throws SQLException, SQLHandledException {
+    public SinglePropertyTableUsage<P> synchronize(String debugInfo, DataSession session, SingleKeyTableUsage<ImportField> importTable) throws SQLException, SQLHandledException {
 
         ImRevMap<P, KeyExpr> mapKeys = implement.property.getMapKeys();
         Where where = GroupExpr.create(getImplementExprs(importTable.join(importTable.getMapKeys()).getExprs()), Where.TRUE, mapKeys).getWhere().and( // в импортируемой таблице
                 implement.property.getExpr(mapKeys, session.getModifier()).getWhere().not()); // для которых не определился объект
 
-        return session.addObjects((ConcreteCustomClass)keyClass, new PropertySet<>(mapKeys, where, MapFact.<Expr, Boolean>EMPTYORDER(), false));
+        return session.addObjects(debugInfo, (ConcreteCustomClass)keyClass, new PropertySet<>(mapKeys, where, MapFact.<Expr, Boolean>EMPTYORDER(), false));
     }
 
     @Override

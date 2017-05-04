@@ -56,8 +56,6 @@ import java.sql.SQLException;
 import java.util.*;
 
 import static lsfusion.base.BaseUtils.immutableCast;
-import static lsfusion.interop.ClassViewType.GRID;
-import static lsfusion.interop.ClassViewType.HIDE;
 
 public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, ProfiledObject {
     public final SeekObjects SEEK_HOME = new SeekObjects(false); 
@@ -627,7 +625,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         }
 
         if (keyTable == null) // в общем то только для hidden'а но может и потом понадобиться
-            keyTable = createKeyTable();
+            keyTable = createKeyTable("upktable");
 
         if (curClassView.isHidden()) return null;
         boolean isGrid = curClassView.isGrid();
@@ -1144,8 +1142,8 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         }
     }
 
-    public NoPropertyTableUsage<ObjectInstance> createKeyTable() {
-        return new NoPropertyTableUsage<>(GroupObjectInstance.getOrderObjects(getOrderUpTreeGroups()), new Type.Getter<ObjectInstance>() {
+    public NoPropertyTableUsage<ObjectInstance> createKeyTable(String debugInfo) {
+        return new NoPropertyTableUsage<>(debugInfo, GroupObjectInstance.getOrderObjects(getOrderUpTreeGroups()), new Type.Getter<ObjectInstance>() {
             public Type getType(ObjectInstance key) {
                 return key.getType();
             }

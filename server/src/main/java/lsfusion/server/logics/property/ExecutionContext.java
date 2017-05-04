@@ -431,8 +431,8 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         return getSession().addObjectAutoSet(cls, pushedAddObject, getBL(), getClassListener());
     }
 
-    public <T extends PropertyInterface> SinglePropertyTableUsage<T> addObjects(ConcreteCustomClass cls, PropertySet<T> set) throws SQLException, SQLHandledException {
-        return getSession().addObjects(cls, set);
+    public <T extends PropertyInterface> SinglePropertyTableUsage<T> addObjects(String debugInfo, ConcreteCustomClass cls, PropertySet<T> set) throws SQLException, SQLHandledException {
+        return getSession().addObjects(debugInfo, cls, set);
     }
 
     public DataObject formAddObject(ObjectEntity object, ConcreteCustomClass cls) throws SQLException, SQLHandledException {

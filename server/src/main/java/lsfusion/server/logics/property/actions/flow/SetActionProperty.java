@@ -77,7 +77,7 @@ public class SetActionProperty<P extends PropertyInterface, W extends PropertyIn
 
             NoPropertyTableUsage<I> mapTable = null;
             if(writeFrom.mapIsComplex() && PropertyChange.needMaterializeWhere(exprWhere)) { // оптимизация с materialize'ингом
-                mapTable = PropertyChange.<I>materializeWhere(session, innerKeys, exprWhere);
+                mapTable = PropertyChange.<I>materializeWhere("setmwh", session, innerKeys, exprWhere);
                 exprWhere = mapTable.join(innerKeys).getWhere();
             }
 

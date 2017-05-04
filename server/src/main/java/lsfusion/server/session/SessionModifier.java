@@ -8,7 +8,6 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
-import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
 import lsfusion.server.caches.ManualLazy;
 import lsfusion.server.caches.ValuesContext;
@@ -268,7 +267,7 @@ public abstract class SessionModifier implements Modifier {
 
         try {
             readProperty = property;
-            final SinglePropertyTableUsage changeTable = property.readChangeTable(getSQL(), this, getBaseClass(), getQueryEnv());
+            final SinglePropertyTableUsage changeTable = property.readChangeTable("htincr", getSQL(), this, getBaseClass(), getQueryEnv());
             increment.add(property, changeTable);
         } catch(Exception e) {
             throw ExceptionUtils.propagate(e, SQLException.class, SQLHandledException.class);

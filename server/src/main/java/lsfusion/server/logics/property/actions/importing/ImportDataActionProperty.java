@@ -137,7 +137,7 @@ public abstract class ImportDataActionProperty extends SystemExplicitActionPrope
                         context.getSession().dropChanges((DataProperty) prop.property);
                 }
 
-                SingleKeyTableUsage<LCP> importTable = new SingleKeyTableUsage<>(IntegerClass.instance, props, new Type.Getter<LCP>() {
+                SingleKeyTableUsage<LCP> importTable = new SingleKeyTableUsage<>("idaatabke", IntegerClass.instance, props, new Type.Getter<LCP>() {
                     @Override
                     public Type getType(LCP key) {
                         return key.property.getType();

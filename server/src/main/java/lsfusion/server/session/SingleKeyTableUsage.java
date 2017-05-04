@@ -18,8 +18,8 @@ import java.sql.SQLException;
 
 public class SingleKeyTableUsage<P> extends SessionTableUsage<String, P> {
 
-    public SingleKeyTableUsage(final Type keyType, ImOrderSet<P> properties, Type.Getter<P> propertyType) {
-        super(SetFact.singletonOrder("key"), properties, new Type.Getter<String>() {
+    public SingleKeyTableUsage(String debugInfo, final Type keyType, ImOrderSet<P> properties, Type.Getter<P> propertyType) {
+        super(debugInfo, SetFact.singletonOrder("key"), properties, new Type.Getter<String>() {
             public Type getType(String key) {
                 return keyType;
             }

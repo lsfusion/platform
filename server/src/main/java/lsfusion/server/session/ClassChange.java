@@ -94,8 +94,8 @@ public class ClassChange extends ImmutableObject {
         return usage.used(getQuery());
     }
 
-    public SingleKeyPropertyUsage materialize(SQLSession sql, BaseClass baseClass, QueryEnvironment env) throws SQLException, SQLHandledException {
-        SingleKeyPropertyUsage changedClasses = new SingleKeyPropertyUsage(ObjectType.instance, ObjectType.instance);
+    public SingleKeyPropertyUsage materialize(String debugInfo, SQLSession sql, BaseClass baseClass, QueryEnvironment env) throws SQLException, SQLHandledException {
+        SingleKeyPropertyUsage changedClasses = new SingleKeyPropertyUsage(debugInfo, ObjectType.instance, ObjectType.instance);
         changedClasses.writeRows(sql, getQuery(), baseClass, env, SessionTable.matLocalQuery);
         return changedClasses;
     }

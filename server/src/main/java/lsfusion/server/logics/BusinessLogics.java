@@ -1941,7 +1941,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             public void run(final SQLSession sql) throws SQLException, SQLHandledException {
                 DataSession.runExclusiveness(new DataSession.RunExclusiveness() {
                     public void run(Query<String, String> query) throws SQLException, SQLHandledException {
-                        SingleKeyTableUsage<String> table = new SingleKeyTableUsage<>(ObjectType.instance, SetFact.toOrderExclSet("sum", "agg"), new Type.Getter<String>() {
+                        SingleKeyTableUsage<String> table = new SingleKeyTableUsage<>("recexcl", ObjectType.instance, SetFact.toOrderExclSet("sum", "agg"), new Type.Getter<String>() {
                             public Type getType(String key) {
                                 return key.equals("sum") ? ValueExpr.COUNTCLASS : StringClass.getv(false, ExtInt.UNLIMITED);
                             }

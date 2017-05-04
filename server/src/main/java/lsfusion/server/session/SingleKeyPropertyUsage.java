@@ -6,12 +6,10 @@ import lsfusion.base.col.interfaces.immutable.ImCol;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
-import lsfusion.server.classes.BaseClass;
 import lsfusion.server.data.*;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.query.Join;
-import lsfusion.server.data.query.Query;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.logics.DataObject;
@@ -22,8 +20,8 @@ import java.sql.SQLException;
 
 public class SingleKeyPropertyUsage extends SinglePropertyTableUsage<String> {
 
-    public SingleKeyPropertyUsage(final Type keyType, Type propertyType) {
-        super(SetFact.singletonOrder("key"), new Type.Getter<String>() {
+    public SingleKeyPropertyUsage(String debugInfo, final Type keyType, Type propertyType) {
+        super(debugInfo, SetFact.singletonOrder("key"), new Type.Getter<String>() {
             public Type getType(String key) {
                 return keyType; 
             }

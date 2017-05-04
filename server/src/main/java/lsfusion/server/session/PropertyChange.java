@@ -286,13 +286,13 @@ public class PropertyChange<T extends PropertyInterface> extends AbstractInnerCo
         return where.needMaterialize() || expr.needMaterialize() || (table != null && table.used(getQuery()));
     }
 
-    public SinglePropertyTableUsage<T> materialize(CalcProperty<T> property, DataSession session) throws SQLException, SQLHandledException {
-        return materialize(property, session.sql, session.baseClass, session.env);
+    public SinglePropertyTableUsage<T> materialize(String debugInfo, CalcProperty<T> property, DataSession session) throws SQLException, SQLHandledException {
+        return materialize(debugInfo, property, session.sql, session.baseClass, session.env);
     }
 
     @StackMessage("{message.property.materialize}")
-    public SinglePropertyTableUsage<T> materialize(@ParamMessage CalcProperty<T> property, SQLSession sql, BaseClass baseClass, QueryEnvironment env) throws SQLException, SQLHandledException {
-        SinglePropertyTableUsage<T> result = property.createChangeTable();
+    public SinglePropertyTableUsage<T> materialize(String debugInfo, @ParamMessage CalcProperty<T> property, SQLSession sql, BaseClass baseClass, QueryEnvironment env) throws SQLException, SQLHandledException {
+        SinglePropertyTableUsage<T> result = property.createChangeTable(debugInfo);
         writeRows(result, sql, baseClass, env, SessionTable.matLocalQuery);
         return result;
     }
@@ -301,8 +301,8 @@ public class PropertyChange<T extends PropertyInterface> extends AbstractInnerCo
         return where.needMaterialize();
     }
 
-    public static <K> NoPropertyTableUsage<K> materializeWhere(DataSession session, final ImRevMap<K, KeyExpr> mapKeys, final Where where) throws SQLException, SQLHandledException {
-        NoPropertyTableUsage<K> result = new NoPropertyTableUsage<>(mapKeys.keys().toOrderSet(), new Type.Getter<K>() {
+    public static <K> NoPropertyTableUsage<K> materializeWhere(String debugInfo, DataSession session, final ImRevMap<K, KeyExpr> mapKeys, final Where where) throws SQLException, SQLHandledException {
+        NoPropertyTableUsage<K> result = new NoPropertyTableUsage<>(debugInfo, mapKeys.keys().toOrderSet(), new Type.Getter<K>() {
             public Type getType(K key) {
                 return where.getKeyType(mapKeys.get(key));
             }

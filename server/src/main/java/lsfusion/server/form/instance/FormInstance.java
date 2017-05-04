@@ -25,7 +25,6 @@ import lsfusion.server.auth.ChangePropertySecurityPolicy;
 import lsfusion.server.auth.SecurityPolicy;
 import lsfusion.server.caches.ManualLazy;
 import lsfusion.server.classes.*;
-import lsfusion.server.classes.link.LinkClass;
 import lsfusion.server.context.ExecutionStack;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.*;
@@ -893,7 +892,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
     public void expandGroupObject(GroupObjectInstance group, ImMap<ObjectInstance, DataObject> value) throws SQLException, SQLHandledException {
         if (group.expandTable == null)
-            group.expandTable = group.createKeyTable();
+            group.expandTable = group.createKeyTable("expgo");
         group.expandTable.modifyRecord(session.sql, value, Modify.MODIFY, session.getOwner());
         group.updated |= UPDATED_EXPANDS;
     }

@@ -205,7 +205,7 @@ public class ReportSourceGenerator<PropertyDraw extends PropertyReaderInstance, 
         BaseClass baseClass = getBaseClass();
         SQLSession sql = session.sql;
         SessionTableUsage<Obj, Pair<Object, PropertyType>> reportTable = new SessionTableUsage<>(
-                sql, query, baseClass, queryEnv, keyTypes, propTypes.result, selectTop);
+                "ichreports", sql, query, baseClass, queryEnv, keyTypes, propTypes.result, selectTop);
 
         try {
             ImOrderMap<ImMap<Obj, Object>, ImMap<Pair<Object, PropertyType>, Object>> resultData = reportTable.read(sql, getQueryEnv(), orders.result);

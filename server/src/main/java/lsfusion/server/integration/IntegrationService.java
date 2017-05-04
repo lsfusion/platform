@@ -62,7 +62,7 @@ public class IntegrationService {
 
     @StackMessage("{message.synchronize}")
     public void synchronize(boolean replaceNull, boolean replaceEqual) throws SQLException, SQLHandledException {
-        SingleKeyTableUsage<ImportField> importTable = new SingleKeyTableUsage<>(IntegerClass.instance, table.getFields(), ImportField.typeGetter);
+        SingleKeyTableUsage<ImportField> importTable = new SingleKeyTableUsage<>("synctop", IntegerClass.instance, table.getFields(), ImportField.typeGetter);
         
         MExclMap<ImMap<String, DataObject>, ImMap<ImportField, ObjectValue>> mRows = MapFact.mExclMap();
         int counter = 0;
@@ -82,7 +82,7 @@ public class IntegrationService {
         MExclMap<ImportKey<?>, SinglePropertyTableUsage<?>> mAddedKeys = MapFact.mExclMapMax(keys.size());
         for (ImportKey<?> key : keys)
             if(!key.skipKey && key.keyClass instanceof ConcreteCustomClass)
-                mAddedKeys.exclAdd(key, key.synchronize(session, importTable));
+                mAddedKeys.exclAdd(key, key.synchronize("keysync", session, importTable));
         ImMap<ImportKey<?>, SinglePropertyTableUsage<?>> addedKeys = mAddedKeys.immutable();
                                                                                          
         MAddSet<SinglePropertyTableUsage<ClassPropertyInterface>> usedPropTables = SetFact.mAddSet();
@@ -91,7 +91,7 @@ public class IntegrationService {
             for (ImportProperty<?> property : properties) {
                 DataChanges synchronize = property.synchronize(session, importTable, addedKeys, replaceNull, replaceEqual);
                 for(DataProperty change : synchronize.getProperties()) {
-                    SinglePropertyTableUsage<ClassPropertyInterface> materialize = synchronize.get(change).materialize(change, session); // materialize'им чтобы избавится от таблиц из хинтов, которые при change'е могут сброситься
+                    SinglePropertyTableUsage<ClassPropertyInterface> materialize = synchronize.get(change).materialize("isrvc", change, session); // materialize'им чтобы избавится от таблиц из хинтов, которые при change'е могут сброситься
                     usedPropTables.add(materialize);
                     propertyChanges = propertyChanges.add(new DataChanges(change, SinglePropertyTableUsage.getChange(materialize)));
                 }

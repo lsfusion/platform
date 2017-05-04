@@ -2,9 +2,16 @@ package lsfusion.server.data;
 
 public interface TableOwner {
     
+    String getDebugInfo();
+    
     TableOwner global = new TableOwner() {
         public String toString() {
             return "global";
+        }
+
+        @Override
+        public String getDebugInfo() {
+            return toString();
         }
     };
 
@@ -12,11 +19,21 @@ public interface TableOwner {
         public String toString() {
             return "none";
         }
+
+        @Override
+        public String getDebugInfo() {
+            return toString();
+        }
     };
 
     TableOwner debug = new TableOwner() {
         public String toString() {
             return "debug";
+        }
+
+        @Override
+        public String getDebugInfo() {
+            return toString();
         }
     };
 

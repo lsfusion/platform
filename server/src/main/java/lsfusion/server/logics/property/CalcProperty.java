@@ -74,6 +74,10 @@ import static lsfusion.server.context.ThreadLocalContext.localize;
 
 public abstract class CalcProperty<T extends PropertyInterface> extends Property<T> implements MapKeysInterface<T> {
 
+    public String getTableDebugInfo(String operation) {
+        return getClass() + "," + debugInfo + "-" + operation;
+    }
+    
     public static FunctionSet<CalcProperty> getDependsOnSet(final FunctionSet<CalcProperty> check) {
         if(check.isEmpty())
             return check;
@@ -353,13 +357,13 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         getImplement().change(keys, env, value);
     }
 
-    public Pair<SinglePropertyTableUsage<T>, SinglePropertyTableUsage<T>> splitSingleApplyClasses(SinglePropertyTableUsage<T> changeTable, SQLSession sql, BaseClass baseClass, QueryEnvironment env) throws SQLException, SQLHandledException {
+    public Pair<SinglePropertyTableUsage<T>, SinglePropertyTableUsage<T>> splitSingleApplyClasses(String debugInfo, SinglePropertyTableUsage<T> changeTable, SQLSession sql, BaseClass baseClass, QueryEnvironment env) throws SQLException, SQLHandledException {
         assert isSingleApplyStored();
 
         if(DataSession.notFitKeyClasses(this, changeTable)) // оптимизация
-            return new Pair<>(createChangeTable(), changeTable);
+            return new Pair<>(createChangeTable(debugInfo+"-ssas:notfit"), changeTable);
         if(DataSession.fitClasses(this, changeTable))
-            return new Pair<>(changeTable, createChangeTable());
+            return new Pair<>(changeTable, createChangeTable(debugInfo+"-ssas:fit"));
 
         PropertyChange<T> change = SinglePropertyTableUsage.getChange(changeTable);
 
@@ -368,16 +372,16 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
                 .or(mapTable.table.getClasses().getWhere(mapKeys).and(change.expr.getWhere().not())); // или если меняет на null, assert что fitKeyClasses
         
         if(classWhere.isFalse()) // оптимизация
-            return new Pair<>(createChangeTable(), changeTable);
+            return new Pair<>(createChangeTable(debugInfo+"-ssas:false"), changeTable);
         if(classWhere.isTrue())
-            return new Pair<>(changeTable, createChangeTable());
+            return new Pair<>(changeTable, createChangeTable(debugInfo+"-ssas:true"));
 
         OperationOwner owner = env.getOpOwner();
         try {
-            SinglePropertyTableUsage<T> fit = readChangeTable(sql, change.and(classWhere), baseClass, env);
+            SinglePropertyTableUsage<T> fit = readChangeTable(debugInfo+"-ssas:fit", sql, change.and(classWhere), baseClass, env);
             SinglePropertyTableUsage<T> notFit;
             try {
-                notFit = readChangeTable(sql, change.and(classWhere.not()), baseClass, env);
+                notFit = readChangeTable(debugInfo+"-ssas:notfit", sql, change.and(classWhere.not()), baseClass, env);
             } catch (Throwable e) {
                 fit.drop(sql, owner);
                 throw ExceptionUtils.propagate(e, SQLException.class, SQLHandledException.class);
@@ -581,18 +585,18 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         return new PropertyChange<>(getMapKeys(), CaseExpr.NULL);
     }
 
-    public SinglePropertyTableUsage<T> createChangeTable() {
-        return new SinglePropertyTableUsage<>(getOrderInterfaces(), interfaceTypeGetter, getType());
+    public SinglePropertyTableUsage<T> createChangeTable(String debugInfo) {
+        return new SinglePropertyTableUsage<>(getTableDebugInfo(debugInfo), getOrderInterfaces(), interfaceTypeGetter, getType());
     }
 
     @StackMessage("{message.increment.read.properties}")
     @ThisMessage
-    public SinglePropertyTableUsage<T> readChangeTable(SQLSession session, Modifier modifier, BaseClass baseClass, QueryEnvironment env) throws SQLException, SQLHandledException {
-        return readFixChangeTable(session, getIncrementChange(modifier), baseClass, env);
+    public SinglePropertyTableUsage<T> readChangeTable(String group, SQLSession session, Modifier modifier, BaseClass baseClass, QueryEnvironment env) throws SQLException, SQLHandledException {
+        return readFixChangeTable(group, session, getIncrementChange(modifier), baseClass, env);
     }
 
-    public SinglePropertyTableUsage<T> readFixChangeTable(SQLSession session, PropertyChange<T> change, BaseClass baseClass, QueryEnvironment env) throws SQLException, SQLHandledException {
-        SinglePropertyTableUsage<T> readTable = readChangeTable(session, change, baseClass, env);
+    public SinglePropertyTableUsage<T> readFixChangeTable(String group, SQLSession session, PropertyChange<T> change, BaseClass baseClass, QueryEnvironment env) throws SQLException, SQLHandledException {
+        SinglePropertyTableUsage<T> readTable = readChangeTable(group, session, change, baseClass, env);
 
         // при вызове readChangeTable, используется assertion (см. assert fitKeyClasses) что если таблица подходит по классам для значения, то подходит по классам и для ключей
         // этот assertion может нарушаться если определилось конкретное значение и оно было null, как правило с комбинаторными event'ами (вообще может нарушиться и если не null, но так как propertyClasses просто вырезаются то не может), соответственно необходимо устранить этот случай
@@ -602,8 +606,8 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         return readTable;
     }
 
-    public SinglePropertyTableUsage<T> readChangeTable(SQLSession session, PropertyChange<T> change, BaseClass baseClass, QueryEnvironment env) throws SQLException, SQLHandledException {
-        SinglePropertyTableUsage<T> changeTable = createChangeTable();
+    public SinglePropertyTableUsage<T> readChangeTable(String debugInfo, SQLSession session, PropertyChange<T> change, BaseClass baseClass, QueryEnvironment env) throws SQLException, SQLHandledException {
+        SinglePropertyTableUsage<T> changeTable = createChangeTable(debugInfo);
         change.writeRows(changeTable, session, baseClass, env, SessionTable.matGlobalQuery);
         return changeTable;
     }

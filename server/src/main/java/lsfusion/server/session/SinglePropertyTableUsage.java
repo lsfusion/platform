@@ -23,8 +23,8 @@ import java.sql.SQLException;
 
 public class SinglePropertyTableUsage<K> extends SessionTableUsage<K, String> {
 
-    public SinglePropertyTableUsage(ImOrderSet<K> keys, Type.Getter<K> keyType, final Type propertyType) {
-        super(keys, SetFact.singletonOrder("value"), keyType, new Type.Getter<String>() {
+    public SinglePropertyTableUsage(String debugInfo, ImOrderSet<K> keys, Type.Getter<K> keyType, final Type propertyType) {
+        super(debugInfo, keys, SetFact.singletonOrder("value"), keyType, new Type.Getter<String>() {
             public Type getType(String key) {
                 return propertyType;
             }

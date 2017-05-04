@@ -79,12 +79,12 @@ public class PropertySet<T extends PropertyInterface> {
         return false;
     }
 
-    public Pair<PropertySet<T>, SessionTableUsage> materialize(DataSession session) throws SQLException, SQLHandledException {
+    public Pair<PropertySet<T>, SessionTableUsage> materialize(String debugInfo, DataSession session) throws SQLException, SQLHandledException {
         final Where fullWhere = getFullWhere();
 
         final ImRevMap<Object, Expr> objects = BaseUtils.generateObjects(orders.keys()).reverse();
 
-        SessionTableUsage<T, Object> tableUsage = new SessionTableUsage<>(mapKeys.keys().toOrderSet(), objects.keys().toOrderSet(), new Type.Getter<T>() {
+        SessionTableUsage<T, Object> tableUsage = new SessionTableUsage<>(debugInfo+"-mt", mapKeys.keys().toOrderSet(), objects.keys().toOrderSet(), new Type.Getter<T>() {
             public Type getType(T key) {
                 return mapKeys.get(key).getType(fullWhere);
             }

@@ -1,14 +1,10 @@
 package lsfusion.server.logics.property.actions;
 
-import lsfusion.base.Pair;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
-import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetExValue;
-import lsfusion.interop.ClassViewType;
-import lsfusion.interop.KeyStrokes;
 import lsfusion.server.classes.AbstractCustomClass;
 import lsfusion.server.classes.ConcreteCustomClass;
 import lsfusion.server.classes.CustomClass;
@@ -17,16 +13,10 @@ import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.where.Where;
-import lsfusion.server.form.entity.FormEntity;
-import lsfusion.server.form.entity.ObjectEntity;
-import lsfusion.server.form.entity.PropertyDrawEntity;
-import lsfusion.server.form.view.DefaultFormView;
-import lsfusion.server.form.view.PropertyDrawView;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.debug.ActionDelegationType;
 import lsfusion.server.logics.i18n.LocalizedString;
-import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.actions.flow.ExtendContextActionProperty;
 import lsfusion.server.logics.property.actions.flow.FlowResult;
@@ -147,7 +137,7 @@ public class AddObjectActionProperty<T extends PropertyInterface, I extends Prop
                     }
                 });
     
-                addedTable = context.addObjects(readClass, new PropertySet<>(innerKeys, exprWhere, orderExprs, ordersNotNull));
+                addedTable = context.addObjects("addobjap", readClass, new PropertySet<>(innerKeys, exprWhere, orderExprs, ordersNotNull));
                 resultChange = SinglePropertyTableUsage.getChange(addedTable);
             }
     

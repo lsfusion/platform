@@ -1078,7 +1078,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
     public static Map<String, String> copyAccess = new HashMap<>(); 
     private <P extends PropertyInterface> boolean migrateAccessProperties() {
         try (DataSession session = createSession(OperationOwner.unknown)) { // создание сессии аналогично fillIDs
-            SingleKeyPropertyUsage table = new SingleKeyPropertyUsage(StringClass.text, StringClass.text);
+            SingleKeyPropertyUsage table = new SingleKeyPropertyUsage("maccp", StringClass.text, StringClass.text);
             table.writeRows(session.sql, OperationOwner.unknown, MapFact.fromJavaMap(copyAccess).mapKeyValues(new GetValue<DataObject, String>() {
                 public DataObject getMapValue(String value) {
                     return new DataObject(value, StringClass.text);

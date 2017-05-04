@@ -8,7 +8,6 @@ import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
-import lsfusion.server.caches.CacheAspect;
 import lsfusion.server.caches.CacheStats;
 import lsfusion.server.data.expr.query.Stat;
 
@@ -53,7 +52,7 @@ public class SQLTemporaryPool {
 
     // SQLSession.assertLock : temporaryTables.lock + read
     @AssertSynchronized
-    public String getTable(SQLSession session, ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, Integer count, Map<String, WeakReference<TableOwner>> used, Result<Boolean> isNew, TableOwner owner, OperationOwner opOwner) throws SQLException { //, Map<String, String> usedStacks
+    public String getTable(SQLSession session, ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, Integer count, Map<String, WeakReference<TableOwner>> used, Map<String, String> debugInfo, Result<Boolean> isNew, TableOwner owner, OperationOwner opOwner) throws SQLException { //, Map<String, String> usedStacks
         FieldStruct fieldStruct = new FieldStruct(keys, properties, count);
 
         Set<String> matchTables = tables.get(fieldStruct);
@@ -66,6 +65,7 @@ public class SQLTemporaryPool {
             if(!used.containsKey(matchTable)) { // если не используется
                 assert !used.containsKey(matchTable);
                 used.put(matchTable, new WeakReference<>(owner));
+                debugInfo.put(matchTable, owner.getDebugInfo());
 //                session.truncate(matchTable); // удаляем старые данные
 //                if(session.getCount(matchTable, opOwner) != 0) {
 //                    ServerLoggers.assertLog(false, "TEMPORARY TABLE NOT EMPTY");
@@ -84,6 +84,7 @@ public class SQLTemporaryPool {
         String table = getTableName(counter);
         assert !used.containsKey(table);
         used.put(table, new WeakReference<>(owner)); // до всех sql, см. выше
+        debugInfo.put(table, owner.getDebugInfo());
         session.createTemporaryTable(table, keys, properties, opOwner);
         counter++;
         //        SQLSession.addUsed(table, owner, used, usedStacks);

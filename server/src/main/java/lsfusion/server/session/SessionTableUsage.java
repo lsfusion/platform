@@ -1,7 +1,6 @@
 package lsfusion.server.session;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.ExceptionUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.Result;
 import lsfusion.base.col.MapFact;
@@ -20,7 +19,6 @@ import lsfusion.server.data.query.*;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassWhere;
-import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.property.PropertyInterface;
@@ -72,20 +70,29 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K>, TableOwner {
         });
     }
 
-    public SessionTableUsage(ImOrderSet<K> keys, ImOrderSet<V> properties, final Type.Getter<K> keyType, final Type.Getter<V> propertyType) {
+    //    public String stack;
+    public String debugInfo;
+
+    @Override
+    public String getDebugInfo() {
+        return debugInfo;
+    }
+
+    public SessionTableUsage(String debugInfo, ImOrderSet<K> keys, ImOrderSet<V> properties, final Type.Getter<K> keyType, final Type.Getter<V> propertyType) {
         mapKeys = genKeys(keys, keyType);
         mapProps = genProps(properties, propertyType);
 
         table = new SessionRows(keys.mapOrder(mapKeys.reverse()), mapProps.keys());
 
+        this.debugInfo = debugInfo;
 //        stack = ExceptionUtils.getStackTrace();
     }
 
 //    public String stack;
 
-    public SessionTableUsage(SQLSession sql, final Query<K,V> query, BaseClass baseClass, QueryEnvironment env,
+    public SessionTableUsage(String debugInfo, SQLSession sql, final Query<K, V> query, BaseClass baseClass, QueryEnvironment env,
                              final ImMap<K, Type> keyTypes, final ImMap<V, Type> propertyTypes, int selectTop) throws SQLException, SQLHandledException { // здесь порядок особо не важен, так как assert что getUsage'а не будет
-        this(query.mapKeys.keys().toOrderSet(), query.properties.keys().toOrderSet(), new Type.Getter<K>() {
+        this(debugInfo, query.mapKeys.keys().toOrderSet(), query.properties.keys().toOrderSet(), new Type.Getter<K>() {
             public Type getType(K key) {
                 return keyTypes.get(key);
             }
@@ -244,7 +251,7 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K>, TableOwner {
 
     @Override
     public String toString() {
-        return "SU@" + System.identityHashCode(this) + " " + table.toString() + " " + getCount();
+        return "SU@" + System.identityHashCode(this) + " " + table.toString() + " " + getCount() + " " + debugInfo;
     }
 
     public void updateCurrentClasses(DataSession session) throws SQLException, SQLHandledException {

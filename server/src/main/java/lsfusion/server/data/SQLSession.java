@@ -594,7 +594,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
 
 //                            String transactionTable = privateConnection.temporary.getTableName(i+transactionCounter);
 
-//                            ServerLoggers.assertLog(transactionTables.contains(transactionTable), "CONSEQUENT TRANSACTION TABLES : HOLE");
+                            ServerLoggers.assertLog(transactionTables.contains(transactionTable), "CONSEQUENT TRANSACTION TABLES : HOLE");
 //                            returnUsed(transactionTable, sessionTablesMap);
                             WeakReference<TableOwner> tableOwner = sessionTablesMap.remove(transactionTable);
 //                            fifo.add("TRANSRET " + getCurrentTimeStamp() + " " + transactionTable + " " + privateConnection.temporary + " " + BaseUtils.nullToString(tableOwner) + " " + BaseUtils.nullToString(tableOwner == null ? null : tableOwner.get()) + " " + owner + " " + SQLSession.this + " " + ExecutionStackAspect.getExStackTrace());
@@ -898,6 +898,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     }
 
     private final Map<String, WeakReference<TableOwner>> sessionTablesMap = MapFact.mAddRemoveMap(); // все использования assertLock
+    private final Map<String, String> sessionDebugInfo = MapFact.mAddRemoveMap(); // все использования assertLock
     private final Map<String, Long> lastReturnedStamp = MapFact.mAddRemoveMap(); // все использования assertLock
 
     private int totalSessionTablesCount; // lockRead
@@ -1005,7 +1006,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
                 removeUnusedTemporaryTables(false, opOwner);
 
                 // в зависимости от политики или локальный пул (для сессии) или глобальный пул
-                table = privateConnection.temporary.getTable(this, keys, properties, count, sessionTablesMap, isNew, owner, opOwner); //, sessionTablesStackGot
+                table = privateConnection.temporary.getTable(this, keys, properties, count, sessionTablesMap, sessionDebugInfo, isNew, owner, opOwner); //, sessionTablesStackGot
 
                 registerChange(table, owner, -1, TableChange.ADD);
                 if(isNew.result && isInTransaction()) { // пометим как transaction
@@ -1050,7 +1051,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
 //                fifo.add("RU " + getCurrentTimeStamp() + " " + force + " " + entry.getKey() + " " + privateConnection.temporary + " " + (tableOwner == null ? TableOwner.none : tableOwner) + " " + opOwner + " " + this + " " + ExecutionStackAspect.getExStackTrace());
                 lastReturnedStamp.put(entry.getKey(), System.currentTimeMillis());
                 truncateSession(entry.getKey(), opOwner, (tableOwner == null ? TableOwner.none : tableOwner));
-                logger.info("REMOVE UNUSED TEMP TABLE : " + entry.getKey()); // потом надо будет больше инфы по owner'у добавить
+                logger.info("REMOVE UNUSED TEMP TABLE : " + entry.getKey() + ", DEBUG INFO : " + sessionDebugInfo.get(entry.getKey())); // потом надо будет больше инфы по owner'у добавить
                 iterator.remove();
             }
         }
@@ -1107,7 +1108,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
                 public void run() throws SQLException {
                     assert sessionTablesMap.containsKey(table);
                     WeakReference<TableOwner> removed = sessionTablesMap.remove(table);
-                    assert removed.get()==owner;
+                    ServerLoggers.assertLog(removed.get()==owner, "REMOVE OWNER SHOULD BE EQUAL TO GET OWNER");
                 }}, firstException);
     
             runSuppressed(new SQLRunnable() {
@@ -1131,10 +1132,11 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
                 // assertion построен на том что между началом транзакции ее rollback'ом, все созданные таблицы в явную drop'ся, соответственно может нарушится если скажем открыта форма и не close'ута, или просто new IntegrationService идет
                 // в принципе он не настолько нужен, но для порядка пусть будет
                 // придется убрать так как чистых использований уже достаточно много, например ClassChange.materialize, DataSession.addObjects, правда что сейчас с assertion'ами делать неясно
-                assert !sessionTablesMap.containsKey(table.getName()); // вернул назад
+                ServerLoggers.assertLog(!sessionTablesMap.containsKey(table.getName()), "ROLLBACK TABLE SHOULD BE FREE"); // вернул назад
                 WeakReference<TableOwner> value = new WeakReference<>(owner);
 //                            fifo.add("RGET " + getCurrentTimeStamp() + " " + table + " " + privateConnection.temporary + " " + value + " " + owner + " " + opOwner  + " " + this + " " + ExecutionStackAspect.getExStackTrace());
                 sessionTablesMap.put(table.getName(), value);
+                sessionDebugInfo.put(table.getName(), owner.getDebugInfo());
 
             } finally {
                 temporaryTablesLock.unlock();
@@ -2494,9 +2496,9 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         
         if(wCurrentOwner == null || (currentOwner = wCurrentOwner.get()) == null) {
             if(owner != TableOwner.none)
-                ServerLoggers.assertLog(false, "UPDATED RETURNED TABLE : " + table + " " + owner);
+                ServerLoggers.assertLog(false, "UPDATED RETURNED TABLE : " + table + " " + owner + ", DEBUG INFO : " + sessionDebugInfo.get(table));
         } else
-            ServerLoggers.assertLog(currentOwner == owner, "UPDATED FOREIGN TABLE : " + table + " " + currentOwner + " " + owner);
+            ServerLoggers.assertLog(currentOwner == owner, "UPDATED FOREIGN TABLE : " + table + " " + currentOwner + " " + owner + ", DEBUG INFO : " + sessionDebugInfo.get(table));
     }
     private void checkTableOwner(Table table, TableOwner owner) {
         if(table instanceof SessionTable)
@@ -2680,7 +2682,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     
     public void checkSessionTable(SessionTable table) {
         WeakReference<TableOwner> sessionTable = sessionTablesMap.get(table.getName());
-        ServerLoggers.assertLog(sessionTable != null && sessionTable.get() != null, "USED RETURNED TABLE : " + table.getName());
+        ServerLoggers.assertLog(sessionTable != null && sessionTable.get() != null, "USED RETURNED TABLE : " + table.getName() + ", DEBUG INFO : " + sessionTablesMap.get(table.getName()));
     }
 
     private PreparedStatement getStatement(SQLCommand command, ImMap<String, ParseInterface> paramObjects, final ExConnection connection, SQLSyntax syntax, DynamicExecEnvSnapshot snapEnv, Result<ReturnStatement> returnStatement, Result<Integer> length) throws SQLException {

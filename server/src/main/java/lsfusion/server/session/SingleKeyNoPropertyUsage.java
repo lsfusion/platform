@@ -16,8 +16,8 @@ import java.sql.SQLException;
 
 public class SingleKeyNoPropertyUsage extends NoPropertyTableUsage<String> {
 
-    public SingleKeyNoPropertyUsage(final Type keyType) {
-        super(SetFact.singletonOrder("key"), new Type.Getter<String>() {
+    public SingleKeyNoPropertyUsage(String debugInfo, final Type keyType) {
+        super(debugInfo, SetFact.singletonOrder("key"), new Type.Getter<String>() {
             public Type getType(String key) {
                 return keyType;
             }
