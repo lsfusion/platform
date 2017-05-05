@@ -2682,7 +2682,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     
     public void checkSessionTable(SessionTable table) {
         WeakReference<TableOwner> sessionTable = sessionTablesMap.get(table.getName());
-        ServerLoggers.assertLog(sessionTable != null && sessionTable.get() != null, "USED RETURNED TABLE : " + table.getName() + ", DEBUG INFO : " + sessionTablesMap.get(table.getName()));
+        ServerLoggers.assertLog(sessionTable != null && sessionTable.get() != null, "USED RETURNED TABLE : " + table.getName() + ", DEBUG INFO : " + sessionDebugInfo.get(table.getName()));
     }
 
     private PreparedStatement getStatement(SQLCommand command, ImMap<String, ParseInterface> paramObjects, final ExConnection connection, SQLSyntax syntax, DynamicExecEnvSnapshot snapEnv, Result<ReturnStatement> returnStatement, Result<Integer> length) throws SQLException {
