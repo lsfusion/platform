@@ -1051,7 +1051,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
 //                fifo.add("RU " + getCurrentTimeStamp() + " " + force + " " + entry.getKey() + " " + privateConnection.temporary + " " + (tableOwner == null ? TableOwner.none : tableOwner) + " " + opOwner + " " + this + " " + ExecutionStackAspect.getExStackTrace());
                 lastReturnedStamp.put(entry.getKey(), System.currentTimeMillis());
                 truncateSession(entry.getKey(), opOwner, (tableOwner == null ? TableOwner.none : tableOwner));
-                logger.info("REMOVE UNUSED TEMP TABLE : " + entry.getKey() + ", DEBUG INFO : " + sessionDebugInfo.get(entry.getKey())); // потом надо будет больше инфы по owner'у добавить
+                logger.info("REMOVE UNUSED TEMP TABLE : " + entry.getKey() + ", DEBUG INFO : " + sessionDebugInfo.get(entry.getKey())); // потом надо будет больше инфы по owner'у добавить, в основном keysTable из-за pendingCleaners 
                 iterator.remove();
             }
         }
@@ -1574,6 +1574,9 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
 
         if(syntax.isUniqueViolation(e))
             handled = new SQLUniqueViolationException(false);
+
+        if(syntax.isTableDoesNotExist(e))
+            handLogger.info("TABLE DOES NOT EXIST " + sessionDebugInfo);
 
         String reason = syntax.getRetryWithReason(e);
         if(reason != null)

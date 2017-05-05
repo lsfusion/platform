@@ -127,6 +127,8 @@ public interface SQLSyntax {
 
     boolean isUniqueViolation(SQLException e);
     
+    boolean isTableDoesNotExist(SQLException e);
+    
     String getRetryWithReason(SQLException e);
 
     boolean isTimeout(SQLException e);

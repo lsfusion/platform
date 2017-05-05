@@ -490,6 +490,11 @@ public class PostgreDataAdapter extends DataAdapter {
     }
 
     @Override
+    public boolean isTableDoesNotExist(SQLException e) {
+        return e.getSQLState().equals("42P01");
+    }
+
+    @Override
     public boolean isTimeout(SQLException e) {
         return e.getSQLState().equals("57014");
     }

@@ -508,6 +508,10 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
         throw new UnsupportedOperationException();
     }
 
+    public boolean isTableDoesNotExist(SQLException e) {
+        return false;
+    }
+
     public boolean isTimeout(SQLException e) {
         return false;
     }
