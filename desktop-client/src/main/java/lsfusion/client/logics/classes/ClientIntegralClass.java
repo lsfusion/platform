@@ -45,7 +45,16 @@ abstract public class ClientIntegralClass extends ClientDataClass {
 
     @Override
     public String formatString(Object obj) throws ParseException {
-        return getDefaultFormat().format(obj);
+        NumberFormat format = getDefaultFormat();
+        String formattedString = format.format(obj);
+        if (format instanceof DecimalFormat) {
+            // аналогично parse'ингу: если в системных настройках для разделения разрядов используется пробел, то java использует 'неразрывный пробел'
+            // excel, например, не воспринимает полученную строку как число
+            if (((DecimalFormat) format).getDecimalFormatSymbols().getGroupingSeparator() == UNBREAKABLE_SPACE) {
+                formattedString = formattedString.replace(UNBREAKABLE_SPACE, ' ');
+            }
+        }
+        return formattedString;
     }
 
     protected Number parseWithDefaultFormat(String s) throws ParseException {
