@@ -30,11 +30,15 @@ public class GResizableModalWindow extends ResizableWindow {
         addCloseHandler(new CloseHandler<ResizableWindow>() {
             @Override
             public void onClose(CloseEvent<ResizableWindow> event) {
-                nativePreviewHandlerReg.removeHandler();
-                nativePreviewHandlerReg = null;
+                if (nativePreviewHandlerReg != null) { // как-то словили NPE
+                    nativePreviewHandlerReg.removeHandler();
+                    nativePreviewHandlerReg = null;
+                }
 
-                modalMask.hide();
-                modalMask = null;
+                if (modalMask != null) {
+                    modalMask.hide();
+                    modalMask = null;
+                }
 
                 if (hiddenHandler != null) {
                     hiddenHandler.onHidden();
