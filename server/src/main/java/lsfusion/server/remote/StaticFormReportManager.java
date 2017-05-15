@@ -60,7 +60,7 @@ public class StaticFormReportManager extends FormReportManager<PropertyDrawEntit
 
             @Override
             public BusinessLogics getBL() {
-                return ThreadLocalContext.getBusinessLogics();
+                return context.getBL();
             }
 
             @Override
