@@ -1,6 +1,9 @@
 package lsfusion.client.form.dispatch;
 
 import com.google.common.base.Throwables;
+import javafx.embed.swing.JFXPanel;
+import javafx.scene.media.Media;
+import javafx.scene.media.MediaPlayer;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.IOUtils;
 import lsfusion.base.SystemUtils;
@@ -559,14 +562,30 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
         }
     }
 
-    private void beep(byte[] inputFile) {
+    private void beep(byte[] fileBytes) {
+        File file = null;
         try {
-            Clip clip = AudioSystem.getClip();
-            AudioInputStream inputStream = AudioSystem.getAudioInputStream(new ByteArrayInputStream(inputFile));
-            clip.open(inputStream);
-            clip.start();
-        } catch (LineUnavailableException | IOException | UnsupportedAudioFileException e) {
+            file = File.createTempFile("beep", getExtension(fileBytes));
+            FileUtils.writeByteArrayToFile(file, fileBytes);
+            Media hit = new Media(file.toURI().toString());
+            createJFXPanel();
+            MediaPlayer mediaPlayer = new MediaPlayer(hit);
+            mediaPlayer.play();
+        } catch (Exception e) {
             throw Throwables.propagate(e);
+        } finally {
+            if (file != null && !file.delete())
+                file.deleteOnExit();
         }
+    }
+
+    //to prevent java.lang.IllegalStateException: Toolkit not initialized
+    // https://rterp.wordpress.com/2015/04/04/javafx-toolkit-not-initialized-solved/
+    private void createJFXPanel() {
+        new JFXPanel();
+    }
+
+    private String getExtension(byte[] file) {
+        return file[0] == 73 && file[1] == 68 && file[2] == 51 ? ".mp3" : ".wav";
     }
 }
