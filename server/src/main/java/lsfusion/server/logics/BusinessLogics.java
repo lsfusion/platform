@@ -988,6 +988,12 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             }
         return mResult.immutableOrder();                    
     }
+
+    @IdentityLazy
+    public Collection<String> findAllCustomReports() {
+        Pattern pattern = Pattern.compile(".*reports/custom/.*\\.jrxml");
+        return ResourceList.getResources(pattern);
+    }
     
     public <P extends PropertyInterface> void resolveAutoSet(DataSession session, ConcreteCustomClass customClass, DataObject dataObject, CustomClassListener classListener) throws SQLException, SQLHandledException {
 

@@ -18,6 +18,7 @@ import lsfusion.server.form.entity.*;
 import lsfusion.server.form.entity.filter.FilterEntity;
 import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.form.instance.PropertyType;
+import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.NullValue;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.property.ExecutionContext;
@@ -55,8 +56,13 @@ public class StaticFormReportManager extends FormReportManager<PropertyDrawEntit
                         return GroupObjectEntity.NULL;
                     return groupObject;
                 }
-            });            
-            
+            });
+
+            @Override
+            public BusinessLogics getBL() {
+                return ThreadLocalContext.getBusinessLogics();
+            }
+
             @Override
             public FormEntity getEntity() {
                 return form;

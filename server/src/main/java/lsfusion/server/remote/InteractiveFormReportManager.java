@@ -24,6 +24,11 @@ public class InteractiveFormReportManager extends FormReportManager<PropertyDraw
     public InteractiveFormReportManager(final FormInstance form) {
         super(new FormReportInterface<PropertyDrawInstance, GroupObjectInstance, PropertyObjectInstance, CalcPropertyObjectInstance, OrderInstance, ObjectInstance, PropertyReaderInstance>() {
             @Override
+            public BusinessLogics getBL() {
+                return form.BL;
+            }
+
+            @Override
             public FormEntity getEntity() {
                 return form.entity;
             }
