@@ -9,8 +9,6 @@ import lsfusion.gwt.form.shared.view.grid.EditManager;
 import java.text.ParseException;
 
 public class IntegralGridCellEditor extends TextBasedGridCellEditor {
-    private final static String UNBREAKABLE_SPACE = "\u00a0";
-    
     protected final NumberFormat format;
 
     protected final GIntegralType type;
@@ -39,7 +37,7 @@ public class IntegralGridCellEditor extends TextBasedGridCellEditor {
         if (inputText.isEmpty() || (onCommit && "-".equals(inputText))) {
             return null;
         } else {
-            inputText = inputText.replace(" ", "").replace(UNBREAKABLE_SPACE, "");
+            inputText = inputText.replace(" ", "").replace(GIntegralType.UNBREAKABLE_SPACE, "");
             return (!onCommit && "-".equals(inputText)) ? true : type.parseString(inputText, property.pattern);
         }
     }

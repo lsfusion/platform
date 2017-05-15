@@ -11,6 +11,8 @@ import lsfusion.gwt.form.shared.view.grid.renderer.NumberGridCellRenderer;
 import java.math.BigDecimal;
 import java.text.ParseException;
 
+import static lsfusion.gwt.base.shared.GwtSharedUtils.countMatches;
+
 public class GNumericType extends GDoubleType {
     private int length = 10;
     private int precision = 2;
@@ -56,11 +58,16 @@ public class GNumericType extends GDoubleType {
             throwParseException(s);
         }
         
+        String groupingSeparator = LocaleInfo.getCurrentLocale().getNumberConstants().groupingSeparator();
+        if (UNBREAKABLE_SPACE.equals(groupingSeparator)) {
+            groupingSeparator = " ";
+        }
+        int allowedSeparatorPosition = length - precision + countMatches(s, "-") + countMatches(s, groupingSeparator);
         int separatorPosition = s.contains(decimalSeparator) ? s.indexOf(decimalSeparator) : s.length();
-        int allowedIntegralLength = length - precision + s.lastIndexOf('-') + 1;
-        if (separatorPosition > allowedIntegralLength) {
+        if (separatorPosition > allowedSeparatorPosition) {
             throwParseException(s);
         }
+        
         return BigDecimal.valueOf(toDouble);
     }
     

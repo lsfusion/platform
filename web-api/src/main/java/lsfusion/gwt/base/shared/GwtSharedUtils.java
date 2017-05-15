@@ -52,6 +52,16 @@ public class GwtSharedUtils {
         return sb.toString();
     }
 
+    public static int countMatches(String str, String sub) {
+        int count = 0;
+        if (str != null && !str.isEmpty() && sub != null && !sub.isEmpty()) {
+            for(int idx = 0; (idx = str.indexOf(sub, idx)) != -1; idx += sub.length()) {
+                ++count;
+            }
+        }
+        return count;
+    }
+
     public static DateTimeFormat getDateFormat(String pattern) {
         return pattern != null ? DateTimeFormat.getFormat(pattern) : getDefaultDateFormat();
     }
