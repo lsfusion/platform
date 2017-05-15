@@ -3,6 +3,7 @@ package lsfusion.server.logics.property.actions;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.interop.action.LogMessageClientAction;
+import lsfusion.server.ServerLoggers;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.instance.*;
@@ -90,6 +91,7 @@ public class LogPropertyActionProperty<P extends PropertyInterface> extends Syst
                 }
 
             }
+            ServerLoggers.exInfoLogger.info("CONSTRAINT " + (caption == null ? (property.toString() + " :") : caption));
             context.delayUserInteraction(new LogMessageClientAction(caption == null ? (property.toString() + " :") : caption, titleRow, data, !context.getSession().isNoCancelInTransaction()));
         }
     }

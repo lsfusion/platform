@@ -1058,7 +1058,9 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
 
     public <T extends PropertyInterface> void executeSessionEvents(ExecutionEnvironment env, ExecutionStack stack) throws SQLException, SQLHandledException {
-//        ServerLoggers.assertLog(!isInTransaction(), "LOCAL EVENTS IN TRANSACTION"); // так как LogPropertyAction создает форму
+        if(isInTransaction())
+            ServerLoggers.exInfoLogger.info("LOCAL EVENTS IN TRANSACTION"); // так как LogPropertyAction создает форму
+
         if(sessionEventChangedOld.getProperties().size() > 0) { // оптимизационная проверка
 
             if(env == null)
