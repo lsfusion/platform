@@ -567,6 +567,8 @@ public class GridTable extends ClientPropertyTable {
                 });
             }
         }
+        
+        setFocusable(hasFocusableCells);
 
         if (model.getColumnCount() != 0) {
 
