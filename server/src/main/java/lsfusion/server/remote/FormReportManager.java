@@ -201,7 +201,8 @@ public class FormReportManager<PropertyDraw extends PropertyReaderInstance, Grou
         boolean root = name.equals(GroupObjectHierarchy.rootNodeName);
         String filePath = "".equals(sid) ? name : (sid + (root ? "" : ("_" + name))) + ".jrxml";
 
-        Collection<String> result = formInterface.getBL().findAllCustomReports();
+        Collection<String> result = SystemProperties.isDebug ?
+                formInterface.getBL().findAllCustomReportsCalculated() : formInterface.getBL().findAllCustomReports();
         
         for(String entry : result){
             if(entry.endsWith("/" + filePath))
