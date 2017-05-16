@@ -113,13 +113,15 @@ public class JoinActionProperty<T extends PropertyInterface> extends KeepContext
     }
 
     private boolean isRecursive;
+    // пока исходим из того что рекурсивными могут быть только abstract'ы
     @Override
-    protected void markRecursions(ListCaseActionProperty recursiveAction) {
-        if(BaseUtils.hashEquals(action.property, recursiveAction)) {
-            assert recursiveAction.isAbstract();
+    protected void markRecursions(ImSet<ListCaseActionProperty> recursiveActions) {
+        ActionProperty<T> execAction = action.property;
+        if(execAction instanceof ListCaseActionProperty && recursiveActions.contains((ListCaseActionProperty)execAction)) {
+            assert ((ListCaseActionProperty) execAction).isAbstract();
             isRecursive = true;
         } else
-            super.markRecursions(recursiveAction);    //To change body of overridden methods use File | Settings | File Templates.
+            super.markRecursions(recursiveActions);    //To change body of overridden methods use File | Settings | File Templates.
     }
 
     @Override

@@ -159,9 +159,9 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
         return result.immutable();
     }
 
-    protected void markRecursions(ListCaseActionProperty recursiveAction) {
+    protected void markRecursions(ImSet<ListCaseActionProperty> recursiveActions) {
         for(ActionProperty action : getDependActions())
-            action.markRecursions(recursiveAction);
+            action.markRecursions(recursiveActions);
     }
 
     public ImMap<CalcProperty, Boolean> getUsedExtProps() {

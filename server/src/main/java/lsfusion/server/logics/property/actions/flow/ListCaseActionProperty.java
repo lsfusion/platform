@@ -1,5 +1,6 @@
 package lsfusion.server.logics.property.actions.flow;
 
+import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.caches.IdentityInstanceLazy;
@@ -101,7 +102,12 @@ public abstract class ListCaseActionProperty extends KeepContextActionProperty {
 
     public void markRecursions() {
         assert isAbstract();
-        markRecursions(this);
+        markRecursions(SetFact.<ListCaseActionProperty>EMPTY());
+    }
+
+    @Override
+    protected void markRecursions(ImSet<ListCaseActionProperty> recursiveActions) {
+        super.markRecursions(recursiveActions.addExcl(this)); // // пока исходим из того что рекурсивными могут быть только abstract'ы
     }
 
     protected abstract ImList<ActionPropertyMapImplement<?, PropertyInterface>> getListActions();
