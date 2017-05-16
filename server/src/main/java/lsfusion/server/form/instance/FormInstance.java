@@ -1450,8 +1450,12 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     // в будущем если все же вернемся к синхронизации закрытия возможно проблема уйдет
     private static boolean useCallerSyncOnClose = false;
     public void syncLikelyOnClose(boolean call, ExecutionStack stack) throws SQLException, SQLHandledException {
-        if(call == useCallerSyncOnClose)
+        if(call == useCallerSyncOnClose) {
             updateSessionOwner(false, stack);
+
+            for(SessionModifier modifier : modifiers.values()) // нужен для того чтобы очистить views раньше и не синхронизировать тогда clean и eventChange
+                modifier.cleanViews();
+        }
     }
 
     @Override

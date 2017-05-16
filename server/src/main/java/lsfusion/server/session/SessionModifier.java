@@ -31,7 +31,7 @@ import java.util.Set;
 // поддерживает hint'ы, есть информация о сессии
 public abstract class SessionModifier implements Modifier {
 
-    private WeakIdentityHashSet<OverrideSessionModifier> views = new WeakIdentityHashSet<>();
+    private ConcurrentIdentityWeakHashSet<OverrideSessionModifier> views = new ConcurrentIdentityWeakHashSet<>();
     public void registerView(OverrideSessionModifier modifier) { // protected
         views.add(modifier);
         modifier.eventDataChanges(getPropertyChanges().getProperties());
@@ -376,6 +376,10 @@ public abstract class SessionModifier implements Modifier {
     public void clean(SQLSession sql, OperationOwner opOwner) throws SQLException {
         increment.clear(sql, opOwner);
         preread.clear();
+        assert views.isEmpty();
+    }
+    
+    public void cleanViews() { // нужен для того чтобы очистить views раньше и не синхронизировать тогда clean и eventChange
         assert views.isEmpty();
     }
 }
