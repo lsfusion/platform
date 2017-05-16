@@ -188,8 +188,7 @@ public abstract class LogicsAwareDispatchServlet<T extends RemoteLogicsInterface
     }
 
     public ClientCallBackInterface getClientCallBack() throws RemoteException {
-        if(clientCallBack == null)
-            clientCallBack = getNavigator().getClientCallBack();
+        clientCallBack = getNavigator().getClientCallBack();
         return clientCallBack;
     }
 
