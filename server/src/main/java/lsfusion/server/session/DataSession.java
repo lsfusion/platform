@@ -452,7 +452,11 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             add(changes.properties);
         }
     }
-
+    
+    // assert использования всех 3-х нижних map внутри updateLock и внутри этих lock'ов нет других lock'ов иначе легко будет dead получить
+    // потом можно будет в отдельную структуру со всеми synchronized методами выделить 
+    private final Object updateLock = new Object(); 
+    
     // формы, для которых с момента последнего update уже был restart, соотвественно в значениях - изменения от посл. update (prev) до посл. apply
     public WeakIdentityHashMap<FormInstance, UpdateChanges> appliedChanges = new WeakIdentityHashMap<>();
 
@@ -568,18 +572,22 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
         // cancel
         //    по кому не было restart :  from -> в applied (помечая что был restart)
-        
+
+        ImSet<CalcProperty> changedProps = null;
         if(!cancel) {
-            ImSet<CalcProperty> changedProps = getChangedProps();
+            changedProps = getChangedProps();
             changes.regChange(changedProps, this);
-            for (Pair<FormInstance, UpdateChanges> appliedChange : appliedChanges.entryIt())
-                appliedChange.second.add(new UpdateChanges(changedProps));
         }
 
-        assert appliedChanges.disjointKeys(cancel ? updateChanges : incrementChanges);
-        appliedChanges.putAll(cancel?updateChanges:incrementChanges);
-        incrementChanges = new WeakIdentityHashMap<>();
-        updateChanges = new WeakIdentityHashMap<>();
+        synchronized (updateLock) {
+            if (changedProps != null)
+                for (Pair<FormInstance, UpdateChanges> appliedChange : appliedChanges.entryIt())
+                    appliedChange.second.add(new UpdateChanges(changedProps));
+            assert appliedChanges.disjointKeys(cancel ? updateChanges : incrementChanges);
+            appliedChanges.putAll(cancel ? updateChanges : incrementChanges);
+            incrementChanges = new WeakIdentityHashMap<>();
+            updateChanges = new WeakIdentityHashMap<>();
+        }
 
         dropTables(keep);
         add.clear();
@@ -983,8 +991,10 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
         dataModifier.eventDataChanges(changes, sourceChanges);
 
-        for(Pair<FormInstance, UpdateChanges> incrementChange : incrementChanges.entryIt()) {
-            incrementChange.second.add(changes);
+        synchronized (updateLock) {
+            for (Pair<FormInstance, UpdateChanges> incrementChange : incrementChanges.entryIt()) {
+                incrementChange.second.add(changes);
+            }
         }
 
         for (FormInstance form : getAllActiveForms()) {
@@ -1422,26 +1432,28 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         // мн-во св-в constraints/persistent или все св-ва формы (то есть произвольное)
         assert activeForms.containsKey(form);
 
-        UpdateChanges incrementChange = incrementChanges.get(form);
-        boolean wasRestart = false;
-        if(incrementChange!=null) // если не было restart
-            //    to -> from или from = changes, to = пустому
-            updateChanges.get(form).add(incrementChange);
-            //    возвращаем to
-        else { // иначе
-            wasRestart = true;
-            incrementChange = appliedChanges.remove(form);
-            if(incrementChange==null) // совсем не было
-                incrementChange = new UpdateChanges();
-            UpdateChanges formChanges = new UpdateChanges(getChangedProps());
-            // from = changes (сбрасываем пометку что не было restart'а)
-            updateChanges.put(form, formChanges);
-            // возвращаем applied + changes
-            incrementChange.add(formChanges);
-        }
-        incrementChanges.put(form,new UpdateChanges());
+        synchronized (updateLock) { // важно не получить внутри другие локи чтобы не было дедлоков
+            UpdateChanges incrementChange = incrementChanges.get(form);
+            boolean wasRestart = false;
+            if (incrementChange != null) // если не было restart
+                //    to -> from или from = changes, to = пустому
+                updateChanges.get(form).add(incrementChange);
+                //    возвращаем to
+            else { // иначе
+                wasRestart = true;
+                incrementChange = appliedChanges.remove(form);
+                if (incrementChange == null) // совсем не было
+                    incrementChange = new UpdateChanges();
+                UpdateChanges formChanges = new UpdateChanges(getChangedProps());
+                // from = changes (сбрасываем пометку что не было restart'а)
+                updateChanges.put(form, formChanges);
+                // возвращаем applied + changes
+                incrementChange.add(formChanges);
+            }
+            incrementChanges.put(form, new UpdateChanges());
 
-        return new ChangedData(incrementChange.properties, wasRestart);
+            return new ChangedData(incrementChange.properties, wasRestart);
+        }
     }
 
     public String applyMessage(BusinessLogics<?> BL, ExecutionStack stack) throws SQLException, SQLHandledException {
@@ -1909,6 +1921,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         updateSessionEvents(getChangedProps());
     }
 
+    // должен быть thread-safe
     private interface Cleaner extends ExceptionRunnable<SQLException> {
     }
 
@@ -1936,12 +1949,15 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                 for(SessionModifier modifier : form.modifiers.values())
                     modifier.clean(sql, owner);
 
-                incrementChanges.remove(form);
-                appliedChanges.remove(form);
-                updateChanges.remove(form);
+                synchronized (updateLock) {
+                    incrementChanges.remove(form);
+                    appliedChanges.remove(form);
+                    updateChanges.remove(form);
+                }
             }
         };
 
+        boolean closed;
         synchronized (closeLock) {
             Boolean createdInTransaction = activeForms.remove(form);
 
@@ -1950,11 +1966,15 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                 cleaner.run();
             } else {
 //                ServerLoggers.assertLog(!isInTransaction(), "SHOULD NOT CLOSE FORM IN TRANSACTION, THAT WHERE CREATED NOT IN TRANSACTION"); как раз может, для этого в том числе pendingCleaners и делались
-                pendingCleaners.add(cleaner);
+                synchronized (pendingCleaners) {
+                    pendingCleaners.add(cleaner);
+                }
             }
 
-            tryClose();
+            closed = tryClose();
         }
+        if(!closed) // за пределами closeLock чтобы 
+            flushPendingCleaners();
     }
 
     // дополнительные formEntity в локальных событиях
@@ -2687,16 +2707,19 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     }
 
     public void unregisterThreadStack() throws SQLException {
+        boolean closed;
         synchronized (closeLock) {
             threadCount--;
 
-            tryClose();
+            closed = tryClose();
         }
+        if(!closed)
+            flushPendingCleaners();
 //        threads.remove(Thread.currentThread());
     }
 
     // необходимо, так как чистка ресурсов может быть асинхронной (closeLater, unreferenced)
-    private WeakIdentityHashSet<Cleaner> pendingCleaners = new WeakIdentityHashSet<>();
+    private final WeakIdentityHashSet<Cleaner> pendingCleaners = new WeakIdentityHashSet<>();
 
     public boolean tryClose() throws SQLException { // assert closedLock
         // не осталось владельцев - закрываем
@@ -2708,20 +2731,29 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         }
         return false;
     }
-
-    // потом надо будет ставить в заведомо синхронизированные места
+    
+    // собственно имеет смысл если при flush'е была транзакция, но это редкий случай (хотя и возможный - закрылась форма через 15 секунд начинает очистку в новом потоке а пользователь уже проводит транзакциюв этой же сессии)
     private void lockedFlushPendingCleaners() throws SQLException {
         synchronized (closeLock) {
             flushPendingCleaners();
         }
     }
 
-    private void flushPendingCleaners() throws SQLException { // assert closedLock
-        // нельзя чистить в транзакции, так как изменения могут rollback'ся, а rollDrop некому делать
-        if(!isInTransaction() && !pendingCleaners.isEmpty()) {
-            for (Cleaner pendingCleaner : pendingCleaners)
+    private void flushPendingCleaners() throws SQLException { // по идее lock-free (кроме когда не осталось owner'ов( поэтому deadlock'ов быть не должно
+        // тут нужно проверять что не только  транзакция, а еще то что транзакция в этом потоке (хотя нельзя так делать, потому как deadlock'и могут быть с closedLock)
+        if(isInTransaction()) // нельзя чистить в транзакции, так как изменения могут rollback'ся, а rollDrop некому делать
+            return; // тут важно, что даже если сессия войдет в транзакцию, так как она это сделает в другом потоке, этот вызов lock-free, а реализации cleaner должны быть thread-safe (в частности все очистки таблиц повиснут на lockRead), dead-clock'ов и других проблем быть не должно 
+
+        while(true) {
+            List<Cleaner> snapPendingCleaners;
+            synchronized (pendingCleaners) {
+                snapPendingCleaners = BaseUtils.toList(pendingCleaners);
+                pendingCleaners.clear();
+            }
+            if(snapPendingCleaners.isEmpty())
+                return;
+            for(Cleaner pendingCleaner : snapPendingCleaners)
                 pendingCleaner.run();
-            pendingCleaners = new WeakIdentityHashSet<>();
         }
     }
 

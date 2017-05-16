@@ -1,5 +1,6 @@
 package lsfusion.server.session;
 
+import lsfusion.base.ConcurrentIdentityWeakHashSet;
 import lsfusion.base.WeakIdentityHashSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.logics.property.CalcProperty;
@@ -8,7 +9,8 @@ import lsfusion.server.logics.property.PropertyInterface;
 
 public abstract class IncrementProps {
 
-    private WeakIdentityHashSet<OverrideSessionModifier> modifiers = new WeakIdentityHashSet<>();
+    // concurrent так как unregisterView может идти асинхронно (впрочем как и registerView)
+    private ConcurrentIdentityWeakHashSet<OverrideSessionModifier> modifiers = new ConcurrentIdentityWeakHashSet<>();
     public void registerView(OverrideSessionModifier modifier) {
         modifiers.add(modifier);
         modifier.eventDataChanges(getProperties());
@@ -17,7 +19,7 @@ public abstract class IncrementProps {
         modifiers.remove(modifier);
     }
 
-    private WeakIdentityHashSet<OverrideIncrementProps> increments = new WeakIdentityHashSet<>();
+    private ConcurrentIdentityWeakHashSet<OverrideIncrementProps> increments = new ConcurrentIdentityWeakHashSet<>();
     public void registerView(OverrideIncrementProps modifier) {
         increments.add(modifier);
     }
