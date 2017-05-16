@@ -183,7 +183,6 @@ public class OverrideSessionModifier extends SessionModifier {
 
     @Override
     public void clean(SQLSession sql, OperationOwner owner) throws SQLException {
-        override.unregisterView(this);
         cleanViews(); // двойной вызов, в случае если cleanViews был раньше, но с текущей реализацией cleanViews это не страшно
 
         super.clean(sql, owner);
@@ -191,6 +190,7 @@ public class OverrideSessionModifier extends SessionModifier {
 
     @Override
     public void cleanViews() {
+        override.unregisterView(this); // можно оставить в clean так как проблем синхронизации нет пока (используется только в DataSession.scope), но для чистоты логики закинем и сюда  
         modifier.unregisterView(this);
     }
 

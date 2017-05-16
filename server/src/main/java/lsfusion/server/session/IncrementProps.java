@@ -9,7 +9,7 @@ import lsfusion.server.logics.property.PropertyInterface;
 
 public abstract class IncrementProps {
 
-    // concurrent так как unregisterView может идти асинхронно (впрочем как и registerView)
+    // пока не concurrent, но в будущем возможно понадобится
     private WeakIdentityHashSet<OverrideSessionModifier> modifiers = new WeakIdentityHashSet<>();
     public void registerView(OverrideSessionModifier modifier) {
         modifiers.add(modifier);
