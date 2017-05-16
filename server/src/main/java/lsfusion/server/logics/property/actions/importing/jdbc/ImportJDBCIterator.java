@@ -8,6 +8,7 @@ import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.ClassType;
 import lsfusion.server.logics.property.actions.importing.ImportIterator;
 
+import java.sql.Date;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,9 +31,10 @@ public class ImportJDBCIterator extends ImportIterator {
                 List<String> listRow = new ArrayList<>();
                 for (Integer column : sourceColumns) {
                     ValueClass valueClass = properties.get(sourceColumns.indexOf(column)).property.getValueClass(ClassType.valuePolicy);
-                    if(valueClass instanceof DateClass)
-                        listRow.add(DateClass.getDateFormat().format(rs.getDate(column)));
-                    else
+                    if(valueClass instanceof DateClass) {
+                        Date value = rs.getDate(column);
+                        listRow.add(value == null ? null : DateClass.getDateFormat().format(value));
+                    } else
                         listRow.add(rs.getString(column));
                 }
                 return listRow;
