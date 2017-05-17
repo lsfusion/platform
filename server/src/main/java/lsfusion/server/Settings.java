@@ -2139,4 +2139,14 @@ public class Settings {
     public void setLogHeurStackSize(int logHeurStackSize) {
         this.logHeurStackSize = logHeurStackSize;
     }
+
+    private int constraintRowsLimit = 30;
+
+    public int getConstraintRowsLimit() {
+        return constraintRowsLimit;
+    }
+
+    public void setConstraintRowsLimit(int constraintRowsLimit) {
+        this.constraintRowsLimit = constraintRowsLimit;
+    }
 }

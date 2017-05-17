@@ -228,7 +228,7 @@ public final class Log {
         table.setPreferredScrollableViewportSize(
                 new Dimension(
                         table.getPreferredScrollableViewportSize().width,
-                        dataArray.length * table.getRowHeight()
+                        Math.min(table.getPreferredScrollableViewportSize().height, dataArray.length * table.getRowHeight())
                 ));
 
         Caret caret = new DefaultCaret()

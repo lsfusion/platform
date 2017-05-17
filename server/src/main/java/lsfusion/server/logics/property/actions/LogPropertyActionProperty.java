@@ -4,6 +4,7 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.interop.action.LogMessageClientAction;
 import lsfusion.server.ServerLoggers;
+import lsfusion.server.Settings;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.instance.*;
@@ -41,7 +42,7 @@ public class LogPropertyActionProperty<P extends PropertyInterface> extends Syst
 
             List<String> titleRow = new ArrayList<>();
             List<List<String>> data = new ArrayList<>();
-            ImOrderSet<FormRow> formRows = formInstance.getFormData(30).rows;
+            ImOrderSet<FormRow> formRows = formInstance.getFormData(Settings.get().getConstraintRowsLimit()).rows;
             for (int i = 0; i < formRows.size(); i++)
                 data.add(new ArrayList<String>());
 
