@@ -1,6 +1,7 @@
 package lsfusion.server.logics.property.actions.flow;
 
 import lsfusion.base.BaseUtils;
+import lsfusion.base.Pair;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
@@ -137,5 +138,12 @@ public class JoinActionProperty<T extends PropertyInterface> extends KeepContext
             return super.ignoreReadOnlyPolicy();
         
         return action.property.ignoreReadOnlyPolicy();
+    }
+
+    @Override
+    protected ImSet<Pair<String, Integer>> getRecInnerDebugActions() {
+        if(isRecursive) // recursion guard
+            return SetFact.EMPTY();
+        return super.getRecInnerDebugActions();
     }
 }

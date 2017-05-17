@@ -236,10 +236,15 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
     
     @IdentityLazy
     private ImSet<Pair<String, Integer>> getInnerDebugActions() {
-        MSet<Pair<String, Integer>> result = SetFact.mSet();
+        ImSet<Pair<String, Integer>> result = getRecInnerDebugActions();
         if (debugInfo != null && debugInfo.needToCreateDelegate()) {
-            result.add(debugInfo.getDebuggerModuleLine());
+            result = result.merge(debugInfo.getDebuggerModuleLine());
         }
+        return result;
+    }
+
+    protected ImSet<Pair<String, Integer>> getRecInnerDebugActions() {
+        MSet<Pair<String, Integer>> result = SetFact.mSet();
         for (ActionProperty actionProperty : getDependActions()) {
             result.addAll(actionProperty.getInnerDebugActions());
         }
