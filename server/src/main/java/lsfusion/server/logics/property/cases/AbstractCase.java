@@ -115,7 +115,7 @@ public abstract class AbstractCase<P extends PropertyInterface, W extends CalcPr
         Result<Pair<A, A>> ambiguous = new Result<>();
         Graph<F> graph = pregraph.translate(set.mapValues(translator), ambiguous);
         if(graph == null)
-            throw new RuntimeException("Ambiguous identical implementation");
+            throw new RuntimeException("Ambiguous identical implementation " + ambiguous.result);
         
         // pre-3. собираем все abstract'ы, упорядочиваем по "возрастанию" использования, делаем это до очистки, чтобы их не потерять
         final ImMap<F, Graph<F>> abstractGraphs = graph.getNodes().mapValues(new GetValue<Graph<F>, F>() {
