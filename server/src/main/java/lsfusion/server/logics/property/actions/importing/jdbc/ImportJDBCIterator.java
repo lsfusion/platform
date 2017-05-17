@@ -3,6 +3,7 @@ package lsfusion.server.logics.property.actions.importing.jdbc;
 import com.google.common.base.Throwables;
 import com.sun.rowset.CachedRowSetImpl;
 import lsfusion.server.classes.DateClass;
+import lsfusion.server.classes.IntegerClass;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.ClassType;
@@ -31,9 +32,19 @@ public class ImportJDBCIterator extends ImportIterator {
                 List<String> listRow = new ArrayList<>();
                 for (Integer column : sourceColumns) {
                     ValueClass valueClass = properties.get(sourceColumns.indexOf(column)).property.getValueClass(ClassType.valuePolicy);
-                    if(valueClass instanceof DateClass) {
+                    if (valueClass instanceof DateClass) {
                         Date value = rs.getDate(column);
                         listRow.add(value == null ? null : DateClass.getDateFormat().format(value));
+                    } else if (valueClass instanceof IntegerClass) {
+                        Object value = rs.getObject(column);
+                        String result = null;
+                        if(value != null) {
+                            if (value instanceof Boolean)
+                                result = String.valueOf((Boolean) value ? 1 : 0);
+                            else
+                                result = String.valueOf(value);
+                        }
+                        listRow.add(result);
                     } else
                         listRow.add(rs.getString(column));
                 }
@@ -47,7 +58,7 @@ public class ImportJDBCIterator extends ImportIterator {
 
     @Override
     protected void release() {
-        if(rs != null)
+        if (rs != null)
             try {
                 rs.close();
             } catch (SQLException e) {
