@@ -1071,7 +1071,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         if(isInTransaction())
             ServerLoggers.exInfoLogger.info("LOCAL EVENTS IN TRANSACTION"); // так как LogPropertyAction создает форму
 
-        if(sessionEventChangedOld.getProperties().size() > 0) { // оптимизационная проверка
+        if(!isInTransaction() && sessionEventChangedOld.getProperties().size() > 0) { // если в транзакции подменится modifier, туда похоже в хинты могут попадать таблицы из apply (правда не совсем понятно как), и приводит к table does not exist, в любом случае это очень опасная вещь в транзакции, поэтому уберем, второе - оптимизационная проверка
 
             if(env == null)
                 env = this;
