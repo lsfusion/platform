@@ -17,7 +17,9 @@ public class BreakActionProperty extends ChangeFlowActionProperty {
     }
 
     public boolean hasFlow(ChangeFlowType type) {
-        return type == ChangeFlowType.BREAK;
+        if(type == ChangeFlowType.BREAK)
+            return true;
+        return super.hasFlow(type);
     }
 
     public FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {

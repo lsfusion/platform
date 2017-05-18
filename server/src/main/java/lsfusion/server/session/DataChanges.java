@@ -18,6 +18,7 @@ import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.DataProperty;
+import lsfusion.server.logics.property.SessionDataProperty;
 
 import java.sql.SQLException;
 
@@ -71,6 +72,13 @@ public class DataChanges extends AbstractValuesContext<DataChanges> {
 
     public boolean isEmpty() {
         return changes.isEmpty();
+    }
+    
+    public boolean isGlobalEmpty() {
+        for(DataProperty changeProp : changes.keyIt())
+            if(!(changeProp instanceof SessionDataProperty))
+                return false;
+        return true;
     }
 
     public PropertyChange<ClassPropertyInterface> get(DataProperty property) {

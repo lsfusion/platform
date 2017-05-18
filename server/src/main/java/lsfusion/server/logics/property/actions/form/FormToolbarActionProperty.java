@@ -75,4 +75,9 @@ public abstract class FormToolbarActionProperty extends ScriptingActionProperty 
         CalcPropertyMapImplement showIfImplement = createAnd(SetFact.<PropertyInterface>EMPTY(), createTrue(), mAnds.immutableList(), mNots.immutableList());
         return new LCP(showIfImplement.property);
     }
+
+    @Override
+    protected boolean isGlobalChange() {
+        return false;
+    }
 }

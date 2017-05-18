@@ -66,7 +66,9 @@ public abstract class ExplicitActionProperty extends BaseActionProperty<ClassPro
 
     @Override
     public boolean hasFlow(ChangeFlowType type) {
-        return type == ChangeFlowType.VOLATILE && isVolatile();
+        if(type == ChangeFlowType.VOLATILE && isVolatile())
+            return true;
+        return super.hasFlow(type);
     }
 
     @Override

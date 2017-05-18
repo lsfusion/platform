@@ -22,7 +22,9 @@ public class CancelActionProperty extends SystemExplicitActionProperty {
 
     @Override
     public boolean hasFlow(ChangeFlowType type) {
-        return type == ChangeFlowType.CANCEL;
+        if(type == ChangeFlowType.CANCEL)
+            return true;
+        return super.hasFlow(type);
     }
 
     protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {

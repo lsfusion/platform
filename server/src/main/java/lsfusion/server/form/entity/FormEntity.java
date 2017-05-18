@@ -40,6 +40,7 @@ import lsfusion.server.logics.mutables.NFFact;
 import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.mutables.interfaces.*;
 import lsfusion.server.logics.property.*;
+import lsfusion.server.logics.property.actions.flow.ChangeFlowType;
 import lsfusion.server.logics.property.actions.flow.NewSessionActionProperty;
 import lsfusion.server.logics.property.group.AbstractGroup;
 import lsfusion.server.logics.property.group.AbstractNode;
@@ -382,10 +383,10 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     @IdentityLazy
     public boolean isReadOnly() {
         for (PropertyDrawEntity property : getPropertyDrawsIt()) {
-            if (property.getEditAction(ServerResponse.CHANGE, this) != null && !property.isSelector() && 
-                !(property.propertyObject.property instanceof NewSessionActionProperty) && 
-                !(property.propertyObject.property instanceof SessionDataProperty)) {
-                return false;
+            if(!property.isSelector()) { // непонятная проверка - в будущем возможно надо будет убрать
+                ActionPropertyObjectEntity<?> editAction = property.getEditAction(ServerResponse.CHANGE, this);
+                if (editAction != null && editAction.property.hasFlow(ChangeFlowType.CHANGE))
+                    return false;
             }
         }
 

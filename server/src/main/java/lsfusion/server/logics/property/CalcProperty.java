@@ -1337,7 +1337,14 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
     }
 
     // важно для подсветки
-    public boolean canBeChanged() {
+    public boolean canBeChanged() { // предполагается что все сверху кэшируется
+        return canBeChanged(false);
+    }
+    @IdentityLazy
+    public boolean canBeGlobalChanged() { // есть не Local'ы changed
+        return canBeChanged(true);
+    }
+    private boolean canBeChanged(boolean global) {
         ImRevMap<T, KeyExpr> mapKeys = getMapKeys();
         Modifier modifier = Property.defaultModifier;
         try {
@@ -1345,8 +1352,12 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
             Where classWhere = getClassProperty().mapExpr(mapKeys, modifier).getWhere();
             CalcPropertyRevImplement<?, String> valueProperty = getValueClassProperty();
             if(valueProperty != null)
-                classWhere = classWhere.and(valueProperty.mapExpr(MapFact.singleton("value", changeExpr), modifier).getWhere()); 
-            return !getDataChanges(new PropertyChange<>(mapKeys, changeExpr, classWhere), modifier).isEmpty();
+                classWhere = classWhere.and(valueProperty.mapExpr(MapFact.singleton("value", changeExpr), modifier).getWhere());
+            DataChanges dataChanges = getDataChanges(new PropertyChange<>(mapKeys, changeExpr, classWhere), modifier);
+            if(global)
+                return !dataChanges.isGlobalEmpty();
+            else
+                return !dataChanges.isEmpty();
         } catch (SQLException e) { // по идее не должно быть, но на всякий случай
             return false;
         } catch (SQLHandledException e) { // по идее не должно быть

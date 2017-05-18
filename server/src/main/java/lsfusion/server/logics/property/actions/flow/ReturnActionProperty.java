@@ -18,7 +18,9 @@ public class ReturnActionProperty extends ChangeFlowActionProperty {
 
     @Override
     public boolean hasFlow(ChangeFlowType type) {
-        return type == ChangeFlowType.RETURN;
+        if(type == ChangeFlowType.RETURN)
+            return true;
+        return super.hasFlow(type);
     }
 
     public FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {

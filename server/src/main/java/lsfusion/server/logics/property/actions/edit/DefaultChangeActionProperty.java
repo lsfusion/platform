@@ -22,6 +22,8 @@ import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.actions.SystemExplicitActionProperty;
+import lsfusion.server.logics.property.actions.flow.ChangeFlowType;
+import lsfusion.server.logics.property.actions.flow.SetActionProperty;
 import lsfusion.server.session.Modifier;
 
 import java.io.IOException;
@@ -43,6 +45,13 @@ public class DefaultChangeActionProperty<P extends PropertyInterface> extends Sy
         this.implement = new CalcPropertyMapImplement<>(property, getMapInterfaces(listInterfaces).reverse());
         this.editActionSID = editActionSID;
         this.filterProperty = filterProperty;
+    }
+
+    @Override
+    public boolean hasFlow(ChangeFlowType type) {
+        if(SetActionProperty.hasFlow(implement, type))
+            return true;
+        return super.hasFlow(type);
     }
 
     @Override // сам выполняет request поэтому на inRequest не смотрим

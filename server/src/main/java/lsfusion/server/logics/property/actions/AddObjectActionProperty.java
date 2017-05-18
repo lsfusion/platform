@@ -18,6 +18,7 @@ import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.debug.ActionDelegationType;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.*;
+import lsfusion.server.logics.property.actions.flow.ChangeFlowType;
 import lsfusion.server.logics.property.actions.flow.ExtendContextActionProperty;
 import lsfusion.server.logics.property.actions.flow.FlowResult;
 import lsfusion.server.logics.property.derived.DerivedProperty;
@@ -153,6 +154,13 @@ public class AddObjectActionProperty<T extends PropertyInterface, I extends Prop
         if(where==null)
             return DerivedProperty.createTrue();
         return where;
+    }
+
+    @Override
+    public boolean hasFlow(ChangeFlowType type) {
+        if(type == ChangeFlowType.CHANGE)
+            return true;
+        return super.hasFlow(type);
     }
 
     @Override

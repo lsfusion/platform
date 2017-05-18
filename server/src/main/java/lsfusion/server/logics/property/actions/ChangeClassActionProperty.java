@@ -20,6 +20,7 @@ import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.debug.ActionDelegationType;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.*;
+import lsfusion.server.logics.property.actions.flow.ChangeFlowType;
 import lsfusion.server.logics.property.actions.flow.ExtendContextActionProperty;
 import lsfusion.server.logics.property.actions.flow.FlowResult;
 import lsfusion.server.logics.property.actions.flow.ForActionProperty;
@@ -194,6 +195,13 @@ public class ChangeClassActionProperty<T extends PropertyInterface, I extends Pr
                 return createChangeClassAction(context, mapInnerInterfaces.get(changeInterface), valueClass, forceDialog, where, baseClass, orders, ordersNotNull);
             }
         });
+    }
+
+    @Override
+    public boolean hasFlow(ChangeFlowType type) {
+        if(type == ChangeFlowType.CHANGE)
+            return true;
+        return super.hasFlow(type);
     }
 
     @Override

@@ -27,6 +27,19 @@ public class SetActionProperty<P extends PropertyInterface, W extends PropertyIn
     private CalcPropertyInterfaceImplement<I> writeFrom;
     protected final CalcPropertyMapImplement<P, I> writeTo; // assert что здесь + в mapInterfaces полный набор ключей
     protected final CalcPropertyMapImplement<?, I> where;
+    
+    public static boolean hasFlow(CalcPropertyMapImplement<?,?> writeTo, ChangeFlowType type) {
+        if(type == ChangeFlowType.CHANGE && writeTo.property.canBeGlobalChanged())
+            return true;             
+        return false;
+    }
+
+    @Override
+    public boolean hasFlow(ChangeFlowType type) {
+        if(hasFlow(writeTo, type))
+            return true;
+        return super.hasFlow(type);
+    }
 
     public SetActionProperty(LocalizedString caption,
                              ImSet<I> innerInterfaces,

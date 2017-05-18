@@ -65,11 +65,6 @@ public class NewExecutorActionProperty extends AroundAspectActionProperty {
     }
 
     @Override
-    public boolean hasFlow(ChangeFlowType type) {
-        return type == ChangeFlowType.NEWSESSION || (!(type == ChangeFlowType.APPLY || type == ChangeFlowType.CANCEL) && super.hasFlow(type));
-    }
-
-    @Override
     public CustomClass getSimpleAdd() {
         return aspectActionImplement.property.getSimpleAdd();
     }

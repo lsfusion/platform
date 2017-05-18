@@ -461,7 +461,9 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
 
     @Override
     public boolean hasFlow(ChangeFlowType type) {
-        return type != ChangeFlowType.BREAK && super.hasFlow(type);
+        if (type == ChangeFlowType.BREAK)
+            return false;
+        return super.hasFlow(type);
     }
 
     public interface PushFor<PI extends PropertyInterface, I extends PropertyInterface> {

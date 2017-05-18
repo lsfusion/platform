@@ -16,6 +16,7 @@ import lsfusion.server.logics.property.ClassType;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.logics.property.actions.SystemExplicitActionProperty;
+import lsfusion.server.logics.property.actions.flow.ChangeFlowType;
 import lsfusion.server.session.DataSession;
 import org.antlr.runtime.RecognitionException;
 
@@ -63,6 +64,10 @@ public class EvalActionProperty<P extends PropertyInterface> extends SystemExpli
             context.delayUserInteraction(new MessageClientAction(getMessage(e), "Execution error"));
             throw new RuntimeException(e);
         }
+    }
+    @Override
+    public boolean hasFlow(ChangeFlowType type) {
+        return true;
     }
 
     private String getMessage(Throwable e) {

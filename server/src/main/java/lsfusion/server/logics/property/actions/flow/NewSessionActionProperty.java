@@ -84,7 +84,15 @@ public class NewSessionActionProperty extends AroundAspectActionProperty {
 
     @Override
     public boolean hasFlow(ChangeFlowType type) {
-        return type == ChangeFlowType.NEWSESSION || (!(type == ChangeFlowType.APPLY || type == ChangeFlowType.CANCEL) && super.hasFlow(type));
+        if (type == ChangeFlowType.NEWSESSION) 
+            return true;
+        if (type == ChangeFlowType.APPLY)
+            return false;
+        if (type == ChangeFlowType.CANCEL)
+            return false;
+        if (type == ChangeFlowType.CHANGE && !isNested)
+            return false;
+        return super.hasFlow(type);
     }
 
     protected void afterAspect(FlowResult result, ExecutionContext<PropertyInterface> context, ExecutionContext<PropertyInterface> innerContext) throws SQLException, SQLHandledException {

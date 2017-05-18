@@ -10,6 +10,7 @@ import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.actions.ExplicitActionProperty;
+import lsfusion.server.logics.property.actions.flow.ChangeFlowType;
 import lsfusion.server.logics.property.group.AbstractGroup;
 import lsfusion.server.session.DataSession;
 
@@ -86,6 +87,17 @@ public abstract class ScriptingActionProperty extends ExplicitActionProperty {
     @Override
     protected boolean isVolatile() {
         return true;
+    }
+
+    protected boolean isGlobalChange() {
+        return true;
+    }
+
+    @Override
+    public boolean hasFlow(ChangeFlowType type) {
+        if(type == ChangeFlowType.CHANGE && isGlobalChange())
+            return true;
+        return super.hasFlow(type);
     }
 
     @Override

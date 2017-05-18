@@ -70,7 +70,9 @@ public class JoinActionProperty<T extends PropertyInterface> extends KeepContext
         if(isRecursive) // recursion guard
             return false;
 
-        return type != ChangeFlowType.RETURN && super.hasFlow(type);
+        if (type == ChangeFlowType.RETURN)
+            return false;
+        return super.hasFlow(type);
     }
 
     public ImSet<ActionProperty> getDependActions() {
