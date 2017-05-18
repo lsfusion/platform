@@ -2953,16 +2953,26 @@ inputActionDefinitionBody[List<TypedParameter> context] returns [LPWithParams pr
 	;
 	
 mappedInput[List<TypedParameter> context] returns [DataClass dataClass, LPWithParams initValue]
+@init {
+    String varName = null;
+}
 @after {
 	if (inPropParseState()) {
-		$dataClass = self.getInputDataClass($varID.text, context, $ptype.text, $pe.property, insideRecursion);
+		$dataClass = self.getInputDataClass(varName, context, $ptype.text, $pe.property, insideRecursion);
 		$initValue = $pe.property;
 	}
 }
     :    
-    ((varID=ID '=')? ptype=PRIMITIVE_TYPE)
+    (
+        (varID=ID '=' { varName = $varID.text; } )? 
+        ptype=PRIMITIVE_TYPE
+    )
     |	
-    ((varID=ID)? '=' pe=propertyExpression[context, false])
+    ( 
+        { varName = "object"; } // для случая INPUT =f() CHANGE 
+        (varID=ID { varName = $varID.text; } )? 
+        '=' pe=propertyExpression[context, false]
+    )
 ;
 
 activeFormActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]

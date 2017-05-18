@@ -2507,6 +2507,8 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     private LPWithParams proceedDoClause(LPWithParams doAction, LPWithParams elseAction, List<TypedParameter> oldContext, List<TypedParameter> newContext, ImList<LCP> inputParamProps, LPWithParams inputAction, ImList<Pair<LPWithParams, DebugInfo.DebugPoint>> assignProps) throws ScriptingErrorLog.SemanticErrorException {
+        assert newContext.size() - oldContext.size() == inputParamProps.size();
+        assert inputParamProps.size() == assignProps.size();
         if (doAction != null) {
             doAction = extendDoParams(doAction, newContext, oldContext.size(), inputParamProps, assignProps);
             return addScriptedRequestAProp(inputAction, doAction, elseAction);
