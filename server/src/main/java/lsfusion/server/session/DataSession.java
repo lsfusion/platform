@@ -1071,6 +1071,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         if(isInTransaction())
             ServerLoggers.exInfoLogger.info("LOCAL EVENTS IN TRANSACTION"); // так как LogPropertyAction создает форму
 
+        // по идее можно будет assertion вернуть когда рефакторятся constraint'ы на работу с FormEntity
         if(!isInTransaction() && sessionEventChangedOld.getProperties().size() > 0) { // если в транзакции подменится modifier, туда похоже в хинты могут попадать таблицы из apply (правда не совсем понятно как), и приводит к table does not exist, в любом случае это очень опасная вещь в транзакции, поэтому уберем, второе - оптимизационная проверка
 
             if(env == null)
@@ -2741,8 +2742,10 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
     private void flushPendingCleaners() throws SQLException { // по идее lock-free (кроме когда не осталось owner'ов( поэтому deadlock'ов быть не должно
         // тут нужно проверять что не только  транзакция, а еще то что транзакция в этом потоке (хотя нельзя так делать, потому как deadlock'и могут быть с closedLock)
-        if(isInTransaction()) // нельзя чистить в транзакции, так как изменения могут rollback'ся, а rollDrop некому делать
-            return; // тут важно, что даже если сессия войдет в транзакцию, так как она это сделает в другом потоке, этот вызов lock-free, а реализации cleaner должны быть thread-safe (в частности все очистки таблиц повиснут на lockRead), dead-clock'ов и других проблем быть не должно 
+        if(isInTransaction()) { // нельзя чистить в транзакции, так как изменения могут rollback'ся, а rollDrop некому делать
+            ServerLoggers.exInfoLogger.info("FLUSH PENDING CLEANERS IN TRANSACTION");
+            return; // тут важно, что даже если сессия войдет в транзакцию, так как она это сделает в другом потоке, этот вызов lock-free, а реализации cleaner должны быть thread-safe (в частности все очистки таблиц повиснут на lockRead), dead-clock'ов и других проблем быть не должно
+        }
 
         while(true) {
             List<Cleaner> snapPendingCleaners;
