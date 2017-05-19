@@ -315,8 +315,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
             if(noCancel == null)
                 noCancel = heurNoCancel;
             else {
-                if (noCancel != heurNoCancel)
-                    regAutoDiff("CANCEL", noCancel, heurNoCancel);
+//                if (noCancel != heurNoCancel)
+//                    regAutoDiff("CANCEL", noCancel, heurNoCancel);
                 
                 if(Settings.get().isEnableHeurNoCancel())
                     noCancel = heurNoCancel;
