@@ -146,7 +146,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
     private ImSet<ObjectInstance> objects;
 
-    private boolean readOnly = false;
+    private boolean showReadOnly = false;
     
     public boolean local = false; // временный хак для resolve'а, так как modifier очищается синхронно, а форма нет, можно было бы в транзакцию перенести, но там подмену modifier'а (resolveModifier) так не встроишь 
 
@@ -157,8 +157,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                         ExecutionStack stack, boolean isModal, Boolean noCancel, ManageSessionType manageSession, boolean checkOnOk,
                         boolean showDrop, boolean interactive,
                         ImSet<FilterEntity> contextFilters,
-                        ImSet<PullChangeProperty> pullProps, boolean readOnly, Locale locale) throws SQLException, SQLHandledException {
-        this(entity, logicsInstance, session, securityPolicy, focusListener, classListener, computer, connection, mapObjects, stack, isModal, noCancel, manageSession, checkOnOk, showDrop, interactive, false, contextFilters, pullProps, readOnly, locale);
+                        ImSet<PullChangeProperty> pullProps, boolean showReadOnly, Locale locale) throws SQLException, SQLHandledException {
+        this(entity, logicsInstance, session, securityPolicy, focusListener, classListener, computer, connection, mapObjects, stack, isModal, noCancel, manageSession, checkOnOk, showDrop, interactive, false, contextFilters, pullProps, showReadOnly, locale);
     }
 
     public FormInstance(FormEntity<T> entity, LogicsInstance logicsInstance, DataSession session, SecurityPolicy securityPolicy,
@@ -170,7 +170,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                         boolean showDrop, boolean interactive, boolean isDialog,
                         ImSet<FilterEntity> contextFilters,
                         ImSet<PullChangeProperty> pullProps,
-                        boolean readOnly, Locale locale) throws SQLException, SQLHandledException {
+                        boolean showReadOnly, Locale locale) throws SQLException, SQLHandledException {
         this.isModal = isModal;
         this.checkOnOk = checkOnOk;
         this.showDrop = showDrop;
@@ -183,7 +183,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
         this.pullProps = pullProps;
 
-        this.readOnly = readOnly;
+        this.showReadOnly = showReadOnly;
 
         this.locale = locale;
         
@@ -325,8 +325,9 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
             noCancel = false; // temp
         
         boolean adjManageSession = manageSession != ManageSessionType.AUTO && manageSession.isManageSession();
-        readOnly = readOnly || entity.isReadOnly();
-        environmentIncrement = createEnvironmentIncrement(isModal, isDialog, noCancel, adjManageSession, readOnly, showDrop);
+        boolean heurReadOnly = showReadOnly || entity.hasNoChange(); // по идее при showreadonly редактирование все равно могут включить политикой безопасности, но при определении manageSession не будем на это обращать внимание
+        adjManageSession = adjManageSession && !heurReadOnly; // вставить потом if manageSession == ManageSessionType.AUTO (хотя возможно и не надо)
+        environmentIncrement = createEnvironmentIncrement(isModal, isDialog, noCancel, adjManageSession, showDrop);
 
         if (!interactive) {
             endApply(stack);
@@ -334,9 +335,10 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         } else {
             int prevOwners = updateSessionOwner(true, stack);
      
-            boolean heurManageSession = heuristicManageSession(prevOwners, readOnly); 
+            boolean heurManageSession = heuristicManageSession(prevOwners) && !heurReadOnly; 
             if(manageSession == ManageSessionType.AUTO) {
                 if(heurManageSession) { // если нет owner'ов
+                    assert !heurReadOnly;
                     adjManageSession = true; 
                     environmentIncrement.add(FormEntity.manageSession, PropertyChange.<ClassPropertyInterface>STATIC(true));
                 }
@@ -412,11 +414,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         diffForms.put(new DiffForm(type, entity, stackString, explicit, heur), true);
     }
 
-    private boolean heuristicManageSession(int prevOwners, boolean readOnly) {
-        if(prevOwners > 0)
-            return false;
-        
-        return !readOnly; 
+    private boolean heuristicManageSession(int prevOwners) {
+        return prevOwners <= 0;
     }
 
     private boolean heuristicNoCancel(ImMap<ObjectEntity, ? extends ObjectValue> mapObjects) {
@@ -441,13 +440,12 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         }
     }
 
-    private static IncrementChangeProps createEnvironmentIncrement(boolean isModal, boolean isDialog, boolean isAdd, boolean manageSession, boolean isReadOnly, boolean showDrop) {
+    private static IncrementChangeProps createEnvironmentIncrement(boolean isModal, boolean isDialog, boolean isAdd, boolean manageSession, boolean showDrop) {
         IncrementChangeProps environment = new IncrementChangeProps();
         environment.add(FormEntity.isModal, PropertyChange.<ClassPropertyInterface>STATIC(isModal));
         environment.add(FormEntity.isDialog, PropertyChange.<ClassPropertyInterface>STATIC(isDialog));
         environment.add(FormEntity.isAdd, PropertyChange.<ClassPropertyInterface>STATIC(isAdd));
         environment.add(FormEntity.manageSession, PropertyChange.<ClassPropertyInterface>STATIC(manageSession));
-        environment.add(FormEntity.isReadOnly, PropertyChange.<ClassPropertyInterface>STATIC(isReadOnly));
         environment.add(FormEntity.showDrop, PropertyChange.<ClassPropertyInterface>STATIC(showDrop));
         return environment;
     }
@@ -1041,7 +1039,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
             return;
         }
 
-        if (readOnly && !checkReadOnlyPermission(editAction, property)) {
+        if (showReadOnly && !checkReadOnlyPermission(editAction, property)) {
             ThreadLocalContext.delayUserInteraction(EditNotPerformedClientAction.instance);
             return;
         }

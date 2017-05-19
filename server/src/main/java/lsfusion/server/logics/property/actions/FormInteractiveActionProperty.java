@@ -24,6 +24,7 @@ import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.*;
+import lsfusion.server.logics.property.actions.flow.ChangeFlowType;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -160,5 +161,17 @@ public class FormInteractiveActionProperty<O extends ObjectSelector> extends For
     @Override
     public boolean ignoreReadOnlyPolicy() {
         return !(noCancel != null && noCancel);
+    }
+
+    @Override
+    public boolean hasFlow(ChangeFlowType type) {
+        if(type == ChangeFlowType.CHANGE) {
+            if(!readOnly) { // если не read only
+                FormEntity staticForm = form.getStaticForm();
+                if(staticForm == null || !staticForm.hasNoChange()) // и форма не известна и может что-то изменять
+                    return false;
+            }
+        }
+        return super.hasFlow(type);
     }
 }

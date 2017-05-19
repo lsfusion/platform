@@ -65,7 +65,6 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     public static final SessionDataProperty isModal = new SessionDataProperty(LocalizedString.create("Is modal"), LogicalClass.instance);
     public static final SessionDataProperty isAdd = new SessionDataProperty(LocalizedString.create("Is add"), LogicalClass.instance);
     public static final SessionDataProperty manageSession = new SessionDataProperty(LocalizedString.create("Manage session"), LogicalClass.instance);
-    public static final SessionDataProperty isReadOnly = new SessionDataProperty(LocalizedString.create("Is read only form"), LogicalClass.instance);
     public static final SessionDataProperty showDrop = new SessionDataProperty(LocalizedString.create("Show drop"), LogicalClass.instance);
 
     public PropertyDrawEntity printActionPropertyDraw;
@@ -381,7 +380,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     }
 
     @IdentityLazy
-    public boolean isReadOnly() {
+    public boolean hasNoChange() {
         for (PropertyDrawEntity property : getPropertyDrawsIt()) {
             if(!property.isSelector()) { // непонятная проверка - в будущем возможно надо будет убрать
                 ActionPropertyObjectEntity<?> editAction = property.getEditAction(ServerResponse.CHANGE, this);
@@ -1294,6 +1293,11 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         for (GroupObjectEntity group : getGroupsIt())
             mObjects.exclAddAll(group.getObjects());
         return mObjects.immutable();
+    }
+
+    @Override
+    public FormEntity getStaticForm() {
+        return this;
     }
 
     public Pair<FormEntity, ImRevMap<ObjectEntity, ObjectEntity>> getForm(BaseLogicsModule<?> LM, DataSession session, ImMap<ObjectEntity, ? extends ObjectValue> mapObjectValues) {

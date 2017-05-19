@@ -162,6 +162,38 @@ public class ListActionProperty extends ListCaseActionProperty {
             return ActionDelegationType.BEFORE_DELEGATE;
         else
             return null;
+    }
 
+    // пока просто ищем в конце APPLY и CHANGE'ы после APPLY
+    // потом по хорошему надо будет в if then apply else cancel 
+    private boolean hasApplyWithNoChangeAfter() {
+
+        ImList<ActionPropertyMapImplement<?, PropertyInterface>> actions = getActions();
+        for(int i = actions.size() - 1; i>= 0; i--) {
+            ActionProperty<?> listAction = actions.get(i).property;
+            while(listAction instanceof JoinActionProperty)
+                listAction = ((JoinActionProperty) listAction).action.property;
+
+            if(listAction instanceof ApplyActionProperty)
+                return true;
+            
+            if(listAction.hasFlow(ChangeFlowType.CHANGE)) {
+                return listAction instanceof ListActionProperty && ((ListActionProperty) listAction).hasApplyWithNoChangeAfter();
+            }
+        }
+        
+        assert false; // так как сверщу есит проверка на hasFlow(CHANGE)
+        return false;
+    }
+    
+    @Override
+    public boolean hasFlow(ChangeFlowType type) {
+        boolean hasFlow = super.hasFlow(type);
+        
+        if(type == ChangeFlowType.CHANGE && hasFlow) {
+            return !hasApplyWithNoChangeAfter();
+        }
+        
+        return hasFlow;
     }
 }

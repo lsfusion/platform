@@ -18,7 +18,7 @@ import java.awt.*;
 import java.sql.SQLException;
 
 public class FormApplyActionProperty extends FormFlowActionProperty {
-    private static LCP showIf = createShowIfProperty(new CalcProperty[]{FormEntity.manageSession, FormEntity.isReadOnly}, new boolean[]{false, true});
+    private static LCP showIf = createShowIfProperty(new CalcProperty[]{FormEntity.manageSession}, new boolean[]{false});
 
     static LCP applyBackground = new LCP(
             DerivedProperty.createAnd(

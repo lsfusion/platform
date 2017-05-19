@@ -16,5 +16,6 @@ public interface FormSelector<O extends ObjectSelector> {
     
     ValueClass getBaseClass(O object);
     
+    FormEntity getStaticForm();
     Pair<FormEntity, ImRevMap<ObjectEntity, O>> getForm(BaseLogicsModule<?> LM, DataSession session, ImMap<O, ? extends ObjectValue> mapObjectValues) throws SQLException, SQLHandledException;
 }

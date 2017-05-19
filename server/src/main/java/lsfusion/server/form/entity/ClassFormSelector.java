@@ -36,6 +36,11 @@ public class ClassFormSelector implements FormSelector<ClassFormSelector.Virtual
     }
 
     @Override
+    public FormEntity getStaticForm() {
+        return null;
+    }
+
+    @Override
     public Pair<FormEntity, ImRevMap<ObjectEntity, VirtualObject>> getForm(BaseLogicsModule<?> LM, DataSession session, ImMap<VirtualObject, ? extends ObjectValue> mapObjectValues) throws SQLException, SQLHandledException {
         assert mapObjectValues.isEmpty() || mapObjectValues.singleKey() == virtualObject;
         

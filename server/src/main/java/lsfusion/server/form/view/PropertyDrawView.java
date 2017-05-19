@@ -415,7 +415,7 @@ public class PropertyDrawView extends ComponentView {
     public boolean hasChangeAction(ServerContext context) {
         ActionPropertyObjectEntity<?> editAction = entity.getChangeAction(context.entity);
         if (editAction != null) {
-            boolean readOnly = entity.isReadOnly() || (((ActionProperty) editAction.property).checkReadOnly && entity.propertyReadOnly != null && entity.propertyReadOnly.property.checkAlwaysNull(false));
+            boolean readOnly = (((ActionProperty) editAction.property).checkReadOnly && entity.propertyReadOnly != null && entity.propertyReadOnly.property.checkAlwaysNull(false));
             ChangePropertySecurityPolicy changePropertySecurityPolicy = context.securityPolicy.property.change;
             boolean securityPermission = changePropertySecurityPolicy.checkPermission(editAction.property) && changePropertySecurityPolicy.checkPermission(entity.propertyObject.property);
             return !readOnly && securityPermission;
