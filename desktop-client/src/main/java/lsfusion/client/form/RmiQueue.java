@@ -28,6 +28,7 @@ import static lsfusion.client.exceptions.ClientExceptionManager.getRemoteExcepti
 
 public class RmiQueue implements DispatcherListener {
     private static final Logger logger = ClientLoggers.invocationLogger;
+    private static final Logger remoteLogger = ClientLoggers.remoteLogger;
 
     private final static Object edtSyncBlocker = new Object();
 
@@ -95,6 +96,10 @@ public class RmiQueue implements DispatcherListener {
 
     private static ExecutorService executorService = Executors.newCachedThreadPool();
     
+    private static double getTimeout(Pair<Integer, Integer> timeoutParams, int exponent) {
+        return timeoutParams.second * Math.pow(timeoutParams.first, exponent);    
+    }
+    
     // вызывает request (предположительно remote) несколько раз, проблемы с целостностью предполагается что решается либо индексом, либо результат не так важен
     public static <T> T runRetryableRequest(Callable<T> request, AtomicBoolean abandoned, boolean registeredFailure, Pair<Integer, Integer> timeoutParams, RmiFutureInterface futureInterface) {
         int reqCount = 0;
@@ -108,11 +113,13 @@ public class RmiQueue implements DispatcherListener {
                     if (Main.useRequestTimeout && timeoutParams != null && futureInterface != null) {
                         Future<T> future = executorService.submit(request);
                         while (true) {
+                            double timeout = getTimeout(timeoutParams, exponent);
                             try {
-                                return future.get((long) (timeoutParams.second * Math.pow(timeoutParams.first, exponent)), TimeUnit.SECONDS);
+                                return future.get((long) timeout, TimeUnit.SECONDS);
                             } catch (TimeoutException e) {
                                 if (futureInterface.isFirst()) {
                                     exponent++;
+                                    remoteLogger.info("TimeoutException: timeout - " + timeout + "s, next timeout - " + getTimeout(timeoutParams, exponent) + "s");
                                     throw e; // переотправляем
                                 }
                             }
