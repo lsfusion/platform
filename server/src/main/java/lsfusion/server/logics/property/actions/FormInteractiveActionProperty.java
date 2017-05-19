@@ -169,7 +169,7 @@ public class FormInteractiveActionProperty<O extends ObjectSelector> extends For
             if(!readOnly) { // если не read only
                 FormEntity staticForm = form.getStaticForm();
                 if(staticForm == null || !staticForm.hasNoChange()) // и форма не известна и может что-то изменять
-                    return false;
+                    return true;
             }
         }
         return super.hasFlow(type);
