@@ -65,7 +65,7 @@ public class CopyPasteUtils {
         {
             try {
                 text = event.clipboardData.getData("text/plain");
-                return text.trim();
+                return text;
             }
             catch (e) {
             }
@@ -75,12 +75,12 @@ public class CopyPasteUtils {
         {
             try {
                 text = $wnd.clipboardData.getData("Text");
-                return text.trim();
+                return text;
             }
             catch (e) {
             }
         }
 
-        return text.trim();
+        return text;
     }-*/;
 }

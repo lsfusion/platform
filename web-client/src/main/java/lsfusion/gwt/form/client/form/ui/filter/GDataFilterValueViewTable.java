@@ -139,7 +139,7 @@ public class GDataFilterValueViewTable extends DataGrid implements EditManager {
     }
 
     private void executePaste(Event event) {
-        String line = CopyPasteUtils.getClipboardData(event);
+        String line = CopyPasteUtils.getClipboardData(event).trim();
         if (!line.isEmpty()) {
             stopPropagation(event);
             line = line.replaceAll("\r\n", "\n");    // браузеры заменяют разделители строк на "\r\n"
