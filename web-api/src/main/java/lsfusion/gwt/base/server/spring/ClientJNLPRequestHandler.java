@@ -12,7 +12,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.rmi.RemoteException;
-import java.util.Properties;
+import java.util.*;
 
 import static lsfusion.base.BaseUtils.isRedundantString;
 
@@ -81,6 +81,10 @@ public class ClientJNLPRequestHandler implements HttpRequestHandler {
         logger.debug("Generating jnlp response.");
 
         try {
+
+            Map<String, String> queryParams = getQueryParams(request);
+            String jnlpMaxHeapSize = queryParams.get("maxHeapSize");
+
             Properties properties = new Properties();
             properties.put("jnlp.codebase", codebaseUrl);
             properties.put("jnlp.url", jnlpUrl);
@@ -90,7 +94,7 @@ public class ClientJNLPRequestHandler implements HttpRequestHandler {
             properties.put("jnlp.exportName", exportName);
             properties.put("jnlp.singleInstance", String.valueOf(singleInstance));
             properties.put("jnlp.initHeapSize", !isRedundantString(initHeapSize) ? initHeapSize : DEFAULT_INIT_HEAP_SIZE);
-            properties.put("jnlp.maxHeapSize", !isRedundantString(maxHeapSize) ? maxHeapSize : DEFAULT_MAX_HEAP_SIZE);
+            properties.put("jnlp.maxHeapSize", jnlpMaxHeapSize != null ? jnlpMaxHeapSize : (!isRedundantString(maxHeapSize) ? maxHeapSize : DEFAULT_MAX_HEAP_SIZE));
             properties.put("jnlp.maxHeapFreeRatio", !isRedundantString(maxHeapFreeRatio) ? String.valueOf(maxHeapFreeRatio) : DEFAULT_MAX_HEAP_FREE_RATIO);
 
             String content = stringResolver.replacePlaceholders(
@@ -103,5 +107,20 @@ public class ClientJNLPRequestHandler implements HttpRequestHandler {
             logger.debug("Error handling jnlp request: ", e);
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Can't generate jnlp.");
         }
+    }
+
+    private Map<String, String> getQueryParams(HttpServletRequest request) {
+        final Map<String, String> queryParams = new HashMap<>();
+        String queryString = request.getQueryString();
+        if(queryString != null) {
+            final String[] pairs = queryString.split("&");
+            for (String pair : pairs) {
+                if (pair.contains("=")) {
+                    final int idx = pair.indexOf("=");
+                    queryParams.put(pair.substring(0, idx), pair.length() > idx + 1 ? pair.substring(idx + 1) : null);
+                }
+            }
+        }
+        return queryParams;
     }
 }

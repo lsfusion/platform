@@ -74,6 +74,15 @@
     </servlet-mapping>
 
     <servlet>
+        <servlet-name>readMemoryLimitsHandler</servlet-name>
+        <servlet-class>org.springframework.web.context.support.HttpRequestHandlerServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>readMemoryLimitsHandler</servlet-name>
+        <url-pattern>/readMemoryLimits</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
         <servlet-name>readFormHandler</servlet-name>
         <servlet-class>org.springframework.web.context.support.HttpRequestHandlerServlet</servlet-class>
     </servlet>

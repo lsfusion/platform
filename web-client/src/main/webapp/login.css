@@ -156,6 +156,11 @@ form#login-form {
     float: right;
 }
 
+.triangle {
+    cursor:default;
+    color: #75AEEA;
+}
+
 .errorblock {
     color: #ff0000;
     background-color: #ffEEEE;
