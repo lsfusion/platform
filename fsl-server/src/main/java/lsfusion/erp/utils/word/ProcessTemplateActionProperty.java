@@ -167,9 +167,16 @@ public class ProcessTemplateActionProperty extends ScriptingActionProperty {
             List<XWPFRun> runs = p.getRuns();
             for (int i = runs.size() - 1; i >= 0; i--) {
                 String text = runs.get(i).getText(0);
-                if (text != null && text.contains(key))
+                if (text != null && text.contains(key)) {
                     text = text.replace(key, value);
-                runs.get(i).setText(text, 0);
+                    String[] splitted = text.split("\r");
+                    int offset = 0;
+                    for (int j = 0; j < splitted.length; j++) {
+                        runs.get(i).setText(splitted[j], offset);
+                        runs.get(i).addBreak();
+                        offset += splitted[j].length();
+                    }
+                }
             }
         }
     }
