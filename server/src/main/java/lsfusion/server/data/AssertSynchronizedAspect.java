@@ -21,9 +21,9 @@ import static lsfusion.server.ServerLoggers.sqlLogger;
 @Aspect
 public class AssertSynchronizedAspect {
 
-    private static Map<Object, WeakReference<Thread>> map = MapFact.getGlobalConcurrentIdentityWeakHashMap();
+    private static final Map<Object, WeakReference<Thread>> map = MapFact.getGlobalConcurrentIdentityWeakHashMap();
 
-    private static Map<Thread, Boolean> suppress = MapFact.getGlobalConcurrentIdentityWeakHashMap();
+    private static final Map<Thread, Boolean> suppress = MapFact.getGlobalConcurrentIdentityWeakHashMap();
     public static void pushSuppress() {
         suppress.put(Thread.currentThread(), true);
     }

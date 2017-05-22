@@ -539,8 +539,11 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         this.owner = upOwner;
 
         registerThreadStack(); // создающий поток также является владельцем сессии
+        createdInTransaction = sql.isInTransaction(); // при synchronizeDB есть такой странный кейс
 //        SQLSession.fifo.add("DCR " + getOwner() + SQLSession.getCurrentTimeStamp() + " " + this + '\n' + ExceptionUtils.getStackTrace());
     }
+    
+    private boolean createdInTransaction;
 
     public DataSession createSession() throws SQLException {
         return createSession(sql);
@@ -2778,7 +2781,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     // assert closeLock и noOwnersLock
     private void flushPendingCleaners() throws SQLException { // по идее lock-free (кроме когда не осталось owner'ов( поэтому deadlock'ов быть не должно
         // тут нужно проверять что не только  транзакция, а еще то что транзакция в этом потоке (хотя нельзя так делать, потому как deadlock'и могут быть с closedLock)
-        ServerLoggers.assertLog(!sql.isWriteLockedByCurrentThread(), "SHOULD NOT BE WRITE LOCKED"); // соответственно не может быть deadLock с flush, так как в этом потоке максимум lockRead
+        ServerLoggers.assertLog(createdInTransaction || !sql.isWriteLockedByCurrentThread(), "SHOULD NOT BE WRITE LOCKED"); // соответственно не может быть deadLock с flush, так как в этом потоке максимум lockRead
         while(true) {
             List<Cleaner> snapPendingCleaners;
             synchronized (pendingCleaners) {
