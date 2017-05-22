@@ -146,8 +146,8 @@ onStarted() += {
 
 FORM DOWs 'Дни недели'
     OBJECTS d = DOW
-    PROPERTIES(d) READONLY staticCaption, number
-    ORDER BY number(d)
+    PROPERTIES(d) READONLY staticCaption, numberM
+    ORDER BY numberM(d)
     LIST DOW OBJECT d
 ;
 
