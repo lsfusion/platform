@@ -2766,7 +2766,12 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         }
         
         synchronized (noOwnersLock) {
-            flushPendingCleaners();
+            AssertSynchronizedAspect.pushSuppress(); // не синхронизированно относительно owner'а (DataSession, но это ожидаемое поведение)
+            try {
+                flushPendingCleaners();
+            } finally {
+                AssertSynchronizedAspect.popSuppress();
+            }
         }
     }
     

@@ -1,5 +1,6 @@
 package lsfusion.server.data;
 
+import lsfusion.base.ConcurrentIdentityWeakHashSet;
 import lsfusion.base.ExceptionUtils;
 import lsfusion.base.WeakIdentityHashMap;
 import lsfusion.base.WeakIdentityHashSet;
@@ -22,6 +23,14 @@ public class AssertSynchronizedAspect {
 
     private static Map<Object, WeakReference<Thread>> map = MapFact.getGlobalConcurrentIdentityWeakHashMap();
 
+    private static Map<Thread, Boolean> suppress = MapFact.getGlobalConcurrentIdentityWeakHashMap();
+    public static void pushSuppress() {
+        suppress.put(Thread.currentThread(), true);
+    }
+    public static void popSuppress() {
+        suppress.remove(Thread.currentThread());
+    }
+
     @Around("execution(@lsfusion.server.data.AssertSynchronized * *.*(..)) && target(object)")
     public Object callMethod(ProceedingJoinPoint thisJoinPoint, Object object) throws Throwable {
         
@@ -29,7 +38,7 @@ public class AssertSynchronizedAspect {
         WeakReference<Thread> prevWeakThread = map.put(object, new WeakReference<>(currentThread));
         if(prevWeakThread != null) { // работает не максимально надежно, но смысл в том что сам exception и так время от времени будет появляться
             Thread prevThread = prevWeakThread.get();
-            if(prevThread != currentThread)
+            if(prevThread != currentThread && !suppress.containsKey(currentThread) && !(prevThread != null && suppress.containsKey(prevThread)))
                 ServerLoggers.assertLog(false, "ASSERT SYNCHRONIZED " + object + '\n' +
                      (prevThread == null? "DEAD" : prevThread.toString() + '\n' + ExceptionUtils.getStackTrace(prevThread.getStackTrace())) + " PREV CURRENT " + currentThread + '\n');
         }
