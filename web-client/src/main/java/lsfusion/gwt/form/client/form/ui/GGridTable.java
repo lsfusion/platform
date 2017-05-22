@@ -589,7 +589,12 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
     }
 
     public boolean isEmpty() {
-        return values.isEmpty() || properties.isEmpty();
+        for (GPropertyDraw property : properties) {
+            if (!values.get(property).isEmpty()) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public GGroupObjectValue getCurrentKey() {
@@ -853,7 +858,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
     public void pasteData(final List<List<String>> table) {
         final int selectedColumn = getKeyboardSelectedColumn();
 
-        if (selectedColumn == -1 || table.isEmpty()) {
+        if (selectedColumn == -1 || isEmpty() || table.isEmpty()) {
             return;
         }
 
