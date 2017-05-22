@@ -8,6 +8,8 @@ import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
+import lsfusion.server.caches.IdentityLazy;
+import lsfusion.server.caches.IdentityStartLazy;
 import lsfusion.server.classes.CustomClass;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
@@ -164,36 +166,28 @@ public class ListActionProperty extends ListCaseActionProperty {
             return null;
     }
 
-    // пока просто ищем в конце APPLY и CHANGE'ы после APPLY
-    // потом по хорошему надо будет в if then apply else cancel 
-    private boolean hasApplyWithNoChangeAfter() {
-
+    @Override
+    @IdentityStartLazy
+    public boolean endsWithApplyAndNoChangesAfterBreaksBefore() {
+        boolean lookingForChangeFlow = false;
+        boolean lookingForChange = true;
         ImList<ActionPropertyMapImplement<?, PropertyInterface>> actions = getActions();
         for(int i = actions.size() - 1; i>= 0; i--) {
             ActionProperty<?> listAction = actions.get(i).property;
-            while(listAction instanceof JoinActionProperty)
-                listAction = ((JoinActionProperty) listAction).action.property;
-
-            if(listAction instanceof ApplyActionProperty)
-                return true;
             
-            if(listAction.hasFlow(ChangeFlowType.CHANGE)) {
-                return listAction instanceof ListActionProperty && ((ListActionProperty) listAction).hasApplyWithNoChangeAfter();
+            if(lookingForChangeFlow && (listAction.hasFlow(ChangeFlowType.BREAK) || listAction.hasFlow(ChangeFlowType.RETURN)))
+                return false;
+
+            boolean endsWithApply = listAction.endsWithApplyAndNoChangesAfterBreaksBefore();
+            if(endsWithApply) {
+                lookingForChange = false; // change'и уже не важны, только возможность уйти за пределы APPLY
+                lookingForChangeFlow = true;
             }
+            
+            if(lookingForChange && listAction.hasFlow(ChangeFlowType.CHANGE))
+                return false;
         }
         
-        assert false; // так как сверщу есит проверка на hasFlow(CHANGE)
-        return false;
-    }
-    
-    @Override
-    public boolean hasFlow(ChangeFlowType type) {
-        boolean hasFlow = super.hasFlow(type);
-        
-        if(type == ChangeFlowType.CHANGE && hasFlow) {
-            return !hasApplyWithNoChangeAfter();
-        }
-        
-        return hasFlow;
+        return true;
     }
 }

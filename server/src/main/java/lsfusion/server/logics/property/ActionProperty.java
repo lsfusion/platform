@@ -217,6 +217,12 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
         return false;
     }
 
+    // пока просто ищем в конце APPLY и CHANGE'ы после APPLY
+    // потом по хорошему надо будет в if then apply else cancel
+    public boolean endsWithApplyAndNoChangesAfterBreaksBefore() {
+        return false;
+    }
+
     @IdentityStartLazy // только компиляция, построение лексикографики и несколько мелких использований
     public ImSet<SessionCalcProperty> getSessionCalcDepends(boolean events) {
         MSet<SessionCalcProperty> mResult = SetFact.mSet();

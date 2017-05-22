@@ -1,6 +1,5 @@
 package lsfusion.server.logics.property.actions.flow;
 
-import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
@@ -147,5 +146,13 @@ public class JoinActionProperty<T extends PropertyInterface> extends KeepContext
         if(isRecursive) // recursion guard
             return SetFact.EMPTY();
         return super.getRecInnerDebugActions();
+    }
+
+    @Override
+    public boolean endsWithApplyAndNoChangesAfterBreaksBefore() {
+        if(isRecursive) // recursion guard
+            return false;
+        
+        return action.property.endsWithApplyAndNoChangesAfterBreaksBefore();
     }
 }

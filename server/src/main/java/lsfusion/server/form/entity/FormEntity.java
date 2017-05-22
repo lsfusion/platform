@@ -41,7 +41,6 @@ import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.mutables.interfaces.*;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.actions.flow.ChangeFlowType;
-import lsfusion.server.logics.property.actions.flow.NewSessionActionProperty;
 import lsfusion.server.logics.property.group.AbstractGroup;
 import lsfusion.server.logics.property.group.AbstractNode;
 import lsfusion.server.session.DataSession;
@@ -384,7 +383,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         for (PropertyDrawEntity property : getPropertyDrawsIt()) {
             if(!property.isSelector()) { // непонятная проверка - в будущем возможно надо будет убрать
                 ActionPropertyObjectEntity<?> editAction = property.getEditAction(ServerResponse.CHANGE, this);
-                if (editAction != null && editAction.property.hasFlow(ChangeFlowType.CHANGE))
+                if (editAction != null && editAction.property.hasFlow(ChangeFlowType.CHANGE) && !editAction.property.endsWithApplyAndNoChangesAfterBreaksBefore())
                     return false;
             }
         }
