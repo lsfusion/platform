@@ -2415,6 +2415,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         result.add(getInitPingInfoUpdateTask(scheduler));
         result.add(getAllocatedBytesUpdateTask(scheduler));
         result.add(getCleanTempTablesTask(scheduler));
+        result.add(getFlushPendingTransactionCleanersTask(scheduler));
         result.add(getRestartConnectionsTask(scheduler));
         return result;
     }
@@ -2451,6 +2452,14 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         }, false, Settings.get().getTempTablesTimeThreshold(), false, "Drop Temp Tables");
     }
 
+    private Scheduler.SchedulerTask getFlushPendingTransactionCleanersTask(Scheduler scheduler) {
+        return scheduler.createSystemTask(new EExecutionStackRunnable() {
+            public void run(ExecutionStack stack) throws Exception {
+                DataSession.flushPendingTransactionCleaners();
+            }
+        }, false, Settings.get().getFlushPendingTransactionCleanersThreshold(), false, "Flush Pending Transaction Cleaners");
+    }
+    
     private Scheduler.SchedulerTask getRestartConnectionsTask(Scheduler scheduler) {
         final Result<Double> prevStart = new Result<>(0.0);
         return scheduler.createSystemTask(new EExecutionStackRunnable() {

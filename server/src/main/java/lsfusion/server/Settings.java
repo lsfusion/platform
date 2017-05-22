@@ -1157,6 +1157,16 @@ public class Settings {
         this.disablePropertyReupdateCount = disablePropertyReupdateCount;
     }
 
+    private int flushPendingTransactionCleanersThreshold = 10; // время как часто будет обрабатываться пул асинхронных очисток ресурсов сессии (в секундах), должно быть работать быстрее сборок мусора
+
+    public int getFlushPendingTransactionCleanersThreshold() {
+        return flushPendingTransactionCleanersThreshold;
+    }
+
+    public void setFlushPendingTransactionCleanersThreshold(int flushPendingTransactionCleanersThreshold) {
+        this.flushPendingTransactionCleanersThreshold = flushPendingTransactionCleanersThreshold;
+    }
+
     private int tempTablesTimeThreshold = 240; // время сколько будет гарантированно жить таблица (в секундах), нужно для предотвращения ротации кэшей, должно быть соизмеримо со стандартным временем использования
     private int tempTablesCountThreshold = 40; // очищать таблицы, когда их общее количество превысило данный порог * количество соединений
 

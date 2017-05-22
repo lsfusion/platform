@@ -1974,8 +1974,8 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
             closed = tryClose();
         }
-        if(!closed) // за пределами closeLock чтобы 
-            flushPendingCleaners();
+        if(!closed) // за пределами closeLock чтобы не было dead-lock'ов 
+            asyncFlushPendingCleaners();
     }
 
     // дополнительные formEntity в локальных событиях
@@ -2699,6 +2699,8 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 //    private final WeakIdentityHashSet<Thread> threads = new WeakIdentityHashSet<>();
     private int threadCount = 0;
     private final Object closeLock = new Object();
+    
+    private final Object noOwnersLock = new Object();
 
     public void registerThreadStack() {
         synchronized (closeLock) {
@@ -2714,8 +2716,8 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
             closed = tryClose();
         }
-        if(!closed)
-            flushPendingCleaners();
+        if(!closed) // за пределами closeLock чтобы не было dead-lock'ов
+            asyncFlushPendingCleaners();
 //        threads.remove(Thread.currentThread());
     }
 
@@ -2726,27 +2728,52 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         // не осталось владельцев - закрываем
         if(threadCount == 0 && activeForms.isEmpty()) { // AssertSynchronized со всеми остальными методами DataSession
             ServerLoggers.assertLog(!isInTransaction(), "SHOULD NOT CLOSE DATASESSION IN TRANSACTION");
-            flushPendingCleaners();
-            explicitClose();
+            synchronized (noOwnersLock) { // чтобы гарантировать полный flushPendingCleaners при close
+                flushPendingCleaners();
+                explicitClose();
+            }
             return true;
         }
         return false;
     }
     
-    // собственно имеет смысл если при flush'е была транзакция, но это редкий случай (хотя и возможный - закрылась форма через 15 секунд начинает очистку в новом потоке а пользователь уже проводит транзакциюв этой же сессии)
-    private void lockedFlushPendingCleaners() throws SQLException {
-        synchronized (closeLock) {
+    private final static WeakIdentityHashSet<DataSession> pendingTransactionCleaners = new WeakIdentityHashSet<>(); // assert synchronized
+    
+    public static void flushPendingTransactionCleaners() throws SQLException {        
+        List<DataSession> cleaners;
+        synchronized (pendingTransactionCleaners) {
+            cleaners = BaseUtils.toList(pendingTransactionCleaners);
+            pendingTransactionCleaners.clear();
+        }
+        if(!cleaners.isEmpty())
+            ServerLoggers.exInfoLogger.info("FLUSH PENDING TRANSACTION CLEANERS : " + cleaners.size());
+        for(DataSession cleaner : cleaners)
+            cleaner.asyncFlushPendingCleaners();
+    }
+    
+    private void asyncFlushPendingCleaners() throws SQLException {
+        if(isClosed())
+            return;
+
+        // тут важно, что даже если сессия войдет в транзакцию, так как она это сделает в другом потоке, этот вызов lock-free (за исключение noOwnersLock, но он не может быть в транзакции), а реализации cleaner должны быть thread-safe (в частности все очистки таблиц повиснут на lockRead), dead-clock'ов и других проблем быть не должно
+        if(isInTransaction()) { // нельзя чистить в транзакции, так как изменения могут rollback'ся, а rollDrop некому делать
+            ServerLoggers.exInfoLogger.info("FLUSH PENDING CLEANERS IN TRANSACTION");
+            // выполним чуть позже, когда транзакция предположительно закончится
+            synchronized (pendingTransactionCleaners) {
+                pendingTransactionCleaners.add(this);
+            }
+            return;
+        }
+        
+        synchronized (noOwnersLock) {
             flushPendingCleaners();
         }
     }
-
+    
+    // assert closeLock и noOwnersLock
     private void flushPendingCleaners() throws SQLException { // по идее lock-free (кроме когда не осталось owner'ов( поэтому deadlock'ов быть не должно
         // тут нужно проверять что не только  транзакция, а еще то что транзакция в этом потоке (хотя нельзя так делать, потому как deadlock'и могут быть с closedLock)
-        if(isInTransaction()) { // нельзя чистить в транзакции, так как изменения могут rollback'ся, а rollDrop некому делать
-            ServerLoggers.exInfoLogger.info("FLUSH PENDING CLEANERS IN TRANSACTION");
-            return; // тут важно, что даже если сессия войдет в транзакцию, так как она это сделает в другом потоке, этот вызов lock-free, а реализации cleaner должны быть thread-safe (в частности все очистки таблиц повиснут на lockRead), dead-clock'ов и других проблем быть не должно
-        }
-
+        ServerLoggers.assertLog(!sql.isWriteLockedByCurrentThread(), "SHOULD NOT BE WRITE LOCKED"); // соответственно не может быть deadLock с flush, так как в этом потоке максимум lockRead
         while(true) {
             List<Cleaner> snapPendingCleaners;
             synchronized (pendingCleaners) {

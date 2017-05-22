@@ -322,6 +322,10 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         }
     }
 
+    public boolean isWriteLockedByCurrentThread() {
+        return lock.isWriteLockedByCurrentThread();
+    }
+
     private void assertLock() {
         ServerLoggers.assertLog((temporaryTablesLock.isLocked() && lock.getReadLockCount() > 0) || lock.isWriteLocked(), "TEMPORARY TABLE SHOULD BY LOCKED");
     }
