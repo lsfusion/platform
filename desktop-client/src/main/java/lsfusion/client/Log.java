@@ -142,7 +142,12 @@ public final class Log {
 
         JPanel labelPanel = new JPanel();
         labelPanel.setLayout(new BoxLayout(labelPanel, BoxLayout.X_AXIS));
-        labelPanel.add(new JLabel(toHtml(message)));
+        JLabel titlePanel = new JLabel(toHtml(message));
+        double screenWidth = Main.frame.getRootPane().getWidth() * 0.9;
+        double titleWidth = titlePanel.getPreferredSize().getWidth();
+        double titleHeight = titlePanel.getPreferredSize().getHeight();
+        titlePanel.setPreferredSize(new Dimension((int) Math.min(screenWidth, titleWidth), (int) (titleHeight * Math.ceil(titleWidth / screenWidth))));
+        labelPanel.add(titlePanel);
         labelPanel.add(Box.createHorizontalGlue());
         
         JPanel messagePanel = new JPanel();
