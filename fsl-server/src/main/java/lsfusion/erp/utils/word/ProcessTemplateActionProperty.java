@@ -170,11 +170,13 @@ public class ProcessTemplateActionProperty extends ScriptingActionProperty {
                 if (text != null && text.contains(key)) {
                     text = text.replace(key, value);
                     String[] splitted = text.split("\r");
-                    int offset = 0;
                     for (int j = 0; j < splitted.length; j++) {
-                        runs.get(i).setText(splitted[j], offset);
-                        runs.get(i).addBreak();
-                        offset += splitted[j].length();
+                        if(j == 0)
+                            runs.get(i).setText(splitted[j], 0);
+                        else
+                            runs.get(i).setText(splitted[j]);
+                        if(j < (splitted.length - 1))
+                            runs.get(i).addBreak();
                     }
                 }
             }
