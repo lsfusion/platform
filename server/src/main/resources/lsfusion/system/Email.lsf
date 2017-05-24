@@ -65,6 +65,7 @@ deleteMessages 'Удалять сообщения с сервера' = DATA BOOL
 lastDays 'Загружать письма не старше (дней)' = DATA INTEGER(Account);
 disable 'Отключить отсылку и получение почты' = DATA BOOLEAN(Account);
 enable 'Включить отсылку и получение почты' (Account account) = NOT disable(account) AND account IS Account;
+unpack 'Распаковывать архивы' = DATA BOOLEAN (Account);
 
 encryptedConnectionType 'Тип шифрованного подключения' = DATA EncryptedConnectionTypeStatus(Account);
 nameEncryptedConnectionType 'Тип шифрованного подключения' (Account account) = staticCaption(encryptedConnectionType(account)) PREFCHARWIDTH 3;
@@ -95,7 +96,7 @@ FORM account 'E-mail аккаунт'
     OBJECTS a = Account PANEL
     PROPERTIES(a) name, password, fromAddress, smtpHost, smtpPort, nameReceiveAccountType, receiveHost,
                   receivePort, nameEncryptedConnectionType, blindCarbonCopy, deleteMessages, lastDays, 
-                  isDefaultNotification, isDefaultInbox, disable
+                  isDefaultNotification, isDefaultInbox, disable, unpack
     EDIT Account OBJECT a
 ;
 
@@ -104,7 +105,7 @@ FORM accounts 'E-mail аккаунты'
     OBJECTS a = Account
     PROPERTIES(a) READONLY name, password, fromAddress, smtpHost, smtpPort, nameReceiveAccountType, receiveHost,
                   receivePort, nameEncryptedConnectionType, blindCarbonCopy, deleteMessages, lastDays,
-                  isDefaultNotification, disable
+                  isDefaultNotification, disable, unpack
     PROPERTIES(a) NEWSESSION NEW, EDIT, DELETE 
 
     LIST Account OBJECT a
@@ -124,7 +125,8 @@ email = DATA Email (AttachmentEmail);
 attachmentEmail (id, email) = GROUP AGGR AttachmentEmail attachment BY id (attachment), id(email(attachment)) WHERE attachment IS AttachmentEmail; 
 name 'Имя файла' = DATA VARSTRING[255] (AttachmentEmail);
 file 'Файл' = DATA CUSTOMFILE (AttachmentEmail);
-openFile 'Файл' (AttachmentEmail attachmentEmail) = { OPEN file(attachmentEmail); }
+openFile 'Открыть' (AttachmentEmail attachmentEmail) = { OPEN file(attachmentEmail); }
+saveFile 'Скачать' (AttachmentEmail attachmentEmail) = { SAVE file(attachmentEmail) ; }
 lastError 'Последняя ошибка при импорте файла' = DATA TEXT (AttachmentEmail);
 
 FORM remindUserPass 'Напоминание пароля'
@@ -144,7 +146,7 @@ FORM mail 'Почта'
 
     PROPERTIES(a) name, smtpHost, smtpPort, nameReceiveAccountType, receiveHost, receivePort, nameEncryptedConnectionType,
                   fromAddress, password, blindCarbonCopy, deleteMessages, lastDays,
-                  isDefaultNotification, isDefaultInbox, disable 
+                  isDefaultNotification, isDefaultInbox, disable, unpack
     PROPERTIES(a)  NEW, DELETE 
     
     OBJECTS e=Email
@@ -157,7 +159,8 @@ FORM mail 'Почта'
                     
     OBJECTS ae=AttachmentEmail
     
-    PROPERTIES(ae) READONLY imported, importError, name, lastError SHOWIF showError(ae), openFile EDITABLE GRID
+    PROPERTIES(ae) READONLY imported, importError, name, lastError SHOWIF showError(ae)
+    PROPERTIES(ae) GRID openFile, saveFile
     FILTERS email(ae)==e
     
     OBJECTS n=Notification

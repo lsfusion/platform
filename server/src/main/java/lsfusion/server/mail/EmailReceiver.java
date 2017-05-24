@@ -1,6 +1,11 @@
 package lsfusion.server.mail;
 
 
+import com.github.junrar.Archive;
+import com.github.junrar.exception.RarException;
+import com.github.junrar.impl.FileVolumeManager;
+import com.github.junrar.rarfile.FileHeader;
+import com.google.common.base.Throwables;
 import com.sun.mail.util.BASE64DecoderStream;
 import com.sun.mail.util.MailSSLSocketFactory;
 import lsfusion.base.BaseUtils;
@@ -27,10 +32,13 @@ import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 import javax.mail.internet.MimeUtility;
 import java.io.*;
+import java.nio.charset.Charset;
 import java.security.GeneralSecurityException;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.*;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 public class EmailReceiver {
     EmailLogicsModule LM;
@@ -60,7 +68,8 @@ public class EmailReceiver {
 
     public void receiveEmail(ExecutionContext context) throws MessagingException, IOException, SQLException, ScriptingErrorLog.SemanticErrorException, SQLHandledException, GeneralSecurityException {
 
-        List<List<List<Object>>> data = downloadEmailList(getSkipEmails(context));
+        boolean unpack = LM.findProperty("unpack[Account]").read(context, accountObject) != null;
+        List<List<List<Object>>> data = downloadEmailList(getSkipEmails(context), unpack);
 
         importEmails(context, data.get(0));
         importAttachments(context, data.get(1));
@@ -186,7 +195,7 @@ public class EmailReceiver {
         }
     }
 
-    public List<List<List<Object>>> downloadEmailList(Set<String> skipEmails) throws MessagingException, SQLException, IOException, GeneralSecurityException {
+    public List<List<List<Object>>> downloadEmailList(Set<String> skipEmails, boolean unpack) throws MessagingException, SQLException, IOException, GeneralSecurityException {
 
         List<List<Object>> dataEmails = new ArrayList<>();
         List<List<Object>> dataAttachments = new ArrayList<>();
@@ -228,8 +237,8 @@ public class EmailReceiver {
                 if(!skipEmails.contains(idEmail)) {
                     message.setFlag(deleteMessagesAccount ? Flags.Flag.DELETED : Flags.Flag.SEEN, true);
                     Object messageContent = getEmailContent(message);
-                    MultipartBody messageEmail = messageContent instanceof Multipart ? getMultipartBody(subjectEmail, (Multipart) messageContent) :
-                            messageContent instanceof BASE64DecoderStream ? getMultipartBody64(subjectEmail, (BASE64DecoderStream) messageContent, decodeFileName(message.getFileName())) :
+                    MultipartBody messageEmail = messageContent instanceof Multipart ? getMultipartBody(subjectEmail, (Multipart) messageContent, unpack) :
+                            messageContent instanceof BASE64DecoderStream ? getMultipartBody64(subjectEmail, (BASE64DecoderStream) messageContent, decodeFileName(message.getFileName()), unpack) :
                                     messageContent instanceof String ? new MultipartBody((String) messageContent, null) : null;
                     if (messageEmail == null) {
                         messageEmail = new MultipartBody(messageContent == null ? null : String.valueOf(messageContent), null);
@@ -288,7 +297,7 @@ public class EmailReceiver {
         return String.format("%s/%s/%s", dateTime == null ? "" : dateTime.getTime(), fromAddress, subject == null ? "" : subject);
     }
 
-    private MultipartBody getMultipartBody(String subjectEmail, Multipart mp) throws IOException, MessagingException {
+    private MultipartBody getMultipartBody(String subjectEmail, Multipart mp, boolean unpack) throws IOException, MessagingException {
         String body = "";
         Map<String, byte[]> attachments = new HashMap<>();
         for (int i = 0; i < mp.getCount(); i++) {
@@ -310,7 +319,7 @@ public class EmailReceiver {
                     }
                     fos.close();
 
-                    attachments.put(fileName, BaseUtils.mergeFileAndExtension(IOUtils.getFileBytes(f), fileExtension.getBytes()));
+                    attachments.putAll(unpack(IOUtils.getFileBytes(f), fileName, fileExtension, unpack));
 
                 } catch (IOException ioe) {
                     ServerLoggers.mailLogger.error("Error reading attachment '" + fileName + "' from email '" + subjectEmail + "'");
@@ -326,9 +335,9 @@ public class EmailReceiver {
                     String fileName = decodeFileName(bp.getFileName());
                     String[] fileNameAndExt = fileName.split("\\.");
                     String fileExtension = fileNameAndExt.length > 1 ? fileNameAndExt[fileNameAndExt.length - 1] : "";
-                    attachments.put(fileName, BaseUtils.mergeFileAndExtension(byteArray, fileExtension.getBytes()));
+                    attachments.putAll(unpack(byteArray, fileName, fileExtension, unpack));
                 } else if (content instanceof MimeMultipart) {
-                    body = getMultipartBody(subjectEmail, (Multipart) content).message;
+                    body = getMultipartBody(subjectEmail, (Multipart) content, unpack).message;
                 } else
                     body = String.valueOf(content);
             }
@@ -336,17 +345,17 @@ public class EmailReceiver {
         return new MultipartBody(body, attachments);
     }
 
-    private MultipartBody getMultipartBody64(String subjectEmail, BASE64DecoderStream base64InputStream, String filename) throws IOException, MessagingException {
+    private MultipartBody getMultipartBody64(String subjectEmail, BASE64DecoderStream base64InputStream, String fileName, boolean unpack) throws IOException, MessagingException {
         byte[] byteArray = IOUtils.readBytesFromStream(base64InputStream);
         Map<String, byte[]> attachments = new HashMap<>();
-        String[] fileNameAndExt = filename.split("\\.");
+        String[] fileNameAndExt = fileName.split("\\.");
         String fileExtension = fileNameAndExt.length > 1 ? fileNameAndExt[fileNameAndExt.length - 1] : "";
-        attachments.put(filename, BaseUtils.mergeFileAndExtension(byteArray, fileExtension.getBytes()));
+        attachments.putAll(unpack(byteArray, fileName, fileExtension, unpack));
         return new MultipartBody(subjectEmail, attachments);
     }
 
     private String decodeFileName(String value) throws UnsupportedEncodingException {
-        return value == null ? "attachment.txt" : MimeUtility.decodeText(value);
+        return value == null ? "attachment.txt" : MimeUtility.decodeText(value).trim();
     }
 
     private class MultipartBody {
@@ -357,6 +366,157 @@ public class EmailReceiver {
             this.message = message;
             this.attachments = attachments;
         }
+    }
+
+    private Map<String, byte[]> unpack(byte[] byteArray, String fileName, String fileExtension, boolean unpack) {
+        Map<String, byte[]> attachments = new HashMap<>();
+        if (unpack) {
+            if (fileName.toLowerCase().endsWith(".rar")) {
+                attachments.putAll(unpackRARFile(byteArray));
+            } else if (fileName.toLowerCase().endsWith(".zip")) {
+                attachments.putAll(unpackZIPFile(byteArray));
+            }
+        }
+        if (attachments.isEmpty())
+            attachments.put(fileName, BaseUtils.mergeFileAndExtension(byteArray, fileExtension.getBytes()));
+        return attachments;
+    }
+
+    private Map<String, byte[]> unpackRARFile(byte[] fileBytes) {
+
+        Map<String, byte[]> result = new HashMap<>();
+        File inputFile = null;
+        File outputFile = null;
+        try {
+            inputFile = File.createTempFile("email", ".rar");
+            try (FileOutputStream stream = new FileOutputStream(inputFile)) {
+                stream.write(fileBytes);
+            }
+
+            List<File> dirList = new ArrayList<>();
+            File outputDirectory = new File(inputFile.getParent() + "/" + getFileNameWithoutExt(inputFile));
+            if(inputFile.exists() && (outputDirectory.exists() || outputDirectory.mkdir())) {
+                dirList.add(outputDirectory);
+                Archive a = new Archive(new FileVolumeManager(inputFile));
+
+                FileHeader fh = a.nextFileHeader();
+
+                while (fh != null) {
+                    String fileName = (fh.isUnicode() ? fh.getFileNameW() : fh.getFileNameString());
+                    outputFile = new File(outputDirectory.getPath() + "/" + fileName);
+                    File dir = outputFile.getParentFile();
+                    dir.mkdirs();
+                    if(!dirList.contains(dir))
+                        dirList.add(dir);
+                    if(!outputFile.isDirectory()) {
+                        try (FileOutputStream os = new FileOutputStream(outputFile)) {
+                            a.extractFile(fh, os);
+                        }
+                        result.put(getFileName(result, fileName), BaseUtils.mergeFileAndExtension(IOUtils.getFileBytes(outputFile), BaseUtils.getFileExtension(outputFile).getBytes()));
+                        if(!outputFile.delete())
+                            outputFile.deleteOnExit();
+                    }
+                    fh = a.nextFileHeader();
+                }
+                a.close();
+            }
+
+            for(File dir : dirList)
+                if(dir != null && dir.exists() && !dir.delete())
+                    dir.deleteOnExit();
+
+        } catch (RarException | IOException e) {
+            throw Throwables.propagate(e);
+        } finally {
+            if(inputFile != null && !inputFile.delete())
+                inputFile.deleteOnExit();
+            if(outputFile != null && !outputFile.delete())
+                outputFile.deleteOnExit();
+        }
+        return result;
+    }
+
+    private Map<String, byte[]> unpackZIPFile(byte[] fileBytes) {
+
+        Map<String, byte[]> result = new HashMap<>();
+        File inputFile = null;
+        File outputFile = null;
+        try {
+            inputFile = File.createTempFile("email", ".zip");
+            try (FileOutputStream stream = new FileOutputStream(inputFile)) {
+                stream.write(fileBytes);
+            }
+
+            byte[] buffer = new byte[1024];
+            Set<File> dirList = new HashSet<>();
+            File outputDirectory = new File(inputFile.getParent() + "/" + getFileNameWithoutExt(inputFile));
+            if(inputFile.exists() && (outputDirectory.exists() || outputDirectory.mkdir())) {
+                dirList.add(outputDirectory);
+                ZipInputStream inputStream = new ZipInputStream(new FileInputStream(inputFile), Charset.forName("cp866"));
+
+                ZipEntry ze = inputStream.getNextEntry();
+                while (ze != null) {
+                    if(ze.isDirectory()) {
+                        File dir = new File(outputDirectory.getPath() + "/" + ze.getName());
+                        dir.mkdirs();
+                        dirList.add(dir);
+                    }
+                    else {
+                        String fileName = ze.getName();
+                        outputFile = new File(outputDirectory.getPath() + "/" + fileName);
+                        FileOutputStream outputStream = new FileOutputStream(outputFile);
+                        int len;
+                        while ((len = inputStream.read(buffer)) > 0) {
+                            outputStream.write(buffer, 0, len);
+                        }
+                        outputStream.close();
+                        result.put(getFileName(result, fileName), BaseUtils.mergeFileAndExtension(IOUtils.getFileBytes(outputFile), BaseUtils.getFileExtension(outputFile).getBytes()));
+                        if(!outputFile.delete())
+                            outputFile.deleteOnExit();
+                    }
+                    ze = inputStream.getNextEntry();
+                }
+                inputStream.closeEntry();
+                inputStream.close();
+            }
+
+            for(File dir : dirList)
+                if(dir != null && dir.exists() && !dir.delete())
+                    dir.deleteOnExit();
+
+        } catch (IOException e) {
+            throw Throwables.propagate(e);
+        } finally {
+            if(inputFile != null && !inputFile.delete())
+                inputFile.deleteOnExit();
+            if(outputFile != null && !outputFile.delete())
+                outputFile.deleteOnExit();
+        }
+        return result;
+    }
+
+    private String getFileName(Map<String, byte[]> files, String fileName) {
+        if (files.containsKey(fileName)) {
+            String name = getFileNameWithoutExt(fileName);
+            String extension = BaseUtils.getFileExtension(fileName);
+            int count = 1;
+            while (files.containsKey(name + "_" + count + (extension.isEmpty() ? "" : ("." + extension)))) {
+                count++;
+            }
+            fileName = name + "_" + count + (extension.isEmpty() ? "" : ("." + extension));
+        }
+        return fileName;
+    }
+
+    private String getFileNameWithoutExt(File file) {
+        String name = file.getName();
+        int index = name.lastIndexOf(".");
+        return (index == -1) ? name : name.substring(0, index);
+    }
+
+    private String getFileNameWithoutExt(String name) {
+        int index = name.lastIndexOf(".");
+        return (index == -1) ? name : name.substring(0, index);
     }
 }
 
