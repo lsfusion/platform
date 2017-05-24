@@ -339,7 +339,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         
         if(formExecEnv != null) { // пока дублирующие механизмы, в будущем надо рефакторить
             // formInstance == null так как в события не всегда formEnv проталкивается
-            ServerLoggers.assertLog(formInstance == null || formExecEnv == formInstance, "FORMS SHOULD BE EQUAL");
+            ServerLoggers.assertLog(formInstance == null || formExecEnv == formInstance, "FORMS SHOULD BE EQUAL : ENV - " + formExecEnv + ", FORM - " + formInstance);
             return formExecEnv;
         }
         
@@ -481,7 +481,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
     }
 
     public ExecutionContext<P> override(ExecutionEnvironment newEnv, ExecutionStack stack) {
-        return new ExecutionContext<>(keys, pushedAddObject, newEnv, executorService, form, stack);
+        return new ExecutionContext<>(keys, pushedAddObject, newEnv, executorService, new FormEnvironment<P>(null, null, newEnv.getFormInstance()), stack);
     }
 
     public ExecutionContext<P> override(ExecutionStack stack) {
