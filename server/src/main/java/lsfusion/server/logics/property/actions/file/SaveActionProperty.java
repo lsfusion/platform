@@ -33,7 +33,7 @@ public class SaveActionProperty extends FileActionProperty {
             Object files = filesObject.getValue();
             Type dataClass = ((DataObject) filesObject).getType();
 
-            String fileName = context.getKeyCount() >= 2 ? trim((String) context.getKeys().getValue(1).getValue()) : null;
+            String fileName = context.getKeyCount() >= 2 ? trim((String) context.getKeys().getValue(1).getValue()) : "new file";
 
             if (dataClass instanceof FileClass) {
                 for (byte[] file : ((FileClass) dataClass).getFiles(files)) {
