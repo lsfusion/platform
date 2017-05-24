@@ -82,7 +82,7 @@ public class StopProfilerActionProperty extends ScriptingActionProperty {
             DataObject baseProfileObject = profileObject.getDataObject("top");
             basePOStaticCaption = ((String) LM.baseLM.staticCaption.read(context, baseProfileObject)).trim();
             
-            writeProfilerBatch = findAction("writeProfilerBatch");
+            writeProfilerBatch = findAction("writeProfilerBatch[]");
 
             updateProfileData(context);
         } catch (ScriptingErrorLog.SemanticErrorException e) {
