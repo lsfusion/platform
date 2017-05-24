@@ -2699,7 +2699,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     
     private final static ThreadLocal<Boolean> wasSessionTableAssertion = new ThreadLocal<>();
     public static void checkSessionTableAssertion(Modifier modifier) {
-        if(wasSessionTableAssertion.get()) {
+        if(wasSessionTableAssertion.get() != null) {
             outModifier("ASSERT", modifier);            
             wasSessionTableAssertion.remove();
         }
