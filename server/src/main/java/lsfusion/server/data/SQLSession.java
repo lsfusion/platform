@@ -30,6 +30,8 @@ import lsfusion.server.form.navigator.SQLSessionUserProvider;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
+import lsfusion.server.session.Modifier;
+import lsfusion.server.session.SessionModifier;
 import lsfusion.server.stack.ExecutionStackAspect;
 import lsfusion.server.stack.ParamMessage;
 import lsfusion.server.stack.StackMessage;
@@ -2689,7 +2691,22 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     
     public void checkSessionTable(SessionTable table) {
         WeakReference<TableOwner> sessionTable = sessionTablesMap.get(table.getName());
-        ServerLoggers.assertLog(sessionTable != null && sessionTable.get() != null, "USED RETURNED TABLE : " + table.getName() + ", DEBUG INFO : " + sessionDebugInfo.get(table.getName()));
+        if(!(sessionTable != null && sessionTable.get() != null)) {
+            ServerLoggers.assertLog(false, "USED RETURNED TABLE : " + table.getName() + ", DEBUG INFO : " + sessionDebugInfo.get(table.getName()));
+            wasSessionTableAssertion.set(true);
+        }
+    }
+    
+    private final static ThreadLocal<Boolean> wasSessionTableAssertion = new ThreadLocal<>();
+    public static void checkSessionTableAssertion(Modifier modifier) {
+        if(wasSessionTableAssertion.get()) {
+            outModifier("ASSERT", modifier);            
+            wasSessionTableAssertion.remove();
+        }
+    }
+    
+    public static void outModifier(String info, Modifier modifier) {
+        ServerLoggers.sqlHandLogger.info(info + (modifier instanceof SessionModifier ? ((SessionModifier) modifier).out() : "\nDEFAULT") + "\npropertychanges : " + modifier.getPropertyChanges());
     }
 
     private PreparedStatement getStatement(SQLCommand command, ImMap<String, ParseInterface> paramObjects, final ExConnection connection, SQLSyntax syntax, DynamicExecEnvSnapshot snapEnv, Result<ReturnStatement> returnStatement, Result<Integer> length) throws SQLException {

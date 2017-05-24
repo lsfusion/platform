@@ -1613,6 +1613,10 @@ public class BaseUtils {
     public static <I> I immutableCast(Object object) {
         return (I) object;
     }
+    
+    public static String tab(String tab) {
+        return tab.replace("\n", "\n\t");
+    }
 
     public static <I> I single(Collection<I> col) {
         assert col.size() == 1;

@@ -885,7 +885,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         ImOrderMap<T, ValueClass> keyClasses = getOrderTableInterfaceClasses(ClassType.storedPolicy);
         if (table != null) {
             mapTable = table.getMapKeysTable(keyClasses);
-            assert mapTable!=null;
+            assert mapTable!=null; // таблица не подходящих классов явно задана
         }
 
         if (mapTable == null) {

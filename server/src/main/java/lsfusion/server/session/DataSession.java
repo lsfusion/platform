@@ -116,6 +116,10 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
     private class DataModifier extends SessionModifier {
 
+        public DataModifier() {
+            super("data");
+        }
+
         public SQLSession getSQL() {
             return sql;
         }
@@ -139,6 +143,16 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             if(!preread.isEmpty())
                 return new ModifyChange<>(property.getNoChange(), preread, false);
             return null;
+        }
+
+        @Override
+        public String out() {
+            return super.out() + "\nchanged : " + getChangedProps().mapValues(new GetValue<PropertyChange, CalcProperty>() {
+                @Override
+                public PropertyChange getMapValue(CalcProperty value) {
+                    return getPropertyChange(value);
+                }
+            });
         }
 
         public ImSet<CalcProperty> calculateProperties() {
@@ -255,7 +269,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         sql.startTransaction(DBManager.getCurrentTIL(), getOwner(), attemptCountMap, deadLockPriority, applyStartTime);
         isInTransaction = true;
         if(applyFilter == ApplyFilter.ONLY_DATA)
-            onlyDataModifier = new OverrideSessionModifier(new IncrementChangeProps(BL.getDataChangeEvents()), applyModifier);
+            onlyDataModifier = new OverrideSessionModifier("onlydata", new IncrementChangeProps(BL.getDataChangeEvents()), applyModifier);
     }
     
     private void cleanOnlyDataModifier() throws SQLException {
@@ -1012,7 +1026,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
     // потом можно было бы оптимизировать создание OverrideSessionModifier'а (в рамках getPropertyChanges) и тогда можно создавать modifier'ы непосредственно при запуске
     private boolean inSessionEvent;
-    private OverrideSessionModifier sessionEventModifier = new OverrideSessionModifier(new OverrideIncrementProps(sessionEventChangedOld, sessionEventNotChangedOld), false, dataModifier);
+    private OverrideSessionModifier sessionEventModifier = new OverrideSessionModifier("sessionEvent", new OverrideIncrementProps(sessionEventChangedOld, sessionEventNotChangedOld), false, dataModifier);
 
     public boolean needSessionEventMaterialize(SessionTableUsage tableUsage, ImSet<? extends CalcProperty> changes) {
         if(tableUsage == null && isInSessionEvent()) { // если таблица не материализована, и мы в сессионном событии, то есть может измениться sessionEventModifier и drop'уть таблицы, которые используются в изменении
@@ -1185,7 +1199,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                     changes.add(sessionCalcProperty, fullChange);
             }
         
-        resolveModifier = new OverrideSessionModifier(changes, true, dataModifier);
+        resolveModifier = new OverrideSessionModifier("resolve", changes, true, dataModifier);
         try {
             action.execute(this, stack);
         } finally {
@@ -1510,6 +1524,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     private class EmptyModifier extends SessionModifier {
 
         private EmptyModifier() {
+            super("empty");
         }
 
         @Override
@@ -1578,7 +1593,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         IncrementTableProps increment = new IncrementTableProps(property, change);
         IncrementChangeProps noUpdate = new IncrementChangeProps(BL.getDataChangeEvents());
 
-        OverrideSessionModifier modifier = new OverrideSessionModifier(new OverrideIncrementProps(noUpdate, increment), emptyModifier);
+        OverrideSessionModifier modifier = new OverrideSessionModifier("assd", new OverrideIncrementProps(noUpdate, increment), emptyModifier);
 
         ImOrderSet<CalcProperty> dependProps = BL.getSingleApplyDependFrom(property, this); // !!! важно в лексикографическом порядке должно быть
 
@@ -1730,7 +1745,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
     // хранит агрегированные изменения для уменьшения сложности (в транзакции очищает ветки от single applied)
     private IncrementTableProps apply = new IncrementTableProps();
-    private OverrideSessionModifier applyModifier = new OverrideSessionModifier(apply, dataModifier);
+    private OverrideSessionModifier applyModifier = new OverrideSessionModifier("apply", apply, dataModifier);
     private OverrideSessionModifier onlyDataModifier = null;
 
     @Override
@@ -2640,7 +2655,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                     increment.add(splitProp, SessionTableUsage.getChange(splitChangesTable, splitProp.mapTable.mapKeys, splitProp));
             }
     
-            OverrideSessionModifier modifier = new OverrideSessionModifier(increment, emptyModifier);
+            OverrideSessionModifier modifier = new OverrideSessionModifier(debugInfo + "-splrs", increment, emptyModifier);
             try {
                 return readSave(debugInfo + "-rs", table, properties, modifier);
             } finally {

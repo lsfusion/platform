@@ -194,7 +194,8 @@ public class OverrideSessionModifier extends SessionModifier {
         modifier.unregisterView(this);
     }
 
-    public OverrideSessionModifier(IncrementProps override, FunctionSet<CalcProperty> forceDisableHintIncrement, FunctionSet<CalcProperty> forceDisableNoUpdate, FunctionSet<CalcProperty> forceHintIncrement, FunctionSet<CalcProperty> forceNoUpdate, SessionModifier modifier) { // нужно clean вызывать после такого modifier'а
+    public OverrideSessionModifier(String debugInfo, IncrementProps override, FunctionSet<CalcProperty> forceDisableHintIncrement, FunctionSet<CalcProperty> forceDisableNoUpdate, FunctionSet<CalcProperty> forceHintIncrement, FunctionSet<CalcProperty> forceNoUpdate, SessionModifier modifier) { // нужно clean вызывать после такого modifier'а
+        super(debugInfo);
         this.override = override;
         this.modifier = modifier;
         this.forceDisableHintIncrement = forceDisableHintIncrement;
@@ -209,19 +210,19 @@ public class OverrideSessionModifier extends SessionModifier {
         modifier.registerView(this);
     }
 
-    public OverrideSessionModifier(IncrementProps override, FunctionSet<CalcProperty> forceDisableHintIncrement, SessionModifier modifier) { // нужно clean вызывать после такого modifier'а
-        this(override, forceDisableHintIncrement, FullFunctionSet.<CalcProperty>instance(), SetFact.<CalcProperty>EMPTY(), SetFact.<CalcProperty>EMPTY(), modifier);
+    public OverrideSessionModifier(String debugInfo, IncrementProps override, FunctionSet<CalcProperty> forceDisableHintIncrement, SessionModifier modifier) { // нужно clean вызывать после такого modifier'а
+        this(debugInfo, override, forceDisableHintIncrement, FullFunctionSet.<CalcProperty>instance(), SetFact.<CalcProperty>EMPTY(), SetFact.<CalcProperty>EMPTY(), modifier);
     }
 
-    public OverrideSessionModifier(IncrementProps override, SessionModifier modifier) { // нужно clean вызывать после такого modifier'а
-        this(override, Settings.get().isNoApplyIncrement(), modifier);
+    public OverrideSessionModifier(String debugInfo, IncrementProps override, SessionModifier modifier) { // нужно clean вызывать после такого modifier'а
+        this(debugInfo, override, Settings.get().isNoApplyIncrement(), modifier);
 
         limitHintIncrementComplexity = Settings.get().getLimitApplyHintIncrementComplexity();
         limitHintIncrementStat = Settings.get().getLimitApplyHintIncrementStat();
     }
 
-    public OverrideSessionModifier(IncrementProps override, boolean disableHintIncrement, SessionModifier modifier) { // нужно clean вызывать после такого modifier'а
-        this(override, disableHintIncrement ? FullFunctionSet.<CalcProperty>instance() : SetFact.<CalcProperty>EMPTY(), modifier);
+    public OverrideSessionModifier(String debugInfo, IncrementProps override, boolean disableHintIncrement, SessionModifier modifier) { // нужно clean вызывать после такого modifier'а
+        this(debugInfo, override, disableHintIncrement ? FullFunctionSet.<CalcProperty>instance() : SetFact.<CalcProperty>EMPTY(), modifier);
     }
 
     @Override
@@ -250,5 +251,10 @@ public class OverrideSessionModifier extends SessionModifier {
 
     public QueryEnvironment getQueryEnv() {
         return modifier.getQueryEnv();
+    }
+
+    @Override
+    public String out() {
+        return super.out() + "\noverride : " + BaseUtils.tab(override.out()) + "\nmodifier : " + modifier.out();
     }
 }

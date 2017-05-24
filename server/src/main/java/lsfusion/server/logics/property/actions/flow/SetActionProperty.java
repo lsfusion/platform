@@ -5,6 +5,7 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.server.caches.IdentityInstanceLazy;
 import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.data.SQLSession;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.where.Where;
@@ -97,10 +98,11 @@ public class SetActionProperty<P extends PropertyInterface, W extends PropertyIn
             if(!exprWhere.isFalse()) {
                 Expr fromExpr = writeFrom.mapExpr(PropertyChange.simplifyExprs(innerExprs, exprWhere), context.getModifier());
                 ImMap<P, DataObject> writeInnerValues = DataObject.onlyDataObjects(writeTo.mapping.innerJoin(innerValues));
-                if(writeInnerValues!=null)
+                if(writeInnerValues!=null) {
                     context.getEnv().change(writeTo.property, new PropertyChange<>(writeInnerValues, writeTo.mapping.rightJoin(innerKeys), // нет FormEnvironment так как заведомо не action
                             fromExpr, exprWhere));
-                else
+                    SQLSession.checkSessionTableAssertion(context.getModifier());                    
+                } else
                     proceedNullException();
             }
 

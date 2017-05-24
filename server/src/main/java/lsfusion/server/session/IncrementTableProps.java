@@ -1,5 +1,6 @@
 package lsfusion.server.session;
 
+import lsfusion.base.BaseUtils;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.SQLSession;
@@ -69,5 +70,10 @@ public class IncrementTableProps extends IncrementProps {
         if(table != null)
             return table.getCount();
         return 0;
+    }
+
+    @Override
+    public String out() {
+        return "\nincrementprops : " + BaseUtils.tab(tableProps.out());
     }
 }

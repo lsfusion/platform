@@ -18,6 +18,10 @@ public class TableProps {
 
     private Map<CalcProperty, SinglePropertyTableUsage<PropertyInterface>> tables = MapFact.mAddRemoveMap(); // mutable с remove поведение
 
+    public String out() {
+        return "\ntables : " + tables.toString();
+    }
+    
     public String toString() {
         return tables.toString();
     }

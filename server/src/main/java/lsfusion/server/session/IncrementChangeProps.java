@@ -61,4 +61,9 @@ public class IncrementChangeProps extends IncrementProps {
     public int getMaxCount(CalcProperty property) {
         return 0;
     }
+
+    @Override
+    public String out() {
+        return "\nchange : " + changes;
+    }
 }

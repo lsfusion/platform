@@ -39,4 +39,9 @@ public class OverrideIncrementProps extends IncrementProps {
     public int getMaxCount(CalcProperty property) {
         return BaseUtils.max(override.getMaxCount(property), increment.getMaxCount(property));
     }
+
+    @Override
+    public String out() {
+        return "\noverride : " + BaseUtils.tab(override.out()) + "\nincrement : " + BaseUtils.tab(increment.out());
+    }
 }

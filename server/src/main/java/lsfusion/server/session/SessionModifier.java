@@ -8,6 +8,7 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
+import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
 import lsfusion.server.caches.ManualLazy;
 import lsfusion.server.caches.ValuesContext;
@@ -30,6 +31,12 @@ import java.util.Set;
 
 // поддерживает hint'ы, есть информация о сессии
 public abstract class SessionModifier implements Modifier {
+
+    private final String debugInfo;
+    
+    public SessionModifier(String debugInfo) {
+        this.debugInfo = debugInfo;
+    }
 
     private ConcurrentIdentityWeakHashSet<OverrideSessionModifier> views = new ConcurrentIdentityWeakHashSet<>();
     public void registerView(OverrideSessionModifier modifier) { // protected
@@ -270,6 +277,8 @@ public abstract class SessionModifier implements Modifier {
             final SinglePropertyTableUsage changeTable = property.readChangeTable("htincr", getSQL(), this, getBaseClass(), getQueryEnv());
             increment.add(property, changeTable);
         } catch(Exception e) {
+            if(e.getMessage().contains("does not exist")) // выводим, что за modifier
+                SQLSession.outModifier("DOES NOT EXIST", this);
             throw ExceptionUtils.propagate(e, SQLException.class, SQLHandledException.class);
         } finally {
             readProperty = null;
@@ -381,5 +390,14 @@ public abstract class SessionModifier implements Modifier {
     
     public void cleanViews() { // нужен для того чтобы очистить views раньше и не синхронизировать тогда clean и eventChange
         assert views.isEmpty();
+    }
+
+    @Override
+    public String toString() {
+        return debugInfo;
+    }
+    
+    public String out() {
+        return '\n' + debugInfo + "\nincrement : " + BaseUtils.tab(increment.out());
     }
 }

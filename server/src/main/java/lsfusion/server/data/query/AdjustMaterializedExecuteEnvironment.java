@@ -79,7 +79,7 @@ public class AdjustMaterializedExecuteEnvironment extends DynamicExecuteEnvironm
     private boolean assertNoRecheckBefore() {
         Step previous = current.previous;
         while (previous != null) {
-            ServerLoggers.assertLog(!previous.recheck, "NO RECHECK");
+            ServerLoggers.assertLog(!previous.recheck, "NO RECHECK"); // из-за race condition'ов в createNavigator -> applyFormDefinedUserPolicy
             previous = previous.previous;
         }
         return true;
