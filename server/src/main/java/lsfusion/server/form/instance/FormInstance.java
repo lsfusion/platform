@@ -2368,7 +2368,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
     private SessionModifier createModifier() {
         FunctionSet<CalcProperty> noHints = getNoHints();
-        return new OverrideSessionModifier(environmentIncrement, noHints, noHints, entity.getHintsIncrementTable(), entity.getHintsNoUpdate(), session.getModifier());
+        return new OverrideSessionModifier(toString(), environmentIncrement, noHints, noHints, entity.getHintsIncrementTable(), entity.getHintsNoUpdate(), session.getModifier());
     }
 
     public Map<SessionModifier, SessionModifier> modifiers = new HashMap<>();
