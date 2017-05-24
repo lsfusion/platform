@@ -1,5 +1,6 @@
 package lsfusion.server.logics.property.cases;
 
+import com.google.common.base.Objects;
 import lsfusion.server.classes.sets.ResolveClassSet;
 import lsfusion.server.logics.property.ActionPropertyMapImplement;
 import lsfusion.server.logics.property.CalcPropertyMapImplement;
@@ -15,5 +16,16 @@ public class ExplicitActionCase<P extends PropertyInterface> extends AbstractAct
 
     public ExplicitActionCase(CalcPropertyMapImplement<?, P> where, ActionPropertyMapImplement<?, P> implement, List<ResolveClassSet> signature) {
         super(where, implement, signature);
+    }
+
+    // см. ExplicitCalcCase
+    @Override
+    public boolean equals(Object o) {
+        return this == o || o instanceof AbstractCase && where.equalsMap(((AbstractCase) o).where) && implement.equalsMap(((AbstractCase) o).implement) && signature.equals(((AbstractCase) o).signature);
+    }
+
+    @Override
+    public int hashCode() {
+        return 31 * (31 * where.hashMap() + implement.hashMap()) + signature.hashCode();
     }
 }

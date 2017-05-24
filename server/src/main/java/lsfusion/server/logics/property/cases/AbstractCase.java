@@ -105,7 +105,7 @@ public abstract class AbstractCase<P extends PropertyInterface, W extends CalcPr
             }
         };
 
-        ImOrderSet<A> orderSet = list.toOrderExclSet();
+        ImOrderSet<A> orderSet = list.toOrderSet(); // может повторяться implementation
         ImSet<A> set = orderSet.getSet();
 
         // priorityComparator транзитивный (но на 0 не обязательно, то есть не consistent with equals)
