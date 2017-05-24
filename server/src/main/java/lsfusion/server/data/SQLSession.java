@@ -3042,6 +3042,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         return score;
     }
 
+    public boolean isRestarting;
+
     private boolean restartConnection(double score, Map<ConnectionPool, Connection> notUsedConnections) throws SQLException, SQLHandledException {
         if(isClosed())
             return false;
@@ -3056,6 +3058,9 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         try {
             boolean locked = tryLockWrite(owner);
             try {
+                if(locked)
+                    isRestarting = true;
+                    
                 Result<String> description = new Result<>();
                 if(!locked || isClosed() || privateConnection == null || score > getScore(description, true)) { // double check - score упал
                     notUsedConnections.put(connectionPool, newConnection); // если не использовали возвращаем
@@ -3101,8 +3106,10 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
                 int newBackend = ((PGConnection)newConnection).getBackendPID();
                 ServerLoggers.sqlConnectionLogger.info("RESTART CONNECTION : Time : " + (System.currentTimeMillis() - timeRestartStarted) + ", New : " + newBackend + ", " + description.result);
             } finally {
-                if(locked)
+                if(locked) {
+                    isRestarting = false;
                     unlockWrite(true);
+                }
             }
         } finally {
             if(!noError)

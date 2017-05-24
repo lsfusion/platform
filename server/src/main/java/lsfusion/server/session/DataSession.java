@@ -2781,7 +2781,8 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     // assert closeLock и noOwnersLock
     private void flushPendingCleaners() throws SQLException { // по идее lock-free (кроме когда не осталось owner'ов( поэтому deadlock'ов быть не должно
         // тут нужно проверять что не только  транзакция, а еще то что транзакция в этом потоке (хотя нельзя так делать, потому как deadlock'и могут быть с closedLock)
-        ServerLoggers.assertLog(createdInTransaction || !sql.isWriteLockedByCurrentThread(), "SHOULD NOT BE WRITE LOCKED"); // соответственно не может быть deadLock с flush, так как в этом потоке максимум lockRead
+        ServerLoggers.assertLog(createdInTransaction || sql.isRestarting || !sql.isWriteLockedByCurrentThread(), "SHOULD NOT BE WRITE LOCKED"); // соответственно не может быть deadLock с flush, так как в этом потоке максимум lockRead
+        // если isRestarting и writeLocked ничего страшного, так как lockWrite взял restart, а он не берет noOwnersLock ни одной "асинхронной" сессии (только своей синхронной в getLogInfo, а значит deadLock'а по этому lock'у быть не может)  
         while(true) {
             List<Cleaner> snapPendingCleaners;
             synchronized (pendingCleaners) {
