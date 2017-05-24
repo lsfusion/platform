@@ -52,7 +52,7 @@ public class EvalActionProperty<P extends PropertyInterface> extends SystemExpli
         try {
             ScriptingLogicsModule module = EvalUtils.evaluate(context.getBL(), script);
 
-            String runName = module.getName() + ".run";
+            String runName = module.getName() + ".run[]";
             LAP<?> runAction = module.findAction(runName);
             if (runAction != null) {
                 runAction.execute(context);

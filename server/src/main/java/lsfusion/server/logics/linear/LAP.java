@@ -1,5 +1,6 @@
 package lsfusion.server.logics.linear;
 
+import lsfusion.base.BaseUtils;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
@@ -43,6 +44,10 @@ public class LAP<T extends PropertyInterface> extends LP<T, ActionProperty<T>> {
 
     public FlowResult execute(ExecutionContext<?> context, ObjectValue... objects) throws SQLException, SQLHandledException {
         return property.execute(context.override(getMapValues(objects), (FormEnvironment<T>) null));
+    }
+
+    public <X extends PropertyInterface> FlowResult execute(ExecutionContext<X> context) throws SQLException, SQLHandledException {
+        return property.execute(BaseUtils.<ExecutionContext<T>>immutableCast(context.override(MapFact.<X, ObjectValue>EMPTY())));
     }
 
     public <P extends PropertyInterface> void setEventAction(LogicsModule lm, LCP<P> lp, Integer... mapping) {
