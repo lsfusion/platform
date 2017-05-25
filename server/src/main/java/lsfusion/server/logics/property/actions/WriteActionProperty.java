@@ -204,7 +204,7 @@ public class WriteActionProperty extends SystemExplicitActionProperty {
                     session.disconnect();
             }
         } else {
-            throw Throwables.propagate(new RuntimeException("Incorrect sftp url. Please use format: sftp://username:password@host:port/path_to_file;charset"));
+            throw Throwables.propagate(new RuntimeException("Incorrect sftp url. Please use format: sftp://username:password;charset@host:port/path_to_file"));
         }
     }
 }
