@@ -899,11 +899,11 @@ formEventsList
 
 formEventDeclaration returns [ActionPropertyObjectEntity action, Object type]
 @init {
-    boolean before = false;
+    Boolean before = null;
 }
 	:	'ON'
-		(	'OK' 	 { $type = FormEventType.OK; }
-		|	'APPLY' ('BEFORE' { before = true; } | 'AFTER' { before = false; }) { $type = before ? FormEventType.BEFOREAPPLY : FormEventType.AFTERAPPLY; }
+		(	'OK' ('BEFORE' { before = true; } | 'AFTER' { before = false; })? { $type = before == null ? FormEventType.OK : (before ? FormEventType.BEFOREOK : FormEventType.AFTEROK); }
+		|	'APPLY' ('BEFORE' { before = true; } | 'AFTER' { before = false; })? { $type = before == null ? FormEventType.APPLY : (before ? FormEventType.BEFOREAPPLY : FormEventType.AFTERAPPLY); }
 		|	'CLOSE'	 { $type = FormEventType.CLOSE; }
 		|	'INIT'	 { $type = FormEventType.INIT; }
 		|	'CANCEL' { $type = FormEventType.CANCEL; }

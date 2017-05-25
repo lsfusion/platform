@@ -1382,7 +1382,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
         fireOnBeforeApply(stack);
 
-        boolean succeeded = session.apply(BL, this, stack, interaction, applyActions, keepProperties);
+        boolean succeeded = session.apply(BL, this, stack, interaction, applyActions.mergeOrder(getEventsOnApply()), keepProperties);
 
         if (!succeeded)
             return false;
@@ -2302,15 +2302,28 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         fireEvent(FormEventType.AFTERAPPLY, stack);
     }
 
+    public void fireOnBeforeOk(ExecutionStack stack) throws SQLException, SQLHandledException {
+        fireEvent(FormEventType.BEFOREOK, stack);
+    }
+
+    public void fireOnAfterOk(ExecutionStack stack) throws SQLException, SQLHandledException {
+        fireEvent(FormEventType.AFTEROK, stack);
+        formResult = FormCloseType.OK;
+    }
+    
+    public void fireOnOk(ExecutionStack stack) throws SQLException, SQLHandledException {
+        fireEvent(FormEventType.OK, stack);
+    }
+
     public void fireOnCancel(ExecutionStack stack) throws SQLException, SQLHandledException {
         fireEvent(FormEventType.CANCEL, stack);
     }
 
-    public void fireOnOk() throws SQLException, SQLHandledException {
-        formResult = FormCloseType.OK;
-    }
     public ImOrderSet<ActionPropertyValueImplement> getEventsOnOk() throws SQLException, SQLHandledException {
         return getEvents(FormEventType.OK);
+    }
+    public ImOrderSet<ActionPropertyValueImplement> getEventsOnApply() throws SQLException, SQLHandledException {
+        return getEvents(FormEventType.APPLY);
     }
 
     public void fireOnClose(ExecutionStack stack) throws SQLException, SQLHandledException {
@@ -2440,11 +2453,17 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
             }
         }
 
-        fireOnOk();
+        fireOnBeforeOk(context.stack);
 
-        if (manageSession && !apply(BL, context, getEventsOnOk())) {
-            return;
-        }
+        if (manageSession) {
+            if (!apply(BL, context, getEventsOnOk())) {
+                return;
+            }
+        } else
+            fireOnOk(context.stack);
+
+        fireOnAfterOk(context.stack);
+
         formHide(context);
     }
 
