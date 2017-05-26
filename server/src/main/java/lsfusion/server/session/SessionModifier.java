@@ -277,7 +277,8 @@ public abstract class SessionModifier implements Modifier {
             final SinglePropertyTableUsage changeTable = property.readChangeTable("htincr", getSQL(), this, getBaseClass(), getQueryEnv());
             increment.add(property, changeTable);
         } catch(Exception e) {
-            if(e.getMessage().contains("does not exist")) // выводим, что за modifier
+            String message = e.getMessage();
+            if(message != null && message.contains("does not exist")) // выводим, что за modifier
                 SQLSession.outModifier("DOES NOT EXIST", this);
             throw ExceptionUtils.propagate(e, SQLException.class, SQLHandledException.class);
         } finally {
