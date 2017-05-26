@@ -457,6 +457,7 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
                 if(proceeded==0)
                     return this;
 
+                changed.set(true);
                 return new SessionTable(name, keys, properties, classes, propertyClasses, count - proceeded).
                         updateStatistics(session, count, 0, owner, opOwner).checkClasses(session, null, updateClasses, opOwner);
             default:
