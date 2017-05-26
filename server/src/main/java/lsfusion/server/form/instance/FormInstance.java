@@ -335,7 +335,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         } else {
             int prevOwners = updateSessionOwner(true, stack);
      
-            boolean heurManageSession = heuristicManageSession(prevOwners) && !heurReadOnly; 
+            boolean heurManageSession = heuristicManageSession(prevOwners) && (!heurReadOnly || session.isStoredDataChanged()); 
             if(manageSession == ManageSessionType.AUTO) {
                 if(heurManageSession) { // если нет owner'ов
                     assert !heurReadOnly;
