@@ -1,5 +1,6 @@
 package lsfusion.client;
 
+import lsfusion.base.BaseUtils;
 import lsfusion.base.NavigatorInfo;
 import lsfusion.base.SystemUtils;
 import lsfusion.client.remote.proxy.RemoteBusinessLogicProxy;
@@ -220,10 +221,9 @@ public final class LoginAction {
 
     public boolean needShutdown() {
         try {
+            Integer oldApiVersion = BaseUtils.getApiVersion();
             Integer newApiVersion = remoteLogics.getApiVersion();
-            boolean needRestart = Main.apiVersion != null && newApiVersion != null && !newApiVersion.equals(Main.apiVersion);
-            Main.apiVersion = newApiVersion;
-            return needRestart;
+            return !oldApiVersion.equals(newApiVersion);
         } catch (RemoteException e) {
             return false;
         }

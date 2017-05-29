@@ -91,8 +91,6 @@ public class Main {
     static SingleInstance singleInstance;
     public static boolean busyDialog;
     public static boolean useRequestTimeout;
-    
-    public static Integer apiVersion = null;
 
     public static void start(final String[] args, ModuleFactory startModule) {
 
