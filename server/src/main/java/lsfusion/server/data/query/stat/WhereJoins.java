@@ -1944,7 +1944,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
             return getStatKeys(groups, keyStat, type);
     }
 
-    public static <T extends WhereJoin> WhereJoins removeJoin(QueryJoin removeJoin, WhereJoin[] wheres, UpWheres<WhereJoin> upWheres, Result<UpWheres<WhereJoin>> resultWheres) {
+    public static <T extends WhereJoin, K extends Expr> WhereJoins removeJoin(QueryJoin<K, ?, ?, ?> removeJoin, WhereJoin[] wheres, UpWheres<WhereJoin> upWheres, Result<UpWheres<WhereJoin>> resultWheres) {
         WhereJoins result = null;
         UpWheres<WhereJoin> resultUpWheres = null;
         MExclSet<WhereJoin> mKeepWheres = SetFact.mExclSetMax(wheres.length); // массивы
@@ -1956,8 +1956,21 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
             InnerJoins joinFollows = null; Result<UpWheres<InnerJoin>> joinUpWheres = null;
             if (!remove && whereJoin instanceof ExprStatJoin && ((ExprStatJoin) whereJoin).depends(removeJoin)) // без этой проверки может бесконечно проталкивать
                 remove = true;
-            if (!remove && whereJoin instanceof ExprIndexedJoin && ((ExprIndexedJoin)whereJoin).givesNoKeys()) // даст висячий ключ при проталкивании, вообще рекурсивно пойти не может, но смысла нет разбирать
-                remove = true;
+
+            // жесткий хак, вообще нужно проталкивать все предикаты, но в случае (GROUP BY d) WHERE f(d) AND a=<d<=b, может протолкнутся a<=d<=b без f(d) и получится висячий ключ
+            // собственно нужно сделать чтобы предикат a<=d<=b - при отсутствии ключа добавлял сам join на iterate(a,d,b), но пока этого не сделано, такой хак: 
+            if (!remove && whereJoin instanceof ExprIndexedJoin && ((ExprIndexedJoin)whereJoin).givesNoKeys()) {
+                KeyExpr keyExpr = ((ExprIndexedJoin) whereJoin).getKeyExpr();
+                assert keyExpr != null;
+                ImMap<K, BaseExpr> joins = removeJoin.getJoins();
+                // если для joins есть единственный KeyExpr и K не keyExpr - проталкиваем
+                boolean foundGiveKeys = false;
+                for(int i=0,size=joins.size();i<size;i++)
+                    if(BaseUtils.hashEquals(keyExpr, joins.getValue(i)) && !(joins.getKey(i) instanceof KeyExpr))
+                        foundGiveKeys = true;
+                if(!foundGiveKeys)
+                    remove = true;
+            }
             // нижние проверки должны соответствовать calculateOrWhere 
             if(!remove && whereJoin instanceof PartitionJoin) {
                 if(UnionJoin.depends(((PartitionJoin) whereJoin).getOrWhere(), removeJoin))
