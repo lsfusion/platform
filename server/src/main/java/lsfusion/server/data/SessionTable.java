@@ -18,10 +18,7 @@ import lsfusion.server.caches.ManualLazy;
 import lsfusion.server.caches.ValuesContext;
 import lsfusion.server.caches.hash.HashContext;
 import lsfusion.server.caches.hash.HashValues;
-import lsfusion.server.classes.BaseClass;
-import lsfusion.server.classes.ConcreteClass;
-import lsfusion.server.classes.ConcreteObjectClass;
-import lsfusion.server.classes.DataClass;
+import lsfusion.server.classes.*;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
@@ -45,6 +42,7 @@ import lsfusion.server.logics.DBManager;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.session.DataSession;
+import lsfusion.server.session.RegisterClassRemove;
 import org.apache.log4j.Logger;
 
 import java.io.DataOutputStream;
@@ -685,19 +683,24 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
     public final static boolean changeTable = false; // changing table with specific values
     public final static boolean nonead = false; // all the rest
 
-    public SessionTable checkClasses(SQLSession session, BaseClass baseClass, boolean checkClassesUpdate, OperationOwner owner) throws SQLException, SQLHandledException {
+    public SessionTable checkClasses(SQLSession session, BaseClass baseClass, boolean checkClassesUpdate, OperationOwner owner) throws SQLException, SQLHandledException {  
+        return checkClasses(session, baseClass, checkClassesUpdate, owner, false, null, null, null, 0);
+    }
+    public SessionTable checkClasses(SQLSession session, BaseClass baseClass, boolean checkClassesUpdate, OperationOwner owner, final boolean inconsistent, ImMap<Field, ValueClass> inconsistentTableClasses, Result<ImSet<Field>> rereadChanges, RegisterClassRemove classRemove, long timestamp) throws SQLException, SQLHandledException {
 //        assert assertCheckClasses(session, baseClass);
+        assert !(session.inconsistent && inconsistent);
+        assert checkClassesUpdate || !inconsistent;
 
-        if(session.inconsistent || !checkClassesUpdate || Settings.get().isDisableReadClasses())
+        if(session.inconsistent || !checkClassesUpdate || (!inconsistent && Settings.get().isDisableReadClasses()))
             return this;
 
         if(baseClass==null)
             baseClass = ThreadLocalContext.getBusinessLogics().LM.baseClass;
 
         final Pair<ClassWhere<KeyField>,ImMap<PropertyField,ClassWhere<Field>>> readClasses;
-        Result<ImSet<KeyField>> objectKeys = new Result<>(); final Result<ImSet<PropertyField>> objectProps = new Result<>();
-        ImMap<ImMap<KeyField, ConcreteClass>, ImMap<PropertyField, ConcreteClass>> readData = readClasses(session, baseClass, objectKeys, objectProps, owner); // теоретически может очень долго работать, когда много колонок, из-за большого количества case'ов по которым надо группировать
-
+        final Result<ImSet<KeyField>> objectKeys = new Result<>(); final Result<ImSet<PropertyField>> objectProps = new Result<>();
+        ImMap<ImMap<KeyField, ConcreteClass>, ImMap<PropertyField, ConcreteClass>> readData = readClasses(session, baseClass, objectKeys, objectProps, owner, inconsistent, inconsistentTableClasses, rereadChanges, classRemove, timestamp); // теоретически может очень долго работать, когда много колонок, из-за большого количества case'ов по которым надо группировать
+        
         if(readData!=null && !(objectKeys.result.isEmpty() && objectProps.result.isEmpty())) // вторая проверка оптимизация
             readClasses = SessionRows.getClasses(readData,  objectProps.result);
         else // если concatenate type есть, читаем сами значения
@@ -705,29 +708,48 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
 //            readClasses = SessionRows.getClasses(properties, read(session, baseClass, OperationOwner.debug).getMap());
 
         // assert что readClasses.first => classes + readClasses.second => propertyClasses.
-        assert readClasses.first.means(classes.filterKeys(objectKeys.result), true);
-        for(PropertyField property : objectProps.result)
-            assert readClasses.second.get(property).means(propertyClasses.get(property).filterKeys(SetFact.addExcl(objectKeys.result, property)), true);
+        if(!inconsistent) {
+            assert readClasses.first.means(classes.filterKeys(objectKeys.result), true);
+            for (PropertyField property : objectProps.result)
+                assert readClasses.second.get(property).means(propertyClasses.get(property).filterKeys(SetFact.addExcl(objectKeys.result, property)), true);
+        }
 
         // проверяем что у classes \ propertyClasses есть complex - классы \ unknown
 
         ClassWhere<KeyField> newClasses = classes; ImMap<PropertyField,ClassWhere<Field>> newPropertyClasses;
 
-        final boolean updatedClasses = !classes.means(readClasses.first, true); // оптимизация
-        if(updatedClasses)
-            newClasses = newClasses.and(readClasses.first);
+        boolean updatedClasses;
+        if(inconsistent) {
+            updatedClasses = !readClasses.first.means(classes, true); // оптимизация, если даже уточняет классы не будем трогать, чтобы не пересоздавать ссылки
+            if(updatedClasses)
+                newClasses = newClasses.remove(objectKeys.result).and(readClasses.first);
+        } else {
+            updatedClasses = !classes.means(readClasses.first, true); // оптимизация
+            if (updatedClasses)
+                newClasses = newClasses.and(readClasses.first);
+        }
 
         final Result<Boolean> updatedProps = new Result<>(false); // оптимизация
         final ClassWhere<KeyField> fNewClasses = newClasses;
+        final boolean fUpdatedClasses = updatedClasses;
         newPropertyClasses = propertyClasses.mapItValues(new GetKeyValue<ClassWhere<Field>, PropertyField, ClassWhere<Field>>() {
             public ClassWhere<Field> getMapValue(PropertyField key, ClassWhere<Field> value) {
                 ClassWhere<Field> readWhere = readClasses.second.get(key);
                 assert (readWhere != null) == objectProps.result.contains(key);
-                if (readWhere != null && !value.means(readWhere, true)) {
-                    updatedProps.set(true);
-                    value = value.and(readWhere);
+                if (readWhere != null) {
+                    if (inconsistent) {
+                        if (!readWhere.means(value, true)) { // если даже уточняет классы не будем трогать, чтобы не пересоздавать ссылки
+                            updatedProps.set(true);
+                            value = value.remove(SetFact.addExcl(objectKeys.result, key)).and(readWhere);
+                        }
+                    } else {
+                        if (!value.means(readWhere, true)) {
+                            updatedProps.set(true);
+                            value = value.and(readWhere);
+                        }
+                    }
                 }
-                if(updatedClasses)
+                if(fUpdatedClasses)
                     value = value.and(BaseUtils.<ClassWhere<Field>>immutableCast(fNewClasses));
                 return value;
             }

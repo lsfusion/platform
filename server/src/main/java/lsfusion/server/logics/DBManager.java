@@ -6,7 +6,6 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.implementations.abs.AMap;
 import lsfusion.base.col.implementations.abs.ASet;
-import lsfusion.base.col.implementations.simple.EmptyOrderMap;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
@@ -30,7 +29,6 @@ import lsfusion.server.data.expr.formula.SQLSyntaxType;
 import lsfusion.server.data.expr.query.GroupExpr;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.expr.where.CaseExprInterface;
-import lsfusion.server.data.query.Query;
 import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.data.sql.DataAdapter;
 import lsfusion.server.data.sql.SQLSyntax;
@@ -466,14 +464,14 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
     }
 
-    private String getDroppedTablesString(OldDBStructure oldDBStructure, NewDBStructure newDBStructure) throws SQLException, SQLHandledException {
+    private String getDroppedTablesString(SQLSession sql, OldDBStructure oldDBStructure, NewDBStructure newDBStructure) throws SQLException, SQLHandledException {
         String droppedTables = "";
         for (Table table : oldDBStructure.tables.keySet()) {
             if (newDBStructure.getTable(table.getName()) == null) {
                 ImRevMap<KeyField, KeyExpr> mapKeys = table.getMapKeys();
                 Expr expr = GroupExpr.create(MapFact.<KeyField, KeyExpr>EMPTY(), new ValueExpr(new DataObject(1)), table.join(mapKeys).getWhere(), GroupType.SUM, MapFact.<KeyField, Expr>EMPTY());
-                ImOrderMap<ImMap<Object, Object>, ImMap<String, Object>> resultMap = new Query<>(MapFact.<Object, KeyExpr>EMPTYREV(), expr, "value").execute(createSession());
-                if (!(resultMap instanceof EmptyOrderMap)) {
+                Object result = Expr.readValue(sql, expr, OperationOwner.unknown); // таблица не пустая
+                if (result != null) {
                     if (!droppedTables.equals("")) {
                         droppedTables += ", ";
                     }
@@ -713,7 +711,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
             // проверка, не удалятся ли старые таблицы
             if (denyDropTables) {
-                String droppedTables = getDroppedTablesString(oldDBStructure, newDBStructure);
+                String droppedTables = getDroppedTablesString(sql, oldDBStructure, newDBStructure);
                 if (!droppedTables.isEmpty()) {
                     throw new RuntimeException("Dropped tables: " + droppedTables);
                 }

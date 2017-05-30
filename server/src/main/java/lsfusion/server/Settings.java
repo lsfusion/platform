@@ -2159,4 +2159,24 @@ public class Settings {
     public void setConstraintRowsLimit(int constraintRowsLimit) {
         this.constraintRowsLimit = constraintRowsLimit;
     }
+    
+    private boolean disableCheckDataClasses = false; // проверка на целостность изменений свойств перед применением транзакции (без SERIALIZABLE не имеет особого смысла)
+
+    public boolean isDisableCheckDataClasses() {
+        return disableCheckDataClasses;
+    }
+
+    public void setDisableCheckDataClasses(boolean disableCheckDataClasses) {
+        this.disableCheckDataClasses = disableCheckDataClasses;
+    }
+    
+    private boolean isClustered = false;
+
+    public boolean isIsClustered() {
+        return isClustered;
+    }
+
+    public void setIsClustered(boolean isClustered) {
+        this.isClustered = isClustered;
+    }
 }

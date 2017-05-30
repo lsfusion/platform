@@ -8,7 +8,6 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
-import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
 import lsfusion.server.caches.ManualLazy;
 import lsfusion.server.caches.ValuesContext;
@@ -306,7 +305,7 @@ public abstract class SessionModifier implements Modifier {
 
             ImMap<Expr, ObjectValue> readedParamValues;
             if(!valueSet.isEmpty())
-                readedParamValues = Expr.readValues(getSQL(), getBaseClass(), valueSet.toMap(), getQueryEnv());
+                readedParamValues = Expr.readObjectValues(getSQL(), getBaseClass(), valueSet.toMap(), getQueryEnv());
             else
                 readedParamValues = MapFact.EMPTY();
 

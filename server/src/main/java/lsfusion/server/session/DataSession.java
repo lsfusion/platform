@@ -7,10 +7,7 @@ import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
-import lsfusion.base.col.interfaces.mutable.MFilterSet;
-import lsfusion.base.col.interfaces.mutable.MList;
-import lsfusion.base.col.interfaces.mutable.MOrderExclSet;
-import lsfusion.base.col.interfaces.mutable.MSet;
+import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.col.interfaces.mutable.add.MAddCol;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetExValue;
@@ -23,6 +20,7 @@ import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
 import lsfusion.server.caches.ManualLazy;
 import lsfusion.server.classes.*;
+import lsfusion.server.classes.sets.AndClassSet;
 import lsfusion.server.classes.sets.UpClassSet;
 import lsfusion.server.context.ExecutionStack;
 import lsfusion.server.context.ThreadLocalContext;
@@ -552,11 +550,48 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             upOwner = new OperationOwner() {}; 
         this.owner = upOwner;
 
+        if(Settings.get().isIsClustered())
+            registerClassRemove = NOREGISTER;
+        else
+            registerClassRemove = new RegisterClassRemove() {
+
+                private long lastChecked;
+
+                @Override
+                public void removed(ImSet<ValueClass> classes, long timestamp) {
+                    MapFact.addJavaAll(lastRemoved, classes.toMap(timestamp));
+                }
+
+                @Override
+                public void checked(long timestamp) {
+                    lastChecked = timestamp;
+                }
+
+                @Override
+                public boolean removedAfterChecked(ValueClass checkClass, long timestamp) {
+                    Long lastClassRemoved = lastRemoved.get(checkClass);
+                    if (lastClassRemoved == null)
+                        return false;
+                    return lastClassRemoved >= lastChecked;
+                }
+            };
+        registerClassRemove.checked(getTimestamp());
+
         registerThreadStack(); // создающий поток также является владельцем сессии
         createdInTransaction = sql.isInTransaction(); // при synchronizeDB есть такой странный кейс
 //        SQLSession.fifo.add("DCR " + getOwner() + SQLSession.getCurrentTimeStamp() + " " + this + '\n' + ExceptionUtils.getStackTrace());
     }
     
+    private final static RegisterClassRemove NOREGISTER = new RegisterClassRemove() {
+            public void removed(ImSet<ValueClass> classes, long timestamp) {
+            }
+            public void checked(long timestamp) {
+            }
+            public boolean removedAfterChecked(ValueClass checkClass, long timestamp) {
+                return true;
+            }
+        };
+
     private boolean createdInTransaction;
 
     public DataSession createSession() throws SQLException {
@@ -1520,6 +1555,14 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         return change.getClassWhere(property.mapTable.mapKeys, property.field).and(property.fieldClassWhere).isFalse();
     }
 
+    public static <T extends PropertyInterface> boolean fitClasses(AndClassSet property, AndClassSet change) {
+        return property.containsAll(change, true);
+    }
+
+    public static <T extends PropertyInterface> boolean notFitClasses(AndClassSet property, AndClassSet change) {
+        return property.and(change).isEmpty();
+    }
+
     // для Single Apply
     private class EmptyModifier extends SessionModifier {
 
@@ -1852,15 +1895,65 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         return transactApply(BL, stack, interaction, new HashMap<String, Integer>(), 0, applyActions, keepProps, false, System.currentTimeMillis());
     }
 
+    private static final Map<ValueClass, Long> lastRemoved = MapFact.getGlobalConcurrentHashMap();
+
+    private final RegisterClassRemove registerClassRemove;
+
+    private ImSet<DataProperty> checkDataClasses(ImSet<DataProperty> checkOnlyProps, long timestamp) throws SQLException, SQLHandledException {
+        if(Settings.get().isDisableCheckDataClasses())
+            return SetFact.EMPTY();
+        
+        Map<DataProperty, SinglePropertyTableUsage<ClassPropertyInterface>> checkData = data;
+        if(checkOnlyProps != null)
+            checkData = BaseUtils.filterKeys(data, checkOnlyProps);
+        
+        Runnable checkTransaction = null;
+        if(isInTransaction()) {
+            checkTransaction = new Runnable() {
+                public void run() {
+                    checkTransaction();
+                }
+            };
+        }
+
+        MExclSet<DataProperty> mUpdated = SetFact.mExclSet();
+        for(Map.Entry<DataProperty, SinglePropertyTableUsage<ClassPropertyInterface>> dataChange : checkData.entrySet()) {
+            DataProperty property = dataChange.getKey();
+            ModifyResult modifyResult = property.checkClasses(dataChange.getValue(), sql, baseClass, env, getModifier(), getOwner(), checkTransaction, registerClassRemove, timestamp);
+            if(modifyResult.dataChanged()) {
+                updateProperties(SetFact.singleton(property), modifyResult.sourceChanged());
+
+                mUpdated.exclAdd(property);
+            }
+        }
+        return mUpdated.immutable();
+    }
+
+    long transactionStartTimestamp;
+            
     private boolean transactApply(BusinessLogics<?> BL, ExecutionStack stack,
                                   UserInteraction interaction,
                                   Map<String, Integer> attemptCountMap, int autoAttemptCount,
                                   ImOrderSet<ActionPropertyValueImplement> applyActions, FunctionSet<SessionDataProperty> keepProps, boolean deadLockPriority, long applyStartTime) throws SQLException, SQLHandledException {
 //        assert !isInTransaction();
+        long startTimeStamp = getTimestamp(); 
+        transactionStartTimestamp = startTimeStamp;
+
         startTransaction(BL, attemptCountMap, deadLockPriority, applyStartTime);
 
+        ImSet<DataProperty> updatedClasses = checkDataClasses(null, transactionStartTimestamp); // проверка на изменение классов в базе
+
         try {
-            return recursiveApply(applyActions, BL, stack, keepProps);
+            boolean suceeded = recursiveApply(applyActions, BL, stack, keepProps, SetFact.<ValueClass>EMPTY());
+            if(!suceeded) {
+                long timestamp = getTimestamp();
+                
+                checkDataClasses(updatedClasses, timestamp);
+
+                // после checkDataClasses а то себя же учтут
+                registerClassRemove.checked(startTimeStamp); // потому как есть оптимизация с updatedClasses (остальные не recheck'аются) 
+            }
+            return suceeded;
         } catch (Throwable t) { // assert'им что последняя SQL комманда, работа с транзакцией
             try {
                 rollbackApply();
@@ -2070,7 +2163,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         rollbackInfo.add(run);
     }
 
-    private boolean recursiveApply(ImOrderSet<ActionPropertyValueImplement> actions, BusinessLogics BL, ExecutionStack stack, FunctionSet<SessionDataProperty> keepProps) throws SQLException, SQLHandledException {
+    private boolean recursiveApply(ImOrderSet<ActionPropertyValueImplement> actions, BusinessLogics BL, ExecutionStack stack, FunctionSet<SessionDataProperty> keepProps, ImSet<ValueClass> removedClasses) throws SQLException, SQLHandledException {
         // тоже нужен посередине, чтобы он успел dataproperty изменить до того как они обработаны
         ImOrderSet<Object> execActions = SetFact.addOrderExcl(actions, BL.getAppliedProperties(this));
         for (int i = 0, size = execActions.size(); i < size; i++) {
@@ -2118,6 +2211,8 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     
             apply.clear(sql, owner); // все сохраненные хинты обнуляем
             dataModifier.clearHints(sql, owner); // drop'ем hint'ы (можно и без sql но пока не важно)
+
+            removedClasses = removedClasses.merge(SetFact.fromJavaSet(remove));
             restart(false, BaseUtils.merge(recursiveUsed,keepProps)); // оставляем usedSessiona
         } finally {
             sql.inconsistent = false;
@@ -2126,12 +2221,29 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         if(recursiveActions.size() > 0) {
             recursiveUsed = SetFact.EMPTY();
             recursiveActions.clear();
-            return recursiveApply(updatedRecursiveActions, BL, stack, keepProps);
+            return recursiveApply(updatedRecursiveActions, BL, stack, keepProps, removedClasses);
         }
 
+        long checkedTimestamp;
+        if(keepProps.isEmpty()) {
+            assert data.isEmpty();
+            checkedTimestamp = getTimestamp(); // здесь еще есть lockWrite поэтому новых изменений не появится
+        } else
+            checkedTimestamp = transactionStartTimestamp; // // так как keepProps проверили только на начало транзакции - берем соответствующий timestamp 
+
+        registerClassRemove.removed(removedClasses, Long.MAX_VALUE); // надо так как между commit'ом и регистрацией изменения может начаться новая транзакция и update conflict'а не будет, поэтому временно включим режим будущего
+        
         commitTransaction();
 
+        registerClassRemove.removed(removedClasses, getTimestamp());
+
+        registerClassRemove.checked(checkedTimestamp);
+        
         return true;
+    }
+    
+    private static long getTimestamp() {
+        return System.currentTimeMillis();
     }
 
     private ImOrderSet<ActionPropertyValueImplement> updateCurrentClasses(FunctionSet<SessionDataProperty> keepProps) throws SQLException, SQLHandledException {

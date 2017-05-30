@@ -40,6 +40,7 @@ import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.table.ImplementTable;
 import lsfusion.server.session.DataSession;
+import lsfusion.server.session.RegisterClassRemove;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -263,13 +264,41 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
         query.getQuery().executeSQL(session, MapFact.<PropertyField, Boolean>EMPTYORDER(), 0, DataSession.emptyEnv(owner), result);
     }
 
-    private static <B extends Field, T extends B> ImMap<T, ObjectValueClassSet> splitComplex(ImSet<T> fields, GetValue<AndClassSet, T> fieldClasses) {
+    public static boolean checkClasses(ObjectClassSet classSet, ValueClass inconsistentTableClass, Result<Boolean> mRereadChange, RegisterClassRemove classRemove, long timestamp) {
+        if(!classRemove.removedAfterChecked(inconsistentTableClass, timestamp)) {
+            mRereadChange.set(false);
+            return false;
+        }
+            
+        ValueClassSet tableClasses = inconsistentTableClass.getUpSet();
+        boolean result = false;
+        if(DataSession.fitClasses(tableClasses, classSet)) { // перечитываем только если fitClasses (так как если есть инородные классы - delete все равно сработает, классы могут остаться старыми)
+            result = true;
+            mRereadChange.set(true); // тоже помечаем на перечитывание изменений, хотя на самом деле, если они не обновяться никакого перечитывания не будет, оптимизатор уберет это условие 
+        } else {
+            // если все не подходят (notFit) не перечитываем изменения (assert'ся что все равно все изменяются)
+            mRereadChange.set(DataSession.notFitClasses(tableClasses, classSet)); // если mixed - надо перечитывать значения (классы при этом не перечитываем пока)
+        }
+        return result;
+    }
+    
+    private static <B extends Field, T extends B> ImMap<T, ObjectValueClassSet> splitRead(ImSet<T> fields, GetValue<AndClassSet, T> fieldClasses, boolean inconsistent, ImMap<B, ValueClass> inconsistentTableClasses, MExclSet<B> mInconsistentCheckChanges, RegisterClassRemove classRemove, long timestamp) {
         MExclMap<T, ObjectValueClassSet> mObjectFields = MapFact.mExclMapMax(fields.size());
         for(T field : fields) {
             if(field.type instanceof ObjectType) {
                 ObjectClassSet classSet = (ObjectClassSet)fieldClasses.getMapValue(field);
                 ObjectValueClassSet valueClassSet = classSet.getValueClassSet();
-                if((!BaseUtils.hashEquals(classSet, valueClassSet) && !valueClassSet.isEmpty()) || (valueClassSet.hasComplex() && valueClassSet.getSetConcreteChildren().size() > 1))
+                // если есть unknown или complex или inconsistent
+                boolean checkClasses;
+                if(inconsistent) {
+                    Result<Boolean> rereadChange = new Result<Boolean>();
+                    checkClasses = checkClasses(classSet, inconsistentTableClasses.get(field), rereadChange, classRemove, timestamp);
+                    if(rereadChange.result)
+                        mInconsistentCheckChanges.exclAdd(field);
+                } else {
+                    checkClasses = (!BaseUtils.hashEquals(classSet, valueClassSet) && !valueClassSet.isEmpty()) || (valueClassSet.hasComplex() && valueClassSet.getSetConcreteChildren().size() > 1); 
+                }
+                if(checkClasses)
                     mObjectFields.exclAdd(field, valueClassSet);
             } else
                 if(!(field.type instanceof DataClass))
@@ -278,21 +307,30 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
         return mObjectFields.immutable();
     }
 
-    public ImMap<ImMap<KeyField,ConcreteClass>,ImMap<PropertyField,ConcreteClass>> readClasses(SQLSession session, final BaseClass baseClass, Result<ImSet<KeyField>> resultKeys, Result<ImSet<PropertyField>> resultProps, OperationOwner owner) throws SQLException, SQLHandledException {
-        final ImMap<KeyField, ObjectValueClassSet> objectKeyClasses = splitComplex(getTableKeys(), classes.getCommonClasses(getTableKeys()).fnGetValue());
-        if(objectKeyClasses == null)
+    public ImMap<ImMap<KeyField,ConcreteClass>,ImMap<PropertyField,ConcreteClass>> readClasses(SQLSession session, final BaseClass baseClass, Result<ImSet<KeyField>> resultKeys, Result<ImSet<PropertyField>> resultProps, OperationOwner owner, boolean inconsistent, ImMap<Field, ValueClass> inconsistentTableClasses, Result<ImSet<Field>> inconsistentRereadChanges, RegisterClassRemove classRemove, long timestamp) throws SQLException, SQLHandledException {
+        MExclSet<Field> mInconsistentRereadChanges = SetFact.mExclSetMax(getTableKeys().size() + properties.size()); 
+        final ImMap<KeyField, ObjectValueClassSet> objectKeyClasses = splitRead(getTableKeys(), classes.getCommonClasses(getTableKeys()).fnGetValue(), inconsistent, inconsistentTableClasses, mInconsistentRereadChanges, classRemove, timestamp);
+        if(objectKeyClasses == null) {
+            if(inconsistent)
+                inconsistentRereadChanges.set(SetFact.<Field>EMPTY());
             return null;
-        final ImMap<PropertyField, ObjectValueClassSet> objectPropClasses = splitComplex(properties, new GetValue<AndClassSet, PropertyField>() {
+        }
+        final ImMap<PropertyField, ObjectValueClassSet> objectPropClasses = splitRead(properties, new GetValue<AndClassSet, PropertyField>() {
             public AndClassSet getMapValue(PropertyField value) {
                 return propertyClasses.get(value).getCommonClass(value);
-            }});
-        if(objectPropClasses == null)
+            }}, inconsistent, inconsistentTableClasses, mInconsistentRereadChanges, classRemove, timestamp);
+        if(objectPropClasses == null) {
+            if(inconsistent)
+                inconsistentRereadChanges.set(SetFact.<Field>EMPTY());
             return null;
+        }
 
         final ImSet<KeyField> objectKeys = objectKeyClasses.keys();
         final ImSet<PropertyField> objectProps = objectPropClasses.keys();
         resultKeys.set(objectKeys);
         resultProps.set(objectProps);
+        if(inconsistent)
+            inconsistentRereadChanges.set(mInconsistentRereadChanges.immutable());
 
         if(objectKeyClasses.isEmpty() && objectPropClasses.isEmpty()) // no complex
             return MapFact.singleton(MapFact.<KeyField, ConcreteClass>EMPTY(), MapFact.<PropertyField, ConcreteClass>EMPTY());
@@ -310,9 +348,10 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
         final ValueExpr nullExpr = new ValueExpr(-2, baseClass.unknown);
         final ValueExpr unknownExpr = new ValueExpr(-1, baseClass.unknown);
         final ImMap<Field, ObjectValueClassSet> fieldClasses = MapFact.addExcl(objectKeyClasses, objectPropClasses);
+        final IsClassType classType = inconsistent ? IsClassType.INCONSISTENT : IsClassType.CONSISTENT;
         GetKeyValue<Expr, Field, Expr> classExpr = new GetKeyValue<Expr, Field, Expr>() {
             public Expr getMapValue(Field key, Expr value) {
-                return value.classExpr(fieldClasses.get(key)).nvl(unknownExpr).ifElse(value.getWhere(), nullExpr);
+                return value.classExpr(fieldClasses.get(key), classType).nvl(unknownExpr).ifElse(value.getWhere(), nullExpr);
             }};
         ImMap<Field, Expr> group = fieldExprs.mapValues(classExpr);
 

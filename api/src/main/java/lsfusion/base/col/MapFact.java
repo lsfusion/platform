@@ -163,7 +163,10 @@ public class MapFact {
             }
         });
     }
-
+    public static <K, V> ImRevMap<K, V> filterRev(ImRevMap<? extends K, V> map, ImSet<K> set) {
+        return ((ImRevMap<K, V>)map).filterRev(set);
+    }
+        
     public static <K, V> ImMap<K, V> addExcl(ImMap<? extends K, ? extends V> map, K key, V value) {
         return ((ImMap<K, V>)map).addExcl(key, value);
     }

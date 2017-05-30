@@ -1668,9 +1668,13 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
             getQuery(CalcType.EXPR, PropertyChanges.EMPTY, PropertyQueryType.FULLCHANGED, MapFact.<T, Expr>EMPTY()).pack();
     }
 
-    @IdentityInstanceLazy
     public CalcPropertyMapImplement<?, T> getClassProperty() {
-        return IsClassProperty.getMapProperty(getInterfaceClasses(ClassType.signaturePolicy));
+        return getClassProperty(interfaces);
+    }
+
+    @IdentityInstanceLazy
+    public CalcPropertyMapImplement<?, T> getClassProperty(ImSet<T> interfaces) {
+        return IsClassProperty.getMapProperty(getInterfaceClasses(ClassType.signaturePolicy).filterIncl(interfaces));
     }
 
     @IdentityInstanceLazy

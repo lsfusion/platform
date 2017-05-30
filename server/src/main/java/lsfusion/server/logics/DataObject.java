@@ -18,10 +18,7 @@ import lsfusion.server.classes.sets.AndClassSet;
 import lsfusion.server.data.Field;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.Value;
-import lsfusion.server.data.expr.Expr;
-import lsfusion.server.data.expr.KeyExpr;
-import lsfusion.server.data.expr.StaticValueExpr;
-import lsfusion.server.data.expr.ValueExpr;
+import lsfusion.server.data.expr.*;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.translator.MapValuesTranslate;
 import lsfusion.server.data.type.ParseInterface;
@@ -110,6 +107,10 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
     public DataObject(ValueExpr valueExpr) {
         this(valueExpr.object, valueExpr.objectClass);
         this.valueExpr = valueExpr;
+    }
+
+    public InconsistentStaticValueExpr getInconsistentExpr() {
+        return new InconsistentStaticValueExpr((ConcreteObjectClass) objectClass, object);
     }
 
     public Expr getStaticExpr() {
@@ -270,7 +271,7 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
     }
 
     @Override
-    public AndClassSet getAndClassSet() {
+    public ConcreteClass getAndClassSet() {
         return objectClass;
     }
 

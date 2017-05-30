@@ -82,6 +82,7 @@ public interface ImMap<K, V> {
     ImMap<K, V> replaceValue(K key, V value);
     ImMap<K, V> replaceValues(ImMap<? extends V, ? extends V> map);
     ImMap<K,V> override(ImMap<? extends K,? extends V> map); // перекрываем this, значениями из map, replace в BaseUtils !!! тут важно разделить те которые добавляют и нет
+    ImMap<K,V> overrideIncl(ImMap<? extends K,? extends V> map);
 
     <M> ImValueMap<K,M> mapItValues();
     <M> ImRevValueMap<K,M> mapItRevValues();

@@ -433,6 +433,15 @@ public abstract class AMap<K, V> extends AColObject implements ImMap<K, V> {
     public ImMap<K, V> override(ImMap<? extends K, ? extends V> imMap) {
         return merge(imMap, MapFact.<K, V>override());
     }
+    
+    public ImMap<K, V> overrideIncl(final ImMap<? extends K, ? extends V> map) {
+        return mapValues(new GetKeyValue<V, K, V>() {
+            public V getMapValue(K key, V value) {
+                V mapValue = ((ImMap<K, V>) map).get(key);
+                return mapValue != null ? mapValue : value;
+            }
+        });
+    }
 
     public <M> ImMap<K, M> mapItValues(GetValue<M, V> getter) {
         ImValueMap<K, M> mvResult = mapItValues();

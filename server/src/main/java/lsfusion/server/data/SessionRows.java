@@ -7,16 +7,18 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
+import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
+import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
 import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.caches.InnerContext;
 import lsfusion.server.caches.MapValuesIterable;
 import lsfusion.server.caches.hash.HashValues;
-import lsfusion.server.classes.BaseClass;
-import lsfusion.server.classes.ConcreteClass;
+import lsfusion.server.classes.*;
 import lsfusion.server.data.expr.Expr;
+import lsfusion.server.data.expr.IsClassType;
 import lsfusion.server.data.expr.where.CaseExprInterface;
 import lsfusion.server.data.expr.where.extra.CompareWhere;
 import lsfusion.server.data.query.Join;
@@ -27,6 +29,7 @@ import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.session.DataSession;
+import lsfusion.server.session.RegisterClassRemove;
 
 import java.sql.SQLException;
 
@@ -237,7 +240,98 @@ public class SessionRows extends SessionData<SessionRows> {
         return rows.toString();
     }
 
-    public SessionRows checkClasses(SQLSession session, BaseClass baseClass, boolean updateClasses, OperationOwner owner) throws SQLException {
-        return this;
+    public static <O extends ObjectValue> boolean checkClasses(O value, SQLSession session, BaseClass baseClass, OperationOwner owner, ValueClass inconsistentTableClass, Result<Boolean> rereadChange, RegisterClassRemove classRemove, long timestamp) throws SQLException, SQLHandledException {
+        boolean result = false;
+        rereadChange.set(false);
+        if(value instanceof DataObject) {
+            DataObject dataValue = (DataObject) value;
+            ConcreteClass objectClass = dataValue.objectClass;
+            if(objectClass instanceof ConcreteObjectClass) {
+                ConcreteObjectClass concreteObjectClass = (ConcreteObjectClass) objectClass;
+                if(Table.checkClasses(concreteObjectClass, inconsistentTableClass, rereadChange, classRemove, timestamp)) {
+                    assert concreteObjectClass instanceof ConcreteCustomClass; // иначе checkClasses не прошел бы
+                    result = true;
+                }
+            }
+        }
+        return result;
+    }
+    
+    public static <F extends Field, O extends ObjectValue> ImMap<F, O> checkClasses(final ImMap<F, O> map, SQLSession session, final BaseClass baseClass, OperationOwner owner, ImMap<Field, ValueClass> inconsistentTableClasses, Result<ImSet<Field>> rRereadChanges, RegisterClassRemove classRemove, long timestamp) throws SQLException, SQLHandledException {
+        ImFilterValueMap<F, DataObject> mToCheckMap = map.mapFilterValues(); // exception + второй результат
+        MExclSet<Field> mRereadChanges = SetFact.mExclSetMax(map.size());
+        for(int i=0,size=map.size();i<size;i++) {
+            F field = map.getKey(i);
+            O value = map.getValue(i);
+            
+            Result<Boolean> rereadValue = new Result<>();            
+            if(checkClasses(value, session, baseClass, owner, inconsistentTableClasses.get(field), rereadValue, classRemove, timestamp))
+                mToCheckMap.mapValue(i, (DataObject) value);
+            if(rereadValue.result)
+                mRereadChanges.exclAdd(field);
+        }
+        ImSet<Field> rereadChanges = mRereadChanges.immutable();
+        if(rRereadChanges.result != null)
+            rereadChanges = rereadChanges.merge(rRereadChanges.result);
+        rRereadChanges.set(rereadChanges);
+        final ImMap<F, DataObject> toCheckMap = mToCheckMap.immutableValue();
+        
+        if(toCheckMap.isEmpty())
+            return map;
+        
+        ImMap<F, Expr> classExprs = toCheckMap.mapValues(new GetValue<Expr, DataObject>() {
+            @Override
+            public Expr getMapValue(DataObject value) {
+                ConcreteObjectClass objectClass = (ConcreteObjectClass) value.objectClass;
+                return value.getInconsistentExpr().classExpr(objectClass.getValueClassSet(), IsClassType.INCONSISTENT);// тут (как и в Table.readClasses) не совсем корректно брать текущий класс, но проверять куда может измениться этот класс (то есть baseClass использовать) убьет производительность
+            }
+        });
+
+        // тут можно было бы делать как в Table.readClasses, -2, -1, 0 но это сложнее реализовывать и в общем то нужно только для оптимизации, так как rereadChanges - удалит изменение (то есть -2 само обработает)
+        ImMap<F, Object> classValues = Expr.readValues(session, classExprs, owner);
+        final Result<Boolean> updated = new Result<>(false);
+        ImMap<F, DataObject> checkedMap = classValues.mapItValues(new GetKeyValue<DataObject, F, Object>() {
+            @Override
+            public DataObject getMapValue(F key, Object value) {
+                ConcreteObjectClass newConcreteClass = baseClass.findConcreteClassID((Integer) value);
+                DataObject dataObject = toCheckMap.get(key);
+                if (BaseUtils.hashEquals(newConcreteClass, dataObject.objectClass))
+                    return dataObject;
+                updated.set(true);
+                return new DataObject(dataObject.object, newConcreteClass);
+            }
+        });
+
+        if(!updated.result) // самый частый случай
+            return map;
+        return map.overrideIncl(BaseUtils.<ImMap<F, O>>immutableCast(checkedMap)); // assert Incl
+    }
+    
+    public static Pair<ImMap<KeyField, DataObject>, ImMap<PropertyField, ObjectValue>> checkClasses(ImMap<KeyField, DataObject> keys, ImMap<PropertyField, ObjectValue> props, SQLSession session, BaseClass baseClass, OperationOwner owner, ImMap<Field, ValueClass> inconsistentTableClasses, Result<ImSet<Field>> rRereadChanges, RegisterClassRemove classRemove, long timestamp) throws SQLException, SQLHandledException {
+        ImMap<Field, ObjectValue> fields = MapFact.addExcl(keys, props);
+        ImMap<Field, ObjectValue> updatedFields = checkClasses(fields, session, baseClass, owner, inconsistentTableClasses, rRereadChanges, classRemove, timestamp);
+
+        if(BaseUtils.hashEquals(fields, updatedFields))
+            return new Pair<>(keys, props);
+        return new Pair<>(BaseUtils.<ImMap<KeyField, DataObject>>immutableCast(updatedFields.filterIncl(keys.keys())), updatedFields.filterIncl(props.keys()));
+    }
+
+    public SessionRows checkClasses(SQLSession session, BaseClass baseClass, boolean updateClasses, OperationOwner owner, boolean inconsistent, ImMap<Field, ValueClass> inconsistentTableClasses, Result<ImSet<Field>> rereadChanges, RegisterClassRemove classRemove, long timestamp) throws SQLException, SQLHandledException {
+        if(!inconsistent)
+            return this;
+
+        rereadChanges.set(SetFact.<Field>EMPTY());
+        MExclMap<ImMap<KeyField, DataObject>, ImMap<PropertyField, ObjectValue>> mUpdatedRows = MapFact.mExclMap(rows.size()); // excl
+        for(int i=0,size=rows.size();i<size;i++) {
+            Pair<ImMap<KeyField, DataObject>, ImMap<PropertyField, ObjectValue>> updatedRow = 
+                    checkClasses(rows.getKey(i), rows.getValue(i), session, baseClass, owner, inconsistentTableClasses, rereadChanges, classRemove, timestamp);
+            mUpdatedRows.exclAdd(updatedRow.first, updatedRow.second);
+        }
+        ImMap<ImMap<KeyField, DataObject>, ImMap<PropertyField, ObjectValue>> updatedRows = mUpdatedRows.immutable();
+        
+        if(BaseUtils.hashEquals(updatedRows, rows))
+            return this;
+        else
+            return new SessionRows(keys, properties, updatedRows);
     }
 }

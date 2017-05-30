@@ -1,12 +1,16 @@
 package lsfusion.server.session;
 
+import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
+import lsfusion.base.Result;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
+import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.classes.BaseClass;
+import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.*;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
@@ -58,6 +62,19 @@ public class SinglePropertyTableUsage<K> extends SessionTableUsage<K, String> {
     }
 
     public void checkClasses(SQLSession session, BaseClass baseClass, boolean updateClasses, OperationOwner owner) throws SQLException, SQLHandledException {
-        table = table.checkClasses(session, baseClass, updateClasses, owner);
+        checkClasses(session, baseClass, updateClasses, owner, false, null, null, null, null, null, null, 0);
+    }
+    public boolean checkClasses(SQLSession sql, BaseClass baseClass, boolean updateClasses, OperationOwner owner, boolean inconsistent, ImMap<K, ValueClass> interfaceClasses, ValueClass valueClass, Result<ImSet<K>> checkKeyChanges, Result<Boolean> checkValueChange, Runnable checkTransaction, RegisterClassRemove classRemove, long timestamp) throws SQLException, SQLHandledException {
+        Result<ImSet<Field>> checkChanges = new Result<>();
+        SessionData<?> checkedTable = table.checkClasses(sql, baseClass, updateClasses, owner, inconsistent, inconsistent ? MapFact.addExcl(mapKeys.join(interfaceClasses), mapProps.singleKey(), valueClass) : null, checkChanges, classRemove, timestamp);
+        if(inconsistent) {
+            checkKeyChanges.set(MapFact.filterRev(mapKeys, checkChanges.result).valuesSet());            
+            checkValueChange.set(checkChanges.result.contains(mapProps.singleKey()));            
+        }
+        boolean result = !BaseUtils.hashEquals(table, checkedTable);
+        if(result && checkTransaction != null)
+            checkTransaction.run();
+        table = checkedTable;
+        return result;
     }
 }

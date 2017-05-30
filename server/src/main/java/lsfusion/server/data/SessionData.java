@@ -14,11 +14,11 @@ import lsfusion.server.caches.AbstractValuesContext;
 import lsfusion.server.caches.InnerContext;
 import lsfusion.server.classes.BaseClass;
 import lsfusion.server.classes.DataClass;
+import lsfusion.server.classes.ValueClass;
 import lsfusion.server.classes.sets.AndClassSet;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.ValueExpr;
-import lsfusion.server.data.expr.query.DistinctKeys;
 import lsfusion.server.data.expr.query.PropStat;
 import lsfusion.server.data.query.AbstractJoin;
 import lsfusion.server.data.query.IQuery;
@@ -31,6 +31,7 @@ import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.session.DataSession;
+import lsfusion.server.session.RegisterClassRemove;
 
 import java.sql.SQLException;
 
@@ -91,7 +92,7 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
             readValues = readValues.addExcl(whereObject, ValueExpr.get(query.getWhere()));
         }
 
-        final ImMap<Object, ObjectValue> readedValues = Expr.readValues(session, baseClass, readValues, env);
+        final ImMap<Object, ObjectValue> readedValues = Expr.readObjectValues(session, baseClass, readValues, env);
 
         ImMap<KeyField, ObjectValue> keyReadValues = readedValues.filterIncl(keyExprValues.keys());
         for(ObjectValue keyValue : keyReadValues.valueIt()) // keys
@@ -290,5 +291,5 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
     
     public abstract int getCount();
 
-    public abstract T checkClasses(SQLSession session, BaseClass baseClass, boolean updateClasses, OperationOwner owner) throws SQLException, SQLHandledException;
+    public abstract T checkClasses(SQLSession session, BaseClass baseClass, boolean updateClasses, OperationOwner owner, boolean inconsistent, ImMap<Field, ValueClass> inconsistentTableClasses, Result<ImSet<Field>> rereadChanges, RegisterClassRemove classRemove, long timestamp) throws SQLException, SQLHandledException;
 }
