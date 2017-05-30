@@ -14,6 +14,11 @@ public class RefreshActionProperty extends FormFlowActionProperty {
         super(lm, false);
     }
 
+    @Override
+    protected boolean isSameSession() { // context не используется
+        return false;
+    }
+
     protected void executeForm(FormInstance form, ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         form.refreshData();
     }

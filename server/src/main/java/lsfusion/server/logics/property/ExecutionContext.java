@@ -325,7 +325,10 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
     
     // подразумевают вызов только из Top Action'ов (FORM.NEW, form*, DefaultChange)
     public FormInstance getFormFlowInstance() {
-        return getFormInstance(true, true);
+        return getFormFlowInstance(true);
+    }
+    public FormInstance getFormFlowInstance(boolean sameSession) {
+        return getFormInstance(sameSession, true);
     }
     
     // использование формы, чисто для того чтобы передать дальше 
