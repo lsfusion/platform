@@ -1960,14 +1960,14 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
             // жесткий хак, вообще нужно проталкивать все предикаты, но в случае (GROUP BY d) WHERE f(d) AND a=<d<=b, может протолкнутся a<=d<=b без f(d) и получится висячий ключ
             // собственно нужно сделать чтобы предикат a<=d<=b - при отсутствии ключа добавлял сам join на iterate(a,d,b), но пока этого не сделано, такой хак: 
             if (!remove && whereJoin instanceof ExprIndexedJoin && ((ExprIndexedJoin)whereJoin).givesNoKeys()) {
-                KeyExpr keyExpr = ((ExprIndexedJoin) whereJoin).getKeyExpr();
-                assert keyExpr != null;
                 ImMap<K, BaseExpr> joins = removeJoin.getJoins();
                 // если для joins есть единственный KeyExpr и K не keyExpr - проталкиваем
                 boolean foundGiveKeys = false;
-                for(int i=0,size=joins.size();i<size;i++)
-                    if(BaseUtils.hashEquals(keyExpr, joins.getValue(i)) && !(joins.getKey(i) instanceof KeyExpr))
-                        foundGiveKeys = true;
+                KeyExpr keyExpr = ((ExprIndexedJoin) whereJoin).getKeyExpr();
+                if(keyExpr != null) // может быть not
+                    for(int i=0,size=joins.size();i<size;i++)
+                        if(BaseUtils.hashEquals(keyExpr, joins.getValue(i)) && !(joins.getKey(i) instanceof KeyExpr))
+                            foundGiveKeys = true;
                 if(!foundGiveKeys)
                     remove = true;
             }
