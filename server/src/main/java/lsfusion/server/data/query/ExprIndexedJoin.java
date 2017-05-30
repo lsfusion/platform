@@ -125,7 +125,7 @@ public class ExprIndexedJoin extends ExprJoin<ExprIndexedJoin> {
         return not || super.givesNoKeys();
     }
 
-    private KeyExpr getKeyExpr() {
+    public KeyExpr getKeyExpr() {
         if(baseExpr instanceof KeyExpr) {
             assert !not;
             return (KeyExpr) baseExpr;
