@@ -605,7 +605,16 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     public static FunctionSet<SessionDataProperty> adjustKeep(final boolean manageSession, final FunctionSet<SessionDataProperty> operationKeep) {
         return new SFunctionSet<SessionDataProperty>() {
             public boolean contains(SessionDataProperty element) {
-                return (element.nestedType != null && element.nestedType.is(manageSession)) || operationKeep.contains(element);
+                if (element.nestedType != null) {
+                    if (element.nestedType == LocalNestedType.ALL) 
+                        return true;
+                    // MANAGESESSION, NOMANAGESESSION
+                    if ((element.nestedType == LocalNestedType.MANAGESESSION) == manageSession) 
+                        return true;
+                    if(operationKeep == DataSession.keepAllSessionProperties) // нужно чтобы sessionOwners не nest'ся, хак, потом надо будет как-то хитрее сделать 
+                        return false;
+                }
+                return operationKeep.contains(element);
             }
         };
     }
