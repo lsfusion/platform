@@ -2688,17 +2688,10 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
                 checkSessionTable(sessionTable);
         }
     }
-
-    public void checkSessionTables(ImSet<Value> values) {
-        for(Value paramObject : values)
-            if(paramObject instanceof SessionTable) {
-                checkSessionTable((SessionTable) paramObject);
-            }
-    }
-
+    
     public void checkSessionTable(SessionTable table) {
         WeakReference<TableOwner> sessionTable = sessionTablesMap.get(table.getName());
-        if(!(sessionTable != null && sessionTable.get() != null)) { // одна из возможных причин - DataSession.updateSessionNotChangedEvents
+        if(!(sessionTable != null && sessionTable.get() != null)) {
             ServerLoggers.assertLog(false, "USED RETURNED TABLE : " + table.getName() + ", DEBUG INFO : " + sessionDebugInfo.get(table.getName()));
             wasSessionTableAssertion.set(true);
         }
