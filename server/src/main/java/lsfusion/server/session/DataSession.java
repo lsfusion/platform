@@ -1111,7 +1111,12 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     }
 
     private void updateSessionEventNotChangedOld(ExecutionEnvironment env, OldProperty<PropertyInterface> changedOld, boolean dataChanged) throws SQLException, SQLHandledException {
-        sessionEventNotChangedOld.add(changedOld, changedOld.property.getIncrementChange(env.getModifier()), dataChanged);
+        Modifier modifier = env.getModifier();
+        PropertyChange<PropertyInterface> incrementChange = changedOld.property.getIncrementChange(modifier);
+        sessionEventNotChangedOld.add(changedOld, incrementChange, dataChanged);
+        
+        sql.checkSessionTables(incrementChange.getValues());
+        SQLSession.checkSessionTableAssertion(modifier);
     }
 
     public boolean isInSessionEvent() {
