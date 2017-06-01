@@ -156,55 +156,6 @@ public class ExprIndexedJoin extends ExprJoin<ExprIndexedJoin> {
 
         return null;
     }
-    // определяет замыкающиеся диапазоны
-    public static ImSet<ExprIndexedJoin> getIntervals(WhereJoin[] wheres) {
-        MAddMap<BaseExpr, IntervalType> intervals = MapFact.mAddMap(new SymmAddValue<BaseExpr, IntervalType>() {
-            public IntervalType addValue(BaseExpr key, IntervalType prevValue, IntervalType newValue) {
-                return prevValue.and(newValue);
-            }
-        });
-        boolean hasKeyExprs = false; // оптимизация
-        for(WhereJoin where : wheres) {
-            if(where instanceof ExprIndexedJoin) {
-                ExprIndexedJoin eiJoin = (ExprIndexedJoin) where;
-                boolean hasKeyExpr = false;
-                if(!eiJoin.givesNoKeys() || (hasKeyExpr = (eiJoin.getKeyExpr() != null))) { // по идее эта проверка не нужна, но тогда могут появляться висячие ключи, хотя строго говоря потом можно наоборот поддержать эти случаи, тогда a>=1 AND a<=5 будет работать
-                    hasKeyExprs = hasKeyExprs || hasKeyExpr;
-                    IntervalType type = getIntervalType(eiJoin.compare);
-                    if (type != null)
-                        intervals.add(eiJoin.baseExpr, type);
-                }
-            }
-        }
-
-        MExclSet<ExprIndexedJoin> mResult = SetFact.mExclSetMax(wheres.length);
-        for(WhereJoin where : wheres) {
-            if (where instanceof ExprIndexedJoin) {
-                ExprIndexedJoin eiJoin = (ExprIndexedJoin) where;
-                IntervalType type = intervals.get(eiJoin.baseExpr);
-                if(type != null && type == IntervalType.FULL)
-                    mResult.exclAdd(eiJoin);
-            }
-        }
-        ImSet<ExprIndexedJoin> result = mResult.immutable();
-
-        if(result.size() > 0) {
-            if(hasKeyExprs) { // оптимизация
-                // по идее эта обработка не нужна, но тогда могут появляться висячие ключи, хотя строго говоря потом можно наоборот поддержать эти случаи, тогда a>=1 AND a<=5 будет работать
-                final ImSet<KeyExpr> innerKeys = getInnerKeys(wheres);
-                result = result.filterFn(new SFunctionSet<ExprIndexedJoin>() {
-                    public boolean contains(ExprIndexedJoin element) {
-                        KeyExpr keyExpr = element.getKeyExpr();
-                        if(keyExpr != null && !innerKeys.contains(keyExpr)) // висячий ключ
-                            return false;
-                        return true;
-                    }
-                });
-            }
-        }
-
-        return result;
-    }
 
     private static ImSet<KeyExpr> getInnerKeys(WhereJoin[] wheres) {
         MSet<KeyExpr> mInnerKeys = SetFact.mSet();
