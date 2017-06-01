@@ -696,7 +696,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                 Where pushWhere;
                 Depth subQueryDepth = subcontext.getSubQueryDepth();
                 if(subQueryDepth != Depth.INFINITE){
-                    if ((pushWhere = whereJoins.getPushWhere(innerJoins, upWheres, innerJoin, subQueryDepth == Depth.LARGE, isInner(), keyStat, fullWhere, statKeys)) != null) // проталкивание предиката
+                    if ((pushWhere = whereJoins.getPushWhere(upWheres, innerJoin, subQueryDepth == Depth.LARGE, isInner(), keyStat)) != null) // проталкивание предиката
                         fullWhere = fullWhere.and(pushWhere);
                     if (isEmptySelect(fullWhere, keys)) { // может быть когда проталкивается верхнее условие, а внутри есть NOT оно же
                         // getKeyEquals - для надежности, так как идет перетранслирование ключей и условие может стать false, а это критично, так как в emptySelect есть cast'ы, а скажем в GroupSelect, может придти EMPTY, ключи NULL и "Class Cast'ы" будут
