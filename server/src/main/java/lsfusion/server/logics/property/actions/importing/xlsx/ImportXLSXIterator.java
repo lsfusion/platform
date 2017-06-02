@@ -142,7 +142,7 @@ public class ImportXLSXIterator extends ImportIterator {
         String result = null;
         try {
             if (value != null && !value.isEmpty() && !value.replace(".", "").trim().isEmpty()) {
-                Date date = DateUtils.parseDate(value, "dd/MM/yyyy", "dd.MM.yyyy");
+                Date date = DateUtils.parseDate(value, "dd/MM/yyyy", "dd.MM.yyyy", "dd.MM.yyyy HH:mm:ss");
                 if(date != null)
                     result = dateFormat.format(date);
             }
