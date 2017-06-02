@@ -4,6 +4,8 @@ REQUIRE System, Authentication, Service, Utils, Time;
 
 runSQL 'Выполнить SQL' = ACTION CUSTOM 'lsfusion.erp.utils.RunSQLScriptActionProperty' (TEXT);
 
+runJDBC 'Выполнить JDBC' = ACTION CUSTOM 'lsfusion.erp.utils.RunJDBCStatementActionProperty' (VARSTRING[100], TEXT);
+
 vacuumTableAction 'Упаковать таблицу'(Table table) = {
     runSQL('VACUUM FULL ' + sid(table));
 }
