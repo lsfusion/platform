@@ -49,20 +49,24 @@ public class ImportXLSXIterator extends ImportIterator {
             XSSFRow xssfRow = sheet.getRow(current);
             if (xssfRow != null) {
                 for (Integer column : columns) {
-                    ValueClass valueClass = properties.get(columns.indexOf(column)).property.getValueClass(ClassType.valuePolicy);
-                    DateFormat dateFormat = null;
-                    if (valueClass instanceof DateClass) {
-                        dateFormat = DateClass.getDateFormat();
-                    } else if (valueClass instanceof TimeClass) {
-                        dateFormat = ((TimeClass) valueClass).getDefaultFormat();
-                    } else if (valueClass instanceof DateTimeClass) {
-                        dateFormat = DateTimeClass.getDateTimeFormat();
+                    try {
+                        ValueClass valueClass = properties.get(columns.indexOf(column)).property.getValueClass(ClassType.valuePolicy);
+                        DateFormat dateFormat = null;
+                        if (valueClass instanceof DateClass) {
+                            dateFormat = DateClass.getDateFormat();
+                        } else if (valueClass instanceof TimeClass) {
+                            dateFormat = ((TimeClass) valueClass).getDefaultFormat();
+                        } else if (valueClass instanceof DateTimeClass) {
+                            dateFormat = DateTimeClass.getDateTimeFormat();
+                        }
+                        listRow.add(getXLSXFieldValue(xssfRow, column, dateFormat, null));
+                    } catch (Exception e) {
+                        throw new RuntimeException(String.format("Error parsing row %s, column %s", current, column), e);
                     }
-                    listRow.add(getXLSXFieldValue(xssfRow, column, dateFormat, null));
                 }
             }
-        } catch (ParseException e) {
-            Throwables.propagate(e);
+        } catch (Exception e) {
+            throw Throwables.propagate(e);
         }
         current++;
         return current > lastRow ? null : listRow;
