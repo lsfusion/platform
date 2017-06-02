@@ -87,14 +87,16 @@ public class ImportXLSXIterator extends ImportIterator {
                     case Cell.CELL_TYPE_FORMULA:
                         try {
                             if (dateFormat != null) {
-                                result = (xssfCell.getStringCellValue().isEmpty()) ? defaultValue : xssfCell.getStringCellValue().trim();
+                                String formulaCellValue = getFormulaCellValue(xssfCell);
+                                result = formulaCellValue.isEmpty() ? defaultValue : formulaCellValue.trim();
                                 if(result != null)
                                     result = parseFormatDate(dateFormat, result);
                             } else {
                                 result = new DecimalFormat("#.#####").format(xssfCell.getNumericCellValue());
                             }
                         } catch (Exception e) {
-                            result = xssfCell.getStringCellValue().isEmpty() ? defaultValue : xssfCell.getStringCellValue();
+                            String formulaCellValue = getFormulaCellValue(xssfCell);
+                            result = formulaCellValue.isEmpty() ? defaultValue : formulaCellValue;
                         }
                         result = result != null && result.endsWith(".0") ? result.substring(0, result.length() - 2) : result;
                         break;
@@ -115,6 +117,19 @@ public class ImportXLSXIterator extends ImportIterator {
                         }
                 }
             }
+        }
+        return result;
+    }
+
+    private String getFormulaCellValue(XSSFCell xssfCell) {
+        String result;
+        switch (xssfCell.getCachedFormulaResultType()) {
+            case 0:
+                result = String.valueOf(xssfCell.getNumericCellValue());
+                break;
+            default:
+                result = xssfCell.getStringCellValue();
+                break;
         }
         return result;
     }
