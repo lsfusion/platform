@@ -750,12 +750,12 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         });
     }
 
-    public <K extends BaseExpr, Z extends Expr> Where getCostPushWhere(final QueryJoin<Z, ?, ?, ?> queryJoin, boolean pushLargeDepth, final UpWheres<WhereJoin> upWheres, final KeyStat keyStat, final StatType type) {
+    public <K extends BaseExpr, Z extends Expr> Where getCostPushWhere(final QueryJoin<Z, ?, ?, ?> queryJoin, boolean pushLargeDepth, final UpWheres<WhereJoin> upWheres, final KeyStat keyStat, final StatType type, final Result<Pair<ImRevMap<Z, KeyExpr>, Where>> pushJoinWhere) {
         ImSet<BaseExpr> groups = queryJoin.getJoins().values().toSet();
 
         return calculateCost(groups, queryJoin, pushLargeDepth, false, keyStat, type, new CostResult<Where>() {
             public Where calculate(CostStat costStat, ImSet<Edge> edges, MAddMap<BaseExpr, PropStat> exprStats) {
-                return getCostPushWhere(costStat, edges, queryJoin, upWheres);
+                return getCostPushWhere(costStat, edges, queryJoin, upWheres, pushJoinWhere);
             }
         });
     }
@@ -850,7 +850,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         }
     }
 
-    private <Z extends Expr> Where getCostPushWhere(CostStat cost, ImSet<Edge> edges, QueryJoin<Z, ?, ?, ?> queryJoin, UpWheres<WhereJoin> upWheres) {
+    private <Z extends Expr> Where getCostPushWhere(CostStat cost, ImSet<Edge> edges, QueryJoin<Z, ?, ?, ?> queryJoin, UpWheres<WhereJoin> upWheres, Result<Pair<ImRevMap<Z, KeyExpr>, Where>> pushJoinWhere) {
         ImSet<Z> pushedKeys = (ImSet<Z>) cost.getPushKeys(queryJoin);
         if(pushedKeys == null) { // значит ничего не протолкнулось
             // пока падает из-за неправильного computeVertex видимо
@@ -859,7 +859,8 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         }
         assert !pushedKeys.isEmpty();
         ImSet<BaseJoin> keepJoins = cost.getJoins().removeIncl(queryJoin);
-        ImMap<Z, BaseExpr> pushMap = queryJoin.getJoins().filterIncl(pushedKeys);
+        ImMap<Z, BaseExpr> queryJoins = queryJoin.getJoins();
+        ImMap<Z, BaseExpr> pushMap = queryJoins.filterIncl(pushedKeys);
 
         final ImMap<BaseJoin, ImSet<Edge>> inEdges = edges.group(new BaseUtils.Group<BaseJoin, Edge>() {
             public BaseJoin group(Edge value) {
@@ -912,10 +913,17 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         }
 
         Result<Where> pushExtraWhere = new Result<>(); // для partition
-        ImMap<Expr, ? extends Expr> translatedPush = queryJoin.getPushGroup(translator.translate(pushMap), true, pushExtraWhere);
+        ImMap<Z, Expr> translatedPush = translator.translate(pushMap);
+        ImMap<Expr, ? extends Expr> translatedPushGroup = queryJoin.getPushGroup(translatedPush, true, pushExtraWhere);
         if(pushExtraWhere.result != null)
             upPushWhere = upPushWhere.and(pushExtraWhere.result.translateExpr(translator));
-        return GroupExpr.create(translatedPush, upPushWhere, translatedPush.keys().toMap()).getWhere();
+        if(pushJoinWhere != null && queryJoins.size() == pushedKeys.size()) { // последняя проверка - оптимизация
+            assert queryJoin instanceof GroupJoin;
+            assert BaseUtils.hashEquals(translatedPush, translatedPushGroup);
+            ImRevMap<Z, KeyExpr> mapKeys = KeyExpr.getMapKeys(translatedPush.keys());
+            pushJoinWhere.set(new Pair<ImRevMap<Z, KeyExpr>, Where>(mapKeys, GroupExpr.create(translatedPush, upPushWhere, mapKeys).getWhere()));
+        }
+        return GroupExpr.create(translatedPushGroup, upPushWhere, translatedPushGroup.keys().toMap()).getWhere();
     }
 
     private <K extends BaseExpr, Z> CostStat getCost(final QueryJoin pushJoin, final boolean pushLargeDepth, final boolean needNotNulls, MAddMap<BaseJoin, Stat> joinStats, MAddMap<BaseJoin, Cost> indexedStats, final MAddMap<BaseExpr, PropStat> exprStats, MAddMap<BaseJoin, DistinctKeys> keyDistinctStats, ImSet<Edge> edges, final KeyStat keyStat, final StatType type) {
@@ -1603,9 +1611,9 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
     // !!! ТЕОРЕТИЧЕСКИ НЕСМОТРЯ НА REMOVE из-за паковки может проталкивать бесконечно (впоследствии нужен будет GUARD), например X = L(G1 + G2) AND (G1 OR G2) спакуется в X = L(G1 + G2) AND (G1' OR G2) , (а не L(G1' + G2), и будет G1 проталкивать бесконечно)
     //  но это очень редкая ситуация и важно проследить за ее природой, так как возможно есть аналогичные assertion'ы
     // может неправильно проталкивать в случае если скажем есть документы \ строки, строки "материализуются" и если они опять будут группироваться по документу, информация о том что он один уже потеряется
-    public <K extends Expr, T extends Expr> Where getPushWhere(UpWheres<WhereJoin> upWheres, QueryJoin<K, ?, ?, ?> pushJoin, boolean pushLargeDepth, boolean isInner, KeyStat keyStat) {
+    public <K extends Expr, T extends Expr> Where getPushWhere(UpWheres<WhereJoin> upWheres, QueryJoin<K, ?, ?, ?> pushJoin, boolean pushLargeDepth, boolean isInner, KeyStat keyStat, Result<Pair<ImRevMap<K, KeyExpr>, Where>> pushJoinWhere) {
         Result<UpWheres<WhereJoin>> adjUpWheres = new Result<>(upWheres);
-        return getWhereJoins(pushJoin, isInner, adjUpWheres).getCostPushWhere(pushJoin, pushLargeDepth, adjUpWheres.result, keyStat, StatType.PUSH_OUTER());
+        return getWhereJoins(pushJoin, isInner, adjUpWheres).getCostPushWhere(pushJoin, pushLargeDepth, adjUpWheres.result, keyStat, StatType.PUSH_OUTER(), pushJoinWhere);
     }
 
     private <K extends Expr> WhereJoins getWhereJoins(QueryJoin<K, ?, ?, ?> pushJoin, boolean isInner, Result<UpWheres<WhereJoin>> upWheres) {
@@ -1676,7 +1684,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
     }
     
     // вообще при таком подходе, скажем из-за формул в ExprJoin, LEFT JOIN'ы могут быть раньше INNER, но так как SQL Server это позволяет бороться до конца за это не имеет особого смысла 
-    public Where fillInnerJoins(UpWheres<WhereJoin> upWheres, MList<String> whereSelect, Result<Cost> mBaseCost, CompileSource source, ImSet<KeyExpr> keys, KeyStat keyStat) {
+    public Where fillInnerJoins(UpWheres<WhereJoin> upWheres, MList<String> whereSelect, Result<Cost> mBaseCost, Result<Stat> mRows, CompileSource source, ImSet<KeyExpr> keys, KeyStat keyStat, LimitOptions limit, ImOrderSet<Expr> orders) {
         Where innerWhere = Where.TRUE;
         for (WhereJoin where : getAdjWheres())
             if(!(where instanceof ExprIndexedJoin && ((ExprIndexedJoin)where).givesNoKeys())) {
@@ -1688,14 +1696,50 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
                 }
             }
 
+        // хитрая эвристика - если есть limit и он маленький, докидываем маленькую статистику по порядкам
+        // фактически если есть хороший план с поиском первых записей, то логично что и фильтрация будет быстрой (обратное впрочем не верно, но в этом и есть эвристика
+        // !!! ВАЖНА для GROUP LAST / ANY оптимизации (isLastOpt)
         StatType statType = StatType.COMPILE;
         Result<ImSet<BaseExpr>> usedNotNulls = source.syntax.hasNotNullIndexProblem() ? new Result<ImSet<BaseExpr>>() : null;
         StatKeys<KeyExpr> statKeys = getStatKeys(keys, null, keyStat, statType, usedNotNulls);// newNotNull
 
         Cost baseCost = statKeys.getCost();
+        Stat stat = statKeys.getRows();
+
+        if(limit.hasLimit() && !Settings.get().isDisableAdjustLimitHeur() && Stat.ONE.less(baseCost.rows)) {
+            WhereJoins whereJoins = this;
+            int i=0,size=orders.size();
+            for(;i<size;i++) {
+                Expr order = orders.get(i);
+                if(order instanceof BaseExpr) {
+                    whereJoins = whereJoins.and(new WhereJoins(new ExprStatJoin((BaseExpr)order, Stat.ONE)));
+                    statKeys = whereJoins.getStatKeys(keys, null, keyStat, statType, usedNotNulls);
+
+                    Cost newBaseCost = statKeys.getCost();
+                    Stat newStat = statKeys.getRows();
+                    Stat costReduce = baseCost.rows.div(newBaseCost.rows);
+                    Stat statReduce = stat.div(newStat);
+                    // если cost упал на столько же сколько и stat значит явно есть индекс
+                    if(statReduce.lessEquals(costReduce)) { // по идее equals, но на всякий случай
+                        baseCost = newBaseCost;
+                        stat = newStat;
+                        continue;
+                    }
+                }
+                break;
+            }
+            if(i>=size) // если не осталось порядков, значит все просматривать не надо
+                baseCost = baseCost.div(stat);
+            stat = Stat.ONE; // предполагаем что limit отбирает мало записей
+        }
+            
         if(mBaseCost.result != null)
             baseCost = baseCost.or(mBaseCost.result);
         mBaseCost.set(baseCost);
+        
+        if(mRows.result != null)
+            stat = stat.or(mRows.result);
+        mRows.set(stat);
 
         if(usedNotNulls != null)
             for(BaseExpr notNull : usedNotNulls.result)
