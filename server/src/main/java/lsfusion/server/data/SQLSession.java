@@ -2720,7 +2720,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     }
     
     public static void outModifier(String info, Modifier modifier) {
-        ServerLoggers.sqlHandLogger.info(info + (modifier instanceof SessionModifier ? ((SessionModifier) modifier).out() : "\nDEFAULT") + "\npropertychanges : " + modifier.getPropertyChanges());
+        ServerLoggers.exInfoLogger.info(info + (modifier instanceof SessionModifier ? ((SessionModifier) modifier).out() : "\nDEFAULT") + "\npropertychanges : " + modifier.getPropertyChanges());
     }
 
     private PreparedStatement getStatement(SQLCommand command, ImMap<String, ParseInterface> paramObjects, final ExConnection connection, SQLSyntax syntax, DynamicExecEnvSnapshot snapEnv, Result<ReturnStatement> returnStatement, Result<Integer> length) throws SQLException {
