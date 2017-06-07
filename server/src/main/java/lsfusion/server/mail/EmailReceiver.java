@@ -37,6 +37,8 @@ import java.security.GeneralSecurityException;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -355,18 +357,17 @@ public class EmailReceiver {
     }
 
     private String decodeFileName(String value) throws UnsupportedEncodingException {
-        StringBuilder result = new StringBuilder();
-        if(value == null)
-            result = new StringBuilder("attachment.txt");
+        if (value == null)
+            value = "attachment.txt";
         else {
-            if (value.startsWith("=?UTF-8")) {
-                for (String namePart : value.split("\\=\\?UTF-8")) {
-                    result.append(namePart.isEmpty() ? "" : MimeUtility.decodeText("=?UTF-8" + namePart));
-                }
-            } else
-                result = new StringBuilder(MimeUtility.decodeText(value));
+            Pattern p = Pattern.compile("\\=\\?[^?]*\\?\\w\\?[^?]*\\?\\=");
+            Matcher m = p.matcher(value);
+            while (m.find()) {
+                value = value.replace(m.group(), MimeUtility.decodeText(m.group()));
+            }
+            value = MimeUtility.decodeText(value);
         }
-        return result.toString();
+        return value;
     }
 
     private class MultipartBody {
