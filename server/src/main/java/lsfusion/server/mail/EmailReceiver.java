@@ -355,7 +355,18 @@ public class EmailReceiver {
     }
 
     private String decodeFileName(String value) throws UnsupportedEncodingException {
-        return value == null ? "attachment.txt" : MimeUtility.decodeText(value).trim();
+        StringBuilder result = new StringBuilder();
+        if(value == null)
+            result = new StringBuilder("attachment.txt");
+        else {
+            if (value.startsWith("=?UTF-8")) {
+                for (String namePart : value.split("\\=\\?UTF-8")) {
+                    result.append(namePart.isEmpty() ? "" : MimeUtility.decodeText("=?UTF-8" + namePart));
+                }
+            } else
+                result = new StringBuilder(MimeUtility.decodeText(value));
+        }
+        return result.toString();
     }
 
     private class MultipartBody {
