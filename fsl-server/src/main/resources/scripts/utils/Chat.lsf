@@ -514,7 +514,7 @@ showOnStart() = {
     IF sumUnreadMessages(currentUser()) > 0 THEN {
         deliveredNotificationAction(currentUser());
         apply();
-        SHOW shortChat;
+        SHOW shortChat NOMANAGESESSIONX;
     }
 }
 
