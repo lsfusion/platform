@@ -17,7 +17,7 @@ import lsfusion.server.data.where.classes.ClassExprWhere;
 
 public abstract class StaticNullableExpr extends NullableExpr implements StaticExprInterface {
 
-    private final AndClassSet paramClass;
+    protected final AndClassSet paramClass;
 
     public StaticNullableExpr(AndClassSet paramClass) {
         this.paramClass = paramClass;

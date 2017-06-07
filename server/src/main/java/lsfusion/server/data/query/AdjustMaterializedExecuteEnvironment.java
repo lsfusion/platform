@@ -253,7 +253,7 @@ public class AdjustMaterializedExecuteEnvironment extends DynamicExecuteEnvironm
 
             size = command.getCost(MapFact.<SQLQuery, Stat>EMPTY()).rows.getWeight();
             hasTooLongKeys = query != null && SQLQuery.hasTooLongKeys(query.keyReaders);
-            hasRecursiveTables = query != null && query.getEnv().hasUsedRecursiveTable();
+            hasNotMaterializables = query != null && query.getEnv().hasNotMaterializable();
         }
 
         public boolean isRoot() {
@@ -274,7 +274,7 @@ public class AdjustMaterializedExecuteEnvironment extends DynamicExecuteEnvironm
         }
         private final int size;
         private final boolean hasTooLongKeys;
-        private final boolean hasRecursiveTables;
+        private final boolean hasNotMaterializables;
         private Set<Node> children = new HashSet<>();
 
         private Integer priority = null;
@@ -330,7 +330,7 @@ public class AdjustMaterializedExecuteEnvironment extends DynamicExecuteEnvironm
                         if(cdeg > target) // если больше target по сути запретим выбирать
                             return Integer.MAX_VALUE / 2;
                     } else {
-                        if (pdeg == 0 || (o.size >= max && o.size > topNode.size) || o.hasTooLongKeys || o.hasRecursiveTables) // если удаленная вершина или больше порога не выбираем вообще
+                        if (pdeg == 0 || (o.size >= max && o.size > topNode.size) || o.hasTooLongKeys || o.hasNotMaterializables) // если удаленная вершина или больше порога не выбираем вообще
                             return Integer.MAX_VALUE;
                     }
 

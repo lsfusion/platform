@@ -2179,4 +2179,24 @@ public class Settings {
     public void setIsClustered(boolean isClustered) {
         this.isClustered = isClustered;
     }
+    
+    private boolean disableAdjustLimitHeur = false;
+
+    public boolean isDisableAdjustLimitHeur() {
+        return disableAdjustLimitHeur;
+    }
+
+    public void setDisableAdjustLimitHeur(boolean disableAdjustLimitHeur) {
+        this.disableAdjustLimitHeur = disableAdjustLimitHeur;
+    }
+
+    private boolean disableGroupLastOpt = false;
+
+    public boolean isDisableGroupLastOpt() {
+        return disableGroupLastOpt;
+    }
+
+    public void setDisableGroupLastOpt(boolean disableGroupLastOpt) {
+        this.disableGroupLastOpt = disableGroupLastOpt;
+    }
 }

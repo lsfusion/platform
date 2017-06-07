@@ -1458,6 +1458,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     public int executeExplain(PreparedStatement statement, boolean noAnalyze, boolean dml) throws SQLException {
         long l = System.currentTimeMillis();
         long actualTime = System.currentTimeMillis() - l;
+        int minSpaces = Integer.MAX_VALUE;
         Integer rows = null;
         try (ResultSet result = statement.executeQuery()) {
             int thr = Settings.get().getExplainThreshold();
@@ -1484,8 +1485,14 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
                     m++;
                 }
 
-                if (!noAnalyze && dml && (i == 1 || i == 2) && rows == null && act >= 0) // второй ряд (первый почему то всегда 0) или 3-й (так как 2-й может быть Buffers:)
-                    rows = (int) act;
+                if (!noAnalyze && dml && i > 0 && act >= 0) { // первая запись почему-то всегда 0, минимальная табуляция (как правило первый или второго 
+                    int sp=0; char ch;
+                    for(;sp<row.length() && ((ch = row.charAt(sp))==' ' || ch=='\t');sp++);
+                    if(sp < minSpaces && row.startsWith("->", sp)) {
+                        rows = (int) act;
+                        minSpaces = sp;
+                    }
+                }
                 i++;
 
                 Pattern tpt = Pattern.compile("actual time=(((\\d)+)[.]((\\d)+))[.][.](((\\d)+)[.]((\\d)+))");

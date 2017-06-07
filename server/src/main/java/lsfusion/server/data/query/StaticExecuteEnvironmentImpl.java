@@ -9,7 +9,6 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.Settings;
 import lsfusion.server.data.*;
 import lsfusion.server.data.expr.query.GroupType;
-import lsfusion.server.data.expr.query.RecursiveTable;
 import lsfusion.server.data.type.ArrayClass;
 import lsfusion.server.data.type.ConcatenateType;
 import lsfusion.server.data.type.Type;
@@ -34,7 +33,7 @@ public class StaticExecuteEnvironmentImpl extends TwinImmutableObject implements
         this.groupAggOrders = env.groupAggOrders;
         this.typeFuncs = env.typeFuncs;
         this.arrayClasses = env.arrayClasses;
-        this.usedRecursiveTables = env.usedRecursiveTables;
+        this.usedNotMaterializables = env.usedNotMaterializables;
         finalized = false;
     }
 
@@ -63,7 +62,7 @@ public class StaticExecuteEnvironmentImpl extends TwinImmutableObject implements
         arrayClasses = SetFact.EMPTY();
         typeFuncs = SetFact.EMPTY();
 
-        usedRecursiveTables = SetFact.EMPTY();
+        usedNotMaterializables = SetFact.EMPTY();
 
         this.finalized = finalized;
     }
@@ -77,7 +76,7 @@ public class StaticExecuteEnvironmentImpl extends TwinImmutableObject implements
     private ImSet<Type> safeCastTypes;
     private ImSet<Pair<GroupType, ImList<Type>>> groupAggOrders;
 
-    private ImSet<RecursiveTable> usedRecursiveTables;
+    private ImSet<NotMaterializable> usedNotMaterializables;
 
     private ImSet<Pair<TypeFunc, Type>> typeFuncs;
 
@@ -101,19 +100,19 @@ public class StaticExecuteEnvironmentImpl extends TwinImmutableObject implements
         arrayClasses = arrayClasses.merge(envImpl.arrayClasses);
         typeFuncs = typeFuncs.merge(envImpl.typeFuncs);
 
-        usedRecursiveTables = usedRecursiveTables.merge(envImpl.usedRecursiveTables);
+        usedNotMaterializables = usedNotMaterializables.merge(envImpl.usedNotMaterializables);
     }
 
-    public void addUsedRecursiveTable(RecursiveTable table) {
+    public void addNotMaterializable(NotMaterializable table) {
         assert !finalized;
 
-        usedRecursiveTables = usedRecursiveTables.merge(table);
+        usedNotMaterializables = usedNotMaterializables.merge(table);
     }
 
-    public void removeUsedRecursiveTable(RecursiveTable table) {
+    public void removeNotMaterializable(NotMaterializable table) {
         assert !finalized;
 
-        usedRecursiveTables = usedRecursiveTables.removeIncl(table); // по идее не может исчезнуть STEP вообще
+        usedNotMaterializables = usedNotMaterializables.removeIncl(table); // по идее не может исчезнуть STEP вообще
     }
 
     public void addNoReadOnly() {
@@ -237,10 +236,10 @@ public class StaticExecuteEnvironmentImpl extends TwinImmutableObject implements
     }
 
     @Override
-    public boolean hasUsedRecursiveTable() {
+    public boolean hasNotMaterializable() {
         assert finalized;
 
-        return !usedRecursiveTables.isEmpty();
+        return !usedNotMaterializables.isEmpty();
     }
 
     public boolean hasRecursion() {
