@@ -60,6 +60,7 @@ public class BusyDialogDisplayer extends TimerTask {
     }
 
     public void show(Runnable r) {
+        //HideSwingWorker нужен для синхронизации RmiFutures в isRmiFutureDone
         SwingWorker hideSwingWorker = null;
         try {
             hideSwingWorker = new HideSwingWorker(r);
