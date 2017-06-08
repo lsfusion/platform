@@ -553,6 +553,8 @@ public class RmiQueue implements DispatcherListener {
                 if(getRemoteExceptionCause(e) == null) {
                     request.onResponseGetFailed(e);
                     failed = true;
+                } else {
+                    throw Throwables.propagate(e);
                 }
             }
             if(!failed)
