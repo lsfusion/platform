@@ -3,7 +3,6 @@ package lsfusion.server.logics.property.actions.importing.jdbc;
 import com.google.common.base.Throwables;
 import com.sun.rowset.CachedRowSetImpl;
 import lsfusion.base.BaseUtils;
-import lsfusion.server.classes.ValueClass;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.actions.importing.ImportDataActionProperty;
@@ -17,8 +16,8 @@ import java.util.List;
 import java.util.Map;
 
 public class ImportJDBCDataActionProperty extends ImportDataActionProperty {
-    public ImportJDBCDataActionProperty(ValueClass valueClass, List<String> ids, List<LCP> properties, BaseLogicsModule baseLM) {
-        super(new ValueClass[] {valueClass}, ids, properties, baseLM);
+    public ImportJDBCDataActionProperty(List<String> ids, List<LCP> properties, BaseLogicsModule baseLM) {
+        super(1, ids, properties, baseLM);
     }
 
     @Override

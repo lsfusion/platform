@@ -2,13 +2,13 @@ package lsfusion.server.logics.property.actions.importing.dbf;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.server.classes.StringClass;
-import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.linear.LCP;
-import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
+import lsfusion.server.logics.property.PropertyInterface;
+import lsfusion.server.logics.property.actions.flow.FlowResult;
 import lsfusion.server.logics.property.actions.importing.ImportDataActionProperty;
 import lsfusion.server.logics.property.actions.importing.ImportIterator;
 import net.iryndin.jdbf.core.DbfField;
@@ -31,15 +31,15 @@ public class ImportDBFDataActionProperty extends ImportDataActionProperty {
     private byte[] memo;
     private File tempMemoFile;
     private String charset;
-    public ImportDBFDataActionProperty(ValueClass[] classes, boolean hasWheres, boolean hasMemo, List<String> ids, List<LCP> properties, String charset, BaseLogicsModule baseLM) {
-        super(classes, ids, properties, baseLM);
+    public ImportDBFDataActionProperty(int paramsCount, boolean hasWheres, boolean hasMemo, List<String> ids, List<LCP> properties, String charset, BaseLogicsModule baseLM) {
+        super(paramsCount, ids, properties, baseLM);
         this.hasWheres = hasWheres;
         this.hasMemo = hasMemo;
         this.charset = charset == null ? "cp1251" : charset;
     }
 
     @Override
-    protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+    protected FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
         DataObject wheresObject = null;
         if (hasWheres) {
             wheresObject = context.getDataKeys().getValue(1);
@@ -51,7 +51,7 @@ public class ImportDBFDataActionProperty extends ImportDataActionProperty {
             memoObject = context.getDataKeys().getValue(hasWheres ? 2 : 1);
         }
         memo = memoObject != null ? BaseUtils.getFile((byte[]) memoObject.object) : null;
-        super.executeCustom(context);
+        return super.aspectExecute(context);
     }
 
     @Override

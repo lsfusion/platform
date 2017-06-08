@@ -2775,15 +2775,15 @@ public class ScriptingLogicsModule extends LogicsModule {
             params.add(whereProp);
         if(memoProp != null)
             params.add(memoProp);
-        return addScriptedJoinAProp(addAProp(ImportDataActionProperty.createDBFProperty(fileProp.property.property.getValueClass(ClassType.valuePolicy),
-                whereProp == null ? null : whereProp.property.property.getValueClass(ClassType.valuePolicy),
-                memoProp == null ? null : memoProp.property.property.getValueClass(ClassType.valuePolicy),
+        int paramsCount = 1 + (whereProp != null ? 1 : 0) + (memoProp != null ? 1 : 0);
+        return addScriptedJoinAProp(addAProp(ImportDataActionProperty.createDBFProperty(
+                paramsCount, whereProp != null, memoProp != null,
                 ids, props, charset, baseLM)), params);
     }
 
     public LPWithParams addScriptedImportActionProperty(ImportSourceFormat format, LPWithParams fileProp, List<String> ids, List<PropertyUsage> propUsages) throws ScriptingErrorLog.SemanticErrorException {
         List<LCP> props = findLPsForImport(propUsages);
-        return addScriptedJoinAProp(addAProp(ImportDataActionProperty.createProperty(fileProp.property.property.getValueClass(ClassType.valuePolicy), format, ids, props, baseLM)), Arrays.asList(fileProp));
+        return addScriptedJoinAProp(addAProp(ImportDataActionProperty.createProperty(/*fileProp.property.property.getValueClass(ClassType.valuePolicy), */format, ids, props, baseLM)), Arrays.asList(fileProp));
     }
 
     public LPWithParams addScriptedNewThreadActionProperty(LPWithParams actionProp, LPWithParams connectionProp, LPWithParams periodProp, LPWithParams delayProp) throws ScriptingErrorLog.SemanticErrorException {
@@ -2827,31 +2827,17 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public LPWithParams addScriptedImportExcelActionProperty(ImportSourceFormat format, LPWithParams fileProp, List<String> ids, List<PropertyUsage> propUsages, List<TypedParameter> context, LPWithParams sheetIndex) throws ScriptingErrorLog.SemanticErrorException {
         List<LCP> props = findLPsForImport(propUsages);
-        ValueClass sheetIndexValueClass = null;
-        if (sheetIndex != null) {
-            if (sheetIndex.property == null) {
-                TypedParameter param = context.get(sheetIndex.usedParams.get(0));
-                sheetIndexValueClass = param.cls;
-            } else {
-                sheetIndexValueClass = sheetIndex.property.property.getValueClass(ClassType.valuePolicy);
-            }
-            if (!(sheetIndexValueClass instanceof IntClass)) {
-                errLog.emitImportNonIntegralSheetError(parser);
-            }
-        }
-        ValueClass valueClass = fileProp.property.property.getValueClass(ClassType.valuePolicy);
-        return addScriptedJoinAProp(addAProp(new ImportXLSDataActionProperty(sheetIndex == null ? new ValueClass[]{valueClass} : new ValueClass[]{valueClass, sheetIndexValueClass},
-                        ids, props, baseLM, format)), sheetIndex == null ? Collections.singletonList(fileProp) : Lists.newArrayList(fileProp, sheetIndex));
+        return addScriptedJoinAProp(addAProp(new ImportXLSDataActionProperty(sheetIndex != null ? 2 : 1, ids, props, baseLM, format)), sheetIndex == null ? Collections.singletonList(fileProp) : Lists.newArrayList(fileProp, sheetIndex));
     }
 
     public LPWithParams addScriptedImportCSVActionProperty(LPWithParams fileProp, List<String> ids, List<PropertyUsage> propUsages, String separator, boolean noHeader, String charset) throws ScriptingErrorLog.SemanticErrorException {
         List<LCP> props = findLPsForImport(propUsages);
-        return addScriptedJoinAProp(addAProp(new ImportCSVDataActionProperty(fileProp.property.property.getValueClass(ClassType.valuePolicy), ids, props, separator, noHeader, charset, baseLM)), Collections.singletonList(fileProp));
+        return addScriptedJoinAProp(addAProp(new ImportCSVDataActionProperty(ids, props, separator, noHeader, charset, baseLM)), Collections.singletonList(fileProp));
     }
 
     public LPWithParams addScriptedImportXMLActionProperty(LPWithParams fileProp, List<String> ids, List<PropertyUsage> propUsages, boolean attr) throws ScriptingErrorLog.SemanticErrorException {
         List<LCP> props = findLPsForImport(propUsages);
-        return addScriptedJoinAProp(addAProp(new ImportXMLDataActionProperty(fileProp.property.property.getValueClass(ClassType.valuePolicy), ids, props, attr, baseLM)), Collections.singletonList(fileProp));
+        return addScriptedJoinAProp(addAProp(new ImportXMLDataActionProperty(ids, props, attr, baseLM)), Collections.singletonList(fileProp));
     }
 
     public LPWithParams addScriptedImportFormCSVActionProperty(FormEntity formEntity, boolean noHeader, String charset, String separator) throws ScriptingErrorLog.SemanticErrorException {

@@ -1,6 +1,5 @@
 package lsfusion.server.logics.property.actions.importing.xml;
 
-import lsfusion.server.classes.ValueClass;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.actions.importing.ImportDataActionProperty;
@@ -15,8 +14,8 @@ import java.util.Map;
 
 public class ImportXMLDataActionProperty extends ImportDataActionProperty {
     boolean attr;
-    public ImportXMLDataActionProperty(ValueClass valueClass, List<String> ids, List<LCP> properties, boolean attr, BaseLogicsModule baseLM) {
-        super(new ValueClass[] {valueClass}, ids, properties, baseLM);
+    public ImportXMLDataActionProperty(List<String> ids, List<LCP> properties, boolean attr, BaseLogicsModule baseLM) {
+        super(1, ids, properties, baseLM);
         this.attr = attr;
     }
 
