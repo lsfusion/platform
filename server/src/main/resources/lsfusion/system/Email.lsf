@@ -121,7 +121,7 @@ showError (AttachmentEmail attachmentEmail) = NOT imported (attachmentEmail) OR 
                                                             AND attachmentEmail IS AttachmentEmail;
 notImported (AttachmentEmail attachmentEmail) = NOT imported (attachmentEmail) AND NOT importError(attachmentEmail)
                                                             AND attachmentEmail IS AttachmentEmail;
-email = DATA Email (AttachmentEmail);
+email = DATA Email (AttachmentEmail) NOT NULL DELETE;
 attachmentEmail (id, email) = GROUP AGGR AttachmentEmail attachment BY id (attachment), id(email(attachment)) WHERE attachment IS AttachmentEmail; 
 name 'Имя файла' = DATA VARSTRING[255] (AttachmentEmail);
 file 'Файл' = DATA CUSTOMFILE (AttachmentEmail);
@@ -149,7 +149,7 @@ FORM mail 'Почта'
                   isDefaultNotification, isDefaultInbox, disable, unpack
     PROPERTIES(a)  NEW, DELETE 
     
-    OBJECTS e=Email
+    OBJECTS e=Email LAST
   
     PROPERTIES(e) READONLY subject, fromAddress, toAddress, dateTimeSent, 
                    dateTimeReceived, openEMLFile EDITABLE GRID, message PANEL
