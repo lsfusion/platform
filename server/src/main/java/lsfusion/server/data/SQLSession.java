@@ -756,7 +756,11 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     }
 
     private ImOrderMap<Field, Boolean> getOrderFields(ImOrderSet<KeyField> keyFields, boolean order, ImOrderSet<Field> fields) {
-        ImOrderMap<Field, Boolean> result = fields.toOrderMap(false);
+        ImOrderMap<Field, Boolean> result = fields.mapOrderValues(new GetValue<Boolean, Field>() {
+            public Boolean getMapValue(Field value) {
+                return value instanceof KeyField;
+            }
+        });
         if(order)
             result = result.addOrderExcl(keyFields.toOrderMap(true));
         return result;
