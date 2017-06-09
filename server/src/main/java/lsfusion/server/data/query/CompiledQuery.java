@@ -784,7 +784,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
 
                 Result<Cost> rLastBaseCosts = new Result<>(Cost.ONE);
                 Result<ImRevMap<Value, Expr>> rVirtParams = new Result<>();
-                ImRevMap<String, SubQueryExprSelect> propertySelect = getLastExprSources(mapKeys, pushWhere.getClassWhere().get(keys.toMap()),
+                ImRevMap<String, SubQueryExprSelect> propertySelect = getLastExprSources(rVirtParams, mapKeys, pushWhere.getClassWhere().get(keys.toMap()),
                         mSubEnv, rLastBaseCosts);
 
                 final Query<Expr, Object> query = new Query<>(mapKeys, pushWhere);
@@ -810,7 +810,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                         whereSelect.result.toString(" AND "),"","","", "") + ")", baseCost, rSubQueries.result, mSubEnv, groupWhere, false);
             }
 
-            private ImRevMap<String, SubQueryExprSelect> getLastExprSources(ImRevMap<Expr, KeyExpr> mapKeys, final ClassWhere<KeyExpr> keyClasses, MStaticExecuteEnvironment mSubEnv, Result<Cost> rBaseCost) {
+            private ImRevMap<String, SubQueryExprSelect> getLastExprSources(Result<ImRevMap<Value, Expr>> rVirtParams, ImRevMap<Expr, KeyExpr> mapKeys, final ClassWhere<KeyExpr> keyClasses, MStaticExecuteEnvironment mSubEnv, Result<Cost> rBaseCost) {
                 SubQueryContext subQueryContext = subcontext;
 
                 // генерим для всех Expr - "виртуальные" ValueExpr, and.им (хотя можно как в getExprSource просто в whereSelect докинуть, но будут проблемы с index'ами, union'ами и т.п.)
@@ -825,6 +825,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                 });
                 subQueryContext = subQueryContext.pushSubQueryExprs();
 
+                rVirtParams.set(virtParams.reverse());
                 Where valueWhere = CompareWhere.compare(BaseUtils.<ImRevMap<Expr, Expr>>immutableCast(virtParams));
 
                 ImRevValueMap<String, SubQueryExprSelect> mPropertySelect = queries.mapItRevValues();// последействие
