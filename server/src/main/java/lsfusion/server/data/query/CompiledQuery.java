@@ -738,7 +738,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
         }
 
         private interface SubQueryExprSelect {
-            String getSource(ImRevMap<ParseValue, String> subQueryParams, Result<ImMap<String, SQLQuery>> rSubQueries);
+            String getSource(ImRevMap<ParseValue, String> subQueryParams, MStaticExecuteEnvironment mSubEnv, Result<ImMap<String, SQLQuery>> rSubQueries);
         }
 
         private class GroupSelect extends QuerySelect<Expr, GroupExpr.Query,GroupJoin,GroupExpr> {
@@ -750,7 +750,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                 keys = BaseUtils.immutableCast(groupJoin.getInnerKeys());
             }
             
-            public SubQueryExprSelect getLastExprSource(GroupExpr.Query query, Where valueWhere, final MStaticExecuteEnvironment mSubEnv, SubQueryContext subQueryContext, Result<Cost> rBaseCost) {
+            public SubQueryExprSelect getLastExprSource(GroupExpr.Query query, Where valueWhere, MStaticExecuteEnvironment mSubEnv, SubQueryContext subQueryContext, Result<Cost> rBaseCost) {
                 
                 Where fullWhere = query.getWhere().and(valueWhere);
                 
@@ -767,7 +767,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                 final String alias = subQueryContext.wrapAlias(subQueryContext.wrapSiblingSubQuery("LEALIAS")); // чтобы оставить одну колонку 
 
                 return new SubQueryExprSelect() {
-                    public String getSource(ImRevMap<ParseValue, String> subQueryParams, Result<ImMap<String, SQLQuery>> rSubQueries) {
+                    public String getSource(ImRevMap<ParseValue, String> subQueryParams, MStaticExecuteEnvironment mSubEnv, Result<ImMap<String, SQLQuery>> rSubQueries) {
                         final Result<ImMap<Expr,String>> fromPropertyNames = new Result<>();
                         Result<ImMap<String, SQLQuery>> gSubQueries = new Result<>();
                         String select = compiled.getSelect(fromPropertyNames, gSubQueries, params.addRevExcl(subQueryParams), mSubEnv, limit);
@@ -782,9 +782,12 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                 final MStaticExecuteEnvironment mSubEnv = StaticExecuteEnvironmentImpl.mEnv();
                 final Result<ImMap<String, SQLQuery>> rSubQueries = new Result<>();
 
+                final StaticValueNullableExpr.Level level = new StaticValueNullableExpr.Level(subcontext.getSubQueryExprs());
+                mSubEnv.addNotMaterializable(level);
+
                 Result<Cost> rLastBaseCosts = new Result<>(Cost.ONE);
                 Result<ImRevMap<Value, Expr>> rVirtParams = new Result<>();
-                ImRevMap<String, SubQueryExprSelect> propertySelect = getLastExprSources(rVirtParams, mapKeys, pushWhere.getClassWhere().get(keys.toMap()),
+                ImRevMap<String, SubQueryExprSelect> propertySelect = getLastExprSources(level, rVirtParams, mapKeys, pushWhere.getClassWhere().get(mapKeys.valuesSet().toMap()),
                         mSubEnv, rLastBaseCosts);
 
                 final Query<Expr, Object> query = new Query<>(mapKeys, pushWhere);
@@ -794,7 +797,6 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                 final Result<ImCol<String>> whereSelect = new Result<>(); // проверить crossJoin
                 String fromSelect = compiled.fillSelect(resultKeys, fromPropertySelect, whereSelect, rSubQueries, params, mSubEnv);
 
-                Cost baseCost = compiled.sql.baseCost.or(rLastBaseCosts.result.mult(compiled.rows));
                 final ImRevMap<ParseValue, String> exParams = BaseUtils.immutableCast(rVirtParams.result.mapRevValues(new GetValue<String, Expr>() {
                     public String getMapValue(Expr value) {
                         return resultKeys.result.get(value);
@@ -802,22 +804,22 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                 }));
                 ImMap<String, String> propertySources = propertySelect.mapValues(new GetValue<String, SubQueryExprSelect>() {
                     public String getMapValue(SubQueryExprSelect value) {
-                        return value.getSource(exParams, rSubQueries);
+                        return value.getSource(exParams, mSubEnv, rSubQueries);
                     }
                 });
+                mSubEnv.removeNotMaterializable(level);
 
+                Cost baseCost = compiled.sql.baseCost.or(rLastBaseCosts.result.mult(compiled.rows));
                 return getSQLQuery("(" + syntax.getSelect(fromSelect, SQLSession.stringExpr(group.join(resultKeys.result),propertySources),
                         whereSelect.result.toString(" AND "),"","","", "") + ")", baseCost, rSubQueries.result, mSubEnv, groupWhere, false);
             }
 
-            private ImRevMap<String, SubQueryExprSelect> getLastExprSources(Result<ImRevMap<Value, Expr>> rVirtParams, ImRevMap<Expr, KeyExpr> mapKeys, final ClassWhere<KeyExpr> keyClasses, MStaticExecuteEnvironment mSubEnv, Result<Cost> rBaseCost) {
+            private ImRevMap<String, SubQueryExprSelect> getLastExprSources(final StaticValueNullableExpr.Level level, Result<ImRevMap<Value, Expr>> rVirtParams, ImRevMap<Expr, KeyExpr> mapKeys, final ClassWhere<KeyExpr> keyClasses, MStaticExecuteEnvironment mSubEnv, Result<Cost> rBaseCost) {
                 SubQueryContext subQueryContext = subcontext;
 
                 // генерим для всех Expr - "виртуальные" ValueExpr, and.им (хотя можно как в getExprSource просто в whereSelect докинуть, но будут проблемы с index'ами, union'ами и т.п.)
                 ImSet<KeyExpr> keys = mapKeys.valuesSet();
                 final ImRevMap<KeyExpr, String> keyNames = keys.mapRevValues(new GenNameIndex("pfda", "fr"));
-                final StaticValueNullableExpr.Level level = new StaticValueNullableExpr.Level(subQueryContext.getSubQueryExprs());
-                mSubEnv.addNotMaterializable(level);
                 ImRevMap<Expr, Value> virtParams = mapKeys.mapRevValues(new GetValue<Value, KeyExpr>() {
                     public Value getMapValue(KeyExpr value) {
                         return new StaticValueNullableExpr(keyClasses.getCommonClass(value), keyNames.get(value), level);
@@ -836,7 +838,6 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                     
                     mPropertySelect.mapValue(i, getLastExprSource(group, valueWhere, mSubEnv, subQueryContext, rBaseCost));
                 }
-                mSubEnv.removeNotMaterializable(level);
                 return mPropertySelect.immutableValueRev();
             }
 
