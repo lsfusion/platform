@@ -154,7 +154,6 @@ public abstract class QueryView extends JPanel implements QueryConditionView.UIH
             }
         });
 
-        comp.getInputMap(JComponent.WHEN_FOCUSED).put(KeyStrokes.getRemoveFiltersKeyStroke(), "removeAll");
         comp.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(getKeyStroke(InputEvent.SHIFT_DOWN_MASK), "removeAll");
         comp.getActionMap().put("removeAll", new AbstractAction() {
             @Override
