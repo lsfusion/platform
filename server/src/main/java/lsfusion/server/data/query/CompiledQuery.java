@@ -795,7 +795,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                 String fromSelect = compiled.fillSelect(resultKeys, fromPropertySelect, whereSelect, rSubQueries, params, mSubEnv);
 
                 Cost baseCost = compiled.sql.baseCost.or(rLastBaseCosts.result.mult(compiled.rows));
-                final ImRevMap<ParseValue, String> exParams = params.addRevExcl(rVirtParams.result.mapRevValues(new GetValue<String, Expr>() {
+                final ImRevMap<ParseValue, String> exParams = BaseUtils.immutableCast(rVirtParams.result.mapRevValues(new GetValue<String, Expr>() {
                     public String getMapValue(Expr value) {
                         return resultKeys.result.get(value);
                     }
