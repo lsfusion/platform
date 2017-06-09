@@ -417,9 +417,9 @@ public class CompiledQuery<K,V> extends ImmutableObject {
 
         private abstract class JoinSelect<I extends InnerJoin> {
 
-            final String alias; // final
-            String join; // final
-            final I innerJoin;
+            public final String alias; // final
+            public String join; // final
+            public final I innerJoin;
 
             protected abstract ImMap<String, BaseExpr> initJoins(I innerJoin, SQLSyntax syntax);
 
@@ -514,8 +514,10 @@ public class CompiledQuery<K,V> extends ImmutableObject {
         public void fillInnerJoins(Result<Cost> mBaseCost, Result<Stat> mRows, MCol<String> whereSelect, LimitOptions limit, ImOrderSet<Expr> orders) { // заполним Inner Joins, чтобы keySelect'ы были
             stackUsedPendingKeys.push(SetFact.<KeyExpr>mSet()); stackTranslate.push(MapFact.<String, String>mRevMap()); stackUsedOuterPendingJoins.push(new Result<Boolean>());
 
-            innerWhere = whereJoins.fillInnerJoins(upWheres, mExplicitWheres, mBaseCost, mRows, this, keys, keyStat, limit, orders);
-
+            // заполняем inner joins, чтобы заполнить все ключи (плюс сделать это первыми)
+            InnerJoins innerJoins = getInnerJoins();
+            innerJoins.fillInnerJoins(innerJoins.getMeanUpWheres(whereJoins, upWheres), this);
+            
             MSet<KeyExpr> usedKeys = stackUsedPendingKeys.pop();
             MRevMap<String, String> translate = stackTranslate.pop();
             stackUsedOuterPendingJoins.pop();
@@ -528,6 +530,8 @@ public class CompiledQuery<K,V> extends ImmutableObject {
             mExplicitWheres = null;
             mImplicitJoins = null;
             mOuterPendingJoins = null;
+
+            innerWhere = whereJoins.fillExtraInfo(upWheres, whereSelect, mBaseCost, mRows, this, keys, keyStat, limit, orders);
         }
 
         private Where innerWhere;

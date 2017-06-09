@@ -798,6 +798,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     public void addIndex(Table table, ImOrderMap<Field, Boolean> fields, Logger logger) throws SQLException {
         String columns = fields.toString(new GetKeyValue<String, Field, Boolean>() {
             public String getMapValue(Field key, Boolean value) {
+                assert value || !(key instanceof KeyField);
                 return key.getName(syntax) + " " + syntax.getOrderDirection(false, value);
             }}, ",");
 

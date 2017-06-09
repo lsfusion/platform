@@ -1668,37 +1668,36 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
     // из upMeans следует
     public UpWheres<WhereJoin> orMeanUpWheres(UpWheres<WhereJoin> up, WhereJoins meanWheres, UpWheres<WhereJoin> upMeans) {
         MExclMap<WhereJoin, UpWhere> result = MapFact.mExclMap(wheres.length); // массивы
-        for(WhereJoin where : wheres) {
-            UpWhere up2Where = upMeans.get(where);
-            if(up2Where==null) { // то есть значит в следствии
-                InnerExpr followExpr;
-                for(WhereJoin up2Join : meanWheres.wheres)
-                    if((followExpr=((InnerJoin)where).getInnerExpr(up2Join))!=null) {
-                        up2Where = followExpr.getUpNotNullWhere();
-                        break;
-                    }
-            }
-            result.exclAdd(where, up.get(where).or(up2Where));
-        }
+        for(WhereJoin where : wheres)
+            result.exclAdd(where, up.get(where).or(getMeanUpWheres(where, meanWheres, upMeans)));
         return new UpWheres<>(result.immutable());
     }
-    
-    // вообще при таком подходе, скажем из-за формул в ExprJoin, LEFT JOIN'ы могут быть раньше INNER, но так как SQL Server это позволяет бороться до конца за это не имеет особого смысла 
-    public Where fillInnerJoins(UpWheres<WhereJoin> upWheres, MList<String> whereSelect, Result<Cost> mBaseCost, Result<Stat> mRows, CompileSource source, ImSet<KeyExpr> keys, KeyStat keyStat, LimitOptions limit, ImOrderSet<Expr> orders) {
-        Where innerWhere = Where.TRUE;
-        for (WhereJoin where : getAdjWheres())
-            if(!(where instanceof ExprIndexedJoin && ((ExprIndexedJoin)where).givesNoKeys())) {
-                Where upWhere = upWheres.get(where).getWhere();
-                String upSource = upWhere.getSource(source);
-                if(where instanceof ExprJoin && ((ExprJoin)where).isClassJoin()) {
-                    whereSelect.add(upSource);
-                    innerWhere = innerWhere.and(upWhere);
-                }
-            }
 
-        // хитрая эвристика - если есть limit и он маленький, докидываем маленькую статистику по порядкам
-        // фактически если есть хороший план с поиском первых записей, то логично что и фильтрация будет быстрой (обратное впрочем не верно, но в этом и есть эвристика
-        // !!! ВАЖНА для GROUP LAST / ANY оптимизации (isLastOpt)
+    public static UpWhere getMeanUpWheres(WhereJoin where, WhereJoins meanWheres, UpWheres<WhereJoin> upMeans) {
+        UpWhere up2Where = upMeans.get(where);
+        if(up2Where==null) { // то есть значит в следствии
+            InnerExpr followExpr;
+            for(WhereJoin up2Join : meanWheres.wheres)
+                if((followExpr=((InnerJoin)where).getInnerExpr(up2Join))!=null) {
+                    up2Where = followExpr.getUpNotNullWhere();
+                    break;
+                }
+        }
+        return up2Where;
+    }
+
+    // IsClassJoin, limitHeur, indexNotNulls
+    public Where fillExtraInfo(UpWheres<WhereJoin> upWheres, MCol<String> whereSelect, Result<Cost> mBaseCost, Result<Stat> mRows, CompileSource source, ImSet<KeyExpr> keys, KeyStat keyStat, LimitOptions limit, ImOrderSet<Expr> orders) {
+        // не совсем понятно зачем isClassJoin явно обрабатывать
+        Where innerWhere = Where.TRUE;
+//        for (WhereJoin where : getAdjWheres()) {
+//            if(where instanceof ExprJoin && ((ExprJoin)where).isClassJoin()) {
+//                Where upWhere = upWheres.get(where).getWhere();
+//                whereSelect.add(upWhere.getSource(source));
+//                innerWhere = innerWhere.and(upWhere);
+//            }
+//        }
+
         StatType statType = StatType.COMPILE;
         Result<ImSet<BaseExpr>> usedNotNulls = source.syntax.hasNotNullIndexProblem() ? new Result<ImSet<BaseExpr>>() : null;
         StatKeys<KeyExpr> statKeys = getStatKeys(keys, null, keyStat, statType, usedNotNulls);// newNotNull
@@ -1706,6 +1705,9 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         Cost baseCost = statKeys.getCost();
         Stat stat = statKeys.getRows();
 
+        // хитрая эвристика - если есть limit и он маленький, докидываем маленькую статистику по порядкам
+        // фактически если есть хороший план с поиском первых записей, то логично что и фильтрация будет быстрой (обратное впрочем не верно, но в этом и есть эвристика
+        // !!! ВАЖНА для GROUP LAST / ANY оптимизации (isLastOpt)
         if(limit.hasLimit() && !Settings.get().isDisableAdjustLimitHeur() && Stat.ONE.less(baseCost.rows)) {
             WhereJoins whereJoins = this;
             int i=0,size=orders.size();
@@ -1735,8 +1737,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
             
         if(mBaseCost.result != null)
             baseCost = baseCost.or(mBaseCost.result);
-        mBaseCost.set(baseCost);
-        
+        mBaseCost.set(baseCost);        
         if(mRows.result != null)
             stat = stat.or(mRows.result);
         mRows.set(stat);
