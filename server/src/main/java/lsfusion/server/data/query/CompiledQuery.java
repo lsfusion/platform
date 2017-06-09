@@ -737,6 +737,10 @@ public class CompiledQuery<K,V> extends ImmutableObject {
 
         }
 
+        private interface SubQueryExprSelect {
+            String getSource(ImRevMap<ParseValue, String> subQueryParams, Result<ImMap<String, SQLQuery>> rSubQueries);
+        }
+
         private class GroupSelect extends QuerySelect<Expr, GroupExpr.Query,GroupJoin,GroupExpr> {
 
             final ImSet<KeyExpr> keys;
@@ -745,52 +749,73 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                 super(groupJoin);
                 keys = BaseUtils.immutableCast(groupJoin.getInnerKeys());
             }
-
-            public String getLastExprSource(GroupExpr.Query query, Where valueWhere, ImRevMap<ParseValue, String> exParams, MStaticExecuteEnvironment mSubEnv, SubQueryContext subQueryContext, Result<ImMap<String, SQLQuery>> rSubQueries, Result<Cost> rBaseCost, Stat rows) {
+            
+            public SubQueryExprSelect getLastExprSource(GroupExpr.Query query, Where valueWhere, final MStaticExecuteEnvironment mSubEnv, SubQueryContext subQueryContext, Result<Cost> rBaseCost) {
                 
                 Where fullWhere = query.getWhere().and(valueWhere);
                 
                 final CompileSource source = InnerSelect.this;
                 
-                Expr valueExpr = query.getMainExpr();
+                final Expr valueExpr = query.getMainExpr();
                 Query<KeyExpr,Expr> subQuery = new Query<>(keys.toRevMap(),
                         query.orders.keys().merge(valueExpr).toMap(), fullWhere);
                 // непонятно надо ли использовать или нет, но пока методики проталкивания его нет query.ordersNotNull
                 
-                int limit = 1;
-                CompiledQuery<KeyExpr, Expr> compiled = subQuery.compile(Query.reverseOrder(query.orders), new CompileOptions<Expr>(source.syntax, LimitOptions.get(limit), subQueryContext));
+                final int limit = 1;
+                final CompiledQuery<KeyExpr, Expr> compiled = subQuery.compile(Query.reverseOrder(query.orders), new CompileOptions<Expr>(source.syntax, LimitOptions.get(limit), subQueryContext));
+                rBaseCost.set(rBaseCost.result.or(compiled.sql.baseCost));
+                final String alias = subQueryContext.wrapAlias(subQueryContext.wrapSiblingSubQuery("LEALIAS")); // чтобы оставить одну колонку 
 
-                final Result<ImMap<Expr,String>> fromPropertyNames = new Result<>();
-                Result<ImMap<String, SQLQuery>> gSubQueries = new Result<>();
-                String select = compiled.getSelect(fromPropertyNames, gSubQueries, exParams, mSubEnv, limit);
-                rSubQueries.set(rSubQueries.result.addExcl(gSubQueries.result));
-                rBaseCost.set(rBaseCost.result.or(compiled.sql.baseCost.mult(rows)));
-                
-                String alias = subQueryContext.wrapAlias(subQueryContext.wrapSiblingSubQuery("LEALIAS")); // чтобы оставить одну колонку 
-                return "(" + syntax.getSelect("(" + select+ ") " + alias, fromPropertyNames.result.get(valueExpr), "", "", "", "", "") + ")"; 
+                return new SubQueryExprSelect() {
+                    public String getSource(ImRevMap<ParseValue, String> subQueryParams, Result<ImMap<String, SQLQuery>> rSubQueries) {
+                        final Result<ImMap<Expr,String>> fromPropertyNames = new Result<>();
+                        Result<ImMap<String, SQLQuery>> gSubQueries = new Result<>();
+                        String select = compiled.getSelect(fromPropertyNames, gSubQueries, params.addRevExcl(subQueryParams), mSubEnv, limit);
+                        rSubQueries.set(rSubQueries.result.addExcl(gSubQueries.result));
+                        return "(" + syntax.getSelect("(" + select+ ") " + alias, fromPropertyNames.result.get(valueExpr), "", "", "", "", "") + ")";
+                    }
+                };
             }
 
             public SQLQuery getLastSQLQuery(ImRevMap<Expr, KeyExpr> mapKeys, Where pushWhere, Where groupWhere) {
                 
                 final MStaticExecuteEnvironment mSubEnv = StaticExecuteEnvironmentImpl.mEnv();
-                final Result<ImCol<String>> whereSelect = new Result<>(); // проверить crossJoin
-                final Result<ImMap<Object,String>> fromPropertySelect = new Result<>();
-                Result<Cost> rBaseCost = new Result<>();
                 final Result<ImMap<String, SQLQuery>> rSubQueries = new Result<>();
-                
-                final Query<Expr, Object> query = new Query<>(mapKeys, pushWhere);
 
+                Result<Cost> rLastBaseCosts = new Result<>(Cost.ONE);
+                Result<ImRevMap<Value, Expr>> rVirtParams = new Result<>();
+                ImRevMap<String, SubQueryExprSelect> propertySelect = getLastExprSources(mapKeys, pushWhere.getClassWhere().get(keys.toMap()),
+                        mSubEnv, rLastBaseCosts);
+
+                final Query<Expr, Object> query = new Query<>(mapKeys, pushWhere);
                 final CompiledQuery<Expr, Object> compiled = query.compile(new CompileOptions<Object>(syntax, subcontext.pushSubQuery()));
                 final Result<ImMap<Expr, String>> resultKeys = new Result<>();
+                final Result<ImMap<Object,String>> fromPropertySelect = new Result<>();
+                final Result<ImCol<String>> whereSelect = new Result<>(); // проверить crossJoin
                 String fromSelect = compiled.fillSelect(resultKeys, fromPropertySelect, whereSelect, rSubQueries, params, mSubEnv);
-                rBaseCost.set(compiled.sql.baseCost);
 
+                Cost baseCost = compiled.sql.baseCost.or(rLastBaseCosts.result.mult(compiled.rows));
+                final ImRevMap<ParseValue, String> exParams = params.addRevExcl(rVirtParams.result.mapRevValues(new GetValue<String, Expr>() {
+                    public String getMapValue(Expr value) {
+                        return resultKeys.result.get(value);
+                    }
+                }));
+                ImMap<String, String> propertySources = propertySelect.mapValues(new GetValue<String, SubQueryExprSelect>() {
+                    public String getMapValue(SubQueryExprSelect value) {
+                        return value.getSource(exParams, rSubQueries);
+                    }
+                });
+
+                return getSQLQuery("(" + syntax.getSelect(fromSelect, SQLSession.stringExpr(group.join(resultKeys.result),propertySources),
+                        whereSelect.result.toString(" AND "),"","","", "") + ")", baseCost, rSubQueries.result, mSubEnv, groupWhere, false);
+            }
+
+            private ImRevMap<String, SubQueryExprSelect> getLastExprSources(ImRevMap<Expr, KeyExpr> mapKeys, final ClassWhere<KeyExpr> keyClasses, MStaticExecuteEnvironment mSubEnv, Result<Cost> rBaseCost) {
                 SubQueryContext subQueryContext = subcontext;
 
                 // генерим для всех Expr - "виртуальные" ValueExpr, and.им (хотя можно как в getExprSource просто в whereSelect докинуть, но будут проблемы с index'ами, union'ами и т.п.)
                 ImSet<KeyExpr> keys = mapKeys.valuesSet();
                 final ImRevMap<KeyExpr, String> keyNames = keys.mapRevValues(new GenNameIndex("pfda", "fr"));
-                final ClassWhere<KeyExpr> keyClasses = pushWhere.getClassWhere().get(keys.toMap());
                 final StaticValueNullableExpr.Level level = new StaticValueNullableExpr.Level(subQueryContext.getSubQueryExprs());
                 mSubEnv.addNotMaterializable(level);
                 ImRevMap<Expr, Value> virtParams = mapKeys.mapRevValues(new GetValue<Value, KeyExpr>() {
@@ -799,27 +824,20 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                     }
                 });
                 subQueryContext = subQueryContext.pushSubQueryExprs();
-                
-                ImRevMap<ParseValue, String> exParams = params.addRevExcl(virtParams.reverse().mapRevValues(new GetValue<String, Expr>() {
-                    public String getMapValue(Expr value) {
-                        return resultKeys.result.get(value);
-                    }
-                }));
+
                 Where valueWhere = CompareWhere.compare(BaseUtils.<ImRevMap<Expr, Expr>>immutableCast(virtParams));
 
-                ImRevValueMap<String, String> mPropertySelect = queries.mapItRevValues();// последействие
+                ImRevValueMap<String, SubQueryExprSelect> mPropertySelect = queries.mapItRevValues();// последействие
                 for(int i=0,size=queries.size();i<size;i++) {
                     GroupExpr.Query group = queries.getValue(i); assert group.type.isLastOpt();
                     
                     subQueryContext = subQueryContext.pushSiblingSubQuery().pushAlias(1); // чтобы не пересекались alias'ы при использовании subqueryexpr
-
-                    mPropertySelect.mapValue(i, getLastExprSource(group, valueWhere, exParams, mSubEnv, subQueryContext, rSubQueries, rBaseCost, compiled.rows));
+                    
+                    mPropertySelect.mapValue(i, getLastExprSource(group, valueWhere, mSubEnv, subQueryContext, rBaseCost));
                 }
-                
                 mSubEnv.removeNotMaterializable(level);
-                return getSQLQuery("(" + syntax.getSelect(fromSelect, SQLSession.stringExpr(group.join(resultKeys.result),mPropertySelect.immutableValueRev()),
-                        whereSelect.result.toString(" AND "),"","","", "") + ")", rBaseCost.result, rSubQueries.result, mSubEnv, groupWhere, false);
-            } 
+                return mPropertySelect.immutableValueRev();
+            }
 
             public SQLQuery getSQLQuery() {
 
