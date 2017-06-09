@@ -350,6 +350,8 @@ public class OrObjectClassSet extends TwinImmutableObject implements OrClassSet,
         if(children.size()==1) return source + "=" + children.single().ID;
         return source + " IN (" + children.toString(new GetValue<String, ConcreteCustomClass>() {
             public String getMapValue(ConcreteCustomClass value) {
+                if(value.ID == null)
+                    return "filling ids";
                 return value.ID.toString();
             }
         }, ",") + ")";
