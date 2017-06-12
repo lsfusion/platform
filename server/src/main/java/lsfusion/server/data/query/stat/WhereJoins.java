@@ -17,7 +17,6 @@ import lsfusion.server.caches.ManualLazy;
 import lsfusion.server.caches.OuterContext;
 import lsfusion.server.caches.ParamExpr;
 import lsfusion.server.caches.hash.HashContext;
-import lsfusion.server.data.Table;
 import lsfusion.server.data.Value;
 import lsfusion.server.data.expr.*;
 import lsfusion.server.data.expr.query.*;
@@ -30,9 +29,6 @@ import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.where.DNFWheres;
 import lsfusion.server.data.where.Where;
 import lsfusion.utils.GreedyTreeBuilding;
-import lsfusion.utils.SpanningTreeWithBlackjack;
-import lsfusion.utils.prim.Prim;
-import lsfusion.utils.prim.UndirectedGraph;
 
 import java.util.*;
 
@@ -260,6 +256,11 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         }
 
         @Override
+        public Cost getCostWithLookAhead() {
+            return statKeys.getCost();
+        }
+
+        @Override
         public Stat getStat() {
             return statKeys.getRows();
         }
@@ -271,7 +272,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
 
         @Override
         public Cost getMaxCost() {
-            return getCost();
+            return statKeys.getCost();
         }
 
         @Override
@@ -339,6 +340,8 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         // основные параметры
         private final Cost cost;
         private final Stat stat;
+        
+        private final Cost lookAheadCost;
 
         // доппараметры, в основном для детерменированности
         private final Cost leftCost; // assert что больше внутренних
@@ -359,8 +362,8 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
 //        private final Stat[] bEdgeStats;
 //        private final List<? extends Edge> edges;
 
-        public MergeCostStat(Cost cost, MergeCostStat costStat) {
-            this(cost, costStat.stat, costStat.inJoins, costStat.adjJoins,
+        public MergeCostStat(Cost lookAheadCost, MergeCostStat costStat) {
+            this(costStat.cost, lookAheadCost, costStat.stat, costStat.inJoins, costStat.adjJoins,
                     costStat.leftCost, costStat.rightCost, costStat.leftStat, costStat.rightStat, costStat.joinsCount,
                     costStat.joinStats, costStat.keyStats, costStat.propStats, costStat.pushCosts, costStat.usedNotNulls
 //                    ,costStat.left, costStat.right, costStat.aEdgeStats, costStat.bEdgeStats, costStat.edges
@@ -371,20 +374,21 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
                              Cost leftCost, Cost rightCost, Stat leftStat, Stat rightStat, int joinsCount
 //                             , CostStat left, CostStat right, Stat[] aEdgeStats, Stat[] bEdgeStats, List<? extends Edge> edges
                             ) {
-            this(cost, stat, inJoins, adjJoins,
+            this(cost, null, stat, inJoins, adjJoins,
                     leftCost, rightCost, leftStat, rightStat, joinsCount,
                     null, null, null, null, null
 //                    , left, right, aEdgeStats, bEdgeStats, edges
                 );
         }
 
-        public MergeCostStat(Cost cost, Stat stat, BitSet inJoins, BitSet adjJoins,
+        public MergeCostStat(Cost cost, Cost lookAheadCost, Stat stat, BitSet inJoins, BitSet adjJoins,
                              Cost leftCost, Cost rightCost, Stat leftStat, Stat rightStat, int joinsCount,
                              ImMap<BaseJoin, Stat> joinStats, ImMap<BaseJoin, DistinctKeys> keyStats, ImMap<BaseExpr, Stat> propStats, ImMap<QueryJoin, PushCost> pushCosts, ImSet<BaseExpr> usedNotNulls
 //                             , CostStat left, CostStat right, Stat[] aEdgeStats, Stat[] bEdgeStats, List<? extends Edge> edges
                             ) {
             super(usedNotNulls, inJoins, adjJoins, pushCosts);
             this.cost = cost;
+            this.lookAheadCost = lookAheadCost;
             this.stat = stat;
 
             this.leftCost = leftCost;
@@ -412,6 +416,14 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         @Override
         public Cost getCost() {
             return cost;
+        }
+
+        @Override
+        public Cost getCostWithLookAhead() {
+            Cost result = cost;
+            if(lookAheadCost != null)
+                result = result.or(lookAheadCost);
+            return result;
         }
 
         @Override
@@ -582,6 +594,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
 
         public abstract BaseJoin getJoin();
         public abstract Cost getCost();
+        public abstract Cost getCostWithLookAhead();
         public abstract Stat getStat();
 
         public abstract Cost getMinCost();
@@ -676,7 +689,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
             if(o == max)
                 return -1;
 
-            int compare = Integer.compare(getCost().rows.getWeight(), o.getCost().rows.getWeight());
+            int compare = Integer.compare(getCostWithLookAhead().rows.getWeight(), o.getCostWithLookAhead().rows.getWeight());
             if(compare != 0)
                 return compare;
             compare = Integer.compare(getStat().getWeight(), o.getStat().getWeight());
@@ -992,7 +1005,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
     }
 
     private static MergeCostStat max = new MergeCostStat(null, null, null, null, null, null, null, null, 0
-                                                            , null, null, null, null, null
+//                                                            , null, null, null, null, null
                                                         );
 
     private static <K extends BaseExpr, Z> GreedyTreeBuilding.CalculateCost<BaseJoin, CostStat, Edge<K>> getCostFunc(final QueryJoin pushJoin, final MAddMap<BaseExpr, PropStat> exprStats, final boolean needNotNulls, final KeyStat keyStat, final StatType type, final List<CostStat> costs, final List<Collection<Edge<K>>> edgesOut, final List<Collection<Edge<K>>> edgesIn) {
@@ -1310,7 +1323,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
                     }
                     ImMap<BaseExpr, Stat> newPropStats = aCostStat.getPropStats().addExcl(bCostStat.getPropStats()).merge(mPropAdjStats.immutable(), minStat);
     
-                    return new MergeCostStat(newCost, newStat, newInJoins, newAdjJoins,
+                    return new MergeCostStat(newCost, null, newStat, newInJoins, newAdjJoins,
                             aCost, bBaseCost, aAdjStat, bAdjStat, newJoinStats.size(),
                             newJoinStats, newKeyStats, newPropStats, newPushCosts, newUsedNotNulls
 //                            , aCostStat, bCostStat, aEdgeStats, bEdgeStats, edgesList
