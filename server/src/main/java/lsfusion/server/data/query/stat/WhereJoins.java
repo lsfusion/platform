@@ -1,12 +1,15 @@
 package lsfusion.server.data.query.stat;
 
 import lsfusion.base.*;
+import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.*;
+import lsfusion.base.col.interfaces.mutable.add.MAddCol;
 import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
 import lsfusion.base.col.interfaces.mutable.add.MAddMap;
+import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.base.col.lru.LRUWSSVSMap;
@@ -763,10 +766,15 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         });
     }
 
+    // assert что не включает queryJoin
     public <K extends BaseExpr, Z extends Expr> Where getCostPushWhere(final QueryJoin<Z, ?, ?, ?> queryJoin, boolean pushLargeDepth, final UpWheres<WhereJoin> upWheres, final KeyStat keyStat, final StatType type, final Result<Pair<ImRevMap<Z, KeyExpr>, Where>> pushJoinWhere) {
-        ImSet<BaseExpr> groups = queryJoin.getJoins().values().toSet();
+        return and(new WhereJoins(queryJoin)).getInnerCostPushWhere(queryJoin, pushLargeDepth, upWheres, keyStat, type, pushJoinWhere);
+    }
 
-        return calculateCost(groups, queryJoin, pushLargeDepth, false, keyStat, type, new CostResult<Where>() {
+    // assert что включает queryJoin
+    private <K extends BaseExpr, Z extends Expr> Where getInnerCostPushWhere(final QueryJoin<Z, ?, ?, ?> queryJoin, boolean pushLargeDepth, final UpWheres<WhereJoin> upWheres, final KeyStat keyStat, final StatType type, final Result<Pair<ImRevMap<Z, KeyExpr>, Where>> pushJoinWhere) {
+//        ImSet<BaseExpr> groups = queryJoin.getJoins().values().toSet(); // по идее не надо, так как включает queryJoin
+        return calculateCost(SetFact.<BaseExpr>EMPTY(), queryJoin, pushLargeDepth, false, keyStat, type, new CostResult<Where>() {
             public Where calculate(CostStat costStat, ImSet<Edge> edges, MAddMap<BaseExpr, PropStat> exprStats) {
                 return getCostPushWhere(costStat, edges, queryJoin, upWheres, pushJoinWhere);
             }
@@ -787,10 +795,11 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         boolean allKeep = keepThis;
         for (Edge edge : inJoin) {
             BaseJoin fromJoin = edge.getFrom();
-            boolean inAllKeep = recProceedCostWhere(fromJoin, proceeded, mMiddleTreeKeeps, mAllKeeps, mTranslate, edge, keepThis, keepJoins.contains(fromJoin), keepJoins, inEdges);
+            BaseExpr fromExpr = edge.expr;
+            boolean inAllKeep = recProceedCostWhere(fromJoin, proceeded, mMiddleTreeKeeps, mAllKeeps, mTranslate, fromExpr, keepThis, keepJoins.contains(fromJoin), keepJoins, inEdges);
             allKeep = inAllKeep && allKeep;
             if(inAllKeep)
-                mInAllKeeps.add(edge.expr);
+                mInAllKeeps.add(fromExpr);
         }
         if(keepThis && !allKeep) // если этот элемент не "полный", значит понадобятся все child'ы для трансляции, соотвественно пометим "полные" из них
             mAllKeeps.addAll(mInAllKeeps.immutable());
@@ -799,7 +808,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         return allKeep;
     }
 
-    private boolean recProceedCostWhere(BaseJoin join, MAddExclMap<BaseJoin, Boolean> proceeded, MMap<BaseJoin, MiddleTreeKeep> mMiddleTreeKeeps, MSet<BaseExpr> mAllKeeps, MSet<BaseExpr> mTranslate, Edge upEdge, boolean upKeep, boolean keepThis, ImSet<BaseJoin> keepJoins, ImMap<BaseJoin, ImSet<Edge>> inEdges) {
+    private boolean recProceedCostWhere(BaseJoin join, MAddExclMap<BaseJoin, Boolean> proceeded, MMap<BaseJoin, MiddleTreeKeep> mMiddleTreeKeeps, MSet<BaseExpr> mAllKeeps, MSet<BaseExpr> mTranslate, BaseExpr upExpr, boolean upKeep, boolean keepThis, ImSet<BaseJoin> keepJoins, ImMap<BaseJoin, ImSet<Edge>> inEdges) {
         assert keepThis == keepJoins.contains(join);
         if(!keepThis && upKeep && (join instanceof ParamExpr || join instanceof ValueJoin)) // ParamExpr и ValueJoin принудительно делаем keep
             keepThis = true;
@@ -807,10 +816,10 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         boolean allKeep = recProceedChildrenCostWhere(join, proceeded, mMiddleTreeKeeps, mAllKeeps, mTranslate, keepThis, keepJoins, inEdges);
 
         if (keepThis) // есть верхний keep join, соответственно это его проблема добавить Where (этот сам "подцепится" после этого)
-            mMiddleTreeKeeps.add(join, upKeep ? IntermediateKeep.instance : new MiddleTopKeep(upEdge.expr)); // есть ребро "наверх", используем выражение из него
+            mMiddleTreeKeeps.add(join, upKeep ? IntermediateKeep.instance : new MiddleTopKeep(upExpr)); // есть ребро "наверх", используем выражение из него
         else
             if (upKeep) // если был keep, а этот не нужен - добавляем трансляцию
-                mTranslate.add(upEdge.expr);
+                mTranslate.add(upExpr);
 
         return allKeep;
     }
@@ -872,8 +881,6 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         }
         assert !pushedKeys.isEmpty();
         ImSet<BaseJoin> keepJoins = cost.getJoins().removeIncl(queryJoin);
-        ImMap<Z, BaseExpr> queryJoins = queryJoin.getJoins();
-        ImMap<Z, BaseExpr> pushMap = queryJoins.filterIncl(pushedKeys);
 
         final ImMap<BaseJoin, ImSet<Edge>> inEdges = edges.group(new BaseUtils.Group<BaseJoin, Edge>() {
             public BaseJoin group(Edge value) {
@@ -926,7 +933,8 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         }
 
         Result<Where> pushExtraWhere = new Result<>(); // для partition
-        ImMap<Z, Expr> translatedPush = translator.translate(pushMap);
+        ImMap<Z, BaseExpr> queryJoins = queryJoin.getJoins();
+        ImMap<Z, Expr> translatedPush = translator.translate(queryJoins.filterIncl(pushedKeys));
         ImMap<Expr, ? extends Expr> translatedPushGroup = queryJoin.getPushGroup(translatedPush, true, pushExtraWhere);
         if(pushExtraWhere.result != null)
             upPushWhere = upPushWhere.and(pushExtraWhere.result.translateExpr(translator));
@@ -934,7 +942,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
             assert queryJoin instanceof GroupJoin;
             assert BaseUtils.hashEquals(translatedPush, translatedPushGroup);
             ImRevMap<Z, KeyExpr> mapKeys = KeyExpr.getMapKeys(translatedPush.keys());
-            pushJoinWhere.set(new Pair<ImRevMap<Z, KeyExpr>, Where>(mapKeys, GroupExpr.create(translatedPush, upPushWhere, mapKeys).getWhere()));
+            pushJoinWhere.set(new Pair<>(mapKeys, GroupExpr.create(translatedPush, upPushWhere, mapKeys).getWhere()));
         }
         return GroupExpr.create(translatedPushGroup, upPushWhere, translatedPushGroup.keys().toMap()).getWhere();
     }
@@ -998,7 +1006,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
             compute = treeBuilding.compute(costCalc);
         result = compute.node.getCost();
 
-        if(pushJoin != null && pushCost.pushCompareTo(result, pushJoin, pushLargeDepth) <= 0) // так как текущий computeWithVertex всегда берет хоть одно ребро
+        if(pushJoin != null && pushCost.pushCompareTo(result, pushJoin, pushLargeDepth || pushJoin instanceof LastJoin) <= 0) // так как текущий computeWithVertex всегда берет хоть одно ребро, последняя проверка нужна так как есть оптимизация быстрой остановки когда cost становится равным Max, выходить - а эта проверка пессимистична (пытается протолкнуть даже при совпадении cost'ов) 
             return pushCost;
         else
             return result;
@@ -1452,6 +1460,13 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
             queue.add(join);
     }
 
+    private static void addExpr(BaseJoin join, MSet<BaseJoin> mJoins, Queue<BaseJoin> queue, QueryJoin keepIdentJoin) {
+        if(keepIdentJoin != null && BaseUtils.hashEquals(join, keepIdentJoin))
+            join = keepIdentJoin;
+        if(!mJoins.add(join))
+            queue.add(join);
+    }
+
     private List<WhereJoin> getAdjIntervalWheres(Result<UpWheres<WhereJoin>> upAdjWheres) {
         // в принципе в cost based это может быть не нужно, просто нужно сделать result cost и stat объединения двух ExprIndexedJoin = AverageIntervalStat и тогда жадняк сам разберется
         boolean hasExprIndexed = false; // оптимизация
@@ -1488,6 +1503,9 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         MSet<BaseJoin> mJoins = SetFact.mSet();
         Queue<BaseJoin> queue = new LinkedList<>();
 
+        // для того чтобы сгруппировать одинаковые expr и тем самым создать виртуальную связь key-key (без join'а самого expr'а)
+        MAddExclMap<BaseExpr, MAddCol<Pair<BaseJoin<Object>, Object>>> joinExprEdges = MapFact.mAddExclMap();
+
         // собираем все ребра и вершины (без ExprIndexedJoin они все равно не используются при подсчете статистики, но с интервалами)
         for(WhereJoin valueJoin : getAdjIntervalWheres(null))
             addQueueJoin(valueJoin, mJoins, queue, keepIdentJoin);
@@ -1504,13 +1522,41 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
                 Object joinKey = joinExprs.getKey(i);
                 BaseExpr joinExpr = joinExprs.getValue(i);
 
-                Edge edge = new Edge(join, joinKey, joinExpr);
-                mEdges.exclAdd(edge);
-                mExprs.add(joinExpr);
+                InnerBaseJoin<?> exprJoin = joinExpr.getBaseJoin();
+                
+                if(exprJoin.getJoins().isEmpty()) { // оптимизация (хотя и не до конца правильная если скажем это GroupJoin без параметров, но большим cost'ом)
+                    addExpr(mEdges, mExprs, join, joinKey, joinExpr);
+                } else {
+                    MAddCol<Pair<BaseJoin<Object>, Object>> exprEdges = joinExprEdges.get(joinExpr);
+                    if (exprEdges == null) {
+                        exprEdges = ListFact.mAddCol();
+                        joinExprEdges.exclAdd(joinExpr, exprEdges);
+                    }
+                    exprEdges.add(new Pair<>(join, joinKey));
+                }
 
-                addQueueJoin(joinExpr.getBaseJoin(), mJoins, queue, keepIdentJoin);
+                addQueueJoin(exprJoin, mJoins, queue, keepIdentJoin);
             }
         }
+
+        for(int i=0,size=joinExprEdges.size();i<size;i++) {
+            BaseExpr joinExpr = joinExprEdges.getKey(i);
+            MAddCol<Pair<BaseJoin<Object>, Object>> exprEdges = joinExprEdges.getValue(i);
+            if(exprEdges.size()==1) { // оптимизация, чтобы не создавать не нужные вершины
+                Pair<BaseJoin<Object>, Object> exprEdge = exprEdges.get(0);
+                addExpr(mEdges, mExprs, exprEdge.first, exprEdge.second, joinExpr);
+            } else {
+                IdentExpr identExpr = new IdentExpr(joinExpr);
+                for(int j=0,sizeJ=exprEdges.size();j<sizeJ;j++) {
+                    Pair<BaseJoin<Object>, Object> exprEdge = exprEdges.get(j);
+                    addExpr(mEdges, mExprs, exprEdge.first, exprEdge.second, identExpr);
+                }
+                IdentExpr baseJoin = identExpr.getBaseJoin();
+                mJoins.add(baseJoin);
+                addExpr(mEdges, mExprs, baseJoin, 0, joinExpr);
+            }            
+        }
+
         exprs.set(mExprs.immutable());
 
         // добавляем notNull статистику
@@ -1527,8 +1573,26 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         edges.set(mEdges.immutable());
     }
 
+    private static void addExpr(MExclSet<Edge> mEdges, MSet<BaseExpr> mExprs, BaseJoin<Object> join, Object joinKey, BaseExpr joinExpr) {
+        Edge edge = new Edge(join, joinKey, joinExpr);
+        mEdges.exclAdd(edge);
+        mExprs.add(joinExpr);
+    }
+
     private static Where getUpWhere(WhereJoin join, UpWhere upWhere) {
         return upWhere.getWhere().and(BaseExpr.getOrWhere(join));
+    }
+
+    public <K extends BaseExpr, Z extends Expr> Where getCostPushWhere(final QueryJoin<Z, ?, ?, ?> queryJoin, boolean pushLargeDepth, UpWheres<WhereJoin> upWheres, KeyStat keyStat, final StatType type, KeyEqual keyEqual) {
+        WhereJoins adjWhereJoins = this;
+        if(!keyEqual.isEmpty()) { // для оптимизации
+            Result<UpWheres<WhereJoin>> equalUpWheres = new Result<>();
+            WhereJoins equalWhereJoins = keyEqual.getWhereJoins(equalUpWheres);
+            adjWhereJoins = adjWhereJoins.and(equalWhereJoins);
+            upWheres = adjWhereJoins.andUpWheres(upWheres, equalUpWheres.result); // можно было бы по идее просто слить addExcl, но на всякий случай сделаем в общем случае
+            keyStat = keyEqual.getKeyStat(keyStat);
+        }
+        return adjWhereJoins.getCostPushWhere(queryJoin, pushLargeDepth, upWheres, keyEqual.getKeyStat(keyStat), type, (Result<Pair<ImRevMap<Z,KeyExpr>,Where>>) null);
     }
 
     public <K extends BaseExpr> StatKeys<K> getStatKeys(ImSet<K> groups, final KeyStat keyStat, StatType type, final KeyEqual keyEqual) {
@@ -1633,7 +1697,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         WhereJoins adjWhereJoins = this;
         if(isInner) {
             if(pushJoin.isValue()) { // проблема что queryJoin может быть в ExprStatJoin.valueJoins, тогда он будет Inner, а в WhereJoins его не будет и начнут падать assertion'ы появлятся висячие ключи, другое дело, что потом надо убрать в EqualsWhere ExprStatJoin = значение, тогда это проверка не нужно
-                return new WhereJoins(pushJoin);
+                return WhereJoins.EMPTY;
             }
         }
         
@@ -1645,7 +1709,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         else
             assert !isInner;
         
-        return adjWhereJoins.and(new WhereJoins(pushJoin));
+        return adjWhereJoins;
     }
 
     // может как MeanUpWheres сделать

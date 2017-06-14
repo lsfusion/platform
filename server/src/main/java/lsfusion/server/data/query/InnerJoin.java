@@ -12,5 +12,7 @@ public interface InnerJoin<K, IJ extends InnerJoin<K, IJ>> extends WhereJoin<K, 
 
     InnerExpr getInnerExpr(WhereJoin join);
 
+    boolean isValue();
+
     StatKeys<K> getInnerStatKeys(StatType type);
 }

@@ -8,6 +8,7 @@ import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.KeyType;
+import lsfusion.server.data.expr.query.GroupExprJoinsWhere;
 import lsfusion.server.data.expr.query.GroupExprWhereJoins;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.expr.query.StatType;
@@ -91,7 +92,9 @@ public interface Where extends SourceJoin<Where>, OuterContext<Where>, KeyType, 
     <K extends ParamExpr> StatKeys<K> getFullStatKeys(ImSet<K> groups, StatType type);
     <K extends BaseExpr> Stat getStatRows(StatType type);
     <K extends Expr> ImCol<GroupSplitWhere<K>> getSplitJoins(boolean notExclusive, ImSet<K> exprs, StatType statType, GroupStatType type);
-    <K extends Expr> GroupExprWhereJoins<K> getGroupWhereJoins(ImSet<K> exprs, final StatType statType, boolean forcePackReduce);
+    <K extends Expr> GroupExprWhereJoins<K> getGroupExprWhereJoins(ImSet<K> exprs, final StatType statType, boolean forcePackReduce);
+    <K extends Expr> GroupExprWhereJoins<K> getGroupExprWhereJoins(ImMap<K, ? extends Expr> exprs, final StatType statType, boolean forcePackReduce);
+    <K extends Expr> ImCol<GroupExprJoinsWhere<K>> getGroupExprJoinsWheres(ImMap<K, ? extends Expr> exprs, final StatType statType, final boolean forcePackReduce);
 
     // группировки в ДНФ, protected по сути
     KeyEquals getKeyEquals();

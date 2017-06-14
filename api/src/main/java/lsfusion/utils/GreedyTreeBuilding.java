@@ -333,6 +333,10 @@ public class GreedyTreeBuilding<V, C extends Comparable<C>, E extends GreedyTree
                 C edgeCost = functor.calculateLowerBound(nodes.get(i), nodes.get(j), complexEdge.simpleEdges);
                 complexEdge.setCost(edgeCost, true);
                 queue.add(complexEdge);
+
+                if(debugEnabled) {
+                    System.out.println("INIT NODES : " + complexEdge.cost + ", index : " + BaseUtils.indexOf(queue, complexEdge));
+                }
             }
         }
     }

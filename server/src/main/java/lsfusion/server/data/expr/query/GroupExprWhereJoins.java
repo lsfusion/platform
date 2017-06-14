@@ -3,11 +3,14 @@ package lsfusion.server.data.expr.query;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Result;
 import lsfusion.base.TwinImmutableObject;
+import lsfusion.base.col.ListFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImCol;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.base.col.interfaces.mutable.MCol;
+import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.caches.AbstractOuterContext;
 import lsfusion.server.caches.OuterContext;
@@ -19,6 +22,7 @@ import lsfusion.server.data.query.innerjoins.GroupJoinsWhere;
 import lsfusion.server.data.query.innerjoins.KeyEqual;
 import lsfusion.server.data.query.stat.*;
 import lsfusion.server.data.query.stat.KeyStat;
+import lsfusion.server.data.translator.ExprTranslator;
 import lsfusion.server.data.translator.MapTranslate;
 
 public class GroupExprWhereJoins<K extends Expr> extends AbstractOuterContext<GroupExprWhereJoins<K>> {
@@ -35,7 +39,7 @@ public class GroupExprWhereJoins<K extends Expr> extends AbstractOuterContext<Gr
         }
 
         public StatKeys<KeyExpr> getPartitionStatKeys(KeyStat keyStat, StatType type, StatKeys<KeyExpr> statKeys, ImSet<KeyExpr> allKeys, boolean useWhere) {
-            keyStat = keyEqual.getKeyStat(keyStat);
+//            keyStat = keyEqual.getKeyStat(keyStat); // по идее и так оборачивается внутри
 
             ImSet<BaseExpr> group = mapExprs.values().toSet();
             StatKeys<BaseExpr> partitionStats = (useWhere ? joins : WhereJoins.EMPTY).pushStatKeys(statKeys).getStatKeys(group, keyStat, type, keyEqual); // joins
@@ -43,7 +47,7 @@ public class GroupExprWhereJoins<K extends Expr> extends AbstractOuterContext<Gr
         }
 
         public StatKeys<K> getStatKeys(KeyStat keyStat, StatType type, StatKeys<K> statKeys) {
-            keyStat = keyEqual.getKeyStat(keyStat);
+//            keyStat = keyEqual.getKeyStat(keyStat);
 
             WhereJoins adjJoins = joins;
             if(statKeys != StatKeys.<K>NOPUSH()) {
@@ -76,6 +80,10 @@ public class GroupExprWhereJoins<K extends Expr> extends AbstractOuterContext<Gr
     public GroupExprWhereJoins(ImSet<Node<K>> nodes) {
         this.nodes = nodes;
     }
+    
+    public void addAll(MSet<Node<K>> mResult) {
+        mResult.addAll(nodes);
+    }
 
     public StatKeys<KeyExpr> getPartitionStatKeys(final KeyStat keyStat, final StatType type, final StatKeys<KeyExpr> statKeys, final boolean useWhere, final ImSet<KeyExpr> allKeys) {
         return StatKeys.or(nodes, new GetValue<StatKeys<KeyExpr>, Node<K>>() {
@@ -94,12 +102,29 @@ public class GroupExprWhereJoins<K extends Expr> extends AbstractOuterContext<Gr
     }
 
     // GroupJoinsWhere может и всегда приходит без Where
-    public static <K extends Expr> GroupExprWhereJoins<K> create(ImCol<GroupJoinsWhere> whereJoins, final ImMap<K, BaseExpr> mapExprs) {
-        return new GroupExprWhereJoins<>(whereJoins.mapMergeSetValues(new GetValue<Node<K>, GroupJoinsWhere>() {
-            public Node<K> getMapValue(GroupJoinsWhere value) {
-                return new Node<>(mapExprs, value.keyEqual, value.joins);
+    public static <K extends Expr> GroupExprWhereJoins<K> create(ImCol<GroupJoinsWhere> whereJoins, final ImMap<K, BaseExpr> mapExprs, StatType statType, boolean forcePackReduce) {
+        MSet<Node<K>> mResult = SetFact.mSet();
+        for(int i=0,size=whereJoins.size();i<size;i++) {
+            GroupJoinsWhere joinsWhere = whereJoins.get(i);
+            if(joinsWhere.keyEqual.isEmpty())
+                mResult.add(new Node<K>(mapExprs, joinsWhere.keyEqual, joinsWhere.joins));
+            else {
+                ExprTranslator translator = joinsWhere.keyEqual.getTranslator();
+                ImMap<K, Expr> transMapExprs = translator.translate(mapExprs);
+                ImMap<K, BaseExpr> transMapBaseExprs = BaseExpr.onlyBaseExprs(transMapExprs);
+                if(transMapBaseExprs != null)
+                    mResult.add(new Node<K>(transMapBaseExprs, joinsWhere.keyEqual, joinsWhere.joins));
+                else
+                    joinsWhere.getFullWhere().getGroupExprWhereJoins(transMapExprs, statType, forcePackReduce).addAll(mResult);
             }
-        }));
+        }
+        return new GroupExprWhereJoins<K>(mResult.immutable());
+
+//        return new GroupExprWhereJoins<>(whereJoins.mapMergeSetValues(new GetValue<Node<K>, GroupJoinsWhere>() {
+//            public Node<K> getMapValue(GroupJoinsWhere value) {
+//                return new Node<>(mapExprs, value.keyEqual, value.joins);
+//            }
+//        }));
     }
 
     private static final GroupExprWhereJoins EMPTY = new GroupExprWhereJoins(SetFact.EMPTY());

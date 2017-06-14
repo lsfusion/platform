@@ -30,6 +30,8 @@ import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.type.ClassReader;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassExprWhere;
+import lsfusion.server.logics.DataObject;
+import lsfusion.server.logics.ObjectValue;
 
 import java.util.Collections;
 import java.util.Set;
@@ -280,5 +282,12 @@ public abstract class BaseExpr extends Expr {
     // определят "класс сравнения", то есть класс в рамках которого если выражения не equals, то и их значения гарантировано не equals
     public int getStaticEqualClass() {
         return -1;
+    }
+
+    public static <K> ImMap<K, BaseExpr> onlyBaseExprs(ImMap<K, ? extends Expr> map) {
+        for(int i=0,size=map.size();i<size;i++)
+            if(!(map.getValue(i) instanceof BaseExpr))
+                return null;
+        return BaseUtils.immutableCast(map);
     }
 }

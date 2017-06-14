@@ -37,6 +37,10 @@ public class Cost {
     public boolean lessEquals(Cost cost) {
         return rows.lessEquals(cost.rows);
     }
+    
+    public boolean less(Cost cost) {
+        return rows.less(cost.rows);
+    }
 
     public Cost or(Stat decrease) {
         return new Cost(rows.or(decrease));

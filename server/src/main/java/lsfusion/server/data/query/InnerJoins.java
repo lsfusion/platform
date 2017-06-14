@@ -74,7 +74,7 @@ public class InnerJoins extends AddSet<InnerJoin, InnerJoins> {
         for (InnerJoin where : wheres) {
             UpWhere upWhere = upWheres.get(where);
             if(upWhere == null)
-                assert where.getOuterKeys().isEmpty(); // assert что это valueJoin из ExprStatJoin.valueJoins, а значит не дает ключ и getSource не обязателен (хотя возможно правильнее было бы getMeanUpWheres -> getInnerExpr подправить)
+                assert where.isValue(); // assert что это valueJoin из ExprStatJoin.valueJoins, а значит не дает ключ и getSource не обязателен (хотя возможно правильнее было бы getMeanUpWheres -> getInnerExpr подправить)
             else
                 upWhere.getWhere().getSource(source);
         }

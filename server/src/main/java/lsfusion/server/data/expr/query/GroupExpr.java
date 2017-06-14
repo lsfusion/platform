@@ -244,7 +244,7 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
         final Where queryWhere = query.getWhere();
         Settings settings = Settings.get();
 
-        GroupExprWhereJoins<Expr> groupWhereJoins = queryWhere.getGroupWhereJoins(group.keys(), StatType.GROUP_SPLIT, settings.isGroupStatExprWhereJoins());
+        GroupExprWhereJoins<Expr> groupWhereJoins = queryWhere.getGroupExprWhereJoins(group.keys(), StatType.GROUP_SPLIT, settings.isGroupStatExprWhereJoins());
 
         ImSet<KeyExpr> innerKeys = getInner().getQueryKeys();
 
@@ -266,7 +266,7 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
         }
 
         return new GroupJoin(innerKeys, getInner().getInnerValues(), getInner().getInnerKeyTypes(),
-                getInner().getInnerFollows(), groupWhere, groupWhereJoins, group, query.type.isLastOpt() && !settings.isDisableGroupLastOpt());
+                getInner().getInnerFollows(), groupWhere, groupWhereJoins, group, query.type.isLastOpt() && settings.getUseGroupLastOpt() != 0);
     }
 
 

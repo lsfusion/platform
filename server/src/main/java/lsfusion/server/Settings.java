@@ -2190,13 +2190,14 @@ public class Settings {
         this.disableAdjustLimitHeur = disableAdjustLimitHeur;
     }
 
-    private boolean disableGroupLastOpt = false;
+    // выключен так как обычно выталкиваемы предикаты в GroupLast не делают и они как правило приходят извне, во всяком случае пока подтвержденных случаев (кроме одного когда только 3 помогает не видели)
+    private int useGroupLastOpt = 1; // 0 (no) - не используем, 1 (pushedIn) - используем только полный pushedInWhere, 2 (mixed) - используем полный pushedInWhere если есть иначе pushedOutWhere, 3 (pushedOut) - всегда pushedOut
 
-    public boolean isDisableGroupLastOpt() {
-        return disableGroupLastOpt;
+    public int getUseGroupLastOpt() {
+        return useGroupLastOpt;
     }
 
-    public void setDisableGroupLastOpt(boolean disableGroupLastOpt) {
-        this.disableGroupLastOpt = disableGroupLastOpt;
+    public void setUseGroupLastOpt(int useGroupLastOpt) {
+        this.useGroupLastOpt = useGroupLastOpt;
     }
 }
