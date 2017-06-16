@@ -27,6 +27,7 @@ import lsfusion.server.caches.CacheStats;
 import lsfusion.server.caches.CacheStats.CacheType;
 import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.caches.IdentityStrongLazy;
+import lsfusion.server.caches.ManualLazy;
 import lsfusion.server.classes.*;
 import lsfusion.server.classes.sets.OrObjectClassSet;
 import lsfusion.server.classes.sets.ResolveClassSet;
@@ -464,7 +465,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
 
         Map<String, Set<String>> graph = buildModuleGraph();
 
-        checkCycles(graph, "there is a circular dependency between requred modules");
+        checkCycles(graph, "there is a circular dependency between required modules");
 
         if (!isRedundantString(orderDependencies)) {
             addOrderDependencies(orderDependencies, graph);
@@ -989,10 +990,13 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         return mResult.immutableOrder();                    
     }
 
-    @IdentityLazy
+    private Collection<String> customReports;
+    @ManualLazy
     public Collection<String> findAllCustomReports() {
-        Pattern pattern = Pattern.compile(".*reports/custom/.*\\.jrxml");
-        return ResourceList.getResources(pattern);
+        if (customReports == null) {
+            customReports = findAllCustomReportsCalculated();
+        }
+        return customReports;
     }
 
     public Collection<String> findAllCustomReportsCalculated() {
@@ -2417,6 +2421,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         result.add(getCleanTempTablesTask(scheduler));
         result.add(getFlushPendingTransactionCleanersTask(scheduler));
         result.add(getRestartConnectionsTask(scheduler));
+        result.add(findCustomReportsTask(scheduler));
         return result;
     }
 
@@ -2475,6 +2480,15 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
                 updateThreadAllocatedBytesMap();
             }
         }, false, Settings.get().getThreadAllocatedMemoryPeriod() / 2, false, "Allocated Bytes");
+    }
+    
+    private Scheduler.SchedulerTask findCustomReportsTask(Scheduler scheduler) {
+        return scheduler.createSystemTask(new EExecutionStackRunnable() {
+            @Override
+            public void run(ExecutionStack stack) throws Exception {
+                customReports = findAllCustomReportsCalculated();    
+            }
+        }, false, Settings.get().getFindCustomReportsTaskPeriod(), false, "Custom Reports");
     }
 
     private class AllocatedInfo {

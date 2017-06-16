@@ -253,6 +253,8 @@ public class Settings {
     private int profilerBatchSize = 10000;
 
     private int threadAllocatedMemoryPeriod = 180; //every 3 minutes
+    
+    private int findCustomReportsTaskPeriod = 60;
 
     private boolean readAllocatedBytes = true;
 
@@ -1660,6 +1662,14 @@ public class Settings {
 
     public void setThreadAllocatedMemoryPeriod(int threadAllocatedMemoryPeriod) {
         this.threadAllocatedMemoryPeriod = threadAllocatedMemoryPeriod;
+    }
+    
+    public int getFindCustomReportsTaskPeriod() {
+        return findCustomReportsTaskPeriod;
+    }
+    
+    public void setFindCustomReportsTaskPeriod(int findCustomReportsTaskPeriod) {
+        this.findCustomReportsTaskPeriod = findCustomReportsTaskPeriod; 
     }
 
     public long getMaxThreadAllocatedBytes() {
