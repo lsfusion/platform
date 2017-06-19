@@ -354,9 +354,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                 }
             } else {
                 if(!manageSession.isX()) {
-                    boolean isManageSession = manageSession.isManageSession();
-                    if (isManageSession != heurManageSession) {
-                        regAutoDiff("MANAGESESSION", isManageSession, heurManageSession);
+                    if (adjManageSession != heurManageSession) {
+                        regAutoDiff("MANAGESESSION", adjManageSession, heurManageSession);
                     }
                     
                     if(Settings.get().isEnableHeurManageSession()) {
