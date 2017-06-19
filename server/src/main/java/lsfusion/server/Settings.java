@@ -262,6 +262,8 @@ public class Settings {
 
     private long excessThreadAllocatedBytes = 5368709120L; //5GB
 
+    private int accessInterruptCount = 4;
+    
     private boolean logSqlProcesses = false;
 
     public long getMaxRecalculateTime() {
@@ -1686,6 +1688,14 @@ public class Settings {
 
     public void setExcessThreadAllocatedBytes(long excessThreadAllocatedBytes) {
         this.excessThreadAllocatedBytes = excessThreadAllocatedBytes;
+    }
+
+    public int getAccessInterruptCount() {
+        return accessInterruptCount;
+    }
+
+    public void setAccessInterruptCount(int accessInterruptCount) {
+        this.accessInterruptCount = accessInterruptCount;
     }
 
     public boolean isLogSqlProcesses() {
