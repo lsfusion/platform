@@ -74,7 +74,7 @@ public class StaticValueNullableExpr extends StaticNullableExpr implements Value
 
     @Override
     public int getStaticEqualClass() {
-        return 2;
+        return -1; // так как используется для эмуляции значения из верхнего контекста, а значит разные StaticValueNullableExpr могут давать одинаковые значения
     }
 
     public boolean calcTwins(TwinImmutableObject o) {
