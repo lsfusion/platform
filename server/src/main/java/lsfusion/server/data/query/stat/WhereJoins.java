@@ -9,7 +9,6 @@ import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.col.interfaces.mutable.add.MAddCol;
 import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
 import lsfusion.base.col.interfaces.mutable.add.MAddMap;
-import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.base.col.lru.LRUWSSVSMap;
@@ -722,7 +721,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
     }
 
     private interface CostResult<T> {
-        T calculate(CostStat costStat, ImSet<Edge> edges, MAddMap<BaseExpr, PropStat> exprStats);
+        T calculate(CostStat costStat, ImSet<Edge> edges, MAddMap<BaseJoin, Stat> joinStats, MAddMap<BaseExpr, PropStat> exprStats);
     }
 
     public <K extends BaseExpr, T> T calculateCost(ImSet<K> groups, QueryJoin join, boolean pushLargeDepth, boolean needNotNulls, final KeyStat keyStat, final StatType type, CostResult<T> result) {
@@ -738,7 +737,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
 
         CostStat costStat = getCost(join, pushLargeDepth, needNotNulls, joinStats, indexedStats, exprStats, keyDistinctStats, edges.result, keyStat, type);
 
-        return result.calculate(costStat, edges.result, exprStats);
+        return result.calculate(costStat, edges.result, joinStats, exprStats);
     }
 
     public <K extends BaseExpr, Z> StatKeys<K> getCostStatKeys(final ImSet<K> groups, final Result<Stat> rows, final KeyStat keyStat, final StatType type, final Result<ImSet<BaseExpr>> usedNotNullJoins) {
@@ -754,7 +753,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         }
 
         return calculateCost(groups, null, false, usedNotNullJoins != null, keyStat, type, new CostResult<StatKeys<K>>() {
-            public StatKeys<K> calculate(CostStat costStat, ImSet<Edge> edges, MAddMap<BaseExpr, PropStat> exprStats) {
+            public StatKeys<K> calculate(CostStat costStat, ImSet<Edge> edges, MAddMap<BaseJoin, Stat> joinStats, MAddMap<BaseExpr, PropStat> exprStats) {
                 Stat stat = costStat.getStat();
                 Cost cost = costStat.getCost();
                 if(rows != null)
@@ -775,13 +774,13 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
     private <K extends BaseExpr, Z extends Expr> Where getInnerCostPushWhere(final QueryJoin<Z, ?, ?, ?> queryJoin, boolean pushLargeDepth, final UpWheres<WhereJoin> upWheres, final KeyStat keyStat, final StatType type, final Result<Pair<ImRevMap<Z, KeyExpr>, Where>> pushJoinWhere) {
 //        ImSet<BaseExpr> groups = queryJoin.getJoins().values().toSet(); // по идее не надо, так как включает queryJoin
         return calculateCost(SetFact.<BaseExpr>EMPTY(), queryJoin, pushLargeDepth, false, keyStat, type, new CostResult<Where>() {
-            public Where calculate(CostStat costStat, ImSet<Edge> edges, MAddMap<BaseExpr, PropStat> exprStats) {
-                return getCostPushWhere(costStat, edges, queryJoin, upWheres, pushJoinWhere);
+            public Where calculate(CostStat costStat, ImSet<Edge> edges, MAddMap<BaseJoin, Stat> joinStats, MAddMap<BaseExpr, PropStat> exprStats) {
+                return getCostPushWhere(costStat, edges, queryJoin, upWheres, pushJoinWhere, joinStats);
             }
         });
     }
 
-    private boolean recProceedChildrenCostWhere(BaseJoin join, MAddExclMap<BaseJoin, Boolean> proceeded, MMap<BaseJoin, MiddleTreeKeep> mMiddleTreeKeeps, MSet<BaseExpr> mAllKeeps, MSet<BaseExpr> mTranslate, boolean keepThis, ImSet<BaseJoin> keepJoins, ImMap<BaseJoin, ImSet<Edge>> inEdges) {
+    private boolean recProceedChildrenCostWhere(BaseJoin join, MAddExclMap<BaseJoin, Boolean> proceeded, MMap<BaseJoin, MiddleTreeKeep> mMiddleTreeKeeps, MSet<BaseExpr> mAllKeeps, MSet<BaseExpr> mTranslate, boolean keepThis, ImSet<BaseJoin> keepJoins, FunctionSet<BaseJoin> notKeepJoins, ImMap<BaseJoin, ImSet<Edge>> inEdges) {
         Boolean cachedAllKeep = proceeded.get(join);
         if(cachedAllKeep != null)
             return cachedAllKeep;
@@ -796,7 +795,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         for (Edge edge : inJoin) {
             BaseJoin fromJoin = edge.getFrom();
             BaseExpr fromExpr = edge.expr;
-            boolean inAllKeep = recProceedCostWhere(fromJoin, proceeded, mMiddleTreeKeeps, mAllKeeps, mTranslate, fromExpr, keepThis, keepJoins.contains(fromJoin), keepJoins, inEdges);
+            boolean inAllKeep = recProceedCostWhere(fromJoin, proceeded, mMiddleTreeKeeps, mAllKeeps, mTranslate, fromExpr, keepThis, keepJoins.contains(fromJoin), keepJoins, notKeepJoins, inEdges);
             allKeep = inAllKeep && allKeep;
             if(inAllKeep)
                 mInAllKeeps.add(fromExpr);
@@ -808,12 +807,16 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         return allKeep;
     }
 
-    private boolean recProceedCostWhere(BaseJoin join, MAddExclMap<BaseJoin, Boolean> proceeded, MMap<BaseJoin, MiddleTreeKeep> mMiddleTreeKeeps, MSet<BaseExpr> mAllKeeps, MSet<BaseExpr> mTranslate, BaseExpr upExpr, boolean upKeep, boolean keepThis, ImSet<BaseJoin> keepJoins, ImMap<BaseJoin, ImSet<Edge>> inEdges) {
+    private boolean recProceedCostWhere(BaseJoin join, MAddExclMap<BaseJoin, Boolean> proceeded, MMap<BaseJoin, MiddleTreeKeep> mMiddleTreeKeeps, MSet<BaseExpr> mAllKeeps, MSet<BaseExpr> mTranslate, BaseExpr upExpr, boolean upKeep, boolean keepThis, ImSet<BaseJoin> keepJoins, FunctionSet<BaseJoin> notKeepJoins, ImMap<BaseJoin, ImSet<Edge>> inEdges) {
         assert keepThis == keepJoins.contains(join);
         if(!keepThis && upKeep && (join instanceof ParamExpr || join instanceof ValueJoin)) // ParamExpr и ValueJoin принудительно делаем keep
             keepThis = true;
 
-        boolean allKeep = recProceedChildrenCostWhere(join, proceeded, mMiddleTreeKeeps, mAllKeeps, mTranslate, keepThis, keepJoins, inEdges);
+        boolean allKeep = recProceedChildrenCostWhere(join, proceeded, mMiddleTreeKeeps, mAllKeeps, mTranslate, keepThis, keepJoins, notKeepJoins, inEdges);
+
+        if(allKeep && join instanceof UnionJoin && ((UnionJoin) join).depends(notKeepJoins)) {
+            allKeep = false; // придется перепроверять так как может оказаться не keep не в графе (а проверку не keep не в графе непонятно как делать)
+        }
 
         if (keepThis) // есть верхний keep join, соответственно это его проблема добавить Where (этот сам "подцепится" после этого)
             mMiddleTreeKeeps.add(join, upKeep ? IntermediateKeep.instance : new MiddleTopKeep(upExpr)); // есть ребро "наверх", используем выражение из него
@@ -872,7 +875,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         }
     }
 
-    private <Z extends Expr> Where getCostPushWhere(CostStat cost, ImSet<Edge> edges, QueryJoin<Z, ?, ?, ?> queryJoin, UpWheres<WhereJoin> upWheres, Result<Pair<ImRevMap<Z, KeyExpr>, Where>> pushJoinWhere) {
+    private <Z extends Expr> Where getCostPushWhere(CostStat cost, ImSet<Edge> edges, QueryJoin<Z, ?, ?, ?> queryJoin, UpWheres<WhereJoin> upWheres, Result<Pair<ImRevMap<Z, KeyExpr>, Where>> pushJoinWhere, final MAddMap<BaseJoin, Stat> joinStats) {
         ImSet<Z> pushedKeys = (ImSet<Z>) cost.getPushKeys(queryJoin);
         if(pushedKeys == null) { // значит ничего не протолкнулось
             // пока падает из-за неправильного computeVertex видимо
@@ -880,7 +883,13 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
             return null;
         }
         assert !pushedKeys.isEmpty();
-        ImSet<BaseJoin> keepJoins = cost.getJoins().removeIncl(queryJoin);
+        final ImSet<BaseJoin> keepJoins = cost.getJoins().removeIncl(queryJoin);
+        FunctionSet<BaseJoin> notKeepJoins = new SFunctionSet<BaseJoin>() {
+            @Override
+            public boolean contains(BaseJoin element) {
+                return !keepJoins.contains(element) && joinStats.containsKey(element);
+            }
+        };
 
         final ImMap<BaseJoin, ImSet<Edge>> inEdges = edges.group(new BaseUtils.Group<BaseJoin, Edge>() {
             public BaseJoin group(Edge value) {
@@ -901,7 +910,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         for(WhereJoin where : adjWheres) { // бежим по upWhere
             boolean keepThis = keepJoins.contains(where);
 
-            recProceedChildrenCostWhere(where, proceeded, mMiddleTreeKeeps, mFullExprs, mTranslate, keepThis, keepJoins, inEdges);
+            recProceedChildrenCostWhere(where, proceeded, mMiddleTreeKeeps, mFullExprs, mTranslate, keepThis, keepJoins, notKeepJoins, inEdges);
 
             if(keepThis)
                 mTopKeys.exclAdd(where);
