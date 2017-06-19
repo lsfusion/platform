@@ -102,6 +102,11 @@ public abstract class ObjectInstance extends CellInstance<ObjectEntity> implemen
         return getExpr(classSource, modifier);
     }
 
+    @Override
+    public Expr getExpr(ImMap<ObjectInstance, ? extends Expr> classSource, Modifier modifier, ReallyChanged reallyChanged, MSet<CalcProperty> mUsedProps) throws SQLException, SQLHandledException {
+        return getExpr(classSource, modifier);
+    }
+
     public GroupObjectInstance getApplyObject() {
         return groupTo;
     }

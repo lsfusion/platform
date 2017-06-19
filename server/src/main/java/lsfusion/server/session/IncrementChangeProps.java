@@ -4,9 +4,11 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.PropertyInterface;
 
+import java.sql.SQLException;
 import java.util.Map;
 
 public class IncrementChangeProps extends IncrementProps {
@@ -14,12 +16,8 @@ public class IncrementChangeProps extends IncrementProps {
     public IncrementChangeProps() {
     }
 
-    public <P extends PropertyInterface> IncrementChangeProps(CalcProperty<P> property, PropertyChange<P> table) {
-        add(property, table);
-    }
-
     // noUpdate конструктор
-    public <P extends PropertyInterface> IncrementChangeProps(ImSet<? extends CalcProperty> noUpdates) {
+    public <P extends PropertyInterface> IncrementChangeProps(ImSet<? extends CalcProperty> noUpdates) throws SQLException, SQLHandledException {
         for(CalcProperty noUpdate : noUpdates)
             addNoChange(noUpdate);
     }
@@ -38,21 +36,21 @@ public class IncrementChangeProps extends IncrementProps {
         return (PropertyChange<P>) changes.get(property);
     }
 
-    public <P extends PropertyInterface> void clear() {
+    public <P extends PropertyInterface> void clear() throws SQLException, SQLHandledException {
         eventChanges(changes.keySet());
 
         changes.clear();
     }
 
-    public <P extends PropertyInterface> void addNoChange(CalcProperty<P> property) {
+    public <P extends PropertyInterface> void addNoChange(CalcProperty<P> property) throws SQLException, SQLHandledException {
         add(property, property.getNoChange());
     }
 
-    public <P extends PropertyInterface> void add(CalcProperty<P> property, PropertyChange<P> change) {
+    public <P extends PropertyInterface> void add(CalcProperty<P> property, PropertyChange<P> change) throws SQLException, SQLHandledException {
         add(property, change, true);
     }
 
-    public <P extends PropertyInterface> void add(CalcProperty<P> property, PropertyChange<P> change, boolean dataChanged) {
+    public <P extends PropertyInterface> void add(CalcProperty<P> property, PropertyChange<P> change, boolean dataChanged) throws SQLException, SQLHandledException {
         PropertyChange<PropertyInterface> previous = changes.put(property, (PropertyChange<PropertyInterface>) change);
 
         eventChange(property, dataChanged, previous==null || !BaseUtils.hashEquals(previous, change));

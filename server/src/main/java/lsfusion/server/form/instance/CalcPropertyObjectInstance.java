@@ -61,13 +61,17 @@ public class CalcPropertyObjectInstance<P extends PropertyInterface> extends Pro
     public Expr getExpr(final ImMap<ObjectInstance, ? extends Expr> classSource, final Modifier modifier) throws SQLException, SQLHandledException {
         return getExpr(classSource, modifier, (WhereBuilder)null);
     }
-
     public Expr getExpr(final ImMap<ObjectInstance, ? extends Expr> classSource, final Modifier modifier, ReallyChanged reallyChanged) throws SQLException, SQLHandledException {
+        return getExpr(classSource, modifier, reallyChanged, null);
+    }
+    public Expr getExpr(final ImMap<ObjectInstance, ? extends Expr> classSource, final Modifier modifier, ReallyChanged reallyChanged, MSet<CalcProperty> mUsedProps) throws SQLException, SQLHandledException {
         WhereBuilder changedWhere = null;
-        if(reallyChanged!=null)
+        if(reallyChanged!=null && !reallyChanged.containsChange(this))
             changedWhere = new WhereBuilder();
+        if(mUsedProps != null)
+            mUsedProps.add(property);
         Expr expr = getExpr(classSource, modifier, changedWhere);
-        if(reallyChanged!=null)
+        if(changedWhere!=null)
             if(!changedWhere.toWhere().isFalse())
                 reallyChanged.addChange(this);
         return expr;

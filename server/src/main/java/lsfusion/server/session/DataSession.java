@@ -105,6 +105,13 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         return result;
     }
 
+    public static Where isValueClass(Expr expr, ObjectValueClassSet classSet) {
+        Where result = Where.FALSE;
+        for(ConcreteCustomClass customUsedClass : classSet.getSetConcreteChildren())
+            result = result.or(expr.compare(customUsedClass.getClassObject().getStaticExpr(), Compare.EQUALS));
+        return result;
+    }
+
     public ImSet<CalcProperty> getChangedProps(ImSet<CustomClass> add, ImSet<CustomClass> remove, ImSet<ConcreteObjectClass> old, ImSet<ConcreteObjectClass> newc, ImSet<DataProperty> data) {
         return SetFact.<CalcProperty>addExclSet(getClassChanges(add, remove, old, newc), data);
     }
@@ -239,7 +246,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                 DataSession.this.news = null;
         }
 
-        private void rollback() throws SQLException {
+        private void rollback() throws SQLException, SQLHandledException {
             ServerLoggers.assertLog(sessionEventChangedOld.isEmpty(), "SESSION EVENTS NOT EMPTY"); // в транзакции никаких сессионных event'ов быть не может
             ServerLoggers.assertLog(applyModifier.getHintProps().isEmpty(), "APPLY HINTS NOT EMPTY"); // равно как и хинт'ов
 
@@ -283,7 +290,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         if(isInTransaction() && applyTransaction==null)
             applyTransaction = new Transaction();
     }
-    public void rollbackTransaction() throws SQLException {
+    public void rollbackTransaction() throws SQLException, SQLHandledException {
         for(Runnable info : rollbackInfo)
             info.run();
         
@@ -439,10 +446,15 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         assert o == null;
         
 //        SQLSession.fifo.add("DC " + getOwner() + SQLSession.getCurrentTimeStamp() + " " + this + '\n' + ExceptionUtils.getStackTrace());
-        dropTables(SetFact.<SessionDataProperty>EMPTY());
+        try {
+            dropTables(SetFact.<SessionDataProperty>EMPTY());
+            sessionEventChangedOld.clear(sql, getOwner());
 
-        sessionEventChangedOld.clear(sql, getOwner());
-        sessionEventNotChangedOld.clear();
+            sessionEventNotChangedOld.clear();
+        } catch (SQLHandledException e) {
+            throw Throwables.propagate(e);
+        }
+
         updateNotChangedOld.clear();
     }
 
@@ -877,7 +889,6 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                         fromJavaSet(add).remove(addClasses), fromJavaSet(remove).remove(removeClasses),
                         fromJavaSet(usedOldClasses).remove(changedOldClasses), fromJavaSet(usedNewClasses).remove(changedNewClasses));
                 dataModifier.eventSourceChanges(allClasses);
-                updateSessionNotChangedEvents(allClasses);
             }
 
             updateProperties(updateChanges, updateSourceChanges);
@@ -1033,7 +1044,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         isStoredDataChanged = false;
     }
 
-    public void updateProperties(ImSet<? extends CalcProperty> changes, boolean sourceChanged) throws SQLException {
+    public void updateProperties(ImSet<? extends CalcProperty> changes, boolean sourceChanged) throws SQLException, SQLHandledException {
         updateProperties(changes, sourceChanged ? FullFunctionSet.<CalcProperty>instance() : SetFact.<CalcProperty>EMPTY());
     }
 
@@ -1048,7 +1059,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         }
     }
 
-    public void updateProperties(ImSet<? extends CalcProperty> changes, FunctionSet<? extends CalcProperty> sourceChanges) throws SQLException {
+    public void updateProperties(ImSet<? extends CalcProperty> changes, FunctionSet<? extends CalcProperty> sourceChanges) throws SQLException, SQLHandledException {
         registerChange(changes);
 
         dataModifier.eventDataChanges(changes, sourceChanges);
@@ -1071,7 +1082,14 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
     // потом можно было бы оптимизировать создание OverrideSessionModifier'а (в рамках getPropertyChanges) и тогда можно создавать modifier'ы непосредственно при запуске
     private boolean inSessionEvent;
-    private OverrideSessionModifier sessionEventModifier = new OverrideSessionModifier("sessionEvent", new OverrideIncrementProps(sessionEventChangedOld, sessionEventNotChangedOld), false, dataModifier);
+    private OverrideSessionModifier sessionEventModifier = new OverridePropSourceSessionModifier<OldProperty>("sessionEvent", sessionEventChangedOld, sessionEventNotChangedOld, false, dataModifier) {
+        protected ImSet<CalcProperty> getSourceProperties(OldProperty old) {
+            return SetFact.singleton(old.property);
+        }
+        protected void updateSource(OldProperty property, boolean dataChanged) throws SQLException, SQLHandledException {
+            updateSessionNotChangedEvents(property, dataChanged);
+        }
+    };
 
     public boolean needSessionEventMaterialize(SessionTableUsage tableUsage, ImSet<? extends CalcProperty> changes) {
         if(tableUsage == null && isInSessionEvent()) { // если таблица не материализована, и мы в сессионном событии, то есть может измениться sessionEventModifier и drop'уть таблицы, которые используются в изменении
@@ -1092,21 +1110,16 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
     // вообще если какое-то свойство попало в sessionEventNotChangedOld, а потом изменился источник одного из его зависимых свойств, то в следствие updateSessionEvents "обновленное" изменение попадет в sessionEventChangedOld и "перекроет" изменение в notChanged (по сути последнее никогда использоваться не будет)
     // но есть проблема при изменении источника news, которое в depends не попадает и верхний инвариант будет нарушен
-    public void updateSessionNotChangedEvents(ImSet<? extends CalcProperty> changes) throws SQLException, SQLHandledException {
-        if(!isInTransaction())
-            for(CalcProperty prop : sessionEventNotChangedOld.getProperties()) {
-                OldProperty<PropertyInterface> old = (OldProperty<PropertyInterface>) prop;
-                if (!sessionEventChangedOld.contains(old) && CalcProperty.depends(old.property, changes)) {
-                    if(isInSessionEvent()) { // если уже локальное событие, придется обновлять источник не откладывая на потом
-                        assert updateNotChangedOld.isEmpty();
-                        updateSessionEventNotChangedOld(this, old, false);
-                    } else {
-                        final Boolean prevDataChanged = updateNotChangedOld.get(old);
-                        if(prevDataChanged == null)
-                            updateNotChangedOld.put(old, false);
-                    }
-                }
-            }
+    private void updateSessionNotChangedEvents(OldProperty<PropertyInterface> old, boolean dataChanged) throws SQLException, SQLHandledException {
+        assert !isInTransaction();
+        if (!isInSessionEvent()) { // помечаем на обновление
+            Boolean prevDataChanged = updateNotChangedOld.put(old, dataChanged);
+            if(prevDataChanged != null && prevDataChanged && !dataChanged)
+                updateNotChangedOld.put(old, true);
+        } else { // если уже локальное событие, придется обновлять источник не откладывая на потом
+            assert updateNotChangedOld.isEmpty();
+            updateSessionEventNotChangedOld(this, old, dataChanged);
+        }
     }
 
     private void updateSessionEventChangedOld(OldProperty<PropertyInterface> old) throws SQLException, SQLHandledException {
@@ -1121,12 +1134,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     }
 
     private void updateSessionEventNotChangedOld(ExecutionEnvironment env, OldProperty<PropertyInterface> changedOld, boolean dataChanged) throws SQLException, SQLHandledException {
-        Modifier modifier = env.getModifier();
-        PropertyChange<PropertyInterface> incrementChange = changedOld.property.getIncrementChange(modifier);
-        sessionEventNotChangedOld.add(changedOld, incrementChange, dataChanged);
-        
-        sql.checkSessionTables(incrementChange.getValues());
-        SQLSession.checkSessionTableAssertion(modifier);
+        sessionEventNotChangedOld.add(changedOld, changedOld.property.getIncrementChange(env.getModifier()), dataChanged);
     }
 
     public boolean isInSessionEvent() {
@@ -1162,7 +1170,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         }
     }
 
-    private void dropSessionEventChangedOld() throws SQLException {
+    private void dropSessionEventChangedOld() throws SQLException, SQLHandledException {
         // закидываем старые изменения
         for(CalcProperty changedOld : sessionEventChangedOld.getProperties()) // assert что только old'ы
             updateNotChangedOld.put((OldProperty)changedOld, true);
@@ -1249,7 +1257,18 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                     changes.add(sessionCalcProperty, fullChange);
             }
         
-        resolveModifier = new OverrideSessionModifier("resolve", changes, true, dataModifier);
+        resolveModifier = new OverridePropSourceSessionModifier<CalcProperty>("resolve", changes, true, dataModifier) {
+            // надо бы реализовать, но не понятно для чего
+            @Override
+            protected ImSet<CalcProperty> getSourceProperties(CalcProperty property) {
+                return SetFact.EMPTY();
+            }
+
+            @Override
+            protected void updateSource(CalcProperty property, boolean dataChanged) throws SQLException, SQLHandledException {
+                assert false;
+            }
+        };
         try {
             action.execute(this, stack);
         } finally {
@@ -1905,9 +1924,13 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         executeSessionEvents(sessionEventFormEnv, stack);
 
         // очистим, так как в транзакции уже другой механизм используется, и старые increment'ы будут мешать
-        dataModifier.clearHints(sql, getOwner());
+        clearDataHints(getOwner());
 
         return transactApply(BL, stack, interaction, new HashMap<String, Integer>(), 0, applyActions, keepProps, false, System.currentTimeMillis());
+    }
+    
+    private void clearDataHints(OperationOwner owner) throws SQLException, SQLHandledException {
+        dataModifier.clearHints(sql, owner);
     }
 
     private static final Map<ValueClass, Long> lastRemoved = MapFact.getGlobalConcurrentHashMap();
@@ -2225,7 +2248,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             }
     
             apply.clear(sql, owner); // все сохраненные хинты обнуляем
-            dataModifier.clearHints(sql, owner); // drop'ем hint'ы (можно и без sql но пока не важно)
+            clearDataHints(owner); // drop'ем hint'ы (можно и без sql но пока не важно)
 
             removedClasses = removedClasses.merge(SetFact.fromJavaSet(remove));
             restart(false, BaseUtils.merge(recursiveUsed,keepProps)); // оставляем usedSessiona
@@ -2526,6 +2549,9 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                             changeTable = change.materialize("chcl:nm2", sql, baseClass, env);
                             change = changeTable.getChange();
                         }
+                        
+                        updateSessionEvents(SetFact.singleton(property));
+                        
                         ModifyResult tableRemoveChanged = table.modifyRows(sql, new Query<ClassPropertyInterface, String>(mapKeys, removeWhere), baseClass, Modify.DELETE, getQueryEnv(), SessionTable.matGlobalQuery);
                         if(tableRemoveChanged.dataChanged())
                             dataModifier.eventChange(property, true, tableRemoveChanged.sourceChanged());
@@ -2586,7 +2612,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         return result;
     }
 
-    public void dropTables(FunctionSet<SessionDataProperty> keep) throws SQLException {
+    public void dropTables(FunctionSet<SessionDataProperty> keep) throws SQLException, SQLHandledException {
         OperationOwner owner = getOwner();
         for(SinglePropertyTableUsage<ClassPropertyInterface> dataTable : filterNotSessionData(keep).values())
             dataTable.drop(sql, owner);
@@ -2703,7 +2729,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         return true;
     }
 
-    private void rollbackApply() throws SQLException {
+    private void rollbackApply() throws SQLException, SQLHandledException {
         try {
             OperationOwner owner = getOwner();
             if(neededProps!=null) {
@@ -2719,7 +2745,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     
             // не надо DROP'ать так как Rollback автоматически drop'ает все temporary таблицы
             apply.clear(sql, owner);
-            dataModifier.clearHints(sql, owner); // drop'ем hint'ы (можно и без sql но пока не важно)
+            clearDataHints(owner); // drop'ем hint'ы (можно и без sql но пока не важно)
         } finally {
             rollbackTransaction();
         }

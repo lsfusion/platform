@@ -1,6 +1,7 @@
 package lsfusion.server.form.instance.filter;
 
 import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.where.Where;
@@ -8,6 +9,7 @@ import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.form.instance.GroupObjectInstance;
 import lsfusion.server.form.instance.ObjectInstance;
 import lsfusion.server.form.instance.ReallyChanged;
+import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.session.Modifier;
 
 import java.io.DataInputStream;
@@ -24,8 +26,8 @@ public class OrFilterInstance extends OpFilterInstance {
         super(inStream, form);
     }
 
-    public Where getWhere(ImMap<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier, ReallyChanged reallyChanged) throws SQLException, SQLHandledException {
-        return op1.getWhere(mapKeys, modifier, reallyChanged).or(op2.getWhere(mapKeys, modifier, reallyChanged));
+    public Where getWhere(ImMap<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier, ReallyChanged reallyChanged, MSet<CalcProperty> mUsedProps) throws SQLException, SQLHandledException {
+        return op1.getWhere(mapKeys, modifier, reallyChanged, mUsedProps).or(op2.getWhere(mapKeys, modifier, reallyChanged, mUsedProps));
     }
 
     public boolean isInInterface(GroupObjectInstance classGroup) {

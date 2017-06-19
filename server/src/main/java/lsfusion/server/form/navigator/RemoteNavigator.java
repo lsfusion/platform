@@ -180,12 +180,15 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         return false;
     }
 
-    public synchronized void updateEnvironmentProperty(CalcProperty property, ObjectValue value) throws SQLException {
+    public synchronized void updateEnvironmentProperty(CalcProperty property, ObjectValue value) throws SQLException, SQLHandledException {
         if(isClosed())
             return;
 
-        for (DataSession session : sessions)
-            session.updateProperties(SetFact.singleton(property), true); // редко используется поэтому все равно
+        for (DataSession session : sessions) {
+            ImSet<CalcProperty> updateChanges = SetFact.singleton(property);
+            session.updateSessionEvents(updateChanges);
+            session.updateProperties(updateChanges, true); // редко используется поэтому все равно
+        }
     }
 
     public SecurityPolicy getUserSecurityPolicy(Result<Integer> timeout) {

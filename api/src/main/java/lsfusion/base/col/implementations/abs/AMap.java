@@ -549,6 +549,16 @@ public abstract class AMap<K, V> extends AColObject implements ImMap<K, V> {
         return mResult.immutable();
     }
 
+    public <MK, MV> ImMap<MK, MV> mapKeyValues(GetKeyValue<MK, K, V> getterKey, GetKeyValue<MV, K, V> getterValue) {
+        MExclMap<MK, MV> mResult = MapFact.mExclMap(size());
+        for(int i=0,size=size();i<size;i++) {
+            K key = getKey(i);
+            V value = getValue(i);
+            mResult.exclAdd(getterKey.getMapValue(key, value), getterValue.getMapValue(key, value));
+        }
+        return mResult.immutable();
+    }
+
     public <M> ImMap<M, V> mapKeys(GetValue<M, K> getter) {
         MExclMap<M, V> mResult = MapFact.mExclMap(size());
         for(int i=0,size=size();i<size;i++)

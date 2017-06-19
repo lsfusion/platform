@@ -23,7 +23,7 @@ public class JoinExprTranslator extends ExprTranslator {
     }
 
     public Expr translate(BaseExpr key) {
-        Expr transExpr = exprs.get(key);
+        KeyExpr transExpr = exprs.get(key);
         if(transExpr==null) {
             if(fullExprs.contains(key))
                 return key;

@@ -9,8 +9,10 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
+import lsfusion.base.col.interfaces.mutable.add.MAddMap;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetKey;
+import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImOrderValueMap;
 import lsfusion.interop.*;
@@ -328,6 +330,14 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         boolean heurReadOnly = showReadOnly || entity.hasNoChange(); // по идее при showreadonly редактирование все равно могут включить политикой безопасности, но при определении manageSession не будем на это обращать внимание
         adjManageSession = adjManageSession && !heurReadOnly; // вставить потом if manageSession == ManageSessionType.AUTO (хотя возможно и не надо)
         environmentIncrement = createEnvironmentIncrement(isModal, isDialog, noCancel, adjManageSession, showDrop);
+        
+        MExclMap<SessionDataProperty, Pair<GroupObjectInstance, GroupObjectProp>> mEnvironmentIncrementSources = MapFact.mExclMap();
+        for (GroupObjectInstance groupObject : groupObjects) {
+            ImMap<GroupObjectProp, CalcPropertyRevImplement<ClassPropertyInterface, ObjectInstance>> props = groupObject.props;
+            for(int i = 0, size = props.size(); i<size; i++)
+                mEnvironmentIncrementSources.exclAdd((SessionDataProperty) props.getValue(i).property, new Pair<>(groupObject, props.getKey(i)));
+        }
+        environmentIncrementSources = mEnvironmentIncrementSources.immutable();
 
         if (!interactive) {
             endApply(stack);
@@ -440,7 +450,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         }
     }
 
-    private static IncrementChangeProps createEnvironmentIncrement(boolean isModal, boolean isDialog, boolean isAdd, boolean manageSession, boolean showDrop) {
+    private static IncrementChangeProps createEnvironmentIncrement(boolean isModal, boolean isDialog, boolean isAdd, boolean manageSession, boolean showDrop) throws SQLException, SQLHandledException {
         IncrementChangeProps environment = new IncrementChangeProps();
         environment.add(FormEntity.isModal, PropertyChange.<ClassPropertyInterface>STATIC(isModal));
         environment.add(FormEntity.isDialog, PropertyChange.<ClassPropertyInterface>STATIC(isDialog));
@@ -2378,10 +2388,28 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     }
     
     private final IncrementChangeProps environmentIncrement;
+    private final ImMap<SessionDataProperty, Pair<GroupObjectInstance, GroupObjectProp>> environmentIncrementSources;
 
     private SessionModifier createModifier() {
         FunctionSet<CalcProperty> noHints = getNoHints();
-        return new OverrideSessionModifier(toString(), environmentIncrement, noHints, noHints, entity.getHintsIncrementTable(), entity.getHintsNoUpdate(), session.getModifier());
+        return new OverridePropSourceSessionModifier<SessionDataProperty>(toString(), environmentIncrement, noHints, noHints, entity.getHintsIncrementTable(), entity.getHintsNoUpdate(), session.getModifier()) {
+            @Override
+            protected ImSet<CalcProperty> getSourceProperties(SessionDataProperty property) {
+                Pair<GroupObjectInstance, GroupObjectProp> source = environmentIncrementSources.get(property);
+                if(source == null)
+                    return SetFact.EMPTY();
+                ImSet<CalcProperty> result = source.first.getUsedEnvironmentIncrementProps(source.second);
+                if(result == null)
+                    return SetFact.EMPTY();
+                return result;
+            }
+
+            @Override
+            protected void updateSource(SessionDataProperty property, boolean dataChanged) throws SQLException, SQLHandledException {
+                Pair<GroupObjectInstance, GroupObjectProp> source = environmentIncrementSources.get(property);
+                source.first.updateEnvironmentIncrementProp(environmentIncrement, this, null, FormInstance.this, source.second, false, dataChanged);
+            }
+        };
     }
 
     public Map<SessionModifier, SessionModifier> modifiers = new HashMap<>();
