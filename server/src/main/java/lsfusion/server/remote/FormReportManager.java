@@ -2,7 +2,6 @@ package lsfusion.server.remote;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.Pair;
-import lsfusion.base.ResourceList;
 import lsfusion.base.Result;
 import lsfusion.interop.form.FormUserPreferences;
 import lsfusion.interop.form.ReportGenerationData;
@@ -12,7 +11,8 @@ import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.entity.CalcPropertyObjectEntity;
 import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.entity.GroupObjectHierarchy;
-import lsfusion.server.form.instance.*;
+import lsfusion.server.form.instance.ReportData;
+import lsfusion.server.form.instance.ReportSourceGenerator;
 import lsfusion.server.form.view.FormView;
 import lsfusion.server.form.view.report.ReportDesignGenerator;
 import net.sf.jasperreports.engine.JRException;
@@ -25,7 +25,6 @@ import org.apache.log4j.Logger;
 import java.io.*;
 import java.sql.SQLException;
 import java.util.*;
-import java.util.regex.Pattern;
 
 import static lsfusion.base.BaseUtils.serializeObject;
 import static lsfusion.server.context.ThreadLocalContext.localize;

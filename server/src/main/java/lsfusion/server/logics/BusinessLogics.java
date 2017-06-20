@@ -316,7 +316,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             if (filePath.contains("*")) {
                 filePath += filePath.endsWith(".lsf") ? "" : ".lsf";
                 Pattern pattern = Pattern.compile(filePath.replace("*", ".*"));
-                Collection<String> list = ResourceList.getResources(pattern);
+                Collection<String> list = ResourceUtils.getResources(pattern);
                 for (String name : list) {
                     excludedLSF.add(name);
                 }
@@ -324,7 +324,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
                 excludedLSF.add(filePath);
             } else {
                 Pattern pattern = Pattern.compile(filePath + ".*\\.lsf");
-                Collection<String> list = ResourceList.getResources(pattern);
+                Collection<String> list = ResourceUtils.getResources(pattern);
                 for (String name : list) {
                     excludedLSF.add(name);
                 }
@@ -335,7 +335,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             if (filePath.contains("*")) {
                 filePath += filePath.endsWith(".lsf") ? "" : ".lsf";
                 Pattern pattern = Pattern.compile(filePath.replace("*", ".*"));
-                Collection<String> list = ResourceList.getResources(pattern);
+                Collection<String> list = ResourceUtils.getResources(pattern);
                 for (String name : list) {
                     if (!excludedLSF.contains(name)) {
                         addModulesFromResource(name);
@@ -347,7 +347,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
                 }
             } else {
                 Pattern pattern = Pattern.compile(filePath + ".*\\.lsf");
-                Collection<String> list = ResourceList.getResources(pattern);
+                Collection<String> list = ResourceUtils.getResources(pattern);
                 for (String name : list) {
                     if (!excludedLSF.contains(name)) {
                         addModulesFromResource(name);
@@ -1001,7 +1001,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
 
     public Collection<String> findAllCustomReportsCalculated() {
         Pattern pattern = Pattern.compile(".*reports/custom/.*\\.jrxml");
-        return ResourceList.getResources(pattern);
+        return ResourceUtils.getResources(pattern);
     }
     
     public <P extends PropertyInterface> void resolveAutoSet(DataSession session, ConcreteCustomClass customClass, DataObject dataObject, CustomClassListener classListener) throws SQLException, SQLHandledException {
@@ -2424,7 +2424,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         result.add(getCleanTempTablesTask(scheduler));
         result.add(getFlushPendingTransactionCleanersTask(scheduler));
         result.add(getRestartConnectionsTask(scheduler));
-        result.add(findCustomReportsTask(scheduler));
+        result.add(resetCustomReportsCacheTask(scheduler));
         return result;
     }
 
@@ -2485,13 +2485,18 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         }, false, Settings.get().getThreadAllocatedMemoryPeriod() / 2, false, "Allocated Bytes");
     }
     
-    private Scheduler.SchedulerTask findCustomReportsTask(Scheduler scheduler) {
+    private Scheduler.SchedulerTask resetCustomReportsCacheTask(Scheduler scheduler) {
         return scheduler.createSystemTask(new EExecutionStackRunnable() {
             @Override
             public void run(ExecutionStack stack) throws Exception {
-                customReports = findAllCustomReportsCalculated();    
+                ResourceUtils.watchClassPathFoldersForChange(new Runnable() {
+                    @Override
+                    public void run() {
+                        customReports = null;  
+                    }
+                }); 
             }
-        }, false, Settings.get().getFindCustomReportsTaskPeriod(), false, "Custom Reports");
+        }, true, null, false, "Custom Reports");
     }
 
     private class AllocatedInfo {

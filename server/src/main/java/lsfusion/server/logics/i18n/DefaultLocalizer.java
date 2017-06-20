@@ -1,6 +1,6 @@
 package lsfusion.server.logics.i18n;
 
-import lsfusion.base.ResourceList;
+import lsfusion.base.ResourceUtils;
 
 import java.util.*;
 import java.util.regex.Pattern;
@@ -11,7 +11,7 @@ public class DefaultLocalizer extends AbstractLocalizer {
     public DefaultLocalizer() {
         resourceBundleNames = new ArrayList<>();
         Pattern pattern = Pattern.compile("[^/]*ResourceBundle\\.properties"); // возможно нужен другой regexp
-        Collection<String> filenames = ResourceList.getResources(pattern);
+        Collection<String> filenames = ResourceUtils.getResources(pattern);
         for (String filename : filenames) {
             resourceBundleNames.add(filename.substring(0, filename.lastIndexOf('.')));
         }
