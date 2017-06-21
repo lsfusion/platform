@@ -275,14 +275,14 @@ public class AutoHintsAspect {
             if(allowNoUpdate && catchHint.forceNoUpdate(property) && hintHasChanges(changed, property, propChanges))
                 throw new HintException(new IncrementHint(property, false));
 
-            if(!(Settings.get().isDisableValueAllHints() && !interfaceValues.isEmpty())) { // нужен чтобы не цеплять много лишних записей, потенциально конечно опасно
-                Expr expr = result.getExpr("value");
+            Expr expr = result.getExpr("value");
+            long exprComplexity = expr.getComplexity(false);
+            long whereComplexity = 0;
+            if(changed!=null)
+                whereComplexity = changed.getComplexity(false);
+            long complexity = max(exprComplexity, whereComplexity);
 
-                long exprComplexity = expr.getComplexity(false);
-                long whereComplexity = 0;
-                if(changed!=null)
-                    whereComplexity = changed.getComplexity(false);
-                long complexity = max(exprComplexity, whereComplexity);
+            if(interfaceValues.isEmpty() || (complexity > catchHint.getLimitHintIncrementValueComplexity() && !property.isComplex())) { // нужен чтобы не цеплять много лишних записей, потенциально конечно опасно, для этого сделан отдельный порог и проверка на complex (но все равно не максимально надежное решение, в общем случае надо по аналогии с preread change'и для interfaceValues хранить)
                 int limitComplexity = catchHint.getLimitHintIncrementComplexity();
                 if(complexity > limitComplexity && property.hasChanges(propChanges)) { // сложность большая, если нет изменений то ничем не поможешь
                     if (interfaceValues.isEmpty() && queryType == PropertyQueryType.FULLCHANGED) {

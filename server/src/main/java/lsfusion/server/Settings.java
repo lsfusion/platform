@@ -159,6 +159,8 @@ public class Settings {
 
     private int limitHintIncrementComplexity = 50; // есть проблема когда идет G(очень большого числа данных) = значение, статистика нормальная, сложность большая, начинает hint'ить что мешает проталкиванию
 
+    private int limitHintIncrementValueComplexity = 1000; // есть проблема когда идет G(очень большого числа данных) = значение, статистика нормальная, сложность большая, начинает hint'ить что мешает проталкиванию
+
     private double limitComplexityGrowthCoeff = 1.5;
 
     private long limitHintIncrementStat = 200;
@@ -724,6 +726,18 @@ public class Settings {
 
     public void setLimitHintIncrementComplexityCoeff(int limitHintIncrementComplexity) {
         this.limitHintIncrementComplexity = limitHintIncrementComplexity;
+    }
+
+    public int getLimitHintIncrementValueComplexity() {
+        return limitHintIncrementValueComplexity;
+    }
+
+    public void setLimitHintIncrementValueComplexity(int limitHintIncrementValueComplexity) {
+        this.limitHintIncrementValueComplexity = limitHintIncrementValueComplexity;
+    }
+
+    public int getLimitHintIncrementValueComplexityCoeff() {
+        return limitHintIncrementValueComplexity * limitIncrementCoeff;
     }
 
     public boolean isNoApplyIncrement() {
