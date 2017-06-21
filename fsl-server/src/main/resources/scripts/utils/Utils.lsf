@@ -81,6 +81,7 @@ trunc = FORMULA 'trunc($1,$2)';
 
 sqr = FORMULA '($1)*($1)';
 sqrt = FORMULA 'sqrt($1)';
+power = FORMULA 'power($1, $2)';
 percent = FORMULA '(($1)*($2)/100)';
 share = FORMULA '(($1)*100/($2))';
 round = FORMULA PG 'round(CAST(($1) as numeric),$2)', MS 'round(CAST(($1) as numeric(38,19)),$2)';
@@ -101,6 +102,11 @@ count(INTEGER i, INTEGER count) = iterate(i, 1, count);
 
 toInteger (i) = FORMULA INTEGER PG 'convert_to_integer($1)', MS 'dbo.convert_to_integer($1)';
 toNumeric (i) = FORMULA NUMERIC[38,19] PG 'convert_to_integer($1)', MS 'dbo.convert_to_integer($1)';
+
+// ---------------------------------------Побитовые операции --------------------------------- //
+bitwiseAnd = FORMULA INTEGER '$1 & $2';
+bitwiseOr = FORMULA INTEGER '$1 | $2';
+bitwiseNot = FORMULA INTEGER '~ $1';
 
 // --------------------------------------------- Округления --------------------------------- //
 roundM1 (number) = round(number, -1);
