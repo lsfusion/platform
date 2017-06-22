@@ -53,7 +53,7 @@ public class ChangeAllDatesActionProperty extends ScriptingActionProperty {
                     String column = (String) valueEntry.get("dbName");
                     String table = (String) valueEntry.get("tableSID");
                     String returnProperty = (String) valueEntry.get("return");
-                    if (!table.isEmpty() && !column.isEmpty() && (returnProperty.equals("TIME") || returnProperty.equals("DATETIME"))) {
+                    if (!table.isEmpty() && !column.isEmpty() && (returnProperty.equals("DATE") || returnProperty.equals("TIME") || returnProperty.equals("DATETIME"))) {
                         ServerLoggers.systemLogger.info(String.format("Changing date: column %s, table %s", column, table));
                         session.sql.executeDDL(String.format("UPDATE %s SET %s = %s + %s*INTERVAL '1 second'", table, column, column, seconds));
                     }
