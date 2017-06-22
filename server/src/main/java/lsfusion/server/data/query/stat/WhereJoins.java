@@ -1684,7 +1684,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
 
     // устраняет сам join чтобы при проталкивании не было рекурсии
     public WhereJoins removeJoin(QueryJoin join, UpWheres<WhereJoin> upWheres, Result<UpWheres<WhereJoin>> resultWheres) {
-        return removeJoin(join, getAdjWheres(), upWheres, resultWheres); // не надо Bet
+        return removeJoin(join, wheres, upWheres, resultWheres); // не надо Bet
     }
 
     public <K extends BaseExpr> WhereJoins pushStatKeys(StatKeys<K> statKeys) {

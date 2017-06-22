@@ -922,7 +922,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                 if(isLastOpt) {
                     useGroupLastOpt = Settings.get().getUseGroupLastOpt();
                     assert useGroupLastOpt != 0; 
-                    if(Settings.get().getUseGroupLastOpt() != 3) {
+                    if(useGroupLastOpt != 3) {
                         pushGroupWhere = new Result<>();
                         if (group.isEmpty())
                             pushGroupWhere.set(new Pair<>(MapFact.<Expr, KeyExpr>EMPTYREV(), Where.TRUE));
