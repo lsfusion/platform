@@ -1551,19 +1551,34 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         for(int i=0,size=joinExprEdges.size();i<size;i++) {
             BaseExpr joinExpr = joinExprEdges.getKey(i);
             MAddCol<Pair<BaseJoin<Object>, Object>> exprEdges = joinExprEdges.getValue(i);
-            if(exprEdges.size()==1) { // оптимизация, чтобы не создавать не нужные вершины
-                Pair<BaseJoin<Object>, Object> exprEdge = exprEdges.get(0);
-                addExpr(mEdges, mExprs, exprEdge.first, exprEdge.second, joinExpr);
-            } else {
-                IdentExpr identExpr = new IdentExpr(joinExpr);
-                for(int j=0,sizeJ=exprEdges.size();j<sizeJ;j++) {
-                    Pair<BaseJoin<Object>, Object> exprEdge = exprEdges.get(j);
-                    addExpr(mEdges, mExprs, exprEdge.first, exprEdge.second, identExpr);
-                }
-                IdentExpr baseJoin = identExpr.getBaseJoin();
+
+            Pair<BaseJoin<Object>, Object> singleEdge = null; // оптимизация, чтобы не создавать не нужные вершины
+            BaseExpr singleExpr = null;            
+            KeyJoinExpr keyJoinExpr = null;;
+            for(int j=0,sizeJ=exprEdges.size();j<sizeJ;j++) {
+                Pair<BaseJoin<Object>, Object> exprEdge = exprEdges.get(j);
+                if(((BaseJoin)exprEdge.first) instanceof ExprIntervalJoin) { // не создаем промежуточную вершину, чтобы не протолкнулся висячий ключ 
+                    addExpr(mEdges, mExprs, exprEdge.first, exprEdge.second, joinExpr);
+                } else {
+                    if(singleEdge == null ) {
+                        singleEdge = exprEdge;
+                        singleExpr = joinExpr;
+                    } else {
+                        if(keyJoinExpr == null)
+                            keyJoinExpr = new KeyJoinExpr(joinExpr);
+                        singleExpr = keyJoinExpr;
+                        addExpr(mEdges, mExprs, exprEdge.first, exprEdge.second, keyJoinExpr);
+                    }
+                }                    
+            }
+            
+            if(keyJoinExpr != null) {
+                KeyJoinExpr baseJoin = keyJoinExpr.getBaseJoin();
                 mJoins.add(baseJoin);
                 addExpr(mEdges, mExprs, baseJoin, 0, joinExpr);
             }            
+            if(singleEdge != null)
+                addExpr(mEdges, mExprs, singleEdge.first, singleEdge.second, singleExpr);
         }
 
         exprs.set(mExprs.immutable());

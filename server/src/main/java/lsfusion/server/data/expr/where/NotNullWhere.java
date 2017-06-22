@@ -10,14 +10,12 @@ import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.interop.Compare;
 import lsfusion.server.caches.OuterContext;
 import lsfusion.server.caches.hash.HashContext;
-import lsfusion.server.data.expr.BaseExpr;
-import lsfusion.server.data.expr.Expr;
-import lsfusion.server.data.expr.NullableExpr;
-import lsfusion.server.data.expr.NullableExprInterface;
+import lsfusion.server.data.expr.*;
 import lsfusion.server.data.expr.query.StatType;
 import lsfusion.server.data.expr.where.extra.BinaryWhere;
 import lsfusion.server.data.query.CompileSource;
 import lsfusion.server.data.query.ExprIndexedJoin;
+import lsfusion.server.data.query.InnerJoins;
 import lsfusion.server.data.query.JoinData;
 import lsfusion.server.data.query.innerjoins.GroupJoinsWheres;
 import lsfusion.server.data.query.innerjoins.UpWhere;
@@ -54,7 +52,7 @@ public abstract class NotNullWhere extends DataWhere {
         BaseExpr expr = getExpr();
         Result<Boolean> isOrderTop = new Result<>();
         if(BinaryWhere.needIndexedJoin(expr, orderTop, null, isOrderTop))
-            return groupDataNotJoinsWheres(new ExprIndexedJoin(expr, Compare.LESS, Expr.NULL, true, isOrderTop.result), type); // кривовато конечно, но пока достаточно
+            return groupDataNotJoinsWheres(new ExprIndexedJoin(expr, Compare.LESS, InnerJoins.EMPTY, true, isOrderTop.result), type); // кривовато конечно, но пока достаточно
         return super.groupNotJoinsWheres(keepStat, statType, keyStat, orderTop, type);
     }
 

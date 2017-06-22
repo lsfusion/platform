@@ -29,17 +29,17 @@ import lsfusion.server.data.where.classes.ClassExprWhere;
 import lsfusion.server.logics.property.ObjectClassField;
 
 // нужно только для определения статистики для создания связи ключ-ключ
-public class IdentExpr extends BaseExpr implements InnerBaseJoin<Object> {
+public class KeyJoinExpr extends BaseExpr implements InnerBaseJoin<Object> {
     
     private final BaseExpr expr;
 
-    public IdentExpr(BaseExpr expr) {
+    public KeyJoinExpr(BaseExpr expr) {
         this.expr = expr;
     }
 
     @Override
     protected boolean calcTwins(TwinImmutableObject o) {
-        return expr.equals(((IdentExpr)o).expr);
+        return expr.equals(((KeyJoinExpr)o).expr);
     }
 
     @Override
@@ -71,7 +71,7 @@ public class IdentExpr extends BaseExpr implements InnerBaseJoin<Object> {
 
     // JOIN'ы - собственно ради этого все и делается
     @Override
-    public IdentExpr getBaseJoin() {
+    public KeyJoinExpr getBaseJoin() {
         return this;
     }
 
@@ -103,7 +103,7 @@ public class IdentExpr extends BaseExpr implements InnerBaseJoin<Object> {
     @Override
     protected BaseExpr translate(MapTranslate translator) {
         assert false;
-        return new IdentExpr(expr.translate(translator));
+        return new KeyJoinExpr(expr.translate(translator));
     }
 
     @Override

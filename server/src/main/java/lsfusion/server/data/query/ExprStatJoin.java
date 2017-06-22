@@ -77,7 +77,7 @@ public class ExprStatJoin extends ExprJoin<ExprStatJoin> {
     }
 
     protected int hash(HashContext hashContext) {
-        return 31 * (31 * super.hash(hashContext) + stat.hashCode()) + (notNull ? 1 : 0) + 5;
+        return 31 * (31 * super.hash(hashContext) + stat.hashCode()) + (notNull ? 1 : 0) + 5 + valueJoins.hash(hashContext.values);
     }
 
     protected ExprStatJoin translate(MapTranslate translator) {

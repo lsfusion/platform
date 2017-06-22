@@ -10,6 +10,9 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.server.Settings;
+import lsfusion.server.caches.hash.HashCodeKeys;
+import lsfusion.server.caches.hash.HashContext;
+import lsfusion.server.caches.hash.HashValues;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.InnerExpr;
@@ -80,8 +83,22 @@ public class InnerJoins extends AddSet<InnerJoin, InnerJoins> {
         }
     }
 
-    // транслятор используется только для InnerJoins без ключей
+    // транслятор и hash используется только для InnerJoins без ключей
+    public int hash(HashValues hashValues) {
+        int result = 0;
+        if(isFalse()) // оптимизация
+            return result;
+        
+        HashContext hashContext = new HashContext(HashCodeKeys.instance, hashValues);
+        for(int i=0;i<wheres.length;i++)
+            result += ((InnerJoin<?, ?>)wheres[i]).hashOuter(hashContext);
+        return result;
+    }
+
     public InnerJoins translate(MapValuesTranslate translate) {
+        if(isFalse()) // оптимизация
+            return this;
+        
         MapTranslate mapKeys = translate.mapKeys();
         InnerJoin[] transWheres = new InnerJoin[wheres.length];
         for(int i=0;i<wheres.length;i++)
