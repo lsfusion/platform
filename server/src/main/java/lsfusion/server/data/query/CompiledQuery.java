@@ -797,7 +797,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                     public String getSource(ImRevMap<ParseValue, String> subQueryParams, MStaticExecuteEnvironment mSubEnv, Result<ImMap<String, SQLQuery>> rSubQueries) {
                         final Result<ImMap<Expr,String>> fromPropertyNames = new Result<>();
                         Result<ImMap<String, SQLQuery>> gSubQueries = new Result<>();
-                        String select = compiled.getSelect(fromPropertyNames, gSubQueries, params.addRevExcl(subQueryParams), mSubEnv, limit);
+                        String select = compiled.getSelect(fromPropertyNames, gSubQueries, params.addExcl(subQueryParams), mSubEnv, limit); // не rev, так как subQueryParams - идут expr'ы и они могут быть равны expression'ам
                         rSubQueries.set(rSubQueries.result.addExcl(gSubQueries.result));
                         return "(" + syntax.getSelect("(" + select+ ") " + alias, fromPropertyNames.result.get(valueExpr), "", "", "", "", "") + ")";
                     }
@@ -1828,14 +1828,14 @@ public class CompiledQuery<K,V> extends ImmutableObject {
     }
 
     // key - какие есть, value - которые должны быть
-    private static String translateParam(String query,ImRevMap<String,String> paramValues) {
+    private static String translateParam(String query,ImMap<String,String> paramValues) {
         // генерируем промежуточные имена, перетранслируем на них
         ImRevMap<String, String> preTranslate = paramValues.mapRevValues(new GenNameIndex("transp", "nt"));
         for(int i=0,size=preTranslate.size();i<size;i++)
             query = query.replace(preTranslate.getKey(i), preTranslate.getValue(i));
 
         // транслируем на те что должны быть
-        ImRevMap<String, String> translateMap = preTranslate.crossJoin(paramValues);
+        ImMap<String, String> translateMap = preTranslate.crossJoin(paramValues);
         for(int i=0,size=translateMap.size();i<size;i++)
             query = query.replace(translateMap.getKey(i), translateMap.getValue(i));
         return query;
@@ -1889,7 +1889,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
             }}));
         return translateParam(from, params);
     }
-    private String getSelect(final ImRevMap<String, String> params, Result<ImMap<V, String>> fillPropertyNames, Result<ImMap<String, SQLQuery>> fillSubQueries, MStaticExecuteEnvironment fillEnv) {
+    private String getSelect(final ImMap<String, String> params, Result<ImMap<V, String>> fillPropertyNames, Result<ImMap<String, SQLQuery>> fillSubQueries, MStaticExecuteEnvironment fillEnv) {
         fillPropertyNames.set(propertyNames);
         fillEnv.add(sql.getEnv());
         fillSubQueries.set(SQLQuery.translate(sql.subQueries, new GetValue<String, String>() {
@@ -1902,15 +1902,18 @@ public class CompiledQuery<K,V> extends ImmutableObject {
     private ImRevMap<String, String> getTranslate(ImRevMap<ParseValue, String> mapValues) {
         return params.crossJoin(mapValues);
     }
+    private ImMap<String, String> getTranslate(ImMap<ParseValue, String> mapValues) {
+        return params.crossJoin(mapValues);
+    }
 
     // для подзапросов
     public String fillSelect(Result<ImMap<K, String>> fillKeySelect, Result<ImMap<V, String>> fillPropertySelect, Result<ImCol<String>> fillWhereSelect, Result<ImMap<String, SQLQuery>> fillSubQueries, ImRevMap<ParseValue, String> mapValues, MStaticExecuteEnvironment fillEnv) {
         return fillSelect(getTranslate(mapValues), fillKeySelect, fillPropertySelect, fillWhereSelect, fillSubQueries, fillEnv);
     }
-    public String getSelect(Result<ImMap<V, String>> fillPropertyNames, Result<ImMap<String, SQLQuery>> fillSubQueries, ImRevMap<ParseValue, String> mapValues, MStaticExecuteEnvironment fillEnv, int limit) {
-        ImRevMap<String, String> translate = getTranslate(mapValues);
+    public String getSelect(Result<ImMap<V, String>> fillPropertyNames, Result<ImMap<String, SQLQuery>> fillSubQueries, ImMap<ParseValue, String> mapValues, MStaticExecuteEnvironment fillEnv, int limit) {
+        ImMap<String, String> translate = getTranslate(mapValues);
         if(limit > 0)
-            translate = translate.addRevExcl(SQLSession.limitParam, String.valueOf(limit));
+            translate = translate.addExcl(SQLSession.limitParam, String.valueOf(limit));
         return getSelect(translate, fillPropertyNames, fillSubQueries, fillEnv);
     }
 
