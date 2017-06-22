@@ -1197,11 +1197,32 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
 
     private int noReadOnly = 0;
     private final Object noReadOnlyLock = new Object();
+    public void pushNoReadOnly() throws SQLException {
+        lockRead(OperationOwner.unknown);
+
+        try {
+            pushNoReadOnly(getConnection().sql);
+        } finally {
+            lockNeedPrivate();
+
+            unlockRead();
+        }
+    }
     public void pushNoReadOnly(Connection connection) throws SQLException {
         synchronized (noReadOnlyLock) {
             if(inTransaction == 0 && noReadOnly++ == 0) {
                 connection.setReadOnly(false);
             }
+        }
+    }
+    public void popNoReadOnly() throws SQLException {
+        lockRead(OperationOwner.unknown);
+        try {
+            popNoReadOnly(getConnection().sql);
+        } finally {
+            lockTryCommon(OperationOwner.unknown);
+
+            unlockRead();
         }
     }
     public void popNoReadOnly(Connection connection) throws SQLException {
