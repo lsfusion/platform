@@ -355,6 +355,18 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         return false;
     }
 
+    public String getStoredChanges() {
+        String result = "";
+        if (news != null)
+            result += " " + news;
+
+        for (DataProperty property : data.keySet())
+            if (property.isStored())
+                result += " " + property;
+
+        return result;
+    }
+
     private PropertyChange<ClassPropertyInterface> getObjectClassChange(ObjectClassProperty property) {
         if(news!=null)
             return SingleKeyPropertyUsage.getChange(news, property.interfaces.single());
