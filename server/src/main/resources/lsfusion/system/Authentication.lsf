@@ -70,8 +70,8 @@ upcaseLogin 'Логин в верхнем регистре' (CustomUser customUs
 customUserUpcase 'Обычный пользователь' (login) = GROUP MAX CustomUser customUser BY upcaseLogin(customUser);
 sha256Password 'Пароль' = DATA VARSTRING[100] (CustomUser) ECHO;
 calculatedHash 'Значение хэш' = DATA LOCAL VARSTRING[100] ();
-forbidChangePassword 'Запретить пользователю изменять пароль' = DATA BOOLEAN (CustomUser);
-forbidEditProfile 'Запретить пользователю редактировать профиль' = DATA BOOLEAN (CustomUser);
+forbidChangePassword 'Запретить пользователю изменять пароль' = ABSTRACT BOOLEAN (CustomUser);
+forbidEditProfile 'Запретить пользователю редактировать профиль' = ABSTRACT BOOLEAN (CustomUser);
 
 lastActivity 'Последняя активность' = DATA DATETIME (CustomUser);
 ignorePrintTypeCustom 'Открывать печатные формы в интерактивном режиме' = DATA BOOLEAN (User);
@@ -167,7 +167,7 @@ FORM customUser 'Пользователь'
     OBJECTS u=CustomUser PANEL
     PROPERTIES(u) firstName, lastName, login,
     sha256Password ON CHANGE changeSHA256Password(u), email,
-    forbidChangePassword, forbidEditProfile, isLocked, lastActivity, ignorePrintTypeCustom, useBusyDialogCustom, useRequestTimeout,
+    isLocked, lastActivity, ignorePrintTypeCustom, useBusyDialogCustom, useRequestTimeout,
     allowExcessAllocatedBytes, language, country, timeZone, twoDigitYearStart, clientLanguage, clientCountry, useClientLocale
 
     EDIT CustomUser OBJECT u
@@ -196,7 +196,7 @@ edit 'Редактировать' (CustomUser u) = {
 FORM customUsers 'Пользователи'
     OBJECTS u=CustomUser
     PROPERTIES(u) READONLY name[Contact], login, email
-    PROPERTIES(u) NEWSESSION forbidChangePassword, forbidEditProfile, useBusyDialogCustom, useRequestTimeout, allowExcessAllocatedBytes,
+    PROPERTIES(u) NEWSESSION useBusyDialogCustom, useRequestTimeout, allowExcessAllocatedBytes,
                   language, userLanguage, clientLanguage, country, userCountry, clientCountry, useClientLocale, 
                   timeZone, userTimeZone, twoDigitYearStart, userTwoDigitYearStart, isLocked READONLY,
                   lastActivity, NEW, edit , DELETE 

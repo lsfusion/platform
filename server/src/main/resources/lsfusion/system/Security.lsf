@@ -38,7 +38,17 @@ CONSTRAINT DROPPED(UserRole r IS UserRole) AND PREV(has(User user, r))
 inMainRole(CustomUser customUser, UserRole userRole) = mainRole(customUser) == userRole OR in(customUser, userRole);
 
 forbidDuplicateForms 'Запретить открытие второй формы' = DATA BOOLEAN (UserRole);
-forbidDuplicateFormsCurrentUser 'Запретить открытие второй формы' () = forbidDuplicateForms (mainRole(currentUser()));
+dataForbidDuplicateForms 'Запретить открытие второй формы' = DATA BOOLEAN (CustomUser);
+forbidDuplicateForms 'Запретить открытие второй формы' (CustomUser u) = OVERRIDE dataForbidDuplicateForms(u), forbidDuplicateForms(mainRole(u));
+forbidDuplicateFormsCurrentUser 'Запретить открытие второй формы' () = forbidDuplicateForms(currentUser());
+
+forbidChangePassword 'Запретить пользователю изменять пароль' = DATA BOOLEAN (UserRole);
+dataForbidChangePassword 'Запретить пользователю изменять пароль' = DATA BOOLEAN (CustomUser);
+forbidChangePassword(CustomUser u) += OVERRIDE dataForbidChangePassword(u), forbidChangePassword(mainRole(u));
+
+forbidEditProfile 'Запретить пользователю редактировать профиль' = DATA BOOLEAN (UserRole);
+dataForbidEditProfile 'Запретить пользователю редактировать профиль' = DATA BOOLEAN (CustomUser);
+forbidEditProfile(CustomUser u) += OVERRIDE dataForbidEditProfile(u), forbidEditProfile(mainRole(u));
 
 permitViewAllProperty 'Разрешить просмотр всех свойств' = DATA BOOLEAN (UserRole);
 permitViewAllProperty 'Разрешить просмотр всех свойств' (User user) = permitViewAllProperty (mainRole(user));
@@ -308,7 +318,7 @@ FORM securityPolicy 'Политика безопасности'
 
     OBJECTS ur=UserRole
     PROPERTIES(ur) READONLY name, sid
-    PROPERTIES(ur) transactTimeout, forbidDuplicateForms, permitViewAllProperty, forbidViewAllProperty, permitChangeAllProperty,
+    PROPERTIES(ur) transactTimeout, permitViewAllProperty, forbidViewAllProperty, permitChangeAllProperty,
                    forbidChangeAllProperty, nameDefaultForms, permitAllForms, forbidAllForms
 
     OBJECTS p=Policy
@@ -361,6 +371,17 @@ FORM securityPolicy 'Политика безопасности'
     PROPERTIES(ur, p) order COLUMNS (ur) HEADER sid(ur)
 
     FILTERS parent(prs)==tprs, parent(dprs)==tdprs
+    
+    OBJECTS ur2=UserRole
+    PROPERTIES(ur2) READONLY name, sid
+    PROPERTIES(ur2) forbidDuplicateForms, forbidChangePassword, forbidEditProfile
+    
+    OBJECTS u=CustomUser
+    PROPERTIES(u) READONLY name[Contact], login
+    PROPERTIES(u) dataForbidDuplicateForms, dataForbidChangePassword, forbidEditProfile
+    
+    FILTERS mainRole(u) == ur2 
+
 ;
 
 DESIGN securityPolicy {
@@ -418,6 +439,13 @@ DESIGN securityPolicy {
                     }
                 }
             }
+        }
+        
+        NEW users {
+            caption = 'Пользователи';
+            type = SPLITV;
+            MOVE ur2.box;
+            MOVE u.box;
         }
 
         MOVE p.box {
