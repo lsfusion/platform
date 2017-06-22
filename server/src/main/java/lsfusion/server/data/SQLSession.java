@@ -1201,10 +1201,10 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         lockRead(OperationOwner.unknown);
 
         try {
-            pushNoReadOnly(getConnection().sql);
-        } finally {
             lockNeedPrivate();
 
+            pushNoReadOnly(getConnection().sql);
+        } finally {
             unlockRead();
         }
     }
