@@ -900,7 +900,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         MSet<BaseExpr> mTranslate = SetFact.mSet();
 
         Result<UpWheres<WhereJoin>> upAdjWheres = new Result<>(upWheres);
-        List<WhereJoin> adjWheres = getAdjIntervalWheres(upAdjWheres);
+        List<WhereJoin> adjWheres = getAdjIntervalWheres(upAdjWheres, queryJoin);
         upWheres = upAdjWheres.result;
 
         MExclSet<WhereJoin> mTopKeys = SetFact.mExclSetMax(adjWheres.size());
@@ -1476,7 +1476,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
             queue.add(join);
     }
 
-    private List<WhereJoin> getAdjIntervalWheres(Result<UpWheres<WhereJoin>> upAdjWheres) {
+    private List<WhereJoin> getAdjIntervalWheres(Result<UpWheres<WhereJoin>> upAdjWheres, QueryJoin excludeQueryJoin) {
         // в принципе в cost based это может быть не нужно, просто нужно сделать result cost и stat объединения двух ExprIndexedJoin = AverageIntervalStat и тогда жадняк сам разберется
         boolean hasExprIndexed = false; // оптимизация
         WhereJoin[] wheres = getAdjWheres();
@@ -1497,7 +1497,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
             else
                 result.add(valueJoin);
 
-        ExprIndexedJoin.fillIntervals(mExprIndexedJoins.immutable(), result, upAdjWheres, wheres);
+        ExprIndexedJoin.fillIntervals(mExprIndexedJoins.immutable(), result, upAdjWheres, wheres, excludeQueryJoin);
 
         return result;
     }
@@ -1516,9 +1516,9 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         MAddExclMap<BaseExpr, MAddCol<Pair<BaseJoin<Object>, Object>>> joinExprEdges = MapFact.mAddExclMap();
 
         // собираем все ребра и вершины (без ExprIndexedJoin они все равно не используются при подсчете статистики, но с интервалами)
-        for(WhereJoin valueJoin : getAdjIntervalWheres(null))
+        for(WhereJoin valueJoin : getAdjIntervalWheres(null, keepIdentJoin))
             addQueueJoin(valueJoin, mJoins, queue, keepIdentJoin);
-
+        
         for(BaseExpr group : groups) {
             mExprs.add(group);
             addQueueJoin(group.getBaseJoin(), mJoins, queue, keepIdentJoin);

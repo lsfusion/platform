@@ -16,6 +16,7 @@ import lsfusion.server.caches.hash.HashContext;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.NullableExprInterface;
+import lsfusion.server.data.expr.query.QueryJoin;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.expr.query.StatType;
 import lsfusion.server.data.query.innerjoins.AbstractUpWhere;
@@ -156,10 +157,11 @@ public class ExprIndexedJoin extends ExprJoin<ExprIndexedJoin> {
         return null;
     }
 
-    private static ImSet<KeyExpr> getInnerKeys(WhereJoin[] wheres) {
+    // excludeQueryJoin нужен чтобы она не считала его источником ключей => бесконечное проталкивание
+    private static ImSet<KeyExpr> getInnerKeys(WhereJoin[] wheres, QueryJoin excludeQueryJoin) {
         MSet<KeyExpr> mInnerKeys = SetFact.mSet();
         for(WhereJoin<?, ?> where : wheres) {
-            if (where instanceof InnerJoin) {
+            if (where instanceof InnerJoin && (excludeQueryJoin == null || !BaseUtils.hashEquals(where, excludeQueryJoin))) {
                 ImSet<BaseExpr> whereKeys = where.getJoins().values().filterCol(new SFunctionSet<BaseExpr>() {
                     public boolean contains(BaseExpr element) {
                         return element instanceof KeyExpr;
@@ -171,7 +173,7 @@ public class ExprIndexedJoin extends ExprJoin<ExprIndexedJoin> {
         return mInnerKeys.immutable();
     }
 
-    public static void fillIntervals(ImSet<ExprIndexedJoin> exprs, List<WhereJoin> mResult, Result<UpWheres<WhereJoin>> upAdjWheres, WhereJoin[] wheres) {
+    public static void fillIntervals(ImSet<ExprIndexedJoin> exprs, List<WhereJoin> mResult, Result<UpWheres<WhereJoin>> upAdjWheres, WhereJoin[] wheres, QueryJoin excludeQueryJoin) {
         ImMap<BaseExpr, ImSet<ExprIndexedJoin>> exprIndexedJoins = exprs.group(new BaseUtils.Group<BaseExpr, ExprIndexedJoin>() {
             public BaseExpr group(ExprIndexedJoin key) {
                 return key.baseExpr;
@@ -205,7 +207,7 @@ public class ExprIndexedJoin extends ExprJoin<ExprIndexedJoin> {
 
             if(fixedInterval && expr instanceof KeyExpr) { // по идее эта обработка не нужна, но тогда могут появляться висячие ключи (так как a>=1 AND a<=5 будет убивать другие join'ы), хотя строго говоря потом можно наоборот поддержать эти случаи, тогда a>=1 AND a<=5 будет работать
                 if(innerKeys == null)
-                    innerKeys = getInnerKeys(wheres);
+                    innerKeys = getInnerKeys(wheres, excludeQueryJoin);
                 if(!innerKeys.contains((KeyExpr)expr)) // висячий ключ
                     fixedInterval = false;
             }
