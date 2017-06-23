@@ -260,7 +260,7 @@ DESIGN connections{
 FORM  exceptions 'Журнал ошибок'
 
     OBJECTS e=Exception LAST
-    PROPERTIES(e) FOREGROUND foregroundNonFatal(e) BACKGROUND backgroundNonFatal(e) READONLY message, client , login , type, date, reqId PANEL, count PANEL, abandoned PANEL
+    PROPERTIES(e) FOREGROUND foregroundNonFatal(e) BACKGROUND backgroundNonFatal(e) READONLY objectClassName, message, client , login , type, date, reqId PANEL, count PANEL, abandoned PANEL
     PROPERTIES(e) READONLY PANEL erTrace, lsfStackTrace
 ;
 
