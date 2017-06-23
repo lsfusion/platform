@@ -64,8 +64,6 @@ public class RecursiveProperty<T extends PropertyInterface> extends ComplexIncre
 
     @IdentityInstanceLazy
     public CalcProperty getConstrainedProperty() {
-        // создает ограничение на "одинаковость" всех группировочных св-в
-        // I1=I1' AND … In = In' AND G!=G' == false
         assert cycle == Cycle.NO;
         assert !isLogical();
 
