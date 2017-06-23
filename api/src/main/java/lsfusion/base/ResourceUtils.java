@@ -115,7 +115,9 @@ public class ResourceUtils {
     public static void watchClassPathFoldersForChange(final Runnable callback) {
         try {
             List<Path> paths = new ArrayList<>();
-            for (final String element : getClassPathElements()) {
+            for (String element : getClassPathElements()) {
+                if(element.endsWith("/.")) // временный хак
+                    element = element.substring(0, element.length() - 2);
                 if (!isRedundantString(element)) {
                     final Path path = Paths.get(element);
                     Boolean isFolder = (Boolean) Files.getAttribute(path, "basic:isDirectory", NOFOLLOW_LINKS);
