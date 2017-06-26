@@ -1557,7 +1557,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
             KeyJoinExpr keyJoinExpr = null;;
             for(int j=0,sizeJ=exprEdges.size();j<sizeJ;j++) {
                 Pair<BaseJoin<Object>, Object> exprEdge = exprEdges.get(j);
-                if(((BaseJoin)exprEdge.first) instanceof ExprIntervalJoin) { // не создаем промежуточную вершину, чтобы не протолкнулся висячий ключ 
+                if(((BaseJoin)exprEdge.first) instanceof ExprJoin && !((ExprJoin)exprEdge.first).canBeKeyJoined()) { // не создаем промежуточную вершину, чтобы не протолкнулся висячий ключ
                     addExpr(mEdges, mExprs, exprEdge.first, exprEdge.second, joinExpr);
                 } else {
                     if(singleEdge == null ) {

@@ -72,6 +72,11 @@ public class ExprStatJoin extends ExprJoin<ExprStatJoin> {
     }
 
     @Override
+    public boolean canBeKeyJoined() {
+        return !notNull;
+    }
+
+    @Override
     public InnerJoins getInnerJoins() {
         return super.getInnerJoins().and(valueJoins);
     }

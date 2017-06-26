@@ -217,7 +217,7 @@ public class ExprIndexedJoin extends ExprJoin<ExprIndexedJoin> {
                 valueJoins = valueJoins.and(join.valueJoins);
             WhereJoin adjJoin;
             if(fixedInterval) // assert что все остальные тоже givesNoKeys
-                adjJoin = new ExprIntervalJoin(expr, new Stat(intStat, true), valueJoins, false);
+                adjJoin = new ExprIntervalJoin(expr, new Stat(intStat, true), valueJoins);
             else
                 adjJoin = new ExprStatJoin(expr, Stat.ALOT, valueJoins, false);
             mResult.add(adjJoin);

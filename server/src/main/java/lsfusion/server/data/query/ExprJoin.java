@@ -47,6 +47,11 @@ public abstract class ExprJoin<T extends ExprJoin<T>> extends AbstractOuterConte
         return InnerExpr.getExprFollows(this, includeInnerWithoutNotNull, recursive);
     }
 
+    // может ли при замене выражения на ключ сохранить информацию о join'е (или все же неявно использует семантику выражения) - хак в определенной степени
+    public boolean canBeKeyJoined() {
+        return true;
+    }
+
     public ImMap<Integer, BaseExpr> getJoins() {
         return MapFact.singleton(0, (BaseExpr) baseExpr);
     }
