@@ -34,6 +34,7 @@ public class SubQueryContext extends TwinImmutableObject {
         this.siblingSubQuery = siblingSubQuery;
         this.subQuery = subQuery;
         this.subQueryExprs = subQueryExprs;
+        assert alias >= 0;
     }
 
     public String wrapAlias(String name) {

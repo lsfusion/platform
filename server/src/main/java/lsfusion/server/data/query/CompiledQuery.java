@@ -815,7 +815,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                         return new StaticValueNullableExpr(keyClasses.getCommonClass(value), keyNames.get(value), level);
                     }
                 });
-                subQueryContext = subQueryContext.pushSubQueryExprs();
+                subQueryContext = subQueryContext.pushSubQueryExprs().pushAlias(1); // чтобы не пересекались alias'ы с верхним контекстом (sibling'и могут)
 
                 rVirtParams.set(virtParams.reverse());
                 Where valueWhere = CompareWhere.compare(BaseUtils.<ImRevMap<Expr, Expr>>immutableCast(virtParams));
@@ -824,7 +824,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                 for(int i=0,size=queries.size();i<size;i++) {
                     GroupExpr.Query group = queries.getValue(i); assert group.type.isLastOpt();
 
-                    subQueryContext = subQueryContext.pushSiblingSubQuery().pushAlias(1); // чтобы не пересекались alias'ы при использовании subqueryexpr
+                    subQueryContext = subQueryContext.pushSiblingSubQuery(); // чтобы не пересекались alias'ы при использовании subqueryexpr
 
                     mPropertySelect.mapValue(i, getLastExprSource(group, valueWhere, subQueryContext, rBaseCost));
                 }
