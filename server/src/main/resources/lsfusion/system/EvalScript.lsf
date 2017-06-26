@@ -4,114 +4,57 @@ REQUIRE System, Time;
 
 NAMESPACE System;
 
-scriptStorage 'Скрипт' () = DATA TEXT ();
-
 CLASS Script 'Скрипт';
 TABLE script(Script);
 
 name 'Наименование' = DATA VARSTRING[100] (Script);
 text 'Текст' = DATA TEXT (Script);
-textScript = GROUP MAX Script script BY text(script); 
-dateTime 'Дата запуска' = DATA DATETIME (Script);
-succeeded = DATA BOOLEAN (Script);
+textScript = GROUP MAX Script script BY text(script);
+ 
+dateTime 'Время запуска' = DATA DATETIME (Script);
 
-//при первом старте помечает все старые скрипты как succeeded
-onStartedSucceeded = DATA BOOLEAN ();
-onStarted() += {
-    IF NOT onStartedSucceeded() THEN {
-        succeeded(Script s) <- TRUE;
-        onStartedSucceeded() <- TRUE;
-    }
-}
+dateTimeChange 'Время изменения' = DATA DATETIME (Script);  
+dateTimeChange(Script s) <- currentDateTime() WHEN CHANGED(text(s));
 
-updateStorageNewSession(Script script) = {
-	NEWSESSION {
-	    scriptStorage() <- text(script);
-	    apply();
-	}
-}
-
-updateStorage(Script script) = {
-    updateStorageNewSession(script);
-    cancel();
-}
-
-saveTextScript(Script s, TEXT t) = {
-    text(s) <- t;
-}
-
-updateDateTimeScript(Script s) = {
+preRunScript(Script s) = {
     dateTime(s) <- currentDateTime();
+    APPLY;
 }
 
-setSucceeded(Script s) = {
-    succeeded(s) <- TRUE;
+scriptExecution 'Выполнить скрипт' (Script s) = { 
+    TRY { 
+        preRunScript(s); 
+        NEWSESSION { 
+            EVAL text(s); 
+        } 
+    } 
 }
 
-preRunScript() = {
-    LOCAL localText = TEXT();
-    localText() <- scriptStorage();
-    NEWSESSION NESTED (localText) {
-        scriptStorage() <- localText();
-        LOCAL script = Script ();
-        script() <- textScript(localText());
-        IF NOT script() THEN {
-            NEW s = Script
-                script() <- s;
-            saveTextScript(script(), scriptStorage());
+actionBodyExecution 'Выполнить действие' (Script s) = { 
+    TRY { 
+        preRunScript(s);
+        NEWSESSION {
+            EVAL CONCAT ' ', 'run() = \{', text(s), ';\n\};';
         }
-        updateDateTimeScript(script());
-        apply();
-    }
+    } 
 }
 
-afterRunScript() = {
-	NEWSESSION {
-	    setSucceeded(textScript(scriptStorage()));
-	    apply();
-	}
-}
-
-
-scriptExecution 'Выполнить скрипт' () = { TRY { preRunScript(); EVAL scriptStorage(); afterRunScript(); } }
-
-actionBodyExecution 'Выполнить действие' () = { TRY { preRunScript(); EVAL CONCAT ' ', 'run() = \{', scriptStorage(), ';\n\};'; afterRunScript(); } };
-formExecution 'Показать форму' () = { TRY { preRunScript(); EVAL CONCAT ' ', 'FORM form', scriptStorage(), ';\nrun() = \{ SHOW form NOWAIT; \}'; afterRunScript(); } };
-javaActionBodyExecution 'Выполнить Java-код' () = { TRY { preRunScript(); EVAL CONCAT ' ', 'run() = ACTION CUSTOM <\{ ', scriptStorage(), ' \}>;'; afterRunScript(); } };
-
-FORM chooseScriptName 'Сохранить как'
-    OBJECTS name = VARSTRING[100] PANEL
-    PROPERTIES valueName = VALUE(name)
-;
-
-DESIGN chooseScriptName {
-    main{
-        caption = 'Сохранить как';
-        PROPERTY(valueName){
-            caption = 'Наименование';
-            font = 'Tahoma 24';
+formExecution 'Показать форму' (Script s) = { 
+    TRY { 
+        preRunScript(s);
+        NEWSESSION {
+            EVAL CONCAT ' ', 'FORM form', text(s), ';\nrun() = \{ SHOW form MANAGESESSION NOWAIT; \}';
         }
-    REMOVE leftControls;
-    REMOVE PROPERTY(formRefresh());
-    }
+    } 
 }
 
-saveAsScriptAction 'Сохранить как'() = {
-	NEWSESSION {
-	    DIALOG chooseScriptName OBJECTS name INPUT DO {
-	        NEW s = Script {
-	            name(s) <- name;
-	            text(s) <- scriptStorage();
-	            dateTime(s) <- currentDateTime();
-	        }
-	        apply();
-	    }
-	}
-}
-
-saveAction 'Сохранить'(Script script) = {
-    text(script) <- scriptStorage();
-    dateTime(script) <- currentDateTime();
+javaActionBodyExecution 'Выполнить Java-код' (Script s) = { 
+    TRY {
+        preRunScript(s);
+        NEWSESSION {
+            EVAL CONCAT ' ', 'run() = ACTION CUSTOM <\{ ', text(s), ' \}>;';
+        }
+    } 
 }
 
 // Универсальная таблица для последующего импорта
@@ -141,11 +84,9 @@ date3 'Дата 3' = DATA DATE (Row);
 
 FORM script 'Скрипт'
     OBJECTS s = Script PANEL
-    PROPERTIES(s) dateTime, name SELECTOR EVENTS ON CHANGE s updateStorage(s)
-    PROPERTIES() scriptStorage,
-                 scriptExecution, actionBodyExecution, formExecution, javaActionBodyExecution, saveAsScriptAction
-    PROPERTIES(s) saveAction
-    ORDER BY dateTime(s) DESC
+    PROPERTIES(s) dateTimeChange SELECTOR, dateTime SELECTOR, name, text
+    
+    PROPERTIES(s) scriptExecution, actionBodyExecution, formExecution, javaActionBodyExecution
                  
     OBJECTS r = Row GRID
     PROPERTIES(r) string1, string2, string3, string4, string5, string6, string7, string8, string9, string10 
@@ -153,8 +94,18 @@ FORM script 'Скрипт'
     PROPERTIES(r) NEW, DELETE GRID
 ;
 
+createScript () = {
+    NEW s = Script {
+        SEEK script.s = s;
+    }
+}
+
+EXTEND FORM script
+    EVENTS
+        ON INIT createScript();
+;
+
 DESIGN script {
-    PROPERTY(dateTime(s)) { hide = TRUE; }
     NEW pane {
         fill = 1;
         type = TABBED;
@@ -162,23 +113,23 @@ DESIGN script {
             fill = 1;        
             caption = 'Скрипт';
             NEW script {
-                caption = 'Сохранённые скрипты';
+                caption = 'Параметры';
                 type = CONTAINERH;
+                MOVE PROPERTY(dateTimeChange(s)) { font = 'bold 24'; alignment = STRETCH; }
+                MOVE PROPERTY(dateTime(s)) { font = 'bold 24'; alignment = STRETCH; }
                 MOVE PROPERTY(name(s)) { font = 'bold 24'; alignment = STRETCH; }
-                MOVE PROPERTY(saveAction(s)) { font = 'bold 24'; alignment = STRETCH; }
-                MOVE PROPERTY(saveAsScriptAction()) { font = 'bold 24'; alignment = STRETCH; }
             }
-            MOVE PROPERTY(scriptStorage()) {
+            MOVE PROPERTY(text(s)) {
                 panelCaptionAbove = TRUE;    
                 fill = 1;
             }
             NEW run {
                 caption = 'Запуск';
                 type = CONTAINERH;
-                MOVE PROPERTY(scriptExecution()) { font = 'bold 24'; }
-                MOVE PROPERTY(actionBodyExecution()) { font = 'bold 24'; }
-                MOVE PROPERTY(formExecution()) { font = 'bold 24'; }
-                MOVE PROPERTY(javaActionBodyExecution()) { font = 'bold 24'; }
+                MOVE PROPERTY(scriptExecution(s)) { font = 'bold 24'; }
+                MOVE PROPERTY(actionBodyExecution(s)) { font = 'bold 24'; }
+                MOVE PROPERTY(formExecution(s)) { font = 'bold 24'; }
+                MOVE PROPERTY(javaActionBodyExecution(s)) { font = 'bold 24'; }
             }
         }
         MOVE r.box {
@@ -198,12 +149,11 @@ FORM scriptLog 'Скрипт'
 FORM scriptsLog 'Скрипты'
     
     OBJECTS s=Script
-    PROPERTIES(s) name, text READONLY, dateTime READONLY 
+    PROPERTIES(s) READONLY name, text, dateTimeChange, dateTime 
     PROPERTIES(s) NEWSESSION DELETE 
-    ORDER BY dateTime(s) DESC
+    ORDER BY dateTimeChange(s) DESC
 
-    FILTERGROUP user FILTER 'Только пользовательские' name(s) 'F9'
-    FILTERGROUP succeeded FILTER 'Только без ошибок' succeeded(s) 'F10' DEFAULT
+    FILTERGROUP user FILTER 'Именованные' name(s) 'F9'
 
     LIST Script OBJECT s
 ;
