@@ -96,6 +96,9 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.*;
@@ -2424,7 +2427,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         result.add(getCleanTempTablesTask(scheduler));
         result.add(getFlushPendingTransactionCleanersTask(scheduler));
         result.add(getRestartConnectionsTask(scheduler));
-        result.add(resetCustomReportsCacheTask(scheduler));
+        result.addAll(resetCustomReportsCacheTasks(scheduler));
         return result;
     }
 
@@ -2484,19 +2487,28 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             }
         }, false, Settings.get().getThreadAllocatedMemoryPeriod() / 2, false, "Allocated Bytes");
     }
-    
-    private Scheduler.SchedulerTask resetCustomReportsCacheTask(Scheduler scheduler) {
-        return scheduler.createSystemTask(new EExecutionStackRunnable() {
-            @Override
-            public void run(ExecutionStack stack) throws Exception {
-                ResourceUtils.watchClassPathFoldersForChange(new Runnable() {
-                    @Override
-                    public void run() {
-                        customReports = null;  
-                    }
-                }); 
+
+    private List<Scheduler.SchedulerTask> resetCustomReportsCacheTasks(Scheduler scheduler) {
+        List<Scheduler.SchedulerTask> tasks = new ArrayList<>();
+        for (String element : ResourceUtils.getClassPathElements()) {
+            if (!isRedundantString(element)) {
+                final Path path = Paths.get(element);
+                if (Files.isDirectory(path)) {
+                    tasks.add(scheduler.createSystemTask(new EExecutionStackRunnable() {
+                        @Override
+                        public void run(ExecutionStack stack) throws Exception {
+                            ResourceUtils.watchPathForChange(path, new Runnable() {
+                                @Override
+                                public void run() {
+                                    customReports = null;
+                                }
+                            });
+                        }
+                    }, true, null, false, "Custom Reports"));
+                }
             }
-        }, true, null, false, "Custom Reports");
+        }
+        return tasks;
     }
 
     private class AllocatedInfo {

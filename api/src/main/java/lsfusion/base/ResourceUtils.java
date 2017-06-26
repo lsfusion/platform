@@ -1,22 +1,16 @@
 package lsfusion.base;
 
-import com.google.common.base.Throwables;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
-import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 import static com.sun.nio.file.ExtendedWatchEventModifier.FILE_TREE;
-import static java.nio.file.LinkOption.NOFOLLOW_LINKS;
 import static java.nio.file.StandardWatchEventKinds.*;
 import static lsfusion.base.BaseUtils.isRedundantString;
 
@@ -112,58 +106,26 @@ public class ResourceUtils {
         return getClassPath().split(System.getProperty("path.separator"));
     }
 
-    public static void watchClassPathFoldersForChange(final Runnable callback) {
-        try {
-            List<Path> paths = new ArrayList<>();
-            for (String element : getClassPathElements()) {
-                if(element.endsWith("/.")) // временный хак
-                    element = element.substring(0, element.length() - 2);
-                if (!isRedundantString(element)) {
-                    final Path path = Paths.get(element);
-                    Boolean isFolder = (Boolean) Files.getAttribute(path, "basic:isDirectory", NOFOLLOW_LINKS);
-                    if (isFolder) {
-                        paths.add(path);
-                    }
+    public static void watchPathForChange(Path path, Runnable callback) throws IOException {
+        WatchService watcher = FileSystems.getDefault().newWatchService();
+        path.register(watcher, new WatchEvent.Kind[]{ENTRY_CREATE, ENTRY_DELETE}, FILE_TREE);
+
+        WatchKey key;
+        while (true) {
+            try {
+                // wait for key to be signaled
+                key = watcher.take();
+            } catch (InterruptedException x) {
+                return;
+            }
+
+            for (WatchEvent<?> event : key.pollEvents()) {
+                WatchEvent.Kind<?> kind = event.kind();
+                if (kind == ENTRY_CREATE || kind == ENTRY_DELETE || kind == OVERFLOW) {
+                    callback.run();
                 }
             }
-            watchPathsForChange(paths, callback);
-        } catch (IOException e) {
-            Throwables.propagate(e);
-        }
-    }
-    
-    public static void watchPathsForChange(final List<Path> paths, final Runnable callback) throws IOException {
-        ExecutorService threadPool = Executors.newCachedThreadPool();
-        final WatchService watcher = FileSystems.getDefault().newWatchService();
-        for (final Path path : paths) {
-            threadPool.submit(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        path.register(watcher, new WatchEvent.Kind[]{ENTRY_CREATE, ENTRY_DELETE}, FILE_TREE);
-
-                        WatchKey key;
-                        while (true) {
-                            try {
-                                // wait for key to be signaled
-                                key = watcher.take();
-                            } catch (InterruptedException x) {
-                                return;
-                            }
-
-                            for (WatchEvent<?> event : key.pollEvents()) {
-                                WatchEvent.Kind<?> kind = event.kind();
-                                if (kind == ENTRY_CREATE || kind == ENTRY_DELETE || kind == OVERFLOW) {
-                                    callback.run();
-                                }
-                            }
-                            key.reset();
-                        }
-                    } catch (IOException e) {
-                        Throwables.propagate(e);
-                    }
-                }
-            });
+            key.reset();
         }
     }
 }  
