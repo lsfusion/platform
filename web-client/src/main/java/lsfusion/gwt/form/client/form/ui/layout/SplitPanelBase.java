@@ -20,7 +20,6 @@ public abstract class SplitPanelBase<P extends Panel> {
 
     protected double flex1;
     protected double flex2;
-    protected double currentRatio = -1;
     protected double flexSum;
 
     protected Widget firstWidget;
@@ -51,7 +50,7 @@ public abstract class SplitPanelBase<P extends Panel> {
         flex1 = flex <= 0 ? 1 : flex;
         flexSum = flex1 + flex2;
 
-        addFirstWidgetImpl(child, w);
+        addFirstWidgetImpl(child, w, flex1);
     }
 
     public void addSecondWidget(GComponent child, Widget w, double flex) {
@@ -63,7 +62,7 @@ public abstract class SplitPanelBase<P extends Panel> {
         flex2 = flex <= 0 ? 1 : flex;
         flexSum = flex1 + flex2;
 
-        addSecondWidgetImpl(child, w);
+        addSecondWidgetImpl(child, w, flex2);
     }
 
     public void remove(Widget child) {
@@ -98,7 +97,7 @@ public abstract class SplitPanelBase<P extends Panel> {
 
         splitter.setVisible(firstVisible && secondVisible);
 
-        adjustSize();
+//        adjustSize();
     }
 
     private void resize(int firstPixelSize) {
@@ -106,34 +105,18 @@ public abstract class SplitPanelBase<P extends Panel> {
             return;
         }
 
-        currentRatio = firstPixelSize / (double) getAvailableSize();
-        adjustSize();
+        double currentRatio = firstPixelSize / (double) getAvailableSize();
+        setSplitSize(currentRatio, flexSum, false);
 
         if (panel instanceof RequiresResize) {
             ((RequiresResize)panel).onResize();
         }
     }
 
-    private void adjustSize() {
-        if (firstWidget == null && secondWidget == null) {
-            return;
-        }
-        if (firstWidget == null || !firstWidget.isVisible()) {
-            setChildrenRatio(0);
-        } else if (secondWidget == null || !secondWidget.isVisible()) {
-            setChildrenRatio(1);
-        } else {
-            if (currentRatio <= 0) {
-                currentRatio = flex1 / flexSum;
-            }
-            setChildrenRatio(currentRatio);
-        }
-    }
-
     protected abstract void addSplitterImpl(Splitter splitter);
-    protected abstract void addFirstWidgetImpl(GComponent child, Widget widget);
-    protected abstract void addSecondWidgetImpl(GComponent child, Widget secondWidget);
-    protected abstract void setChildrenRatio(double ratio);
+    protected abstract void addFirstWidgetImpl(GComponent child, Widget widget, double flex1);
+    protected abstract void addSecondWidgetImpl(GComponent child, Widget secondWidget, double flex2);
+    protected abstract void setSplitSize(double ratio, double flexSum, boolean recheck);
 
     protected abstract class Splitter extends Widget {
         private boolean dragging;

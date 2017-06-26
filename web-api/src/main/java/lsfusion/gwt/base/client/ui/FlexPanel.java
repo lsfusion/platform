@@ -219,10 +219,10 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
     }
 
     public static final class LayoutData {
-        Element child;
-        GFlexAlignment alignment;
-        double flex;
-        String flexBasis;
+        public Element child;
+        public GFlexAlignment alignment;
+        public double flex;
+        public String flexBasis;
 
         public LayoutData(Element child, GFlexAlignment alignment, double flex, String flexBasis) {
             this.child = child;

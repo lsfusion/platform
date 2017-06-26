@@ -27,7 +27,7 @@ public class TableSplitPanel extends SplitPanelBase<CellPanel> {
     }
 
     @Override
-    protected void addFirstWidgetImpl(GComponent child, Widget w) {
+    protected void addFirstWidgetImpl(GComponent child, Widget w, double flex1) {
         ((InsertPanel)panel).insert(w, 0);
         w.setSize("100%", "100%");
         setCellSize(!vertical, w, "100%");
@@ -35,7 +35,7 @@ public class TableSplitPanel extends SplitPanelBase<CellPanel> {
     }
 
     @Override
-    protected void addSecondWidgetImpl(GComponent child, Widget w) {
+    protected void addSecondWidgetImpl(GComponent child, Widget w, double flex2) {
         int index = firstWidget == null ? 1 : 2;
         ((InsertPanel)panel).insert(w, index);
         w.setSize("100%", "100%");
@@ -44,7 +44,7 @@ public class TableSplitPanel extends SplitPanelBase<CellPanel> {
     }
 
     @Override
-    protected void setChildrenRatio(double ratio) {
+    protected void setSplitSize(double ratio, double flexSum, boolean recheck) {
         assert ratio >=0 && ratio <= 1;
         int prc1 = (int) (100 * ratio);
         if (firstWidget != null) {
