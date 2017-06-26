@@ -14,7 +14,9 @@ import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
 import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Future;
 
 public class ThreadUtils {
@@ -128,5 +130,18 @@ public class ThreadUtils {
         }
         String result = sb.toString();
         return result.isEmpty() ? null : result;
+    }
+
+    private static Set<Thread> finallyModeThreadSet = new HashSet<>();
+
+    public static void setFinallyMode(Thread thread, boolean enable) {
+        if(enable)
+            finallyModeThreadSet.add(thread);
+        else
+            finallyModeThreadSet.remove(thread);
+    }
+
+    public static boolean isFinallyMode(Thread thread) {
+        return finallyModeThreadSet.contains(thread);
     }
 }

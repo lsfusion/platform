@@ -26,6 +26,7 @@ import lsfusion.server.form.entity.PropertyDrawEntity;
 import lsfusion.server.form.view.PropertyDrawView;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
+import lsfusion.server.logics.ThreadUtils;
 import lsfusion.server.logics.debug.*;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.linear.LP;
@@ -452,7 +453,7 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
     }
 
     public FlowResult executeImpl(ExecutionContext<P> context) throws SQLException, SQLHandledException {
-        if(Thread.currentThread().isInterrupted())
+        if(Thread.currentThread().isInterrupted() && !ThreadUtils.isFinallyMode(Thread.currentThread()))
             return FlowResult.THROWS;
 
         for(ActionPropertyMapImplement<?, P> aspect : getBeforeAspects()) {

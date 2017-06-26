@@ -10,6 +10,7 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.caches.IdentityInstanceLazy;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.type.Type;
+import lsfusion.server.logics.ThreadUtils;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.derived.DerivedProperty;
@@ -95,7 +96,12 @@ public class TryActionProperty extends KeepContextActionProperty {
             }
         } finally {
             if (finallyAction != null) {
-                finallyAction.execute(context);
+                ThreadUtils.setFinallyMode(Thread.currentThread(), true);
+                try {
+                    finallyAction.execute(context);
+                } finally {
+                    ThreadUtils.setFinallyMode(Thread.currentThread(), false);
+                }
             }
         }
 
