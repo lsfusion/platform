@@ -2147,7 +2147,7 @@ public class Settings {
     }
 
     private int logHeurStackSize = 1;
-    private boolean enableHeurManageSession = false;
+    private boolean enableHeurManageSession = true;
     private boolean enableHeurNoCancel = true;
 
     public boolean isEnableHeurManageSession() {
