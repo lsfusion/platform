@@ -343,8 +343,10 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
                 textPane.setEditable(false);
                 int width = (int) (Main.frame.getRootPane().getWidth() * 0.3);
                 textPane.setSize(new Dimension(width, 10));
-                if(getWidth(action.message) >= width) //set preferred size only for text with long lines
-                    textPane.setPreferredSize((new Dimension(width, textPane.getPreferredSize().height)));
+                if(getWidth(action.message) >= width) { //set preferred size only for text with long lines
+                    int height = Math.min((int) (Main.frame.getRootPane().getHeight() * 0.9), textPane.getPreferredSize().height);
+                    textPane.setPreferredSize((new Dimension(width, height)));
+                }
                 textPane.setBackground(null);
                 JOptionPane.showMessageDialog(getDialogParentContainer(), textPane, action.caption, JOptionPane.INFORMATION_MESSAGE);
             } else {
