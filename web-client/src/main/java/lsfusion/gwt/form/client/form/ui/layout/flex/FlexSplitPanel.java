@@ -4,6 +4,7 @@ import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.base.client.ui.FlexPanel;
 import lsfusion.gwt.base.client.ui.GFlexAlignment;
+import lsfusion.gwt.form.client.form.ui.layout.GAbstractContainerView;
 import lsfusion.gwt.form.client.form.ui.layout.SplitPanelBase;
 import lsfusion.gwt.form.shared.view.GComponent;
 
@@ -26,21 +27,25 @@ public class FlexSplitPanel extends SplitPanelBase<FlexPanel> {
     }
 
     @Override
-    protected void addFirstWidgetImpl(GComponent child, Widget widget, double flex1) {
-        firstChild = child;
-        panel.add(firstWidget, 0, GFlexAlignment.STRETCH, flex1);
+    protected void addFirstWidgetImpl(GComponent child, Widget widget) {
+        addImpl(true, child, widget, panel);
+    }
+
+    private void addImpl(boolean first, GComponent child, Widget widget, FlexPanel panel) {
+        if(first)
+            firstChild = child;
+        else
+            secondChild = child;
+        assert child.alignment == GFlexAlignment.STRETCH; // временные assert'ы чтобы проверить обратную совместимость
+        GAbstractContainerView.add(panel, widget, first ? 0 : (firstWidget == null ? 1 : 2), child.alignment, child.flex, child, vertical);
         Style style = widget.getElement().getStyle();
         style.setOverflowY(vertical ? Style.Overflow.AUTO : Style.Overflow.HIDDEN);
         style.setOverflowX(vertical ? Style.Overflow.HIDDEN : Style.Overflow.AUTO);
     }
 
     @Override
-    protected void addSecondWidgetImpl(GComponent child, Widget widget, double flex2) {
-        secondChild = child;
-        panel.add(widget, firstWidget == null ? 1 : 2, GFlexAlignment.STRETCH, flex2);
-        Style style = widget.getElement().getStyle();
-        style.setOverflowY(vertical ? Style.Overflow.AUTO : Style.Overflow.HIDDEN);
-        style.setOverflowX(vertical ? Style.Overflow.HIDDEN : Style.Overflow.AUTO);
+    protected void addSecondWidgetImpl(GComponent child, Widget widget) {
+        addImpl(false, child, widget, panel);
     }
 
     private static class LocationData {

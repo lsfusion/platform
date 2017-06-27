@@ -23,8 +23,8 @@ public class GridView extends ComponentView {
     public GridView(int ID, GroupObjectView groupObject) {
         super(ID);
         this.groupObject = groupObject;
-        flex = 1;
-        alignment = FlexAlignment.STRETCH;
+        setFlex(1);
+        setAlignment(FlexAlignment.STRETCH);
     }
 
     //todo: формально временное решение:

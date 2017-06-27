@@ -23,8 +23,8 @@ public class ClassChooserView extends ComponentView  {
 
         this.object = object;
 
-        flex = 0.2;
-        alignment = FlexAlignment.STRETCH;
+        setFlex(0.2);
+        setAlignment(FlexAlignment.STRETCH);
     }
 
     @Override

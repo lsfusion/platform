@@ -28,16 +28,17 @@ public class FlexLinearContainerView extends GAbstractContainerView {
 
     @Override
     protected void addImpl(int index, GComponent child, Widget view) {
+        boolean vertical = container.isVertical();
         if (child.hasMargins()) {
-            FlexPanel proxyPanel = new FlexPanel(container.isVertical());
+            FlexPanel proxyPanel = new FlexPanel(vertical);
             proxyPanel.getElement().getStyle().setOverflow(Style.Overflow.VISIBLE);
             child.installPaddings(proxyPanel);
 
-            proxyPanel.add(view, child.alignment, child.flex > 0 ? 1 : 0);
+            add(proxyPanel, view, 0, child.alignment, child.flex, child, vertical);
 
-            panel.add(proxyPanel, index, child.alignment, child.flex);
+            add(panel, proxyPanel, index, child.alignment, child.flex, child, vertical);
         } else {
-            panel.add(view, index, child.alignment, child.flex);
+            add(panel, view, index, child.alignment, child.flex, child, vertical);
         }
     }
 

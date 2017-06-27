@@ -37,9 +37,34 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
     public Dimension minimumSize;
     public Dimension maximumSize;
     public Dimension preferredSize;
+    public Dimension getPreferredSize() {
+        if(preferredSize == null) {
+            if(this instanceof ContainerView && ((ContainerView)this).isScroll()) {
+                return new Dimension(1, 1);
+            }
+        }
+        return preferredSize;
+    }
 
-    public double flex = 0;
-    public FlexAlignment alignment = FlexAlignment.LEADING;
+    private Double flex = null;
+    private FlexAlignment alignment = null;
+    public double getFlex() {
+        assert flex == null || (flex > 0 || !getContainer().isScroll()); // временные assert'ы чтобы проверить обратную совместимость
+        if(flex != null)
+            return flex;
+        if(getContainer().isScroll())
+            return 1;
+        return 0;
+    }
+    public FlexAlignment getAlignment() {
+        assert alignment == null || (alignment == FlexAlignment.STRETCH || (!getContainer().isScroll() && !getContainer().isSplit())); // временные assert'ы чтобы проверить обратную совместимость
+        if(alignment != null)
+            return alignment;
+        ContainerView container = getContainer();
+        if(container.isScroll() || container.isSplit())
+            return FlexAlignment.STRETCH;
+        return FlexAlignment.LEADING;
+    }
 
     public int marginTop;
     public int marginBottom;
@@ -81,6 +106,26 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
 
     public void setAlignment(FlexAlignment alignment) {
         this.alignment = alignment;
+    }
+
+    public void setPreferredSize(Dimension preferredSize) {
+        this.preferredSize = preferredSize;
+    }
+
+    public void setPreferredHeight(int prefHeight) {
+        if (this.preferredSize == null) {
+            this.preferredSize = new Dimension(-1, prefHeight);
+        } else {
+            this.preferredSize.height = prefHeight;
+        }
+    }
+
+    public void setPreferredWidth(int prefWidth) {
+        if (this.preferredSize == null) {
+            this.preferredSize = new Dimension(prefWidth, -1);
+        } else {
+            this.preferredSize.width = prefWidth;
+        }
     }
 
     public void setMarginTop(int marginTop) {
@@ -178,10 +223,11 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
 
         pool.writeObject(outStream, minimumSize);
         pool.writeObject(outStream, maximumSize);
-        pool.writeObject(outStream, preferredSize);
+        pool.writeObject(outStream, getPreferredSize());
 
-        outStream.writeDouble(flex);
-        pool.writeObject(outStream, alignment);
+        outStream.writeDouble(getFlex());
+        pool.writeObject(outStream, getAlignment());
+
         outStream.writeInt(marginTop);
         outStream.writeInt(marginBottom);
         outStream.writeInt(marginLeft);

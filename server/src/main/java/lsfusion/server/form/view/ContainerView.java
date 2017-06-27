@@ -58,6 +58,13 @@ public class ContainerView extends ComponentView implements AbstractContainer<Co
     public boolean isTabbedPane() {
         return getType() == ContainerType.TABBED_PANE;
     }
+    public boolean isScroll() {
+        return getType() == ContainerType.SCROLL;
+    }
+    public boolean isSplit() {
+        ContainerType type = getType();
+        return type == ContainerType.HORIZONTAL_SPLIT_PANE || type == ContainerType.VERTICAL_SPLIT_PANE;
+    }
     public ContainerType getType() {
         return type;
     }

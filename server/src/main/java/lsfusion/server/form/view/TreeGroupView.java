@@ -40,8 +40,8 @@ public class TreeGroupView extends ComponentView implements ServerIdentitySerial
         toolbar = new ToolbarView(form.idGenerator.idShift());
         filter = new FilterView(form.idGenerator.idShift());
 
-        flex = 1;
-        alignment = FlexAlignment.STRETCH;
+        setFlex(1);
+        setAlignment(FlexAlignment.STRETCH);
     }
 
     @Override

@@ -20,12 +20,12 @@ public class FlexSplitPanel_IEBug extends SplitPanelBase<FlexPanel> {
     }
 
     @Override
-    protected void addFirstWidgetImpl(GComponent child, Widget widget, double flex1) {
+    protected void addFirstWidgetImpl(GComponent child, Widget widget) {
         panel.add(firstWidget, 0, GFlexAlignment.STRETCH, flex1, "0px");
     }
 
     @Override
-    protected void addSecondWidgetImpl(GComponent child, Widget secondWidget, double flex2) {
+    protected void addSecondWidgetImpl(GComponent child, Widget secondWidget) {
         int index = firstWidget == null ? 1 : 2;
         panel.add(secondWidget, index, GFlexAlignment.STRETCH, flex2, "0px");
     }

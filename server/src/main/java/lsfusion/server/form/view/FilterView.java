@@ -17,7 +17,7 @@ public class FilterView extends ComponentView {
     public FilterView(int ID) {
         super(ID);
 
-        alignment = FlexAlignment.STRETCH;
+        setAlignment(FlexAlignment.STRETCH);
     }
 
     @Override

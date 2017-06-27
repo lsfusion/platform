@@ -45,20 +45,6 @@ public class GComponent implements Serializable {
                '}';
     }
 
-    public int getAbsoluteWidth() {
-        if (preferredWidth == minimumHeight && preferredWidth == maximumWidth) {
-            return preferredWidth;
-        }
-        return -1;
-    }
-
-    public int getAbsoluteHeight() {
-        if (preferredHeight == minimumHeight && preferredHeight == maximumHeight) {
-            return preferredHeight;
-        }
-        return -1;
-    }
-
     public boolean isVerticallyStretched() {
         if (container != null) {
             if (container.isScroll() || container.isTabbed() || container.isSplit()) {

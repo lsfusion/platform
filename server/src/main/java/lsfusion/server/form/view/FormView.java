@@ -797,7 +797,7 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
     }
 
     private void setPreferredSize(PropertyDrawView property, Dimension size) {
-        property.preferredSize = new Dimension(size);
+        property.setPreferredSize(new Dimension(size));
     }
 
     public void setPropertyDrawViewHide(boolean hide, PropertyDrawEntity... properties) {

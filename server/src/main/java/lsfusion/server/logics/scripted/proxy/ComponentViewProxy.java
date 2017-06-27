@@ -54,23 +54,15 @@ public class ComponentViewProxy<T extends ComponentView> extends ViewProxy<T> {
     }
 
     public void setPreferredSize(Dimension preferredSize) {
-        target.preferredSize = preferredSize;
+        target.setPreferredSize(preferredSize);
     }
 
     public void setPreferredHeight(int prefHeight) {
-        if (target.preferredSize == null) {
-            target.preferredSize = new Dimension(-1, prefHeight);
-        } else {
-            target.preferredSize.height = prefHeight;
-        }
+        target.setPreferredHeight(prefHeight);
     }
 
     public void setPreferredWidth(int prefWidth) {
-        if (target.preferredSize == null) {
-            target.preferredSize = new Dimension(prefWidth, -1);
-        } else {
-            target.preferredSize.width = prefWidth;
-        }
+        target.setPreferredWidth(prefWidth);
     }
 
     public void setFixedSize(Dimension size) {
@@ -103,7 +95,7 @@ public class ComponentViewProxy<T extends ComponentView> extends ViewProxy<T> {
     }
 
     public void setFlex(double flex) {
-        target.flex = flex;
+        target.setFlex(flex);
     }
 
     public void setAlign(FlexAlignment alignment) {

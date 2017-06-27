@@ -119,9 +119,7 @@ public class FlexPanelImpl {
     }
 
     private String getFlexValue(double flex, String flexBasis) {
-        return flex > 0
-               ? flex + " 0 " + flexBasis
-               : "0 0 auto";
+        return flex + " 0 " + flexBasis;
     }
 
     public void setAlignment(FlexPanel.LayoutData layoutData, Element child, GFlexAlignment alignment) {

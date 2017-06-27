@@ -2,6 +2,7 @@ package lsfusion.client.form.layout;
 
 import lsfusion.client.logics.ClientComponent;
 import lsfusion.client.logics.ClientContainer;
+import lsfusion.interop.form.layout.FlexAlignment;
 
 import javax.swing.*;
 import java.awt.*;
@@ -21,6 +22,7 @@ public class ScrollClientContainerView extends AbstractClientContainerView {
 
     @Override
     public void addImpl(int index, ClientComponent child, Component view) {
+        assert child.flex == 1 && child.alignment == FlexAlignment.STRETCH; // временные assert'ы чтобы проверить обратную совместимость
         view.setPreferredSize(child.preferredSize);
         scroll.setViewportView(view);
     }

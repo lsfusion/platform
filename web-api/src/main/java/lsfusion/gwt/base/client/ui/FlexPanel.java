@@ -98,10 +98,6 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
         add(widget, beforeIndex, alignment, flex, "auto");
     }
 
-    public void add(Widget widget, GFlexAlignment alignment, double flex, String flexBasis) {
-        add(widget, getWidgetCount(), alignment, flex, flexBasis);
-    }
-
     public void addFill(Widget widget) {
         addFill(widget, getWidgetCount());
     }
@@ -133,16 +129,6 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
 
         // Adopt.
         adopt(widget);
-    }
-
-    public void setChildConstraints(Widget w, GFlexAlignment alignment, double flex, String flexBasis) {
-        int index = getWidgetIndex(w);
-        if (index != -1) {
-            LayoutData layoutData = (LayoutData) w.getLayoutData();
-            Element childElement = w.getElement();
-            impl.setFlex(layoutData, childElement, flex, flexBasis);
-            impl.setAlignment(layoutData, childElement, alignment);
-        }
     }
 
     public void setChildFlex(Widget w, double flex) {

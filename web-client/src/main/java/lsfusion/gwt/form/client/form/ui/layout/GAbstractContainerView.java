@@ -4,6 +4,7 @@ import com.google.gwt.user.client.ui.RequiresResize;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.base.client.Dimension;
 import lsfusion.gwt.base.client.ui.FlexPanel;
+import lsfusion.gwt.base.client.ui.GFlexAlignment;
 import lsfusion.gwt.form.client.form.ui.layout.flex.FlexCaptionPanel;
 import lsfusion.gwt.form.client.form.ui.layout.table.TableCaptionPanel;
 import lsfusion.gwt.form.shared.view.GComponent;
@@ -139,6 +140,18 @@ public abstract class GAbstractContainerView {
 
     public void updateLayout() {
         //do nothing by default
+    }
+
+    private static String getFlexBasis(boolean vertical, GComponent component) {
+        int preferredSize = vertical ? component.preferredHeight : component.preferredWidth;
+        if(preferredSize != -1)
+            return preferredSize + "px";
+        return "auto";
+    }
+    public static void add(FlexPanel panel, Widget widget, int beforeIndex, GFlexAlignment alignment, double flex, GComponent component, boolean vertical) { // последний параметр временный хак для Scrollable
+//        assert alignment == component.alignment;
+//        assert flex == component.flex;
+        panel.add(widget, beforeIndex, alignment, flex, getFlexBasis(vertical, component));
     }
 
     protected abstract void addImpl(int index, GComponent child, Widget view);

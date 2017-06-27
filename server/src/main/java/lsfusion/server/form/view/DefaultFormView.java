@@ -171,12 +171,12 @@ public class DefaultFormView extends FormView {
         ContainerView leftControlsContainer = createContainer(null, null, "leftControls", version);
         leftControlsContainer.setType(ContainerType.CONTAINERH);
         leftControlsContainer.childrenAlignment = Alignment.LEADING;
-        leftControlsContainer.flex = 0;
+        leftControlsContainer.setFlex(0);
 
         ContainerView rightControlsContainer = createContainer(null, null, "rightControls", version);
         rightControlsContainer.setType(ContainerType.CONTAINERH);
         rightControlsContainer.childrenAlignment = Alignment.TRAILING;
-        rightControlsContainer.flex = 1;
+        rightControlsContainer.setFlex(1);
 
 //        leftControlsContainer.add(printFunction, version);
 //        leftControlsContainer.add(xlsFunction, version);
@@ -197,7 +197,7 @@ public class DefaultFormView extends FormView {
         action.editKey = editKey;
         action.focusable = false;
         action.entity.setEditType(PropertyEditType.EDITABLE);
-        action.alignment = FlexAlignment.STRETCH;
+        action.setAlignment(FlexAlignment.STRETCH);
 
         if (imagePath != null) {
             action.showEditKey = false;
@@ -245,7 +245,7 @@ public class DefaultFormView extends FormView {
         }
 
         if (groupObject.entity.isForcedPanel()) {
-            groupSet.getGroupContainer().flex = 0;
+            groupSet.getGroupContainer().setFlex(0);
         }
     }
 
@@ -285,7 +285,7 @@ public class DefaultFormView extends FormView {
                 propertyContainer = getToolbarPropsContainer(mgroupObjects.get(groupObject));
             }
 
-            propertyDraw.alignment = FlexAlignment.CENTER;
+            propertyDraw.setAlignment(FlexAlignment.CENTER);
 
             propertyContainer.add(propertyDraw, version);
         } else {

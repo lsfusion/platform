@@ -40,29 +40,31 @@ public abstract class SplitPanelBase<P extends Panel> {
         addSplitterImpl(splitter);
     }
 
-    public void addFirstWidget(GComponent child, Widget w, double flex) {
+    public void addFirstWidget(GComponent child, Widget w) {
         if (firstWidget != null) {
             remove(firstWidget);
         }
 
         firstWidget = w;
 
-        flex1 = flex <= 0 ? 1 : flex;
+        assert child.flex > 0;
+        flex1 = child.flex;
         flexSum = flex1 + flex2;
 
-        addFirstWidgetImpl(child, w, flex1);
+        addFirstWidgetImpl(child, w);
     }
 
-    public void addSecondWidget(GComponent child, Widget w, double flex) {
+    public void addSecondWidget(GComponent child, Widget w) {
         if (secondWidget != null) {
             remove(secondWidget);
         }
 
         secondWidget = w;
-        flex2 = flex <= 0 ? 1 : flex;
+        assert child.flex > 0;
+        flex2 = child.flex;
         flexSum = flex1 + flex2;
 
-        addSecondWidgetImpl(child, w, flex2);
+        addSecondWidgetImpl(child, w);
     }
 
     public void remove(Widget child) {
@@ -114,8 +116,8 @@ public abstract class SplitPanelBase<P extends Panel> {
     }
 
     protected abstract void addSplitterImpl(Splitter splitter);
-    protected abstract void addFirstWidgetImpl(GComponent child, Widget widget, double flex1);
-    protected abstract void addSecondWidgetImpl(GComponent child, Widget secondWidget, double flex2);
+    protected abstract void addFirstWidgetImpl(GComponent child, Widget widget);
+    protected abstract void addSecondWidgetImpl(GComponent child, Widget secondWidget);
     protected abstract void setSplitSize(double ratio, double flexSum, boolean recheck);
 
     protected abstract class Splitter extends Widget {
