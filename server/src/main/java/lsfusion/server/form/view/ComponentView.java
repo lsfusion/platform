@@ -49,19 +49,20 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
     private Double flex = null;
     private FlexAlignment alignment = null;
     public double getFlex() {
-        assert flex == null || (flex > 0 || !getContainer().isScroll()); // временные assert'ы чтобы проверить обратную совместимость
+        assert flex == null || (flex > 0 || getContainer() == null || !getContainer().isScroll()); // временные assert'ы чтобы проверить обратную совместимость
         if(flex != null)
             return flex;
-        if(getContainer().isScroll())
+        ContainerView container = getContainer();
+        if(container != null && container.isScroll())
             return 1;
         return 0;
     }
     public FlexAlignment getAlignment() {
-        assert alignment == null || (alignment == FlexAlignment.STRETCH || (!getContainer().isScroll() && !getContainer().isSplit())); // временные assert'ы чтобы проверить обратную совместимость
+        assert alignment == null || (alignment == FlexAlignment.STRETCH || getContainer() == null || (!getContainer().isScroll() && !getContainer().isSplit())); // временные assert'ы чтобы проверить обратную совместимость
         if(alignment != null)
             return alignment;
         ContainerView container = getContainer();
-        if(container.isScroll() || container.isSplit())
+        if(container != null && (container.isScroll() || container.isSplit()))
             return FlexAlignment.STRETCH;
         return FlexAlignment.LEADING;
     }
