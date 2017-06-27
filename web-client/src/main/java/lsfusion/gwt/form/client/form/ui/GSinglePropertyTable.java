@@ -43,7 +43,7 @@ public class GSinglePropertyTable extends GPropertyTable<Object> {
     private String foreground;
 
     public GSinglePropertyTable(GFormController iform, GPropertyDraw iproperty, GGroupObjectValue columnKey) {
-        super(iform, GSINGLE_PROPERTY_TABLE_RESOURCE, true, true);
+        super(iform, GSINGLE_PROPERTY_TABLE_RESOURCE, true);
 
         this.property = iproperty;
         this.columnKey = columnKey;

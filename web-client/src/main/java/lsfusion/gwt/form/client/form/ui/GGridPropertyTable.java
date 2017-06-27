@@ -59,12 +59,12 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
 
     public static final GGridPropertyTableResource GGRID_RESOURCES = GWT.create(GGridPropertyTableResource.class);
 
-    public GGridPropertyTable(GFormController iform, GFont font, boolean flexible) {
-        this(iform, font, -1, flexible);    
+    public GGridPropertyTable(GFormController iform, GFont font) {
+        this(iform, font, -1);    
     }
     
-    public GGridPropertyTable(GFormController iform, GFont font, int initHeaderHeight, boolean flexible) {
-        super(iform, GGRID_RESOURCES, initHeaderHeight, flexible);
+    public GGridPropertyTable(GFormController iform, GFont font, int initHeaderHeight) {
+        super(iform, GGRID_RESOURCES, initHeaderHeight);
         
         this.font = font;
 

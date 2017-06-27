@@ -140,11 +140,6 @@ public class FlexSplitPanel extends SplitPanelBase<FlexPanel> {
         }
 
         @Override
-        public double getFlexShrink() {
-            return isVertical() ? 1 : 0;
-        }
-
-        @Override
         public void onResize() {
             splitPanel.update();
             super.onResize();

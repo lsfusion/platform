@@ -34,10 +34,7 @@ public class GTreeGroupController extends GAbstractGroupObjectController {
         treeView = new ResizableSimplePanel();
         treeView.setStyleName("gridResizePanel");
         treeView.setWidget(tree);
-        // для flex-layout'а. убираем position:absolute для грида в контейнерах, у которых в иерархии предков есть скролл или flex=0. грид будет занимать всё место, которое ему нужно
-        if (treeGroup.isInFlexible()) {
-            setupFillParent(treeView.getElement(), tree.getElement());
-        }
+        setupFillParent(treeView.getElement(), tree.getElement());
 
         getFormLayout().add(treeGroup, treeView, new DefaultFocusReceiver() {
             @Override
@@ -47,10 +44,6 @@ public class GTreeGroupController extends GAbstractGroupObjectController {
         });
 
         addFilterButton();
-    }
-    
-    public GTreeGroup getTreeGroup() {
-        return treeGroup;
     }
     
     public GFont getFont() {

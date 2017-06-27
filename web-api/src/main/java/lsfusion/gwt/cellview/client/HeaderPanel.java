@@ -30,15 +30,12 @@ public class HeaderPanel extends Panel implements RequiresResize {
     private int lastContentBottom;
 
     private boolean layoutScheduled = false;
-    
-    private boolean flexible; // если !flexible, то нет смысла проставлять top, margin-top, etc., т.к. position = static
 
-    public HeaderPanel(boolean flexible) {
-        this(DEFAULT_HEADER_HEIGHT, DEFAULT_FOOTER_HEIGHT, flexible);
+    public HeaderPanel() {
+        this(DEFAULT_HEADER_HEIGHT, DEFAULT_FOOTER_HEIGHT);
     }
 
-    public HeaderPanel(int initialHeaderHeight, int initialFooterHeight, boolean flexible) {
-        this.flexible = flexible;
+    public HeaderPanel(int initialHeaderHeight, int initialFooterHeight) {
         lastContentTop = initialHeaderHeight >= 0 ? initialHeaderHeight : DEFAULT_HEADER_HEIGHT;
         lastContentBottom = initialFooterHeight;
 
@@ -49,27 +46,21 @@ public class HeaderPanel extends Panel implements RequiresResize {
         setElement(elem);
 
         // Create the header container.
-        headerContainer = createContainer(flexible);
-        if (flexible) {
-            headerContainer.getStyle().setTop(0, Style.Unit.PX);
-        }
+        headerContainer = createContainer();
+        headerContainer.getStyle().setTop(0, Style.Unit.PX);
         elem.appendChild(headerContainer);
 
         // Create the footer container.
-        footerContainer = createContainer(flexible);
-        if (flexible) {
-            footerContainer.getStyle().setBottom(0.0, Style.Unit.PX);
-        }
+        footerContainer = createContainer();
+        footerContainer.getStyle().setBottom(0.0, Style.Unit.PX);
         elem.appendChild(footerContainer);
 
         // Create the content container.
-        contentContainer = createContainer(flexible);
+        contentContainer = createContainer();
         contentContainer.getStyle().setOverflow(Style.Overflow.HIDDEN);
-        if (flexible) {
-            contentContainer.getStyle().setTop(lastContentTop, Style.Unit.PX);
-            contentContainer.getStyle().setBottom(lastContentBottom, Style.Unit.PX);
-            contentContainer.getStyle().setMarginTop(lastContentTop > 0 ? 2 : 0, Style.Unit.PX);
-        }
+        contentContainer.getStyle().setTop(lastContentTop, Style.Unit.PX);
+        contentContainer.getStyle().setBottom(lastContentBottom, Style.Unit.PX);
+        contentContainer.getStyle().setMarginTop(lastContentTop > 0 ? 2 : 0, Style.Unit.PX);
         elem.appendChild(contentContainer);
     }
 
@@ -198,16 +189,12 @@ public class HeaderPanel extends Panel implements RequiresResize {
         }
     }
 
-    private Element createContainer(boolean flexible) {
+    private Element createContainer() {
         Element container = Document.get().createDivElement().cast();
+        container.getStyle().setPosition(Style.Position.ABSOLUTE);
         container.getStyle().setDisplay(Style.Display.NONE);
-
-        // для flex-layout'а. убираем position:absolute для грида в контенерах, у которых в иерархии предков есть скролл или flex=0. грид будет занимать всё место, которое ему нужно
-        if (flexible) {
-            container.getStyle().setPosition(Style.Position.ABSOLUTE);
-            container.getStyle().setLeft(0.0, Style.Unit.PX);
-            container.getStyle().setRight(0.0, Style.Unit.PX);
-        }
+        container.getStyle().setLeft(0.0, Style.Unit.PX);
+        container.getStyle().setRight(0.0, Style.Unit.PX);
         return container;
     }
 
@@ -242,16 +229,12 @@ public class HeaderPanel extends Panel implements RequiresResize {
         }
 
         if (contentTop != lastContentTop) {
-            if (flexible) {
-                contentContainer.getStyle().setTop(contentTop, Style.Unit.PX);
-                contentContainer.getStyle().setMarginTop(contentTop > 0 ? 2 : 0, Style.Unit.PX);
-            }
+            contentContainer.getStyle().setTop(contentTop, Style.Unit.PX);
+            contentContainer.getStyle().setMarginTop(contentTop > 0 ? 2 : 0, Style.Unit.PX);
             lastContentTop = contentTop;
         }
         if (contentBottom != lastContentBottom) {
-            if (flexible) {
-                contentContainer.getStyle().setBottom(contentBottom, Style.Unit.PX);
-            }
+            contentContainer.getStyle().setBottom(contentBottom, Style.Unit.PX);
             lastContentBottom = contentBottom;
         }
 

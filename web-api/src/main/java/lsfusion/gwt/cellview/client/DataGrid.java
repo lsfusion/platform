@@ -311,14 +311,14 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
     }
 
     public DataGrid(Resources resources) {
-        this(resources, -1, false, true);
+        this(resources, -1, false);
     }
 
-    public DataGrid(Resources resources, int initHeaderHeight, boolean nullHeaders, boolean flexible) {
+    public DataGrid(Resources resources, int initHeaderHeight, boolean nullHeaders) {
         this.nullHeaders = nullHeaders;
 
         int initialHeaderHeight = nullHeaders ? 0 : initHeaderHeight; 
-        headerPanel = new HeaderPanel(initialHeaderHeight, 0, flexible);
+        headerPanel = new HeaderPanel(initialHeaderHeight, 0);
 
         initWidget(headerPanel);
 

@@ -111,9 +111,4 @@ public class GComponent implements Serializable {
     public void installPaddings(Element element) {
         GwtClientUtils.installPaddings(element, marginTop, marginBottom, marginLeft, marginRight);
     }
-
-    // для flex-layout'а. убираем position:absolute для грида в контенерах, у которых в иерархии предков есть скролл или flex=0. грид будет занимать всё место, которое ему нужно
-    public boolean isInFlexible() {
-        return container == null || !(container.isScroll() || container.flex <= 0) && container.isInFlexible();
-    }
 }

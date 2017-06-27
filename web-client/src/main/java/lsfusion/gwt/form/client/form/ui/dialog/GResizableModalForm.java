@@ -42,12 +42,6 @@ public class GResizableModalForm extends GResizableModalWindow {
                     }
                 });
             }
-            
-            @Override
-            public void setPixelSize(int width, int height) {
-                super.setPixelSize(width, height);
-                form.onResize(); // с flex-layout'ом сплитам необходимо пересчитать свои размеры при ресайзе диалога
-            }
         };
 
         setContentWidget(form);

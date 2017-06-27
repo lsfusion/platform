@@ -45,20 +45,20 @@ public abstract class GPropertyTable<T> extends DataGrid<T> implements EditManag
     protected Element editCellParent;
     protected GType editType;
 
-    public GPropertyTable(GFormController iform, Resources resources, boolean flexible) {
-        this(iform, resources, false, flexible);
+    public GPropertyTable(GFormController iform, Resources resources) {
+        this(iform, resources, false);
     }
 
-    public GPropertyTable(GFormController iform, Resources resources, int initHeaderHeight, boolean flexible) {
-        this(iform, resources, initHeaderHeight, false, flexible);    
+    public GPropertyTable(GFormController iform, Resources resources, int initHeaderHeight) {
+        this(iform, resources, initHeaderHeight, false);    
     }
 
-    public GPropertyTable(GFormController iform, Resources resources, boolean nullHeader, boolean flexible) {
-        this(iform, resources, -1, nullHeader, flexible);
+    public GPropertyTable(GFormController iform, Resources resources, boolean nullHeader) {
+        this(iform, resources, -1, nullHeader);
     }
 
-    public GPropertyTable(GFormController iform, Resources resources, int initHeaderHeight, boolean nullHeader, boolean flexible) {
-        super(resources, initHeaderHeight, nullHeader, flexible);
+    public GPropertyTable(GFormController iform, Resources resources, int initHeaderHeight, boolean nullHeader) {
+        super(resources, initHeaderHeight, nullHeader);
 
         this.form = iform;
 

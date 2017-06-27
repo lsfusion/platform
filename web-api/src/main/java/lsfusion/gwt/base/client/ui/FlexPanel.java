@@ -3,7 +3,10 @@ package lsfusion.gwt.base.client.ui;
 import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.user.client.ui.*;
+import com.google.gwt.user.client.ui.ComplexPanel;
+import com.google.gwt.user.client.ui.ProvidesResize;
+import com.google.gwt.user.client.ui.RequiresResize;
+import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.base.client.Dimension;
 
 import static lsfusion.gwt.base.client.GwtClientUtils.calculateStackPreferredSize;
@@ -56,10 +59,6 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
 
     public boolean isHorizontal() {
         return !isVertical();
-    }
-    
-    public double getFlexShrink() {
-        return 0;
     }
 
     @Override
@@ -128,30 +127,20 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
 
         // Physical attach.
         Element childElement = widget.getElement();
-        
-        // выставляем скроллам flex-basis равным "0", т.к. иначе, с "auto", он требует себе всё пространство, необходимое его потомкам - растягивается 
-        if (widget instanceof ScrollPanel) {
-            flexBasis = "0";
-        }
-        
-        double flexShrink = 0;
-        if (widget instanceof FlexPanel) {
-            flexShrink = ((FlexPanel) widget).getFlexShrink();
-        }
 
-        LayoutData layoutData = impl.insertChild(parentElement, childElement, beforeIndex, alignment, flex, flexShrink, flexBasis);
+        LayoutData layoutData = impl.insertChild(parentElement, childElement, beforeIndex, alignment, flex, flexBasis);
         widget.setLayoutData(layoutData);
 
         // Adopt.
         adopt(widget);
     }
 
-    public void setChildConstraints(Widget w, GFlexAlignment alignment, double flex, double flexShrink, String flexBasis) {
+    public void setChildConstraints(Widget w, GFlexAlignment alignment, double flex, String flexBasis) {
         int index = getWidgetIndex(w);
         if (index != -1) {
             LayoutData layoutData = (LayoutData) w.getLayoutData();
             Element childElement = w.getElement();
-            impl.setFlex(layoutData, childElement, flex, flexShrink, flexBasis);
+            impl.setFlex(layoutData, childElement, flex, flexBasis);
             impl.setAlignment(layoutData, childElement, alignment);
         }
     }
@@ -161,13 +150,9 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
     }
 
     public void setChildFlex(Widget w, double flex, String flexBasis) {
-        setChildFlex(w, flex, 0, flexBasis);
-    }
-
-    public void setChildFlex(Widget w, double flex, double flexShrink, String flexBasis) {
         int index = getWidgetIndex(w);
         if (index != -1) {
-            impl.setFlex((LayoutData) w.getLayoutData(), w.getElement(), flex, flexShrink, flexBasis);
+            impl.setFlex((LayoutData) w.getLayoutData(), w.getElement(), flex, flexBasis);
         }
     }
 
