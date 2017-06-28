@@ -34,6 +34,7 @@ public class ScrollContainerView extends GAbstractContainerView {
     @Override
     protected void addImpl(int index, GComponent child, Widget view) {
         assert child.flex == 1 && child.alignment == GFlexAlignment.STRETCH; // временные assert'ы чтобы проверить обратную совместимость
+        view.getElement().getStyle().setOverflowY(Style.Overflow.AUTO); // scroll
         if(child.preferredHeight == 1) { // panel тем же базисом и flex'ом (assert что 1)
             proxyPanel = new FlexPanel(vertical);
 
@@ -42,7 +43,6 @@ public class ScrollContainerView extends GAbstractContainerView {
             proxyView = view;
             view = proxyPanel;
         }
-        view.getElement().getStyle().setOverflowY(Style.Overflow.AUTO); // scroll
         add(scrollPanel, view, 0, child.alignment, child.flex, child, vertical);
     }
 
@@ -58,6 +58,15 @@ public class ScrollContainerView extends GAbstractContainerView {
 
     public void updateLayout() {
         if(proxyPanel != null) {
+//            if(proxyView instanceof FlexPanel) {
+//                for(Widget child : ((FlexPanel)proxyView)) {
+//                        int height = GwtClientUtils.calculatePreferredSize(child).height;
+//                        if (height > 0) {
+//                            ((FlexPanel)proxyView).setChildFlexBasis(child, height);
+////                            child.setHeight(height + "px");
+//                        }
+//                }
+//            } else
             proxyPanel.setChildFlexBasis(proxyView, GwtClientUtils.calculatePreferredSize(proxyView).height);
         }
     }
