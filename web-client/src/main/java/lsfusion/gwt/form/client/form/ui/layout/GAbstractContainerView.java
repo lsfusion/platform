@@ -142,11 +142,11 @@ public abstract class GAbstractContainerView {
         //do nothing by default
     }
 
-    private static String getFlexBasis(boolean vertical, GComponent component) {
+    private static Integer getFlexBasis(boolean vertical, GComponent component) {
         int preferredSize = vertical ? component.preferredHeight : component.preferredWidth;
         if(preferredSize != -1)
-            return preferredSize + "px";
-        return "auto";
+            return preferredSize;
+        return null;
     }
     public static void add(FlexPanel panel, Widget widget, int beforeIndex, GFlexAlignment alignment, double flex, GComponent component, boolean vertical) { // последний параметр временный хак для Scrollable
 //        assert alignment == component.alignment;

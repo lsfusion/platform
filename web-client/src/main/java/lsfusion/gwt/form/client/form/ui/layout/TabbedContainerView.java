@@ -44,6 +44,8 @@ public class TabbedContainerView extends GAbstractContainerView {
     public TabbedContainerView(final GFormController formController, final GContainer container, final TabbedDelegate delegate) {
         super(container);
 
+        assert container.isTabbed();
+
         tabbedDelegate = delegate;
 
         if (container.children.size() > 0) {

@@ -97,7 +97,7 @@ public class FlexPanelImpl {
         parent.getStyle().setProperty("display", visible ? getDisplayFlexValue() : "none");
     }
 
-    public FlexPanel.LayoutData insertChild(Element parent, Element child, int beforeIndex, GFlexAlignment alignment, double flex, String flexBasis) {
+    public FlexPanel.LayoutData insertChild(Element parent, Element child, int beforeIndex, GFlexAlignment alignment, double flex, Integer flexBasis) {
         FlexPanel.LayoutData layoutData = new FlexPanel.LayoutData(child, alignment, flex, flexBasis);
 
         setFlex(layoutData, child, flex, flexBasis);
@@ -112,10 +112,31 @@ public class FlexPanelImpl {
         layoutData.child.removeFromParent();
     }
 
-    public void setFlex(FlexPanel.LayoutData layoutData, Element child, double flex, String flexBasis) {
+    public void setFlex(FlexPanel.LayoutData layoutData, Element child, double flex, Integer flexBasis) {
         layoutData.flex = flex;
         layoutData.flexBasis = flexBasis;
-        child.getStyle().setProperty(getFlexAttrName(), getFlexValue(flex, flexBasis));
+        child.getStyle().setProperty(getFlexAttrName(), getFlexValue(flex, layoutData.getFlexBasisString()));
+    }
+
+    public void fixFlexBasis(FlexPanel.LayoutData layoutData, Element child, boolean vertical) {
+        if(layoutData.flexBasis != null)
+            return;
+
+        Style style = child.getStyle();
+        String flexAttrName = getFlexAttrName();
+        style.setProperty(flexAttrName, getFlexValue(0, layoutData.getFlexBasisString()));
+
+        layoutData.flexBasis = child.getPropertyInt(vertical ? "offsetHeight" : "offsetWidth");
+
+        style.setProperty(flexAttrName, getFlexValue(layoutData.flex, layoutData.getFlexBasisString()));
+    }
+
+    public int getFlexBasis(FlexPanel.LayoutData layoutData, Element child, boolean vertical) {
+        if(layoutData.flexBasis != null)
+            return layoutData.flexBasis;
+
+        child.getStyle().setProperty(getFlexAttrName(), getFlexValue(0, layoutData.getFlexBasisString()));
+        return child.getPropertyInt(vertical ? "offsetHeight" : "offsetWidth");
     }
 
     private String getFlexValue(double flex, String flexBasis) {
