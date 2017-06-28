@@ -132,13 +132,23 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
     }
 
     public void setChildFlex(Widget w, double flex) {
-        setChildFlex(w, flex, null);
+        int index = getWidgetIndex(w);
+        if (index != -1) {
+            impl.setFlex((LayoutData) w.getLayoutData(), w.getElement(), flex);
+        }
     }
 
     public void setChildFlex(Widget w, double flex, Integer flexBasis) {
         int index = getWidgetIndex(w);
         if (index != -1) {
             impl.setFlex((LayoutData) w.getLayoutData(), w.getElement(), flex, flexBasis);
+        }
+    }
+
+    public void setChildFlexBasis(Widget w, Integer flexBasis) {
+        int index = getWidgetIndex(w);
+        if (index != -1) {
+            impl.setFlexBasis((LayoutData) w.getLayoutData(), w.getElement(), flexBasis);
         }
     }
 

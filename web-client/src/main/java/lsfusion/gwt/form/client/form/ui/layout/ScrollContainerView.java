@@ -25,15 +25,24 @@ public class ScrollContainerView extends GAbstractContainerView {
         assert container.isScroll();
 
         scrollPanel = new FlexPanel(vertical);
-        Style style = scrollPanel.getElement().getStyle();
-        style.setOverflowY(Style.Overflow.AUTO); // scroll
 
         view = scrollPanel;
     }
 
+    private FlexPanel proxyPanel;
+    private Widget proxyView;
     @Override
     protected void addImpl(int index, GComponent child, Widget view) {
         assert child.flex == 1 && child.alignment == GFlexAlignment.STRETCH; // временные assert'ы чтобы проверить обратную совместимость
+        if(child.preferredHeight == 1) { // panel тем же базисом и flex'ом (assert что 1)
+            proxyPanel = new FlexPanel(vertical);
+
+            proxyPanel.add(view, child.alignment, child.flex > 0 ? 1 : 0);
+
+            proxyView = view;
+            view = proxyPanel;
+        }
+        view.getElement().getStyle().setOverflowY(Style.Overflow.AUTO); // scroll
         add(scrollPanel, view, 0, child.alignment, child.flex, child, vertical);
     }
 
@@ -48,23 +57,9 @@ public class ScrollContainerView extends GAbstractContainerView {
     }
 
     public void updateLayout() {
-
-//        for (Widget panel : scrollPanel) {
-//            for(Widget child : (Panel) panel) {
-//                if(child instanceof TableCaptionPanel) {
-//                    int height = container.preferredHeight > 0 ? container.preferredHeight : GwtClientUtils.calculatePreferredSize(child).height;
-//                    if (height > 0) {
-//                        child.setHeight(height + "px");
-//                    }
-//                }
-//            }
-//        }
-//
-//        if(container.preferredWidth > 0)
-//            scrollPanel.setWidth(container.preferredWidth + "px");
-//        if(container.preferredHeight > 0)
-//            scrollPanel.setHeight(container.preferredHeight + "px");
-//
+        if(proxyPanel != null) {
+            proxyPanel.setChildFlexBasis(proxyView, GwtClientUtils.calculatePreferredSize(proxyView).height);
+        }
     }
 
     @Override

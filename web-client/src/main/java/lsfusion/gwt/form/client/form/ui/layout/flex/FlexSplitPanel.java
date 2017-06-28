@@ -86,6 +86,8 @@ public class FlexSplitPanel extends SplitPanelBase<FlexPanel> {
         int realSize = vertical ? firstWidget.getElement().getOffsetHeight() : firstWidget.getElement().getOffsetWidth();
         LocationData newLocation = new LocationData(availableSize, realSize, firstFlex);
 
+        // тут можно сделать все проще выставить flex 0 прочитать basis и дать нужный flex
+
         boolean foundBasis = false;
         double fb = 0.0;
         double w1 = newLocation.availableSize, rs1 = newLocation.size, f1 = newLocation.flex;

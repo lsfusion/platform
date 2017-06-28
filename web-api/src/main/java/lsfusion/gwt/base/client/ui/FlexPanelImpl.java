@@ -118,6 +118,16 @@ public class FlexPanelImpl {
         child.getStyle().setProperty(getFlexAttrName(), getFlexValue(flex, layoutData.getFlexBasisString()));
     }
 
+    public void setFlex(FlexPanel.LayoutData layoutData, Element child, double flex) {
+        layoutData.flex = flex;
+        child.getStyle().setProperty(getFlexAttrName(), getFlexValue(layoutData.flex, layoutData.getFlexBasisString()));
+    }
+
+    public void setFlexBasis(FlexPanel.LayoutData layoutData, Element child, Integer flexBasis) {
+        layoutData.flexBasis = flexBasis;
+        child.getStyle().setProperty(getFlexAttrName(), getFlexValue(layoutData.flex, layoutData.getFlexBasisString()));
+    }
+
     public void fixFlexBasis(FlexPanel.LayoutData layoutData, Element child, boolean vertical) {
         if(layoutData.flexBasis != null)
             return;
