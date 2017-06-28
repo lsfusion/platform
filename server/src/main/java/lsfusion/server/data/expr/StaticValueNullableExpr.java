@@ -78,7 +78,7 @@ public class StaticValueNullableExpr extends StaticNullableExpr implements Value
     }
 
     public boolean calcTwins(TwinImmutableObject o) {
-        return object.equals(((StaticValueNullableExpr)o).object) && paramClass.equals(((StaticValueNullableExpr)o).paramClass);
+        return object.equals(((StaticValueNullableExpr)o).object) && getValueClass().equals(((StaticValueNullableExpr)o).getValueClass());
     }
     
     @Override
@@ -104,7 +104,7 @@ public class StaticValueNullableExpr extends StaticNullableExpr implements Value
 
     @Override
     public int immutableHashCode() {
-        return object.hashCode()+paramClass.hashCode() * 31;
+        return object.hashCode()+getValueClass().hashCode() * 31;
     }
 
     @Override
