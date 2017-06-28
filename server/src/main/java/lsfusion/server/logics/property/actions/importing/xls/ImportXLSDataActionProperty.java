@@ -11,6 +11,7 @@ import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.logics.property.actions.flow.FlowResult;
 import lsfusion.server.logics.property.actions.importing.ImportDataActionProperty;
 import lsfusion.server.logics.property.actions.importing.ImportIterator;
+import lsfusion.server.logics.property.actions.importing.IncorrectFileException;
 import lsfusion.server.logics.property.actions.importing.xlsx.ImportXLSXIterator;
 
 import java.io.IOException;
@@ -41,7 +42,7 @@ public class ImportXLSDataActionProperty extends ImportDataActionProperty {
     }
 
     @Override
-    public ImportIterator getIterator(byte[] file) throws IOException {
+    public ImportIterator getIterator(byte[] file) throws IOException, IncorrectFileException {
         //todo: когда избавимся от всех IMPORT XLSX в LSF, убрать проверку на format
         return format == ImportSourceFormat.XLSX || file[0] == 80 ?  //50 hex
                 new ImportXLSXIterator(file, getSourceColumns(XLSColumnsMapping), properties, sheetIndex) :

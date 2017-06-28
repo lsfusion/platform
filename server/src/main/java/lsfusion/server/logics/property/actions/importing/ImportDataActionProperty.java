@@ -12,6 +12,7 @@ import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
+import lsfusion.interop.action.MessageClientAction;
 import lsfusion.server.classes.*;
 import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.SQLHandledException;
@@ -197,7 +198,9 @@ public abstract class ImportDataActionProperty extends SystemActionProperty {
                 }
                 
                 iterator.release();
-                
+
+            } catch (IncorrectFileException e) {
+                context.delayUserInterfaction(new MessageClientAction(e.getMessage(), "Import Error"));
             } catch (Exception e) {
                 Throwables.propagate(e);
             }
@@ -235,7 +238,7 @@ public abstract class ImportDataActionProperty extends SystemActionProperty {
         return 0;
     }
 
-    public abstract ImportIterator getIterator(byte[] file) throws IOException, ParseException, xBaseJException, JDOMException, ClassNotFoundException;
+    public abstract ImportIterator getIterator(byte[] file) throws IOException, ParseException, xBaseJException, JDOMException, ClassNotFoundException, IncorrectFileException;
 
     protected boolean ignoreIncorrectColumns() {
         return true;

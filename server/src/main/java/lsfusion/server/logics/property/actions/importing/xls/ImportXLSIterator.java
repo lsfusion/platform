@@ -8,6 +8,8 @@ import lsfusion.server.classes.ValueClass;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.ClassType;
 import lsfusion.server.logics.property.actions.importing.ImportIterator;
+import lsfusion.server.logics.property.actions.importing.IncorrectFileException;
+import org.apache.poi.hssf.OldExcelFormatException;
 import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
@@ -29,15 +31,19 @@ public class ImportXLSIterator extends ImportIterator {
     private HSSFSheet sheet;
     private int lastRow;
     
-    public ImportXLSIterator(byte[] file, List<Integer> columns, List<LCP> properties, Integer sheetIndex) throws IOException {
+    public ImportXLSIterator(byte[] file, List<Integer> columns, List<LCP> properties, Integer sheetIndex) throws IOException, IncorrectFileException {
         this.columns = columns;
         this.properties = properties;
 
-        HSSFWorkbook wb = new HSSFWorkbook(new ByteArrayInputStream(file));
-        
-        sheet = wb.getSheetAt(sheetIndex == null ? 0 : (sheetIndex - 1));
-        lastRow = sheet.getLastRowNum();
-        lastRow = lastRow == 0 && sheet.getRow(0) == null ? 0 : (lastRow + 1);
+        try {
+            HSSFWorkbook wb = new HSSFWorkbook(new ByteArrayInputStream(file));
+
+            sheet = wb.getSheetAt(sheetIndex == null ? 0 : (sheetIndex - 1));
+            lastRow = sheet.getLastRowNum();
+            lastRow = lastRow == 0 && sheet.getRow(0) == null ? 0 : (lastRow + 1);
+        } catch (OldExcelFormatException e) {
+            throw new IncorrectFileException(e.getMessage());
+        }
     }
 
     @Override
