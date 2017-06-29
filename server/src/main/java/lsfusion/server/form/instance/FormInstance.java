@@ -345,7 +345,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         } else {
             int prevOwners = updateSessionOwner(true, stack);
      
-            boolean heurManageSession = heuristicManageSession(prevOwners) && (!heurReadOnly || session.isStoredDataChanged()); 
+            boolean heurManageSession = heuristicManageSession(prevOwners) && (!heurReadOnly || session.isStoredDataChanged());
             if(manageSession == ManageSessionType.AUTO) {
                 if(heurManageSession) { // если нет owner'ов
                     assert !heurReadOnly;
@@ -359,6 +359,9 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                     }
                     
                     if(Settings.get().isEnableHeurManageSession()) {
+                        if(adjManageSession != heurManageSession) {
+                            environmentIncrement.add(FormEntity.manageSession, PropertyChange.<ClassPropertyInterface>STATIC(heurManageSession));
+                        }
                          adjManageSession = heurManageSession;
                     }
                 }
