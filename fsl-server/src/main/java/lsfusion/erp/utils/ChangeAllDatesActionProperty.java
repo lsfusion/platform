@@ -16,6 +16,10 @@ import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 import lsfusion.server.session.DataSession;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class ChangeAllDatesActionProperty extends ScriptingActionProperty {
 
@@ -37,6 +41,8 @@ public class ChangeAllDatesActionProperty extends ScriptingActionProperty {
             Integer seconds = (Integer) findProperty("secondsChangeAllDates").read(session);
             if (seconds != null) {
 
+                Map<String, List<String>> tableColumnsMap = new HashMap<>();
+
                 KeyExpr propertyExpr = new KeyExpr("property");
 
                 ImRevMap<Object, KeyExpr> keys = MapFact.singletonRev((Object) "property", propertyExpr);
@@ -54,8 +60,11 @@ public class ChangeAllDatesActionProperty extends ScriptingActionProperty {
                     String table = (String) valueEntry.get("tableSID");
                     String returnProperty = (String) valueEntry.get("return");
                     if (!table.isEmpty() && !column.isEmpty() && (returnProperty.equals("DATE") || returnProperty.equals("TIME") || returnProperty.equals("DATETIME"))) {
-                        ServerLoggers.systemLogger.info(String.format("Changing date: column %s, table %s", column, table));
-                        session.sql.executeDDL(String.format("UPDATE %s SET %s = %s + %s*INTERVAL '1 second'", table, column, column, seconds));
+                        List<String> columns = tableColumnsMap.get(table);
+                        if(columns == null)
+                            columns = new ArrayList<>();
+                        columns.add(column);
+                        tableColumnsMap.put(table, columns);
                     }
                 }
 
@@ -75,9 +84,26 @@ public class ChangeAllDatesActionProperty extends ScriptingActionProperty {
                     String key = (String) valueEntry.get("name");
                     String table = (String) valueEntry.get("sidTable");
                     if (!key.isEmpty() && !table.isEmpty() && (classSID.equals("TIME") || classSID.equals("DATETIME"))) {
-                        ServerLoggers.systemLogger.info(String.format("Changing date: key %s, table %s", key, table));
-                        session.sql.executeDDL(String.format("UPDATE %s SET %s = %s + %s*INTERVAL '1 second'", table, key, key, seconds));
+                        List<String> columns = tableColumnsMap.get(table);
+                        if(columns == null)
+                            columns = new ArrayList<>();
+                        columns.add(key);
+                        tableColumnsMap.put(table, columns);
                     }
+                }
+
+                int count = 1;
+                for (Map.Entry<String, List<String>> entry : tableColumnsMap.entrySet()) {
+                    String table = entry.getKey();
+                    StringBuilder columns = new StringBuilder();
+                    StringBuilder logColumns = new StringBuilder();
+                    for (String column : entry.getValue()) {
+                        columns.append(String.format("%s%s = %s + %s*INTERVAL '1 second'", columns.length() == 0 ? "" : ", ", column, column, seconds));
+                        logColumns.append(String.format("%s%s", (logColumns.length() == 0) ? "" : ", ", column));
+                    }
+                    ServerLoggers.systemLogger.info(String.format("Changing dates %s/%s: table %s, columns %s", count, tableColumnsMap.size(), table, logColumns.toString()));
+                    session.sql.executeDDL(String.format("UPDATE %s SET %s", table, columns.toString()));
+                    count++;
                 }
 
                 session.apply(context);
