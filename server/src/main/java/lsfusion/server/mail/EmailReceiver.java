@@ -307,8 +307,6 @@ public class EmailReceiver {
             String disp = bp.getDisposition();
             if (disp != null && (disp.equalsIgnoreCase(BodyPart.ATTACHMENT))) {
                 String fileName = decodeFileName(bp.getFileName());
-                String[] fileNameAndExt = fileName.split("\\.");
-                String fileExtension = fileNameAndExt.length > 1 ? fileNameAndExt[fileNameAndExt.length - 1] : "";
                 
                 InputStream is = bp.getInputStream();
                 File f = File.createTempFile("attachment", "");
@@ -321,7 +319,7 @@ public class EmailReceiver {
                     }
                     fos.close();
 
-                    attachments.putAll(unpack(IOUtils.getFileBytes(f), fileName, fileExtension, unpack));
+                    attachments.putAll(unpack(IOUtils.getFileBytes(f), fileName, unpack));
 
                 } catch (IOException ioe) {
                     ServerLoggers.mailLogger.error("Error reading attachment '" + fileName + "' from email '" + subjectEmail + "'");
@@ -335,9 +333,7 @@ public class EmailReceiver {
                 if (content instanceof BASE64DecoderStream) {
                     byte[] byteArray = IOUtils.readBytesFromStream((BASE64DecoderStream) content);
                     String fileName = decodeFileName(bp.getFileName());
-                    String[] fileNameAndExt = fileName.split("\\.");
-                    String fileExtension = fileNameAndExt.length > 1 ? fileNameAndExt[fileNameAndExt.length - 1] : "";
-                    attachments.putAll(unpack(byteArray, fileName, fileExtension, unpack));
+                    attachments.putAll(unpack(byteArray, fileName, unpack));
                 } else if (content instanceof MimeMultipart) {
                     body = getMultipartBody(subjectEmail, (Multipart) content, unpack).message;
                 } else
@@ -350,9 +346,7 @@ public class EmailReceiver {
     private MultipartBody getMultipartBody64(String subjectEmail, BASE64DecoderStream base64InputStream, String fileName, boolean unpack) throws IOException, MessagingException {
         byte[] byteArray = IOUtils.readBytesFromStream(base64InputStream);
         Map<String, byte[]> attachments = new HashMap<>();
-        String[] fileNameAndExt = fileName.split("\\.");
-        String fileExtension = fileNameAndExt.length > 1 ? fileNameAndExt[fileNameAndExt.length - 1] : "";
-        attachments.putAll(unpack(byteArray, fileName, fileExtension, unpack));
+        attachments.putAll(unpack(byteArray, fileName, unpack));
         return new MultipartBody(subjectEmail, attachments);
     }
 
@@ -380,12 +374,14 @@ public class EmailReceiver {
         }
     }
 
-    private Map<String, byte[]> unpack(byte[] byteArray, String fileName, String fileExtension, boolean unpack) {
+    private Map<String, byte[]> unpack(byte[] byteArray, String fileName, boolean unpack) {
         Map<String, byte[]> attachments = new HashMap<>();
+        String[] fileNameAndExt = fileName.split("\\.");
+        String fileExtension = fileNameAndExt.length > 1 ? fileNameAndExt[fileNameAndExt.length - 1].trim() : "";
         if (unpack) {
-            if (fileName.toLowerCase().endsWith(".rar")) {
+            if (fileExtension.toLowerCase().equals("rar")) {
                 attachments.putAll(unpackRARFile(byteArray));
-            } else if (fileName.toLowerCase().endsWith(".zip")) {
+            } else if (fileExtension.toLowerCase().equals("zip")) {
                 attachments.putAll(unpackZIPFile(byteArray));
             }
         }
