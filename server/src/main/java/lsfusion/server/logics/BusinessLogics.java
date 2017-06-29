@@ -2494,12 +2494,15 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             if (!isRedundantString(element)) {
                 final Path path = Paths.get(element);
                 if (Files.isDirectory(path)) {
+                    logger.info("Reset reports cache: path is directory: " + path);
                     tasks.add(scheduler.createSystemTask(new EExecutionStackRunnable() {
                         @Override
                         public void run(ExecutionStack stack) throws Exception {
+                            logger.info("Reset reports cache: run scheduler task for " + path);
                             ResourceUtils.watchPathForChange(path, new Runnable() {
                                 @Override
                                 public void run() {
+                                    logger.info("Reset reports cache: directory changed: " + path + " - reset cache");
                                     customReports = null;
                                 }
                             });
