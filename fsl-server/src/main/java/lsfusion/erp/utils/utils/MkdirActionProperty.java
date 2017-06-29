@@ -42,7 +42,7 @@ public class MkdirActionProperty extends ScriptingActionProperty {
                     String result = null;
                     switch (type) {
                         case "file": {
-                            if (!new File(url).mkdirs())
+                            if (!new File(url).exists() && !new File(url).mkdirs())
                                 result = "Failed to create directory '" + directory + "'";
                             break;
                         }
