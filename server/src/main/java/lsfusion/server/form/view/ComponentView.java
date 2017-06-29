@@ -46,6 +46,8 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
         }
         return preferredSize;
     }
+    
+    public boolean autoSize = false;
 
     private Double flex = null;
     private FlexAlignment alignment = null;
@@ -226,6 +228,8 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
         pool.writeObject(outStream, minimumSize);
         pool.writeObject(outStream, maximumSize);
         pool.writeObject(outStream, getPreferredSize());
+        
+        outStream.writeBoolean(autoSize);
 
         outStream.writeDouble(getFlex());
         pool.writeObject(outStream, getAlignment());
@@ -248,6 +252,8 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
         minimumSize = pool.readObject(inStream);
         maximumSize = pool.readObject(inStream);
         preferredSize = pool.readObject(inStream);
+        
+        autoSize = inStream.readBoolean();
 
         flex = inStream.readDouble();
         alignment = pool.readObject(inStream);

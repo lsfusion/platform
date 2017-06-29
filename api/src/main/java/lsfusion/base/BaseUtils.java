@@ -1,6 +1,5 @@
 package lsfusion.base;
 
-import com.google.common.collect.Iterables;
 import com.sun.rowset.CachedRowSetImpl;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
@@ -46,7 +45,7 @@ public class BaseUtils {
     private static final int STRING_SERIALIZATION_CHUNK_SIZE = 65535/3;
 
     public static Integer getApiVersion() {
-        return 41;
+        return 42;
     }
 
     public static boolean nullEquals(Object obj1, Object obj2) {

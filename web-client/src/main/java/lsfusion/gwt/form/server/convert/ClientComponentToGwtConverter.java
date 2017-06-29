@@ -61,6 +61,8 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
             component.preferredWidth = clientComponent.preferredSize.width;
             component.preferredHeight = clientComponent.preferredSize.height;
         }
+        
+        component.autoSize = clientComponent.autoSize;
 
         component.flex = clientComponent.flex;
         component.alignment = convertFlexAlignment(clientComponent.alignment);
@@ -325,7 +327,6 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         propertyDraw.minimumCharWidth = clientPropertyDraw.minimumCharWidth;
         propertyDraw.maximumCharWidth = clientPropertyDraw.maximumCharWidth;
         propertyDraw.preferredCharWidth = clientPropertyDraw.preferredCharWidth;
-        propertyDraw.autoSize = clientPropertyDraw.autoSize;
 
         propertyDraw.panelCaptionAbove = clientPropertyDraw.panelCaptionAbove;
         

@@ -20,6 +20,8 @@ public class GComponent implements Serializable {
     public int maximumHeight = -1;
     public int preferredWidth = -1;
     public int preferredHeight = -1;
+    
+    public boolean autoSize;
 
     public double flex = 0;
     public GFlexAlignment alignment;
