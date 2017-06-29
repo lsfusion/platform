@@ -116,6 +116,9 @@ TABLE attachmentEmail(AttachmentEmail);
 
 id = DATA VARSTRING[100] (AttachmentEmail);  
 imported 'Импортировано' = DATA BOOLEAN (AttachmentEmail);  
+markImported 'Пометить импортированным' (AttachmentEmail ae) = {
+    IF NOT imported(ae) THEN imported(ae) <- TRUE;
+}
 importError 'Ошибка при импорте' = DATA BOOLEAN (AttachmentEmail);  
 showError (AttachmentEmail attachmentEmail) = NOT imported (attachmentEmail) OR importError(attachmentEmail)
                                                             AND attachmentEmail IS AttachmentEmail;
@@ -160,7 +163,7 @@ FORM mail 'Почта'
     OBJECTS ae=AttachmentEmail
     
     PROPERTIES(ae) READONLY imported, importError, name, lastError SHOWIF showError(ae)
-    PROPERTIES(ae) GRID openFile, saveFile
+    PROPERTIES(ae) GRID openFile, saveFile, markImported
     FILTERS email(ae)==e
     
     OBJECTS n=Notification
