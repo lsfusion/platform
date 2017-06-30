@@ -275,12 +275,12 @@ DESIGN exceptions {
 
                 MOVE PROPERTY(erTrace(e)) {
                     fill = 0.5;
-                    preferredSize = ( -1, 200);
+                    preferredValueSize = ( -1, 200);
                     panelCaptionAbove = TRUE;
                 }
                 MOVE PROPERTY(lsfStackTrace(e)) {
                     fill = 0.5;
-                    preferredSize = ( -1, 200);
+                    preferredValueSize = ( -1, 200);
                     panelCaptionAbove = TRUE;
                 }
             }
@@ -316,7 +316,7 @@ DESIGN changes {
 
                 MOVE PROPERTY(pChanges) {
                     fill = 0.5;
-                    preferredSize = ( -1, 200);
+                    preferredValueSize = ( -1, 200);
                     panelCaptionAbove = TRUE;
                 }
             }
