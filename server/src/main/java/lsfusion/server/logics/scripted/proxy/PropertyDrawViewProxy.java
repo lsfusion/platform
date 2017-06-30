@@ -169,6 +169,24 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
         }
     }
 
+    public void setFixedValueSize(Dimension size) {
+        setMinimumValueSize(size);
+        setMaximumValueSize(size);
+        setPreferredValueSize(size);
+    }
+
+    public void setFixedValueHeight(int height) {
+        setMinimumValueHeight(height);
+        setMaximumValueHeight(height);
+        setPreferredValueHeight(height);
+    }
+
+    public void setFixedValueWidth(int width) {
+        setMinimumValueWidth(width);
+        setMaximumValueWidth(width);
+        setPreferredValueWidth(width);
+    }
+
     public void setEditKey(KeyStroke editKey) {
         target.editKey = editKey;
     }

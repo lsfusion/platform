@@ -98,12 +98,6 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
         this.ID = ID;
     }
 
-    public void setFixedSize(Dimension size) {
-        minimumSize = size;
-        maximumSize = size;
-        preferredSize = size;
-    }
-
     public void setFlex(double flex) {
         this.flex = flex;
     }
