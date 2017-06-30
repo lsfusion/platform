@@ -53,7 +53,7 @@ nameShortChat 'Чат' (Message message) = IF isDialog(chat(message)) THEN nameC
 
 attachment 'Вложение' = DATA CUSTOMFILE (Message);
 hasAttachment 'Вл.' (Message m) = IF attachment(m) THEN TRUE MAXCHARWIDTH 1 PREFCHARWIDTH 1;
-loadAttachment 'Прикрепить вложение' (Message m) = { LOADFILE attachment(m); }
+loadAttachment 'Прикрепить вложение' (Message m) = { INPUT =attachment(m) CHANGE; }
 openAttachment 'Открыть вложение' (Message m) = {
     IF attachment(m) THEN {
         OPEN attachment(m);
@@ -91,7 +91,7 @@ noEditingMessage (Chat chat) = NOT editingMessage(chat);
 notificate 'С уведомлением' = DATA LOCAL NESTED BOOLEAN (Chat);
 
 attachment 'Вложение' = DATA LOCAL NESTED CUSTOMFILE (Chat);
-loadAttachment 'Прикрепить вложение' (Chat c) = { LOADFILE attachment(c); }
+loadAttachment 'Прикрепить вложение' (Chat c) = { INPUT =attachment(c) CHANGE; }
 deleteAttachment 'Удалить вложение' (Chat c) = { attachment(c) <- NULL; } IMAGE 'deleteChat.png';
 showLoadAttachment (Chat c) = NOT attachment(c);
 showDeleteAttachment (Chat c) = attachment(c);
