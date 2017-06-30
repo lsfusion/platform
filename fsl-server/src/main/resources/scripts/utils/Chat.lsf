@@ -345,7 +345,7 @@ DESIGN fullChat {
                 MOVE m.box { 
                     fill = 0.8; 
                     PROPERTY(showText(m)) {
-                        minimumWidth = 300;
+                        minimumValueWidth = 300;
                     }                       
                 }
                             
