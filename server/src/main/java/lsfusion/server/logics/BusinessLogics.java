@@ -88,10 +88,7 @@ import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
 import java.lang.reflect.InvocationTargetException;
@@ -2492,7 +2489,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         List<Scheduler.SchedulerTask> tasks = new ArrayList<>();
         for (String element : ResourceUtils.getClassPathElements()) {
             if (!isRedundantString(element)) {
-                final Path path = Paths.get(element);
+                final Path path = Paths.get(element).resolve("reports/custom");
+                logger.info("Reset reports cache: processing path : " + path);
                 if (Files.isDirectory(path)) {
                     logger.info("Reset reports cache: path is directory: " + path);
                     tasks.add(scheduler.createSystemTask(new EExecutionStackRunnable() {

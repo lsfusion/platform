@@ -108,7 +108,7 @@ public class ResourceUtils {
 
     public static void watchPathForChange(Path path, Runnable callback) throws IOException {
         WatchService watcher = FileSystems.getDefault().newWatchService();
-        path.register(watcher, new WatchEvent.Kind[]{ENTRY_CREATE, ENTRY_DELETE}, FILE_TREE);
+        path.register(watcher, new WatchEvent.Kind[]{ENTRY_CREATE, ENTRY_DELETE});
 
         WatchKey key;
         while (true) {
