@@ -530,10 +530,10 @@ public class GridTable extends ClientPropertyTable {
 
             TableColumn column = getColumnModel().getColumn(i);
 
-            column.setMinWidth(cell.getMinimumWidth(this));
+            column.setMinWidth(cell.getMinimumValueWidth(this));
             column.setPreferredWidth(getUserWidth(cell) != null ? getUserWidth(cell) :
-                    ((getAutoResizeMode() == JTable.AUTO_RESIZE_OFF) ? cell.getMinimumWidth(this) : cell.getPreferredWidth(this)));
-            column.setMaxWidth(cell.getMaximumWidth(this));
+                    ((getAutoResizeMode() == JTable.AUTO_RESIZE_OFF) ? cell.getMinimumValueWidth(this) : cell.getPreferredValueWidth(this)));
+            column.setMaxWidth(cell.getMaximumValueWidth(this));
             
             column.setHeaderValue(getColumnCaption(i));
 
@@ -543,7 +543,7 @@ public class GridTable extends ClientPropertyTable {
                 ((LabelPropertyRenderer) renderer).setFormat(format);
             }
 
-            rowHeight = max(rowHeight, cell.getPreferredHeight(this));
+            rowHeight = max(rowHeight, cell.getPreferredValueHeight(this));
 
             hasFocusableCells |= cell.focusable == null || cell.focusable;
 
@@ -822,7 +822,7 @@ public class GridTable extends ClientPropertyTable {
     private void resetPreferredColumnWidths() {
         for (int i = 0; i < model.getColumnCount(); ++i) {
             ClientPropertyDraw cell = model.getColumnProperty(i);
-            getColumnModel().getColumn(i).setPreferredWidth(cell.getPreferredWidth(this));
+            getColumnModel().getColumn(i).setPreferredWidth(cell.getPreferredValueWidth(this));
         }
     }
 

@@ -27,6 +27,7 @@ import lsfusion.server.serialization.ServerContext;
 import lsfusion.server.serialization.ServerSerializationPool;
 
 import javax.swing.*;
+import java.awt.*;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -50,6 +51,10 @@ public class PropertyDrawView extends ComponentView {
     private int minimumCharWidth;
     private int maximumCharWidth;
     private int preferredCharWidth;
+
+    public Dimension minimumValueSize;
+    public Dimension maximumValueSize;
+    public Dimension preferredValueSize;
 
     public KeyStroke editKey;
     public Boolean showEditKey;
@@ -181,6 +186,10 @@ public class PropertyDrawView extends ComponentView {
         outStream.writeInt(getMinimumCharWidth());
         outStream.writeInt(getMaximumCharWidth());
         outStream.writeInt(getPreferredCharWidth());
+
+        pool.writeObject(outStream, getMinimumValueSize());
+        pool.writeObject(outStream, getMaximumValueSize());
+        pool.writeObject(outStream, getPreferredValueSize());
 
         pool.writeObject(outStream, editKey);
 
@@ -339,6 +348,10 @@ public class PropertyDrawView extends ComponentView {
         setMaximumCharWidth(inStream.readInt());
         setPreferredCharWidth(inStream.readInt());
 
+        setMinimumValueSize(pool.<Dimension>readObject(inStream));
+        setMaximumValueSize(pool.<Dimension>readObject(inStream));
+        setPreferredValueSize(pool.<Dimension>readObject(inStream));
+
         editKey = pool.readObject(inStream);
         showEditKey = inStream.readBoolean();
 
@@ -389,7 +402,31 @@ public class PropertyDrawView extends ComponentView {
     public void setPreferredCharWidth(int preferredCharWidth) {
         this.preferredCharWidth = preferredCharWidth;
     }
-    
+
+    public Dimension getMinimumValueSize() {
+        return minimumValueSize;
+    }
+
+    public void setMinimumValueSize(Dimension minimumValueSize) {
+        this.minimumValueSize = minimumValueSize;
+    }
+
+    public Dimension getMaximumValueSize() {
+        return maximumValueSize;
+    }
+
+    public void setMaximumValueSize(Dimension maximumValueSize) {
+        this.maximumValueSize = maximumValueSize;
+    }
+
+    public Dimension getPreferredValueSize() {
+        return preferredValueSize;
+    }
+
+    public void setPreferredValueSize(Dimension preferredValueSize) {
+        this.preferredValueSize = preferredValueSize;
+    }
+
     public String getAskConfirmMessage() {
         assert entity.askConfirm;
         if (entity.askConfirmMessage != null)

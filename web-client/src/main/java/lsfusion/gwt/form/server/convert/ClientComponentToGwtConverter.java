@@ -328,6 +328,19 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         propertyDraw.maximumCharWidth = clientPropertyDraw.maximumCharWidth;
         propertyDraw.preferredCharWidth = clientPropertyDraw.preferredCharWidth;
 
+        if (clientPropertyDraw.minimumValueSize != null) {
+            propertyDraw.minimumValueWidth = clientPropertyDraw.minimumValueSize.width;
+            propertyDraw.minimumValueHeight = clientPropertyDraw.minimumValueSize.height;
+        }
+        if (clientPropertyDraw.maximumValueSize != null) {
+            propertyDraw.maximumValueWidth = clientPropertyDraw.maximumValueSize.width;
+            propertyDraw.maximumValueHeight = clientPropertyDraw.maximumValueSize.height;
+        }
+        if (clientPropertyDraw.preferredValueSize != null) {
+            propertyDraw.preferredValueWidth = clientPropertyDraw.preferredValueSize.width;
+            propertyDraw.preferredValueHeight = clientPropertyDraw.preferredValueSize.height;
+        }
+
         propertyDraw.panelCaptionAbove = clientPropertyDraw.panelCaptionAbove;
         
         propertyDraw.hide = clientPropertyDraw.hide;

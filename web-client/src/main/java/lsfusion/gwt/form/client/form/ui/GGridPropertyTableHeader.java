@@ -281,8 +281,8 @@ public class GGridPropertyTableHeader extends Header<String> {
 
             if (table.getTableDataScroller().getMaximumHorizontalScrollPosition() > 0) {
                 GPropertyDraw property = table.getProperty(leftColumn);
-                int propertyMinWidth = property != null ? property.getMinimumPixelWidth(null) : 0;
-                int propertyMaxWidth = property != null ? property.getMaximumPixelWidth() : Integer.MAX_VALUE;
+                int propertyMinWidth = property != null ? property.getMinimumPixelValueWidth(null) : 0;
+                int propertyMaxWidth = property != null ? property.getMaximumPixelValueWidth() : Integer.MAX_VALUE;
                 if (property == null || (newLeftWidth >= propertyMinWidth && newLeftWidth <= propertyMaxWidth)) {
                     table.setColumnWidth(leftColumn, newLeftWidth + "px");
                     if (table instanceof GGridTable) {

@@ -84,6 +84,13 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
     public int maximumCharWidth;
     public int preferredCharWidth;
 
+    public int minimumValueWidth = -1;
+    public int minimumValueHeight = -1;
+    public int maximumValueWidth = -1;
+    public int maximumValueHeight = -1;
+    public int preferredValueWidth = -1;
+    public int preferredValueHeight = -1;
+
     public boolean panelCaptionAbove;
     
     public boolean hide;
@@ -266,65 +273,65 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
         return notNull && !isReadOnly();
     }
 
-    public String getMinimumWidth(GFont parentFont) {
-        return getMinimumPixelWidth(parentFont) + "px";
+    public String getMinimumValueWidth(GFont parentFont) {
+        return getMinimumPixelValueWidth(parentFont) + "px";
     }
 
-    public int getMinimumPixelWidth(GFont parentFont) {
-        if (minimumWidth != -1) {
-            return minimumWidth;
+    public int getMinimumPixelValueWidth(GFont parentFont) {
+        if (minimumValueWidth != -1) {
+            return minimumValueWidth;
         } else {
             return baseType.getMinimumPixelWidth(minimumCharWidth, font != null ? font : parentFont, pattern);
         }
     }
 
-    public String getMinimumHeight() {
-        return getMinimumPixelHeight(null) + "px";
+    public String getMinimumValueHeight() {
+        return getMinimumValuePixelHeight(null) + "px";
     }
 
-    public int getMinimumPixelHeight(GFont parentFont) {
-        if (minimumHeight != -1) {
-            return minimumHeight;
+    public int getMinimumValuePixelHeight(GFont parentFont) {
+        if (minimumValueHeight != -1) {
+            return minimumValueHeight;
         } else {
             return baseType.getMinimumPixelHeight(font != null ? font : parentFont);
         }
     }
 
-    public String getMaximumWidth() {
-        return getMaximumPixelWidth() + "px";
+    public String getMaximumValueWidth() {
+        return getMaximumPixelValueWidth() + "px";
     }
 
-    public int getMaximumPixelWidth() {
-        if (maximumWidth != -1) {
-            return maximumWidth;
+    public int getMaximumPixelValueWidth() {
+        if (maximumValueWidth != -1) {
+            return maximumValueWidth;
         } else {
             return baseType.getMaximumPixelWidth(maximumCharWidth, font, pattern);
         }
     }
 
     public String getMaximumHeight() {
-        return maximumHeight + "px";
+        return maximumValueHeight + "px";
     }
 
-    public String getPreferredWidth() {
-        return getPreferredPixelWidth() + "px";
+    public String getPreferredValueWidth() {
+        return getPreferredValuePixelWidth() + "px";
     }
 
-    public int getPreferredPixelWidth() {
-        if (preferredWidth != -1) {
-            return preferredWidth;
+    public int getPreferredValuePixelWidth() {
+        if (preferredValueWidth != -1) {
+            return preferredValueWidth;
         } else {
             return baseType.getPreferredPixelWidth(preferredCharWidth, font, pattern);
         }
     }
 
-    public String getPreferredHeight() {
-        return getPreferredPixelHeight() + "px";
+    public String getPreferredValueHeight() {
+        return getPreferredValuePixelHeight() + "px";
     }
 
-    public int getPreferredPixelHeight() {
-        if (preferredHeight != -1) {
-            return preferredHeight;
+    public int getPreferredValuePixelHeight() {
+        if (preferredValueHeight != -1) {
+            return preferredValueHeight;
         } else {
             return baseType.getPreferredPixelHeight(font);
         }

@@ -75,8 +75,8 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
             }
         });
 
-        if (property.getPreferredPixelHeight() > -1) {
-            button.setHeight(property.getPreferredHeight());
+        if (property.getPreferredValuePixelHeight() > -1) {
+            button.setHeight(property.getPreferredValueHeight());
         }
         if (property.font != null) {
             property.font.apply(button.getLabel().getElement().getStyle());

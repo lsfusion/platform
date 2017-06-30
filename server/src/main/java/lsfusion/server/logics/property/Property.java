@@ -45,6 +45,7 @@ import lsfusion.server.session.Modifier;
 import lsfusion.server.session.PropertyChanges;
 
 import javax.swing.*;
+import java.awt.*;
 import java.util.List;
 import java.util.concurrent.Callable;
 
@@ -588,6 +589,10 @@ public abstract class Property<T extends PropertyInterface> extends AbstractProp
         private int maximumCharWidth;
         private int preferredCharWidth;
 
+        private Dimension minimumValueSize;
+        private Dimension maximumValueSize;
+        private Dimension preferredValueSize;
+
         // свойства, но пока реализовано как для всех
         private String regexp;
         private String regexpMessage;
@@ -645,6 +650,12 @@ public abstract class Property<T extends PropertyInterface> extends AbstractProp
                 propertyView.setMaximumCharWidth(maximumCharWidth);
             if(propertyView.getPreferredCharWidth() == 0)
                 propertyView.setPreferredCharWidth(preferredCharWidth);
+            if(propertyView.getMinimumValueSize() == null)
+                propertyView.setMinimumValueSize(minimumValueSize);
+            if(propertyView.getMaximumValueSize() == null)
+                propertyView.setMaximumValueSize(maximumValueSize);
+            if(propertyView.getPreferredValueSize() == null)
+                propertyView.setPreferredValueSize(preferredValueSize);
             if (propertyView.design.imagePath == null && iconPath != null) {
                 propertyView.design.imagePath = iconPath;
                 propertyView.design.setImage(image);

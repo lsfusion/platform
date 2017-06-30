@@ -151,11 +151,11 @@ class DataFilterValueViewTable extends JTable implements TableTransferHandler.Ta
     public void setProperty(ClientPropertyDraw property) {
         model.setProperty(property);
 
-        setMinimumSize(property.getMinimumSize(this));
-        setPreferredSize(property.getPreferredSize(this));
-        setMaximumSize(property.getMaximumSize(this));
+        setMinimumSize(property.getMinimumValueSize(this));
+        setPreferredSize(property.getPreferredValueSize(this));
+        setMaximumSize(property.getMaximumValueSize(this));
 
-        setRowHeight(property.getPreferredSize(this).height);
+        setRowHeight(property.getPreferredValueSize(this).height);
     }
 
     private final class Renderer extends JComponent implements TableCellRenderer {

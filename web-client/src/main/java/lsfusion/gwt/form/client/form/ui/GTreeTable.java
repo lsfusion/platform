@@ -105,7 +105,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
             createdFields.remove(index);
             headers.remove(index);
             removeColumn(index);
-            preferredWidth -= property.getMinimumPixelWidth(font);
+            preferredWidth -= property.getMinimumPixelValueWidth(font);
         }
     }
 
@@ -125,9 +125,9 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
                 insertColumn(index, gridColumn, header);
                 createdFields.add(index, property.sID);
 
-                setColumnWidth(gridColumn, property.getMinimumWidth(font));
+                setColumnWidth(gridColumn, property.getMinimumValueWidth(font));
 
-                preferredWidth += property.getMinimumPixelWidth(font);
+                preferredWidth += property.getMinimumPixelValueWidth(font);
             }
         }
     }
@@ -281,7 +281,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
                 header.setToolTip(property.getTooltipText(value));
                 needsHeaderRefresh = true;
             }
-            rowHeight = Math.max(rowHeight, property.getMinimumPixelHeight(font));
+            rowHeight = Math.max(rowHeight, property.getMinimumValuePixelHeight(font));
         }
         setCellHeight(rowHeight);
         if (needsHeaderRefresh) {

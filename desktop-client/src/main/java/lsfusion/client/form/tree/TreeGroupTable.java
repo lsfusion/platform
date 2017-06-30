@@ -357,7 +357,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
         getColumnModel().getColumn(0).setPreferredWidth(treeGroup.calculatePreferredSize());
         for (int i = 1; i < model.getColumnCount(); ++i) {
             ClientPropertyDraw cell = model.getColumnProperty(i);
-            getColumnModel().getColumn(i).setPreferredWidth(cell.getPreferredWidth(this));
+            getColumnModel().getColumn(i).setPreferredWidth(cell.getPreferredValueWidth(this));
         }
     }
 
@@ -491,7 +491,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
         
         int rowHeight = 0;
         for (ClientPropertyDraw columnProperty : model.columnProperties) {
-            rowHeight = max(rowHeight, columnProperty.getPreferredHeight(this));
+            rowHeight = max(rowHeight, columnProperty.getPreferredValueHeight(this));
         }
         if (rowHeight != getRowHeight() && rowHeight > 0) {
             setRowHeight(rowHeight);
@@ -538,13 +538,13 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
             int rowHeight = getRowHeight();
             int currentSelectedColumn = getColumnModel().getSelectionModel().getLeadSelectionIndex();
 
-            int min = property.getMinimumWidth(this);
-            int max = property.getMaximumWidth(this);
-            int pref = property.getPreferredWidth(this);
+            int min = property.getMinimumValueWidth(this);
+            int max = property.getMaximumValueWidth(this);
+            int pref = property.getPreferredValueWidth(this);
 
             setColumnSizes(tableColumn, min, max, pref);
 
-            rowHeight = max(rowHeight, property.getPreferredHeight(this));
+            rowHeight = max(rowHeight, property.getPreferredValueHeight(this));
 
             addColumn(tableColumn);
             moveColumn(getColumnCount() - 1, pos);

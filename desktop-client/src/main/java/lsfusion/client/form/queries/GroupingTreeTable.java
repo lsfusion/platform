@@ -95,9 +95,9 @@ public class GroupingTreeTable extends JXTreeTable {
         for (int i = 1; i < treeTableModel.getColumnCount(); i++) {
             TableColumn column = getColumnModel().getColumn(i);
             ClientPropertyDraw property = columnProperties.get(i - 1);
-            column.setPreferredWidth(property != null ? property.getPreferredWidth(this) : MIN_COLUMN_WIDTH);
-            column.setMaxWidth(property != null ? property.getMaximumWidth(this) : MAX_COLUMN_WIDTH);
-            column.setMinWidth(property != null ? property.getMinimumWidth(this) : MIN_COLUMN_WIDTH);
+            column.setPreferredWidth(property != null ? property.getPreferredValueWidth(this) : MIN_COLUMN_WIDTH);
+            column.setMaxWidth(property != null ? property.getMaximumValueWidth(this) : MAX_COLUMN_WIDTH);
+            column.setMinWidth(property != null ? property.getMinimumValueWidth(this) : MIN_COLUMN_WIDTH);
             
             if (property != null && (property.baseType instanceof ClientImageClass || property.baseType instanceof ClientImageLinkClass)) {
                 needToExpandRows = true;

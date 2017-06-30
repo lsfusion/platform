@@ -50,7 +50,7 @@ public class GSinglePropertyTable extends GPropertyTable<Object> {
 
         setTableBuilder(new GSinglePropertyTableBuilder(this));
 
-        setCellHeight(property.getPreferredPixelHeight());
+        setCellHeight(property.getPreferredValuePixelHeight());
         setRemoveKeyboardStylesOnBlur(true);
 
         getTableDataScroller().removeScrollbars();

@@ -104,8 +104,8 @@ public class DataPanelRenderer implements PanelRenderer {
         panel.add(label, GFlexAlignment.CENTER);
         panel.add(gridPanel, vertical ? GFlexAlignment.STRETCH : GFlexAlignment.CENTER, 1);
 
-        String preferredHeight = property.getPreferredHeight();
-        String preferredWidth = property.getPreferredWidth();
+        String preferredHeight = property.getPreferredValueHeight();
+        String preferredWidth = property.getPreferredValueWidth();
 
         gridPanel.setHeight(preferredHeight);
         if (!vertical) {
@@ -227,8 +227,8 @@ public class DataPanelRenderer implements PanelRenderer {
             }
 
             //+extra for borders and margins
-            int width = property.getPreferredPixelWidth() + 4;
-            int height = property.getPreferredPixelHeight() + 4;
+            int width = property.getPreferredValuePixelWidth() + 4;
+            int height = property.getPreferredValuePixelHeight() + 4;
 
             if (isVertical()) {
                 pref.width = Math.max(pref.width, width);

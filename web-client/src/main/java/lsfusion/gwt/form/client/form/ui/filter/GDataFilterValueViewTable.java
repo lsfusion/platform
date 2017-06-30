@@ -47,8 +47,8 @@ public class GDataFilterValueViewTable extends DataGrid implements EditManager {
 
         setRemoveKeyboardStylesOnBlur(true);
 
-        setSize("100%", property.getMinimumHeight());
-        setTableWidth(property.getPreferredPixelWidth(), Unit.PX);
+        setSize("100%", property.getMinimumValueHeight());
+        setTableWidth(property.getPreferredValuePixelWidth(), Unit.PX);
         getTableDataScroller().removeScrollbars();
 
         cell = new DataFilterValueEditableCell();
@@ -76,10 +76,10 @@ public class GDataFilterValueViewTable extends DataGrid implements EditManager {
     public void setProperty(GPropertyDraw property) {
         this.property = property;
 
-        int minimumPixelHeight = property.getMinimumPixelHeight(null);
+        int minimumPixelHeight = property.getMinimumValuePixelHeight(null);
 
-        setTableWidth(property.getPreferredPixelWidth(), Unit.PX);
-        setHeight(property.getMinimumHeight());
+        setTableWidth(property.getPreferredValuePixelWidth(), Unit.PX);
+        setHeight(property.getMinimumValueHeight());
 
         setCellHeight(minimumPixelHeight);
     }
