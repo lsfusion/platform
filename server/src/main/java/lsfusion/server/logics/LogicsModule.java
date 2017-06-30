@@ -46,7 +46,6 @@ import lsfusion.server.logics.mutables.NFLazy;
 import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.actions.*;
-import lsfusion.server.logics.property.actions.file.LoadActionProperty;
 import lsfusion.server.logics.property.actions.file.OpenActionProperty;
 import lsfusion.server.logics.property.actions.file.SaveActionProperty;
 import lsfusion.server.logics.property.actions.flow.*;
@@ -1477,16 +1476,6 @@ public abstract class LogicsModule {
         return addProperty(null, new LAP(new AsyncUpdateEditValueActionProperty(LocalizedString.create("Async Update"))));
     }
 
-    // ------------------- LOAD FILE ----------------- //
-
-    protected LAP addLFAProp(LCP lp) {
-        return addLFAProp(null, LocalizedString.create("lfa"), lp);
-    }
-
-    protected LAP addLFAProp(AbstractGroup group, LocalizedString caption, LCP lp) {
-        return addProperty(group, new LAP(new LoadActionProperty(caption, lp)));
-    }
-
     // ------------------- OPEN FILE ----------------- //
 
     protected LAP addOFAProp(ValueClass prop, ValueClass nameProp) {
@@ -1667,10 +1656,6 @@ public abstract class LogicsModule {
 
     // ---------------------- Add Form ---------------------- //
 
-    public LAP getScriptAddFormAction(CustomClass cls, FormSessionScope scope) {
-        return addAddFormAction(cls, null, scope);
-    }
-
     protected LAP addAddFormAction(CustomClass cls, ObjectEntity contextObject, FormSessionScope scope) {
         LCP<ClassPropertyInterface> addedProperty = new LCP<ClassPropertyInterface>(baseLM.getAddedObjectProperty());
 
@@ -1733,10 +1718,6 @@ public abstract class LogicsModule {
     }
 
     // ---------------------- Edit Form ---------------------- //
-
-    public LAP getScriptEditFormAction(CustomClass cls, FormSessionScope scope) {
-        return addEditFormAction(scope, cls);
-    }
 
     protected LAP addEditFormAction(FormSessionScope scope, CustomClass customClass) {
         LAP result = addEditAProp(LocalizedString.create("{logics.edit}"), customClass);

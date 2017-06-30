@@ -2379,9 +2379,7 @@ contextIndependentActionDB returns [LP property, List<ResolveClassSet> signature
         self.topContextActionPropertyDefinitionBodyCreated(lpWithParams);
 	}
 }
-	:	addformADB=addFormActionDefinitionBody { $property = $addformADB.property; $signature = $addformADB.signature; }
-	|	editformADB=editFormActionDefinitionBody { $property = $editformADB.property; $signature = $editformADB.signature; }
-	|	customADB=customActionDefinitionBody { $property = $customADB.property; $signature = $customADB.signature; }
+	:	customADB=customActionDefinitionBody { $property = $customADB.property; $signature = $customADB.signature; }
     |	abstractActionDef=abstractActionDefinition { $property = $abstractActionDef.property; $signature = $abstractActionDef.signature; needToCreateDelegate = false; } // to debug into implementation immediately, without stepping on abstract declaration
 	|	'NATIVE' '(' clist=classIdList ')' { if (inPropParseState()) { $property = null; $signature = self.createClassSetsFromClassNames($clist.ids); }}
 	;
@@ -2650,40 +2648,6 @@ customActionDefinitionBody returns [LP property, List<ResolveClassSet> signature
 	;
 
 
-addFormActionDefinitionBody returns [LP property, List<ResolveClassSet> signature]
-@init {
-	FormSessionScope scope = FormSessionScope.NEWSESSION;	
-}
-@after {
-	if (inPropParseState()) {
-		$signature = new ArrayList<ResolveClassSet>(); 
-		$property = self.addScriptedAddFormAction($cls.sid, scope);	
-	}
-}
-	:	'ADDFORM'
-		(   'SESSION' { scope = FormSessionScope.OLDSESSION; }
-		|   'NESTED'  { scope = FormSessionScope.NESTEDSESSION; }
-		)?
-		cls=classId
-	;
-
-editFormActionDefinitionBody returns [LP property, List<ResolveClassSet> signature]
-@init {
-	FormSessionScope scope = FormSessionScope.NEWSESSION;	
-}
-@after {
-	if (inPropParseState()) {
-		$signature = self.createClassSetsFromClassNames(Collections.singletonList($cls.sid)); 
-		$property = self.addScriptedEditFormAction($cls.sid, scope);	
-	}
-}
-	:	'EDITFORM'
-	    (   'SESSION' { scope = FormSessionScope.OLDSESSION; }
-	    |   'NESTED'  { scope = FormSessionScope.NESTEDSESSION; }
-        )?
-        cls=classId
-	;
-
 newWhereActionDefinitionBody[List<TypedParameter> context] returns [LPWithParams property]
 @init {
 	List<TypedParameter> newContext = new ArrayList<TypedParameter>(context);
@@ -2859,8 +2823,7 @@ fileActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns 
 	}
 }
 	:	(
-			'LOADFILE' { actionType = FileActionType.LOAD; } pe=propertyExpression[context, dynamic] { fileProp = $pe.property; } 
-		| 	'OPEN' { actionType = FileActionType.OPEN; } pe=propertyExpression[context, dynamic] { fileProp = $pe.property; } ('NAME' npe=propertyExpression[context, dynamic] { fileNameProp = $npe.property; })?
+			'OPEN' { actionType = FileActionType.OPEN; } pe=propertyExpression[context, dynamic] { fileProp = $pe.property; } ('NAME' npe=propertyExpression[context, dynamic] { fileNameProp = $npe.property; })?
 		|	'SAVE' { actionType = FileActionType.SAVE; } pe=propertyExpression[context, dynamic] { fileProp = $pe.property; } ('NAME' npe=propertyExpression[context, dynamic] { fileNameProp = $npe.property; })?
 		) 
 	;

@@ -1192,9 +1192,6 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         LAP<?> res;
         switch (actionType) {
-            case LOAD:
-                res = addLFAProp((LCP) property.property);
-                return new LPWithParams(res, property.usedParams);
             case OPEN:
                 res = addOFAProp(property.property.property.getValueClass(ClassType.valuePolicy),
                         fileNameProp == null ? null : fileNameProp.property.property.getValueClass(ClassType.valuePolicy));
@@ -1581,18 +1578,6 @@ public class ScriptingLogicsModule extends LogicsModule {
         List<Integer> usedParams = mergeAllParams(properties);
         LP prop = addJoinAProp(null, LocalizedString.create(""), (LAP<?>) mainProp, resultParams.toArray());
         return new LPWithParams(prop, usedParams);
-    }
-
-    public LP addScriptedAddFormAction(String className, FormSessionScope scope) throws ScriptingErrorLog.SemanticErrorException {
-        ValueClass cls = findClass(className);
-        checkAddActionsClass(cls);
-        return getScriptAddFormAction((CustomClass) cls, scope);
-    }
-
-    public LP addScriptedEditFormAction(String className, FormSessionScope scope) throws ScriptingErrorLog.SemanticErrorException {
-        ValueClass cls = findClass(className);
-        checkAddActionsClass(cls);
-        return getScriptEditFormAction((CustomClass) cls, scope);
     }
 
     public LPWithParams addScriptedConfirmProp(LPWithParams msgProp, LPWithParams doAction, LPWithParams elseAction, boolean yesNo, List<TypedParameter> oldContext, List<TypedParameter> newContext) throws ScriptingErrorLog.SemanticErrorException {
