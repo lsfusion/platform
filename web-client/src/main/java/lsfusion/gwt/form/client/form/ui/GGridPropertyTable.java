@@ -122,11 +122,14 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         return new Cell.Context(getKeyboardSelectedRow(), getKeyboardSelectedColumn(), getKeyboardSelectedRowValue());
     }
 
+    protected boolean isAutoSize() {
+        return false;
+    }
     @Override
     public Dimension getPreferredSize() {
         return new Dimension(
                 preferredWidth + nativeScrollbarWidth + 17,
-                max(140, getRowCount() * getRowHeight() + 30) + nativeScrollbarHeight
+                max(isAutoSize() ? 0 : 140, getRowCount() * getRowHeight() + 30) + nativeScrollbarHeight
         );
     }
 

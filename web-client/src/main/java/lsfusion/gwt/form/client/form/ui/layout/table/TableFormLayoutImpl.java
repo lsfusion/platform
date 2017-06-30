@@ -3,6 +3,7 @@ package lsfusion.gwt.form.client.form.ui.layout.table;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.base.client.ui.ResizableSimplePanel;
 import lsfusion.gwt.base.client.ui.ResizableVerticalPanel;
 import lsfusion.gwt.form.client.form.ui.GFormController;
 import lsfusion.gwt.form.client.form.ui.layout.GAbstractContainerView;
@@ -37,7 +38,7 @@ public class TableFormLayoutImpl extends GFormLayoutImpl {
     }
 
     @Override
-    public Panel createGridView(GGrid grid, Panel panel) {
+    public Panel createGridView(GGrid grid, ResizableSimplePanel panel) {
         ResizableVerticalPanel gridView = new ResizableVerticalPanel();
         gridView.add(panel);
 

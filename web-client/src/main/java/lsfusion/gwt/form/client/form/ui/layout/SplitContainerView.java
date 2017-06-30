@@ -50,6 +50,7 @@ public abstract class SplitContainerView<P extends Panel> extends GAbstractConta
     }
 
     public void updateLayout() {
+        super.updateLayout();
         splitPane.update();
     }
 

@@ -5,7 +5,9 @@ import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.base.client.ui.FlexPanel;
+import lsfusion.gwt.base.client.ui.ResizableSimplePanel;
 import lsfusion.gwt.form.client.form.ui.GFormController;
+import lsfusion.gwt.form.client.form.ui.GGridTable;
 import lsfusion.gwt.form.client.form.ui.layout.GAbstractContainerView;
 import lsfusion.gwt.form.client.form.ui.layout.GFormLayoutImpl;
 import lsfusion.gwt.form.client.form.ui.layout.ScrollContainerView;
@@ -40,10 +42,34 @@ public class FlexFormLayoutImpl extends GFormLayoutImpl {
         setupFillParent(mainContainerElement);
     }
 
+    public static class GridPanel extends FlexPanel {
+        private final ResizableSimplePanel panel;
+
+        private GGridTable getGridTable() {
+            return (GGridTable)panel.getWidget();
+        }
+
+        public GridPanel(ResizableSimplePanel panel) {
+            super(true);
+
+            this.panel = panel;
+            addFill(panel);
+        }
+
+        public void autoSize() {
+            GGridTable gridTable = getGridTable();
+            int autoSize = gridTable.getAutoSize();
+            if(autoSize <= 0) // еще не было layout'а, ставим эвристичный размер
+                autoSize = gridTable.getPreferredSize().height;
+            else {
+                autoSize += panel.getOffsetHeight() - gridTable.getTableDataScroller().getClientHeight(); // margin'ы и border'ы учитываем
+            }
+            setChildFlexBasis(panel, autoSize);
+        }
+    }
+
     @Override
-    public Panel createGridView(GGrid grid, Panel panel) {
-        FlexPanel gridView = new FlexPanel(true);
-        gridView.addFill(panel);
-        return gridView;
+    public Panel createGridView(GGrid grid, ResizableSimplePanel panel) {
+        return new GridPanel(panel);
     }
 }

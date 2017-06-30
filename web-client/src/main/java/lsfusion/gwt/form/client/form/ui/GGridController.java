@@ -27,7 +27,7 @@ public class GGridController {
         grid = igrid;
         groupController = igroupObject;
 
-        table = new GGridTable(iformController, igroupObject, this, userPreferences);
+        table = new GGridTable(iformController, igroupObject, this, userPreferences, igrid.autoSize);
 
 //        ResizableLayoutPanel panel = new ResizableLayoutPanel();
 //        panel.setStyleName("gridResizePanel");
@@ -36,6 +36,8 @@ public class GGridController {
         ResizableSimplePanel panel = new ResizableSimplePanel(table);
         panel.setStyleName("gridResizePanel");
         setupFillParent(panel.getElement(), table.getElement());
+        if(grid.autoSize) // убираем default'ый minHeight
+            panel.getElement().getStyle().setProperty("minHeight", "0px");
 
         gridView = layoutImpl.createGridView(grid, panel);
     }

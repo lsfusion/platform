@@ -6,9 +6,11 @@ import lsfusion.gwt.base.client.Dimension;
 import lsfusion.gwt.base.client.ui.FlexPanel;
 import lsfusion.gwt.base.client.ui.GFlexAlignment;
 import lsfusion.gwt.form.client.form.ui.layout.flex.FlexCaptionPanel;
+import lsfusion.gwt.form.client.form.ui.layout.flex.FlexFormLayoutImpl;
 import lsfusion.gwt.form.client.form.ui.layout.table.TableCaptionPanel;
 import lsfusion.gwt.form.shared.view.GComponent;
 import lsfusion.gwt.form.shared.view.GContainer;
+import lsfusion.gwt.form.shared.view.GPropertyDraw;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,7 +32,7 @@ public abstract class GAbstractContainerView {
         this.container = container;
     }
 
-    public void add(GComponent child, Widget view) {
+    public void add(GComponent child, final Widget view) {
         assert child != null && view != null && container.children.contains(child);
 
         int index = relativePosition(child, container.children, children);
@@ -39,6 +41,15 @@ public abstract class GAbstractContainerView {
         childrenViews.add(index, view);
 
         addImpl(index, child, view);
+
+        if(child.autoSize && view instanceof FlexFormLayoutImpl.GridPanel) {
+            updateLayoutListeners.add(new UpdateLayoutListener() {
+                @Override
+                public void updateLayout() {
+                    ((FlexFormLayoutImpl.GridPanel)view).autoSize();
+                }
+            });
+        }
     }
 
     public void remove(GComponent child) {
@@ -138,8 +149,14 @@ public abstract class GAbstractContainerView {
         }
     }
 
+    private interface UpdateLayoutListener {
+        void updateLayout();
+    }
+
+    private List<UpdateLayoutListener> updateLayoutListeners = new ArrayList<>();
     public void updateLayout() {
-        //do nothing by default
+        for(UpdateLayoutListener updateLayoutListener : updateLayoutListeners)
+            updateLayoutListener.updateLayout();
     }
 
     private static Integer getFlexBasis(boolean vertical, GComponent component) {

@@ -91,12 +91,21 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
 
     private double lastQuickSearchTime = 0;
 
-    public GGridTable(GFormController iform, GGroupObjectController igroupController, GGridController gridController, GGridUserPreferences[] iuserPreferences) {
+    private boolean autoSize;
+
+    @Override
+    protected boolean isAutoSize() {
+        return autoSize;
+    }
+
+    public GGridTable(GFormController iform, GGroupObjectController igroupController, GGridController gridController, GGridUserPreferences[] iuserPreferences, boolean autoSize) {
         super(iform, null, igroupController.groupObject.grid.headerHeight);
 
         this.groupObjectController = igroupController;
         this.groupObject = igroupController.groupObject;
         this.gridController = gridController;
+
+        this.autoSize = autoSize;
 
         generalGridPreferences = iuserPreferences != null && iuserPreferences[0] != null ? iuserPreferences[0] : new GGridUserPreferences(groupObject);
         userGridPreferences = iuserPreferences != null && iuserPreferences[1] != null ? iuserPreferences[1] : new GGridUserPreferences(groupObject);
@@ -1230,5 +1239,9 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
 
             return super.handleKeyEvent(event);
         }
+    }
+
+    public int getAutoSize() {
+        return getTableBodyElement().getOffsetHeight();
     }
 }
