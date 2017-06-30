@@ -52,11 +52,11 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
     private Double flex = null;
     private FlexAlignment alignment = null;
     public double getFlex() {
-        assert flex == null || (flex > 0 || getContainer() == null || !getContainer().isScroll()); // временные assert'ы чтобы проверить обратную совместимость
+        assert flex == null || (flex > 0 || getContainer() == null || (!getContainer().isScroll() && !getContainer().isSplit())); // временные assert'ы чтобы проверить обратную совместимость
         if(flex != null)
             return flex;
         ContainerView container = getContainer();
-        if(container != null && container.isScroll())
+        if(container != null && (container.isScroll() || container.isSplit()))
             return 1;
         return 0;
     }
