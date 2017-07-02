@@ -14,8 +14,15 @@ public class RefreshActionProperty extends FormFlowActionProperty {
         super(lm, false);
     }
 
+    // так как вызывают откуда попало
     @Override
     protected boolean isSameSession() { // context не используется
+        return false;
+    }
+
+    // так как вызывают откуда попало
+    @Override
+    protected boolean isAssertExists() {
         return false;
     }
 
