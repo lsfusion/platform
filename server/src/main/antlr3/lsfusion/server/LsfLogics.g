@@ -2522,7 +2522,7 @@ printActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns
 	}
 }
 	:	'PRINT' mf=mappedForm[context, null, dynamic]
-		(   ( // static
+		(   ( // static - jasper
             (   'XLS'  { printType = FormPrintType.XLS; }
             |	'XLSX' { printType = FormPrintType.XLSX; }
             |	'PDF' { printType = FormPrintType.PDF; }
@@ -2531,7 +2531,7 @@ printActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns
             ) 
             ('TO' pUsage=propertyUsage)?
             )
-        |   (
+        |   ( // static - rest
                 'MESSAGE' { printType = FormPrintType.MESSAGE; }
                 (sync = syncTypeLiteral { syncType = $sync.val; })?
                 ('TOP' top = intLiteral { selectTop = $top.val; } )?

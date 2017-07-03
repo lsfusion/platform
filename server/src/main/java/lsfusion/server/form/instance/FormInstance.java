@@ -2406,6 +2406,13 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                 return result;
             }
 
+            // нужно не в транзакции, так как если откатится, у ведомления начнут приходить не целостными из restart и это может привести к странному поведению
+            // поэтому по-хорошему надо делать явное обновление в restart (как updateSessionEventNotChangedOld), но пока делать не будем, а просто не будем update'ить в транзакции  
+//            @Override
+//            protected boolean noUpdateInTransaction() {
+//                return false;
+//            }
+
             @Override
             protected void updateSource(SessionDataProperty property, boolean dataChanged) throws SQLException, SQLHandledException {
                 Pair<GroupObjectInstance, GroupObjectProp> source = environmentIncrementSources.get(property);
