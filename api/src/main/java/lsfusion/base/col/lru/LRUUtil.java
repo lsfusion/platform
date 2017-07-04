@@ -19,6 +19,7 @@ public class LRUUtil {
     
     public static double multiplier = 1.0;
     public static double MAX_MULTIPLIER = 15.0; // чтобы не рос до бесконечности, из - за того что некоторые кэши имеют максимальные пределы
+    public static double MIN_MULTIPLIER = 1/MAX_MULTIPLIER; // чтобы не падал до бесконечности, так как в этом случае все равно кэши будут ротироваться с бешеной скоростью
 
     public static int hash(int h) {
         // Spread bits to regularize both segment and index locations,
@@ -148,7 +149,7 @@ public class LRUUtil {
                 
                 if(used!=lastCollected) { // прошла сборка мусора
                     logger.log("COLLECTED, USED : " + used + ", LASTCOLLECTED : " + lastCollected + ", UPAVERAGE : " + upAverageMem + ", DOWNAVERAGE : " + downAverageMem);
-                    if (used > lastCollected && used > upAverageMem) { // память растет и мы ниже критического предела, ускоряем сборку LRU
+                    if (used > lastCollected && used > upAverageMem && multiplier > MIN_MULTIPLIER) { // память растет и мы ниже критического предела, ускоряем сборку LRU
                         multiplier /= adjustLRU;
                         logger.log("DEC MULTI " + multiplier);
                     }
