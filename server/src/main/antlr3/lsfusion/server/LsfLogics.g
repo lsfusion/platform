@@ -1502,9 +1502,9 @@ abstractActionDefinition returns [LP property, List<ResolveClassSet> signature]
 }
 	:	'ABSTRACT'
 		(
-			(('CASE' { type = ListCaseActionProperty.AbstractType.CASE; isExclusive = false; isLast = false; }
-			|	'MULTI'	{ type = ListCaseActionProperty.AbstractType.MULTI; isExclusive = true; isLast = false; }) (opt=abstractExclusiveOverrideOption { isExclusive = $opt.isExclusive; if($opt.isLast!=null) isLast = $opt.isLast;})?)
-		|	('LIST' { type = ListCaseActionProperty.AbstractType.LIST; } (acopt=abstractCaseAddOption { isLast = $acopt.isLast; } )?)
+			(('CASE' { type = ListCaseActionProperty.AbstractType.CASE; isExclusive = false; }
+			|	'MULTI'	{ type = ListCaseActionProperty.AbstractType.MULTI; isExclusive = true; }) (opt=abstractExclusiveOverrideOption { isExclusive = $opt.isExclusive; if($opt.isLast!=null) isLast = $opt.isLast;})?)
+		|	('LIST' { type = ListCaseActionProperty.AbstractType.LIST; isLast = true; } (acopt=abstractCaseAddOption { isLast = $acopt.isLast; } )?)
 		)?
 		('CHECKED' { isChecked = true; })?
 		'(' 
