@@ -18,7 +18,7 @@ public class LRUUtil {
     private final static Object lockCleanLRU = new Object();
     
     public static double multiplier = 1.0;
-    public static double MAX_MULTIPLIER = 15.0; // чтобы не рос до бесконечности, из - за того что некоторые кэши имеют максимальные пределы
+    public static double MAX_MULTIPLIER = 10.0; // чтобы не рос до бесконечности, из - за того что некоторые кэши имеют максимальные пределы
     public static double MIN_MULTIPLIER = 1/MAX_MULTIPLIER; // чтобы не падал до бесконечности, так как в этом случае все равно кэши будут ротироваться с бешеной скоростью
 
     public static int hash(int h) {
