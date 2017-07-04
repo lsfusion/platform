@@ -141,7 +141,7 @@ public class ClientFormLayout extends JPanel {
     }
 
     // добавляем визуальный компонент
-    public boolean add(ClientComponent key, Component view) {
+    public boolean add(ClientComponent key, JComponentPanel view) {
         if (key != null) {
             ClientContainerView containerView = containerViews.get(key.container);
             if (containerView != null && !containerView.hasChild(key)) {

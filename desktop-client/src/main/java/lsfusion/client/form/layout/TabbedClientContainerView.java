@@ -96,12 +96,12 @@ public class TabbedClientContainerView extends AbstractClientContainerView {
     }
 
     @Override
-    public void addImpl(int index, ClientComponent child, Component view) {
+    public void addImpl(int index, ClientComponent child, JComponentPanel view) {
         hiddenHolderPanel.add(view);
     }
 
     @Override
-    public void removeImpl(int index, ClientComponent child, Component view) {
+    public void removeImpl(int index, ClientComponent child, JComponentPanel view) {
         int visibleIndex = visibleChildren.indexOf(child);
         if (visibleIndex != -1) {
             visibleChildren.remove(visibleIndex);
@@ -131,7 +131,7 @@ public class TabbedClientContainerView extends AbstractClientContainerView {
         }
     }
 
-    public JComponent getView() {
+    public JComponentPanel getView() {
         return panel;
     }
 

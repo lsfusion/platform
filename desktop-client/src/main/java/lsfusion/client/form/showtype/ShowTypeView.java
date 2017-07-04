@@ -2,7 +2,9 @@ package lsfusion.client.form.showtype;
 
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.form.RmiQueue;
+import lsfusion.client.form.layout.JComponentPanel;
 import lsfusion.client.form.queries.ToolbarGridButton;
+import lsfusion.client.logics.ClientComponent;
 import lsfusion.client.logics.ClientShowType;
 import lsfusion.interop.ClassViewType;
 
@@ -12,7 +14,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.List;
 
-public class ShowTypeView extends JPanel {
+public class ShowTypeView extends JComponentPanel {
     private final ClassViewType[] types = new ClassViewType[] {ClassViewType.GRID, ClassViewType.PANEL, ClassViewType.HIDE};
     private final ImageIcon[] icons = new ImageIcon[] {new ImageIcon(ShowTypeView.class.getResource("/images/view_grid.png")),
                                                  new ImageIcon(ShowTypeView.class.getResource("/images/view_panel.png")),

@@ -5,6 +5,7 @@ import lsfusion.client.form.ClientFormController;
 import lsfusion.client.form.cell.PanelView;
 import lsfusion.client.form.layout.ClientFormLayout;
 import lsfusion.client.form.layout.HasLabel;
+import lsfusion.client.form.layout.JComponentPanel;
 import lsfusion.client.logics.ClientGroupObjectValue;
 import lsfusion.client.logics.ClientPropertyDraw;
 import lsfusion.interop.form.layout.Alignment;
@@ -214,7 +215,7 @@ public class PropertyController {
         }
     }
 
-    private class ViewsPanel extends JPanel implements HasLabel {
+    private class ViewsPanel extends JComponentPanel implements HasLabel {
         private ViewsPanel() {
             super(null);
             setLayout(new FlexLayout(this, false, Alignment.LEADING));

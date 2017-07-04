@@ -1039,7 +1039,7 @@ propertyStatement
 	    }
 		'=' 
 		(	(   pdef=propertyDefinition[context, dynamic] { property = $pdef.property; signature = $pdef.signature; }
-            |	'ACTION' ciADB=contextIndependentActionDB { if(inPropParseState()) { property = $ciADB.property; signature = $ciADB.signature; } }
+            |	'ACTION'? ciADB=contextIndependentActionDB { if(inPropParseState()) { property = $ciADB.property; signature = $ciADB.signature; } }
             )
             ((opt=propertyOptions[property, propertyName, caption, context, signature] { ps = $opt.ps; } ) | ';')
         |

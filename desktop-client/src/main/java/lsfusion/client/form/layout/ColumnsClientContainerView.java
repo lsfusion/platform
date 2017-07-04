@@ -41,7 +41,7 @@ public class ColumnsClientContainerView extends AbstractClientContainerView {
     }
 
     @Override
-    public void addImpl(int index, ClientComponent child, Component view) {
+    public void addImpl(int index, ClientComponent child, JComponentPanel view) {
 //        ((JComponent)view).setBorder(randomBorder());
 
 //        panel.add(view, new ColumnsConstraints(child.getAlignment()), index);
@@ -78,7 +78,7 @@ public class ColumnsClientContainerView extends AbstractClientContainerView {
     }
 
     @Override
-    public void removeImpl(int index, ClientComponent child, Component view) {
+    public void removeImpl(int index, ClientComponent child, JComponentPanel view) {
         int childIndex = container.children.indexOf(child);
         int colIndex = childIndex % columnsCount;
         columnsChildren[colIndex].remove(child);
@@ -102,7 +102,7 @@ public class ColumnsClientContainerView extends AbstractClientContainerView {
     }
 
     @Override
-    public JComponent getView() {
+    public JComponentPanel getView() {
         return panel;
     }
 }

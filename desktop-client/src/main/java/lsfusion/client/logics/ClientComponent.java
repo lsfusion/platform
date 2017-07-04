@@ -23,7 +23,7 @@ public abstract class ClientComponent extends ContextIdentityObject implements I
     public ComponentDesign design;
 
     public ClientContainer container;
-
+    
     public Dimension minimumSize;
     public Dimension maximumSize;
     public Dimension preferredSize;

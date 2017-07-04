@@ -5,9 +5,6 @@ import lsfusion.client.logics.ClientContainer;
 import lsfusion.interop.form.layout.FlexLayout;
 import lsfusion.interop.form.layout.FlexConstraints;
 
-import javax.swing.*;
-import java.awt.*;
-
 public class LinearClientContainerView extends AbstractClientContainerView {
 
     private final ContainerViewPanel panel;
@@ -23,20 +20,20 @@ public class LinearClientContainerView extends AbstractClientContainerView {
     }
 
     @Override
-    public void addImpl(int index, ClientComponent child, Component view) {
+    public void addImpl(int index, ClientComponent child, JComponentPanel view) {
 //        ((JComponent)view).setBorder(randomBorder());
 
         FlexConstraints constraints = new FlexConstraints(child.getAlignment(), child.getFlex());
-        panel.add(view, constraints, index);
+        add(panel, view, index, constraints, child);
     }
 
     @Override
-    public void removeImpl(int index, ClientComponent child, Component view) {
+    public void removeImpl(int index, ClientComponent child, JComponentPanel view) {
         panel.remove(view);
     }
 
     @Override
-    public JComponent getView() {
+    public JComponentPanel getView() {
         return panel;
     }
 }

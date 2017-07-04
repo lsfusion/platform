@@ -4,6 +4,8 @@ import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.form.GroupObjectLogicsSupplier;
 import lsfusion.client.form.RmiQueue;
 import lsfusion.client.form.cell.DataPanelView;
+import lsfusion.client.form.layout.JComponentPanel;
+import lsfusion.client.logics.ClientComponent;
 import lsfusion.client.logics.ClientPropertyDraw;
 import lsfusion.client.logics.filter.ClientPropertyFilter;
 import lsfusion.interop.KeyStrokes;
@@ -18,7 +20,7 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public abstract class QueryView extends JPanel implements QueryConditionView.UIHandlers {
+public abstract class QueryView extends JComponentPanel implements QueryConditionView.UIHandlers {
     private JButton applyButton;
     private JButton addCondButton;
 
