@@ -2381,7 +2381,6 @@ contextIndependentActionDB returns [LP property, List<ResolveClassSet> signature
 }
 	:	customADB=customActionDefinitionBody { $property = $customADB.property; $signature = $customADB.signature; }
     |	abstractActionDef=abstractActionDefinition { $property = $abstractActionDef.property; $signature = $abstractActionDef.signature; needToCreateDelegate = false; } // to debug into implementation immediately, without stepping on abstract declaration
-	|	'NATIVE' '(' clist=classIdList ')' { if (inPropParseState()) { $property = null; $signature = self.createClassSetsFromClassNames($clist.ids); }}
 	;
 
 mappedForm[List<TypedParameter> context, List<TypedParameter> newContext, boolean dynamic] returns [MappedForm mapped, List<FormActionProps> props = new ArrayList<>()]
