@@ -119,6 +119,7 @@ public class GConnectionLostManager {
 
     public static class GBlockDialog extends WindowBox {
 
+        private int attempt;
         public Timer showButtonsTimer;
         private Button btnExit;
         private Button btnRelogin;
@@ -133,6 +134,7 @@ public class GConnectionLostManager {
 
         public GBlockDialog(boolean fatal, boolean showReconnect) {
             super(false, true, false, false, false);
+            this.attempt = 0;
             setGlassEnabled(true);
             this.fatal = fatal;
             lbMessage = new HTML(fatal ? messages.rmiConnectionLostFatal() : messages.rmiConnectionLostNonfatal());
@@ -238,7 +240,7 @@ public class GConnectionLostManager {
             if (fatal)
                 Window.Location.reload();
             else {
-                lbMessage.setHTML(messages.rmiConnectionLostWaitReconnect());
+                lbMessage.setHTML(messages.rmiConnectionLostWaitReconnect(attempt));
                 warningPanel.setVisible(false);
                 btnReconnect.setVisible(false);
                 center();
@@ -262,6 +264,8 @@ public class GConnectionLostManager {
                     this.fatal = fatal;
                     center();
                 }
+            } else if(!fatal && reconnectWhenFatal) {
+                lbMessage.setHTML(messages.rmiConnectionLostWaitReconnect(++attempt / 2));
             }
         }
 
