@@ -1038,12 +1038,12 @@ propertyStatement
 	        caption = $declaration.caption;
 	    }
 		'=' 
-		(	pdef=propertyDefinition[context, dynamic] { property = $pdef.property; signature = $pdef.signature; }
+		(	( 
+		        pdef=propertyDefinition[context, dynamic] { property = $pdef.property; signature = $pdef.signature; }
+            |	ciADB=contextIndependentActionDB { if(inPropParseState()) { property = $ciADB.property; signature = $ciADB.signature; } }		
+	        )
             ((opt=propertyOptions[property, propertyName, caption, context, signature] { ps = $opt.ps; } ) | ';')
-        |   (
-                aDB=listTopContextDependentActionDefinitionBody[context, dynamic, true] { if (inPropParseState()) { property = $aDB.property.property; signature = self.getClassesFromTypedParams(context); }}
-            |	ciADB=contextIndependentActionDB { if(inPropParseState()) { property = $ciADB.property; signature = $ciADB.signature; } }
-            )
+        |   aDB=listTopContextDependentActionDefinitionBody[context, dynamic, true] { if (inPropParseState()) { property = $aDB.property.property; signature = self.getClassesFromTypedParams(context); }}
             (opt=propertyOptions[property, propertyName, caption, context, signature]  { ps = $opt.ps; } )?
         )
         {
