@@ -9,10 +9,8 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
-import lsfusion.base.col.interfaces.mutable.add.MAddMap;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetKey;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImOrderValueMap;
 import lsfusion.interop.*;
@@ -132,10 +130,10 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
     private final boolean checkOnOk;
 
-    private final boolean isModal;
+    private final boolean isSync;
 
-    public boolean isModal() {
-        return isModal;
+    public boolean isSync() {
+        return isSync;
     }
 
     private final boolean manageSession;
@@ -156,11 +154,11 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                         FocusListener<T> focusListener, CustomClassListener classListener,
                         PropertyObjectInterfaceInstance computer, DataObject connection,
                         ImMap<ObjectEntity, ? extends ObjectValue> mapObjects,
-                        ExecutionStack stack, boolean isModal, Boolean noCancel, ManageSessionType manageSession, boolean checkOnOk,
+                        ExecutionStack stack, boolean isSync, Boolean noCancel, ManageSessionType manageSession, boolean checkOnOk,
                         boolean showDrop, boolean interactive,
                         ImSet<FilterEntity> contextFilters,
                         ImSet<PullChangeProperty> pullProps, boolean showReadOnly, Locale locale) throws SQLException, SQLHandledException {
-        this(entity, logicsInstance, session, securityPolicy, focusListener, classListener, computer, connection, mapObjects, stack, isModal, noCancel, manageSession, checkOnOk, showDrop, interactive, false, contextFilters, pullProps, showReadOnly, locale);
+        this(entity, logicsInstance, session, securityPolicy, focusListener, classListener, computer, connection, mapObjects, stack, isSync, noCancel, manageSession, checkOnOk, showDrop, interactive, false, contextFilters, pullProps, showReadOnly, locale);
     }
 
     public FormInstance(FormEntity<T> entity, LogicsInstance logicsInstance, DataSession session, SecurityPolicy securityPolicy,
@@ -168,12 +166,12 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                         PropertyObjectInterfaceInstance computer, DataObject connection,
                         ImMap<ObjectEntity, ? extends ObjectValue> mapObjects,
                         ExecutionStack stack,
-                        boolean isModal, Boolean noCancel, ManageSessionType manageSession, boolean checkOnOk,
-                        boolean showDrop, boolean interactive, boolean isDialog,
+                        boolean isSync, Boolean noCancel, ManageSessionType manageSession, boolean checkOnOk,
+                        boolean showDrop, boolean interactive, boolean isFloat,
                         ImSet<FilterEntity> contextFilters,
                         ImSet<PullChangeProperty> pullProps,
                         boolean showReadOnly, Locale locale) throws SQLException, SQLHandledException {
-        this.isModal = isModal;
+        this.isSync = isSync;
         this.checkOnOk = checkOnOk;
         this.showDrop = showDrop;
 
@@ -329,7 +327,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         boolean adjManageSession = manageSession != ManageSessionType.AUTO && manageSession.isManageSession();
         boolean heurReadOnly = showReadOnly || entity.hasNoChange(); // по идее при showreadonly редактирование все равно могут включить политикой безопасности, но при определении manageSession не будем на это обращать внимание
         adjManageSession = adjManageSession && !heurReadOnly; // вставить потом if manageSession == ManageSessionType.AUTO (хотя возможно и не надо)
-        environmentIncrement = createEnvironmentIncrement(isModal, isDialog, noCancel, adjManageSession, showDrop);
+        environmentIncrement = createEnvironmentIncrement(isSync, isFloat, noCancel, adjManageSession, showDrop);
         
         MExclMap<SessionDataProperty, Pair<GroupObjectInstance, GroupObjectProp>> mEnvironmentIncrementSources = MapFact.mExclMap();
         for (GroupObjectInstance groupObject : groupObjects) {
@@ -452,10 +450,10 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         }
     }
 
-    private static IncrementChangeProps createEnvironmentIncrement(boolean isModal, boolean isDialog, boolean isAdd, boolean manageSession, boolean showDrop) throws SQLException, SQLHandledException {
+    private static IncrementChangeProps createEnvironmentIncrement(boolean isSync, boolean isFloat, boolean isAdd, boolean manageSession, boolean showDrop) throws SQLException, SQLHandledException {
         IncrementChangeProps environment = new IncrementChangeProps();
-        environment.add(FormEntity.isModal, PropertyChange.<ClassPropertyInterface>STATIC(isModal));
-        environment.add(FormEntity.isDialog, PropertyChange.<ClassPropertyInterface>STATIC(isDialog));
+        environment.add(FormEntity.isSync, PropertyChange.<ClassPropertyInterface>STATIC(isSync));
+        environment.add(FormEntity.isFloat, PropertyChange.<ClassPropertyInterface>STATIC(isFloat));
         environment.add(FormEntity.isAdd, PropertyChange.<ClassPropertyInterface>STATIC(isAdd));
         environment.add(FormEntity.manageSession, PropertyChange.<ClassPropertyInterface>STATIC(manageSession));
         environment.add(FormEntity.showDrop, PropertyChange.<ClassPropertyInterface>STATIC(showDrop));

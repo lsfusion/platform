@@ -12,8 +12,8 @@ import lsfusion.server.logics.property.ExecutionContext;
 import java.sql.SQLException;
 
 public class OkActionProperty extends FormFlowActionProperty {
-    private static LCP showIf = createShowIfProperty(new CalcProperty[] {FormEntity.isModal}, new boolean[] {false});
-
+    private static LCP showIf = createShowIfProperty(new CalcProperty[] {FormEntity.isSync, FormEntity.manageSession}, new boolean[] {false, true});
+    
     public OkActionProperty(BaseLogicsModule lm) {
         super(lm);
     }

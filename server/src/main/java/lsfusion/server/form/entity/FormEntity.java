@@ -60,8 +60,8 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
 
     public static final IsFullClientFormulaProperty isFullClient = IsFullClientFormulaProperty.instance;
     public static final IsDebugFormulaProperty isDebug = IsDebugFormulaProperty.instance;
-    public static final SessionDataProperty isDialog = new SessionDataProperty(LocalizedString.create("Is dialog"), LogicalClass.instance);
-    public static final SessionDataProperty isModal = new SessionDataProperty(LocalizedString.create("Is modal"), LogicalClass.instance);
+    public static final SessionDataProperty isFloat = new SessionDataProperty(LocalizedString.create("Is dialog"), LogicalClass.instance);
+    public static final SessionDataProperty isSync = new SessionDataProperty(LocalizedString.create("Is modal"), LogicalClass.instance);
     public static final SessionDataProperty isAdd = new SessionDataProperty(LocalizedString.create("Is add"), LogicalClass.instance);
     public static final SessionDataProperty manageSession = new SessionDataProperty(LocalizedString.create("Manage session"), LogicalClass.instance);
     public static final SessionDataProperty showDrop = new SessionDataProperty(LocalizedString.create("Show drop"), LogicalClass.instance);

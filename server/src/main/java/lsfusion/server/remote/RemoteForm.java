@@ -86,7 +86,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         this.requestLock = new SequentialRequestLock();
 
         this.weakRemoteFormListener = new WeakReference<>(remoteFormListener);
-        finalizeInit(upStack, form.isModal() ? SyncType.SYNC : SyncType.NOSYNC);
+        finalizeInit(upStack, form.isSync() ? SyncType.SYNC : SyncType.NOSYNC);
 
         if (remoteFormListener != null) {
             remoteFormListener.formCreated(this);
