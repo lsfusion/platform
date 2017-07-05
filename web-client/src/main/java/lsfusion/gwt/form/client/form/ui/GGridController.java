@@ -36,8 +36,10 @@ public class GGridController {
         ResizableSimplePanel panel = new ResizableSimplePanel(table);
         panel.setStyleName("gridResizePanel");
         setupFillParent(panel.getElement(), table.getElement());
-        if(grid.autoSize) // убираем default'ый minHeight
+        if(grid.autoSize) { // убираем default'ый minHeight
             panel.getElement().getStyle().setProperty("minHeight", "0px");
+            panel.getElement().getStyle().setProperty("minWidth", "0px");
+        }
 
         gridView = layoutImpl.createGridView(grid, panel);
     }

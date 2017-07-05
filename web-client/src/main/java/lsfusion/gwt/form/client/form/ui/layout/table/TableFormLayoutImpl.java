@@ -11,6 +11,7 @@ import lsfusion.gwt.form.client.form.ui.layout.GFormLayoutImpl;
 import lsfusion.gwt.form.client.form.ui.layout.ScrollContainerView;
 import lsfusion.gwt.form.shared.view.GContainer;
 import lsfusion.gwt.form.shared.view.GGrid;
+import lsfusion.gwt.form.shared.view.GTreeGroup;
 
 public class TableFormLayoutImpl extends GFormLayoutImpl {
     @Override
@@ -47,5 +48,17 @@ public class TableFormLayoutImpl extends GFormLayoutImpl {
         gridView.setCellHeight(panel, "100%");
 
         return gridView;
+    }
+
+    @Override
+    public Panel createTreeView(GTreeGroup treeGroup, ResizableSimplePanel panel) {
+        ResizableVerticalPanel treeView = new ResizableVerticalPanel();
+        treeView.add(panel);
+
+        panel.setSize("100%", "100%");
+        treeView.setCellWidth(panel, "100%");
+        treeView.setCellHeight(panel, "100%");
+
+        return treeView;
     }
 }

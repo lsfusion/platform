@@ -10,7 +10,6 @@ import lsfusion.gwt.form.client.form.ui.layout.flex.FlexFormLayoutImpl;
 import lsfusion.gwt.form.client.form.ui.layout.table.TableCaptionPanel;
 import lsfusion.gwt.form.shared.view.GComponent;
 import lsfusion.gwt.form.shared.view.GContainer;
-import lsfusion.gwt.form.shared.view.GPropertyDraw;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -159,16 +158,21 @@ public abstract class GAbstractContainerView {
             updateLayoutListener.updateLayout();
     }
 
-    private static Integer getFlexBasis(boolean vertical, GComponent component) {
-        int preferredSize = vertical ? component.preferredHeight : component.preferredWidth;
-        if(preferredSize != -1)
+    private static Integer getPreferredSize(boolean vertical, boolean mainAxis, GComponent component) {
+        int preferredSize;
+        if (mainAxis) {
+            preferredSize = vertical ? component.preferredHeight : component.preferredWidth;    
+        } else {
+            preferredSize = vertical ? component.preferredWidth : component.preferredHeight;
+        }
+        if (preferredSize != -1)
             return preferredSize;
         return null;
     }
     public static void add(FlexPanel panel, Widget widget, int beforeIndex, GFlexAlignment alignment, double flex, GComponent component, boolean vertical) { // последний параметр временный хак для Scrollable
 //        assert alignment == component.alignment;
 //        assert flex == component.flex;
-        panel.add(widget, beforeIndex, alignment, flex, getFlexBasis(vertical, component));
+        panel.add(widget, beforeIndex, alignment, flex, getPreferredSize(vertical, true, component), getPreferredSize(vertical, false, component));
     }
 
     protected abstract void addImpl(int index, GComponent child, Widget view);

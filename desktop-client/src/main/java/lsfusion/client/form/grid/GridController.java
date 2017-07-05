@@ -237,6 +237,10 @@ public class GridController {
     public Font getFont() {
         return clientGrid.design.getFont(table);
     }
+    
+    public boolean getAutoSize() {
+        return clientGrid.autoSize;
+    }
 
     public void addView(ClientFormLayout formLayout) {
         formLayout.add(clientGrid, view);

@@ -7,6 +7,7 @@ import lsfusion.gwt.base.client.ui.ResizableSimplePanel;
 import lsfusion.gwt.form.client.form.ui.GFormController;
 import lsfusion.gwt.form.shared.view.GContainer;
 import lsfusion.gwt.form.shared.view.GGrid;
+import lsfusion.gwt.form.shared.view.GTreeGroup;
 
 public abstract class GFormLayoutImpl {
     private static GFormLayoutImpl impl;
@@ -23,4 +24,6 @@ public abstract class GFormLayoutImpl {
     public abstract void setupMainContainer(Widget mainContainerWidget);
 
     public abstract Panel createGridView(GGrid grid, ResizableSimplePanel panel);
+    
+    public abstract Panel createTreeView(GTreeGroup treeGroup, ResizableSimplePanel panel);
 }

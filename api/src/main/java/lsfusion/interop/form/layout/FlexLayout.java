@@ -4,7 +4,8 @@ import java.awt.*;
 import java.util.HashMap;
 import java.util.Map;
 
-import static lsfusion.interop.form.layout.Alignment.*;
+import static lsfusion.interop.form.layout.Alignment.CENTER;
+import static lsfusion.interop.form.layout.Alignment.LEADING;
 
 public class FlexLayout extends CachableLayout<FlexConstraints> {
 
@@ -79,9 +80,7 @@ public class FlexLayout extends CachableLayout<FlexConstraints> {
                 FlexConstraints constraints = lookupConstraints(child);
 
                 totalFlex += constraints.getFlex();
-                if (constraints.getFlex() == 0) {
-                    totalSize += vertical ? prefSize.height : prefSize.width;
-                }
+                totalSize += vertical ? prefSize.height : prefSize.width;
             }
         }
 
@@ -119,10 +118,10 @@ public class FlexLayout extends CachableLayout<FlexConstraints> {
 
                 if (vertical) {
                     width = limitedSize(align == FlexAlignment.STRETCH, prefWidth, minWidth, parentWidth);
-                    height = flex == 0 ? prefHeight : (int) (flex * fillSpace / totalFlex);
+                    height = flex == 0 ? prefHeight : prefHeight + (int) (flex * fillSpace / totalFlex);
                     xOffset = getAlignmentOffset(align, in.left, parentWidth, width);
                 } else {
-                    width = flex == 0 ? prefWidth : (int) (flex * fillSpace / totalFlex);
+                    width = flex == 0 ? prefWidth : prefWidth + (int) (flex * fillSpace / totalFlex);
                     height = limitedSize(align == FlexAlignment.STRETCH, prefHeight, minHeight, parentHeight);
                     yOffset = getAlignmentOffset(align, in.top, parentHeight, height);
                 }

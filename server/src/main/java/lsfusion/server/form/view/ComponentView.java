@@ -41,7 +41,7 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
         if(preferredSize == null) {
             ContainerView container = getContainer();
             if(container != null && container.isScroll()) {
-                return new Dimension(1, 1);
+                return new Dimension(-1, 1);
             }
         }
         return preferredSize;

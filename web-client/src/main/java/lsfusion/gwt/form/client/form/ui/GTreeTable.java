@@ -44,11 +44,14 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     private TreeTableKeyboardSelectionHandler keyboardSelectionHandler;
 
     private GTreeGroupController treeGroupController;
+    
+    private boolean autoSize;
 
-    public GTreeTable(GFormController iformController, GForm iform, GTreeGroupController treeGroupController) {
+    public GTreeTable(GFormController iformController, GForm iform, GTreeGroupController treeGroupController, boolean autoSize) {
         super(iformController, treeGroupController.getFont());
 
         this.treeGroupController = treeGroupController;
+        this.autoSize = autoSize;
 
         tree = new GTreeTableTree(iform);
         Column<GTreeGridRecord, Object> column = new Column<GTreeGridRecord, Object>(new GTreeGridControlCell(this)) {
@@ -96,6 +99,11 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         };
 
         setFixedHeaderHeight(HeaderPanel.DEFAULT_HEADER_HEIGHT);
+    }
+
+    @Override
+    protected boolean isAutoSize() {
+        return autoSize;
     }
 
     public void removeProperty(GGroupObject group, GPropertyDraw property) {

@@ -50,6 +50,8 @@ import static java.util.Collections.singletonMap;
 import static lsfusion.client.form.ClientFormController.PasteData;
 import static lsfusion.client.form.EditBindingMap.getPropertyEditActionSID;
 import static lsfusion.client.form.EditBindingMap.isEditableAwareEditEvent;
+import static lsfusion.client.form.grid.GridTable.DEFAULT_HEADER_HEIGHT;
+import static lsfusion.client.form.grid.GridTable.DEFAULT_PREFERRED_SIZE;
 
 public class TreeGroupTable extends ClientFormTreeTable implements CellTableInterface, EditPropertyHandler {
     private final EditPropertyDispatcher editDispatcher;
@@ -336,6 +338,11 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
             setOrResetPreferredColumnWidths();
         }
         super.doLayout();
+    }
+
+    @Override
+    public Dimension getPreferredScrollableViewportSize() {
+        return treeGroup.autoSize ? getPreferredSize() : DEFAULT_PREFERRED_SIZE;
     }
 
     public void setOrResetPreferredColumnWidths() {
@@ -951,7 +958,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
             @Override
             public Dimension getPreferredSize() {
                 Dimension pref = super.getPreferredSize();
-                return new Dimension(pref.width, 34);
+                return new Dimension(pref.width, DEFAULT_HEADER_HEIGHT);
             }
         };
         jxTableHeader.setReorderingAllowed(false);

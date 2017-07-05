@@ -115,6 +115,9 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
     }
 
     public void add(Widget widget, int beforeIndex, GFlexAlignment alignment, double flex, Integer flexBasis) {
+        add(widget, beforeIndex, alignment, flex, flexBasis, null);    
+    }
+    public void add(Widget widget, int beforeIndex, GFlexAlignment alignment, double flex, Integer flexBasis, Integer crossAxisSize) {
         // Detach new child.
         widget.removeFromParent();
 
@@ -126,6 +129,14 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
 
         LayoutData layoutData = impl.insertChild(parentElement, childElement, beforeIndex, alignment, flex, flexBasis);
         widget.setLayoutData(layoutData);
+
+        if (crossAxisSize != null && crossAxisSize >= 0) {
+            if (vertical) {
+                widget.setWidth(crossAxisSize + "px");
+            } else {
+                widget.setHeight(crossAxisSize + "px");
+            }
+        }
 
         // Adopt.
         adopt(widget);

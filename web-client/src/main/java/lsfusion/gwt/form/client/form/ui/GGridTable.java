@@ -1240,8 +1240,4 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
             return super.handleKeyEvent(event);
         }
     }
-
-    public int getAutoSize() {
-        return getTableBodyElement().getOffsetHeight();
-    }
 }

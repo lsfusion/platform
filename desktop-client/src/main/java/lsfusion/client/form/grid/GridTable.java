@@ -54,7 +54,10 @@ public class GridTable extends ClientPropertyTable {
 
     public static final String GOTO_LAST_ACTION = "gotoLastRow";
     public static final String GOTO_FIRST_ACTION = "gotoFirstRow";
+    
     public static final int DEFAULT_HEADER_HEIGHT = 34;
+    public static int DEFAULT_PREFERRED_HEIGHT = 130;
+    public static Dimension DEFAULT_PREFERRED_SIZE = new Dimension(130, 130 - DEFAULT_HEADER_HEIGHT); 
 
     private static final long QUICK_SEARCH_MAX_DELAY = 2000;
     private String lastQuickSearchPrefix = "";
@@ -328,6 +331,11 @@ public class GridTable extends ClientPropertyTable {
             return predefinedHeaderHeight;
         }
         return DEFAULT_HEADER_HEIGHT; 
+    }
+
+    @Override
+    public Dimension getPreferredScrollableViewportSize() {
+        return gridController.getAutoSize() ? getPreferredSize() : DEFAULT_PREFERRED_SIZE;
     }
 
     private boolean isEditOnSingleClick(int row, int col) {

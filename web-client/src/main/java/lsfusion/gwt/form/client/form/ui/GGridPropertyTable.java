@@ -125,6 +125,11 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     protected boolean isAutoSize() {
         return false;
     }
+
+    public int getAutoSize() {
+        return getTableBodyElement().getOffsetHeight();
+    }
+    
     @Override
     public Dimension getPreferredSize() {
         return new Dimension(
