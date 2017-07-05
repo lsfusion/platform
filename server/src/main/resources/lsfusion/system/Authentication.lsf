@@ -77,8 +77,8 @@ lastActivity 'Последняя активность' = DATA DATETIME (CustomUs
 ignorePrintTypeCustom 'Открывать печатные формы в интерактивном режиме' = DATA BOOLEAN (User);
 ignorePrintType() += ignorePrintTypeCustom(currentUser());
 
-calculateBase64Hash 'Вычислить Base64 хэш' = ACTION CUSTOM 'lsfusion.server.logics.authentication.CalculateBase64HashActionProperty' (STRING[10], STRING[30]);
-logOut (restart, reconnect) = ACTION CUSTOM 'lsfusion.server.logics.authentication.LogOutActionProperty' (BOOLEAN, BOOLEAN);
+calculateBase64Hash 'Вычислить Base64 хэш' = CUSTOM 'lsfusion.server.logics.authentication.CalculateBase64HashActionProperty' (STRING[10], STRING[30]);
+logOut (restart, reconnect) = CUSTOM 'lsfusion.server.logics.authentication.LogOutActionProperty' (BOOLEAN, BOOLEAN);
 shutdown 'Отключить' = {
     logOut(NULL, NULL);
 }
@@ -89,9 +89,9 @@ restart 'Выйти' = {
     logOut(TRUE, NULL);
 }
 
-relogin 'Сменить пользователя' = ACTION CUSTOM 'lsfusion.server.logics.authentication.ReloginUserActionProperty' (CustomUser);
+relogin 'Сменить пользователя' = CUSTOM 'lsfusion.server.logics.authentication.ReloginUserActionProperty' (CustomUser);
 
-generateLoginPassword 'Сгенерировать логин и пароль' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.GenerateLoginPasswordActionProperty' (CustomUser);
+generateLoginPassword 'Сгенерировать логин и пароль' = CUSTOM 'lsfusion.server.logics.property.actions.GenerateLoginPasswordActionProperty' (CustomUser);
 
 minHashLength 'Минимальное совпадение хэша пароля (символов)' = DATA INTEGER ();
 useLDAP 'Использовать LDAP аутентификацию' = DATA BOOLEAN ();
@@ -129,7 +129,7 @@ country 'Страна локали' (CustomUser user) = IF useClientLocale(user)
 timeZone 'Часовой пояс' (CustomUser user) = OVERRIDE userTimeZone(user), defaultUserTimeZone();
 twoDigitYearStart 'Первый год двумя цифрами' (CustomUser user) = OVERRIDE userTwoDigitYearStart(user), defaultUserTwoDigitYearStart();
 
-deliveredNotificationAction = ACTION ABSTRACT LIST (CustomUser);
+deliveredNotificationAction = ABSTRACT LIST (CustomUser);
 
 locked = DATA User (Object);
 lockResult = DATA LOCAL NESTED BOOLEAN ();

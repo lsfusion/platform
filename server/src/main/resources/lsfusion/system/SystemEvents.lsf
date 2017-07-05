@@ -118,7 +118,7 @@ shutdown 'Отключить' (CustomUser user) = {
 } CONFIRM;
 
 fileUserLogs = DATA CUSTOMFILE (Connection);
-userLogs () = ACTION CUSTOM 'lsfusion.server.logics.systemevents.UserLogsActionProperty' ();
+userLogs () = CUSTOM 'lsfusion.server.logics.systemevents.UserLogsActionProperty' ();
 requestUserLogs 'Запросить логи' (CustomUser user) = {
     FOR user(Connection conn) == user AND connectionStatus(conn) == ConnectionStatus.connectedConnection DO {
         NEWSESSION NEWTHREAD userLogs(); CONNECTION conn;
@@ -131,7 +131,7 @@ openUserLogs 'Открыть логи' (CustomUser user) = {
 }
 
 fileThreadDump = DATA CUSTOMFILE (Connection);
-threadDump () = ACTION CUSTOM 'lsfusion.server.logics.systemevents.ThreadDumpActionProperty' ();
+threadDump () = CUSTOM 'lsfusion.server.logics.systemevents.ThreadDumpActionProperty' ();
 requestThreadDump 'Запросить ThreadDump' (CustomUser user) = {
     FOR user(Connection conn) == user AND connectionStatus(conn) == ConnectionStatus.connectedConnection DO {
         NEWSESSION NEWTHREAD threadDump(); CONNECTION conn;
@@ -204,8 +204,8 @@ is64Java '64-битная java' (Computer computer) = is64Java(lastConnection(co
 
 countDaysClearPings 'За сколько дней хранить статистику пингов и памяти' = DATA INTEGER (); 
 
-onClientStarted = ACTION ABSTRACT LIST ();
-onWebClientStarted = ACTION ABSTRACT LIST ();
+onClientStarted = ABSTRACT LIST ();
+onWebClientStarted = ABSTRACT LIST ();
     
 EXTEND FORM options PROPERTIES countDaysClearPings();
 DESIGN options { log { MOVE PROPERTY(countDaysClearPings());} }    

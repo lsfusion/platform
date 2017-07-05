@@ -87,8 +87,8 @@ message 'Сообщение' = DATA RICHTEXT (Email);
 emlFile 'Файл EML' = DATA CUSTOMFILE (Email);
 openEMLFile 'Открыть файл EML' (Email email) = { OPEN emlFile (email); }
 
-receiveEmailAction 'Получить всю почту' = ACTION CUSTOM 'lsfusion.server.mail.ReceiveEmailActionProperty' ();
-receiveEmailAction 'Получить почту' = ACTION CUSTOM 'lsfusion.server.mail.ReceiveEmailAccountActionProperty' (Account);
+receiveEmailAction 'Получить всю почту' = CUSTOM 'lsfusion.server.mail.ReceiveEmailActionProperty' ();
+receiveEmailAction 'Получить почту' = CUSTOM 'lsfusion.server.mail.ReceiveEmailAccountActionProperty' (Account);
 
 emailSent 'Отправлено' = DATA LOCAL BOOLEAN ();
 

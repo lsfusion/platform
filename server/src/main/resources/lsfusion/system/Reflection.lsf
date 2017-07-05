@@ -209,12 +209,12 @@ sparseColumns 'Количество разреженных колонок' (tabl
 notRecalculate 'Не пересчитывать аггрегации' = DATA BOOLEAN (TableColumn);
 notRecalculate 'Не пересчитывать аггрегации' (VARISTRING[100] sid) = notRecalculate(tableColumnSID(sid));
 
-recalculateAggregation 'Пересчитать агрегации' = ACTION CUSTOM 'lsfusion.server.logics.reflection.RecalculateTableColumnActionProperty' (TableColumn);
-recalculateAggregationWithDependencies 'Пересчитать агрегации (+зависимости)' = ACTION CUSTOM 'lsfusion.server.logics.reflection.RecalculateTableColumnWithDependenciesActionProperty' (TableColumn);
-recalculateAggregationWithDependents 'Пересчитать агрегации (+зависимые)' = ACTION CUSTOM 'lsfusion.server.logics.reflection.RecalculateTableColumnWithDependentsActionProperty' (TableColumn);
-checkAggregation 'Проверить агрегации' = ACTION CUSTOM 'lsfusion.server.logics.reflection.CheckTableColumnActionProperty' (TableColumn);
+recalculateAggregation 'Пересчитать агрегации' = CUSTOM 'lsfusion.server.logics.reflection.RecalculateTableColumnActionProperty' (TableColumn);
+recalculateAggregationWithDependencies 'Пересчитать агрегации (+зависимости)' = CUSTOM 'lsfusion.server.logics.reflection.RecalculateTableColumnWithDependenciesActionProperty' (TableColumn);
+recalculateAggregationWithDependents 'Пересчитать агрегации (+зависимые)' = CUSTOM 'lsfusion.server.logics.reflection.RecalculateTableColumnWithDependentsActionProperty' (TableColumn);
+checkAggregation 'Проверить агрегации' = CUSTOM 'lsfusion.server.logics.reflection.CheckTableColumnActionProperty' (TableColumn);
 checkAggregation(VARISTRING[100] string) = { checkAggregation(tableColumnSID(string)); }
-dropDB = ACTION CUSTOM 'lsfusion.server.logics.reflection.DropColumnActionProperty' (DropColumn);
+dropDB = CUSTOM 'lsfusion.server.logics.reflection.DropColumnActionProperty' (DropColumn);
 drop 'Окончательно удалить колонку' (DropColumn cl) = {
     dropDB(cl);
     DELETE cl;
@@ -225,12 +225,12 @@ recalculateColumnsAggregations 'Пересчитать агрегации кол
         recalculateAggregation(tableColumn);    
     }
 }
-checkClasses 'Проверить классы таблицы' = ACTION CUSTOM 'lsfusion.server.logics.reflection.CheckTableClassesActionProperty' (Table);
+checkClasses 'Проверить классы таблицы' = CUSTOM 'lsfusion.server.logics.reflection.CheckTableClassesActionProperty' (Table);
 checkClasses(VARISTRING[100] string) = { checkClasses(table(string)); }
-recalculateClasses 'Пересчитать классы таблицы' = ACTION CUSTOM 'lsfusion.server.logics.reflection.RecalculateTableClassesActionProperty' (Table);
+recalculateClasses 'Пересчитать классы таблицы' = CUSTOM 'lsfusion.server.logics.reflection.RecalculateTableClassesActionProperty' (Table);
 notRecalculateStats 'Не пересчитывать статистику таблицы' = DATA BOOLEAN (Table);
 notRecalculateStats 'Не пересчитывать статистику таблицы' (VARISTRING[100] sid) = notRecalculateStats(tableSID(sid));
-recalculateStats 'Пересчитать статистику таблицы' = ACTION CUSTOM 'lsfusion.server.logics.reflection.RecalculateTableStatsActionProperty' (Table);
+recalculateStats 'Пересчитать статистику таблицы' = CUSTOM 'lsfusion.server.logics.reflection.RecalculateTableStatsActionProperty' (Table);
 
 CLASS DropColumn 'Удалённая колонка';
 TABLE dropColumn (DropColumn);

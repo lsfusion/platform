@@ -52,7 +52,7 @@ javaActionBodyExecution 'Выполнить Java-код' (Script s) = {
     TRY {
         preRunScript(s);
         NEWSESSION {
-            EVAL CONCAT ' ', 'run() = ACTION CUSTOM <\{ ', text(s), ' \}>;';
+            EVAL CONCAT ' ', 'run() = CUSTOM <\{ ', text(s), ' \}>;';
         }
     } 
 }
