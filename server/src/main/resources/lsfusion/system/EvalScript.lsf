@@ -82,9 +82,28 @@ date1 'Дата 1' = DATA DATE (Row);
 date2 'Дата 2' = DATA DATE (Row);
 date3 'Дата 3' = DATA DATE (Row);
 
+FORM scriptLog 'Скрипт'
+    OBJECTS s = Script PANEL
+    PROPERTIES(s) name, text, dateTime
+
+    EDIT Script OBJECT s
+;
+
+FORM scriptsLog 'Скрипты'
+    
+    OBJECTS s=Script
+    PROPERTIES(s) READONLY name, text, dateTimeChange, dateTime 
+    PROPERTIES(s) NEWSESSION DELETE 
+    ORDER BY dateTimeChange(s) DESC
+
+    FILTERGROUP user FILTER 'Именованные' name(s) 'F9'
+
+    LIST Script OBJECT s
+;
+
 FORM script 'Скрипт'
     OBJECTS s = Script PANEL
-    PROPERTIES(s) dateTimeChange SELECTOR, dateTime SELECTOR, name, text
+    PROPERTIES(s) name, text
     
     PROPERTIES(s) scriptExecution, actionBodyExecution, formExecution, javaActionBodyExecution
                  
@@ -100,7 +119,38 @@ createScript () = {
     }
 }
 
+copyScript 'Копировать' (Script sf) = {
+    NEW s = Script {
+        text(s) <- text(sf);
+        SEEK script.s = s;
+    }
+    IF NOT PREV(sf IS Script) THEN
+        DELETE sf;
+}
+
+findScript 'Найти' (Script sf) = {
+    DIALOG scriptsLog OBJECTS s INPUT DO {
+        IF NOT PREV(sf IS Script) THEN
+            DELETE sf;
+
+        LOCAL new = BOOLEAN();
+        new() <- NULL;
+        ASK 'Создать новый скрипт на основе выбранного ? ' DO {
+            NEW st = Script {
+                text(st) <- text(s);
+                SEEK script.s = st;
+            }
+            new () <- TRUE;
+        }
+        IF NOT new() THEN {
+            SEEK script.s = s;
+        }
+    }   
+}
+
 EXTEND FORM script
+    PROPERTIES(s) copyScript, findScript
+    
     EVENTS
         ON INIT createScript();
 ;
@@ -115,8 +165,8 @@ DESIGN script {
             NEW script {
                 caption = 'Параметры';
                 type = CONTAINERH;
-                MOVE PROPERTY(dateTimeChange(s)) { font = 'bold 24'; alignment = STRETCH; }
-                MOVE PROPERTY(dateTime(s)) { font = 'bold 24'; alignment = STRETCH; }
+                MOVE PROPERTY(copyScript(s)) { font = 'bold 24'; alignment = STRETCH; }
+                MOVE PROPERTY(findScript(s)) { font = 'bold 24'; alignment = STRETCH; }
                 MOVE PROPERTY(name(s)) { font = 'bold 24'; alignment = STRETCH; }
             }
             MOVE PROPERTY(text(s)) {
@@ -138,25 +188,6 @@ DESIGN script {
     }
     MOVE functions.box;
 }
-
-FORM scriptLog 'Скрипт'
-    OBJECTS s = Script PANEL
-    PROPERTIES(s) name, text, dateTime
-
-    EDIT Script OBJECT s
-;
-
-FORM scriptsLog 'Скрипты'
-    
-    OBJECTS s=Script
-    PROPERTIES(s) READONLY name, text, dateTimeChange, dateTime 
-    PROPERTIES(s) NEWSESSION DELETE 
-    ORDER BY dateTimeChange(s) DESC
-
-    FILTERGROUP user FILTER 'Именованные' name(s) 'F9'
-
-    LIST Script OBJECT s
-;
 
 NAVIGATOR {
     configuration {
