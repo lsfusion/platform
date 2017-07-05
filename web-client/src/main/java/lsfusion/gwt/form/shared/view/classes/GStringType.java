@@ -36,7 +36,7 @@ public class GStringType extends GDataType {
 
     @Override
     public GCompare getDefaultCompare() {
-        return GCompare.CONTAINS;
+        return caseInsensitive ? GCompare.CONTAINS : GCompare.EQUALS;
     }
 
     @Override

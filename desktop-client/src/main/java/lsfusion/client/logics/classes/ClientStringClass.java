@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static lsfusion.interop.Compare.CONTAINS;
+import static lsfusion.interop.Compare.EQUALS;
 
 public class ClientStringClass extends ClientDataClass {
 
@@ -53,7 +54,7 @@ public class ClientStringClass extends ClientDataClass {
 
     @Override
     public Compare getDefaultCompare() {
-        return CONTAINS;
+        return caseInsensitive ? CONTAINS : EQUALS;
     }
 
     public final static Map<Pair<Boolean, Boolean>, ClientTypeClass> types = new HashMap<>();
