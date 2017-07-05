@@ -2,8 +2,8 @@ MODULE ProcessUtils;
 
 REQUIRE System;
 
-getActiveJavaThreadsAction 'Обновить список java-потоков' = ACTION CUSTOM 'lsfusion.erp.utils.GetActiveJavaThreadsActionProperty' () TOOLBAR;  
-cancelActiveJavaThreadAction 'Остановить java-поток' = ACTION CUSTOM 'lsfusion.erp.utils.CancelActiveJavaThreadActionProperty' (INTEGER);  
+getActiveJavaThreadsAction 'Обновить список java-потоков' = CUSTOM 'lsfusion.erp.utils.GetActiveJavaThreadsActionProperty' () TOOLBAR;  
+cancelActiveJavaThreadAction 'Остановить java-поток' = CUSTOM 'lsfusion.erp.utils.CancelActiveJavaThreadActionProperty' (INTEGER);  
 
 idActiveJavaThread 'ID java-потока' = DATA LOCAL INTEGER (INTEGER);
 stackTraceActiveJavaThread 'След java-потока' = DATA LOCAL TEXT (INTEGER);

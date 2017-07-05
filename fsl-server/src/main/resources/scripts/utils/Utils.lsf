@@ -2,7 +2,7 @@ MODULE Utils;
 
 REQUIRE System;
 
-printToLog 'Записать в лог' = ACTION CUSTOM 'lsfusion.erp.utils.utils.PrintToLogActionProperty' (TEXT);
+printToLog 'Записать в лог' = CUSTOM 'lsfusion.erp.utils.utils.PrintToLogActionProperty' (TEXT);
 
 // --------------------------------------------- Стандартные группы --------------------------------- //
 
@@ -12,19 +12,19 @@ GROUP print 'Печатные формы' : public;
 fileName 'Список файлов' = DATA LOCAL VARISTRING[255] (INTEGER);
 fileIsDirectory 'Является директорией' = DATA LOCAL BOOLEAN (INTEGER);
 //ftp://username:password@host:port/path or file://path
-listFiles 'Получить список файлов' = ACTION CUSTOM 'lsfusion.erp.utils.utils.ListFilesActionProperty' (VARISTRING[255], VARISTRING[10]); 
+listFiles 'Получить список файлов' = CUSTOM 'lsfusion.erp.utils.utils.ListFilesActionProperty' (VARISTRING[255], VARISTRING[10]); 
 listFiles 'Получить список файлов'(VARISTRING[255] path) = { listFiles(path, 'UTF-8'); }
 
 resultCustomFile = DATA LOCAL CUSTOMFILE ();
 //value, charset, extension
-stringToCustomFile 'Запись строки в файл' = ACTION CUSTOM 'lsfusion.erp.utils.utils.StringToFileActionProperty' (VARISTRING[255], VARSTRING[10], VARSTRING[10]);
+stringToCustomFile 'Запись строки в файл' = CUSTOM 'lsfusion.erp.utils.utils.StringToFileActionProperty' (VARISTRING[255], VARSTRING[10], VARSTRING[10]);
 
-mkdir 'Создать папку' = ACTION CUSTOM 'lsfusion.erp.utils.utils.MkdirActionProperty' (VARISTRING[255]);
+mkdir 'Создать папку' = CUSTOM 'lsfusion.erp.utils.utils.MkdirActionProperty' (VARISTRING[255]);
 
 //zip files
 zipping 'Архивируемый файл' = DATA LOCAL CUSTOMFILE (VARSTRING[100]);
 zipped 'Файл архива' = DATA LOCAL CUSTOMFILE ();
-makeZipFile 'Заархивировать файлы' = ACTION CUSTOM 'lsfusion.erp.utils.utils.MakeZipFileActionProperty' ();
+makeZipFile 'Заархивировать файлы' = CUSTOM 'lsfusion.erp.utils.utils.MakeZipFileActionProperty' ();
 // --------------------------------------------- Работа со строками --------------------------------- //
 
 lower (TEXT p1) = FORMULA 'lower($1)';

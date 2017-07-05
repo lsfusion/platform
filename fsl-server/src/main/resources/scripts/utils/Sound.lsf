@@ -2,4 +2,4 @@ MODULE Sound;
 
 REQUIRE System;
 
-beep(file, async) = ACTION CUSTOM 'lsfusion.erp.utils.BeepActionProperty'(CUSTOMFILE, BOOLEAN);
+beep(file, async) = CUSTOM 'lsfusion.erp.utils.BeepActionProperty'(CUSTOMFILE, BOOLEAN);

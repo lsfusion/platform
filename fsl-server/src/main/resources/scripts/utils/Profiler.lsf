@@ -36,7 +36,7 @@ isStoppedProfiler 'Остановлен' () = NOT isStartedProfiler();
 
 onStarted() += { isStartedProfiler() <- NULL; }
 
-doStartProfiler 'Запустить профилировщик' () = ACTION CUSTOM 'lsfusion.erp.utils.StartProfilerActionProperty';
+doStartProfiler 'Запустить профилировщик' () = CUSTOM 'lsfusion.erp.utils.StartProfilerActionProperty';
 startProfiler 'Запустить профилировщик' () = {
     totalTime(ProfileObject p1, ProfileObject p2, User u, ProfileForm f) <- NULL;
     totalSQLTime(ProfileObject p1, ProfileObject p2, User u, ProfileForm f) <- NULL; 
@@ -52,7 +52,7 @@ startProfiler 'Запустить профилировщик' () = {
     doStartProfiler();
 }
 
-doStopProfiler 'Остановить профилировщик' () = ACTION CUSTOM 'lsfusion.erp.utils.StopProfilerActionProperty';
+doStopProfiler 'Остановить профилировщик' () = CUSTOM 'lsfusion.erp.utils.StopProfilerActionProperty';
 
 stopProfiler 'Остановить профилировщик' () = {
     doStopProfiler();

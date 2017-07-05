@@ -247,7 +247,7 @@ META defineNumeratedDefault (object1, object2, property, captionV, seriesV)
         }
     }
 
-    loadDefaultNumerators() += ACTION () {
+    loadDefaultNumerators() += () {
         NEW n = Numerator {
             nameNumerator(n) <- captionV;
             seriesNumerator(n) <- seriesV;
@@ -278,5 +278,5 @@ META defineNumeratedID(object, caption)
 END
 // --------------------------------------------- Стандартные значения ---------------------------- //
 
-loadDefaultNumerators 'Загрузить стандартные нумераторы' = ACTION ABSTRACT LIST ();
+loadDefaultNumerators 'Загрузить стандартные нумераторы' = ABSTRACT LIST ();
 @implementLoadDefaultData(loadDefaultNumerators);

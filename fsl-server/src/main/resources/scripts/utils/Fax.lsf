@@ -3,4 +3,4 @@ MODULE Fax;
 REQUIRE System, Utils;
 
 //text, faxNumber
-writeToFax 'Отправить на факс' = ACTION CUSTOM 'lsfusion.erp.utils.fax.WriteToFaxActionProperty' (TEXT, VARISTRING[255]);
+writeToFax 'Отправить на факс' = CUSTOM 'lsfusion.erp.utils.fax.WriteToFaxActionProperty' (TEXT, VARISTRING[255]);

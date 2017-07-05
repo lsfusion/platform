@@ -362,7 +362,7 @@ META defineDocumentInterfacePosted (object)
 END
 
 // Closed
-closeDocuments = ACTION ABSTRACT LIST (DATE);
+closeDocuments = ABSTRACT LIST (DATE);
 
 documentsClosedDate 'Дата закрытия документов' = DATA DATE();
  
@@ -412,7 +412,7 @@ END
 META defineDocumentAbstractHeaderClosed (objectClass)
     isClosed 'Закрыт' = ABSTRACT BOOLEAN(objectClass) MATERIALIZED;
     isOpened 'Не закрыт' (objectClass o) = o IS objectClass AND NOT isClosed(o) MATERIALIZED INDEXED;
-    close 'Закрыть' (o) = ACTION ABSTRACT LIST (objectClass);
+    close 'Закрыть' (o) = ABSTRACT LIST (objectClass);
 END
 
 META defineDocumentInterfaceHeaderClosed (objectClass)

@@ -2,18 +2,18 @@ MODULE Backup;
 
 REQUIRE System, Reflection, SchedulerDefaultData;
 
-makeBackup 'Создать копию'= ACTION CUSTOM 'lsfusion.erp.utils.backup.BackupActionProperty' () TOOLBAR;
+makeBackup 'Создать копию'= CUSTOM 'lsfusion.erp.utils.backup.BackupActionProperty' () TOOLBAR;
 makeBackupAction 'Создать копию' = {
     makeBackup();
     formRefresh();
 }
-makePartialBackup 'Создать копию (оперативно)'= ACTION CUSTOM 'lsfusion.erp.utils.backup.PartialBackupActionProperty' () TOOLBAR;
+makePartialBackup 'Создать копию (оперативно)'= CUSTOM 'lsfusion.erp.utils.backup.PartialBackupActionProperty' () TOOLBAR;
 makePartialBackupAction 'Создать копию (оперативно)' = {
     makePartialBackup();
     formRefresh();
 }
-save 'Скачать'= ACTION CUSTOM 'lsfusion.erp.utils.backup.SaveBackupActionProperty' (Backup) TOOLBAR;
-delete 'Удалить'= ACTION CUSTOM 'lsfusion.erp.utils.backup.DeleteBackupActionProperty' (Backup);
+save 'Скачать'= CUSTOM 'lsfusion.erp.utils.backup.SaveBackupActionProperty' (Backup) TOOLBAR;
+delete 'Удалить'= CUSTOM 'lsfusion.erp.utils.backup.DeleteBackupActionProperty' (Backup);
 
 deleteAction 'Удалить' (Backup b) = {
     delete(b);
@@ -23,13 +23,13 @@ deleteAction 'Удалить' (Backup b) = {
 saveMondayBackups 'Оставлять бэкап за понедельник (от недели до месяца)' = DATA BOOLEAN ();
 saveFirstDayBackups 'Оставлять бэкап за первое число месяца (старше месяца)' = DATA BOOLEAN ();
 maxQuantityBackups 'Максимальное число сохраняемых бэкапов' = DATA INTEGER ();
-decimateBackups 'Проредить'= ACTION CUSTOM 'lsfusion.erp.utils.backup.DecimateBackupsActionProperty' () TOOLBAR CONFIRM;
+decimateBackups 'Проредить'= CUSTOM 'lsfusion.erp.utils.backup.DecimateBackupsActionProperty' () TOOLBAR CONFIRM;
 decimateBackupsAction 'Проредить' = {
     decimateBackups();
     formRefresh();
 }
 
-customRestore 'Восстановить таблицы' = ACTION CUSTOM 'lsfusion.erp.utils.backup.CustomRestoreActionProperty' (Backup);
+customRestore 'Восстановить таблицы' = CUSTOM 'lsfusion.erp.utils.backup.CustomRestoreActionProperty' (Backup);
 inCustomRestore 'Вкл' = DATA BOOLEAN (Table);
 restoreObjects 'Восстанавливать удалённые объекты' = DATA BOOLEAN (Table);
 inCustomRestore 'Вкл' = DATA BOOLEAN (TableColumn);

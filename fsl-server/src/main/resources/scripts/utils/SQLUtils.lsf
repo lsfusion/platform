@@ -2,9 +2,9 @@ MODULE SQLUtils;
 
 REQUIRE System, Authentication, Service, Utils, Time;
 
-runSQL 'Выполнить SQL' = ACTION CUSTOM 'lsfusion.erp.utils.RunSQLScriptActionProperty' (TEXT);
+runSQL 'Выполнить SQL' = CUSTOM 'lsfusion.erp.utils.RunSQLScriptActionProperty' (TEXT);
 
-runJDBC 'Выполнить JDBC' = ACTION CUSTOM 'lsfusion.erp.utils.RunJDBCStatementActionProperty' (VARSTRING[100], TEXT);
+runJDBC 'Выполнить JDBC' = CUSTOM 'lsfusion.erp.utils.RunJDBCStatementActionProperty' (VARSTRING[100], TEXT);
 
 vacuumTableAction 'Упаковать таблицу'(Table table) = {
     runSQL('VACUUM FULL ' + sid(table));
@@ -36,7 +36,7 @@ DESIGN admin {
     }
 }
 
-changeAllDates 'Сместить время всех свойств и ключей' = ACTION CUSTOM 'lsfusion.erp.utils.ChangeAllDatesActionProperty' ();
+changeAllDates 'Сместить время всех свойств и ключей' = CUSTOM 'lsfusion.erp.utils.ChangeAllDatesActionProperty' ();
 secondsChangeAllDates 'Интервал в секундах' = DATA INTEGER ();
 
 EXTEND FORM admin PROPERTIES() changeAllDates, secondsChangeAllDates;
@@ -64,10 +64,10 @@ FORM processTypes 'Фильтры процессов'
     LIST ProcessType OBJECT t
 ;
 
-getActiveTasksAction 'Обновить список активных процессов' = ACTION CUSTOM 'lsfusion.erp.utils.GetActiveTasksActionProperty' () TOOLBAR;
-getAllTasksAction 'Обновить список всех процессов' = ACTION CUSTOM 'lsfusion.erp.utils.GetAllTasksActionProperty' () TOOLBAR;
-cancelActiveTaskAction 'Снять процесс' = ACTION CUSTOM 'lsfusion.erp.utils.CancelActiveTaskActionProperty' (INTEGER);
-killActiveTaskAction 'Убить процесс' = ACTION CUSTOM 'lsfusion.erp.utils.KillActiveTaskActionProperty' (INTEGER);
+getActiveTasksAction 'Обновить список активных процессов' = CUSTOM 'lsfusion.erp.utils.GetActiveTasksActionProperty' () TOOLBAR;
+getAllTasksAction 'Обновить список всех процессов' = CUSTOM 'lsfusion.erp.utils.GetAllTasksActionProperty' () TOOLBAR;
+cancelActiveTaskAction 'Снять процесс' = CUSTOM 'lsfusion.erp.utils.CancelActiveTaskActionProperty' (INTEGER);
+killActiveTaskAction 'Убить процесс' = CUSTOM 'lsfusion.erp.utils.KillActiveTaskActionProperty' (INTEGER);
 
 idActiveTask 'ID процесса' = DATA LOCAL INTEGER (INTEGER);
 queryActiveTask 'Запрос' = DATA LOCAL TEXT (INTEGER);
@@ -84,7 +84,7 @@ FORM activeTasks 'Активные процессы'
     FILTERS idActiveTask(i)
 ;
 
-getActiveBlocksAction 'Обновить список блокировок' = ACTION CUSTOM 'lsfusion.erp.utils.GetActiveBlocksActionProperty' () TOOLBAR;
+getActiveBlocksAction 'Обновить список блокировок' = CUSTOM 'lsfusion.erp.utils.GetActiveBlocksActionProperty' () TOOLBAR;
 
 processIdActiveBlock 'ID процесса блокировки' = DATA LOCAL INTEGER (INTEGER);
 typeLockedObjectActiveBlock 'Тип заблокированного объекта' = DATA LOCAL VARSTRING[100] (INTEGER);
@@ -104,11 +104,11 @@ CLASS StateProcess 'Статус процесса' {
     idle 'Idle in transaction'
 }
 
-updateProcessMonitorAction 'Обновить монитор процессов' = ACTION CUSTOM 'lsfusion.erp.utils.UpdateProcessMonitorActionProperty' () TOOLBAR;
-killJavaProcess 'Убить java-процесс' = ACTION CUSTOM 'lsfusion.erp.utils.KillJavaProcessActionProperty' (VARSTRING[10]);
-killSQLProcess 'Убить SQL-процесс' = ACTION CUSTOM 'lsfusion.erp.utils.KillSQLProcessActionProperty' (VARSTRING[10]);
-cancelJavaProcess 'Снять java-процесс' = ACTION CUSTOM 'lsfusion.erp.utils.CancelJavaProcessActionProperty' (VARSTRING[10]);
-cancelSQLProcess 'Снять SQL-процесс' = ACTION CUSTOM 'lsfusion.erp.utils.CancelSQLProcessActionProperty' (VARSTRING[10]);
+updateProcessMonitorAction 'Обновить монитор процессов' = CUSTOM 'lsfusion.erp.utils.UpdateProcessMonitorActionProperty' () TOOLBAR;
+killJavaProcess 'Убить java-процесс' = CUSTOM 'lsfusion.erp.utils.KillJavaProcessActionProperty' (VARSTRING[10]);
+killSQLProcess 'Убить SQL-процесс' = CUSTOM 'lsfusion.erp.utils.KillSQLProcessActionProperty' (VARSTRING[10]);
+cancelJavaProcess 'Снять java-процесс' = CUSTOM 'lsfusion.erp.utils.CancelJavaProcessActionProperty' (VARSTRING[10]);
+cancelSQLProcess 'Снять SQL-процесс' = CUSTOM 'lsfusion.erp.utils.CancelSQLProcessActionProperty' (VARSTRING[10]);
 
 processType 'Фильтр процессов'= DATA LOCAL ProcessType();
 nameProcessType 'Фильтр процессов' () = staticName(processType()) PREFCHARWIDTH 15;
@@ -135,7 +135,7 @@ dateTimeCallProcess 'Время начала вызова' = DATA LOCAL DATETIME
 idSQLProcess 'ID процесса (SQL)' = DATA LOCAL INTEGER (VARSTRING[10]);
 querySQLProcess 'Запрос (SQL)' = DATA LOCAL TEXT (VARSTRING[10]);
 fullQuerySQLProcess 'Полный запрос (SQL)' = DATA LOCAL TEXT (VARSTRING[10]);
-copyFullQuerySQLProcess 'Копировать полный запрос в буфер' (VARSTRING[10] i) = ACTION CUSTOM 'lsfusion.erp.utils.CopyFullQuerySQLProcessActionProperty' (VARSTRING[10]);
+copyFullQuerySQLProcess 'Копировать полный запрос в буфер' (VARSTRING[10] i) = CUSTOM 'lsfusion.erp.utils.CopyFullQuerySQLProcessActionProperty' (VARSTRING[10]);
 copiedFullQuerySQLProcess 'Скопированный полный запрос (SQL)' = DATA LOCAL TEXT (VARSTRING[10]);
 addressUserSQLProcess 'Адрес пользователя (SQL)' = DATA LOCAL VARSTRING[100] (VARSTRING[10]);
 dateTimeSQLProcess 'Время запуска (SQL)' = DATA LOCAL DATETIME (VARSTRING[10]);
@@ -228,10 +228,10 @@ killProcess 'Убить процесс' (VARSTRING[10] i) = {
 }
 showExtraButtons(VARSTRING[10] i) = idSQLProcess(i) AND NOT startsWith(idThreadProcess(i), 's');
                
-//test1Action = ACTION CUSTOM 'lsfusion.erp.utils.TestActionProperty'();
-//test2Action = ACTION CUSTOM 'lsfusion.erp.utils.Test2ActionProperty'();
-//test3Action = ACTION CUSTOM 'lsfusion.erp.utils.Test3ActionProperty'();
-//test4Action = ACTION CUSTOM 'lsfusion.erp.utils.Test4ActionProperty'();
+//test1Action = CUSTOM 'lsfusion.erp.utils.TestActionProperty'();
+//test2Action = CUSTOM 'lsfusion.erp.utils.Test2ActionProperty'();
+//test3Action = CUSTOM 'lsfusion.erp.utils.Test3ActionProperty'();
+//test4Action = CUSTOM 'lsfusion.erp.utils.Test4ActionProperty'();
               
 setDefaultProcessType() = {
     processType() <- ProcessType.activeSQL;
