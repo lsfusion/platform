@@ -49,7 +49,7 @@ active 'Активно' = DATA BOOLEAN (ScheduledTaskDetail);
 order 'Порядок' = DATA INTEGER (ScheduledTaskDetail);
 script 'Скрипт' = DATA TEXT (ScheduledTaskDetail);
 
-scheduledTask = DATA ScheduledTask (ScheduledTaskDetail) NOT NULL DELETE;
+scheduledTask = DATA ScheduledTask (ScheduledTaskDetail) NONULL DELETE;
 property = DATA Property (ScheduledTaskDetail);
 captionProperty 'Свойство' (ScheduledTaskDetail scheduledTaskDetail) = caption(property(scheduledTaskDetail));
 canonicalNameProperty 'Код свойства' (ScheduledTaskDetail scheduledTaskDetail) = canonicalName(property(scheduledTaskDetail));
@@ -77,7 +77,7 @@ scheduledTask 'Задание планировщика' = DATA ScheduledTask (Sc
 CLASS ScheduledClientTaskLog 'Сообщения клиента';
 TABLE scheduledClientTaskLog (ScheduledClientTaskLog);
 
-scheduledTaskLog 'Лог планировщика'= DATA ScheduledTaskLog (ScheduledClientTaskLog) NOT NULL DELETE;
+scheduledTaskLog 'Лог планировщика'= DATA ScheduledTaskLog (ScheduledClientTaskLog) NONULL DELETE;
 message 'Сообщение'= DATA TEXT (ScheduledClientTaskLog);
 lsfStack 'LSF след'= DATA TEXT (ScheduledClientTaskLog);
 date 'Время'= DATA DATETIME (ScheduledClientTaskLog);

@@ -124,7 +124,7 @@ showError (AttachmentEmail attachmentEmail) = NOT imported (attachmentEmail) OR 
                                                             AND attachmentEmail IS AttachmentEmail;
 notImported (AttachmentEmail attachmentEmail) = NOT imported (attachmentEmail) AND NOT importError(attachmentEmail)
                                                             AND attachmentEmail IS AttachmentEmail;
-email = DATA Email (AttachmentEmail) NOT NULL DELETE;
+email = DATA Email (AttachmentEmail) NONULL DELETE;
 attachmentEmail (id, email) = GROUP AGGR AttachmentEmail attachment BY id (attachment), id(email(attachment)) WHERE attachment IS AttachmentEmail; 
 name 'Имя файла' = DATA VARSTRING[255] (AttachmentEmail);
 file 'Файл' = DATA CUSTOMFILE (AttachmentEmail);

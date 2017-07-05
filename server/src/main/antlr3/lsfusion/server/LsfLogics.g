@@ -2037,7 +2037,7 @@ notNullSetting returns [DebugInfo.DebugPoint debugPoint, BooleanDebug toResolve 
 @init {
     $debugPoint = getEventDebugPoint();
 }
-	:	'NOT' 'NULL'
+	:	'NONULL'
 	    (dt = notNullDeleteSetting { $toResolve = new BooleanDebug($dt.debugPoint); })?
 	    et=baseEvent { $event = $et.event; }
 	;
