@@ -880,6 +880,10 @@ public class ScriptingLogicsModule extends LogicsModule {
         property.setImage(path);
     }
 
+    public void setDefaultCompare(LP property, String defaultCompare) {
+        property.setDefaultCompare(defaultCompare);
+    }
+
     public void setEditKey(LP property, String code, Boolean showEditKey) {
         property.setEditKey(KeyStroke.getKeyStroke(code));
         if (showEditKey != null)

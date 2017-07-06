@@ -18,6 +18,7 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.col.lru.LRUSVSMap;
 import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.interop.ClassViewType;
+import lsfusion.interop.Compare;
 import lsfusion.interop.form.ServerResponse;
 import lsfusion.server.Settings;
 import lsfusion.server.caches.IdentityLazy;
@@ -610,6 +611,9 @@ public abstract class Property<T extends PropertyInterface> extends AbstractProp
         private String iconPath;
 
         // для всех
+        private Compare defaultCompare;
+
+        // для всех
         private KeyStroke editKey;
         private Boolean showEditKey;
 
@@ -732,6 +736,14 @@ public abstract class Property<T extends PropertyInterface> extends AbstractProp
         public void setImage(String iconPath) {
             this.setIconPath(iconPath);
             setImage(new ImageIcon(Property.class.getResource("/images/" + iconPath)));
+        }
+
+        public Compare getDefaultCompare() {
+            return defaultCompare;
+        }
+
+        public void setDefaultCompare(String defaultCompare) {
+            this.defaultCompare = PropertyUtils.stringToCompare(defaultCompare);
         }
 
 

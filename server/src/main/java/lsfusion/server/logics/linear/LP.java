@@ -127,6 +127,10 @@ public abstract class LP<T extends PropertyInterface, P extends Property<T>> {
         property.drawOptions.setImage(name);
     }
 
+    public void setDefaultCompare(String defaultCompare) {
+        property.drawOptions.setDefaultCompare(defaultCompare);
+    }
+
     public void setEditKey(KeyStroke editKey) {
         property.drawOptions.setEditKey(editKey);
     }

@@ -9,6 +9,7 @@ import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
+import lsfusion.interop.Compare;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
@@ -151,6 +152,35 @@ public class PropertyUtils {
             if (param instanceof Integer)
                 intNum = Math.max(intNum, (Integer) param);
         return intNum;
+    }
+
+    public static Compare stringToCompare(String compare) {
+        switch (compare) {
+            case "EQUALS":
+                return Compare.EQUALS;
+            case "GREATER":
+                return Compare.GREATER;
+            case "LESS":
+                return Compare.LESS;
+            case "GREATER_EQUALS":
+                return Compare.GREATER_EQUALS;
+            case "LESS_EQUALS":
+                return Compare.LESS_EQUALS;
+            case "NOT_EQUALS":
+                return Compare.NOT_EQUALS;
+            case "START_WITH":
+                return Compare.START_WITH;
+            case "CONTAINS":
+                return Compare.CONTAINS;
+            case "ENDS_WITH":
+                return Compare.ENDS_WITH;
+            case "LIKE":
+                return Compare.LIKE;
+            case "INARRAY":
+                return Compare.INARRAY;
+            default:
+                return null;
+        }
     }
 
     public static <P extends PropertyInterface> ActionPropertyImplement<P, CalcPropertyInterfaceImplement<P>> mapActionImplement(LAP<P> property, ImList<CalcPropertyInterfaceImplement<P>> propImpl) {

@@ -1983,6 +1983,7 @@ semiPropertyOption[LP property, String propertyName, LocalizedString caption, Pr
         |	minCharWidthSetting [property]
         |	maxCharWidthSetting [property]
         |	prefCharWidthSetting [property]
+        |   defaultCompareSetting [property]
         |	imageSetting [property]
         |	editKeySetting [property]
         |	autosetSetting [property]
@@ -2117,6 +2118,16 @@ imageSetting [LP property]
 }
 	:	'IMAGE' path = stringLiteral
 	;
+
+defaultCompareSetting [LP property]
+@after {
+	if (inPropParseState()) {
+		self.setDefaultCompare(property, $defaultCompare.val);
+	}
+}
+	:	'DEFAULTCOMPARE' defaultCompare = stringLiteral
+	;
+
 
 editKeySetting [LP property]
 @init {

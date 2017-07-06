@@ -5,6 +5,7 @@ import lsfusion.server.classes.DateClass;
 import lsfusion.server.classes.IntegralClass;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.form.view.PropertyDrawView;
+import lsfusion.server.logics.PropertyUtils;
 import lsfusion.server.logics.i18n.LocalizedString;
 
 import javax.swing.*;
@@ -62,41 +63,7 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
     }
 
     public void setDefaultCompare(String defaultCompare) {
-        switch (defaultCompare) {
-            case "EQUALS":
-                target.defaultCompare = Compare.EQUALS;
-                break;
-            case "GREATER":
-                target.defaultCompare = Compare.GREATER;
-                break;
-            case "LESS":
-                target.defaultCompare = Compare.LESS;
-                break;
-            case "GREATER_EQUALS":
-                target.defaultCompare = Compare.GREATER_EQUALS;
-                break;
-            case "LESS_EQUALS":
-                target.defaultCompare = Compare.LESS_EQUALS;
-                break;
-            case "NOT_EQUALS":
-                target.defaultCompare = Compare.NOT_EQUALS;
-                break;
-            case "START_WITH":
-                target.defaultCompare = Compare.START_WITH;
-                break;
-            case "CONTAINS":
-                target.defaultCompare = Compare.CONTAINS;
-                break;
-            case "ENDS_WITH":
-                target.defaultCompare = Compare.ENDS_WITH;
-                break;
-            case "LIKE":
-                target.defaultCompare = Compare.LIKE;
-                break;
-            case "INARRAY":
-                target.defaultCompare = Compare.INARRAY;
-                break;
-        }
+        target.defaultCompare = PropertyUtils.stringToCompare(defaultCompare);
     }
 
     public void setMinimumCharWidth(int minimumCharWidth) {
