@@ -691,7 +691,10 @@ public abstract class Property<T extends PropertyInterface> extends AbstractProp
                 setImage(options.image);
                 setIconPath(options.iconPath);
             }
-            
+
+            if(defaultCompare == null)
+                setDefaultCompare(options.defaultCompare);
+
             if(regexp == null)
                 setRegexp(options.regexp);
             if(regexpMessage == null)
@@ -744,6 +747,10 @@ public abstract class Property<T extends PropertyInterface> extends AbstractProp
 
         public void setDefaultCompare(String defaultCompare) {
             this.defaultCompare = PropertyUtils.stringToCompare(defaultCompare);
+        }
+
+        public void setDefaultCompare(Compare defaultCompare) {
+            this.defaultCompare = defaultCompare;
         }
 
 
