@@ -88,8 +88,12 @@ import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
 
-import java.io.*;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -2313,8 +2317,15 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
                         LogInfo logInfo = thread == null ? null : ThreadLocalContext.logInfoMap.get(thread);
                         String computer = logInfo == null ? null : logInfo.hostnameComputer;
                         String user = logInfo == null ? null : logInfo.userName;
+                        String userRole = logInfo == null ? null : logInfo.userRole;
+                        String threadName = "";
+                        ThreadInfo threadInfo;
+                        threadInfo = tBean.getThreadInfo(thread.getId());
+                        if (threadInfo != null) {
+                            threadName = threadInfo.getThreadName();
+                        }
 
-                        infos.add(new AllocatedInfo(user, computer, bEntry.getKey(), deltaBytes, userMissed, userHit, userHitMap, userMissedMap));
+                        infos.add(new AllocatedInfo(user, userRole, computer, threadName, bEntry.getKey(), deltaBytes, userMissed, userHit, userHitMap, userMissedMap));
                     }
                 }
             }
@@ -2514,7 +2525,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
 
     private class AllocatedInfo {
         private final String user;
+        private final String userRole;
         private final String computer;
+        private final String threadName;
         private final Long pid;
         private final Long bytes;
         private final long userMissed;
@@ -2522,9 +2535,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         private final HashMap<CacheType, Long> userHitMap;
         private final HashMap<CacheType, Long> userMissedMap;
 
-        AllocatedInfo(String user, String computer, Long pid, Long bytes, long userMissed, long userHit, HashMap<CacheType, Long> userHitMap, HashMap<CacheType, Long> userMissedMap) {
+        AllocatedInfo(String user, String userRole, String computer, String threadName, Long pid, Long bytes, long userMissed, long userHit, HashMap<CacheType, Long> userHitMap, HashMap<CacheType, Long> userMissedMap) {
             this.user = user;
+            this.userRole = userRole;
             this.computer = computer;
+            this.threadName = threadName;
             this.pid = pid;
             this.bytes = bytes;
             this.userMissed = userMissed;
@@ -2535,12 +2550,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
 
         @Override
         public String toString() {
-            String userMessage;
-            if (user == null) {
-                userMessage = String.format("PID %s: %s", pid, humanReadableByteCount(bytes));
-            } else {
-                userMessage = String.format("PID %s, %s, Comp. %s, User %s", pid,
-                        humanReadableByteCount(bytes), computer == null ? "unknown" : computer, user);
+            String userMessage = String.format("PID %s: %s, Thread %s", pid, humanReadableByteCount(bytes), threadName);
+            if (user != null) {
+                userMessage += String.format(", Comp. %s, User %s, Role %s", computer == null ? "unknown" : computer, user, userRole);
             }
             userMessage += String.format(", missed-hit: All: %s-%s, %s", userMissed, userHit, getStringMap(userHitMap, userMissedMap));
 
