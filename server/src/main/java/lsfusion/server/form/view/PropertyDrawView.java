@@ -8,8 +8,10 @@ import lsfusion.interop.Compare;
 import lsfusion.interop.form.ReportConstants;
 import lsfusion.interop.form.screen.ExternalScreen;
 import lsfusion.interop.form.screen.ExternalScreenConstraints;
+import lsfusion.server.Settings;
 import lsfusion.server.auth.ChangePropertySecurityPolicy;
 import lsfusion.server.classes.ActionClass;
+import lsfusion.server.classes.StringClass;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.type.Type;
@@ -309,7 +311,9 @@ public class PropertyDrawView extends ComponentView {
     }
 
     private void serializeCompare(DataOutputStream outStream) throws IOException {
-        if(defaultCompare != null)
+        if(Settings.get().isDefaultCompareForStringContains() && entity.propertyObject.property.getType() instanceof StringClass)
+            Compare.CONTAINS.serialize(outStream);
+        else if(defaultCompare != null)
             defaultCompare.serialize(outStream);
         else if(entity.propertyObject.property.drawOptions.getDefaultCompare() != null)
             entity.propertyObject.property.drawOptions.getDefaultCompare().serialize(outStream);

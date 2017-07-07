@@ -2226,4 +2226,14 @@ public class Settings {
     public void setUseGroupLastOpt(int useGroupLastOpt) {
         this.useGroupLastOpt = useGroupLastOpt;
     }
+
+    private boolean defaultCompareForStringContains = false;
+
+    public boolean isDefaultCompareForStringContains() {
+        return defaultCompareForStringContains;
+    }
+
+    public void setDefaultCompareForStringContains(boolean defaultCompareForStringContains) {
+        this.defaultCompareForStringContains = defaultCompareForStringContains;
+    }
 }
