@@ -311,7 +311,7 @@ public class PropertyDrawView extends ComponentView {
     }
 
     private void serializeCompare(DataOutputStream outStream) throws IOException {
-        if(Settings.get().isDefaultCompareForStringContains() && entity.propertyObject.property.getType() instanceof StringClass)
+        if(Settings.get().isDefaultCompareForStringContains() && getType() instanceof StringClass)
             Compare.CONTAINS.serialize(outStream);
         else if(defaultCompare != null)
             defaultCompare.serialize(outStream);
