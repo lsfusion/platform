@@ -41,8 +41,8 @@ public class StartProfilerActionProperty extends ScriptingActionProperty {
 
             KeyExpr formKey = new KeyExpr("ProfileForm");
             QueryBuilder<Object, Object> queryF = new QueryBuilder<>(MapFact.singletonRev((Object) "ProfileForm", formKey));
-            queryF.addProperty("formCN", findProperty("canonicalName[NavigatorElement]").getExpr(context.getModifier(), formKey));
-            queryF.and(findProperty("dataFilter[ProfileForm]").getExpr(context.getModifier(), formKey).getWhere());
+            queryF.addProperty("formCN", findProperty("canonicalName[Form]").getExpr(context.getModifier(), formKey));
+            queryF.and(findProperty("dataFilter[Form]").getExpr(context.getModifier(), formKey).getWhere());
             ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> resultF = queryF.execute(context.getSession());
 
             profileForms = new HashSet<>();
