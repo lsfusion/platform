@@ -3,6 +3,7 @@ package lsfusion.server.logics;
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.SystemUtils;
+import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
@@ -15,6 +16,8 @@ import lsfusion.server.classes.LongClass;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.KeyField;
 import lsfusion.server.data.PropertyField;
+import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.form.entity.FormEntity;
@@ -26,6 +29,7 @@ import lsfusion.server.integration.*;
 import lsfusion.server.lifecycle.LifecycleEvent;
 import lsfusion.server.lifecycle.LogicsManager;
 import lsfusion.server.logics.linear.LCP;
+import lsfusion.server.logics.linear.LP;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.group.AbstractGroup;
 import lsfusion.server.logics.property.group.AbstractNode;
@@ -119,8 +123,23 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
         synchronizeNavigatorElements(reflectionLM.form, FormEntity.class, false, reflectionLM.isForm);
         synchronizeNavigatorElements(reflectionLM.navigatorAction, NavigatorAction.class, true, reflectionLM.isNavigatorAction);
         synchronizeNavigatorElements(reflectionLM.navigatorElement, NavigatorElement.class, true, reflectionLM.isNavigatorElement);
+        
+        // todo [dale]: Изменится в дальнейшем, нужно для перехода на новую логику
+        updateFormsCanonicalNames();
     }
 
+    private void updateFormsCanonicalNames() {
+        try (DataSession session = createSyncSession()) {
+            LP prop = reflectionLM.formCanonicalName;
+            KeyExpr key = new KeyExpr("key");
+            PropertyChange change = new PropertyChange(MapFact.singletonRev(prop.listInterfaces.single(), key), reflectionLM.canonicalNameNavigatorElement.getExpr(key), key.isClass(reflectionLM.form));
+            session.changeProperty((DataProperty) prop.property, change);
+            session.apply(businessLogics, getStack());
+        } catch (SQLException | SQLHandledException  e) {
+            throw new RuntimeException(e);
+        }
+    }
+    
     private void synchronizeNavigatorElements(ConcreteCustomClass elementCustomClass, Class<? extends NavigatorElement> filterJavaClass, boolean exactJavaClass, LCP deleteLP) {
 
         startLogger.info("synchronizeNavigatorElements collecting data started");

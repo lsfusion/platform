@@ -17,20 +17,28 @@ propertyGroup 'Свойство' (sID) = GROUP AGGR PropertyGroup propertyGroup 
 
 CLASS NavigatorElement 'Элемент навигатора';
 CLASS NavigatorAction 'Действие' : NavigatorElement;
-CLASS ProfileForm  {
-    noForm 'NoForm'    
+CLASS Form 'Форма' {
+    noForm 'NoForm'
 } : NavigatorElement;
-CLASS Form 'Форма' : ProfileForm;
+
 TABLE navigatorElement (NavigatorElement);
 TABLE navigatorElementNavigatorElement(NavigatorElement, NavigatorElement);
+TABLE form (Form);
 
 caption 'Название формы' = DATA VARSTRING[250] (NavigatorElement);
 sid 'Код формы' = DATA VARSTRING[50] (NavigatorElement);
 canonicalName 'Каноническое имя формы' = DATA VARSTRING[100] (NavigatorElement);
+canonicalName 'Каноническое имя формы' = DATA VARSTRING[100] (Form);
+
 number 'Номер' = DATA INTEGER (NavigatorElement);
 navigatorElement 'Форма' (sID) = GROUP AGGR NavigatorElement navigatorElement BY sid(navigatorElement) WHERE navigatorElement IS NavigatorElement;
+
 TABLE navigatorElementNames (VARSTRING[100]);
+TABLE formNames (VARSTRING[100]);
+
 navigatorElementCanonicalName 'Форма' (sid) = GROUP AGGR NavigatorElement navigatorElement BY canonicalName(navigatorElement) WHERE navigatorElement IS NavigatorElement MATERIALIZED TABLE navigatorElementNames; // для profiler'а
+form 'Форма' (VARSTRING[100] name) = GROUP AGGR Form form BY canonicalName(form) WHERE form IS Form MATERIALIZED TABLE formNames; 
+
 parent 'Родит. форма' = DATA NavigatorElement (NavigatorElement);
 is (NavigatorElement navigatorElement) = navigatorElement IS NavigatorElement AND NOT navigatorElement IS Form AND NOT navigatorElement IS NavigatorAction;
 is (Form form) = form IS Form;
