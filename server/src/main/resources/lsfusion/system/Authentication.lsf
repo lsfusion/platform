@@ -74,6 +74,8 @@ forbidChangePassword 'Запретить пользователю изменят
 forbidEditProfile 'Запретить пользователю редактировать профиль' = ABSTRACT BOOLEAN (CustomUser);
 
 lastActivity 'Последняя активность' = DATA DATETIME (CustomUser);
+lastComputer 'Рабочее место' = DATA Computer (CustomUser);
+hostnameLastComputer 'Рабочее место' (CustomUser user) = hostname(lastComputer(user));
 ignorePrintTypeCustom 'Открывать печатные формы в интерактивном режиме' = DATA BOOLEAN (User);
 ignorePrintType() += ignorePrintTypeCustom(currentUser());
 
@@ -167,7 +169,7 @@ FORM customUser 'Пользователь'
     OBJECTS u=CustomUser PANEL
     PROPERTIES(u) firstName, lastName, login,
     sha256Password ON CHANGE changeSHA256Password(u), email,
-    isLocked, lastActivity, ignorePrintTypeCustom, useBusyDialogCustom, useRequestTimeout,
+    isLocked, lastActivity, hostnameLastComputer, ignorePrintTypeCustom, useBusyDialogCustom, useRequestTimeout,
     allowExcessAllocatedBytes, language, country, timeZone, twoDigitYearStart, clientLanguage, clientCountry, useClientLocale
 
     EDIT CustomUser OBJECT u
@@ -199,7 +201,7 @@ FORM customUsers 'Пользователи'
     PROPERTIES(u) NEWSESSION useBusyDialogCustom, useRequestTimeout, allowExcessAllocatedBytes,
                   language, userLanguage, clientLanguage, country, userCountry, clientCountry, useClientLocale, 
                   timeZone, userTimeZone, twoDigitYearStart, userTwoDigitYearStart, isLocked READONLY,
-                  lastActivity, NEW, edit , DELETE 
+                  lastActivity, hostnameLastComputer, NEW, edit , DELETE 
 
     PROPERTIES() useLDAP, serverLDAP, portLDAP, baseDNLDAP, userDNSuffixLDAP, minHashLength, defaultUserLanguage, defaultUserCountry
 ;

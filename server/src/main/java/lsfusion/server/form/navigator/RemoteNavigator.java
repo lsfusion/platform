@@ -44,10 +44,7 @@ import lsfusion.server.logics.SecurityManager;
 import lsfusion.server.logics.property.ActionProperty;
 import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.ClassPropertyInterface;
-import lsfusion.server.remote.ContextAwarePendingRemoteObject;
-import lsfusion.server.remote.RemoteForm;
-import lsfusion.server.remote.RemoteLoggerAspect;
-import lsfusion.server.remote.RemotePausableInvocation;
+import lsfusion.server.remote.*;
 import lsfusion.server.session.DataSession;
 import lsfusion.server.session.ExecutionEnvironment;
 import org.apache.log4j.Logger;
@@ -602,15 +599,16 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
     public static void updateUserLastActivity(BusinessLogics businessLogics, ExecutionStack stack) {
         try {
 
-            Map<Integer, Long> userActivityMap;
+            Map<Integer, UserActivity> userActivityMap;
             userActivityMap = new HashMap<>(RemoteLoggerAspect.userActivityMap);
             RemoteLoggerAspect.userActivityMap.clear();
 
             try (DataSession session = ThreadLocalContext.getDbManager().createSession()) {
 
-                for (Map.Entry<Integer, Long> userActivity : userActivityMap.entrySet()) {
+                for (Map.Entry<Integer, UserActivity> userActivity : userActivityMap.entrySet()) {
                     DataObject customUserObject = new DataObject(userActivity.getKey(), businessLogics.authenticationLM.customUser);
-                    businessLogics.authenticationLM.lastActivityCustomUser.change(new Timestamp(userActivity.getValue()), session, customUserObject);
+                    businessLogics.authenticationLM.lastActivityCustomUser.change(new Timestamp(userActivity.getValue().time), session, customUserObject);
+                    businessLogics.authenticationLM.lastComputerCustomUser.change(userActivity.getValue().computer, session, customUserObject);
 
                 }
                 String result = session.applyMessage(businessLogics, stack);

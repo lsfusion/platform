@@ -36,6 +36,7 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
     public LCP sha256PasswordCustomUser;
     public LCP calculatedHash;
     public LCP lastActivityCustomUser;
+    public LCP lastComputerCustomUser;
     public LCP ignorePrintTypeCustomUser;
     public LCP currentUser;
     public LCP currentUserName;
@@ -125,6 +126,7 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
         calculatedHash = findProperty("calculatedHash[]");
 
         lastActivityCustomUser = findProperty("lastActivity[CustomUser]");
+        lastComputerCustomUser = findProperty("lastComputer[CustomUser]");
         ignorePrintTypeCustomUser = findProperty("ignorePrintTypeCustom[User]");
 
         minHashLength = findProperty("minHashLength[]");

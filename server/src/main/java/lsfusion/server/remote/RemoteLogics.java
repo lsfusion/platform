@@ -380,6 +380,10 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
         return dbManager.getSystemUserObject();
     }
 
+    public Integer getCurrentComputer() {
+        return (Integer) dbManager.getServerComputerObject(getStack()).getValue();
+    }
+
     @Override
     protected boolean isEnabledUnreferenced() { // иначе когда отключаются все клиенты логика закрывается
         return false;

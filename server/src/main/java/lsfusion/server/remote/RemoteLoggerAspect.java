@@ -18,7 +18,7 @@ import java.util.Map;
 public class RemoteLoggerAspect {
     private final static Logger logger = ServerLoggers.remoteLogger;
 
-    public static final Map<Integer, Long> userActivityMap = MapFact.getGlobalConcurrentHashMap();
+    public static final Map<Integer, UserActivity> userActivityMap = MapFact.getGlobalConcurrentHashMap();
     public static final Map<Integer, Map<Long, List<Long>>> pingInfoMap = MapFact.getGlobalConcurrentHashMap();
     private static final Map<Long, Timestamp> dateTimeCallMap = MapFact.getGlobalConcurrentHashMap();
     private static Map<Integer, Boolean> remoteLoggerDebugEnabled = MapFact.getGlobalConcurrentHashMap();
@@ -33,18 +33,21 @@ public class RemoteLoggerAspect {
         putDateTimeCall(id, new Timestamp(System.currentTimeMillis()));
         try {
             Integer user;
+            Integer computer = null;
             if (target instanceof RemoteLogics) {
                 user = ((RemoteLogics) target).getCurrentUser();
+                computer = ((RemoteLogics) target).getCurrentComputer();
             } else if (target instanceof RemoteForm) {
-                user = ((RemoteForm) target).getCurrentUser();
+                user = ((RemoteForm) target).getCurrentComputer();
             } else {
                 user = (Integer) ((RemoteNavigator) target).getUser().object;
+                computer = (Integer) ((RemoteNavigator) target).getComputer().object;
             }
             long startTime = System.currentTimeMillis();
             Object result = thisJoinPoint.proceed();
             long runTime = System.currentTimeMillis() - startTime;
 
-            userActivityMap.put(user, startTime);
+            userActivityMap.put(user, new UserActivity(computer, startTime));
 
             boolean debugEnabled = user != null && isRemoteLoggerDebugEnabled(user);
 
