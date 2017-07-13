@@ -204,7 +204,7 @@ public class EmailReceiver {
         //options to increase downloading big attachments
         mailProps.put("mail.imaps.partialfetch", "true");
         mailProps.put("mail.imaps.fetchsize", "819200");
-        if(!isPOP3) { //imaps
+        if (!isPOP3) { //imaps
             MailSSLSocketFactory socketFactory = new MailSSLSocketFactory();
             socketFactory.setTrustAllHosts(true);
             mailProps.put("mail.imaps.ssl.socketFactory", socketFactory);
@@ -212,58 +212,71 @@ public class EmailReceiver {
         }
         Session emailSession = Session.getInstance(mailProps);
         Store emailStore = emailSession.getStore(isPOP3 ? "pop3" : "imaps");
-        if(receivePortAccount != null)
+        if (receivePortAccount != null)
             emailStore.connect(receiveHostAccount, receivePortAccount, nameAccount, passwordAccount);
         else
             emailStore.connect(receiveHostAccount, nameAccount, passwordAccount);
 
-        Folder emailFolder = emailStore.getFolder("INBOX");
-        emailFolder.open(Folder.READ_WRITE);
+        List<Folder> folders = getSubFolders(emailStore.getFolder("INBOX"));
 
-        Timestamp dateTimeReceivedEmail = new Timestamp(Calendar.getInstance().getTime().getTime());
-        Timestamp minDateTime = null;
-        if(lastDaysAccount != null) {
-            Calendar calendar = Calendar.getInstance();
-            calendar.add(Calendar.DATE, -lastDaysAccount);
-            minDateTime = new Timestamp(calendar.getTime().getTime());
-        }
+        for (Folder emailFolder : folders) {
 
-        Message[] messages = emailFolder.getMessages();
-        ServerLoggers.mailLogger.info(String.format("Account %s: found %s emails", nameAccount, messages.length));
-        for (Message message : messages) {
-            Timestamp dateTimeSentEmail = getSentDate(message);
-            if(minDateTime == null || dateTimeSentEmail == null || minDateTime.compareTo(dateTimeSentEmail) <= 0) {
-                String fromAddressEmail = ((InternetAddress) message.getFrom()[0]).getAddress();
-                String subjectEmail = message.getSubject();
-                String idEmail = getEmailId(dateTimeSentEmail, fromAddressEmail, subjectEmail);
-                if(!skipEmails.contains(idEmail)) {
-                    message.setFlag(deleteMessagesAccount ? Flags.Flag.DELETED : Flags.Flag.SEEN, true);
-                    Object messageContent = getEmailContent(message);
-                    MultipartBody messageEmail = messageContent instanceof Multipart ? getMultipartBody(subjectEmail, (Multipart) messageContent, unpack) :
-                            messageContent instanceof BASE64DecoderStream ? getMultipartBody64(subjectEmail, (BASE64DecoderStream) messageContent, decodeFileName(message.getFileName()), unpack) :
-                                    messageContent instanceof String ? new MultipartBody((String) messageContent, null) : null;
-                    if (messageEmail == null) {
-                        messageEmail = new MultipartBody(messageContent == null ? null : String.valueOf(messageContent), null);
-                        ServerLoggers.mailLogger.error("Warning: missing attachment '" + messageContent + "' from email '" + subjectEmail + "'");
-                    }
-                    byte[] emlFileEmail = BaseUtils.mergeFileAndExtension(getEMLByteArray(message), "eml".getBytes());
-                    dataEmails.add(Arrays.asList((Object) idEmail, dateTimeSentEmail, dateTimeReceivedEmail,
-                            fromAddressEmail, nameAccount, subjectEmail, messageEmail.message, emlFileEmail));
-                    int counter = 1;
-                    if (messageEmail.attachments != null) {
-                        for (Map.Entry<String, byte[]> entry : messageEmail.attachments.entrySet()) {
-                            dataAttachments.add(Arrays.asList((Object) idEmail, String.valueOf(counter), entry.getKey(), entry.getValue()));
-                            counter++;
+            emailFolder.open(Folder.READ_WRITE);
+
+            Timestamp dateTimeReceivedEmail = new Timestamp(Calendar.getInstance().getTime().getTime());
+            Timestamp minDateTime = null;
+            if (lastDaysAccount != null) {
+                Calendar calendar = Calendar.getInstance();
+                calendar.add(Calendar.DATE, -lastDaysAccount);
+                minDateTime = new Timestamp(calendar.getTime().getTime());
+            }
+
+            Message[] messages = emailFolder.getMessages();
+            ServerLoggers.mailLogger.info(String.format("Account %s, folder %s: found %s emails", nameAccount, emailFolder.getFullName(), messages.length));
+            for (Message message : messages) {
+                Timestamp dateTimeSentEmail = getSentDate(message);
+                if (minDateTime == null || dateTimeSentEmail == null || minDateTime.compareTo(dateTimeSentEmail) <= 0) {
+                    String fromAddressEmail = ((InternetAddress) message.getFrom()[0]).getAddress();
+                    String subjectEmail = message.getSubject();
+                    String idEmail = getEmailId(dateTimeSentEmail, fromAddressEmail, subjectEmail);
+                    if (!skipEmails.contains(idEmail)) {
+                        message.setFlag(deleteMessagesAccount ? Flags.Flag.DELETED : Flags.Flag.SEEN, true);
+                        Object messageContent = getEmailContent(message);
+                        MultipartBody messageEmail = messageContent instanceof Multipart ? getMultipartBody(subjectEmail, (Multipart) messageContent, unpack) :
+                                messageContent instanceof BASE64DecoderStream ? getMultipartBody64(subjectEmail, (BASE64DecoderStream) messageContent, decodeFileName(message.getFileName()), unpack) :
+                                        messageContent instanceof String ? new MultipartBody((String) messageContent, null) : null;
+                        if (messageEmail == null) {
+                            messageEmail = new MultipartBody(messageContent == null ? null : String.valueOf(messageContent), null);
+                            ServerLoggers.mailLogger.error("Warning: missing attachment '" + messageContent + "' from email '" + subjectEmail + "'");
+                        }
+                        byte[] emlFileEmail = BaseUtils.mergeFileAndExtension(getEMLByteArray(message), "eml".getBytes());
+                        dataEmails.add(Arrays.asList((Object) idEmail, dateTimeSentEmail, dateTimeReceivedEmail,
+                                fromAddressEmail, nameAccount, subjectEmail, messageEmail.message, emlFileEmail));
+                        int counter = 1;
+                        if (messageEmail.attachments != null) {
+                            for (Map.Entry<String, byte[]> entry : messageEmail.attachments.entrySet()) {
+                                dataAttachments.add(Arrays.asList((Object) idEmail, String.valueOf(counter), entry.getKey(), entry.getValue()));
+                                counter++;
+                            }
                         }
                     }
                 }
             }
-        }
 
-        emailFolder.close(true);
+            emailFolder.close(true);
+        }
         emailStore.close();
 
         return Arrays.asList(dataEmails, dataAttachments);
+    }
+
+    private List<Folder> getSubFolders(Folder folder) throws MessagingException {
+        List<Folder> folders = new ArrayList<>();
+        folders.add(folder);
+        for (Folder f : folder.list()) {
+            folders.addAll(getSubFolders(f));
+        }
+        return folders;
     }
 
     private Object getEmailContent(Message email) throws IOException, MessagingException {
