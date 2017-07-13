@@ -163,11 +163,11 @@ DESIGN scheduledTask {
     NEW specContainer {
         fill = 1; 
         type = SPLITV;
-        MOVE t.box;
+        MOVE BOX(t);
         NEW south {
             fill = 2;
             type = TABBED;
-            MOVE td.box {
+            MOVE BOX(td) {
                 caption = 'Свойства';
                 MOVE PROPERTY(script(td)) {
                     panelCaptionAbove = TRUE;
@@ -181,12 +181,12 @@ DESIGN scheduledTask {
             NEW logContainer {
                 caption = 'Лог';
                 type = CONTAINERH;
-                MOVE tl.box;
-                MOVE ctl.box;
+                MOVE BOX(tl);
+                MOVE BOX(ctl);
             }
             NEW dowContainer {
                 caption = 'Фильтр по дням';
-                MOVE dow.box;
+                MOVE BOX(dow);
                 PROPERTY(number(dow)) {
                     hide = TRUE;
                 }
@@ -204,7 +204,7 @@ DESIGN scheduledTask {
         MOVE PROPERTY(runSetupSchedulerApply());
         MOVE PROPERTY(stopSchedulerApply());
     }
-    MOVE functions.box;
+    MOVE TOOLBARBOX;
 }
 
 FORM scheduledTaskProperties 'Свойства'

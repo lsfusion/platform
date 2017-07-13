@@ -322,21 +322,21 @@ FORM physicalModel 'Таблицы'
 
 DESIGN physicalModel {
     main{
-        NEW container BEFORE functions.box{
+        NEW container BEFORE TOOLBARBOX{
             fill = 1;
             type = TABBED;
             NEW modelContainer {
                 fill = 1;
                 caption = 'Таблицы';
-                MOVE t.box {
+                MOVE BOX(t) {
                     caption = 'Таблицы';
                     fill = 1;
                 };
-                MOVE tk.box {
+                MOVE BOX(tk) {
                     caption = 'Ключи';
                     fill = 0.5;
                 }
-                MOVE tc.box {
+                MOVE BOX(tc) {
                     caption = 'Колонки';
                     fill = 1;
                 }
@@ -345,7 +345,7 @@ DESIGN physicalModel {
             NEW dropColumnsContainer {
                 fill = 1;
                 caption = 'Удалённые колонки';
-                MOVE dc.box;
+                MOVE BOX(dc);
             }
         }
     }
@@ -396,13 +396,13 @@ FORM forms 'Формы'
 
 DESIGN forms {
     main {
-        NEW groupingContainer BEFORE p.box {
+        NEW groupingContainer BEFORE BOX(p) {
             type = CONTAINERH;
             fill = 1;
-            MOVE g.box {
+            MOVE BOX(g) {
                 fill = 2;
             }
-            MOVE fg.box {
+            MOVE BOX(fg) {
                 fill = 1;
             }
         }
@@ -429,20 +429,20 @@ FORM properties 'Свойства'
 
 DESIGN properties {
     main {
-        NEW container BEFORE functions.box {
+        NEW container BEFORE TOOLBARBOX {
             fill = 1;
             type = TABBED;
 
             NEW treeContainer {
                 fill = 1;
                 caption = 'Дерево';
-                MOVE treePropertiesObject.tree.box;
+                MOVE BOX(TREE treePropertiesObject);
             }
 
             NEW tableContainer {
                 fill = 1;
                 caption = 'Таблица';
-                MOVE p.box;
+                MOVE BOX(p);
             }
         }
     }

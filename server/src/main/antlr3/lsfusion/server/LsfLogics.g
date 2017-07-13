@@ -2895,7 +2895,7 @@ focusActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns
 }
 	:	'FOCUS' (namespace=ID '.')? formSName=ID '.' { if (inPropParseState()) { form = self.findForm(($namespace == null ? "" : $namespace.text + ".") + $formSName.text); }}
 		prop=formPropertySelector[form]
-	;	
+	;
 
 requestActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
 @after {
@@ -2967,7 +2967,7 @@ activateActionDefinitionBody[List<TypedParameter> context, boolean dynamic] retu
 		$property = self.addScriptedActivateAProp(formName, componentName);
 	}
 }
-	:	'ACTIVATE' 
+	:	'ACTIVATE'
 		(	'FORM' fName=compoundID { formName = $fName.sid; }
 		|	'TAB'  component=multiCompoundID 'FORM' formPart=compoundID { formName = $formPart.text; componentName = $component.sid; }
 		)
@@ -3791,6 +3791,12 @@ componentSelector returns [ComponentView component]
 			}
 		}
 	|	'PROPERTY' '(' prop=propertySelector ')' { $component = $prop.propertyView; }
+	|   exc=exComponentSelector
+	    {
+			if (inPropParseState()) {
+				$component = $designStatement::design.getComponentBySID($exc.sid, self.getVersion());
+			}
+	    }
 	|	mid=multiCompoundID
 		{
 			if (inPropParseState()) {
@@ -3798,6 +3804,65 @@ componentSelector returns [ComponentView component]
 			}
 		}
 	;
+exComponentSelector returns [String sid]
+    :   gt = groupObjectTreeSelector { $sid = $gt.sid; }
+    |   gs = globalSingleSelectorType { $sid = $gs.sid; }
+    |   'GROUP' '(' (   ggo = ID ',' { $sid = $ggo.text + ".panel.props"; }
+                    |   ggo = ID ',' ggr = ID { $sid = $ggo.text + "." + $ggr.text; }
+                    |   ggr = ID { $sid = "NOGROUP." + $ggr.text; }
+                    |   { $sid = "nogroup.panel.props"; }
+                    ) ')'
+    |   'FILTERGROUP' '(' ggo = ID ')' { $sid = "filters." + $ggo.text; }
+    ;
+
+componentSingleSelectorType returns [String sid]
+    :
+        ( 'BOX' { $sid = "box"; } | 'TOOLBARBOX' { $sid = "controls"; } | 'TOOLBARLEFT' { $sid = "toolbar"; } |
+          'TOOLBARRIGHT' { $sid = "controls.right"; } | 'TOOLBAR' { $sid = "toolbar.props.box"; } | 'PANEL' { $sid = "panel"; }
+        )
+    ;
+
+globalSingleSelectorType returns [String sid]
+    :
+        cst=componentSingleSelectorType {
+            switch($cst.sid) {
+                case "box":
+                    $sid = "main";
+                    break;
+                case "controls":
+                    $sid = "functions.box";
+                    break;
+                case "toolbar":
+                    $sid = "leftControls";
+                    break;
+                case "controls.right":
+                    $sid = "rightControls";
+                    break;
+                case "panel":
+                    $sid = "nogroup.panel";
+                    break;
+                default:
+                    $sid = $cst.sid;
+            }
+        }
+    ;
+
+groupObjectTreeSelector returns [String sid]
+@init {
+	String result = null;
+}
+    :
+        ( cst=componentSingleSelectorType { result = $cst.sid; } | 'TOOLBARSYSTEM' { result = "toolbar.system"; } |
+         'FILTERGROUPS' { result = "filters"; } | 'USERFILTER' { result = "filter"; } | 'GRIDBOX' { result = "grid.box"; } | 'CLASSCHOOSER' { result = "classChooser"; } |
+         'GRID' { result = "grid"; } | 'SHOWTYPE' { result = "showType"; }
+         )
+        '('
+        (   'TREE' tg = ID { if(result.equals("grid")) result=""; result = $tg.text + ".tree" + (result.isEmpty()?"":"."+result); }
+        |   go = ID { result = $go.text + "." + result; }
+        )
+        ')'
+        { $sid = result; }
+    ;
 
 
 propertySelector returns [PropertyDrawView propertyView = null]

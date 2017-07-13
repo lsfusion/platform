@@ -445,9 +445,9 @@ DESIGN admin {
             }
         }
         
-        MOVE u.box;
+        MOVE BOX(u);
     }
-    MOVE functions.box;
+    MOVE TOOLBARBOX;
 }
 
 NAVIGATOR { 

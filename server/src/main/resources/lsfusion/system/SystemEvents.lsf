@@ -260,12 +260,12 @@ FORM connections 'Журнал подключений'
 ;
 
 DESIGN connections{
-    NEW boxes BEFORE functions.box {
+    NEW boxes BEFORE TOOLBARBOX {
         fill = 1;
         type = CONTAINERH;
 
-        MOVE n.box;
-        MOVE s.box;
+        MOVE BOX(n);
+        MOVE BOX(s);
     }
 }
 
@@ -280,7 +280,7 @@ DESIGN exceptions {
     main {
         NEW specContainer {
             fill = 1;
-            MOVE e.box;
+            MOVE BOX(e);
             NEW textContainer {
                 type = CONTAINERH;
                 fill = 1;
@@ -296,7 +296,7 @@ DESIGN exceptions {
                     panelCaptionAbove = TRUE;
                 }
             }
-            MOVE functions.box;
+            MOVE TOOLBARBOX;
         }
     }
 }
@@ -321,7 +321,7 @@ DESIGN changes {
     main {
         NEW specContainer {
             fill = 1;
-            MOVE s.box;
+            MOVE BOX(s);
             NEW textContainer {
                 type = CONTAINERV;
                 fill = 1;
@@ -332,7 +332,7 @@ DESIGN changes {
                     panelCaptionAbove = TRUE;
                 }
             }
-            MOVE functions.box;
+            MOVE TOOLBARBOX;
         }
     }
 }
@@ -385,24 +385,24 @@ FORM pings 'Журнал клиентских приложений'
 DESIGN pings {
     NEW computer {
         fill = 1;
-        MOVE c.box;
+        MOVE BOX(c);
     }
     NEW options {
         fill = 1;
         type = TABBED;
         NEW data {
             caption = 'Данные';
-            MOVE dates.box;
+            MOVE BOX(dates);
             PROPERTY(dFromObj) { caption = 'Время (с)'; }
             PROPERTY(dToObj) { caption = 'Время (по)'; }
             PROPERTY(subtractSeconds(dFrom, dTo)) { caption = 'Промежуток в секундах'; }
         }
         NEW connections {
             caption = 'Подключения';
-            MOVE cn.box;
+            MOVE BOX(cn);
         }
     }
-    MOVE functions.box;
+    MOVE TOOLBARBOX;
     PROPERTY(limitDFromObj) { caption = 'Время (с)'; }
     PROPERTY(limitDToObj) { caption = 'Время (по)'; }    
 }

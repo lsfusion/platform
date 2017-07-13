@@ -245,7 +245,7 @@ EXTEND FORM customUser
 
 DESIGN customUser {
     container {
-        MOVE ur.box {
+        MOVE BOX(ur) {
             flex = 1.0;
         }
     }
@@ -396,8 +396,8 @@ DESIGN securityPolicy {
             NEW defaultForms {
                 type = TABBED;
                 caption = 'Формы';
-                MOVE treeDefaultForm.tree.box;
-                MOVE df.box {
+                MOVE BOX(TREE treeDefaultForm);
+                MOVE BOX(df) {
                     caption = 'Таблица';
                 }
             }
@@ -405,8 +405,8 @@ DESIGN securityPolicy {
             NEW defaultPropertyContainer {
                 type = TABBED;
                 caption = 'Свойства';
-                MOVE treeDefaultProperty.tree.box;
-                MOVE dpr.box {
+                MOVE BOX(TREE treeDefaultProperty);
+                MOVE BOX(dpr) {
                     caption = 'Таблица';
                 };
             }
@@ -415,7 +415,7 @@ DESIGN securityPolicy {
         NEW roles {
             caption = 'Роли';
             type = SPLITV;
-            MOVE ur.box;
+            MOVE BOX(ur);
 
             NEW rolePolicyContainer {
                 fill = 2;
@@ -424,8 +424,8 @@ DESIGN securityPolicy {
                 NEW formsContainer {
                     type = TABBED;
                     caption = 'Формы';
-                    MOVE treeFormObject.tree.box;
-                    MOVE f.box {
+                    MOVE BOX(TREE treeFormObject);
+                    MOVE BOX(f) {
                         caption = 'Таблица';
                     }
                 }
@@ -433,8 +433,8 @@ DESIGN securityPolicy {
                 NEW propertiesContainer {
                     type = TABBED;
                     caption = 'Свойства';
-                    MOVE treePropertyObject.tree.box;
-                    MOVE pr.box {
+                    MOVE BOX(TREE treePropertyObject);
+                    MOVE BOX(pr) {
                         caption = 'Таблица';
                     }
                 }
@@ -444,16 +444,16 @@ DESIGN securityPolicy {
         NEW users {
             caption = 'Пользователи';
             type = SPLITV;
-            MOVE ur2.box;
-            MOVE u.box;
+            MOVE BOX(ur2);
+            MOVE BOX(u);
         }
 
-        MOVE p.box {
+        MOVE BOX(p) {
             caption = 'Дополнительные политики';
         }
     }
     
-    MOVE functions.box;
+    MOVE TOOLBARBOX;
 }
 
 FORM userRoles 'Роли'
@@ -497,8 +497,8 @@ DESIGN propertyPolicy {
         MOVE PROPERTY(userLoggable(p));
         MOVE PROPERTY(isSetNotNull(p));
     }
-    MOVE ur.box;
-    MOVE functions.box;
+    MOVE BOX(ur);
+    MOVE TOOLBARBOX;
 }
 
 NAVIGATOR {

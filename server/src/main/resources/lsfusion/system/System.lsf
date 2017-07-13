@@ -192,7 +192,7 @@ META applicationForm(sid, name)
     
     DESIGN sid {
         main {
-            NEW pane BEFORE functions.box {
+            NEW pane BEFORE TOOLBARBOX {
                 type = TABBED;
                 flex = 1;
                 align = STRETCH;
@@ -223,7 +223,7 @@ META defineLinkDialog (object, class)
 END
 
 WINDOW root '{window.root}' TOOLBAR HORIZONTAL POSITION(0, 0, 100, 6) VALIGN (CENTER) HIDETITLE HIDESCROLLBARS;
-WINDOW toolbar '{window.toolbar}' TOOLBAR VERTICAL POSITION(0, 6, 20, 64) HIDETITLE;
+WINDOW toolbar '{TOOLBARLEFT(window)}' TOOLBAR VERTICAL POSITION(0, 6, 20, 64) HIDETITLE;
 WINDOW tree '{window.tree}' TOOLBAR POSITION(0, 6, 20, 64) HIDETITLE;
 
 NAVIGATOR {

@@ -176,13 +176,13 @@ FORM customUser 'Пользователь'
 ;
 
 DESIGN customUser {
-    NEW container BEFORE functions.box {
+    NEW container BEFORE TOOLBARBOX {
         type = SPLITH;
         fill = 1;
-        MOVE u.box {
+        MOVE BOX(u) {
             flex = 0.3;
         };
-        u.panel.props {
+        GROUP(u,) {
             type = COLUMNS;
             columns = 1;
         }
@@ -241,7 +241,7 @@ FORM reloginLoginUser 'Сменить пользователя'
 
 DESIGN reloginLoginUser {
     main{
-        data.box {
+        BOX(data) {
             caption = 'Смена пользователя';
             PROPERTY(valueLogin){
                 caption = 'Логин';
@@ -253,7 +253,7 @@ DESIGN reloginLoginUser {
                 font = 'Tahoma 36';
             }
         }
-        REMOVE leftControls;
+        REMOVE TOOLBARLEFT;
         REMOVE PROPERTY(formRefresh());
     }
 }
@@ -291,14 +291,14 @@ FORM reloginPasswordUser 'Сменить пользователя'
 
 DESIGN reloginPasswordUser {
     main{
-        password.box {
+        BOX(password) {
             caption = 'Смена пользователя';
             PROPERTY(valuePassword){
                 caption = 'Пароль';
                 font = 'Tahoma 36';
             }
         }
-        REMOVE leftControls;
+        REMOVE TOOLBARLEFT;
         REMOVE PROPERTY(formRefresh());
     }
 }
@@ -335,7 +335,7 @@ FORM changePasswordUser 'Сменить пароль'
 
 DESIGN changePasswordUser {
     main{
-        passwords.box {
+        BOX(passwords) {
             MOVE PROPERTY(login(u)) FIRST {
                font = 'Tahoma 36';
             };
@@ -355,7 +355,7 @@ DESIGN changePasswordUser {
                 font = 'Tahoma 36';
             }
         }
-        REMOVE leftControls;
+        REMOVE TOOLBARLEFT;
         REMOVE PROPERTY(formRefresh());
     }
 }

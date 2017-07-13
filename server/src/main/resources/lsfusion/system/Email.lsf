@@ -183,13 +183,13 @@ DESIGN mail {
     main {
         NEW specContainer {
             fill = 1;
-            MOVE a.box;
+            MOVE BOX(a);
             NEW mailContainer {
                 fill = 3;
                 type = TABBED;    
                 NEW emailContainer {
                     caption = 'Входящие';
-                    MOVE e.box;
+                    MOVE BOX(e);
                     NEW tabbedContainer {
                         fill = 1;
                         type=TABBED;
@@ -202,16 +202,16 @@ DESIGN mail {
                                 panelCaptionAbove = TRUE;
                             }
                         }
-                        MOVE ae.box {caption = 'Вложения';}
+                        MOVE BOX(ae) {caption = 'Вложения';}
                     }
                 }
                 NEW notificationContainer {
                     caption = 'Уведомления';
-                    MOVE n.box;
+                    MOVE BOX(n);
                     NEW pane {
                         fill = 1;
                         type = CONTAINERH;
-                        MOVE p.box;
+                        MOVE BOX(p);
                         MOVE PROPERTY(text(n)) {
                             fill = 1;
                             panelCaptionAbove = TRUE;
@@ -219,7 +219,7 @@ DESIGN mail {
                     }
                 }
             }
-            MOVE functions.box;
+            MOVE TOOLBARBOX;
         }
     }
 }

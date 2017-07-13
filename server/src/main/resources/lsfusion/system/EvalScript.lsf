@@ -182,11 +182,11 @@ DESIGN script {
                 MOVE PROPERTY(javaActionBodyExecution(s)) { font = 'bold 24'; }
             }
         }
-        MOVE r.box {
+        MOVE BOX(r) {
             caption = 'Данные';
         }
     }
-    MOVE functions.box;
+    MOVE TOOLBARBOX;
 }
 
 NAVIGATOR {
