@@ -313,21 +313,21 @@ DESIGN profiler {
             MOVE PROPERTY (startProfiler());
             MOVE PROPERTY (stopProfiler());
             MOVE PROPERTY (nameOrder());
-            MOVE pi.box{fill = 1;};
+            MOVE BOX(pi){fill = 1;};
             NEW options {
                 fill = 2;
                 type = SPLITH;
                 NEW user {
                     fill = 1;
-                    MOVE r.box;
-                    MOVE u.box;        
+                    MOVE BOX(r);
+                    MOVE BOX(u);        
                 }
-                MOVE f.box{fill = 1;};
+                MOVE BOX(f){fill = 1;};
             }
         }
         NEW hotSpots {
             caption = 'Список вызовов';
-            MOVE ohs.box;
+            MOVE BOX(ohs);
         }
         NEW call {
             caption = 'Дерево вызовов';
@@ -338,28 +338,28 @@ DESIGN profiler {
                 NEW pT{
                     type = SPLITV;
                     fill = 1;
-                    MOVE pT.tree.box{fill = 2;};
+                    MOVE BOX(TREE pT){fill = 2;};
                     NEW tabDownUsers{
                         type = TABBED;
                         fill = 1;
-                        MOVE upToDown.box {caption = 'Все вызовы';};
-                        MOVE downWithUsers.box {caption = 'По пользователям';};
+                        MOVE BOX(upToDown) {caption = 'Все вызовы';};
+                        MOVE BOX(downWithUsers) {caption = 'По пользователям';};
                     }
                 }
                 NEW pB {
                     type = SPLITV;
                     fill = 1;
-                    MOVE pB.tree.box{fill = 2;};
-                    MOVE downToUp.box{fill = 1;};
+                    MOVE BOX(TREE pB){fill = 2;};
+                    MOVE BOX(downToUp){fill = 1;};
                 }
             }
         }
         NEW raw {
             caption = 'Raw data';
-            MOVE g.box;
+            MOVE BOX(g);
         }
     }
-    MOVE functions.box;
+    MOVE TOOLBARBOX;
 }
 
 setSelected 'Посмотреть дерево вызовов'(ProfileObject po) = {

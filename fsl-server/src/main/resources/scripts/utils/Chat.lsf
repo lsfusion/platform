@@ -331,18 +331,18 @@ DESIGN fullChat {
        
                 NEW contacts {
                     caption = 'Контакты';
-                    MOVE u.box { caption = 'Контакты'; }
+                    MOVE BOX(u) { caption = 'Контакты'; }
                 }
                 NEW recent {
                     caption = 'Чаты';
-                    MOVE c.box { caption = 'Чаты'; } 
+                    MOVE BOX(c) { caption = 'Чаты'; } 
                 }                         
                 
             }
             NEW right {
                 type = SPLITV;
                 fill = 0.7;
-                MOVE m.box { 
+                MOVE BOX(m) { 
                     fill = 0.8; 
                     PROPERTY(showText(m)) {
                         minimumValueWidth = 300;
@@ -387,7 +387,7 @@ DESIGN fullChat {
                 }
             }            
         }
-        MOVE functions.box;
+        MOVE TOOLBARBOX;
     }           
 }
 
@@ -488,7 +488,7 @@ EVENTS ON CLOSE markSeenOnChange(m)
 
 DESIGN shortChat {
     main {
-        m.box {
+        BOX(m) {
             fill = 0.7;
         }
         MOVE PROPERTY(reply(m)) {
@@ -506,7 +506,7 @@ DESIGN shortChat {
                 MOVE PROPERTY(notificate(m)) { alignment = TRAILING; };
             }
         }
-        REMOVE functions.box;
+        REMOVE TOOLBARBOX;
     }      
 }  
 

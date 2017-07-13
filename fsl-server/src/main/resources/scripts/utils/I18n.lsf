@@ -113,7 +113,7 @@ DESIGN translation {
         }
     }
     MOVE PROPERTY(translateText()) { font = 'bold 24'; }
-    MOVE functions.box;
+    MOVE TOOLBARBOX;
 }
 
 NAVIGATOR {
@@ -147,8 +147,8 @@ FORM dictionary 'Словарь'
 DESIGN dictionary {
     main {
         type = CONTAINERV;
-        MOVE d.box;
-        MOVE e.box;
+        MOVE BOX(d);
+        MOVE BOX(e);
         NEW test {
             type = CONTAINERH;
             MOVE PROPERTY(translationInput()) {
@@ -164,7 +164,7 @@ DESIGN dictionary {
                 font = 'bold 24';
             }
         }
-        MOVE functions.box;
+        MOVE TOOLBARBOX;
     }
 }
 

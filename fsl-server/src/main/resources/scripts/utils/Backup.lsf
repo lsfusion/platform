@@ -83,8 +83,8 @@ DESIGN backup {
             type = CONTAINERH;
             NEW leftPane {
                 fill = 1;
-                MOVE b.box;
-                MOVE t1.box;
+                MOVE BOX(b);
+                MOVE BOX(t1);
             }
             NEW rightPane {
                 fill = 1;
@@ -92,7 +92,7 @@ DESIGN backup {
                     fill = 1;
                     panelCaptionAbove = TRUE;
                 }
-                MOVE t2.box {
+                MOVE BOX(t2) {
                     caption = 'Скопированные таблицы';
                 }
             }
@@ -105,7 +105,7 @@ DESIGN backup {
             MOVE PROPERTY(maxQuantityBackups());
         }        
     }
-    MOVE functions.box;
+    MOVE TOOLBARBOX;
 }
 
 FORM backups 'Резервные копии'

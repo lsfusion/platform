@@ -296,7 +296,7 @@ DESIGN processMonitor {
         NEW allProcesses {
             fill = 1;
             caption = 'Все процессы';
-            MOVE i.box {
+            MOVE BOX(i) {
                 fill = 3;
                 caption = 'Процессы';
             }
@@ -308,17 +308,17 @@ DESIGN processMonitor {
         NEW blockingProcesses {
             fill = 1;
             caption = 'Блокирующие';
-            MOVE blocking.tree.box {
+            MOVE BOX(TREE blocking) {
                 caption = 'Блокирующие процессы';
             }
         }
         NEW blockedProcesses {
             fill = 1;
             caption = 'Блокированные';
-            MOVE blocked.box {
+            MOVE BOX(blocked) {
                 caption = 'Блокированные процессы';
             }
-            MOVE blocking.box {
+            MOVE BOX(blocking) {
                 caption = 'Блокирующие процессы';
             }
         }
@@ -329,7 +329,7 @@ DESIGN processMonitor {
         MOVE PROPERTY(captionProcessType());
         MOVE PROPERTY(updateProcessMonitorAction());
     }
-    MOVE functions.box;
+    MOVE TOOLBARBOX;
 }
 
 NAVIGATOR {

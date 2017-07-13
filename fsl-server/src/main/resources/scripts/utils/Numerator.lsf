@@ -95,7 +95,7 @@ FORM defaultNumerators 'Нумераторы'
 
 DESIGN defaultNumerators {
     main {
-        NEW defaultContainer AFTER n.box {
+        NEW defaultContainer AFTER BOX(n) {
             type = COLUMNS;
             columns = 3;
             caption = 'Нумераторы по умолчанию';

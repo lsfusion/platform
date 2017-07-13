@@ -10,7 +10,7 @@ FORM defaultData 'Стандартные данные'
     PROPERTIES() loadDefaultData
 ;
 DESIGN defaultData {
-    NEW pane BEFORE functions.box {
+    NEW pane BEFORE TOOLBARBOX {
         fill = 1;
         type = TABBED;
         NEW commons {

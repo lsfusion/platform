@@ -53,7 +53,7 @@ DESIGN template {
     main{
         preferredSize = (1024, 768);
         type = CONTAINERV;
-        MOVE t.box {
+        MOVE BOX(t) {
             type = CONTAINERH;
             NEW row1 {
                 MOVE PROPERTY(name(t));
@@ -65,9 +65,9 @@ DESIGN template {
                 MOVE PROPERTY(openFile(t));
             };
         }
-        MOVE te.box;
+        MOVE BOX(te);
     }
-    MOVE functions.box;
+    MOVE TOOLBARBOX;
 }
 
 
