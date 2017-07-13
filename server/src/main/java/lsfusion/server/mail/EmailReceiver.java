@@ -6,6 +6,7 @@ import com.github.junrar.exception.RarException;
 import com.github.junrar.impl.FileVolumeManager;
 import com.github.junrar.rarfile.FileHeader;
 import com.google.common.base.Throwables;
+import com.sun.mail.pop3.POP3Folder;
 import com.sun.mail.util.BASE64DecoderStream;
 import com.sun.mail.util.MailSSLSocketFactory;
 import lsfusion.base.BaseUtils;
@@ -273,8 +274,11 @@ public class EmailReceiver {
     private List<Folder> getSubFolders(Folder folder) throws MessagingException {
         List<Folder> folders = new ArrayList<>();
         folders.add(folder);
-        for (Folder f : folder.list()) {
-            folders.addAll(getSubFolders(f));
+        //pop3 doesn't allow subfolders
+        if(!(folder instanceof POP3Folder)) {
+            for (Folder f : folder.list()) {
+                folders.addAll(getSubFolders(f));
+            }
         }
         return folders;
     }
