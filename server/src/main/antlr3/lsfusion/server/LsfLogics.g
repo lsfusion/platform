@@ -3805,14 +3805,14 @@ componentSelector returns [ComponentView component]
 		}
 	;
 exComponentSelector returns [String sid]
-    :   gt = groupObjectTreeSelector { $sid = $gt.sid; }
+    :   gt = groupObjectTreeComponentSelector { $sid = $gt.sid; }
     |   gs = globalSingleSelectorType { $sid = $gs.sid; }
-    |   'GROUP' '(' (   ggo = ID ',' { $sid = $ggo.text + ".panel.props"; }
-                    |   ggo = ID ',' ggr = ID { $sid = $ggo.text + "." + $ggr.text; }
+    |   'GROUP' '(' (   ggo = groupObjectTreeSelector ',' { $sid = $ggo.sid + ".panel.props"; }
+                    |   ggo = groupObjectTreeSelector ',' ggr = ID { $sid = $ggo.sid + "." + $ggr.text; }
                     |   ggr = ID { $sid = "NOGROUP." + $ggr.text; }
                     |   { $sid = "nogroup.panel.props"; }
                     ) ')'
-    |   'FILTERGROUP' '(' ggo = ID ')' { $sid = "filters." + $ggo.text; }
+    |   'FILTERGROUP' '(' gfg = ID ')' { $sid = "filters." + $gfg.text; }
     ;
 
 componentSingleSelectorType returns [String sid]
@@ -3848,6 +3848,12 @@ globalSingleSelectorType returns [String sid]
     ;
 
 groupObjectTreeSelector returns [String sid]
+    :
+           'TREE' tg = ID { $sid = $tg.text + ".tree"; }
+        |   go = ID { $sid = $go.text; }
+    ;
+
+groupObjectTreeComponentSelector returns [String sid]
 @init {
 	String result = null;
 }
@@ -3856,14 +3862,14 @@ groupObjectTreeSelector returns [String sid]
          'FILTERGROUPS' { result = "filters"; } | 'USERFILTER' { result = "filter"; } | 'GRIDBOX' { result = "grid.box"; } | 'CLASSCHOOSER' { result = "classChooser"; } |
          'GRID' { result = "grid"; } | 'SHOWTYPE' { result = "showType"; }
          )
-        '('
-        (   'TREE' tg = ID { if(result.equals("grid")) result=""; result = $tg.text + ".tree" + (result.isEmpty()?"":"."+result); }
-        |   go = ID { result = $go.text + "." + result; }
-        )
-        ')'
-        { $sid = result; }
+        '(' gots = groupObjectTreeSelector ')'
+        {
+            if(result.equals("grid") && $gots.sid.endsWith(".tree"))
+                $sid = $gots.sid;
+            else
+                $sid = $gots.sid + "." + result;
+        }
     ;
-
 
 propertySelector returns [PropertyDrawView propertyView = null]
 	:	pname=ID
