@@ -198,14 +198,14 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     }
 
     public int getPreferredValueWidth(JComponent comp) {
-        if (preferredValueSize != null) {
+        if (preferredValueSize != null && preferredValueSize.width > -1) {
             return preferredValueSize.width;
         }
         return baseType.getPreferredWidth(preferredCharWidth, comp.getFontMetrics(design.getFont(comp)));
     }
 
     public int getPreferredValueHeight(JComponent comp) {
-        if (preferredValueSize != null) {
+        if (preferredValueSize != null && preferredValueSize.height > -1) {
             return preferredValueSize.height;
         }
         int height = baseType.getPreferredHeight(comp.getFontMetrics(design.getFont(comp)));
