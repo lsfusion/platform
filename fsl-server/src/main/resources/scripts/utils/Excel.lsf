@@ -45,7 +45,7 @@ FORM template 'Шаблон Excel'
 ;
 
 DESIGN template {
-    main{
+    BOX {
         preferredSize = (1024, 768);
         type = CONTAINERV;
         MOVE BOX(t) {
@@ -86,7 +86,7 @@ FORM dialogTemplates 'Шаблоны Excel'
     LIST Template OBJECT t
 ;
 DESIGN dialogTemplates {
-    main {
+    BOX {
         preferredSize = (1024, 768);
     }
 }

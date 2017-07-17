@@ -321,7 +321,7 @@ FORM fullChat 'Чат'
 ;
 
 DESIGN fullChat {
-    main {
+    BOX {
         NEW topMain {
             type = SPLITH;
             fill = 1;
@@ -487,7 +487,7 @@ EVENTS ON CLOSE markSeenOnChange(m)
 ;
 
 DESIGN shortChat {
-    main {
+    BOX {
         BOX(m) {
             fill = 0.7;
         }

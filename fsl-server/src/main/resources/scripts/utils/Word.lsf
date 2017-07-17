@@ -50,7 +50,7 @@ FORM template 'Шаблон Word'
 ;
 
 DESIGN template {
-    main{
+    BOX {
         preferredSize = (1024, 768);
         type = CONTAINERV;
         MOVE BOX(t) {
@@ -91,7 +91,7 @@ FORM dialogTemplates 'Шаблоны Word'
     LIST Template OBJECT t
 ;
 DESIGN dialogTemplates {
-    main {
+    BOX {
         preferredSize = (1024, 768);
     }
 }

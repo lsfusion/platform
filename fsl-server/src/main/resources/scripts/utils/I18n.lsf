@@ -145,7 +145,7 @@ FORM dictionary 'Словарь'
 ;
 
 DESIGN dictionary {
-    main {
+    BOX {
         type = CONTAINERV;
         MOVE BOX(d);
         MOVE BOX(e);
