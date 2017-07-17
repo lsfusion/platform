@@ -180,7 +180,7 @@ FORM mail 'Почта'
 ;
 
 DESIGN mail {
-    main {
+    BOX {
         NEW specContainer {
             fill = 1;
             MOVE BOX(a);

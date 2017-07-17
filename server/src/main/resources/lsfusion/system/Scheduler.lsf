@@ -15,7 +15,7 @@ FORM schedulerStartTypes 'Способ отсчета времени'
 ;
 
 DESIGN schedulerStartTypes {
-    main {
+    BOX {
         PROPERTY(staticCaption(s)) {
             caption = 'Отсчёт времени';
         }

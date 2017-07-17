@@ -37,7 +37,7 @@ FORM computersDialog 'Рабочие места'
     
     LIST Computer OBJECT c     
 ;
-DESIGN computersDialog { main{ preferredSize = (1024, 768); }}
+DESIGN computersDialog { BOX { preferredSize = (1024, 768); }}
 
 // -------------------------- Пользователи ---------------------------- //
 CLASS ABSTRACT User 'Пользователь';
@@ -213,7 +213,7 @@ FORM customUsersDialog 'Пользователи'
     LIST CustomUser OBJECT u
 ;
 
-DESIGN customUsersDialog { main{ preferredSize = (1024, 768); }}
+DESIGN customUsersDialog { BOX { preferredSize = (1024, 768); }}
 
 FORM editProfile 'Редактировать профиль' IMAGE '/images/editReport.png'
     OBJECTS u=CustomUser PANEL
@@ -224,7 +224,7 @@ FORM editProfile 'Редактировать профиль' IMAGE '/images/edit
 ;
 
 DESIGN editProfile {
-    main{
+    BOX {
         type = CONTAINERH;
     }
 }
@@ -240,7 +240,7 @@ FORM reloginLoginUser 'Сменить пользователя'
 ;
 
 DESIGN reloginLoginUser {
-    main{
+    BOX {
         BOX(data) {
             caption = 'Смена пользователя';
             PROPERTY(valueLogin){
@@ -290,7 +290,7 @@ FORM reloginPasswordUser 'Сменить пользователя'
 ;
 
 DESIGN reloginPasswordUser {
-    main{
+    BOX {
         BOX(password) {
             caption = 'Смена пользователя';
             PROPERTY(valuePassword){
@@ -334,7 +334,7 @@ FORM changePasswordUser 'Сменить пароль'
 ;
 
 DESIGN changePasswordUser {
-    main{
+    BOX {
         BOX(passwords) {
             MOVE PROPERTY(login(u)) FIRST {
                font = 'Tahoma 36';

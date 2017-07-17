@@ -277,7 +277,7 @@ FORM  exceptions 'Журнал ошибок'
 ;
 
 DESIGN exceptions {
-    main {
+    BOX {
         NEW specContainer {
             fill = 1;
             MOVE BOX(e);
@@ -318,7 +318,7 @@ FORM changes 'Журнал изменений'
 ;
 
 DESIGN changes {
-    main {
+    BOX {
         NEW specContainer {
             fill = 1;
             MOVE BOX(s);

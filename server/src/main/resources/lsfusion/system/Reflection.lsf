@@ -321,7 +321,7 @@ FORM physicalModel 'Таблицы'
 ;
 
 DESIGN physicalModel {
-    main{
+    BOX {
         NEW container BEFORE TOOLBARBOX{
             fill = 1;
             type = TABBED;
@@ -395,7 +395,7 @@ FORM forms 'Формы'
 ;
 
 DESIGN forms {
-    main {
+    BOX {
         NEW groupingContainer BEFORE BOX(p) {
             type = CONTAINERH;
             fill = 1;
@@ -428,7 +428,7 @@ FORM properties 'Свойства'
 ;
 
 DESIGN properties {
-    main {
+    BOX {
         NEW container BEFORE TOOLBARBOX {
             fill = 1;
             type = TABBED;

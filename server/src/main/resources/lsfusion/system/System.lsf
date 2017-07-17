@@ -191,7 +191,7 @@ META applicationForm(sid, name)
     FORM sid name;
     
     DESIGN sid {
-        main {
+        BOX {
             NEW pane BEFORE TOOLBARBOX {
                 type = TABBED;
                 flex = 1;
