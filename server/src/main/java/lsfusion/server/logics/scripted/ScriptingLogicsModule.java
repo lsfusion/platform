@@ -33,6 +33,7 @@ import lsfusion.server.form.navigator.DefaultIcon;
 import lsfusion.server.form.navigator.NavigatorElement;
 import lsfusion.server.form.view.ComponentView;
 import lsfusion.server.form.view.FormView;
+import lsfusion.server.form.view.PropertyDrawView;
 import lsfusion.server.form.window.*;
 import lsfusion.server.logics.*;
 import lsfusion.server.logics.debug.*;
@@ -1540,13 +1541,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LPWithParams(addAProp(null, new IsActiveFormActionProperty(LocalizedString.create(""), form, baseLM.getIsActiveFormProperty())), new ArrayList<Integer>());
     }
 
-    public LPWithParams addScriptedActivateAProp(String formName, String componentName) throws ScriptingErrorLog.SemanticErrorException {
-        FormEntity form = findForm(formName);
-        ComponentView component = null;
-        if (componentName != null) {
-            component = form.getNFRichDesign(getVersion()).getComponentBySID(componentName, getVersion());
-            checkComponent(component, componentName); 
-        }
+    public LPWithParams addScriptedActivateAProp(FormEntity form, ComponentView component) throws ScriptingErrorLog.SemanticErrorException {
         return new LPWithParams(addAProp(null, new ActivateActionProperty(LocalizedString.create(""), form, component)), new ArrayList<Integer>());
     }
 
@@ -2911,10 +2906,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LPWithParams(newProp, property.usedParams);
     }
 
-    public LPWithParams addScriptedActiveTabProp(String formName, String componentName) throws ScriptingErrorLog.SemanticErrorException {
-        FormEntity form = findForm(formName);
-        ComponentView component = form.getNFRichDesign(getVersion()).getComponentBySID(componentName, getVersion());
-        checkComponent(component, componentName);
+    public LPWithParams addScriptedActiveTabProp(FormEntity form, ComponentView component) throws ScriptingErrorLog.SemanticErrorException {
         return new LPWithParams(new LCP<>(component.getActiveTab().property), new ArrayList<Integer>());
     }
 

@@ -1686,10 +1686,10 @@ signaturePropertyDefinition[List<TypedParameter> context, boolean dynamic] retur
 activeTabPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedActiveTabProp($formName.text, $compName.sid);
+		$property = self.addScriptedActiveTabProp($fc.form, $fc.component);
 	}
 }
-	: 	'ACTIVE' 'TAB' compName=multiCompoundID 'FORM' formName=compoundID
+	: 	'ACTIVE' 'TAB' fc = formComponentID
 	;
 
 formulaPropertyDefinition returns [LP property, List<ResolveClassSet> signature]
@@ -2366,7 +2366,6 @@ leafKeepContextActionDB[List<TypedParameter> context, boolean dynamic] returns [
 	|	fileADB=fileActionDefinitionBody[context, dynamic] { $property = $fileADB.property; }
 	|	evalADB=evalActionDefinitionBody[context, dynamic] { $property = $evalADB.property; }
 	|	drillDownADB=drillDownActionDefinitionBody[context, dynamic] { $property = $drillDownADB.property; }
-	|	focusADB=focusActionDefinitionBody[context, dynamic] { $property = $focusADB.property; }
 	|	readADB=readActionDefinitionBody[context, dynamic] { $property = $readADB.property; }
 	|	writeADB=writeActionDefinitionBody[context, dynamic] { $property = $writeADB.property; }
 	|	importADB=importActionDefinitionBody[context, dynamic] { $property = $importADB.property; }
@@ -2884,19 +2883,6 @@ drillDownActionDefinitionBody[List<TypedParameter> context, boolean dynamic] ret
 	:	'DRILLDOWN' expr=propertyExpression[context, dynamic]
 	;	
 
-focusActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
-@init {
-    FormEntity form = null;
-}
-@after {
-	if (inPropParseState()) {
-		$property = self.addScriptedFocusActionProp($prop.propertyDraw);
-	}
-}
-	:	'FOCUS' (namespace=ID '.')? formSName=ID '.' { if (inPropParseState()) { form = self.findForm(($namespace == null ? "" : $namespace.text + ".") + $formSName.text); }}
-		prop=formPropertySelector[form]
-	;
-
 requestActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
 @after {
 	if (inPropParseState()) {
@@ -2959,17 +2945,22 @@ activeFormActionDefinitionBody[List<TypedParameter> context, boolean dynamic] re
 
 activateActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
 @init {
-    String formName = null;
-    String componentName = null;
+    FormEntity form = null;
+    ComponentView component = null;
+    PropertyDrawEntity propertyDraw = null;
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedActivateAProp(formName, componentName);
+	    if(form != null)
+		    $property = self.addScriptedActivateAProp(form, component);
+        else
+            $property = self.addScriptedFocusActionProp(propertyDraw);
 	}
 }
 	:	'ACTIVATE'
-		(	'FORM' fName=compoundID { formName = $fName.sid; }
-		|	'TAB'  component=multiCompoundID 'FORM' formPart=compoundID { formName = $formPart.text; componentName = $component.sid; }
+		(	'FORM' fName=compoundID { form = self.findForm($fName.sid); }
+		|	'TAB' fc = formComponentID { form = $fc.form; component = $fc.component; }
+		|   'PROPERTY' fp = formPropertyID { propertyDraw = $fp.propertyDraw; }
 		)
 	;
 
@@ -3784,27 +3775,31 @@ removeComponentStatement
 	;
 
 componentSelector returns [ComponentView component]
+    :
+        exc=formComponentSelector[$designStatement::design] { $component = $exc.component; }
+    ;
+formComponentSelector[ScriptingFormView formView] returns [ComponentView component]
 	:	'PARENT' '(' child=componentSelector ')'
 		{
 			if (inPropParseState()) {
-				$designStatement::design.getParentContainer($child.component, self.getVersion());
+				formView.getParentContainer($child.component, self.getVersion());
 			}
 		}
-	|	'PROPERTY' '(' prop=propertySelector ')' { $component = $prop.propertyView; }
-	|   exc=exComponentSelector
+	|	'PROPERTY' '(' prop=propertySelector[formView] ')' { $component = $prop.propertyView; }
+	|   exc=formContainersComponentSelector
 	    {
 			if (inPropParseState()) {
-				$component = $designStatement::design.getComponentBySID($exc.sid, self.getVersion());
+				$component = formView.getComponentBySID($exc.sid, self.getVersion());
 			}
 	    }
 	|	mid=ID
 		{
 			if (inPropParseState()) {
-				$component = $designStatement::design.getComponentBySID($mid.text, self.getVersion());
+				$component = formView.getComponentBySID($mid.text, self.getVersion());
 			}
 		}
 	;
-exComponentSelector returns [String sid]
+formContainersComponentSelector returns [String sid]
     :   gt = groupObjectTreeComponentSelector { $sid = $gt.sid; }
     |   gs = globalSingleSelectorType { $sid = $gs.sid; }
     |   'GROUP' '(' (   ggo = groupObjectTreeSelector ',' { $sid = $ggo.sid + ".panel.props"; }
@@ -3871,17 +3866,17 @@ groupObjectTreeComponentSelector returns [String sid]
         }
     ;
 
-propertySelector returns [PropertyDrawView propertyView = null]
+propertySelector[ScriptingFormView formView] returns [PropertyDrawView propertyView = null]
 	:	pname=ID
 		{
 			if (inPropParseState()) {
-				$propertyView = $designStatement::design.getPropertyView($pname.text, self.getVersion());
+				$propertyView = formView.getPropertyView($pname.text, self.getVersion());
 			}
 		}
 	|	mappedProp=mappedPropertyDraw	
 		{
 			if (inPropParseState()) {
-				$propertyView = $designStatement::design.getPropertyView($mappedProp.name, $mappedProp.mapping, self.getVersion());
+				$propertyView = formView.getPropertyView($mappedProp.name, $mappedProp.mapping, self.getVersion());
 			}
 		}
 	;
@@ -4223,6 +4218,42 @@ formGroupObjectID returns [String sid]
 
 formObjectID returns [String sid]
     :	(namespacePart=ID '.')? formPart=ID '.' namePart=ID { $sid = ($namespacePart != null ? $namespacePart.text + '.' : "") + $formPart.text + '.' + $namePart.text; }
+    ;
+
+formComponentID returns [FormEntity form, ComponentView component]
+@init {
+	ScriptingFormView formView = null;
+}
+    :
+        (namespacePart=ID '.')? formPart=ID '.'
+        {
+            if(inPropParseState()) {
+                formView = self.getFormDesign(($namespacePart != null ? $namespacePart.text + '.' : "") + $formPart.text, null, false);
+            }
+        }
+        cs = formComponentSelector[formView] { $component = $cs.component; }
+        {
+            if(inPropParseState()) {
+                $form = formView.getView().entity;
+            }
+        }
+    ;
+
+formPropertyID returns [PropertyDrawEntity propertyDraw]
+@init {
+	FormEntity form = null;
+}
+    :
+        (namespace=ID '.')? formSName=ID '.'
+        {
+            if(inPropParseState()) {
+                form = self.findForm(($namespace == null ? "" : $namespace.text + ".") + $formSName.text);
+            }
+        }
+        prop=formPropertySelector[form]
+        {
+            $propertyDraw = $prop.propertyDraw;
+        }
     ;
 
 multiCompoundID returns [String sid]
