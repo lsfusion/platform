@@ -3742,10 +3742,10 @@ newComponentStatement[ComponentView parentComponent]
 @init {
 	ComponentView newComp = null;
 }
-	:	'NEW' cid=multiCompoundID insPosition=componentInsertPosition
+	:	'NEW' cid=ID insPosition=componentInsertPosition
 		{
 			if (inPropParseState()) {
-				newComp = $designStatement::design.createNewComponent($cid.sid, parentComponent, $insPosition.position, $insPosition.anchor, self.getVersion());
+				newComp = $designStatement::design.createNewComponent($cid.text, parentComponent, $insPosition.position, $insPosition.anchor, self.getVersion());
 			}
 		}
 		componentStatementBody[newComp]
@@ -3797,10 +3797,10 @@ componentSelector returns [ComponentView component]
 				$component = $designStatement::design.getComponentBySID($exc.sid, self.getVersion());
 			}
 	    }
-	|	mid=multiCompoundID
+	|	mid=ID
 		{
 			if (inPropParseState()) {
-				$component = $designStatement::design.getComponentBySID($mid.sid, self.getVersion());
+				$component = $designStatement::design.getComponentBySID($mid.text, self.getVersion());
 			}
 		}
 	;
