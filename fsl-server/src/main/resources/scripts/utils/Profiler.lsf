@@ -364,7 +364,7 @@ DESIGN profiler {
 
 setSelected 'Посмотреть дерево вызовов'(ProfileObject po) = {
     dataSelectedTop() <- po;
-    ACTIVATE TAB call FORM profiler;
+    ACTIVATE TAB profiler.call;
 } SHORTCUT text[ProfileObject];
 
 NAVIGATOR {
