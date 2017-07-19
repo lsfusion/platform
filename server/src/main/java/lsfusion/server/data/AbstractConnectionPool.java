@@ -11,6 +11,7 @@ import java.lang.ref.WeakReference;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public abstract class AbstractConnectionPool implements ConnectionPool {
 
@@ -172,8 +173,10 @@ public abstract class AbstractConnectionPool implements ConnectionPool {
     }
 
     protected void prepareConnection(Connection connection) {
-    } 
-    
+    }
+
+    private AtomicInteger connectionsCount = new AtomicInteger();
+
     public Connection newConnection() throws SQLException {
         try {
             long l = System.currentTimeMillis();
@@ -182,7 +185,7 @@ public abstract class AbstractConnectionPool implements ConnectionPool {
             prepareConnection(newConnection);
             SQLSession.setACID(newConnection, false, (SQLSyntax)this);
 
-            logConnection("NEW", l, ((PGConnection)newConnection).getBackendPID());
+            logConnection("NEW", l, connectionsCount.incrementAndGet(), ((PGConnection)newConnection).getBackendPID());
 
             return newConnection;
         } catch (ClassNotFoundException | IllegalAccessException | InstantiationException e) {
@@ -197,11 +200,11 @@ public abstract class AbstractConnectionPool implements ConnectionPool {
 
         connection.close();
 
-        logConnection("CLOSE", l, backendPID);
+        logConnection("CLOSE", l, connectionsCount.getAndDecrement(), backendPID);
     }
 
-    private void logConnection(String type, long l, int backendPID) {
-        String message = type + " CONNECTION : " + backendPID + (l > 0 ? ", Time : " + (System.currentTimeMillis() - l) : "");
+    private static void logConnection(String type, long l, long cc, int backendPID) {
+        String message = type + " CONNECTION : " + backendPID + (l > 0 ? ", Time : " + (System.currentTimeMillis() - l) : "") + ", Current connections count : " + cc;
         if(Settings.get().isExtendedSQLConnectionLog())
             ServerLoggers.sqlConnectionLog(message);
         else
@@ -234,7 +237,7 @@ public abstract class AbstractConnectionPool implements ConnectionPool {
                         return null;
                 } else {
                     freeConnection = freeConnections.pop();
-                    logConnection("NEW CONNECTION FROM CACHE (size : " + freeConnections.size() + ")", -1, ((PGConnection) freeConnection.sql).getBackendPID());
+                    logConnection("NEW CONNECTION FROM CACHE (size : " + freeConnections.size() + ")", -1, connectionsCount.get(), ((PGConnection) freeConnection.sql).getBackendPID());
                 }
 
                 usedConnections.put(freeConnection, new WeakReference<>(object));
@@ -259,7 +262,7 @@ public abstract class AbstractConnectionPool implements ConnectionPool {
                     // assert что synchronized lock
                     if (freeConnections.size() < Settings.get().getFreeConnections()) {
                         freeConnections.push(connection);
-                        logConnection("CLOSE CONNECTION TO CACHE (size : " + freeConnections.size() + ")", -1, ((PGConnection) connection.sql).getBackendPID());
+                        logConnection("CLOSE CONNECTION TO CACHE (size : " + freeConnections.size() + ")", -1, connectionsCount.get(), ((PGConnection) connection.sql).getBackendPID());
                     } else
                         return connection;
                 }
