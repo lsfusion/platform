@@ -216,14 +216,20 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
 
     private void addGroupObjectView(GroupObjectView groupObjectView, Version version) {
         mgroupObjects.put(groupObjectView.entity, groupObjectView);
-        setComponentSID(groupObjectView.getGrid(), getGridSID(groupObjectView.entity), version);
-        setComponentSID(groupObjectView.getShowType(), getShowTypeSID(groupObjectView.entity), version);
-        setComponentSID(groupObjectView.getToolbar(), getToolbarSID(groupObjectView.entity), version);
-        setComponentSID(groupObjectView.getFilter(), getFilterSID(groupObjectView.entity), version);
+
+        boolean isInTree = groupObjectView.entity.isInTree();
+
+        if(!isInTree) { // правильнее вообще не создавать компоненты, но для этого потребуется более сложный рефакторинг, поэтому пока просто сделаем так чтобы к ним нельзя было обратиться
+            setComponentSID(groupObjectView.getGrid(), getGridSID(groupObjectView), version);
+            setComponentSID(groupObjectView.getShowType(), getShowTypeSID(groupObjectView), version);
+            setComponentSID(groupObjectView.getToolbar(), getToolbarSID(groupObjectView), version);
+            setComponentSID(groupObjectView.getFilter(), getFilterSID(groupObjectView), version);
+        }
 
         for (ObjectView object : groupObjectView) {
             mobjects.put(object.entity, object);
-            setComponentSID(object.classChooser, getClassChooserSID(object.entity), version);
+            if(!isInTree)
+                setComponentSID(object.classChooser, getClassChooserSID(object.entity), version);
         }
     }
     
@@ -243,11 +249,7 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
     }
 
     public GroupObjectView addGroupObject(GroupObjectEntity groupObject, GroupObjectEntity neighbour, Boolean isRightNeighbour, Version version) {
-        return addGroupObjectBase(groupObject, neighbour, isRightNeighbour, version);    
-    }
-
-    public GroupObjectView addGroupObject(GroupObjectEntity groupObject, Version version) {
-        return addGroupObjectBase(groupObject, version);
+        return addGroupObjectBase(groupObject, neighbour, isRightNeighbour, version);
     }
 
     public TreeGroupView addTreeGroup(TreeGroupEntity treeGroup, Version version) {
@@ -256,9 +258,9 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
 
     private void addTreeGroupView(TreeGroupView treeGroupView, Version version) {
         mtreeGroups.put(treeGroupView.entity, treeGroupView);
-        setComponentSID(treeGroupView, getTreeSID(treeGroupView.entity), version);
-        setComponentSID(treeGroupView.getToolbar(), getToolbarSID(treeGroupView.entity), version);
-        setComponentSID(treeGroupView.getFilter(), getFilterSID(treeGroupView.entity), version);
+        setComponentSID(treeGroupView, getGridSID(treeGroupView), version);
+        setComponentSID(treeGroupView.getToolbar(), getToolbarSID(treeGroupView), version);
+        setComponentSID(treeGroupView.getFilter(), getFilterSID(treeGroupView), version);
     }
 
     private TreeGroupView addTreeGroupBase(TreeGroupEntity treeGroup, Version version) {
@@ -833,28 +835,24 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         return "main";
     }
 
-    private static String getTreeSID(TreeGroupEntity entity) {
-        return entity.getSID() + ".tree";
-    }
-
     private static String getRegularFilterGroupSID(RegularFilterGroupEntity entity) {
         return "filters." + entity.getSID();
     }
 
-    private static String getGridSID(GroupObjectEntity entity) {
-        return entity.getSID() + ".grid";
+    private static String getGridSID(PropertyGroupContainerView entity) {
+        return entity.getPropertyGroupContainerSID() + ".grid";
     }
 
-    private static String getToolbarSID(IdentityObject entity) {
-        return entity.getSID() + ".toolbar";
+    private static String getToolbarSID(PropertyGroupContainerView entity) {
+        return entity.getPropertyGroupContainerSID() + ".toolbar";
     }
 
-    private static String getFilterSID(IdentityObject entity) {
-        return entity.getSID() + ".filter";
+    private static String getFilterSID(PropertyGroupContainerView entity) {
+        return entity.getPropertyGroupContainerSID() + ".filter";
     }
 
-    private static String getShowTypeSID(GroupObjectEntity entity) {
-        return entity.getSID() + ".showType";
+    private static String getShowTypeSID(PropertyGroupContainerView entity) {
+        return entity.getPropertyGroupContainerSID() + ".showType";
     }
 
     private static String getClassChooserSID(ObjectEntity entity) {

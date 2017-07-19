@@ -132,7 +132,7 @@ public class GroupDrillDownFormEntity<I extends PropertyInterface> extends Drill
     public FormView createDefaultRichDesign(Version version) {
         DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign(version);
 
-        detailsContainer.add(design.getGroupObjectContainer(detailsGroup), version);
+        detailsContainer.add(design.getBoxContainer(detailsGroup), version);
 
         valueContainer.add(design.get(implPropertyDraw), version);
 

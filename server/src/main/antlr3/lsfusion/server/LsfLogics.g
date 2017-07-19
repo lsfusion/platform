@@ -3836,6 +3836,9 @@ globalSingleSelectorType returns [String sid]
                 case "panel":
                     $sid = "nogroup.panel";
                     break;
+                case "toolbar.props.box":
+                    $sid = "nogroup.toolbar.props.box";
+                    break;
                 default:
                     $sid = $cst.sid;
             }
@@ -3859,10 +3862,7 @@ groupObjectTreeComponentSelector returns [String sid]
          )
         '(' gots = groupObjectTreeSelector ')'
         {
-            if(result.equals("grid") && $gots.sid.endsWith(".tree"))
-                $sid = $gots.sid;
-            else
-                $sid = $gots.sid + "." + result;
+            $sid = $gots.sid + "." + result;
         }
     ;
 

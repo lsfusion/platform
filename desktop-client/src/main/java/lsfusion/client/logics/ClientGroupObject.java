@@ -165,7 +165,7 @@ public class ClientGroupObject extends IdentityObject implements ClientIdentityS
     }
 
     public ClientContainer getClientComponent(ClientContainer parent) {
-        return parent.findContainerBySID(getSID() + ContainerConstants.GROUP_CONTAINER);
+        return parent.findContainerBySID(getSID() + ContainerConstants.BOX_CONTAINER);
     }
 
     // по аналогии с сервером

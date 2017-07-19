@@ -49,6 +49,10 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
 
     public TreeGroupEntity treeGroup;
 
+    public boolean isInTree() {
+        return treeGroup != null;
+    }
+
     public CalcPropertyObjectEntity<?> reportPathProp;
     
     public boolean noClassFilter = false;
@@ -134,8 +138,9 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
     public GroupObjectEntity() {
     }
 
-    public GroupObjectEntity(int ID) {
+    public GroupObjectEntity(int ID, TreeGroupEntity treeGroup) {
         this(ID, (String)null);
+        this.treeGroup = treeGroup; // нужно чтобы IsInTree правильно определялось в addScriptingTreeGroupObject, когда идет addGroupObjectView
     }
 
     public GroupObjectEntity(int ID, String sID) {

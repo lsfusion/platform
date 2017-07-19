@@ -392,7 +392,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     }
 
     public ObjectEntity addSingleGroupObject(ValueClass baseClass, Version version, Object... groups) {
-        GroupObjectEntity groupObject = new GroupObjectEntity(genID());
+        GroupObjectEntity groupObject = new GroupObjectEntity(genID(), (TreeGroupEntity) null);
         ObjectEntity object = new ObjectEntity(genID(), baseClass, null);
         groupObject.add(object);
         addGroupObject(groupObject, version);
@@ -402,8 +402,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         return object;
     }
 
-    public TreeGroupEntity addTreeGroupObject(String sID, Version version, GroupObjectEntity... tGroups) {
-        TreeGroupEntity treeGroup = new TreeGroupEntity(genID());
+    public TreeGroupEntity addTreeGroupObject(TreeGroupEntity treeGroup, String sID, Version version, GroupObjectEntity... tGroups) {
         if (sID != null)
             treeGroup.setSID(sID);
         for (GroupObjectEntity group : tGroups) {
@@ -438,7 +437,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
 
         FormView richDesign = getNFRichDesign(version);
         if (richDesign != null) {
-            richDesign.addGroupObject(group, neighbour, isRightNeighbour, version);    
+            richDesign.addGroupObject(group, neighbour, isRightNeighbour, version);
         }
     }
 
@@ -978,10 +977,10 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         ComponentView drawComponent;
         if(grid) {
             GroupObjectEntity toDraw = property.getToDraw(this);
-            if(toDraw.treeGroup == null)
-                drawComponent = formView.get(toDraw).grid;
-            else
+            if (toDraw.isInTree())
                 drawComponent = formView.get(toDraw.treeGroup);
+            else
+                drawComponent = formView.get(toDraw).grid;
         } else
             drawComponent = formView.get(property);
         return drawComponent;

@@ -13,7 +13,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 
-public class GroupObjectView extends ArrayList<ObjectView> implements ServerIdentitySerializable, AbstractGroupObject<ComponentView, LocalizedString> {
+public class GroupObjectView extends ArrayList<ObjectView> implements ServerIdentitySerializable, PropertyGroupContainerView, AbstractGroupObject<ComponentView, LocalizedString> {
 
     public GroupObjectEntity entity;
 
@@ -85,6 +85,11 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
 
     public String getSID() {
         return entity.getSID();
+    }
+
+    @Override
+    public String getPropertyGroupContainerSID() {
+        return getSID();
     }
 
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {

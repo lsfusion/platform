@@ -60,9 +60,12 @@ public class ScriptingFormEntity {
     }
 
     public List<GroupObjectEntity> addScriptingGroupObjects(List<ScriptingGroupObject> groupObjects, Version version) throws ScriptingErrorLog.SemanticErrorException {
+        return addScriptingGroupObjects(groupObjects, null, version);
+    }
+    public List<GroupObjectEntity> addScriptingGroupObjects(List<ScriptingGroupObject> groupObjects, TreeGroupEntity treeGroup, Version version) throws ScriptingErrorLog.SemanticErrorException {
         List<GroupObjectEntity> groups = new ArrayList<>();
         for (ScriptingGroupObject groupObject : groupObjects) {
-            GroupObjectEntity groupObj = new GroupObjectEntity(form.genID());
+            GroupObjectEntity groupObj = new GroupObjectEntity(form.genID(), treeGroup);
 
             for (int j = 0; j < groupObject.objects.size(); j++) {
                 String className = groupObject.classes.get(j);
@@ -114,7 +117,8 @@ public class ScriptingFormEntity {
     }
 
     public void addScriptingTreeGroupObject(String treeSID, List<ScriptingGroupObject> groupObjects, List<List<ScriptingLogicsModule.PropertyUsage>> parentProperties, Version version) throws ScriptingErrorLog.SemanticErrorException {
-        List<GroupObjectEntity> groups = addScriptingGroupObjects(groupObjects, version);
+        TreeGroupEntity treeGroup = new TreeGroupEntity(form.genID());
+        List<GroupObjectEntity> groups = addScriptingGroupObjects(groupObjects, treeGroup, version);
         for (ScriptingGroupObject groupObject : groupObjects) {
             List<ScriptingLogicsModule.PropertyUsage> properties = parentProperties.get(groupObjects.indexOf(groupObject));
 
@@ -136,7 +140,7 @@ public class ScriptingFormEntity {
                     groupObj.setIsParents(propertyObjects.toArray(new CalcPropertyObjectEntity[propertyObjects.size()]));
             }
         }
-        form.addTreeGroupObject(treeSID, version, groups.toArray(new GroupObjectEntity[groups.size()]));
+        form.addTreeGroupObject(treeGroup, treeSID, version, groups.toArray(new GroupObjectEntity[groups.size()]));
     }
 
     private LP findLP(ScriptingLogicsModule.PropertyUsage property, GroupObjectEntity group) throws ScriptingErrorLog.SemanticErrorException {
@@ -157,7 +161,7 @@ public class ScriptingFormEntity {
         if (form.getNFGroupObject(groupName, version) != null) {
             LM.getErrLog().emitAlreadyDefinedError(LM.getParser(), "group object", groupName);
         }
-        if (neighbour != null && neighbour.treeGroup != null) {
+        if (neighbour != null && neighbour.isInTree()) {
             LM.getErrLog().emitGroupObjectInTreeAfterBeforeError(LM.getParser(), neighbour.getSID());    
         }
         group.setSID(groupName);
