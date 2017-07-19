@@ -102,7 +102,7 @@ public class ListFilesActionProperty extends ScriptingActionProperty {
             String password = connectionStringMatcher.group(2); //12345
             String server = connectionStringMatcher.group(3); //ftp.harmony.neolocation.net
             boolean noPort = connectionStringMatcher.groupCount() == 4;
-            Integer port = noPort ? 21 : Integer.parseInt(connectionStringMatcher.group(4)); //21
+            Integer port = noPort || connectionStringMatcher.group(4) == null ? 21 : Integer.parseInt(connectionStringMatcher.group(4)); //21
             String remotePath = connectionStringMatcher.group(noPort ? 4 : 5);
             FTPClient ftpClient = new FTPClient();
             try {
