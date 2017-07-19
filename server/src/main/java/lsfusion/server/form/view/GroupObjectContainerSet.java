@@ -13,6 +13,7 @@ public class GroupObjectContainerSet {
     private ContainerView panelContainer;
     private ContainerView panelPropsContainer;
     private ContainerView controlsContainer;
+    private ContainerView leftControlsContainer;
     private ContainerView rightControlsContainer;
     private ContainerView filtersContainer;
     private ContainerView toolbarPropsContainer;
@@ -35,6 +36,10 @@ public class GroupObjectContainerSet {
 
     public ContainerView getControlsContainer() {
         return controlsContainer;
+    }
+
+    public ContainerView getLeftControlsContainer() {
+        return leftControlsContainer;
     }
 
     public ContainerView getRightControlsContainer() {
@@ -86,6 +91,9 @@ public class GroupObjectContainerSet {
         set.rightControlsContainer = factory.createContainer();
         set.rightControlsContainer.setSID(sid + CONTROLS_RIGHT_CONTAINER);
 
+        set.leftControlsContainer = factory.createContainer();
+        set.leftControlsContainer.setSID(sid + CONTROLS_LEFT_CONTAINER);
+
         set.boxContainer.setType(ContainerType.CONTAINERV);
         set.boxContainer.setChildrenAlignment(Alignment.LEADING);
         set.boxContainer.setAlignment(FlexAlignment.STRETCH);
@@ -103,8 +111,13 @@ public class GroupObjectContainerSet {
         set.controlsContainer.setType(ContainerType.CONTAINERH);
         set.controlsContainer.setAlignment(FlexAlignment.STRETCH);
         set.controlsContainer.setChildrenAlignment(Alignment.LEADING);
-        adder.add(set.controlsContainer, group.getToolbar());
+        adder.add(set.controlsContainer, set.leftControlsContainer);
         adder.add(set.controlsContainer, set.rightControlsContainer);
+
+        set.leftControlsContainer.setType(ContainerType.CONTAINERH);
+        set.leftControlsContainer.setAlignment(FlexAlignment.CENTER);
+        set.leftControlsContainer.setChildrenAlignment(Alignment.TRAILING);
+        adder.add(set.leftControlsContainer, group.getToolbar());
 
         set.rightControlsContainer.setType(ContainerType.CONTAINERH);
         set.rightControlsContainer.setAlignment(FlexAlignment.CENTER);

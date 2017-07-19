@@ -3,9 +3,7 @@ package lsfusion.server.form.view;
 import lsfusion.interop.form.layout.*;
 import lsfusion.server.logics.i18n.LocalizedString;
 
-import static lsfusion.interop.form.layout.ContainerConstants.GRID_CONTAINER;
-import static lsfusion.interop.form.layout.ContainerConstants.PANEL_CONTAINER;
-import static lsfusion.interop.form.layout.ContainerConstants.PANEL_PROPS_CONTAINER;
+import static lsfusion.interop.form.layout.ContainerConstants.*;
 
 // сейчас полный клон GroupObjectContainerSet, потом надо рефакторить
 public class TreeGroupContainerSet {
@@ -15,6 +13,7 @@ public class TreeGroupContainerSet {
     private ContainerView panelContainer;
     private ContainerView panelPropsContainer;
     private ContainerView controlsContainer;
+    private ContainerView leftControlsContainer;
     private ContainerView rightControlsContainer;
     private ContainerView filtersContainer;
     private ContainerView toolbarPropsContainer;
@@ -37,6 +36,10 @@ public class TreeGroupContainerSet {
 
     public ContainerView getControlsContainer() {
         return controlsContainer;
+    }
+
+    public ContainerView getLeftControlsContainer() {
+        return leftControlsContainer;
     }
 
     public ContainerView getRightControlsContainer() {
@@ -87,6 +90,9 @@ public class TreeGroupContainerSet {
         set.rightControlsContainer = factory.createContainer();
         set.rightControlsContainer.setSID(sid + ContainerConstants.CONTROLS_RIGHT_CONTAINER);
 
+        set.leftControlsContainer = factory.createContainer();
+        set.leftControlsContainer.setSID(sid + ContainerConstants.CONTROLS_LEFT_CONTAINER);
+
         set.boxContainer.setType(ContainerType.CONTAINERV);
         set.boxContainer.setChildrenAlignment(Alignment.LEADING);
         set.boxContainer.setAlignment(FlexAlignment.STRETCH);
@@ -104,9 +110,14 @@ public class TreeGroupContainerSet {
         set.controlsContainer.setType(ContainerType.CONTAINERH);
         set.controlsContainer.setAlignment(FlexAlignment.STRETCH);
         set.controlsContainer.setChildrenAlignment(Alignment.LEADING);
-        adder.add(set.controlsContainer, treeGroup.getToolbar());
+        adder.add(set.controlsContainer, set.leftControlsContainer);
         adder.add(set.controlsContainer, set.rightControlsContainer);
-        
+
+        set.leftControlsContainer.setType(ContainerType.CONTAINERH);
+        set.leftControlsContainer.setAlignment(FlexAlignment.CENTER);
+        set.leftControlsContainer.setChildrenAlignment(Alignment.TRAILING);
+        adder.add(set.leftControlsContainer, treeGroup.getToolbar());
+
         set.rightControlsContainer.setType(ContainerType.CONTAINERH);
         set.rightControlsContainer.setAlignment(FlexAlignment.CENTER);
         set.rightControlsContainer.setChildrenAlignment(Alignment.TRAILING);

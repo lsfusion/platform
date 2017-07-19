@@ -9,6 +9,7 @@ public class ContainerConstants {
     public static final String TOOLBAR_PROPS_CONTAINER = ".toolbar.props.box";
     public static final String CONTROLS_CONTAINER = ".controls";
     public static final String CONTROLS_RIGHT_CONTAINER = ".controls.right";
+    public static final String CONTROLS_LEFT_CONTAINER = ".controls.left";
     
     public static final String FUNCTIONS_CONTAINER = "functions.box";
     public static final String NOGROUP_PANEL_CONTAINER = "nogroup.panel";

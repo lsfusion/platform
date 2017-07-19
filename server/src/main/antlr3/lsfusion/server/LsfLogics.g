@@ -3812,7 +3812,7 @@ formContainersComponentSelector returns [String sid]
 
 componentSingleSelectorType returns [String sid]
     :
-        ( 'BOX' { $sid = "box"; } | 'TOOLBARBOX' { $sid = "controls"; } | 'TOOLBARLEFT' { $sid = "toolbar"; } |
+        ( 'BOX' { $sid = "box"; } | 'TOOLBARBOX' { $sid = "controls"; } | 'TOOLBARLEFT' { $sid = "controls.left"; } |
           'TOOLBARRIGHT' { $sid = "controls.right"; } | 'TOOLBAR' { $sid = "toolbar.props.box"; } | 'PANEL' { $sid = "panel"; }
         )
     ;
@@ -3856,7 +3856,7 @@ groupObjectTreeComponentSelector returns [String sid]
 	String result = null;
 }
     :
-        ( cst=componentSingleSelectorType { result = $cst.sid; } | 'TOOLBARSYSTEM' { result = "toolbar.system"; } |
+        ( cst=componentSingleSelectorType { result = $cst.sid; } | 'TOOLBARSYSTEM' { result = "toolbar"; } |
          'FILTERGROUPS' { result = "filters"; } | 'USERFILTER' { result = "filter"; } | 'GRIDBOX' { result = "grid.box"; } | 'CLASSCHOOSER' { result = "classChooser"; } |
          'GRID' { result = "grid"; } | 'SHOWTYPE' { result = "showType"; }
          )

@@ -53,6 +53,7 @@ public class DefaultFormView extends FormView {
     protected final Map<PropertyGroupContainerView, ContainerView> toolbarPropsContainers = synchronizedMap(new HashMap<PropertyGroupContainerView, ContainerView>());
     public ContainerView getToolbarPropsContainer(PropertyDrawEntity property, Version version) { return toolbarPropsContainers.get(getPropertyContainer(property, version)); }
 
+    protected transient final Map<PropertyGroupContainerView, ContainerView> leftControlsContainers = synchronizedMap(new HashMap<PropertyGroupContainerView, ContainerView>());
     protected transient final Map<PropertyGroupContainerView, ContainerView> rightControlsContainers = synchronizedMap(new HashMap<PropertyGroupContainerView, ContainerView>());
 
     protected final Map<PropertyGroupContainerView,ContainerView> filtersContainers = synchronizedMap(new HashMap<PropertyGroupContainerView, ContainerView>());
@@ -222,6 +223,7 @@ public class DefaultFormView extends FormView {
             registerComponent(panelContainers, groupSet.getPanelContainer(), groupObject, version);
             registerComponent(panelPropsContainers, groupSet.getPanelPropsContainer(), groupObject, version);
             registerComponent(controlsContainers, groupSet.getControlsContainer(), groupObject, version);
+            registerComponent(leftControlsContainers, groupSet.getLeftControlsContainer(), groupObject, version);
             registerComponent(rightControlsContainers, groupSet.getRightControlsContainer(), groupObject, version);
             registerComponent(filtersContainers, groupSet.getFiltersContainer(), groupObject, version);
             registerComponent(toolbarPropsContainers, groupSet.getToolbarPropsContainer(), groupObject, version);
@@ -264,6 +266,7 @@ public class DefaultFormView extends FormView {
         registerComponent(panelContainers, treeSet.getPanelContainer(), treeGroup, version);
         registerComponent(panelPropsContainers, treeSet.getPanelPropsContainer(), treeGroup, version);
         registerComponent(controlsContainers, treeSet.getControlsContainer(), treeGroup, version);
+        registerComponent(leftControlsContainers, treeSet.getLeftControlsContainer(), treeGroup, version);
         registerComponent(rightControlsContainers, treeSet.getRightControlsContainer(), treeGroup, version);
         registerComponent(filtersContainers, treeSet.getFiltersContainer(), treeGroup, version);
         registerComponent(toolbarPropsContainers, treeSet.getToolbarPropsContainer(), treeGroup, version);
