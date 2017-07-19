@@ -2319,8 +2319,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
                         String user = logInfo == null ? null : logInfo.userName;
                         String userRole = logInfo == null ? null : logInfo.userRole;
                         String threadName = "";
-                        ThreadInfo threadInfo;
-                        threadInfo = tBean.getThreadInfo(thread.getId());
+                        ThreadInfo threadInfo = thread == null ? null : tBean.getThreadInfo(thread.getId());
                         if (threadInfo != null) {
                             threadName = threadInfo.getThreadName();
                         }
