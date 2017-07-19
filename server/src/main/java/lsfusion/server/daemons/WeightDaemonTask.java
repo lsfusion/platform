@@ -1,59 +1,75 @@
 package lsfusion.server.daemons;
 
+import com.google.common.base.Throwables;
 import jssc.SerialPort;
+import jssc.SerialPortEvent;
+import jssc.SerialPortEventListener;
 import jssc.SerialPortException;
-import lsfusion.interop.event.RepeatableDaemonTask;
+import lsfusion.interop.event.AbstractDaemonTask;
 
 import java.io.Serializable;
-import java.math.BigInteger;
-import java.util.Arrays;
 
-public class WeightDaemonTask extends RepeatableDaemonTask implements Serializable {
-
+public class WeightDaemonTask extends AbstractDaemonTask implements Serializable, SerialPortEventListener {
     public static final String SCALES_SID = "SCALES";
 
+    private int com;
     SerialPort serialPort;
-    int prev;
-    int speed;
 
-    public WeightDaemonTask(int com, int speed, int period, int delay) {
-        super(delay, period, "weight-daemon-task");
-        serialPort = new SerialPort("COM" + com);
-        this.speed = speed;
+    public WeightDaemonTask(int com) {
+        this.com = com;
     }
 
     @Override
-    protected void tick() {
+    public void start() {
         try {
-            serialPort.openPort();
-            serialPort.setParams(speed, SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_EVEN);
-            byte[] msg = {0x4A};
-            serialPort.writeBytes(msg);
-            byte[] buffer = serialPort.readBytes(5);
-            System.out.println(Arrays.toString(buffer));
-            if (isWeighted(buffer)) {
-                int newValue = getWeight(buffer);
-                System.out.println(newValue);
-                if ((newValue > 10) && (Math.abs(prev - newValue) > 10)) {
-                    double value = newValue / 1000.0;
-                    eventBus.fireValueChanged(SCALES_SID, value);
-                    //System.out.println(newValue);
-                }
-                prev = newValue;
+            serialPort = new SerialPort("COM" + com);
+            boolean opened = serialPort.openPort();
+            if (!opened) {
+                throw new RuntimeException("Не удалось открыть порт COM" + com + ". Попробуйте закрыть все другие приложения, использующие этот порт и перезапустить клиент.");
             }
-            serialPort.closePort();
+            serialPort.setParams(4800, 8, 1, 0);
+            serialPort.setEventsMask(SerialPort.MASK_RXCHAR | SerialPort.MASK_CTS | SerialPort.MASK_DSR);//Set mask
+            serialPort.addEventListener(this, SerialPort.MASK_RXCHAR | SerialPort.MASK_CTS | SerialPort.MASK_DSR);//Add SerialPortEventListener
         } catch (SerialPortException ex) {
             throw new RuntimeException(ex);
         }
+
     }
 
-    static public int getWeight(byte[] msg) {
-        byte[] weight = {msg[4], msg[3], msg[2]};
-        BigInteger w = new BigInteger(weight);
-        return w.intValue();
+    @Override
+    public void stop() {
+        try {
+            if(serialPort != null) {
+                serialPort.removeEventListener();
+                serialPort.closePort();
+                serialPort = null;
+            }
+        } catch (SerialPortException e) {
+            logger.error("Error releasing scanner: ", e);
+            throw Throwables.propagate(e);
+        }
     }
 
-    static public boolean isWeighted(byte[] msg) {
-        return msg[0] < 0;
+    @Override
+    public void serialEvent(SerialPortEvent event) {
+        if (event.isRXCHAR()) {
+            try {
+                Thread.sleep(50);
+                byte[] portBytes = serialPort.readBytes();
+                if (portBytes != null && portBytes[portBytes.length - 5] == (byte) 0x55 && portBytes[portBytes.length - 4] == (byte) 0xAA) {
+                    boolean negate = portBytes[portBytes.length - 1] != 0x00;
+                    int weightByte1 = portBytes[portBytes.length - 2];
+                    if(weightByte1 < 0)
+                        weightByte1 += 256;
+                    int weightByte2 = portBytes[portBytes.length - 3];
+                    if(weightByte2 < 0)
+                        weightByte2 += 256;
+                    double weight = ((double)((negate ? -1 : 1) * (weightByte1 * 256 + weightByte2))) / 1000;
+                    eventBus.fireValueChanged(SCALES_SID, weight);
+                }
+            } catch (SerialPortException | InterruptedException ex) {
+                throw new RuntimeException(ex);
+            }
+        }
     }
 }

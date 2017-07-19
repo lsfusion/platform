@@ -46,6 +46,7 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
     public LCP scannerComPortComputer;
     public LCP scannerSingleReadComputer;
     public LCP useDiscountCardReaderComputer;
+    public LCP scalesComPortComputer;
 
     public LCP currentComputer;
     public LCP hostnameCurrentComputer;
@@ -111,6 +112,7 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
         scannerComPortComputer = findProperty("scannerComPort[Computer]");
         scannerSingleReadComputer = findProperty("scannerSingleRead[Computer]");
         useDiscountCardReaderComputer = findProperty("useDiscountCardReader[Computer]");
+        scalesComPortComputer = findProperty("scalesComPort[Computer]");
 
         hostnameCurrentComputer = findProperty("hostnameCurrentComputer[]");
 

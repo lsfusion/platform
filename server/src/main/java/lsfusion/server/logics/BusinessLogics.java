@@ -37,6 +37,7 @@ import lsfusion.server.context.ExecutionStack;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.daemons.DiscountCardDaemonTask;
 import lsfusion.server.daemons.ScannerDaemonTask;
+import lsfusion.server.daemons.WeightDaemonTask;
 import lsfusion.server.data.*;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
@@ -233,6 +234,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         Integer scannerComPort;
         Boolean scannerSingleRead;
         boolean useDiscountCardReader;
+        Integer scalesComPort;
 
         try {
             try(DataSession session = getDbManager().createSession()) {
@@ -240,6 +242,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
                 scannerComPort = (Integer) authenticationLM.scannerComPortComputer.read(session, computerObject);
                 scannerSingleRead = (Boolean) authenticationLM.scannerSingleReadComputer.read(session, computerObject);
                 useDiscountCardReader = authenticationLM.useDiscountCardReaderComputer.read(session, computerObject) != null;
+                scalesComPort = (Integer) authenticationLM.scalesComPortComputer.read(session, computerObject);
             }
         } catch (SQLException | SQLHandledException e) {
             throw Throwables.propagate(e);
@@ -248,6 +251,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             daemons.add(new DiscountCardDaemonTask());
         if (scannerComPort != null) {
             IDaemonTask task = new ScannerDaemonTask(scannerComPort, ((Boolean)true).equals(scannerSingleRead));
+            daemons.add(task);
+        }
+        if (scalesComPort != null) {
+            IDaemonTask task = new WeightDaemonTask(scalesComPort);
             daemons.add(task);
         }
         return daemons;

@@ -10,29 +10,32 @@ TABLE computer (Computer);
 hostname 'Имя хоста' = DATA VARISTRING[100] (Computer) IN recognize;
 
 // Сканер
-scannerComPort 'Com-port' = DATA INTEGER (Computer);
+scannerComPort 'Com-port сканнера' = DATA INTEGER (Computer);
 scannerSingleRead 'Одно событие на весь штрих-код' = DATA BOOLEAN (Computer);
 
 //Считыватель дисконтных карт
 useDiscountCardReader 'Включить считыватель дисконтных карт' = DATA BOOLEAN (Computer);
 
+//Весы
+scalesComPort 'Com-port весов' = DATA INTEGER (Computer);
+
 FORM computer 'Рабочее место'
     OBJECTS c = Computer PANEL
-    PROPERTIES(c) hostname, scannerComPort, scannerSingleRead, useDiscountCardReader
+    PROPERTIES(c) hostname, scannerComPort, scannerSingleRead, useDiscountCardReader, scalesComPort
     
     EDIT Computer OBJECT c
 ;
 
 FORM computers 'Рабочие места'
     OBJECTS c = Computer
-    PROPERTIES(c) READONLY hostname, scannerComPort, scannerSingleRead, useDiscountCardReader
+    PROPERTIES(c) READONLY hostname, scannerComPort, scannerSingleRead, useDiscountCardReader, scalesComPort
     PROPERTIES(c) NEWSESSION NEW, EDIT, DELETE GRID
 ;
 
 FORM computersDialog 'Рабочие места'
     OBJECTS c = Computer
     
-    PROPERTIES(c) READONLY hostname, scannerComPort, scannerSingleRead, useDiscountCardReader
+    PROPERTIES(c) READONLY hostname, scannerComPort, scannerSingleRead, useDiscountCardReader, scalesComPort
     PROPERTIES(c) NEWSESSION NEW, EDIT, DELETE 
     
     LIST Computer OBJECT c     
