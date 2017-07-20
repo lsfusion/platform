@@ -1,0 +1,37 @@
+<!DOCTYPE module PUBLIC "-//Google Inc.//DTD Google Web Toolkit 2.0//EN"
+        "http://google-web-toolkit.googlecode.com/svn/releases/2.0/distro-source/core/src/gwt-module.dtd">
+<module>
+    <inherits name='com.google.gwt.user.User'/>
+    <inherits name="lsfusion.gwt.settings.BasicSettings"/>
+    
+    <stylesheet src="ui/WindowBox.css" />
+
+    <!-- GIN configuration -->
+    <inherits name="com.google.gwt.inject.Inject"/>
+    <inherits name="net.customware.gwt.dispatch.Dispatch"/>
+    <inherits name="com.bfr.client.Selection"/>
+
+    <source path='client'/>
+    <source path='shared'/>
+
+    <!-- Standard FlexPanelImpl implementation. -->
+    <replace-with class="lsfusion.gwt.base.client.ui.FlexPanelImplStandard">
+        <when-type-is class="lsfusion.gwt.base.client.ui.FlexPanelImpl"/>
+    </replace-with>
+
+    <!-- IE-10 FlexPanelImpl implementation. -->
+    <replace-with class="lsfusion.gwt.base.client.ui.FlexPanelImplIE">
+        <when-type-is class="lsfusion.gwt.base.client.ui.FlexPanelImpl"/>
+        <any>
+            <when-property-is name="user.agent" value="ie10"/>
+        </any>
+    </replace-with>
+
+    <!-- Webkit FlexPanelImpl implementation. -->
+    <replace-with class="lsfusion.gwt.base.client.ui.FlexPanelImplWebkit">
+        <when-type-is class="lsfusion.gwt.base.client.ui.FlexPanelImpl"/>
+        <any>
+            <when-property-is name="user.agent" value="opera"/>
+        </any>
+    </replace-with>
+</module>

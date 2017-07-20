@@ -1,0 +1,69 @@
+<?xml version="1.0"?>
+<project name="lsFusion post-install configurator">
+    <taskdef resource="net/sf/antcontrib/antcontrib.properties"/>
+
+    <property file="configure.properties" />
+
+    <target name="configureWebClient">
+        <unzip src="${web.archive}" dest=".">
+            <patternset>
+                <include name="WEB-INF/web.xml"/>
+            </patternset>
+            <mapper type="flatten"/>
+        </unzip>
+
+        <replace file="web.xml" token="localhost" value="${server.host}" encoding="UTF-8"/>
+        <replace file="web.xml" token="7652" value="${server.port}" encoding="UTF-8"/>
+
+        <zip destfile="${web.archive}" update="true">
+            <zipfileset dir="." includes="web.xml" fullpath="WEB-INF/web.xml"/>
+        </zip>
+
+        <delete verbose="true">
+            <file file="web.xml" />
+        </delete>
+
+        <if>
+            <not>
+                <equals arg1="${web.dir}" arg2="" />
+            </not>
+            <then>
+                <copy file="${web.archive}" tofile="${web.dir}/${web.context}.war" />
+            </then>
+        </if>
+    </target>
+
+    <target name="configureTomcat">
+        <replace file="${tomcat.dir}/conf/server.xml" token="8005" value="${tomcat.shutdownPort}" />
+        <replace file="${tomcat.dir}/conf/server.xml" token="8009" value="${tomcat.ajpPort}" />
+        <replace file="${tomcat.dir}/conf/server.xml" token="8080" value="${tomcat.httpPort}" />
+    </target>
+
+    <target name="configureIdea">
+        <unzip src="../${idea.plugin}" dest="${idea.dir}/plugins/" />
+        
+        <replace file="jdk.table.xml" token="java.home" value="${jdk.home}" />
+        <replace file="jdk.table.xml" token="java.majorversion" value="${jdk.majorversion}" />
+        <replace file="jdk.table.xml" token="java.version" value="${jdk.version}" />
+        <copy file="jdk.table.xml" tofile="${user.home}/.IdeaIC${idea.majorversion}/config/options/jdk.table.xml" />
+
+        <replace file="applicationLibraries.xml" token="lsfusion.library.name" value="${lsfusion.library.name}" />
+        <replace file="applicationLibraries.xml" token="server.archive" value="${server.archive}" />
+        <copy file="applicationLibraries.xml" tofile="${user.home}/.IdeaIC${idea.majorversion}/config/options/applicationLibraries.xml" />
+
+        <replace file="options.xml" token="db.host" value="${db.host}" />
+        <replace file="options.xml" token="db.port" value="${db.port}" />
+        <replace file="options.xml" token="db.user" value="${db.user}" />
+        <replace file="options.xml" token="db.pass" value="${db.pass}" />
+        <if>
+            <isset property="admin.pass"/>
+            <then>
+                <replace file="options.xml" token="admin.pass" value="${admin.pass}" />
+            </then>
+            <else>
+                <replace file="options.xml" token="admin.pass" value="" />
+            </else>
+        </if>
+        <copy file="options.xml" tofile="${user.home}/.IdeaIC${idea.majorversion}/config/options/options.xml" />
+    </target>
+</project>

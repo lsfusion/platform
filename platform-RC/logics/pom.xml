@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>lsfusion.build</groupId>
+        <artifactId>build</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+        <relativePath>../../build/pom.xml</relativePath>
+    </parent>
+
+    <groupId>lsfusion.platform</groupId>
+    <artifactId>logics</artifactId>
+    <packaging>pom</packaging>
+    <version>1.3.0</version>
+    <name>Logics</name>
+
+    <properties>
+        <lsfusion.version>1.3.0</lsfusion.version>
+        <assemble.mainClass>lsfusion.server.logics.BusinessLogicsBootstrap</assemble.mainClass>
+        <assemble.finalName>lsfusion-server-${project.version}</assemble.finalName>
+    </properties>
+
+    <profiles>
+        <profile>
+            <id>exec-client</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <configuration>
+                            <exportAntProperties>true</exportAntProperties>
+                            <target>
+                                <java classpathref="maven.runtime.classpath" classname="lsfusion.client.Main" fork="true" clonevm="true" failonerror="true">
+                                    <jvmarg value="-Xms512m" />
+                                    <jvmarg value="-Xmx1400m" />
+                                    <jvmarg value="-ea" />
+                                </java>
+                            </target>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+
+            <dependencies>
+                <dependency>
+                    <groupId>lsfusion.platform</groupId>
+                    <artifactId>desktop-client</artifactId>
+                    <version>${lsfusion.version}</version>
+                </dependency>
+            </dependencies>
+        </profile>
+    </profiles>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>aspectj-maven-plugin</artifactId>
+                <configuration>
+                    <!-- чтобы weave'лись аспекты из сервера -->
+                    <aspectLibraries>
+                        <aspectLibrary>
+                            <groupId>lsfusion.platform</groupId>
+                            <artifactId>server</artifactId>
+                        </aspectLibrary>
+                    </aspectLibraries>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <dependencies>
+        <dependency>
+            <groupId>lsfusion.platform</groupId>
+            <artifactId>server</artifactId>
+            <version>${lsfusion.version}</version>
+        </dependency>
+    </dependencies>
+
+  <scm>
+    <developerConnection>scm:svn:svn://server/lsfusion/build/tags/platform-1.3.0/logics</developerConnection>
+  </scm>
+</project>

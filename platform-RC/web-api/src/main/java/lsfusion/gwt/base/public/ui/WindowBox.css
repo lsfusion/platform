@@ -1,0 +1,59 @@
+.gwt-extras-WindowBox .dialogMiddleCenter {
+    padding: 0px !important;
+}
+
+.gwt-extras-WindowBox .gwt-extras-dialog-container {
+    position: relative;
+}
+
+.gwt-extras-WindowBox .gwt-extras-dialog-controls {
+    position: absolute;
+    top: -22px;
+    right: 2px;
+}
+
+.gwt-extras-WindowBox .gwt-extras-dialog-cover {
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    z-index: 2;
+    opacity: 0.0;
+    background: blue;
+}
+
+.gwt-extras-WindowBox .gwt-extras-dialog-controls a {
+    cursor: pointer;
+    display: block;
+    height: 12px;
+    width: 12px;
+}
+
+.gwt-extras-WindowBox .gwt-extras-dialog-controls a.gwt-extras-dialog-close {
+    background: transparent url(WindowBox_close.png) left top no-repeat;
+}
+
+.gwt-extras-WindowBox .gwt-extras-dialog-controls a.gwt-extras-dialog-close:hover {
+    background: transparent url(WindowBox_close.png) right top no-repeat;
+}
+
+.gwt-extras-WindowBox .gwt-extras-dialog-controls a.gwt-extras-dialog-minimize {
+    background: transparent url(WindowBox_minmax.png) left top no-repeat;
+}
+
+.gwt-extras-WindowBox .gwt-extras-dialog-controls a.gwt-extras-dialog-minimize:hover {
+    background: transparent url(WindowBox_minmax.png) left top no-repeat;
+}
+
+.gwt-extras-WindowBox .gwt-extras-dialog-controls a.gwt-extras-dialog-minimize:hover {
+    background: transparent url(WindowBox_minmax.png) right top no-repeat;
+}
+
+.gwt-extras-WindowBox .gwt-extras-dialog-controls a.gwt-extras-dialog-maximize {
+    background: transparent url(WindowBox_minmax.png) left bottom no-repeat;
+}
+
+.gwt-extras-WindowBox .gwt-extras-dialog-controls a.gwt-extras-dialog-maximize:hover {
+    background: transparent url(WindowBox_minmax.png) right bottom no-repeat;
+}

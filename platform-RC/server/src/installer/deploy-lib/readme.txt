@@ -1,0 +1,1 @@
+All jar-files from this directory go to the server classpath. Put any custom jars into this directory.

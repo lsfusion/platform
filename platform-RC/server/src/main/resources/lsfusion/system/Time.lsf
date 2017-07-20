@@ -1,0 +1,165 @@
+MODULE Time;
+
+REQUIRE System;
+
+extractHour = FORMULA INTEGER PG '(extract(hour from ($1)))', MS 'datepart(hh, $1)'; 
+extractDay = FORMULA INTEGER PG '(extract(day from ($1)))', MS 'datepart(dd, $1)';
+extractYear = FORMULA INTEGER PG '(extract(year from ($1)))', MS 'datepart(yy, $1)';
+
+currentDateTime = NATIVE DATETIME ();
+currentMinute = NATIVE INTEGER ();
+currentHour = NATIVE INTEGER ();
+currentEpoch = NATIVE LONG ();
+
+currentDate 'Тек. дата' = DATA DATE ();
+dateDiffersCurrent(DATE date) = date IS DATE AND date != currentDate();
+
+currentYear 'Тек. год' = extractYear (currentDate());
+
+toDate(DATETIME dateTime) = DATE(dateTime AS DATETIME);
+toTime(DATETIME dateTime) = TIME(dateTime AS DATETIME);
+toDateTime(DATE date) = DATETIME(date AS DATE);
+
+toDateFormat = FORMULA DATE 'to_date($1,$2)';
+
+toDateDDMMYY = FORMULA VARSTRING[8] 'to_char(($1),\'DD.MM.YY\')';
+toDateDDMMYYYY = FORMULA VARSTRING[10] 'to_char(($1),\'DD.MM.YYYY\')';
+
+currentTime 'Тек. время' = toTime(currentDateTime());
+
+sum(DATE date, LONG days) = [= FORMULA DATE PG '(($1)+($2))', MS 'DATEADD(dd, $2, $1)'](date AS DATE, days AS LONG);
+sumMonth (date, months) = FORMULA DATE PG '(CAST(($1) AS date) + ($2)*(interval \'1 month\'))', MS 'DATEADD(mm, $2, $1)';
+sumYear (date, months) = FORMULA DATE PG '(CAST(($1) AS date) + ($2)*(interval \'1 year\'))', MS 'DATEADD(yy, $2, $1)';
+
+iterate(DATE dt, DATE from, DATE to) = RECURSION dt==from AND from IS DATE AND to IS DATE STEP dt==sum($dt, 1) AND dt<=to CYCLES IMPOSSIBLE;
+
+firstDayOfMonth (DATE date) = [= FORMULA DATE PG '(date_trunc(\'MONTH\', $1)::date)', MS 'DATEADD(month, DATEDIFF(month, 0, $1), 0)'](date AS DATE);
+lastDayOfMonth (DATE date) = [= FORMULA DATE PG '((date_trunc(\'MONTH\', $1) + INTERVAL \'1 MONTH - 1 day\')::date)', MS 'DATEADD(s,-1,DATEADD(mm, DATEDIFF(m,0,$1)+1,0))'](date AS DATE);
+
+subtract(DATE date, LONG days) = [= FORMULA DATE PG '(($1)-($2))', MS 'DATEADD(dd, -($2), $1)'](date AS DATE, days AS LONG);
+
+sumSeconds(TIME time, LONG secs) = [= FORMULA TIME PG '(($1)+($2)*CAST(\'1 seconds\' AS INTERVAL))', MS 'DATEADD(ss, $2, $1)'](time AS TIME, secs AS LONG);
+sumMinutes(TIME time, LONG mins) = [= FORMULA TIME PG '(($1)+($2)*CAST(\'1 minutes\' AS INTERVAL))', MS 'DATEADD(mm, $2, $1)'](time AS TIME, mins AS LONG);
+
+sumDay(DATETIME dateTime, LONG days) = [= FORMULA DATETIME PG '(($1)+($2)*CAST(\'1 days\' AS INTERVAL))', MS 'DATEADD(dd, $2, $1)'](dateTime AS DATETIME, days AS LONG);
+sumMinutes(DATETIME dateTime, LONG mins) = [= FORMULA DATETIME PG '(($1)+($2)*CAST(\'1 minutes\' AS INTERVAL))', MS 'DATEADD(mm, $2, $1)'](dateTime AS DATETIME, mins AS LONG);
+sumSeconds(DATETIME dateTime, LONG secs) = [= FORMULA DATETIME PG '(($1)+($2)*CAST(\'1 seconds\' AS INTERVAL))', MS 'DATEADD(ss, $2, $1)'](dateTime AS DATETIME, secs AS LONG);
+
+subtractSeconds(DATETIME dateTime, LONG secs) = [= FORMULA DATETIME PG '(($1)-($2)*CAST(\'1 seconds\' AS INTERVAL))', MS 'DATEADD(ss, -($2), $1)'](dateTime AS DATETIME, secs AS LONG);
+
+subtractDay(DATETIME dateTime, LONG days) = [= FORMULA DATETIME PG '(($1)-($2)*CAST(\'1 days\' AS INTERVAL))', MS 'DATEADD(dd, -($2), $1)'](dateTime AS DATETIME, days AS LONG);
+
+dateTimeToDateTime = FORMULA DATETIME PG 'to_timestamp(CAST($1 as char(10)) || CAST($2 as char(12)), \'YYYY-MM-DDHH24:MI:SS.MS\')',
+                                      MS 'CAST($1 AS DATETIME) + CAST($2 AS DATETIME)';
+
+daysBetweenDates(DATE dateFrom, DATE dateTo) = [= FORMULA INTEGER PG '(($1)-($2))', MS 'DATEDIFF(dd, $2, $1)'](dateFrom AS DATE, dateTo AS DATE);
+
+daysInclBetweenDates (DATE date1, DATE date2) = daysBetweenDates(date2, date1) + 1;
+
+sumWeekFrom (DATE date, INTEGER int) = sum(date, int * 7) IF date IS DATE AND int IS INTEGER;
+sumWeekTo (DATE date, INTEGER int) = sum(date, int * 7 + 6) IF date IS DATE AND int IS INTEGER;
+
+// --------------------------------- Месяца ------------------------ //
+
+CLASS Month 'Месяц' {
+    january 'Январь',
+    february 'Февраль',
+    march 'Март',
+    april 'Апрель',
+    may 'Май',
+    june 'Июнь',
+    july 'Июль',
+    august 'Август',
+    september 'Сентябрь',
+    october 'Октябрь',
+    november 'Ноябрь',
+    december 'Декабрь'
+}
+
+TABLE month (Month);
+
+number 'Номер месяца' = DATA INTEGER (Month);
+onStarted() += {
+    number(Month d) <- 1 WHERE d == Month.january; 
+    number(Month d) <- 2 WHERE d == Month.february; 
+    number(Month d) <- 3 WHERE d == Month.march; 
+    number(Month d) <- 4 WHERE d == Month.april; 
+    number(Month d) <- 5 WHERE d == Month.may; 
+    number(Month d) <- 6 WHERE d == Month.june; 
+    number(Month d) <- 7 WHERE d == Month.july; 
+    number(Month d) <- 8 WHERE d == Month.august; 
+    number(Month d) <- 9 WHERE d == Month.september; 
+    number(Month d) <- 10 WHERE d == Month.october; 
+    number(Month d) <- 11 WHERE d == Month.november; 
+    number(Month d) <- 12 WHERE d == Month.december; 
+}
+
+month 'Месяц (ИД)' (number) = GROUP AGGR Month month BY number(month);
+
+extractMonthNumber = [= FORMULA INTEGER PG '(extract(month from ($1)))', MS 'DATEPART(mm, $1)'](DATE date AS DATE);
+extractMonth 'Месяц (ИД)' (DATE date) = month(extractMonthNumber(date));
+extractMonthName 'Месяц' (DATE date) = staticCaption(extractMonth(date));
+
+currentMonth 'Тек. месяц' = extractMonthNumber (currentDate());
+
+FORM months 'Месяца'
+    OBJECTS m = Month
+    PROPERTIES(m) staticCaption, number
+    ORDER BY number(m)
+    LIST Month OBJECT m
+;
+
+// --------------------------------- Дни недели ------------------------ //
+
+CLASS DOW 'День недели' {
+    sunday 'Воскресенье',
+    monday 'Понедельник',
+    tuesday 'Вторник',
+    wednesday 'Среда',
+    thursday 'Четверг',
+    friday 'Пятница',
+    saturday 'Суббота'
+}
+TABLE dow (DOW);
+
+number 'Номер дня недели' = DATA INTEGER (DOW);
+onStarted() += {
+    number(DOW d) <- 0 WHERE d == DOW.sunday; 
+    number(DOW d) <- 1 WHERE d == DOW.monday; 
+    number(DOW d) <- 2 WHERE d == DOW.tuesday; 
+    number(DOW d) <- 3 WHERE d == DOW.wednesday; 
+    number(DOW d) <- 4 WHERE d == DOW.thursday; 
+    number(DOW d) <- 5 WHERE d == DOW.friday; 
+    number(DOW d) <- 6 WHERE d == DOW.saturday; 
+}
+
+numberM 'Номер дня недели' = DATA INTEGER (DOW);
+onStarted() += {
+    numberM(DOW d) <- 0 WHERE d == DOW.monday; 
+    numberM(DOW d) <- 1 WHERE d == DOW.tuesday; 
+    numberM(DOW d) <- 2 WHERE d == DOW.wednesday; 
+    numberM(DOW d) <- 3 WHERE d == DOW.thursday; 
+    numberM(DOW d) <- 4 WHERE d == DOW.friday; 
+    numberM(DOW d) <- 5 WHERE d == DOW.saturday; 
+    numberM(DOW d) <- 6 WHERE d == DOW.sunday; 
+}
+
+FORM DOWs 'Дни недели'
+    OBJECTS d = DOW
+    PROPERTIES(d) READONLY staticCaption, numberM
+    ORDER BY numberM(d)
+    LIST DOW OBJECT d
+;
+
+DOW 'День недели (ИД)' (number) = GROUP AGGR DOW dow BY number(dow);
+
+extractDOWNumber = [= FORMULA INTEGER PG '(extract(dow from ($1)))', MS '(DATEPART(dw, $1)-1)'](DATE date AS DATE);
+extractDOW 'День недели (ИД)' (DATE date) = DOW(extractDOWNumber(date));
+extractDOWName 'День недели' (DATE date) = staticCaption(extractDOW(date));
+
+distanceDOWDOW (DOW d1, DOW d2) = (number(d2) - number(d1)) (+) (7 IF number(d2) < number(d1));     
+
+// uses ISO 8601, where first week of the year contains January, 4th
+extractWeek = FORMULA INTEGER PG '(extract(week from ($1)))', MS 'datepart(isoww, $1)'; 
+// changes extractWeek return value for first days of the year    
+extractWeekZeroBased(DATE date) = IF extractWeek(date) > 50 AND extractMonthNumber(date) == 1 THEN 0 ELSE extractWeek(date);

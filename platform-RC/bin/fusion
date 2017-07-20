@@ -1,0 +1,43 @@
+##!/bin/sh
+# chkconfig: 2345 99 50
+# description: lsFusion management script
+#
+# Adapt the following lines to your configuration
+LSFUSION_HOME=/usr/lsfusion
+JAVA_HOME=/usr/java/latest
+PID_FILE=/var/run/jsvc-lsfusion.pid
+
+LSFUSION_OPTS="-Xms512m -Xmx4096m"
+
+CLASSPATH=.:lsfusion-server-1.0.0-SNAPSHOT.jar
+
+cd $LSFUSION_HOME
+
+case "$1" in
+  start)
+    /usr/bin/jsvc \
+    -home $JAVA_HOME \
+    -jvm server \
+    -cwd $LSFUSION_HOME \
+    -pidfile $PID_FILE \
+    -outfile $LSFUSION_HOME/logs/stdout.log \
+    -errfile $LSFUSION_HOME/logs/stderr.log \
+    $LSFUSION_OPTS \
+    -cp $CLASSPATH \
+    lsfusion.server.logics.BusinessLogicsBootstrap
+    exit $?
+    ;;
+
+  stop)
+    /usr/bin/jsvc \
+    -home $JAVA_HOME \
+    -stop \
+    -pidfile $PID_FILE \
+    lsfusion.server.logics.BusinessLogicsBootstrap
+    exit $?
+    ;;
+
+  *)
+    echo "Usage lsfusion.sh start/stop"
+    exit 1;;
+esac

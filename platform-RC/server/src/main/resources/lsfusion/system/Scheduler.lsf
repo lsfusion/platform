@@ -1,0 +1,220 @@
+MODULE Scheduler;
+
+REQUIRE System, Reflection, Service;
+
+
+CLASS SchedulerStartType 'Отсчёт времени' {
+    afterStart 'От запуска предыдущего',
+    afterFinish 'От окончания предыдущего'
+}
+
+FORM schedulerStartTypes 'Способ отсчета времени'
+    OBJECTS s = SchedulerStartType
+    PROPERTIES(s) READONLY staticCaption
+    LIST SchedulerStartType OBJECT s
+;
+
+DESIGN schedulerStartTypes {
+    BOX {
+        PROPERTY(staticCaption(s)) {
+            caption = 'Отсчёт времени';
+        }
+    }
+}
+
+CLASS ScheduledTask 'Задание планировщика';
+TABLE scheduledTask (ScheduledTask);
+
+name 'Имя' = DATA VARSTRING[100] (ScheduledTask);
+scheduledTask (name) = GROUP AGGR ScheduledTask task BY name(task) WHERE task IS ScheduledTask;
+
+runAtStart 'Выполнить при старте' = DATA BOOLEAN (ScheduledTask);
+timeFrom 'Время с' = DATA TIME (ScheduledTask);
+timeTo 'Время по' = DATA TIME (ScheduledTask);
+startDate 'Дата начала' = DATA DATETIME (ScheduledTask);
+period 'Повторять каждые (секунд)' = DATA INTEGER (ScheduledTask);
+schedulerStartType 'Отсчёт времени' = DATA SchedulerStartType (ScheduledTask);
+nameSchedulerStartType 'Отсчёт времени' = staticCaption(schedulerStartType(ScheduledTask ScheduledTask));
+active 'Активно' = DATA BOOLEAN (ScheduledTask);
+daysOfMonth 'Выполнять по дням (через запятую)' = DATA VARSTRING[255] (ScheduledTask);
+
+TABLE DOWScheduledTask(DOW, ScheduledTask);
+in 'Вкл' = DATA BOOLEAN (DOW, ScheduledTask); 
+daysOfWeek (t)= GROUP CONCAT VARSTRING[3](number(DOW d)) IF in (d,ScheduledTask t), ', ' BY t ORDER d;   
+
+CLASS ScheduledTaskDetail 'Строка задания планировщика';
+TABLE scheduledTaskDetail (ScheduledTaskDetail);
+
+active 'Активно' = DATA BOOLEAN (ScheduledTaskDetail);
+order 'Порядок' = DATA INTEGER (ScheduledTaskDetail);
+script 'Скрипт' = DATA TEXT (ScheduledTaskDetail);
+
+scheduledTask = DATA ScheduledTask (ScheduledTaskDetail) NONULL DELETE;
+property = DATA Property (ScheduledTaskDetail);
+captionProperty 'Свойство' (ScheduledTaskDetail scheduledTaskDetail) = caption(property(scheduledTaskDetail));
+canonicalNameProperty 'Код свойства' (ScheduledTaskDetail scheduledTaskDetail) = canonicalName(property(scheduledTaskDetail));
+parameter 'Параметр свойства' = DATA TEXT (ScheduledTaskDetail);
+classProperty 'Класс свойства' (ScheduledTaskDetail scheduledTaskDetail) = class(property(scheduledTaskDetail));
+returnProperty 'Возвращаемый класс' (ScheduledTaskDetail scheduledTaskDetail) = return(property(scheduledTaskDetail));
+timeout 'Выполнять не дольше (секунд)' = DATA INTEGER (ScheduledTaskDetail);
+ignoreExceptions 'Игнорировать ошибки' = DATA BOOLEAN (ScheduledTaskDetail);
+
+CONSTRAINT script(ScheduledTaskDetail d) AND property(d) MESSAGE 'В задании планировщика не могут быть одновременно выбраны свойство и скрипт';
+
+CLASS ScheduledTaskLog 'Лог планировщика';
+TABLE scheduledTaskLog (ScheduledTaskLog);
+TABLE scheduledTaskScheduledTaskLog (ScheduledTask, ScheduledTaskLog);
+
+result 'Результат' = DATA VARSTRING[200] (ScheduledTaskLog);
+exceptionOccurred 'Ошибка' = DATA BOOLEAN (ScheduledTaskLog);
+property 'Свойство' = DATA VARSTRING[200] (ScheduledTaskLog);
+date 'Время' = DATA DATETIME (ScheduledTaskLog);
+toDate 'Дата' (ScheduledTaskLog d) = DATE(date(d));
+scheduledTask 'Задание планировщика' = DATA ScheduledTask (ScheduledTaskLog);
+
+@defineLog (ScheduledTaskLog, 'планировщика', log, toDate);
+
+CLASS ScheduledClientTaskLog 'Сообщения клиента';
+TABLE scheduledClientTaskLog (ScheduledClientTaskLog);
+
+scheduledTaskLog 'Лог планировщика'= DATA ScheduledTaskLog (ScheduledClientTaskLog) NONULL DELETE;
+message 'Сообщение'= DATA TEXT (ScheduledClientTaskLog);
+lsfStack 'LSF след'= DATA TEXT (ScheduledClientTaskLog);
+date 'Время'= DATA DATETIME (ScheduledClientTaskLog);
+
+isMessages 'Сообщения' (ScheduledTaskLog stl)= TRUE IF [=GROUP SUM 1 IF message(ScheduledClientTaskLog stcl) BY scheduledTaskLog(stcl)](stl) AND NOT exceptionOccurred(stl);
+
+stopScheduler 'Остановить планировщик' = CUSTOM 'lsfusion.server.scheduler.StopSchedulerActionProperty' ();
+stopSchedulerApply 'Остановить планировщик' = {
+    stopScheduler();
+    apply();
+}
+runSetupScheduler 'Запустить планировщик' = CUSTOM 'lsfusion.server.scheduler.SetupSchedulerActionProperty' ();
+runSetupSchedulerApply 'Запустить планировщик' = {
+    runSetupScheduler();
+    apply();
+}
+isStartedScheduler 'Запущен'  = DATA BOOLEAN ();
+isStoppedScheduler 'Остановлен' () = NOT isStartedScheduler();
+
+threadCountScheduler 'Кол-во потоков' = DATA INTEGER ();
+
+onStarted() += { runSetupScheduler(); }
+
+scriptText 'Скрипт' () = DATA LOCAL TEXT ();
+evalScript 'Выполнить скрипт' () = { EVAL scriptText(); }
+                                         
+changedSchedulerTask (ScheduledTask t) = GROUP SUM 1 IF (((CHANGED (runAtStart(ScheduledTask t)) OR CHANGED (startDate(t)) OR CHANGED (timeFrom(t)) 
+                                         OR CHANGED (timeTo(t)) OR CHANGED (period(t)) OR CHANGED (daysOfMonth(t))
+                                         OR CHANGED (schedulerStartType(t)) OR CHANGED (schedulerStartType(t))) AND active(t)
+                                         OR CHANGED (active(t))) OR
+                                                (((CHANGED (active(ScheduledTaskDetail td)) OR CHANGED (order(td)) OR CHANGED(script(td)) 
+                                         OR CHANGED (scheduledTask(td)) OR CHANGED (property(td)) 
+                                         OR CHANGED (ignoreExceptions(td)) OR CHANGED (timeout(td)) OR CHANGED (parameter(td)))
+                                         AND active(scheduledTask(td))) AND scheduledTask(td)==t) OR 
+                                                CHANGED(in(DOW dow, t))) AND isStartedScheduler() AND t IS ScheduledTask AND td IS ScheduledTaskDetail AND dow IS DOW BY t;
+                                                
+executeScheduledTask 'Выполнить задание' = CUSTOM 'lsfusion.server.scheduler.ExecuteScheduledTaskActionProperty' (ScheduledTask) CONFIRM;                                                                                                                                 
+setupScheduledTask 'Перезапустить задание' = CUSTOM 'lsfusion.server.scheduler.SetupScheduledTaskActionProperty' (ScheduledTask) CONFIRM;                                         
+WHEN changedSchedulerTask(ScheduledTask t) DO EXEC setupScheduledTask(t);
+WHEN DROPPED (ScheduledTaskDetail td IS ScheduledTaskDetail) IF PREV(active(td)) AND isStartedScheduler() DO EXEC setupScheduledTask(scheduledTask(td));
+           
+FORM scheduledTask 'Планировщик'
+
+    PROPERTIES() threadCountScheduler
+
+    OBJECTS t=ScheduledTask
+    PROPERTIES (t) GRID active, name, timeFrom, timeTo, startDate, period,
+                    nameSchedulerStartType, runAtStart, daysOfMonth PANEL, executeScheduledTask, setupScheduledTask
+    PROPERTIES (t) NEW, DELETE GRID
+         
+    OBJECTS td=ScheduledTaskDetail
+    PROPERTIES (td) active, ignoreExceptions, order, captionProperty, 
+                    canonicalNameProperty, parameter, classProperty, 
+                    returnProperty, timeout, script PANEL
+    PROPERTIES (td) NEW, DELETE GRID
+    
+    OBJECTS tl=ScheduledTaskLog LAST
+    PROPERTIES (tl) READONLY property, result, exceptionOccurred, isMessages, date
+    
+    FILTERGROUP stlFilters 
+        FILTER 'Ошибка или сообщение' exceptionOccurred(tl) OR isMessages(tl)
+
+    OBJECTS ctl=ScheduledClientTaskLog
+    PROPERTIES (ctl) READONLY message, lsfStack SHOWIF lsfStack(ctl), date
+    
+    OBJECTS dow=DOW
+    PROPERTIES (dow) number, staticCaption 
+    PROPERTIES (dow, t) in 
+    
+    PROPERTIES () TOOLBAR stopSchedulerApply SHOWIF isStartedScheduler() , runSetupSchedulerApply SHOWIF isStoppedScheduler() 
+    
+    ORDER BY number(dow)
+    
+    FILTERS scheduledTask(td)==t,
+            scheduledTask(tl) == t,
+            scheduledTaskLog(ctl) == tl
+
+    FILTERGROUP filtersScheduler
+            FILTER 'Только активные' active(td) 'F9'
+;
+
+DESIGN scheduledTask {
+    NEW specContainer {
+        fill = 1; 
+        type = SPLITV;
+        MOVE BOX(t);
+        NEW south {
+            fill = 2;
+            type = TABBED;
+            MOVE BOX(td) {
+                caption = 'Свойства';
+                MOVE PROPERTY(script(td)) {
+                    panelCaptionAbove = TRUE;
+                    fill = 0.5;
+                }
+                PROPERTY(parameter(td)) {
+                    preferredValueSize = (-1, 18);
+                    minimumValueSize = (-1, 18);
+                }
+            }
+            NEW logContainer {
+                caption = 'Лог';
+                type = CONTAINERH;
+                MOVE BOX(tl);
+                MOVE BOX(ctl);
+            }
+            NEW dowContainer {
+                caption = 'Фильтр по дням';
+                MOVE BOX(dow);
+                PROPERTY(number(dow)) {
+                    hide = TRUE;
+                }
+                MOVE PROPERTY(daysOfMonth(t));
+            }        
+            NEW settingsContainer {
+                caption = 'Настройки планировщика';
+                MOVE PROPERTY(threadCountScheduler());
+            }
+        }
+    }
+    NEW bottom {
+        type = CONTAINERH;
+        align = TRAILING;
+        MOVE PROPERTY(runSetupSchedulerApply());
+        MOVE PROPERTY(stopSchedulerApply());
+    }
+    MOVE TOOLBARBOX;
+}
+
+FORM scheduledTaskProperties 'Свойства'
+    OBJECTS p = Property
+    PROPERTIES(p) READONLY caption, canonicalName, class, return
+    FILTERS return(p) == 'ActionClass'
+;
+
+NAVIGATOR {
+    configuration {
+        ADD Scheduler.scheduledTask;
+    }
+}
