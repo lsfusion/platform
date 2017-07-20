@@ -1,5 +1,6 @@
 package lsfusion.server.data.query.innerjoins;
 
+import lsfusion.server.data.translator.JoinExprTranslator;
 import lsfusion.server.data.where.Where;
 
 public interface UpWhere {
@@ -10,6 +11,6 @@ public interface UpWhere {
 
     UpWhere not();
 
-    Where getWhere();
+    Where getWhere(JoinExprTranslator translator);
 
 }

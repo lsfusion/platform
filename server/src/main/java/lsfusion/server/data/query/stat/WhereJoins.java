@@ -851,7 +851,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
     }
 
     private static abstract class TopKeep extends AKeep implements Keep {
-        public abstract Where getWhere(BaseJoin join, UpWheres<WhereJoin> upWheres);
+        public abstract Where getWhere(BaseJoin join, UpWheres<WhereJoin> upWheres, JoinExprTranslator translator);
     }
 
     private static class MiddleTopKeep extends TopKeep implements MiddleTreeKeep {
@@ -861,8 +861,8 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
             this.expr = expr;
         }
 
-        public Where getWhere(BaseJoin join, UpWheres<WhereJoin> upWheres) {
-            return expr.getWhere();
+        public Where getWhere(BaseJoin join, UpWheres<WhereJoin> upWheres, JoinExprTranslator translator) {
+            return JoinExprTranslator.translateExpr((Expr)expr, translator).getWhere();
         }
     }
 
@@ -870,8 +870,8 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         private static final TopTreeKeep instance = new TopTreeKeep();
 
         @Override
-        public Where getWhere(BaseJoin join, UpWheres<WhereJoin> upWheres) {
-            return getUpWhere((WhereJoin) join, upWheres.get((WhereJoin) join));
+        public Where getWhere(BaseJoin join, UpWheres<WhereJoin> upWheres, JoinExprTranslator translator) {
+            return getUpWhere((WhereJoin) join, upWheres.get((WhereJoin) join), translator);
         }
     }
 
@@ -930,13 +930,10 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
             BaseJoin join = keeps.getKey(i);
             TopKeep keep = keeps.getValue(i);
 
-            Where upJoinWhere = keep.getWhere(join, upWheres);
-
             boolean allKeep = proceeded.get(join);
-            if(!allKeep)
-                upJoinWhere = upJoinWhere.translateExpr(translator);
-            else
-                assert BaseUtils.hashEquals(upJoinWhere, upJoinWhere.translateExpr(translator));
+            Where upJoinWhere = keep.getWhere(join, upWheres, allKeep ? null : translator);
+
+            assert !allKeep || BaseUtils.hashEquals(upJoinWhere, upJoinWhere.translateExpr(translator));
 
             upPushWhere = upPushWhere.and(upJoinWhere);
         }
@@ -1603,8 +1600,18 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         mExprs.add(joinExpr);
     }
 
-    private static Where getUpWhere(WhereJoin join, UpWhere upWhere) {
-        return upWhere.getWhere().and(BaseExpr.getOrWhere(join));
+    private static Where getUpWhere(WhereJoin join, UpWhere upWhere, JoinExprTranslator translator) {
+        Where result = Where.TRUE;
+        for(BaseExpr baseExpr : ((BaseJoin<?>) join).getJoins().valueIt()) {
+            Expr expr = JoinExprTranslator.translateExpr((Expr) baseExpr, translator);
+            Where where;
+            if(expr instanceof BaseExpr)
+                where = ((BaseExpr) expr).getOrWhere();
+            else
+                where = expr.getWhere(); // orWhere не получим, будет избыточно (andWhere лишний раз проand'ся), но пока другие варианты не понятны
+            result = result.and(where);
+        }
+        return upWhere.getWhere(translator).and(result);
     }
 
     public <K extends BaseExpr, Z extends Expr> Where getCostPushWhere(final QueryJoin<Z, ?, ?, ?> queryJoin, boolean pushLargeDepth, UpWheres<WhereJoin> upWheres, KeyStat keyStat, final StatType type, KeyEqual keyEqual) {
@@ -1793,7 +1800,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         Where innerWhere = Where.TRUE;
 //        for (WhereJoin where : getAdjWheres()) {
 //            if(where instanceof ExprJoin && ((ExprJoin)where).isClassJoin()) {
-//                Where upWhere = upWheres.get(where).getWhere();
+//                Where upWhere = upWheres.get(where).getWhere(null);
 //                whereSelect.add(upWhere.getSource(source));
 //                innerWhere = innerWhere.and(upWhere);
 //            }

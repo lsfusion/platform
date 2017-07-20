@@ -227,17 +227,14 @@ public abstract class BaseExpr extends Expr {
         if(orWhere==null)
             orWhere = calculateOrWhere();
         return orWhere;
-    } 
-    
-    public static Where getOrWhere(BaseJoin<?> join){
-        Where result = Where.TRUE;
-        for(BaseExpr baseExpr : join.getJoins().valueIt())
-            result = result.and(baseExpr.getOrWhere());
-        return result;
     }
+
     // для всех не TRUE реализаций, должны быть соответствующие проверки в removeJoin
     public Where calculateOrWhere() {
-        return getOrWhere(getBaseJoin());
+        Where result = Where.TRUE;
+        for(BaseExpr baseExpr : ((BaseJoin<?>) getBaseJoin()).getJoins().valueIt())
+            result = result.and(baseExpr.getOrWhere());
+        return result;
     }
     
     private Where notNullWhere;

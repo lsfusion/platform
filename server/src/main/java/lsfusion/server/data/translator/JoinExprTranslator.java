@@ -22,6 +22,12 @@ public class JoinExprTranslator extends ExprTranslator {
         this.fullExprs = fullExprs;
     }
 
+    public static <T extends SourceJoin<T>> T translateExpr(T source, JoinExprTranslator translator) {
+        if(translator != null) // важно делать до getWhere, потому как могут добавится условия из getOrWhere (скажем с висячими ключами), а "основной" expr translate'ся и будет висячий ключ
+            return source.translateExpr(translator);
+        return source;
+    }
+
     public Expr translate(BaseExpr key) {
         KeyExpr transExpr = exprs.get(key);
         if(transExpr==null) {
