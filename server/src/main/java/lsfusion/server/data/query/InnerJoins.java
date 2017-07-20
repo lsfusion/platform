@@ -79,7 +79,7 @@ public class InnerJoins extends AddSet<InnerJoin, InnerJoins> {
             if(upWhere == null)
                 assert where.isValue(); // assert что это valueJoin из ExprStatJoin.valueJoins, а значит не дает ключ и getSource не обязателен (хотя возможно правильнее было бы getMeanUpWheres -> getInnerExpr подправить)
             else
-                upWhere.getWhere().getSource(source);
+                upWhere.getWhere(null).getSource(source);
         }
     }
 
