@@ -3827,7 +3827,7 @@ globalSingleSelectorType returns [String sid]
                 case "controls":
                     $sid = "functions.box";
                     break;
-                case "toolbar":
+                case "controls.left":
                     $sid = "leftControls";
                     break;
                 case "controls.right":
