@@ -82,7 +82,7 @@ public interface MainFrameMessages extends Messages {
     String rmiConnectionLost();
     String rmiConnectionLostFatal();
     String rmiConnectionLostNonfatal();
-    String rmiConnectionLostWaitReconnect(int attempt);
+    String rmiConnectionLostWaitReconnect();
     String rmiConnectionLostExit();
     String rmiConnectionLostRelogin();
     String rmiConnectionLostReconnect();

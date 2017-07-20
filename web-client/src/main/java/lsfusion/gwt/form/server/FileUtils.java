@@ -122,10 +122,6 @@ public class FileUtils {
         }
     }
 
-    public static String saveFile(byte[] fileBytes, String name, String extension) {
-        return name != null ? saveFile(name + "." + extension, fileBytes) : saveFile(fileBytes, extension);
-    }
-
     public static String saveFile(byte[] fileBytes, String extension) {
         return saveFile(BaseUtils.randomString(15) + "." + extension, fileBytes);
     }

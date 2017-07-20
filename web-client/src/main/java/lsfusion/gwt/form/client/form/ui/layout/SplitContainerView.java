@@ -33,9 +33,9 @@ public abstract class SplitContainerView<P extends Panel> extends GAbstractConta
     @Override
     protected void addImpl(int index, GComponent child, Widget view) {
         if (container.children.get(0) == child) {
-            splitPane.addFirstWidget(child, view);
+            splitPane.addFirstWidget(child, view, child.flex);
         } else if (container.children.get(1) == child) {
-            splitPane.addSecondWidget(child, view);
+            splitPane.addSecondWidget(child, view, child.flex);
         }
     }
 
@@ -50,7 +50,6 @@ public abstract class SplitContainerView<P extends Panel> extends GAbstractConta
     }
 
     public void updateLayout() {
-        super.updateLayout();
         splitPane.update();
     }
 

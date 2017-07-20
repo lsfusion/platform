@@ -10,7 +10,6 @@ import lsfusion.server.caches.InnerContext;
 import lsfusion.server.caches.MapValuesIterable;
 import lsfusion.server.caches.hash.HashValues;
 import lsfusion.server.classes.BaseClass;
-import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.where.extra.CompareWhere;
 import lsfusion.server.data.query.IQuery;
@@ -22,7 +21,6 @@ import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.NullValue;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.session.DataSession;
-import lsfusion.server.session.RegisterClassRemove;
 
 import java.sql.SQLException;
 
@@ -230,22 +228,11 @@ public class SessionDataTable extends SessionData<SessionDataTable> {
         return table + "{clkeys: " + table.classes + ", clprops" + table.propertyClasses + "} " + "{k:" + keyValues + ",v:" + propertyValues + "}";
     }
 
-    public SessionDataTable checkClasses(SQLSession session, BaseClass baseClass, boolean updateClasses, OperationOwner owner, boolean inconsistent, ImMap<Field, ValueClass> inconsistentTableClasses, Result<ImSet<Field>> rereadChanges, RegisterClassRemove classRemove, long timestamp) throws SQLException, SQLHandledException {
-        SessionTable checkTable = table.checkClasses(session, baseClass, updateClasses, owner, inconsistent, inconsistentTableClasses, rereadChanges, classRemove, timestamp);
-
-        ImMap<KeyField, DataObject> checkedKeyValues = keyValues;
-        ImMap<PropertyField, ObjectValue> checkedPropValues = this.propertyValues;
-        if(inconsistent) {
-            Pair<ImMap<KeyField, DataObject>, ImMap<PropertyField, ObjectValue>> checkedKeyPropValues 
-                    = SessionRows.checkClasses(checkedKeyValues, checkedPropValues, session, baseClass, owner, inconsistentTableClasses, rereadChanges, classRemove, timestamp);
-            
-            checkedKeyValues = checkedKeyPropValues.first;
-            checkedPropValues = checkedKeyPropValues.second;
-        }
-
-        if(BaseUtils.hashEquals(checkTable, table) && BaseUtils.hashEquals(checkedKeyValues, keyValues) && BaseUtils.hashEquals(checkedPropValues, propertyValues))
+    public SessionDataTable checkClasses(SQLSession session, BaseClass baseClass, boolean updateClasses, OperationOwner owner) throws SQLException, SQLHandledException {
+        SessionTable checkTable = table.checkClasses(session, baseClass, updateClasses, owner);
+        if(BaseUtils.hashEquals(checkTable, table))
             return this;
-        
-        return new SessionDataTable(checkTable, keys, checkedKeyValues, checkedPropValues);
+        else
+            return new SessionDataTable(checkTable, keys, keyValues, propertyValues);
     }
 }

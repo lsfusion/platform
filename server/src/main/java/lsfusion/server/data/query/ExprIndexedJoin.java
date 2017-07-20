@@ -8,12 +8,16 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.base.col.interfaces.mutable.MSet;
+import lsfusion.base.col.interfaces.mutable.SymmAddValue;
+import lsfusion.base.col.interfaces.mutable.add.MAddMap;
 import lsfusion.interop.Compare;
 import lsfusion.server.Settings;
 import lsfusion.server.caches.hash.HashContext;
 import lsfusion.server.data.expr.BaseExpr;
+import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.NullableExprInterface;
 import lsfusion.server.data.expr.query.QueryJoin;
@@ -30,24 +34,21 @@ import java.util.List;
 public class ExprIndexedJoin extends ExprJoin<ExprIndexedJoin> {
 
     private final Compare compare;
-    private final InnerJoins valueJoins;
+    private final Expr compareExpr;
     private boolean not;
     private boolean isOrderTop;
 
     @Override
     public String toString() {
-        return baseExpr + " " + compare + " " + valueJoins + " " + not;
+        return baseExpr + " " + compare + " " + compareExpr + " " + not;
     }
 
-    public ExprIndexedJoin(BaseExpr baseExpr, Compare compare, BaseExpr compareExpr, boolean not, boolean isOrderTop) {
-        this(baseExpr, compare, getInnerJoins(compareExpr), not, isOrderTop);
-        assert compareExpr.isValue();
-    }
-    public ExprIndexedJoin(BaseExpr baseExpr, Compare compare, InnerJoins valueJoins, boolean not, boolean isOrderTop) {
+    public ExprIndexedJoin(BaseExpr baseExpr, Compare compare, Expr compareExpr, boolean not, boolean isOrderTop) {
         super(baseExpr);
         assert !compare.equals(Compare.EQUALS);
+        assert compareExpr.isValue();
         assert baseExpr.isIndexed();
-        this.valueJoins = valueJoins;
+        this.compareExpr = compareExpr;
         this.compare = compare;
         this.not = not;
         this.isOrderTop = isOrderTop;
@@ -89,15 +90,15 @@ public class ExprIndexedJoin extends ExprJoin<ExprIndexedJoin> {
 //    }
 
     protected int hash(HashContext hashContext) {
-        return 31 * (31 * super.hash(hashContext) + compare.hashCode()) + valueJoins.hash(hashContext.values) + 13 + (not ? 1 : 0) + (isOrderTop ? 3 : 0);
+        return 31 * (31 * super.hash(hashContext) + compare.hashCode()) + compareExpr.hashOuter(hashContext) + 13 + (not ? 1 : 0) + (isOrderTop ? 3 : 0);
     }
 
     protected ExprIndexedJoin translate(MapTranslate translator) {
-        return new ExprIndexedJoin(baseExpr.translateOuter(translator), compare, valueJoins.translate(translator.mapValues()), not, isOrderTop);
+        return new ExprIndexedJoin(baseExpr.translateOuter(translator), compare, compareExpr, not, isOrderTop);
     }
 
     public boolean calcTwins(TwinImmutableObject o) {
-        return super.calcTwins(o) && compare.equals(((ExprIndexedJoin)o).compare) && valueJoins.equals(((ExprIndexedJoin)o).valueJoins) && not == ((ExprIndexedJoin)o).not && isOrderTop == ((ExprIndexedJoin)o).isOrderTop;
+        return super.calcTwins(o) && compare.equals(((ExprIndexedJoin)o).compare) && compareExpr.equals(((ExprIndexedJoin)o).compareExpr) && not == ((ExprIndexedJoin)o).not && isOrderTop == ((ExprIndexedJoin)o).isOrderTop;
     }
 
     @Override
@@ -156,6 +157,55 @@ public class ExprIndexedJoin extends ExprJoin<ExprIndexedJoin> {
 
         return null;
     }
+    // определяет замыкающиеся диапазоны
+    public static ImSet<ExprIndexedJoin> getIntervals(WhereJoin[] wheres) {
+        MAddMap<BaseExpr, IntervalType> intervals = MapFact.mAddMap(new SymmAddValue<BaseExpr, IntervalType>() {
+            public IntervalType addValue(BaseExpr key, IntervalType prevValue, IntervalType newValue) {
+                return prevValue.and(newValue);
+            }
+        });
+        boolean hasKeyExprs = false; // оптимизация
+        for(WhereJoin where : wheres) {
+            if(where instanceof ExprIndexedJoin) {
+                ExprIndexedJoin eiJoin = (ExprIndexedJoin) where;
+                boolean hasKeyExpr = false;
+                if(!eiJoin.givesNoKeys() || (hasKeyExpr = (eiJoin.getKeyExpr() != null))) { // по идее эта проверка не нужна, но тогда могут появляться висячие ключи, хотя строго говоря потом можно наоборот поддержать эти случаи, тогда a>=1 AND a<=5 будет работать
+                    hasKeyExprs = hasKeyExprs || hasKeyExpr;
+                    IntervalType type = getIntervalType(eiJoin.compare);
+                    if (type != null)
+                        intervals.add(eiJoin.baseExpr, type);
+                }
+            }
+        }
+
+        MExclSet<ExprIndexedJoin> mResult = SetFact.mExclSetMax(wheres.length);
+        for(WhereJoin where : wheres) {
+            if (where instanceof ExprIndexedJoin) {
+                ExprIndexedJoin eiJoin = (ExprIndexedJoin) where;
+                IntervalType type = intervals.get(eiJoin.baseExpr);
+                if(type != null && type == IntervalType.FULL)
+                    mResult.exclAdd(eiJoin);
+            }
+        }
+        ImSet<ExprIndexedJoin> result = mResult.immutable();
+
+        if(result.size() > 0) {
+            if(hasKeyExprs) { // оптимизация
+                // по идее эта обработка не нужна, но тогда могут появляться висячие ключи, хотя строго говоря потом можно наоборот поддержать эти случаи, тогда a>=1 AND a<=5 будет работать
+                final ImSet<KeyExpr> innerKeys = getInnerKeys(wheres, null);
+                result = result.filterFn(new SFunctionSet<ExprIndexedJoin>() {
+                    public boolean contains(ExprIndexedJoin element) {
+                        KeyExpr keyExpr = element.getKeyExpr();
+                        if(keyExpr != null && !innerKeys.contains(keyExpr)) // висячий ключ
+                            return false;
+                        return true;
+                    }
+                });
+            }
+        }
+
+        return result;
+    }
 
     // excludeQueryJoin нужен чтобы она не считала его источником ключей => бесконечное проталкивание
     private static ImSet<KeyExpr> getInnerKeys(WhereJoin[] wheres, QueryJoin excludeQueryJoin) {
@@ -212,14 +262,7 @@ public class ExprIndexedJoin extends ExprJoin<ExprIndexedJoin> {
                     fixedInterval = false;
             }
 
-            InnerJoins valueJoins = InnerJoins.EMPTY;
-            for(ExprIndexedJoin join : joins)
-                valueJoins = valueJoins.and(join.valueJoins);
-            WhereJoin adjJoin;
-            if(fixedInterval) // assert что все остальные тоже givesNoKeys
-                adjJoin = new ExprIntervalJoin(expr, new Stat(intStat, true), valueJoins);
-            else
-                adjJoin = new ExprStatJoin(expr, Stat.ALOT, valueJoins, false);
+            ExprStatJoin adjJoin = new ExprStatJoin(expr, fixedInterval ? new Stat(intStat, true) : Stat.ALOT);
             mResult.add(adjJoin);
 
             if(upAdjWheres != null)

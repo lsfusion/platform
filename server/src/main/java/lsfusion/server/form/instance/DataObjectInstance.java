@@ -8,8 +8,6 @@ import lsfusion.server.classes.ValueClass;
 import lsfusion.server.classes.sets.AndClassSet;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.form.entity.ObjectEntity;
-import lsfusion.server.logics.DataObject;
-import lsfusion.server.logics.NullValue;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.session.SessionChanges;
 
@@ -19,7 +17,7 @@ import java.sql.SQLException;
 public class DataObjectInstance extends ObjectInstance {
 
     DataClass dataClass;
-    ObjectValue value = NullValue.instance;
+    Object value = null;
 
     public DataObjectInstance(ObjectEntity entity, DataClass dataClass) {
         super(entity);
@@ -39,10 +37,10 @@ public class DataObjectInstance extends ObjectInstance {
     }
 
     public void changeValue(SessionChanges session, ObjectValue objectValue) throws SQLException {
-        if(BaseUtils.nullEquals(value, objectValue)) return;
+        Object changeValue = objectValue.getValue();
+        if(BaseUtils.nullEquals(value,changeValue)) return;
 
-        assert objectValue instanceof NullValue || dataClass.equals(((DataObject) objectValue).getType());
-        value = objectValue;
+        value = changeValue;
 
         updated = updated | UPDATED_OBJECT;
         groupTo.updated = groupTo.updated | GroupObjectInstance.UPDATED_OBJECT;
@@ -61,7 +59,7 @@ public class DataObjectInstance extends ObjectInstance {
     }
 
     public ObjectValue getObjectValue() {
-        return value;
+        return ObjectValue.getValue(value,dataClass);
     }
 
     public ConcreteClass getCurrentClass() {

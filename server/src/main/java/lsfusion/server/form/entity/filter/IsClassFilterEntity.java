@@ -12,8 +12,12 @@ import lsfusion.server.form.instance.filter.FilterInstance;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.property.IsClassProperty;
 import lsfusion.server.logics.property.PropertyInterface;
+import lsfusion.server.serialization.ServerSerializationPool;
 import lsfusion.server.session.Modifier;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.sql.SQLException;
 
 public class IsClassFilterEntity<P extends PropertyInterface> extends PropertyFilterEntity<P> {
@@ -36,6 +40,6 @@ public class IsClassFilterEntity<P extends PropertyInterface> extends PropertyFi
 
     @Override
     public Where getWhere(ImMap<ObjectEntity, ? extends Expr> mapKeys, ImMap<ObjectEntity, ObjectValue> mapObjects, Modifier modifier) throws SQLException, SQLHandledException {
-        return IsClassProperty.getWhere(isClass, property.getExpr(mapKeys, modifier, mapObjects), modifier, null);
+        return IsClassProperty.getWhere(isClass, property.getExpr(mapKeys, modifier, mapObjects), modifier);
     }
 }

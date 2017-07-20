@@ -34,12 +34,12 @@ public class CalcClassType extends CalcType implements AlgType {
         return property.calcIsInInterface(interfaceClasses, isAny, this);
     }
 
-    public <T extends PropertyInterface, P extends PropertyInterface> void checkExclusiveness(CalcProperty<T> property, String caseInfo, CalcProperty<P> intersect, String intersectInfo, ImRevMap<P, T> map, String abstractInfo) {
-        property.calcCheckExclusiveness(caseInfo, intersect, intersectInfo, map, this, abstractInfo);
+    public <T extends PropertyInterface, P extends PropertyInterface> void checkExclusiveness(CalcProperty<T> property, String info, CalcProperty<P> intersect, String intersectInfo, ImRevMap<P, T> map, String abstractInfo) {
+        property.calcCheckExclusiveness(info, intersect, intersectInfo, map, this, abstractInfo);
     }
 
-    public <T extends PropertyInterface, P extends PropertyInterface> void checkContainsAll(CalcProperty<T> property, CalcProperty<P> intersect, String caseInfo, ImRevMap<P, T> map, CalcPropertyInterfaceImplement<T> value, String abstractInfo) {
-        property.calcCheckContainsAll(caseInfo, intersect, map, this, value, abstractInfo);
+    public <T extends PropertyInterface, P extends PropertyInterface> void checkContainsAll(CalcProperty<T> property, CalcProperty<P> intersect, String caption, ImRevMap<P, T> map, CalcPropertyInterfaceImplement<T> value) {
+        property.calcCheckContainsAll(intersect, map, this, value);
     }
 
     public <T extends PropertyInterface, P extends PropertyInterface> void checkAllImplementations(CalcProperty<T> property, ImList<CalcProperty<P>> intersects, ImList<ImRevMap<P, T>> maps) {

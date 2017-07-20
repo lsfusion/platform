@@ -6,9 +6,10 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.*;
-import lsfusion.base.col.interfaces.mutable.add.MAddCol;
 import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
 import lsfusion.base.col.interfaces.mutable.add.MAddMap;
+import lsfusion.base.col.interfaces.mutable.add.MAddSet;
+import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.base.col.lru.LRUWSSVSMap;
@@ -19,6 +20,7 @@ import lsfusion.server.caches.ManualLazy;
 import lsfusion.server.caches.OuterContext;
 import lsfusion.server.caches.ParamExpr;
 import lsfusion.server.caches.hash.HashContext;
+import lsfusion.server.data.Table;
 import lsfusion.server.data.Value;
 import lsfusion.server.data.expr.*;
 import lsfusion.server.data.expr.query.*;
@@ -31,6 +33,9 @@ import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.where.DNFWheres;
 import lsfusion.server.data.where.Where;
 import lsfusion.utils.GreedyTreeBuilding;
+import lsfusion.utils.SpanningTreeWithBlackjack;
+import lsfusion.utils.prim.Prim;
+import lsfusion.utils.prim.UndirectedGraph;
 
 import java.util.*;
 
@@ -128,6 +133,11 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         return BaseUtils.hashEquals(who,what) || (what instanceof InnerJoin && ((InnerJoin)what).getInnerExpr(who)!=null);
     }
 
+    // аналог верхнего для BaseJoin
+    protected static boolean containsJoinAll(BaseJoin who, WhereJoin what) {
+        return BaseUtils.hashEquals(who,what) || (what instanceof InnerJoin && QueryJoin.getInnerExpr(((InnerJoin)what), who)!=null);
+    }
+
     public WhereJoins and(WhereJoins set) {
         return add(set);
     }
@@ -145,7 +155,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
     public InnerJoins getInnerJoins() {
         if(innerJoins == null) {
             InnerJoins calcInnerJoins = InnerJoins.EMPTY;
-            for(WhereJoin where : getAdjWheres())
+            for(WhereJoin where : wheres)
                 calcInnerJoins = calcInnerJoins.and(where.getInnerJoins());
             innerJoins = calcInnerJoins;
         }
@@ -185,6 +195,13 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
             return join;
         }
 
+        public Stat getKeyStat(MAddMap<BaseJoin, Stat> joinStats, MAddMap<Edge, Stat> keyStats) {
+            return keyStats.get(this).min(joinStats.get(join));
+        }
+        public Stat getPropStat(MAddMap<BaseJoin, Stat> joinStats, MAddMap<BaseExpr, Stat> propStats) {
+            return WhereJoins.getPropStat(expr, joinStats, propStats);
+        }
+
         private Edge(BaseJoin<K> join, K key, BaseExpr expr) {
             this.join = join;
             this.key = key;
@@ -204,6 +221,10 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         public String toString() {
             return expr + " -> " + join + "," + key;
         }
+    }
+
+    private static Stat getPropStat(BaseExpr valueExpr, MAddMap<BaseJoin, Stat> joinStats, MAddMap<BaseExpr, Stat> propStats) {
+        return propStats.get(valueExpr).min(joinStats.get(valueExpr.getBaseJoin()));
     }
 
     public <K extends BaseExpr> StatKeys<K> getStatKeys(ImSet<K> groups, KeyStat keyStat, StatType type) {
@@ -229,10 +250,52 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         return getStatKeys(groups, rows, keyStat, type, null);
     }
 
+    public static boolean useCost = true;
+
+    private static long maxDiff = 0;
+
     // assert что rows >= result
     // можно rows в StatKeys было закинуть как и Cost, но используется только в одном месте и могут быть проблемы с кэшированием
     public <K extends BaseExpr> StatKeys<K> getStatKeys(ImSet<K> groups, Result<Stat> rows, final KeyStat keyStat, StatType type, Result<ImSet<BaseExpr>> usedNotNullJoins) {
-        return getCostStatKeys(groups, rows, keyStat, type, usedNotNullJoins);
+
+//        StatKeys<K> costStatKeys = getCostStatKeys(groups, rows, keyStat, type, usedNotNullJoins);
+//        StatKeys<K> oldStatKeys = getOldStatKeys(groups, rows, keyStat, type);
+//        StatKeys<K> exactOldStatKeys = getExactOldStatKeys(groups, rows, keyStat, type);
+//
+//        if(!BaseUtils.hashEquals(costStatKeys, oldStatKeys)) {
+//            exactOldStatKeys = exactOldStatKeys;
+//            if(!(BaseUtils.hashEquals(costStatKeys.getRows(), exactOldStatKeys.getRows()) && BaseUtils.hashEquals(costStatKeys.getDistinct(), exactOldStatKeys.getDistinct())))
+//                exactOldStatKeys = exactOldStatKeys;
+//        }
+//
+//        if(1==1) return costStatKeys;
+
+        if(useCost || usedNotNullJoins != null)
+            return getCostStatKeys(groups, rows, keyStat, type, usedNotNullJoins);
+        else
+            return getExactOldStatKeys(groups, rows, keyStat, type);
+    }
+
+    private <K extends BaseExpr> StatKeys<K> getOldStatKeys(ImSet<K> groups, Result<Stat> rows, KeyStat keyStat, StatType type) {
+        // groups учавствует только в дополнительном фильтре
+        final MAddMap<BaseJoin, Stat> joinStats = MapFact.mAddOverrideMap();
+        final MAddMap<BaseExpr, Stat> exprStats = MapFact.mAddOverrideMap();
+        final MAddMap<BaseJoin, Cost> indexedStats = MapFact.<BaseJoin, Cost>mAddOverrideMap();
+
+        Result<ImMap<Edge, Stat>> edgeStats = new Result<>(); // assert edge.expr == key
+        buildBalancedGraph(groups, joinStats, exprStats, edgeStats, indexedStats, type, keyStat);
+
+        final Stat finalStat = getStat(joinStats, edgeStats.result);
+        if(rows!=null)
+            rows.set(finalStat);
+
+        DistinctKeys<K> distinct = new DistinctKeys<>(groups.mapValues(new GetValue<Stat, K>() {
+            public Stat getMapValue(K value) { // для groups, берем min(из статистики значения, статистики его join'а)
+                return getPropStat(value, joinStats, exprStats).min(finalStat);
+            }
+        }));
+        //, Cost cost
+        return StatKeys.create(getIndexedStat(indexedStats, finalStat), finalStat, distinct);
     }
 
     private static class JoinCostStat<Z> extends CostStat {
@@ -258,11 +321,6 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         }
 
         @Override
-        public Cost getCostWithLookAhead() {
-            return statKeys.getCost();
-        }
-
-        @Override
         public Stat getStat() {
             return statKeys.getRows();
         }
@@ -274,7 +332,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
 
         @Override
         public Cost getMaxCost() {
-            return statKeys.getCost();
+            return getCost();
         }
 
         @Override
@@ -342,8 +400,6 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         // основные параметры
         private final Cost cost;
         private final Stat stat;
-        
-        private final Cost lookAheadCost;
 
         // доппараметры, в основном для детерменированности
         private final Cost leftCost; // assert что больше внутренних
@@ -364,8 +420,8 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
 //        private final Stat[] bEdgeStats;
 //        private final List<? extends Edge> edges;
 
-        public MergeCostStat(Cost lookAheadCost, MergeCostStat costStat) {
-            this(costStat.cost, lookAheadCost, costStat.stat, costStat.inJoins, costStat.adjJoins,
+        public MergeCostStat(Cost cost, MergeCostStat costStat) {
+            this(cost, costStat.stat, costStat.inJoins, costStat.adjJoins,
                     costStat.leftCost, costStat.rightCost, costStat.leftStat, costStat.rightStat, costStat.joinsCount,
                     costStat.joinStats, costStat.keyStats, costStat.propStats, costStat.pushCosts, costStat.usedNotNulls
 //                    ,costStat.left, costStat.right, costStat.aEdgeStats, costStat.bEdgeStats, costStat.edges
@@ -376,21 +432,20 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
                              Cost leftCost, Cost rightCost, Stat leftStat, Stat rightStat, int joinsCount
 //                             , CostStat left, CostStat right, Stat[] aEdgeStats, Stat[] bEdgeStats, List<? extends Edge> edges
                             ) {
-            this(cost, null, stat, inJoins, adjJoins,
+            this(cost, stat, inJoins, adjJoins,
                     leftCost, rightCost, leftStat, rightStat, joinsCount,
                     null, null, null, null, null
 //                    , left, right, aEdgeStats, bEdgeStats, edges
                 );
         }
 
-        public MergeCostStat(Cost cost, Cost lookAheadCost, Stat stat, BitSet inJoins, BitSet adjJoins,
+        public MergeCostStat(Cost cost, Stat stat, BitSet inJoins, BitSet adjJoins,
                              Cost leftCost, Cost rightCost, Stat leftStat, Stat rightStat, int joinsCount,
                              ImMap<BaseJoin, Stat> joinStats, ImMap<BaseJoin, DistinctKeys> keyStats, ImMap<BaseExpr, Stat> propStats, ImMap<QueryJoin, PushCost> pushCosts, ImSet<BaseExpr> usedNotNulls
 //                             , CostStat left, CostStat right, Stat[] aEdgeStats, Stat[] bEdgeStats, List<? extends Edge> edges
                             ) {
             super(usedNotNulls, inJoins, adjJoins, pushCosts);
             this.cost = cost;
-            this.lookAheadCost = lookAheadCost;
             this.stat = stat;
 
             this.leftCost = leftCost;
@@ -418,14 +473,6 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         @Override
         public Cost getCost() {
             return cost;
-        }
-
-        @Override
-        public Cost getCostWithLookAhead() {
-            Cost result = cost;
-            if(lookAheadCost != null)
-                result = result.or(lookAheadCost);
-            return result;
         }
 
         @Override
@@ -596,7 +643,6 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
 
         public abstract BaseJoin getJoin();
         public abstract Cost getCost();
-        public abstract Cost getCostWithLookAhead();
         public abstract Stat getStat();
 
         public abstract Cost getMinCost();
@@ -691,7 +737,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
             if(o == max)
                 return -1;
 
-            int compare = Integer.compare(getCostWithLookAhead().rows.getWeight(), o.getCostWithLookAhead().rows.getWeight());
+            int compare = Integer.compare(getCost().rows.getWeight(), o.getCost().rows.getWeight());
             if(compare != 0)
                 return compare;
             compare = Integer.compare(getStat().getWeight(), o.getStat().getWeight());
@@ -721,7 +767,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
     }
 
     private interface CostResult<T> {
-        T calculate(CostStat costStat, ImSet<Edge> edges, MAddMap<BaseJoin, Stat> joinStats, MAddMap<BaseExpr, PropStat> exprStats);
+        T calculate(CostStat costStat, ImSet<Edge> edges, MAddMap<BaseExpr, PropStat> exprStats);
     }
 
     public <K extends BaseExpr, T> T calculateCost(ImSet<K> groups, QueryJoin join, boolean pushLargeDepth, boolean needNotNulls, final KeyStat keyStat, final StatType type, CostResult<T> result) {
@@ -737,7 +783,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
 
         CostStat costStat = getCost(join, pushLargeDepth, needNotNulls, joinStats, indexedStats, exprStats, keyDistinctStats, edges.result, keyStat, type);
 
-        return result.calculate(costStat, edges.result, joinStats, exprStats);
+        return result.calculate(costStat, edges.result, exprStats);
     }
 
     public <K extends BaseExpr, Z> StatKeys<K> getCostStatKeys(final ImSet<K> groups, final Result<Stat> rows, final KeyStat keyStat, final StatType type, final Result<ImSet<BaseExpr>> usedNotNullJoins) {
@@ -753,7 +799,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         }
 
         return calculateCost(groups, null, false, usedNotNullJoins != null, keyStat, type, new CostResult<StatKeys<K>>() {
-            public StatKeys<K> calculate(CostStat costStat, ImSet<Edge> edges, MAddMap<BaseJoin, Stat> joinStats, MAddMap<BaseExpr, PropStat> exprStats) {
+            public StatKeys<K> calculate(CostStat costStat, ImSet<Edge> edges, MAddMap<BaseExpr, PropStat> exprStats) {
                 Stat stat = costStat.getStat();
                 Cost cost = costStat.getCost();
                 if(rows != null)
@@ -765,22 +811,17 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         });
     }
 
-    // assert что не включает queryJoin
-    public <K extends BaseExpr, Z extends Expr> Where getCostPushWhere(final QueryJoin<Z, ?, ?, ?> queryJoin, boolean pushLargeDepth, final UpWheres<WhereJoin> upWheres, final KeyStat keyStat, final StatType type, final Result<Pair<ImRevMap<Z, KeyExpr>, Where>> pushJoinWhere) {
-        return and(new WhereJoins(queryJoin)).getInnerCostPushWhere(queryJoin, pushLargeDepth, upWheres, keyStat, type, pushJoinWhere);
-    }
+    public <K extends BaseExpr, Z extends Expr> Where getCostPushWhere(final QueryJoin<Z, ?, ?, ?> queryJoin, boolean pushLargeDepth, final UpWheres<WhereJoin> upWheres, final KeyStat keyStat, final StatType type) {
+        ImSet<BaseExpr> groups = queryJoin.getJoins().values().toSet();
 
-    // assert что включает queryJoin
-    private <K extends BaseExpr, Z extends Expr> Where getInnerCostPushWhere(final QueryJoin<Z, ?, ?, ?> queryJoin, boolean pushLargeDepth, final UpWheres<WhereJoin> upWheres, final KeyStat keyStat, final StatType type, final Result<Pair<ImRevMap<Z, KeyExpr>, Where>> pushJoinWhere) {
-//        ImSet<BaseExpr> groups = queryJoin.getJoins().values().toSet(); // по идее не надо, так как включает queryJoin
-        return calculateCost(SetFact.<BaseExpr>EMPTY(), queryJoin, pushLargeDepth, false, keyStat, type, new CostResult<Where>() {
-            public Where calculate(CostStat costStat, ImSet<Edge> edges, MAddMap<BaseJoin, Stat> joinStats, MAddMap<BaseExpr, PropStat> exprStats) {
-                return getCostPushWhere(costStat, edges, queryJoin, upWheres, pushJoinWhere, joinStats);
+        return calculateCost(groups, queryJoin, pushLargeDepth, false, keyStat, type, new CostResult<Where>() {
+            public Where calculate(CostStat costStat, ImSet<Edge> edges, MAddMap<BaseExpr, PropStat> exprStats) {
+                return getCostPushWhere(costStat, edges, queryJoin, upWheres);
             }
         });
     }
 
-    private boolean recProceedChildrenCostWhere(BaseJoin join, MAddExclMap<BaseJoin, Boolean> proceeded, MMap<BaseJoin, MiddleTreeKeep> mMiddleTreeKeeps, MSet<BaseExpr> mAllKeeps, MSet<BaseExpr> mTranslate, boolean keepThis, ImSet<BaseJoin> keepJoins, FunctionSet<BaseJoin> notKeepJoins, ImMap<BaseJoin, ImSet<Edge>> inEdges) {
+    private boolean recProceedChildrenCostWhere(BaseJoin join, MAddExclMap<BaseJoin, Boolean> proceeded, MMap<BaseJoin, MiddleTreeKeep> mMiddleTreeKeeps, MSet<BaseExpr> mAllKeeps, MSet<BaseExpr> mTranslate, boolean keepThis, ImSet<BaseJoin> keepJoins, ImMap<BaseJoin, ImSet<Edge>> inEdges) {
         Boolean cachedAllKeep = proceeded.get(join);
         if(cachedAllKeep != null)
             return cachedAllKeep;
@@ -794,11 +835,10 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         boolean allKeep = keepThis;
         for (Edge edge : inJoin) {
             BaseJoin fromJoin = edge.getFrom();
-            BaseExpr fromExpr = edge.expr;
-            boolean inAllKeep = recProceedCostWhere(fromJoin, proceeded, mMiddleTreeKeeps, mAllKeeps, mTranslate, fromExpr, keepThis, keepJoins.contains(fromJoin), keepJoins, notKeepJoins, inEdges);
+            boolean inAllKeep = recProceedCostWhere(fromJoin, proceeded, mMiddleTreeKeeps, mAllKeeps, mTranslate, edge, keepThis, keepJoins.contains(fromJoin), keepJoins, inEdges);
             allKeep = inAllKeep && allKeep;
             if(inAllKeep)
-                mInAllKeeps.add(fromExpr);
+                mInAllKeeps.add(edge.expr);
         }
         if(keepThis && !allKeep) // если этот элемент не "полный", значит понадобятся все child'ы для трансляции, соотвественно пометим "полные" из них
             mAllKeeps.addAll(mInAllKeeps.immutable());
@@ -807,22 +847,18 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         return allKeep;
     }
 
-    private boolean recProceedCostWhere(BaseJoin join, MAddExclMap<BaseJoin, Boolean> proceeded, MMap<BaseJoin, MiddleTreeKeep> mMiddleTreeKeeps, MSet<BaseExpr> mAllKeeps, MSet<BaseExpr> mTranslate, BaseExpr upExpr, boolean upKeep, boolean keepThis, ImSet<BaseJoin> keepJoins, FunctionSet<BaseJoin> notKeepJoins, ImMap<BaseJoin, ImSet<Edge>> inEdges) {
+    private boolean recProceedCostWhere(BaseJoin join, MAddExclMap<BaseJoin, Boolean> proceeded, MMap<BaseJoin, MiddleTreeKeep> mMiddleTreeKeeps, MSet<BaseExpr> mAllKeeps, MSet<BaseExpr> mTranslate, Edge upEdge, boolean upKeep, boolean keepThis, ImSet<BaseJoin> keepJoins, ImMap<BaseJoin, ImSet<Edge>> inEdges) {
         assert keepThis == keepJoins.contains(join);
         if(!keepThis && upKeep && (join instanceof ParamExpr || join instanceof ValueJoin)) // ParamExpr и ValueJoin принудительно делаем keep
             keepThis = true;
 
-        boolean allKeep = recProceedChildrenCostWhere(join, proceeded, mMiddleTreeKeeps, mAllKeeps, mTranslate, keepThis, keepJoins, notKeepJoins, inEdges);
-
-        if(allKeep && join instanceof UnionJoin && ((UnionJoin) join).depends(notKeepJoins)) {
-            allKeep = false; // придется перепроверять так как может оказаться не keep не в графе (а проверку не keep не в графе непонятно как делать)
-        }
+        boolean allKeep = recProceedChildrenCostWhere(join, proceeded, mMiddleTreeKeeps, mAllKeeps, mTranslate, keepThis, keepJoins, inEdges);
 
         if (keepThis) // есть верхний keep join, соответственно это его проблема добавить Where (этот сам "подцепится" после этого)
-            mMiddleTreeKeeps.add(join, upKeep ? IntermediateKeep.instance : new MiddleTopKeep(upExpr)); // есть ребро "наверх", используем выражение из него
+            mMiddleTreeKeeps.add(join, upKeep ? IntermediateKeep.instance : new MiddleTopKeep(upEdge.expr)); // есть ребро "наверх", используем выражение из него
         else
             if (upKeep) // если был keep, а этот не нужен - добавляем трансляцию
-                mTranslate.add(upExpr);
+                mTranslate.add(upEdge.expr);
 
         return allKeep;
     }
@@ -851,7 +887,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
     }
 
     private static abstract class TopKeep extends AKeep implements Keep {
-        public abstract Where getWhere(BaseJoin join, UpWheres<WhereJoin> upWheres, JoinExprTranslator translator);
+        public abstract Where getWhere(BaseJoin join, UpWheres<WhereJoin> upWheres);
     }
 
     private static class MiddleTopKeep extends TopKeep implements MiddleTreeKeep {
@@ -861,8 +897,8 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
             this.expr = expr;
         }
 
-        public Where getWhere(BaseJoin join, UpWheres<WhereJoin> upWheres, JoinExprTranslator translator) {
-            return JoinExprTranslator.translateExpr((Expr)expr, translator).getWhere();
+        public Where getWhere(BaseJoin join, UpWheres<WhereJoin> upWheres) {
+            return expr.getWhere();
         }
     }
 
@@ -870,12 +906,19 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         private static final TopTreeKeep instance = new TopTreeKeep();
 
         @Override
-        public Where getWhere(BaseJoin join, UpWheres<WhereJoin> upWheres, JoinExprTranslator translator) {
-            return getUpWhere((WhereJoin) join, upWheres.get((WhereJoin) join), translator);
+        public Where getWhere(BaseJoin join, UpWheres<WhereJoin> upWheres) {
+            return getUpWhere((WhereJoin) join, upWheres.get((WhereJoin) join));
         }
     }
 
-    private <Z extends Expr> Where getCostPushWhere(CostStat cost, ImSet<Edge> edges, QueryJoin<Z, ?, ?, ?> queryJoin, UpWheres<WhereJoin> upWheres, Result<Pair<ImRevMap<Z, KeyExpr>, Where>> pushJoinWhere, final MAddMap<BaseJoin, Stat> joinStats) {
+    private static boolean keep(BaseJoin from, ImSet<BaseJoin> keepJoins) {
+        if(from instanceof ParamExpr || from instanceof ValueJoin) // докидываем ParamExpr, потом надо будет оптимизировать если будет критично, чтобы не пересоздавать коллекци с merge
+            return true;
+
+        return false;
+    }
+
+    private <Z extends Expr> Where getCostPushWhere(CostStat cost, ImSet<Edge> edges, QueryJoin<Z, ?, ?, ?> queryJoin, UpWheres<WhereJoin> upWheres) {
         ImSet<Z> pushedKeys = (ImSet<Z>) cost.getPushKeys(queryJoin);
         if(pushedKeys == null) { // значит ничего не протолкнулось
             // пока падает из-за неправильного computeVertex видимо
@@ -883,13 +926,8 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
             return null;
         }
         assert !pushedKeys.isEmpty();
-        final ImSet<BaseJoin> keepJoins = cost.getJoins().removeIncl(queryJoin);
-        FunctionSet<BaseJoin> notKeepJoins = new SFunctionSet<BaseJoin>() {
-            @Override
-            public boolean contains(BaseJoin element) {
-                return !keepJoins.contains(element) && joinStats.containsKey(element);
-            }
-        };
+        ImSet<BaseJoin> keepJoins = cost.getJoins().removeIncl(queryJoin);
+        ImMap<Z, BaseExpr> pushMap = queryJoin.getJoins().filterIncl(pushedKeys);
 
         final ImMap<BaseJoin, ImSet<Edge>> inEdges = edges.group(new BaseUtils.Group<BaseJoin, Edge>() {
             public BaseJoin group(Edge value) {
@@ -910,7 +948,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         for(WhereJoin where : adjWheres) { // бежим по upWhere
             boolean keepThis = keepJoins.contains(where);
 
-            recProceedChildrenCostWhere(where, proceeded, mMiddleTreeKeeps, mFullExprs, mTranslate, keepThis, keepJoins, notKeepJoins, inEdges);
+            recProceedChildrenCostWhere(where, proceeded, mMiddleTreeKeeps, mFullExprs, mTranslate, keepThis, keepJoins, inEdges);
 
             if(keepThis)
                 mTopKeys.exclAdd(where);
@@ -930,27 +968,22 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
             BaseJoin join = keeps.getKey(i);
             TopKeep keep = keeps.getValue(i);
 
-            boolean allKeep = proceeded.get(join);
-            Where upJoinWhere = keep.getWhere(join, upWheres, allKeep ? null : translator);
+            Where upJoinWhere = keep.getWhere(join, upWheres);
 
-            assert !allKeep || BaseUtils.hashEquals(upJoinWhere, upJoinWhere.translateExpr(translator));
+            boolean allKeep = proceeded.get(join);
+            if(!allKeep)
+                upJoinWhere = upJoinWhere.translateExpr(translator);
+            else
+                assert BaseUtils.hashEquals(upJoinWhere, upJoinWhere.translateExpr(translator));
 
             upPushWhere = upPushWhere.and(upJoinWhere);
         }
 
         Result<Where> pushExtraWhere = new Result<>(); // для partition
-        ImMap<Z, BaseExpr> queryJoins = queryJoin.getJoins();
-        ImMap<Z, Expr> translatedPush = translator.translate(queryJoins.filterIncl(pushedKeys));
-        ImMap<Expr, ? extends Expr> translatedPushGroup = queryJoin.getPushGroup(translatedPush, true, pushExtraWhere);
+        ImMap<Expr, ? extends Expr> translatedPush = queryJoin.getPushGroup(translator.translate(pushMap), true, pushExtraWhere);
         if(pushExtraWhere.result != null)
             upPushWhere = upPushWhere.and(pushExtraWhere.result.translateExpr(translator));
-        if(pushJoinWhere != null && queryJoins.size() == pushedKeys.size()) { // последняя проверка - оптимизация
-            assert queryJoin instanceof GroupJoin;
-            assert BaseUtils.hashEquals(translatedPush, translatedPushGroup);
-            ImRevMap<Z, KeyExpr> mapKeys = KeyExpr.getMapKeys(translatedPush.keys());
-            pushJoinWhere.set(new Pair<>(mapKeys, GroupExpr.create(translatedPush, upPushWhere, mapKeys).getWhere()));
-        }
-        return GroupExpr.create(translatedPushGroup, upPushWhere, translatedPushGroup.keys().toMap()).getWhere();
+        return GroupExpr.create(translatedPush, upPushWhere, translatedPush.keys().toMap()).getWhere();
     }
 
     private <K extends BaseExpr, Z> CostStat getCost(final QueryJoin pushJoin, final boolean pushLargeDepth, final boolean needNotNulls, MAddMap<BaseJoin, Stat> joinStats, MAddMap<BaseJoin, Cost> indexedStats, final MAddMap<BaseExpr, PropStat> exprStats, MAddMap<BaseJoin, DistinctKeys> keyDistinctStats, ImSet<Edge> edges, final KeyStat keyStat, final StatType type) {
@@ -1012,14 +1045,14 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
             compute = treeBuilding.compute(costCalc);
         result = compute.node.getCost();
 
-        if(pushJoin != null && pushCost.pushCompareTo(result, pushJoin, pushLargeDepth || pushJoin instanceof LastJoin) <= 0) // так как текущий computeWithVertex всегда берет хоть одно ребро, последняя проверка нужна так как есть оптимизация быстрой остановки когда cost становится равным Max, выходить - а эта проверка пессимистична (пытается протолкнуть даже при совпадении cost'ов) 
+        if(pushJoin != null && pushCost.pushCompareTo(result, pushJoin, pushLargeDepth) <= 0) // так как текущий computeWithVertex всегда берет хоть одно ребро
             return pushCost;
         else
             return result;
     }
 
     private static MergeCostStat max = new MergeCostStat(null, null, null, null, null, null, null, null, 0
-//                                                            , null, null, null, null, null
+                                                            , null, null, null, null, null
                                                         );
 
     private static <K extends BaseExpr, Z> GreedyTreeBuilding.CalculateCost<BaseJoin, CostStat, Edge<K>> getCostFunc(final QueryJoin pushJoin, final MAddMap<BaseExpr, PropStat> exprStats, final boolean needNotNulls, final KeyStat keyStat, final StatType type, final List<CostStat> costs, final List<Collection<Edge<K>>> edgesOut, final List<Collection<Edge<K>>> edgesIn) {
@@ -1337,7 +1370,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
                     }
                     ImMap<BaseExpr, Stat> newPropStats = aCostStat.getPropStats().addExcl(bCostStat.getPropStats()).merge(mPropAdjStats.immutable(), minStat);
     
-                    return new MergeCostStat(newCost, null, newStat, newInJoins, newAdjJoins,
+                    return new MergeCostStat(newCost, newStat, newInJoins, newAdjJoins,
                             aCost, bBaseCost, aAdjStat, bAdjStat, newJoinStats.size(),
                             newJoinStats, newKeyStats, newPropStats, newPushCosts, newUsedNotNulls
 //                            , aCostStat, bCostStat, aEdgeStats, bEdgeStats, edgesList
@@ -1413,6 +1446,150 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         });
     }
 
+    private Stat getStat(MAddMap<BaseJoin, Stat> joinStats, ImMap<Edge, Stat> edgeStats) {
+        return getNodeStat(joinStats).div(getEdgeStat(joinStats, edgeStats));
+    }
+
+    private Cost getIndexedStat(MAddMap<BaseJoin, Cost> indexedStats, Stat finalStat) {
+        Cost tableStat = new Cost(finalStat);
+        for(int i=0,size=indexedStats.size();i<size;i++)
+            if(indexedStats.getKey(i) instanceof InnerJoin)
+                tableStat = tableStat.or(indexedStats.getValue(i));
+        return tableStat;
+    }
+
+    private Stat getNodeStat(MAddMap<BaseJoin, Stat> nodeStats) {
+        Stat rowStat = Stat.ONE;
+        for(int i=0,size=nodeStats.size();i<size;i++)
+            rowStat = rowStat.mult(nodeStats.getValue(i));
+        return rowStat;
+    }
+
+    private <K extends BaseExpr> void buildBalancedGraph(ImSet<K> groups, final MAddMap<BaseJoin, Stat> joinStats, final MAddMap<BaseExpr, Stat> exprStats, Result<ImMap<Edge, Stat>> edgeStats, MAddMap<BaseJoin, Cost> indexedStats, StatType statType, KeyStat keyStat) {
+
+        final MAddMap<Edge, Stat> keyStats = MapFact.mAddOverrideMap();
+
+        Result<ImSet<Edge>> edges = new Result<>();
+        MAddMap<BaseExpr, PropStat> propStats = MapFact.mAddOverrideMap();
+        buildGraphWithStats(groups, edges, joinStats, propStats, keyStats, null, indexedStats, statType, keyStat, null);
+        for(int i=0,size=propStats.size();i<size;i++)
+            exprStats.add(propStats.getKey(i), propStats.getValue(i).distinct);
+
+        balanceGraph(edges.result, joinStats, exprStats, keyStats, indexedStats);
+
+        edgeStats.set(edges.result.mapValues(new GetValue<Stat, Edge>() {
+            public Stat getMapValue(Edge value) {
+                Stat propStat = value.getPropStat(joinStats, exprStats);
+                assert propStat.equals(value.getKeyStat(joinStats, keyStats));
+                return propStat;
+            }}));
+    }
+
+    private static class Balancing implements Comparable<Balancing> {
+        public final boolean key; // ключ или вершина
+        public final Cost indexStat; // текущая индексная статистика
+        public final Stat reduce; // степень уменьшения
+        public final Stat reduceTo; // к чему уменьшаем
+
+        public Balancing(boolean key, Cost indexStat, Stat reduce, Stat reduceTo) {
+            this.key = key;
+            this.indexStat = indexStat;
+            this.reduce = reduce;
+            this.reduceTo = reduceTo;
+        }
+
+        public final static Balancing MAX = new Balancing(false, null, null, null);
+
+        private int statCompareTo(Balancing o) {
+            int result;
+
+            result = Integer.compare(indexStat.rows.getWeight(), o.indexStat.rows.getWeight());
+            if(result != 0)
+                return result; // min / max
+
+            result = Integer.compare(reduce.getWeight(), o.reduce.getWeight());
+            if(result != 0)
+                return result; // min / max
+
+            result = Integer.compare(reduceTo.getWeight(), o.reduceTo.getWeight());
+            if(result != 0)
+                return -result; // max / min
+
+            return 0;
+        }
+
+        @Override
+        public int compareTo(Balancing o) {
+            if(this == MAX)
+                return o == MAX ? 0 : 1;
+            if(o == MAX)
+                return -1;
+
+//            int result;
+//
+//            result = costReduce.compareTo(o.costReduce);
+//            if(result != 0)
+//                return result;
+
+            // агрессивность редуцирования
+            int statCompare = statCompareTo(o);
+
+//            if(costReduce.equals(CostReduce.NONE))
+//                return -statCompare; // минимальная агрессивность, пытаемся вернуться к "индексированному" редуцированию
+//            else
+                return statCompare; // максимальная агрессивность, пытаемся по максимуму редуцировать "тяжелые" join'ы
+        }
+    }
+
+    private static Balancing get(Edge edge, MAddMap<BaseJoin, Stat> joinStats, MAddMap<BaseExpr, Stat> exprStats, MAddMap<Edge, Stat> keyStats, MAddMap<BaseJoin, Cost> indexedStats) {
+        Stat keys = edge.getKeyStat(joinStats, keyStats);
+        Stat values = edge.getPropStat(joinStats, exprStats);
+
+        if(keys.equals(values))
+            return null;
+
+        boolean key = values.less(keys);
+        if(key)
+            return new Balancing(true, indexedStats.get(edge.join), keys.div(values), values);
+        else
+            return new Balancing(false, indexedStats.get(edge.expr.getBaseJoin()), values.div(keys), keys);
+    }
+
+    private void balanceGraph(ImSet<Edge> edges, MAddMap<BaseJoin, Stat> joinStats, MAddMap<BaseExpr, Stat> exprStats, MAddMap<Edge, Stat> keyStats, MAddMap<BaseJoin, Cost> indexedStats) {
+
+        // ищем несбалансированное ребро с максимальным costReduce, или
+        Set<Edge> unbalancedEdges = SetFact.mAddRemoveSet(edges);
+
+        while(unbalancedEdges.size() > 0) {
+            Balancing bestBalancing = null; Edge<?> bestEdge = null;
+            for(Edge edge : unbalancedEdges) {
+                Balancing balancing = get(edge, joinStats, exprStats, keyStats, indexedStats);
+                if(balancing != null) {
+                    if (bestBalancing == null || balancing.compareTo(bestBalancing) < 0) { // если нашли новый минимум про старый забываем
+                        bestBalancing = balancing;
+                        bestEdge = edge;
+                    }
+                }
+            }
+            if(bestBalancing == null)
+                break;
+
+            BaseJoin decreaseJoin;
+            Stat decrease = bestBalancing.reduce;
+            if(!bestBalancing.key) { // балансируем значение
+                decreaseJoin = bestEdge.expr.getBaseJoin();
+                exprStats.add(bestEdge.expr, bestBalancing.reduceTo); // это и есть разница
+            } else { // балансируем ключ, больше он использоваться не будет
+                decreaseJoin = bestEdge.join;
+                keyStats.add(bestEdge, bestBalancing.reduceTo);
+            }
+            joinStats.add(decreaseJoin, joinStats.get(decreaseJoin).div(decrease));
+
+            if(indexedStats != null && decreaseJoin instanceof Table.Join && (bestBalancing.key || (bestEdge.expr.isIndexed() && !(bestEdge.join instanceof CalculateJoin))))
+                indexedStats.add((Table.Join) decreaseJoin, indexedStats.get((Table.Join) decreaseJoin).div(decrease));
+        }
+    }
+
     private <K extends BaseExpr> void buildGraphWithStats(ImSet<K> groups, Result<ImSet<Edge>> edges, MAddMap<BaseJoin, Stat> joinStats, MAddMap<BaseExpr, PropStat> exprStats, MAddMap<Edge, Stat> keyStats,
                                                           MAddMap<BaseJoin, DistinctKeys> keyDistinctStats, MAddMap<BaseJoin, Cost> indexedStats, StatType statType, KeyStat keyStat, QueryJoin keepIdentJoin) {
 
@@ -1466,17 +1643,9 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
             queue.add(join);
     }
 
-    private static void addExpr(BaseJoin join, MSet<BaseJoin> mJoins, Queue<BaseJoin> queue, QueryJoin keepIdentJoin) {
-        if(keepIdentJoin != null && BaseUtils.hashEquals(join, keepIdentJoin))
-            join = keepIdentJoin;
-        if(!mJoins.add(join))
-            queue.add(join);
-    }
-
     private List<WhereJoin> getAdjIntervalWheres(Result<UpWheres<WhereJoin>> upAdjWheres, QueryJoin excludeQueryJoin) {
         // в принципе в cost based это может быть не нужно, просто нужно сделать result cost и stat объединения двух ExprIndexedJoin = AverageIntervalStat и тогда жадняк сам разберется
         boolean hasExprIndexed = false; // оптимизация
-        WhereJoin[] wheres = getAdjWheres();
         for(WhereJoin valueJoin : wheres)
             if(valueJoin instanceof ExprIndexedJoin) {
                 hasExprIndexed = true;
@@ -1499,18 +1668,11 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         return result;
     }
 
-    private WhereJoin[] getAdjWheres() {
-        return wheres;
-    }
-
     private <K extends BaseExpr> void buildGraph(ImSet<K> groups, Result<ImSet<Edge>> edges, Result<ImSet<BaseExpr>> exprs, Result<ImSet<BaseJoin>> joins, KeyStat keyStat, StatType statType, QueryJoin keepIdentJoin) {
         MExclSet<Edge> mEdges = SetFact.mExclSet();
         MSet<BaseExpr> mExprs = SetFact.mSet();
         MSet<BaseJoin> mJoins = SetFact.mSet();
         Queue<BaseJoin> queue = new LinkedList<>();
-
-        // для того чтобы сгруппировать одинаковые expr и тем самым создать виртуальную связь key-key (без join'а самого expr'а)
-        MAddExclMap<BaseExpr, MAddCol<Pair<BaseJoin<Object>, Object>>> joinExprEdges = MapFact.mAddExclMap();
 
         // собираем все ребра и вершины (без ExprIndexedJoin они все равно не используются при подсчете статистики, но с интервалами)
         for(WhereJoin valueJoin : getAdjIntervalWheres(null, keepIdentJoin))
@@ -1528,56 +1690,13 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
                 Object joinKey = joinExprs.getKey(i);
                 BaseExpr joinExpr = joinExprs.getValue(i);
 
-                InnerBaseJoin<?> exprJoin = joinExpr.getBaseJoin();
-                
-                if(exprJoin.getJoins().isEmpty()) { // оптимизация (хотя и не до конца правильная если скажем это GroupJoin без параметров, но большим cost'ом)
-                    addExpr(mEdges, mExprs, join, joinKey, joinExpr);
-                } else {
-                    MAddCol<Pair<BaseJoin<Object>, Object>> exprEdges = joinExprEdges.get(joinExpr);
-                    if (exprEdges == null) {
-                        exprEdges = ListFact.mAddCol();
-                        joinExprEdges.exclAdd(joinExpr, exprEdges);
-                    }
-                    exprEdges.add(new Pair<>(join, joinKey));
-                }
+                Edge edge = new Edge(join, joinKey, joinExpr);
+                mEdges.exclAdd(edge);
+                mExprs.add(joinExpr);
 
-                addQueueJoin(exprJoin, mJoins, queue, keepIdentJoin);
+                addQueueJoin(joinExpr.getBaseJoin(), mJoins, queue, keepIdentJoin);
             }
         }
-
-        for(int i=0,size=joinExprEdges.size();i<size;i++) {
-            BaseExpr joinExpr = joinExprEdges.getKey(i);
-            MAddCol<Pair<BaseJoin<Object>, Object>> exprEdges = joinExprEdges.getValue(i);
-
-            Pair<BaseJoin<Object>, Object> singleEdge = null; // оптимизация, чтобы не создавать не нужные вершины
-            BaseExpr singleExpr = null;            
-            KeyJoinExpr keyJoinExpr = null;;
-            for(int j=0,sizeJ=exprEdges.size();j<sizeJ;j++) {
-                Pair<BaseJoin<Object>, Object> exprEdge = exprEdges.get(j);
-                if(((BaseJoin)exprEdge.first) instanceof ExprJoin && !((ExprJoin)exprEdge.first).canBeKeyJoined()) { // не создаем промежуточную вершину, чтобы не протолкнулся висячий ключ
-                    addExpr(mEdges, mExprs, exprEdge.first, exprEdge.second, joinExpr);
-                } else {
-                    if(singleEdge == null ) {
-                        singleEdge = exprEdge;
-                        singleExpr = joinExpr;
-                    } else {
-                        if(keyJoinExpr == null)
-                            keyJoinExpr = new KeyJoinExpr(joinExpr);
-                        singleExpr = keyJoinExpr;
-                        addExpr(mEdges, mExprs, exprEdge.first, exprEdge.second, keyJoinExpr);
-                    }
-                }                    
-            }
-            
-            if(keyJoinExpr != null) {
-                KeyJoinExpr baseJoin = keyJoinExpr.getBaseJoin();
-                mJoins.add(baseJoin);
-                addExpr(mEdges, mExprs, baseJoin, 0, joinExpr);
-            }            
-            if(singleEdge != null)
-                addExpr(mEdges, mExprs, singleEdge.first, singleEdge.second, singleExpr);
-        }
-
         exprs.set(mExprs.immutable());
 
         // добавляем notNull статистику
@@ -1594,36 +1713,228 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         edges.set(mEdges.immutable());
     }
 
-    private static void addExpr(MExclSet<Edge> mEdges, MSet<BaseExpr> mExprs, BaseJoin<Object> join, Object joinKey, BaseExpr joinExpr) {
-        Edge edge = new Edge(join, joinKey, joinExpr);
-        mEdges.exclAdd(edge);
-        mExprs.add(joinExpr);
+    private Stat getEdgeStat(MAddMap<BaseJoin, Stat> joinStats, ImMap<Edge, Stat> edgeStats) {
+        // высчитываем total
+
+        int pessStatType = Settings.get().getPessStatType();
+        
+        Stat total = null;
+        
+        if(pessStatType != 3) {
+            total = Stat.ONE;
+            for (Stat stat : edgeStats.valueIt()) {
+                total = total.mult(stat);
+            }
+        }
+
+        if(pessStatType == 0)
+            return total;
+
+        Stat mt = null;
+        // multi tree stat
+        if(pessStatType != 3) {
+            mt = getMTCost(joinStats, edgeStats, total);
+            assert mt.lessEquals(total);
+            
+            if (pessStatType == 1)
+                return mt;
+        }
+
+        // minimum spanning tree cost
+        Stat mst = getMSTExCost(joinStats, edgeStats);
+        if(pessStatType == 3)
+            return mst;
+        
+        assert mst.lessEquals(mt) && pessStatType == 2;        
+        return mst.avg(mt);
     }
 
-    private static Where getUpWhere(WhereJoin join, UpWhere upWhere, JoinExprTranslator translator) {
-        Where result = Where.TRUE;
-        for(BaseExpr baseExpr : ((BaseJoin<?>) join).getJoins().valueIt()) {
-            Expr expr = JoinExprTranslator.translateExpr((Expr) baseExpr, translator);
-            Where where;
-            if(expr instanceof BaseExpr)
-                where = ((BaseExpr) expr).getOrWhere();
-            else
-                where = expr.getWhere(); // orWhere не получим, будет избыточно (andWhere лишний раз проand'ся), но пока другие варианты не понятны
-            result = result.and(where);
+    private Stat getMSTCost(MAddMap<BaseJoin, Stat> joinStats, MAddExclMap<BaseExpr, Set<Edge>> balancedEdges, MAddExclMap<BaseExpr, Stat> balancedStats) {
+        UndirectedGraph<BaseJoin> graph = new UndirectedGraph<>();
+        BaseJoin root = ValueJoin.instance(null); // чтобы создать связность
+        graph.addNode(root);
+        for(int i=0,size=joinStats.size();i<size;i++) {
+            BaseJoin node = joinStats.getKey(i);
+            graph.addNode(node);
+            graph.addEdge(root, node, 0);
         }
-        return upWhere.getWhere(translator).and(result);
+        
+        for(int i=0;i<balancedEdges.size();i++) {
+            BaseExpr bExpr = balancedEdges.getKey(i);
+            BaseJoin from = bExpr.getBaseJoin();
+            for(Edge edge : balancedEdges.getValue(i)) {
+                assert BaseUtils.hashEquals(edge.expr, bExpr);
+                graph.addEdge(from, edge.join, - balancedStats.get(bExpr).getWeight());
+            }
+        }
+        return new Stat(-Prim.mst(graph).calculateTotalEdgeCost(), true);
     }
 
-    public <K extends BaseExpr, Z extends Expr> Where getCostPushWhere(final QueryJoin<Z, ?, ?, ?> queryJoin, boolean pushLargeDepth, UpWheres<WhereJoin> upWheres, KeyStat keyStat, final StatType type, KeyEqual keyEqual) {
-        WhereJoins adjWhereJoins = this;
-        if(!keyEqual.isEmpty()) { // для оптимизации
-            Result<UpWheres<WhereJoin>> equalUpWheres = new Result<>();
-            WhereJoins equalWhereJoins = keyEqual.getWhereJoins(equalUpWheres);
-            adjWhereJoins = adjWhereJoins.and(equalWhereJoins);
-            upWheres = adjWhereJoins.andUpWheres(upWheres, equalUpWheres.result); // можно было бы по идее просто слить addExcl, но на всякий случай сделаем в общем случае
-            keyStat = keyEqual.getKeyStat(keyStat);
+    private Stat getMSTExCost(MAddMap<BaseJoin, Stat> nodeStats, ImMap<Edge, Stat> edgeStats) {
+
+        SpanningTreeWithBlackjack<BaseJoin> graph = new SpanningTreeWithBlackjack<>();
+        for(int i=0,size=nodeStats.size();i<size;i++) {
+            BaseJoin node = nodeStats.getKey(i);
+            graph.addNode(node, node.getJoins().isEmpty() ? 0 : nodeStats.getValue(i).getWeight());
         }
-        return adjWhereJoins.getCostPushWhere(queryJoin, pushLargeDepth, upWheres, keyEqual.getKeyStat(keyStat), type, (Result<Pair<ImRevMap<Z,KeyExpr>,Where>>) null);
+        for(int i=0;i<edgeStats.size();i++) {
+            Edge edge = edgeStats.getKey(i);
+            graph.addEdge(edge.expr.getBaseJoin(), edge.join, edgeStats.getValue(i).getWeight());
+        }
+
+        int maxIterations = Settings.get().getMaxEdgeIterations();
+        return new Stat(graph.calculate(BaseUtils.max(edgeStats.size() - nodeStats.size(), 1) * maxIterations), true);
+    }
+
+    private Stat getMTCost(MAddMap<BaseJoin, Stat> joinStats, ImMap<Edge, Stat> edgeStats, Stat totalBalanced) {
+
+        ImMap<BaseExpr, ImSet<Edge>> outEdges = edgeStats.keys().group(new BaseUtils.Group<BaseExpr, Edge>() {
+            public BaseExpr group(Edge value) {
+                return value.expr;
+            }});
+
+        MExclMap<BaseJoin, MExclSet<Edge>> mEdges = MapFact.mExclMap();
+        for(int i=0,size=joinStats.size();i<size;i++) {
+            mEdges.exclAdd(joinStats.getKey(i), SetFact.<Edge>mExclSet());
+        }
+        for(int i=0;i<outEdges.size();i++) {
+            BaseExpr bExpr = outEdges.getKey(i);
+            BaseJoin from = bExpr.getBaseJoin();
+            MExclSet<Edge> mFromEdges = mEdges.get(from);
+            for(Edge edge : outEdges.getValue(i)) {
+                assert BaseUtils.hashEquals(edge.expr, bExpr);
+                mFromEdges.exclAdd(edge);
+            }            
+        }
+        ImMap<BaseJoin, ImSet<Edge>> edges = MapFact.immutable(mEdges);
+        Pair<Integer, ImSet<Edge>> mt = recBuildMT(MapFact.buildGraphOrder(edges, new GetValue<BaseJoin, Edge>() {
+            public BaseJoin getMapValue(Edge value) {
+                return value.join;
+            }}), edges, edgeStats.fnGetValue(), new HashSet<Edge>(), 0, new HashMap<BaseJoin, ImMap<BaseJoin, Edge>>(), 0, null);
+        if(mt == null)
+            return totalBalanced;
+        return totalBalanced.div(new Stat(mt.first, true));
+    }
+    
+    // proceeded - из какой вершины в какую можно пройти и вершина через которую надо идти
+    private Pair<Integer, ImSet<Edge>> recBuildMT(ImOrderSet<BaseJoin> order, ImMap<BaseJoin, ImSet<Edge>> edgesOuts, final GetValue<Stat, Edge> edgeStats, Set<Edge> removedEdges, int removedStat, Map<BaseJoin, ImMap<BaseJoin, Edge>> currentTree, int currentIndex, Pair<Integer, ImSet<Edge>> currentMin) {
+        if(currentIndex >= order.size()) {
+            return new Pair<>(removedStat, SetFact.fromJavaSet(removedEdges));
+        }
+        
+        BaseJoin currentNode = order.get(currentIndex);
+        ImSet<Edge> edgesOut = edgesOuts.get(currentNode);
+        
+        MExclMap<BaseJoin, Edge> edgeOutTree = MapFact.mExclMap();
+        for(Edge edgeOut : edgesOut) {
+            if(removedEdges.contains(edgeOut)) // избыточная проверка с точки зрения того что removedEdges содержит уже отработанные node'ы
+                continue;
+            ImMap<BaseJoin, Edge> reachableEdges = currentTree.get(edgeOut.join).addExcl(edgeOut.join, edgeOut);
+            // нашли "два пути", edge на одном из путей надо вырезать рекурсивно выбираем минимум
+            for(int i=0,size=reachableEdges.size();i<size;i++) {
+                BaseJoin reachableJoin = reachableEdges.getKey(i);
+//                Edge reachableEdge = reachableEdges.getValue(i);
+
+                Edge presentEdgeOut = edgeOutTree.get(reachableJoin);
+                if(presentEdgeOut != null) { // нашли цикл, один через edgeOut, второй через presentEdgeOut, один из edge'й на этих путях придется удалить в любом случае (это и перебираем)
+                    // бежим по обоим найденным путям, упорядочив по минимальным весам 
+                    Iterable<Edge> edges = BaseUtils.sort(BaseUtils.mergeIterables(getEdgePath(currentTree, edgeOut, reachableJoin), getEdgePath(currentTree, presentEdgeOut, reachableJoin)), new Comparator<Edge>() {
+                        public int compare(Edge o1, Edge o2) {
+                            return Integer.compare(edgeStats.getMapValue(o1).getWeight(), edgeStats.getMapValue(o2).getWeight());
+                        }});
+                    for(Edge currentEdge : edges) {
+                        // пробуем удалить ребро
+                        int newRemovedStat = removedStat + edgeStats.getMapValue(currentEdge).getWeight();
+                        if(currentMin == null || currentMin.first > newRemovedStat) {
+                            MAddExclMap<BaseJoin, ImMap<BaseJoin, Edge>> stackRemoved = removeEdge(currentTree, currentEdge);
+                            removedEdges.add(currentEdge);
+                            Pair<Integer, ImSet<Edge>> recCut = recBuildMT(order, edgesOuts, edgeStats, removedEdges, newRemovedStat, currentTree, currentIndex, currentMin);// придется начинать с 0 чтобы перестроить дерево
+                            removedEdges.remove(currentEdge);
+                            MapFact.addJavaAll(currentTree, stackRemoved);
+
+                            if(recCut != null) {
+                                assert currentMin == null || recCut.first < currentMin.first || recCut == currentMin;
+                                currentMin = recCut;
+                            }
+                        }
+                    }
+                    return currentMin;
+                } else
+                    edgeOutTree.exclAdd(reachableJoin, edgeOut);                
+            }
+        }
+        currentTree.put(currentNode, edgeOutTree.immutable()); // assert что не было
+        Pair<Integer, ImSet<Edge>> result = recBuildMT(order, edgesOuts, edgeStats, removedEdges, removedStat, currentTree, currentIndex + 1, currentMin);
+        currentTree.remove(currentNode); // assert что было
+        return result;
+    }
+    
+    private Iterable<Edge> getEdgePath(final Map<BaseJoin, ImMap<BaseJoin, Edge>> currentTree, final Edge startEdge, final BaseJoin endNode) {
+        return new Iterable<Edge>() {
+            public Iterator<Edge> iterator() {
+                return new Iterator<Edge>() {
+                    Edge currentEdge = startEdge; 
+
+                    public boolean hasNext() {
+                        return currentEdge != null;
+                    }
+
+                    public Edge next() {
+                        Edge nextEdge = currentEdge;
+                        currentEdge = currentTree.get(currentEdge.join).get(endNode);
+                        assert currentEdge != null || BaseUtils.hashEquals(nextEdge.join, endNode);
+                        return nextEdge;
+                    }
+
+                    public void remove() {
+                        throw new UnsupportedOperationException();
+                    }
+                };
+            }
+        };
+    }
+
+    // удаляет из дерева ребро
+    private MAddExclMap<BaseJoin, ImMap<BaseJoin, Edge>> removeEdge(Map<BaseJoin, ImMap<BaseJoin, Edge>> currentTree, Edge removeEdge) {
+        BaseJoin to = removeEdge.join;
+        MAddExclMap<BaseJoin, ImMap<BaseJoin, Edge>> rest = MapFact.mAddExclMap();
+        final BaseJoin from = removeEdge.expr.getBaseJoin();
+        final ImSet<BaseJoin> toNodes = currentTree.get(to).keys().addExcl(to);
+        for(Map.Entry<BaseJoin, ImMap<BaseJoin, Edge>> entry : currentTree.entrySet()) {
+            BaseJoin node = entry.getKey();
+            ImMap<BaseJoin, Edge> nodes = entry.getValue();
+            if(nodes.containsKey(from) || BaseUtils.hashEquals(node, from)) {
+                rest.exclAdd(entry.getKey(), nodes);
+                entry.setValue(nodes.removeIncl(toNodes));
+            }
+        }
+        return rest;
+    }
+
+    private static class PushResult {
+        private final Stat runStat;
+
+        private final List<WhereJoin> joins;
+        private final UpWheres<WhereJoin> upWheres;
+
+        public PushResult(Stat runStat, List<WhereJoin> joins, UpWheres<WhereJoin> upWheres) {
+            this.runStat = runStat;
+
+            this.joins = joins;
+            this.upWheres = upWheres;
+        }
+
+        private <T extends Expr> Where getWhere(ImMap<T, ? extends Expr> translate) {
+            Where result = Where.TRUE;
+            for (WhereJoin join : joins)
+                result = result.and(getUpWhere(join, upWheres.get(join))); // чтобы не потерять or, правда при этом removeJoin должен "соответствовать" не TRUE calculateOrWhere
+
+            return GroupExpr.create(translate, result, translate.keys().toMap()).getWhere();
+        }
+    }
+
+    private static Where getUpWhere(WhereJoin join, UpWhere upWhere) {
+        return upWhere.getWhere().and(BaseExpr.getOrWhere(join));
     }
 
     public <K extends BaseExpr> StatKeys<K> getStatKeys(ImSet<K> groups, final KeyStat keyStat, StatType type, final KeyEqual keyEqual) {
@@ -1706,7 +2017,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
 
     // устраняет сам join чтобы при проталкивании не было рекурсии
     public WhereJoins removeJoin(QueryJoin join, UpWheres<WhereJoin> upWheres, Result<UpWheres<WhereJoin>> resultWheres) {
-        return removeJoin(join, wheres, upWheres, resultWheres); // не надо Bet
+        return removeJoin(join, wheres, upWheres, resultWheres);
     }
 
     public <K extends BaseExpr> WhereJoins pushStatKeys(StatKeys<K> statKeys) {
@@ -1719,16 +2030,29 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
     // !!! ТЕОРЕТИЧЕСКИ НЕСМОТРЯ НА REMOVE из-за паковки может проталкивать бесконечно (впоследствии нужен будет GUARD), например X = L(G1 + G2) AND (G1 OR G2) спакуется в X = L(G1 + G2) AND (G1' OR G2) , (а не L(G1' + G2), и будет G1 проталкивать бесконечно)
     //  но это очень редкая ситуация и важно проследить за ее природой, так как возможно есть аналогичные assertion'ы
     // может неправильно проталкивать в случае если скажем есть документы \ строки, строки "материализуются" и если они опять будут группироваться по документу, информация о том что он один уже потеряется
-    public <K extends Expr, T extends Expr> Where getPushWhere(UpWheres<WhereJoin> upWheres, QueryJoin<K, ?, ?, ?> pushJoin, boolean pushLargeDepth, boolean isInner, KeyStat keyStat, Result<Pair<ImRevMap<K, KeyExpr>, Where>> pushJoinWhere) {
-        Result<UpWheres<WhereJoin>> adjUpWheres = new Result<>(upWheres);
-        return getWhereJoins(pushJoin, isInner, adjUpWheres).getCostPushWhere(pushJoin, pushLargeDepth, adjUpWheres.result, keyStat, StatType.PUSH_OUTER(), pushJoinWhere);
+    public <K extends Expr, T extends Expr> Where getPushWhere(ImMap<K, BaseExpr> joinMap, UpWheres<WhereJoin> upWheres, QueryJoin<K, ?, ?, ?> pushJoin, boolean pushLargeDepth, boolean isInner, KeyStat keyStat, Where fullWhere, StatKeys<K> currentJoinStat) {
+        // joinKeys из skipJoin.getJoins()
+
+//        Where costResult = getWhereJoins(pushJoin, isInner).getCostPushWhere(pushJoin, upWheres, keyStat, StatType.PUSH_OUTER());
+//        Where oldResult = getOldPushWhere(joinMap, upWheres, pushJoin, keyStat, fullWhere, currentJoinStat);
+//
+//        if(!BaseUtils.nullHashEquals(costResult, oldResult))
+//            costResult = costResult;
+//
+//        if(1==1) return costResult;
+
+        if(useCost) {
+            Result<UpWheres<WhereJoin>> adjUpWheres = new Result<>(upWheres);
+            return getWhereJoins(pushJoin, isInner, adjUpWheres).getCostPushWhere(pushJoin, pushLargeDepth, adjUpWheres.result, keyStat, StatType.PUSH_OUTER());
+        } else
+            return getOldPushWhere(joinMap, upWheres, pushJoin, keyStat, fullWhere, currentJoinStat);
     }
 
     private <K extends Expr> WhereJoins getWhereJoins(QueryJoin<K, ?, ?, ?> pushJoin, boolean isInner, Result<UpWheres<WhereJoin>> upWheres) {
         WhereJoins adjWhereJoins = this;
         if(isInner) {
             if(pushJoin.isValue()) { // проблема что queryJoin может быть в ExprStatJoin.valueJoins, тогда он будет Inner, а в WhereJoins его не будет и начнут падать assertion'ы появлятся висячие ключи, другое дело, что потом надо убрать в EqualsWhere ExprStatJoin = значение, тогда это проверка не нужно
-                return WhereJoins.EMPTY;
+                return new WhereJoins(pushJoin);
             }
         }
         
@@ -1740,7 +2064,459 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         else
             assert !isInner;
         
-        return adjWhereJoins;
+        return adjWhereJoins.and(new WhereJoins(pushJoin));
+    }
+
+    private <K extends Expr> Where getOldPushWhere(ImMap<K, BaseExpr> joinMap, UpWheres<WhereJoin> upWheres, QueryJoin<K, ?, ?, ?> pushJoin, KeyStat keyStat, Where fullWhere, StatKeys<K> currentJoinStat) {
+        assert joinMap.equals(pushJoin.getJoins().filterIncl(joinMap.keys()));
+        Result<UpWheres<WhereJoin>> upFitWheres = new Result<>();
+        WhereJoins removedJoins = removeJoin(pushJoin, upWheres, upFitWheres);
+        if(removedJoins==null) {
+            removedJoins = this;
+            upFitWheres.set(upWheres);
+        }
+
+        return removedJoins.getPushWhere(joinMap, keyStat, StatType.PUSH_OUTER(), fullWhere.getStatRows(StatType.PUSH_INNER()), currentJoinStat, upFitWheres.result, pushJoin);
+    }
+
+    private static class PushJoinResult<K extends Expr> {
+        private final PushResult joins;
+        private final ImMap<K, BaseExpr> group;
+
+        public PushJoinResult(PushResult joins, ImMap<K, BaseExpr> group) {
+            this.joins = joins;
+            this.group = group;
+        }
+    }
+
+    private <K extends Expr> Where getPushWhere(ImMap<K, BaseExpr> joinMap, KeyStat keyStat, StatType type, Stat currentStat, StatKeys<K> currentJoinStat, UpWheres<WhereJoin> upWheres, QueryJoin<K, ?, ?, ?> pushJoin) {
+        assertJoinRowStat(currentStat, currentJoinStat);
+
+        final PushJoinResult<K> pushResult = getPushJoins(joinMap, keyStat, type, currentStat, currentJoinStat, upWheres);
+        if(pushResult == null)
+            return null;
+        assert BaseUtils.hashEquals(pushJoin.getJoins().filterIncl(pushResult.group.keys()), pushResult.group);
+        return pushResult.joins.getWhere(pushJoin.getPushGroup(pushResult.group, false, null));
+    }
+
+    private <K extends Expr, T extends Expr> PushJoinResult<K> getPushJoins(ImMap<K, BaseExpr> joinMap, KeyStat keyStat, StatType type, Stat currentStat, StatKeys<K> currentJoinStat, UpWheres<WhereJoin> upWheres) {
+        PushJoinResult<K> pushResult;
+        Stat baseStat = currentStat.min(Stat.ALOT);
+        pushResult = getPushJoins(joinMap, keyStat, type, currentStat, currentJoinStat, upWheres, baseStat);
+        if(pushResult == null)
+            return null;
+        return pushResult;
+    }
+
+    // как правило работает, но в каких то очень редких случаях вроде синхронизации нет, надо будет потом разобраться, пока не критично
+    private <K extends Expr> void assertJoinRowStat(Stat currentStat, StatKeys<K> currentJoinStat) {
+//        assert currentJoinStat.rows.equals(StatKeys.create(currentStat, currentJoinStat.distinct).rows);
+    }
+
+    private <K extends Expr, T extends Expr> PushJoinResult<K> getPushJoins(ImMap<K, BaseExpr> innerOuter, KeyStat keyStat, StatType type, Stat innerRows, StatKeys<K> innerKeys, UpWheres<WhereJoin> upWheres, Stat baseStat) {
+        Result<ImRevMap<K, BaseExpr>> revInnerOuter = new Result<>();
+        innerKeys = innerKeys.toRevMap(innerOuter, revInnerOuter);
+
+        // считаем начальную итерацию, вырезаем WhereJoins которые "входят" в group
+        final ImSet<ParamExpr> keepKeys = SetFact.<ParamExpr>EMPTY();
+        Comparator<PushElement> comparator = getComparator(keepKeys);
+        final ImSet<PushGroup<K>> groups = revInnerOuter.result.mapSetValues(new GetKeyValue<PushGroup<K>, K, BaseExpr>() {
+            public PushGroup<K> getMapValue(K key, BaseExpr value) {
+                return new PushGroup<>(key, value);
+            }});
+        List<PushElement> newPriority = new ArrayList<>();
+        MExclSet<PushElement> mNewElements = SetFact.<PushElement>mExclSet(groups);
+        MExclSet<WhereJoin> mNewJoins = SetFact.mExclSet();
+        for(PushGroup<K> group : groups)
+            BaseUtils.addToOrderedList(newPriority, group, 0, comparator);
+        addJoins(Arrays.asList(wheres), upWheres, comparator, newPriority, groups, mNewElements, mNewJoins, null);
+        final PushIteration<K> initialIteration = new PushIteration<>(mNewElements.immutable(), mNewJoins.immutable(), revInnerOuter.result, keepKeys, newPriority);
+
+        // перебираем
+        Result<BestResult> rBest = new Result<BestResult>(new BaseStat(baseStat));
+        recPushJoins(initialIteration, keyStat, type, innerRows, innerKeys, PushIteration.Reduce.NONE, rBest, false);
+
+        if(rBest.result instanceof BaseStat) // не нашли ничего лучше
+            return null;
+        final PushIteration<K> best = (PushIteration<K>) rBest.result;
+
+        MMap<WhereJoin, UpWhere> bestUpWheres = MapFact.mMap(MapFact.<WhereJoin, UpWhere>override());
+        for(PushElement element : best.elements)
+            if(element instanceof PushJoin) {
+                PushJoin join = (PushJoin)element;
+                bestUpWheres.add(join.join, join.upWhere);
+            }
+        return new PushJoinResult<>(new PushResult(best.estStat, best.joins.toList().toJavaList(), new UpWheres<>(bestUpWheres.immutable())), best.innerOuter);
+    }
+
+    private static abstract class PushElement {
+
+        protected abstract OuterContext<?> getOuterContext();
+        protected abstract BaseJoin<?> getBaseJoin();
+
+        public boolean containsAll(WhereJoin join) {
+            return containsJoinAll(getBaseJoin(), join);
+        }
+
+        private InnerJoins getJoinFollows(Result<UpWheres<InnerJoin>> upWheres) {
+            return InnerExpr.getJoinFollows(getBaseJoin(), upWheres, null);
+        }
+
+        public long getComplexity() {
+            return getOuterContext().getComplexity(false);
+        }
+
+        public ImSet<ParamExpr> getKeys() {
+            return getOuterContext().getOuterKeys();
+        }
+    }
+
+    private static class PushJoin extends PushElement {
+
+        private final WhereJoin join;
+        private final UpWhere upWhere;
+
+        public PushJoin(WhereJoin join, UpWhere upWhere) {
+            this.join = join;
+            this.upWhere = upWhere;
+        }
+
+        protected OuterContext<?> getOuterContext() {
+            return join;
+        }
+
+        protected BaseJoin<?> getBaseJoin() {
+            return join;
+        }
+    }
+
+    private static class PushGroup<K extends Expr> extends PushElement {
+        private final K inner;
+        private final BaseExpr outer;
+
+        public PushGroup(K inner, BaseExpr outer) {
+            this.inner = inner;
+            this.outer = outer;
+        }
+
+        protected OuterContext<?> getOuterContext() {
+            return outer;
+        }
+
+        protected BaseJoin<?> getBaseJoin() {
+            return outer.getBaseJoin();
+        }
+    }
+
+    private static int getGroupPriority(PushElement o1) {
+        return o1 instanceof PushGroup ? 0 : 1; // group'ы лучше
+    }
+
+    private static int getKeysPriority(PushElement o1, ImSet<ParamExpr> keepKeys) {
+        return -o1.getKeys().remove(keepKeys).size(); // чем больше не keep ключей тем лучше
+    }
+
+
+    public static Comparator<PushElement> getComparator (final ImSet<ParamExpr> keepKeys) {
+        return new Comparator<PushElement>() {
+            public int compare(PushElement o1, PushElement o2) {
+                // группы
+                int compare = Integer.compare(getGroupPriority(o1), getGroupPriority(o2));
+                if(compare != 0)
+                    return compare;
+
+                // количество "свободных" (не keep) ключей, чтобы быстрее отсечения получить
+                compare = Integer.compare(getKeysPriority(o1, keepKeys), getKeysPriority(o2, keepKeys));
+                if(compare != 0)
+                    return compare;
+
+                // наименьшая "сложность" join'ов, чтобы отсечение лучше было
+                return Long.compare(o1.getComplexity(), o2.getComplexity());
+            }
+        };
+    }
+
+    private static abstract class BestResult {
+
+        protected Stat estStat;
+        protected abstract long getSecPriority();
+
+        // обе должны быть убывающими при вырезании join'ов, без изменения PRIM
+        protected boolean primBetter(BestResult iteration) { // если лучше, то при remove'е join'ов не убирая ключи или группы результат не улучшишь
+            return estStat.less(iteration.estStat);
+        }
+        protected boolean secBetter(BestResult iteration) {
+            return getSecPriority() < iteration.getSecPriority();
+        }
+    }
+
+    private static class BaseStat extends BestResult {
+
+        public BaseStat(Stat baseStat) {
+            estStat = baseStat;
+        }
+
+        protected long getSecPriority() { // мнтересует только если статистика строго меньше
+            return Long.MIN_VALUE;
+        }
+    }
+
+    private static class PushIteration<K extends Expr> extends BestResult {
+
+        private final ImSet<PushElement> elements; // для исключения избыточных WhereJoin
+        private final ImSet<WhereJoin> joins;
+        private final ImRevMap<K, BaseExpr> innerOuter;
+        private final ImSet<ParamExpr> keepKeys;
+        private final List<PushElement> priority; // только не keep в порядке компаратора
+
+        public PushIteration(ImSet<PushElement> elements, ImSet<WhereJoin> joins, ImRevMap<K, BaseExpr> innerOuter, ImSet<ParamExpr> keepKeys, List<PushElement> priority) {
+            this.elements = elements;
+            this.joins = joins;
+            this.innerOuter = innerOuter;
+            this.keepKeys = keepKeys;
+            this.priority = priority;
+
+            assert checkPriority(priority, getComparator(keepKeys));
+        }
+
+        private WhereJoins getJoins() {
+            return new WhereJoins(joins);
+        }
+        private ImRevMap<K, BaseExpr> getInnerOuter() {
+            return innerOuter;
+        }
+
+        public boolean hasElement() {
+            return !priority.isEmpty();
+        }
+
+        public PushElement findElement() {
+            return priority.get(0);
+        }
+
+        private static <J> Stat calcMultStat(ImSet<J> groups, Stat rows, StatKeys<J> keys) {
+            Stat sum = Stat.ONE;
+            for(J group : groups)
+                sum = sum.mult(keys.getDistinct(group));
+            return sum.min(rows);
+        }
+
+        // MAX(Ri * MIN (*(Jo), Ro) / MIN(*(Ji), Ri)  , Ro)
+        private static <K> Stat calcEstStat(ImRevMap<K, BaseExpr> innerOuter, Stat outerRows, StatKeys<BaseExpr> outerKeys, Stat innerRows, StatKeys<K> innerKeys) {
+            return innerRows.mult(calcMultStat(innerOuter.valuesSet(), outerRows, outerKeys)).div(calcMultStat(innerOuter.keys(), innerRows, innerKeys)).max(outerRows);
+        }
+        private static <K> int calcIndexDecrease(ImRevMap<K, BaseExpr> innerOuter, Stat outerRows, StatKeys<BaseExpr> outerKeys, Stat innerRows, StatKeys<K> innerKeys) {
+            Stat sum = Stat.ONE;
+            for(int i=0,size=innerOuter.size();i<size;i++){
+                K inner = innerOuter.getKey(i);
+                BaseExpr outer = innerOuter.getValue(i);
+
+                Stat innerStat = innerKeys.getDistinct(inner);
+                Stat outerStat = outerKeys.getDistinct(outer);
+                if(outerStat.less(innerStat) && inner instanceof BaseExpr && ((BaseExpr) inner).isIndexed()) {
+                    sum = sum.mult(innerStat.div(outerStat));
+                }
+            }
+            return sum.getWeight();
+        }
+
+        private void calcEstStat(Stat innerRows, StatKeys<K> innerKeys, KeyStat keyStat, StatType type) {
+            ImRevMap<K, BaseExpr> innerOuter = getInnerOuter();
+            WhereJoins joins = getJoins();
+
+            Result<Stat> rows = new Result<>();
+            StatKeys<BaseExpr> statKeys = joins.getStatKeys(innerOuter.valuesSet(), rows, keyStat, type);
+
+            estStat = calcEstStat(innerOuter, rows.result, statKeys, innerRows, innerKeys);
+            indexDecrease = calcIndexDecrease(innerOuter, rows.result, statKeys, innerRows, innerKeys);
+        }
+
+        private int indexDecrease;
+
+        private long calcSecPriority() {
+            long result = 0;
+            for(WhereJoin element : joins)
+                result += element.getComplexity(false);
+            for(BaseExpr expr : innerOuter.valueIt())
+                result += expr.getComplexity(false);
+            return result;// - 1000 * indexDecrease;
+        }
+
+        protected Long secPriority;
+        @ManualLazy
+        protected long getSecPriority() {
+            if(secPriority == null)
+                secPriority = calcSecPriority();
+            return secPriority;
+        }
+
+        private enum Reduce {
+            PRIM, // Stat, group keys + keyExprs
+            SEC, // PRIM (>=)= best ищем уменьшение SEC (если конечно не reducePrim)
+            NONE
+        }
+
+        public Reduce checkBest(Reduce forceReduce, Result<BestResult> bestIteration, Stat innerRows, StatKeys<K> innerKeys, KeyStat keyStat, StatType type) { // возвращает если заведомо хуже best
+            if(forceReduce == Reduce.PRIM) // если REDUCE.PRIM то ничего не проверяем
+                return forceReduce;
+
+            if(forceReduce == Reduce.SEC) { // если ждем reduce'а вторичного признака, не считаем estStat до того как проверим вторичный признак (но считать estStat все равно придется, чтобы не увеличить его случайно)
+                assert bestIteration.result != null; // так как опция Reduce.SEC может включится только при равенстве Redisce.PRIM
+                if(!secBetter(bestIteration.result))
+                    return forceReduce;
+            }
+
+            // считаем estStat
+            calcEstStat(innerRows, innerKeys, keyStat, type);
+
+            // если best меньше
+            if(bestIteration.result != null && bestIteration.result.primBetter(this)) // помечаем что мы должны убрать кдюч, так как если мы уберем этот join, то join outer и row outer, а значит и runstat вырастут
+                return Reduce.PRIM;
+
+            // если текущая меньше
+            if(bestIteration.result == null || forceReduce == Reduce.SEC || primBetter(bestIteration.result) || secBetter(bestIteration.result)) // 2-я проверка - оптимизация
+                bestIteration.set(this); // здесь и внизу SEC не нужен, так как он ASSERT'ся и так
+
+            return Reduce.SEC;
+        }
+
+        public boolean hasNoReducePrim() { // оптимизация, если нет группировок и не keep ключей
+            final PushElement element = findElement();
+
+            // оптимизация завязана на реализацию findElement, assert что есть упорядочивание
+            return !(element instanceof PushGroup) && keepKeys.containsAll(element.getKeys());
+        }
+
+        public PushIteration<K> keepElement() {
+            final PushElement element = findElement();
+
+            List<PushElement> newPriority = new ArrayList<>(priority);
+            newPriority.remove(0);
+
+            // инкрементально пересчитываем кэши (keepkeys + priority)
+            ImSet<ParamExpr> addKeepKeys = element.getKeys().remove(this.keepKeys);
+
+            if(addKeepKeys.isEmpty()) // оптимизация
+                return new PushIteration<>(elements, joins, innerOuter, keepKeys, newPriority);
+
+            ImSet<ParamExpr> newKeepKeys = this.keepKeys.addExcl(addKeepKeys);
+
+            MAddSet<PushElement> validateElements = SetFact.mAddSet();
+            Comparator<PushElement> comparator = getComparator(newKeepKeys);
+            for(int i=1,size=priority.size();i<size;i++) { // обновляем priority с учетом изменения comparator\а
+                final PushElement rest = priority.get(i);
+                final ImSet<ParamExpr> restKeys = rest.getKeys();
+                if(restKeys.intersect(addKeepKeys)) { // если пересекаются ключи, выкидываем, добавляем еще раз
+                    newPriority.remove(rest);
+//                    BaseUtils.addToOrderedList(newPriority, rest, 0, comparator);
+                    validateElements.add(rest);
+                }
+
+                if(rest instanceof PushJoin && this.keepKeys.containsAll(restKeys)) // оптимизация по comparator'у в priority, если все из keep выходим
+                    break;
+            }
+
+            for(PushElement validateElement : validateElements)
+                BaseUtils.addToOrderedList(newPriority, validateElement, 0, comparator);
+
+            return new PushIteration<>(elements, joins, innerOuter, newKeepKeys, newPriority);
+        }
+
+        private boolean checkPriority(List<PushElement> priority, Comparator<PushElement> comparator) {
+            List<PushElement> checkPriority = new ArrayList<>();
+            for(PushElement element : priority)
+                BaseUtils.addToOrderedList(checkPriority, element, 0, comparator);
+            boolean result = checkPriority.equals(priority);
+            assert result;
+            return result;
+        }
+
+        public PushIteration<K> removeElement(Result<Boolean> reducedPrim) { // group не просто вырезаем а заменяем на join с upWhere
+            PushElement element = findElement();
+
+            List<PushElement> newPriority = new ArrayList<>(priority);
+            newPriority.remove(0);
+
+            final ImSet<PushElement> removedElements = elements.removeIncl(element);
+            MExclSet<PushElement> mNewElements = SetFact.mExclSet(removedElements);
+
+            MExclSet<WhereJoin> mNewJoins; ImRevMap<K, BaseExpr> newInnerOuter; Set<ParamExpr> removedKeys;
+            if(element instanceof PushGroup) {
+                mNewJoins = SetFact.mExclSet(joins);
+                newInnerOuter = innerOuter.removeRev(((PushGroup<K>) element).inner);
+                removedKeys = null;
+            } else {
+                mNewJoins = SetFact.mExclSet(joins.removeIncl(((PushJoin) element).join));
+                newInnerOuter = innerOuter;
+                removedKeys = SetFact.mAddRemoveSet(element.getKeys().remove(this.keepKeys));
+            }
+
+            // добавляем follow элементы
+            Result<UpWheres<InnerJoin>> reduceFollowUpWheres = new Result<>();
+            Comparator<PushElement> comparator = getComparator(keepKeys);
+            addJoins(element.getJoinFollows(reduceFollowUpWheres).it(), reduceFollowUpWheres.result,
+                    comparator, newPriority, removedElements, mNewElements, mNewJoins, removedKeys);
+
+            if(element instanceof PushGroup) {
+                reducedPrim.set(true);
+            } else {
+                int i = 1, size = priority.size(); // докидываем не keep проверяя уменьшили мы ключ или нет
+                while (!removedKeys.isEmpty() && i < size) {
+                    SetFact.removeJavaAll(removedKeys, priority.get(i).getKeys());
+                    i++;
+                }
+                reducedPrim.set(!removedKeys.isEmpty()); // уменьшили количество ключей (ессно не keep) или группировку
+            }
+            return new PushIteration<>(mNewElements.immutable(), mNewJoins.immutable(), newInnerOuter, keepKeys, newPriority);
+        }
+    }
+
+    public static <WJ extends WhereJoin> void addJoins(Iterable<WJ> joins, UpWheres<WJ> upWheres, Comparator<PushElement> comparator, List<PushElement> newPriority, ImSet<? extends PushElement> elements, MExclSet<PushElement> mNewElements, MExclSet<WhereJoin> mNewJoins, Set<ParamExpr> removedKeys) {
+        for(WJ joinFollow : joins) { // пытаемся заменить reduceJoin, на его joinFollows
+            boolean found = false;
+            for(PushElement newElement : elements)
+                if(newElement.containsAll(joinFollow)) {
+                    found = true;
+                    break;
+                }
+            PushJoin followJoin = new PushJoin(joinFollow, upWheres.get(joinFollow));
+            if(!found) {
+                BaseUtils.addToOrderedList(newPriority, followJoin, 0, comparator);
+                mNewJoins.exclAdd(joinFollow);
+                mNewElements.exclAdd(followJoin);
+            }
+
+            if(removedKeys != null)
+                SetFact.removeJavaAll(removedKeys, followJoin.getKeys());
+        }
+    }
+
+    private <K extends Expr> void recPushJoins(PushIteration<K> iteration, KeyStat keyStat, StatType type, Stat innerRows, StatKeys<K> innerKeys, PushIteration.Reduce forceReduce, Result<BestResult> best, boolean upKeep) {
+
+        if(!upKeep) // если сверху не обработали эту итерацию (здесь, а не в вырезании чтобы включить первую итерацию)
+            forceReduce = iteration.checkBest(forceReduce, best, innerRows, innerKeys, keyStat, type);
+
+        if(!iteration.hasElement())
+            return;
+
+        // оптимизация
+        if(forceReduce == PushIteration.Reduce.PRIM && iteration.hasNoReducePrim())
+            return;
+
+        // проверяем оставление
+        recPushJoins(iteration.keepElement(), keyStat, type, innerRows, innerKeys, forceReduce, best, true);
+
+        // проверяем удаление
+        Result<Boolean> reducedPrim = new Result<>();
+        final PushIteration<K> removeIteration = iteration.removeElement(reducedPrim);
+
+        if(removeIteration.getInnerOuter().isEmpty()) // если группировок не осталось выходим
+            return;
+
+        if (reducedPrim.result) // сбрасываем prim, если "ушел" один из значимых признаков (группировка или не keep ключ)
+            forceReduce = PushIteration.Reduce.NONE;
+
+        recPushJoins(removeIteration, keyStat, type, innerRows, innerKeys, forceReduce, best, false);
     }
 
     // может как MeanUpWheres сделать
@@ -1776,79 +2552,42 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
     // из upMeans следует
     public UpWheres<WhereJoin> orMeanUpWheres(UpWheres<WhereJoin> up, WhereJoins meanWheres, UpWheres<WhereJoin> upMeans) {
         MExclMap<WhereJoin, UpWhere> result = MapFact.mExclMap(wheres.length); // массивы
-        for(WhereJoin where : wheres)
-            result.exclAdd(where, up.get(where).or(getMeanUpWheres(where, meanWheres, upMeans)));
+        for(WhereJoin where : wheres) {
+            UpWhere up2Where = upMeans.get(where);
+            if(up2Where==null) { // то есть значит в следствии
+                InnerExpr followExpr;
+                for(WhereJoin up2Join : meanWheres.wheres)
+                    if((followExpr=((InnerJoin)where).getInnerExpr(up2Join))!=null) {
+                        up2Where = followExpr.getUpNotNullWhere();
+                        break;
+                    }
+            }
+            result.exclAdd(where, up.get(where).or(up2Where));
+        }
         return new UpWheres<>(result.immutable());
     }
-
-    public static UpWhere getMeanUpWheres(WhereJoin where, WhereJoins meanWheres, UpWheres<WhereJoin> upMeans) {
-        UpWhere up2Where = upMeans.get(where);
-        if(up2Where==null) { // то есть значит в следствии
-            InnerExpr followExpr;
-            for(WhereJoin up2Join : meanWheres.wheres)
-                if((followExpr=((InnerJoin)where).getInnerExpr(up2Join))!=null) {
-                    up2Where = followExpr.getUpNotNullWhere();
-                    break;
-                }
-        }
-        return up2Where;
-    }
-
-    // IsClassJoin, limitHeur, indexNotNulls
-    public Where fillExtraInfo(UpWheres<WhereJoin> upWheres, MCol<String> whereSelect, Result<Cost> mBaseCost, Result<Stat> mRows, CompileSource source, ImSet<KeyExpr> keys, KeyStat keyStat, LimitOptions limit, ImOrderSet<Expr> orders) {
-        // не совсем понятно зачем isClassJoin явно обрабатывать
+    
+    // вообще при таком подходе, скажем из-за формул в ExprJoin, LEFT JOIN'ы могут быть раньше INNER, но так как SQL Server это позволяет бороться до конца за это не имеет особого смысла 
+    public Where fillInnerJoins(UpWheres<WhereJoin> upWheres, MList<String> whereSelect, Result<Cost> mBaseCost, CompileSource source, ImSet<KeyExpr> keys, KeyStat keyStat) {
         Where innerWhere = Where.TRUE;
-//        for (WhereJoin where : getAdjWheres()) {
-//            if(where instanceof ExprJoin && ((ExprJoin)where).isClassJoin()) {
-//                Where upWhere = upWheres.get(where).getWhere(null);
-//                whereSelect.add(upWhere.getSource(source));
-//                innerWhere = innerWhere.and(upWhere);
-//            }
-//        }
+        for (WhereJoin where : wheres)
+            if(!(where instanceof ExprIndexedJoin && ((ExprIndexedJoin)where).givesNoKeys())) {
+                Where upWhere = upWheres.get(where).getWhere();
+                String upSource = upWhere.getSource(source);
+                if(where instanceof ExprJoin && ((ExprJoin)where).isClassJoin()) {
+                    whereSelect.add(upSource);
+                    innerWhere = innerWhere.and(upWhere);
+                }
+            }
 
         StatType statType = StatType.COMPILE;
         Result<ImSet<BaseExpr>> usedNotNulls = source.syntax.hasNotNullIndexProblem() ? new Result<ImSet<BaseExpr>>() : null;
         StatKeys<KeyExpr> statKeys = getStatKeys(keys, null, keyStat, statType, usedNotNulls);// newNotNull
 
         Cost baseCost = statKeys.getCost();
-        Stat stat = statKeys.getRows();
-
-        // хитрая эвристика - если есть limit и он маленький, докидываем маленькую статистику по порядкам
-        // фактически если есть хороший план с поиском первых записей, то логично что и фильтрация будет быстрой (обратное впрочем не верно, но в этом и есть эвристика
-        // !!! ВАЖНА для GROUP LAST / ANY оптимизации (isLastOpt)
-        if(limit.hasLimit() && !Settings.get().isDisableAdjustLimitHeur() && Stat.ONE.less(baseCost.rows)) {
-            WhereJoins whereJoins = this;
-            int i=0,size=orders.size();
-            for(;i<size;i++) {
-                Expr order = orders.get(i);
-                if(order instanceof BaseExpr) {
-                    whereJoins = whereJoins.and(new WhereJoins(new ExprStatJoin((BaseExpr)order, Stat.ONE)));
-                    statKeys = whereJoins.getStatKeys(keys, null, keyStat, statType, usedNotNulls);
-
-                    Cost newBaseCost = statKeys.getCost();
-                    Stat newStat = statKeys.getRows();
-                    Stat costReduce = baseCost.rows.div(newBaseCost.rows);
-                    Stat statReduce = stat.div(newStat);
-                    // если cost упал на столько же сколько и stat значит явно есть индекс
-                    if(statReduce.lessEquals(costReduce)) { // по идее equals, но на всякий случай
-                        baseCost = newBaseCost;
-                        stat = newStat;
-                        continue;
-                    }
-                }
-                break;
-            }
-            if(i>=size) // если не осталось порядков, значит все просматривать не надо
-                baseCost = baseCost.div(stat);
-            stat = Stat.ONE; // предполагаем что limit отбирает мало записей
-        }
-            
         if(mBaseCost.result != null)
             baseCost = baseCost.or(mBaseCost.result);
-        mBaseCost.set(baseCost);        
-        if(mRows.result != null)
-            stat = stat.or(mRows.result);
-        mRows.set(stat);
+        mBaseCost.set(baseCost);
 
         if(usedNotNulls != null)
             for(BaseExpr notNull : usedNotNulls.result)
@@ -1879,4 +2618,476 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
     public ImSet<StaticValueExpr> getOuterStaticValues() {
         throw new RuntimeException("should not be");
     }
+
+
+
+
+    // EXACT OLD MECHANISM
+
+    private static class OldEdge<K> {
+        public BaseJoin<K> join;
+        public Stat keyStat;
+        public BaseExpr expr;
+
+        public Stat getKeyStat(MAddMap<BaseJoin, Stat> statJoins) {
+            return keyStat.min(statJoins.get(join));
+        }
+        public Stat getPropStat(MAddMap<BaseJoin, Stat> joinStats, MAddMap<BaseExpr, Stat> propStats) {
+            return WhereJoins.getPropStat(expr, joinStats, propStats);
+        }
+
+        private OldEdge(BaseJoin<K> join, Stat keyStat, BaseExpr expr) {
+            this.join = join;
+            this.keyStat = keyStat;
+            this.expr = expr;
+        }
+
+        public boolean equals(Object o) {
+            return this == o || (o instanceof OldEdge && join.equals(((OldEdge<?>) o).join) && keyStat.equals(((OldEdge<?>) o).keyStat) && expr.equals(((OldEdge<?>) o).expr));
+        }
+
+        public int hashCode() {
+            return 31 * (31 * join.hashCode() + keyStat.hashCode()) + expr.hashCode();
+        }
+
+        public String toString() {
+            return join + ", " + keyStat + ", " + expr;
+        }
+    }
+
+    private Iterable<OldEdge> getEdgePath(final Map<BaseJoin, ImMap<BaseJoin, OldEdge>> currentTree, final OldEdge startEdge, final BaseJoin endNode) {
+        return new Iterable<OldEdge>() {
+            public Iterator<OldEdge> iterator() {
+                return new Iterator<OldEdge>() {
+                    OldEdge currentEdge = startEdge;
+
+                    public boolean hasNext() {
+                        return currentEdge != null;
+                    }
+
+                    public OldEdge next() {
+                        OldEdge nextEdge = currentEdge;
+                        currentEdge = currentTree.get(currentEdge.join).get(endNode);
+                        assert currentEdge != null || BaseUtils.hashEquals(nextEdge.join, endNode);
+                        return nextEdge;
+                    }
+
+                    public void remove() {
+                        throw new UnsupportedOperationException();
+                    }
+                };
+            }
+        };
+    }
+
+    private <K extends BaseExpr> StatKeys<K> getExactOldStatKeys(ImSet<K> groups, Result<Stat> rows, KeyStat keyStat, StatType type) {
+        return getStatKeys(groups, rows, keyStat, null, null, null);
+    }
+
+    private MAddExclMap<BaseJoin, ImMap<BaseJoin, OldEdge>> removeEdge(Map<BaseJoin, ImMap<BaseJoin, OldEdge>> currentTree, OldEdge removeEdge) {
+        BaseJoin to = removeEdge.join;
+        MAddExclMap<BaseJoin, ImMap<BaseJoin, OldEdge>> rest = MapFact.mAddExclMap();
+        final BaseJoin from = removeEdge.expr.getBaseJoin();
+        final ImSet<BaseJoin> toNodes = currentTree.get(to).keys().addExcl(to);
+        for(Map.Entry<BaseJoin, ImMap<BaseJoin, OldEdge>> entry : currentTree.entrySet()) {
+            BaseJoin node = entry.getKey();
+            ImMap<BaseJoin, OldEdge> nodes = entry.getValue();
+            if(nodes.containsKey(from) || BaseUtils.hashEquals(node, from)) {
+                rest.exclAdd(entry.getKey(), nodes);
+                entry.setValue(nodes.removeIncl(toNodes));
+            }
+        }
+        return rest;
+    }
+
+    // proceeded - из какой вершины в какую можно пройти и вершина через которую надо идти
+    private Pair<Integer, ImSet<OldEdge>> recBuildMT(ImOrderSet<BaseJoin> order, ImMap<BaseJoin, ImSet<OldEdge>> edgesOuts, final MAddExclMap<BaseExpr, Stat> balancedStats, Set<OldEdge> removedEdges, int removedStat, Map<BaseJoin, ImMap<BaseJoin, OldEdge>> currentTree, int currentIndex, Pair<Integer, ImSet<OldEdge>> currentMin) {
+        if(currentIndex >= order.size()) {
+            return new Pair<>(removedStat, SetFact.fromJavaSet(removedEdges));
+        }
+
+        BaseJoin currentNode = order.get(currentIndex);
+        ImSet<OldEdge> edgesOut = edgesOuts.get(currentNode);
+
+        MExclMap<BaseJoin, OldEdge> edgeOutTree = MapFact.mExclMap();
+        for(OldEdge edgeOut : edgesOut) {
+            if(removedEdges.contains(edgeOut)) // избыточная проверка с точки зрения того что removedEdges содержит уже отработанные node'ы
+                continue;
+            ImMap<BaseJoin, OldEdge> reachableEdges = currentTree.get(edgeOut.join).addExcl(edgeOut.join, edgeOut);
+            // нашли "два пути", edge на одном из путей надо вырезать рекурсивно выбираем минимум
+            for(int i=0,size=reachableEdges.size();i<size;i++) {
+                BaseJoin reachableJoin = reachableEdges.getKey(i);
+//                OldEdge reachableEdge = reachableEdges.getValue(i);
+
+                OldEdge presentEdgeOut = edgeOutTree.get(reachableJoin);
+                if(presentEdgeOut != null) { // нашли цикл, один через edgeOut, второй через presentEdgeOut, один из edge'й на этих путях придется удалить в любом случае (это и перебираем)
+                    // бежим по обоим найденным путям, упорядочив по минимальным весам
+                    Iterable<OldEdge> edges = BaseUtils.sort(BaseUtils.mergeIterables(getEdgePath(currentTree, edgeOut, reachableJoin), getEdgePath(currentTree, presentEdgeOut, reachableJoin)), new Comparator<OldEdge>() {
+                        public int compare(OldEdge o1, OldEdge o2) {
+                            return Integer.compare(balancedStats.get(o1.expr).getWeight(), balancedStats.get(o2.expr).getWeight());
+                        }});
+                    for(OldEdge currentEdge : edges) {
+                        // пробуем удалить ребро
+                        int newRemovedStat = removedStat + balancedStats.get(currentEdge.expr).getWeight();
+                        if(currentMin == null || currentMin.first > newRemovedStat) {
+                            MAddExclMap<BaseJoin, ImMap<BaseJoin, OldEdge>> stackRemoved = removeEdge(currentTree, currentEdge);
+                            removedEdges.add(currentEdge);
+                            Pair<Integer, ImSet<OldEdge>> recCut = recBuildMT(order, edgesOuts, balancedStats, removedEdges, newRemovedStat, currentTree, currentIndex, currentMin);// придется начинать с 0 чтобы перестроить дерево
+                            removedEdges.remove(currentEdge);
+                            MapFact.addJavaAll(currentTree, stackRemoved);
+
+                            if(recCut != null) {
+                                assert currentMin == null || recCut.first < currentMin.first || recCut == currentMin;
+                                currentMin = recCut;
+                            }
+                        }
+                    }
+                    return currentMin;
+                } else
+                    edgeOutTree.exclAdd(reachableJoin, edgeOut);
+            }
+        }
+        currentTree.put(currentNode, edgeOutTree.immutable()); // assert что не было
+        Pair<Integer, ImSet<OldEdge>> result = recBuildMT(order, edgesOuts, balancedStats, removedEdges, removedStat, currentTree, currentIndex + 1, currentMin);
+        currentTree.remove(currentNode); // assert что было
+        return result;
+    }
+
+    private Stat getMTCost(MAddMap<BaseJoin, Stat> joinStats, MAddExclMap<BaseExpr, Set<OldEdge>> balancedEdges, MAddExclMap<BaseExpr, Stat> balancedStats, Stat totalBalanced) {
+        MExclMap<BaseJoin, MExclSet<OldEdge>> mEdges = MapFact.mExclMap();
+        for(int i=0,size=joinStats.size();i<size;i++) {
+            mEdges.exclAdd(joinStats.getKey(i), SetFact.<OldEdge>mExclSet());
+        }
+        for(int i=0;i<balancedEdges.size();i++) {
+            BaseExpr bExpr = balancedEdges.getKey(i);
+            BaseJoin from = bExpr.getBaseJoin();
+            MExclSet<OldEdge> mFromEdges = mEdges.get(from);
+            for(OldEdge edge : balancedEdges.getValue(i)) {
+                assert BaseUtils.hashEquals(edge.expr, bExpr);
+                mFromEdges.exclAdd(edge);
+            }
+        }
+        ImMap<BaseJoin, ImSet<OldEdge>> edges = MapFact.immutable(mEdges);
+        Pair<Integer, ImSet<OldEdge>> mt = recBuildMT(MapFact.buildGraphOrder(edges, new GetValue<BaseJoin, OldEdge>() {
+            public BaseJoin getMapValue(OldEdge value) {
+                return value.join;
+            }}), edges, balancedStats, new HashSet<OldEdge>(), 0, new HashMap<BaseJoin, ImMap<BaseJoin, OldEdge>>(), 0, null);
+        if(mt == null)
+            return totalBalanced;
+        return totalBalanced.div(new Stat(mt.first, true));
+    }
+
+    private Stat getEdgeRowStat(MAddMap<BaseJoin, Stat> joinStats, MAddExclMap<BaseExpr, Set<OldEdge>> balancedEdges, MAddExclMap<BaseExpr, Stat> balancedStats) {
+        // высчитываем total
+
+        int pessStatType = Settings.get().getPessStatType();
+
+        Stat total = null;
+
+        if(pessStatType != 3) {
+            total = Stat.ONE;
+            for (int i = 0; i < balancedEdges.size(); i++)
+                total = total.mult(balancedStats.get(balancedEdges.getKey(i)).deg(balancedEdges.getValue(i).size()));
+        }
+
+        if(pessStatType == 0)
+            return total;
+
+        Stat mt = null;
+        // multi tree stat
+        if(pessStatType != 3) {
+            mt = getMTCost(joinStats, balancedEdges, balancedStats, total);
+            assert mt.lessEquals(total);
+
+            if (pessStatType == 1)
+                return mt;
+        }
+
+        // minimum spanning tree cost
+        Stat mst = getMSTExCost(joinStats, balancedEdges, balancedStats);
+        if(pessStatType == 3)
+            return mst;
+
+        assert mst.lessEquals(mt) && pessStatType == 2;
+        return mst.avg(mt);
+    }
+
+    private Stat getMSTExCost(MAddMap<BaseJoin, Stat> joinStats, MAddExclMap<BaseExpr, Set<OldEdge>> balancedEdges, MAddExclMap<BaseExpr, Stat> balancedStats) {
+        int nodes = 0; int edges = 0;
+
+        SpanningTreeWithBlackjack<BaseJoin> graph = new SpanningTreeWithBlackjack<>();
+        for(int i=0,size=joinStats.size();i<size;i++) {
+            BaseJoin node = joinStats.getKey(i);
+            graph.addNode(node, node.getJoins().isEmpty() ? 0 : joinStats.getValue(i).getWeight());
+            nodes++;
+        }
+
+        for(int i=0;i<balancedEdges.size();i++) {
+            BaseExpr bExpr = balancedEdges.getKey(i);
+            BaseJoin from = bExpr.getBaseJoin();
+            for(OldEdge edge : balancedEdges.getValue(i)) {
+                assert BaseUtils.hashEquals(edge.expr, bExpr);
+                graph.addEdge(from, edge.join, balancedStats.get(bExpr).getWeight());
+                edges++;
+            }
+        }
+
+        int maxIterations = Settings.get().getMaxEdgeIterations();
+        return new Stat(graph.calculate(BaseUtils.max(edges - nodes, 1) * maxIterations), true);
+    }
+
+    // assert что rows >= result
+    // можно rows в StatKeys было закинуть как и ExecCost, но используется только в одном месте и могут быть проблемы с кэшированием
+    public <K extends BaseExpr> StatKeys<K> getStatKeys(ImSet<K> groups, Result<Stat> rows, final KeyStat keyStat, Result<BaseExpr> newNotNull, MAddMap<BaseExpr, Boolean> proceededNotNulls, Result<Cost> tableCosts) {
+
+        // groups учавствует только в дополнительном фильтре
+        final MAddMap<BaseJoin, Stat> joinStats = MapFact.mAddOverrideMap();
+        final MAddMap<BaseExpr, Stat> exprStats = MapFact.mAddOverrideMap();
+
+        final MAddMap<Table.Join, Stat> indexedStats = MapFact.<Table.Join, Stat>mAddOverrideMap();
+
+        MAddExclMap<BaseExpr, Set<OldEdge>> balancedEdges = MapFact.mAddExclMap(); // assert edge.expr == key
+        MAddExclMap<BaseExpr, Stat> balancedStats = MapFact.mAddExclMap();
+
+        buildBalancedGraph(groups, keyStat, joinStats, exprStats, balancedEdges, balancedStats, newNotNull, proceededNotNulls, indexedStats);
+
+        // pessimistic adjust - строим остовное дерево (на
+        Stat edgeRowStat = getEdgeRowStat(joinStats, balancedEdges, balancedStats);
+
+        // бежим по всем сбалансированным ребрам суммируем, бежим по всем нодам суммируем, возвращаем разность
+        Stat rowStat = Stat.ONE;
+        for(int i=0,size=joinStats.size();i<size;i++)
+            rowStat = rowStat.mult(joinStats.getValue(i));
+        final Stat finalStat = rowStat.div(edgeRowStat);
+
+        if(rows!=null)
+            rows.set(finalStat);
+
+        Stat tableStat = Stat.ONE;
+        for(int i=0,size=indexedStats.size();i<size;i++)
+            tableStat = tableStat.or(indexedStats.getValue(i));
+        if(tableCosts != null) {
+            tableCosts.set(new Cost(tableStat));
+        }
+
+        DistinctKeys<K> distinct = new DistinctKeys<>(groups.mapValues(new GetValue<Stat, K>() {
+            public Stat getMapValue(K value) { // для groups, берем min(из статистики значения, статистики его join'а)
+                return getPropStat(value, joinStats, exprStats).min(finalStat);
+            }
+        }));
+        return StatKeys.create(new Cost(tableStat.max(finalStat)), finalStat, distinct); // возвращаем min(суммы groups, расчитанного результата)
+    }
+
+    private <K extends BaseExpr> void buildBalancedGraph(ImSet<K> groups, KeyStat keyStat, MAddMap<BaseJoin, Stat> joinStats, MAddMap<BaseExpr, Stat> exprStats, MAddExclMap<BaseExpr, Set<OldEdge>> balancedEdges, MAddExclMap<BaseExpr, Stat> balancedStats, Result<BaseExpr> newNotNull, MAddMap<BaseExpr, Boolean> proceededNotNulls, MAddMap<Table.Join, Stat> indexedStats) {
+        Set<OldEdge> edges = SetFact.mAddRemoveSet();
+
+        buildGraph(groups, keyStat, exprStats, joinStats, edges, proceededNotNulls, newNotNull);
+
+        balanceGraph(joinStats, exprStats, edges, balancedEdges, balancedStats, indexedStats);
+    }
+
+    // balancedEdges - исходящие edges для всех "внутренних" expr, название конечно не совсем корректное
+    // balancedStats - уже скорректированная статистика, только для "внутренних" expr, не включая groups, в принципе можно совместить с exprStats, пробежав по groups и хакинув туда getPropStat(value, joinStats, exprStats), но пока особого смысла нет
+    private void balanceGraph(MAddMap<BaseJoin, Stat> joinStats, MAddMap<BaseExpr, Stat> exprStats, Set<OldEdge> unbalancedEdges, MAddExclMap<BaseExpr, Set<OldEdge>> balancedEdges, MAddExclMap<BaseExpr, Stat> balancedStats, MAddMap<Table.Join, Stat> indexedStats) {
+        // ищем несбалансированное ребро с минимальной статистикой
+        Stat currentStat = null;
+        MAddExclMap<BaseExpr, Set<OldEdge>> currentBalancedEdges = MapFact.mAddExclMap();
+
+        if(indexedStats != null)
+            for(int i=0,size=joinStats.size();i<size;i++) {
+                BaseJoin join = joinStats.getKey(i);
+                if(join instanceof Table.Join)
+                    indexedStats.add((Table.Join)join, joinStats.getValue(i));
+            }
+
+        while(unbalancedEdges.size() > 0 || currentBalancedEdges.size() > 0) {
+            OldEdge<?> unbalancedEdge = null;
+            Pair<Stat, Stat> unbalancedStat = null;
+
+            Stat stat = Stat.MAX;
+            for(OldEdge edge : unbalancedEdges) {
+                Stat keys = edge.getKeyStat(joinStats);
+                Stat values = edge.getPropStat(joinStats, exprStats);
+                Stat min = keys.min(values);
+                if(min.less(stat)) { // если нашли новый минимум про старый забываем
+                    unbalancedEdge = edge;
+                    unbalancedStat = new Pair<>(keys, values);
+                    stat = min;
+                    if(currentStat !=null && stat.equals(currentStat)) // оптимизация, так как меньше уже быть не может
+                        break;
+                }
+            }
+            if(currentStat==null || !stat.equals(currentStat)) { // закончилась группа статистики
+                if(currentStat!=null) { // не первая
+                    assert currentStat.less(stat);
+                    for(int i=0;i<currentBalancedEdges.size();i++) { // переливаем в balanced
+                        BaseExpr expr = currentBalancedEdges.getKey(i);
+                        Set<OldEdge> exprEdges = currentBalancedEdges.getValue(i);
+
+                        for(int j=0;j<balancedEdges.size();j++) { // бежим по всем уже сбалансированным и пытаемся поддержать cross-column статистику
+                            BaseExpr bExpr = balancedEdges.getKey(j);
+                            Set<OldEdge> bExprEdges = balancedEdges.getValue(j);
+                            Stat bStat = balancedStats.get(bExpr);
+
+                            List<Pair<OldEdge, OldEdge>> mergeEdges = new ArrayList<>();
+                            Iterator<OldEdge> it = exprEdges.iterator();
+                            while(it.hasNext()) {
+                                OldEdge exprEdge = it.next();
+
+                                OldEdge bExprEdge = null;
+                                boolean found = false;
+                                Iterator<OldEdge> bit = bExprEdges.iterator();
+                                while(bit.hasNext()) {
+                                    bExprEdge = bit.next();
+                                    if(BaseUtils.hashEquals(exprEdge.join, bExprEdge.join)) {
+                                        found = true;
+                                        bit.remove();
+                                        break;
+                                    }
+                                }
+                                if(found) {
+                                    it.remove();
+                                    mergeEdges.add(new Pair<>(exprEdge, bExprEdge));
+                                }
+                            }
+
+                            if(mergeEdges.size() > 1) { // если пара используется несколько раз объединим
+                                ConcatenateExpr concExpr = new ConcatenateExpr(ListFact.toList(expr, bExpr)); // создаем общую вершину
+                                InnerBaseJoin<?> concJoin = concExpr.getBaseJoin();
+                                Stat mergedStat = currentStat.mult(bStat);
+//                                balanced = balanced.mult(mergedStat); // добавляем два внутренних edge'а (обработанных), собсно так как они потом не будут использовать просто добавим в статистику
+                                exprEdges.add(new OldEdge(concJoin, currentStat, expr));
+                                bExprEdges.add(new OldEdge(concJoin, bStat, bExpr));
+                                joinStats.add(concJoin, mergedStat); exprStats.add(concExpr, mergedStat); // добавляем join \ записываем статистику
+                                for(Pair<OldEdge, OldEdge> mergeEdge : mergeEdges) { // добавляем внешние (возможно не сбалансированные edge'и)
+                                    assert BaseUtils.hashEquals(mergeEdge.first.join, mergeEdge.second.join);
+                                    OldEdge mergedEdge = new OldEdge(mergeEdge.first.join, mergedStat, concExpr);
+                                    unbalancedEdges.add(mergedEdge);
+                                }
+                                unbalancedEdge = null; // сбрасываем текущую итерацию и начинаем заново
+                            } else {
+                                if(mergeEdges.size()==1) { // вернем на место
+                                    Pair<OldEdge, OldEdge> single = BaseUtils.single(mergeEdges);
+                                    exprEdges.add(single.first); bExprEdges.add(single.second);
+                                }
+                            }
+                        }
+
+                        balancedEdges.exclAdd(expr, exprEdges); // закидываем в balanced
+                        balancedStats.exclAdd(expr, currentStat);
+                    }
+                }
+
+                if(unbalancedEdge!=null)
+                    currentStat = stat;
+                currentBalancedEdges = MapFact.mAddExclMap();
+            }
+
+            if(unbalancedEdge!=null) { // потому что edges может быть пустой или объединенные ребра будут с минимальной статистикой
+                BaseJoin decreaseJoin; Stat decrease; boolean keyReduce = false;
+                if(unbalancedStat.first.less(unbalancedStat.second)) { // балансируем значение
+                    decrease = unbalancedStat.second.div(unbalancedStat.first);
+                    exprStats.add(unbalancedEdge.expr, unbalancedStat.first); // это и есть разница
+                    decreaseJoin = unbalancedEdge.expr.getBaseJoin();
+                } else { // балансируем ключ, больше он использоваться не будет
+                    decrease = unbalancedStat.first.div(unbalancedStat.second);
+                    decreaseJoin = unbalancedEdge.join;
+                    keyReduce = true;
+                }
+                joinStats.add(decreaseJoin, joinStats.get(decreaseJoin).div(decrease));
+                unbalancedEdges.remove(unbalancedEdge);
+
+                // помечаем уменьшения статистики по индексу приполагается что будет bitmap scan с bitmap and всех индексов
+                if(indexedStats != null && decreaseJoin instanceof Table.Join && (keyReduce || (unbalancedEdge.expr.isIndexed() && !(unbalancedEdge.join instanceof CalculateJoin))))
+                    indexedStats.add((Table.Join) decreaseJoin, indexedStats.get((Table.Join) decreaseJoin).div(decrease));
+
+                Set<OldEdge> exprEdges = currentBalancedEdges.get(unbalancedEdge.expr);
+                if(exprEdges==null) {
+                    exprEdges = SetFact.mAddRemoveSet();
+                    currentBalancedEdges.exclAdd(unbalancedEdge.expr, exprEdges);
+                }
+                exprEdges.add(unbalancedEdge);
+            }
+        }
+    }
+
+    private <K extends BaseExpr> void buildGraph(ImSet<K> groups, KeyStat keyStat, MAddMap<BaseExpr, Stat> exprStats, MAddMap<BaseJoin, Stat> joinStats, Set<OldEdge> edges, MAddMap<BaseExpr, Boolean> proceededNotNulls, Result<BaseExpr> newNotNull) {
+        Set<BaseExpr> exprs = SetFact.mAddRemoveSet();
+        Set<BaseJoin> joins = SetFact.mAddRemoveSet();
+
+        buildEdgesExprsJoins(groups, keyStat, edges, exprs, joins);
+
+        for(BaseJoin join : joins)
+            joinStats.add(join, join.getStatKeys(keyStat, StatType.ALL, true).getRows());
+
+        int intStat = Settings.get().getAverageIntervalStat();
+        if(intStat >= 0)
+            for(ExprIndexedJoin join : ExprIndexedJoin.getIntervals(wheres))
+                joinStats.add(join, new Stat(intStat, true));
+
+        // читаем статистику по значениям
+        for(BaseExpr expr : exprs) {
+            PropStat exprStat = expr.getStatValue(keyStat, StatType.ALL);
+            exprStats.add(expr, exprStat.distinct);
+
+            Stat notNullStat = exprStat.notNull;
+            Boolean proceededNotNull = null;
+            if(notNullStat !=null && !(newNotNull != null && (proceededNotNull = proceededNotNulls.get(expr)) != null && proceededNotNull)) { // пропускаем notNull
+                InnerBaseJoin<?> notNullJoin = expr.getBaseJoin();
+                Stat joinStat = joinStats.get(notNullJoin);
+//                assert notNullStat.lessEquals(joinStat);
+                joinStats.add(notNullJoin, notNullStat.min(joinStat)); // уменьшаем статистику join'а до notNull значения, min нужен так как может быть несколько notNull
+                if(newNotNull != null && proceededNotNull == null && notNullStat.less(joinStat) && expr.isIndexed()) { // если уменьшаем статистику, индексированы, и есть проблема с notNull
+                    newNotNull.set(expr);
+                }
+            }
+        }
+    }
+
+    private <K extends BaseExpr> void buildEdgesExprsJoins(ImSet<K> groups, KeyStat keyStat, Set<OldEdge> edges, Set<BaseExpr> exprs, Set<BaseJoin> joins) {
+        // собираем все ребра и вершины
+        Queue<BaseJoin> queue = new LinkedList<>();
+        for(WhereJoin valueJoin : wheres) {
+            queue.add(valueJoin);
+            joins.add(valueJoin);
+        }
+        for(BaseExpr group : groups) {
+            exprs.add(group);
+            InnerBaseJoin<?> valueJoin = group.getBaseJoin();
+            if(!joins.contains(valueJoin)) {
+                queue.add(valueJoin);
+                joins.add(valueJoin);
+            }
+        }
+        while(!queue.isEmpty()) {
+            BaseJoin<Object> join = queue.poll();
+            ImMap<?, BaseExpr> joinExprs = getJoinsForStat(join);
+
+/*            if(((BaseJoin)join) instanceof UnionJoin) { // UnionJoin может потерять ключи, а они важны
+                for(ParamExpr lostKey : ((UnionJoin) (BaseJoin)join).getLostKeys())
+                    if(!joins.contains(lostKey)) {
+                        queue.add(lostKey);
+                        joins.add(lostKey);
+                    }
+            }*/
+
+            for(int i=0,size=joinExprs.size();i<size;i++) {
+                Object joinKey = joinExprs.getKey(i);
+                BaseExpr joinExpr = joinExprs.getValue(i);
+
+                edges.add(new OldEdge(join, join.getStatKeys(keyStat, StatType.ALL, true).getDistinct(joinKey), joinExpr));
+
+                exprs.add(joinExpr);
+                InnerBaseJoin<?> valueJoin = joinExpr.getBaseJoin();
+                if(!joins.contains(valueJoin)) {
+                    queue.add(valueJoin);
+                    joins.add(valueJoin);
+                }
+            }
+        }
+    }
+
+
+
+
 }

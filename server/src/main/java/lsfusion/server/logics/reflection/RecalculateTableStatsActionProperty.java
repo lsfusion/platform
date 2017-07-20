@@ -6,7 +6,7 @@ import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ReflectionLogicsModule;
-import lsfusion.server.logics.i18n.LocalizedString;
+import lsfusion.server.logics.i18n.FormatLocalizedString;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
@@ -44,6 +44,6 @@ public class RecalculateTableStatsActionProperty extends ScriptingActionProperty
                     }
                 }
         );
-        context.delayUserInterfaction(new MessageClientAction(localize(LocalizedString.createFormatted("{logics.recalculation.completed}", localize("{logics.recalculation.stats}"))), localize("{logics.recalculation.stats}")));
+        context.delayUserInterfaction(new MessageClientAction(localize(new FormatLocalizedString("{logics.recalculation.completed}", localize("{logics.recalculation.stats}"))), localize("{logics.recalculation.stats}")));
     }
 }

@@ -3,7 +3,6 @@ package lsfusion.client.form.layout;
 import lsfusion.base.BaseUtils;
 import lsfusion.client.logics.ClientComponent;
 import lsfusion.client.logics.ClientContainer;
-import lsfusion.interop.form.layout.FlexConstraints;
 
 import javax.swing.*;
 import java.awt.*;
@@ -18,7 +17,7 @@ public abstract class AbstractClientContainerView implements ClientContainerView
     protected final ClientContainer container;
 
     protected final List<ClientComponent> children = new ArrayList<>();
-    protected final List<JComponentPanel> childrenViews = new ArrayList<>();
+    protected final List<Component> childrenViews = new ArrayList<>();
 
     public AbstractClientContainerView(ClientFormLayout formLayout, ClientContainer container) {
         this.formLayout = formLayout;
@@ -26,7 +25,7 @@ public abstract class AbstractClientContainerView implements ClientContainerView
     }
 
     @Override
-    public void add(ClientComponent child, JComponentPanel view) {
+    public void add(ClientComponent child, Component view) {
         assert child != null && view != null && container.children.contains(child);
 
         int index = BaseUtils.relativePosition(child, container.children, children);
@@ -37,16 +36,6 @@ public abstract class AbstractClientContainerView implements ClientContainerView
         addImpl(index, child, view);
     }
 
-    public static void setSizes(JComponentPanel view, ClientComponent child) {
-        view.setComponentMaximumSize(child.maximumSize);
-        view.setComponentMinimumSize(child.minimumSize);
-        view.setComponentPreferredSize(child.preferredSize);
-    }
-    public static void add(JPanel panel, JComponentPanel view, int index, Object constraints, ClientComponent child) {
-        setSizes(view, child);
-        panel.add(view, constraints, index);
-    }
-
     @Override
     public void remove(ClientComponent child) {
         int index = children.indexOf(child);
@@ -55,7 +44,7 @@ public abstract class AbstractClientContainerView implements ClientContainerView
         }
 
         children.remove(index);
-        JComponentPanel view = childrenViews.remove(index);
+        Component view = childrenViews.remove(index);
 
         removeImpl(index, child, view);
     }
@@ -89,11 +78,11 @@ public abstract class AbstractClientContainerView implements ClientContainerView
     }
 
     @Override
-    public abstract JComponentPanel getView();
-    protected abstract void addImpl(int index, ClientComponent child, JComponentPanel view);
-    protected abstract void removeImpl(int index, ClientComponent child, JComponentPanel view);
+    public abstract JComponent getView();
+    protected abstract void addImpl(int index, ClientComponent child, Component view);
+    protected abstract void removeImpl(int index, ClientComponent child, Component view);
 
-    public class ContainerViewPanel extends JComponentPanel {
+    public class ContainerViewPanel extends JPanel {
         public ContainerViewPanel() {
             this(null);
         }
@@ -114,6 +103,21 @@ public abstract class AbstractClientContainerView implements ClientContainerView
             }
 
             container.installMargins(this);
+        }
+
+        @Override
+        public Dimension getMinimumSize() {
+            return overrideSize(super.getMinimumSize(), container.minimumSize);
+        }
+
+        @Override
+        public Dimension getMaximumSize() {
+            return overrideSize(super.getMaximumSize(), container.maximumSize);
+        }
+
+        @Override
+        public Dimension getPreferredSize() {
+            return overrideSize(super.getPreferredSize(), container.preferredSize);
         }
 
         @Override

@@ -10,8 +10,11 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.rmi.RemoteException;
 
+// todo [dale]: Теперь получение свойства осуществляется через каноническое имя, которое содержит различные спецсимволы
+// возможно этот код нужно изменить
+
 public class RunActionRequestHandler implements HttpRequestHandler {
-    private static final String ACTION_CN_PARAM = "sid";
+    private static final String ACTION_SID_PARAM = "sid";
     private static final String PARAMS_PARAM = "p";
 
     @Autowired
@@ -22,10 +25,10 @@ public class RunActionRequestHandler implements HttpRequestHandler {
     @Override
     public void handleRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         try {
-            String actionCN = request.getParameter(ACTION_CN_PARAM);
+            String actionSID = request.getParameter(ACTION_SID_PARAM);
             String userLogin = context.getInitParameter("serviceUserLogin");
-            if (blProvider.getLogics().checkPropertyChangePermission(userLogin, actionCN)) {
-                blProvider.getLogics().runAction(actionCN, request.getParameterValues(PARAMS_PARAM));
+            if (blProvider.getLogics().checkPropertyChangePermission(userLogin, actionSID)) {
+                blProvider.getLogics().runAction(actionSID, request.getParameterValues(PARAMS_PARAM));
             } else {
                 response.sendError(HttpServletResponse.SC_FORBIDDEN, "Not enough rights to execute the action");
             }

@@ -47,8 +47,8 @@ public class NotFilterInstance extends FilterInstance {
         return filter.getApplyObject();
     }
 
-    public Where getWhere(ImMap<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier, ReallyChanged reallyChanged, MSet<CalcProperty> mUsedProps) throws SQLException, SQLHandledException {
-        return filter.getWhere(mapKeys, modifier, reallyChanged, mUsedProps).not();
+    public Where getWhere(ImMap<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier, ReallyChanged reallyChanged) throws SQLException, SQLHandledException {
+        return filter.getWhere(mapKeys, modifier, reallyChanged).not();
     }
 
     public boolean isInInterface(GroupObjectInstance classGroup) {

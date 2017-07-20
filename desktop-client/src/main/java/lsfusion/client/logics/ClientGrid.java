@@ -14,7 +14,7 @@ public class ClientGrid extends ClientComponent {
     public boolean tabVertical = false;
     public boolean autoHide;
     public boolean quickSearch;
-    public int headerHeight;
+    public int headerHeight = 0;
 
     public ClientGroupObject groupObject;
 
@@ -83,7 +83,7 @@ public class ClientGrid extends ClientComponent {
     }
 
     public int getHeaderHeight() {
-        return headerHeight;
+        return headerHeight == 0 ? 34 : headerHeight;
     }
 
     public void setHeaderHeight(int headerHeight) {

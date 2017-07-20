@@ -97,25 +97,21 @@ public class ReportGenerator {
     }
 
     public JasperPrint createReport(boolean ignorePagination, Map<ByteArray, String> files) throws ClassNotFoundException, IOException, JRException {
-        return createReport(ignorePagination, files, false);
-    }
-
-    public JasperPrint createReport(boolean ignorePagination, Map<ByteArray, String> files, boolean fixBoolean) throws ClassNotFoundException, IOException, JRException {
         Pair<String, Map<String, List<String>>> hpair = retrieveReportHierarchy(generationData.reportHierarchyData);
-        return createReport(hpair, ignorePagination, files, fixBoolean);
+        return createReport(hpair, ignorePagination, files);
     }
 
-    private JasperPrint createReport(Pair<String, Map<String, List<String>>> hpair, boolean ignorePagination, Map<ByteArray, String> files, boolean fixBoolean) throws IOException, ClassNotFoundException, JRException {
+    private JasperPrint createReport(Pair<String, Map<String, List<String>>> hpair, boolean ignorePagination, Map<ByteArray, String> files) throws IOException, ClassNotFoundException, JRException {
         rootID = hpair.first;
         hierarchy = hpair.second;
 
-        return createJasperPrint(ignorePagination, files, fixBoolean);
+        return createJasperPrint(ignorePagination, files);
     }
 
-    private JasperPrint createJasperPrint( boolean ignorePagination, Map<ByteArray, String> files, boolean fixBoolean) throws ClassNotFoundException, IOException, JRException {
+    private JasperPrint createJasperPrint( boolean ignorePagination, Map<ByteArray, String> files) throws ClassNotFoundException, IOException, JRException {
         designs = retrieveReportDesigns(generationData);
 
-        SourcesGenerationOutput output = retrieveReportSources(generationData, files, fixBoolean);
+        SourcesGenerationOutput output = retrieveReportSources(generationData, files);
         data = output.data;
         compositeColumnValues = output.compositeColumnValues;
 
@@ -197,26 +193,18 @@ public class ReportGenerator {
     }
 
     public static SourcesGenerationOutput retrieveReportSources(ReportGenerationData generationData, Map<ByteArray, String> files) throws IOException {
-        return retrieveReportSources(generationData, files, ReportGenerationDataType.PRINTJASPER, false);
-    }
-
-    public static SourcesGenerationOutput retrieveReportSources(ReportGenerationData generationData, Map<ByteArray, String> files, boolean fixBoolean) throws IOException {
-        return retrieveReportSources(generationData, files, ReportGenerationDataType.PRINTJASPER, fixBoolean);
-    }
-
-    public static SourcesGenerationOutput retrieveReportSources(ReportGenerationData generationData, Map<ByteArray, String> files, ReportGenerationDataType reportType) throws IOException {
-       return retrieveReportSources(generationData, files, reportType, false);
+        return retrieveReportSources(generationData, files, ReportGenerationDataType.DEFAULT);
     }
 
     //corresponding serialization is in lsfusion.server.remote.FormReportManager.getReportSourcesByteArray()
-    public static SourcesGenerationOutput retrieveReportSources(ReportGenerationData generationData, Map<ByteArray, String> files, ReportGenerationDataType reportType, boolean fixBoolean) throws IOException {
+    public static SourcesGenerationOutput retrieveReportSources(ReportGenerationData generationData, Map<ByteArray, String> files, ReportGenerationDataType reportType) throws IOException {
         SourcesGenerationOutput output = new SourcesGenerationOutput();
         DataInputStream dataStream = new DataInputStream(new ByteArrayInputStream(generationData.reportSourceData));
         int size = dataStream.readInt();
         output.data = new HashMap<>();
         for (int i = 0; i < size; i++) {
             String sid = dataStream.readUTF();
-            ClientReportData reportData = new ClientReportData(dataStream, files, reportType, fixBoolean);
+            ClientReportData reportData = new ClientReportData(dataStream, files, reportType);
             output.data.put(sid, reportData);
         }
 
@@ -601,9 +589,10 @@ public class ReportGenerator {
         return res;
     }
 
-    public static void exportAndOpen(ReportGenerationData generationData, FormPrintType type, boolean fixBoolean) {
+    public static void exportAndOpen(ReportGenerationData generationData, FormPrintType type) {
         try {
-            File tempFile = exportToFile(generationData, type, fixBoolean);
+            assert type.isExcel();
+            File tempFile = exportToFile(generationData, type);
 
             try {
                 if (Desktop.isDesktopSupported()) {
@@ -652,25 +641,16 @@ public class ReportGenerator {
         }
         throw new UnsupportedOperationException();
     }
-
     public static File exportToFile(ReportGenerationData generationData, FormPrintType type) throws ClassNotFoundException, IOException, JRException {
-        return exportToFile(generationData, type, false);
-    }
-
-    public static File exportToFile(ReportGenerationData generationData, FormPrintType type, boolean fixBoolean) throws ClassNotFoundException, IOException, JRException {
-        return exportToFile(generationData, getExporter(type), type.getExtension(), type.isExcel(), fixBoolean);
+        return exportToFile(generationData, getExporter(type), type.getExtension(), type.isExcel());
     }
     
     private static File exportToFile(ReportGenerationData generationData, JRAbstractExporter exporter, String extension, boolean ignorePagination) throws IOException, JRException, ClassNotFoundException {
-        return exportToFile(generationData, exporter, extension, ignorePagination, false);
-    }
-
-    private static File exportToFile(ReportGenerationData generationData, JRAbstractExporter exporter, String extension, boolean ignorePagination, boolean fixBoolean) throws IOException, JRException, ClassNotFoundException {
         File tempFile = File.createTempFile("lsf", "." + extension);
 
         ReportGenerator report = new ReportGenerator(generationData);
 
-        JasperPrint print = report.createReport(ignorePagination, null, fixBoolean);
+        JasperPrint print = report.createReport(ignorePagination, null);
         print.setProperty(JRXlsAbstractExporterParameter.PROPERTY_DETECT_CELL_TYPE, "true");
 
         exporter.setParameter(JRExporterParameter.JASPER_PRINT, print);

@@ -2,13 +2,12 @@ package lsfusion.client.form.panel;
 
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.StartupProperties;
-import lsfusion.client.form.layout.JComponentPanel;
 import lsfusion.client.logics.ClientToolbar;
 
 import javax.swing.*;
 import java.awt.*;
 
-public class ToolbarView extends JComponentPanel {
+public class ToolbarView extends JPanel {
     private JPanel mainPanel;
 
     private JLabel infoLabel;

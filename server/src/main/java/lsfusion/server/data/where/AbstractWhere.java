@@ -13,7 +13,6 @@ import lsfusion.server.data.Table;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
-import lsfusion.server.data.expr.query.GroupExprJoinsWhere;
 import lsfusion.server.data.expr.query.GroupExprWhereJoins;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.expr.query.StatType;
@@ -331,16 +330,11 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
         }.proceed(this, exprs.toMap());
     }
 
-    public <K extends Expr> GroupExprWhereJoins<K> getGroupExprWhereJoins(ImSet<K> exprs, StatType statType, boolean forcePackReduce) {
-        return getGroupExprWhereJoins(exprs.toMap(), statType, forcePackReduce);
-    }
-
-    @Override
-    public <K extends Expr> GroupExprWhereJoins<K> getGroupExprWhereJoins(ImMap<K, ? extends Expr> exprs, final StatType statType, final boolean forcePackReduce) {
+    public <K extends Expr> GroupExprWhereJoins<K> getGroupWhereJoins(ImSet<K> exprs, final StatType statType, final boolean forcePackReduce) {
         return new ExclPullWheres<GroupExprWhereJoins<K>, K, Where>() {
             protected GroupExprWhereJoins<K> proceedBase(Where data, ImMap<K, BaseExpr> map) {
                 return GroupExprWhereJoins.create(data.and(Expr.getWhere(map)).getWhereJoins(
-                        map.values().toSet(), statType, forcePackReduce), map, statType, forcePackReduce);
+                        map.values().toSet(), statType, forcePackReduce), map);
             }
 
             protected GroupExprWhereJoins<K> initEmpty() {
@@ -350,24 +344,7 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
             protected GroupExprWhereJoins<K> add(GroupExprWhereJoins<K> op1, GroupExprWhereJoins<K> op2) {
                 return op1.merge(op2);
             }
-        }.proceed(this, exprs);
-    }
-
-    public <K extends Expr> ImCol<GroupExprJoinsWhere<K>> getGroupExprJoinsWheres(ImMap<K, ? extends Expr> exprs, final StatType statType, final boolean forcePackReduce) {
-        return new ExclPullWheres<ImCol<GroupExprJoinsWhere<K>>, K, Where>() {
-            protected ImCol<GroupExprJoinsWhere<K>> proceedBase(Where data, ImMap<K, BaseExpr> map) {
-                return GroupExprJoinsWhere.create(data.and(Expr.getWhere(map)).getWhereJoins(
-                        map.values().toSet(), statType, forcePackReduce), map, statType, forcePackReduce);
-            }
-
-            protected ImCol<GroupExprJoinsWhere<K>> initEmpty() {
-                return SetFact.EMPTY();
-            }
-
-            protected ImCol<GroupExprJoinsWhere<K>> add(ImCol<GroupExprJoinsWhere<K>> op1, ImCol<GroupExprJoinsWhere<K>> op2) {
-                return op1.mergeCol(op2);
-            }
-        }.proceed(this, exprs);
+        }.proceed(this, exprs.toMap());
     }
 
     @IdentityLazy

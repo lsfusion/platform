@@ -798,7 +798,6 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     public void addIndex(Table table, ImOrderMap<Field, Boolean> fields, Logger logger) throws SQLException {
         String columns = fields.toString(new GetKeyValue<String, Field, Boolean>() {
             public String getMapValue(Field key, Boolean value) {
-                assert value || !(key instanceof KeyField);
                 return key.getName(syntax) + " " + syntax.getOrderDirection(false, value);
             }}, ",");
 
@@ -1197,32 +1196,11 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
 
     private int noReadOnly = 0;
     private final Object noReadOnlyLock = new Object();
-    public void pushNoReadOnly() throws SQLException {
-        lockRead(OperationOwner.unknown);
-
-        try {
-            lockNeedPrivate();
-
-            pushNoReadOnly(getConnection().sql);
-        } finally {
-            unlockRead();
-        }
-    }
     public void pushNoReadOnly(Connection connection) throws SQLException {
         synchronized (noReadOnlyLock) {
             if(inTransaction == 0 && noReadOnly++ == 0) {
                 connection.setReadOnly(false);
             }
-        }
-    }
-    public void popNoReadOnly() throws SQLException {
-        lockRead(OperationOwner.unknown);
-        try {
-            popNoReadOnly(getConnection().sql);
-        } finally {
-            lockTryCommon(OperationOwner.unknown);
-
-            unlockRead();
         }
     }
     public void popNoReadOnly(Connection connection) throws SQLException {
@@ -1484,7 +1462,6 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     public int executeExplain(PreparedStatement statement, boolean noAnalyze, boolean dml) throws SQLException {
         long l = System.currentTimeMillis();
         long actualTime = System.currentTimeMillis() - l;
-        int minSpaces = Integer.MAX_VALUE;
         Integer rows = null;
         try (ResultSet result = statement.executeQuery()) {
             int thr = Settings.get().getExplainThreshold();
@@ -1511,14 +1488,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
                     m++;
                 }
 
-                if (!noAnalyze && dml && i > 0 && act >= 0) { // первая запись почему-то всегда 0, минимальная табуляция (как правило первый или второго 
-                    int sp=0; char ch;
-                    for(;sp<row.length() && ((ch = row.charAt(sp))==' ' || ch=='\t');sp++);
-                    if(sp < minSpaces && row.startsWith("->", sp)) {
-                        rows = (int) act;
-                        minSpaces = sp;
-                    }
-                }
+                if (!noAnalyze && dml && (i == 1 || i == 2) && rows == null && act >= 0) // второй ряд (первый почему то всегда 0) или 3-й (так как 2-й может быть Buffers:)
+                    rows = (int) act;
                 i++;
 
                 Pattern tpt = Pattern.compile("actual time=(((\\d)+)[.]((\\d)+))[.][.](((\\d)+)[.]((\\d)+))");
@@ -2595,14 +2566,10 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         }
 
     }
-
     public int insertSessionSelect(String name, final IQuery<KeyField, PropertyField> query, final QueryEnvironment env, final TableOwner owner) throws SQLException, SQLHandledException {
-        return insertSessionSelect(name, query, env, owner, 0);
-    }
-
-    public int insertSessionSelect(String name, final IQuery<KeyField, PropertyField> query, final QueryEnvironment env, final TableOwner owner, int selectTop) throws SQLException, SQLHandledException {
         checkTableOwner(name, owner);
-        return insertSessionSelect(ModifyQuery.getInsertSelect(syntax.getSessionTableName(name), query, env, owner, syntax, userProvider, null, register(name, owner, TableChange.INSERT), selectTop), new ERunnable() {
+
+        return insertSessionSelect(ModifyQuery.getInsertSelect(syntax.getSessionTableName(name), query, env, owner, syntax, userProvider, null, register(name, owner, TableChange.INSERT)), new ERunnable() {
             public void run() throws Exception {
                 query.outSelect(SQLSession.this, env);
             }});

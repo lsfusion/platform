@@ -5,7 +5,6 @@ import jasperapi.ClientReportData;
 import jasperapi.ReportGenerator;
 import jasperapi.ReportPropertyData;
 import lsfusion.base.IOUtils;
-import lsfusion.base.Pair;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.interop.FormPrintType;
@@ -83,38 +82,31 @@ public class PrintActionProperty<O extends ObjectSelector> extends FormStaticAct
 
         try {
 
-            Map<String, ClientReportData> data = ReportGenerator.retrieveReportSources(reportData, null, ReportGenerationDataType.PRINTMESSAGE).data;
+            Map<String, ClientReportData> data = ReportGenerator.retrieveReportSources(reportData, null, ReportGenerationDataType.PRINT).data;
             Map<String, Map<String, String>> propertyCaptionsMap = ReportGenerator.retrievePropertyCaptions(reportData);
             assert data.size() == 1;
             for (Map.Entry<String, ClientReportData> dataEntry : data.entrySet()) {
                 String key = dataEntry.getKey();
                 ClientReportData clientData = dataEntry.getValue();
+                Map<String, String> propertyCaptions = propertyCaptionsMap.get(key);
                 Map<String, ReportPropertyData> properties = clientData.getProperties();
-                List<Pair<String, Boolean>> titles = getTitles(properties, key);
-
-                List<String> messages = new ArrayList<>();
+                List<String> titles = getTitleRow(properties);
+                List<String> titleRow = new ArrayList<>();
+                for(String title : titles) {
+                    titleRow.add(propertyCaptions.get(title));
+                }
                 List<List<String>> dataRows = new ArrayList();
                 for (HashMap<Integer, Object> keyRow : clientData.getKeyRows()) {
                     Map<ReportPropertyData, Object> row = clientData.getRows().get(keyRow);
-                    if (row != null) {
+                    if(row != null) {
                         List<String> dataRow = new ArrayList<>();
-                        List<String> dataPanel = new ArrayList<>();
                         for (int i = 0; i < titles.size(); i++) {
-                            Pair<String, Boolean> title = titles.get(i);
-                            Object value = row.get(properties.get(title.first));
-                            if (title.second)
-                                dataRow.add(String.valueOf(value));
-                            else if (value != null)
-                                dataPanel.add(String.valueOf(value));
+                            dataRow.add(String.valueOf(row.get(properties.get(titles.get(i)))));
                         }
                         dataRows.add(dataRow);
-                        if(messages.isEmpty())
-                            messages.addAll(dataPanel);
                     }
                 }
-
-                LogMessageClientAction action = new LogMessageClientAction(getMessage(caption, messages),
-                        getTitleRow(titles, propertyCaptionsMap.get(key)), dataRows, !context.getSession().isNoCancelInTransaction());
+                LogMessageClientAction action = new LogMessageClientAction(ThreadLocalContext.localize(caption), titleRow, dataRows, !context.getSession().isNoCancelInTransaction());
                 if(syncType)
                     context.requestUserInteraction(action);
                 else
@@ -126,28 +118,11 @@ public class PrintActionProperty<O extends ObjectSelector> extends FormStaticAct
         }
     }
 
-    private String getMessage(LocalizedString caption, List<String> messages) {
-        StringBuilder builder = new StringBuilder(ThreadLocalContext.localize(caption));
-        for (String message : messages)
-            builder.append(builder.length() == 0 ? "" : "\n").append(message);
-        return builder.toString();
-    }
-
-    private List<Pair<String, Boolean>> getTitles(Map<String, ReportPropertyData> properties, String toDraw) {
-        List<Pair<String, Boolean>> titleRow = new ArrayList<>();
-        for(Map.Entry<String, ReportPropertyData> property : properties.entrySet()) {
-            ReportPropertyData propertyData = property.getValue();
-            if(!propertyData.propertyType.equals("ActionClass"))
-                titleRow.add(Pair.create(property.getKey(), propertyData.toDraw.equals(toDraw)));
-        }
-        return titleRow;
-    }
-
-    private List<String> getTitleRow(List<Pair<String, Boolean>> titles, Map<String, String> propertyCaptions) {
+    private List<String> getTitleRow(Map<String, ReportPropertyData> properties) {
         List<String> titleRow = new ArrayList<>();
-        for(Pair<String, Boolean> title : titles) {
-            if(title.second)
-                titleRow.add(propertyCaptions.get(title.first));
+        for(Map.Entry<String, ReportPropertyData> property : properties.entrySet()) {
+            if(!property.getValue().propertyType.equals("ActionClass"))
+                titleRow.add(property.getKey());
         }
         return titleRow;
     }

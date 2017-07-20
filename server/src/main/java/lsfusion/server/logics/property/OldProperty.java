@@ -19,7 +19,7 @@ import lsfusion.server.session.PropertyChanges;
 public class OldProperty<T extends PropertyInterface> extends SessionCalcProperty<T> {
 
     public OldProperty(CalcProperty<T> property, PrevScope scope) {
-        super(LocalizedString.concat("(" + scope.getSID() + ",в БД) ", property.localizedToString()), property, scope);
+        super(LocalizedString.create("(" + scope.getSID() + ",в БД) " + property), property, scope);
     }
 
 /*    @Override

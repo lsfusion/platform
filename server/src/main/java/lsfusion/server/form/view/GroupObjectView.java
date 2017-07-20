@@ -2,9 +2,9 @@ package lsfusion.server.form.view;
 
 import lsfusion.base.identity.IDGenerator;
 import lsfusion.interop.form.layout.AbstractGroupObject;
+import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.form.entity.GroupObjectEntity;
 import lsfusion.server.form.entity.ObjectEntity;
-import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.serialization.ServerIdentitySerializable;
 import lsfusion.server.serialization.ServerSerializationPool;
 
@@ -13,7 +13,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 
-public class GroupObjectView extends ArrayList<ObjectView> implements ServerIdentitySerializable, PropertyGroupContainerView, AbstractGroupObject<ComponentView, LocalizedString> {
+public class GroupObjectView extends ArrayList<ObjectView> implements ServerIdentitySerializable, AbstractGroupObject<ComponentView> {
 
     public GroupObjectEntity entity;
 
@@ -50,9 +50,9 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
         filter = new FilterView(idGen.idShift());
     }
 
-    public LocalizedString getCaption() {
+    public String getCaption() {
         if (size() > 0)
-            return get(0).getCaption();
+            return ThreadLocalContext.localize(get(0).getCaption());
         else
             return null;
     }
@@ -85,11 +85,6 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
 
     public String getSID() {
         return entity.getSID();
-    }
-
-    @Override
-    public String getPropertyGroupContainerSID() {
-        return getSID();
     }
 
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {

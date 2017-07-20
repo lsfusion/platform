@@ -141,7 +141,6 @@ public final class ClassCanonicalNameUtils {
         put("EXCELLINK", ExcelLinkClass.get(false));
         put("COLOR", ColorClass.instance);
         put("TEXT", StringClass.text);
-        put("ITEXT", StringClass.iText);
         put("RICHTEXT", StringClass.richText);
     }};
 

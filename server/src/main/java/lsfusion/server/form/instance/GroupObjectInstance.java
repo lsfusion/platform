@@ -8,13 +8,11 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.*;
-import lsfusion.base.col.interfaces.mutable.add.MAddMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.*;
 import lsfusion.interop.ClassViewType;
 import lsfusion.interop.Compare;
 import lsfusion.interop.Order;
 import lsfusion.interop.form.PropertyReadType;
-import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
 import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.classes.BaseClass;
@@ -383,7 +381,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         ImSet<FilterInstance> getFilters();
     }
 
-    public Where getFilterWhere(ImMap<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier, ReallyChanged reallyChanged, FilterProcessor filterProcessor, MSet<CalcProperty> mUsedProps) throws SQLException, SQLHandledException {
+    public Where getFilterWhere(ImMap<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier, ReallyChanged reallyChanged, FilterProcessor filterProcessor) throws SQLException, SQLHandledException {
         Where where = Where.TRUE;
         for(FilterInstance filt : (filterProcessor != null ? filterProcessor.getFilters() : filters)) {
             if(filterProcessor != null) {
@@ -392,7 +390,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
                     continue;
                 mapKeys = overridedKeys;
             }
-            where = where.and(filt.getWhere(mapKeys, modifier, reallyChanged, mUsedProps));
+            where = where.and(filt.getWhere(mapKeys, modifier, reallyChanged));
         }
         return where;
     }
@@ -403,23 +401,17 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
                 return value.getGridClass();
             }});
     }
-    public Where getClassWhere(ImMap<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier, MSet<CalcProperty> mUsedProps) {
+    public Where getClassWhere(ImMap<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier) {
         if(noClassFilter)
             return Where.TRUE;
-        return IsClassProperty.getWhere(getGridClasses(objects), mapKeys, modifier, mUsedProps);
+        return IsClassProperty.getWhere(getGridClasses(objects), mapKeys, modifier);
     }
 
     public Where getWhere(ImMap<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier, ReallyChanged reallyChanged) throws SQLException, SQLHandledException {
-        return getWhere(mapKeys, modifier, reallyChanged, (MSet<CalcProperty>) null);
-    }
-    public Where getWhere(ImMap<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier, ReallyChanged reallyChanged, MSet<CalcProperty> mUsedProps) throws SQLException, SQLHandledException {
-        return getWhere(mapKeys, modifier, reallyChanged, null, mUsedProps);
+        return getWhere(mapKeys, modifier, reallyChanged, null);
     }
     public Where getWhere(ImMap<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier, ReallyChanged reallyChanged, FilterProcessor processor) throws SQLException, SQLHandledException {
-        return getWhere(mapKeys, modifier, reallyChanged, processor, null);
-    }
-    public Where getWhere(ImMap<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier, ReallyChanged reallyChanged, FilterProcessor processor, MSet<CalcProperty> mUsedProps) throws SQLException, SQLHandledException {
-        return getFilterWhere(mapKeys, modifier, reallyChanged, processor, mUsedProps).and(getClassWhere(mapKeys, modifier, mUsedProps));
+        return getFilterWhere(mapKeys, modifier, reallyChanged, processor).and(getClassWhere(mapKeys, modifier));
     }
 
     public Where getWhere(ImMap<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier) throws SQLException, SQLHandledException {
@@ -507,7 +499,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
         final ImRevMap<ObjectInstance, KeyExpr> mapKeys = getMapKeys();
 
-        final ImSet<KeyExpr> usedContext = immutableCast(getFilterWhere(mapKeys, Property.defaultModifier, null, null, null).getOuterKeys());
+        final ImSet<KeyExpr> usedContext = immutableCast(getFilterWhere(mapKeys, Property.defaultModifier, null, null).getOuterKeys());
 
         return immutableCast(objects.filterFn(new SFunctionSet<ObjectInstance>() {
             public boolean contains(ObjectInstance object) { // если DataObject и нету ключей
@@ -624,57 +616,6 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
     // вообще касается всего что идет после проверки на hidden, можно было бо обобщить, но пока нет смысла
     private boolean pendingHiddenUpdateKeys;
     private boolean pendingHiddenUpdateObjects;
-    
-    private boolean hasUpdateEnvironmentIncrementProp(GroupObjectProp propType) { // оптимизация
-        return props.get(propType) != null;
-    }
-    
-    private MAddMap<GroupObjectProp, ImSet<CalcProperty>> usedEnvironmentIncrementProps = MapFact.mAddOverrideMap();
-    public ImSet<CalcProperty> getUsedEnvironmentIncrementProps(GroupObjectProp propType) {
-        return usedEnvironmentIncrementProps.get(propType);
-    }
-            
-    public void updateEnvironmentIncrementProp(IncrementChangeProps environmentIncrement, final Modifier modifier, Result<ChangedData> changedProps, final ReallyChanged reallyChanged, GroupObjectProp propType, boolean propsChanged, boolean dataChanged) throws SQLException, SQLHandledException {
-        CalcPropertyRevImplement<ClassPropertyInterface, ObjectInstance> mappedProp = props.get(propType);
-        if(mappedProp != null) {
-            MSet<CalcProperty> mUsedProps = null;
-            if(propsChanged)
-                mUsedProps = SetFact.mSet();
-            
-            final ImRevMap<ObjectInstance, KeyExpr> mapKeys = getMapKeys();
-            PropertyChange<ClassPropertyInterface> change;
-            switch (propType) {
-                case FILTER:
-                    change = new PropertyChange<>(mappedProp.mapping.join(mapKeys), ValueExpr.TRUE, getWhere(mapKeys, modifier, reallyChanged));
-                    break;
-                case ORDER:
-                    if(orders.isEmpty())
-                        change = mappedProp.property.getNoChange();
-                    else {
-                        final MSet<CalcProperty> fmUsedProps = mUsedProps;
-                        ImOrderMap<Expr, Boolean> orderExprs = orders.mapOrderKeysEx(new GetExValue<Expr, OrderInstance, SQLException, SQLHandledException>() {
-                            public Expr getMapValue(OrderInstance value) throws SQLException, SQLHandledException {
-                                return value.getExpr(mapKeys, modifier, reallyChanged, fmUsedProps);
-                            }
-                        });
-                        OrderClass orderClass = OrderClass.get(orders.keyOrderSet().mapListValues(new GetValue<Type, OrderInstance>() {
-                            public Type getMapValue(OrderInstance value) {
-                                return value.getType();
-                            }}), orderExprs.valuesList());
-                        change = new PropertyChange<>(mappedProp.mapping.join(mapKeys), FormulaUnionExpr.create(orderClass, orderExprs.keyOrderSet()));
-                    }
-                    break;
-                default:
-                    throw new UnsupportedOperationException();
-            }
-            environmentIncrement.add(mappedProp.property, change, dataChanged);
-            if(propsChanged)
-                usedEnvironmentIncrementProps.add(propType, mUsedProps.immutable());
-
-            if(changedProps != null)
-                changedProps.set(changedProps.result.merge(new ChangedData(SetFact.singleton((CalcProperty) mappedProp.property), false)));
-        }
-    }
 
     @StackMessage("{message.form.update.group.keys}")
     @ThisMessage
@@ -746,11 +687,16 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
                     break;
                 }
 
-        if(updateFilters) // изменились фильтры, надо обновить свойства созданные при помощи соответствующих операторов форм, сейчас будет определенная избыточность для dataUpdated (так как через eventChange уже должны изменится), но пока не критично
-            updateEnvironmentIncrementProp(environmentIncrement, modifier, changedProps, reallyChanged, GroupObjectProp.FILTER, true, true);
+        CalcPropertyRevImplement<ClassPropertyInterface, ObjectInstance> filterProperty = props.get(GroupObjectProp.FILTER);
+        if(updateFilters && filterProperty!=null) { // изменились фильтры, надо обновить свойства созданные при помощи соответствующих операторов форм
+            ImRevMap<ObjectInstance, KeyExpr> mapKeys = getMapKeys();
+            environmentIncrement.add(filterProperty.property, new PropertyChange<>(filterProperty.mapping.join(mapKeys), ValueExpr.TRUE, getWhere(mapKeys, modifier, reallyChanged)));
+
+            changedProps.set(changedProps.result.merge(new ChangedData(SetFact.singleton((CalcProperty)filterProperty.property), false)));
+        }
 
         boolean updateOrders = false;
-        boolean hasOrderProperty = hasUpdateEnvironmentIncrementProp(GroupObjectProp.ORDER); // оптимизация
+        CalcPropertyRevImplement<ClassPropertyInterface, ObjectInstance> orderProperty = props.get(GroupObjectProp.ORDER);
 
         // порядки
         if(OrderInstance.ignoreInInterface) {
@@ -779,22 +725,41 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
             orders = newOrders;
         }
 
-        if (!updateOrders && (!updateFilters || hasOrderProperty)) // изменились "верхние" объекты для порядков
+        if (!updateOrders && (!updateFilters || orderProperty!=null)) // изменились "верхние" объекты для порядков
             for (OrderInstance order : orders.keyIt())
                 if (order.objectUpdated(sThis)) {
                     updateOrders = true;
                     objectsUpdated = true;
                     break;
                 }
-        if (!updateOrders && (!updateFilters || hasOrderProperty)) // изменились данные по порядкам
+        if (!updateOrders && (!updateFilters || orderProperty!=null)) // изменились данные по порядкам
             for (OrderInstance order : orders.keyIt())
                 if (order.dataUpdated(changedProps.result, reallyChanged, modifier, hidden, sThis)) {
                     updateOrders = true;
                     break;
                 }
 
-        if(updateOrders) // изменились порядки, надо обновить свойства созданные при помощи соответствующих операторов форм, сейчас будет определенная избыточность для dataUpdated (так как через eventChange уже должны изменится), но пока не критично
-            updateEnvironmentIncrementProp(environmentIncrement, modifier, changedProps, reallyChanged, GroupObjectProp.ORDER, true, true);
+        if(updateOrders && orderProperty!=null) { // изменились порядки, надо обновить свойства созданные при помощи соответствующих операторов форм
+            final ImRevMap<ObjectInstance, KeyExpr> mapKeys = getMapKeys();
+            PropertyChange<ClassPropertyInterface> change;
+            if(orders.isEmpty())
+                change = orderProperty.property.getNoChange();
+            else {
+                ImOrderMap<Expr, Boolean> orderExprs = orders.mapOrderKeysEx(new GetExValue<Expr, OrderInstance, SQLException, SQLHandledException>() {
+                    public Expr getMapValue(OrderInstance value) throws SQLException, SQLHandledException {
+                        return value.getExpr(mapKeys, modifier);
+                    }
+                });
+                OrderClass orderClass = OrderClass.get(orders.keyOrderSet().mapListValues(new GetValue<Type, OrderInstance>() {
+                    public Type getMapValue(OrderInstance value) {
+                        return value.getType();
+                    }}), orderExprs.valuesList());
+                change = new PropertyChange<>(orderProperty.mapping.join(mapKeys), FormulaUnionExpr.create(orderClass, orderExprs.keyOrderSet()));
+            }
+            environmentIncrement.add(orderProperty.property, change);
+
+            changedProps.set(changedProps.result.merge(new ChangedData(SetFact.singleton((CalcProperty) orderProperty.property), false)));
+        }
 
         boolean updateKeys = updateFilters || updateOrders;
 

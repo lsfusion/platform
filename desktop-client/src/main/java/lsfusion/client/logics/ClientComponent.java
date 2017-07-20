@@ -18,17 +18,15 @@ import java.io.IOException;
 import static javax.swing.BorderFactory.createCompoundBorder;
 import static javax.swing.BorderFactory.createEmptyBorder;
 
-public abstract class ClientComponent extends ContextIdentityObject implements IdentitySerializable<ClientSerializationPool>, AbstractComponent {
+public abstract class ClientComponent extends ContextIdentityObject implements IdentitySerializable<ClientSerializationPool>, AbstractComponent<ClientContainer, ClientComponent> {
 
     public ComponentDesign design;
 
     public ClientContainer container;
-    
+
     public Dimension minimumSize;
     public Dimension maximumSize;
     public Dimension preferredSize;
-    
-    public boolean autoSize;
 
     public double flex = 0;
     public FlexAlignment alignment = FlexAlignment.LEADING;
@@ -69,8 +67,6 @@ public abstract class ClientComponent extends ContextIdentityObject implements I
         pool.writeObject(outStream, minimumSize);
         pool.writeObject(outStream, maximumSize);
         pool.writeObject(outStream, preferredSize);
-        
-        outStream.writeBoolean(autoSize);
 
         outStream.writeDouble(flex);
         pool.writeObject(outStream, alignment);
@@ -92,8 +88,6 @@ public abstract class ClientComponent extends ContextIdentityObject implements I
         minimumSize = pool.readObject(inStream);
         maximumSize = pool.readObject(inStream);
         preferredSize = pool.readObject(inStream);
-        
-        autoSize = inStream.readBoolean();
 
         flex = inStream.readDouble();
         alignment = pool.readObject(inStream);

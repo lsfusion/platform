@@ -130,7 +130,7 @@ requestUserLogs 'Запросить логи' (CustomUser user) = {
 openUserLogs 'Открыть логи' (CustomUser user) = {
     IF hasConnectedConnections(user) THEN {
         FOR user(Connection conn) == user AND connectionStatus(conn) == ConnectionStatus.connectedConnection AND fileUserLogs(conn) DO {
-            OPEN fileUserLogs(conn) NAME userLogin(conn) + '-log';
+            OPEN fileUserLogs(conn);
         } ELSE {
             MESSAGE 'Логи ещё не получены. Ожидайте';
         }
@@ -148,7 +148,7 @@ requestThreadDump 'Запросить ThreadDump' (CustomUser user) = {
 openThreadDump 'Открыть ThreadDump' (CustomUser user) = {
     IF hasConnectedConnections(user) THEN {
         FOR user(Connection conn) == user AND connectionStatus(conn) == ConnectionStatus.connectedConnection AND fileThreadDump(conn) DO {
-            OPEN fileThreadDump(conn) NAME userLogin(conn) + '-dump';
+            OPEN fileThreadDump(conn);
         } ELSE {
             MESSAGE 'ThreadDump ещё не получен. Ожидайте';
         }
@@ -217,7 +217,6 @@ is64Java '64-битная java' (Computer computer) = is64Java(lastConnection(co
 countDaysClearPings 'За сколько дней хранить статистику пингов и памяти' = DATA INTEGER (); 
 
 onClientStarted = ABSTRACT LIST ();
-onWebClientStarted = ABSTRACT LIST ();
     
 EXTEND FORM options PROPERTIES countDaysClearPings();
 DESIGN options { log { MOVE PROPERTY(countDaysClearPings());} }    
@@ -272,7 +271,7 @@ DESIGN connections{
 FORM  exceptions 'Журнал ошибок'
 
     OBJECTS e=Exception LAST
-    PROPERTIES(e) FOREGROUND foregroundNonFatal(e) BACKGROUND backgroundNonFatal(e) READONLY objectClassName, message, client , login , type, date, reqId PANEL, count PANEL, abandoned PANEL
+    PROPERTIES(e) FOREGROUND foregroundNonFatal(e) BACKGROUND backgroundNonFatal(e) READONLY message, client , login , type, date, reqId PANEL, count PANEL, abandoned PANEL
     PROPERTIES(e) READONLY PANEL erTrace, lsfStackTrace
 ;
 

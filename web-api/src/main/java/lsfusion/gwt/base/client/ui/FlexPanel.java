@@ -3,10 +3,7 @@ package lsfusion.gwt.base.client.ui;
 import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.user.client.ui.ComplexPanel;
-import com.google.gwt.user.client.ui.ProvidesResize;
-import com.google.gwt.user.client.ui.RequiresResize;
-import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.base.client.Dimension;
 
 import static lsfusion.gwt.base.client.GwtClientUtils.calculateStackPreferredSize;
@@ -60,6 +57,10 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
     public boolean isHorizontal() {
         return !isVertical();
     }
+    
+    public double getFlexShrink() {
+        return 0;
+    }
 
     @Override
     public void setVisible(boolean nVisible) {
@@ -95,29 +96,30 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
     }
 
     public void add(Widget widget, int beforeIndex, GFlexAlignment alignment, double flex) {
-        add(widget, beforeIndex, alignment, flex, null);
+        add(widget, beforeIndex, alignment, flex, "auto");
+    }
+
+    public void add(Widget widget, GFlexAlignment alignment, double flex, String flexBasis) {
+        add(widget, getWidgetCount(), alignment, flex, flexBasis);
     }
 
     public void addFill(Widget widget) {
         addFill(widget, getWidgetCount());
     }
 
-    public void addFillFlex(Widget widget, Integer flexBasis) {
+    public void addFill(Widget widget, String flexBasis) {
         addFill(widget, getWidgetCount(), flexBasis);
     }
 
     public void addFill(Widget widget, int beforeIndex) {
-        addFill(widget, beforeIndex, null);
+        addFill(widget, beforeIndex, "auto");
     }
 
-    public void addFill(Widget widget, int beforeIndex, Integer flexBasis) {
+    public void addFill(Widget widget, int beforeIndex, String flexBasis) {
         add(widget, beforeIndex, GFlexAlignment.STRETCH, 1, flexBasis);
     }
 
-    public void add(Widget widget, int beforeIndex, GFlexAlignment alignment, double flex, Integer flexBasis) {
-        add(widget, beforeIndex, alignment, flex, flexBasis, null);    
-    }
-    public void add(Widget widget, int beforeIndex, GFlexAlignment alignment, double flex, Integer flexBasis, Integer crossAxisSize) {
+    public void add(Widget widget, int beforeIndex, GFlexAlignment alignment, double flex, String flexBasis) {
         // Detach new child.
         widget.removeFromParent();
 
@@ -126,56 +128,47 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
 
         // Physical attach.
         Element childElement = widget.getElement();
-
-        LayoutData layoutData = impl.insertChild(parentElement, childElement, beforeIndex, alignment, flex, flexBasis);
-        widget.setLayoutData(layoutData);
-
-        if (crossAxisSize != null && crossAxisSize >= 0) {
-            if (vertical) {
-                widget.setWidth(crossAxisSize + "px");
-            } else {
-                widget.setHeight(crossAxisSize + "px");
-            }
+        
+        // выставляем скроллам flex-basis равным "0", т.к. иначе, с "auto", он требует себе всё пространство, необходимое его потомкам - растягивается 
+        if (widget instanceof ScrollPanel) {
+            flexBasis = "0";
         }
+        
+        double flexShrink = 0;
+        if (widget instanceof FlexPanel) {
+            flexShrink = ((FlexPanel) widget).getFlexShrink();
+        }
+
+        LayoutData layoutData = impl.insertChild(parentElement, childElement, beforeIndex, alignment, flex, flexShrink, flexBasis);
+        widget.setLayoutData(layoutData);
 
         // Adopt.
         adopt(widget);
     }
 
+    public void setChildConstraints(Widget w, GFlexAlignment alignment, double flex, double flexShrink, String flexBasis) {
+        int index = getWidgetIndex(w);
+        if (index != -1) {
+            LayoutData layoutData = (LayoutData) w.getLayoutData();
+            Element childElement = w.getElement();
+            impl.setFlex(layoutData, childElement, flex, flexShrink, flexBasis);
+            impl.setAlignment(layoutData, childElement, alignment);
+        }
+    }
+
     public void setChildFlex(Widget w, double flex) {
-        int index = getWidgetIndex(w);
-        if (index != -1) {
-            impl.setFlex((LayoutData) w.getLayoutData(), w.getElement(), flex);
-        }
+        setChildFlex(w, flex, "auto");
     }
 
-    public void setChildFlex(Widget w, double flex, Integer flexBasis) {
-        int index = getWidgetIndex(w);
-        if (index != -1) {
-            impl.setFlex((LayoutData) w.getLayoutData(), w.getElement(), flex, flexBasis);
-        }
+    public void setChildFlex(Widget w, double flex, String flexBasis) {
+        setChildFlex(w, flex, 0, flexBasis);
     }
 
-    public void setChildFlexBasis(Widget w, Integer flexBasis) {
+    public void setChildFlex(Widget w, double flex, double flexShrink, String flexBasis) {
         int index = getWidgetIndex(w);
         if (index != -1) {
-            impl.setFlexBasis((LayoutData) w.getLayoutData(), w.getElement(), flexBasis);
+            impl.setFlex((LayoutData) w.getLayoutData(), w.getElement(), flex, flexShrink, flexBasis);
         }
-    }
-
-    public void fixFlexBasis(Widget w) {
-        int index = getWidgetIndex(w);
-        if (index != -1) {
-            impl.fixFlexBasis((LayoutData) w.getLayoutData(), w.getElement(), vertical);
-        }
-    }
-
-    public int getFlexBasis(Widget w) {
-        int index = getWidgetIndex(w);
-        if (index != -1) {
-            return impl.getFlexBasis((LayoutData) w.getLayoutData(), w.getElement(), vertical);
-        }
-        return -1;
     }
 
     public void setChildAlignment(Widget w, GFlexAlignment alignment) {
@@ -229,14 +222,9 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
         public Element child;
         public GFlexAlignment alignment;
         public double flex;
-        public Integer flexBasis;
-//        public String flexBasis;
+        public String flexBasis;
 
-        public String getFlexBasisString() {
-            return flexBasis == null ? "auto" : (flexBasis + "px");
-        }
-
-        public LayoutData(Element child, GFlexAlignment alignment, double flex, Integer flexBasis) {
+        public LayoutData(Element child, GFlexAlignment alignment, double flex, String flexBasis) {
             this.child = child;
             this.alignment = alignment;
             this.flex = flex;

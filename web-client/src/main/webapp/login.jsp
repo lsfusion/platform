@@ -1,7 +1,7 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 
-<!DOCTYPE html>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
@@ -33,29 +33,9 @@
                                     <input type="password" id="j_password" name="j_password" class="round full-width-input"/>
                                 </p>
                                 <input name="submit" type="submit" class="button round blue image-right ic-right-arrow" value="log in"/>
-                                <div class="desktop-link">
-                                    <span id="triangle" class="triangle" onclick="showSpoiler()">&#9658;</span><a href="${pageContext.request.contextPath}/client.jnlp">Run desktop client</a>
-                                    <div id="spoiler" style="display:none"></div>
-                                        <script>
-                                            function showSpoiler() {
-                                                if(document.getElementById('spoiler').style.display==='none') {
-
-                                                    var xhttp = new XMLHttpRequest();
-                                                    xhttp.onload = function() {
-                                                        document.getElementById('spoiler').innerHTML = this.responseText;
-                                                    };
-                                                    xhttp.open("GET", "readMemoryLimits?path=${pageContext.request.contextPath}", true);
-                                                    xhttp.send();
-
-                                                    document.getElementById('spoiler') .style.display='';
-                                                    document.getElementById('triangle').innerHTML = '&#9660;'
-                                                } else {
-                                                    document.getElementById('spoiler') .style.display='none';
-                                                    document.getElementById('triangle').innerHTML = '&#9658;'
-                                                }
-                                            }
-                                    </script>
-                                </div>
+                                <a class="desktop-link" href="${pageContext.request.contextPath}/client.jnlp">
+                                    Run desktop client
+                                </a>
                             </fieldset>
                         </form>
                         <c:if test="${!empty param.error}">

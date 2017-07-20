@@ -12,7 +12,7 @@ import lsfusion.server.logics.property.ExecutionContext;
 import java.sql.SQLException;
 
 public class EditReportActionProperty extends ReportClientActionProperty {
-    private static LCP showIf = createShowIfProperty(new CalcProperty[] {FormEntity.isFullClient, FormEntity.isDebug, FormEntity.isFloat}, new boolean[] {false, false, true});
+    private static LCP showIf = createShowIfProperty(new CalcProperty[] {FormEntity.isFullClient, FormEntity.isDebug, FormEntity.isDialog}, new boolean[] {false, false, true});
 
     public EditReportActionProperty(BaseLogicsModule lm) {
         super(lm, false);

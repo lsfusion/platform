@@ -4,9 +4,7 @@ import com.google.gwt.user.client.ui.RequiresResize;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.base.client.Dimension;
 import lsfusion.gwt.base.client.ui.FlexPanel;
-import lsfusion.gwt.base.client.ui.GFlexAlignment;
 import lsfusion.gwt.form.client.form.ui.layout.flex.FlexCaptionPanel;
-import lsfusion.gwt.form.client.form.ui.layout.flex.FlexFormLayoutImpl;
 import lsfusion.gwt.form.client.form.ui.layout.table.TableCaptionPanel;
 import lsfusion.gwt.form.shared.view.GComponent;
 import lsfusion.gwt.form.shared.view.GContainer;
@@ -31,7 +29,7 @@ public abstract class GAbstractContainerView {
         this.container = container;
     }
 
-    public void add(GComponent child, final Widget view) {
+    public void add(GComponent child, Widget view) {
         assert child != null && view != null && container.children.contains(child);
 
         int index = relativePosition(child, container.children, children);
@@ -40,15 +38,6 @@ public abstract class GAbstractContainerView {
         childrenViews.add(index, view);
 
         addImpl(index, child, view);
-
-        if(child.autoSize && view instanceof FlexFormLayoutImpl.GridPanel) {
-            updateLayoutListeners.add(new UpdateLayoutListener() {
-                @Override
-                public void updateLayout() {
-                    ((FlexFormLayoutImpl.GridPanel)view).autoSize();
-                }
-            });
-        }
     }
 
     public void remove(GComponent child) {
@@ -148,31 +137,8 @@ public abstract class GAbstractContainerView {
         }
     }
 
-    private interface UpdateLayoutListener {
-        void updateLayout();
-    }
-
-    private List<UpdateLayoutListener> updateLayoutListeners = new ArrayList<>();
     public void updateLayout() {
-        for(UpdateLayoutListener updateLayoutListener : updateLayoutListeners)
-            updateLayoutListener.updateLayout();
-    }
-
-    private static Integer getPreferredSize(boolean vertical, boolean mainAxis, GComponent component) {
-        int preferredSize;
-        if (mainAxis) {
-            preferredSize = vertical ? component.preferredHeight : component.preferredWidth;    
-        } else {
-            preferredSize = vertical ? component.preferredWidth : component.preferredHeight;
-        }
-        if (preferredSize != -1)
-            return preferredSize;
-        return null;
-    }
-    public static void add(FlexPanel panel, Widget widget, int beforeIndex, GFlexAlignment alignment, double flex, GComponent component, boolean vertical) { // последний параметр временный хак для Scrollable
-//        assert alignment == component.alignment;
-//        assert flex == component.flex;
-        panel.add(widget, beforeIndex, alignment, flex, getPreferredSize(vertical, true, component), getPreferredSize(vertical, false, component));
+        //do nothing by default
     }
 
     protected abstract void addImpl(int index, GComponent child, Widget view);

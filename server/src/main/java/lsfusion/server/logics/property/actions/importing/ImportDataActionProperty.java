@@ -2,17 +2,13 @@ package lsfusion.server.logics.property.actions.importing;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
-import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
-import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
-import lsfusion.interop.action.MessageClientAction;
 import lsfusion.server.classes.*;
 import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.SQLHandledException;
@@ -25,15 +21,14 @@ import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.NullValue;
 import lsfusion.server.logics.ObjectValue;
-import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.*;
-import lsfusion.server.logics.property.actions.SystemActionProperty;
-import lsfusion.server.logics.property.actions.flow.FlowResult;
+import lsfusion.server.logics.property.actions.SystemExplicitActionProperty;
 import lsfusion.server.logics.property.actions.importing.dbf.ImportDBFDataActionProperty;
 import lsfusion.server.logics.property.actions.importing.jdbc.ImportJDBCDataActionProperty;
 import lsfusion.server.logics.property.actions.importing.mdb.ImportMDBDataActionProperty;
-import lsfusion.server.logics.property.derived.DerivedProperty;
+import lsfusion.server.logics.property.actions.importing.xls.ImportXLSDataActionProperty;
+import lsfusion.server.logics.property.actions.importing.xlsx.ImportXLSXDataActionProperty;
 import lsfusion.server.session.PropertyChange;
 import lsfusion.server.session.SingleKeyTableUsage;
 import org.jdom.JDOMException;
@@ -42,12 +37,9 @@ import org.xBaseJ.xBaseJException;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
-public abstract class ImportDataActionProperty extends SystemActionProperty {
+public abstract class ImportDataActionProperty extends SystemExplicitActionProperty {
 
     protected final List<String> ids;
     protected final List<LCP> properties;
@@ -83,8 +75,16 @@ public abstract class ImportDataActionProperty extends SystemActionProperty {
             XLSColumnsMapping.put(XLSColumnByIndex(i), i);
         }
     }
+    
+    public static ImportDataActionProperty createExcelProperty(ValueClass valueClass, ImportSourceFormat format, List<String> ids, List<LCP> properties, ValueClass sheetIndex, BaseLogicsModule baseLM) {
+        if (format == ImportSourceFormat.XLS) {
+            return new ImportXLSDataActionProperty(sheetIndex == null ? new ValueClass[] {valueClass} : new ValueClass[] {valueClass, sheetIndex} , ids, properties, baseLM);
+        } else if (format == ImportSourceFormat.XLSX) {
+            return new ImportXLSXDataActionProperty(sheetIndex == null ? new ValueClass[] {valueClass} : new ValueClass[] {valueClass, sheetIndex}, ids, properties, baseLM);
+        } else return null;
+    }
 
-    public static ImportDataActionProperty createDBFProperty(int paramsCount, boolean hasWheres, boolean hasMemo, List<String> ids, List<LCP> properties, String charset, BaseLogicsModule baseLM) {
+    public static ImportDataActionProperty createDBFProperty(ValueClass valueClass, ValueClass wheresClass, ValueClass memoClass, List<String> ids, List<LCP> properties, String charset, BaseLogicsModule baseLM) {
         for (int i = 0; i < ids.size(); ++i) { // для DBF делаем case insensitive
             String id = ids.get(i);
             if (id != null)
@@ -92,45 +92,38 @@ public abstract class ImportDataActionProperty extends SystemActionProperty {
             else
                 throw new RuntimeException("Import error: field for property " + properties.get(i) + " not specified");
         }
-
-        return new ImportDBFDataActionProperty(paramsCount, hasWheres, hasMemo, ids, properties, charset, baseLM);
+        List<ValueClass> classes = new ArrayList<>();
+        classes.add(valueClass);
+        if(wheresClass != null)
+            classes.add(wheresClass);
+        if(memoClass != null)
+            classes.add(memoClass);
+        return new ImportDBFDataActionProperty(classes.toArray(new ValueClass[classes.size()]), wheresClass != null, memoClass != null, ids, properties, charset, baseLM);
     }
 
-    public static ImportDataActionProperty createProperty(ImportSourceFormat format, List<String> ids, List<LCP> properties, BaseLogicsModule baseLM) {
+    public static ImportDataActionProperty createProperty(ValueClass valueClass, ImportSourceFormat format, List<String> ids, List<LCP> properties, BaseLogicsModule baseLM) {
         if (format == ImportSourceFormat.JDBC) {
-            return new ImportJDBCDataActionProperty(ids, properties, baseLM);
+            return new ImportJDBCDataActionProperty(valueClass, ids, properties, baseLM);
         } else if (format == ImportSourceFormat.MDB) {
-            return new ImportMDBDataActionProperty(ids, properties, baseLM);
+            return new ImportMDBDataActionProperty(valueClass, ids, properties, baseLM);
         }
         return null;
     }
 
-    public ImportDataActionProperty(int paramsCount, List<String> ids, List<LCP> properties, BaseLogicsModule baseLM) {
-        super(LocalizedString.create("Import"), SetFact.toOrderExclSet(paramsCount, new GetIndex<PropertyInterface>() {
-            @Override
-            public PropertyInterface getMapValue(int i) {
-                return new PropertyInterface();
-            }
-        }));
+    public ImportDataActionProperty(ValueClass[] valueClasses, List<String> ids, List<LCP> properties, BaseLogicsModule baseLM) {
+        super(valueClasses);
         this.ids = ids;
         this.properties = properties;
         this.importedProperty = baseLM.imported;
     }
 
     @Override
-    public CalcPropertyMapImplement<?, PropertyInterface> calcWhereProperty() {
-        // Сделано по подобию MessageAction
-        // TRUE AND a OR (NOT a), т.е. значение всегда TRUE, но при join'е будет учавствовать в classWhere - FULL
-        ImList props = ListFact.EMPTY();
-        for (PropertyInterface i : interfaces) {
-            props.addList(DerivedProperty.createAnd(DerivedProperty.createTrue(), i));
-            props.addList(DerivedProperty.createNot(i));
-        }
-        return DerivedProperty.createUnion(interfaces, props);
+    protected boolean allowNulls() {
+        return false;
     }
 
     @Override
-    protected FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
+    protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         DataObject value = context.getDataKeys().getValue(0);
         assert value.getType() instanceof FileClass;
 
@@ -198,14 +191,11 @@ public abstract class ImportDataActionProperty extends SystemActionProperty {
                 }
                 
                 iterator.release();
-
-            } catch (IncorrectFileException e) {
-                context.delayUserInterfaction(new MessageClientAction(e.getMessage(), "Import Error"));
+                
             } catch (Exception e) {
                 Throwables.propagate(e);
             }
         }
-        return FlowResult.FINISH;
     }
 
     protected List<Integer> getSourceColumns(Map<String, Integer> mapping) {
@@ -238,7 +228,7 @@ public abstract class ImportDataActionProperty extends SystemActionProperty {
         return 0;
     }
 
-    public abstract ImportIterator getIterator(byte[] file) throws IOException, ParseException, xBaseJException, JDOMException, ClassNotFoundException, IncorrectFileException;
+    public abstract ImportIterator getIterator(byte[] file) throws IOException, ParseException, xBaseJException, JDOMException, ClassNotFoundException;
 
     protected boolean ignoreIncorrectColumns() {
         return true;

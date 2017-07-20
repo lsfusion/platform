@@ -16,7 +16,6 @@ import lsfusion.interop.Compare;
 import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.caches.ManualLazy;
 import lsfusion.server.classes.*;
-import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.QueryEnvironment;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
@@ -92,9 +91,9 @@ abstract public class Expr extends AbstractSourceJoin<Expr> {
     public Expr classExpr(BaseClass baseClass, IsClassType type) {
         return classExpr(baseClass.getUpObjectClassFields().keys(), type);
     }
-    public Expr classExpr(ObjectValueClassSet valueClassSet, IsClassType type) {
+    public Expr classExpr(ObjectValueClassSet valueClassSet) {
         assert !valueClassSet.isEmpty();
-        return classExpr(valueClassSet.getObjectClassFields().keys(), type);
+        return classExpr(valueClassSet.getObjectClassFields().keys(), IsClassType.CONSISTENT);
     }
     public abstract Expr classExpr(ImSet<ObjectClassField> classes, IsClassType type); // classes - за пределами которых можно (и нужно ?) возвращать null
 
@@ -240,22 +239,7 @@ abstract public class Expr extends AbstractSourceJoin<Expr> {
                 }), true)).getWhere()).compile(new CompileOptions<>(PostgreDataAdapter.debugSyntax));
     }
 
-    public static Object readValue(SQLSession session, Expr expr, OperationOwner owner) throws SQLException, SQLHandledException { // assert что в mapExprs только values
-        return new Query<>(MapFact.<Object, KeyExpr>EMPTYREV(), MapFact.singleton("value", expr), Where.TRUE).execute(session, owner).singleValue().singleValue();
-    }
-
-    public static ObjectValue readObjectValue(SQLSession session, BaseClass baseClass, Expr expr, QueryEnvironment env) throws SQLException, SQLHandledException { // assert что в mapExprs только values
-        ObjectValue objectValue = expr.getObjectValue(env);
-        if(objectValue != null)
-            return objectValue;
-        return new Query<>(MapFact.<Object, KeyExpr>EMPTYREV(), MapFact.singleton("value", expr), Where.TRUE).executeClasses(session, env, baseClass).singleValue().singleValue(); 
-    }
-
-    public static <K> ImMap<K, Object> readValues(SQLSession session, ImMap<K,Expr> mapExprs, OperationOwner owner) throws SQLException, SQLHandledException { // assert что в mapExprs только values
-        return new Query<>(MapFact.<Object, KeyExpr>EMPTYREV(), mapExprs, Where.TRUE).execute(session, owner).singleValue();
-    }
-    
-    public static <K> ImMap<K, ObjectValue> readObjectValues(SQLSession session, BaseClass baseClass, ImMap<K,Expr> mapExprs, QueryEnvironment env) throws SQLException, SQLHandledException { // assert что в mapExprs только values
+    public static <K> ImMap<K, ObjectValue> readValues(SQLSession session, BaseClass baseClass, ImMap<K,Expr> mapExprs, QueryEnvironment env) throws SQLException, SQLHandledException { // assert что в mapExprs только values
         MExclMap<K, ObjectValue> mMapValues = MapFact.<K, ObjectValue>mExclMap(mapExprs.size());
         MExclMap<K, Expr> mMapExprValues = MapFact.<K, Expr>mExclMap(mapExprs.size());
         for(int i=0,size=mapExprs.size();i<size;i++) {

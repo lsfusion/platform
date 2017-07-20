@@ -67,7 +67,7 @@ public abstract class InnerExpr extends NullableExpr implements JoinData {
         Stat statValue = getInnerStatValue(keyStat, statType).distinct;
         Stat joinStats = getInnerStatRows(statType);
 //        if (desiredJoinStat.less(joinStats)) // оптимизация
-        return new ExprStatJoin(this, statValue, desiredJoinStat, joinStats, notNull);
+        return new ExprStatJoin(this, statValue, desiredJoinStat, joinStats, false);
 //        return null;
     }
 

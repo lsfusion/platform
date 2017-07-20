@@ -1,6 +1,5 @@
 package lsfusion.server.logics.property.derived;
 
-import lsfusion.base.BaseUtils;
 import lsfusion.base.Result;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImCol;
@@ -17,6 +16,7 @@ import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.query.Join;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
+import lsfusion.server.logics.i18n.FormatLocalizedString;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.session.DataChanges;
@@ -42,26 +42,15 @@ public class CycleGroupProperty<I extends PropertyInterface, P extends PropertyI
     public CalcProperty getConstrainedProperty() {
         // создает ограничение на "одинаковость" всех группировочных св-в
         // I1=I1' AND … In = In' AND G!=G' == false
-        CalcProperty constraint; 
-                
-//        constraint = DerivedProperty.createPartition(innerInterfaces, DerivedProperty.<I>createTrue(),
-//                getMapInterfaces().values(), groupProperty, new Result<ImRevMap<I, JoinProperty.Interface>>(), Compare.GREATER);
-
-        CalcPropertyMapImplement<?, GroupProperty.Interface<I>> constraintImplement;
-        CalcPropertyMapImplement<?, I> one = DerivedProperty.createOne();
-        if(this instanceof AggregateGroupProperty) {
-            constraintImplement = DerivedProperty.createSumGProp(innerInterfaces, getMapInterfaces().values(), DerivedProperty.createAnd(one, groupProperty));
-        } else {
-            constraintImplement = DerivedProperty.createSumGProp(innerInterfaces, getMapInterfaces().values().mergeCol(SetFact.singleton(groupProperty)), one);
-        }
-        constraint = DerivedProperty.createCompare(constraintImplement, BaseUtils.<CalcPropertyMapImplement<?, Interface<I>>>immutableCast(one), Compare.GREATER).property;
+        CalcProperty constraint = DerivedProperty.createPartition(innerInterfaces, DerivedProperty.<I>createTrue(),
+                getMapInterfaces().values(), groupProperty, new Result<ImRevMap<I, JoinProperty.Interface>>(), Compare.GREATER);
         
         String cycleCaption;
         if(groupProperty instanceof CalcPropertyMapImplement)
             cycleCaption = ((CalcPropertyMapImplement<?, I>)groupProperty).property.toString();
         else
             cycleCaption = groupProperty.toString();
-        constraint.caption = LocalizedString.createFormatted("{logics.property.derived.violate.property.uniqueness.for.objects}", cycleCaption);
+        constraint.caption = new FormatLocalizedString("{logics.property.derived.violate.property.uniqueness.for.objects}", cycleCaption);
         return constraint;
     }
 

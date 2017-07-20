@@ -30,45 +30,16 @@ import java.sql.SQLException;
 
 import static java.lang.Math.max;
 
-public class ComponentView extends IdentityObject implements ServerIdentitySerializable, AbstractComponent {
+public class ComponentView extends IdentityObject implements ServerIdentitySerializable, AbstractComponent<ContainerView, ComponentView> {
 
     public ComponentDesign design = new ComponentDesign();
 
     public Dimension minimumSize;
     public Dimension maximumSize;
     public Dimension preferredSize;
-    public Dimension getPreferredSize() {
-        if(preferredSize == null) {
-            ContainerView container = getContainer();
-            if(container != null && container.isScroll()) {
-                return new Dimension(-1, 1);
-            }
-        }
-        return preferredSize;
-    }
-    
-    public boolean autoSize = false;
 
-    private Double flex = null;
-    private FlexAlignment alignment = null;
-    public double getFlex() {
-        assert flex == null || (flex > 0 || getContainer() == null || (!getContainer().isScroll() && !getContainer().isSplit())); // временные assert'ы чтобы проверить обратную совместимость
-        if(flex != null)
-            return flex;
-        ContainerView container = getContainer();
-        if(container != null && (container.isScroll() || container.isSplit()))
-            return 1;
-        return 0;
-    }
-    public FlexAlignment getAlignment() {
-        assert alignment == null || (alignment == FlexAlignment.STRETCH || getContainer() == null || (!getContainer().isScroll() && !getContainer().isSplit())); // временные assert'ы чтобы проверить обратную совместимость
-        if(alignment != null)
-            return alignment;
-        ContainerView container = getContainer();
-        if(container != null && (container.isScroll() || container.isSplit()))
-            return FlexAlignment.STRETCH;
-        return FlexAlignment.LEADING;
-    }
+    public double flex = 0;
+    public FlexAlignment alignment = FlexAlignment.LEADING;
 
     public int marginTop;
     public int marginBottom;
@@ -104,26 +75,6 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
 
     public void setAlignment(FlexAlignment alignment) {
         this.alignment = alignment;
-    }
-
-    public void setPreferredSize(Dimension preferredSize) {
-        this.preferredSize = preferredSize;
-    }
-
-    public void setPreferredHeight(int prefHeight) {
-        if (this.preferredSize == null) {
-            this.preferredSize = new Dimension(-1, prefHeight);
-        } else {
-            this.preferredSize.height = prefHeight;
-        }
-    }
-
-    public void setPreferredWidth(int prefWidth) {
-        if (this.preferredSize == null) {
-            this.preferredSize = new Dimension(prefWidth, -1);
-        } else {
-            this.preferredSize.width = prefWidth;
-        }
     }
 
     public void setMarginTop(int marginTop) {
@@ -221,13 +172,10 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
 
         pool.writeObject(outStream, minimumSize);
         pool.writeObject(outStream, maximumSize);
-        pool.writeObject(outStream, getPreferredSize());
-        
-        outStream.writeBoolean(autoSize);
+        pool.writeObject(outStream, preferredSize);
 
-        outStream.writeDouble(getFlex());
-        pool.writeObject(outStream, getAlignment());
-
+        outStream.writeDouble(flex);
+        pool.writeObject(outStream, alignment);
         outStream.writeInt(marginTop);
         outStream.writeInt(marginBottom);
         outStream.writeInt(marginLeft);
@@ -246,8 +194,6 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
         minimumSize = pool.readObject(inStream);
         maximumSize = pool.readObject(inStream);
         preferredSize = pool.readObject(inStream);
-        
-        autoSize = inStream.readBoolean();
 
         flex = inStream.readDouble();
         alignment = pool.readObject(inStream);

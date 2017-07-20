@@ -1,7 +1,6 @@
 package lsfusion.client.form.tree;
 
 import lsfusion.client.form.ClientFormController;
-import lsfusion.client.form.layout.JComponentPanel;
 import lsfusion.client.logics.ClientGroupObject;
 import lsfusion.client.logics.ClientGroupObjectValue;
 import lsfusion.client.logics.ClientPropertyDraw;
@@ -12,7 +11,7 @@ import java.awt.*;
 import java.util.List;
 import java.util.Map;
 
-public class TreeView extends JComponentPanel {
+public class TreeView extends JPanel {
     private final TreeGroupTable groupTree;
 
     public TreeView(ClientFormController form, ClientTreeGroup treeGroup) {

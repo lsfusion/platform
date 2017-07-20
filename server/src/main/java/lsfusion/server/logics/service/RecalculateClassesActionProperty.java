@@ -5,7 +5,7 @@ import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.ServiceLogicsModule;
-import lsfusion.server.logics.i18n.LocalizedString;
+import lsfusion.server.logics.i18n.FormatLocalizedString;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
@@ -31,7 +31,7 @@ public class RecalculateClassesActionProperty extends ScriptingActionProperty {
                 context.getDbManager().packTables(session, BL.LM.tableFactory.getImplementTables(), isolatedTransaction);
             }});
 
-        context.delayUserInterfaction(new MessageClientAction(localize(LocalizedString.createFormatted("{logics.recalculation.completed}", localize("{logics.recalculating.data.classes}"))), localize("{logics.recalculating.data.classes}"), true));
+        context.delayUserInterfaction(new MessageClientAction(localize(new FormatLocalizedString("{logics.recalculation.completed}", localize("{logics.recalculating.data.classes}"))), localize("{logics.recalculating.data.classes}"), true));
     }
 
     @Override

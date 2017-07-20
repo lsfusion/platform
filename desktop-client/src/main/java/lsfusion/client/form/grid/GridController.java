@@ -69,6 +69,10 @@ public class GridController {
             clientGrid.setHeaderHeight(headerHeight);
     }
 
+    public void setHeaderHeight(Integer headerHeight) {
+        clientGrid.setHeaderHeight(headerHeight == null ? 0 : headerHeight);
+    }
+
     public boolean containsProperty(ClientPropertyDraw property) {
         return table.containsProperty(property);
     }
@@ -236,10 +240,6 @@ public class GridController {
 
     public Font getFont() {
         return clientGrid.design.getFont(table);
-    }
-    
-    public boolean getAutoSize() {
-        return clientGrid.autoSize;
     }
 
     public void addView(ClientFormLayout formLayout) {

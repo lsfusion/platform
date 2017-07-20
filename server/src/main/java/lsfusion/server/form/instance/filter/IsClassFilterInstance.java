@@ -1,7 +1,6 @@
 package lsfusion.server.form.instance.filter;
 
 import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.server.classes.CustomClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.Expr;
@@ -10,7 +9,6 @@ import lsfusion.server.form.instance.CalcPropertyObjectInstance;
 import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.form.instance.ObjectInstance;
 import lsfusion.server.form.instance.ReallyChanged;
-import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.IsClassProperty;
 import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.session.Modifier;
@@ -33,7 +31,7 @@ public class IsClassFilterInstance<P extends PropertyInterface> extends Property
         isClass = form.getCustomClass(inStream.readInt());
     }
 
-    public Where getWhere(ImMap<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier, ReallyChanged reallyChanged, MSet<CalcProperty> mUsedProps) throws SQLException, SQLHandledException {
-        return IsClassProperty.getWhere(isClass, property.getExpr(mapKeys, modifier, reallyChanged, mUsedProps), modifier, mUsedProps);
+    public Where getWhere(ImMap<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier, ReallyChanged reallyChanged) throws SQLException, SQLHandledException {
+        return IsClassProperty.getWhere(isClass, property.getExpr(mapKeys, modifier), modifier);
     }
 }

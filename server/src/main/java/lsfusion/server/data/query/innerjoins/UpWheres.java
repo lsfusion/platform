@@ -5,7 +5,6 @@ import lsfusion.base.col.WrapMap;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.data.query.stat.WhereJoin;
-import lsfusion.server.data.translator.JoinExprTranslator;
 import lsfusion.server.data.where.Where;
 
 public class UpWheres<J extends WhereJoin> extends WrapMap<J, UpWhere> {
@@ -40,7 +39,7 @@ public class UpWheres<J extends WhereJoin> extends WrapMap<J, UpWhere> {
             return FALSE;
         }
 
-        public Where getWhere(JoinExprTranslator translator) {
+        public Where getWhere() {
             return Where.TRUE;
         }
     };
@@ -57,7 +56,7 @@ public class UpWheres<J extends WhereJoin> extends WrapMap<J, UpWhere> {
             return TRUE;
         }
 
-        public Where getWhere(JoinExprTranslator translator) {
+        public Where getWhere() {
             return Where.FALSE;
         }
     };

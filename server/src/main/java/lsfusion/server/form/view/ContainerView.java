@@ -17,7 +17,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-public class ContainerView extends ComponentView implements AbstractContainer<ComponentView, LocalizedString> {
+public class ContainerView extends ComponentView implements AbstractContainer<ContainerView, ComponentView> {
 
     public NFOrderSet<ComponentView> children = NFFact.orderSet();
 
@@ -47,23 +47,16 @@ public class ContainerView extends ComponentView implements AbstractContainer<Co
         this.main = main;
     }
 
-    public void setCaption(LocalizedString caption) {
-        this.caption = caption;
+    public void setCaption(String caption) {
+        this.caption = LocalizedString.create(caption);
     }
 
-    public void setDescription(LocalizedString description) {
-        this.description = description;
+    public void setDescription(String description) {
+        this.description = LocalizedString.create(description);
     }
 
     public boolean isTabbedPane() {
         return getType() == ContainerType.TABBED_PANE;
-    }
-    public boolean isScroll() {
-        return getType() == ContainerType.SCROLL;
-    }
-    public boolean isSplit() {
-        ContainerType type = getType();
-        return type == ContainerType.HORIZONTAL_SPLIT_PANE || type == ContainerType.VERTICAL_SPLIT_PANE;
     }
     public ContainerType getType() {
         return type;
@@ -110,7 +103,7 @@ public class ContainerView extends ComponentView implements AbstractContainer<Co
         comp.setContainer(this, version);
     }
 
-    public static class VersionContainerAdder extends ContainerAdder<ContainerView, ComponentView, LocalizedString> {
+    public static class VersionContainerAdder extends ContainerAdder<ContainerView, ComponentView> {
         private final Version version;
 
         public VersionContainerAdder(Version version) {

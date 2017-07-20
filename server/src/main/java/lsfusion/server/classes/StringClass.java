@@ -27,7 +27,6 @@ public class StringClass extends DataClass {
     private final static Collection<StringClass> strings = new ArrayList<>();
 
     public final static StringClass text = getv(ExtInt.UNLIMITED);
-    public final static StringClass iText = getv(true, ExtInt.UNLIMITED);
     public final static StringClass richText = get(false, false, true, ExtInt.UNLIMITED);
     public final boolean blankPadded;
     public final boolean caseInsensitive;
@@ -211,7 +210,7 @@ public class StringClass extends DataClass {
     @Override
     public String getSID() {
         String sid = (length == ExtInt.UNLIMITED
-                      ? (rich ? "RICHTEXT" : ((caseInsensitive ? "I" : "") + "TEXT"))
+                      ? (rich ? "RICHTEXT" : "TEXT")
                       : "STRING");
         sid = (!blankPadded ? "VAR" : "") + (caseInsensitive ? "I" : "") + sid;
         if (length != ExtInt.UNLIMITED) {

@@ -111,7 +111,6 @@ public abstract class ColumnsContainerView<P extends Panel> extends GAbstractCon
 
     @Override
     public void updateLayout() {
-        super.updateLayout();
         if (container.columnLabelsWidth > 0) {
             for (int i = 0; i < columnsCount; ++i) {
                 ResizableComplexPanel column = columns[i];

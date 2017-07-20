@@ -1,20 +1,15 @@
 package lsfusion.server.logics.property;
 
 import lsfusion.base.Pair;
-import lsfusion.base.Result;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.server.caches.IdentityInstanceLazy;
-import lsfusion.server.classes.BaseClass;
 import lsfusion.server.classes.CustomClass;
 import lsfusion.server.classes.ValueClass;
-import lsfusion.server.data.*;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
-import lsfusion.server.data.query.Join;
-import lsfusion.server.data.query.Query;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.data.where.classes.ClassWhere;
@@ -26,11 +21,10 @@ import lsfusion.server.logics.property.actions.ChangeEvent;
 import lsfusion.server.logics.property.infer.ExClassSet;
 import lsfusion.server.logics.property.infer.InferType;
 import lsfusion.server.logics.property.infer.Inferred;
-import lsfusion.server.session.*;
-import lsfusion.server.stack.StackMessage;
-import lsfusion.server.stack.ThisMessage;
-
-import java.sql.SQLException;
+import lsfusion.server.session.DataChanges;
+import lsfusion.server.session.PropertyChange;
+import lsfusion.server.session.PropertyChanges;
+import lsfusion.server.session.StructChanges;
 
 public abstract class DataProperty extends CalcProperty<ClassPropertyInterface> {
 
@@ -89,55 +83,16 @@ public abstract class DataProperty extends CalcProperty<ClassPropertyInterface> 
         return SetFact.singleton(this);
     }
 
-    @StackMessage("{message.check.data.properties}")
-    @ThisMessage
-    public ModifyResult checkClasses(SinglePropertyTableUsage<ClassPropertyInterface> change, SQLSession sql, BaseClass baseClass, QueryEnvironment env, Modifier modifier, OperationOwner owner, Runnable checkTransaction, RegisterClassRemove classRemove, long timestamp) throws SQLException, SQLHandledException {
-        return checkClasses(change, sql, baseClass, env, modifier.getPropertyChanges(), owner, checkTransaction, classRemove, timestamp);        
-    }
-    
-    public ModifyResult checkClasses(SinglePropertyTableUsage<ClassPropertyInterface> change, SQLSession sql, BaseClass baseClass, QueryEnvironment env, PropertyChanges propertyChanges, OperationOwner owner, Runnable checkTransaction, RegisterClassRemove classRemove, long timestamp) throws SQLException, SQLHandledException {
-        if(noClasses())
-            return ModifyResult.NO;
-
-        Result<ImSet<ClassPropertyInterface>> checkKeyChanges = new Result<>();
-        Result<Boolean> checkValueChange = new Result<>();
-        ClassType classType = ClassType.storedPolicy;
-        boolean updatedClasses = change.checkClasses(sql, baseClass, true, owner, true, getInterfaceClasses(classType), getValueClass(classType), checkKeyChanges, checkValueChange, checkTransaction, classRemove, timestamp); // тут фиг поймешь какое policy
-        
-        ImRevMap<ClassPropertyInterface, KeyExpr> mapKeys = getMapKeys();
-        Join<String> changeJoin = change.join(mapKeys);
-        Expr changeExpr = changeJoin.getExpr("value");
-        Where wrongWhere = changeJoin.getWhere().and(getIsClassWhere(propertyChanges, mapKeys.filterInclRev(checkKeyChanges.result), checkValueChange.result ? changeExpr : null).not());
-        
-        ModifyResult deleted = ModifyResult.NO;
-        if(!wrongWhere.isFalse()) { // оптимизация
-            if(checkTransaction != null)
-                checkTransaction.run();
-            deleted = change.modifyRows(sql, new Query<ClassPropertyInterface, String>(mapKeys, change.getWhere(mapKeys).and(wrongWhere)), baseClass, Modify.DELETE, env, false); // только что их собственно обновили
-        }
-        
-        if(updatedClasses)
-            return ModifyResult.DATA_SOURCE; // формально в этом случае (если deleted - NO) мог только source изменится, но оптимизировать это особого смысла нет 
-        return deleted; 
-    }
-    
     @Override
     protected DataChanges calculateDataChanges(PropertyChange<ClassPropertyInterface> change, WhereBuilder changedWhere, PropertyChanges propChanges) {
         if(!noClasses()) // нижнее условие по аналогии с canBeChanged
-            change = change.and(getIsClassWhere(propChanges, change.getMapExprs(), change.expr));
+            change = change.and(getClassProperty().mapExpr(change.getMapExprs(), propChanges, null).getWhere().and(getValueClassProperty().mapExpr(MapFact.singleton("value", change.expr), propChanges, null).getWhere().or(change.expr.getWhere().not())));
         
         if(change.where.isFalse()) // чтобы не плодить пустые change'и
             return DataChanges.EMPTY;
 
         if(changedWhere !=null) changedWhere.add(change.where); // помечаем что можем обработать тока подходящие по интерфейсу классы
         return new DataChanges(this, change);
-    }
-
-    private Where getIsClassWhere(PropertyChanges propChanges, ImMap<ClassPropertyInterface, ? extends Expr> mapKeys, Expr expr) {
-        Where result = getClassProperty(mapKeys.keys()).mapExpr(mapKeys, propChanges, null).getWhere();
-        if(expr != null)
-            result = result.and(getValueClassProperty().mapExpr(MapFact.singleton("value", expr), propChanges, null).getWhere().or(expr.getWhere().not()));
-        return result;
     }
 
     public ImSet<CalcProperty> calculateUsedChanges(StructChanges propChanges) {

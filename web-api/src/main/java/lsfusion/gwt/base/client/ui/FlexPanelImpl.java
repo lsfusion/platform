@@ -87,20 +87,21 @@ public class FlexPanelImpl {
     }
 
     public void setupParentDiv(DivElement parent, boolean vertical, Justify justify) {
-        parent.getStyle().setOverflow(Style.Overflow.HIDDEN);
-        parent.getStyle().setProperty("display", getDisplayFlexValue());
-        parent.getStyle().setProperty(getDirectionAttrName(), getDirectionValue(vertical));
-        parent.getStyle().setProperty(getJustifyContentAttrName(), getJustifyValue(justify));
+        Style parentStyle = parent.getStyle();
+        parentStyle.setOverflow(Style.Overflow.HIDDEN);
+        parentStyle.setProperty("display", getDisplayFlexValue());
+        parentStyle.setProperty(getDirectionAttrName(), getDirectionValue(vertical));
+        parentStyle.setProperty(getJustifyContentAttrName(), getJustifyValue(justify));
     }
 
     public void setVisible(DivElement parent, boolean visible) {
         parent.getStyle().setProperty("display", visible ? getDisplayFlexValue() : "none");
     }
 
-    public FlexPanel.LayoutData insertChild(Element parent, Element child, int beforeIndex, GFlexAlignment alignment, double flex, Integer flexBasis) {
+    public FlexPanel.LayoutData insertChild(Element parent, Element child, int beforeIndex, GFlexAlignment alignment, double flex, double flexShrink, String flexBasis) {
         FlexPanel.LayoutData layoutData = new FlexPanel.LayoutData(child, alignment, flex, flexBasis);
 
-        setFlex(layoutData, child, flex, flexBasis);
+        setFlex(layoutData, child, flex, flexShrink, flexBasis);
         setAlignment(layoutData, child, alignment);
 
         DOM.insertChild(parent.<com.google.gwt.user.client.Element>cast(), child.<com.google.gwt.user.client.Element>cast(), beforeIndex);
@@ -112,45 +113,17 @@ public class FlexPanelImpl {
         layoutData.child.removeFromParent();
     }
 
-    public void setFlex(FlexPanel.LayoutData layoutData, Element child, double flex, Integer flexBasis) {
+    public void setFlex(FlexPanel.LayoutData layoutData, Element child, double flex, double flexShrink, String flexBasis) {
         layoutData.flex = flex;
         layoutData.flexBasis = flexBasis;
-        child.getStyle().setProperty(getFlexAttrName(), getFlexValue(flex, layoutData.getFlexBasisString()));
+        child.getStyle().setProperty(getFlexAttrName(), getFlexValue(flex, flexShrink, flexBasis));
     }
 
-    public void setFlex(FlexPanel.LayoutData layoutData, Element child, double flex) {
-        layoutData.flex = flex;
-        child.getStyle().setProperty(getFlexAttrName(), getFlexValue(layoutData.flex, layoutData.getFlexBasisString()));
-    }
-
-    public void setFlexBasis(FlexPanel.LayoutData layoutData, Element child, Integer flexBasis) {
-        layoutData.flexBasis = flexBasis;
-        child.getStyle().setProperty(getFlexAttrName(), getFlexValue(layoutData.flex, layoutData.getFlexBasisString()));
-    }
-
-    public void fixFlexBasis(FlexPanel.LayoutData layoutData, Element child, boolean vertical) {
-        if(layoutData.flexBasis != null)
-            return;
-
-        Style style = child.getStyle();
-        String flexAttrName = getFlexAttrName();
-        style.setProperty(flexAttrName, getFlexValue(0, layoutData.getFlexBasisString()));
-
-        layoutData.flexBasis = child.getPropertyInt(vertical ? "offsetHeight" : "offsetWidth");
-
-        style.setProperty(flexAttrName, getFlexValue(layoutData.flex, layoutData.getFlexBasisString()));
-    }
-
-    public int getFlexBasis(FlexPanel.LayoutData layoutData, Element child, boolean vertical) {
-        if(layoutData.flexBasis != null)
-            return layoutData.flexBasis;
-
-        child.getStyle().setProperty(getFlexAttrName(), getFlexValue(0, layoutData.getFlexBasisString()));
-        return child.getPropertyInt(vertical ? "offsetHeight" : "offsetWidth");
-    }
-
-    private String getFlexValue(double flex, String flexBasis) {
-        return flex + " 0 " + flexBasis;
+    private String getFlexValue(double flex, double flexShrink, String flexBasis) {
+        double shrink = Math.max(flexShrink,  0);
+        return flex > 0
+               ? flex + " " + shrink + " " + flexBasis
+               : "0 " + shrink + " auto";
     }
 
     public void setAlignment(FlexPanel.LayoutData layoutData, Element child, GFlexAlignment alignment) {

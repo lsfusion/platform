@@ -303,7 +303,7 @@ public abstract class GUserPreferencesDialog extends GResizableModalWindow {
         } catch(NumberFormatException e) {
             return null;
         }
-        return headerHeight >= 0 ? headerHeight : null;
+        return headerHeight != 0 ? headerHeight : null;
     }
 
     private GFont getInitialFont() {
@@ -434,8 +434,6 @@ public abstract class GUserPreferencesDialog extends GResizableModalWindow {
                 refreshValues(font);
                 grid.font = font;
                 grid.columnsPreferencesChanged();
-                grid.setUserHeaderHeight(getUserHeaderHeight());
-                grid.refreshColumnsAndRedraw();
                 preferencesChanged();
                 String caption = save ? messages.formGridPreferencesSaving() : messages.formGridPreferencesResetting();
                 String message = save ? messages.formGridPreferencesSaveSuccess() : messages.formGridPreferencesResetSuccess();

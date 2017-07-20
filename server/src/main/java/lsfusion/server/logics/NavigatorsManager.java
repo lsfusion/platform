@@ -192,7 +192,7 @@ public class NavigatorsManager extends LogicsManager implements InitializingBean
 //        }
 //    }
 
-    public void updateEnvironmentProperty(CalcProperty property, ObjectValue value) throws SQLException, SQLHandledException {
+    public void updateEnvironmentProperty(CalcProperty property, ObjectValue value) throws SQLException {
         synchronized (navigators) { // могут быть закрывающиеся навигаторы, проверка с синхронизацией внутри вызова
             for (RemoteNavigator remoteNavigator : navigators)
                 if (remoteNavigator != null)

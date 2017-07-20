@@ -3,6 +3,7 @@ package lsfusion.server.logics.property.actions.importing.mdb;
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
 import lsfusion.server.classes.DateTimeClass;
+import lsfusion.server.classes.ValueClass;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.actions.importing.ImportDataActionProperty;
@@ -12,8 +13,8 @@ import java.io.IOException;
 import java.util.*;
 
 public class ImportMDBDataActionProperty extends ImportDataActionProperty {
-    public ImportMDBDataActionProperty(List<String> ids, List<LCP> properties, BaseLogicsModule baseLM) {
-        super(1, ids, properties, baseLM);
+    public ImportMDBDataActionProperty(ValueClass valueClass, List<String> ids, List<LCP> properties, BaseLogicsModule baseLM) {
+        super(new ValueClass[] {valueClass}, ids, properties, baseLM);
     }
 
     @Override

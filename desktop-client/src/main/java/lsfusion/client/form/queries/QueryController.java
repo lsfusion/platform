@@ -105,22 +105,14 @@ abstract class QueryController {
     }
 
     public void replaceConditionPressed() {
-        replaceConditionPressed(null);
-    }
-
-    public void replaceConditionPressed(ClientPropertyDraw propertyDraw) {
-        if (addNewCondition(true, propertyDraw)) {
+        if (addNewCondition(true, null)) {
             setState(State.EXPANDED);
             view.startEditing(null, null);
         }
     }
 
     public void addConditionPressed() {
-       addConditionPressed(null);
-    }
-
-    public void addConditionPressed(ClientPropertyDraw propertyDraw) {
-        if (addNewCondition(false, propertyDraw)) {
+        if (addNewCondition(false, null)) {
             setState(State.EXPANDED);
         }
     }

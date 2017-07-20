@@ -1,6 +1,8 @@
 package lsfusion.server.logics.property.actions.edit;
 
 import lsfusion.base.col.MapFact;
+import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.server.classes.CustomClass;
 import lsfusion.server.classes.DataClass;
@@ -11,7 +13,10 @@ import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.query.GroupExpr;
 import lsfusion.server.data.expr.query.GroupType;
+import lsfusion.server.data.query.Query;
 import lsfusion.server.data.type.Type;
+import lsfusion.server.data.where.Where;
+import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.*;
@@ -76,7 +81,10 @@ public class DefaultChangeAggActionProperty<P extends PropertyInterface> extends
                 );
             }
 
-            ObjectValue convertWYSValue = Expr.readObjectValue(context.getSession().sql, context.getSession().baseClass, groupExpr, context.getQueryEnv());
+            ImOrderMap<ImMap<String, DataObject>, ImMap<String, ObjectValue>> values =
+                    new Query<>(MapFact.<String, KeyExpr>EMPTYREV(), MapFact.singleton("value", groupExpr), Where.TRUE).executeClasses(context);
+
+            ObjectValue convertWYSValue = values.singleValue().singleValue();
             return context.pushRequestedValue(convertWYSValue, aggClass.getType(), new SQLCallable<FlowResult>() {
                 public FlowResult call() throws SQLException, SQLHandledException {
                     return proceed(context);

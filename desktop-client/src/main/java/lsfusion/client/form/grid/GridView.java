@@ -2,8 +2,6 @@ package lsfusion.client.form.grid;
 
 import lsfusion.client.form.ClientFormController;
 import lsfusion.client.form.grid.preferences.GridUserPreferences;
-import lsfusion.client.form.layout.JComponentPanel;
-import lsfusion.client.logics.ClientComponent;
 import lsfusion.client.logics.ClientGrid;
 
 import javax.swing.*;
@@ -11,7 +9,7 @@ import java.awt.*;
 
 import static lsfusion.client.SwingUtils.overrideSize;
 
-public class GridView extends JComponentPanel {
+public class GridView extends JPanel {
     final JScrollPane pane;
 
     private final ClientGrid grid;
@@ -54,6 +52,21 @@ public class GridView extends JComponentPanel {
         grid.installMargins(this);
 
         add(pane, BorderLayout.CENTER);
+    }
+
+    @Override
+    public Dimension getMinimumSize() {
+        return overrideSize(super.getMinimumSize(), grid.minimumSize);
+    }
+
+    @Override
+    public Dimension getMaximumSize() {
+        return overrideSize(super.getMaximumSize(), grid.maximumSize);
+    }
+
+    @Override
+    public Dimension getPreferredSize() {
+        return overrideSize(super.getPreferredSize(), grid.preferredSize);
     }
 
     public GridController getGridController() {

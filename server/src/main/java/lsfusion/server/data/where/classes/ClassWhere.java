@@ -14,7 +14,6 @@ import lsfusion.server.classes.sets.AndClassSet;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.query.Stat;
-import lsfusion.server.data.expr.where.pull.ExclPullWheres;
 import lsfusion.server.data.where.Where;
 
 public class ClassWhere<K> extends AbstractClassWhere<K, ClassWhere<K>> {
@@ -202,23 +201,6 @@ public class ClassWhere<K> extends AbstractClassWhere<K, ClassWhere<K>> {
         for(And<K> andWhere : wheres)
             result = result.or(new ClassWhere<>(andWhere.getBase()));
         return result;
-    }
-
-    // аналог mapBack в ClassExprWhere
-    public static <K> ClassWhere<K> get(ImMap<K, ? extends Expr> outerInner, Where innerWhere) {
-        return new ExclPullWheres<ClassWhere<K>, K, Where>() {
-            protected ClassWhere<K> initEmpty() {
-                return ClassWhere.FALSE();
-            }
-            protected ClassWhere<K> proceedBase(Where data, ImMap<K, BaseExpr> outerInner) {
-                // тут фокус в том что так-как exclusive в CaseList не гарантируется с точки зрения булевой логики (только с точки зрения семантики), getWhere за пределами inner не гарантирует все assertion'ы (например то что SingleClassExpr.isClass - getOrSet не null + assertion в intersect)
-                return data.and(Expr.getWhere(outerInner)).getClassWhere().get(outerInner);
-            }
-            protected ClassWhere<K> add(ClassWhere<K> op1, ClassWhere<K> op2) {
-                return op1.or(op2);
-            }
-        }.proceed(innerWhere, outerInner);
-    }
-
+    } 
 }
 

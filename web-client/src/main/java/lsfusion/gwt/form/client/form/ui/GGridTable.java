@@ -91,21 +91,12 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
 
     private double lastQuickSearchTime = 0;
 
-    private boolean autoSize;
-
-    @Override
-    protected boolean isAutoSize() {
-        return autoSize;
-    }
-
-    public GGridTable(GFormController iform, GGroupObjectController igroupController, GGridController gridController, GGridUserPreferences[] iuserPreferences, boolean autoSize) {
-        super(iform, null, igroupController.groupObject.grid.headerHeight);
+    public GGridTable(GFormController iform, GGroupObjectController igroupController, GGridController gridController, GGridUserPreferences[] iuserPreferences) {
+        super(iform, null, igroupController.groupObject.grid.isInFlexible());
 
         this.groupObjectController = igroupController;
         this.groupObject = igroupController.groupObject;
         this.gridController = gridController;
-
-        this.autoSize = autoSize;
 
         generalGridPreferences = iuserPreferences != null && iuserPreferences[0] != null ? iuserPreferences[0] : new GGridUserPreferences(groupObject);
         userGridPreferences = iuserPreferences != null && iuserPreferences[1] != null ? iuserPreferences[1] : new GGridUserPreferences(groupObject);
@@ -116,6 +107,11 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
         }
         if (font == null) {
             font = gridController.getFont();
+        }
+
+        Integer headerHeight = currentGridPreferences.headerHeight;
+        if(headerHeight != null && headerHeight != 0) {
+            gridController.setHeaderHeight(headerHeight);
         }
 
         keyboardSelectionHandler =  new GridTableKeyboardSelectionHandler(this);
@@ -341,8 +337,6 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
 
             int rowHeight = 0;
             preferredWidth = 0;
-            int headerHeight = getHeaderHeight();
-
             NativeHashMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, GridColumn>> newColumnsMap = new NativeHashMap<>();
             for (int i = 0; i < columnProperties.size(); ++i) {
                 GPropertyDraw property = columnProperties.get(i);
@@ -383,7 +377,8 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
                 header.setCaption(columnCaption, property.notNull, property.hasChangeAction);
                 header.setToolTip(property.getTooltipText(columnCaption));
 
-                header.setHeaderHeight(headerHeight);
+                if(currentGridPreferences.headerHeight != null)
+                    header.setHeaderHeight(currentGridPreferences.headerHeight);
 
                 String pattern = getUserPattern(property);
                 GridCellRenderer renderer = property.getGridCellRenderer();
@@ -401,9 +396,6 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
                 rowHeight = Math.max(rowHeight, columnMinimumHeight);
                 preferredWidth += columnMinimumWidth;
             }
-            
-            setFixedHeaderHeight(headerHeight);
-            
             setCellHeight(rowHeight);
 
             columnsMap.foreachValue(new Function<NativeHashMap<GGroupObjectValue, GridColumn>>() {
@@ -492,14 +484,6 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
                 return null;
             }
         });
-    }
-    
-    public int getHeaderHeight() {
-        Integer headerHeight = currentGridPreferences.headerHeight;
-        if (headerHeight == null || headerHeight < 0) {
-            headerHeight = gridController.getHeaderHeight();
-        }
-        return headerHeight;
     }
     
     public GFont getDesignFont() {

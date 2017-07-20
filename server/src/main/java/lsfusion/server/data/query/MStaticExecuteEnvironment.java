@@ -1,6 +1,15 @@
 package lsfusion.server.data.query;
 
+import lsfusion.base.Pair;
+import lsfusion.base.col.interfaces.immutable.ImList;
+import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.server.data.SessionTable;
+import lsfusion.server.data.expr.query.GroupType;
+import lsfusion.server.data.expr.query.RecursiveTable;
+import lsfusion.server.data.type.ArrayClass;
+import lsfusion.server.data.type.ConcatenateType;
+import lsfusion.server.data.type.Type;
 
 public interface MStaticExecuteEnvironment extends TypeEnvironment {
 
@@ -12,9 +21,9 @@ public interface MStaticExecuteEnvironment extends TypeEnvironment {
 
     void addNoPrepare();
 
-    void addNotMaterializable(NotMaterializable table);
+    void addUsedRecursiveTable(RecursiveTable table);
 
-    void removeNotMaterializable(NotMaterializable table);
+    void removeUsedRecursiveTable(RecursiveTable table);
 
     StaticExecuteEnvironment finish();
 }

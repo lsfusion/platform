@@ -46,6 +46,7 @@ import lsfusion.server.logics.mutables.NFLazy;
 import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.actions.*;
+import lsfusion.server.logics.property.actions.file.LoadActionProperty;
 import lsfusion.server.logics.property.actions.file.OpenActionProperty;
 import lsfusion.server.logics.property.actions.file.SaveActionProperty;
 import lsfusion.server.logics.property.actions.flow.*;
@@ -1372,7 +1373,7 @@ public abstract class LogicsModule {
     } 
     
     // ------------------- Loggable ----------------- //
-    // todo [dale]: тут конечно страх, во-первых, сигнатура берется из интерфейсов свойства (issue #1725), 
+    // todo [dale]: тут конечно страх, во-первых, сигнатура берется из интерфейсов свойства (можно брать из канонического имени), 
     // во-вторых руками markStored вызывается, чтобы обойти проблему с созданием propertyField из addDProp 
     public LCP addLProp(SystemEventsLogicsModule systemEventsLM, LCP lp) {
         assert lp.property.isNamed();
@@ -1476,24 +1477,34 @@ public abstract class LogicsModule {
         return addProperty(null, new LAP(new AsyncUpdateEditValueActionProperty(LocalizedString.create("Async Update"))));
     }
 
+    // ------------------- LOAD FILE ----------------- //
+
+    protected LAP addLFAProp(LCP lp) {
+        return addLFAProp(null, LocalizedString.create("lfa"), lp);
+    }
+
+    protected LAP addLFAProp(AbstractGroup group, LocalizedString caption, LCP lp) {
+        return addProperty(group, new LAP(new LoadActionProperty(caption, lp)));
+    }
+
     // ------------------- OPEN FILE ----------------- //
 
-    protected LAP addOFAProp(ValueClass prop, ValueClass nameProp) {
-        List<ValueClass> valueClasses = new ArrayList<>();
-        valueClasses.add(prop);
-        if(nameProp != null)
-            valueClasses.add(nameProp);
-        return addProperty(null, new LAP(new OpenActionProperty(LocalizedString.create("ofa"), valueClasses.toArray(new ValueClass[valueClasses.size()]))));
+    protected LAP addOFAProp(LCP lp) {
+        return addOFAProp(null, LocalizedString.create("ofa"), lp);
+    }
+
+    protected LAP addOFAProp(AbstractGroup group, LocalizedString caption, LCP lp) { // обернем сразу в and
+        return addProperty(group, new LAP(new OpenActionProperty(caption, lp)));
     }
 
     // ------------------- SAVE FILE ----------------- //
 
-    protected LAP addSFAProp(ValueClass prop, ValueClass nameProp) {
-        List<ValueClass> valueClasses = new ArrayList<>();
-        valueClasses.add(prop);
-        if(nameProp != null)
-            valueClasses.add(nameProp);
-        return addProperty(null, new LAP(new SaveActionProperty(LocalizedString.create("sfa"), valueClasses.toArray(new ValueClass[valueClasses.size()]))));
+    protected LAP addSFAProp(LCP lp, LCP nameLP) {
+        return addSFAProp(null, LocalizedString.create("sfa"), lp, nameLP);
+    }
+
+    protected LAP addSFAProp(AbstractGroup group, LocalizedString caption, LCP lp, LCP nameProp) {
+        return addProperty(group, new LAP(new SaveActionProperty(caption, lp, nameProp)));
     }
 
     // ------------------- EVAL ----------------- //
@@ -1656,6 +1667,10 @@ public abstract class LogicsModule {
 
     // ---------------------- Add Form ---------------------- //
 
+    public LAP getScriptAddFormAction(CustomClass cls, FormSessionScope scope) {
+        return addAddFormAction(cls, null, scope);
+    }
+
     protected LAP addAddFormAction(CustomClass cls, ObjectEntity contextObject, FormSessionScope scope) {
         LCP<ClassPropertyInterface> addedProperty = new LCP<ClassPropertyInterface>(baseLM.getAddedObjectProperty());
 
@@ -1718,6 +1733,10 @@ public abstract class LogicsModule {
     }
 
     // ---------------------- Edit Form ---------------------- //
+
+    public LAP getScriptEditFormAction(CustomClass cls, FormSessionScope scope) {
+        return addEditFormAction(scope, cls);
+    }
 
     protected LAP addEditFormAction(FormSessionScope scope, CustomClass customClass) {
         LAP result = addEditAProp(LocalizedString.create("{logics.edit}"), customClass);

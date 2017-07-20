@@ -186,14 +186,10 @@ public class ModifyQuery {
     }
 
     public static SQLExecute getInsertSelect(String name, IQuery<KeyField, PropertyField> query, QueryEnvironment env, TableOwner owner, SQLSyntax syntax, SQLSessionUserProvider userProvider, Table table, RegisterChange change) {
-        return getInsertSelect(name, query, env, owner, syntax, userProvider, table, change, 0);
-    }
-
-    public static SQLExecute getInsertSelect(String name, IQuery<KeyField, PropertyField> query, QueryEnvironment env, TableOwner owner, SQLSyntax syntax, SQLSessionUserProvider userProvider, Table table, RegisterChange change, int selectTop) {
-        CompiledQuery<KeyField, PropertyField> changeCompile = query.compile(new CompileOptions<>(syntax, table != null ? table.getPropTypes() : null, selectTop));
+        CompiledQuery<KeyField, PropertyField> changeCompile = query.compile(new CompileOptions<>(syntax, table != null ? table.getPropTypes() : null));
 
         SQLDML dml = changeCompile.sql.getInsertDML(name, changeCompile.keyOrder, changeCompile.propertyOrder, true, changeCompile.keyOrder.mapOrder(changeCompile.keyNames), changeCompile.propertyOrder.mapOrder(changeCompile.propertyNames), syntax);
-        return new SQLExecute(dml, changeCompile.getQueryParams(env, selectTop), changeCompile.getQueryExecEnv(userProvider), env.getTransactTimeout(), env.getOpOwner(), owner, change);
+        return new SQLExecute(dml, changeCompile.getQueryParams(env), changeCompile.getQueryExecEnv(userProvider), env.getTransactTimeout(), env.getOpOwner(), owner, change);
     }
 
     public SQLExecute getInsertSelect(SQLSyntax syntax, SQLSessionUserProvider userProvider) {

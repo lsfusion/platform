@@ -59,16 +59,13 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
 
     public static final GGridPropertyTableResource GGRID_RESOURCES = GWT.create(GGridPropertyTableResource.class);
 
-    public GGridPropertyTable(GFormController iform, GFont font) {
-        this(iform, font, -1);    
-    }
-    
-    public GGridPropertyTable(GFormController iform, GFont font, int initHeaderHeight) {
-        super(iform, GGRID_RESOURCES, initHeaderHeight);
+    public GGridPropertyTable(GFormController iform, GFont font, boolean flexible) {
+        super(iform, GGRID_RESOURCES, flexible);
         
         this.font = font;
 
         setTableBuilder(new GGridPropertyTableBuilder<T>(this));
+        setFixedHeaderHeight(36);
     }
 
     @Override
@@ -122,19 +119,11 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         return new Cell.Context(getKeyboardSelectedRow(), getKeyboardSelectedColumn(), getKeyboardSelectedRowValue());
     }
 
-    protected boolean isAutoSize() {
-        return false;
-    }
-
-    public int getAutoSize() {
-        return getTableBodyElement().getOffsetHeight();
-    }
-    
     @Override
     public Dimension getPreferredSize() {
         return new Dimension(
                 preferredWidth + nativeScrollbarWidth + 17,
-                max(isAutoSize() ? 0 : 140, getRowCount() * getRowHeight() + 30) + nativeScrollbarHeight
+                max(140, getRowCount() * getRowHeight() + 30) + nativeScrollbarHeight
         );
     }
 

@@ -12,7 +12,7 @@ public class GridView extends ComponentView {
     public boolean tabVertical = false;
     public boolean autoHide = false;
     private boolean quickSearch = false;
-    public int headerHeight = -1;
+    public int headerHeight = 0;
 
     public GroupObjectView groupObject;
 
@@ -23,8 +23,8 @@ public class GridView extends ComponentView {
     public GridView(int ID, GroupObjectView groupObject) {
         super(ID);
         this.groupObject = groupObject;
-        setFlex(1);
-        setAlignment(FlexAlignment.STRETCH);
+        flex = 1;
+        alignment = FlexAlignment.STRETCH;
     }
 
     //todo: формально временное решение:

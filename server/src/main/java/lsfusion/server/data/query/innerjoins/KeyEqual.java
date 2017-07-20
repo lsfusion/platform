@@ -1,14 +1,12 @@
 package lsfusion.server.data.query.innerjoins;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.Result;
 import lsfusion.base.TwinImmutableObject;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.AddValue;
-import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.col.interfaces.mutable.SymmAddValue;
 import lsfusion.server.caches.*;
 import lsfusion.server.caches.hash.HashContext;
@@ -24,7 +22,6 @@ import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.translator.PartialKeyExprTranslator;
 import lsfusion.server.data.translator.ExprTranslator;
 import lsfusion.server.data.where.DNFWheres;
-import lsfusion.server.data.where.DataWhere;
 import lsfusion.server.data.where.Where;
 
 public class KeyEqual extends AbstractOuterContext<KeyEqual> implements DNFWheres.Interface<KeyEqual>,TranslateContext<KeyEqual> {
@@ -98,23 +95,11 @@ public class KeyEqual extends AbstractOuterContext<KeyEqual> implements DNFWhere
             return new KeyEqual((ParamExpr) operator2, operator1);
         return KeyEqual.EMPTY;
     }
-    
+
     public WhereJoins getWhereJoins() {
-        return getWhereJoins(null);
-    }
-    public WhereJoins getWhereJoins(Result<UpWheres<WhereJoin>> upWheres) {
         WhereJoin[] wheres = new WhereJoin[keyExprs.size()]; int iw = 0;
-        MExclMap<WhereJoin, UpWhere> mUpWheres = null;
-        if(upWheres != null)
-            mUpWheres = MapFact.mExclMap(keyExprs.size());
-        for(int i=0,size=keyExprs.size();i<size;i++) {
-            ExprEqualsJoin join = new ExprEqualsJoin(keyExprs.getKey(i), keyExprs.getValue(i));
-            wheres[iw++] = join;
-            if(mUpWheres != null)
-                mUpWheres.exclAdd(join, new DataUpWhere((DataWhere) EqualsWhere.create(keyExprs.getKey(i),keyExprs.getValue(i))));
-        }
-        if(mUpWheres != null)
-            upWheres.set(new UpWheres<>(mUpWheres.immutable()));
+        for(int i=0,size=keyExprs.size();i<size;i++)
+            wheres[iw++] = new ExprEqualsJoin(keyExprs.getKey(i), keyExprs.getValue(i));
         return new WhereJoins(wheres);
     }
     

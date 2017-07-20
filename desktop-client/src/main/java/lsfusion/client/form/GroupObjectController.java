@@ -42,16 +42,13 @@ public class GroupObjectController extends AbstractGroupObjectController {
         this(null, ilogicsSupplier, iform, formLayout, null);
     }
 
-    public GroupObjectController(ClientGroupObject igroupObject, LogicsSupplier ilogicsSupplier, ClientFormController iform, final ClientFormLayout formLayout, GridUserPreferences[] userPreferences) throws IOException {
+    public GroupObjectController(ClientGroupObject igroupObject, LogicsSupplier ilogicsSupplier, ClientFormController iform, ClientFormLayout formLayout, GridUserPreferences[] userPreferences) throws IOException {
         super(iform, ilogicsSupplier, formLayout, igroupObject == null ? null : igroupObject.toolbar);
         groupObject = igroupObject;
 
         panel = new PanelController(form, formLayout) {
-            protected void addGroupObjectActions(final JComponent comp) {
+            protected void addGroupObjectActions(JComponent comp) {
                 GroupObjectController.this.addGroupObjectActions(comp);
-                if(filter != null) {
-                    filter.getView().addActionsToPanelInputMap(comp);
-                }
             }
         };
 
@@ -133,6 +130,7 @@ public class GroupObjectController extends AbstractGroupObjectController {
 
         addToToolbar(Box.createHorizontalStrut(5));
 
+        // todo [dale]: Можно ли избавиться от if'ов?
         if (groupObject.toolbar.showPrint && Main.module.isFull()) {
             addToToolbar(grid.createPrintGroupButton());
         }

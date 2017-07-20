@@ -40,31 +40,29 @@ public abstract class SplitPanelBase<P extends Panel> {
         addSplitterImpl(splitter);
     }
 
-    public void addFirstWidget(GComponent child, Widget w) {
+    public void addFirstWidget(GComponent child, Widget w, double flex) {
         if (firstWidget != null) {
             remove(firstWidget);
         }
 
         firstWidget = w;
 
-        assert child.flex > 0;
-        flex1 = child.flex;
+        flex1 = flex <= 0 ? 1 : flex;
         flexSum = flex1 + flex2;
 
-        addFirstWidgetImpl(child, w);
+        addFirstWidgetImpl(child, w, flex1);
     }
 
-    public void addSecondWidget(GComponent child, Widget w) {
+    public void addSecondWidget(GComponent child, Widget w, double flex) {
         if (secondWidget != null) {
             remove(secondWidget);
         }
 
         secondWidget = w;
-        assert child.flex > 0;
-        flex2 = child.flex;
+        flex2 = flex <= 0 ? 1 : flex;
         flexSum = flex1 + flex2;
 
-        addSecondWidgetImpl(child, w);
+        addSecondWidgetImpl(child, w, flex2);
     }
 
     public void remove(Widget child) {
@@ -82,7 +80,7 @@ public abstract class SplitPanelBase<P extends Panel> {
     }
 
     protected int getAvailableSize() {
-        return (vertical ? panel.getOffsetHeight() : panel.getOffsetWidth()) - (splitter.isVisible() ? splitterSize : 0);
+        return (vertical ? panel.getOffsetHeight() : panel.getOffsetWidth()) - (splitter.isVisible() ? splitterSize : 0) - 2; // не удалось найти точную причину цикличной перерисовки формы с расширением сплит-панелей. поэтому делаем поправку на 2px
     }
 
     public int getSplitterSize() {
@@ -116,8 +114,8 @@ public abstract class SplitPanelBase<P extends Panel> {
     }
 
     protected abstract void addSplitterImpl(Splitter splitter);
-    protected abstract void addFirstWidgetImpl(GComponent child, Widget widget);
-    protected abstract void addSecondWidgetImpl(GComponent child, Widget secondWidget);
+    protected abstract void addFirstWidgetImpl(GComponent child, Widget widget, double flex1);
+    protected abstract void addSecondWidgetImpl(GComponent child, Widget secondWidget, double flex2);
     protected abstract void setSplitSize(double ratio, double flexSum, boolean recheck);
 
     protected abstract class Splitter extends Widget {
@@ -177,11 +175,11 @@ public abstract class SplitPanelBase<P extends Panel> {
             if (vertical) {
                 draggerElement.getStyle().setLeft(0, Style.Unit.PX);
                 draggerElement.getStyle().setRight(0, Style.Unit.PX);
-                draggerElement.getStyle().setHeight(5, Style.Unit.PX);
+                draggerElement.getStyle().setHeight(splitterSize, Style.Unit.PX);
             } else {
                 draggerElement.getStyle().setTop(0, Style.Unit.PX);
                 draggerElement.getStyle().setBottom(0, Style.Unit.PX);
-                draggerElement.getStyle().setWidth(5, Style.Unit.PX);
+                draggerElement.getStyle().setWidth(splitterSize, Style.Unit.PX);
             }
 
             panel.getElement().appendChild(draggerElement);

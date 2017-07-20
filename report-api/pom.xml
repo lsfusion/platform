@@ -5,7 +5,7 @@
     <parent>
         <groupId>lsfusion.platform</groupId>
         <artifactId>base</artifactId>
-        <version>1.3.1-SNAPSHOT</version>
+        <version>1.3.0</version>
         <relativePath>../base/pom.xml</relativePath>
     </parent>
     <artifactId>report-api</artifactId>
@@ -25,18 +25,6 @@
         <dependency>
             <groupId>net.sf.jasperreports</groupId>
             <artifactId>jasperreports-html-component</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.xmlgraphics</groupId>
-            <artifactId>batik-bridge</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.xmlgraphics</groupId>
-            <artifactId>xmlgraphics-commons</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>net.sf.barcode4j</groupId>
-            <artifactId>barcode4j</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.poi</groupId>

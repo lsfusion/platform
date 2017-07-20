@@ -38,14 +38,14 @@ public class InferType implements AlgType {
         return property.inferIsInInterface(interfaceClasses, isAny, this);
     }
 
-    public <T extends PropertyInterface, P extends PropertyInterface> void checkExclusiveness(CalcProperty<T> property, String caseInfo, CalcProperty<P> intersect, String intersectInfo, ImRevMap<P, T> map, String abstractInfo) {
+    public <T extends PropertyInterface, P extends PropertyInterface> void checkExclusiveness(CalcProperty<T> property, String info, CalcProperty<P> intersect, String intersectInfo, ImRevMap<P, T> map, String abstractInfo) {
         assert this != RESOLVE;
-        property.inferCheckExclusiveness(caseInfo, intersect, intersectInfo, map, this, abstractInfo);
+        property.inferCheckExclusiveness(info, intersect, intersectInfo, map, this, abstractInfo);
     }
 
-    public <T extends PropertyInterface, P extends PropertyInterface> void checkContainsAll(CalcProperty<T> property, CalcProperty<P> intersect, String caseInfo, ImRevMap<P, T> map, CalcPropertyInterfaceImplement<T> value, String abstractInfo) {
+    public <T extends PropertyInterface, P extends PropertyInterface> void checkContainsAll(CalcProperty<T> property, CalcProperty<P> intersect, String caption, ImRevMap<P, T> map, CalcPropertyInterfaceImplement<T> value) {
         assert this != RESOLVE;
-        property.inferCheckContainsAll(intersect, caseInfo, map, this, value, abstractInfo);
+        property.inferCheckContainsAll(intersect, caption, map, this, value);
     }
 
     public <T extends PropertyInterface, P extends PropertyInterface> void checkAllImplementations(CalcProperty<T> property, ImList<CalcProperty<P>> intersects, ImList<ImRevMap<P, T>> maps) {

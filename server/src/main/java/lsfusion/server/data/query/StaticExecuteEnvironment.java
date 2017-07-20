@@ -31,7 +31,7 @@ public interface StaticExecuteEnvironment {
 
     boolean hasRecursion();
 
-    boolean hasNotMaterializable();
+    boolean hasUsedRecursiveTable();
 
     boolean isNoPrepare();
 

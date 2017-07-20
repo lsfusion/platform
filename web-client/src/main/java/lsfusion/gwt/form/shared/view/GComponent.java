@@ -20,8 +20,6 @@ public class GComponent implements Serializable {
     public int maximumHeight = -1;
     public int preferredWidth = -1;
     public int preferredHeight = -1;
-    
-    public boolean autoSize;
 
     public double flex = 0;
     public GFlexAlignment alignment;
@@ -45,6 +43,20 @@ public class GComponent implements Serializable {
                "sID='" + sID + '\'' +
                ", defaultComponent=" + defaultComponent +
                '}';
+    }
+
+    public int getAbsoluteWidth() {
+        if (preferredWidth == minimumHeight && preferredWidth == maximumWidth) {
+            return preferredWidth;
+        }
+        return -1;
+    }
+
+    public int getAbsoluteHeight() {
+        if (preferredHeight == minimumHeight && preferredHeight == maximumHeight) {
+            return preferredHeight;
+        }
+        return -1;
     }
 
     public boolean isVerticallyStretched() {
@@ -98,5 +110,10 @@ public class GComponent implements Serializable {
 
     public void installPaddings(Element element) {
         GwtClientUtils.installPaddings(element, marginTop, marginBottom, marginLeft, marginRight);
+    }
+
+    // для flex-layout'а. убираем position:absolute для грида в контенерах, у которых в иерархии предков есть скролл или flex=0. грид будет занимать всё место, которое ему нужно
+    public boolean isInFlexible() {
+        return container == null || !(container.isScroll() || container.flex <= 0) && container.isInFlexible();
     }
 }

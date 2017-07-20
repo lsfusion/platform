@@ -159,8 +159,6 @@ public class Settings {
 
     private int limitHintIncrementComplexity = 50; // есть проблема когда идет G(очень большого числа данных) = значение, статистика нормальная, сложность большая, начинает hint'ить что мешает проталкиванию
 
-    private int limitHintIncrementValueComplexity = 1000; // есть проблема когда идет G(очень большого числа данных) = значение, статистика нормальная, сложность большая, начинает hint'ить что мешает проталкиванию
-
     private double limitComplexityGrowthCoeff = 1.5;
 
     private long limitHintIncrementStat = 200;
@@ -262,8 +260,6 @@ public class Settings {
 
     private long excessThreadAllocatedBytes = 5368709120L; //5GB
 
-    private int accessInterruptCount = 4;
-    
     private boolean logSqlProcesses = false;
 
     public long getMaxRecalculateTime() {
@@ -726,18 +722,6 @@ public class Settings {
 
     public void setLimitHintIncrementComplexityCoeff(int limitHintIncrementComplexity) {
         this.limitHintIncrementComplexity = limitHintIncrementComplexity;
-    }
-
-    public int getLimitHintIncrementValueComplexity() {
-        return limitHintIncrementValueComplexity;
-    }
-
-    public void setLimitHintIncrementValueComplexity(int limitHintIncrementValueComplexity) {
-        this.limitHintIncrementValueComplexity = limitHintIncrementValueComplexity;
-    }
-
-    public int getLimitHintIncrementValueComplexityCoeff() {
-        return limitHintIncrementValueComplexity * limitIncrementCoeff;
     }
 
     public boolean isNoApplyIncrement() {
@@ -1694,14 +1678,6 @@ public class Settings {
         this.excessThreadAllocatedBytes = excessThreadAllocatedBytes;
     }
 
-    public int getAccessInterruptCount() {
-        return accessInterruptCount;
-    }
-
-    public void setAccessInterruptCount(int accessInterruptCount) {
-        this.accessInterruptCount = accessInterruptCount;
-    }
-
     public boolean isLogSqlProcesses() {
         return logSqlProcesses;
     }
@@ -2182,49 +2158,6 @@ public class Settings {
 
     public void setConstraintRowsLimit(int constraintRowsLimit) {
         this.constraintRowsLimit = constraintRowsLimit;
-    }
-    
-    private boolean disableCheckDataClasses = false; // проверка на целостность изменений свойств перед применением транзакции (без SERIALIZABLE не имеет особого смысла)
-
-    public boolean isDisableCheckDataClasses() {
-        return disableCheckDataClasses;
-    }
-
-    public void setDisableCheckDataClasses(boolean disableCheckDataClasses) {
-        this.disableCheckDataClasses = disableCheckDataClasses;
-    }
-    
-    private boolean isClustered = false;
-
-    public boolean isIsClustered() {
-        return isClustered;
-    }
-
-    public void setIsClustered(boolean isClustered) {
-        this.isClustered = isClustered;
-    }
-    
-    private boolean disableAdjustLimitHeur = false;
-
-    public boolean isDisableAdjustLimitHeur() {
-        return disableAdjustLimitHeur;
-    }
-
-    public void setDisableAdjustLimitHeur(boolean disableAdjustLimitHeur) {
-        this.disableAdjustLimitHeur = disableAdjustLimitHeur;
-    }
-
-    // выключен так как обычно выталкиваемы предикаты в GroupLast не делают и они как правило приходят извне, во всяком случае пока подтвержденных случаев (кроме одного когда только 3 помогает не видели)
-    private int useGroupLastOpt = 1; // 0 (no) - не используем, 1 (pushedIn) - используем только полный pushedInWhere, 2 (mixed) - используем полный pushedInWhere если есть иначе pushedOutWhere, 3 (pushedOut) - всегда pushedOut
-
-    public int getUseGroupLastOpt() {
-        if(SystemProperties.isDebug) // для тестирования
-            return 3;
-        return useGroupLastOpt;
-    }
-
-    public void setUseGroupLastOpt(int useGroupLastOpt) {
-        this.useGroupLastOpt = useGroupLastOpt;
     }
 
     private boolean defaultCompareForStringContains = false;

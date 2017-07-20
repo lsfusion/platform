@@ -16,7 +16,7 @@ import java.io.IOException;
 
 public class ReportHTMLExporter extends JRHtmlExporter {
     // copy-paste from JRHTMLExporter
-    // todo: При обновлении версии JasperReports возможно понадобится merge c изменениями в JRHTMLExporter.
+    // todo [dale]: При обновлении версии JasperReports возможно понадобится merge c изменениями в JRHTMLExporter.
 
     protected void writeEmptyCell(JRExporterGridCell cell, int rowHeight) throws IOException
     {
@@ -30,14 +30,14 @@ public class ReportHTMLExporter extends JRHtmlExporter {
                 writer.write(" colspan=\"" + cell.getColSpan() + "\"");
             }
 
-            StringBuilder styleBuilder = new StringBuilder();
-            appendBackcolorStyle(cell, styleBuilder);
-            appendBorderStyle(cell.getBox(), styleBuilder);
+            StringBuffer styleBuffer = new StringBuffer();
+            appendBackcolorStyle(cell, styleBuffer);
+            appendBorderStyle(cell.getBox(), styleBuffer);
 
-            if (styleBuilder.length() > 0)
+            if (styleBuffer.length() > 0)
             {
                 writer.write(" style=\"");
-                writer.write(styleBuilder.toString());
+                writer.write(styleBuffer.toString());
                 writer.write("\"");
             }
 
@@ -65,7 +65,7 @@ public class ReportHTMLExporter extends JRHtmlExporter {
             writer.write(" dir=\"rtl\"");
         }
 
-        StringBuilder styleBuilder = new StringBuilder();
+        StringBuffer styleBuffer = new StringBuffer();
 
         String verticalAlignment = HTML_VERTICAL_ALIGN_TOP;
 
@@ -82,7 +82,6 @@ public class ReportHTMLExporter extends JRHtmlExporter {
                 break;
             }
             case TOP :
-            case JUSTIFIED :
             default :
             {
                 verticalAlignment = HTML_VERTICAL_ALIGN_TOP;
@@ -96,9 +95,9 @@ public class ReportHTMLExporter extends JRHtmlExporter {
             writer.write("\"");
         }
 
-        appendBackcolorStyle(gridCell, styleBuilder);
-        appendBorderStyle(gridCell.getBox(), styleBuilder);
-        appendPaddingStyle(text.getLineBox(), styleBuilder);
+        appendBackcolorStyle(gridCell, styleBuffer);
+        appendBorderStyle(gridCell.getBox(), styleBuffer);
+        appendPaddingStyle(text.getLineBox(), styleBuffer);
 
         String horizontalAlignment = CSS_TEXT_ALIGN_LEFT;
 
@@ -135,30 +134,30 @@ public class ReportHTMLExporter extends JRHtmlExporter {
 //                    && !horizontalAlignment.equals(CSS_TEXT_ALIGN_RIGHT))
 //                )
 //            {
-            styleBuilder.append("text-align: ");
-            styleBuilder.append(horizontalAlignment);
-            styleBuilder.append(";");
+                styleBuffer.append("text-align: ");
+                styleBuffer.append(horizontalAlignment);
+                styleBuffer.append(";");
 //            }
         }
 
         boolean isWrapBreakWord = this.getCurrentItemConfiguration().isWrapBreakWord();
         if (isWrapBreakWord)
         {
-            styleBuilder.append("width: " + toSizeUnit(gridCell.getWidth()) + "; ");
-            styleBuilder.append("word-wrap: break-word; ");
+            styleBuffer.append("width: " + toSizeUnit(gridCell.getWidth()) + "; ");
+            styleBuffer.append("word-wrap: break-word; ");
         }
 
         if (text.getLineBreakOffsets() != null)
         {
             //if we have line breaks saved in the text, set nowrap so that
             //the text only wraps at the explicit positions
-            styleBuilder.append("white-space: nowrap; ");
+            styleBuffer.append("white-space: nowrap; ");
         }
 
-        if (styleBuilder.length() > 0)
+        if (styleBuffer.length() > 0)
         {
             writer.write(" style=\"");
-            writer.write(styleBuilder.toString());
+            writer.write(styleBuffer.toString());
             writer.write("\"");
         }
 

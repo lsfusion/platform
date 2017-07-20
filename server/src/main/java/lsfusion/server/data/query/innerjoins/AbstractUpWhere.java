@@ -2,7 +2,7 @@ package lsfusion.server.data.query.innerjoins;
 
 import lsfusion.base.TwinImmutableObject;
 import lsfusion.base.col.interfaces.mutable.SymmAddValue;
-import lsfusion.server.data.translator.JoinExprTranslator;
+import lsfusion.server.data.query.stat.WhereJoin;
 import lsfusion.server.data.where.Where;
 
 public abstract class AbstractUpWhere<T extends AbstractUpWhere<T>> extends TwinImmutableObject<T> implements UpWhere {
@@ -26,8 +26,8 @@ public abstract class AbstractUpWhere<T extends AbstractUpWhere<T>> extends Twin
         }
 
         @Override
-        public Where getWhere(JoinExprTranslator translator) {
-            return upWhere.getWhere(translator).not();
+        public Where getWhere() {
+            return upWhere.getWhere().not();
         }
     }
 
@@ -59,9 +59,9 @@ public abstract class AbstractUpWhere<T extends AbstractUpWhere<T>> extends Twin
         }
 
         @Override
-        public Where getWhere(JoinExprTranslator translator) {
-            Where where1 = upWhere1.getWhere(translator);
-            Where where2 = upWhere2.getWhere(translator);
+        public Where getWhere() {
+            Where where1 = upWhere1.getWhere();
+            Where where2 = upWhere2.getWhere();
             if(and)
                 return where1.and(where2);
             else

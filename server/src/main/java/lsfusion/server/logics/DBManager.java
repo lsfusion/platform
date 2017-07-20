@@ -6,6 +6,7 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.implementations.abs.AMap;
 import lsfusion.base.col.implementations.abs.ASet;
+import lsfusion.base.col.implementations.simple.EmptyOrderMap;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
@@ -29,6 +30,7 @@ import lsfusion.server.data.expr.formula.SQLSyntaxType;
 import lsfusion.server.data.expr.query.GroupExpr;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.expr.where.CaseExprInterface;
+import lsfusion.server.data.query.Query;
 import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.data.sql.DataAdapter;
 import lsfusion.server.data.sql.SQLSyntax;
@@ -39,7 +41,7 @@ import lsfusion.server.form.navigator.*;
 import lsfusion.server.integration.*;
 import lsfusion.server.lifecycle.LifecycleEvent;
 import lsfusion.server.lifecycle.LogicsManager;
-import lsfusion.server.logics.i18n.LocalizedString;
+import lsfusion.server.logics.i18n.FormatLocalizedString;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.mutables.NFLazy;
 import lsfusion.server.logics.property.*;
@@ -464,14 +466,14 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
     }
 
-    private String getDroppedTablesString(SQLSession sql, OldDBStructure oldDBStructure, NewDBStructure newDBStructure) throws SQLException, SQLHandledException {
+    private String getDroppedTablesString(OldDBStructure oldDBStructure, NewDBStructure newDBStructure) throws SQLException, SQLHandledException {
         String droppedTables = "";
         for (Table table : oldDBStructure.tables.keySet()) {
             if (newDBStructure.getTable(table.getName()) == null) {
                 ImRevMap<KeyField, KeyExpr> mapKeys = table.getMapKeys();
                 Expr expr = GroupExpr.create(MapFact.<KeyField, KeyExpr>EMPTY(), new ValueExpr(new DataObject(1)), table.join(mapKeys).getWhere(), GroupType.SUM, MapFact.<KeyField, Expr>EMPTY());
-                Object result = Expr.readValue(sql, expr, OperationOwner.unknown); // таблица не пустая
-                if (result != null) {
+                ImOrderMap<ImMap<Object, Object>, ImMap<String, Object>> resultMap = new Query<>(MapFact.<Object, KeyExpr>EMPTYREV(), expr, "value").execute(createSession());
+                if (!(resultMap instanceof EmptyOrderMap)) {
                     if (!droppedTables.equals("")) {
                         droppedTables += ", ";
                     }
@@ -711,7 +713,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
             // проверка, не удалятся ли старые таблицы
             if (denyDropTables) {
-                String droppedTables = getDroppedTablesString(sql, oldDBStructure, newDBStructure);
+                String droppedTables = getDroppedTablesString(oldDBStructure, newDBStructure);
                 if (!droppedTables.isEmpty()) {
                     throw new RuntimeException("Dropped tables: " + droppedTables);
                 }
@@ -768,7 +770,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
                                 sql.addColumn(newTable, newProperty.property.field);
                                 // делаем запрос на перенос
 
-                                startLogger.info(localize(LocalizedString.createFormatted("{logics.info.property.is.transferred.from.table.to.table}", newProperty.property.field, newProperty.property.caption, oldProperty.tableName, newProperty.tableName)));
+                                startLogger.info(localize(new FormatLocalizedString("{logics.info.property.is.transferred.from.table.to.table}", newProperty.property.field, newProperty.property.caption, oldProperty.tableName, newProperty.tableName)));
                                 newProperty.property.mapTable.table.moveColumn(sql, newProperty.property.field, oldTable,
                                         foundInterfaces.join((ImMap<PropertyInterface, KeyField>) newProperty.property.mapTable.mapKeys), oldTable.findProperty(oldProperty.getDBName()));
                                 startLogger.info("Done");
@@ -861,7 +863,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 copyObjects.addProperty(table.findProperty(classProp.getDBName()), mExpr.getFinal());
                 copyObjects.and(moveWhere);
 
-                startLogger.info(localize(LocalizedString.createFormatted("{logics.info.objects.are.transferred.from.tables.to.table}", classProp.tableName, mCopyFromTables.immutable().toString())));
+                startLogger.info(localize(new FormatLocalizedString("{logics.info.objects.are.transferred.from.tables.to.table}", classProp.tableName, mCopyFromTables.immutable().toString())));
                 sql.modifyRecords(new ModifyQuery(table, copyObjects.getQuery(), OperationOwner.unknown, TableOwner.global));
             }
             ImMap<String, ImSet<Integer>> toClean = MapFact.mergeMaps(toCopy.values(), ASet.<String, Integer>addMergeSet());
@@ -879,7 +881,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 dropClassObjects.addProperty(oldField, Expr.NULL);
                 dropClassObjects.and(moveWhere);
 
-                startLogger.info(localize(LocalizedString.createFormatted("{logics.info.objects.are.removed.from.table}", classProp.tableName)));
+                startLogger.info(localize(new FormatLocalizedString("{logics.info.objects.are.removed.from.table}", classProp.tableName)));
                 sql.updateRecords(new ModifyQuery(table, dropClassObjects.getQuery(), OperationOwner.unknown, TableOwner.global));
             }
 
@@ -2025,9 +2027,9 @@ public class DBManager extends LogicsManager implements InitializingBean {
                     ImRevMap<String, KeyField> mapKeys = propertyImplement.mapping.crossJoin(property.mapTable.mapKeys);
 
                     if (!BaseUtils.hashEquals(baseIndexTable, indexTable))
-                        throw new RuntimeException(localize(LocalizedString.createFormatted("{logics.policy.forbidden.to.create.indexes.on.properties.in.different.tables}", baseProperty, property)));
+                        throw new RuntimeException(localize(new FormatLocalizedString("{logics.policy.forbidden.to.create.indexes.on.properties.in.different.tables}", baseProperty, property)));
                     if (!BaseUtils.hashEquals(baseMapKeys, mapKeys))
-                        throw new RuntimeException(localize(LocalizedString.createFormatted("{logics.policy.forbidden.to.create.indexes.on.properties.with.different.mappings}", baseProperty, property, baseMapKeys, mapKeys)));
+                        throw new RuntimeException(localize(new FormatLocalizedString("{logics.policy.forbidden.to.create.indexes.on.properties.with.different.mappings}", baseProperty, property, baseMapKeys, mapKeys)));
                     field = property.field;
                 } else {
                     field = baseMapKeys.get(((CalcPropertyObjectImplement<String>)indexField).object);

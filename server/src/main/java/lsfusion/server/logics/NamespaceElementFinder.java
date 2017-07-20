@@ -1,18 +1,15 @@
 package lsfusion.server.logics;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 /**
- * Поиск элемента системы по пространству имен и простому имени среди набора модулей (необязательно в этом пространстве имен)
- * @param <T> тип искомого элемента системы
- * @param <P> тип параметра finder'а 
+ * Created by DAle on 09.04.14
  */
 
 public class NamespaceElementFinder<T, P> {
     private LogicsModule.ModuleFinder<T, P> finder;
-    private Collection<LogicsModule> modules;
+    private List<LogicsModule> modules;
     
     public static class FoundItem<T> {
         public T value;
@@ -24,7 +21,7 @@ public class NamespaceElementFinder<T, P> {
         }
     }
 
-    public NamespaceElementFinder(LogicsModule.ModuleFinder<T, P> finder, Collection<LogicsModule> modules) {
+    public NamespaceElementFinder(LogicsModule.ModuleFinder<T, P> finder, List<LogicsModule> modules) {
         this.finder = finder;
         this.modules = modules;
     }
@@ -46,7 +43,7 @@ public class NamespaceElementFinder<T, P> {
         return finalizeResult(result);
     }
 
-    protected List<FoundItem<T>> finalizeResult(final List<FoundItem<T>> result) {
+    protected List<FoundItem<T>> finalizeResult(List<FoundItem<T>> result) {
         return result;
     }
 }

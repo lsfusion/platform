@@ -66,7 +66,7 @@ public class RichTextGridCellEditor extends DialogBasedGridCellEditor {
         bottomPane.add(btnCancel);
 
         final FlexPanel mainPane = new FlexPanel(true);
-        mainPane.addFillFlex(contentsContainer, 0);
+        mainPane.addFill(contentsContainer, "0");
         mainPane.add(bottomPane, GFlexAlignment.CENTER);
 
         textArea.addInitializeHandler(new InitializeHandler() {

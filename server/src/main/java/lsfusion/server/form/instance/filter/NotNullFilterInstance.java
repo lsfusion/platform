@@ -3,7 +3,6 @@ package lsfusion.server.form.instance.filter;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
-import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
@@ -45,8 +44,8 @@ public class NotNullFilterInstance<P extends PropertyInterface> extends Property
         checkChange = false;
     }
 
-    public Where getWhere(ImMap<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier, ReallyChanged reallyChanged, MSet<CalcProperty> mUsedProps) throws SQLException, SQLHandledException {
-        return property.getExpr(mapKeys, modifier, reallyChanged, mUsedProps).getWhere();
+    public Where getWhere(ImMap<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier, ReallyChanged reallyChanged) throws SQLException, SQLHandledException {
+        return property.getExpr(mapKeys, modifier).getWhere();
     }
 
     @Override

@@ -2,10 +2,11 @@ package lsfusion.client.form.layout;
 
 import lsfusion.client.logics.ClientComponent;
 
+import javax.swing.*;
 import java.awt.*;
 
 public interface ClientContainerView {
-    void add(ClientComponent child, JComponentPanel view);
+    void add(ClientComponent child, Component view);
     void remove(ClientComponent child);
 
     boolean hasChild(ClientComponent child);
@@ -13,7 +14,7 @@ public interface ClientContainerView {
     ClientComponent getChild(int index);
     Component getChildView(int index);
 
-    JComponentPanel getView();
+    JComponent getView();
 
     void updateLayout();
 }

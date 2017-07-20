@@ -5,6 +5,7 @@ import lsfusion.base.Result;
 import lsfusion.base.TwinImmutableObject;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
+import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
@@ -13,7 +14,6 @@ import lsfusion.server.Settings;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
-import lsfusion.server.data.expr.query.QueryJoin;
 import lsfusion.server.data.expr.query.StatType;
 import lsfusion.server.data.query.InnerJoin;
 import lsfusion.server.data.query.InnerJoins;
@@ -46,10 +46,6 @@ public class GroupJoinsWhere extends GroupWhere<GroupJoinsWhere> {
     }
     public <K extends BaseExpr> StatKeys<K> getStatKeys(ImSet<K> groups, StatType type) {
         return getStatKeys(groups, type, StatKeys.<KeyExpr>NOPUSH());
-    }
-
-    public <K extends BaseExpr, Z extends Expr> Where getCostPushWhere(final QueryJoin<Z, ?, ?, ?> queryJoin, boolean pushLargeDepth, final StatType type) {
-        return joins.getCostPushWhere(queryJoin, pushLargeDepth, upWheres, where, type, keyEqual);   
     }
 
     public boolean isComplex() {

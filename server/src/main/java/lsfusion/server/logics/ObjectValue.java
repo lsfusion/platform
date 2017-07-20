@@ -49,10 +49,6 @@ public abstract class ObjectValue<T extends ObjectValue<T>> extends AbstractValu
         return getExpr();
     }
 
-    public Expr getExpr(ImMap<ObjectInstance, ? extends Expr> classSource, Modifier modifier, ReallyChanged reallyChanged, MSet<CalcProperty> mUsedProps) throws SQLException, SQLHandledException {
-        return getExpr();
-    }
-
     public static <K> ImMap<K,Expr> getMapExprs(ImMap<K,? extends ObjectValue> map) {
         return ((ImMap<K, ObjectValue>)map).mapValues(new GetValue<Expr, ObjectValue>() {
             public Expr getMapValue(ObjectValue value) {

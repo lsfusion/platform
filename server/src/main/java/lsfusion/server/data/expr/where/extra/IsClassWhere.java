@@ -21,14 +21,12 @@ import lsfusion.server.data.query.ExprStatJoin;
 import lsfusion.server.data.query.JoinData;
 import lsfusion.server.data.query.innerjoins.GroupJoinsWheres;
 import lsfusion.server.data.query.stat.KeyStat;
-import lsfusion.server.data.translator.JoinExprTranslator;
 import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.translator.ExprTranslator;
 import lsfusion.server.data.where.DataWhere;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassExprWhere;
 import lsfusion.server.logics.property.IsClassField;
-import lsfusion.server.session.DataSession;
 
 public class IsClassWhere extends DataWhere {
 
@@ -114,13 +112,6 @@ public class IsClassWhere extends DataWhere {
     }
     @ParamLazy
     public Where translate(ExprTranslator translator) {
-        // getAdjustJoin в groupJoinsWheres нарушает инвариант создавая WhereJoin у которого появляется новый Expr (IsClassExpr) не в "пути" этого IsClassWhere и при проталкивании (в частности через Ident получаются проблемы)
-        if(classes instanceof ObjectValueClassSet && translator instanceof JoinExprTranslator) {
-            Expr translatedClassExpr = classExpr.translateExpr(translator);
-            if(translatedClassExpr instanceof KeyExpr) // если подставился ключ при проталкивании
-                return DataSession.isValueClass(translatedClassExpr, (ObjectValueClassSet)classes); // подставляем compare на конкретные классы N (IN ARRAY ???)
-        }
-        
         return expr.translateExpr(translator).isClass(classes, inconsistent);
     }
 

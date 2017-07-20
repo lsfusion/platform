@@ -11,8 +11,9 @@
 }
 
 .dataGridHeaderCell {
+    height: 30px;
     border-left: 1px solid #CCCCCC;
-    padding: 0 2px;
+    padding: 2px;
     color: #4b4a4a;
 }
 

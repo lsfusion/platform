@@ -414,18 +414,9 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
     }
 
     @Override
-    public LocalizedString localizedToString() {
-        LocalizedString result = super.localizedToString();
-        if (debugInfo != null)
-            result = LocalizedString.concat(result, ":" + debugInfo);
-        return result;
-        
-    } 
-
-    @Override
     public String toString() {
         String result = super.toString();
-        if (debugInfo != null)
+        if(debugInfo != null)
            result += ":" + debugInfo;
         return result;
     }

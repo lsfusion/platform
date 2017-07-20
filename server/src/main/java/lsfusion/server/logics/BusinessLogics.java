@@ -1823,7 +1823,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         for (ImplementTable dataTable : tables) {
             count++;
             long start = System.currentTimeMillis();
-            serviceLogger.info(String.format("Recalculate Stats %s of %s: %s", count, tables.size(), String.valueOf(dataTable)));
+            serviceLogger.info(String.format("Recalculate Stats %s of %s: %sms", count, tables.size(), String.valueOf(dataTable)));
             dataTable.calculateStat(this.reflectionLM, session);
             long time = System.currentTimeMillis() - start;
             serviceLogger.info(String.format("Recalculate Stats: %s, %sms", String.valueOf(dataTable), time));
@@ -2376,9 +2376,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     }
 
     private void checkExceededAllocatedBytes(Map<Long, Thread> threadMap, Set<Long> excessAllocatedBytesSet) {
-
-        int accessInterruptCount = Settings.get().getAccessInterruptCount();
-
         for (Iterator<Map.Entry<Long, Integer>> it = excessAllocatedBytesMap.entrySet().iterator(); it.hasNext(); ) {
             Map.Entry<Long, Integer> entry = it.next();
             Long id = entry.getKey();
@@ -2388,7 +2385,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
                 count = (count == null ? 0 : count) + 1;
                 excessAllocatedBytesMap.put(id, count);
                 allocatedBytesLogger.info(String.format("Process %s allocated too much bytes, %s cycles", id, count));
-                if(count >= accessInterruptCount) {
+                if(count >= 4) {
                     logger.info(String.format("Process %s allocated too much bytes for %s cycles, will be interrupted", id, count));
                     try {
                         ThreadUtils.interruptThread(getDbManager(), threadMap.get(id));

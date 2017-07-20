@@ -60,8 +60,8 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
 
     public static final IsFullClientFormulaProperty isFullClient = IsFullClientFormulaProperty.instance;
     public static final IsDebugFormulaProperty isDebug = IsDebugFormulaProperty.instance;
-    public static final SessionDataProperty isFloat = new SessionDataProperty(LocalizedString.create("Is dialog"), LogicalClass.instance);
-    public static final SessionDataProperty isSync = new SessionDataProperty(LocalizedString.create("Is modal"), LogicalClass.instance);
+    public static final SessionDataProperty isDialog = new SessionDataProperty(LocalizedString.create("Is dialog"), LogicalClass.instance);
+    public static final SessionDataProperty isModal = new SessionDataProperty(LocalizedString.create("Is modal"), LogicalClass.instance);
     public static final SessionDataProperty isAdd = new SessionDataProperty(LocalizedString.create("Is add"), LogicalClass.instance);
     public static final SessionDataProperty manageSession = new SessionDataProperty(LocalizedString.create("Manage session"), LogicalClass.instance);
     public static final SessionDataProperty showDrop = new SessionDataProperty(LocalizedString.create("Show drop"), LogicalClass.instance);
@@ -392,7 +392,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     }
 
     public ObjectEntity addSingleGroupObject(ValueClass baseClass, Version version, Object... groups) {
-        GroupObjectEntity groupObject = new GroupObjectEntity(genID(), (TreeGroupEntity) null);
+        GroupObjectEntity groupObject = new GroupObjectEntity(genID());
         ObjectEntity object = new ObjectEntity(genID(), baseClass, null);
         groupObject.add(object);
         addGroupObject(groupObject, version);
@@ -402,7 +402,8 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         return object;
     }
 
-    public TreeGroupEntity addTreeGroupObject(TreeGroupEntity treeGroup, String sID, Version version, GroupObjectEntity... tGroups) {
+    public TreeGroupEntity addTreeGroupObject(String sID, Version version, GroupObjectEntity... tGroups) {
+        TreeGroupEntity treeGroup = new TreeGroupEntity(genID());
         if (sID != null)
             treeGroup.setSID(sID);
         for (GroupObjectEntity group : tGroups) {
@@ -437,7 +438,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
 
         FormView richDesign = getNFRichDesign(version);
         if (richDesign != null) {
-            richDesign.addGroupObject(group, neighbour, isRightNeighbour, version);
+            richDesign.addGroupObject(group, neighbour, isRightNeighbour, version);    
         }
     }
 
@@ -977,10 +978,10 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         ComponentView drawComponent;
         if(grid) {
             GroupObjectEntity toDraw = property.getToDraw(this);
-            if (toDraw.isInTree())
-                drawComponent = formView.get(toDraw.treeGroup);
-            else
+            if(toDraw.treeGroup == null)
                 drawComponent = formView.get(toDraw).grid;
+            else
+                drawComponent = formView.get(toDraw.treeGroup);
         } else
             drawComponent = formView.get(property);
         return drawComponent;

@@ -1,6 +1,6 @@
 package lsfusion.interop.form.layout;
 
-public interface AbstractTreeGroup<T extends AbstractComponent> extends AbstractComponent {
+public interface AbstractTreeGroup<C extends AbstractContainer<C, T>, T extends AbstractComponent<C, T>> extends AbstractComponent<C,T> {
 
     int getID();
     String getSID();

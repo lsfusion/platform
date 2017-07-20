@@ -43,14 +43,6 @@ public class GContainer extends GComponent {
         return type == TABBED_PANE;
     }
 
-    public int getFlexCount() {
-        int count = 0;
-        for(GComponent child : children)
-            if(child.flex > 0)
-                count++;
-        return count;
-    }
-
     public boolean isSplit() {
         return type == HORIZONTAL_SPLIT_PANE || type == VERTICAL_SPLIT_PANE;
     }

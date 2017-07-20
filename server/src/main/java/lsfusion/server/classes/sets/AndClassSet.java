@@ -1,7 +1,6 @@
 package lsfusion.server.classes.sets;
 
 import lsfusion.base.ArrayInstancer;
-import lsfusion.base.GlobalObject;
 import lsfusion.server.classes.ValueClassSet;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.type.Type;

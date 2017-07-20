@@ -49,10 +49,6 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
 
     public TreeGroupEntity treeGroup;
 
-    public boolean isInTree() {
-        return treeGroup != null;
-    }
-
     public CalcPropertyObjectEntity<?> reportPathProp;
     
     public boolean noClassFilter = false;
@@ -138,9 +134,8 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
     public GroupObjectEntity() {
     }
 
-    public GroupObjectEntity(int ID, TreeGroupEntity treeGroup) {
+    public GroupObjectEntity(int ID) {
         this(ID, (String)null);
-        this.treeGroup = treeGroup; // нужно чтобы IsInTree правильно определялось в addScriptingTreeGroupObject, когда идет addGroupObjectView
     }
 
     public GroupObjectEntity(int ID, String sID) {
@@ -297,7 +292,7 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
     public Where getClassWhere(ImMap<ObjectEntity, ? extends Expr> mapKeys, Modifier modifier) {
         if(noClassFilter)
             return Where.TRUE;
-        return IsClassProperty.getWhere(getGridClasses(getObjects()), mapKeys, modifier, null);
+        return IsClassProperty.getWhere(getGridClasses(getObjects()), mapKeys, modifier);
     }
 
     public Where getWhere(ImMap<ObjectEntity, ? extends Expr> mapKeys, Modifier modifier, ImMap<ObjectEntity, ObjectValue> mapObjects, ImSet<FilterEntity> filters) throws SQLException, SQLHandledException {

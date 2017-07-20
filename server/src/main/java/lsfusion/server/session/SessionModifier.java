@@ -8,6 +8,7 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
+import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
 import lsfusion.server.caches.ManualLazy;
 import lsfusion.server.caches.ValuesContext;
@@ -38,7 +39,7 @@ public abstract class SessionModifier implements Modifier {
     }
 
     private ConcurrentIdentityWeakHashSet<OverrideSessionModifier> views = new ConcurrentIdentityWeakHashSet<>();
-    public void registerView(OverrideSessionModifier modifier) throws SQLException, SQLHandledException { // protected
+    public void registerView(OverrideSessionModifier modifier) { // protected
         views.add(modifier);
         modifier.eventDataChanges(getPropertyChanges().getProperties());
     }
@@ -56,19 +57,19 @@ public abstract class SessionModifier implements Modifier {
         views.remove(modifier);
     }
 
-    protected void eventDataChanges(ImSet<? extends CalcProperty> properties, FunctionSet<? extends CalcProperty> sourceChanged) throws SQLException, SQLHandledException {
+    protected void eventDataChanges(ImSet<? extends CalcProperty> properties, FunctionSet<? extends CalcProperty> sourceChanged) {
         assert sourceChanged.isFull() || (((ImSet<CalcProperty>)properties).containsAll((ImSet<CalcProperty>)sourceChanged));
         for(CalcProperty property : properties)
             eventChange(property, true, ((FunctionSet<CalcProperty>) sourceChanged).contains(property)); // как правило этот метод используется для сброса изменений, поэтому пометим что все изменилось
     }
 
-    protected void eventDataChanges(ImSet<? extends CalcProperty> properties) throws SQLException, SQLHandledException {
+    protected void eventDataChanges(ImSet<? extends CalcProperty> properties) {
         eventDataChanges(properties, FullFunctionSet.<CalcProperty>instance());
     }
 
     private MSet<CalcProperty> mChanged = SetFact.mSet();
 
-    protected void eventChange(CalcProperty property, boolean data, boolean source) throws SQLException, SQLHandledException {
+    protected void eventChange(CalcProperty property, boolean data, boolean source) {
         if(source)
             mChanged.add(property);
 /*        else {
@@ -100,25 +101,19 @@ public abstract class SessionModifier implements Modifier {
                 throw new RuntimeException(e);
             }
         }
-        
-        if(source)
-            notifySourceChange(property, data);
 
         for(OverrideSessionModifier view : views)
             view.eventChange(property, data, source);
     }
-    
-    protected void notifySourceChange(CalcProperty property, boolean data) throws SQLException, SQLHandledException {        
-    }
 
-    protected void eventNoUpdate(CalcProperty property) throws SQLException, SQLHandledException {
+    protected void eventNoUpdate(CalcProperty property) {
         mChanged.add(property);
 
         for(OverrideSessionModifier view : views)
             view.eventChange(property, true, true); // если сюда зашли, значит гарантировано изменили данные
     }
 
-    protected void eventSourceChanges(Iterable<? extends CalcProperty> properties) throws SQLException, SQLHandledException {
+    protected void eventSourceChanges(Iterable<? extends CalcProperty> properties) {
         for(CalcProperty property : properties)
             eventChange(property, false, true); // используется только в случаях когда гарантировано меняется "источник"
     }
@@ -162,7 +157,7 @@ public abstract class SessionModifier implements Modifier {
     }
 
     // должно цеплять все views, чтобы не получилось что increment'ы создались до начала транзакции, а удалялись по eventChange (который цепляет все views), тогда rollbacktransaction вернет назад записи в старые таблицы
-    public void clearHints(SQLSession session, OperationOwner owner) throws SQLException, SQLHandledException {
+    public void clearHints(SQLSession session, OperationOwner owner) throws SQLException {
         eventSourceChanges(getIncrementProps());
         increment.clear(session, owner);
         preread.clear();
@@ -173,7 +168,7 @@ public abstract class SessionModifier implements Modifier {
             view.clearHints(session, owner);
     }
 
-    public void clearPrereads() throws SQLException, SQLHandledException {
+    public void clearPrereads() throws SQLException {
         eventSourceChanges(getPrereadProps());
         preread.clear();
     }
@@ -262,10 +257,6 @@ public abstract class SessionModifier implements Modifier {
         return Settings.get().getLimitHintIncrementComplexityCoeff();
     }
 
-    public int getLimitHintIncrementValueComplexity() {
-        return Settings.get().getLimitHintIncrementValueComplexityCoeff();
-    }
-
     public double getLimitComplexityGrowthCoeff() {
         return Settings.get().getLimitComplexityGrowthCoeff();
     }
@@ -315,7 +306,7 @@ public abstract class SessionModifier implements Modifier {
 
             ImMap<Expr, ObjectValue> readedParamValues;
             if(!valueSet.isEmpty())
-                readedParamValues = Expr.readObjectValues(getSQL(), getBaseClass(), valueSet.toMap(), getQueryEnv());
+                readedParamValues = Expr.readValues(getSQL(), getBaseClass(), valueSet.toMap(), getQueryEnv());
             else
                 readedParamValues = MapFact.EMPTY();
 
@@ -338,7 +329,7 @@ public abstract class SessionModifier implements Modifier {
     }
 
     private MAddSet<CalcProperty> noUpdate = SetFact.mAddSet();
-    public void addNoUpdate(CalcProperty property) throws SQLException, SQLHandledException {
+    public void addNoUpdate(CalcProperty property) {
         assert allowNoUpdate(property);
 
         noUpdate.add(property);

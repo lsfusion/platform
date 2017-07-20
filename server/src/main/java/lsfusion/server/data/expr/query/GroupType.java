@@ -128,10 +128,6 @@ public enum GroupType implements AggrType {
     public boolean nullsNotAllowed() {
         return this == LAST;
     }
-    
-    public boolean isLastOpt() {
-        return this == LAST || this == ANY; // ANY - LAST без порядка
-    }
 
     public boolean splitExprCases() {
         assert hasAdd();

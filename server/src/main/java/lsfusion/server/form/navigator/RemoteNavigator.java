@@ -44,7 +44,10 @@ import lsfusion.server.logics.SecurityManager;
 import lsfusion.server.logics.property.ActionProperty;
 import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.ClassPropertyInterface;
-import lsfusion.server.remote.*;
+import lsfusion.server.remote.ContextAwarePendingRemoteObject;
+import lsfusion.server.remote.RemoteForm;
+import lsfusion.server.remote.RemoteLoggerAspect;
+import lsfusion.server.remote.RemotePausableInvocation;
 import lsfusion.server.session.DataSession;
 import lsfusion.server.session.ExecutionEnvironment;
 import org.apache.log4j.Logger;
@@ -177,15 +180,12 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         return false;
     }
 
-    public synchronized void updateEnvironmentProperty(CalcProperty property, ObjectValue value) throws SQLException, SQLHandledException {
+    public synchronized void updateEnvironmentProperty(CalcProperty property, ObjectValue value) throws SQLException {
         if(isClosed())
             return;
 
-        for (DataSession session : sessions) {
-            ImSet<CalcProperty> updateChanges = SetFact.singleton(property);
-            session.updateSessionEvents(updateChanges);
-            session.updateProperties(updateChanges, true); // редко используется поэтому все равно
-        }
+        for (DataSession session : sessions)
+            session.updateProperties(SetFact.singleton(property), true); // редко используется поэтому все равно
     }
 
     public SecurityPolicy getUserSecurityPolicy(Result<Integer> timeout) {
@@ -599,16 +599,15 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
     public static void updateUserLastActivity(BusinessLogics businessLogics, ExecutionStack stack) {
         try {
 
-            Map<Integer, UserActivity> userActivityMap;
+            Map<Integer, Long> userActivityMap;
             userActivityMap = new HashMap<>(RemoteLoggerAspect.userActivityMap);
             RemoteLoggerAspect.userActivityMap.clear();
 
             try (DataSession session = ThreadLocalContext.getDbManager().createSession()) {
 
-                for (Map.Entry<Integer, UserActivity> userActivity : userActivityMap.entrySet()) {
+                for (Map.Entry<Integer, Long> userActivity : userActivityMap.entrySet()) {
                     DataObject customUserObject = new DataObject(userActivity.getKey(), businessLogics.authenticationLM.customUser);
-                    businessLogics.authenticationLM.lastActivityCustomUser.change(new Timestamp(userActivity.getValue().time), session, customUserObject);
-                    businessLogics.authenticationLM.lastComputerCustomUser.change(userActivity.getValue().computer, session, customUserObject);
+                    businessLogics.authenticationLM.lastActivityCustomUser.change(new Timestamp(userActivity.getValue()), session, customUserObject);
 
                 }
                 String result = session.applyMessage(businessLogics, stack);
@@ -701,7 +700,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
 //            RemoteForm remoteForm = invalidatedForms.remove(formEntity);
 //            if (remoteForm == null) {
 //                remoteForm = context.createRemoteForm(
-//                        context.createFormInstance(formEntity, MapFact.<ObjectEntity, DataObject>EMPTY(), createSession(), isSync, FormSessionScope.NEWSESSION, false, false, interactive)
+//                        context.createFormInstance(formEntity, MapFact.<ObjectEntity, DataObject>EMPTY(), createSession(), isModal, FormSessionScope.NEWSESSION, false, false, interactive)
 //                );
 //            }
 //            return remoteForm;

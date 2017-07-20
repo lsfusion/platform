@@ -187,16 +187,13 @@ public class EmailSender {
         return result;
     }
 
-    public void sendMail(ExecutionContext context, String subject, List<String> inlineFiles, List<AttachmentProperties> attachments, Map<ByteArray, String> files, Map<ByteArray, Pair<String, String>> customAttachments, List<String> inlineTexts) throws MessagingException, IOException, ScriptingErrorLog.SemanticErrorException {
-        assert inlineFiles != null && attachments != null && files != null && inlineTexts != null;
+    public void sendMail(ExecutionContext context, String subject, List<String> inlineFiles, List<AttachmentProperties> attachments, Map<ByteArray, String> files, Map<ByteArray, Pair<String, String>> customAttachments) throws MessagingException, IOException, ScriptingErrorLog.SemanticErrorException {
+        assert inlineFiles != null && attachments != null && files != null;
 
         setMessageHeading();
         message.setSubject(subject, "utf-8");
 
-        for(String inlineText : inlineTexts)
-            setText(inlineText);
-        if(!inlineFiles.isEmpty())
-            setText(createInlinePart(inlineFiles));
+        setText(createInlinePart(inlineFiles));
 
         for (AttachmentProperties attachment : attachments) {
             attachFile(attachment);

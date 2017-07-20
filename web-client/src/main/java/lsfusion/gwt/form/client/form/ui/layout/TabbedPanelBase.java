@@ -4,9 +4,6 @@ import com.google.gwt.event.logical.shared.*;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.ui.*;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class TabbedPanelBase extends Composite implements IndexedPanel,
                                                           HasBeforeSelectionHandlers<Integer>, HasSelectionHandlers<Integer>,
                                                           RequiresResize, ProvidesResize {
@@ -75,15 +72,8 @@ public class TabbedPanelBase extends Composite implements IndexedPanel,
         }
     }
 
-    private final List<BeforeSelectionTabHandler> beforeSelectionTabHandlers = new ArrayList<>();
-    public void addBeforeSelectionTabHandler(BeforeSelectionTabHandler handler) {
-        beforeSelectionTabHandlers.add(handler);
-    }
-
     private void onTabSelected(SelectionEvent<Integer> event) {
         int tabIndex = event.getSelectedItem();
-        for(BeforeSelectionTabHandler beforeSelectionTabHandler : beforeSelectionTabHandlers)
-            beforeSelectionTabHandler.onBeforeSelection(tabIndex);
         deck.showWidget(tabIndex);
         SelectionEvent.fire(this, tabIndex);
     }

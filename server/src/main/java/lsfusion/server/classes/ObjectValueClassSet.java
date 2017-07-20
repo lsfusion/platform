@@ -3,7 +3,6 @@ package lsfusion.server.classes;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.classes.sets.ObjectClassSet;
-import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.property.IsClassField;
 import lsfusion.server.logics.property.ObjectClassField;
 

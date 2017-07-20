@@ -261,18 +261,6 @@ FORM userRole 'Роль'
     EDIT UserRole OBJECT ur
 ;
 
-CLASS MemoryLimit 'Параметры старта JNLP';
-TABLE memoryLimit (MemoryLimit);
-
-name 'Имя' = DATA VARSTRING[100] (MemoryLimit);
-maxHeapSize 'MaxHeapSize' = DATA VARSTRING[10] (MemoryLimit);
-
-FORM memoryLimits 'Параметры старта JNLP'
-    OBJECTS m = MemoryLimit
-    PROPERTIES(m) name, maxHeapSize
-    PROPERTIES(m) TOOLBAR NEW, DELETE 
-;
-
 // ---------------------------------------- Копирование роли ----------------------- //
 overCopy = ABSTRACT LIST (UserRole, UserRole);
 
@@ -505,7 +493,6 @@ NAVIGATOR {
     security {
         ADD Security.userRoles;
         ADD Security.securityPolicy;
-        ADD memoryLimits;
     }
 }
 

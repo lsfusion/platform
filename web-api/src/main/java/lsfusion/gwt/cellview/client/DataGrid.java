@@ -311,14 +311,13 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
     }
 
     public DataGrid(Resources resources) {
-        this(resources, -1, false);
+        this(resources, false, true);
     }
 
-    public DataGrid(Resources resources, int initHeaderHeight, boolean nullHeaders) {
+    public DataGrid(Resources resources, boolean nullHeaders, boolean flexible) {
         this.nullHeaders = nullHeaders;
 
-        int initialHeaderHeight = nullHeaders ? 0 : initHeaderHeight; 
-        headerPanel = new HeaderPanel(initialHeaderHeight, 0);
+        headerPanel = !nullHeaders ? new HeaderPanel(flexible) : new HeaderPanel(0, 0, flexible);
 
         initWidget(headerPanel);
 
@@ -1143,9 +1142,9 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
     private void setNonNullFootersCount(int count) {
         nonNullFootersCount = count;
         if (!nullHeaders) {
-            SimplePanel footerWidgetToSet = count != 0 ? tableFooterContainer : null;
-            if (headerPanel.getFooterWidget() != footerWidgetToSet) {
-                headerPanel.setFooterWidget(footerWidgetToSet);
+            SimplePanel foooterWidgetToSet = count != 0 ? tableFooterContainer : null;
+            if (headerPanel.getFooterWidget() != foooterWidgetToSet) {
+                headerPanel.setFooterWidget(foooterWidgetToSet);
             }
         }
     }

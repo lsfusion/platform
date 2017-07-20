@@ -1,25 +1,24 @@
 package lsfusion.server.logics.property.actions.file;
 
 import lsfusion.base.BaseUtils;
+import lsfusion.base.col.MapFact;
+import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.interop.action.OpenFileClientAction;
 import lsfusion.interop.action.OpenUriClientAction;
+import lsfusion.server.classes.DataClass;
 import lsfusion.server.classes.DynamicFormatFileClass;
 import lsfusion.server.classes.FileClass;
 import lsfusion.server.classes.StaticFormatFileClass;
-import lsfusion.server.classes.ValueClass;
 import lsfusion.server.classes.link.LinkClass;
 import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.data.type.Type;
-import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.i18n.LocalizedString;
-import lsfusion.server.logics.property.ClassPropertyInterface;
-import lsfusion.server.logics.property.ExecutionContext;
+import lsfusion.server.logics.linear.LCP;
+import lsfusion.server.logics.property.*;
+import lsfusion.server.logics.property.actions.SystemExplicitActionProperty;
 
 import java.net.URI;
 import java.sql.SQLException;
-
-import static lsfusion.base.BaseUtils.trim;
 
 /**
 * Created by IntelliJ IDEA.
@@ -30,32 +29,37 @@ import static lsfusion.base.BaseUtils.trim;
 */
 public class OpenActionProperty extends FileActionProperty {
 
-    public OpenActionProperty(LocalizedString caption, ValueClass... valueClasses) {
-        super(caption, valueClasses);
+    public OpenActionProperty(LocalizedString caption, LCP fileProperty) {
+        super(caption, fileProperty);
 
         drawOptions.setImage("open.png");
     }
 
+    @Override
+    public ImMap<CalcProperty, Boolean> aspectUsedExtProps() {
+        return MapFact.<CalcProperty, Boolean>singleton(fileProperty.property, false);
+    }
+
+    private DataClass getDataClass() {
+        return (DataClass) fileProperty.property.getType();
+    }
+
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
-
-        ObjectValue filesObject = context.getKeys().getValue(0);
-        if(filesObject instanceof DataObject) {
-            Object files = filesObject.getValue();
-            Type dataClass = ((DataObject) filesObject).getType();
-
-            String fileName = context.getKeyCount() == 2 ? trim((String) context.getKeys().getValue(1).getValue()) : null;
-
-            if (dataClass instanceof FileClass) {
-                for (byte[] file : ((FileClass) dataClass).getFiles(files)) {
-                    if (dataClass instanceof DynamicFormatFileClass)
-                        context.delayUserInterfaction(new OpenFileClientAction(BaseUtils.getFile(file), fileName, BaseUtils.getExtension(file)));
-                    else
-                        context.delayUserInterfaction(new OpenFileClientAction(file, fileName, BaseUtils.firstWord(((StaticFormatFileClass) dataClass).getOpenExtension(file), ",")));
-                }
-            } else if (dataClass instanceof LinkClass) {
-                for (URI file : ((LinkClass) dataClass).getFiles(files)) {
-                    context.delayUserInterfaction(new OpenUriClientAction(file));
-                }
+        ObjectValue[] objects = new ObjectValue[context.getKeyCount()];
+        int i = 0; // здесь опять учитываем, что порядок тот же
+        for (ClassPropertyInterface classInterface : interfaces)
+            objects[i++] = context.getKeyValue(classInterface);
+        DataClass dataClass = getDataClass();
+        if(dataClass instanceof FileClass) {
+            for (byte[] file : ((FileClass)dataClass).getFiles(fileProperty.read(context, objects))) {
+                if (dataClass instanceof DynamicFormatFileClass)
+                    context.delayUserInterfaction(new OpenFileClientAction(BaseUtils.getFile(file), BaseUtils.getExtension(file)));
+                else
+                    context.delayUserInterfaction(new OpenFileClientAction(file, BaseUtils.firstWord(((StaticFormatFileClass) dataClass).getOpenExtension(file), ",")));
+            }
+        } else if (dataClass instanceof LinkClass) {
+            for (URI file : ((LinkClass) dataClass).getFiles(fileProperty.read(context, objects))) {
+                context.delayUserInterfaction(new OpenUriClientAction(file));
             }
         }
     }

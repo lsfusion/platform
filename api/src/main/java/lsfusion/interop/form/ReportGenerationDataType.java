@@ -5,22 +5,22 @@ import lsfusion.interop.FormPrintType;
 import lsfusion.interop.FormStaticType;
 
 public enum ReportGenerationDataType {
-    EXPORT, PRINTMESSAGE, PRINTJASPER;
+    EXPORT, PRINT, DEFAULT;
 
     public static ReportGenerationDataType get(FormStaticType staticType) {
         return  staticType instanceof FormExportType ? EXPORT :
-                staticType instanceof FormPrintType && staticType == FormPrintType.MESSAGE ? PRINTMESSAGE : PRINTJASPER;
+                staticType instanceof FormPrintType ? PRINT : DEFAULT;
     }
 
     public boolean isExport() {
         return this == EXPORT;
     }
 
-    public boolean isPrintMessage() {
-        return this == PRINTMESSAGE;
+    public boolean isPrint() {
+        return false;
     }
 
-    public boolean isPrintJasper() {
-        return this == PRINTJASPER;
+    public boolean isDefault() {
+        return this != EXPORT;
     }
 }

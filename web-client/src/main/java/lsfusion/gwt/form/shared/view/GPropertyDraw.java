@@ -84,6 +84,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
     public int maximumCharWidth;
     public int preferredCharWidth;
 
+    public boolean autoSize;
     public int minimumValueWidth = -1;
     public int minimumValueHeight = -1;
     public int maximumValueWidth = -1;

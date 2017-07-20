@@ -11,8 +11,11 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.rmi.RemoteException;
 
+// todo [dale]: Теперь получение свойства осуществляется через каноническое имя, которое содержит различные спецсимволы
+// возможно этот код нужно изменить
+
 public class ReadFileRequestHandler implements HttpRequestHandler {
-    private static final String CN_PARAM = "sid";
+    private static final String SID_PARAM = "sid";
     private static final String PARAMS_PARAM = "p";
 
     @Autowired
@@ -23,18 +26,18 @@ public class ReadFileRequestHandler implements HttpRequestHandler {
     @Override
     public void handleRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String user = context.getInitParameter("serviceUserLogin");
-        String propertyCN = request.getParameter(CN_PARAM);
+        String propertySid = request.getParameter(SID_PARAM);
 
         try {
-            boolean permitView = blProvider.getLogics().checkPropertyViewPermission(user, propertyCN);
+            boolean permitView = blProvider.getLogics().checkPropertyViewPermission(user, propertySid);
             if (!permitView) {
                 response.sendError(HttpServletResponse.SC_FORBIDDEN, "Not enough rights to load the file");
             } else {
-                byte[] file = blProvider.getLogics().readFile(propertyCN, request.getParameterValues(PARAMS_PARAM));
+                byte[] file = blProvider.getLogics().readFile(propertySid, request.getParameterValues(PARAMS_PARAM));
                 if (file != null) {
                     String extension = BaseUtils.getExtension(file);
                     response.setContentType("application/" + extension);
-                    response.addHeader("Content-Disposition", "attachment; filename=" + propertyCN.replace(',', '_') + "." + extension);
+                    response.addHeader("Content-Disposition", "attachment; filename=" + propertySid + "." + extension);
                     response.getOutputStream().write(BaseUtils.getFile(file));
                 } else {
                     response.getWriter().print("null");

@@ -15,10 +15,7 @@ import lsfusion.server.data.SQLCallable;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.formula.CastFormulaImpl;
 import lsfusion.server.data.type.Type;
-import lsfusion.server.form.entity.ClassFormEntity;
-import lsfusion.server.form.entity.FormEntity;
-import lsfusion.server.form.entity.ObjectEntity;
-import lsfusion.server.form.entity.PropertyFormEntity;
+import lsfusion.server.form.entity.*;
 import lsfusion.server.form.instance.FormSessionScope;
 import lsfusion.server.form.navigator.NavigatorElement;
 import lsfusion.server.form.window.AbstractWindow;
@@ -655,7 +652,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         ValueClass cls = obj.baseClass;
         LCP result = addProp(new ObjectValueProperty(cls, obj));
         if (formEntity.getCanonicalName() != null) {
-            // issue #1725 Потенциальное совпадение канонических имен различных свойств
             String name = "_OBJVALUE_" + formEntity.getCanonicalName().replace('.', '_') + "_" + obj.getSID();
             makePropertyPublic(result, name, cls.getResolveSet());
         }
@@ -682,7 +678,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     @IdentityStrongLazy
     public LAP getAddFormAction(CustomClass cls, FormEntity contextForm, ObjectEntity contextObject, FormSessionScope scope, ClassFormEntity form) {
         LAP result = addAddFormAction(cls, contextObject, scope);
-        // issue #1725 Потенциальное совпадение канонических имен различных свойств
+
         String contextPrefix = getFormPrefix(contextForm) + getObjectPrefix(contextObject);
         String name = "_ADDFORM" + scope + contextPrefix + getClassPrefix(cls);
 
@@ -699,7 +695,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     @IdentityStrongLazy
     public LAP getEditFormAction(CustomClass cls, FormSessionScope scope, ClassFormEntity form) {
         LAP result = addEditFormAction(scope, cls);
-        // issue #1725 Потенциальное совпадение канонических имен различных свойств
+
         String name = "_EDITFORM" + scope + getClassPrefix(cls);
         makePropertyPublic(result, name, form.object.getResolveClassSet());
 

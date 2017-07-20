@@ -5,9 +5,7 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.NavigatorInfo;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
-import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.interop.GUIPreferences;
 import lsfusion.interop.RemoteLogicsInterface;
 import lsfusion.interop.VMOptions;
@@ -26,8 +24,6 @@ import lsfusion.server.classes.StaticFormatFileClass;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.context.ExecutionStack;
 import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.data.expr.KeyExpr;
-import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.lifecycle.LifecycleEvent;
 import lsfusion.server.lifecycle.LifecycleListener;
 import lsfusion.server.logics.*;
@@ -36,7 +32,6 @@ import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.ClassType;
 import lsfusion.server.logics.property.PropertyInterface;
-import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.session.DataSession;
 import org.apache.log4j.Logger;
 import org.apache.poi.util.IOUtils;
@@ -46,7 +41,9 @@ import org.springframework.util.Assert;
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 import static lsfusion.server.context.ThreadLocalContext.localize;
 
@@ -348,40 +345,9 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     public String addUser(String username, String email, String password, String firstName, String lastName, String localeLanguage) throws RemoteException {
         return securityManager.addUser(username, email, password, firstName, lastName, localeLanguage, getStack());
     }
-
-    @Override
-    public Map<String, String> readMemoryLimits() throws RemoteException {
-        Map<String, String> memoryLimitMap = new HashMap<>();
-        try (DataSession session = createSession()) {
-            KeyExpr memoryLimitExpr = new KeyExpr("memoryLimit");
-            ImRevMap<Object, KeyExpr> memoryLimitKeys = MapFact.singletonRev((Object) "memoryLimit", memoryLimitExpr);
-            QueryBuilder<Object, Object> query = new QueryBuilder<>(memoryLimitKeys);
-
-            String[] names = new String[]{"name", "maxHeapSize"};
-            LCP[] properties = businessLogics.securityLM.findProperties("name[MemoryLimit]", "maxHeapSize[MemoryLimit]");
-            for (int j = 0; j < properties.length; j++) {
-                query.addProperty(names[j], properties[j].getExpr(memoryLimitExpr));
-            }
-            query.and(businessLogics.securityLM.findProperty("name[MemoryLimit]").getExpr(memoryLimitExpr).getWhere());
-
-            ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> result = query.execute(session);
-            for (ImMap<Object, Object> entry : result.values()) {
-                String name = (String) entry.get("name");
-                String maxHeapSize = (String) entry.get("maxHeapSize");
-                memoryLimitMap.put(name, "maxHeapSize=" + maxHeapSize);
-            }
-        } catch (ScriptingErrorLog.SemanticErrorException | SQLException | SQLHandledException e) {
-            logger.error("Error reading MemoryLimit: ", e);
-        }
-        return memoryLimitMap;
-    }
-
+    
     public Integer getCurrentUser() {
         return dbManager.getSystemUserObject();
-    }
-
-    public Integer getCurrentComputer() {
-        return (Integer) dbManager.getServerComputerObject(getStack()).getValue();
     }
 
     @Override

@@ -516,8 +516,7 @@ textarea {
 
 /* ------------ Other components  ------------ */
 .gridResizePanel{
-    min-height: 130px;
-    min-width: 130px;
+    min-height: 130px !important;
 }
 
 .toolbarButton {

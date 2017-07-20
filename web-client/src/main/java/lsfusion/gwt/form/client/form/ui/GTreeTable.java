@@ -10,7 +10,6 @@ import lsfusion.gwt.base.client.GwtClientUtils;
 import lsfusion.gwt.base.shared.GwtSharedUtils;
 import lsfusion.gwt.cellview.client.Column;
 import lsfusion.gwt.cellview.client.DataGrid;
-import lsfusion.gwt.cellview.client.HeaderPanel;
 import lsfusion.gwt.cellview.client.KeyboardRowChangedEvent;
 import lsfusion.gwt.cellview.client.cell.Cell;
 import lsfusion.gwt.cellview.client.cell.CellPreviewEvent;
@@ -44,14 +43,11 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     private TreeTableKeyboardSelectionHandler keyboardSelectionHandler;
 
     private GTreeGroupController treeGroupController;
-    
-    private boolean autoSize;
 
-    public GTreeTable(GFormController iformController, GForm iform, GTreeGroupController treeGroupController, boolean autoSize) {
-        super(iformController, treeGroupController.getFont());
+    public GTreeTable(GFormController iformController, GForm iform, GTreeGroupController treeGroupController) {
+        super(iformController, treeGroupController.getFont(), treeGroupController.getTreeGroup().isInFlexible());
 
         this.treeGroupController = treeGroupController;
-        this.autoSize = autoSize;
 
         tree = new GTreeTableTree(iform);
         Column<GTreeGridRecord, Object> column = new Column<GTreeGridRecord, Object>(new GTreeGridControlCell(this)) {
@@ -61,7 +57,6 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
             }
         };
         GGridPropertyTableHeader header = new GGridPropertyTableHeader(this, "Дерево");
-        header.setHeaderHeight(HeaderPanel.DEFAULT_HEADER_HEIGHT);
         createdFields.add("treeColumn");
         headers.add(header);
         addColumn(column, header);
@@ -97,13 +92,6 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
                 return tree.getColumnProperty(column);
             }
         };
-
-        setFixedHeaderHeight(HeaderPanel.DEFAULT_HEADER_HEIGHT);
-    }
-
-    @Override
-    protected boolean isAutoSize() {
-        return autoSize;
     }
 
     public void removeProperty(GGroupObject group, GPropertyDraw property) {
@@ -125,9 +113,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         if (index > -1) {
             if (!createdFields.contains(property.sID)) {
                 Column<GTreeGridRecord, Object> gridColumn = createGridColumn(property);
-                String propertyCaption = property.getCaptionOrEmpty();
-                GGridPropertyTableHeader header = new GGridPropertyTableHeader(this, propertyCaption, property.getTooltipText(propertyCaption));
-                header.setHeaderHeight(HeaderPanel.DEFAULT_HEADER_HEIGHT);
+                GGridPropertyTableHeader header = new GGridPropertyTableHeader(this, property.getCaptionOrEmpty(), property.getTooltipText(property.getCaptionOrEmpty()));
 
                 headers.add(index, header);
                 insertColumn(index, gridColumn, header);

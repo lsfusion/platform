@@ -8,10 +8,10 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
-import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
+import lsfusion.server.SystemProperties;
 import lsfusion.server.caches.ManualLazy;
 import lsfusion.server.classes.*;
 import lsfusion.server.data.expr.Expr;
@@ -75,17 +75,11 @@ public class IsClassProperty extends AggregateProperty<ClassPropertyInterface> {
         return getMapProperty(getMapClasses(interfaces));
      }
 
-    public static <T> Where getWhere(ImMap<T, ValueClass> joinClasses, ImMap<T, ? extends Expr> joinImplement, Modifier modifier, MSet<CalcProperty> mUsedProps) {
-        CalcPropertyRevImplement<?, T> property = getProperty(joinClasses);
-        if(mUsedProps != null)
-            mUsedProps.add(property.property);
-        return property.mapExpr(joinImplement, modifier.getPropertyChanges(), null).getWhere();
+    public static <T> Where getWhere(ImMap<T, ValueClass> joinClasses, ImMap<T, ? extends Expr> joinImplement, Modifier modifier) {
+        return getProperty(joinClasses).mapExpr(joinImplement, modifier.getPropertyChanges(), null).getWhere();
     }
-    public static Where getWhere(ValueClass valueClass, Expr valueExpr, Modifier modifier, MSet<CalcProperty> mUsedProps) {
-        CalcPropertyRevImplement<?, String> property = getProperty(valueClass, "value");
-        if(mUsedProps != null)
-            mUsedProps.add(property.property);
-        return property.mapExpr(MapFact.singleton("value", valueExpr), modifier.getPropertyChanges(), null).getWhere();
+    public static Where getWhere(ValueClass valueClass, Expr valueExpr, Modifier modifier) {
+        return getProperty(valueClass, "value").mapExpr(MapFact.singleton("value", valueExpr), modifier.getPropertyChanges(), null).getWhere();
     }
 
     public static ImOrderSet<ClassPropertyInterface> getInterfaces(final ValueClass[] classes) {

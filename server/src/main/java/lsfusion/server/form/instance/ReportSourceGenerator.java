@@ -205,20 +205,20 @@ public class ReportSourceGenerator<PropertyDraw extends PropertyReaderInstance, 
         BaseClass baseClass = getBaseClass();
         SQLSession sql = session.sql;
         SessionTableUsage<Obj, Pair<Object, PropertyType>> reportTable = new SessionTableUsage<>(
-                "ichreports", sql, query, baseClass, queryEnv, keyTypes, propTypes.result, selectTop);
+                "ichreports", sql, query, baseClass, queryEnv, keyTypes, propTypes.result);
 
         try {
-            ImOrderMap<ImMap<Obj, Object>, ImMap<Pair<Object, PropertyType>, Object>> resultData = reportTable.read(sql, getQueryEnv(), orders.result);
+            ImOrderMap<ImMap<Obj, Object>, ImMap<Pair<Object, PropertyType>, Object>> resultData = reportTable.read(sql, getQueryEnv(), orders.result, selectTop);
 
             List<Pair<String, PropertyReaderInstance>> propertyList = new ArrayList<>();
             for(PropertyDraw property : filterProperties(groups.getSet(), reportType)) {
                 String psid = formInterface.getPSID(property);
                 propertyList.add(new Pair<String, PropertyReaderInstance>(psid, property));
                 if (formInterface.getPropertyCaption(property) != null) {
-                    propertyList.add(new Pair<>(psid, formInterface.getCaptionReader(property)));
+                    propertyList.add(new Pair<String, PropertyReaderInstance>(psid, formInterface.getCaptionReader(property)));
                 }
                 if (formInterface.getPropertyFooter(property) != null) {
-                    propertyList.add(new Pair<>(psid, formInterface.getFooterReader(property)));
+                    propertyList.add(new Pair<String, PropertyReaderInstance>(psid, formInterface.getFooterReader(property)));
                 }
             }
 
@@ -286,7 +286,7 @@ public class ReportSourceGenerator<PropertyDraw extends PropertyReaderInstance, 
             Property pProperty;
             if (((applyGroup == null || toDraw == applyGroup) && toDraw != null && filterGroups.contains(toDraw) && validForGroupReports(property)) ||
                 (toDraw == null && applyGroup == null && (pProperty = formInterface.getProperty(formInterface.getPropertyObject(property))) instanceof CalcProperty && pProperty.getInterfaceCount() == 0) ||
-                (toDraw != applyGroup && !reportType.isPrintJasper())) {
+                (toDraw != applyGroup && !reportType.isDefault())) {
                 boolean add = true;
                 
                 if (userPreferences != null && toDraw != null) {
@@ -312,7 +312,7 @@ public class ReportSourceGenerator<PropertyDraw extends PropertyReaderInstance, 
     }
 
     public ColumnGroupCaptionsData<Obj> getColumnGroupCaptions() throws SQLException, SQLHandledException {
-        ColumnGroupCaptionsData<Obj> resultData = new ColumnGroupCaptionsData<>();
+        ColumnGroupCaptionsData<Obj> resultData = new ColumnGroupCaptionsData<Obj>();
 
         for (PropertyDraw property : formInterface.getProperties()) {
             ImOrderSet<GroupObject> columnGroupObjects = formInterface.getOrderColumnGroupObjects(property);
@@ -332,11 +332,7 @@ public class ReportSourceGenerator<PropertyDraw extends PropertyReaderInstance, 
 
                     List<Object> values = new ArrayList<>();
                     for (Obj object : propObjects) {
-                        if (key.containsKey(object)) {
-                            values.add(key.get(object));
-                        } else {
-                            values.add(formInterface.getObjectValue(object).getValue());
-                        }
+                        values.add(key.get(object));
                     }
                     data.put(values, value.get(property));
                     if (formInterface.getPropertyCaption(property) != null) {
@@ -348,12 +344,7 @@ public class ReportSourceGenerator<PropertyDraw extends PropertyReaderInstance, 
 
                     List<Object> columnValues = new ArrayList<>();
                     for (Obj object : formInterface.getOrderObjects(columnGroupObjects)) {
-                        if (key.containsKey(object)) {
-                            columnValues.add(key.get(object));
-                        } else {
-                            assert false;
-//                            columnValues.add(formInterface.getObjectValue(object).getValue());
-                        }
+                        columnValues.add(key.get(object));
                     }
                     columnData.add(columnValues);
                 }
@@ -375,22 +366,11 @@ public class ReportSourceGenerator<PropertyDraw extends PropertyReaderInstance, 
     }
 
     private ImOrderMap<ImMap<Obj, Object>, ImMap<Object, Object>> getColumnPropQueryResult(ImOrderSet<GroupObject> groups, PropertyDraw property) throws SQLException, SQLHandledException {
-        ImOrderSet<GroupObject> keyGroupObjects = groups;
-        if (groupId != null) {
-            MOrderSet<GroupObject> queryGroups = SetFact.mOrderSet();
-            for (GroupObject group : groups) {
-                if (groupId.equals(formInterface.getGroupID(group)) || formInterface.getColumnGroupObjects(property).contains(group)) {
-                    queryGroups.add(group);
-                }
-            }
-            keyGroupObjects = queryGroups.immutableOrder();
-        }
-        
-        ImSet<Obj> objects = formInterface.getObjects(keyGroupObjects.getSet());
+        ImSet<Obj> objects = formInterface.getObjects(groups.getSet());
         QueryBuilder<Obj, Object> query = new QueryBuilder<>(objects);
-        
         MOrderMap<Object, Boolean> mQueryOrders = MapFact.mOrderMap();
-        for (GroupObject group : keyGroupObjects) {
+
+        for (GroupObject group : groups) {
             query.and(formInterface.getWhere(group, query.getMapExprs()));
 
             ImOrderMap<Order, Boolean> groupOrders = formInterface.getOrders(group).mergeOrder(formInterface.getOrderObjects(group).toOrderMap(false));
@@ -400,7 +380,7 @@ public class ReportSourceGenerator<PropertyDraw extends PropertyReaderInstance, 
                 mQueryOrders.add(order, groupOrders.getValue(i));
             }
 
-            if (formInterface.getGroupViewType(group).isPanel()) {
+            if (!formInterface.getGroupViewType(group).isGrid() || (groupId != null && !(groupId.equals(formInterface.getGroupID(group)) || formInterface.getColumnGroupObjects(property).contains(group)))) {
                 for (Obj object : formInterface.getObjects(group)) {
                     query.and(formInterface.getExpr(object, query.getMapExprs()).compare(formInterface.getObjectValue(object).getExpr(), Compare.EQUALS));
                 }

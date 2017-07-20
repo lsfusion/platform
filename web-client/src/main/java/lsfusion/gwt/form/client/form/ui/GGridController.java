@@ -27,7 +27,7 @@ public class GGridController {
         grid = igrid;
         groupController = igroupObject;
 
-        table = new GGridTable(iformController, igroupObject, this, userPreferences, igrid.autoSize);
+        table = new GGridTable(iformController, igroupObject, this, userPreferences);
 
 //        ResizableLayoutPanel panel = new ResizableLayoutPanel();
 //        panel.setStyleName("gridResizePanel");
@@ -35,10 +35,10 @@ public class GGridController {
 
         ResizableSimplePanel panel = new ResizableSimplePanel(table);
         panel.setStyleName("gridResizePanel");
-        setupFillParent(panel.getElement(), table.getElement());
-        if(grid.autoSize) { // убираем default'ый minHeight
-            panel.getElement().getStyle().setProperty("minHeight", "0px");
-            panel.getElement().getStyle().setProperty("minWidth", "0px");
+
+        // для flex-layout'а. убираем position:absolute для грида в контейнерах, у которых в иерархии предков есть скролл или flex=0. грид будет занимать всё место, которое ему нужно
+        if (grid.isInFlexible()) {
+            setupFillParent(panel.getElement(), table.getElement());
         }
 
         gridView = layoutImpl.createGridView(grid, panel);
@@ -46,6 +46,10 @@ public class GGridController {
 
     public int getHeaderHeight() {
         return grid.headerHeight;
+    }
+
+    public void setHeaderHeight(int headerHeight) {
+        grid.headerHeight = headerHeight;
     }
 
     public GGridTable getTable() {

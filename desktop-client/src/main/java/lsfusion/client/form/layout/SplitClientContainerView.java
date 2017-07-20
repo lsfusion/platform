@@ -4,7 +4,6 @@ import lsfusion.client.logics.ClientComponent;
 import lsfusion.client.logics.ClientContainer;
 import lsfusion.interop.KeyStrokes;
 import lsfusion.interop.form.layout.CachableLayout;
-import lsfusion.interop.form.layout.FlexAlignment;
 
 import javax.swing.*;
 import javax.swing.plaf.basic.BasicSplitPaneUI;
@@ -51,7 +50,7 @@ public class SplitClientContainerView extends AbstractClientContainerView {
     }
 
     @Override
-    public void addImpl(int index, ClientComponent child, JComponentPanel view) {
+    public void addImpl(int index, ClientComponent child, Component view) {
         if (container.children.get(0) == child) {
             setLeftComponent(child, view);
         } else if (container.children.get(1) == child) {
@@ -60,8 +59,7 @@ public class SplitClientContainerView extends AbstractClientContainerView {
     }
 
     @Override
-    public void removeImpl(int index, ClientComponent child, JComponentPanel view) {
-        assert child.alignment == FlexAlignment.STRETCH && child.flex > 0;// временные assert'ы чтобы проверить обратную совместимость
+    public void removeImpl(int index, ClientComponent child, Component view) {
         if (container.children.get(0) == child) {
             removeLeftComponent(child, view);
         } else if (container.children.get(1) == child) {
@@ -69,16 +67,16 @@ public class SplitClientContainerView extends AbstractClientContainerView {
         }
     }
 
-    public void setLeftComponent(ClientComponent child, JComponentPanel view) {
+    public void setLeftComponent(ClientComponent child, Component view) {
         leftView = view;
         wasLVisible = false;
-        add(hiddenHolderPanel, view, -1, null, child);
+        hiddenHolderPanel.add(view);
     }
 
-    public void setRightComponent(ClientComponent child, JComponentPanel view) {
+    public void setRightComponent(ClientComponent child, Component view) {
         rightView = view;
         wasRVisible = false;
-        add(hiddenHolderPanel, view, -1, null, child);
+        hiddenHolderPanel.add(view);
     }
 
     private void removeLeftComponent(ClientComponent child, Component view) {
@@ -144,7 +142,7 @@ public class SplitClientContainerView extends AbstractClientContainerView {
         wasRVisible = rVisible;
     }
 
-    public JComponentPanel getView() {
+    public JComponent getView() {
         return panel;
     }
 

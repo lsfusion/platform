@@ -3,7 +3,6 @@ package lsfusion.gwt.form.client.form.ui.layout.table;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.base.client.ui.ResizableSimplePanel;
 import lsfusion.gwt.base.client.ui.ResizableVerticalPanel;
 import lsfusion.gwt.form.client.form.ui.GFormController;
 import lsfusion.gwt.form.client.form.ui.layout.GAbstractContainerView;
@@ -11,7 +10,6 @@ import lsfusion.gwt.form.client.form.ui.layout.GFormLayoutImpl;
 import lsfusion.gwt.form.client.form.ui.layout.ScrollContainerView;
 import lsfusion.gwt.form.shared.view.GContainer;
 import lsfusion.gwt.form.shared.view.GGrid;
-import lsfusion.gwt.form.shared.view.GTreeGroup;
 
 public class TableFormLayoutImpl extends GFormLayoutImpl {
     @Override
@@ -39,7 +37,7 @@ public class TableFormLayoutImpl extends GFormLayoutImpl {
     }
 
     @Override
-    public Panel createGridView(GGrid grid, ResizableSimplePanel panel) {
+    public Panel createGridView(GGrid grid, Panel panel) {
         ResizableVerticalPanel gridView = new ResizableVerticalPanel();
         gridView.add(panel);
 
@@ -48,17 +46,5 @@ public class TableFormLayoutImpl extends GFormLayoutImpl {
         gridView.setCellHeight(panel, "100%");
 
         return gridView;
-    }
-
-    @Override
-    public Panel createTreeView(GTreeGroup treeGroup, ResizableSimplePanel panel) {
-        ResizableVerticalPanel treeView = new ResizableVerticalPanel();
-        treeView.add(panel);
-
-        panel.setSize("100%", "100%");
-        treeView.setCellWidth(panel, "100%");
-        treeView.setCellHeight(panel, "100%");
-
-        return treeView;
     }
 }

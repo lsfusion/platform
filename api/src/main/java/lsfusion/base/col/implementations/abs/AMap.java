@@ -433,15 +433,6 @@ public abstract class AMap<K, V> extends AColObject implements ImMap<K, V> {
     public ImMap<K, V> override(ImMap<? extends K, ? extends V> imMap) {
         return merge(imMap, MapFact.<K, V>override());
     }
-    
-    public ImMap<K, V> overrideIncl(final ImMap<? extends K, ? extends V> map) {
-        return mapValues(new GetKeyValue<V, K, V>() {
-            public V getMapValue(K key, V value) {
-                V mapValue = ((ImMap<K, V>) map).get(key);
-                return mapValue != null ? mapValue : value;
-            }
-        });
-    }
 
     public <M> ImMap<K, M> mapItValues(GetValue<M, V> getter) {
         ImValueMap<K, M> mvResult = mapItValues();
@@ -545,16 +536,6 @@ public abstract class AMap<K, V> extends AColObject implements ImMap<K, V> {
         for(int i=0,size=size();i<size;i++) {
             K key = getKey(i);
             mResult.exclAdd(getterKey.getMapValue(key), getterValue.getMapValue(key, getValue(i)));
-        }
-        return mResult.immutable();
-    }
-
-    public <MK, MV> ImMap<MK, MV> mapKeyValues(GetKeyValue<MK, K, V> getterKey, GetKeyValue<MV, K, V> getterValue) {
-        MExclMap<MK, MV> mResult = MapFact.mExclMap(size());
-        for(int i=0,size=size();i<size;i++) {
-            K key = getKey(i);
-            V value = getValue(i);
-            mResult.exclAdd(getterKey.getMapValue(key, value), getterValue.getMapValue(key, value));
         }
         return mResult.immutable();
     }

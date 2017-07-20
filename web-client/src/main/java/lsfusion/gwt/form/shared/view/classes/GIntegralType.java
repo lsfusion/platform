@@ -24,11 +24,6 @@ public abstract class GIntegralType extends GDataType {
             if (UNBREAKABLE_SPACE.equals(groupingSeparator)) {
                 s = s.replace(" ", UNBREAKABLE_SPACE);
             }
-            String decimalSeparator = LocaleInfo.getCurrentLocale().getNumberConstants().decimalSeparator();
-            if (s.contains(",") && decimalSeparator.equals("."))
-                s = s.replace(",", ".");
-            else if (s.contains(".") && decimalSeparator.equals(","))
-                s = s.replace(".", ",");
             return getFormat(pattern).parse(s);
         } catch (NumberFormatException e) {
             throw new ParseException("string " + s + "can not be converted to double", 0);

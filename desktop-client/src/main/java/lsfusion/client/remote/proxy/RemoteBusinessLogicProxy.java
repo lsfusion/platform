@@ -169,12 +169,4 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface> extends R
         logRemoteMethodEndVoidCall("addUser");
         return result;
     }
-
-    @Override
-    public Map<String, String> readMemoryLimits() throws RemoteException {
-        logRemoteMethodStartCall("readMemoryLimits");
-        Map<String, String> result = target.readMemoryLimits();
-        logRemoteMethodEndVoidCall("readMemoryLimits");
-        return result;
-    }
 }

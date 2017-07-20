@@ -3,9 +3,6 @@ package lsfusion.client.form.queries;
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.form.GroupObjectLogicsSupplier;
 import lsfusion.client.form.RmiQueue;
-import lsfusion.client.form.cell.DataPanelView;
-import lsfusion.client.form.layout.JComponentPanel;
-import lsfusion.client.logics.ClientComponent;
 import lsfusion.client.logics.ClientPropertyDraw;
 import lsfusion.client.logics.filter.ClientPropertyFilter;
 import lsfusion.interop.KeyStrokes;
@@ -20,7 +17,7 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public abstract class QueryView extends JComponentPanel implements QueryConditionView.UIHandlers {
+public abstract class QueryView extends JPanel implements QueryConditionView.UIHandlers {
     private JButton applyButton;
     private JButton addCondButton;
 
@@ -121,41 +118,6 @@ public abstract class QueryView extends JComponentPanel implements QueryConditio
         });
 
         comp.getInputMap(JComponent.WHEN_FOCUSED).put(KeyStrokes.getRemoveFiltersKeyStroke(), "removeAll");
-        comp.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(getKeyStroke(InputEvent.SHIFT_DOWN_MASK), "removeAll");
-        comp.getActionMap().put("removeAll", new AbstractAction() {
-            @Override
-            public boolean isEnabled() {
-                return controller.hasAnyFilter();
-            }
-
-            public void actionPerformed(ActionEvent ae) {
-                RmiQueue.runAction(new Runnable() {
-                    @Override
-                    public void run() {
-                        controller.allRemovedPressed();
-                    }
-                });
-            }
-        });
-    }
-
-    public void addActionsToPanelInputMap(final JComponent comp) {
-        //кто-то съедает pressed F2, поэтому ловим released
-        comp.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_F2, 0, true), "newFilter");
-        comp.getActionMap().put("newFilter", new AbstractAction() {
-            public void actionPerformed(ActionEvent ae) {
-                if(comp instanceof DataPanelView)
-                    controller.replaceConditionPressed(((DataPanelView) comp).getProperty());
-            }
-        });
-
-        comp.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(getKeyStroke(InputEvent.ALT_DOWN_MASK), "addFilter");
-        comp.getActionMap().put("addFilter", new AbstractAction() {
-            public void actionPerformed(ActionEvent ae) {
-                controller.addConditionPressed(((DataPanelView) comp).getProperty());
-            }
-        });
-
         comp.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(getKeyStroke(InputEvent.SHIFT_DOWN_MASK), "removeAll");
         comp.getActionMap().put("removeAll", new AbstractAction() {
             @Override

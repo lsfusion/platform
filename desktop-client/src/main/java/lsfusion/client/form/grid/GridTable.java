@@ -54,10 +54,6 @@ public class GridTable extends ClientPropertyTable {
 
     public static final String GOTO_LAST_ACTION = "gotoLastRow";
     public static final String GOTO_FIRST_ACTION = "gotoFirstRow";
-    
-    public static final int DEFAULT_HEADER_HEIGHT = 34;
-    public static int DEFAULT_PREFERRED_HEIGHT = 130;
-    public static Dimension DEFAULT_PREFERRED_SIZE = new Dimension(130, 130 - DEFAULT_HEADER_HEIGHT); 
 
     private static final long QUICK_SEARCH_MAX_DELAY = 2000;
     private String lastQuickSearchPrefix = "";
@@ -112,9 +108,7 @@ public class GridTable extends ClientPropertyTable {
     private int previousSelectedRow = 0;
 
     private int pageSize = 50;
-    
-    private Integer headerHeight;
-    
+
     public void setPageSize(int pageSize) {
         this.pageSize = pageSize;
     }
@@ -144,15 +138,13 @@ public class GridTable extends ClientPropertyTable {
         tableHeader = new GridTableHeader(columnModel) {
             @Override
             public Dimension getPreferredSize() {
-                return new Dimension(columnModel.getTotalColumnWidth(), getHeaderHeight());
+                return new Dimension(columnModel.getTotalColumnWidth(), igridView.getHeaderHeight());
             }
         };
 
         gridController = igridView.getGridController();
         groupController = gridController.getGroupController();
         groupObject = groupController.getGroupObject();
-        
-        headerHeight = igridView.getHeaderHeight();
 
         generalGridPreferences = iuserPreferences != null && iuserPreferences[0] != null ? iuserPreferences[0] : new GridUserPreferences(groupObject);
         userGridPreferences = iuserPreferences != null && iuserPreferences[1] != null ? iuserPreferences[1] : new GridUserPreferences(groupObject);
@@ -318,24 +310,7 @@ public class GridTable extends ClientPropertyTable {
     }
 
     public void setHeaderHeight(Integer headerHeight) {
-        this.headerHeight = headerHeight;
-    }
-    
-    public int getHeaderHeight() {
-        if (headerHeight != null && headerHeight >= 0) {
-            return headerHeight;
-        }
-        // заданная в дизайне
-        int predefinedHeaderHeight = gridController.getGridView().getHeaderHeight();
-        if (predefinedHeaderHeight >= 0) {
-            return predefinedHeaderHeight;
-        }
-        return DEFAULT_HEADER_HEIGHT; 
-    }
-
-    @Override
-    public Dimension getPreferredScrollableViewportSize() {
-        return gridController.getAutoSize() ? getPreferredSize() : DEFAULT_PREFERRED_SIZE;
+        gridController.setHeaderHeight(headerHeight);
     }
 
     private boolean isEditOnSingleClick(int row, int col) {

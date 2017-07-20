@@ -1,6 +1,5 @@
 package lsfusion.server.logics;
 
-import lsfusion.server.data.SQLHandledException;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
@@ -42,7 +41,7 @@ public class RestartManager implements InitializingBean {
         Assert.notNull(navigatorsManager, "navigatorsManager must be specified");
     }
 
-    public synchronized void scheduleRestart() throws SQLException, SQLHandledException {
+    public synchronized void scheduleRestart() throws SQLException {
         if (restartFuture != null) {
             return;
         }
@@ -80,7 +79,7 @@ public class RestartManager implements InitializingBean {
         this.pendingRestart = pendingRestart;
     }
 
-    public synchronized void cancelRestart() throws SQLException, SQLHandledException {
+    public synchronized void cancelRestart() throws SQLException {
         if (restartFuture == null) {
             return;
         }
@@ -100,7 +99,7 @@ public class RestartManager implements InitializingBean {
         }
     }
 
-    public void updateRestartProperty() throws SQLException, SQLHandledException {
+    public void updateRestartProperty() throws SQLException {
         Boolean isRestarting = isPendingRestart() ? Boolean.TRUE : null;
         navigatorsManager.updateEnvironmentProperty(
                 (CalcProperty) businessLogics.serviceLM.isServerRestarting.property,

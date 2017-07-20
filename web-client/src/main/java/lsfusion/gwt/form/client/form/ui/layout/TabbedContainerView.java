@@ -12,7 +12,7 @@ import lsfusion.gwt.form.shared.view.GContainer;
 import java.util.ArrayList;
 import java.util.Map;
 
-import static lsfusion.gwt.base.client.GwtClientUtils.*;
+import static lsfusion.gwt.base.client.GwtClientUtils.scheduleOnResize;
 import static lsfusion.gwt.base.shared.GwtSharedUtils.relativePosition;
 
 public class TabbedContainerView extends GAbstractContainerView {
@@ -43,8 +43,6 @@ public class TabbedContainerView extends GAbstractContainerView {
 
     public TabbedContainerView(final GFormController formController, final GContainer container, final TabbedDelegate delegate) {
         super(container);
-
-        assert container.isTabbed();
 
         tabbedDelegate = delegate;
 
@@ -96,7 +94,6 @@ public class TabbedContainerView extends GAbstractContainerView {
 
     @Override
     public void updateLayout() {
-        super.updateLayout();
         int childCnt = childrenViews.size();
         for (int i = 0; i < childCnt; i++) {
             GComponent child = children.get(i);

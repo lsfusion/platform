@@ -328,10 +328,6 @@ public class DerivedProperty {
         return createStatic(true, LogicalClass.instance);
     }
 
-    public static <T extends PropertyInterface> CalcPropertyMapImplement<?,T> createOne() {
-        return createStatic(1, LongClass.instance);
-    }
-
     public static <T extends PropertyInterface> CalcPropertyMapImplement<?, T> createFalse() {
         return new CalcPropertyMapImplement<>(new SessionDataProperty(LocalizedString.create("sys"), LogicalClass.instance));
 //        return new CalcPropertyMapImplement<PropertyInterface, T>(NullValueProperty.instance, new HashMap<PropertyInterface, T>());
@@ -370,11 +366,6 @@ public class DerivedProperty {
     public static <T extends PropertyInterface> CalcPropertyMapImplement<?, T> createLastGProp(CalcProperty<T> where, CalcPropertyInterfaceImplement<T> last, ImSet<T> groupInterfaces, ImOrderMap<CalcPropertyInterfaceImplement<T>, Boolean> orders, boolean ordersNotNull) {
         OrderGroupProperty<T> groupProperty = new OrderGroupProperty<>(LocalizedString.create("sys"), where.interfaces, BaseUtils.<ImCol<CalcPropertyInterfaceImplement<T>>>immutableCast(groupInterfaces), ListFact.toList(where.getImplement(), last), GroupType.LAST, orders, ordersNotNull);
         return new CalcPropertyMapImplement<>(groupProperty, BaseUtils.<ImMap<GroupProperty.Interface<T>, T>>immutableCast(groupProperty.getMapInterfaces()).toRevExclMap());
-    }
-
-    public static <T extends PropertyInterface> CalcPropertyMapImplement<?, GroupProperty.Interface<T>> createSumGProp(ImSet<T> innerInterfaces,  ImCol<? extends CalcPropertyInterfaceImplement<T>> groupInterfaces, CalcPropertyInterfaceImplement<T> property) {
-        SumGroupProperty<T> groupProperty = new SumGroupProperty<T>(LocalizedString.create("sys"), innerInterfaces, groupInterfaces, property);
-        return groupProperty.getImplement();
     }
 
     private static <T extends PropertyInterface> CalcPropertyMapImplement<?,T> createFormula(ImSet<T> interfaces, String formula, DataClass valueClass, ImList<? extends CalcPropertyInterfaceImplement<T>> params) {

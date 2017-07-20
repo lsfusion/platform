@@ -1,7 +1,6 @@
 package lsfusion.server.data.query.stat;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.FunctionSet;
 import lsfusion.base.Result;
 import lsfusion.base.TwinImmutableObject;
 import lsfusion.base.col.ListFact;
@@ -119,31 +118,10 @@ public class UnionJoin extends CalculateJoin<Integer> {
         });
         return depends.result;
     }
-
-    public static boolean depends(OuterContext context, final FunctionSet<BaseJoin> dependJoins) {
-        final Result<Boolean> depends = new Result<>(false);
-        context.enumerate(new ExprEnumerator() {
-            public Boolean enumerate(OuterContext join) {
-                if(join instanceof BaseExpr && dependJoins.contains(((BaseExpr) join).getBaseJoin())) {
-                    depends.set(true);
-                    return null;
-                }
-                return true;
-            }
-        });
-        return depends.result;
-    }
-
+    
     public boolean depends(final QueryJoin dependJoin) {
         for(Expr expr : exprs)
             if(depends(expr, dependJoin))
-                return true;
-        return false;
-    }
-
-    public boolean depends(final FunctionSet<BaseJoin> dependJoins) {
-        for(Expr expr : exprs)
-            if(depends(expr, dependJoins))
                 return true;
         return false;
     }

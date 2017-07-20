@@ -1,5 +1,6 @@
 package lsfusion.base;
 
+import com.google.common.collect.Iterables;
 import com.sun.rowset.CachedRowSetImpl;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
@@ -1953,11 +1954,11 @@ public class BaseUtils {
         });
     }
 
-    public static void openFile(byte[] data, String name, String extension) throws IOException {
-        File file = name != null ? new File(System.getProperty("java.io.tmpdir") + "/" + name + "." + extension) : File.createTempFile("lsf", "." + extension);
-        try (FileOutputStream f = new FileOutputStream(file)) {
-            f.write(data);
-        }
+    public static void openFile(byte[] data, String extension) throws IOException {
+        File file = File.createTempFile("lsf", "." + extension);
+        FileOutputStream f = new FileOutputStream(file);
+        f.write(data);
+        f.close();
         Desktop.getDesktop().open(file);
     }
 

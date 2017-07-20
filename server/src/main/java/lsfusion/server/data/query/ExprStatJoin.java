@@ -72,17 +72,12 @@ public class ExprStatJoin extends ExprJoin<ExprStatJoin> {
     }
 
     @Override
-    public boolean canBeKeyJoined() {
-        return !notNull;
-    }
-
-    @Override
     public InnerJoins getInnerJoins() {
         return super.getInnerJoins().and(valueJoins);
     }
 
     protected int hash(HashContext hashContext) {
-        return 31 * (31 * super.hash(hashContext) + stat.hashCode()) + (notNull ? 1 : 0) + 5 + valueJoins.hash(hashContext.values);
+        return 31 * (31 * super.hash(hashContext) + stat.hashCode()) + (notNull ? 1 : 0) + 5;
     }
 
     protected ExprStatJoin translate(MapTranslate translator) {

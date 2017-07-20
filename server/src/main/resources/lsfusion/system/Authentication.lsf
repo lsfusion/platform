@@ -77,8 +77,6 @@ forbidChangePassword 'Запретить пользователю изменят
 forbidEditProfile 'Запретить пользователю редактировать профиль' = ABSTRACT BOOLEAN (CustomUser);
 
 lastActivity 'Последняя активность' = DATA DATETIME (CustomUser);
-lastComputer 'Рабочее место' = DATA Computer (CustomUser);
-hostnameLastComputer 'Рабочее место' (CustomUser user) = hostname(lastComputer(user));
 ignorePrintTypeCustom 'Открывать печатные формы в интерактивном режиме' = DATA BOOLEAN (User);
 ignorePrintType() += ignorePrintTypeCustom(currentUser());
 
@@ -172,7 +170,7 @@ FORM customUser 'Пользователь'
     OBJECTS u=CustomUser PANEL
     PROPERTIES(u) firstName, lastName, login,
     sha256Password ON CHANGE changeSHA256Password(u), email,
-    isLocked, lastActivity, hostnameLastComputer, ignorePrintTypeCustom, useBusyDialogCustom, useRequestTimeout,
+    isLocked, lastActivity, ignorePrintTypeCustom, useBusyDialogCustom, useRequestTimeout,
     allowExcessAllocatedBytes, language, country, timeZone, twoDigitYearStart, clientLanguage, clientCountry, useClientLocale
 
     EDIT CustomUser OBJECT u
@@ -192,19 +190,13 @@ DESIGN customUser {
     }
 }
 
-edit 'Редактировать' (CustomUser u) = {
-	NEWSESSION {
-        SHOW customUser OBJECTS u = u MANAGESESSION  DOCKED;
-	}
-} IMAGE 'edit.png' EDITKEY 'BACK_SPACE' HIDE TOOLBAR;
-
 FORM customUsers 'Пользователи'
     OBJECTS u=CustomUser
     PROPERTIES(u) READONLY name[Contact], login, email
     PROPERTIES(u) NEWSESSION useBusyDialogCustom, useRequestTimeout, allowExcessAllocatedBytes,
                   language, userLanguage, clientLanguage, country, userCountry, clientCountry, useClientLocale, 
                   timeZone, userTimeZone, twoDigitYearStart, userTwoDigitYearStart, isLocked READONLY,
-                  lastActivity, hostnameLastComputer, NEW, edit , DELETE 
+                  lastActivity, NEW, EDIT , DELETE 
 
     PROPERTIES() useLDAP, serverLDAP, portLDAP, baseDNLDAP, userDNSuffixLDAP, minHashLength, defaultUserLanguage, defaultUserCountry
 ;

@@ -43,7 +43,6 @@ public class SequentialRequestLock {
             requestLock.take();
             ServerLoggers.pausableLog("Acquired request lock for " + ownerSID + " for request #" + requestIndex);
         } catch (InterruptedException e) {
-            ServerLoggers.pausableLog("Interrupted request lock for " + ownerSID + " for request #" + requestIndex);
             throw new RemoteInterruptedException(e);
         }
     }

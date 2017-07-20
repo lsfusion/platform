@@ -8,7 +8,6 @@ import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.ThreadUtils;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.PropertyInterface;
-import lsfusion.server.stack.ExecutionStackAspect;
 import org.apache.log4j.Logger;
 
 import java.sql.SQLException;
@@ -104,7 +103,6 @@ public abstract class Task {
                     taskQueue.ensurePolled(this);
                     proceed(BL, executor, context, monitor, taskCount, logger, taskQueue, throwableConsumer, propertyTimeout);
                 } catch (Throwable t) {
-                    logger.error(ExecutionStackAspect.getExceptionStackString());
                     if(!ignoreExceptions())
                         throwableConsumer.consume(t);
                 } finally {

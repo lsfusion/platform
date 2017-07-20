@@ -82,7 +82,6 @@ public interface ImMap<K, V> {
     ImMap<K, V> replaceValue(K key, V value);
     ImMap<K, V> replaceValues(ImMap<? extends V, ? extends V> map);
     ImMap<K,V> override(ImMap<? extends K,? extends V> map); // перекрываем this, значениями из map, replace в BaseUtils !!! тут важно разделить те которые добавляют и нет
-    ImMap<K,V> overrideIncl(ImMap<? extends K,? extends V> map);
 
     <M> ImValueMap<K,M> mapItValues();
     <M> ImRevValueMap<K,M> mapItRevValues();
@@ -100,7 +99,6 @@ public interface ImMap<K, V> {
     <M> ImRevMap<K,M> mapRevValues(GetKeyValue<M,K, V> getter);
     <MK, MV> ImMap<MK,MV> mapKeyValues(GetValue<MK, K> getterKey, GetValue<MV, V> getterValue);
     <MK, MV> ImMap<MK,MV> mapKeyValues(GetValue<MK, K> getterKey, GetKeyValue<MV, K, V> getterValue);
-    <MK, MV> ImMap<MK,MV> mapKeyValues(GetKeyValue<MK, K, V> getterKey, GetKeyValue<MV, K, V> getterValue);
 
     <M, E1 extends Exception, E2 extends Exception> ImMap<K,M> mapKeyValuesEx(GetExValue<M,K,E1,E2> getter) throws E1, E2;
     <M, E1 extends Exception, E2 extends Exception> ImMap<K,M> mapValuesEx(GetExValue<M,V,E1,E2> getter) throws E1, E2;

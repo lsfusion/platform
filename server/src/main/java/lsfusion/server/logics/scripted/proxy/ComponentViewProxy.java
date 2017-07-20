@@ -4,7 +4,6 @@ import lsfusion.interop.ComponentDesign;
 import lsfusion.interop.FontInfo;
 import lsfusion.interop.form.layout.FlexAlignment;
 import lsfusion.server.form.view.ComponentView;
-import lsfusion.server.logics.i18n.LocalizedString;
 
 import java.awt.*;
 
@@ -54,15 +53,23 @@ public class ComponentViewProxy<T extends ComponentView> extends ViewProxy<T> {
     }
 
     public void setPreferredSize(Dimension preferredSize) {
-        target.setPreferredSize(preferredSize);
+        target.preferredSize = preferredSize;
     }
 
     public void setPreferredHeight(int prefHeight) {
-        target.setPreferredHeight(prefHeight);
+        if (target.preferredSize == null) {
+            target.preferredSize = new Dimension(-1, prefHeight);
+        } else {
+            target.preferredSize.height = prefHeight;
+        }
     }
 
     public void setPreferredWidth(int prefWidth) {
-        target.setPreferredWidth(prefWidth);
+        if (target.preferredSize == null) {
+            target.preferredSize = new Dimension(prefWidth, -1);
+        } else {
+            target.preferredSize.width = prefWidth;
+        }
     }
 
     public void setFixedSize(Dimension size) {
@@ -82,10 +89,6 @@ public class ComponentViewProxy<T extends ComponentView> extends ViewProxy<T> {
         setMaximumWidth(width);
         setPreferredWidth(width);
     }
-    
-    public void setAutoSize(boolean autoSize) {
-        target.autoSize = autoSize;
-    }
 
     public void setDefaultComponent(boolean defaultComponent) {
         target.defaultComponent = defaultComponent;
@@ -99,7 +102,7 @@ public class ComponentViewProxy<T extends ComponentView> extends ViewProxy<T> {
     }
 
     public void setFlex(double flex) {
-        target.setFlex(flex);
+        target.flex = flex;
     }
 
     public void setAlign(FlexAlignment alignment) {
@@ -148,10 +151,9 @@ public class ComponentViewProxy<T extends ComponentView> extends ViewProxy<T> {
         design.setFont(font);
     }
 
-    public void setFontStyle(LocalizedString lFontStyle) {
+    public void setFontStyle(String fontStyle) {
         boolean bold;
         boolean italic;
-        String fontStyle = lFontStyle.getSourceString();
         //чтобы не заморачиваться с лишним типом для стиля просто перечисляем все варианты...
         if ("bold".equals(fontStyle)) {
             bold = true;
@@ -184,7 +186,7 @@ public class ComponentViewProxy<T extends ComponentView> extends ViewProxy<T> {
         target.design.foreground = foreground;
     }
 
-    public void setImagePath(LocalizedString imagePath) {
-        target.design.setImagePath(imagePath.getSourceString());
+    public void setImagePath(String imagePath) {
+        target.design.setImagePath(imagePath);
     }
 }

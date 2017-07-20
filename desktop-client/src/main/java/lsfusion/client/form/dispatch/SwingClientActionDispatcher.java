@@ -413,7 +413,7 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
     public void execute(OpenFileClientAction action) {
         try {
             if (action.file != null) {
-                BaseUtils.openFile(action.file, action.name, action.extension);
+                BaseUtils.openFile(action.file, action.extension);
             }
         } catch (IOException e) {
             throw new RuntimeException(e);

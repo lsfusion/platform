@@ -102,7 +102,7 @@ public class DataPanelRenderer implements PanelRenderer {
         gridPanel.getElement().getStyle().clearOverflow();
 
         panel.add(label, GFlexAlignment.CENTER);
-        panel.add(gridPanel, vertical ? GFlexAlignment.STRETCH : GFlexAlignment.CENTER, 1);
+        panel.add(gridPanel, vertical ? GFlexAlignment.STRETCH : GFlexAlignment.CENTER, 1, "auto");
 
         String preferredHeight = property.getPreferredValueHeight();
         String preferredWidth = property.getPreferredValueWidth();

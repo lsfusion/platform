@@ -557,10 +557,6 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, format("expected property with (%s) param classes: %s", paramClasses, property));
     }
 
-    public void emitRecursiveImplementError(ScriptParser parser) throws SemanticErrorException {
-        emitSimpleError(parser, "recursive implement");
-    }    
-    
     public void emitSimpleError(ScriptParser parser, String message) throws SemanticErrorException {
         if (parser.getCurrentParser() != null) {
             SemanticErrorException e = new SemanticErrorException(parser.getCurrentParser().input);

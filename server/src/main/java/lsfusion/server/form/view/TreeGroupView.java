@@ -1,6 +1,5 @@
 package lsfusion.server.form.view;
 
-import lsfusion.base.BaseUtils;
 import lsfusion.interop.form.layout.AbstractTreeGroup;
 import lsfusion.interop.form.layout.FlexAlignment;
 import lsfusion.server.form.entity.GroupObjectEntity;
@@ -15,7 +14,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TreeGroupView extends ComponentView implements ServerIdentitySerializable, PropertyGroupContainerView, AbstractTreeGroup<ComponentView> {
+public class TreeGroupView extends ComponentView implements ServerIdentitySerializable, AbstractTreeGroup<ContainerView, ComponentView> {
     public List<GroupObjectView> groups = new ArrayList<>();
 
     public TreeGroupEntity entity;
@@ -24,11 +23,6 @@ public class TreeGroupView extends ComponentView implements ServerIdentitySerial
     public FilterView filter;
     
     public boolean expandOnClick = true;
-
-    @Override
-    public String getPropertyGroupContainerSID() {
-        return entity.getSID() + ".tree";
-    }
 
     public TreeGroupView() {
         
@@ -46,8 +40,8 @@ public class TreeGroupView extends ComponentView implements ServerIdentitySerial
         toolbar = new ToolbarView(form.idGenerator.idShift());
         filter = new FilterView(form.idGenerator.idShift());
 
-        setFlex(1);
-        setAlignment(FlexAlignment.STRETCH);
+        flex = 1;
+        alignment = FlexAlignment.STRETCH;
     }
 
     @Override

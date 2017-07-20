@@ -10,12 +10,11 @@ import lsfusion.server.data.Field;
 import lsfusion.server.data.KeyField;
 import lsfusion.server.data.PropertyField;
 import lsfusion.server.data.Table;
-import lsfusion.server.data.query.NotMaterializable;
 import lsfusion.server.data.query.stat.StatKeys;
 import lsfusion.server.data.query.stat.TableStatKeys;
 import lsfusion.server.data.where.classes.ClassWhere;
 
-public class RecursiveTable extends Table implements NotMaterializable {
+public class RecursiveTable extends Table {
 
     private final TableStatKeys statKeys;
     // assert'им что properties IntegralClass'ы

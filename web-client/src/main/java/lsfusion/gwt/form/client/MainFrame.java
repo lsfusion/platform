@@ -278,8 +278,6 @@ public class MainFrame implements EntryPoint {
                 navigatorController.update();
 
                 openInitialForms(defaultForms);
-
-                formsController.executeNotificationAction("SystemEvents.onWebClientStarted[]", 0);
             }
         });
     }

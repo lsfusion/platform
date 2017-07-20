@@ -17,7 +17,6 @@ import lsfusion.client.form.dispatch.SimpleChangePropertyDispatcher;
 import lsfusion.client.form.grid.preferences.GridUserPreferences;
 import lsfusion.client.form.layout.ClientContainerView;
 import lsfusion.client.form.layout.ClientFormLayout;
-import lsfusion.client.form.layout.JComponentPanel;
 import lsfusion.client.form.layout.TabbedClientContainerView;
 import lsfusion.client.form.tree.TreeGroupController;
 import lsfusion.client.logics.*;
@@ -37,7 +36,6 @@ import lsfusion.interop.form.*;
 
 import javax.swing.*;
 import javax.swing.Timer;
-import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -47,7 +45,6 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.util.*;
-import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -109,7 +106,7 @@ public class ClientFormController implements AsyncListener {
     private final Map<ClientGroupObject, GroupObjectController> controllers = new HashMap<>();
     private final Map<ClientTreeGroup, TreeGroupController> treeControllers = new HashMap<>();
 
-    private final Map<ClientGroupObject, List<JComponentPanel>> filterViews = new HashMap<>();
+    private final Map<ClientGroupObject, List<JComponent>> filterViews = new HashMap<>();
 
     private boolean defaultOrdersInitialized = false;
 
@@ -451,25 +448,22 @@ public class ClientFormController implements AsyncListener {
     }
 
     private void addFilterView(ClientRegularFilterGroup filterGroup, JComponent filterView) {
-        JComponentPanel filterPanel = new JComponentPanel(new BorderLayout());
-        filterPanel.add(filterView, BorderLayout.CENTER);
-        
-        formLayout.add(filterGroup, filterPanel);
+        formLayout.add(filterGroup, filterView);
 
         if (filterGroup.groupObject == null) {
             return;
         }
 
-        List<JComponentPanel> groupFilters = filterViews.get(filterGroup.groupObject);
+        List<JComponent> groupFilters = filterViews.get(filterGroup.groupObject);
         if (groupFilters == null) {
             groupFilters = new ArrayList<>();
             filterViews.put(filterGroup.groupObject, groupFilters);
         }
-        groupFilters.add(filterPanel);
+        groupFilters.add(filterView);
     }
 
     public void setFiltersVisible(ClientGroupObject groupObject, boolean visible) {
-        List<JComponentPanel> groupFilters = filterViews.get(groupObject);
+        List<JComponent> groupFilters = filterViews.get(groupObject);
         if (groupFilters != null) {
             for (JComponent filterView : groupFilters) {
                 filterView.setVisible(visible);

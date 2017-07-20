@@ -26,22 +26,6 @@ public class Cost {
         return new Cost(rows.div(decrease));
     }
 
-    public Cost mult(Stat increase) {
-        return new Cost(rows.mult(increase));
-    }
-
-    public Cost max(Stat stat) {
-        return new Cost(rows.max(stat));
-    }
-
-    public boolean lessEquals(Cost cost) {
-        return rows.lessEquals(cost.rows);
-    }
-    
-    public boolean less(Cost cost) {
-        return rows.less(cost.rows);
-    }
-
     public Cost or(Stat decrease) {
         return new Cost(rows.or(decrease));
     }

@@ -30,8 +30,6 @@ import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.type.ClassReader;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassExprWhere;
-import lsfusion.server.logics.DataObject;
-import lsfusion.server.logics.ObjectValue;
 
 import java.util.Collections;
 import java.util.Set;
@@ -227,14 +225,17 @@ public abstract class BaseExpr extends Expr {
         if(orWhere==null)
             orWhere = calculateOrWhere();
         return orWhere;
-    }
-
-    // для всех не TRUE реализаций, должны быть соответствующие проверки в removeJoin
-    public Where calculateOrWhere() {
+    } 
+    
+    public static Where getOrWhere(BaseJoin<?> join){
         Where result = Where.TRUE;
-        for(BaseExpr baseExpr : ((BaseJoin<?>) getBaseJoin()).getJoins().valueIt())
+        for(BaseExpr baseExpr : join.getJoins().valueIt())
             result = result.and(baseExpr.getOrWhere());
         return result;
+    }
+    // для всех не TRUE реализаций, должны быть соответствующие проверки в removeJoin
+    public Where calculateOrWhere() {
+        return getOrWhere(getBaseJoin());
     }
     
     private Where notNullWhere;
@@ -279,12 +280,5 @@ public abstract class BaseExpr extends Expr {
     // определят "класс сравнения", то есть класс в рамках которого если выражения не equals, то и их значения гарантировано не equals
     public int getStaticEqualClass() {
         return -1;
-    }
-
-    public static <K> ImMap<K, BaseExpr> onlyBaseExprs(ImMap<K, ? extends Expr> map) {
-        for(int i=0,size=map.size();i<size;i++)
-            if(!(map.getValue(i) instanceof BaseExpr))
-                return null;
-        return BaseUtils.immutableCast(map);
     }
 }

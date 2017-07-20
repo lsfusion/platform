@@ -35,9 +35,9 @@ public class ClientReportData implements JRDataSource {
 
     private final Map<ByteArray, String> files;
 
-    public ClientReportData(DataInputStream inStream, Map<ByteArray, String> files, ReportGenerationDataType reportType, boolean fixBoolean) throws IOException {
+    public ClientReportData(DataInputStream inStream, Map<ByteArray, String> files, ReportGenerationDataType reportType) throws IOException {
 
-        if (!inStream.readBoolean() || !reportType.isPrintJasper()) {
+        if (!inStream.readBoolean() || !reportType.isDefault()) {
             int objectCnt = inStream.readInt();
             for (int i = 0; i < objectCnt; i++) {
                 String name = inStream.readUTF();
@@ -68,10 +68,7 @@ public class ClientReportData implements JRDataSource {
                 Map<ReportPropertyData, Object> propValues = new HashMap<>();
                 for (String propName : propertyNames) {
                     Object propValue = BaseUtils.deserializeObject(inStream);
-                    ReportPropertyData property = properties.get(propName);
-                    if(fixBoolean && propValue == null && isBoolean(property))
-                        propValue = false;
-                    propValues.put(property, propValue);
+                    propValues.put(properties.get(propName), propValue);
                 }
                 keyRows.add(objectValues);
                 rows.put(objectValues, propValues);
@@ -80,10 +77,6 @@ public class ClientReportData implements JRDataSource {
         iterator = keyRows.listIterator();
 
         this.files = files;
-    }
-
-    private boolean isBoolean(ReportPropertyData property) {
-        return property != null && property.propertyType != null && property.propertyType.equals("BOOLEAN");
     }
 
     public List<String> getPropertyNames() {

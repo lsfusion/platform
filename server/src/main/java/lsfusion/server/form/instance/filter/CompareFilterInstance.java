@@ -78,8 +78,8 @@ public class CompareFilterInstance<P extends PropertyInterface> extends Property
         return super.objectUpdated(gridGroups) || value.objectUpdated(gridGroups);
     }
 
-    public Where getWhere(ImMap<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier, ReallyChanged reallyChanged, MSet<CalcProperty> mUsedProps) throws SQLException, SQLHandledException {
-        Where where = property.getExpr(mapKeys, modifier, reallyChanged, mUsedProps).compare(value.getExpr(mapKeys, modifier, reallyChanged, mUsedProps), compare);
+    public Where getWhere(ImMap<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier, ReallyChanged reallyChanged) throws SQLException, SQLHandledException {
+        Where where = property.getExpr(mapKeys, modifier, reallyChanged).compare(value.getExpr(mapKeys, modifier, reallyChanged), compare);
         return negate ? where.not() : where;
     }
 

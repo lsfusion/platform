@@ -3,14 +3,13 @@ package lsfusion.client.form.classes;
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.form.ClientFormController;
 import lsfusion.client.form.RmiQueue;
-import lsfusion.client.form.layout.JComponentPanel;
 import lsfusion.client.logics.ClientObject;
 
 import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
 
-public class ClassChooserView extends JComponentPanel {
+public class ClassChooserView extends JPanel {
     public boolean isExpanded;
     private ClientFormController form;
 

@@ -1,8 +1,6 @@
 package lsfusion.gwt.form.client.form.ui;
 
-import com.google.gwt.user.client.ui.Panel;
 import lsfusion.gwt.base.client.ui.ResizableSimplePanel;
-import lsfusion.gwt.form.client.form.ui.layout.GFormLayoutImpl;
 import lsfusion.gwt.form.shared.view.*;
 import lsfusion.gwt.form.shared.view.changes.GFormChanges;
 import lsfusion.gwt.form.shared.view.changes.GGroupObjectValue;
@@ -18,11 +16,9 @@ import static lsfusion.gwt.base.client.GwtClientUtils.isShowing;
 import static lsfusion.gwt.base.client.GwtClientUtils.setupFillParent;
 
 public class GTreeGroupController extends GAbstractGroupObjectController {
-    private static final GFormLayoutImpl layoutImpl = GFormLayoutImpl.get();
-    
     private final GTreeGroup treeGroup;
 
-    private final Panel treeView;
+    private final ResizableSimplePanel treeView;
 
     private final GTreeTable tree;
     
@@ -33,19 +29,15 @@ public class GTreeGroupController extends GAbstractGroupObjectController {
         treeGroup = iTreeGroup;
         lastGroupObject = treeGroup.groups.size() > 0 ? treeGroup.groups.get(treeGroup.groups.size() - 1) : null;
 
-        tree = new GTreeTable(iFormController, iForm, this, treeGroup.autoSize);
+        tree = new GTreeTable(iFormController, iForm, this);
 
-        ResizableSimplePanel resizePanel = new ResizableSimplePanel();
-        resizePanel.setStyleName("gridResizePanel");
-        resizePanel.setWidget(tree);
-        setupFillParent(resizePanel.getElement(), tree.getElement());
-
-        if(treeGroup.autoSize) { // убираем default'ый minHeight
-            resizePanel.getElement().getStyle().setProperty("minHeight", "0px");
-            resizePanel.getElement().getStyle().setProperty("minWidth", "0px");
+        treeView = new ResizableSimplePanel();
+        treeView.setStyleName("gridResizePanel");
+        treeView.setWidget(tree);
+        // для flex-layout'а. убираем position:absolute для грида в контейнерах, у которых в иерархии предков есть скролл или flex=0. грид будет занимать всё место, которое ему нужно
+        if (treeGroup.isInFlexible()) {
+            setupFillParent(treeView.getElement(), tree.getElement());
         }
-
-        treeView = layoutImpl.createTreeView(treeGroup, resizePanel);
 
         getFormLayout().add(treeGroup, treeView, new DefaultFocusReceiver() {
             @Override
@@ -55,6 +47,10 @@ public class GTreeGroupController extends GAbstractGroupObjectController {
         });
 
         addFilterButton();
+    }
+    
+    public GTreeGroup getTreeGroup() {
+        return treeGroup;
     }
     
     public GFont getFont() {

@@ -63,7 +63,6 @@ public class TableLinearContainerView extends GAbstractContainerView {
 
     @Override
     public void updateLayout() {
-        super.updateLayout();
         int childCnt = childrenViews.size();
         double sumFlex = 0;
         for (int i = 0; i < childCnt; i++) {
