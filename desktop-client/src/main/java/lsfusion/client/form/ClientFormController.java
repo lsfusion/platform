@@ -1275,6 +1275,8 @@ public class ClientFormController implements AsyncListener {
     }
     
     public List<FormGrouping> readGroupings(final String groupObjectSID) {
+        commitOrCancelCurrentEditing();
+        
         List<FormGrouping> result = rmiQueue.syncRequest(new RmiCheckNullFormRequest<List<FormGrouping>>("readGroupings") {
             @Override
             protected List<FormGrouping> doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
