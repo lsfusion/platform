@@ -1,5 +1,6 @@
 package lsfusion.gwt.form.client.dispatch;
 
+import com.allen_sauer.gwt.log.client.Log;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.http.client.RequestBuilder;
 import com.google.gwt.http.client.URL;
@@ -71,6 +72,11 @@ public class DispatchAsyncWrapper extends AbstractDispatchAsync {
                     if(finalRequestTry == 2) //first retry
                         GConnectionLostManager.registerFailedRmiRequest();
                     GExceptionManager.addFailedRmiRequest(caught, action);
+                    for (StackTraceElement stackTraceElement : caught.getStackTrace()) {
+                        if (stackTraceElement != null) {
+                            Log.error(stackTraceElement.toString());
+                        }
+                    }
                     
                     Timer timer = new Timer() {  // таймер, чтобы не исчерпать слишком быстро попытки соединения с сервером
                         @Override
