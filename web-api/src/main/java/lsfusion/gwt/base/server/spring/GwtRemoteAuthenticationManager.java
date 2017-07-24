@@ -1,8 +1,10 @@
 package lsfusion.gwt.base.server.spring;
 
+import lsfusion.base.BaseUtils;
 import lsfusion.interop.exceptions.LoginException;
 import lsfusion.interop.exceptions.RemoteServerException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.rcp.RemoteAuthenticationException;
 import org.springframework.security.authentication.rcp.RemoteAuthenticationManager;
 import org.springframework.security.core.GrantedAuthority;
@@ -26,9 +28,15 @@ public class GwtRemoteAuthenticationManager implements RemoteAuthenticationManag
             for (String role : roles) {
                 result.add(new GrantedAuthorityImpl(role));
             }
+
+            Integer oldApiVersion = BaseUtils.getApiVersion();
+            Integer newApiVersion = businessLogicProvider.getLogics().getApiVersion();
+            if (!oldApiVersion.equals(newApiVersion))
+                throw new DisabledException("Необходимо обновить web-клиент. изменилась версия API!");
+
             return result;
         } catch (LoginException le) {
-            throw new UsernameNotFoundException(le.getMessage()); 
+            throw new UsernameNotFoundException(le.getMessage());
         } catch (RemoteServerException e) {
             throw new RuntimeException("Ошибка во время чтения данных о пользователе.", e);
         } catch (RemoteException e) {
