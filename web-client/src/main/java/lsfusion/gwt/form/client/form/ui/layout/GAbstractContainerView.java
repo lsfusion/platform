@@ -2,7 +2,6 @@ package lsfusion.gwt.form.client.form.ui.layout;
 
 import com.google.gwt.user.client.ui.RequiresResize;
 import com.google.gwt.user.client.ui.Widget;
-import lsfusion.base.BaseUtils;
 import lsfusion.gwt.base.client.Dimension;
 import lsfusion.gwt.base.client.ui.FlexPanel;
 import lsfusion.gwt.base.client.ui.GFlexAlignment;
@@ -113,13 +112,13 @@ public abstract class GAbstractContainerView {
         if(preferredWidth == -1)
             preferredWidth = dimension.width;
         else if(max)
-            preferredWidth = BaseUtils.max(preferredWidth, dimension.width);
+            preferredWidth = Math.max(preferredWidth, dimension.width);
 
         int preferredHeight = child.preferredHeight;
         if(preferredHeight == -1)
             preferredHeight = dimension.height;
         else if(max)
-            preferredHeight = BaseUtils.max(preferredHeight, dimension.height);
+            preferredHeight = Math.max(preferredHeight, dimension.height);
         return new Dimension(preferredWidth, preferredHeight);
     }
 
