@@ -217,8 +217,7 @@ public class PropertyController {
 
     private class ViewsPanel extends JComponentPanel implements HasLabel {
         private ViewsPanel() {
-            super(null);
-            setLayout(new FlexLayout(this, false, Alignment.LEADING));
+            super(false, Alignment.LEADING);
         }
 
         @Override

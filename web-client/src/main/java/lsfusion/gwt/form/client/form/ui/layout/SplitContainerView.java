@@ -55,9 +55,9 @@ public abstract class SplitContainerView<P extends Panel> extends GAbstractConta
     }
 
     @Override
-    public Dimension getPreferredSize(Map<GContainer, GAbstractContainerView> containerViews) {
-        Dimension pref = getChildrenStackSize(containerViews, container.isVerticalSplit());
-
+    public Dimension getMaxPreferredSize(Map<GContainer, GAbstractContainerView> containerViews) {
+        Dimension pref = super.getMaxPreferredSize(containerViews);
+        
         if (container.isVerticalSplit()) {
             pref.height += splitPane.getSplitterSize();
         } else {

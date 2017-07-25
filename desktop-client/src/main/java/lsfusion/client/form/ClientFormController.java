@@ -451,7 +451,7 @@ public class ClientFormController implements AsyncListener {
     }
 
     private void addFilterView(ClientRegularFilterGroup filterGroup, JComponent filterView) {
-        JComponentPanel filterPanel = new JComponentPanel(new BorderLayout());
+        JComponentPanel filterPanel = new JComponentPanel();
         filterPanel.add(filterView, BorderLayout.CENTER);
         
         formLayout.add(filterGroup, filterPanel);

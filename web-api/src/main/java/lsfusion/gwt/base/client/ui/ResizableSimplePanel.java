@@ -7,7 +7,7 @@ import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.base.client.Dimension;
 import lsfusion.gwt.base.client.GwtClientUtils;
 
-public class ResizableSimplePanel extends SimplePanel implements RequiresResize, ProvidesResize, HasPreferredSize {
+public class ResizableSimplePanel extends SimplePanel implements RequiresResize, ProvidesResize, HasMaxPreferredSize {
     public ResizableSimplePanel() {
     }
 
@@ -36,7 +36,7 @@ public class ResizableSimplePanel extends SimplePanel implements RequiresResize,
     }
 
     @Override
-    public Dimension getPreferredSize() {
-        return GwtClientUtils.calculatePreferredSize(getWidget());
+    public Dimension getMaxPreferredSize() {
+        return GwtClientUtils.calculateMaxPreferredSize(getWidget());
     }
 }

@@ -73,9 +73,4 @@ public class FlexLinearContainerView extends GAbstractContainerView {
     public Widget getView() {
         return view;
     }
-
-    @Override
-    public Dimension getPreferredSize(Map<GContainer, GAbstractContainerView> containerViews) {
-        return getChildrenStackSize(containerViews, container.isVertical());
-    }
 }

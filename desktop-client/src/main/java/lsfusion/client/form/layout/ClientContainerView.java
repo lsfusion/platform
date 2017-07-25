@@ -1,8 +1,10 @@
 package lsfusion.client.form.layout;
 
 import lsfusion.client.logics.ClientComponent;
+import lsfusion.client.logics.ClientContainer;
 
 import java.awt.*;
+import java.util.Map;
 
 public interface ClientContainerView {
     void add(ClientComponent child, JComponentPanel view);
@@ -14,6 +16,8 @@ public interface ClientContainerView {
     Component getChildView(int index);
 
     JComponentPanel getView();
-
+    
     void updateLayout();
+
+    Dimension getMaxPreferredSize(Map<ClientContainer, ClientContainerView> containerViews);
 }

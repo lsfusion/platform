@@ -23,10 +23,10 @@ public class ScrollClientContainerView extends AbstractClientContainerView {
         
         container.design.designComponent(scroll);
 
-        scrollPanel = new JComponentPanel(new BorderLayout()); // componentSize добавляемого компонента
+        scrollPanel = new JComponentPanel(); // componentSize добавляемого компонента
         scrollPanel.add(scroll, BorderLayout.CENTER);
 
-        panel = new ContainerViewPanel(new BorderLayout()); // componentSize этого контейнера
+        panel = new ContainerViewPanel(); // componentSize этого контейнера
         panel.add(scrollPanel, BorderLayout.CENTER);
     }
 

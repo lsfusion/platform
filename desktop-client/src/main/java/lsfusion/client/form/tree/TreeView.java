@@ -16,8 +16,6 @@ public class TreeView extends JComponentPanel {
     private final TreeGroupTable groupTree;
 
     public TreeView(ClientFormController form, ClientTreeGroup treeGroup) {
-        setLayout(new BorderLayout());
-
         groupTree = new TreeGroupTable(form, treeGroup);
 
         treeGroup.installMargins(this);

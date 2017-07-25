@@ -4,7 +4,7 @@ import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.base.client.Dimension;
 import lsfusion.gwt.base.client.GwtClientUtils;
 
-public class ResizableLayoutPanel extends ResizeLayoutPanel implements RequiresResize, ProvidesResize, HasPreferredSize {
+public class ResizableLayoutPanel extends ResizeLayoutPanel implements RequiresResize, ProvidesResize, HasMaxPreferredSize {
     
     public ResizableLayoutPanel() {
         this(null);
@@ -37,7 +37,7 @@ public class ResizableLayoutPanel extends ResizeLayoutPanel implements RequiresR
     }
 
     @Override
-    public Dimension getPreferredSize() {
-        return GwtClientUtils.calculatePreferredSize(getWidget());
+    public Dimension getMaxPreferredSize() {
+        return GwtClientUtils.calculateMaxPreferredSize(getWidget());
     }
 }

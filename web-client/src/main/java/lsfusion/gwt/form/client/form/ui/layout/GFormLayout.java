@@ -146,8 +146,8 @@ public class GFormLayout extends ResizableSimplePanel {
     }
 
     @Override
-    public Dimension getPreferredSize() {
-        Dimension result = containerViews.get(mainContainer).getPreferredSize(containerViews);
+    public Dimension getMaxPreferredSize() {
+        Dimension result = GAbstractContainerView.getMaxPreferredSize(mainContainer, containerViews, false); // в BOX container'е берем явный preferredSize (предполагая что он используется не как базовый размер с flex > 0, а конечный)
         setDebugDimensionsAttributes(containerViews.get(mainContainer).getView(), result);
         return result;
     }

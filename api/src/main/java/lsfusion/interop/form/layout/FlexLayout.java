@@ -14,10 +14,6 @@ public class FlexLayout extends CachableLayout<FlexConstraints> {
 
     protected final Map<Component, FlexConstraints> constraintsMap;
 
-    public FlexLayout(Container target, boolean vertical) {
-        this(target, vertical, CENTER);
-    }
-
     public FlexLayout(Container target, boolean vertical, Alignment alignment) {
         super(target);
         this.vertical = vertical;

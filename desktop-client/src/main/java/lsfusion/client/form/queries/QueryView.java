@@ -37,8 +37,6 @@ public abstract class QueryView extends JComponentPanel implements QueryConditio
     QueryView(QueryController ilistener) {
         this.controller = ilistener;
 
-        setLayout(new BorderLayout());
-
         initButtons();
 
         initLayout();

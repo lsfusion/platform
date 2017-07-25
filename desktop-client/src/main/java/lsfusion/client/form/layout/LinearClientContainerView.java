@@ -13,8 +13,7 @@ public class LinearClientContainerView extends AbstractClientContainerView {
         super(formLayout, container);
         assert container.isLinear();
 
-        panel = new ContainerViewPanel();
-        panel.setLayout(new FlexLayout(panel, container.isVertical(), container.childrenAlignment));
+        panel = new ContainerViewPanel(container.isVertical(), container.childrenAlignment);
 
         container.design.designComponent(panel);
     }

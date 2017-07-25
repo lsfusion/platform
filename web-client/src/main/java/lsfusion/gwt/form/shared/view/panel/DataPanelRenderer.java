@@ -220,7 +220,7 @@ public class DataPanelRenderer implements PanelRenderer {
         }
 
         @Override
-        public Dimension getPreferredSize() {
+        public Dimension getMaxPreferredSize() {
             Dimension pref = getOffsetSize(label);
             if (!vertical) {
                 pref.width += 4; //extra for right label margin

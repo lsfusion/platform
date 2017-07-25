@@ -63,7 +63,7 @@ public class GResizableModalForm extends GResizableModalWindow {
     @Override
     protected void onLoad() {
         if (initialOnLoad) {
-            Dimension size = form.getPreferredSize();
+            Dimension size = form.getMaxPreferredSize();
             if (size.width > 0) {
                 int wndWidth = Window.getClientWidth();
                 size.width = min(size.width + 20, wndWidth - 20);

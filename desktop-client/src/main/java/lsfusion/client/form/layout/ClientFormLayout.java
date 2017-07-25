@@ -16,6 +16,10 @@ import java.util.Map;
 
 public class ClientFormLayout extends JPanel {
 
+    public Dimension getMaxPreferredSize() {
+        return AbstractClientContainerView.getMaxPreferredSize(mainContainer,containerViews, false); // в BOX container'е берем явный preferredSize (предполагая что он используется не как базовый размер с flex > 0, а конечный)
+    }
+
     public interface KeyBinding {
         boolean keyPressed(KeyEvent ke);
     }

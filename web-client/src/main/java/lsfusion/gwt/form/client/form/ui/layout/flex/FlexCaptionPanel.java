@@ -11,8 +11,8 @@ public class FlexCaptionPanel extends GCaptionPanel {
     }
 
     @Override
-    public Dimension getPreferredSize() {
-        Dimension sz = GwtClientUtils.calculatePreferredSize(content);
+    public Dimension getMaxPreferredSize() {
+        Dimension sz = GwtClientUtils.calculateMaxPreferredSize(content);
         sz.height += legend.getOffsetHeight() + 5;
         sz.width += 5;
         return sz;

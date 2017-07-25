@@ -6,9 +6,9 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.base.client.Dimension;
 
-import static lsfusion.gwt.base.client.GwtClientUtils.calculateStackPreferredSize;
+import static lsfusion.gwt.base.client.GwtClientUtils.calculateStackMaxPreferredSize;
 
-public class ResizableVerticalPanel extends VerticalPanel implements RequiresResize, ProvidesResize, HasPreferredSize {
+public class ResizableVerticalPanel extends VerticalPanel implements RequiresResize, ProvidesResize, HasMaxPreferredSize {
     @Override
     public void onResize() {
         if (!visible) {
@@ -31,7 +31,7 @@ public class ResizableVerticalPanel extends VerticalPanel implements RequiresRes
     }
 
     @Override
-    public Dimension getPreferredSize() {
-        return calculateStackPreferredSize(this.iterator(), true);
+    public Dimension getMaxPreferredSize() {
+        return calculateStackMaxPreferredSize(this.iterator(), true);
     }
 }

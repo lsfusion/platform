@@ -78,7 +78,7 @@ public class GShowTypeView extends ResizableHorizontalPanel {
     }
 
     @Override
-    public Dimension getPreferredSize() {
+    public Dimension getMaxPreferredSize() {
         return getOffsetSize(this);
     }
 

@@ -9,12 +9,10 @@ import com.google.gwt.user.client.ui.RequiresResize;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.base.client.Dimension;
 
-import static lsfusion.gwt.base.client.GwtClientUtils.calculateStackPreferredSize;
+import static lsfusion.gwt.base.client.GwtClientUtils.calculateStackMaxPreferredSize;
 
-/**
- * Browser support: http://caniuse.com/flexbox
- */
-public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesResize, HasPreferredSize {
+// выполняет роль JComponentPanel в desktop
+public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesResize, HasMaxPreferredSize {
 
     private static FlexPanelImpl impl = FlexPanelImpl.get();
 
@@ -217,8 +215,8 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
     }
 
     @Override
-    public Dimension getPreferredSize() {
-        return calculateStackPreferredSize(this.iterator(), isVertical());
+    public Dimension getMaxPreferredSize() {
+        return calculateStackMaxPreferredSize(this.iterator(), isVertical());
     }
 
     public enum Justify {

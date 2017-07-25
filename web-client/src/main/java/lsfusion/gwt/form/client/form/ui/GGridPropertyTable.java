@@ -10,7 +10,7 @@ import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
 import lsfusion.gwt.base.client.Dimension;
 import lsfusion.gwt.base.client.ui.GKeyStroke;
-import lsfusion.gwt.base.client.ui.HasPreferredSize;
+import lsfusion.gwt.base.client.ui.HasMaxPreferredSize;
 import lsfusion.gwt.cellview.client.DataGrid;
 import lsfusion.gwt.cellview.client.Header;
 import lsfusion.gwt.cellview.client.cell.Cell;
@@ -30,7 +30,7 @@ import static lsfusion.gwt.base.client.GwtClientUtils.isShowing;
 import static lsfusion.gwt.base.client.GwtClientUtils.stopPropagation;
 import static lsfusion.gwt.form.shared.view.GEditBindingMap.EditEventFilter;
 
-public abstract class GGridPropertyTable<T extends GridDataRecord> extends GPropertyTable<T> implements HasPreferredSize {
+public abstract class GGridPropertyTable<T extends GridDataRecord> extends GPropertyTable<T> implements HasMaxPreferredSize {
     protected Map<GPropertyDraw, Map<GGroupObjectValue, Object>> propertyCaptions = new HashMap<>();
 
     protected Map<GPropertyDraw, Map<GGroupObjectValue, Object>> cellBackgroundValues = new HashMap<>();
@@ -131,7 +131,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     }
     
     @Override
-    public Dimension getPreferredSize() {
+    public Dimension getMaxPreferredSize() {
         return new Dimension(
                 preferredWidth + nativeScrollbarWidth + 17,
                 max(isAutoSize() ? 0 : 140, getRowCount() * getRowHeight() + 30) + nativeScrollbarHeight

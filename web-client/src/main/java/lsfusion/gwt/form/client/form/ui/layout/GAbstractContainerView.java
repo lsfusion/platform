@@ -2,6 +2,7 @@ package lsfusion.gwt.form.client.form.ui.layout;
 
 import com.google.gwt.user.client.ui.RequiresResize;
 import com.google.gwt.user.client.ui.Widget;
+import lsfusion.base.BaseUtils;
 import lsfusion.gwt.base.client.Dimension;
 import lsfusion.gwt.base.client.ui.FlexPanel;
 import lsfusion.gwt.base.client.ui.GFlexAlignment;
@@ -16,7 +17,7 @@ import java.util.List;
 import java.util.Map;
 
 import static java.lang.Math.max;
-import static lsfusion.gwt.base.client.GwtClientUtils.calculatePreferredSize;
+import static lsfusion.gwt.base.client.GwtClientUtils.calculateMaxPreferredSize;
 import static lsfusion.gwt.base.client.GwtClientUtils.enlargeDimension;
 import static lsfusion.gwt.base.shared.GwtSharedUtils.relativePosition;
 
@@ -84,30 +85,53 @@ public abstract class GAbstractContainerView {
         return index != -1 ? childrenViews.get(index) : null;
     }
 
-    protected boolean isTopContainerView() {
-        return container.container == null;
+    protected Dimension getChildMaxPreferredSize(Map<GContainer, GAbstractContainerView> containerViews, int index) {
+        return getChildMaxPreferredSize(containerViews, getChild(index));
     }
 
-    protected Dimension getChildPreferredSize(Map<GContainer, GAbstractContainerView> containerViews, int index) {
-        return getChildPreferredSize(containerViews, getChild(index));
-    }
-
-    protected Dimension getChildPreferredSize(Map<GContainer, GAbstractContainerView> containerViews, GComponent child) {
+    protected Dimension getChildMaxPreferredSize(Map<GContainer, GAbstractContainerView> containerViews, GComponent child) {
         Dimension dimensions = child instanceof GContainer
-                               ? containerViews.get(child).getPreferredSize(containerViews)
-                               : calculatePreferredSize(getChildView(child));
+                               ? getMaxPreferredSize((GContainer) child, containerViews, true)
+                               : getMaxPreferredSize(child, getChildView(child));
         Dimension result = enlargeDimension(dimensions, child.getHorizontalMargin(), child.getVerticalMargin());
         GFormLayout.setDebugDimensionsAttributes(getChildView(child), result);
         return result;
     }
+    
+    public static Dimension getMaxPreferredSize(GContainer child, Map<GContainer, GAbstractContainerView> containerViews, boolean max) {
+        return overrideSize(child, containerViews.get(child).getMaxPreferredSize(containerViews), max);
+    }
+    private static Dimension getMaxPreferredSize(GComponent child, Widget childView) {
+        return overrideSize(child, calculateMaxPreferredSize(childView), true);        
+    }
 
-    protected Dimension getChildrenStackSize(Map<GContainer, GAbstractContainerView> containerViews, boolean vertical) {
+    private static Dimension overrideSize(GComponent child, Dimension dimension, boolean max) {
+        if(child.preferredHeight == -1 && child.preferredWidth == -1) // оптимизация
+            return dimension;
+
+        int preferredWidth = child.preferredWidth;
+        if(preferredWidth == -1)
+            preferredWidth = dimension.width;
+        else if(max)
+            preferredWidth = BaseUtils.max(preferredWidth, dimension.width);
+
+        int preferredHeight = child.preferredHeight;
+        if(preferredHeight == -1)
+            preferredHeight = dimension.height;
+        else if(max)
+            preferredHeight = BaseUtils.max(preferredHeight, dimension.height);
+        return new Dimension(preferredWidth, preferredHeight);
+    }
+
+    // не предполагает явное использование (так как не содержит проверки на явный preferredSize)
+    protected Dimension getMaxPreferredSize(Map<GContainer, GAbstractContainerView> containerViews) {
+        boolean vertical = container.isVertical();
         int width = 0;
         int height = 0;
         int chCnt = children.size();
         for (int i = 0; i < chCnt; ++i) {
             if (childrenViews.get(i).isVisible()) {
-                Dimension childSize = getChildPreferredSize(containerViews, i);
+                Dimension childSize = getChildMaxPreferredSize(containerViews, i);
                 if (vertical) {
                     width = max(width, childSize.width);
                     height += childSize.height;
@@ -129,8 +153,8 @@ public abstract class GAbstractContainerView {
         return dimension;
     }
 
-    protected boolean needCaption() {
-        return (!isTopContainerView() && !container.container.isTabbed()) && container.caption != null;
+    private boolean needCaption() { // не top, не tabbed и есть caption
+        return (container.container != null && !container.container.isTabbed()) && container.caption != null;
     }
 
     protected FlexPanel wrapWithFlexCaption(FlexPanel view) {
@@ -158,7 +182,7 @@ public abstract class GAbstractContainerView {
             updateLayoutListener.updateLayout();
     }
 
-    private static Integer getPreferredSize(boolean vertical, boolean mainAxis, GComponent component) {
+    private static Integer getMaxPreferredSize(boolean vertical, boolean mainAxis, GComponent component) {
         int preferredSize;
         if (mainAxis) {
             preferredSize = vertical ? component.preferredHeight : component.preferredWidth;    
@@ -172,11 +196,10 @@ public abstract class GAbstractContainerView {
     public static void add(FlexPanel panel, Widget widget, int beforeIndex, GFlexAlignment alignment, double flex, GComponent component, boolean vertical) { // последний параметр временный хак для Scrollable
 //        assert alignment == component.alignment;
 //        assert flex == component.flex;
-        panel.add(widget, beforeIndex, alignment, flex, getPreferredSize(vertical, true, component), getPreferredSize(vertical, false, component));
+        panel.add(widget, beforeIndex, alignment, flex, getMaxPreferredSize(vertical, true, component), getMaxPreferredSize(vertical, false, component));
     }
 
     protected abstract void addImpl(int index, GComponent child, Widget view);
     protected abstract void removeImpl(int index, GComponent child, Widget view);
     public abstract Widget getView();
-    public abstract Dimension getPreferredSize(Map<GContainer, GAbstractContainerView> containerViews);
 }

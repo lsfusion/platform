@@ -11,7 +11,7 @@ import com.google.gwt.http.client.UrlBuilder;
 import com.google.gwt.i18n.client.Dictionary;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
-import lsfusion.gwt.base.client.ui.HasPreferredSize;
+import lsfusion.gwt.base.client.ui.HasMaxPreferredSize;
 import lsfusion.gwt.base.shared.GwtSharedUtils;
 
 import java.util.*;
@@ -249,21 +249,21 @@ public class GwtClientUtils {
         return new Dimension(widget.getOffsetWidth() + widthExtra, widget.getOffsetHeight() + heightExtra);
     }
 
-    public static Dimension calculatePreferredSize(Widget widget) {
-        if (widget instanceof HasPreferredSize) {
-            return ((HasPreferredSize) widget).getPreferredSize();
+    public static Dimension calculateMaxPreferredSize(Widget widget) {
+        if (widget instanceof HasMaxPreferredSize) {
+            return ((HasMaxPreferredSize) widget).getMaxPreferredSize();
         } else {
             return new Dimension(widget.getOffsetWidth(), widget.getOffsetHeight());
         }
     }
 
-    public static Dimension calculateStackPreferredSize(Iterator<Widget> widgets, boolean vertical) {
+    public static Dimension calculateStackMaxPreferredSize(Iterator<Widget> widgets, boolean vertical) {
         int width = 0;
         int height = 0;
         while (widgets.hasNext()) {
             Widget childView = widgets.next();
             if (childView.isVisible()) {
-                Dimension childSize = calculatePreferredSize(childView);
+                Dimension childSize = calculateMaxPreferredSize(childView);
                 if (vertical) {
                     width = max(width, childSize.width);
                     height += childSize.height;

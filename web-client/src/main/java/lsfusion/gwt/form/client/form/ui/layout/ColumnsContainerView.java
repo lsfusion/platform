@@ -133,7 +133,7 @@ public abstract class ColumnsContainerView<P extends Panel> extends GAbstractCon
     }
 
     @Override
-    public Dimension getPreferredSize(Map<GContainer, GAbstractContainerView> containerViews) {
+    public Dimension getMaxPreferredSize(Map<GContainer, GAbstractContainerView> containerViews) {
         int width = 0;
         int height = 0;
         for (int i = 0; i < columnsCount; ++i) {
@@ -141,7 +141,7 @@ public abstract class ColumnsContainerView<P extends Panel> extends GAbstractCon
             int columnWidth = 0;
             for (GComponent child : columnsChildren[i]) {
                 if (getChildView(child).isVisible()) {
-                    Dimension childPref = getChildPreferredSize(containerViews, child);
+                    Dimension childPref = getChildMaxPreferredSize(containerViews, child);
                     columnHeight += childPref.height;
                     columnWidth = Math.max(columnWidth, childPref.width);
                 }

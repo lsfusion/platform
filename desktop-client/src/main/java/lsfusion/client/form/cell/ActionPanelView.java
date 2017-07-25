@@ -9,6 +9,7 @@ import lsfusion.client.logics.ClientGroupObjectValue;
 import lsfusion.client.logics.ClientPropertyDraw;
 import lsfusion.client.logics.classes.ClientType;
 import lsfusion.interop.form.ServerResponse;
+import lsfusion.interop.form.layout.Alignment;
 import lsfusion.interop.form.layout.FlexConstraints;
 import lsfusion.interop.form.layout.FlexLayout;
 
@@ -90,7 +91,7 @@ public class ActionPanelView extends JButton implements PanelView, EditPropertyH
         });
 
         panel = new JPanel(null);
-        panel.setLayout(new FlexLayout(panel, true));
+        panel.setLayout(new FlexLayout(panel, true, Alignment.CENTER));
         panel.add(this, new FlexConstraints(property.alignment, 1));
         property.installMargins(panel);
     }

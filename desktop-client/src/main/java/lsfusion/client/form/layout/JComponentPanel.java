@@ -1,30 +1,26 @@
 package lsfusion.client.form.layout;
 
 import lsfusion.client.logics.ClientComponent;
+import lsfusion.interop.form.layout.Alignment;
+import lsfusion.interop.form.layout.FlexLayout;
 
 import javax.swing.*;
 import java.awt.*;
 
 import static lsfusion.client.SwingUtils.overrideSize;
 
-/**
- * Created by User on 04.07.2017.
- */
+// выполняет роль FlexPanel в web
 public class JComponentPanel extends JPanel {
-    
-    public JComponentPanel(LayoutManager layout, boolean isDoubleBuffered) {
-        super(layout, isDoubleBuffered);
-    }
 
+    public JComponentPanel(boolean vertical, Alignment alignment) {
+        super(null);
+        setLayout(new FlexLayout(this, vertical, alignment));
+    }
+    public JComponentPanel() {
+        this(new BorderLayout());
+    }
     public JComponentPanel(LayoutManager layout) {
         super(layout);
-    }
-    
-    public JComponentPanel(boolean isDoubleBuffered) {
-        super(isDoubleBuffered);
-    }
-    
-    public JComponentPanel() {
     }
 
     private Dimension componentMinimumSize;
@@ -58,4 +54,7 @@ public class JComponentPanel extends JPanel {
         return overrideSize(super.getPreferredSize(), componentPreferredSize);
     }
 
+    public Dimension getMaxPreferredSize() {
+        return getPreferredSize();
+    }
 }

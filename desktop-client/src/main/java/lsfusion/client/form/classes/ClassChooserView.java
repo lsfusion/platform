@@ -33,8 +33,6 @@ public class ClassChooserView extends JComponentPanel {
             }
         };
 
-        setLayout(new BorderLayout());
-
         JScrollPane pane = new JScrollPane(view);
         add(pane, BorderLayout.CENTER);
 

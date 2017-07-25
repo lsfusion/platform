@@ -3,9 +3,9 @@ package lsfusion.gwt.base.client.ui;
 import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.base.client.Dimension;
 
-import static lsfusion.gwt.base.client.GwtClientUtils.calculateStackPreferredSize;
+import static lsfusion.gwt.base.client.GwtClientUtils.calculateStackMaxPreferredSize;
 
-public class ResizableHorizontalPanel extends HorizontalPanel implements RequiresResize, ProvidesResize, HasPreferredSize {
+public class ResizableHorizontalPanel extends HorizontalPanel implements RequiresResize, ProvidesResize, HasMaxPreferredSize {
     @Override
     public void onResize() {
         if (!visible) {
@@ -28,7 +28,7 @@ public class ResizableHorizontalPanel extends HorizontalPanel implements Require
     }
 
     @Override
-    public Dimension getPreferredSize() {
-        return calculateStackPreferredSize(this.iterator(), false);
+    public Dimension getMaxPreferredSize() {
+        return calculateStackMaxPreferredSize(this.iterator(), false);
     }
 }

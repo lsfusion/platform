@@ -18,8 +18,10 @@ import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static java.lang.Math.max;
+import static lsfusion.client.form.layout.TabbedClientContainerView.TabbedPane.hackedTabInsetsHeight;
 
 public class TabbedClientContainerView extends AbstractClientContainerView {
 
@@ -48,7 +50,7 @@ public class TabbedClientContainerView extends AbstractClientContainerView {
 
         hiddenHolderPanel = new JPanel(null);
 
-        panel = new ContainerViewPanel(new BorderLayout());
+        panel = new ContainerViewPanel();
         panel.add(tabbedPane, BorderLayout.CENTER);
         panel.add(hiddenHolderPanel, BorderLayout.SOUTH);
 
@@ -230,5 +232,16 @@ public class TabbedClientContainerView extends AbstractClientContainerView {
 
     public boolean isTabVisible(ClientComponent tab) {
         return visibleChildren.contains(tab);
+    }
+
+    @Override
+    public Dimension getMaxPreferredSize(Map<ClientContainer, ClientContainerView> containerViews) {
+        int selected = tabbedPane.getSelectedIndex();
+        if (selected != -1) {
+            Dimension dimensions = getChildMaxPreferredSize(containerViews, selected);
+            dimensions.height += 32 + 5; //little extra for borders, etc., пока захардкодим 32 в высоту tab header'а
+            return dimensions;
+        }
+        return new Dimension(0, 0);
     }
 }

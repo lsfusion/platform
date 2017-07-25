@@ -118,10 +118,10 @@ public class TabbedContainerView extends GAbstractContainerView {
     }
 
     @Override
-    public Dimension getPreferredSize(Map<GContainer, GAbstractContainerView> containerViews) {
+    public Dimension getMaxPreferredSize(Map<GContainer, GAbstractContainerView> containerViews) {
         int selected = tabbedDelegate.getSelectedTab();
         if (selected != -1) {
-            Dimension dimensions = getChildPreferredSize(containerViews, selected);
+            Dimension dimensions = getChildMaxPreferredSize(containerViews, selected);
             dimensions.height += tabbedDelegate.getTabBarHeight() + 5; //little extra for borders, etc.
             return dimensions;
         }

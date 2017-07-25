@@ -27,6 +27,7 @@ public class ShowTypeView extends JComponentPanel {
     private ClassViewType classView = types[types.length - 1];
 
     public ShowTypeView(ShowTypeController controller, ClientShowType showType, List<ClassViewType> banClassView) {
+        super(null);
         this.controller = controller;
         this.banClassView = banClassView;
 

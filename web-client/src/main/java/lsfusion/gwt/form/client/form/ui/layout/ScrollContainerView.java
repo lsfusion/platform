@@ -2,14 +2,11 @@ package lsfusion.gwt.form.client.form.ui.layout;
 
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.base.client.Dimension;
 import lsfusion.gwt.base.client.GwtClientUtils;
 import lsfusion.gwt.base.client.ui.FlexPanel;
 import lsfusion.gwt.base.client.ui.GFlexAlignment;
 import lsfusion.gwt.form.shared.view.GComponent;
 import lsfusion.gwt.form.shared.view.GContainer;
-
-import java.util.Map;
 
 public class ScrollContainerView extends GAbstractContainerView {
 
@@ -20,6 +17,7 @@ public class ScrollContainerView extends GAbstractContainerView {
         super(container);
 
         assert container.isScroll();
+        assert container.isVertical();
 
         scrollPanel = new FlexPanel(vertical);
 
@@ -41,6 +39,8 @@ public class ScrollContainerView extends GAbstractContainerView {
 //            proxyView = view;
 //            view = proxyPanel;
 //        }
+        // возможно надо попроставлять как внизу компонентам MaxPreferredSize ??
+        if(1!=1) GwtClientUtils.calculateMaxPreferredSize(view); // .height
         view.getElement().getStyle().setOverflowY(Style.Overflow.AUTO); // scroll
         add(scrollPanel, view, 0, child.alignment, child.flex, child, vertical);
     }
@@ -57,22 +57,17 @@ public class ScrollContainerView extends GAbstractContainerView {
 
     public void updateLayout() {
         super.updateLayout();
-        if(proxyPanel != null) {
-            if(proxyView instanceof FlexPanel) {
-                for(Widget child : ((FlexPanel)proxyView)) {
-                        int height = GwtClientUtils.calculatePreferredSize(child).height;
-                        if (height > 0) {
-                            ((FlexPanel)proxyView).setChildFlexBasis(child, height);
-//                            child.setHeight(height + "px");
-                        }
-                }
-            } else
-                proxyPanel.setChildFlexBasis(proxyView, GwtClientUtils.calculatePreferredSize(proxyView).height);
-        }
-    }
-
-    @Override
-    public Dimension getPreferredSize(Map<GContainer, GAbstractContainerView> containerViews) {
-        return getChildrenStackSize(containerViews, true);
+//        if(proxyPanel != null) {
+//            if(proxyView instanceof FlexPanel) {
+//                for(Widget child : ((FlexPanel)proxyView)) {
+//                        int height = GwtClientUtils.calculatePreferredSize(child).height;
+//                        if (height > 0) {
+//                            ((FlexPanel)proxyView).setChildFlexBasis(child, height);
+////                            child.setHeight(height + "px");
+//                        }
+//                }
+//            } else
+//                proxyPanel.setChildFlexBasis(proxyView, GwtClientUtils.calculatePreferredSize(proxyView).height);
+//        }
     }
 }

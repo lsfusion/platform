@@ -9,6 +9,7 @@ import lsfusion.interop.form.layout.FlexAlignment;
 import javax.swing.*;
 import javax.swing.plaf.basic.BasicSplitPaneUI;
 import java.awt.*;
+import java.util.Map;
 
 import static java.lang.Math.max;
 import static lsfusion.interop.form.layout.CachableLayout.*;
@@ -19,8 +20,8 @@ public class SplitClientContainerView extends AbstractClientContainerView {
     private final SplitPane splitPane;
     private final JPanel hiddenHolderPanel;
 
-    private Component leftView;
-    private Component rightView;
+    private JComponentPanel leftView;
+    private JComponentPanel rightView;
 
     private JPanel leftProxy;
     private JPanel rightProxy;
@@ -46,7 +47,7 @@ public class SplitClientContainerView extends AbstractClientContainerView {
 
         hiddenHolderPanel = new JPanel(null);
 
-        panel = new ContainerViewPanel(new BorderLayout());
+        panel = new ContainerViewPanel();
         panel.add(hiddenHolderPanel, BorderLayout.SOUTH);
     }
 
@@ -192,4 +193,17 @@ public class SplitClientContainerView extends AbstractClientContainerView {
             return false;
         }
     }
+
+    public Dimension getMaxPreferredSize(Map<ClientContainer, ClientContainerView> containerViews) {
+        Dimension pref = super.getMaxPreferredSize(containerViews);
+
+        if (container.isVerticalSplit()) {
+            pref.height += 5; // пока хардкодим ширину сплиттера (в preferred size она вообще не учитывается) 
+        } else {
+            pref.width += 5;
+        }
+
+        return pref;
+    }
+
 }

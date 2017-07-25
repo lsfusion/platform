@@ -258,4 +258,12 @@ public abstract class ClientComponent extends ContextIdentityObject implements I
     }
 
     public abstract String getCaption();
+
+    public int getVerticalMargin() {
+        return marginTop + marginBottom;
+    }
+
+    public int getHorizontalMargin() {
+        return marginLeft + marginRight;
+    }
 }

@@ -1074,20 +1074,8 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         DialogBoxHelper.showMessageBox(isError, caption, message, callback);
     }
 
-    public Dimension getPreferredSize() {
-        int preferredWidth = form.mainContainer.preferredWidth;
-        int preferredHeight = form.mainContainer.preferredHeight;
-        if (preferredWidth == -1 || preferredHeight == -1) {
-            Dimension size = formLayout.getPreferredSize();
-            if (preferredWidth == -1) {
-                preferredWidth = size.width;
-            }
-            if (preferredHeight == -1) {
-                preferredHeight = size.height;
-            }
-        }
-
-        return new Dimension(preferredWidth, preferredHeight);
+    public Dimension getMaxPreferredSize() {
+        return formLayout.getMaxPreferredSize();
     }
 
     private GPropertyTable editingTable;

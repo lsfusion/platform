@@ -62,11 +62,11 @@ public class FlexFormLayoutImpl extends GFormLayoutImpl {
             GGridPropertyTable gridTable = getGridTable();
             int autoSize;
             if (gridTable instanceof GTreeTable) {
-                autoSize = gridTable.getPreferredSize().height;    
+                autoSize = gridTable.getMaxPreferredSize().height;    
             } else {
                 autoSize = gridTable.getAutoSize();
                 if (autoSize <= 0) // еще не было layout'а, ставим эвристичный размер
-                    autoSize = gridTable.getPreferredSize().height;
+                    autoSize = gridTable.getMaxPreferredSize().height;
                 else {
                     autoSize += panel.getOffsetHeight() - gridTable.getTableDataScroller().getClientHeight(); // margin'ы и border'ы учитываем
                 }

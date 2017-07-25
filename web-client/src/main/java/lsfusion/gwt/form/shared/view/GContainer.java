@@ -100,7 +100,7 @@ public class GContainer extends GComponent {
     }
 
     public boolean isVertical() {
-        return type == CONTAINERV;
+        return type == CONTAINERV || type == VERTICAL_SPLIT_PANE;
     }
 
     public boolean isHorizontal() {

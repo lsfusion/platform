@@ -8,6 +8,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class ColumnsClientContainerView extends AbstractClientContainerView {
 
@@ -20,8 +21,7 @@ public class ColumnsClientContainerView extends AbstractClientContainerView {
         super(formLayout, container);
         assert container.isColumns();
 
-        panel = new ContainerViewPanel();
-        panel.setLayout(new FlexLayout(panel, false, Alignment.LEADING));
+        panel = new ContainerViewPanel(false, Alignment.LEADING);
 
         columnsCount = container.columns;
 
@@ -38,6 +38,32 @@ public class ColumnsClientContainerView extends AbstractClientContainerView {
         }
 
         container.design.designComponent(panel);
+    }
+
+    @Override
+    public Dimension getMaxPreferredSize(Map<ClientContainer, ClientContainerView> containerViews) {
+        int width = 0;
+        int height = 0;
+        for (int i = 0; i < columnsCount; ++i) {
+            int columnHeight = 0;
+            int columnWidth = 0;
+            for (ClientComponent child : columnsChildren[i]) {
+                if (getChildView(child).isVisible()) {
+                    Dimension childPref = getChildMaxPreferredSize(containerViews, child);
+                    columnHeight += childPref.height;
+                    columnWidth = Math.max(columnWidth, childPref.width);
+                }
+            }
+
+            if (columnWidth == 0) {
+                //пустые колонки всё равно ренедрятся шириной в 1 пиксел
+                columnWidth = 1;
+            }
+
+            width += columnWidth;
+            height = Math.max(height, columnHeight);
+        }
+        return addCaptionDimensions(new Dimension(width, height));
     }
 
     @Override

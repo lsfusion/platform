@@ -14,7 +14,6 @@ public class ToolbarView extends JComponentPanel {
     private JLabel infoLabel;
 
     public ToolbarView(ClientToolbar toolbar) {
-        super(new BorderLayout());
         initBottomContainer();
         toolbar.installMargins(this);
     }
