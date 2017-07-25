@@ -110,7 +110,7 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
 
     @Override
     public int getCount() {
-        return stat != null ? stat : 1;
+        return BaseUtils.max(stat != null ? stat : 0, 1);
     }
     
     public int getClassCount() {
