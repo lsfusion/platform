@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.Map;
 
 import static java.lang.Math.max;
-import static lsfusion.client.form.layout.TabbedClientContainerView.TabbedPane.hackedTabInsetsHeight;
 
 public class TabbedClientContainerView extends AbstractClientContainerView {
 
