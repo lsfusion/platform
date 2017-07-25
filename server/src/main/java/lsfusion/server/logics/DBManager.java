@@ -186,7 +186,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
     }
 
     public void updateStats(SQLSession sql) throws SQLException, SQLHandledException {
-        businessLogics.updateStats(sql);
+        businessLogics.updateStats(sql, false);
     }
 
     @Override
@@ -902,9 +902,6 @@ public class DBManager extends LogicsManager implements InitializingBean {
             startLogger.info("Packing tables");
             packTables(sql, mPackTables.immutable(), false); // упакуем таблицы
 
-            startLogger.info("Updating stats");
-            ImMap<String, Integer> tableStats = businessLogics.updateStats(sql);  // пересчитаем статистику
-
             // создадим индексы в базе
             startLogger.info("Adding indices");
             for (Map.Entry<Table, Map<List<Field>, Boolean>> mapIndex : newDBStructure.tables.entrySet())
@@ -916,6 +913,17 @@ public class DBManager extends LogicsManager implements InitializingBean {
             startLogger.info("Filling static objects ids");
             if(!fillIDs(getChangesAfter(oldDBStructure.dbVersion, classSIDChanges), getChangesAfter(oldDBStructure.dbVersion, objectSIDChanges)))
                 throw new RuntimeException("Error while filling static objects ids");
+
+            if (oldDBStructure.version < 0) {
+                startLogger.info("Recalculate class stats");
+                try(DataSession session = createSession(OperationOwner.unknown)) {
+                    businessLogics.recalculateClassStat(session, false);
+                    session.apply(businessLogics, getStack());
+                }
+            }
+
+            startLogger.info("Updating stats");
+            ImMap<String, Integer> tableStats = businessLogics.updateStats(sql, false);  // пересчитаем статистику
 
             for (DBConcreteClass newClass : newDBStructure.concreteClasses) {
                 newClass.ID = newClass.customClass.ID;
@@ -939,17 +947,6 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 ImMap<PropertyField, ObjectValue> propFields = MapFact.singleton(StructTable.instance.struct, (ObjectValue) new DataObject(new byte[0], ByteArrayClass.instance));
                 sql.insertRecord(StructTable.instance, MapFact.<KeyField, DataObject>EMPTY(), propFields, true, TableOwner.global, OperationOwner.unknown);
             }
-
-            if (oldDBStructure.version < 0) {
-                startLogger.info("Recalculate class stats");
-                try(DataSession session = createSession(OperationOwner.unknown)) {
-                    businessLogics.recalculateClassStat(session, false);
-                    session.apply(businessLogics, getStack());
-                }
-            }
-
-            startLogger.info("Updating class stats");
-            businessLogics.updateClassStat(sql, false);
 
             startLogger.info("Recalculating aggregations");
             recalculateAggregations(getStack(), sql, recalculateProperties, false, startLogger); // перерасчитаем агрегации
@@ -1026,7 +1023,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
                     long time = System.currentTimeMillis() - start;
                     startLogger.info(String.format("Update Aggregation Stats: %s, %sms", table, time));
                 }
-                table.updateStat(tableStats, null, propStats, false, fields.keys());
+                table.updateStat(tableStats, null, propStats, fields.keys(), false);
             }
         }
     }

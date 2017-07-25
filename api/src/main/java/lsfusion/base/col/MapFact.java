@@ -390,6 +390,15 @@ public class MapFact {
     public static <K, V> AddValue<K, V> override() {
         return (AddValue<K, V>) override;
     }
+    private final static AddValue<Object, Integer> max = new SymmAddValue<Object, Integer>() {
+        @Override
+        public Integer addValue(Object key, Integer prevValue, Integer newValue) {
+            return BaseUtils.max(prevValue, newValue);
+        }
+    };            
+    public static <K> AddValue<K, Integer> max() {
+        return (AddValue<K, Integer>) max;
+    }
 
     private final static AddValue<Object, Object> keepNewRef = new SimpleAddValue<Object, Object>() {
         public Object addValue(Object key, Object prevValue, Object newValue) {

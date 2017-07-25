@@ -1,5 +1,6 @@
 package lsfusion.server.data.query.stat;
 
+import lsfusion.base.BaseUtils;
 import lsfusion.base.TwinImmutableObject;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
@@ -32,6 +33,8 @@ public class TableStatKeys extends TwinImmutableObject {
     public TableStatKeys(Stat rows, DistinctKeys<KeyField> distinct) {
         this.rows = rows;
         this.distinct = distinct;
+        
+        assert rows.lessEquals(distinct.getMax()) && distinct.getMaxKey().lessEquals(rows);
     }
 
     public TableStatKeys decrease(final Stat dec) {
@@ -62,7 +65,13 @@ public class TableStatKeys extends TwinImmutableObject {
             });
 
             int toAdd = rowStat.div(distStatMax).getWeight();
-            if(toAdd > distinct.size()) { // статистика количества записей не реальная, уменьшаем
+            // считаем количество округленных вниз
+            int roundedDown = 0;
+            for(Double roundValue : round.valueIt())
+                if(roundValue > 0)
+                    roundedDown++;
+            
+            if(roundedDown < toAdd) { // статистика количества записей не реальная, округляем все вверх уменьшаем статистику
                 distStat = new DistinctKeys<>(distStat.mapValues(new GetKeyValue<Stat, KeyField, Stat>() {
                     public Stat getMapValue(KeyField key, Stat value) {
                         if(round.get(key) > 0) // округляли вних

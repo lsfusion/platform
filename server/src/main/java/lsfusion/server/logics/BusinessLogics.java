@@ -629,7 +629,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             if(count >= Settings.get().getMinClassDataIndexCount()) {
                 Stat totStat = new Stat(count);
                 for (ConcreteCustomClass customClass : set)
-                    if (customClass.stat != null && new Stat(customClass.getCount()).less(totStat))
+                    if (new Stat(customClass.getCount()).less(totStat))
                         return true;
             }
         }
@@ -689,8 +689,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
 
                 //временное решение
                 try {
-                    updateStats(sql);
-                    updateClassStat(sql, true);
+                    updateStats(sql, true);
                 } catch (Exception ignored) {
                     startLogger.info("Error updating stats, while initializing reflection events occured. Probably this is the first database synchronization. Look to the exinfo log for details.");
                     ServerLoggers.exInfoLogger.error("Error updating stats, while initializing reflection events", ignored);
@@ -838,7 +837,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         }
     }
 
-    public void updateClassStat(SQLSession session, boolean useSIDs) throws SQLException, SQLHandledException {
+    public void updateClassStats(SQLSession session, boolean useSIDs) throws SQLException, SQLHandledException {
 
         Map<Integer, Integer> customObjectClassMap = new HashMap<>();
         Map<String, Integer> customSIDObjectClassMap = new HashMap<>();
@@ -875,17 +874,58 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
                     stat = customSIDObjectClassMap.get(customClass.getSID());
                 } else
                     stat = customObjectClassMap.get(customClass.ID);
-                ((ConcreteCustomClass) customClass).stat = stat == null ? 1 : stat;
+                ((ConcreteCustomClass) customClass).stat = stat;
             }
         }
     }
 
-    public ImMap<String, Integer> updateStats(SQLSession sql) throws SQLException, SQLHandledException {
-        ImMap<String, Integer> result = updateStats(sql, true); // чтобы сами таблицы статистики получили статистику
-        return SystemProperties.doNotCalculateStats ? result : updateStats(sql, false);
+    public ImMap<String, Integer> updateStats(SQLSession sql, boolean useSIDsForClasses) throws SQLException, SQLHandledException {
+        ImMap<String, Integer> result = updateTableStats(sql, true); // чтобы сами таблицы статистики получили статистику
+        updateFullClassStats(sql, useSIDsForClasses);
+        if(SystemProperties.doNotCalculateStats)
+            return result;
+        return updateTableStats(sql, false);
+    }
+    
+    private void updateFullClassStats(SQLSession sql, boolean useSIDsForClasses) throws SQLException, SQLHandledException {
+        updateClassStats(sql, useSIDsForClasses);
+
+        adjustClassStats(sql);        
     }
 
-    public ImMap<String, Integer> updateStats(SQLSession sql, boolean statDefault) throws SQLException, SQLHandledException {
+    private void adjustClassStats(SQLSession sql) throws SQLException, SQLHandledException {
+        ImMap<String, Integer> tableStats = readStatsFromDB(sql, reflectionLM.tableSID, reflectionLM.rowsTable, null);
+        ImMap<String, Integer> keyStats = readStatsFromDB(sql, reflectionLM.tableKeySID, reflectionLM.overQuantityTableKey, null);
+
+        MMap<CustomClass, Integer> mClassFullStats = MapFact.mMap(MapFact.<CustomClass>max());
+        for (ImplementTable dataTable : LM.tableFactory.getImplementTables()) {
+            dataTable.fillFullClassStat(tableStats, keyStats, mClassFullStats);
+        }
+        ImMap<CustomClass, Integer> classFullStats = mClassFullStats.immutable();
+
+        // правим статистику по классам
+        ImOrderMap<CustomClass, Integer> orderedClassFullStats = classFullStats.sort(BaseUtils.<Comparator<CustomClass>>immutableCast(ValueClass.comparator));// для детерминированности
+        for(int i=0,size=orderedClassFullStats.size();i<size;i++) {
+            CustomClass customClass = orderedClassFullStats.getKey(i);
+            int quantity = orderedClassFullStats.getValue(i);
+            ImOrderSet<ConcreteCustomClass> concreteChildren = customClass.getUpSet().getSetConcreteChildren().sortSet(BaseUtils.<Comparator<ConcreteCustomClass>>immutableCast(ValueClass.comparator));// для детерминированности
+            int childrenStat = 0;
+            for(ConcreteCustomClass child : concreteChildren) {
+                childrenStat += child.getCount();
+            }
+            quantity = quantity - childrenStat; // сколько дораспределить
+            for(ConcreteCustomClass child : concreteChildren) {
+                int count = child.getCount();
+                int newCount = (int)((long)quantity * (long)count / (long)childrenStat);
+                child.stat = count + newCount;
+                assert child.stat >= 0;
+                quantity -= newCount;
+                childrenStat -= count;
+            }
+        }
+    }
+
+    public ImMap<String, Integer> updateTableStats(SQLSession sql, boolean statDefault) throws SQLException, SQLHandledException {
         ImMap<String, Integer> tableStats;
         ImMap<String, Integer> keyStats;
         ImMap<String, Pair<Integer, Integer>> propStats;
@@ -900,7 +940,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         }
 
         for (ImplementTable dataTable : LM.tableFactory.getImplementTables()) {
-            dataTable.updateStat(tableStats, keyStats, propStats, statDefault, null);
+            dataTable.updateStat(tableStats, keyStats, propStats, null, statDefault);
         }
         return tableStats;
     }

@@ -9,6 +9,7 @@ import lsfusion.server.logics.property.IsClassProperty;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.Comparator;
 
 public interface ValueClass extends RemoteClass {
 
@@ -35,4 +36,12 @@ public interface ValueClass extends RemoteClass {
     IsClassProperty getProperty();
     
     String getParsedName();
+    
+    Comparator<ValueClass> comparator = new Comparator<ValueClass>() {
+        public int compare(ValueClass o1, ValueClass o2) {
+            String sid1 = o1.getSID();
+            String sid2 = o2.getSID();
+            return sid1.compareTo(sid2);
+        }
+    };
 }

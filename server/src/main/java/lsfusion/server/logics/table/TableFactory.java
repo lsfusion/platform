@@ -152,13 +152,7 @@ public class TableFactory implements FullTablesInterface {
             ValueClass valueClass = findItem.getValue(i);
             valueClasses.add(valueClass instanceof CustomClass ? baseClass : valueClass);
         }
-        Collections.sort(valueClasses, new Comparator<ValueClass>() {
-            public int compare(ValueClass o1, ValueClass o2) {
-                String sid1 = o1.getSID();
-                String sid2 = o2.getSID();
-                return sid1.compareTo(sid2);
-            }
-        });
+        Collections.sort(valueClasses, ValueClass.comparator);
 
         int baseClassCount = 0;
         String dataPrefix = "";
