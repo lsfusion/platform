@@ -91,7 +91,6 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
     public LCP quantityRemovedClassesSession;
     public LCP quantityChangedClassesSession;
     public LCP changesSession;
-    public LCP userLoginConnectionSession;
 
     public LCP pingComputerDateTimeFromDateTimeTo;
     public LCP minTotalMemoryComputerDateTimeFromDateTimeTo;
@@ -181,7 +180,6 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
         quantityRemovedClassesSession = findProperty("quantityRemovedClasses[Session]");
         quantityChangedClassesSession = findProperty("quantityChangedClasses[Session]");
         changesSession = findProperty("changes[Session]");
-        userLoginConnectionSession = findProperty("userLoginConnection[Session]");
 //        baseLM.objectClassName.makeLoggable(this, true);
 
         pingComputerDateTimeFromDateTimeTo = findProperty("pingFromTo[Computer,DATETIME,DATETIME]");

@@ -37,16 +37,14 @@ public class LogFormEntity<T extends BusinessLogics<T>> extends FormEntity<T> {
     ObjectEntity[] entities;
     ObjectEntity objSession;
     LCP<?> logProperty;
-    LCP<?> logShowProperty;
     LCP<?> property;
     public boolean lazyInit;
 
-    public LogFormEntity(String canonicalName, LocalizedString caption, LCP<?> property, LCP<?> logProperty, LCP<?> logShowProperty, SystemEventsLogicsModule systemEventsLM) {
+    public LogFormEntity(String canonicalName, LocalizedString caption, LCP<?> property, LCP<?> logProperty, SystemEventsLogicsModule systemEventsLM) {
         super(canonicalName, caption, systemEventsLM.getVersion());
 
         this.systemEventsLM = systemEventsLM;
         this.logProperty = logProperty;
-        this.logShowProperty = logShowProperty;
         this.property = property;
 
         Version version = getVersion();
@@ -95,7 +93,7 @@ public class LogFormEntity<T extends BusinessLogics<T>> extends FormEntity<T> {
             addPropertyDraw(obj, version, systemEventsLM.baseLM.recognizeGroup, true);
         }
 
-        addPropertyDraw(logShowProperty, version, entities);
+        addPropertyDraw(logProperty, version, entities);
 
         ImList<PropertyClassImplement> recognizePropImpls =
                 systemEventsLM.baseLM.recognizeGroup.getProperties(new ValueClassWrapper(property.property.getValueClass(ClassType.logPolicy)), true, version);
@@ -103,13 +101,13 @@ public class LogFormEntity<T extends BusinessLogics<T>> extends FormEntity<T> {
         for (PropertyClassImplement impl : recognizePropImpls) {
             if(impl instanceof CalcPropertyClassImplement) {
                 CalcPropertyClassImplement<?> calcImpl = ((CalcPropertyClassImplement)impl);
-                int paramCnt = logShowProperty.property.interfaces.size();
+                int paramCnt = logProperty.property.interfaces.size();
                 ImOrderSet<JoinProperty.Interface> listInterfaces = JoinProperty.getInterfaces(paramCnt);
 
                 LCP lpMainProp = new LCP(calcImpl.property);
 
                 Object[] params = new Object[paramCnt + 1];
-                params[0] = logShowProperty;
+                params[0] = logProperty;
                 for (int i = 0; i < paramCnt; i++) {
                     params[i+1] = i+1;
                 }

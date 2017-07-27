@@ -54,7 +54,10 @@ import lsfusion.server.logics.property.cases.CalcCase;
 import lsfusion.server.logics.property.derived.*;
 import lsfusion.server.logics.property.group.AbstractGroup;
 import lsfusion.server.logics.property.group.AbstractNode;
-import lsfusion.server.logics.scripted.*;
+import lsfusion.server.logics.scripted.EvalActionProperty;
+import lsfusion.server.logics.scripted.LazyActionProperty;
+import lsfusion.server.logics.scripted.MetaCodeFragment;
+import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 import lsfusion.server.logics.table.ImplementTable;
 import lsfusion.server.session.LocalNestedType;
 import org.antlr.runtime.RecognitionException;
@@ -63,8 +66,6 @@ import org.apache.log4j.Logger;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.PrintWriter;
-import java.sql.Date;
-import java.sql.Timestamp;
 import java.util.*;
 
 import static lsfusion.base.BaseUtils.add;
@@ -467,12 +468,16 @@ public abstract class LogicsModule {
     }
 
     // ------------------- Loggable ----------------- //
-    protected <D extends PropertyInterface> LCP addLogProp(AbstractGroup group, LocalizedString caption, int whereNum, LCP<D> derivedProp, Object... params) {
+
+    protected <D extends PropertyInterface> LCP addDCProp(AbstractGroup group, LocalizedString caption, int whereNum, LCP<D> derivedProp, Object... params) {
         Pair<ValueClass[], ValueClass> signature = getSignature(derivedProp, whereNum, params);
 
         // выполняем само создание свойства
         StoredDataProperty dataProperty = new StoredDataProperty(caption, signature.first, signature.second);
-        return addProperty(group, false, new LCP<>(dataProperty));
+        LCP derDataProp = addProperty(group, false, new LCP<>(dataProperty));
+
+        derDataProp.setEventChange(derivedProp, whereNum, params);
+        return derDataProp;
     }
 
     private <D extends PropertyInterface> Pair<ValueClass[], ValueClass> getSignature(LCP<D> derivedProp, int whereNum, Object[] params) {
@@ -1368,8 +1373,8 @@ public abstract class LogicsModule {
     
     // ------------------- Loggable ----------------- //
     // todo [dale]: тут конечно страх, во-первых, сигнатура берется из интерфейсов свойства (issue #1725), 
-    // во-вторых руками markStored вызывается, чтобы обойти проблему с созданием propertyField из addDProp
-    public Pair<LCP, LCP> addLProp(SystemEventsLogicsModule systemEventsLM, LCP lp) {
+    // во-вторых руками markStored вызывается, чтобы обойти проблему с созданием propertyField из addDProp 
+    public LCP addLProp(SystemEventsLogicsModule systemEventsLM, LCP lp) {
         assert lp.property.isNamed();
         String name = "";
         try {
@@ -1378,47 +1383,13 @@ public abstract class LogicsModule {
         } catch (PropertyCanonicalNameParser.ParseException e) {
             Throwables.propagate(e);
         }
-
+        
         List<ResolveClassSet> signature = getSignatureForLogProperty(lp, systemEventsLM);
-
-        LCP logProperty = addLogProp(baseLM.privateGroup, LocalizedString.create("{logics.log}" + " " + lp.property), 1, lp, add(new Object[]{addJProp(baseLM.equals2, 1, systemEventsLM.currentSession), lp.listInterfaces.size() + 1}, directLI(lp)));
-
-        LCP constantProperty = getConstantProperty(logProperty);
-        LCP overrideProperty = addUProp(null, LocalizedString.create(""), Union.OVERRIDE, null, null, getUParams(new LP[]{lp, constantProperty}));
-
-        LCP whereProperty = addJProp(false, LocalizedString.create(""), baseLM.and1,
-                addCHProp(lp, IncrementType.CHANGED, PrevScope.EVENT), 1, addJProp(baseLM.equals2, 1, systemEventsLM.currentSession), 2);
-
-        Object[] params = directLI(overrideProperty);
-        if (whereProperty != null) {
-            params = BaseUtils.add(params, directLI(whereProperty));
-        }
-        logProperty.setEventChange(systemEventsLM, true, params);
-
-        makePropertyPublic(logProperty, name, signature);
-        ((StoredDataProperty)logProperty.property).markStored(baseLM.tableFactory);
-
-        return Pair.create(logProperty, getLogShowProperty(logProperty, constantProperty));
-    }
-
-    private LCP getLogShowProperty(LCP logProperty, LCP constantProperty) {
-        LCP ifProp = addJProp(baseLM.equals2, BaseUtils.add(directLI(logProperty), directLI(constantProperty)));
-        LCP joinShowProperty = addJProp(and(true), BaseUtils.add(directLI(logProperty), directLI(ifProp)));
-        return addUProp(null, logProperty.property.caption, Union.EXCLUSIVE, null, null, directLI(joinShowProperty));
-    }
-
-    private LCP getConstantProperty(LCP logProperty) {
-        ValueClass baseClass = ((StoredDataProperty) logProperty.property).value.getBaseClass();
-        if (baseClass instanceof StringClass)
-            return addCProp((StringClass) baseClass, LocalizedString.create("999999"));
-        else if (baseClass instanceof IntegralClass)
-            return addCProp((IntegralClass) baseClass, Integer.MIN_VALUE);
-        else if(baseClass instanceof DateClass)
-            return addCProp((DateClass) baseClass, new Date(1970 - 1900, 0, 1));
-        else if(baseClass instanceof DateTimeClass)
-            return addCProp((DateTimeClass) baseClass, new Timestamp(1970 - 1900, 0, 1, 0, 0, 0, 0));
-        else
-            return baseLM.vnull;
+        
+        LCP result = addDCProp(baseLM.privateGroup, LocalizedString.create("{logics.log}" + " " + lp.property), 1, lp, add(new Object[]{addJProp(baseLM.equals2, 1, systemEventsLM.currentSession), lp.listInterfaces.size() + 1}, directLI(lp)));
+        makePropertyPublic(result, name, signature);
+        ((StoredDataProperty)result.property).markStored(baseLM.tableFactory);
+        return result;
     }
 
     // ------------------- UNION SUM ----------------- //

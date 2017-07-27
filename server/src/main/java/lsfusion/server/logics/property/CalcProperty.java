@@ -1393,7 +1393,6 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
     }
 
     private LCP logProperty;
-    private LCP logShowProperty;
 
     public LCP getLogProperty() {
         return logProperty;
@@ -1401,14 +1400,6 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
 
     public void setLogProperty(LCP logProperty) {
         this.logProperty = logProperty;
-    }
-
-    public LCP getLogShowProperty() {
-        return logShowProperty;
-    }
-
-    public void setLogShowProperty(LCP logShowProperty) {
-        this.logShowProperty = logShowProperty;
     }
 
     public boolean autoset;
