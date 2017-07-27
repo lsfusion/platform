@@ -15,7 +15,6 @@ import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.form.entity.LogFormEntity;
-import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.ObjectValue;
@@ -126,11 +125,12 @@ public class LCP<T extends PropertyInterface> extends LP<T, CalcProperty<T>> {
     private void setupLoggable(LogicsModule ownerModule, SystemEventsLogicsModule systemEventsLM) {
         if (property.getLogProperty() == null) {
             property.setLogProperty(ownerModule.addLProp(systemEventsLM, this));
+            property.setLogDropProperty(ownerModule.addLDropProp(systemEventsLM, this));
         }
         if (property.getLogFormProperty() == null) {
             LogFormEntity logFormEntity = new LogFormEntity(null,
                                                             LocalizedString.create("{logics.property.log.form}"),
-                                                            this, property.getLogProperty(), systemEventsLM);
+                                                            this, property.getLogProperty(), property.getLogDropProperty(), systemEventsLM);
             systemEventsLM.addFormEntity(logFormEntity);
             property.setLogFormProperty(ownerModule.addMFAProp(LocalizedString.create("{logics.property.log.action}"), logFormEntity, logFormEntity.params, true));
         }
