@@ -1,6 +1,7 @@
 package lsfusion.server.logics.linear;
 
 import lsfusion.base.BaseUtils;
+import lsfusion.base.Pair;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
@@ -125,12 +126,14 @@ public class LCP<T extends PropertyInterface> extends LP<T, CalcProperty<T>> {
 
     private void setupLoggable(LogicsModule ownerModule, SystemEventsLogicsModule systemEventsLM) {
         if (property.getLogProperty() == null) {
-            property.setLogProperty(ownerModule.addLProp(systemEventsLM, this));
+            Pair<LCP, LCP> logProps = ownerModule.addLProp(systemEventsLM, this);
+            property.setLogProperty(logProps.first);
+            property.setLogShowProperty(logProps.second);
         }
         if (property.getLogFormProperty() == null) {
             LogFormEntity logFormEntity = new LogFormEntity(null,
                                                             LocalizedString.create("{logics.property.log.form}"),
-                                                            this, property.getLogProperty(), systemEventsLM);
+                                                            this, property.getLogProperty(), property.getLogShowProperty(), systemEventsLM);
             systemEventsLM.addFormEntity(logFormEntity);
             property.setLogFormProperty(ownerModule.addMFAProp(LocalizedString.create("{logics.property.log.action}"), logFormEntity, logFormEntity.params, true));
         }
