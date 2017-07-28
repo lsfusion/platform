@@ -4,6 +4,7 @@ import com.allen_sauer.gwt.log.client.Log;
 import com.google.gwt.core.client.Duration;
 import com.google.gwt.dom.client.BrowserEvents;
 import com.google.gwt.dom.client.NativeEvent;
+import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.ScrollEvent;
 import com.google.gwt.event.dom.client.ScrollHandler;
@@ -343,6 +344,10 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
             preferredWidth = 0;
             int headerHeight = getHeaderHeight();
 
+            List<GridColumn> flexColumns = new ArrayList<>();
+            List<Integer> flexValues = new ArrayList<>();
+            int totalFlexValues = 0;
+
             NativeHashMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, GridColumn>> newColumnsMap = new NativeHashMap<>();
             for (int i = 0; i < columnProperties.size(); ++i) {
                 GPropertyDraw property = columnProperties.get(i);
@@ -359,10 +364,16 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
                         dataUpdated = true; // если кроме появления этой колонки в гриде ничего не поменялось, всё равно нужно обновить данные и подсветки
                     }
                 }
-
-                int columnMinimumWidth = getUserWidth(property) != null ? getUserWidth(property) : property.getMinimumPixelValueWidth(font);
-                int columnMinimumHeight = property.getMinimumValuePixelHeight(font);
-                setColumnWidth(column, columnMinimumWidth  + "px");
+                
+                boolean isFlex = property.isFlex(font);
+                int columnPreferredWidth = getUserWidth(property) != null ? getUserWidth(property) : property.getPreferredValuePixelWidth(font);
+                if(isFlex) {
+                    flexColumns.add(column);
+                    flexValues.add(columnPreferredWidth);
+                    totalFlexValues += columnPreferredWidth;
+                } else
+                    setColumnWidth(column, columnPreferredWidth  + "px");
+                preferredWidth += columnPreferredWidth;
 
                 //дублирование логики изменения captions для оптимизации
                 String columnCaption;
@@ -398,10 +409,21 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
 
                 putToColumnsMap(newColumnsMap, property, columnKey, column);
 
+                int columnMinimumHeight = property.getMinimumValuePixelHeight(font);
                 rowHeight = Math.max(rowHeight, columnMinimumHeight);
-                preferredWidth += columnMinimumWidth;
             }
             
+            int restPercent = 100 * 100;
+            for(int i=0,size=flexColumns.size();i<size;i++) {
+                GridColumn flexColumn = flexColumns.get(i);
+                int flexValue = flexValues.get(i);
+                int flexPercent = Math.round(flexValue * restPercent / totalFlexValues);
+                restPercent -= flexPercent;
+                totalFlexValues -= flexValue;
+                setColumnWidth(flexColumn, ((double)flexPercent / 100.0)  + "%");
+            }
+            setMinimumTableWidth(preferredWidth, com.google.gwt.dom.client.Style.Unit.PX);
+
             setFixedHeaderHeight(headerHeight);
             
             setCellHeight(rowHeight);
