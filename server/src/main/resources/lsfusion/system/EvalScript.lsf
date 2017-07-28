@@ -91,7 +91,7 @@ FORM scriptLog 'Скрипт'
 
 FORM scriptsLog 'Скрипты'
     
-    OBJECTS s=Script
+    OBJECTS s=Script FIRST
     PROPERTIES(s) READONLY name, text, dateTimeChange, dateTime 
     PROPERTIES(s) NEWSESSION DELETE 
     ORDER BY dateTimeChange(s) DESC
