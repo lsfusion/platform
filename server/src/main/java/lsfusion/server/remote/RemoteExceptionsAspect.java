@@ -27,7 +27,7 @@ public class RemoteExceptionsAspect {
             return thisJoinPoint.proceed();
         } catch (ThreadDeath | InterruptedException td) {
             logger.error("Thread '" + Thread.currentThread() + "' was forcefully stopped.");
-            throw new RemoteInternalException(1, "Thread was stopped");
+            throw new RemoteInternalException("Thread was stopped");
         } catch (Throwable throwable) {
             if (!(throwable instanceof RemoteException) && !(throwable instanceof RemoteServerException)) {
                 throw createInternalServerException(throwable, (ContextAwarePendingRemoteObject)target);
@@ -42,13 +42,12 @@ public class RemoteExceptionsAspect {
 
         assert !(e.getCause() instanceof LoginException);
 
-        BusinessLogics BL = ThreadLocalContext.getBusinessLogics();
         try {
             target.logServerException(e);
         } catch (Exception ex) {
             logger.error("Error when logging exception: ", ex);
         }
 
-        return new RemoteInternalException(0, e.getLocalizedMessage());
+        return new RemoteInternalException(e.getLocalizedMessage());
     }
 }
