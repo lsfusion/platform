@@ -70,14 +70,14 @@ exceptionOccurred 'Ошибка' = DATA BOOLEAN (ScheduledTaskLog);
 property 'Свойство' = DATA VARSTRING[200] (ScheduledTaskLog);
 date 'Время' = DATA DATETIME (ScheduledTaskLog);
 toDate 'Дата' (ScheduledTaskLog d) = DATE(date(d));
-scheduledTask 'Задание планировщика' = DATA ScheduledTask (ScheduledTaskLog);
+scheduledTask 'Задание планировщика' = DATA ScheduledTask (ScheduledTaskLog) INDEXED;
 
 @defineLog (ScheduledTaskLog, 'планировщика', log, toDate);
 
 CLASS ScheduledClientTaskLog 'Сообщения клиента';
 TABLE scheduledClientTaskLog (ScheduledClientTaskLog);
 
-scheduledTaskLog 'Лог планировщика'= DATA ScheduledTaskLog (ScheduledClientTaskLog) NONULL DELETE;
+scheduledTaskLog 'Лог планировщика'= DATA ScheduledTaskLog (ScheduledClientTaskLog) NONULL DELETE INDEXED;
 message 'Сообщение'= DATA TEXT (ScheduledClientTaskLog);
 lsfStack 'LSF след'= DATA TEXT (ScheduledClientTaskLog);
 date 'Время'= DATA DATETIME (ScheduledClientTaskLog);
