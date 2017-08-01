@@ -303,6 +303,9 @@ baseValue 'Сохранённое значение' = DATA VARSTRING[100] (Refle
 defaultValue 'Значение по умолчанию' = DATA VARSTRING[100] (ReflectionProperty);
 value 'Значение' (ReflectionProperty reflectionProperty) = OVERRIDE baseValue(reflectionProperty), defaultValue(reflectionProperty);
 
+pushReflectionPropertyAction 'Перегрузить свойство' = CUSTOM 'lsfusion.server.logics.service.reflection.PushReflectionPropertyActionProperty' (VARSTRING[100], VARSTRING[100]);
+popReflectionPropertyAction 'Сбросить свойство' = CUSTOM 'lsfusion.server.logics.service.reflection.PopReflectionPropertyActionProperty' ();
+
 readReflectionPropertiesAction 'Прочитать настройки свойств' = CUSTOM 'lsfusion.server.logics.service.reflection.ReadReflectionPropertiesActionProperty' ();
 onStarted() += { readReflectionPropertiesAction(); }
 saveAction 'Сохранить настройку свойства' = CUSTOM 'lsfusion.server.logics.service.reflection.SaveReflectionPropertyActionProperty' (ReflectionProperty);

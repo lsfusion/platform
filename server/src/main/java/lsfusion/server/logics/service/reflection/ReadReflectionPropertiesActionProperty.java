@@ -49,7 +49,7 @@ public class ReadReflectionPropertiesActionProperty extends ScriptingActionPrope
                 data.add(Arrays.asList((Object) name, value));
                 String savedValue = savedReflectionProperties.get(name);
                 if(savedValue != null)
-                    SaveReflectionPropertyActionProperty.setPropertyValue(name, savedValue);
+                    SaveReflectionPropertyActionProperty.setPropertyValue(settings, name, savedValue);
             }
 
             List<ImportProperty<?>> props = new ArrayList<>();

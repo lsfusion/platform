@@ -45,7 +45,7 @@ public class SaveReflectionPropertyActionProperty extends ScriptingActionPropert
                 String oldValue = BeanUtils.getProperty(Settings.get(), nameReflectionProperty);
 
                 if(!oldValue.equals(valueReflectionProperty)) {
-                    setPropertyValue(nameReflectionProperty, valueReflectionProperty);
+                    setPropertyValue(Settings.get(), nameReflectionProperty, valueReflectionProperty);
                 }
             }
             
@@ -56,17 +56,17 @@ public class SaveReflectionPropertyActionProperty extends ScriptingActionPropert
 
     }
 
-    public static void setPropertyValue(String nameProperty, String valueProperty) throws IllegalAccessException, NoSuchMethodException, InvocationTargetException {
-        Class type = PropertyUtils.getPropertyType(Settings.get(), nameProperty);
+    public static void setPropertyValue(Settings settings, String nameProperty, String valueProperty) throws IllegalAccessException, NoSuchMethodException, InvocationTargetException {
+        Class type = PropertyUtils.getPropertyType(settings, nameProperty);
         if(type == Boolean.TYPE)
-            BeanUtils.setProperty(Settings.get(), nameProperty, valueProperty.equals("true"));
+            BeanUtils.setProperty(settings, nameProperty, valueProperty.equals("true"));
         else if(type == Integer.TYPE)
-            BeanUtils.setProperty(Settings.get(), nameProperty, Integer.valueOf(valueProperty));
+            BeanUtils.setProperty(settings, nameProperty, Integer.valueOf(valueProperty));
         else if(type == Double.TYPE)
-            BeanUtils.setProperty(Settings.get(), nameProperty, Double.valueOf(valueProperty));
+            BeanUtils.setProperty(settings, nameProperty, Double.valueOf(valueProperty));
         else if(type == Long.TYPE)
-            BeanUtils.setProperty(Settings.get(), nameProperty, Long.valueOf(valueProperty));
+            BeanUtils.setProperty(settings, nameProperty, Long.valueOf(valueProperty));
         else
-            BeanUtils.setProperty(Settings.get(), nameProperty, trimToEmpty(valueProperty));
+            BeanUtils.setProperty(settings, nameProperty, trimToEmpty(valueProperty));
     }
 }
