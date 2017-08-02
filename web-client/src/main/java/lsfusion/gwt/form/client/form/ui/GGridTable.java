@@ -430,34 +430,41 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
 
     // в общем то для "групп в колонки" разделено (чтобы когда были группы в колонки - все не расширялись(
     private void updateLayoutWidthColumns() {
-        preferredWidth = 0;
         List<Column> flexColumns = new ArrayList<>();
-        List<Integer> flexValues = new ArrayList<>();
-        int totalFlexValues = 0;
+        List<Double> flexValues = new ArrayList<>();
+        double totalPref = 0.0;
+        double totalFlexValues = 0;
 
         for (int i = 0; i < columns.length; ++i) {
             Column column = columns[i];
 
-            int columnPreferredWidth = prefs[i];
+            double pref = prefs[i];
             if(flexes[i]) {
+                pref += (i % 2 == 0 ? (i==columns.length - 1 ? 0.0 : -0.1) : 0.1); // поправка для округлений (чтобы не дрожало)
+
                 flexColumns.add(column);
-                flexValues.add(columnPreferredWidth);
-                totalFlexValues += columnPreferredWidth;
-            } else
-                setColumnWidth(column, columnPreferredWidth  + "px");
-            preferredWidth += columnPreferredWidth;
+                flexValues.add(pref);
+                totalFlexValues += pref;
+            } else {
+                int intPref = (int) Math.round(prefs[i]);
+                assert intPref == basePrefs[i];
+                setColumnWidth(column, intPref + "px");
+            }
+            totalPref += pref;
         }
 
-        int restPercent = 100 * 100;
+        int precision = 10000;
+        int restPercent = 100 * precision;
         for(int i=0,size=flexColumns.size();i<size;i++) {
             Column flexColumn = flexColumns.get(i);
-            int flexValue = flexValues.get(i);
-            int flexPercent = Math.round(flexValue * restPercent / totalFlexValues);
+            double flexValue = flexValues.get(i);
+            int flexPercent = (int) Math.round(flexValue * restPercent / totalFlexValues);
             restPercent -= flexPercent;
             totalFlexValues -= flexValue;
-            setColumnWidth(flexColumn, ((double)flexPercent / 100.0)  + "%");
+            setColumnWidth(flexColumn, ((double)flexPercent / (double)precision)  + "%");
         }
-        setMinimumTableWidth(preferredWidth, com.google.gwt.dom.client.Style.Unit.PX);
+        preferredWidth = (int) Math.round(totalPref);
+        setMinimumTableWidth(totalPref, com.google.gwt.dom.client.Style.Unit.PX);
     }
 
     public void resizeColumn(int column, int delta) {
@@ -465,19 +472,19 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
         int viewWidth = getTableDataScroller().getClientWidth() - 1; // непонятно откуда этот один пиксель берется (судя по всему padding)
         GwtClientUtils.calculateNewFlexesForFixedTableLayout(column, delta, viewWidth, prefs, basePrefs, flexes);
         for(int i=0;i<prefs.length;i++)
-            setUserWidth(getProperty(columns[i]), prefs[i]);
+            setUserWidth(getProperty(columns[i]), (int) Math.round(prefs[i]));
         updateLayoutWidthColumns();
         onResize();
     }
 
     private GridColumn[] columns;
-    private int[] prefs;  // mutable
+    private double[] prefs;  // mutable
     private int[] basePrefs;
     private boolean[] flexes;
     public void updateLayoutWidth() {
         int columnsCount = columnProperties.size();
         columns = new GridColumn[columnsCount];
-        prefs = new int[columnsCount];
+        prefs = new double[columnsCount];
         basePrefs = new int[columnsCount];
         flexes = new boolean[columnsCount];
         for (int i = 0; i < columnsCount; ++i) {
