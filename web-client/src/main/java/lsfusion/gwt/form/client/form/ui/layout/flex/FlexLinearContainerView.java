@@ -37,7 +37,7 @@ public class FlexLinearContainerView extends GAbstractContainerView {
 
     @Override
     protected void addImpl(int index, GComponent child, final Widget view) {
-        boolean vertical = container.isVertical();
+        boolean vertical = container.isLinearVertical(); // assert isLinear
         if (child.hasMargins()) {
             FlexPanel proxyPanel = new FlexPanel(vertical);
             proxyPanel.getElement().getStyle().setOverflow(Style.Overflow.VISIBLE);

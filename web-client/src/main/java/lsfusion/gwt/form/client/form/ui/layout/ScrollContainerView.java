@@ -17,7 +17,6 @@ public class ScrollContainerView extends GAbstractContainerView {
         super(container);
 
         assert container.isScroll();
-        assert container.isVertical();
 
         scrollPanel = new FlexPanel(vertical);
 

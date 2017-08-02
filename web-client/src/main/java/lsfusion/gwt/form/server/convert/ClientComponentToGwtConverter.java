@@ -156,7 +156,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
             }
         }
 
-        boolean convertToColumns = clientContainer.childrenAlignment == Alignment.LEADING && container.isVertical();
+        boolean convertToColumns = clientContainer.childrenAlignment == Alignment.LEADING && container.isLinearVertical();
         for (ClientComponent child : clientContainer.children) {
             GComponent childComponent = convertOrCast(child);
             container.children.add(childComponent);

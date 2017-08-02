@@ -1351,15 +1351,30 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
      * @param unit  the unit of the width
      * @see #setTableWidth(double, Unit)
      */
+    private double minWidthValue = 0.0;
+    private Unit minWidthUnit = null;
     public void setMinimumTableWidth(double value, Unit unit) {
         /*
          * The min-width style attribute doesn't apply to tables, so we set the
          * min-width of the element that contains the table instead. The table width
          * is fixed at 100%.
          */
-        tableHeaderContainer.getElement().getStyle().setProperty("minWidth", value, unit);
-        tableFooterContainer.getElement().getStyle().setProperty("minWidth", value, unit);
         tableDataContainer.getStyle().setProperty("minWidth", value, unit);
+        minWidthValue = value;
+        minWidthUnit = unit;
+        updateHeaderFooterTableMinimumWidth();
+    }
+
+    private void updateHeaderFooterTableMinimumWidth() {
+        if(minWidthUnit != null) {
+            double exValue = minWidthValue + (hasPadding ? nativeScrollbarWidth : 0);
+            tableHeaderContainer.getElement().getStyle().setProperty("minWidth", exValue, minWidthUnit);
+            tableFooterContainer.getElement().getStyle().setProperty("minWidth", exValue, minWidthUnit);
+        }
+    }
+
+    protected int getViewWidth() {
+        return getOffsetWidth() - (hasPadding ? nativeScrollbarWidth: 0);
     }
 
     /**
@@ -1833,6 +1848,7 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
 
     boolean hasPadding = false;
     private void afterUpdateTableData(State<T> pendingState) {
+        boolean prevPadding = hasPadding;
         if (pendingState.pendingHasVerticalScroll) {
             if (!hasPadding) {
                 tableHeader.tableElement.getStyle().setPaddingRight(nativeScrollbarWidth, Unit.PX);
@@ -1844,6 +1860,8 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
                 hasPadding = false;
             }
         }
+        if(prevPadding != hasPadding) // padding changed, we need to reupdate minimumWidth
+            updateHeaderFooterTableMinimumWidth();
 
         if (pendingState.pendingScrollTop != pendingState.pendingCurrentScrollTop) {
             tableDataScroller.setVerticalScrollPosition(pendingState.pendingScrollTop);

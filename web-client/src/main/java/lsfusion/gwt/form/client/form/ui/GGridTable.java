@@ -10,6 +10,7 @@ import com.google.gwt.event.dom.client.ScrollEvent;
 import com.google.gwt.event.dom.client.ScrollHandler;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.base.client.GwtClientUtils;
 import lsfusion.gwt.base.client.jsni.Function;
 import lsfusion.gwt.base.client.jsni.NativeHashMap;
 import lsfusion.gwt.base.client.ui.DialogBoxHelper;
@@ -341,12 +342,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
             }
 
             int rowHeight = 0;
-            preferredWidth = 0;
             int headerHeight = getHeaderHeight();
-
-            List<GridColumn> flexColumns = new ArrayList<>();
-            List<Integer> flexValues = new ArrayList<>();
-            int totalFlexValues = 0;
 
             NativeHashMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, GridColumn>> newColumnsMap = new NativeHashMap<>();
             for (int i = 0; i < columnProperties.size(); ++i) {
@@ -365,16 +361,6 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
                     }
                 }
                 
-                boolean isFlex = property.isFlex(font);
-                int columnPreferredWidth = getUserWidth(property) != null ? getUserWidth(property) : property.getPreferredValuePixelWidth(font);
-                if(isFlex) {
-                    flexColumns.add(column);
-                    flexValues.add(columnPreferredWidth);
-                    totalFlexValues += columnPreferredWidth;
-                } else
-                    setColumnWidth(column, columnPreferredWidth  + "px");
-                preferredWidth += columnPreferredWidth;
-
                 //дублирование логики изменения captions для оптимизации
                 String columnCaption;
                 Map<GGroupObjectValue, Object> propCaptions = propertyCaptions.get(property);
@@ -412,17 +398,6 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
                 int columnMinimumHeight = property.getMinimumValuePixelHeight(font);
                 rowHeight = Math.max(rowHeight, columnMinimumHeight);
             }
-            
-            int restPercent = 100 * 100;
-            for(int i=0,size=flexColumns.size();i<size;i++) {
-                GridColumn flexColumn = flexColumns.get(i);
-                int flexValue = flexValues.get(i);
-                int flexPercent = Math.round(flexValue * restPercent / totalFlexValues);
-                restPercent -= flexPercent;
-                totalFlexValues -= flexValue;
-                setColumnWidth(flexColumn, ((double)flexPercent / 100.0)  + "%");
-            }
-            setMinimumTableWidth(preferredWidth, com.google.gwt.dom.client.Style.Unit.PX);
 
             setFixedHeaderHeight(headerHeight);
             
@@ -442,6 +417,8 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
 
             columnsMap = newColumnsMap;
 
+            updateLayoutWidth(); // после заполнения columnsMap так как используется внутри
+
             refreshHeaders();
 
             gridController.setForceHidden(columnProperties.isEmpty());
@@ -450,7 +427,73 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
             captionsUpdated = false;
         }
     }
-    
+
+    // в общем то для "групп в колонки" разделено (чтобы когда были группы в колонки - все не расширялись(
+    private void updateLayoutWidthColumns() {
+        preferredWidth = 0;
+        List<Column> flexColumns = new ArrayList<>();
+        List<Integer> flexValues = new ArrayList<>();
+        int totalFlexValues = 0;
+
+        for (int i = 0; i < columns.length; ++i) {
+            Column column = columns[i];
+
+            int columnPreferredWidth = prefs[i];
+            if(flexes[i]) {
+                flexColumns.add(column);
+                flexValues.add(columnPreferredWidth);
+                totalFlexValues += columnPreferredWidth;
+            } else
+                setColumnWidth(column, columnPreferredWidth  + "px");
+            preferredWidth += columnPreferredWidth;
+        }
+
+        int restPercent = 100 * 100;
+        for(int i=0,size=flexColumns.size();i<size;i++) {
+            Column flexColumn = flexColumns.get(i);
+            int flexValue = flexValues.get(i);
+            int flexPercent = Math.round(flexValue * restPercent / totalFlexValues);
+            restPercent -= flexPercent;
+            totalFlexValues -= flexValue;
+            setColumnWidth(flexColumn, ((double)flexPercent / 100.0)  + "%");
+        }
+        setMinimumTableWidth(preferredWidth, com.google.gwt.dom.client.Style.Unit.PX);
+    }
+
+    public void resizeColumn(int column, int delta) {
+//        int body = ;
+        int viewWidth = getTableDataScroller().getClientWidth() - 1; // непонятно откуда этот один пиксель берется (судя по всему padding)
+        GwtClientUtils.calculateNewFlexesForFixedTableLayout(column, delta, viewWidth, prefs, basePrefs, flexes);
+        for(int i=0;i<prefs.length;i++)
+            setUserWidth(getProperty(columns[i]), prefs[i]);
+        updateLayoutWidthColumns();
+        onResize();
+    }
+
+    private GridColumn[] columns;
+    private int[] prefs;  // mutable
+    private int[] basePrefs;
+    private boolean[] flexes;
+    public void updateLayoutWidth() {
+        int columnsCount = columnProperties.size();
+        columns = new GridColumn[columnsCount];
+        prefs = new int[columnsCount];
+        basePrefs = new int[columnsCount];
+        flexes = new boolean[columnsCount];
+        for (int i = 0; i < columnsCount; ++i) {
+            GPropertyDraw property = columnProperties.get(i);
+            GGroupObjectValue columnKey = columnKeysList.get(i);
+
+            columns[i] = getFromColumnsMap(columnsMap, property, columnKey);
+            flexes[i] = property.isFlex(font);
+
+            int basePref = property.getMinimumPixelValueWidth(font); //property.getPreferredValuePixelWidth(font);
+            prefs[i] = getUserWidth(property) != null ? getUserWidth(property) : basePref;
+            basePrefs[i] = basePref;
+        }
+        updateLayoutWidthColumns();
+    }
+
     public boolean containsProperty(GPropertyDraw property) {
         return properties.contains(property);
     }
@@ -534,6 +577,14 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
             columnsMap.put(row, rowMap = new NativeHashMap<>());
         }
         rowMap.put(column, value);
+    }
+
+    public static GridColumn getFromColumnsMap(NativeHashMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, GridColumn>> columnsMap, GPropertyDraw row, GGroupObjectValue column) {
+        NativeHashMap<GGroupObjectValue, GridColumn> rowMap = columnsMap.get(row);
+        if (rowMap != null) {
+            return rowMap.get(column);
+        }
+        return null;
     }
 
     public static GridColumn removeFromColumnsMap(NativeHashMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, GridColumn>> columnsMap, GPropertyDraw row, GGroupObjectValue column) {

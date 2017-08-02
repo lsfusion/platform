@@ -99,16 +99,24 @@ public class GContainer extends GComponent {
         return draws;
     }
 
-    public boolean isVertical() {
-        return type == CONTAINERV || type == VERTICAL_SPLIT_PANE;
+    public boolean isLinearVertical() {
+        return type == CONTAINERV;
     }
 
-    public boolean isHorizontal() {
+    public boolean isSplitVertical() {
+        return type == VERTICAL_SPLIT_PANE;
+    }
+
+    public boolean isVertical() {
+        return isLinearVertical() || isSplitVertical();
+    }
+
+    public boolean isLinearHorizontal() {
         return type == CONTAINERH;
     }
 
     public boolean isLinear() {
-        return isVertical() || isHorizontal();
+        return isLinearVertical() || isLinearHorizontal();
     }
 
     public boolean isColumns() {

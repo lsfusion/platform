@@ -94,17 +94,22 @@ public class GGridPropertyTableHeader extends Header<String> {
                         Column leftColumn = table.getColumn(leftColumnIndex);
                         TableCellElement leftHeaderCell = ((TableRowElement) target.getParentElement()).getCells().getItem(leftColumnIndex);
 
-                        int rightColumnsCount = table.getColumnCount() - leftColumnIndex - 1;
-                        Column[] rightColumns = new Column[rightColumnsCount];
-                        double[] rightScaleWidths = new double[rightColumnsCount];
-                        for (int i = 1; i <= rightColumnsCount; i++) {
-                            Column column = table.getColumn(leftColumnIndex + i);
-                            rightColumns[i - 1] = column;
-                            rightScaleWidths[i - 1] = getColumnWidth(column);
-                        }
+                        if(table instanceof GGridTable) {
+                            resizeHelper = new ColumnResizeHelper(leftColumnIndex, leftHeaderCell);
+                        } else {
+                            int initialMouseX = leftHeaderCell.getAbsoluteRight();
+                            int rightColumnsCount = table.getColumnCount() - leftColumnIndex - 1;
+                            Column[] rightColumns = new Column[rightColumnsCount];
+                            double[] rightScaleWidths = new double[rightColumnsCount];
+                            for (int i = 1; i <= rightColumnsCount; i++) {
+                                Column column = table.getColumn(leftColumnIndex + i);
+                                rightColumns[i - 1] = column;
+                                rightScaleWidths[i - 1] = getColumnWidth(column);
+                            }
 
-                        resizeHelper = new ColumnResizeHelper(leftColumn, rightColumns, rightScaleWidths, leftHeaderCell.getAbsoluteRight(),
-                                getColumnWidth(leftColumn), leftHeaderCell.getOffsetWidth());
+                            resizeHelper = new ColumnResizeHelper(leftColumn, rightColumns, rightScaleWidths, initialMouseX,
+                                    getColumnWidth(leftColumn), leftHeaderCell.getOffsetWidth());
+                        }
                         stopPropagation(event);
                     }
                 } else {
@@ -223,13 +228,21 @@ public class GGridPropertyTableHeader extends Header<String> {
     private class ColumnResizeHelper implements NativePreviewHandler {
         private HandlerRegistration previewHandlerReg;
 
-        private int initalMouseX;
+        TableCellElement leftHeaderCell;
+        private int leftColumnIndex;
+        public ColumnResizeHelper(int leftColumnIndex, TableCellElement leftHeaderCell) {
+            this.leftHeaderCell = leftHeaderCell;
+            this.initalMouseX = leftHeaderCell.getAbsoluteRight();
+            this.leftColumnIndex = leftColumnIndex;
 
+            previewHandlerReg = Event.addNativePreviewHandler(this);
+        }
+
+        private int initalMouseX;
         private Column leftColumn;
         private double leftInitialWidth;
 
-        private double scaleWidth;
-        private int scalePixelWidth;
+        private double scale;
 
         private Column[] rightColumns;
         private double[] rightInitialWidths;
@@ -239,8 +252,7 @@ public class GGridPropertyTableHeader extends Header<String> {
             this.leftColumn = leftColumn;
             this.rightColumns = rightColumns;
             this.initalMouseX = initalMouseX;
-            this.scaleWidth = scaleWidth;
-            this.scalePixelWidth = scalePixelWidth;
+            this.scale = scaleWidth / (double) scalePixelWidth;
 
             leftInitialWidth = scaleWidth;
 
@@ -276,7 +288,16 @@ public class GGridPropertyTableHeader extends Header<String> {
 
         private void resizeHeaders(int clientX) {
             int dragX = clientX - initalMouseX;
-            double dragColumnWidth = dragX * scaleWidth / scalePixelWidth;
+            if(table instanceof GGridTable) {
+                if(Math.abs(dragX) > 2) {
+                    ((GGridTable) table).resizeColumn(leftColumnIndex, dragX);
+                    initalMouseX = leftHeaderCell.getAbsoluteRight();
+//                    initalMouseX = clientX; // из-за округлений гулять начинает
+                }
+                return;
+            }
+
+            double dragColumnWidth = dragX * scale;
             double newLeftWidth = leftInitialWidth + dragColumnWidth;
 
             if (table.getTableDataScroller().getMaximumHorizontalScrollPosition() > 0) {

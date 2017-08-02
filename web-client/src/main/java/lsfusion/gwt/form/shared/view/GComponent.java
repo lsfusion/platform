@@ -56,7 +56,7 @@ public class GComponent implements Serializable {
             }
 
             assert container.isLinear();
-            return container.isVertical() && flex > 0 || container.isHorizontal() && alignment == GFlexAlignment.STRETCH;
+            return container.isLinearVertical() && flex > 0 || container.isLinearHorizontal() && alignment == GFlexAlignment.STRETCH;
 
         }
         return false;
@@ -71,7 +71,7 @@ public class GComponent implements Serializable {
             }
 
             assert container.isLinear();
-            return container.isHorizontal() && flex > 0 || container.isVertical() && alignment == GFlexAlignment.STRETCH;
+            return container.isLinearHorizontal() && flex > 0 || container.isLinearVertical() && alignment == GFlexAlignment.STRETCH;
         }
         return false;
     }
