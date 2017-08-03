@@ -194,6 +194,10 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
         return this;
     }
 
+    public ObjectValue getObjectValue() {
+        return this;
+    }
+
     public ConcreteClass getCurrentClass() {
         return objectClass;
     }

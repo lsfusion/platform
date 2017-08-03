@@ -12,6 +12,7 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.classes.sets.AndClassSet;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.DataObject;
+import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyInterface;
 
@@ -70,10 +71,17 @@ public abstract class PropertyObjectInstance<P extends PropertyInterface, T exte
 
     public abstract CalcPropertyObjectInstance<?> getDrawProperty();
 
-    public ImMap<P, DataObject> getInterfaceValues() {
+    public ImMap<P, DataObject> getInterfaceDataObjects() {
         return mapping.mapValues(new GetValue<DataObject, PropertyObjectInterfaceInstance>() {
             public DataObject getMapValue(PropertyObjectInterfaceInstance value) {
                 return value.getDataObject();
+            }});
+    }
+
+    public ImMap<P, ObjectValue> getInterfaceObjectValues() {
+        return mapping.mapValues(new GetValue<ObjectValue, PropertyObjectInterfaceInstance>() {
+            public ObjectValue getMapValue(PropertyObjectInterfaceInstance value) {
+                return value.getObjectValue();
             }});
     }
 

@@ -24,7 +24,7 @@ public class ActionPropertyObjectInstance<P extends PropertyInterface> extends P
     }
 
     public FlowResult execute(ExecutionEnvironment env, ExecutionStack stack, DataObject pushAdd, PropertyDrawInstance changingProperty, FormInstance formInstance) throws SQLException, SQLHandledException {
-        return env.execute(property, getInterfaceValues(), new FormEnvironment<>(mapping, changingProperty, formInstance), pushAdd, stack);
+        return env.execute(property, getInterfaceObjectValues(), new FormEnvironment<>(mapping, changingProperty, formInstance), pushAdd, stack);
     }
 
     public CalcPropertyObjectInstance<?> getDrawProperty() {
@@ -33,6 +33,6 @@ public class ActionPropertyObjectInstance<P extends PropertyInterface> extends P
     }
 
     public ActionPropertyValueImplement<P> getValueImplement(FormInstance formInstance) {
-        return new ActionPropertyValueImplement<>(property, getInterfaceValues(), mapping, formInstance);
+        return new ActionPropertyValueImplement<>(property, getInterfaceObjectValues(), mapping, formInstance);
     }
 }

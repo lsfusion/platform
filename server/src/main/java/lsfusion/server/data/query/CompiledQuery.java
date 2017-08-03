@@ -526,7 +526,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
             whereSelect.addAll(mExplicitWheres.immutableList().getCol());
             whereSelect.addAll(mImplicitJoins.immutableList().getCol());
             mJoins.addAll(mOuterPendingJoins.immutableOrder());
-            assert pending.isEmpty();
+            assert pending.isEmpty(); // из-за висячего ключа может падать (аналогично EmptyStackException)
             mExplicitWheres = null;
             mImplicitJoins = null;
             mOuterPendingJoins = null;

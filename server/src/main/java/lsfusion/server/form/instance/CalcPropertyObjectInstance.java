@@ -33,11 +33,11 @@ public class CalcPropertyObjectInstance<P extends PropertyInterface> extends Pro
     }
 
     public CalcPropertyValueImplement<P> getValueImplement() {
-        return new CalcPropertyValueImplement<>(property, getInterfaceValues());
+        return new CalcPropertyValueImplement<>(property, getInterfaceDataObjects());
     }
 
     public Object read(FormInstance formInstance) throws SQLException, SQLHandledException {
-        return property.read(formInstance, getInterfaceValues());
+        return property.read(formInstance, getInterfaceObjectValues());
     }
 
     public CalcPropertyObjectInstance getDrawProperty() {
