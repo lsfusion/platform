@@ -1921,7 +1921,7 @@ public class Settings implements Cloneable {
         this.queryLengthAverageMax = queryLengthAverageMax;
     }
     
-    private int outSelectLengthThreshold = 10000000;
+    private int outSelectLengthThreshold = 100000;
 
     public int getOutSelectLengthThreshold() {
         return outSelectLengthThreshold;

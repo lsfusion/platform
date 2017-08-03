@@ -1133,21 +1133,24 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         }
     }
     
-    public void rollReturnTemporaryTable(SessionTable table, TableOwner owner, OperationOwner opOwner) throws SQLException {
+    public void rollReturnTemporaryTable(SessionTable table, TableOwner owner, OperationOwner opOwner, boolean assertNotExists) throws SQLException {
         lockRead(opOwner);
         try {
             temporaryTablesLock.lock();
             try {
                 needPrivate();
 
-                // assertion построен на том что между началом транзакции ее rollback'ом, все созданные таблицы в явную drop'ся, соответственно может нарушится если скажем открыта форма и не close'ута, или просто new IntegrationService идет
-                // в принципе он не настолько нужен, но для порядка пусть будет
-                // придется убрать так как чистых использований уже достаточно много, например ClassChange.materialize, DataSession.addObjects, правда что сейчас с assertion'ами делать неясно
-                ServerLoggers.assertLog(!sessionTablesMap.containsKey(table.getName()), "ROLLBACK TABLE SHOULD BE FREE"); // вернул назад
                 WeakReference<TableOwner> value = new WeakReference<>(owner);
 //                            fifo.add("RGET " + getCurrentTimeStamp() + " " + table + " " + privateConnection.temporary + " " + value + " " + owner + " " + opOwner  + " " + this + " " + ExecutionStackAspect.getExStackTrace());
-                sessionTablesMap.put(table.getName(), value);
+                WeakReference<TableOwner> prevOwner = sessionTablesMap.put(table.getName(), value);
                 sessionDebugInfo.put(table.getName(), owner.getDebugInfo());
+
+                if(assertNotExists) {
+                    // assertion построен на том что между началом транзакции ее rollback'ом, все созданные таблицы в явную drop'ся, соответственно может нарушится если скажем открыта форма и не close'ута, или просто new IntegrationService идет
+                    // в принципе он не настолько нужен, но для порядка пусть будет
+                    ServerLoggers.assertLog(prevOwner == null, "ROLLBACK TABLE SHOULD BE FREE");
+                } else
+                    ServerLoggers.assertLog(prevOwner == null || prevOwner.get() == owner, "ROLLBACK OWNERS SHOULD MATCH"); // вернул назад
 
             } finally {
                 temporaryTablesLock.unlock();

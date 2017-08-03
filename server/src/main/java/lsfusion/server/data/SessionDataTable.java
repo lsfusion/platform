@@ -162,8 +162,8 @@ public class SessionDataTable extends SessionData<SessionDataTable> {
     public void drop(SQLSession session, TableOwner owner, OperationOwner opOwner) throws SQLException {
         table.drop(session, owner, opOwner);
     }
-    public void rollDrop(SQLSession session, TableOwner owner, OperationOwner opOwner) throws SQLException {
-        table.rollDrop(session, owner, opOwner);
+    public void rollDrop(SQLSession session, TableOwner owner, OperationOwner opOwner, boolean assertNotExists) throws SQLException {
+        table.rollDrop(session, owner, opOwner, assertNotExists);
     }
 
     public boolean used(InnerContext query) {

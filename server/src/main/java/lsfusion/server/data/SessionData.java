@@ -50,7 +50,7 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
     public abstract Join<PropertyField> join(final ImMap<KeyField, ? extends Expr> joinImplement);
 
     public abstract void drop(SQLSession session, TableOwner owner, OperationOwner opOwner) throws SQLException;
-    public abstract void rollDrop(SQLSession session, TableOwner owner, OperationOwner opOwner) throws SQLException;
+    public abstract void rollDrop(SQLSession session, TableOwner owner, OperationOwner opOwner, boolean assertNotExists) throws SQLException;
 
     public abstract boolean used(InnerContext query);
 
@@ -211,13 +211,7 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
         if(dropBefore)
             drop(session, owner, opOwner);
 
-        SessionData result;
-        try {
-            result = write(session, getOrderKeys(), getProperties(), query, baseClass, env, owner, updateClasses, selectTop);
-        } catch (SQLHandledException e) {
-            rollDrop(session, owner, opOwner);
-            throw e;
-        }
+        SessionData result = write(session, getOrderKeys(), getProperties(), query, baseClass, env, owner, updateClasses, selectTop);
 
         if(!dropBefore)
             drop(session, owner, opOwner);

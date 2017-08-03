@@ -1,6 +1,8 @@
 package lsfusion.server.session;
 
+import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
+import lsfusion.base.ExceptionUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.Result;
 import lsfusion.base.col.MapFact;
@@ -122,6 +124,12 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K>, TableOwner {
         return ModifyResult.NO;
     }
 
+    // в общем случае надо гарантировать целостность ссылки table и usedTempTables в session, но так как отслеживать момент вернулась таблица или нет до exception'а, не хочется, пока такой мини-хак
+    // есть еще несколько записей в table без этого аспекта, но там проблемы с ссылками быть не может (так как exception'ов нет)
+    private void aspectExceptionModify(SQLSession session, OperationOwner owner) throws SQLException {
+        table.rollDrop(session, this, owner, false);
+    }
+
     public ModifyResult modifyRecord(SQLSession session, ImMap<K, DataObject> keyObjects, ImMap<V, ObjectValue> propertyObjects, Modify type, OperationOwner owner) throws SQLException, SQLHandledException {
         ImMap<KeyField, DataObject> keyFieldObjects = mapKeys.join(keyObjects);
         ImMap<PropertyField, ObjectValue> propFieldObjects = mapProps.join(propertyObjects);
@@ -130,7 +138,12 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K>, TableOwner {
             keyFieldObjects = SessionData.castTypes(keyFieldObjects); // так как иначе можно unique violation получить
         
         Result<Boolean> changed = new Result<>();
-        return aspectModify(table.modifyRecord(session, keyFieldObjects, propFieldObjects, type, this, owner, changed), changed.result);
+        try {
+            return aspectModify(table.modifyRecord(session, keyFieldObjects, propFieldObjects, type, this, owner, changed), changed.result);
+        } catch (Throwable t) {
+            aspectExceptionModify(session, owner);
+            throw ExceptionUtils.propagate(t, SQLException.class, SQLHandledException.class);
+        }
     }
 
     public void writeKeys(SQLSession session,ImSet<ImMap<K,DataObject>> writeRows, OperationOwner owner) throws SQLException, SQLHandledException {
@@ -145,7 +158,12 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K>, TableOwner {
             public ImMap<PropertyField, ObjectValue> getMapValue(ImMap<V, ObjectValue> value) {
                 return mapProps.join(value);
             }});
-        table = table.rewrite(session, mapWriteRows, this, opOwner);
+        try {
+            table = table.rewrite(session, mapWriteRows, this, opOwner);
+        } catch (Throwable t) {
+            aspectExceptionModify(session, opOwner);
+            throw ExceptionUtils.propagate(t, SQLException.class, SQLHandledException.class);
+        }
     }
 
     public void writeRows(SQLSession session, IQuery<K, V> query, BaseClass baseClass, QueryEnvironment env, boolean updateClasses) throws SQLException, SQLHandledException {
@@ -153,13 +171,23 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K>, TableOwner {
     }
 
     public void writeRows(SQLSession session, IQuery<K, V> query, BaseClass baseClass, QueryEnvironment env, boolean updateClasses, int selectTop) throws SQLException, SQLHandledException {
-        table = table.rewrite(session, query.map(mapKeys, mapProps), baseClass, env, this, updateClasses, selectTop);
+        try {
+            table = table.rewrite(session, query.map(mapKeys, mapProps), baseClass, env, this, updateClasses, selectTop);
+        } catch (Throwable t) {
+            aspectExceptionModify(session, env.getOpOwner());
+            throw ExceptionUtils.propagate(t, SQLException.class, SQLHandledException.class);
+        }
     }
 
     // добавляет ряды которых не было в таблице, или modify'ит
     public ModifyResult modifyRows(SQLSession session, IQuery<K, V> query, BaseClass baseClass, Modify type, QueryEnvironment env, boolean updateClasses) throws SQLException, SQLHandledException {
         Result<Boolean> changed = new Result<>();
-        return aspectModify(table.modifyRows(session, query.map(mapKeys, type == Modify.DELETE ? MapFact.<PropertyField, V>EMPTYREV() : mapProps), baseClass, type, env, this, changed, updateClasses), changed.result);
+        try {
+            return aspectModify(table.modifyRows(session, query.map(mapKeys, type == Modify.DELETE ? MapFact.<PropertyField, V>EMPTYREV() : mapProps), baseClass, type, env, this, changed, updateClasses), changed.result);
+        } catch (Throwable t) {
+            aspectExceptionModify(session, env.getOpOwner());
+            throw ExceptionUtils.propagate(t, SQLException.class, SQLHandledException.class);
+        }
     }
     // оптимизационная штука
     public void updateAdded(SQLSession session, BaseClass baseClass, V property, Pair<Integer,Integer>[] shifts, OperationOwner owner) throws SQLException, SQLHandledException {
@@ -235,7 +263,7 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K>, TableOwner {
     public void rollData(SQLSession sql, SessionData table, OperationOwner owner) throws SQLException {
         assert this.table == null;
         this.table = table;
-        this.table.rollDrop(sql, this, owner);
+        this.table.rollDrop(sql, this, owner, true);
     }
     
     public static <T> ImMap<T, SessionData> saveData(Map<T, ? extends SessionTableUsage> map) {

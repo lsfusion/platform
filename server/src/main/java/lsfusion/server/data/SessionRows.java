@@ -135,7 +135,7 @@ public class SessionRows extends SessionData<SessionRows> {
 
     public void drop(SQLSession session, TableOwner owner, OperationOwner opOwner) {
     }
-    public void rollDrop(SQLSession session, TableOwner owner, OperationOwner opOwner) throws SQLException {
+    public void rollDrop(SQLSession session, TableOwner owner, OperationOwner opOwner, boolean assertNotExists) throws SQLException {
     }
 
     @Override
