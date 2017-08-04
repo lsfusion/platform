@@ -7,6 +7,7 @@ import com.google.gwt.dom.client.Node;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
 import lsfusion.gwt.base.client.GwtClientUtils;
+import lsfusion.gwt.base.client.jsni.NativeHashMap;
 import lsfusion.gwt.base.shared.GwtSharedUtils;
 import lsfusion.gwt.cellview.client.Column;
 import lsfusion.gwt.cellview.client.DataGrid;
@@ -28,6 +29,7 @@ import static java.util.Collections.singleton;
 
 public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     private boolean dataUpdated;
+    private boolean columnsUpdated;
 
     private GGroupObjectValue pathToSet;
 
@@ -54,6 +56,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         this.autoSize = autoSize;
 
         tree = new GTreeTableTree(iform);
+
         Column<GTreeGridRecord, Object> column = new Column<GTreeGridRecord, Object>(new GTreeGridControlCell(this)) {
             @Override
             public Object getValue(GTreeGridRecord object) {
@@ -113,9 +116,13 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
             createdFields.remove(index);
             headers.remove(index);
             removeColumn(index);
-            preferredWidth -= property.getMinimumPixelValueWidth(font);
+
+            columnsMap.remove(property);
+            columnsUpdated = true;
         }
     }
+
+    private NativeHashMap<GPropertyDraw, Column> columnsMap = new NativeHashMap<>();
 
     public void addProperty(GGroupObject group, GPropertyDraw property) {
         dataUpdated = true;
@@ -133,9 +140,8 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
                 insertColumn(index, gridColumn, header);
                 createdFields.add(index, property.sID);
 
-                setColumnWidth(gridColumn, property.getMinimumValueWidth(font));
-
-                preferredWidth += property.getMinimumPixelValueWidth(font);
+                columnsMap.put(property, gridColumn);
+                columnsUpdated = true;
             }
         }
     }
@@ -193,8 +199,44 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         dataUpdated = true;
     }
 
+    @Override
+    protected void setUserWidth(GPropertyDraw property, Integer value) {
+        // not implemented yet
+    }
+
+    @Override
+    protected Integer getUserWidth(GPropertyDraw property) {
+        // not implemented yet
+        return null;
+    }
+
+    @Override
+    protected int getColumnsCount() {
+        return tree.properties.size();
+    }
+
+    @Override
+    protected GPropertyDraw getColumnPropertyDraw(int i) {
+        return tree.properties.get(i);
+    }
+
+    @Override
+    protected Column getColumnDraw(int i) {
+        return columnsMap.get(tree.properties.get(i));
+    }
+
+    @Override
+    protected int[] getExtraLeftFixedColumns() {
+        return new int[]{81};
+    }
+
     public void update() {
         storeScrollPosition();
+
+        if(columnsUpdated) {
+            updateLayoutWidth();
+            columnsUpdated = false;
+        }
 
         if (dataUpdated) {
             restoreVisualState();

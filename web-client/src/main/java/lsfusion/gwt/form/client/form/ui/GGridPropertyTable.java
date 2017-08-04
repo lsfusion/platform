@@ -9,8 +9,10 @@ import com.google.gwt.dom.client.TableRowElement;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
 import lsfusion.gwt.base.client.Dimension;
+import lsfusion.gwt.base.client.GwtClientUtils;
 import lsfusion.gwt.base.client.ui.GKeyStroke;
 import lsfusion.gwt.base.client.ui.HasMaxPreferredSize;
+import lsfusion.gwt.cellview.client.Column;
 import lsfusion.gwt.cellview.client.DataGrid;
 import lsfusion.gwt.cellview.client.Header;
 import lsfusion.gwt.cellview.client.cell.Cell;
@@ -23,6 +25,7 @@ import lsfusion.gwt.form.shared.view.grid.NativeEditEvent;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static java.lang.Math.max;
@@ -290,4 +293,94 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
             nextRow(down);
         }
     }
+
+    // в общем то для "групп в колонки" разделено (чтобы когда были группы в колонки - все не расширялись(
+    private void updateLayoutWidthColumns() {
+        List<Column> flexColumns = new ArrayList<>();
+        List<Double> flexValues = new ArrayList<>();
+        double totalPref = 0.0;
+        for(int extra : getExtraLeftFixedColumns())
+            totalPref += extra;
+
+        double totalFlexValues = 0;
+
+        for (int i = 0; i < columns.length; ++i) {
+            Column column = columns[i];
+
+            double pref = prefs[i];
+            if(flexes[i]) {
+                pref += (i % 2 == 0 ? (i==columns.length - 1 ? 0.0 : -0.1) : 0.1); // поправка для округлений (чтобы не дрожало)
+
+                flexColumns.add(column);
+                flexValues.add(pref);
+                totalFlexValues += pref;
+            } else {
+                int intPref = (int) Math.round(prefs[i]);
+                assert intPref == basePrefs[i];
+                setColumnWidth(column, intPref + "px");
+            }
+            totalPref += pref;
+        }
+
+        int precision = 10000;
+        int restPercent = 100 * precision;
+        for(int i=0,size=flexColumns.size();i<size;i++) {
+            Column flexColumn = flexColumns.get(i);
+            double flexValue = flexValues.get(i);
+            int flexPercent = (int) Math.round(flexValue * restPercent / totalFlexValues);
+            restPercent -= flexPercent;
+            totalFlexValues -= flexValue;
+            setColumnWidth(flexColumn, ((double)flexPercent / (double)precision)  + "%");
+        }
+        preferredWidth = (int) Math.round(totalPref);
+        setMinimumTableWidth(totalPref, com.google.gwt.dom.client.Style.Unit.PX);
+    }
+
+    protected abstract int[] getExtraLeftFixedColumns(); // для дерева
+
+    public void resizeColumn(int column, int delta) {
+//        int body = ;
+        int viewWidth = getTableDataScroller().getClientWidth() - 1; // непонятно откуда этот один пиксель берется (судя по всему padding)
+        for(int extra : getExtraLeftFixedColumns()) {
+            viewWidth -= extra;
+            column--;
+        }
+
+        GwtClientUtils.calculateNewFlexesForFixedTableLayout(column, delta, viewWidth, prefs, basePrefs, flexes);
+        for(int i=0;i<prefs.length;i++)
+            setUserWidth(getProperty(columns[i]), (int) Math.round(prefs[i]));
+        updateLayoutWidthColumns();
+        onResize();
+    }
+
+    private Column[] columns;
+    private double[] prefs;  // mutable
+    private int[] basePrefs;
+    private boolean[] flexes;
+    public void updateLayoutWidth() {
+        int columnsCount = getColumnsCount();
+        columns = new Column[columnsCount];
+        prefs = new double[columnsCount];
+        basePrefs = new int[columnsCount];
+        flexes = new boolean[columnsCount];
+        for (int i = 0; i < columnsCount; ++i) {
+            columns[i] = getColumnDraw(i);
+
+            GPropertyDraw property = getColumnPropertyDraw(i);
+            flexes[i] = property.isFlex(font);
+
+            int basePref = property.getMinimumPixelValueWidth(font); //property.getPreferredValuePixelWidth(font);
+            Integer userWidth = getUserWidth(property);
+            prefs[i] = userWidth != null ? userWidth : basePref;
+            basePrefs[i] = basePref;
+        }
+        updateLayoutWidthColumns();
+    }
+
+    protected abstract void setUserWidth(GPropertyDraw property, Integer value);
+    protected abstract Integer getUserWidth(GPropertyDraw property);
+
+    protected abstract int getColumnsCount();
+    protected abstract GPropertyDraw getColumnPropertyDraw(int i);
+    protected abstract Column getColumnDraw(int i);
 }
