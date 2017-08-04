@@ -217,12 +217,12 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
 
     @Override
     protected GPropertyDraw getColumnPropertyDraw(int i) {
-        return tree.properties.get(i);
+        return tree.columnProperties.get(i);
     }
 
     @Override
     protected Column getColumnDraw(int i) {
-        return columnsMap.get(tree.properties.get(i));
+        return columnsMap.get(tree.columnProperties.get(i));
     }
 
     @Override

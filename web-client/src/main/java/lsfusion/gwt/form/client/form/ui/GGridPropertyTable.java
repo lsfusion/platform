@@ -346,11 +346,13 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
             column--;
         }
 
-        GwtClientUtils.calculateNewFlexesForFixedTableLayout(column, delta, viewWidth, prefs, basePrefs, flexes);
-        for(int i=0;i<prefs.length;i++)
-            setUserWidth(getProperty(columns[i]), (int) Math.round(prefs[i]));
-        updateLayoutWidthColumns();
-        onResize();
+        if(column >= 0) {
+            GwtClientUtils.calculateNewFlexesForFixedTableLayout(column, delta, viewWidth, prefs, basePrefs, flexes);
+            for (int i = 0; i < prefs.length; i++)
+                setUserWidth(getProperty(columns[i]), (int) Math.round(prefs[i]));
+            updateLayoutWidthColumns();
+            onResize();
+        }
     }
 
     private Column[] columns;
