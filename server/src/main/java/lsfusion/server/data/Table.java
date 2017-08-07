@@ -689,8 +689,8 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
             return InnerExpr.getInnerJoins(this);
         }
 
-        public InnerJoins getJoinFollows(Result<UpWheres<InnerJoin>> upWheres, Result<ImSet<UnionJoin>> unionJoins) {
-            return InnerExpr.getJoinFollows(this, upWheres, unionJoins);
+        public InnerJoins getJoinFollows(Result<UpWheres<InnerJoin>> upWheres, MSet<UnionJoin> mUnionJoins) {
+            return InnerExpr.getJoinFollows(this, upWheres, mUnionJoins);
         }
 
         @TwinLazy

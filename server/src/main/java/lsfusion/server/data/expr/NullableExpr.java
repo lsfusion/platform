@@ -100,22 +100,15 @@ public abstract class NullableExpr extends VariableSingleClassExpr implements Nu
         return result.immutable();
     }
 
-    public static ImSet<InnerExpr> getInnerExprs(ImSet<NullableExprInterface> set, Result<ImSet<UnionJoin>> unionJoins) {
+    public static ImSet<InnerExpr> getInnerExprs(ImSet<NullableExprInterface> set, MSet<UnionJoin> mUnionJoins) {
         boolean hasNotInner = false;
         for(int i=0,size=set.size();i<size;i++) // оптимизация
             if(!(set.get(i) instanceof InnerExpr)) {
                 hasNotInner = true;
                 break;
             }
-        if(!hasNotInner) {
-            if(unionJoins!=null)
-                unionJoins.set(SetFact.<UnionJoin>EMPTY());
+        if(!hasNotInner)
             return BaseUtils.immutableCast(set);
-        }
-
-        MSet<UnionJoin> mUnionJoins = null;
-        if(unionJoins!=null)
-            mUnionJoins = SetFact.mSetMax(set.size());
 
         MSet<InnerExpr> mResult = SetFact.mSet();
         for(int i=0,size=set.size();i<size;i++) {
@@ -125,12 +118,9 @@ public abstract class NullableExpr extends VariableSingleClassExpr implements Nu
             else {
                 if(mUnionJoins!=null && expr instanceof UnionExpr)
                     mUnionJoins.add(((UnionExpr)expr).getBaseJoin());
-                mResult.addAll(getInnerExprs(expr.getExprFollows(NullableExpr.INNERJOINS, false), unionJoins));
+                mResult.addAll(getInnerExprs(expr.getExprFollows(NullableExpr.INNERJOINS, false), mUnionJoins));
             }
         }
-
-        if(unionJoins!=null)
-            unionJoins.set(mUnionJoins.immutable());
         return mResult.immutable();
     }
 

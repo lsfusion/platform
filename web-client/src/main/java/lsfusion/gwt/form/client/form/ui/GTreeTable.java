@@ -231,7 +231,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
 
     @Override
     protected int getColumnsCount() {
-        return 1 + tree.properties.size();
+        return 1 + tree.columnProperties.size();
     }
 
     @Override

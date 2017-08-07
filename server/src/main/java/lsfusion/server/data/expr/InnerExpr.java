@@ -4,6 +4,7 @@ import lsfusion.base.Result;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MMap;
+import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.server.data.Table;
 import lsfusion.server.data.expr.query.PropStat;
 import lsfusion.server.data.expr.query.Stat;
@@ -104,10 +105,10 @@ public abstract class InnerExpr extends NullableExpr implements JoinData {
     }
 
     // множественное наследование
-    public static InnerJoins getJoinFollows(BaseJoin<?> join, Result<UpWheres<InnerJoin>> upWheres, Result<ImSet<UnionJoin>> unionJoins) { // куда-то надо же положить
+    public static InnerJoins getJoinFollows(BaseJoin<?> join, Result<UpWheres<InnerJoin>> upWheres, MSet<UnionJoin> mUnionJoins) { // куда-то надо же положить
         InnerJoins result = InnerJoins.EMPTY;
         UpWheres<InnerJoin> upResult = UpWheres.EMPTY();
-        ImSet<InnerExpr> innerExprs = getInnerExprs(join.getExprFollows(NullableExpr.INNERJOINS, false), unionJoins);
+        ImSet<InnerExpr> innerExprs = getInnerExprs(join.getExprFollows(NullableExpr.INNERJOINS, false), mUnionJoins);
         for(int i=0,size=innerExprs.size();i<size;i++) {
             InnerExpr innerExpr = innerExprs.get(i);
             InnerJoin innerJoin = innerExpr.getInnerJoin();

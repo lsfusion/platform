@@ -1666,10 +1666,10 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
                     remove = true;
             }
             if(!remove) {
-                Result<ImSet<UnionJoin>> unionJoins = new Result<>();
+                MSet<UnionJoin> mUnionJoins = SetFact.mSet();
                 joinUpWheres = new Result<>();
-                joinFollows = whereJoin.getJoinFollows(joinUpWheres, unionJoins);
-                for(UnionJoin unionJoin : unionJoins.result) // без этой проверки может бесконечно проталкивать
+                joinFollows = whereJoin.getJoinFollows(joinUpWheres, mUnionJoins);
+                for(UnionJoin unionJoin : mUnionJoins.immutable()) // без этой проверки может бесконечно проталкивать
                     if(unionJoin.depends(removeJoin)) {
                         remove = true;
                         break;

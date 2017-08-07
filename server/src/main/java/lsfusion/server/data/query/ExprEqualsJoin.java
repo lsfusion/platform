@@ -6,6 +6,7 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.server.caches.AbstractOuterContext;
 import lsfusion.server.caches.OuterContext;
 import lsfusion.server.caches.hash.HashContext;
@@ -44,8 +45,8 @@ public class ExprEqualsJoin extends AbstractOuterContext<ExprEqualsJoin> impleme
         return ExprJoin.getInnerJoins(expr1).and(ExprJoin.getInnerJoins(expr2));
     }
 
-    public InnerJoins getJoinFollows(Result<UpWheres<InnerJoin>> upWheres, Result<ImSet<UnionJoin>> unionJoins) {
-        return InnerExpr.getJoinFollows(this, upWheres, unionJoins);
+    public InnerJoins getJoinFollows(Result<UpWheres<InnerJoin>> upWheres, MSet<UnionJoin> mUnionJoins) {
+        return InnerExpr.getJoinFollows(this, upWheres, mUnionJoins);
     }
 
     public ImSet<NullableExprInterface> getExprFollows(boolean includeInnerWithoutNotNull, boolean recursive) {

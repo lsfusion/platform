@@ -6,6 +6,7 @@ import lsfusion.base.TwinImmutableObject;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.server.caches.*;
 import lsfusion.server.caches.hash.HashContext;
 import lsfusion.server.data.*;
@@ -107,8 +108,8 @@ public abstract class QueryJoin<K extends Expr,I extends QueryJoin.Query<K, I>, 
         public InnerJoins getInnerJoins() {
             return InnerExpr.getInnerJoins(thisObj);
         }
-        public InnerJoins getJoinFollows(Result<UpWheres<InnerJoin>> upWheres, Result<ImSet<UnionJoin>> unionJoins) {
-            return InnerExpr.getJoinFollows(thisObj, upWheres, unionJoins);
+        public InnerJoins getJoinFollows(Result<UpWheres<InnerJoin>> upWheres, MSet<UnionJoin> mUnionJoins) {
+            return InnerExpr.getJoinFollows(thisObj, upWheres, mUnionJoins);
         }
 
         public abstract T translateThis(MapTranslate translate);
@@ -161,8 +162,8 @@ public abstract class QueryJoin<K extends Expr,I extends QueryJoin.Query<K, I>, 
     public InnerJoins getInnerJoins() {
         return getOuter().getInnerJoins();
     }
-    public InnerJoins getJoinFollows(Result<UpWheres<InnerJoin>> upWheres, Result<ImSet<UnionJoin>> unionJoins) {
-        return getOuter().getJoinFollows(upWheres, unionJoins);
+    public InnerJoins getJoinFollows(Result<UpWheres<InnerJoin>> upWheres, MSet<UnionJoin> mUnionJoins) {
+        return getOuter().getJoinFollows(upWheres, mUnionJoins);
     }
 
     public ImMap<K, BaseExpr> getJoins() {

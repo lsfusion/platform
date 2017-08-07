@@ -1132,7 +1132,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
         }
 
         public int getColumnsCount() {
-            return 1 + model.properties.size();
+            return 1 + model.columnProperties.size();
         }
 
         @Override

@@ -5,6 +5,7 @@ import lsfusion.base.Result;
 import lsfusion.base.TwinImmutableObject;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.server.caches.AbstractOuterContext;
 import lsfusion.server.caches.OuterContext;
 import lsfusion.server.caches.hash.HashContext;
@@ -38,8 +39,8 @@ public class StatKeysJoin<K extends BaseExpr> extends AbstractOuterContext<StatK
         return StatKeys.hashOuter(stat, hash);
     }
 
-    public InnerJoins getJoinFollows(Result<UpWheres<InnerJoin>> upWheres, Result<ImSet<UnionJoin>> unionJoins) { // все равно использует getExprFollows
-        return InnerExpr.getJoinFollows(this, upWheres, unionJoins);
+    public InnerJoins getJoinFollows(Result<UpWheres<InnerJoin>> upWheres, MSet<UnionJoin> mUnionJoins) { // все равно использует getExprFollows
+        return InnerExpr.getJoinFollows(this, upWheres, mUnionJoins);
     }
 
     public ImSet<NullableExprInterface> getExprFollows(boolean includeInnerWithoutNotNull, boolean recursive) {
