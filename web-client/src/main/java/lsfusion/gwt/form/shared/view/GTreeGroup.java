@@ -16,7 +16,7 @@ public class GTreeGroup extends GComponent {
     public int calculatePreferredSize() {
         int size = 0;
         for (GGroupObject groupObject : groups) {
-            size += groupObject.isRecursive ? 35 * 4 : 35;
+            size += groupObject.isRecursive ? 20 * 4 : 20;
         }
         return size;
     }

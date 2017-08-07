@@ -299,9 +299,6 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         List<Column> flexColumns = new ArrayList<>();
         List<Double> flexValues = new ArrayList<>();
         double totalPref = 0.0;
-        for(int extra : getExtraLeftFixedColumns())
-            totalPref += extra;
-
         double totalFlexValues = 0;
 
         for (int i = 0; i < columns.length; ++i) {
@@ -341,28 +338,26 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         setMinimumTableWidth(totalPref, com.google.gwt.dom.client.Style.Unit.PX);
     }
 
-    protected abstract int[] getExtraLeftFixedColumns(); // для дерева
-
     public void resizeColumn(int column, int delta) {
 //        int body = ;
         int viewWidth = getViewportWidth(); // непонятно откуда этот один пиксель берется (судя по всему padding)
-        for(int extra : getExtraLeftFixedColumns()) {
-            viewWidth -= extra;
-            column--;
-        }
-
-        if(column >= 0) {
-            GwtClientUtils.calculateNewFlexesForFixedTableLayout(column, delta, viewWidth, prefs, basePrefs, flexes);
-            for (int i = 0; i < prefs.length; i++)
-                setUserWidth(getColumnPropertyDraw(i), (int) Math.round(prefs[i]));
-            updateLayoutWidthColumns();
-            onResize();
-        }
+        GwtClientUtils.calculateNewFlexesForFixedTableLayout(column, delta, viewWidth, prefs, basePrefs, flexes);
+        for (int i = 0; i < prefs.length; i++)
+            setUserWidth(i, (int) Math.round(prefs[i]));
+        updateLayoutWidthColumns();
+        onResize();
     }
 
     private int getViewportWidth() {
         return getTableDataScroller().getClientWidth() - 1;
     }
+
+    protected abstract void setUserWidth(GPropertyDraw property, Integer value);
+    protected abstract Integer getUserWidth(GPropertyDraw property);
+
+    protected abstract int getColumnsCount();
+    protected abstract GPropertyDraw getColumnPropertyDraw(int i);
+    protected abstract Column getColumnDraw(int i);
 
     private Column[] columns;
     private double[] prefs;  // mutable
@@ -375,23 +370,36 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         basePrefs = new int[columnsCount];
         flexes = new boolean[columnsCount];
         for (int i = 0; i < columnsCount; ++i) {
-            columns[i] = getColumnDraw(i);
+            Column columnDraw = getColumnDraw(i);
+            columns[i] = columnDraw;
 
-            GPropertyDraw property = getColumnPropertyDraw(i);
-            flexes[i] = property.isFlex(font);
+            boolean flex = isColumnFlex(i);
+            flexes[i] = flex;
 
-            int basePref = property.getMinimumPixelValueWidth(font); //property.getPreferredValuePixelWidth(font);
-            Integer userWidth = getUserWidth(property);
-            prefs[i] = userWidth != null ? userWidth : basePref;
+            int basePref = getColumnBasePref(i);
             basePrefs[i] = basePref;
+
+            Integer userWidth = getUserWidth(i);
+            int pref = userWidth != null ? userWidth : basePref;
+            prefs[i] = pref;
         }
         updateLayoutWidthColumns();
     }
 
-    protected abstract void setUserWidth(GPropertyDraw property, Integer value);
-    protected abstract Integer getUserWidth(GPropertyDraw property);
+    protected boolean isColumnFlex(int i) {
+        return getColumnPropertyDraw(i).isFlex(font);
+    }
 
-    protected abstract int getColumnsCount();
-    protected abstract GPropertyDraw getColumnPropertyDraw(int i);
-    protected abstract Column getColumnDraw(int i);
+    protected void setUserWidth(int i, int width) {
+        setUserWidth(getColumnPropertyDraw(i), width);
+    }
+
+    protected Integer getUserWidth(int i) {
+        return getUserWidth(getColumnPropertyDraw(i));
+    }
+
+    protected int getColumnBasePref(int i) {
+        return getColumnPropertyDraw(i).getMinimumPixelValueWidth(font); //property.getPreferredValuePixelWidth(font);
+    }
+
 }

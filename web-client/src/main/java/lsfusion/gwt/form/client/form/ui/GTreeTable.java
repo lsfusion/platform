@@ -46,7 +46,8 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     
     private boolean autoSize;
 
-    private int hierarchicalColumnWidth;
+    private int hierarchicalPreferredWidth;
+    private Column hierarchicalColumn;
 
     public GTreeTable(GFormController iformController, GForm iform, GTreeGroupController treeGroupController, GTreeGroup treeGroup, boolean autoSize) {
         super(iformController, treeGroupController.getFont());
@@ -68,8 +69,8 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         headers.add(header);
         addColumn(column, header);
 
-        hierarchicalColumnWidth = treeGroup.calculatePreferredSize();
-        setColumnWidth(column, hierarchicalColumnWidth + "px");
+        hierarchicalColumn = column;
+        hierarchicalPreferredWidth = treeGroup.calculatePreferredSize();
 
         keyboardSelectionHandler = new TreeTableKeyboardSelectionHandler(this);
         setKeyboardSelectionHandler(keyboardSelectionHandler);
@@ -200,35 +201,64 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         dataUpdated = true;
     }
 
+    private Integer hierarchicalUserWidth = null;
+    private final NativeHashMap<GPropertyDraw, Integer> userWidths = new NativeHashMap<>();
     @Override
     protected void setUserWidth(GPropertyDraw property, Integer value) {
-        // not implemented yet
+        userWidths.put(property, value);
     }
 
     @Override
     protected Integer getUserWidth(GPropertyDraw property) {
-        // not implemented yet
-        return null;
+        return userWidths.get(property);
+    }
+
+    @Override
+    protected void setUserWidth(int i, int width) {
+        if(i==0) {
+            hierarchicalUserWidth = width;
+            return;
+        }
+        super.setUserWidth(i - 1, width);
+    }
+
+    @Override
+    protected Integer getUserWidth(int i) {
+        if(i==0)
+            return hierarchicalUserWidth;
+        return super.getUserWidth(i - 1);
     }
 
     @Override
     protected int getColumnsCount() {
-        return tree.properties.size();
+        return 1 + tree.properties.size();
     }
 
     @Override
     protected GPropertyDraw getColumnPropertyDraw(int i) {
+        assert i < getColumnsCount() - 1; // уже вычли фиксированную колонку
         return tree.columnProperties.get(i);
     }
 
     @Override
     protected Column getColumnDraw(int i) {
-        return columnsMap.get(tree.columnProperties.get(i));
+        if(i==0)
+            return hierarchicalColumn;
+        return columnsMap.get(getColumnPropertyDraw(i-1));
     }
 
     @Override
-    protected int[] getExtraLeftFixedColumns() {
-        return new int[]{hierarchicalColumnWidth};
+    protected boolean isColumnFlex(int i) {
+        if(i == 0)
+            return true;
+        return super.isColumnFlex(i - 1);
+    }
+
+    @Override
+    protected int getColumnBasePref(int i) {
+        if(i==0)
+            return hierarchicalPreferredWidth;
+        return super.getColumnBasePref(i - 1);
     }
 
     public void update() {

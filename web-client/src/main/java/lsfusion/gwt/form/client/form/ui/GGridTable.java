@@ -428,10 +428,6 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
         }
     }
 
-    protected int[] getExtraLeftFixedColumns() {
-        return new int[0];
-    }
-
     protected int getColumnsCount() {
         return columnProperties.size();
     }

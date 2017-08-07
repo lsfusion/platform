@@ -1860,11 +1860,6 @@ public class GridTable extends ClientPropertyTable {
             return GridTable.this.getUserWidth(property);
         }
 
-        @Override
-        protected int[] getExtraLeftFixedColumns() {
-            return new int[0];
-        }
-
         public int getColumnsCount() {
             return model.getColumnCount();
         }

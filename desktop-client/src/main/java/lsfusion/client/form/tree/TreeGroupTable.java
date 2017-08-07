@@ -460,13 +460,15 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
         }
     }
 
-    private int hierarchicalColumnWidth;
+    private int hierarchicalPreferredWidth;
+    private TableColumnExt hierarchicalColumn;
     private void setupHierarhicalColumn() {
         TableColumnExt tableColumn = getColumnExt(0);
 
         int pref = treeGroup.calculatePreferredSize();
-        hierarchicalColumnWidth = pref;
-        setColumnSizes(tableColumn, pref, pref, pref);
+        hierarchicalColumn = tableColumn;
+        hierarchicalPreferredWidth = pref;
+//        setColumnSizes(tableColumn, pref, pref, pref);
 
         getColumnModel().getSelectionModel().setSelectionInterval(0, 0);
     }
@@ -1100,28 +1102,28 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
         }
     }
 
+    private Integer hierarchicalUserWidth = null;
+    private final Map<ClientPropertyDraw, Integer> userWidths = MapFact.mAddRemoveMap();
     private final GridPropertyTable gridPropertyTable = new GridPropertyTable() {
         public void setUserWidth(ClientPropertyDraw property, Integer value) {
-            // not implemented yet
+            userWidths.put(property, value);
         }
 
         public Integer getUserWidth(ClientPropertyDraw property) {
-            // not implemented yet
-            return null;
-        }
-
-        public int getColumnsCount() {
-            return model.properties.size();
+            return userWidths.get(property);
         }
 
         @Override
         public ClientPropertyDraw getColumnPropertyDraw(int i) {
+            assert i < getColumnsCount() - 1; // уже вычли фиксированную колонку
             return model.columnProperties.get(i);
         }
 
         @Override
         public TableColumn getColumnDraw(int i) {
-            return columnsMap.get(model.columnProperties.get(i));
+            if(i == 0)
+                return hierarchicalColumn;
+            return columnsMap.get(getColumnPropertyDraw(i-1));
         }
 
         @Override
@@ -1129,9 +1131,38 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
             return TreeGroupTable.this;
         }
 
+        public int getColumnsCount() {
+            return 1 + model.properties.size();
+        }
+
         @Override
-        protected int[] getExtraLeftFixedColumns() {
-            return new int[]{hierarchicalColumnWidth};
+        protected boolean isColumnFlex(int i) {
+            if(i == 0)
+                return true;
+            return super.isColumnFlex(i - 1);
+        }
+
+        @Override
+        protected void setUserWidth(int i, int width) {
+            if(i==0) {
+                hierarchicalUserWidth = width;
+                return;
+            }
+            super.setUserWidth(i - 1, width);
+        }
+
+        @Override
+        protected Integer getUserWidth(int i) {
+            if(i==0)
+                return hierarchicalUserWidth;
+            return super.getUserWidth(i - 1);
+        }
+
+        @Override
+        protected int getColumnBasePref(int i) {
+            if(i==0)
+                return hierarchicalPreferredWidth;
+            return super.getColumnBasePref(i - 1);
         }
     };
 }
