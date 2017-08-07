@@ -1,5 +1,6 @@
 package lsfusion.gwt.form.client.form.ui;
 
+import lsfusion.client.logics.ClientGroupObject;
 import lsfusion.gwt.base.shared.GwtSharedUtils;
 import lsfusion.gwt.form.shared.view.GForm;
 import lsfusion.gwt.form.shared.view.GGroupObject;

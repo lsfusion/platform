@@ -55,10 +55,10 @@ public class GridTable extends ClientPropertyTable {
 
     public static final String GOTO_LAST_ACTION = "gotoLastRow";
     public static final String GOTO_FIRST_ACTION = "gotoFirstRow";
-    
+
     public static final int DEFAULT_HEADER_HEIGHT = 34;
     public static int DEFAULT_PREFERRED_HEIGHT = 130;
-    public static Dimension DEFAULT_PREFERRED_SIZE = new Dimension(130, 130 - DEFAULT_HEADER_HEIGHT); 
+    public static Dimension DEFAULT_PREFERRED_SIZE = new Dimension(130, 130 - DEFAULT_HEADER_HEIGHT);
 
     private static final long QUICK_SEARCH_MAX_DELAY = 2000;
     private String lastQuickSearchPrefix = "";
@@ -103,7 +103,7 @@ public class GridTable extends ClientPropertyTable {
     private int scrollToIndex = -1;
     private int selectIndex = -1;
     private boolean scrollToOldObject = true; // не скроллить при ctrl+home/ctrl+end (синхронный запрос)
-    
+
     private ClientGroupObject groupObject;
     private TableSortableHeaderManager<Pair<ClientPropertyDraw, ClientGroupObjectValue>> sortableHeaderManager;
 
@@ -113,13 +113,13 @@ public class GridTable extends ClientPropertyTable {
     private int previousSelectedRow = 0;
 
     private int pageSize = 50;
-    
+
     private Integer headerHeight;
-    
+
     public void setPageSize(int pageSize) {
         this.pageSize = pageSize;
     }
-    
+
     private GridSelectionController selectionController = new GridSelectionController(this);
     private KeyController keyController = new KeyController(this);
 
@@ -152,7 +152,7 @@ public class GridTable extends ClientPropertyTable {
         gridController = igridView.getGridController();
         groupController = gridController.getGroupController();
         groupObject = groupController.getGroupObject();
-        
+
         headerHeight = igridView.getHeaderHeight();
 
         generalGridPreferences = iuserPreferences != null && iuserPreferences[0] != null ? iuserPreferences[0] : new GridUserPreferences(groupObject);
@@ -309,7 +309,7 @@ public class GridTable extends ClientPropertyTable {
                         cellEditor.stopCellEditing();
                     }
                 }
-                
+
                 changeCurrentObjectLater();
                 moveToFocusableCellIfNeeded();
             }
@@ -321,7 +321,7 @@ public class GridTable extends ClientPropertyTable {
     public void setHeaderHeight(Integer headerHeight) {
         this.headerHeight = headerHeight;
     }
-    
+
     public int getHeaderHeight() {
         if (headerHeight != null && headerHeight >= 0) {
             return headerHeight;
@@ -331,7 +331,7 @@ public class GridTable extends ClientPropertyTable {
         if (predefinedHeaderHeight >= 0) {
             return predefinedHeaderHeight;
         }
-        return DEFAULT_HEADER_HEIGHT; 
+        return DEFAULT_HEADER_HEIGHT;
     }
 
     @Override
@@ -445,7 +445,7 @@ public class GridTable extends ClientPropertyTable {
     public boolean containsProperty(ClientPropertyDraw property) {
         return properties.contains(property);
     }
-    
+
     public List<ClientPropertyDraw> getOrderedVisibleProperties(List<ClientPropertyDraw> propertiesList) {
         List<ClientPropertyDraw> result = new ArrayList<>();
 
@@ -468,7 +468,7 @@ public class GridTable extends ClientPropertyTable {
                 result.add(property);
             }
         }
-        
+
         if (hasUserPreferences()) {
             Collections.sort(result, getCurrentPreferences().getUserOrderComparator());
         }
@@ -555,7 +555,7 @@ public class GridTable extends ClientPropertyTable {
             }
         }
 
-        updateLayoutWidth();
+        gridPropertyTable.updateLayoutWidth();
 
         setFocusable(hasFocusableCells);
 
@@ -572,15 +572,15 @@ public class GridTable extends ClientPropertyTable {
             gridController.setForceHidden(true);
         }
     }
-    
+
     private GridTableColumn getColumn(int index) {
         return (GridTableColumn) columnModel.getColumn(index);
-    }                           
-    
+    }
+
     private String getColumnCaption(int column) {
         ClientPropertyDraw cell = model.getColumnProperty(column);
         String userCaption = getUserCaption(cell);
-        return userCaption != null ? userCaption : model.getColumnName(column);   
+        return userCaption != null ? userCaption : model.getColumnName(column);
     }
 
     private String getColumnPattern(int column) {
@@ -626,15 +626,15 @@ public class GridTable extends ClientPropertyTable {
             }
         }
     }
-    
+
     private void selectColumn(int columnNumber) {
         selectCell(getCurrentRow(), columnNumber);
     }
-    
+
     private void selectRow(int rowNumber) {
         selectCell(rowNumber, getColumnModel().getSelectionModel().getLeadSelectionIndex());
     }
-    
+
     private void selectCell(int row, int col) {
         if (row < 0 || row >= getRowCount()
 //            || col < 0 || col >= getColumnCount()
@@ -705,7 +705,7 @@ public class GridTable extends ClientPropertyTable {
             selectionController.resetSelection();
             updateSelectionInfo();
         }
-        
+
         //calledChangeGroupObject = false;
     }
 
@@ -760,15 +760,7 @@ public class GridTable extends ClientPropertyTable {
 
     @Override
     public void doLayout() {
-        if (tableHeader == null || tableHeader.getResizingColumn() == null) {
-            updateLayoutWidthColumns();
-        } else {
-            TableColumn resizingColumn = tableHeader.getResizingColumn();
-
-            int delta = getWidth() - columnModel.getTotalColumnWidth();
-            int leftColumnIndex = columnModel.getColumnIndex(resizingColumn.getIdentifier());
-            resizeColumn(leftColumnIndex, -delta);
-        }
+        gridPropertyTable.doLayout();
     }
 
     @Override
@@ -1172,7 +1164,7 @@ public class GridTable extends ClientPropertyTable {
     public boolean isPressed(int row, int column) {
         return pressedCellRow == row && pressedCellColumn == column;
     }
-    
+
     public ClientGroupObject getGroupObject() {
         return groupObject;
     }
@@ -1255,7 +1247,7 @@ public class GridTable extends ClientPropertyTable {
                     if (skipScrollingAdjusments) {
                         return;
                     }
-                    
+
                     int currCol = getColumnModel().getSelectionModel().getLeadSelectionIndex();
                     if (currCol != -1 && getColumnCount() > 0) {
                         Pair<Integer, Integer> firstAndLast = getFirstAndLastVisibleColumns(pane);
@@ -1279,7 +1271,7 @@ public class GridTable extends ClientPropertyTable {
                     }
                 }
             });
-            
+
             pane.getVerticalScrollBar().addAdjustmentListener(new AdjustmentListener() {
                 @Override
                 public void adjustmentValueChanged(AdjustmentEvent e) {
@@ -1318,16 +1310,16 @@ public class GridTable extends ClientPropertyTable {
             });
         }
     }
-    
+
     private Pair<Integer, Integer> getFirstAndLastVisibleColumns(JScrollPane pane) {
         Rectangle viewRect = pane.getViewport().getViewRect();
 
         TableColumnModel columnModel = getColumnModel();
         int cc = getColumnCount();
-        
+
         int first = -1;
         int last = -1;
-        
+
         int x = 0;
         for (int column = 0; column < cc; column++) {
             if (first == -1 && x >= viewRect.x && isCellFocusable(0, column)) {
@@ -1338,7 +1330,7 @@ public class GridTable extends ClientPropertyTable {
                 last = column;
             }
         }
-        
+
         return new Pair<>(first == -1 ? 0 : first, last == -1 ? 0 : last);
     }
 
@@ -1369,22 +1361,22 @@ public class GridTable extends ClientPropertyTable {
     public boolean userPreferencesSaved() {
         return userGridPreferences.hasUserPreferences();
     }
-    
+
     public boolean generalPreferencesSaved() {
         return generalGridPreferences.hasUserPreferences();
     }
-    
+
     public GroupObjectUserPreferences getCurrentUserGridPreferences() {
         if (currentGridPreferences.hasUserPreferences()) {
             return currentGridPreferences.convertPreferences();
-        } 
+        }
         return userGridPreferences.convertPreferences();
     }
 
     public GroupObjectUserPreferences getGeneralGridPreferences() {
         return generalGridPreferences.convertPreferences();
     }
-    
+
     public void resetCurrentPreferences(boolean initial) {
         currentGridPreferences = new GridUserPreferences(userGridPreferences.hasUserPreferences() ? userGridPreferences : generalGridPreferences);
         if (!initial) {
@@ -1400,10 +1392,10 @@ public class GridTable extends ClientPropertyTable {
             }
         }
     }
-    
+
     public void resetPreferences(final boolean forAllUsers, final boolean completeReset, final Runnable onSuccess, final Runnable onFailure) {
         currentGridPreferences.resetPreferences();
-        
+
         if (!properties.isEmpty()) {
             Runnable successCallback = new Runnable() {
                 @Override
@@ -1442,7 +1434,7 @@ public class GridTable extends ClientPropertyTable {
                     });
                 }
             };
-            
+
             GridUserPreferences prefs;
             if (forAllUsers) {
                 prefs = completeReset ? null : userGridPreferences;
@@ -1450,14 +1442,14 @@ public class GridTable extends ClientPropertyTable {
                 // assert !completeReset;
                 prefs = generalGridPreferences;
             }
-            
+
             form.saveUserPreferences(currentGridPreferences, forAllUsers, completeReset, successCallback, failureCallback, getHiddenProps(prefs));
         }
     }
-                                                                                 
+
     public void saveCurrentPreferences(final boolean forAllUsers, final Runnable onSuccess, final Runnable onFailure) {
         currentGridPreferences.setHasUserPreferences(true);
-        
+
         if (!properties.isEmpty()) {
             Runnable successCallback = new Runnable() {
                 @Override
@@ -1480,7 +1472,7 @@ public class GridTable extends ClientPropertyTable {
 
                 }
             };
-            
+
             Runnable failureCallback = new Runnable() {
                 @Override
                 public void run() {
@@ -1500,11 +1492,11 @@ public class GridTable extends ClientPropertyTable {
             } else {
                 prefs = currentGridPreferences;
             }
-            
+
             form.saveUserPreferences(currentGridPreferences, forAllUsers, false, successCallback, failureCallback, getHiddenProps(prefs));
         }
     }
-    
+
     private String[] getHiddenProps(final GridUserPreferences preferences) {
         List<String> result = new ArrayList<>();
         if (preferences != null && preferences.hasUserPreferences()) {
@@ -1517,12 +1509,12 @@ public class GridTable extends ClientPropertyTable {
         }
         return result.toArray(new String[result.size()]);
     }
-    
+
     public void refreshUPHiddenProps(String[] propSids) {
         assert groupObject != null; // при null нету таблицы, а значит и настроек
-        form.refreshUPHiddenProperties(groupObject.getSID(), propSids);    
+        form.refreshUPHiddenProperties(groupObject.getSID(), propSids);
     }
-    
+
     public GridUserPreferences getCurrentPreferences() {
         return currentGridPreferences;
     }
@@ -1530,15 +1522,15 @@ public class GridTable extends ClientPropertyTable {
     public boolean hasUserPreferences() {
         return currentGridPreferences.hasUserPreferences();
     }
-    
+
     public void setHasUserPreferences(boolean hasUserPreferences) {
         currentGridPreferences.setHasUserPreferences(hasUserPreferences);
-    } 
+    }
 
     public FontInfo getUserFont() {
         return currentGridPreferences.fontInfo;
     }
-    
+
     public Integer getUserPageSize() {
         return currentGridPreferences.pageSize;
     }
@@ -1546,7 +1538,7 @@ public class GridTable extends ClientPropertyTable {
     public Integer getUserHeaderHeight() {
         return currentGridPreferences.headerHeight;
     }
-    
+
     public Boolean getUserHide(ClientPropertyDraw property) {
         return currentGridPreferences.getUserHide(property);
     }
@@ -1558,7 +1550,7 @@ public class GridTable extends ClientPropertyTable {
     public String getUserPattern(ClientPropertyDraw property) {
         return currentGridPreferences.getUserPattern(property);
     }
-    
+
     public Integer getUserWidth(ClientPropertyDraw property) {
         return currentGridPreferences.getUserWidth(property);
     }
@@ -1574,11 +1566,11 @@ public class GridTable extends ClientPropertyTable {
     public Boolean getUserAscendingSort(ClientPropertyDraw property) {
         return currentGridPreferences.getUserAscendingSort(property);
     }
-    
+
     public void setUserFont(Font userFont) {
         currentGridPreferences.fontInfo = FontInfo.createFrom(userFont);
     }
-    
+
     public void setUserPageSize(Integer userPageSize) {
         currentGridPreferences.pageSize = userPageSize;
         updatePageSizeIfNeeded(false);
@@ -1588,7 +1580,7 @@ public class GridTable extends ClientPropertyTable {
         currentGridPreferences.headerHeight = userHeaderHeight;
         setHeaderHeight(userHeaderHeight);
     }
-    
+
     public void setUserHide(ClientPropertyDraw property, Boolean userHide) {
         currentGridPreferences.setUserHide(property, userHide);
     }
@@ -1600,7 +1592,7 @@ public class GridTable extends ClientPropertyTable {
     public void setUserWidth(ClientPropertyDraw property, Integer userWidth) {
         currentGridPreferences.setUserWidth(property, userWidth);
     }
-    
+
     public void setUserOrder(ClientPropertyDraw property, Integer userOrder) {
         currentGridPreferences.setUserOrder(property, userOrder);
     }
@@ -1612,7 +1604,7 @@ public class GridTable extends ClientPropertyTable {
     public void setUserAscendingSort(ClientPropertyDraw property, Boolean userAscendingSort) {
         currentGridPreferences.setUserAscendingSort(property, userAscendingSort);
     }
-    
+
     public Comparator<ClientPropertyDraw> getUserSortComparator() {
         return getCurrentPreferences().getUserSortComparator();
     }
@@ -1791,7 +1783,7 @@ public class GridTable extends ClientPropertyTable {
             return model.getColumnProperty(modelIndex).getTooltipText(getColumnCaption(index));
         }
     }
-    
+
     private class GridTableHeaderUI extends WindowsTableHeaderUI {
         @Override
         public void installUI(JComponent c) {
@@ -1820,14 +1812,14 @@ public class GridTable extends ClientPropertyTable {
             header.add(rendererPane);
         }
     }
-    
+
     public class GridTableColumn extends TableColumn {
         public int flex; // равен preferred'у
-        
+
         public GridTableColumn(int index) {
             super(index);
         }
-        
+
         @Override
         public TableCellRenderer getHeaderRenderer() {
             TableCellRenderer defaultHeaderRenderer = tableHeader.getDefaultRenderer();
@@ -1849,138 +1841,44 @@ public class GridTable extends ClientPropertyTable {
     public Map<Pair<ClientPropertyDraw, ClientGroupObjectValue>, Boolean> getOrderDirections() {
         return sortableHeaderManager.getOrderDirections();
     }
-    
+
     public FontInfo getDesignFont() {
         return groupObject.grid.design.getFont();
     }
 
     @Override
     public boolean getScrollableTracksViewportWidth() {
-        return minimumTableWidth <= 0 || minimumTableWidth < getViewportWidth();
+        return gridPropertyTable.getScrollableTracksViewportWidth();
     }
 
-    private double minimumTableWidth = -1;
-    private void setMinimumTableWidth(double width) {
-        minimumTableWidth = width;
-    }
-
-    private static void setColumnWidth(GridTableColumn column, int width) {
-        column.setWidth(width);
-        column.setPreferredWidth(width); // если не выставить grid начинает в какие-то моменты ужиматься в preferred, после чего delta при resize'е становится огромной
-    }
-
-    // в общем то для "групп в колонки" разделено (чтобы когда были группы в колонки - все не расширялись(
-    private void updateLayoutWidthColumns() {
-        List<GridTableColumn> flexColumns = new ArrayList<>();
-        List<Double> flexValues = new ArrayList<>();
-        double totalPref = 0.0;
-        for(int extra : getExtraLeftFixedColumns())
-            totalPref += extra;
-
-        double totalFlexValues = 0;
-
-        for (int i = 0; i < columns.length; ++i) {
-            GridTableColumn column = columns[i];
-
-            double pref = prefs[i];
-            if(flexes[i]) {
-                flexColumns.add(column);
-                flexValues.add(pref);
-                totalFlexValues += pref;
-            } else {
-                int intPref = (int) Math.round(prefs[i]);
-                assert intPref == basePrefs[i];
-                setColumnWidth(column, intPref);
-            }
-            totalPref += pref;
+    private final GridPropertyTable gridPropertyTable = new GridPropertyTable() {
+        public void setUserWidth(ClientPropertyDraw property, Integer value) {
+            GridTable.this.setUserWidth(property, value);
         }
 
-        // поправка для округлений (чтобы не дрожало)
-        int flexSize = flexValues.size();
-        if(flexSize % 2 != 0)
-            flexSize--;
-        for(int i=0;i<flexSize;i++)
-            flexValues.set(i, flexValues.get(i) + (i % 2 == 0 ? 0.1 : -0.1));
-
-        double flexWidth = BaseUtils.max(getViewportWidth() - totalPref, 0);
-
-        int precision = 10000; // копия с веба, так то здесь можно double'ы использовать, но чтобы одинаково выглядело работало - сделаем так
-        int restPercent = 100 * precision;
-        for(int i=0,size=flexColumns.size();i<size;i++) {
-            GridTableColumn flexColumn = flexColumns.get(i);
-            double flexValue = flexValues.get(i);
-            int flexPercent = (int) Math.round(flexValue * restPercent / totalFlexValues);
-            restPercent -= flexPercent;
-            totalFlexValues -= flexValue;
-
-            setColumnWidth(flexColumn, ((int)Math.round(flexValue + flexWidth * (double)flexPercent / (double)(100 * precision))));
-        }
-//        preferredWidth = (int) Math.round(totalPref);
-        setMinimumTableWidth(totalPref);
-    }
-
-    protected int[] getExtraLeftFixedColumns() { // для дерева
-        return new int[0];
-    }
-
-    public void resizeColumn(int column, int delta) {
-//        int body = ;
-        int viewWidth = getViewportWidth(); // непонятно откуда этот один пиксель берется (судя по всему padding)
-        for(int extra : getExtraLeftFixedColumns()) {
-            viewWidth -= extra;
-            column--;
+        public Integer getUserWidth(ClientPropertyDraw property) {
+            return GridTable.this.getUserWidth(property);
         }
 
-        if(column >= 0) {
-            SwingUtils.calculateNewFlexesForFixedTableLayout(column, delta, viewWidth, prefs, basePrefs, flexes);
-            for (int i = 0; i < prefs.length; i++)
-                setUserWidth(getColumnPropertyDraw(i), (int) Math.round(prefs[i]));
-            updateLayoutWidthColumns();
+        @Override
+        protected int[] getExtraLeftFixedColumns() {
+            return new int[0];
         }
-    }
 
-    private int getViewportWidth() {
-        return ((JViewport) getParent()).getWidth() - 1;
-//        return getTableDataScroller().getClientWidth() - 1;
-    }
-
-    private GridTableColumn[] columns;
-    private double[] prefs;  // mutable
-    private int[] basePrefs;
-    private boolean[] flexes;
-    public void updateLayoutWidth() {
-        int columnsCount = getColumnsCount();
-        columns = new GridTableColumn[columnsCount];
-        prefs = new double[columnsCount];
-        basePrefs = new int[columnsCount];
-        flexes = new boolean[columnsCount];
-        for (int i = 0; i < columnsCount; ++i) {
-            GridTableColumn columnDraw = getColumnDraw(i);
-            columns[i] = columnDraw;
-
-            ClientPropertyDraw property = getColumnPropertyDraw(i);
-            flexes[i] = property.isFlex(this);
-
-            int basePref = property.getMinimumValueWidth(this); //property.getPreferredValuePixelWidth(font);
-            Integer userWidth = getUserWidth(property);
-            int pref = userWidth != null ? userWidth : basePref;
-            prefs[i] = pref;
-            basePrefs[i] = basePref;
-
-            if(!flexes[i]) // тут хитро, дело в том что базовый механизм resizing'а подразумевает что колонка ВСЕГДА получит запрашиваемую ширину (так как дельта mouseOffsetX - mouseX записывается в ширину, и если колонка не получила ее на прошлом шаге то delta вызовется еще раз и еще раз)
-                columnDraw.setMaxWidth(basePref); // поэтому выставляем max по сути запрещая расширение таких колонок ()
+        public int getColumnsCount() {
+            return model.getColumnCount();
         }
-//        updateLayoutWidthColumns(); // тут не надо, так как в отличие от веб, есть doLayout который и выполняет расположение
-    }
 
+        public ClientPropertyDraw getColumnPropertyDraw(int i) {
+            return model.getColumnProperty(i);
+        }
 
-    protected int getColumnsCount() {
-        return model.getColumnCount();
-    }
-    protected ClientPropertyDraw getColumnPropertyDraw(int i) {
-        return model.getColumnProperty(i);
-    }
-    protected GridTableColumn getColumnDraw(int i) {
-        return getColumn(i);
-    }
+        public TableColumn getColumnDraw(int i) {
+            return getColumn(i);
+        }
+
+        public JTable getTable() {
+            return GridTable.this;
+        }
+    };
 }

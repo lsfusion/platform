@@ -33,7 +33,7 @@ public class GTreeGroupController extends GAbstractGroupObjectController {
         treeGroup = iTreeGroup;
         lastGroupObject = treeGroup.groups.size() > 0 ? treeGroup.groups.get(treeGroup.groups.size() - 1) : null;
 
-        tree = new GTreeTable(iFormController, iForm, this, treeGroup.autoSize);
+        tree = new GTreeTable(iFormController, iForm, this, treeGroup, treeGroup.autoSize);
 
         ResizableSimplePanel resizePanel = new ResizableSimplePanel();
         resizePanel.setStyleName("gridResizePanel");

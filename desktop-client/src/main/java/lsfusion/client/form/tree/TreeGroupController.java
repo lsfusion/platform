@@ -115,6 +115,8 @@ public class TreeGroupController extends AbstractGroupObjectController {
     private void update() {
         tree.restoreVisualState();
 
+        tree.updateTable();
+
         boolean isTreeVisible = tree.getColumnCount() > 1;
         
         view.setVisible(isTreeVisible);

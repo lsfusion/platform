@@ -4,6 +4,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import com.sun.java.swing.plaf.windows.WindowsTreeUI;
 import lsfusion.base.BaseUtils;
+import lsfusion.base.col.MapFact;
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.SwingUtils;
 import lsfusion.client.form.*;
@@ -11,6 +12,7 @@ import lsfusion.client.form.cell.CellTableInterface;
 import lsfusion.client.form.cell.ClientAbstractCellEditor;
 import lsfusion.client.form.cell.ClientAbstractCellRenderer;
 import lsfusion.client.form.dispatch.EditPropertyDispatcher;
+import lsfusion.client.form.grid.GridPropertyTable;
 import lsfusion.client.form.sort.MultiLineHeaderRenderer;
 import lsfusion.client.form.sort.TableSortableHeaderManager;
 import lsfusion.client.logics.ClientGroupObject;
@@ -29,10 +31,7 @@ import org.jdesktop.swingx.treetable.TreeTableNode;
 
 import javax.swing.*;
 import javax.swing.event.*;
-import javax.swing.table.JTableHeader;
-import javax.swing.table.TableCellEditor;
-import javax.swing.table.TableCellRenderer;
-import javax.swing.table.TableColumnModel;
+import javax.swing.table.*;
 import javax.swing.text.JTextComponent;
 import javax.swing.tree.ExpandVetoException;
 import javax.swing.tree.TreePath;
@@ -307,65 +306,17 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
 
     @Override
     public boolean getScrollableTracksViewportWidth() {
-        return fitWidth();
-    }
-
-    private boolean fitWidth() {
-        int minWidth = 0;
-        TableColumnModel columnModel = getColumnModel();
-
-        for (int i = 0; i < getColumnCount(); i++) {
-            if (autoResizeMode == JTable.AUTO_RESIZE_OFF) {
-                minWidth += columnModel.getColumn(i).getWidth();
-            } else {
-                minWidth += columnModel.getColumn(i).getMinWidth();
-            }
-        }
-
-        // тут надо смотреть pane, а не саму table
-        return (minWidth < getParent().getWidth());
+        return gridPropertyTable.getScrollableTracksViewportWidth();
     }
 
     @Override
     public void doLayout() {
-        int newAutoResizeMode = fitWidth()
-                ? JTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS
-                : JTable.AUTO_RESIZE_OFF;
-        if (newAutoResizeMode != autoResizeMode) {
-            autoResizeMode = newAutoResizeMode;
-            setAutoResizeMode(newAutoResizeMode);
-
-            setOrResetPreferredColumnWidths();
-        }
-        super.doLayout();
+        gridPropertyTable.doLayout();
     }
 
     @Override
     public Dimension getPreferredScrollableViewportSize() {
         return treeGroup.autoSize ? getPreferredSize() : DEFAULT_PREFERRED_SIZE;
-    }
-
-    public void setOrResetPreferredColumnWidths() {
-        if (getAutoResizeMode() == JTable.AUTO_RESIZE_OFF) {
-            setPreferredColumnWidthsAsMinWidth();
-        } else {
-            resetPreferredColumnWidths();
-        }
-    }
-
-    private void setPreferredColumnWidthsAsMinWidth() {
-        getColumnModel().getColumn(0).setPreferredWidth(HIERARCHICAL_COLUMN_MIN_WIDTH);
-        for (int i = 1; i < model.getColumnCount(); ++i) {
-            getColumnModel().getColumn(i).setPreferredWidth(getColumnModel().getColumn(i).getMinWidth());
-        }
-    }
-
-    private void resetPreferredColumnWidths() {
-        getColumnModel().getColumn(0).setPreferredWidth(treeGroup.calculatePreferredSize());
-        for (int i = 1; i < model.getColumnCount(); ++i) {
-            ClientPropertyDraw cell = model.getColumnProperty(i);
-            getColumnModel().getColumn(i).setPreferredWidth(cell.getPreferredValueWidth(this));
-        }
     }
 
     private void ordersCleared(ClientGroupObject groupObject) {
@@ -478,9 +429,11 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
         model.updateDrawPropertyValues(property, ivalues, update);
     }
 
+    private Map<ClientPropertyDraw, TableColumn> columnsMap = MapFact.mAddRemoveMap();
+
     public boolean addDrawProperty(ClientGroupObject group, ClientPropertyDraw property) {
         int ind = model.addDrawProperty(form, group, property);
-        if (ind > 0 -1 && !plainTreeMode) {
+        if (ind > -1 && !plainTreeMode) {
             createPropertyColumn(property, ind);
         }
         return ind != -1;
@@ -494,6 +447,8 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
             for (int i = ind; i < getColumnCount(); ++i) {
                 getColumn(i).setModelIndex(i);
             }
+
+            columnsMap.remove(property);
         }
         
         int rowHeight = 0;
@@ -505,11 +460,13 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
         }
     }
 
+    private int hierarchicalColumnWidth;
     private void setupHierarhicalColumn() {
         TableColumnExt tableColumn = getColumnExt(0);
 
         int pref = treeGroup.calculatePreferredSize();
-        setColumnSizes(tableColumn, HIERARCHICAL_COLUMN_MIN_WIDTH, HIERARCHICAL_COLUMN_MAX_WIDTH, pref);
+        hierarchicalColumnWidth = pref;
+        setColumnSizes(tableColumn, pref, pref, pref);
 
         getColumnModel().getSelectionModel().setSelectionInterval(0, 0);
     }
@@ -541,35 +498,35 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
 
     private void createPropertyColumn(ClientPropertyDraw property, int pos) {
         TableColumnExt tableColumn = createColumn(pos);
-        if (tableColumn != null) {
-            int rowHeight = getRowHeight();
-            int currentSelectedColumn = getColumnModel().getSelectionModel().getLeadSelectionIndex();
+        int rowHeight = getRowHeight();
+        int currentSelectedColumn = getColumnModel().getSelectionModel().getLeadSelectionIndex();
 
-            int min = property.getMinimumValueWidth(this);
-            int max = property.getMaximumValueWidth(this);
-            int pref = property.getPreferredValueWidth(this);
+        int min = property.getMinimumValueWidth(this);
+        int max = property.getMaximumValueWidth(this);
+        int pref = property.getPreferredValueWidth(this);
 
-            setColumnSizes(tableColumn, min, max, pref);
+        setColumnSizes(tableColumn, min, max, pref);
 
-            rowHeight = max(rowHeight, property.getPreferredValueHeight(this));
+        rowHeight = max(rowHeight, property.getPreferredValueHeight(this));
 
-            addColumn(tableColumn);
-            moveColumn(getColumnCount() - 1, pos);
-            //нужно поменять реальный индекс всех колонок после данной
-            for (int i = pos + 1; i < getColumnCount(); ++i) {
-                getColumn(i).setModelIndex(i);
-            }
+        addColumn(tableColumn);
+        moveColumn(getColumnCount() - 1, pos);
+        //нужно поменять реальный индекс всех колонок после данной
+        for (int i = pos + 1; i < getColumnCount(); ++i) {
+            getColumn(i).setModelIndex(i);
+        }
 
-            // moveColumn норовит выделить вновь добавленную колонку (при инициализации происходит скроллирование вправо). возвращаем выделение обратно
-            if (currentSelectedColumn != -1) {
-                getColumnModel().getSelectionModel().setLeadSelectionIndex(pos <= currentSelectedColumn ? currentSelectedColumn + 1 : currentSelectedColumn);
-            }
+        // moveColumn норовит выделить вновь добавленную колонку (при инициализации происходит скроллирование вправо). возвращаем выделение обратно
+        if (currentSelectedColumn != -1) {
+            getColumnModel().getSelectionModel().setLeadSelectionIndex(pos <= currentSelectedColumn ? currentSelectedColumn + 1 : currentSelectedColumn);
+        }
 
-            tableColumn.setToolTipText(property.getTooltipText(model.getColumnName(pos)));
+        tableColumn.setToolTipText(property.getTooltipText(model.getColumnName(pos)));
 
-            if (getRowHeight() != rowHeight && rowHeight > 0) {
-                setRowHeight(rowHeight);
-            }
+        columnsMap.put(property, tableColumn);
+
+        if (getRowHeight() != rowHeight && rowHeight > 0) {
+            setRowHeight(rowHeight);
         }
     }
 
@@ -965,6 +922,10 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
         return jxTableHeader;
     }
 
+    public void updateTable() {
+        gridPropertyTable.updateLayoutWidth();
+    }
+
     private class ChangeObjectEvent extends AWTEvent implements ActiveEvent {
         public static final int CHANGE_OBJECT_EVENT = AWTEvent.RESERVED_ID_MAX + 5555;
         private final ClientGroupObject group;
@@ -1138,4 +1099,39 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
             return super.isLocationInExpandControl(path, mouseX, mouseY);
         }
     }
+
+    private final GridPropertyTable gridPropertyTable = new GridPropertyTable() {
+        public void setUserWidth(ClientPropertyDraw property, Integer value) {
+            // not implemented yet
+        }
+
+        public Integer getUserWidth(ClientPropertyDraw property) {
+            // not implemented yet
+            return null;
+        }
+
+        public int getColumnsCount() {
+            return model.properties.size();
+        }
+
+        @Override
+        public ClientPropertyDraw getColumnPropertyDraw(int i) {
+            return model.columnProperties.get(i);
+        }
+
+        @Override
+        public TableColumn getColumnDraw(int i) {
+            return columnsMap.get(model.columnProperties.get(i));
+        }
+
+        @Override
+        public JTable getTable() {
+            return TreeGroupTable.this;
+        }
+
+        @Override
+        protected int[] getExtraLeftFixedColumns() {
+            return new int[]{hierarchicalColumnWidth};
+        }
+    };
 }

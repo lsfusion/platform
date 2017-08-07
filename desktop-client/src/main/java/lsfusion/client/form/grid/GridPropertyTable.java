@@ -1,0 +1,161 @@
+package lsfusion.client.form.grid;
+
+import lsfusion.base.BaseUtils;
+import lsfusion.client.SwingUtils;
+import lsfusion.client.logics.ClientPropertyDraw;
+
+import javax.swing.*;
+import javax.swing.table.JTableHeader;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableColumnModel;
+import java.util.ArrayList;
+import java.util.List;
+
+// наследование не получается (из-за JXTreeTable), поэтому делаем агрегацию
+public abstract class GridPropertyTable {
+
+    public abstract void setUserWidth(ClientPropertyDraw property, Integer value);
+    public abstract Integer getUserWidth(ClientPropertyDraw property);
+
+    public abstract int getColumnsCount();
+    public abstract ClientPropertyDraw getColumnPropertyDraw(int i);
+    public abstract TableColumn getColumnDraw(int i);
+
+    private static void setColumnWidth(TableColumn column, int width) {
+        column.setWidth(width);
+        column.setPreferredWidth(width); // если не выставить grid начинает в какие-то моменты ужиматься в preferred, после чего delta при resize'е становится огромной
+    }
+
+    public abstract JTable getTable();
+
+    public void doLayout() {
+        JTable table = getTable();
+        JTableHeader tableHeader = table.getTableHeader();
+        if (tableHeader == null || tableHeader.getResizingColumn() == null) {
+            updateLayoutWidthColumns();
+        } else {
+            TableColumn resizingColumn = tableHeader.getResizingColumn();
+
+            TableColumnModel columnModel = table.getColumnModel();
+            int delta = table.getWidth() - columnModel.getTotalColumnWidth();
+            int leftColumnIndex = columnModel.getColumnIndex(resizingColumn.getIdentifier());
+            resizeColumn(leftColumnIndex, -delta);
+        }
+    }
+
+
+    // в общем то для "групп в колонки" разделено (чтобы когда были группы в колонки - все не расширялись(
+    private void updateLayoutWidthColumns() {
+        List<TableColumn> flexColumns = new ArrayList<>();
+        List<Double> flexValues = new ArrayList<>();
+        double totalPref = 0.0;
+        for(int extra : getExtraLeftFixedColumns())
+            totalPref += extra;
+
+        double totalFlexValues = 0;
+
+        for (int i = 0; i < columns.length; ++i) {
+            TableColumn column = columns[i];
+
+            double pref = prefs[i];
+            if(flexes[i]) {
+                flexColumns.add(column);
+                flexValues.add(pref);
+                totalFlexValues += pref;
+            } else {
+                int intPref = (int) Math.round(prefs[i]);
+                assert intPref == basePrefs[i];
+                setColumnWidth(column, intPref);
+            }
+            totalPref += pref;
+        }
+
+        // поправка для округлений (чтобы не дрожало)
+        int flexSize = flexValues.size();
+        if(flexSize % 2 != 0)
+            flexSize--;
+        for(int i=0;i<flexSize;i++)
+            flexValues.set(i, flexValues.get(i) + (i % 2 == 0 ? 0.1 : -0.1));
+
+        double flexWidth = BaseUtils.max(getViewportWidth() - totalPref, 0);
+
+        int precision = 10000; // копия с веба, так то здесь можно double'ы использовать, но чтобы одинаково выглядело работало - сделаем так
+        int restPercent = 100 * precision;
+        for(int i=0,size=flexColumns.size();i<size;i++) {
+            TableColumn flexColumn = flexColumns.get(i);
+            double flexValue = flexValues.get(i);
+            int flexPercent = (int) Math.round(flexValue * restPercent / totalFlexValues);
+            restPercent -= flexPercent;
+            totalFlexValues -= flexValue;
+
+            setColumnWidth(flexColumn, ((int)Math.round(flexValue + flexWidth * (double)flexPercent / (double)(100 * precision))));
+        }
+//        preferredWidth = (int) Math.round(totalPref);
+        setMinimumTableWidth(totalPref);
+    }
+
+    public boolean getScrollableTracksViewportWidth() {
+        return minimumTableWidth <= 0 || minimumTableWidth < getViewportWidth();
+    }
+
+    private double minimumTableWidth = -1;
+
+    private void setMinimumTableWidth(double width) {
+        minimumTableWidth = width;
+    }
+
+
+    protected abstract int[] getExtraLeftFixedColumns();
+
+    public void resizeColumn(int column, int delta) {
+//        int body = ;
+        int viewWidth = getViewportWidth(); // непонятно откуда этот один пиксель берется (судя по всему padding)
+        for(int extra : getExtraLeftFixedColumns()) {
+            viewWidth -= extra;
+            column--;
+        }
+
+        if(column >= 0) {
+            SwingUtils.calculateNewFlexesForFixedTableLayout(column, delta, viewWidth, prefs, basePrefs, flexes);
+            for (int i = 0; i < prefs.length; i++)
+                setUserWidth(getColumnPropertyDraw(i), (int) Math.round(prefs[i]));
+            updateLayoutWidthColumns();
+        }
+    }
+
+    private int getViewportWidth() {
+        return ((JViewport) getTable().getParent()).getWidth() - 1;
+//        return getTableDataScroller().getClientWidth() - 1;
+    }
+
+    private TableColumn[] columns;
+    private double[] prefs;  // mutable
+    private int[] basePrefs;
+    private boolean[] flexes;
+    public void updateLayoutWidth() {
+        JTable table = getTable();
+
+        int columnsCount = getColumnsCount();
+        columns = new TableColumn[columnsCount];
+        prefs = new double[columnsCount];
+        basePrefs = new int[columnsCount];
+        flexes = new boolean[columnsCount];
+        for (int i = 0; i < columnsCount; ++i) {
+            TableColumn columnDraw = getColumnDraw(i);
+            columns[i] = columnDraw;
+
+            ClientPropertyDraw property = getColumnPropertyDraw(i);
+            flexes[i] = property.isFlex(table);
+
+            int basePref = property.getMinimumValueWidth(table); //property.getPreferredValuePixelWidth(font);
+            Integer userWidth = getUserWidth(property);
+            int pref = userWidth != null ? userWidth : basePref;
+            prefs[i] = pref;
+            basePrefs[i] = basePref;
+
+            if(!flexes[i]) // тут хитро, дело в том что базовый механизм resizing'а подразумевает что колонка ВСЕГДА получит запрашиваемую ширину (так как дельта mouseOffsetX - mouseX записывается в ширину, и если колонка не получила ее на прошлом шаге то delta вызовется еще раз и еще раз)
+                columnDraw.setMaxWidth(basePref); // поэтому выставляем max по сути запрещая расширение таких колонок ()
+        }
+//        updateLayoutWidthColumns(); // тут не надо, так как в отличие от веб, есть doLayout который и выполняет расположение
+    }
+}

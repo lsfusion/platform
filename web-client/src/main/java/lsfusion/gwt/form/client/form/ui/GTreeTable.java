@@ -15,10 +15,7 @@ import lsfusion.gwt.cellview.client.HeaderPanel;
 import lsfusion.gwt.cellview.client.KeyboardRowChangedEvent;
 import lsfusion.gwt.cellview.client.cell.Cell;
 import lsfusion.gwt.cellview.client.cell.CellPreviewEvent;
-import lsfusion.gwt.form.shared.view.GForm;
-import lsfusion.gwt.form.shared.view.GGroupObject;
-import lsfusion.gwt.form.shared.view.GOrder;
-import lsfusion.gwt.form.shared.view.GPropertyDraw;
+import lsfusion.gwt.form.shared.view.*;
 import lsfusion.gwt.form.shared.view.changes.GGroupObjectValue;
 import lsfusion.gwt.form.shared.view.grid.EditEvent;
 import lsfusion.gwt.form.shared.view.grid.GridEditableCell;
@@ -49,7 +46,9 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     
     private boolean autoSize;
 
-    public GTreeTable(GFormController iformController, GForm iform, GTreeGroupController treeGroupController, boolean autoSize) {
+    private int hierarchicalColumnWidth;
+
+    public GTreeTable(GFormController iformController, GForm iform, GTreeGroupController treeGroupController, GTreeGroup treeGroup, boolean autoSize) {
         super(iformController, treeGroupController.getFont());
 
         this.treeGroupController = treeGroupController;
@@ -68,7 +67,9 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         createdFields.add("treeColumn");
         headers.add(header);
         addColumn(column, header);
-        setColumnWidth(column, "81px");
+
+        hierarchicalColumnWidth = treeGroup.calculatePreferredSize();
+        setColumnWidth(column, hierarchicalColumnWidth + "px");
 
         keyboardSelectionHandler = new TreeTableKeyboardSelectionHandler(this);
         setKeyboardSelectionHandler(keyboardSelectionHandler);
@@ -227,7 +228,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
 
     @Override
     protected int[] getExtraLeftFixedColumns() {
-        return new int[]{81};
+        return new int[]{hierarchicalColumnWidth};
     }
 
     public void update() {
