@@ -309,8 +309,6 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
 
             double pref = prefs[i];
             if(flexes[i]) {
-                pref += (i % 2 == 0 ? (i==columns.length - 1 ? 0.0 : -0.1) : 0.1); // поправка для округлений (чтобы не дрожало)
-
                 flexColumns.add(column);
                 flexValues.add(pref);
                 totalFlexValues += pref;
@@ -321,6 +319,13 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
             }
             totalPref += pref;
         }
+
+        // поправка для округлений (чтобы не дрожало)
+        int flexSize = flexValues.size();
+        if(flexSize % 2 != 0)
+            flexSize--;
+        for(int i=0;i<flexSize;i++)
+            flexValues.set(i, flexValues.get(i) + (i % 2 == 0 ? 0.1 : -0.1));
 
         int precision = 10000;
         int restPercent = 100 * precision;
@@ -340,7 +345,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
 
     public void resizeColumn(int column, int delta) {
 //        int body = ;
-        int viewWidth = getTableDataScroller().getClientWidth() - 1; // непонятно откуда этот один пиксель берется (судя по всему padding)
+        int viewWidth = getViewportWidth(); // непонятно откуда этот один пиксель берется (судя по всему padding)
         for(int extra : getExtraLeftFixedColumns()) {
             viewWidth -= extra;
             column--;
@@ -349,10 +354,14 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         if(column >= 0) {
             GwtClientUtils.calculateNewFlexesForFixedTableLayout(column, delta, viewWidth, prefs, basePrefs, flexes);
             for (int i = 0; i < prefs.length; i++)
-                setUserWidth(getProperty(columns[i]), (int) Math.round(prefs[i]));
+                setUserWidth(getColumnPropertyDraw(i), (int) Math.round(prefs[i]));
             updateLayoutWidthColumns();
             onResize();
         }
+    }
+
+    private int getViewportWidth() {
+        return getTableDataScroller().getClientWidth() - 1;
     }
 
     private Column[] columns;

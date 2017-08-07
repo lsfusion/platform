@@ -628,4 +628,213 @@ public class SwingUtils {
             throw new RuntimeException(e);
         }
     }
+
+    // возвращает новую flexWidth
+    private static double reducePrefsToBase(double prevFlexWidth, int column, double[] prefs, double[] flexes, int[] basePrefs) {
+        double reduce = prefs[column] - basePrefs[column];
+        assert greaterEquals(reduce, 0.0);
+        if(equals(reduce, 0.0))
+            return prevFlexWidth;
+
+        double newFlexWidth = prevFlexWidth + reduce;
+        double newTotalFlexes = 0.0;
+        double prevTotalFlexes = 0.0;
+        for(int i=0;i<prefs.length;i++) {
+            if(i!=column) {
+                double prevFlex = flexes[i];
+                double newFlex = prevFlex * prevFlexWidth / newFlexWidth;
+                flexes[i] = newFlex;
+                newTotalFlexes += newFlex;
+                prevTotalFlexes += prevFlex;
+            }
+        }
+        assert newTotalFlexes < prevTotalFlexes;
+        flexes[column] += prevTotalFlexes - newTotalFlexes;
+        prefs[column] = basePrefs[column];
+        return newFlexWidth;
+    }
+
+    private static boolean greater(double a, double b) {
+        return a - b > 0.001;
+    }
+    private static boolean greaterEquals(double a, double b) {
+        return a - b > -0.001;
+    }
+    private static boolean equals(double a, double b) {
+        return Math.abs(a - b) < 0.001;
+    }
+
+    // prefs на double'ах чтобы не "дрожало", из-за преобразований в разные стороны (строго говоря наверное без adjustTableFixed и overflow дрожать не будет)
+    public static void calculateNewFlexes(int column, int delta, int viewWidth, double[] prefs, double[] flexes, int[] basePrefs, double[] baseFlexes, boolean overflow) {
+        // ищем первую динамическую компоненту слева (она должна получить +delta, соответственно правая часть -delta)
+        // тут есть варианты -delta идет одной правой колонке, или всем правых колонок, но так как
+        // a) так как выравнивание по умолчанию левое, интуитивно при перемещении изменяют именно размер левой колонки, б) так как есть де-факто ограничение Preferred, вероятность получить нужный размер уменьшая все колонки куда выше
+        // будем распределять между всеми правыми колонками
+
+        // находим левую flex
+        while(column >= 0 && baseFlexes[column] == 0)
+            column--;
+        if(column < 0) {
+            while(column < baseFlexes.length && baseFlexes[column] == 0)
+                column++;
+            if(column >= baseFlexes.length) // вообще нет ни одной динамической колонки - ничего не меняем
+                return;
+        }
+
+        // считаем общий текущий preferred
+        double totalPref = 0;
+        for (double pref : prefs) {
+            totalPref += pref;
+        }
+
+        // сначала списываем delta справа налево pref (но не меньше basePref), ПОКА сумма pref > viewWidth !!! ( то есть flex не работает, работает ширина контейнера или minTableWidth в таблице)
+        // тут можно было бы если идет расширение - delta > 0.0, viewWidth приравнять totalPref (соответственно запретить adjust, то есть pref'ы остались такими же) и reduce'ить остальные, но это пойдет в разрез с уменьшением (когда нужно уменьшать pref'ы иначе в исходное состояние не вернешься), поэтому логичнее исходить из концепции когда если есть scroll тогда просто расширяем колонки, если нет scroll'а пытаемся уместить все без скролла
+        double exceedPrefWidth = totalPref - viewWidth;
+        if(greater(exceedPrefWidth, 0.0)) {
+            if(!overflow)
+                return;
+
+            double prefReduceDelta = Math.min(-delta, exceedPrefWidth);
+            delta += prefReduceDelta;
+            for(int i=column;i>=0;i--) {
+                double maxReduce = prefs[i] - basePrefs[i];
+                double reduce = Math.min(prefReduceDelta, maxReduce);
+                prefs[i] -= reduce;
+                prefReduceDelta -= reduce;
+                if(equals(prefReduceDelta, 0.0)) // если delta не осталось нет смысла продолжать, у нас либо viewWidth либо уже все расписали
+                    break;
+            }
+
+            assert greaterEquals(0.0, delta);
+
+            exceedPrefWidth = 0;
+        }
+
+        if(delta == 0) // все расписали
+            return;
+
+        double flexWidth = -exceedPrefWidth;
+        assert greaterEquals(flexWidth, 0.0);
+
+        // можно переходить на basePref - flex (с учетом того что viewWidth может измениться, pref'ы могут быть как равны viewWidth в результате предыдущего шага, так и меньше)
+        for(int i=0;i<prefs.length;i++)
+            flexWidth = reducePrefsToBase(flexWidth, i, prefs, flexes, basePrefs);
+
+        //если flexWidth все еще равно 0 - вываливаемся (так как нельзя меньше preferred опускаться)
+        if(equals(flexWidth,0.0))
+            return;
+
+        // запускаем изменение flex'а (пропорциональное)
+        double totalFlex = 0;
+        double totalBaseFlex = 0;
+        double totalRightFlexes = 0.0;
+        double totalRightBaseFlexes = 0.0;
+        for(int i=0;i<flexes.length;i++) {
+            double flex = flexes[i];
+            double baseFlex = baseFlexes[i];
+            if(i>column) {
+                totalRightFlexes += flex;
+                totalRightBaseFlexes += baseFlex;
+            }
+            totalFlex += flex;
+            totalBaseFlex += baseFlex;
+        }
+
+        // flex колонки увеличиваем на нужную величину, соответственно остальные flex'ы надо уменьшить на эту величину
+        double toAddFlex = (double) delta * totalFlex / (double) flexWidth;
+        if(greater(0.0, toAddFlex + flexes[column])) // не shrink'аем пока
+            toAddFlex = -flexes[column];
+
+        // сначала уменьшаем правые flex'ы
+        double restFlex = 0.0;
+        double toAddRightFlex = toAddFlex;
+        if(toAddRightFlex > totalRightFlexes) {
+            restFlex = toAddRightFlex - totalRightFlexes;
+            toAddRightFlex = totalRightFlexes;
+        }
+        for(int i=column+1;i<flexes.length;i++) {
+            if(greater(totalRightFlexes, 0.0))
+                flexes[i] -= flexes[i] * toAddRightFlex / totalRightFlexes;
+            else {
+                assert equals(flexes[i], 0.0);
+                flexes[i] = - baseFlexes[i] * toAddRightFlex / totalRightBaseFlexes;
+            }
+        }
+
+
+        // может остаться delta, тогда раскидываем ее для левых компонент
+        boolean addLeft = !overflow; // (если не overflow, потому как в противном случае все же не очень естественное поведение)
+        if(addLeft && greater(restFlex, 0.0)) {
+            double totalLeftFlexes = totalFlex - totalRightFlexes - flexes[column];
+            double totalLeftBaseFlexes = totalBaseFlex - totalRightBaseFlexes - baseFlexes[column];
+
+            double toAddLeftFlex = restFlex; // надо изменять preferred - то есть overflow'ить / добавлять scroll по сути
+            restFlex = 0.0;
+            if(toAddLeftFlex > totalLeftFlexes) {
+                restFlex = toAddLeftFlex - totalLeftFlexes;
+                toAddLeftFlex = totalLeftFlexes;
+            }
+            for(int i=0;i<column;i++) {
+                if(greater(totalLeftFlexes, 0.0))
+                    flexes[i] -= flexes[i] * toAddLeftFlex / totalLeftFlexes;
+                else {
+                    assert equals(flexes[i], 0.0);
+                    flexes[i] = - baseFlexes[i] * toAddLeftFlex / totalLeftBaseFlexes;
+                }
+            }
+        }
+
+        toAddFlex = toAddFlex - restFlex;
+        flexes[column] += toAddFlex;
+
+        // если и так осталась, то придется давать preferred (соответственно flex не имеет смысла) и "здравствуй" scroll
+        if(greater(restFlex, 0.0)) {
+            assert !addLeft || equals(flexes[column], totalFlex); // по сути записываем все в эту колонку
+            if(overflow) {
+                if(!addLeft) {
+                    for (int i = 0; i < column; i++)
+                        prefs[i] += flexWidth * flexes[i] / totalFlex;
+                }
+                prefs[column] += flexWidth * ((flexes[column] + restFlex) / totalFlex);
+            }
+        }
+    }
+
+    private static void adjustFlexesToFixedTableLayout(int viewWidth, double[] prefs, boolean[] flexes, double[] flexValues) {
+        double minRatio = Double.MAX_VALUE;
+        double totalPref = 0;
+        double totalFlexValues = 0.0;
+        for(int i=0;i<prefs.length;i++) {
+            if(flexes[i]) {
+                double ratio = flexValues[i] / prefs[i];
+                minRatio = Math.min(minRatio, ratio);
+                totalFlexValues += flexValues[i];
+            }
+            totalPref += prefs[i];
+        }
+        double flexWidth = Math.max((double)viewWidth - totalPref, 0.0);
+        for(int i=0;i<prefs.length;i++) {
+            if(flexes[i])
+                prefs[i] = (prefs[i] + flexWidth * flexValues[i] / totalFlexValues) / (1.0 + flexWidth * minRatio / totalFlexValues);
+        }
+    }
+
+    // изменяется prefs
+    public static void calculateNewFlexesForFixedTableLayout(int column, int delta, int viewWidth, double[] prefs, int[] basePrefs, boolean[] flexes) {
+        double[] flexValues = new double[prefs.length];
+        double[] baseFlexValues = new double[prefs.length];
+        for(int i=0;i<prefs.length;i++) {
+            if(flexes[i]) {
+                flexValues[i] = prefs[i];
+                baseFlexValues[i] = basePrefs[i];
+            } else {
+                flexValues[i] = 0.0;
+                baseFlexValues[i] = 0.0;
+            }
+        }
+
+        calculateNewFlexes(column, delta, viewWidth, prefs, flexValues, basePrefs, baseFlexValues, true);
+
+        adjustFlexesToFixedTableLayout(viewWidth, prefs, flexes, flexValues);
+    }
 }

@@ -2,6 +2,7 @@ package lsfusion.client.form.grid;
 
 import com.google.common.base.Throwables;
 import com.sun.java.swing.plaf.windows.WindowsTableHeaderUI;
+import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.client.Main;
 import lsfusion.client.SwingUtils;
@@ -506,24 +507,7 @@ public class GridTable extends ClientPropertyTable {
         int oldColumnCount = columnModel.getColumnCount();
         if (newColumnCount > oldColumnCount) {
             while (newColumnCount > columnModel.getColumnCount()) {
-                addColumn(new TableColumn(columnModel.getColumnCount()) {
-                    @Override
-                    public TableCellRenderer getHeaderRenderer() {
-                        TableCellRenderer defaultHeaderRenderer = tableHeader.getDefaultRenderer();
-                        if (defaultHeaderRendererRef == null || defaultHeaderRendererRef.get() != defaultHeaderRenderer) {
-                            defaultHeaderRendererRef = new WeakReference<>(defaultHeaderRenderer);
-                            wrapperHeaderRenderer = new MultiLineHeaderRenderer(defaultHeaderRenderer, sortableHeaderManager) {
-                                @Override
-                                public Component getTableCellRendererComponent(JTable itable, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-                                    Component comp = super.getTableCellRendererComponent(itable, value, isSelected, hasFocus, row, column);
-                                    model.getColumnProperty(column).design.designHeader(comp);
-                                    return comp;
-                                }
-                            };
-                        }
-                        return wrapperHeaderRenderer;
-                    }
-                });
+                addColumn(new GridTableColumn(columnModel.getColumnCount()));
             }
         } else {
             while (newColumnCount < columnModel.getColumnCount()) {
@@ -534,31 +518,26 @@ public class GridTable extends ClientPropertyTable {
         int rowHeight = 0;
         hasFocusableCells = false;
         for (int i = 0; i < model.getColumnCount(); ++i) {
-            ClientPropertyDraw cell = model.getColumnProperty(i);
+            ClientPropertyDraw property = model.getColumnProperty(i);
 
-            TableColumn column = getColumnModel().getColumn(i);
+            GridTableColumn column = getColumn(i);
 
-            column.setMinWidth(cell.getMinimumValueWidth(this));
-            column.setPreferredWidth(getUserWidth(cell) != null ? getUserWidth(cell) :
-                    ((getAutoResizeMode() == JTable.AUTO_RESIZE_OFF) ? cell.getMinimumValueWidth(this) : cell.getPreferredValueWidth(this)));
-            column.setMaxWidth(cell.getMaximumValueWidth(this));
-            
             column.setHeaderValue(getColumnCaption(i));
 
-            Format format = cell.setFormat(getColumnPattern(i));
-            PropertyRenderer renderer = cell.getRendererComponent();
+            Format format = property.setFormat(getColumnPattern(i));
+            PropertyRenderer renderer = property.getRendererComponent();
             if (renderer instanceof LabelPropertyRenderer) {
                 ((LabelPropertyRenderer) renderer).setFormat(format);
             }
 
-            rowHeight = max(rowHeight, cell.getPreferredValueHeight(this));
+            rowHeight = max(rowHeight, property.getPreferredValueHeight(this));
 
-            hasFocusableCells |= cell.focusable == null || cell.focusable;
+            hasFocusableCells |= property.focusable == null || property.focusable;
 
-            boolean samePropAsPrevious = i != 0 && cell == model.getColumnProperty(i - 1);
+            boolean samePropAsPrevious = i != 0 && property == model.getColumnProperty(i - 1);
             final int index = i;
-            if (!samePropAsPrevious && cell.editKey != null) {
-                form.getLayout().addKeyBinding(cell.editKey, cell.groupObject, new ClientFormLayout.KeyBinding() {
+            if (!samePropAsPrevious && property.editKey != null) {
+                form.getLayout().addKeyBinding(property.editKey, property.groupObject, new ClientFormLayout.KeyBinding() {
                     @Override
                     public boolean keyPressed(KeyEvent e) {
                         if (isShowing()) {
@@ -575,7 +554,9 @@ public class GridTable extends ClientPropertyTable {
                 });
             }
         }
-        
+
+        updateLayoutWidth();
+
         setFocusable(hasFocusableCells);
 
         if (model.getColumnCount() != 0) {
@@ -591,6 +572,10 @@ public class GridTable extends ClientPropertyTable {
             gridController.setForceHidden(true);
         }
     }
+    
+    private GridTableColumn getColumn(int index) {
+        return (GridTableColumn) columnModel.getColumn(index);
+    }                           
     
     private String getColumnCaption(int column) {
         ClientPropertyDraw cell = model.getColumnProperty(column);
@@ -773,65 +758,22 @@ public class GridTable extends ClientPropertyTable {
         return rowKeys;
     }
 
-    private boolean fitWidth() {
-        int minWidth = 0;
-        TableColumnModel columnModel = getColumnModel();
-
-        for (int i = 0; i < getColumnCount(); i++) {
-            if (autoResizeMode == JTable.AUTO_RESIZE_OFF) {
-                minWidth += columnModel.getColumn(i).getWidth();
-            } else {
-                minWidth += columnModel.getColumn(i).getMinWidth();
-            }
-        }
-
-        // тут надо смотреть pane, а не саму table
-        return (minWidth < getParent().getWidth());
-    }
-
-    @Override
-    public boolean getScrollableTracksViewportWidth() {
-        return fitWidth();
-    }
-
     @Override
     public void doLayout() {
-        int newAutoResizeMode = fitWidth()
-                ? JTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS
-                : JTable.AUTO_RESIZE_OFF;
-        if (newAutoResizeMode != autoResizeMode) {
-            autoResizeMode = newAutoResizeMode;
-            setAutoResizeMode(newAutoResizeMode);
-
-            setOrResetPreferredColumnWidths();
-        }
-        super.doLayout();
-    }
-
-    public void setOrResetPreferredColumnWidths() {
-        if (getAutoResizeMode() == JTable.AUTO_RESIZE_OFF) {
-            setPreferredColumnWidthsAsMinWidth();
+        if (tableHeader == null || tableHeader.getResizingColumn() == null) {
+            updateLayoutWidthColumns();
         } else {
-            resetPreferredColumnWidths();
+            TableColumn resizingColumn = tableHeader.getResizingColumn();
+
+            int delta = getWidth() - columnModel.getTotalColumnWidth();
+            int leftColumnIndex = columnModel.getColumnIndex(resizingColumn.getIdentifier());
+            resizeColumn(leftColumnIndex, -delta);
         }
     }
 
     @Override
     public GridTableModel getModel() {
         return (GridTableModel) super.getModel();
-    }
-
-    private void setPreferredColumnWidthsAsMinWidth() {
-        for (int i = 0; i < model.getColumnCount(); ++i) {
-            getColumnModel().getColumn(i).setPreferredWidth(getColumnModel().getColumn(i).getMinWidth());
-        }
-    }
-
-    private void resetPreferredColumnWidths() {
-        for (int i = 0; i < model.getColumnCount(); ++i) {
-            ClientPropertyDraw cell = model.getColumnProperty(i);
-            getColumnModel().getColumn(i).setPreferredWidth(cell.getPreferredValueWidth(this));
-        }
     }
 
     public ClientFormController getForm() {
@@ -1878,6 +1820,31 @@ public class GridTable extends ClientPropertyTable {
             header.add(rendererPane);
         }
     }
+    
+    public class GridTableColumn extends TableColumn {
+        public int flex; // равен preferred'у
+        
+        public GridTableColumn(int index) {
+            super(index);
+        }
+        
+        @Override
+        public TableCellRenderer getHeaderRenderer() {
+            TableCellRenderer defaultHeaderRenderer = tableHeader.getDefaultRenderer();
+            if (defaultHeaderRendererRef == null || defaultHeaderRendererRef.get() != defaultHeaderRenderer) {
+                defaultHeaderRendererRef = new WeakReference<>(defaultHeaderRenderer);
+                wrapperHeaderRenderer = new MultiLineHeaderRenderer(defaultHeaderRenderer, sortableHeaderManager) {
+                    @Override
+                    public Component getTableCellRendererComponent(JTable itable, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+                        Component comp = super.getTableCellRendererComponent(itable, value, isSelected, hasFocus, row, column);
+                        model.getColumnProperty(column).design.designHeader(comp);
+                        return comp;
+                    }
+                };
+            }
+            return wrapperHeaderRenderer;
+        }
+    }
 
     public Map<Pair<ClientPropertyDraw, ClientGroupObjectValue>, Boolean> getOrderDirections() {
         return sortableHeaderManager.getOrderDirections();
@@ -1885,5 +1852,135 @@ public class GridTable extends ClientPropertyTable {
     
     public FontInfo getDesignFont() {
         return groupObject.grid.design.getFont();
+    }
+
+    @Override
+    public boolean getScrollableTracksViewportWidth() {
+        return minimumTableWidth <= 0 || minimumTableWidth < getViewportWidth();
+    }
+
+    private double minimumTableWidth = -1;
+    private void setMinimumTableWidth(double width) {
+        minimumTableWidth = width;
+    }
+
+    private static void setColumnWidth(GridTableColumn column, int width) {
+        column.setWidth(width);
+        column.setPreferredWidth(width); // если не выставить grid начинает в какие-то моменты ужиматься в preferred, после чего delta при resize'е становится огромной
+    }
+
+    // в общем то для "групп в колонки" разделено (чтобы когда были группы в колонки - все не расширялись(
+    private void updateLayoutWidthColumns() {
+        List<GridTableColumn> flexColumns = new ArrayList<>();
+        List<Double> flexValues = new ArrayList<>();
+        double totalPref = 0.0;
+        for(int extra : getExtraLeftFixedColumns())
+            totalPref += extra;
+
+        double totalFlexValues = 0;
+
+        for (int i = 0; i < columns.length; ++i) {
+            GridTableColumn column = columns[i];
+
+            double pref = prefs[i];
+            if(flexes[i]) {
+                flexColumns.add(column);
+                flexValues.add(pref);
+                totalFlexValues += pref;
+            } else {
+                int intPref = (int) Math.round(prefs[i]);
+                assert intPref == basePrefs[i];
+                setColumnWidth(column, intPref);
+            }
+            totalPref += pref;
+        }
+
+        // поправка для округлений (чтобы не дрожало)
+        int flexSize = flexValues.size();
+        if(flexSize % 2 != 0)
+            flexSize--;
+        for(int i=0;i<flexSize;i++)
+            flexValues.set(i, flexValues.get(i) + (i % 2 == 0 ? 0.1 : -0.1));
+
+        double flexWidth = BaseUtils.max(getViewportWidth() - totalPref, 0);
+
+        int precision = 10000; // копия с веба, так то здесь можно double'ы использовать, но чтобы одинаково выглядело работало - сделаем так
+        int restPercent = 100 * precision;
+        for(int i=0,size=flexColumns.size();i<size;i++) {
+            GridTableColumn flexColumn = flexColumns.get(i);
+            double flexValue = flexValues.get(i);
+            int flexPercent = (int) Math.round(flexValue * restPercent / totalFlexValues);
+            restPercent -= flexPercent;
+            totalFlexValues -= flexValue;
+
+            setColumnWidth(flexColumn, ((int)Math.round(flexValue + flexWidth * (double)flexPercent / (double)(100 * precision))));
+        }
+//        preferredWidth = (int) Math.round(totalPref);
+        setMinimumTableWidth(totalPref);
+    }
+
+    protected int[] getExtraLeftFixedColumns() { // для дерева
+        return new int[0];
+    }
+
+    public void resizeColumn(int column, int delta) {
+//        int body = ;
+        int viewWidth = getViewportWidth(); // непонятно откуда этот один пиксель берется (судя по всему padding)
+        for(int extra : getExtraLeftFixedColumns()) {
+            viewWidth -= extra;
+            column--;
+        }
+
+        if(column >= 0) {
+            SwingUtils.calculateNewFlexesForFixedTableLayout(column, delta, viewWidth, prefs, basePrefs, flexes);
+            for (int i = 0; i < prefs.length; i++)
+                setUserWidth(getColumnPropertyDraw(i), (int) Math.round(prefs[i]));
+            updateLayoutWidthColumns();
+        }
+    }
+
+    private int getViewportWidth() {
+        return ((JViewport) getParent()).getWidth() - 1;
+//        return getTableDataScroller().getClientWidth() - 1;
+    }
+
+    private GridTableColumn[] columns;
+    private double[] prefs;  // mutable
+    private int[] basePrefs;
+    private boolean[] flexes;
+    public void updateLayoutWidth() {
+        int columnsCount = getColumnsCount();
+        columns = new GridTableColumn[columnsCount];
+        prefs = new double[columnsCount];
+        basePrefs = new int[columnsCount];
+        flexes = new boolean[columnsCount];
+        for (int i = 0; i < columnsCount; ++i) {
+            GridTableColumn columnDraw = getColumnDraw(i);
+            columns[i] = columnDraw;
+
+            ClientPropertyDraw property = getColumnPropertyDraw(i);
+            flexes[i] = property.isFlex(this);
+
+            int basePref = property.getMinimumValueWidth(this); //property.getPreferredValuePixelWidth(font);
+            Integer userWidth = getUserWidth(property);
+            int pref = userWidth != null ? userWidth : basePref;
+            prefs[i] = pref;
+            basePrefs[i] = basePref;
+
+            if(!flexes[i]) // тут хитро, дело в том что базовый механизм resizing'а подразумевает что колонка ВСЕГДА получит запрашиваемую ширину (так как дельта mouseOffsetX - mouseX записывается в ширину, и если колонка не получила ее на прошлом шаге то delta вызовется еще раз и еще раз)
+                columnDraw.setMaxWidth(basePref); // поэтому выставляем max по сути запрещая расширение таких колонок ()
+        }
+//        updateLayoutWidthColumns(); // тут не надо, так как в отличие от веб, есть doLayout который и выполняет расположение
+    }
+
+
+    protected int getColumnsCount() {
+        return model.getColumnCount();
+    }
+    protected ClientPropertyDraw getColumnPropertyDraw(int i) {
+        return model.getColumnProperty(i);
+    }
+    protected GridTableColumn getColumnDraw(int i) {
+        return getColumn(i);
     }
 }

@@ -243,8 +243,8 @@ public class GGridPropertyTableHeader extends Header<String> {
             int dragX = clientX - initalMouseX;
             if(Math.abs(dragX) > 2) {
                 table.resizeColumn(leftColumnIndex, dragX);
-                initalMouseX = leftHeaderCell.getAbsoluteRight();
-//                    initalMouseX = clientX; // из-за округлений гулять начинает
+//                initalMouseX = leftHeaderCell.getAbsoluteRight();
+                initalMouseX = Math.max(clientX, leftHeaderCell.getAbsoluteRight()); // делается max, чтобы при resize'е влево растягивание шло с момента когда курсор вернется на правый край колонки (вправо там другие проблемы)
             }
         }
     }

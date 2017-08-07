@@ -314,7 +314,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
     }
 
     public boolean isFlex(GFont parentFont) { // table layout fixed - не поддерживает различные preferred и flex, поэтому просто возвращаем все
-        return getMaximumPixelValueWidth() > getPreferredValuePixelWidth(parentFont) || flex > 0;
+        return flex > 0 || getMaximumPixelValueWidth() > getPreferredValuePixelWidth(parentFont);
     }
 
     public String getPreferredValueWidth() {

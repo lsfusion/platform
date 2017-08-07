@@ -197,6 +197,10 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         return new Dimension(getMinimumValueWidth(comp), getMinimumValueHeight(comp));
     }
 
+    public boolean isFlex(JComponent comp) { // table layout fixed - не поддерживает различные preferred и flex, поэтому просто возвращаем все
+        return flex > 0 || getMaximumValueWidth(comp) > getMinimumValueWidth(comp);
+    }
+
     public int getPreferredValueWidth(JComponent comp) {
         if (preferredValueSize != null && preferredValueSize.width > -1) {
             return preferredValueSize.width;
