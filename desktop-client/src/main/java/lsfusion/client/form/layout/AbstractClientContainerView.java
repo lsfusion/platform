@@ -172,7 +172,7 @@ public abstract class AbstractClientContainerView implements ClientContainerView
     public static Dimension getMaxPreferredSize(ClientContainer child, Map<ClientContainer, ClientContainerView> containerViews, boolean max) {
         return overrideSize(child, containerViews.get(child).getMaxPreferredSize(containerViews), max);
     }
-    private static Dimension getMaxPreferredSize(ClientComponent child, JComponentPanel childView) {
+    private static Dimension getMaxPreferredSize(ClientComponent child, JComponentPanel childView) { // тут как и в GwtClientUtils.calculateMaxPreferredSize возможно нужна проверка на isVisible
         return overrideSize(child, calculateMaxPreferredSize(childView), true);
     }
 

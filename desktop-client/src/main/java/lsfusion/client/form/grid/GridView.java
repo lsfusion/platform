@@ -1,5 +1,6 @@
 package lsfusion.client.form.grid;
 
+import lsfusion.base.BaseUtils;
 import lsfusion.client.form.ClientFormController;
 import lsfusion.client.form.grid.preferences.GridUserPreferences;
 import lsfusion.client.form.layout.JComponentPanel;
@@ -23,7 +24,8 @@ public class GridView extends JComponentPanel {
         Dimension preferredTableSize = gridTable.getPreferredScrollableViewportSize();
         Dimension preferredAutoTableSize = gridTable.getPreferredSize();
         Dimension preferredSize = getPreferredSize(); // чтобы учесть header отступы и т.п.
-        return new Dimension(preferredSize.width - preferredTableSize.width + preferredAutoTableSize.width,  preferredSize.height - preferredTableSize.height + preferredAutoTableSize.height);
+        return new Dimension(BaseUtils.max(preferredSize.width - preferredTableSize.width + preferredAutoTableSize.width, preferredSize.width), // max, 130 px
+                             BaseUtils.max(preferredSize.height - preferredTableSize.height + preferredAutoTableSize.height, preferredSize.height)); // max, 130 px
     }
 
     public GridView(GridController igridController, ClientFormController form, GridUserPreferences[] iuserPreferences, boolean tabVertical, boolean verticalScroll) {

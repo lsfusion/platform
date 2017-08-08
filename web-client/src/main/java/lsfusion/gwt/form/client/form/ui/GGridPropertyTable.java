@@ -136,8 +136,8 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     @Override
     public Dimension getMaxPreferredSize() {
         return new Dimension(
-                preferredWidth + nativeScrollbarWidth + 17,
-                max(isAutoSize() ? 0 : 140, getRowCount() * getRowHeight() + 30) + nativeScrollbarHeight
+                max(isAutoSize() ? 0 : 130, preferredWidth + nativeScrollbarWidth + 17), // 130 px в MainFrame.css
+                max(isAutoSize() ? 0 : 130, getRowCount() * getRowHeight() + 30 + nativeScrollbarHeight) // 130 px в MainFrame.css
         );
     }
 

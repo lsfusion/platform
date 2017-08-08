@@ -146,11 +146,6 @@ public class ClientModalForm extends JDialog {
             preferredSize.height += 40;
         }
 
-        if (form.hasVisibleGrid()) {
-            preferredSize.height += 40;
-            preferredSize.height += 35;  // под отборы
-        }
-
         return preferredSize;
     }
 }

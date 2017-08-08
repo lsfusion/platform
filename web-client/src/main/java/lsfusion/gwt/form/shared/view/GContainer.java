@@ -55,10 +55,6 @@ public class GContainer extends GComponent {
         return type == HORIZONTAL_SPLIT_PANE || type == VERTICAL_SPLIT_PANE;
     }
 
-    public boolean isVerticalSplit() {
-        return type == VERTICAL_SPLIT_PANE;
-    }
-
     public boolean isScroll() {
         return type == SCROLL;
     }

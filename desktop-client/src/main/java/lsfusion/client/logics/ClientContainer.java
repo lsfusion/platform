@@ -187,20 +187,24 @@ public class ClientContainer extends ClientComponent implements AbstractContaine
         return type == HORIZONTAL_SPLIT_PANE || type == VERTICAL_SPLIT_PANE;
     }
 
-    public boolean isVerticalSplit() {
+    public boolean isLinearVertical() {
+        return type == CONTAINERV;
+    }
+
+    public boolean isSplitVertical() {
         return type == VERTICAL_SPLIT_PANE;
     }
 
     public boolean isVertical() {
-        return type == CONTAINERV;
+        return isLinearVertical() || isSplitVertical();
     }
 
-    public boolean isHorizontal() {
+    public boolean isLinearHorizontal() {
         return type == CONTAINERH;
     }
 
     public boolean isLinear() {
-        return isVertical() || isHorizontal();
+        return isLinearVertical() || isLinearHorizontal();
     }
 
     public boolean isColumns() {

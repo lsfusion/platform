@@ -251,7 +251,7 @@ public class GwtClientUtils {
         return new Dimension(widget.getOffsetWidth() + widthExtra, widget.getOffsetHeight() + heightExtra);
     }
 
-    public static Dimension calculateMaxPreferredSize(Widget widget) {
+    public static Dimension calculateMaxPreferredSize(Widget widget) { // тут как и в AbstractClientContainerView.getMaxPreferredSize возможно нужна проверка на isVisible
         if (widget instanceof HasMaxPreferredSize) {
             return ((HasMaxPreferredSize) widget).getMaxPreferredSize();
         } else {

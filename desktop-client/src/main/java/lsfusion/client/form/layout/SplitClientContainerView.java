@@ -151,7 +151,7 @@ public class SplitClientContainerView extends AbstractClientContainerView {
 
     private class SplitPane extends JSplitPane {
         public SplitPane() {
-            super(container.isVerticalSplit() ? JSplitPane.VERTICAL_SPLIT : JSplitPane.HORIZONTAL_SPLIT, false);
+            super(container.isSplitVertical() ? JSplitPane.VERTICAL_SPLIT : JSplitPane.HORIZONTAL_SPLIT, false);
 
             setBorder(null);
 
@@ -176,7 +176,7 @@ public class SplitClientContainerView extends AbstractClientContainerView {
             Dimension left = leftView != null ? sizeGetter.get(leftView) : new Dimension(0, 0);
             Dimension right = rightView != null ? sizeGetter.get(rightView) : new Dimension(0, 0);
 
-            if (container.isVerticalSplit()) {
+            if (container.isSplitVertical()) {
                 result.width = limitedSum(result.width, max(left.width, right.width));
                 result.height = limitedSum(result.height, left.height, right.height);
             } else {
@@ -197,7 +197,7 @@ public class SplitClientContainerView extends AbstractClientContainerView {
     public Dimension getMaxPreferredSize(Map<ClientContainer, ClientContainerView> containerViews) {
         Dimension pref = super.getMaxPreferredSize(containerViews);
 
-        if (container.isVerticalSplit()) {
+        if (container.isSplitVertical()) {
             pref.height += 5; // пока хардкодим ширину сплиттера (в preferred size она вообще не учитывается) 
         } else {
             pref.width += 5;

@@ -20,7 +20,7 @@ public abstract class SplitContainerView<P extends Panel> extends GAbstractConta
 
         assert container.isSplit();
 
-        splitPane = createSplitPanel(container.isVerticalSplit());
+        splitPane = createSplitPanel(container.isSplitVertical());
 
         view = wrapWithCaption(splitPane.asWidget());
 
@@ -58,7 +58,7 @@ public abstract class SplitContainerView<P extends Panel> extends GAbstractConta
     public Dimension getMaxPreferredSize(Map<GContainer, GAbstractContainerView> containerViews) {
         Dimension pref = super.getMaxPreferredSize(containerViews);
         
-        if (container.isVerticalSplit()) {
+        if (container.isSplitVertical()) {
             pref.height += splitPane.getSplitterSize();
         } else {
             pref.width += splitPane.getSplitterSize();
