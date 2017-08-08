@@ -201,7 +201,7 @@ maxTotalMemoryFromTo 'Максимум памяти' = DATA INTEGER (Computer, D
 minUsedMemoryFromTo 'Минимум использованной памяти' = DATA INTEGER (Computer, DATETIME, DATETIME);
 maxUsedMemoryFromTo 'Максимум использованной памяти' = DATA INTEGER (Computer, DATETIME, DATETIME);
 
-lastConnection(computer) = GROUP LAST Connection connection BY computer(connection);
+lastConnection(computer) = GROUP LAST Connection connection BY computer(connection) ORDER connection;
 remoteAddress 'IP пользователя' (Computer computer) = remoteAddress(lastConnection(computer));
 osVersion 'Операционная система' (Computer computer) = osVersion(lastConnection(computer));
 processor 'Процессор' (Computer computer) = processor(lastConnection(computer));
