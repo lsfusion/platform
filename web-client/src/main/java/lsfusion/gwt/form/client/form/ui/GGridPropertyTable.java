@@ -399,7 +399,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     }
 
     protected int getColumnBasePref(int i) {
-        return getColumnPropertyDraw(i).getMinimumPixelValueWidth(font); //property.getPreferredValuePixelWidth(font);
+        return getColumnPropertyDraw(i).getBasePixelValueWidth(font); //property.getPreferredValuePixelWidth(font);
     }
 
 }

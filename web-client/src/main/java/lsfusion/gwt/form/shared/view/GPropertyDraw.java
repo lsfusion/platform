@@ -273,11 +273,11 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
         return notNull && !isReadOnly();
     }
 
-    public String getMinimumValueWidth(GFont parentFont) {
-        return getMinimumPixelValueWidth(parentFont) + "px";
+    public int getBasePixelValueWidth(GFont parentFont) {
+        return Math.min(getMinimumPixelValueWidth(parentFont), getPreferredValuePixelWidth(parentFont));
     }
 
-    public int getMinimumPixelValueWidth(GFont parentFont) {
+    private int getMinimumPixelValueWidth(GFont parentFont) {
         if (minimumValueWidth != -1) {
             return minimumValueWidth;
         } else {
@@ -314,7 +314,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
     }
 
     public boolean isFlex(GFont parentFont) { // table layout fixed - не поддерживает различные preferred и flex, поэтому просто возвращаем все
-        return flex > 0 || getMaximumPixelValueWidth() > getMinimumPixelValueWidth(parentFont);
+        return flex > 0 || getMaximumPixelValueWidth() > getBasePixelValueWidth(parentFont);
     }
 
     public String getPreferredValueWidth() {

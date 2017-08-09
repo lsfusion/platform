@@ -158,6 +158,6 @@ public abstract class GridPropertyTable {
     }
 
     protected int getColumnBasePref(int i) {
-        return getColumnPropertyDraw(i).getMinimumValueWidth(getTable()); //property.getPreferredValuePixelWidth(font);
+        return getColumnPropertyDraw(i).getBaseValueWidth(getTable()); //property.getPreferredValuePixelWidth(font);
     }
 }

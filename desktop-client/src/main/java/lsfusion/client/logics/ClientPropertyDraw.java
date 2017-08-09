@@ -178,6 +178,9 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         return baseType.getPanelView(this, columnKey, form);
     }
 
+    public int getBaseValueWidth(JComponent comp) {
+        return BaseUtils.min(getMinimumValueWidth(comp), getPreferredValueWidth(comp));
+    }
 
     public int getMinimumValueWidth(JComponent comp) {
         if (minimumValueSize != null && minimumValueSize.width > -1) {
@@ -198,7 +201,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     }
 
     public boolean isFlex(JComponent comp) { // table layout fixed - не поддерживает различные preferred и flex, поэтому просто возвращаем все
-        return flex > 0 || getMaximumValueWidth(comp) > getMinimumValueWidth(comp);
+        return flex > 0 || getMaximumValueWidth(comp) > getBaseValueWidth(comp);
     }
 
     public int getPreferredValueWidth(JComponent comp) {

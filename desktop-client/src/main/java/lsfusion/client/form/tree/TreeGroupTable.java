@@ -503,11 +503,11 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
         int rowHeight = getRowHeight();
         int currentSelectedColumn = getColumnModel().getSelectionModel().getLeadSelectionIndex();
 
-        int min = property.getMinimumValueWidth(this);
-        int max = property.getMaximumValueWidth(this);
-        int pref = property.getPreferredValueWidth(this);
-
-        setColumnSizes(tableColumn, min, max, pref);
+//        int min = property.getMinimumValueWidth(this);
+//        int max = property.getMaximumValueWidth(this);
+//        int pref = property.getPreferredValueWidth(this);
+//
+//        setColumnSizes(tableColumn, min, max, pref);
 
         rowHeight = max(rowHeight, property.getPreferredValueHeight(this));
 
