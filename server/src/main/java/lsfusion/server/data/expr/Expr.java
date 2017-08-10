@@ -45,7 +45,6 @@ import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.property.ObjectClassField;
 
 import java.sql.SQLException;
-import java.util.Set;
 
 // абстрактный класс выражений
 
@@ -279,7 +278,7 @@ abstract public class Expr extends AbstractSourceJoin<Expr> {
 
     public abstract Stat getTypeStat(Where fullWhere, boolean forJoin);
 
-    public abstract Set<BaseExpr> getBaseExprs();
+    public abstract ImSet<BaseExpr> getBaseExprs();
     
     public ObjectValue getObjectValue(QueryEnvironment env) {
         return null;

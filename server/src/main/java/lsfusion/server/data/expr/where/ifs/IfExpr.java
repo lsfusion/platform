@@ -29,8 +29,6 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.logics.property.ObjectClassField;
 
-import java.util.Set;
-
 public class IfExpr extends Expr {
 
     public final Where ifWhere;
@@ -222,8 +220,8 @@ public class IfExpr extends Expr {
         return SetFact.<OuterContext>toSet(ifWhere, trueExpr, falseExpr);
     }
 
-    public Set<BaseExpr> getBaseExprs() {
-        return BaseUtils.mergeSet(trueExpr.getBaseExprs(), falseExpr.getBaseExprs());
+    public ImSet<BaseExpr> getBaseExprs() {
+        return trueExpr.getBaseExprs().merge(falseExpr.getBaseExprs());
     }
 
     protected boolean isComplex() {

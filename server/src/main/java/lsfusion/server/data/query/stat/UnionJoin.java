@@ -22,33 +22,61 @@ import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.query.QueryExpr;
 import lsfusion.server.data.expr.query.QueryJoin;
+import lsfusion.server.data.expr.query.Stat;
+import lsfusion.server.data.expr.query.StatType;
 import lsfusion.server.data.query.ExprEnumerator;
+import lsfusion.server.data.where.Where;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class UnionJoin extends CalculateJoin<Integer> {
-
+public class UnionJoin extends CalculateJoin<BaseExpr> {
+    
+    // тут возможно вообще надо было бы where, а не exprs хранить, но логика commonExprs все же требует логику Expr, а не Where (поэтому так, в частности, дублируется получение OrWhere, но там все редко используется и кэшируется)  
     private final ImSet<Expr> exprs;
 
     public UnionJoin(ImSet<Expr> exprs) {
         this.exprs = exprs;
     }
 
-    public ImMap<Integer, BaseExpr> getJoins() {
+    public ImMap<BaseExpr, BaseExpr> getJoins() {
         return getJoins(false);
     }
 
     @IdentityLazy
-    public ImMap<Integer, BaseExpr> getJoins(boolean forStat) {
-        ImSet<BaseExpr> commonExprs = ListFact.fromJavaCol(getCommonExprs()).toSet();
+    public ImMap<BaseExpr, BaseExpr> getJoins(boolean forStat) {
+        ImSet<BaseExpr> commonExprs = getCommonExprs();
         if(forStat) {
             ImSet<ParamExpr> lostKeys = AbstractOuterContext.getOuterSetKeys(exprs).removeIncl(AbstractOuterContext.getOuterColKeys(commonExprs));
             commonExprs = commonExprs.addExcl(lostKeys);
+//            joinExprs = getBaseExprs(); // нельзя, может докинуть новые join'ы (нарушит ряд инвариантов, начнет проталкивать эти докинутые join'ы и вообще будет фильтровать по сути по ним что неправильно)
         }
-        return commonExprs.toOrderSet().toIndexedMap();
+        return commonExprs.toRevMap();
+    }
+    
+    @IdentityLazy
+    private Where getOrWhere() {
+        return Expr.getOrWhere(exprs);
+    }
+
+    @Override
+    public Cost getPushedCost(KeyStat keyStat, StatType type, Cost pushCost, Stat pushStat, ImMap<BaseExpr, Stat> pushKeys, ImMap<BaseExpr, Stat> pushNotNullKeys, ImMap<BaseExpr, Stat> pushProps, Result<ImSet<BaseExpr>> rPushedKeys, Result<ImSet<BaseExpr>> rPushedProps) {
+        if(pushKeys.size() < getJoins().size()) // не все ключи есть, запретим выбирать
+            return Cost.ALOT;
+        
+        // можно было бы translate'ить commonExprs в ключи, но во-первых сама трансляция сложный механизм, во-вторых надо тогда докидывать еще и ключи не входящие в baseExpr, в общем схема будет по сложности равная проталкиванию, но учитывая что в PartitionJoin (наиболее похожем), ничего этого нет, то и здесь смысла нет
+
+        StatKeys<BaseExpr> pushStatKeys = QueryJoin.adjustNotNullStats(pushCost, pushStat, pushKeys, pushNotNullKeys);
+        return getPushedCost(type, pushStatKeys);
+    }
+
+    // важно делать IdentityLazy для мемоизации
+    @IdentityLazy
+    private Cost getPushedCost(StatType type, StatKeys<BaseExpr> pushStatKeys) {
+        Where where = getOrWhere();
+        return where.getPushedStatKeys(where.getOuterKeys(), type, pushStatKeys).getCost();
     }
 
     private static void fillOrderedExprs(BaseExpr baseExpr, BaseExpr fromExpr, MOrderExclMap<BaseExpr, MSet<BaseExpr>> orderedExprs) {
@@ -63,14 +91,20 @@ public class UnionJoin extends CalculateJoin<Integer> {
             fromExprs.add(fromExpr);
     }
 
-    private List<BaseExpr> getCommonExprs() {
+    private ImSet<BaseExpr> getCommonExprs() {
+        return getCommonExprs(getBaseExprs());
+    }
 
-        Set<BaseExpr> baseExprs = new HashSet<>();
+    private ImSet<BaseExpr> getBaseExprs() {
+        MSet<BaseExpr> result = SetFact.mSet();
         for(Expr expr : exprs)
-            baseExprs.addAll(expr.getBaseExprs());
+            result.addAll(expr.getBaseExprs());
+        return result.immutable();
+    }
 
+    private static ImSet<BaseExpr> getCommonExprs(ImSet<BaseExpr> baseExprs) {
         if(baseExprs.size()==1)
-            return new ArrayList<>(baseExprs);
+            return baseExprs;
 
         MOrderExclMap<BaseExpr, MSet<BaseExpr>> mOrderedExprs = MapFact.mOrderExclMap();
         for(BaseExpr baseExpr : baseExprs)
@@ -78,7 +112,7 @@ public class UnionJoin extends CalculateJoin<Integer> {
         ImOrderMap<BaseExpr,ImSet<BaseExpr>> orderedExprs = MapFact.immutable(mOrderedExprs);
 
         MAddExclMap<BaseExpr, ImSet<BaseExpr>> found = MapFact.mAddExclMapMax(orderedExprs.size());
-        List<BaseExpr> result = new ArrayList<>();
+        MSet<BaseExpr> mResult = SetFact.mSet();
         for(int i=orderedExprs.size()-1;i>=0;i--) { // бежим с конца
             BaseExpr baseExpr = orderedExprs.getKey(i);
             ImSet<BaseExpr> orderBaseExprs = orderedExprs.getValue(i);
@@ -96,16 +130,16 @@ public class UnionJoin extends CalculateJoin<Integer> {
             ImSet<BaseExpr> exprFound = null;
             if(mExprFound!=null)
                 exprFound = mExprFound.immutable();
-            
+
             if(exprFound ==null || exprFound.size() == baseExprs.size()) { // все есть
                 if(exprFound != null) // только что нашли
-                    result.add(baseExpr);
+                    mResult.add(baseExpr);
             } else
                 found.exclAdd(baseExpr, exprFound);
         }
-        return result;
+        return mResult.immutable();
     }
-    
+
     public static boolean depends(OuterContext context, final QueryJoin dependJoin) {
         final Result<Boolean> depends = new Result<>(false);
         context.enumerate(new ExprEnumerator() {

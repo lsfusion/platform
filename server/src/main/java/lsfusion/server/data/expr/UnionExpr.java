@@ -10,10 +10,7 @@ import lsfusion.server.data.where.Where;
 public abstract class UnionExpr extends StaticClassNullableExpr {
 
     public Where calculateOrWhere() {
-        Where result = Where.FALSE;
-        for(Expr operand : getParams())
-            result = result.or(operand.getWhere());
-        return result;
+        return Expr.getOrWhere(getParams());
     }
 
     @Override

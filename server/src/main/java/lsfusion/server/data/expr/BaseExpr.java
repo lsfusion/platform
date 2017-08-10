@@ -30,11 +30,8 @@ import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.type.ClassReader;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassExprWhere;
-import lsfusion.server.logics.DataObject;
-import lsfusion.server.logics.ObjectValue;
 
 import java.util.Collections;
-import java.util.Set;
 
 
 public abstract class BaseExpr extends Expr {
@@ -209,8 +206,8 @@ public abstract class BaseExpr extends Expr {
         return getTypeStat((KeyStat) fullWhere, forJoin);
     }
 
-    public Set<BaseExpr> getBaseExprs() {
-        return Collections.singleton(this);
+    public ImSet<BaseExpr> getBaseExprs() {
+        return SetFact.singleton(this);
     }
 
     public ImCol<BaseExpr> getUsed() {

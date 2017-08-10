@@ -87,7 +87,7 @@ public interface Where extends SourceJoin<Where>, OuterContext<Where>, KeyType, 
     <K extends BaseExpr> Pair<ImCol<GroupJoinsWhere>, Boolean> getWhereJoins(boolean tryExclusive, ImSet<K> keepStat, StatType statType, ImOrderSet<Expr> orderTop);
     <K extends BaseExpr> ImCol<GroupSplitWhere<K>> getSplitJoins(ImSet<K> keys, StatType statType, boolean exclusive, GroupStatType type);
     <K extends BaseExpr> ImCol<GroupJoinsWhere> getWhereJoins(ImSet<K> keys, StatType statType, boolean groupPackStat);
-    <K extends BaseExpr> StatKeys<K> getPushedStatKeys(ImSet<K> keys, StatType type, StatKeys<KeyExpr> pushedKeys);
+    <K extends BaseExpr, PK extends BaseExpr> StatKeys<K> getPushedStatKeys(ImSet<K> keys, StatType type, StatKeys<PK> pushedKeys);
     <K extends BaseExpr> StatKeys<K> getStatKeys(ImSet<K> keys, StatType type);
     <K extends ParamExpr> StatKeys<K> getFullStatKeys(ImSet<K> groups, StatType type);
     <K extends BaseExpr> Stat getStatRows(StatType type);

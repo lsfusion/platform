@@ -253,11 +253,11 @@ public class CaseExpr extends Expr {
         return whereDepth;
     }
 
-    public Set<BaseExpr> getBaseExprs() {
-        Set<BaseExpr> result = new HashSet<>();
+    public ImSet<BaseExpr> getBaseExprs() {
+        MSet<BaseExpr> result = SetFact.mSet();
         for(ExprCase exprCase : cases)
             result.addAll(exprCase.data.getBaseExprs());
-        return result;
+        return result.immutable();
     }
 
     @Override

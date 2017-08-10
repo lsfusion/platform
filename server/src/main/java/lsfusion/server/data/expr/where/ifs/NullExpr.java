@@ -31,7 +31,6 @@ import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.property.ObjectClassField;
 
 import java.util.HashSet;
-import java.util.Set;
 
 public class NullExpr extends Expr {
 
@@ -113,8 +112,8 @@ public class NullExpr extends Expr {
         throw new RuntimeException("not supported");
     }
 
-    public Set<BaseExpr> getBaseExprs() {
-        return new HashSet<>();
+    public ImSet<BaseExpr> getBaseExprs() {
+        return SetFact.EMPTY();
     }
 
     public ObjectValue getObjectValue(QueryEnvironment env) {

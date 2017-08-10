@@ -41,7 +41,7 @@ public class GroupJoinsWhere extends GroupWhere<GroupJoinsWhere> {
         this.upWheres = upWheres;
     }
 
-    public <K extends BaseExpr> StatKeys<K> getStatKeys(ImSet<K> groups, StatType type, StatKeys<KeyExpr> pushStatKeys) {
+    public <K extends BaseExpr, PK extends BaseExpr> StatKeys<K> getStatKeys(ImSet<K> groups, StatType type, StatKeys<PK> pushStatKeys) {
         return joins.pushStatKeys(pushStatKeys).getStatKeys(groups, where, type, keyEqual);
     }
     public <K extends BaseExpr> StatKeys<K> getStatKeys(ImSet<K> groups, StatType type) {

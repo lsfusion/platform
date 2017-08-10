@@ -375,7 +375,7 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
         return getWhereJoins(keys, statType, false);
     }
 
-    public <K extends BaseExpr> StatKeys<K> getPushedStatKeys(final ImSet<K> groups, final StatType type, final StatKeys<KeyExpr> pushStatKeys) { // assertion что ключи groups входят в это where
+    public <K extends BaseExpr, PK extends BaseExpr> StatKeys<K> getPushedStatKeys(final ImSet<K> groups, final StatType type, final StatKeys<PK> pushStatKeys) { // assertion что ключи groups входят в это where
         return StatKeys.or(getPushedWhereJoins(groups, type), new GetValue<StatKeys<K>, GroupJoinsWhere>() {
             public StatKeys<K> getMapValue(GroupJoinsWhere value) {
                 return value.getStatKeys(groups, type, pushStatKeys);
