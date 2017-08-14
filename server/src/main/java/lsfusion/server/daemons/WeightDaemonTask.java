@@ -65,7 +65,8 @@ public class WeightDaemonTask extends AbstractDaemonTask implements Serializable
                     if(weightByte2 < 0)
                         weightByte2 += 256;
                     double weight = ((double)((negate ? -1 : 1) * (weightByte1 * 256 + weightByte2))) / 1000;
-                    eventBus.fireValueChanged(SCALES_SID, weight);
+                    if(weight >= 0.01) //игнорируем веса до 10г
+                        eventBus.fireValueChanged(SCALES_SID, weight);
                 }
             } catch (SerialPortException | InterruptedException ex) {
                 throw new RuntimeException(ex);
