@@ -8,6 +8,7 @@ import javax.swing.*;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,6 +25,15 @@ public abstract class GridPropertyTable {
     private static void setColumnWidth(TableColumn column, int width) {
         column.setWidth(width);
         column.setPreferredWidth(width); // если не выставить grid начинает в какие-то моменты ужиматься в preferred, после чего delta при resize'е становится огромной
+    }
+
+    // preferredSize чтобы учесть header отступы и т.п.
+    public Dimension getMaxPreferredSize(Dimension preferredSize) { // ради этого вся ветка maxPreferredSize и делалась
+        JTable gridTable = getTable(); 
+        Dimension preferredTableSize = gridTable.getPreferredScrollableViewportSize();
+        Dimension preferredAutoTableSize = gridTable.getPreferredSize();
+        return new Dimension(BaseUtils.max(preferredSize.width - preferredTableSize.width + preferredAutoTableSize.width, preferredSize.width), // max, 130 px
+                BaseUtils.max(preferredSize.height - preferredTableSize.height + preferredAutoTableSize.height, preferredSize.height)); // max, 130 px
     }
 
     public abstract JTable getTable();

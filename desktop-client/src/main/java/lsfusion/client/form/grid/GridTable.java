@@ -1850,6 +1850,10 @@ public class GridTable extends ClientPropertyTable {
     public boolean getScrollableTracksViewportWidth() {
         return gridPropertyTable.getScrollableTracksViewportWidth();
     }
+    
+    public Dimension getMaxPreferredSize(Dimension preferredSize) {
+        return gridPropertyTable.getMaxPreferredSize(preferredSize);
+    }
 
     private final GridPropertyTable gridPropertyTable = new GridPropertyTable() {
         public void setUserWidth(ClientPropertyDraw property, Integer value) {

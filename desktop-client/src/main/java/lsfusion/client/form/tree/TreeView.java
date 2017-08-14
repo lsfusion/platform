@@ -1,5 +1,6 @@
 package lsfusion.client.form.tree;
 
+import lsfusion.base.BaseUtils;
 import lsfusion.client.form.ClientFormController;
 import lsfusion.client.form.layout.JComponentPanel;
 import lsfusion.client.logics.ClientGroupObject;
@@ -21,6 +22,11 @@ public class TreeView extends JComponentPanel {
         treeGroup.installMargins(this);
 
         add(new JScrollPane(groupTree));
+    }
+
+    @Override
+    public Dimension getMaxPreferredSize() { // ради этого вся ветка maxPreferredSize и делалась
+        return groupTree.getMaxPreferredSize(getPreferredSize());
     }
 
     public TreeGroupTable getTree() {

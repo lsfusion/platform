@@ -21,11 +21,7 @@ public class GridView extends JComponentPanel {
 
     @Override
     public Dimension getMaxPreferredSize() { // ради этого вся ветка maxPreferredSize и делалась
-        Dimension preferredTableSize = gridTable.getPreferredScrollableViewportSize();
-        Dimension preferredAutoTableSize = gridTable.getPreferredSize();
-        Dimension preferredSize = getPreferredSize(); // чтобы учесть header отступы и т.п.
-        return new Dimension(BaseUtils.max(preferredSize.width - preferredTableSize.width + preferredAutoTableSize.width, preferredSize.width), // max, 130 px
-                             BaseUtils.max(preferredSize.height - preferredTableSize.height + preferredAutoTableSize.height, preferredSize.height)); // max, 130 px
+        return gridTable.getMaxPreferredSize(getPreferredSize());
     }
 
     public GridView(GridController igridController, ClientFormController form, GridUserPreferences[] iuserPreferences, boolean tabVertical, boolean verticalScroll) {

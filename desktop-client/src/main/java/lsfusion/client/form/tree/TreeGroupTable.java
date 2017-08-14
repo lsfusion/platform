@@ -1102,6 +1102,10 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
         }
     }
 
+    public Dimension getMaxPreferredSize(Dimension preferredSize) {
+        return gridPropertyTable.getMaxPreferredSize(preferredSize);
+    }
+
     private Integer hierarchicalUserWidth = null;
     private final Map<ClientPropertyDraw, Integer> userWidths = MapFact.mAddRemoveMap();
     private final GridPropertyTable gridPropertyTable = new GridPropertyTable() {
