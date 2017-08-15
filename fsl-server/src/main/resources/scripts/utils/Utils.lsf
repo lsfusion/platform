@@ -25,6 +25,11 @@ mkdir 'Создать папку' = CUSTOM 'lsfusion.erp.utils.utils.MkdirAction
 zipping 'Архивируемый файл' = DATA LOCAL CUSTOMFILE (VARSTRING[100]);
 zipped 'Файл архива' = DATA LOCAL CUSTOMFILE ();
 makeZipFile 'Заархивировать файлы' = CUSTOM 'lsfusion.erp.utils.utils.MakeZipFileActionProperty' ();
+
+//unzip files
+unzipping 'Файл архива' = DATA LOCAL CUSTOMFILE ();
+unzipped 'Разархивированные файлы' = DATA LOCAL CUSTOMFILE (VARSTRING[100]);
+makeUnzipFile 'Разархивировать архив' = CUSTOM 'lsfusion.erp.utils.utils.MakeUnzipFileActionProperty' ();
 // --------------------------------------------- Работа со строками --------------------------------- //
 
 lower (TEXT p1) = FORMULA 'lower($1)';
