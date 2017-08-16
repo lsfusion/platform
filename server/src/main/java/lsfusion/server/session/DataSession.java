@@ -1910,8 +1910,22 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                 Integer changed = data.size();
                 String dataChanged = "";
                 for(Map.Entry<DataProperty, SinglePropertyTableUsage<ClassPropertyInterface>> entry : data.entrySet()){
-                    dataChanged+=entry.getKey().getDBName() + ": " + entry.getValue().getCount() + "\n";
+                    if(entry.getKey().getDBName() != null)
+                        dataChanged+=entry.getKey().getDBName() + ": " + entry.getValue().getCount() + "\n";
                 }
+
+                String added = "";
+                for (CustomClass addEntry : add)
+                    added += (added.isEmpty() ? "" : ", ") + addEntry.getCanonicalName();
+                if(!added.isEmpty())
+                    dataChanged += "Added objects of classes: " + added + "\n";
+
+                String removed = "";
+                for (CustomClass removeEntry : remove)
+                        removed += (removed.isEmpty() ? "" : ", ") + removeEntry.getCanonicalName();
+                if(!removed.isEmpty())
+                    dataChanged += "Removed objects of classes: " + removed + "\n";
+
                 BL.systemEventsLM.changesSession.change(dataChanged, DataSession.this, applyObject);
                 currentSession.change(applyObject.object, DataSession.this);
                 DataObject cn = ThreadLocalContext.getConnection();
