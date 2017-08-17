@@ -17,6 +17,9 @@ import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.data.type.ParseException;
 import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.logics.DataObject;
+import lsfusion.server.logics.NullValue;
+import lsfusion.server.logics.ObjectValue;
+import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.Property;
@@ -59,16 +62,16 @@ public abstract class ImportFormPlainDataActionProperty<I> extends ImportFormDat
     }
 
     @Override
-    protected Map<String, Map<ImMap<KeyField, DataObject>, Map<Property, Object>>> getData(Object files, Map<String, Pair<List<String>, Property>> propertyKeysMap, Map<String, List<String>> headersMap) throws IOException, ParseException {
+    protected Map<String, Map<ImMap<KeyField, DataObject>, Map<Property, ObjectValue>>> getData(Object files, Map<String, Pair<List<String>, CalcProperty>> propertyKeysMap, Map<String, List<String>> headersMap) throws IOException, ParseException {
         List<Pair<String, I>> rootElements = getRootElements((Map<String, byte[]>) files, headersMap);
         tagsMap = new HashMap<>();
         keyTagsMap = new HashMap<>();
         return getData(rootElements, propertyKeysMap);
     }
 
-    private Map<String, Map<ImMap<KeyField, DataObject>, Map<Property, Object>>> getData(
-            List<Pair<String, I>> rootElements, Map<String, Pair<List<String>, Property>> propertyKeysMap) throws IOException, ParseException {
-        Map<String, Map<ImMap<KeyField, DataObject>, Map<Property, Object>>> dataMap = new HashMap();
+    private Map<String, Map<ImMap<KeyField, DataObject>, Map<Property, ObjectValue>>> getData(
+            List<Pair<String, I>> rootElements, Map<String, Pair<List<String>, CalcProperty>> propertyKeysMap) throws IOException, ParseException {
+        Map<String, Map<ImMap<KeyField, DataObject>, Map<Property, ObjectValue>>> dataMap = new HashMap();
         ImportFormIterator iterator = getIterator(rootElements);
         Pair<String, Object> child;
         while ((child = iterator.next()) != null) {
@@ -81,24 +84,24 @@ public abstract class ImportFormPlainDataActionProperty<I> extends ImportFormDat
             Integer count = tagsMap.get(child.first);
             tagsMap.put(child.first, count == null ? 0 : ++count);
 
-            Pair<List<String>, Property> entry = propertyKeysMap.get(child.first);
+            Pair<List<String>, CalcProperty> entry = propertyKeysMap.get(child.first);
             if (entry != null && (!getKeysId(entry.first).equals(child.first) || child.second instanceof ImportIterator)) {
                 String keyId = getKeysId(entry.first);
-                Map<ImMap<KeyField, DataObject>, Map<Property, Object>> dataEntry = dataMap.get(keyId);
+                Map<ImMap<KeyField, DataObject>, Map<Property, ObjectValue>> dataEntry = dataMap.get(keyId);
                 if (dataEntry == null)
                     dataEntry = new HashMap();
                 ImMap<KeyField, DataObject> key = getKeys(entry.first);
-                Map<Property, Object> properties = dataEntry.get(key);
+                Map<Property, ObjectValue> properties = dataEntry.get(key);
                 if (properties == null)
                     properties = new HashMap();
                 String childValue = getChildValue(child.second);
-                properties.put(entry.second, childValue == null ? null : new DataObject(entry.second.getType().parseString(childValue), (ConcreteClass) entry.second.getType()));
-                Map<Property, Object> propertiesEntry = dataEntry.get(key);
+                properties.put(entry.second, childValue == null ? NullValue.instance : new DataObject(entry.second.getType().parseString(childValue), (ConcreteClass) entry.second.getType()));
+                Map<Property, ObjectValue> propertiesEntry = dataEntry.get(key);
                 if(propertiesEntry == null)
                     propertiesEntry = new HashMap<>();
                 propertiesEntry.putAll(properties);
                 dataEntry.put(key, propertiesEntry);
-                Map<ImMap<KeyField, DataObject>, Map<Property, Object>> dataMapEntry = dataMap.get(keyId);
+                Map<ImMap<KeyField, DataObject>, Map<Property, ObjectValue>> dataMapEntry = dataMap.get(keyId);
                 if(dataMapEntry == null)
                     dataMapEntry = new HashMap<>();
                 dataMapEntry.putAll(dataEntry);

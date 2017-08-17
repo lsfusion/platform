@@ -1302,23 +1302,23 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
             setNotNull(row, env, stack, notNull, true);
     }
 
-    protected Object getDefaultValue() {
+    public DataObject getDefaultDataObject() {
         Type type = getType();
-        if(type instanceof DataClass)
-            return ((DataClass) type).getDefaultValue();
-        else
+        if(type instanceof DataClass) {
+            DataClass dataClass = (DataClass) getType();
+            Object defaultValue = ((DataClass) type).getDefaultValue();
+            if(dataClass instanceof StringClass)
+                defaultValue = LocalizedString.create((String)defaultValue, false);
+            return new DataObject(defaultValue, dataClass);
+        } else
             return null;
     }
 
     public ActionPropertyMapImplement<?, T> getSetNotNullAction(boolean notNull) {
         if(notNull) {
-            Object defaultValue = getDefaultValue();
-            if(defaultValue!=null) {
-                DataClass dataClass = (DataClass) getType();
-                if(dataClass instanceof StringClass)
-                    defaultValue = LocalizedString.create((String)defaultValue, false);
-                return DerivedProperty.createSetAction(interfaces, getImplement(), DerivedProperty.<T>createStatic(defaultValue, dataClass));
-            }
+            ObjectValue defaultValue = getDefaultDataObject();
+            if(defaultValue != null)
+                return DerivedProperty.createSetAction(interfaces, getImplement(), DerivedProperty.<T>createStatic(defaultValue.getValue(), (StaticClass) ((DataObject) defaultValue).objectClass));
             return null;
         } else
             return DerivedProperty.createSetAction(interfaces, getImplement(), DerivedProperty.<T>createNull());

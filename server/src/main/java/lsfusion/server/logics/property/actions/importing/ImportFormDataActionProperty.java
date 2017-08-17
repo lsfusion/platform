@@ -18,14 +18,9 @@ import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.query.Join;
 import lsfusion.server.data.type.ParseException;
 import lsfusion.server.data.type.Type;
-import lsfusion.server.form.entity.CalcPropertyObjectEntity;
-import lsfusion.server.form.entity.FormEntity;
-import lsfusion.server.form.entity.ObjectEntity;
-import lsfusion.server.form.entity.PropertyDrawEntity;
+import lsfusion.server.form.entity.*;
 import lsfusion.server.form.entity.filter.FilterEntity;
 import lsfusion.server.form.entity.filter.NotNullFilterEntity;
-import lsfusion.server.form.instance.FormInstance;
-import lsfusion.server.form.instance.PropertyDrawInstance;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.NullValue;
 import lsfusion.server.logics.ObjectValue;
@@ -49,37 +44,37 @@ public abstract class ImportFormDataActionProperty extends SystemExplicitActionP
         this.formEntity = formEntity;
     }
 
-    protected abstract Map<String, Map<ImMap<KeyField, DataObject>, Map<Property, Object>>> getData(Object files, Map<String, Pair<List<String>, Property>> propertyKeysMap, Map<String, List<String>> headersMap) throws IOException, ParseException;
+    protected abstract Map<String, Map<ImMap<KeyField, DataObject>, Map<Property, ObjectValue>>> getData(Object files, Map<String, Pair<List<String>, CalcProperty>> propertyKeysMap, Map<String, List<String>> headersMap) throws IOException, ParseException;
 
     protected void importData(ExecutionContext context, Object files) throws IOException, ParseException, ScriptingErrorLog.SemanticErrorException, SQLException, SQLHandledException {
 
-        Map<String, Pair<List<String>, Property>> propertyKeysMap = new HashMap<>();
+        Map<String, Pair<List<String>, CalcProperty>> propertyKeysMap = new HashMap<>();
         Map<String, List<String>> headersMap = new LinkedHashMap<>();
-        Map<String, List<Property>> propertiesMap = new HashMap<>();
+        Map<String, List<CalcProperty>> propertiesMap = new HashMap<>();
         Map<String, List<KeyField>> keyFieldsMap = new HashMap<>();
-        Map<String, Pair<List<String>, Property>> filtersMap = new HashMap<>(); //предполагаем, что будет только 1 фильтр на каждое сочетание ключей
-
-        FormInstance formInstance = context.createFormInstance(formEntity);
+        Map<String, Pair<List<String>, CalcProperty>> filtersMap = new HashMap<>(); //предполагаем, что будет только 1 фильтр на каждое сочетание ключей
 
         //читаем свойства
-        for (Object propertyDraw : formEntity.getPropertyDrawsList()) {
-            PropertyDrawInstance instance = ((PropertyDrawEntity) propertyDraw).getInstance(formInstance.instanceFactory);
-            if (instance.toDraw != null) {
-                List<String> keys = getNeededGroupsForColumnProp((PropertyDrawEntity) propertyDraw);
+        for (PropertyDrawEntity propertyDraw : formEntity.getPropertyDrawsList()) {
+            GroupObjectEntity toDraw = propertyDraw.getToDraw(formEntity);
+            if (toDraw != null && propertyDraw.propertyObject.property instanceof CalcProperty) {
+                CalcProperty property = (CalcProperty) propertyDraw.propertyObject.property;
+                
+                List<String> keys = getNeededGroupsForColumnProp(propertyDraw);
                 String keysId = getKeysId(keys);
-                String escapedId = escapeTag(instance.getsID());
-                propertyKeysMap.put(escapedId, Pair.create(keys, instance.propertyObject.property));
-
-                List<String> headersEntry = headersMap.get(instance.toDraw.getSID());
+                String escapedId = escapeTag(propertyDraw.getSID());
+                propertyKeysMap.put(escapedId, Pair.create(keys, property));
+                
+                List<String> headersEntry = headersMap.get(toDraw.getSID());
                 if(headersEntry == null)
                     headersEntry = new ArrayList<>();
                 headersEntry.add(escapedId);
-                headersMap.put(instance.toDraw.getSID(), headersEntry);
+                headersMap.put(toDraw.getSID(), headersEntry);
 
-                List<Property> propertiesEntry = propertiesMap.get(keysId);
+                List<CalcProperty> propertiesEntry = propertiesMap.get(keysId);
                 if (propertiesEntry == null)
                     propertiesEntry = new ArrayList();
-                propertiesEntry.add(instance.propertyObject.property);
+                propertiesEntry.add(property);
                 propertiesMap.put(keysId, propertiesEntry);
 
                 List<KeyField> keyFieldsEntry = keyFieldsMap.get(keysId);
@@ -97,7 +92,7 @@ public abstract class ImportFormDataActionProperty extends SystemExplicitActionP
         //добавляем фильтры
         for (FilterEntity filter : formEntity.getFixedFilters()) {
             if (filter instanceof NotNullFilterEntity) {
-                CalcPropertyObjectEntity property = ((NotNullFilterEntity) filter).property;
+                CalcPropertyObjectEntity<?> property = ((NotNullFilterEntity) filter).property;
                 if (property.property instanceof DataProperty) {
                     List<String> keys = new ArrayList<>();
                     for (Object objectInstance : property.getObjectInstances()) {
@@ -106,13 +101,13 @@ public abstract class ImportFormDataActionProperty extends SystemExplicitActionP
                     }
                     context.getSession().dropChanges((DataProperty) property.property);
                     String keysId = getKeysId(keys);
-                    filtersMap.put(keysId, Pair.create(keys, property.property));
-                    List<Property> propertiesEntry = propertiesMap.get(keysId);
+                    filtersMap.put(keysId, Pair.<List<String>, CalcProperty>create(keys, property.property));
+                    List<CalcProperty> propertiesEntry = propertiesMap.get(keysId);
                     if (propertiesEntry == null)
                         propertiesEntry = new ArrayList();
                     propertiesEntry.add(property.property);
                     propertiesMap.put(keysId, propertiesEntry);
-                } else if (property.property instanceof JoinProperty) {
+                } else if (property.property instanceof JoinProperty) { // непонятно почему 
                     for (Object dProperty : ((JoinProperty) property.property).getChangeProps()) {
                         if (dProperty instanceof DataProperty) {
                             List<String> keys = new ArrayList<>();
@@ -122,11 +117,11 @@ public abstract class ImportFormDataActionProperty extends SystemExplicitActionP
                                 }
                             }
                             String keysId = getKeysId(keys);
-                            filtersMap.put(keysId, Pair.create(keys, (Property) dProperty));
-                            List<Property> propertiesEntry = propertiesMap.get(keysId);
+                            filtersMap.put(keysId, Pair.create(keys, (CalcProperty) dProperty));
+                            List<CalcProperty> propertiesEntry = propertiesMap.get(keysId);
                             if (propertiesEntry == null)
                                 propertiesEntry = new ArrayList();
-                            propertiesEntry.add((Property) dProperty);
+                            propertiesEntry.add((CalcProperty) dProperty);
                             propertiesMap.put(keysId, propertiesEntry);
                         }
                     }
@@ -135,7 +130,7 @@ public abstract class ImportFormDataActionProperty extends SystemExplicitActionP
         }
 
         //Отменяем все предыдущие изменения в сессии
-        for (List<Property> properties : propertiesMap.values()) {
+        for (List<CalcProperty> properties : propertiesMap.values()) {
             for (Property property : properties) {
                 if (property instanceof DataProperty)
                     context.getSession().dropChanges((DataProperty) property);
@@ -143,27 +138,29 @@ public abstract class ImportFormDataActionProperty extends SystemExplicitActionP
         }
 
         //читаем данные
-        Map<String, Map<ImMap<KeyField, DataObject>, Map<Property, Object>>> data = getData(files, propertyKeysMap, headersMap);
+        Map<String, Map<ImMap<KeyField, DataObject>, Map<Property, ObjectValue>>> data = getData(files, propertyKeysMap, headersMap);
 
-        //Дополняем null'ами незаполненные данные, чтобы далее получить из них NullValue.instance,
         // потому как writeRows требует именно NullValue.instance
-        for (Map.Entry<String, Map<ImMap<KeyField, DataObject>, Map<Property, Object>>> dataEntry : data.entrySet()) {
-            for (Map.Entry<ImMap<KeyField, DataObject>, Map<Property, Object>> entry : dataEntry.getValue().entrySet()) {
-                for (Pair<List<String>, Property> propertyEntry : propertyKeysMap.values()) {
+        for (Map.Entry<String, Map<ImMap<KeyField, DataObject>, Map<Property, ObjectValue>>> dataEntry : data.entrySet()) {
+            for (Map.Entry<ImMap<KeyField, DataObject>, Map<Property, ObjectValue>> entry : dataEntry.getValue().entrySet()) {
+                // дополняем NullValue.instance там где не все Property (вообще актуально)
+                for (Pair<List<String>, CalcProperty> propertyEntry : propertyKeysMap.values()) {
                     Property property = propertyEntry.second;
                     if (dataEntry.getKey().equals(getKeysId(propertyEntry.first)) && !entry.getValue().containsKey(property)) {
-                        entry.getValue().put(property, null);
+                        entry.getValue().put(property, NullValue.instance);
                     }
                 }
-                Pair<List<String>, Property> filterEntry = filtersMap.get(dataEntry.getKey());
+                // в filters записываем true
+                Pair<List<String>, CalcProperty> filterEntry = filtersMap.get(dataEntry.getKey());
                 assert filterEntry != null;
-                entry.getValue().put(filterEntry.second, new DataObject(true));
-
+                DataObject defaultDataObject = filterEntry.second.getDefaultDataObject();
+                if(defaultDataObject != null)
+                    entry.getValue().put(filterEntry.second, defaultDataObject);
             }
         }
 
         //записываем данные
-        for (Map.Entry<String, Map<ImMap<KeyField, DataObject>, Map<Property, Object>>> dataEntry : data.entrySet()) {
+        for (Map.Entry<String, Map<ImMap<KeyField, DataObject>, Map<Property, ObjectValue>>> dataEntry : data.entrySet()) {
             String dataKey = dataEntry.getKey();
             writeData(context, keyFieldsMap.get(dataKey), propertiesMap.get(dataKey), dataEntry.getValue());
         }
@@ -177,16 +174,12 @@ public abstract class ImportFormDataActionProperty extends SystemExplicitActionP
         return result;
     }
 
-    private void writeData(ExecutionContext context, List<KeyField> keys, List<Property> properties, Map<ImMap<KeyField, DataObject>, Map<Property, Object>> data) throws SQLException, SQLHandledException, ScriptingErrorLog.SemanticErrorException {
-        MMap<ImMap<KeyField, DataObject>, Map<Property, Object>> mPremap = newPremap();
-        GetValue<ImMap<Property, ObjectValue>, Map<Property, Object>> mapProfileValue = new GetValue<ImMap<Property, ObjectValue>, Map<Property, Object>>() {
+    private void writeData(ExecutionContext context, List<KeyField> keys, List<CalcProperty> properties, Map<ImMap<KeyField, DataObject>, Map<Property, ObjectValue>> data) throws SQLException, SQLHandledException, ScriptingErrorLog.SemanticErrorException {
+        MMap<ImMap<KeyField, DataObject>, Map<Property, ObjectValue>> mPremap = newPremap();
+        GetValue<ImMap<Property, ObjectValue>, Map<Property, ObjectValue>> mapProfileValue = new GetValue<ImMap<Property, ObjectValue>, Map<Property, ObjectValue>>() {
             @Override
-            public ImMap<Property, ObjectValue> getMapValue(Map<Property, Object> profileValue) {
-                ImMap<Property, ObjectValue> map = MapFact.EMPTY();
-                for (Map.Entry<Property, Object> profileEntry : profileValue.entrySet()) {
-                    map = map.addExcl(profileEntry.getKey(), profileEntry.getValue() == null ? NullValue.instance : (DataObject) profileEntry.getValue());
-                }
-                return map;
+            public ImMap<Property, ObjectValue> getMapValue(Map<Property, ObjectValue> profileValue) {
+                return MapFact.fromJavaMap(profileValue);
             }
         };
 
@@ -195,7 +188,7 @@ public abstract class ImportFormDataActionProperty extends SystemExplicitActionP
         int batchQuantity = (int) Math.ceil((double) data.size() / batchSize);
         int batchNumber = 1;
 
-        for (Map.Entry<ImMap<KeyField, DataObject>, Map<Property, Object>> entry : data.entrySet()) {
+        for (Map.Entry<ImMap<KeyField, DataObject>, Map<Property, ObjectValue>> entry : data.entrySet()) {
             mPremap.add(entry.getKey(), entry.getValue());
 
             batchCounter++;
@@ -213,7 +206,7 @@ public abstract class ImportFormDataActionProperty extends SystemExplicitActionP
     }
 
     @StackProgress
-    private void writeBatch(final List<KeyField> keys, List<Property> props, ImMap<ImMap<KeyField, DataObject>, ImMap<Property, ObjectValue>> data, ExecutionContext context, @StackProgress ProgressBar progress) throws SQLException, SQLHandledException {
+    private void writeBatch(final List<KeyField> keys, List<CalcProperty> props, ImMap<ImMap<KeyField, DataObject>, ImMap<Property, ObjectValue>> data, ExecutionContext context, @StackProgress ProgressBar progress) throws SQLException, SQLHandledException {
         ImOrderSet<KeyField> keySet = SetFact.fromJavaOrderSet(keys);
         SessionTableUsage<KeyField, Property> importTable =
                 new SessionTableUsage("impformdata", keySet, SetFact.fromJavaOrderSet(props), new Type.Getter<KeyField>() {
@@ -244,10 +237,10 @@ public abstract class ImportFormDataActionProperty extends SystemExplicitActionP
         }
     }
 
-    private MMap<ImMap<KeyField, DataObject>, Map<Property, Object>> newPremap() {
-        return MapFact.mMap(new SymmAddValue<ImMap<KeyField, DataObject>, Map<Property, Object>>() {
+    private MMap<ImMap<KeyField, DataObject>, Map<Property, ObjectValue>> newPremap() {
+        return MapFact.mMap(new SymmAddValue<ImMap<KeyField, DataObject>, Map<Property, ObjectValue>>() {
             @Override
-            public Map<Property, Object> addValue(ImMap<KeyField, DataObject> key, Map<Property, Object> prevValue, Map<Property, Object> newValue) {
+            public Map<Property, ObjectValue> addValue(ImMap<KeyField, DataObject> key, Map<Property, ObjectValue> prevValue, Map<Property, ObjectValue> newValue) {
                 prevValue.putAll(newValue);
                 return prevValue;
             }
