@@ -37,6 +37,7 @@ public class EmailLogicsModule extends ScriptingLogicsModule{
     
     public LCP defaultInboxAccount;
     public LCP inboxAccount;
+    public LCP defaultNotificationAccount;
     public LCP nameEncryptedConnectionTypeAccount;
     public LCP smtpHostAccount;
     public LCP smtpPortAccount;
@@ -83,6 +84,7 @@ public class EmailLogicsModule extends ScriptingLogicsModule{
         // Настройки почтового сервера
         defaultInboxAccount = findProperty("defaultInboxAccount[]");
         inboxAccount = findProperty("inboxAccount[VARSTRING[100]]");
+        defaultNotificationAccount = findProperty("defaultNotificationAccount[]");
 
         nameEncryptedConnectionTypeAccount = findProperty("nameEncryptedConnectionType[Account]");
 
