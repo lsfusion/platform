@@ -7,7 +7,6 @@ from pygments.lexer import RegexLexer, words
 from pygments.token import *
 from os import path
 
-
 class LSFLexer(RegexLexer):
     """
     For `LS Fusion <http://lsfusion.ru/>`_ files.
@@ -75,7 +74,7 @@ def index():
     with open(path.join(filesPath,fileName)) as file:
         code = file.read()
 
-    formatter = HtmlFormatter(HtmlFormatter(style='tango', linenos='table', noclasses=True))
+    formatter = HtmlFormatter(style='tango', linenos='table', noclasses=True)
     html = highlight(code, LSFLexer(), formatter)
 
     return make_response(html)
