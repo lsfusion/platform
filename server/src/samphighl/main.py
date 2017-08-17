@@ -63,6 +63,56 @@ class LSFLexer(RegexLexer):
     }
 
 
+specialCommentPrefix = '//#'
+defaultId = 'default'
+
+def startFragmentComment(id):
+    return specialCommentPrefix + id
+
+def endFragmentComment(id):
+    return specialCommentPrefix + id + ' end'
+
+def filterLines(lines):
+    return [line for line in lines if not line.startswith(specialCommentPrefix)]
+
+def joinLines(lines):
+    return '\n'.join(lines)
+
+def filteredCode(lines):
+    return joinLines(filterLines(lines))
+
+def getCodeFragment(lines, blockId):
+    filteredLines = 0
+    lineIndex = 0
+    startLine = None
+    resultStartLine = 0
+
+    for line in lines:
+        if line.startswith(specialCommentPrefix):
+            filteredLines += 1
+            if line.startswith(endFragmentComment(blockId)):
+                return filteredCode(lines[startLine:lineIndex]), resultStartLine
+            elif line.startswith(startFragmentComment(blockId)):
+                startLine = lineIndex + 1
+                resultStartLine = startLine - filteredLines + 1
+        lineIndex += 1
+
+    if startLine is not None:
+        return filteredCode(lines[startLine:]), resultStartLine
+    else:
+        return None, None
+
+
+#tries to get the fragment, if fails then returns entire filtered code
+def extractCodeFragment(code, blockId=defaultId):
+    lines = code.splitlines()
+    resultCode, startLine = getCodeFragment(lines, blockId)
+    if resultCode is None:
+        return filteredCode(lines), 1
+    else:
+        return resultCode, startLine
+
+
 
 app = Flask(__name__)
 
@@ -70,12 +120,15 @@ app = Flask(__name__)
 def index():
     filesPath = argv[1]
     fileName = request.args.get('file', 'Test') + '.lsf'
-
+    blockId = request.args.get('block', 'default')    
+        
     with open(path.join(filesPath,fileName)) as file:
         code = file.read()
 
-    formatter = HtmlFormatter(style='tango', linenos='table', noclasses=True)
-    html = highlight(code, LSFLexer(), formatter)
+    fragment, startLine = extractCodeFragment(code, blockId)
+
+    formatter = HtmlFormatter(style='tango', linenos='table', noclasses=True, linenostart=1)
+    html = highlight(fragment, LSFLexer(), formatter)
 
     return make_response(html)
 
