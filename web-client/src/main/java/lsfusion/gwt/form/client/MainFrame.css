@@ -516,7 +516,7 @@ textarea {
 
 /* ------------ Other components  ------------ */
 .gridResizePanel{
-    min-height: 130px;
+    min-height: 70px;
     min-width: 130px;
 }
 

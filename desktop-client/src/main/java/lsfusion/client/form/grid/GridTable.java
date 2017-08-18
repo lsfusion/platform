@@ -2,7 +2,6 @@ package lsfusion.client.form.grid;
 
 import com.google.common.base.Throwables;
 import com.sun.java.swing.plaf.windows.WindowsTableHeaderUI;
-import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.client.Main;
 import lsfusion.client.SwingUtils;
@@ -58,7 +57,7 @@ public class GridTable extends ClientPropertyTable {
 
     public static final int DEFAULT_HEADER_HEIGHT = 34;
     public static int DEFAULT_PREFERRED_HEIGHT = 130;
-    public static Dimension DEFAULT_PREFERRED_SIZE = new Dimension(130, 130 - DEFAULT_HEADER_HEIGHT);
+    public static Dimension DEFAULT_PREFERRED_SIZE = new Dimension(130, 70 - DEFAULT_HEADER_HEIGHT);
 
     private static final long QUICK_SEARCH_MAX_DELAY = 2000;
     private String lastQuickSearchPrefix = "";

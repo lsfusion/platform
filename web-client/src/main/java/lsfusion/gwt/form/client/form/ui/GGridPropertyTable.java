@@ -34,6 +34,9 @@ import static lsfusion.gwt.base.client.GwtClientUtils.stopPropagation;
 import static lsfusion.gwt.form.shared.view.GEditBindingMap.EditEventFilter;
 
 public abstract class GGridPropertyTable<T extends GridDataRecord> extends GPropertyTable<T> implements HasMaxPreferredSize {
+    public static int DEFAULT_PREFERRED_WIDTH = 130; // должно соответствовать значению в gridResizePanel в MainFrame.css
+    public static int DEFAULT_PREFERRED_HEIGHT = 70; // должно соответствовать значению в gridResizePanel в MainFrame.css
+    
     protected Map<GPropertyDraw, Map<GGroupObjectValue, Object>> propertyCaptions = new HashMap<>();
 
     protected Map<GPropertyDraw, Map<GGroupObjectValue, Object>> cellBackgroundValues = new HashMap<>();
@@ -136,8 +139,8 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     @Override
     public Dimension getMaxPreferredSize() {
         return new Dimension(
-                max(isAutoSize() ? 0 : 130, preferredWidth + nativeScrollbarWidth + 17), // 130 px в MainFrame.css
-                max(isAutoSize() ? 0 : 130, getRowCount() * getRowHeight() + 30 + nativeScrollbarHeight) // 130 px в MainFrame.css
+                max(isAutoSize() ? 0 : DEFAULT_PREFERRED_WIDTH, preferredWidth + nativeScrollbarWidth + 17),
+                max(isAutoSize() ? 0 : DEFAULT_PREFERRED_HEIGHT, getRowCount() * getRowHeight() + 30 + nativeScrollbarHeight)
         );
     }
 
