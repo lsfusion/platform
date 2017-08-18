@@ -120,14 +120,18 @@ app = Flask(__name__)
 def index():
     filesPath = argv[1]
     fileName = request.args.get('file', 'Test') + '.lsf'
-    blockId = request.args.get('block', 'default')    
+    blockId = request.args.get('block', 'default')
+    originalLines = request.args.get('original')
         
     with open(path.join(filesPath,fileName)) as file:
         code = file.read()
 
     fragment, startLine = extractCodeFragment(code, blockId)
 
-    formatter = HtmlFormatter(style='tango', linenos='table', noclasses=True, linenostart=1)
+    if originalLines is None:
+        startLine = 1
+        
+    formatter = HtmlFormatter(style='tango', linenos='table', noclasses=True, linenostart=startLine)
     html = highlight(fragment, LSFLexer(), formatter)
 
     return make_response(html)
