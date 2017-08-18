@@ -197,13 +197,13 @@ META defineNumeratedDefaultPrefix(class, captionV, seriesV, prefix)
     
     loadDefaultNumerators() += {
         NEW n = Numerator {
-            ASSIGN name(n) <- captionV;
-            ASSIGN series(n) <- seriesV;
-            ASSIGN minValue(n) <- 1L;
-            ASSIGN maxValue(n) <- 99999L;
-            ASSIGN stringLength(n) <- 5;
+            name(n) <- captionV;
+            series(n) <- seriesV;
+            minValue(n) <- 1L;
+            maxValue(n) <- 99999L;
+            stringLength(n) <- 5;
 
-            ASSIGN defaultNumerator##class() <- n;
+            defaultNumerator##class() <- n;
         }
     }
 
