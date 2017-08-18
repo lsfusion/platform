@@ -131,7 +131,7 @@ def index():
     if originalLines is None:
         startLine = 1
         
-    formatter = HtmlFormatter(style='tango', linenos='table', noclasses=True, linenostart=startLine)
+    formatter = HtmlFormatter(style='tango', linenos='inline', noclasses=True, linenostart=startLine)
     html = highlight(fragment, LSFLexer(), formatter)
 
     return make_response(html)
