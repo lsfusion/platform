@@ -90,9 +90,9 @@ public class MakeSQLDumpActionProperty extends ScriptingActionProperty {
         // оставляем только javaProcesses + freeProcesses
         sqlProcesses = sqlProcesses.filter(javaProcesses.keys().merge(freeSQLProcesses));
 
-        if(!sqlProcesses.isEmpty())
+        if (!sqlProcesses.isEmpty())
             ServerLoggers.sqlDumpLogger.info(String.format("SQL DUMP: %s %s\n", sqlProcesses.size(), sqlProcesses.size() > 1 ? "processes" : "process"));
-        for(String key : sqlProcesses.keys()) {
+        for (String key : sqlProcesses.keys()) {
             List<Object> sqlProcess = sqlProcesses.getObject(key);
             List<Object> javaProcess = javaProcesses.getObject(key);
 
@@ -105,8 +105,8 @@ public class MakeSQLDumpActionProperty extends ScriptingActionProperty {
             String lsfStackTraceProcess = javaProcess == null ? null : (String) javaProcess.get(6);
             Long threadAllocatedBytesProcess = javaProcess == null ? null : (Long) javaProcess.get(7);
             Long lastThreadAllocatedBytesProcess = javaProcess == null ? null : (Long) javaProcess.get(8);
-            if(javaProcess != null)
-                javaProcesses.remove(key);
+            if (javaProcess != null)
+                javaProcesses = javaProcesses.remove(key);
 
             ServerLoggers.sqlDumpLogger.info(String.format("idThreadProcess: %s\n   dateTimeCallProcess: %s\n   addressUserSQLProcess: %s\n" +
                             "   dateTimeSQLProcess: %s\n   isActiveSQLProcess: %s\n   inTransactionSQLProcess: %s\n   startTransactionSQLProcess: %s\n" +
@@ -123,11 +123,12 @@ public class MakeSQLDumpActionProperty extends ScriptingActionProperty {
 
         for (String key : javaProcesses.keys()) {
             List<Object> javaProcess = javaProcesses.getObject(key);
-            ServerLoggers.sqlDumpLogger.info(String.format("idThreadProcess: %s\n   nameJavaProcess: %s\n   statusJavaProcess: %s\n   lockNameJavaProcess: %s\n" +
-                            "   nameComputerJavaProcess: %s\n   nameUserJavaProcess: %s\n   threadAllocatedBytesProcess: %s\n   lastThreadAllocatedBytesProcess: %s\n" +
-                            "\nlsfStackTraceProcess: \n%s\n\nstackTraceJavaProcess: \n%s\n\n", key,
-                    javaProcess.get(1), javaProcess.get(2), javaProcess.get(3), javaProcess.get(4), javaProcess.get(5), javaProcess.get(7),
-                    javaProcess.get(8), javaProcess.get(6), javaProcess.get(0)));
+            if (!key.equals(String.valueOf(Thread.currentThread().getId())))
+                ServerLoggers.sqlDumpLogger.info(String.format("idThreadProcess: %s\n   nameJavaProcess: %s\n   statusJavaProcess: %s\n   lockNameJavaProcess: %s\n" +
+                                "   nameComputerJavaProcess: %s\n   nameUserJavaProcess: %s\n   threadAllocatedBytesProcess: %s\n   lastThreadAllocatedBytesProcess: %s\n" +
+                                "\nlsfStackTraceProcess: \n%s\n\nstackTraceJavaProcess: \n%s\n\n", key,
+                        javaProcess.get(1), javaProcess.get(2), javaProcess.get(3), javaProcess.get(4), javaProcess.get(5), javaProcess.get(7),
+                        javaProcess.get(8), javaProcess.get(6), javaProcess.get(0)));
         }
 
     }
@@ -182,7 +183,7 @@ public class MakeSQLDumpActionProperty extends ScriptingActionProperty {
             HMap entry = (HMap) rsValue;
 
             String query = trimToEmpty((String) entry.get("text"));
-            if(!query.equals(originalQuery)) {
+            if (!query.equals(originalQuery)) {
                 String fullQuery = null;
                 boolean isDisabledNestLoop = false;
                 Integer queryTimeout = null;
@@ -206,7 +207,7 @@ public class MakeSQLDumpActionProperty extends ScriptingActionProperty {
 
                 String resultId = getMonitorId(javaThread, processId);
 
-                if(!query.isEmpty()) {
+                if (!query.isEmpty()) {
                     if (javaThread != null)
                         javaThreads.add(javaThread);
                     else {
@@ -285,14 +286,14 @@ public class MakeSQLDumpActionProperty extends ScriptingActionProperty {
                 Integer queryTimeout = sessionThread == null ? null : (Integer) sessionThread.get(9);
 
                 List<Object> lockingProcess = lockingMap.get(sqlId);
-                Integer lockingSqlId = lockingProcess == null ? null : (Integer)lockingProcess.get(0);
+                Integer lockingSqlId = lockingProcess == null ? null : (Integer) lockingProcess.get(0);
                 List<Object> lockingSessionThread = lockingSqlId == null ? null : sessionThreadMap.get(lockingSqlId);
-                String lockOwnerId = lockingSessionThread == null ? null : getMonitorId((Thread)lockingSessionThread.get(0), lockingSqlId);
+                String lockOwnerId = lockingSessionThread == null ? null : getMonitorId((Thread) lockingSessionThread.get(0), lockingSqlId);
                 String lockOwnerName = lockingProcess == null ? null : (String) lockingProcess.get(1);
 
                 String resultId = getMonitorId(javaThread, sqlId);
 
-                if(active) {
+                if (active) {
                     if (javaThread != null)
                         javaThreads.add(javaThread);
                     else {
@@ -381,22 +382,22 @@ public class MakeSQLDumpActionProperty extends ScriptingActionProperty {
 
     private ImMap<String, List<Object>> getJavaProcesses(ImSet<Thread> allThreads, ImSet<Thread> sqlThreads, boolean readAllocatedBytes) {
         ImSet<Thread> threads;
-        if(allThreads != null) {
+        if (allThreads != null) {
             threads = allThreads;
         } else {
             threads = sqlThreads;
         }
 
         long[] threadIds = new long[threads.size()];
-        for(int i=0,size=threads.size();i<size;i++) {
+        for (int i = 0, size = threads.size(); i < size; i++) {
             threadIds[i] = threads.get(i).getId();
         }
         ThreadMXBean tBean = ManagementFactory.getThreadMXBean();
         ThreadInfo[] threadInfos;
-        if(threadIds.length > 0) // https://bugs.openjdk.java.net/browse/JDK-8074815
+        if (threadIds.length > 0) // https://bugs.openjdk.java.net/browse/JDK-8074815
             threadInfos = tBean.getThreadInfo(threadIds, Integer.MAX_VALUE);
         else
-            threadInfos = new ThreadInfo[] {};
+            threadInfos = new ThreadInfo[]{};
 
         long[] allocatedBytes = null;
         if (readAllocatedBytes && tBean instanceof com.sun.management.ThreadMXBean) {
@@ -404,7 +405,7 @@ public class MakeSQLDumpActionProperty extends ScriptingActionProperty {
         }
 
         MExclMap<String, List<Object>> mResultMap = MapFact.mExclMap();
-        for(int i=0,size=threads.size();i<size;i++) {
+        for (int i = 0, size = threads.size(); i < size; i++) {
             Thread thread = threads.get(i);
             List<Object> threadInfo = getThreadInfo(thread, allThreads != null && !sqlThreads.contains(thread), threadInfos[i], allocatedBytes == null ? null : allocatedBytes[i]);
             if (threadInfo != null) {
