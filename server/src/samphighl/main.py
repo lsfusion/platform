@@ -7,6 +7,38 @@ from pygments.lexer import RegexLexer, words
 from pygments.token import *
 from os import path
 
+from pygments.style import Style
+from pygments.token import Keyword, Whitespace, Name, Comment, String, Number, Literal, Generic, Punctuation
+
+
+#inherited from TangoStyle (https://kite.com/docs/python/pygments.styles.tango.TangoStyle)
+class LSFStyle(Style):
+    background_color = "#ffffff"
+    default_style = ""
+
+    styles = {
+        # No corresponding class for the following:
+        #Text:                     "", # class:  ''
+        Whitespace:                "underline #ffffff",      # class: 'w'
+        Comment:                   "#808080", 		 # class: 'c'
+        Keyword:                   "bold #336699",   # class: 'k'
+
+        Name:                      "#000000",        # class: 'n'
+        Name.Decorator:            "#ff1493",	     # class: 'nd'
+
+        Number:                    "#009900",        # class: 'm'
+        Number.Float:              "#009900",        # class: 'mf'
+        Number.Integer:            "#009900",        # class: 'mi'
+        Number.Integer.Long:       "#009900",        # class: 'il'
+
+        Literal:                   "#009900",        # class: 'l'
+        Literal.Date:              "#009900",        # class: 'ld'
+
+        Punctuation:               "#000000",		 # class: 'p'
+
+        String:                    "#009900",        # class: 's'
+    }
+
 class LSFLexer(RegexLexer):
     """
     For `LS Fusion <http://lsfusion.ru/>`_ files.
@@ -131,9 +163,10 @@ def index():
     if originalLines is None:
         startLine = 1
         
-    formatter = HtmlFormatter(style='tango', linenos='inline', noclasses=True, linenostart=startLine)
+    formatter = HtmlFormatter(style=LSFStyle, linenos='inline', noclasses=True, linenostart=startLine)
     html = highlight(fragment, LSFLexer(), formatter)
-
+    html = html.replace('<span></span>', '', 1) # remove first empty span 
+    
     return make_response(html)
 
 if __name__ == "__main__":
