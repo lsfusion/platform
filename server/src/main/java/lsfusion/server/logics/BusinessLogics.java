@@ -2474,7 +2474,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         result.add(getFlushPendingTransactionCleanersTask(scheduler));
         result.add(getRestartConnectionsTask(scheduler));
         result.addAll(resetCustomReportsCacheTasks(scheduler));
-        result.add(getSQLDumpTask(scheduler));
+        result.add(getProcessDumpTask(scheduler));
         return result;
     }
 
@@ -2528,14 +2528,14 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     }
 
 
-    private Scheduler.SchedulerTask getSQLDumpTask(Scheduler scheduler) {
+    private Scheduler.SchedulerTask getProcessDumpTask(Scheduler scheduler) {
         return scheduler.createSystemTask(new EExecutionStackRunnable() {
             public void run(ExecutionStack stack) throws Exception {
                 try(DataSession session = getDbManager().createSession()) {
-                    serviceLM.makeSQLDumpAction.execute(session, stack);
+                    serviceLM.makeProcessDumpAction.execute(session, stack);
                 }
             }
-        }, false, Settings.get().getPeriodSQLDump(), false, "SQL Dump");
+        }, false, Settings.get().getPeriodProcessDump(), false, "Process Dump");
     }
 
     private Scheduler.SchedulerTask getAllocatedBytesUpdateTask(Scheduler scheduler) {

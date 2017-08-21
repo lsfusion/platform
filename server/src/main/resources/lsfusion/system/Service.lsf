@@ -15,7 +15,7 @@ recalculateStatsAction 'Пересчитать статистику' = CUSTOM 'l
 overCalculateStatsAction 'Дорасчитать статистику' = CUSTOM 'lsfusion.server.logics.service.OverCalculateStatsActionProperty' ();
 maxQuantityOverCalculate 'Пороговое кол-во дорасчёта' = DATA INTEGER ();
 
-makeSQLDumpAction 'SQL Dump' = CUSTOM 'lsfusion.server.logics.service.MakeSQLDumpActionProperty' ();
+makeProcessDumpAction 'Process Dump' = CUSTOM 'lsfusion.server.logics.service.MakeProcessDumpActionProperty' ();
 
 serviceDBMultiThreadAction 'Обслуживание БД (многопоточно, threadCount, timeout)' = CUSTOM 'lsfusion.server.logics.service.ServiceDBMultiThreadActionProperty' (INTEGER, INTEGER) NULL;
 checkAggregationsMultiThreadAction 'Проверить агрегации (многопоточно, threadCount, timeout)' = CUSTOM 'lsfusion.server.logics.service.CheckAggregationsMultiThreadActionProperty' (INTEGER, INTEGER) NULL;

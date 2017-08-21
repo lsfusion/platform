@@ -1913,7 +1913,7 @@ public class Settings implements Cloneable {
     private int periodRestartConnections = 60; // 1 минута
     private double percentRestartConnections = 1; // 1% соединений (соотвествено 1,5 часа среднее время жизни соединения при равномерной загрузке)
 
-    private int periodSQLDump = 60; //1 минута
+    private int periodProcessDump = 60; //1 минута
 
     public int getQueryLengthAverageMax() {
         return queryLengthAverageMax;
@@ -2013,12 +2013,12 @@ public class Settings implements Cloneable {
         this.periodRestartConnections = periodRestartConnections;
     }
 
-    public int getPeriodSQLDump() {
-        return periodSQLDump;
+    public int getPeriodProcessDump() {
+        return periodProcessDump;
     }
 
-    public void setPeriodSQLDump(int periodSQLDump) {
-        this.periodSQLDump = periodSQLDump;
+    public void setPeriodProcessDump(int periodProcessDump) {
+        this.periodProcessDump = periodProcessDump;
     }
 
     public int getMaxUsedTempRowsAverageMax() {

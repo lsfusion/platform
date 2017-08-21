@@ -62,13 +62,13 @@
         </layout>
     </appender>
 
-    <appender name="sqldumplog" class="org.apache.log4j.rolling.RollingFileAppender">
+    <appender name="processdumplog" class="org.apache.log4j.rolling.RollingFileAppender">
         <param name="encoding" value="UTF-8" />
         <rollingPolicy class="org.apache.log4j.rolling.FixedWindowRollingPolicy">
             <param name="minIndex" value="1"/>
             <param name="maxIndex" value="9"/>
-            <param name="activeFileName" value="logs/sqldump.log"/>
-            <param name="fileNamePattern" value="logs/sqldump-%i.log.zip"/>
+            <param name="activeFileName" value="logs/processdump.log"/>
+            <param name="fileNamePattern" value="logs/processdump-%i.log.zip"/>
         </rollingPolicy>
         <triggeringPolicy class="org.apache.log4j.rolling.SizeBasedTriggeringPolicy">
             <param name="maxFileSize" value="10485760"/> <!-- 10MB -->
@@ -438,9 +438,9 @@
         <appender-ref ref="sqllog"/>
     </category>
 
-    <category name="SQLDumpLogger" additivity="false">
+    <category name="ProcessDumpLogger" additivity="false">
         <priority value="INFO"/>
-        <appender-ref ref="sqldumplog"/>
+        <appender-ref ref="processdumplog"/>
     </category>
 
     <category name="SQLHandLogger" additivity="false">

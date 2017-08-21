@@ -50,9 +50,9 @@ import java.util.Map;
 import static lsfusion.base.BaseUtils.trimToEmpty;
 import static lsfusion.base.BaseUtils.trimToNull;
 
-public class MakeSQLDumpActionProperty extends ScriptingActionProperty {
+public class MakeProcessDumpActionProperty extends ScriptingActionProperty {
 
-    public MakeSQLDumpActionProperty(ServiceLogicsModule LM) {
+    public MakeProcessDumpActionProperty(ServiceLogicsModule LM) {
         super(LM);
     }
 
@@ -62,7 +62,7 @@ public class MakeSQLDumpActionProperty extends ScriptingActionProperty {
         try {
             boolean readAllocatedBytes = Settings.get().isReadAllocatedBytes();
 
-            makeSQLDump(context, readAllocatedBytes);
+            makeProcessDump(context, readAllocatedBytes);
 
         } catch (SQLHandledException | ScriptingErrorLog.SemanticErrorException e) {
             throw Throwables.propagate(e);
@@ -70,7 +70,7 @@ public class MakeSQLDumpActionProperty extends ScriptingActionProperty {
 
     }
 
-    protected void makeSQLDump(ExecutionContext context, boolean readAllocatedBytes) throws SQLException, SQLHandledException, ScriptingErrorLog.SemanticErrorException {
+    protected void makeProcessDump(ExecutionContext context, boolean readAllocatedBytes) throws SQLException, SQLHandledException, ScriptingErrorLog.SemanticErrorException {
 
         SQLSyntaxType syntaxType = context.getDbManager().getAdapter().getSyntaxType();
 
@@ -91,7 +91,7 @@ public class MakeSQLDumpActionProperty extends ScriptingActionProperty {
         sqlProcesses = sqlProcesses.filter(javaProcesses.keys().merge(freeSQLProcesses));
 
         if (!sqlProcesses.isEmpty())
-            ServerLoggers.sqlDumpLogger.info(String.format("SQL DUMP: %s %s\n", sqlProcesses.size(), sqlProcesses.size() > 1 ? "processes" : "process"));
+            ServerLoggers.processDumpLogger.info(String.format("PROCESS DUMP: %s %s\n", sqlProcesses.size(), sqlProcesses.size() > 1 ? "processes" : "process"));
         for (String key : sqlProcesses.keys()) {
             List<Object> sqlProcess = sqlProcesses.getObject(key);
             List<Object> javaProcess = javaProcesses.getObject(key);
@@ -108,7 +108,7 @@ public class MakeSQLDumpActionProperty extends ScriptingActionProperty {
             if (javaProcess != null)
                 javaProcesses = javaProcesses.remove(key);
 
-            ServerLoggers.sqlDumpLogger.info(String.format("idThreadProcess: %s\n   dateTimeCallProcess: %s\n   addressUserSQLProcess: %s\n" +
+            ServerLoggers.processDumpLogger.info(String.format("idThreadProcess: %s\n   dateTimeCallProcess: %s\n   addressUserSQLProcess: %s\n" +
                             "   dateTimeSQLProcess: %s\n   isActiveSQLProcess: %s\n   inTransactionSQLProcess: %s\n   startTransactionSQLProcess: %s\n" +
                             "   attemptCountSQLProcess: %s\n   statusMessageSQLProcess: %s\n   computerProcess: %s\n   userProcess: %s\n" +
                             "   lockOwnerIdProcess: %s\n   lockOwnerNameProcess: %s\n   idSQLProcess: %s\n   isDisabledNestLoopProcess: %s\n" +
@@ -124,7 +124,7 @@ public class MakeSQLDumpActionProperty extends ScriptingActionProperty {
         for (String key : javaProcesses.keys()) {
             List<Object> javaProcess = javaProcesses.getObject(key);
             if (!key.equals(String.valueOf(Thread.currentThread().getId())))
-                ServerLoggers.sqlDumpLogger.info(String.format("idThreadProcess: %s\n   nameJavaProcess: %s\n   statusJavaProcess: %s\n   lockNameJavaProcess: %s\n" +
+                ServerLoggers.processDumpLogger.info(String.format("idThreadProcess: %s\n   nameJavaProcess: %s\n   statusJavaProcess: %s\n   lockNameJavaProcess: %s\n" +
                                 "   nameComputerJavaProcess: %s\n   nameUserJavaProcess: %s\n   threadAllocatedBytesProcess: %s\n   lastThreadAllocatedBytesProcess: %s\n" +
                                 "\nlsfStackTraceProcess: \n%s\n\nstackTraceJavaProcess: \n%s\n\n", key,
                         javaProcess.get(1), javaProcess.get(2), javaProcess.get(3), javaProcess.get(4), javaProcess.get(5), javaProcess.get(7),
