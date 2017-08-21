@@ -2474,6 +2474,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         result.add(getFlushPendingTransactionCleanersTask(scheduler));
         result.add(getRestartConnectionsTask(scheduler));
         result.addAll(resetCustomReportsCacheTasks(scheduler));
+        result.add(getSQLDumpTask(scheduler));
         return result;
     }
 
@@ -2524,6 +2525,17 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
                 SQLSession.restartConnections(prevStart);
             }
         }, false, Settings.get().getPeriodRestartConnections(), false, "Connection restart");
+    }
+
+
+    private Scheduler.SchedulerTask getSQLDumpTask(Scheduler scheduler) {
+        return scheduler.createSystemTask(new EExecutionStackRunnable() {
+            public void run(ExecutionStack stack) throws Exception {
+                try(DataSession session = getDbManager().createSession()) {
+                    serviceLM.makeSQLDumpAction.execute(session, stack);
+                }
+            }
+        }, false, Settings.get().getPeriodSQLDump(), false, "SQL Dump");
     }
 
     private Scheduler.SchedulerTask getAllocatedBytesUpdateTask(Scheduler scheduler) {

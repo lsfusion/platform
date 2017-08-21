@@ -62,6 +62,22 @@
         </layout>
     </appender>
 
+    <appender name="sqldumplog" class="org.apache.log4j.rolling.RollingFileAppender">
+        <param name="encoding" value="UTF-8" />
+        <rollingPolicy class="org.apache.log4j.rolling.FixedWindowRollingPolicy">
+            <param name="minIndex" value="1"/>
+            <param name="maxIndex" value="9"/>
+            <param name="activeFileName" value="logs/sqldump.log"/>
+            <param name="fileNamePattern" value="logs/sqldump-%i.log.zip"/>
+        </rollingPolicy>
+        <triggeringPolicy class="org.apache.log4j.rolling.SizeBasedTriggeringPolicy">
+            <param name="maxFileSize" value="10485760"/> <!-- 10MB -->
+        </triggeringPolicy>
+        <layout class="org.apache.log4j.EnhancedPatternLayout">
+            <param name="ConversionPattern" value="%d{DATE} %X{client} - %X{computer} - %X{remoteAddress} %5p %c{1} - %m%n%throwable{1000}"/>
+        </layout>
+    </appender>
+
     <appender name="sqlhandlog" class="org.apache.log4j.rolling.RollingFileAppender">
         <param name="encoding" value="UTF-8" />
         <rollingPolicy class="org.apache.log4j.rolling.FixedWindowRollingPolicy">
@@ -380,7 +396,7 @@
             <param name="ConversionPattern" value="%d{DATE} %5p %c{1} - %m%n%throwable{1000}"/>
         </layout>
     </appender>
-    
+
     <appender name="startlog" class="org.apache.log4j.rolling.RollingFileAppender">
         <param name="encoding" value="UTF-8" />
         <rollingPolicy class="org.apache.log4j.rolling.FixedWindowRollingPolicy">
@@ -420,6 +436,11 @@
     <category name="SQLLogger">
         <priority value="INFO"/>
         <appender-ref ref="sqllog"/>
+    </category>
+
+    <category name="SQLDumpLogger" additivity="false">
+        <priority value="INFO"/>
+        <appender-ref ref="sqldumplog"/>
     </category>
 
     <category name="SQLHandLogger" additivity="false">
@@ -516,7 +537,7 @@
         <priority value="INFO"/>
         <appender-ref ref="explainlog"/>
     </category>
-    
+
     <category name="StartLogger">
         <priority value="INFO"/>
         <appender-ref ref="startlog"/>

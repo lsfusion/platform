@@ -19,6 +19,8 @@ public class ServiceLogicsModule extends ScriptingLogicsModule {
     private LAP packAction;
     private LAP serviceDBAction;
 
+    public LAP makeSQLDumpAction;
+
     public LCP isServerRestarting;
     public LAP restartServerAction;
     public LAP runGarbageCollector;
@@ -49,6 +51,8 @@ public class ServiceLogicsModule extends ScriptingLogicsModule {
         packAction = findAction("packAction[]");
         serviceDBAction = findAction("serviceDBAction[]");
         singleTransaction = findProperty("singleTransaction[]");
+
+        makeSQLDumpAction = findAction("makeSQLDumpAction[]");
 
         recalculateMultiThreadAction = findAction("recalculateMultiThreadAction[]");
         recalculateClassesMultiThreadAction = findAction("recalculateClassesMultiThreadAction[]");
