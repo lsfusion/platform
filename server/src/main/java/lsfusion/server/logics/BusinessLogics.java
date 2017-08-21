@@ -115,7 +115,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     protected final static Logger logger = ServerLoggers.systemLogger;
     protected final static Logger sqlLogger = ServerLoggers.sqlLogger;
     protected final static Logger startLogger = ServerLoggers.startLogger;
-    protected final static Logger debuglogger = Logger.getLogger(BusinessLogics.class);
     protected final static Logger lruLogger = ServerLoggers.lruLogger;
     protected final static Logger allocatedBytesLogger = ServerLoggers.allocatedBytesLogger;
 
@@ -785,45 +784,38 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
 
     private void setupPropertyNotifications(SQLSession sql) throws SQLException, IllegalAccessException, InstantiationException, ClassNotFoundException, SQLHandledException {
 
-        LCP isNotification = LM.is(emailLM.notification);
-        ImRevMap<Object, KeyExpr> keys = isNotification.getMapKeys();
-        KeyExpr key = keys.singleValue();
+        KeyExpr notificationExpr = new KeyExpr("notification");
+        KeyExpr propertyExpr = new KeyExpr("property");
+
+        ImRevMap<Object, KeyExpr> keys = MapFact.toRevMap((Object) "notification", notificationExpr, "property", propertyExpr);
+
         QueryBuilder<Object, Object> query = new QueryBuilder<>(keys);
-        query.addProperty("isDerivedChange", emailLM.isEventNotification.getExpr(key));
-        query.addProperty("subject", emailLM.subjectNotification.getExpr(key));
-        query.addProperty("text", emailLM.textNotification.getExpr(key));
-        query.addProperty("emailFrom", emailLM.emailFromNotification.getExpr(key));
-        query.addProperty("emailTo", emailLM.emailToNotification.getExpr(key));
-        query.addProperty("emailToCC", emailLM.emailToCCNotification.getExpr(key));
-        query.addProperty("emailToBC", emailLM.emailToBCNotification.getExpr(key));
-        query.and(isNotification.getExpr(key).getWhere());
+
+        String[] notificationNames = new String[]{"isDerivedChange", "subject", "text", "emailFrom", "emailTo", "emailToCC", "emailToBC"};
+        LCP[] notificationProperties = new LCP[]{emailLM.isEventNotification, emailLM.subjectNotification, emailLM.textNotification,
+                emailLM.emailFromNotification, emailLM.emailToNotification, emailLM.emailToCCNotification, emailLM.emailToBCNotification};
+        for (int i = 0; i < notificationProperties.length; i++) {
+            query.addProperty(notificationNames[i], notificationProperties[i].getExpr(notificationExpr));
+        }
+        query.addProperty("CNProperty", reflectionLM.canonicalNameProperty.getExpr(propertyExpr));
+        query.and(emailLM.textNotification.getExpr(notificationExpr).getWhere());
+        query.and(emailLM.inNotificationProperty.getExpr(notificationExpr, propertyExpr).getWhere());
+
         ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> result = query.execute(sql, OperationOwner.unknown);
 
-        for (int i=0,size=result.size();i<size;i++) {
-            DataObject notificationObject = new DataObject(result.getKey(i).getValue(0), emailLM.notification);
-            KeyExpr propertyExpr2 = new KeyExpr("property");
-            KeyExpr notificationExpr2 = new KeyExpr("notification");
-            ImRevMap<String, KeyExpr> newKeys2 = MapFact.toRevMap("property", propertyExpr2, "notification", notificationExpr2);
+        for (ImMap<Object, Object> entry : result.values()) {
 
-            QueryBuilder<String, String> query2 = new QueryBuilder<>(newKeys2);
-            query2.addProperty("CNProperty", reflectionLM.canonicalNameProperty.getExpr(propertyExpr2));
-            query2.and(emailLM.inNotificationProperty.getExpr(notificationExpr2, propertyExpr2).getWhere());
-            query2.and(notificationExpr2.compare(notificationObject, Compare.EQUALS));
-            ImOrderMap<ImMap<String, Object>, ImMap<String, Object>> result2 = query2.execute(sql, OperationOwner.unknown);
-            List<LCP> listInNotificationProperty = new ArrayList();
-            for (int j=0,size2=result2.size();j<size2;j++) {
-                listInNotificationProperty.add((LCP) findProperty(result2.getValue(i).get("CNProperty").toString().trim()));
-            }
-            ImMap<Object, Object> rowValue = result.getValue(i);
+            String cnProperty = trim((String) entry.get("CNProperty"));
+            if(cnProperty != null) {
+                LCP prop = (LCP) findProperty(cnProperty);
 
-            for (LCP prop : listInNotificationProperty) {
-                boolean isDerivedChange = rowValue.get("isDerivedChange") == null ? false : true;
-                String subject = rowValue.get("subject") == null ? "" : rowValue.get("subject").toString().trim();
-                String text = rowValue.get("text") == null ? "" : rowValue.get("text").toString().trim();
-                String emailFrom = rowValue.get("emailFrom") == null ? "" : rowValue.get("emailFrom").toString().trim();
-                String emailTo = rowValue.get("emailTo") == null ? "" : rowValue.get("emailTo").toString().trim();
-                String emailToCC = rowValue.get("emailToCC") == null ? "" : rowValue.get("emailToCC").toString().trim();
-                String emailToBC = rowValue.get("emailToBC") == null ? "" : rowValue.get("emailToBC").toString().trim();
+                boolean isDerivedChange = entry.get("isDerivedChange") != null;
+                String subject = trim((String) entry.get("subject"));
+                String text = trim((String) entry.get("text"));
+                String emailFrom = trim((String) entry.get("emailFrom"));
+                String emailTo = trim((String) entry.get("emailTo"));
+                String emailToCC = trim((String) entry.get("emailToCC"));
+                String emailToBC = trim((String) entry.get("emailToBC"));
                 LAP emailNotificationProperty = LM.addProperty(LM.actionGroup, new LAP(new NotificationActionProperty(LocalizedString.create("emailNotificationProperty"), prop, subject, text, emailFrom, emailTo, emailToCC, emailToBC, emailLM)));
 
                 Integer[] params = new Integer[prop.listInterfaces.size()];
