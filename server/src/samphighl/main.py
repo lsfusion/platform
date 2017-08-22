@@ -165,9 +165,6 @@ def index():
         
     formatter = HtmlFormatter(style=LSFStyle, linenos='table', noclasses=True, linenostart=startLine)
     html = highlight(fragment, LSFLexer(), formatter)
-    html = html.replace('<span></span>', '', 1) # remove first empty span
-    html = html.replace('class="code"', '')
-    
     return make_response(html)
 
 if __name__ == "__main__":
