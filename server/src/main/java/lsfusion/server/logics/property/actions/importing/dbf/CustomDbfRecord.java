@@ -3,7 +3,6 @@ package lsfusion.server.logics.property.actions.importing.dbf;
 import net.iryndin.jdbf.core.DbfField;
 import net.iryndin.jdbf.core.DbfFieldTypeEnum;
 import net.iryndin.jdbf.core.DbfMetadata;
-import net.iryndin.jdbf.reader.MemoReader;
 import net.iryndin.jdbf.util.BitUtils;
 import net.iryndin.jdbf.util.JdbfUtils;
 

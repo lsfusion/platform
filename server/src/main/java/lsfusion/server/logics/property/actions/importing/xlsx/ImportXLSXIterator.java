@@ -1,7 +1,6 @@
 package lsfusion.server.logics.property.actions.importing.xlsx;
 
 import com.google.common.base.Throwables;
-import lsfusion.server.ServerLoggers;
 import lsfusion.server.classes.DateClass;
 import lsfusion.server.classes.DateTimeClass;
 import lsfusion.server.classes.TimeClass;

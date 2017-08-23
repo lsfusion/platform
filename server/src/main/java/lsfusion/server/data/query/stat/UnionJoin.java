@@ -4,7 +4,6 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.FunctionSet;
 import lsfusion.base.Result;
 import lsfusion.base.TwinImmutableObject;
-import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
@@ -13,7 +12,6 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MOrderExclMap;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
-import lsfusion.base.col.interfaces.mutable.add.MAddMap;
 import lsfusion.server.caches.AbstractOuterContext;
 import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.caches.OuterContext;
@@ -26,11 +24,6 @@ import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.expr.query.StatType;
 import lsfusion.server.data.query.ExprEnumerator;
 import lsfusion.server.data.where.Where;
-
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 public class UnionJoin extends CalculateJoin<BaseExpr> {
     

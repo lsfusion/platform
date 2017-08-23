@@ -10,7 +10,6 @@ import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.form.instance.PropertyObjectInterfaceInstance;
 import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.ObjectValue;
-import lsfusion.server.logics.debug.ActionDebugInfo;
 import lsfusion.server.logics.debug.DebugInfo;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.property.actions.flow.CaseActionProperty;

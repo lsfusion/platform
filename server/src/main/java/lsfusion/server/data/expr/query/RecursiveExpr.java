@@ -20,9 +20,9 @@ import lsfusion.server.data.expr.InnerExpr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.where.pull.ExprPullWheres;
 import lsfusion.server.data.query.CompileSource;
+import lsfusion.server.data.translator.ExprTranslator;
 import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.translator.PartialKeyExprTranslator;
-import lsfusion.server.data.translator.ExprTranslator;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassExprWhere;
 

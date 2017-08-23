@@ -14,7 +14,10 @@ import lsfusion.server.data.query.innerjoins.GroupJoinsWheres;
 import lsfusion.server.data.query.innerjoins.InnerUpWhere;
 import lsfusion.server.data.query.innerjoins.UpWhere;
 import lsfusion.server.data.query.innerjoins.UpWheres;
-import lsfusion.server.data.query.stat.*;
+import lsfusion.server.data.query.stat.BaseJoin;
+import lsfusion.server.data.query.stat.KeyStat;
+import lsfusion.server.data.query.stat.UnionJoin;
+import lsfusion.server.data.query.stat.WhereJoin;
 import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.where.Where;
 

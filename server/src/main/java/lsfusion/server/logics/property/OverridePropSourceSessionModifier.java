@@ -5,7 +5,10 @@ import lsfusion.base.FunctionSet;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.session.*;
+import lsfusion.server.session.IncrementChangeProps;
+import lsfusion.server.session.IncrementTableProps;
+import lsfusion.server.session.OverrideIncrementProps;
+import lsfusion.server.session.SessionModifier;
 
 import java.sql.SQLException;
 

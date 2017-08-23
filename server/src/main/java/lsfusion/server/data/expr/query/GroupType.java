@@ -18,7 +18,6 @@ import lsfusion.server.data.type.ConcatenateType;
 import lsfusion.server.data.type.NullReader;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
-import lsfusion.server.logics.NullValue;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.*;
 

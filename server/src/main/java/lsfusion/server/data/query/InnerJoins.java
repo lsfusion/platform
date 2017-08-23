@@ -4,28 +4,17 @@ import lsfusion.base.AddSet;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Result;
 import lsfusion.base.col.MapFact;
-import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.base.col.interfaces.immutable.ImOrderSet;
-import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
-import lsfusion.base.col.interfaces.mutable.MList;
-import lsfusion.server.Settings;
 import lsfusion.server.caches.hash.HashCodeKeys;
 import lsfusion.server.caches.hash.HashContext;
 import lsfusion.server.caches.hash.HashValues;
-import lsfusion.server.data.expr.BaseExpr;
-import lsfusion.server.data.expr.Expr;
-import lsfusion.server.data.expr.InnerExpr;
-import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.query.QueryJoin;
-import lsfusion.server.data.expr.query.Stat;
-import lsfusion.server.data.expr.query.StatType;
 import lsfusion.server.data.query.innerjoins.UpWhere;
 import lsfusion.server.data.query.innerjoins.UpWheres;
-import lsfusion.server.data.query.stat.*;
+import lsfusion.server.data.query.stat.WhereJoin;
+import lsfusion.server.data.query.stat.WhereJoins;
 import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.translator.MapValuesTranslate;
-import lsfusion.server.data.where.Where;
 
 public class InnerJoins extends AddSet<InnerJoin, InnerJoins> {
 

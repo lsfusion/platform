@@ -1,6 +1,5 @@
 package lsfusion.server.session;
 
-import lsfusion.base.ConcurrentIdentityWeakHashSet;
 import lsfusion.base.WeakIdentityHashSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.data.SQLHandledException;

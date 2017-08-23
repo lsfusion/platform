@@ -18,7 +18,8 @@ import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.query.InnerExprFollows;
 import lsfusion.server.data.query.stat.StatKeys;
-import lsfusion.server.data.translator.*;
+import lsfusion.server.data.translator.KeyExprTranslator;
+import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.where.Where;
 
 public class PartitionJoin extends QueryJoin<KeyExpr, PartitionJoin.Query, PartitionJoin, PartitionJoin.QueryOuterContext> {
