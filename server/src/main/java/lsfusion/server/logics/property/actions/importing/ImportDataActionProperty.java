@@ -170,7 +170,8 @@ public abstract class ImportDataActionProperty extends SystemActionProperty {
                                     Type type = prop.property.getType();
                                     Object parsedObject = null;
                                     try {
-                                        parsedObject = type.parseString(finalRow.get(properties.indexOf(prop)));
+                                        String value = finalRow.get(properties.indexOf(prop));
+                                        parsedObject = value == null ? null : type.parseString(value);
                                     } catch (lsfusion.server.data.type.ParseException ignored) {
                                     }
                                     return ObjectValue.getValue(parsedObject, (ConcreteClass) prop.property.getValueClass(ClassType.editPolicy));
