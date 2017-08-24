@@ -27,25 +27,28 @@ public class ScannerDaemonTask extends AbstractDaemonTask implements Serializabl
 
     @Override
     public void start() {
-
         while (com > 100) {
-            int currentCom = com % 100;
-            try {
-                String portName = "COM" + currentCom;
-                SerialPort serialPort = new SerialPort(portName);
-                boolean opened = serialPort.openPort();
-                if (!opened) {
-                    throw new RuntimeException("Не удалось открыть порт COM" + currentCom + ". Попробуйте закрыть все другие приложения, использующие этот порт и перезапустить клиент.");
-                }
-                serialPort.setParams(9600, 8, 1, 0);
-                serialPort.setEventsMask(SerialPort.MASK_RXCHAR | SerialPort.MASK_CTS | SerialPort.MASK_DSR);//Set mask
-                serialPort.addEventListener(this, SerialPort.MASK_RXCHAR | SerialPort.MASK_CTS | SerialPort.MASK_DSR);//Add SerialPortEventListener
-                serialPortMap.put(portName, serialPort);
-                barcodeMap.put(portName, "");
-            } catch (SerialPortException ex) {
-                throw new RuntimeException(ex);
-            }
+            connect(com % 100);
             com = com / 100;
+        }
+        connect(com);
+    }
+
+    private void connect(int currentCom) {
+        try {
+            String portName = "COM" + currentCom;
+            SerialPort serialPort = new SerialPort(portName);
+            boolean opened = serialPort.openPort();
+            if (!opened) {
+                throw new RuntimeException("Не удалось открыть порт COM" + currentCom + ". Попробуйте закрыть все другие приложения, использующие этот порт и перезапустить клиент.");
+            }
+            serialPort.setParams(9600, 8, 1, 0);
+            serialPort.setEventsMask(SerialPort.MASK_RXCHAR | SerialPort.MASK_CTS | SerialPort.MASK_DSR);//Set mask
+            serialPort.addEventListener(this, SerialPort.MASK_RXCHAR | SerialPort.MASK_CTS | SerialPort.MASK_DSR);//Add SerialPortEventListener
+            serialPortMap.put(portName, serialPort);
+            barcodeMap.put(portName, "");
+        } catch (SerialPortException ex) {
+            throw new RuntimeException(ex);
         }
     }
 
