@@ -3,6 +3,7 @@ package lsfusion.server.logics.property.cases;
 import lsfusion.server.classes.sets.ResolveClassSet;
 import lsfusion.server.logics.property.CalcPropertyInterfaceImplement;
 import lsfusion.server.logics.property.PropertyInterface;
+
 import java.util.List;
 
 public class ExplicitCalcCase<P extends PropertyInterface> extends AbstractCalcCase<P> {
