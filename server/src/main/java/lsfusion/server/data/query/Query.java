@@ -301,7 +301,7 @@ public class Query<K,V> extends IQuery<K,V> {
     @Pack
     @StackMessage("{message.core.query.compile}")
     public CompiledQuery<K, V> compile(ImOrderMap<V, Boolean> orders, CompileOptions<V> options) {
-        return new CompiledQuery<>(this, options.syntax, orders, options.limit, options.subcontext, options.recursive, options.noInline, options.castTypes);
+        return new CompiledQuery<>(this, options.syntax, orders, options.limit, options.subcontext, options.recursive, options.noInline, options.castTypes, options.needDebugInfo);
     }
 
     @IdentityLazy

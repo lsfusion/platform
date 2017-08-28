@@ -1618,7 +1618,10 @@ public class BaseUtils {
     }
     
     public static String tab(String tab) {
-        return tab.replace("\n", "\n\t");
+        return tabPrefix(tab, "\t");
+    }
+    public static String tabPrefix(String tab, String prefix) {
+        return tab.replace("\n", "\n" + prefix);
     }
 
     public static <I> I single(Collection<I> col) {

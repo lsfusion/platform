@@ -16,12 +16,23 @@ public class SQLExecute<OE, S extends DynamicExecEnvSnapshot<OE, S>> {
     public final OperationOwner owner;
     public final TableOwner tableOwner;
     public final PureTimeInterface pureTime;
-    public final RegisterChange registerChange;
+    public final RegisterChange registerChange;    
+    public final LazySQLDebugInfo debugInfo;
 
+    // MATERIALIZE SUBQUERIES
     public SQLExecute(SQLDML command, ImMap<String, ParseInterface> params, DynamicExecuteEnvironment queryExecEnv, int transactTimeout, OperationOwner owner, TableOwner tableOwner, RegisterChange registerChange) {
-        this(command, params, queryExecEnv, null, PureTime.VOID, transactTimeout, owner, tableOwner, registerChange);
+        this(command, params, queryExecEnv, transactTimeout, owner, tableOwner, registerChange, null);
     }
     public SQLExecute(SQLDML command, ImMap<String, ParseInterface> params, DynamicExecuteEnvironment<OE, S> queryExecEnv, OE outerEnv, PureTimeInterface pureTime, int transactTimeout, OperationOwner owner, TableOwner tableOwner, RegisterChange registerChange) {
+        this(command, params, queryExecEnv, outerEnv, pureTime, transactTimeout, owner, tableOwner, registerChange, null);
+    }
+    
+    // UPDATE, DELETE, INSERTSELECT
+    public SQLExecute(SQLDML command, ImMap<String, ParseInterface> params, DynamicExecuteEnvironment queryExecEnv, int transactTimeout, OperationOwner owner, TableOwner tableOwner, RegisterChange registerChange, LazySQLDebugInfo debugInfo) {
+        this(command, params, queryExecEnv, null, PureTime.VOID, transactTimeout, owner, tableOwner, registerChange, debugInfo);
+    }
+
+    public SQLExecute(SQLDML command, ImMap<String, ParseInterface> params, DynamicExecuteEnvironment<OE, S> queryExecEnv, OE outerEnv, PureTimeInterface pureTime, int transactTimeout, OperationOwner owner, TableOwner tableOwner, RegisterChange registerChange, LazySQLDebugInfo debugInfo) {
         this.command = command;
         this.params = params;
         this.queryExecEnv = queryExecEnv;
@@ -31,5 +42,6 @@ public class SQLExecute<OE, S extends DynamicExecEnvSnapshot<OE, S>> {
         this.owner = owner;
         this.tableOwner = tableOwner;
         this.registerChange = registerChange;
+        this.debugInfo = debugInfo;
     }
 }

@@ -33,6 +33,7 @@ import lsfusion.server.data.translator.JoinExprTranslator;
 import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.where.DNFWheres;
 import lsfusion.server.data.where.Where;
+import lsfusion.utils.DebugInfoWriter;
 import lsfusion.utils.GreedyTreeBuilding;
 
 import java.util.*;
@@ -229,13 +230,13 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
     }
 
     public <K extends BaseExpr> StatKeys<K> getStatKeys(ImSet<K> groups, Result<Stat> rows, final KeyStat keyStat, StatType type) {
-        return getStatKeys(groups, rows, keyStat, type, null);
+        return getStatKeys(groups, rows, keyStat, type, null, null);
     }
 
     // assert что rows >= result
     // можно rows в StatKeys было закинуть как и Cost, но используется только в одном месте и могут быть проблемы с кэшированием
-    public <K extends BaseExpr> StatKeys<K> getStatKeys(ImSet<K> groups, Result<Stat> rows, final KeyStat keyStat, StatType type, Result<ImSet<BaseExpr>> usedNotNullJoins) {
-        return getCostStatKeys(groups, rows, keyStat, type, usedNotNullJoins);
+    public <K extends BaseExpr> StatKeys<K> getStatKeys(ImSet<K> groups, Result<Stat> rows, final KeyStat keyStat, StatType type, Result<ImSet<BaseExpr>> usedNotNullJoins, DebugInfoWriter debugInfoWriter) {
+        return getCostStatKeys(groups, rows, keyStat, type, usedNotNullJoins, debugInfoWriter);
     }
 
     private static class JoinCostStat<Z> extends CostStat {
@@ -361,35 +362,51 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         private final ImMap<BaseExpr, Stat> propStats; // поддерживаем только потому что getPushedStatKeys может их "уточнять"
 
         // debug info, temporary
-//        private final CostStat left;
-//        private final CostStat right;
-//        private final Stat[] aEdgeStats;
-//        private final Stat[] bEdgeStats;
-//        private final List<? extends Edge> edges;
+        private static class DebugInfo {
+            private final CostStat left;
+            private final CostStat right;
+            private final Stat[] aEdgeStats;
+            private final Stat[] bEdgeStats;
+            private final List<? extends Edge> edges;
+
+            public DebugInfo(CostStat left, CostStat right, Stat[] aEdgeStats, Stat[] bEdgeStats, List<? extends Edge> edges) {
+                this.left = left;
+                this.right = right;
+                this.aEdgeStats = aEdgeStats;
+                this.bEdgeStats = bEdgeStats;
+                this.edges = edges;
+            }
+
+            public String toString(String prefix) {
+                return " LEFT : "
+                        + Arrays.toString(aEdgeStats) + " RIGHT : " + Arrays.toString(bEdgeStats) + "\n" + (left != null ? left.toString(prefix + '\t') : "") + '\n' + (right != null ? right.toString(prefix + '\t') : "");
+            }
+        }
+        private final DebugInfo debugInfo;
 
         public MergeCostStat(Cost lookAheadCost, MergeCostStat costStat) {
             this(costStat.cost, lookAheadCost, costStat.stat, costStat.inJoins, costStat.adjJoins,
                     costStat.leftCost, costStat.rightCost, costStat.leftStat, costStat.rightStat, costStat.joinsCount,
                     costStat.joinStats, costStat.keyStats, costStat.propStats, costStat.pushCosts, costStat.usedNotNulls
-//                    ,costStat.left, costStat.right, costStat.aEdgeStats, costStat.bEdgeStats, costStat.edges
+                    ,costStat.debugInfo
             );
         }
 
         public MergeCostStat(Cost cost, Stat stat, BitSet inJoins, BitSet adjJoins,
                              Cost leftCost, Cost rightCost, Stat leftStat, Stat rightStat, int joinsCount
-//                             , CostStat left, CostStat right, Stat[] aEdgeStats, Stat[] bEdgeStats, List<? extends Edge> edges
+                             , DebugInfo debugInfo
                             ) {
             this(cost, null, stat, inJoins, adjJoins,
                     leftCost, rightCost, leftStat, rightStat, joinsCount,
                     null, null, null, null, null
-//                    , left, right, aEdgeStats, bEdgeStats, edges
+                    , debugInfo
                 );
         }
 
         public MergeCostStat(Cost cost, Cost lookAheadCost, Stat stat, BitSet inJoins, BitSet adjJoins,
                              Cost leftCost, Cost rightCost, Stat leftStat, Stat rightStat, int joinsCount,
                              ImMap<BaseJoin, Stat> joinStats, ImMap<BaseJoin, DistinctKeys> keyStats, ImMap<BaseExpr, Stat> propStats, ImMap<QueryJoin, PushCost> pushCosts, ImSet<BaseExpr> usedNotNulls
-//                             , CostStat left, CostStat right, Stat[] aEdgeStats, Stat[] bEdgeStats, List<? extends Edge> edges
+                             , DebugInfo debugInfo
                             ) {
             super(usedNotNulls, inJoins, adjJoins, pushCosts);
             this.cost = cost;
@@ -406,11 +423,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
             this.keyStats = keyStats;
             this.propStats = propStats; // assert что все expr.getBaseJoin() из joinStats
 
-//            this.left = left;
-//            this.right = right;
-//            this.aEdgeStats = aEdgeStats;
-//            this.bEdgeStats = bEdgeStats;
-//            this.edges = edges;
+            this.debugInfo = debugInfo;
         }
 
         @Override
@@ -516,9 +529,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         }
 
         public String toString(String prefix) {
-            return prefix + "m" + getCost() + " " + getStat() + " LEFT : " 
-//                            + Arrays.toString(aEdgeStats) + " RIGHT : " + Arrays.toString(bEdgeStats) + "\n" + (left != null ? left.toString(prefix + '\t') : "") + '\n' + (right != null ? right.toString(prefix + '\t') : "")
-                            ;
+            return prefix + "m" + getCost() + " " + getStat() + (debugInfo != null ? debugInfo.toString(prefix) : "");
         }
     }
     
@@ -727,7 +738,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         T calculate(CostStat costStat, ImSet<Edge> edges, MAddMap<BaseJoin, Stat> joinStats, MAddMap<BaseExpr, PropStat> exprStats);
     }
 
-    public <K extends BaseExpr, T> T calculateCost(ImSet<K> groups, QueryJoin join, boolean pushLargeDepth, boolean needNotNulls, final KeyStat keyStat, final StatType type, CostResult<T> result) {
+    public <K extends BaseExpr, T> T calculateCost(ImSet<K> groups, QueryJoin join, boolean pushLargeDepth, boolean needNotNulls, final KeyStat keyStat, final StatType type, CostResult<T> result, DebugInfoWriter debugInfoWriter) {
         // вообще по хорошему надо сделать переборный жадняк, то есть выбрать ребра с минимальной суммой из costReduce + cost (то есть важно и то и то), и искуственно повышать приоритет соединения node'ов (чтобы они соединялись в самом конце), решит проблему 0-5-0-0-5-0
 
         final MAddMap<BaseJoin, Stat> joinStats = MapFact.mAddOverrideMap();
@@ -738,12 +749,12 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
 
         buildGraphWithStats(groups, edges, joinStats, exprStats, null, keyDistinctStats, indexedStats, type, keyStat, join);
 
-        CostStat costStat = getCost(join, pushLargeDepth, needNotNulls, joinStats, indexedStats, exprStats, keyDistinctStats, edges.result, keyStat, type);
+        CostStat costStat = getCost(join, pushLargeDepth, needNotNulls, joinStats, indexedStats, exprStats, keyDistinctStats, edges.result, keyStat, type, debugInfoWriter);
 
         return result.calculate(costStat, edges.result, joinStats, exprStats);
     }
 
-    public <K extends BaseExpr, Z> StatKeys<K> getCostStatKeys(final ImSet<K> groups, final Result<Stat> rows, final KeyStat keyStat, final StatType type, final Result<ImSet<BaseExpr>> usedNotNullJoins) {
+    public <K extends BaseExpr, Z> StatKeys<K> getCostStatKeys(final ImSet<K> groups, final Result<Stat> rows, final KeyStat keyStat, final StatType type, final Result<ImSet<BaseExpr>> usedNotNullJoins, DebugInfoWriter debugInfoWriter) {
         // нужно отдельно STAT считать, так как при например 0 - 3, 0 - 100 получит 3 - 100 -> 3, а не 0 - 3 -> 3 и соотвественно статистику 3, а не 0
         //  но пока не принципиально будем брать stat из "плана"
 
@@ -765,22 +776,22 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
                     usedNotNullJoins.set(costStat.usedNotNulls);
                 return StatKeys.create(cost, stat, new DistinctKeys<>(costStat.getDistinct(groups, exprStats)));
             }
-        });
+        }, debugInfoWriter);
     }
 
     // assert что не включает queryJoin
-    public <K extends BaseExpr, Z extends Expr> Where getCostPushWhere(final QueryJoin<Z, ?, ?, ?> queryJoin, boolean pushLargeDepth, final UpWheres<WhereJoin> upWheres, final KeyStat keyStat, final StatType type, final Result<Pair<ImRevMap<Z, KeyExpr>, Where>> pushJoinWhere) {
-        return and(new WhereJoins(queryJoin)).getInnerCostPushWhere(queryJoin, pushLargeDepth, upWheres, keyStat, type, pushJoinWhere);
+    public <K extends BaseExpr, Z extends Expr> Where getCostPushWhere(final QueryJoin<Z, ?, ?, ?> queryJoin, boolean pushLargeDepth, final UpWheres<WhereJoin> upWheres, final KeyStat keyStat, final StatType type, final Result<Pair<ImRevMap<Z, KeyExpr>, Where>> pushJoinWhere, DebugInfoWriter debugInfoWriter) {
+        return and(new WhereJoins(queryJoin)).getInnerCostPushWhere(queryJoin, pushLargeDepth, upWheres, keyStat, type, pushJoinWhere, debugInfoWriter);
     }
 
     // assert что включает queryJoin
-    private <K extends BaseExpr, Z extends Expr> Where getInnerCostPushWhere(final QueryJoin<Z, ?, ?, ?> queryJoin, boolean pushLargeDepth, final UpWheres<WhereJoin> upWheres, final KeyStat keyStat, final StatType type, final Result<Pair<ImRevMap<Z, KeyExpr>, Where>> pushJoinWhere) {
+    private <K extends BaseExpr, Z extends Expr> Where getInnerCostPushWhere(final QueryJoin<Z, ?, ?, ?> queryJoin, boolean pushLargeDepth, final UpWheres<WhereJoin> upWheres, final KeyStat keyStat, final StatType type, final Result<Pair<ImRevMap<Z, KeyExpr>, Where>> pushJoinWhere, DebugInfoWriter debugInfoWriter) {
 //        ImSet<BaseExpr> groups = queryJoin.getJoins().values().toSet(); // по идее не надо, так как включает queryJoin
         return calculateCost(SetFact.<BaseExpr>EMPTY(), queryJoin, pushLargeDepth, false, keyStat, type, new CostResult<Where>() {
             public Where calculate(CostStat costStat, ImSet<Edge> edges, MAddMap<BaseJoin, Stat> joinStats, MAddMap<BaseExpr, PropStat> exprStats) {
                 return getCostPushWhere(costStat, edges, queryJoin, upWheres, pushJoinWhere, joinStats);
             }
-        });
+        }, debugInfoWriter);
     }
 
     private boolean recProceedChildrenCostWhere(BaseJoin join, MAddExclMap<BaseJoin, Boolean> proceeded, MMap<BaseJoin, MiddleTreeKeep> mMiddleTreeKeeps, MSet<BaseExpr> mAllKeeps, MSet<BaseExpr> mTranslate, boolean keepThis, ImSet<BaseJoin> keepJoins, FunctionSet<BaseJoin> notKeepJoins, ImMap<BaseJoin, ImSet<Edge>> inEdges) {
@@ -956,7 +967,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         return GroupExpr.create(translatedPushGroup, upPushWhere, translatedPushGroup.keys().toMap()).getWhere();
     }
 
-    private <K extends BaseExpr, Z> CostStat getCost(final QueryJoin pushJoin, final boolean pushLargeDepth, final boolean needNotNulls, MAddMap<BaseJoin, Stat> joinStats, MAddMap<BaseJoin, Cost> indexedStats, final MAddMap<BaseExpr, PropStat> exprStats, MAddMap<BaseJoin, DistinctKeys> keyDistinctStats, ImSet<Edge> edges, final KeyStat keyStat, final StatType type) {
+    private <K extends BaseExpr, Z> CostStat getCost(final QueryJoin pushJoin, final boolean pushLargeDepth, final boolean needNotNulls, MAddMap<BaseJoin, Stat> joinStats, MAddMap<BaseJoin, Cost> indexedStats, final MAddMap<BaseExpr, PropStat> exprStats, MAddMap<BaseJoin, DistinctKeys> keyDistinctStats, ImSet<Edge> edges, final KeyStat keyStat, final StatType type, DebugInfoWriter debugInfoWriter) {
         CostStat result;
         CostStat pushCost = null;
         assert joinStats.size() > 0;
@@ -999,7 +1010,8 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         List<Collection<Edge<K>>> edgesOut = treeBuilding.getAdjList();
         
         // отдельно считаем cost
-        final GreedyTreeBuilding.CalculateCost<BaseJoin, CostStat, Edge<K>> costCalc = getCostFunc(pushJoin, exprStats, needNotNulls, keyStat, type, costs, edgesOut, edgesIn);
+        final GreedyTreeBuilding.CalculateCost<BaseJoin, CostStat, Edge<K>> costCalc = getCostFunc(pushJoin, exprStats, needNotNulls, keyStat, type, costs, edgesOut, edgesIn, debugInfoWriter != null);
+        treeBuilding.debugInfoWriter = debugInfoWriter;
         
         GreedyTreeBuilding.TreeNode<BaseJoin, CostStat> compute;
         if (pushJoin != null) {
@@ -1022,10 +1034,10 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
     }
 
     private static MergeCostStat max = new MergeCostStat(null, null, null, null, null, null, null, null, 0
-//                                                            , null, null, null, null, null
+                                                            , null
                                                         );
 
-    private static <K extends BaseExpr, Z> GreedyTreeBuilding.CalculateCost<BaseJoin, CostStat, Edge<K>> getCostFunc(final QueryJoin pushJoin, final MAddMap<BaseExpr, PropStat> exprStats, final boolean needNotNulls, final KeyStat keyStat, final StatType type, final List<CostStat> costs, final List<Collection<Edge<K>>> edgesOut, final List<Collection<Edge<K>>> edgesIn) {
+    private static <K extends BaseExpr, Z> GreedyTreeBuilding.CalculateCost<BaseJoin, CostStat, Edge<K>> getCostFunc(final QueryJoin pushJoin, final MAddMap<BaseExpr, PropStat> exprStats, final boolean needNotNulls, final KeyStat keyStat, final StatType type, final List<CostStat> costs, final List<Collection<Edge<K>>> edgesOut, final List<Collection<Edge<K>>> edgesIn, final boolean debugEnabled) {
         return new GreedyTreeBuilding.CalculateCost<BaseJoin, CostStat, Edge<K>>() {
 
                 @Override
@@ -1094,7 +1106,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
 
                     return new MergeCostStat(newCost, newStat, newInJoins, newAdjJoins,
                             aCost, bCost, aAdjStat, bAdjStat, aCostStat.getJoins().size() + bCostStat.getJoins().size()
-//                            , aCostStat, bCostStat, aEdgeStats, bEdgeStats, edgesList
+                            , debugEnabled ? new MergeCostStat.DebugInfo(aCostStat, bCostStat, aEdgeStats, bEdgeStats, edgesList) : null
                     );
                 }
 
@@ -1343,7 +1355,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
                     return new MergeCostStat(newCost, null, newStat, newInJoins, newAdjJoins,
                             aCost, bBaseCost, aAdjStat, bAdjStat, newJoinStats.size(),
                             newJoinStats, newKeyStats, newPropStats, newPushCosts, newUsedNotNulls
-//                            , aCostStat, bCostStat, aEdgeStats, bEdgeStats, edgesList
+                            , debugEnabled ? new MergeCostStat.DebugInfo(aCostStat, bCostStat, aEdgeStats, bEdgeStats, edgesList) : null
                                             );
                 }
         };
@@ -1617,7 +1629,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         return upWhere.getWhere(translator).and(result);
     }
 
-    public <K extends BaseExpr, Z extends Expr> Where getCostPushWhere(final QueryJoin<Z, ?, ?, ?> queryJoin, boolean pushLargeDepth, UpWheres<WhereJoin> upWheres, KeyStat keyStat, final StatType type, KeyEqual keyEqual) {
+    public <K extends BaseExpr, Z extends Expr> Where getCostPushWhere(final QueryJoin<Z, ?, ?, ?> queryJoin, boolean pushLargeDepth, UpWheres<WhereJoin> upWheres, KeyStat keyStat, final StatType type, KeyEqual keyEqual, DebugInfoWriter debugInfoWriter) {
         WhereJoins adjWhereJoins = this;
         if(!keyEqual.isEmpty()) { // для оптимизации
             Result<UpWheres<WhereJoin>> equalUpWheres = new Result<>();
@@ -1626,7 +1638,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
             upWheres = adjWhereJoins.andUpWheres(upWheres, equalUpWheres.result); // можно было бы по идее просто слить addExcl, но на всякий случай сделаем в общем случае
             keyStat = keyEqual.getKeyStat(keyStat);
         }
-        return adjWhereJoins.getCostPushWhere(queryJoin, pushLargeDepth, upWheres, keyEqual.getKeyStat(keyStat), type, (Result<Pair<ImRevMap<Z,KeyExpr>,Where>>) null);
+        return adjWhereJoins.getCostPushWhere(queryJoin, pushLargeDepth, upWheres, keyEqual.getKeyStat(keyStat), type, (Result<Pair<ImRevMap<Z,KeyExpr>,Where>>) null, debugInfoWriter);
     }
 
     public <K extends BaseExpr> StatKeys<K> getStatKeys(ImSet<K> groups, final KeyStat keyStat, StatType type, final KeyEqual keyEqual) {
@@ -1722,9 +1734,9 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
     // !!! ТЕОРЕТИЧЕСКИ НЕСМОТРЯ НА REMOVE из-за паковки может проталкивать бесконечно (впоследствии нужен будет GUARD), например X = L(G1 + G2) AND (G1 OR G2) спакуется в X = L(G1 + G2) AND (G1' OR G2) , (а не L(G1' + G2), и будет G1 проталкивать бесконечно)
     //  но это очень редкая ситуация и важно проследить за ее природой, так как возможно есть аналогичные assertion'ы
     // может неправильно проталкивать в случае если скажем есть документы \ строки, строки "материализуются" и если они опять будут группироваться по документу, информация о том что он один уже потеряется
-    public <K extends Expr, T extends Expr> Where getPushWhere(UpWheres<WhereJoin> upWheres, QueryJoin<K, ?, ?, ?> pushJoin, boolean pushLargeDepth, boolean isInner, KeyStat keyStat, Result<Pair<ImRevMap<K, KeyExpr>, Where>> pushJoinWhere) {
+    public <K extends Expr, T extends Expr> Where getPushWhere(UpWheres<WhereJoin> upWheres, QueryJoin<K, ?, ?, ?> pushJoin, boolean pushLargeDepth, boolean isInner, KeyStat keyStat, Result<Pair<ImRevMap<K, KeyExpr>, Where>> pushJoinWhere, DebugInfoWriter debugInfoWriter) {
         Result<UpWheres<WhereJoin>> adjUpWheres = new Result<>(upWheres);
-        return getWhereJoins(pushJoin, isInner, adjUpWheres).getCostPushWhere(pushJoin, pushLargeDepth, adjUpWheres.result, keyStat, StatType.PUSH_OUTER(), pushJoinWhere);
+        return getWhereJoins(pushJoin, isInner, adjUpWheres).getCostPushWhere(pushJoin, pushLargeDepth, adjUpWheres.result, keyStat, StatType.PUSH_OUTER(), pushJoinWhere, debugInfoWriter);
     }
 
     private <K extends Expr> WhereJoins getWhereJoins(QueryJoin<K, ?, ?, ?> pushJoin, boolean isInner, Result<UpWheres<WhereJoin>> upWheres) {
@@ -1798,7 +1810,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
     }
 
     // IsClassJoin, limitHeur, indexNotNulls
-    public Where fillExtraInfo(UpWheres<WhereJoin> upWheres, MCol<String> whereSelect, Result<Cost> mBaseCost, Result<Stat> mRows, CompileSource source, ImSet<KeyExpr> keys, KeyStat keyStat, LimitOptions limit, ImOrderSet<Expr> orders) {
+    public Where fillExtraInfo(UpWheres<WhereJoin> upWheres, MCol<String> whereSelect, Result<Cost> mBaseCost, Result<Stat> mRows, CompileSource source, ImSet<KeyExpr> keys, KeyStat keyStat, LimitOptions limit, ImOrderSet<Expr> orders, DebugInfoWriter debugInfoWriter) {
         // не совсем понятно зачем isClassJoin явно обрабатывать
         Where innerWhere = Where.TRUE;
 //        for (WhereJoin where : getAdjWheres()) {
@@ -1811,7 +1823,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
 
         StatType statType = StatType.COMPILE;
         Result<ImSet<BaseExpr>> usedNotNulls = source.syntax.hasNotNullIndexProblem() ? new Result<ImSet<BaseExpr>>() : null;
-        StatKeys<KeyExpr> statKeys = getStatKeys(keys, null, keyStat, statType, usedNotNulls);// newNotNull
+        StatKeys<KeyExpr> statKeys = getStatKeys(keys, null, keyStat, statType, usedNotNulls, debugInfoWriter);// newNotNull
 
         Cost baseCost = statKeys.getCost();
         Stat stat = statKeys.getRows();
@@ -1826,7 +1838,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
                 Expr order = orders.get(i);
                 if(order instanceof BaseExpr) {
                     whereJoins = whereJoins.and(new WhereJoins(new ExprStatJoin((BaseExpr)order, Stat.ONE)));
-                    statKeys = whereJoins.getStatKeys(keys, null, keyStat, statType, usedNotNulls);
+                    statKeys = whereJoins.getStatKeys(keys, null, keyStat, statType, usedNotNulls, debugInfoWriter);
 
                     Cost newBaseCost = statKeys.getCost();
                     Stat newStat = statKeys.getRows();

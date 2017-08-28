@@ -21,6 +21,7 @@ import lsfusion.server.data.query.stat.StatKeys;
 import lsfusion.server.data.query.stat.WhereJoin;
 import lsfusion.server.data.query.stat.WhereJoins;
 import lsfusion.server.data.where.Where;
+import lsfusion.utils.DebugInfoWriter;
 
 public class GroupJoinsWhere extends GroupWhere<GroupJoinsWhere> {
 
@@ -48,8 +49,13 @@ public class GroupJoinsWhere extends GroupWhere<GroupJoinsWhere> {
         return getStatKeys(groups, type, StatKeys.<KeyExpr>NOPUSH());
     }
 
-    public <K extends BaseExpr, Z extends Expr> Where getCostPushWhere(final QueryJoin<Z, ?, ?, ?> queryJoin, boolean pushLargeDepth, final StatType type) {
-        return joins.getCostPushWhere(queryJoin, pushLargeDepth, upWheres, where, type, keyEqual);   
+    public <K extends BaseExpr, Z extends Expr> Where getCostPushWhere(final QueryJoin<Z, ?, ?, ?> queryJoin, boolean pushLargeDepth, final StatType type, DebugInfoWriter debugInfoWriter) {
+        return joins.getCostPushWhere(queryJoin, pushLargeDepth, upWheres, where, type, keyEqual, debugInfoWriter);   
+    }
+
+    @Override
+    public String toString() {
+        return joins.toString() + " " + keyEqual;
     }
 
     public boolean isComplex() {

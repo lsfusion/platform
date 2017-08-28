@@ -43,6 +43,7 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.OrWhere;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassExprWhere;
+import lsfusion.utils.DebugInfoWriter;
 
 import java.util.Collection;
 import java.util.Iterator;
@@ -225,13 +226,15 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
 
     public String getExprSource(final CompileSource source, SubQueryContext subcontext) {
 
+        DebugInfoWriter debugInfoWriter = null;
+        
         final Result<ImMap<Expr,String>> fromPropertySelect = new Result<>();
         Result<ImCol<String>> fromWhereSelect = new Result<>(); // проверить crossJoin
         Result<ImMap<String, SQLQuery>> subQueries = new Result<>();
         lsfusion.server.data.query.Query<KeyExpr,Expr> subQuery = new lsfusion.server.data.query.Query<>(getInner().getQueryKeys().toRevMap(),
                 group.keys().addExcl(query.getExprs()).toMap(), getInner().getFullWhere());
-        CompiledQuery<KeyExpr, Expr> compiled = subQuery.compile(new CompileOptions<Expr>(source.syntax, subcontext));
-        String fromSelect = compiled.fillSelect(new Result<ImMap<KeyExpr, String>>(), fromPropertySelect, fromWhereSelect, subQueries, source.params, null);
+        CompiledQuery<KeyExpr, Expr> compiled = subQuery.compile(new CompileOptions<Expr>(source.syntax, subcontext, debugInfoWriter != null));
+        String fromSelect = compiled.fillSelect(new Result<ImMap<KeyExpr, String>>(), fromPropertySelect, fromWhereSelect, subQueries, source.params, null, DebugInfoWriter.pushPrefix(debugInfoWriter, "GROUP EXPR"));
         
         ImCol<String> whereSelect = fromWhereSelect.result.mergeCol(group.mapColValues(new GetKeyValue<String, Expr, BaseExpr>() {
             public String getMapValue(Expr key, BaseExpr value) {

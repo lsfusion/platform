@@ -1408,7 +1408,13 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     }
 
     private <OE, S extends DynamicExecEnvSnapshot<OE, S>> int executeDML(SQLExecute<OE, S> execute) throws SQLException, SQLHandledException {
-        return executeDML(execute.command, execute.owner, execute.tableOwner, execute.params, execute.queryExecEnv, execute.outerEnv, execute.pureTime, execute.transactTimeout, execute.registerChange);
+        LazySQLDebugInfo debugInfo = execute.debugInfo;
+        LazySQLDebugInfo prevDebugInfo = LazySQLDebugInfo.pushStack(debugInfo);
+        try {
+            return executeDML(execute.command, execute.owner, execute.tableOwner, execute.params, execute.queryExecEnv, execute.outerEnv, execute.pureTime, execute.transactTimeout, execute.registerChange);
+        } finally {
+            LazySQLDebugInfo.popStack(debugInfo, prevDebugInfo);
+        }
     }
 
     private static Map<Integer, Boolean> explainUserMode = MapFact.getGlobalConcurrentHashMap();
@@ -1561,6 +1567,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
                         explainLogger.info(ExceptionUtils.getStackTrace());
                     for (String outRow : out)
                         explainLogger.info(outRow);
+                    
+                    LazySQLDebugInfo.outCompileDebugInfo();
                 } //else {
                 //  explainLogger.info(rtime);
                 //}

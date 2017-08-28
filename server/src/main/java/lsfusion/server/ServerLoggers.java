@@ -59,6 +59,8 @@ public class ServerLoggers {
     
     public static final Logger explainLogger = Logger.getLogger("ExplainLogger");
     
+    public static final Logger explainCompileLogger = Logger.getLogger("ExplainCompileLogger");
+    
     public static final Logger startLogger = Logger.getLogger("StartLogger");
 
     public static final Logger schedulerLogger = Logger.getLogger("SchedulerLogger");

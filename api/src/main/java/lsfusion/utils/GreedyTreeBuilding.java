@@ -334,14 +334,14 @@ public class GreedyTreeBuilding<V, C extends Comparable<C>, E extends GreedyTree
                 complexEdge.setCost(edgeCost, true);
                 queue.add(complexEdge);
 
-                if(debugEnabled) {
-                    System.out.println("INIT NODES : " + complexEdge.cost + ", index : " + BaseUtils.indexOf(queue, complexEdge));
+                if(debugInfoWriter != null) {
+                    debugInfoWriter.addLines("INIT NODES : " + complexEdge.cost + ", index : " + BaseUtils.indexOf(queue, complexEdge));
                 }
             }
         }
     }
-    
-    private boolean debugEnabled;
+
+    public DebugInfoWriter debugInfoWriter;
 
     private ComplexEdge<V, C, E> getMinimumEdge(Set<Node<V, C>> deleted, CalculateCost<V, C, E> functor) {
         while (!queue.isEmpty()) {
@@ -357,8 +357,8 @@ public class GreedyTreeBuilding<V, C extends Comparable<C>, E extends GreedyTree
                     }
                 } 
                 
-                if(debugEnabled) {
-                    System.out.println("PICK UP : " + nextEdge.cost);
+                if(debugInfoWriter != null) {
+                    debugInfoWriter.addLines("PICK UP : " + nextEdge.cost);
                 }
                 
                 return nextEdge;
@@ -401,8 +401,8 @@ public class GreedyTreeBuilding<V, C extends Comparable<C>, E extends GreedyTree
                 adjMatrix.get(i).add(newEdge);
                 queue.add(newEdge);
                 
-                if(debugEnabled) {
-                    System.out.println("JOIN NODES : " + newEdge.cost + ", index : " + BaseUtils.indexOf(queue, newEdge));
+                if(debugInfoWriter != null) {
+                    debugInfoWriter.addLines("JOIN NODES : " + newEdge.cost + ", index : " + BaseUtils.indexOf(queue, newEdge));
                 }
             }
         }
@@ -598,6 +598,9 @@ public class GreedyTreeBuilding<V, C extends Comparable<C>, E extends GreedyTree
                 result.cutNode = curNode;
                 result.cutVertexCount = cutTreeSize;
                 goDeeper = false;
+
+                if(debugInfoWriter != null)
+                    debugInfoWriter.addLines("CUT : " + result.cost);
             }
             expandTree(parentNode.parent, parentNode, siblingNode);
         }

@@ -46,7 +46,8 @@ public class ModifyQuery {
         String update;
         String setString;
         ImCol<String> whereSelect;
-        final CompiledQuery<KeyField, PropertyField> changeCompile = change.compile(new CompileOptions<>(syntax, table.getPropTypes()));
+        CompileOptions<PropertyField> options = new CompileOptions<>(syntax, table.getPropTypes());
+        final CompiledQuery<KeyField, PropertyField> changeCompile = change.compile(options);
 
         switch(updateModel) {
             case 2:
@@ -111,7 +112,7 @@ public class ModifyQuery {
         }
 
         SQLDML dml = new SQLDML(update, changeCompile.sql.baseCost, changeCompile.sql.subQueries, changeCompile.sql.env, changeCompile.sql.recursionFunction);
-        return new SQLExecute(dml,changeCompile.getQueryParams(env), changeCompile.getQueryExecEnv(userProvider), env.getTransactTimeout(), env.getOpOwner(), owner, register(TableChange.UPDATE));
+        return new SQLExecute(dml,changeCompile.getQueryParams(env), changeCompile.getQueryExecEnv(userProvider), env.getTransactTimeout(), env.getOpOwner(), owner, register(TableChange.UPDATE), new LazySQLDebugInfo<>(change, options));
     }
 
     public SQLExecute getDelete(final SQLSyntax syntax, SQLSessionUserProvider userProvider) {
@@ -120,7 +121,8 @@ public class ModifyQuery {
         // noInline'ом пытаемся предотвратить self join у которого все очень плохо со статистикой
         // конечно из-за этого может быть проблема когда изменяемая таблица маленькая, а запрос большой, но в таком случае все равно будет проблема с predicate push down, поэтому будем assert'ить что такой ситуации не будет
         // вообще аналогичная проблема возможна и в getUpdate, но пока с ней не сталкивались
-        final CompiledQuery<KeyField, PropertyField> deleteCompile = change.compile(new CompileOptions<PropertyField>(syntax, syntax.inlineSelfJoinTrouble() && Settings.get().isUseDeleteNoInline()));
+        CompileOptions<PropertyField> options = new CompileOptions<>(syntax, syntax.inlineSelfJoinTrouble() && Settings.get().isUseDeleteNoInline());
+        final CompiledQuery<KeyField, PropertyField> deleteCompile = change.compile(options);
         ImSet<String> whereSelect;
         String delete; final String deleteAlias;
 
@@ -151,7 +153,7 @@ public class ModifyQuery {
         }
 
         SQLDML dml = new SQLDML(delete, deleteCompile.sql.baseCost, deleteCompile.sql.subQueries, deleteCompile.sql.env, deleteCompile.sql.recursionFunction);
-        return new SQLExecute(dml, deleteCompile.getQueryParams(env), deleteCompile.getQueryExecEnv(userProvider), env.getTransactTimeout(), env.getOpOwner(), owner, register(TableChange.DELETE));
+        return new SQLExecute(dml, deleteCompile.getQueryParams(env), deleteCompile.getQueryExecEnv(userProvider), env.getTransactTimeout(), env.getOpOwner(), owner, register(TableChange.DELETE), new LazySQLDebugInfo<>(change, options));
     }
 
     private RegisterChange register(TableChange coeff) {
@@ -190,10 +192,11 @@ public class ModifyQuery {
     }
 
     public static SQLExecute getInsertSelect(String name, IQuery<KeyField, PropertyField> query, QueryEnvironment env, TableOwner owner, SQLSyntax syntax, SQLSessionUserProvider userProvider, Table table, RegisterChange change, int selectTop) {
-        CompiledQuery<KeyField, PropertyField> changeCompile = query.compile(new CompileOptions<>(syntax, table != null ? table.getPropTypes() : null, selectTop));
+        CompileOptions<PropertyField> options = new CompileOptions<>(syntax, table != null ? table.getPropTypes() : null, selectTop);
+        CompiledQuery<KeyField, PropertyField> changeCompile = query.compile(options);
 
         SQLDML dml = changeCompile.sql.getInsertDML(name, changeCompile.keyOrder, changeCompile.propertyOrder, true, changeCompile.keyOrder.mapOrder(changeCompile.keyNames), changeCompile.propertyOrder.mapOrder(changeCompile.propertyNames), syntax);
-        return new SQLExecute(dml, changeCompile.getQueryParams(env, selectTop), changeCompile.getQueryExecEnv(userProvider), env.getTransactTimeout(), env.getOpOwner(), owner, change);
+        return new SQLExecute(dml, changeCompile.getQueryParams(env, selectTop), changeCompile.getQueryExecEnv(userProvider), env.getTransactTimeout(), env.getOpOwner(), owner, change, new LazySQLDebugInfo<>(query, options));
     }
 
     public SQLExecute getInsertSelect(SQLSyntax syntax, SQLSessionUserProvider userProvider) {

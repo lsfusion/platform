@@ -60,7 +60,16 @@ public abstract class IQuery<K,V> extends AbstractInnerContext<IQuery<K, V>> imp
 
     @StackMessage("{message.query.execute}")
     public void executeSQL(SQLSession session, ImOrderMap<V, Boolean> orders, int selectTop, QueryEnvironment env, ResultHandler<K, V> result) throws SQLException, SQLHandledException {
-        compile(orders, new CompileOptions<V>(session.syntax, LimitOptions.get(selectTop))).execute(session, env, selectTop, result);
+        CompileOptions<V> options = new CompileOptions<>(session.syntax, LimitOptions.get(selectTop), SubQueryContext.EMPTY);
+        CompiledQuery<K, V> compile = compile(orders, options);
+
+        LazySQLDebugInfo<K, V> debugInfo = new LazySQLDebugInfo<>(this, options);
+        LazySQLDebugInfo prevDebugInfo = LazySQLDebugInfo.pushStack(debugInfo);
+        try {
+            compile.execute(session, env, selectTop, result);
+        } finally {
+            LazySQLDebugInfo.popStack(debugInfo, prevDebugInfo);
+        }
     }
 
     public abstract <B> ClassWhere<B> getClassWhere(ImSet<? extends V> classProps);
