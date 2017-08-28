@@ -21,6 +21,7 @@ CSS файл, предназначенный для изменения стил�
     border-spacing: 0px;
     border-radius: 3px;
     border: solid 1px #ccc; 
+    table-layout: fixed;
 }
 
 .highlighttable td { 
@@ -29,8 +30,10 @@ CSS файл, предназначенный для изменения стил�
 }  
 
 .highlighttable td:first-child { 
-    width: 40px;
+    width: 45px;
     border-right: solid 1px #ccc; 
+    background-color: #f0f0f0;
+    vertical-align: top;
 }
 
 .highlighttable pre {
@@ -42,11 +45,11 @@ CSS файл, предназначенный для изменения стил�
     text-align: right;
     color: #707070; 
     padding-top: 10px;
-    padding-bottom: 10px;
 }
 
 .highlight {
     padding: 10px;
+    overflow-x: auto;
 }
 
 .highlight span:first-child {
