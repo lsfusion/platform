@@ -63,12 +63,12 @@ public abstract class IQuery<K,V> extends AbstractInnerContext<IQuery<K, V>> imp
         CompileOptions<V> options = new CompileOptions<>(session.syntax, LimitOptions.get(selectTop), SubQueryContext.EMPTY);
         CompiledQuery<K, V> compile = compile(orders, options);
 
-        LazySQLDebugInfo<K, V> debugInfo = new LazySQLDebugInfo<>(this, options);
-        LazySQLDebugInfo prevDebugInfo = LazySQLDebugInfo.pushStack(debugInfo);
+        SQLDebugInfo<K, V> debugInfo = new SQLDebugInfo<>(this, options);
+        SQLDebugInfo prevDebugInfo = SQLDebugInfo.pushStack(debugInfo);
         try {
             compile.execute(session, env, selectTop, result);
         } finally {
-            LazySQLDebugInfo.popStack(debugInfo, prevDebugInfo);
+            SQLDebugInfo.popStack(debugInfo, prevDebugInfo);
         }
     }
 

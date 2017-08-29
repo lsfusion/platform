@@ -1408,12 +1408,12 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     }
 
     private <OE, S extends DynamicExecEnvSnapshot<OE, S>> int executeDML(SQLExecute<OE, S> execute) throws SQLException, SQLHandledException {
-        LazySQLDebugInfo debugInfo = execute.debugInfo;
-        LazySQLDebugInfo prevDebugInfo = LazySQLDebugInfo.pushStack(debugInfo);
+        SQLDebugInfo debugInfo = execute.debugInfo;
+        SQLDebugInfo prevDebugInfo = SQLDebugInfo.pushStack(debugInfo);
         try {
             return executeDML(execute.command, execute.owner, execute.tableOwner, execute.params, execute.queryExecEnv, execute.outerEnv, execute.pureTime, execute.transactTimeout, execute.registerChange);
         } finally {
-            LazySQLDebugInfo.popStack(debugInfo, prevDebugInfo);
+            SQLDebugInfo.popStack(debugInfo, prevDebugInfo);
         }
     }
 
@@ -1561,14 +1561,17 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
                 }
                 double ttime = BaseUtils.nullAdd(rtime, ptime);
                 if (noAnalyze || thr == 0 || ttime >= thr) {
-                    explainLogger.info(statement.toString() + " disabled nested loop : " + isDisabledNestLoop + " actual time : " + actualTime);
-                    explainLogger.info(ExecutionStackAspect.getStackString());
+                    String statementInfo = statement.toString() + " disabled nested loop : " + isDisabledNestLoop + " actual time : " + actualTime + '\n' +
+                                            ExecutionStackAspect.getStackString();
                     if (Settings.get().isExplainJavaStack())
-                        explainLogger.info(ExceptionUtils.getStackTrace());
+                        statementInfo += '\n' + ExceptionUtils.getStackTrace();
+                    explainLogger.info(statementInfo);
+
                     for (String outRow : out)
-                        explainLogger.info(outRow);
-                    
-                    LazySQLDebugInfo.outCompileDebugInfo();
+                        explainLogger.info(outRow); // выводим время, чтобы видеть, что идет тот же запрос (когда очень большой запрос)
+
+                    if(Settings.get().isExplainCompile())
+                        SQLDebugInfo.outCompileDebugInfo(statementInfo);
                 } //else {
                 //  explainLogger.info(rtime);
                 //}

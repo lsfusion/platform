@@ -112,7 +112,7 @@ public class ModifyQuery {
         }
 
         SQLDML dml = new SQLDML(update, changeCompile.sql.baseCost, changeCompile.sql.subQueries, changeCompile.sql.env, changeCompile.sql.recursionFunction);
-        return new SQLExecute(dml,changeCompile.getQueryParams(env), changeCompile.getQueryExecEnv(userProvider), env.getTransactTimeout(), env.getOpOwner(), owner, register(TableChange.UPDATE), new LazySQLDebugInfo<>(change, options));
+        return new SQLExecute(dml,changeCompile.getQueryParams(env), changeCompile.getQueryExecEnv(userProvider), env.getTransactTimeout(), env.getOpOwner(), owner, register(TableChange.UPDATE), new SQLDebugInfo<>(change, options));
     }
 
     public SQLExecute getDelete(final SQLSyntax syntax, SQLSessionUserProvider userProvider) {
@@ -153,7 +153,7 @@ public class ModifyQuery {
         }
 
         SQLDML dml = new SQLDML(delete, deleteCompile.sql.baseCost, deleteCompile.sql.subQueries, deleteCompile.sql.env, deleteCompile.sql.recursionFunction);
-        return new SQLExecute(dml, deleteCompile.getQueryParams(env), deleteCompile.getQueryExecEnv(userProvider), env.getTransactTimeout(), env.getOpOwner(), owner, register(TableChange.DELETE), new LazySQLDebugInfo<>(change, options));
+        return new SQLExecute(dml, deleteCompile.getQueryParams(env), deleteCompile.getQueryExecEnv(userProvider), env.getTransactTimeout(), env.getOpOwner(), owner, register(TableChange.DELETE), new SQLDebugInfo<>(change, options));
     }
 
     private RegisterChange register(TableChange coeff) {
@@ -196,7 +196,7 @@ public class ModifyQuery {
         CompiledQuery<KeyField, PropertyField> changeCompile = query.compile(options);
 
         SQLDML dml = changeCompile.sql.getInsertDML(name, changeCompile.keyOrder, changeCompile.propertyOrder, true, changeCompile.keyOrder.mapOrder(changeCompile.keyNames), changeCompile.propertyOrder.mapOrder(changeCompile.propertyNames), syntax);
-        return new SQLExecute(dml, changeCompile.getQueryParams(env, selectTop), changeCompile.getQueryExecEnv(userProvider), env.getTransactTimeout(), env.getOpOwner(), owner, change, new LazySQLDebugInfo<>(query, options));
+        return new SQLExecute(dml, changeCompile.getQueryParams(env, selectTop), changeCompile.getQueryExecEnv(userProvider), env.getTransactTimeout(), env.getOpOwner(), owner, change, new SQLDebugInfo<>(query, options));
     }
 
     public SQLExecute getInsertSelect(SQLSyntax syntax, SQLSessionUserProvider userProvider) {

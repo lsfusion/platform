@@ -1811,6 +1811,16 @@ public class Settings implements Cloneable {
     public void setExplainJavaStack(boolean explainJavaStack) {
         this.explainJavaStack = explainJavaStack;
     }
+    
+    private boolean explainCompile = false;
+
+    public boolean isExplainCompile() {
+        return explainCompile;
+    }
+
+    public void setExplainCompile(boolean explainCompile) {
+        this.explainCompile = explainCompile;
+    }
 
     private boolean disableSyncStatProps = false;
 
