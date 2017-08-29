@@ -468,7 +468,8 @@ public class ImplementTable extends GlobalTable { // последний инте
         calculateStat(reflectionLM, session, null, true);
     }
 
-    public ImMap<String, Pair<Integer, Integer>> calculateStat(ReflectionLogicsModule reflectionLM, DataSession session, ImMap<PropertyField, String> props, boolean top) throws SQLException, SQLHandledException {
+    public Pair<ImMap<String, Integer>, ImMap<String, Pair<Integer, Integer>>> calculateStat(ReflectionLogicsModule reflectionLM, DataSession session, ImMap<PropertyField, String> props, boolean top) throws SQLException, SQLHandledException {
+        ImMap<String, Integer> keyStat = MapFact.EMPTY();
         ImMap<String, Pair<Integer, Integer>> propStats = MapFact.EMPTY();
         if (!SystemProperties.doNotCalculateStats) {
             ImRevMap<KeyField, KeyExpr> mapKeys = getMapKeys();
@@ -518,7 +519,9 @@ public class ImplementTable extends GlobalTable { // последний инте
                     keyObject = session.addObject(reflectionLM.tableKey);
                     reflectionLM.sidTableKey.change(getName() + "." + key.getName(), session, keyObject);
                 }
-                (top ? reflectionLM.quantityTopTableKey : reflectionLM.quantityTableKey).change(BaseUtils.nvl(result.get(key), 0), session, keyObject);
+                Object quantity = BaseUtils.nvl(result.get(key), 0);
+                (top ? reflectionLM.quantityTopTableKey : reflectionLM.quantityTableKey).change(quantity, session, keyObject);
+                keyStat = keyStat.addExcl(getName() + "." + key.getName(), (Integer) quantity);
             }
 
             ImMap<Object, Object> notNulls = mNotNulls.immutable();
@@ -546,7 +549,7 @@ public class ImplementTable extends GlobalTable { // последний инте
                 }
             }
         }
-        return propStats;
+        return Pair.create(keyStat, propStats);
     }
 
     private Where getCountWhere(SQLSession session, Expr quantityTopExpr, Expr quantityNotTopExpr, KeyExpr keyExpr, Integer total, boolean top) throws SQLException, SQLHandledException {

@@ -950,8 +950,8 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
             startLogger.info("Recalculating aggregations");
             recalculateAggregations(getStack(), sql, recalculateProperties, false, startLogger); // перерасчитаем агрегации
+            recalculateProperties.addAll(recalculateStatProperties);
             updateAggregationStats(recalculateProperties, tableStats);
-            updateAggregationStats(recalculateStatProperties, tableStats);
             if(!noTransSyncDB)
                 sql.commitTransaction();
 
@@ -1013,17 +1013,17 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 ImMap<PropertyField, String> fields = MapFact.EMPTY();
                 for(CalcProperty property : properties)
                     fields = fields.addExcl(property.field, property.getCanonicalName());
-                ImMap<String, Pair<Integer, Integer>> propStats;
+                Pair<ImMap<String, Integer>, ImMap<String, Pair<Integer, Integer>>> calculateStatResult;
                 try (DataSession session = createSession()) {
                     long start = System.currentTimeMillis();
                     startLogger.info(String.format("Update Aggregation Stats started: %s", table));
-                    propStats = table.calculateStat(reflectionLM, session, fields, false);
-                    propStats = table.calculateStat(reflectionLM, session, fields, true);
+                    calculateStatResult = table.calculateStat(reflectionLM, session, fields, false);
+                    calculateStatResult = table.calculateStat(reflectionLM, session, fields, true);
                     session.apply(businessLogics, getStack());
                     long time = System.currentTimeMillis() - start;
                     startLogger.info(String.format("Update Aggregation Stats: %s, %sms", table, time));
                 }
-                table.updateStat(tableStats, null, propStats, fields.keys(), false);
+                table.updateStat(tableStats, calculateStatResult.first, calculateStatResult.second, fields.keys(), false);
             }
         }
     }
