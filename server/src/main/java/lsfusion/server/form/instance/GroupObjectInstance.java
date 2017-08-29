@@ -403,7 +403,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
                 return value.getGridClass();
             }});
     }
-    public Where getClassWhere(ImMap<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier, MSet<CalcProperty> mUsedProps) {
+    public Where getClassWhere(ImMap<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier, MSet<CalcProperty> mUsedProps) throws SQLException, SQLHandledException {
         if(noClassFilter)
             return Where.TRUE;
         return IsClassProperty.getWhere(getGridClasses(objects), mapKeys, modifier, mUsedProps);

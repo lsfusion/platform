@@ -1952,6 +1952,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         // очистим, так как в транзакции уже другой механизм используется, и старые increment'ы будут мешать
         clearDataHints(getOwner());
 
+        dataModifier.updateSourceChanges(); // вызываем все getPropertyChanges, чтобы notifySourceChange, так как иначе начнется транзакция и уже ничего не получится обновлять
         return transactApply(BL, stack, interaction, new HashMap<String, Integer>(), 0, applyActions, keepProps, false, System.currentTimeMillis());
     }
     

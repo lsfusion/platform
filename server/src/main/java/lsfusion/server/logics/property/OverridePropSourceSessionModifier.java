@@ -3,6 +3,7 @@ package lsfusion.server.logics.property;
 import lsfusion.base.FullFunctionSet;
 import lsfusion.base.FunctionSet;
 import lsfusion.base.col.SetFact;
+import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.session.IncrementChangeProps;
@@ -47,12 +48,34 @@ public abstract class OverridePropSourceSessionModifier<P extends CalcProperty> 
     protected boolean noUpdateInTransaction() {
         return true;
     }
+    
+    private Boolean isChanged(P changeProp, ImMap<CalcProperty, Boolean> changed) {
+        ImSet<CalcProperty> sourceProperties = getSourceProperties(changeProp);
+        boolean isChanged = false;
+        for(int i=0,size=changed.size();i<size;i++) {
+            boolean dataChanged = changed.getValue(i);
+            if(isChanged && !dataChanged)
+                continue;
+            if(CalcProperty.depends(sourceProperties, changed.getKey(i))) {
+                isChanged = true;
+                if(dataChanged)
+                    return true;
+            }
+        }
+            
+        if(isChanged)
+            return false;
+        return null;
+    }
     @Override
-    protected void notifySourceChange(CalcProperty property, boolean dataChanged) throws SQLException, SQLHandledException {
+    protected void notifySourceChange(ImMap<CalcProperty, Boolean> changed) throws SQLException, SQLHandledException {
         if (overrideProps != null && !(noUpdateInTransaction() && getSQL().isInTransaction())) { // если в транзакции предполагается что все обновится само (в sessionEvent или очистится или откатится, в форме - refresh будет)
             for (CalcProperty changeProp : overrideProps.getProperties()) { // проверка overrideProps != null из-за того что eventChange может идти до конструктора
-                if ((overrideTable == null || !overrideTable.contains(changeProp)) && CalcProperty.depends(getSourceProperties((P)changeProp), property)) {
-                    updateSource((P)changeProp, dataChanged);
+                if (overrideTable == null || !overrideTable.contains(changeProp)) {
+                    Boolean isChanged = isChanged(((P) changeProp), changed);
+                    if (isChanged != null) {
+                        updateSource((P)changeProp, isChanged);
+                    }
                 }
             }
         }

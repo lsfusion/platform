@@ -5,7 +5,7 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.base.col.interfaces.mutable.MSet;
+import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.Settings;
@@ -66,11 +66,9 @@ public abstract class SessionModifier implements Modifier {
         eventDataChanges(properties, FullFunctionSet.<CalcProperty>instance());
     }
 
-    private MSet<CalcProperty> mChanged = SetFact.mSet();
-
     protected void eventChange(CalcProperty property, boolean data, boolean source) throws SQLException, SQLHandledException {
         if(source)
-            mChanged.add(property);
+            addChange(property, data);
 /*        else {
             if(!mChanged.contains(property)) {
                 ModifyChange modifyChange = getModifyChange(property);
@@ -101,18 +99,15 @@ public abstract class SessionModifier implements Modifier {
             }
         }
         
-        if(source)
-            notifySourceChange(property, data);
-
         for(OverrideSessionModifier view : views)
             view.eventChange(property, data, source);
     }
     
-    protected void notifySourceChange(CalcProperty property, boolean data) throws SQLException, SQLHandledException {        
+    protected void notifySourceChange(ImMap<CalcProperty, Boolean> changed) throws SQLException, SQLHandledException {        
     }
 
     protected void eventNoUpdate(CalcProperty property) throws SQLException, SQLHandledException {
-        mChanged.add(property);
+        addChange(property, true);
 
         for(OverrideSessionModifier view : views)
             view.eventChange(property, true, true); // если сюда зашли, значит гарантировано изменили данные
@@ -124,13 +119,23 @@ public abstract class SessionModifier implements Modifier {
     }
 
 
+    private MMap<CalcProperty, Boolean> mChanged = null;
+    private void addChange(CalcProperty property, boolean dataChanged) {
+        if(mChanged == null)
+            mChanged = MapFact.mMap(MapFact.<CalcProperty>or());
+        mChanged.add(property, dataChanged);
+    }
+
     // по сути protected
     protected PropertyChanges propertyChanges = PropertyChanges.EMPTY;
     @ManualLazy
-    public PropertyChanges getPropertyChanges() {
-        ImSet<CalcProperty> changed = mChanged.immutable();
-        if(changed.size()>0) {
-            ImMap<CalcProperty, ModifyChange> replace = changed.mapValues(new GetValue<ModifyChange, CalcProperty>() {
+    public PropertyChanges getPropertyChanges() throws SQLException, SQLHandledException {
+        if(mChanged != null) {
+            ImMap<CalcProperty, Boolean> changed = mChanged.immutable();
+            assert !changed.isEmpty();
+            mChanged = null;
+            
+            ImMap<CalcProperty, ModifyChange> replace = changed.keys().mapValues(new GetValue<ModifyChange, CalcProperty>() {
                 public ModifyChange getMapValue(CalcProperty value) {
                     return getModifyChange(value);
                 }});
@@ -139,9 +144,18 @@ public abstract class SessionModifier implements Modifier {
 //                mChanged = mChanged;
 
             propertyChanges = propertyChanges.replace(replace);
-            mChanged = SetFact.mSet();
+        
+            notifySourceChange(changed);
+            
+            return getPropertyChanges(); // так как source change мог еще раз изменить
         }
         return propertyChanges;
+    }
+
+    public void updateSourceChanges() throws SQLException, SQLHandledException {
+        getPropertyChanges();
+        for(OverrideSessionModifier view : views)
+            view.updateSourceChanges();        
     }
 
     public ImSet<CalcProperty> getHintProps() {
@@ -388,7 +402,7 @@ public abstract class SessionModifier implements Modifier {
         return result;
     }
 
-    public boolean checkPropertyChanges() {
+    public boolean checkPropertyChanges() throws SQLException, SQLHandledException {
         return BaseUtils.hashEquals(getPropertyChanges(), calculatePropertyChanges());
     }
 

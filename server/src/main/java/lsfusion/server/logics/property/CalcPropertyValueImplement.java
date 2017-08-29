@@ -23,7 +23,7 @@ public class CalcPropertyValueImplement<P extends PropertyInterface> extends Cal
         return new PropertyChange<>(expr, mapping);
     }
 
-    public boolean canBeChanged(Modifier modifier) throws SQLException {
+    public boolean canBeChanged(Modifier modifier) throws SQLException, SQLHandledException {
         return !property.getDataChanges(getPropertyChange(property.getChangeExpr()), modifier).isEmpty();
     }
 

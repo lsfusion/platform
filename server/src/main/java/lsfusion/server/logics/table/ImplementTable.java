@@ -133,7 +133,7 @@ public class ImplementTable extends GlobalTable { // последний инте
         orderMapFields = keys.mapOrderMap(mapFields);
     }
 
-    public <P extends PropertyInterface> IQuery<KeyField, CalcProperty> getReadSaveQuery(ImSet<CalcProperty> properties, Modifier modifier) {
+    public <P extends PropertyInterface> IQuery<KeyField, CalcProperty> getReadSaveQuery(ImSet<CalcProperty> properties, Modifier modifier) throws SQLException, SQLHandledException {
         return getReadSaveQuery(properties, modifier.getPropertyChanges());
     }
 

@@ -2752,14 +2752,14 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     }
     
     private final static ThreadLocal<Boolean> wasSessionTableAssertion = new ThreadLocal<>();
-    public static void checkSessionTableAssertion(Modifier modifier) {
+    public static void checkSessionTableAssertion(Modifier modifier) throws SQLException, SQLHandledException {
         if(wasSessionTableAssertion.get() != null) {
             outModifier("ASSERT", modifier);            
             wasSessionTableAssertion.remove();
         }
     }
     
-    public static void outModifier(String info, Modifier modifier) {
+    public static void outModifier(String info, Modifier modifier) throws SQLException, SQLHandledException {
         ServerLoggers.exInfoLogger.info(info + (modifier instanceof SessionModifier ? ((SessionModifier) modifier).out() : "\nDEFAULT") + "\npropertychanges : " + modifier.getPropertyChanges());
     }
 

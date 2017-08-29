@@ -294,7 +294,7 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
                 return value.baseClass;
             }});
     }
-    public Where getClassWhere(ImMap<ObjectEntity, ? extends Expr> mapKeys, Modifier modifier) {
+    public Where getClassWhere(ImMap<ObjectEntity, ? extends Expr> mapKeys, Modifier modifier) throws SQLException, SQLHandledException {
         if(noClassFilter)
             return Where.TRUE;
         return IsClassProperty.getWhere(getGridClasses(getObjects()), mapKeys, modifier, null);

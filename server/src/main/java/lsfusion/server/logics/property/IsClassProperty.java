@@ -14,6 +14,7 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.caches.ManualLazy;
 import lsfusion.server.classes.*;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.ValueExpr;
 import lsfusion.server.data.where.Where;
@@ -29,6 +30,8 @@ import lsfusion.server.logics.property.infer.Inferred;
 import lsfusion.server.session.Modifier;
 import lsfusion.server.session.PropertyChanges;
 import lsfusion.server.session.StructChanges;
+
+import java.sql.SQLException;
 
 public class IsClassProperty extends AggregateProperty<ClassPropertyInterface> {
 
@@ -75,13 +78,13 @@ public class IsClassProperty extends AggregateProperty<ClassPropertyInterface> {
         return getMapProperty(getMapClasses(interfaces));
      }
 
-    public static <T> Where getWhere(ImMap<T, ValueClass> joinClasses, ImMap<T, ? extends Expr> joinImplement, Modifier modifier, MSet<CalcProperty> mUsedProps) {
+    public static <T> Where getWhere(ImMap<T, ValueClass> joinClasses, ImMap<T, ? extends Expr> joinImplement, Modifier modifier, MSet<CalcProperty> mUsedProps) throws SQLException, SQLHandledException {
         CalcPropertyRevImplement<?, T> property = getProperty(joinClasses);
         if(mUsedProps != null)
             mUsedProps.add(property.property);
         return property.mapExpr(joinImplement, modifier.getPropertyChanges(), null).getWhere();
     }
-    public static Where getWhere(ValueClass valueClass, Expr valueExpr, Modifier modifier, MSet<CalcProperty> mUsedProps) {
+    public static Where getWhere(ValueClass valueClass, Expr valueExpr, Modifier modifier, MSet<CalcProperty> mUsedProps) throws SQLException, SQLHandledException {
         CalcPropertyRevImplement<?, String> property = getProperty(valueClass, "value");
         if(mUsedProps != null)
             mUsedProps.add(property.property);

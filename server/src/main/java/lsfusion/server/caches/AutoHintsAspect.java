@@ -79,7 +79,7 @@ public class AutoHintsAspect {
         private final ImMap<CalcProperty, Byte> usedHints;
         private final ImMap<CalcProperty, ValuesContext> usedPrereads;
 
-        public AutoHintImplement(CalcProperty<P> property, ImMap<P, Expr> joinImplement, SessionModifier modifier) {
+        public AutoHintImplement(CalcProperty<P> property, ImMap<P, Expr> joinImplement, SessionModifier modifier) throws SQLException, SQLHandledException {
             usedChanges = property.getUsedChanges(modifier.getPropertyChanges());
             this.joinImplement = joinImplement;
 
@@ -212,21 +212,22 @@ public class AutoHintsAspect {
     }
 
     private Object proceed(ProceedingJoinPoint thisJoinPoint, SessionModifier sessionModifier, Result<Hint> resultHint) throws Throwable {
+        SessionModifier prevModifier = catchAutoHint.get();
         catchAutoHint.set(sessionModifier);
         Object result;
         try {
             result = thisJoinPoint.proceed();
             assert catchAutoHint.get()==sessionModifier;
-            catchAutoHint.set(null);
 //                        assert cacheHint == null; вообще не работает так как могла вычислится с другим modifier'ом и закэшироваться
             return result; // ничего не пишем в кэш
         } catch (HintException e) {
             Hint hint = e.hint;
             assert catchAutoHint.get()==sessionModifier;
-            catchAutoHint.set(null);
 
             resultHint.set(hint);
             return null;
+        } finally {
+            catchAutoHint.set(prevModifier);
         }
     }
 

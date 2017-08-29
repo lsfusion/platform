@@ -399,6 +399,16 @@ public class MapFact {
     public static <K> AddValue<K, Integer> max() {
         return (AddValue<K, Integer>) max;
     }
+    
+    private final static AddValue<Object, Boolean> or = new SymmAddValue<Object, Boolean>() {
+        @Override
+        public Boolean addValue(Object key, Boolean prevValue, Boolean newValue) {
+            return prevValue || newValue;
+        }
+    };            
+    public static <K> AddValue<K, Boolean> or() {
+        return (AddValue<K, Boolean>) or;
+    }
 
     private final static AddValue<Object, Object> keepNewRef = new SimpleAddValue<Object, Object>() {
         public Object addValue(Object key, Object prevValue, Object newValue) {

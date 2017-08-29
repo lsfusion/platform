@@ -775,7 +775,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
                 getClassWhere(Collections.singleton("value")).getSingleWhere("value").getOr().getCommonClass();*/
     }
 
-    public boolean hasChanges(Modifier modifier) {
+    public boolean hasChanges(Modifier modifier) throws SQLException, SQLHandledException {
         return hasChanges(modifier.getPropertyChanges());
     }
     public boolean hasChanges(PropertyChanges propChanges) {
@@ -1182,7 +1182,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         return calculateUsedDataChanges(propChanges);
     }
 
-    public DataChanges getDataChanges(PropertyChange<T> change, Modifier modifier) {
+    public DataChanges getDataChanges(PropertyChange<T> change, Modifier modifier) throws SQLException, SQLHandledException {
         return getDataChanges(change, modifier.getPropertyChanges());
     }
 
