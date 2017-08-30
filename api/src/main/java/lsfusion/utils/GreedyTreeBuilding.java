@@ -351,8 +351,11 @@ public class GreedyTreeBuilding<V, C extends Comparable<C>, E extends GreedyTree
                     C oldCost = nextEdge.getCost();
                     C cost = functor.calculate(nextEdge.getFrom(), nextEdge.getTo(), nextEdge.simpleEdges);
                     nextEdge.setCost(cost, false);
-                    if (oldCost.compareTo(cost) < 0) {
+                    if (oldCost.compareTo(cost) < 0) {                        
                         queue.add(nextEdge);
+                        if(debugInfoWriter != null) {
+                            debugInfoWriter.addLines("JOIN NODES ADJUSTED : " + nextEdge.cost + ", index : " + BaseUtils.indexOf(queue, nextEdge));
+                        }
                         continue;
                     }
                 } 
@@ -399,10 +402,10 @@ public class GreedyTreeBuilding<V, C extends Comparable<C>, E extends GreedyTree
                 ComplexEdge<V, C, E> newEdge = new ComplexEdge<>(newTreeNode.node, nodes.get(i), edges, cost, true);
                 adjMatrix.get(newIndex).set(i, newEdge);
                 adjMatrix.get(i).add(newEdge);
-                queue.add(newEdge);
                 
+                queue.add(newEdge);                
                 if(debugInfoWriter != null) {
-                    debugInfoWriter.addLines("JOIN NODES : " + newEdge.cost + ", index : " + BaseUtils.indexOf(queue, newEdge));
+                    debugInfoWriter.addLines("JOIN NODES LOWER : " + newEdge.cost + ", index : " + BaseUtils.indexOf(queue, newEdge));
                 }
             }
         }
