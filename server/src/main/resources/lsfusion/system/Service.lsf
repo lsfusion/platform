@@ -318,6 +318,17 @@ FORM reflectionProperties 'Настройки свойств'
     PROPERTIES (r) name READONLY, value READONLY, defaultValue READONLY, baseValue
 ;
 
+selectedRowBackgroundColor 'Цвет фона ряда при выделении' = DATA COLOR (User);
+overrideSelectedRowBackgroundColor 'Цвет фона ряда при выделении' = OVERRIDE selectedRowBackgroundColor(currentUser()), selectedRowBackgroundColor(), RGB(249, 249, 255);
+selectedRowBorderColor 'Цвет границы ряда при выделении' = DATA COLOR (User);
+overrideSelectedRowBorderColor 'Цвет границы ряда при выделении' = OVERRIDE selectedRowBorderColor(currentUser()), selectedRowBorderColor(), RGB(175, 175, 255);
+selectedCellBackgroundColor 'Цвет фона ячейки при выделении' = DATA COLOR (User);
+overrideSelectedCellBackgroundColor 'Цвет фона ячейки при выделении' = OVERRIDE selectedCellBackgroundColor(currentUser()), selectedCellBackgroundColor(), RGB(237, 238, 244);
+focusedCellBackgroundColor 'Цвет фона ячейки при фокусировании' = DATA COLOR (User);
+overrideFocusedCellBackgroundColor 'Цвет фона ячейки при фокусировании' = OVERRIDE focusedCellBackgroundColor(currentUser()), focusedCellBackgroundColor(), RGB(237, 238, 244);
+focusedCellBorderColor 'Цвет границы ячейки при фокусировании' = DATA COLOR (User);
+overrideFocusedCellBorderColor 'Цвет границы ячейки при фокусировании' = OVERRIDE focusedCellBorderColor(currentUser()), focusedCellBorderColor(), RGB(98, 98, 255);
+
 FORM admin 'Администрирование'
     PROPERTIES() currentDate, defaultBackgroundColor, defaultForegroundColor, 
                  selectedRowBackgroundColor, selectedRowBorderColor, selectedCellBackgroundColor, focusedCellBackgroundColor, focusedCellBorderColor,
@@ -332,7 +343,9 @@ FORM admin 'Администрирование'
                  disableTILMode, hostnameServerComputer, reupdateMode, singleTransaction,
                  turnExplainAnalizeOnCurrentUser, clearApplicationLog
     OBJECTS u=User
-    PROPERTIES(u) name READONLY, nameMainRole, explainAnalyzeMode, explainMode, loggerDebugEnabled, remoteLoggerDebugEnabled, remoteExLogEnabled, remotePausableLogEnabled, nameExecEnv, volatileStatsEnabled;
+    PROPERTIES(u) name READONLY, nameMainRole, explainAnalyzeMode, explainMode, loggerDebugEnabled, remoteLoggerDebugEnabled, remoteExLogEnabled, remotePausableLogEnabled, nameExecEnv, volatileStatsEnabled
+    OBJECTS uc=User
+    PROPERTIES(uc) name READONLY, selectedRowBackgroundColor, selectedRowBorderColor, selectedCellBackgroundColor, focusedCellBackgroundColor, focusedCellBorderColor;
 ;
 
 DESIGN admin {
@@ -376,17 +389,7 @@ DESIGN admin {
                     MOVE PROPERTY(reportCharWidth());
                     MOVE PROPERTY(reportRowHeight());
                     MOVE PROPERTY(reportNotToStretch());
-                }        
-                NEW colors {
-                    caption = 'Цвета';
-                    MOVE PROPERTY(defaultBackgroundColor());
-                    MOVE PROPERTY(defaultForegroundColor());
-                    MOVE PROPERTY(selectedRowBackgroundColor());
-                    MOVE PROPERTY(selectedRowBorderColor());
-                    MOVE PROPERTY(selectedCellBackgroundColor());
-                    MOVE PROPERTY(focusedCellBackgroundColor());
-                    MOVE PROPERTY(focusedCellBorderColor());
-                }                                        
+                }                                               
             }
             NEW centralColumn {
                 NEW oneThread {
@@ -451,6 +454,27 @@ DESIGN admin {
         }
         
         MOVE BOX(u);
+        NEW colorsPane {
+            caption = 'Цвета';
+            MOVE BOX(uc);
+            NEW bottomPane {
+                type = CONTAINERH;
+                NEW defaultColors {
+                   caption = 'Цвета по умолчанию';
+                   MOVE PROPERTY(selectedRowBackgroundColor());
+                   MOVE PROPERTY(selectedRowBorderColor());
+                   MOVE PROPERTY(selectedCellBackgroundColor());
+                   MOVE PROPERTY(focusedCellBackgroundColor());
+                   MOVE PROPERTY(focusedCellBorderColor());
+               } 
+               NEW generalColors {
+                   caption = 'Обшие настройки';
+                   MOVE PROPERTY(defaultBackgroundColor());
+                   MOVE PROPERTY(defaultForegroundColor());
+               }
+            }
+            
+        }
     }
     MOVE TOOLBARBOX;
 }

@@ -544,11 +544,11 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
     public ColorPreferences loadColorPreferences() {       
         try {
-            Color selectedRowBackground = (Color) BL.LM.overrideSelectedRowBackgroundColor.read(session);
-            Color selectedRowBorder = (Color) BL.LM.overrideSelectedRowBorderColor.read(session);
-            Color selectedCellBackground = (Color) BL.LM.overrideSelectedCellBackgroundColor.read(session);
-            Color focusedCellBackground = (Color) BL.LM.overrideFocusedCellBackgroundColor.read(session);
-            Color focusedCellBorder = (Color) BL.LM.overrideFocusedCellBorderColor.read(session);
+            Color selectedRowBackground = (Color) BL.serviceLM.overrideSelectedRowBackgroundColor.read(session);
+            Color selectedRowBorder = (Color) BL.serviceLM.overrideSelectedRowBorderColor.read(session);
+            Color selectedCellBackground = (Color) BL.serviceLM.overrideSelectedCellBackgroundColor.read(session);
+            Color focusedCellBackground = (Color) BL.serviceLM.overrideFocusedCellBackgroundColor.read(session);
+            Color focusedCellBorder = (Color) BL.serviceLM.overrideFocusedCellBorderColor.read(session);
             return new ColorPreferences(selectedRowBackground, selectedRowBorder, selectedCellBackground, 
                     focusedCellBackground, focusedCellBorder);
         } catch (SQLException | SQLHandledException e) {

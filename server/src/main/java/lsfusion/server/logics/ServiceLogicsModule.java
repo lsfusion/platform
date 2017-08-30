@@ -33,6 +33,12 @@ public class ServiceLogicsModule extends ScriptingLogicsModule {
     public LAP recalculateFollowsMultiThreadAction;
     public LAP recalculateStatsMultiThreadAction;
 
+    public LCP overrideSelectedRowBackgroundColor;
+    public LCP overrideSelectedRowBorderColor;
+    public LCP overrideSelectedCellBackgroundColor;
+    public LCP overrideFocusedCellBackgroundColor;
+    public LCP overrideFocusedCellBorderColor;
+
     public ServiceLogicsModule(BusinessLogics BL, BaseLogicsModule baseLM) throws IOException {
         super(ServiceLogicsModule.class.getResourceAsStream("/lsfusion/system/Service.lsf"), "/lsfusion/system/Service.lsf", baseLM, BL);
         setBaseLogicsModule(baseLM);
@@ -58,5 +64,11 @@ public class ServiceLogicsModule extends ScriptingLogicsModule {
         recalculateClassesMultiThreadAction = findAction("recalculateClassesMultiThreadAction[]");
         recalculateFollowsMultiThreadAction = findAction("recalculateFollowsMultiThreadAction[]");
         recalculateStatsMultiThreadAction = findAction("recalculateStatsMultiThreadAction[]");
+
+        overrideSelectedRowBackgroundColor = findProperty("overrideSelectedRowBackgroundColor[]");
+        overrideSelectedRowBorderColor = findProperty("overrideSelectedRowBorderColor[]");
+        overrideSelectedCellBackgroundColor = findProperty("overrideSelectedCellBackgroundColor[]");
+        overrideFocusedCellBackgroundColor = findProperty("overrideFocusedCellBackgroundColor[]");
+        overrideFocusedCellBorderColor = findProperty("overrideFocusedCellBorderColor[]");
     }
 }
