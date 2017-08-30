@@ -146,7 +146,7 @@ public abstract class GridPropertyTable {
             basePrefs[i] = basePref;
 
             Integer userWidth = getUserWidth(i);
-            int pref = userWidth != null ? userWidth : basePref;
+            int pref = userWidth != null ? BaseUtils.max(userWidth, basePref) : basePref;
             prefs[i] = pref;
 
             if(!flex) // тут хитро, дело в том что базовый механизм resizing'а подразумевает что колонка ВСЕГДА получит запрашиваемую ширину (так как дельта mouseOffsetX - mouseX записывается в ширину, и если колонка не получила ее на прошлом шаге то delta вызовется еще раз и еще раз)
