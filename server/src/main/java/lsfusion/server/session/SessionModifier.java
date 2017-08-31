@@ -127,13 +127,13 @@ public abstract class SessionModifier implements Modifier {
     }
 
     public PropertyChanges getPropertyChanges() throws SQLException, SQLHandledException {
-        return getPropertyChanges(false);
+        return getPropertyChanges(SetFact.<CalcProperty>EMPTY());
     }
 
     // по сути protected
     protected PropertyChanges propertyChanges = PropertyChanges.EMPTY;
     @ManualLazy
-    public PropertyChanges getPropertyChanges(boolean noSourceChange) throws SQLException, SQLHandledException {
+    public PropertyChanges getPropertyChanges(ImSet<CalcProperty> recursionGuard) throws SQLException, SQLHandledException {
         if(mChanged != null) {
             ImMap<CalcProperty, Boolean> changed = mChanged.immutable();
             assert !changed.isEmpty();
@@ -149,11 +149,9 @@ public abstract class SessionModifier implements Modifier {
 
             propertyChanges = propertyChanges.replace(replace);
         
-            if(!noSourceChange) {
-                notifySourceChange(changed);
+            notifySourceChange(changed.remove(recursionGuard));
 
-                return getPropertyChanges(true); // так как source change мог еще раз изменить
-            }
+            return getPropertyChanges(recursionGuard.merge(changed.keys())); // так как source change мог еще раз изменить
         }
         return propertyChanges;
     }
