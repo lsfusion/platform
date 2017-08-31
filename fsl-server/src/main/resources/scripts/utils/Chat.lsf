@@ -536,7 +536,7 @@ pushAction(BOOLEAN system, BOOLEAN notificate) = {
         ELSE {
             IF system OR notificate THEN {
                 NEWSESSION {
-                    SHOW shortChat;
+                    SHOW shortChat NOMANAGESESSIONX;
                 }
             }
         }
