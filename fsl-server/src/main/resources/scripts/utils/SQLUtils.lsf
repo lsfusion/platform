@@ -28,7 +28,9 @@ vacuumTablesAction 'Упаковать БД потаблично' () = {
     MESSAGE 'Упаковка БД была успешно завершена';
 }
 
-EXTEND FORM physicalModel PROPERTIES(t) vacuumTableAction BEFORE skipVacuum(t) GRID;
+alterTableColumnsToLong 'Alter Table Columns To Long' = CUSTOM 'lsfusion.erp.utils.AlterTableColumnsToLongActionProperty' (Table);
+
+EXTEND FORM physicalModel PROPERTIES(t) BEFORE skipVacuum(t) GRID vacuumTableAction, alterTableColumnsToLong;
 EXTEND FORM admin PROPERTIES() vacuumTablesAction;
 DESIGN admin {
     database {
