@@ -18,10 +18,7 @@ import lsfusion.server.classes.IntegerClass;
 import lsfusion.server.classes.LongClass;
 import lsfusion.server.classes.StringClass;
 import lsfusion.server.context.ThreadLocalContext;
-import lsfusion.server.data.OperationOwner;
-import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.data.SQLSession;
-import lsfusion.server.data.StatusMessage;
+import lsfusion.server.data.*;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.formula.SQLSyntaxType;
 import lsfusion.server.data.query.Join;
@@ -118,7 +115,7 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
         ImOrderSet<LCP> propsSQL = getProps(findProperties("idThreadProcess[VARSTRING[10]]", "dateTimeCallProcess[VARSTRING[10]]", "querySQLProcess[VARSTRING[10]]", "addressUserSQLProcess[VARSTRING[10]]", "dateTimeSQLProcess[VARSTRING[10]]",
                 "isActiveSQLProcess[VARSTRING[10]]", "inTransactionSQLProcess[VARSTRING[10]]", "startTransactionSQLProcess[VARSTRING[10]]", "attemptCountSQLProcess[VARSTRING[10]]", "statusMessageSQLProcess[VARSTRING[10]]",
                 "computerProcess[VARSTRING[10]]", "userProcess[VARSTRING[10]]", "lockOwnerIdProcess[VARSTRING[10]]", "lockOwnerNameProcess[VARSTRING[10]]", "fullQuerySQLProcess[VARSTRING[10]]", "idSQLProcess[VARSTRING[10]]",
-                "isDisabledNestLoopProcess[VARSTRING[10]]", "queryTimeoutProcess[VARSTRING[10]]"));
+                "isDisabledNestLoopProcess[VARSTRING[10]]", "queryTimeoutProcess[VARSTRING[10]]", "debugInfoSQLProcess[VARSTRING[10]]"));
 
         int rowsJava = writeRows(context, propsJava, javaProcesses, true);
         int rowsSQL = writeRows(context, propsSQL, sqlProcesses, false);
@@ -244,6 +241,9 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
             case "queryTimeoutProcess":
                 Integer queryTimeoutProcess = (Integer) sqlProcess.get(17);
                 return queryTimeoutProcess == null ? NullValue.instance : new DataObject(queryTimeoutProcess);
+            case "debugInfoSQLProcess":
+                String debugInfo = (String) sqlProcess.get(18);
+                return debugInfo == null ? NullValue.instance : new DataObject(debugInfo);
             default:
                 return NullValue.instance;
         }
@@ -366,9 +366,11 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
                     }
                 }
 
+                String debugInfo = SQLDebugInfo.getDebugInfoForProcessMonitor(javaThread);
+
                 mResultMap.add(resultId, Arrays.asList(query, fullQuery, null, null,
                         address, dateTime, null, null, baseInTransaction, startTransaction, attemptCount, statusMessage,
-                        null, null, processId, isDisabledNestLoop, queryTimeout));
+                        null, null, processId, isDisabledNestLoop, queryTimeout, debugInfo));
             }
         }
         return mResultMap.immutable();
@@ -465,10 +467,12 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
                     }
                 }
 
+                String debugInfo = SQLDebugInfo.getDebugInfoForProcessMonitor(javaThread);
+
                 mResultMap.add(resultId, Arrays.asList(javaThread == null ? null : RemoteLoggerAspect.getDateTimeCall(javaThread.getId()),
                         query, fullQuery, userActiveTask, computerActiveTask, address, dateTime,
                         active, state.equals("idle in transaction"), baseInTransaction, startTransaction, attemptCount, statusMessage,
-                        lockOwnerId, lockOwnerName, sqlId, isDisabledNestLoop, queryTimeout));
+                        lockOwnerId, lockOwnerName, sqlId, isDisabledNestLoop, queryTimeout, debugInfo));
             }
         }
         return mResultMap.immutable();
