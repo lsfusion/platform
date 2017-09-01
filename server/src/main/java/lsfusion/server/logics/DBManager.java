@@ -62,7 +62,6 @@ import org.postgresql.util.PSQLException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
 
-import javax.management.ValueExp;
 import java.io.*;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -912,7 +911,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 }
 
             startLogger.info("Filling static objects ids");
-            if(!fillIDs(getChangesAfter(oldDBStructure.dbVersion, classSIDChanges), getChangesAfter(oldDBStructure.dbVersion, objectSIDChanges)))
+            if(!fillIDs(getChangesAfter(oldDBStructure.dbVersion, classSIDChanges), getChangesAfter(oldDBStructure.dbVersion, objectSIDChanges), oldDBStructure.version <= 25))
                 throw new RuntimeException("Error while filling static objects ids");
 
             if (oldDBStructure.version < 0) {
@@ -1099,9 +1098,9 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
     }
 
-    private boolean fillIDs(Map<String, String> sIDChanges, Map<String, String> objectSIDChanges) throws SQLException, SQLHandledException {
+    private boolean fillIDs(Map<String, String> sIDChanges, Map<String, String> objectSIDChanges, boolean migrateObjectClassID) throws SQLException, SQLHandledException {
         try (DataSession session = createSession(OperationOwner.unknown)) { // по сути вложенная транзакция
-            LM.baseClass.fillIDs(session, LM.staticCaption, LM.staticName, sIDChanges, objectSIDChanges);
+            LM.baseClass.fillIDs(session, LM.staticCaption, LM.staticName, sIDChanges, objectSIDChanges, migrateObjectClassID);
             return session.apply(businessLogics, getStack());
         }
     }
@@ -2040,7 +2039,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
     private class NewDBStructure extends DBStructure<Field> {
 
         public <P extends PropertyInterface> NewDBStructure(DBVersion dbVersion) {
-            version = 25;
+            version = 26;
             this.dbVersion = dbVersion;
 
             tables.putAll(getIndicesMap());

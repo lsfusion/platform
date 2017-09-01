@@ -14,7 +14,6 @@ import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.base.col.lru.LRUWSVSMap;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
-import lsfusion.server.classes.IntegerClass;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.ValueExpr;
 import lsfusion.server.data.expr.query.PropStat;
@@ -1835,6 +1834,9 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     }
 
     // системные вызовы
+    public <K,V> void executeDML(String update) throws SQLException, SQLHandledException {
+        executeDML(new SQLDML(update, Cost.MIN, MapFact.<String, SQLQuery>EMPTY(), StaticExecuteEnvironmentImpl.EMPTY, false), OperationOwner.unknown, TableOwner.global, MapFact.<String, ParseInterface>EMPTY(), DynamicExecuteEnvironment.DEFAULT, null, PureTime.VOID, 0, RegisterChange.VOID);
+    }
     public <K,V> void executeSelect(String select, OperationOwner owner, StaticExecuteEnvironment env, ImRevMap<K, String> keyNames, final ImMap<String, ? extends Reader> keyReaders, ImRevMap<V, String> propertyNames, ImMap<String, ? extends Reader> propertyReaders, ResultHandler<K, V> handler) throws SQLException, SQLHandledException {
         executeSelect(select, owner, env, MapFact.<String, ParseInterface>EMPTY(), 0, keyNames, keyReaders, propertyNames, propertyReaders, false, handler);
     }
