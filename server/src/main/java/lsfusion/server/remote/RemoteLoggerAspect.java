@@ -38,7 +38,7 @@ public class RemoteLoggerAspect {
                 user = ((RemoteLogics) target).getCurrentUser();
                 computer = ((RemoteLogics) target).getCurrentComputer();
             } else if (target instanceof RemoteForm) {
-                user = ((RemoteForm) target).getCurrentComputer();
+                user = ((RemoteForm) target).getCurrentUser();
             } else {
                 user = (Integer) ((RemoteNavigator) target).getUser().object;
                 computer = (Integer) ((RemoteNavigator) target).getComputer().object;
