@@ -224,8 +224,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
                 String userName = (String) businessLogics.authenticationLM.currentUserName.read(session);
                 boolean allowExcessAllocatedBytes = businessLogics.authenticationLM.currentUserAllowExcessAllocatedBytes.read(session) != null;
                 String computerName = (String) businessLogics.authenticationLM.hostnameCurrentComputer.read(session);
-                DataObject userObject = session.getDataObject(businessLogics.authenticationLM.user, businessLogics.authenticationLM.currentUser.read(session));
-                String userRole = (String) businessLogics.securityLM.nameMainRoleUser.read(session, userObject);
+                String userRole = (String) businessLogics.securityLM.currentUserMainRoleName.read(session);
                 return new LogInfo(allowExcessAllocatedBytes, userName, userRole, computerName, remoteAddress);
             }
         } catch (Exception e) {

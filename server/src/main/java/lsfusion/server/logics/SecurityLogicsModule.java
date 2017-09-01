@@ -56,6 +56,7 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
     public LCP mainRoleUser;
     public LCP sidMainRoleCustomUser;
     public LCP nameMainRoleUser;
+    public LCP currentUserMainRoleName;
 
     public LCP dataCopyAccess;
     public LAP copyAccess;    
@@ -83,6 +84,7 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
         userRoleSID = findProperty("userRoleSID[VARSTRING[30]]");
         sidMainRoleCustomUser = findProperty("sidMainRole[CustomUser]");
         nameMainRoleUser = findProperty("nameMainRole[User]");
+        currentUserMainRoleName = findProperty("currentUserMainRoleName[]");
 
         // Список ролей для пользователей
         mainRoleCustomUser = findProperty("mainRole[CustomUser]");

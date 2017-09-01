@@ -20,6 +20,7 @@ mainRole = DATA UserRole (User);
 mainRole (CustomUser user) = mainRole[User] (user) IF user IS CustomUser;
 sidMainRole 'Идентификатор главной роли' (CustomUser user) = sid (mainRole(user));
 nameMainRole 'Главная роль' (User user) = name (mainRole(user));
+currentUserMainRoleName () = nameMainRole(currentUser());
 
 defaultMainRole 'Роль по умолчанию' = DATA UserRole ();
 nameDefaultMainRole 'Роль по умолчанию' = name(defaultMainRole());
