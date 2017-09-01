@@ -42,7 +42,7 @@ public class KillActiveTaskActionProperty extends ScriptingActionProperty {
         
         context.getDbManager().getAdapter().killProcess(pid);
 
-        findProperty("idActiveTask[INTEGER]").change((Object) null, context, currentObject);
+        findProperty("idActiveTask[INTEGER]").change((Integer) null, context, currentObject);
 
     }
 }

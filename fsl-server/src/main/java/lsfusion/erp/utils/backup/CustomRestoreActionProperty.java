@@ -199,8 +199,8 @@ public class CustomRestoreActionProperty extends ScriptingActionProperty {
                                     } else if (classValue instanceof LogicalClass) {
                                         return getBooleanObject(object);
                                     } else
-                                        return object instanceof String ? new DataObject(((String) object).trim()) : object instanceof Integer ? new DataObject((Integer) object)
-                                                : object instanceof BigDecimal ? new DataObject(object, (NumericClass) classValue) : new DataObject(String.valueOf(object));
+                                        return object instanceof String ? new DataObject(((String) object).trim()) : object instanceof Integer ? new DataObject((Integer) object) : object instanceof Long ? new DataObject((Long) object)
+                                                : object instanceof BigDecimal ? new DataObject((BigDecimal) object, (NumericClass) classValue) : new DataObject(String.valueOf(object));
                                 } catch (SQLException | SQLHandledException e) {
                                     return null;
                                 }

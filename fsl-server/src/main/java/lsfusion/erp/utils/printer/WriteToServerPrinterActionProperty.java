@@ -54,7 +54,7 @@ public class WriteToServerPrinterActionProperty extends ScriptingActionProperty 
         } catch (Exception e) {
             ServerLoggers.printerLogger.error("WriteToPrinter error", e);
             try {
-                findProperty("printed[]").change((Object) null, context);
+                findProperty("printed[]").change((Boolean) null, context);
             } catch (ScriptingErrorLog.SemanticErrorException ignored) {
             }
             throw Throwables.propagate(e);

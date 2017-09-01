@@ -36,7 +36,7 @@ public class StartProfilerActionProperty extends ScriptingActionProperty {
 
             profileUsers = new HashSet<>();
             for (ImMap<Object, Object> imMap : resultU.keys()) {
-                profileUsers.add((Integer) imMap.get("User"));
+                profileUsers.add((Long) imMap.get("User"));
             }
 
             KeyExpr formKey = new KeyExpr("ProfileForm");

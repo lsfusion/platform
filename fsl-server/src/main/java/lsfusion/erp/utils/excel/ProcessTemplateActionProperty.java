@@ -49,7 +49,7 @@ public class ProcessTemplateActionProperty extends ScriptingActionProperty {
                 Object fileObject = findProperty("file[Template]").read(context, templateObject);
                 if (fileObject != null) {
 
-                    DataObject excelObject = new DataObject(findProperty("file[Template]").read(context, templateObject), ExcelClass.get(false, false));
+                    DataObject excelObject = (DataObject) findProperty("file[Template]").readClasses(context, templateObject);
                     Map<String, String> templateEntriesMap = new HashMap<>();
 
                     KeyExpr templateEntryExpr = new KeyExpr("TemplateEntry");

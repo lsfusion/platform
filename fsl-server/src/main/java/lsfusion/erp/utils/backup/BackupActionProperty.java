@@ -53,7 +53,6 @@ public class BackupActionProperty extends ScriptingActionProperty {
                 String backupFileExtension = backupFilePath.substring(backupFilePath.lastIndexOf("."), backupFilePath.length());
 
                 DataObject backupObject = session.addObject((ConcreteCustomClass) findClass("Backup"));
-                Integer backupObjectValue = (Integer) backupObject.getValue();
                 findProperty("date[Backup]").change(new java.sql.Date(currentTime), session, backupObject);
                 findProperty("time[Backup]").change(new java.sql.Time(currentTime), session, backupObject);
                 findProperty("file[Backup]").change(backupFilePath, session, backupObject);
@@ -70,13 +69,15 @@ public class BackupActionProperty extends ScriptingActionProperty {
                 }
 
                 session.apply(context);
+                
+                backupObject = new DataObject((Long)backupObject.object, (ConcreteCustomClass)backupObject.objectClass); // обновляем класс после backup
 
                 context.getDbManager().backupDB(context, backupFileName, excludeTables);
 
                 findProperty("backupFilePath[]").change(backupFilePath, context.getSession());
                 findProperty("backupFileName[]").change(backupFileName + backupFileExtension, context.getSession());
 
-                findProperty("log[Backup]").change(readFileToString(backupFileLogPath), session, session.getDataObject(findClass("Backup"), backupObjectValue));
+                findProperty("log[Backup]").change(readFileToString(backupFileLogPath), session, backupObject);
                 session.apply(context);
             }
         } catch (Exception e) {
