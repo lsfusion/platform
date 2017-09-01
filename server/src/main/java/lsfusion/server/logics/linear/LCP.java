@@ -11,6 +11,7 @@ import lsfusion.server.classes.sets.ResolveClassSet;
 import lsfusion.server.data.QueryEnvironment;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
+import lsfusion.server.data.Time;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.where.Where;
@@ -26,7 +27,10 @@ import lsfusion.server.session.DataSession;
 import lsfusion.server.session.ExecutionEnvironment;
 import lsfusion.server.session.Modifier;
 import lsfusion.server.session.PropertyChange;
+import org.apache.commons.net.ntp.TimeStamp;
 
+import java.math.BigDecimal;
+import java.sql.Date;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -76,22 +80,77 @@ public class LCP<T extends PropertyInterface> extends LP<T, CalcProperty<T>> {
     }
 
     // execute'ы без Form'
-    public void change(Object value, DataSession session, DataObject... objects) throws SQLException, SQLHandledException {
+    private void change(Object value, DataSession session, DataObject... objects) throws SQLException, SQLHandledException {
         change(value, (ExecutionEnvironment)session, objects);
     }
+    // execute'ы из контекста
+    private void change(Object value, ExecutionContext context, DataObject... objects) throws SQLException, SQLHandledException {
+        change(value, context.getEnv(), objects);
+    }
 
+    // с явными типами
+    public void change(Integer value, DataSession session, DataObject... objects) throws SQLException, SQLHandledException {
+        change((Object)value, session, objects);
+    }
+    public void change(Integer value, ExecutionContext context, DataObject... objects) throws SQLException, SQLHandledException {
+        change((Object)value, context, objects);
+    }
+    public void change(Long value, DataSession session, DataObject... objects) throws SQLException, SQLHandledException {
+        change((Object)value, session, objects);
+    }
+    public void change(Long value, ExecutionContext context, DataObject... objects) throws SQLException, SQLHandledException {
+        change((Object)value, context, objects);
+    }
+    public void change(Boolean value, DataSession session, DataObject... objects) throws SQLException, SQLHandledException {
+        change((Object)value, session, objects);
+    }
+    public void change(Boolean value, ExecutionContext context, DataObject... objects) throws SQLException, SQLHandledException {
+        change((Object)value, context, objects);
+    }
+    public void change(Date value, DataSession session, DataObject... objects) throws SQLException, SQLHandledException {
+        change((Object)value, session, objects);
+    }
+    public void change(Date value, ExecutionContext context, DataObject... objects) throws SQLException, SQLHandledException {
+        change((Object)value, context, objects);
+    }
+    public void change(java.sql.Timestamp value, DataSession session, DataObject... objects) throws SQLException, SQLHandledException {
+        change((Object)value, session, objects);
+    }
+    public void change(java.sql.Timestamp value, ExecutionContext context, DataObject... objects) throws SQLException, SQLHandledException {
+        change((Object)value, context, objects);
+    }
+    public void change(BigDecimal value, DataSession session, DataObject... objects) throws SQLException, SQLHandledException {
+        change((Object)value, session, objects);
+    }
+    public void change(BigDecimal value, ExecutionContext context, DataObject... objects) throws SQLException, SQLHandledException {
+        change((Object)value, context, objects);
+    }
+    public void change(byte[] value, DataSession session, DataObject... objects) throws SQLException, SQLHandledException {
+        change((Object)value, session, objects);
+    }
+    public void change(byte[] value, ExecutionContext context, DataObject... objects) throws SQLException, SQLHandledException {
+        change((Object)value, context, objects);
+    }
+    public void change(String value, DataSession session, DataObject... objects) throws SQLException, SQLHandledException {
+        change((Object)value, session, objects);
+    }
+    public void change(String value, ExecutionContext context, DataObject... objects) throws SQLException, SQLHandledException {
+        change((Object)value, context, objects);
+    }
+    public void change(java.sql.Time value, DataSession session, DataObject... objects) throws SQLException, SQLHandledException {
+        change((Object)value, session, objects);
+    }
+    public void change(java.sql.Time value, ExecutionContext context, DataObject... objects) throws SQLException, SQLHandledException {
+        change((Object)value, context, objects);
+    }
+
+    // ObjectValue
+    public void change(ObjectValue value, DataSession session, DataObject... objects) throws SQLException, SQLHandledException {
+        change(value, (ExecutionEnvironment) session, objects);
+    }
     public void change(ObjectValue value, ExecutionContext context, DataObject... objects) throws SQLException, SQLHandledException {
         change(value, context.getEnv(), objects);
     }
-
-    public void change(Object value, ExecutionContext context, DataObject... objects) throws SQLException, SQLHandledException {
-        change(value, context.getEnv(), objects);
-    }
-
-    public void change(Object value, ExecutionContext context, ImMap<T, DataObject> keys) throws SQLException, SQLHandledException {
-        change(value, context.getEnv(), keys);
-    }
-
     public void change(ObjectValue value, ExecutionEnvironment env, DataObject... objects) throws SQLException, SQLHandledException {
         change(value, env, getMapDataValues(objects));
     }
