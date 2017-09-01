@@ -115,6 +115,11 @@ public class StaticValueNullableExpr extends StaticNullableExpr implements Value
     }
 
     @Override
+    public String toDebugString() {
+        return toString();
+    }
+
+    @Override
     public ParseInterface getParseInterface(QueryEnvironment env) {
         assert false; // по идее не должен выполняться в текущих использованиях
         return new TypeObject(object, paramClass.getType());

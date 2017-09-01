@@ -94,6 +94,11 @@ public class InconsistentStaticValueExpr extends VariableSingleClassExpr impleme
     }
 
     @Override
+    public String toDebugString() {
+        return toString();
+    }
+
+    @Override
     public ParseInterface getParseInterface(QueryEnvironment env) {
         return new TypeObject(object, objectClass.getType());
     }

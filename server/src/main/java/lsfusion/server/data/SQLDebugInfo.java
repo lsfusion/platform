@@ -1,5 +1,8 @@
 package lsfusion.server.data;
 
+import lsfusion.base.ConcurrentWeakHashMap;
+import lsfusion.base.col.MapFact;
+import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.data.query.CompileOptions;
 import lsfusion.server.data.query.CompiledQuery;
@@ -19,18 +22,19 @@ public class SQLDebugInfo<K, V> {
     private final CompileOptions<V> compileOptions;
     private boolean alreadyExplained; // для материализации подзапросов чтобы несколько раз не выводить 
     
-    private final static ThreadLocal<SQLDebugInfo> currentSQL = new ThreadLocal<>(); 
+    private final static ThreadLocal<SQLDebugInfo> currentSQL = new ThreadLocal<>();
+    private static ConcurrentWeakHashMap<Thread, SQLDebugInfo> sqlDebugInfoMap = MapFact.getGlobalConcurrentWeakHashMap();
     public static SQLDebugInfo pushStack(SQLDebugInfo debugInfo) {
         if(debugInfo != null) {
-            SQLDebugInfo result = currentSQL.get();
-            currentSQL.set(debugInfo);
+            SQLDebugInfo result = sqlDebugInfoMap.get(Thread.currentThread());
+            sqlDebugInfoMap.put(Thread.currentThread(), debugInfo);
             return result;
         }
         return null;
     }
-    
+
     public static <K, V> void outCompileDebugInfo(String statementInfo) {
-        SQLDebugInfo<K, V> debugInfo = currentSQL.get();
+        SQLDebugInfo<K, V> debugInfo = sqlDebugInfoMap.get(Thread.currentThread());
         if(debugInfo != null) {
             IQuery<K, V> query = debugInfo.wQuery.get();
             if(query != null) {
@@ -47,8 +51,28 @@ public class SQLDebugInfo<K, V> {
                 ServerLoggers.assertLog(!debugInfo.compileOptions.needDebugInfo, "QUERY SHOULD EXIST");
         }
     }
+
     public static void popStack(SQLDebugInfo debugInfo, SQLDebugInfo prevDebugInfo) {
-        if(debugInfo != null)
-            currentSQL.set(prevDebugInfo);
+        if (debugInfo != null) {
+            if (prevDebugInfo != null)
+                sqlDebugInfoMap.put(Thread.currentThread(), prevDebugInfo);
+            else
+                sqlDebugInfoMap.remove(Thread.currentThread());
+        }
+    }
+
+    public static String getDebugInfoForProcessMonitor(Thread thread) {
+        SQLDebugInfo sqlDebugInfo = sqlDebugInfoMap.get(thread);
+        if(sqlDebugInfo != null) {
+            IQuery iQuery = (IQuery) sqlDebugInfo.wQuery.get();
+            StringBuilder debugInfo = new StringBuilder();
+            if(iQuery != null) {
+                ImSet<Value> contextValues = iQuery.getContextValues();
+                for (Value contextValue : contextValues) {
+                    debugInfo.append(debugInfo.length() == 0 ? "" : "\n").append(contextValue.toDebugString());
+                }
+            }
+            return debugInfo.length() == 0 ? null : debugInfo.toString();
+        } else return null;
     }
 }

@@ -41,6 +41,11 @@ public class ValueExpr extends AbstractValueExpr<ConcreteClass> implements Value
         return null;
     }
 
+    @Override
+    public String toDebugString() {
+        return toString();
+    }
+
     public ValueExpr(Object object, ConcreteClass objectClass) {
         super(objectClass);
 
