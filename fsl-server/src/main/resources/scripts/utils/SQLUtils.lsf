@@ -120,14 +120,14 @@ WHEN LOCAL CHANGED (processType()) DO EXEC updateProcessMonitorAction();
 idThreadProcess 'ID потока процесса' = DATA LOCAL VARSTRING[10] (VARSTRING[10]);
 
 nameComputerJavaProcess 'Компьютер (Java)' = DATA LOCAL VARSTRING[100] (VARSTRING[10]);
-computerProcess 'Компьютер (SQL)' = DATA LOCAL INTEGER (VARSTRING[10]);
+computerProcess 'Компьютер (SQL)' = DATA LOCAL LONG (VARSTRING[10]);
 objValue (Computer i) = INTEGER(i AS Computer);
 computerObject (value) = GROUP AGGR Computer computer BY objValue(computer);
 nameComputerSQL 'Компьютер (SQL)' (VARSTRING[10] process) = hostname(computerObject(computerProcess(process)));
 nameComputer 'Компьютер' (VARSTRING[10] process) = OVERRIDE nameComputerSQL(process), nameComputerJavaProcess(process);
   
 nameUserJavaProcess 'Пользователь (Java)' = DATA LOCAL VARSTRING[100] (VARSTRING[10]);
-userProcess 'Пользователь (SQL)' = DATA LOCAL INTEGER (VARSTRING[10]);
+userProcess 'Пользователь (SQL)' = DATA LOCAL LONG (VARSTRING[10]);
 objValue (User i) = INTEGER(i AS User);
 userObject (value) = GROUP AGGR User user BY objValue(user);
 nameUserSQL 'Пользователь (SQL)' (VARSTRING[10] process) = name(userObject(userProcess(process)));
