@@ -334,18 +334,13 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
 
             String query = trimToEmpty((String) entry.get("text"));
             if(!query.equals(originalQuery) && (!onlyActive || !query.isEmpty())) {
-                String fullQuery = null;
-                boolean isDisabledNestLoop = false;
-                Integer queryTimeout = null;
                 Integer processId = (Integer) entry.get("session_id");
                 List<Object> sessionThread = sessionThreadMap.get(processId);
-                if (sessionThread != null) {
-                    if (sessionThread.get(7) != null) {
-                        fullQuery = (String) sessionThread.get(7);
-                    }
-                    isDisabledNestLoop = (boolean) sessionThread.get(8);
-                    queryTimeout = (Integer) sessionThread.get(9);
-                }
+                String fullQuery = sessionThread == null || sessionThread.get(7) == null ? null : (String) sessionThread.get(7);
+                boolean isDisabledNestLoop = sessionThread != null && (boolean) sessionThread.get(8);
+                Integer queryTimeout = sessionThread == null ? null : (Integer) sessionThread.get(9);
+                String debugInfo = sessionThread == null ? null : (String) sessionThread.get(10);
+
                 //String userActiveTask = trimToNull((String) entry.get("host_name"));
                 String address = trimToNull((String) entry.get("client_net_address"));
                 Timestamp dateTime = (Timestamp) entry.get("start_time");
@@ -365,8 +360,6 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
                         mFreeSQLProcesses.exclAdd(resultId);
                     }
                 }
-
-                String debugInfo = SQLDebugInfo.getDebugInfoForProcessMonitor(javaThread);
 
                 mResultMap.add(resultId, Arrays.asList(query, fullQuery, null, null,
                         address, dateTime, null, null, baseInTransaction, startTransaction, attemptCount, statusMessage,
@@ -450,6 +443,7 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
                 String fullQuery = sessionThread == null || sessionThread.get(7) == null ? null : (String) sessionThread.get(7);
                 boolean isDisabledNestLoop = sessionThread != null && (boolean) sessionThread.get(8);
                 Integer queryTimeout = sessionThread == null ? null : (Integer) sessionThread.get(9);
+                String debugInfo = sessionThread == null ? null : (String) sessionThread.get(10);
 
                 List<Object> lockingProcess = lockingMap.get(sqlId);
                 Integer lockingSqlId = lockingProcess == null ? null : (Integer)lockingProcess.get(0);
@@ -466,8 +460,6 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
                         mFreeSQLProcesses.exclAdd(resultId);
                     }
                 }
-
-                String debugInfo = SQLDebugInfo.getDebugInfoForProcessMonitor(javaThread);
 
                 mResultMap.add(resultId, Arrays.asList(javaThread == null ? null : RemoteLoggerAspect.getDateTimeCall(javaThread.getId()),
                         query, fullQuery, userActiveTask, computerActiveTask, address, dateTime,
