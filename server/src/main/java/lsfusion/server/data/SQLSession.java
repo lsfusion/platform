@@ -110,14 +110,19 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     }
 
     public static Map<Integer, List<Object>> getSQLThreadMap() {
+        ConcurrentWeakHashMap<Thread, SQLDebugInfo> sqlDebugInfoMap = SQLDebugInfo.getSqlDebugInfoMap();
+
         Map<Integer, List<Object>> sessionMap = new HashMap<>();
         for(SQLSession sqlSession : sqlSessionMap.keySet()) {
+            SQLDebugInfo sqlDebugInfo = sqlDebugInfoMap.get(sqlSession.getActiveThread());
+            String debugInfo = sqlDebugInfo == null ? null : sqlDebugInfo.getDebugInfoForProcessMonitor();
+
             ExConnection connection = sqlSession.getDebugConnection();
             if(connection != null)
                 sessionMap.put(((PGConnection) connection.sql).getBackendPID(), Arrays.asList(sqlSession.getActiveThread(),
                         sqlSession.isInTransaction(), sqlSession.startTransaction, sqlSession.getAttemptCountMap(), sqlSession.statusMessage,
                         sqlSession.userProvider.getCurrentUser(), sqlSession.userProvider.getCurrentComputer(),
-                        sqlSession.getExecutingStatement(), sqlSession.isDisabledNestLoop, sqlSession.getQueryTimeout()));
+                        sqlSession.getExecutingStatement(), sqlSession.isDisabledNestLoop, sqlSession.getQueryTimeout(), debugInfo));
         }
         return sessionMap;
     }
