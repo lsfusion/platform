@@ -80,11 +80,11 @@ public class LCP<T extends PropertyInterface> extends LP<T, CalcProperty<T>> {
     }
 
     // execute'ы без Form'
-    private void change(Object value, DataSession session, DataObject... objects) throws SQLException, SQLHandledException {
+    public void change(Object value, DataSession session, DataObject... objects) throws SQLException, SQLHandledException {
         change(value, (ExecutionEnvironment)session, objects);
     }
     // execute'ы из контекста
-    private void change(Object value, ExecutionContext context, DataObject... objects) throws SQLException, SQLHandledException {
+    public void change(Object value, ExecutionContext context, DataObject... objects) throws SQLException, SQLHandledException {
         change(value, context.getEnv(), objects);
     }
 
