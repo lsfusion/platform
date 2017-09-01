@@ -2,6 +2,7 @@ package lsfusion.erp.utils;
 
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.classes.ValueClass;
+import lsfusion.server.data.Field;
 import lsfusion.server.data.KeyField;
 import lsfusion.server.data.PropertyField;
 import lsfusion.server.data.SQLHandledException;
@@ -15,14 +16,16 @@ import lsfusion.server.logics.table.ImplementTable;
 import lsfusion.server.session.DataSession;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 import static lsfusion.base.BaseUtils.serviceLogger;
 
 public class AlterTableColumnsToLongActionProperty extends ScriptingActionProperty {
 
     private final ClassPropertyInterface tableInterface;
-    
+
 
     public AlterTableColumnsToLongActionProperty(ScriptingLogicsModule LM, ValueClass... classes) {
 
@@ -43,18 +46,26 @@ public class AlterTableColumnsToLongActionProperty extends ScriptingActionProper
 
                 ImSet<ImplementTable> tables = context.getBL().LM.tableFactory.getImplementTables();
                 for (ImplementTable dataTable : tables) {
-                    if(tableName.equals(dataTable.getName())) {
-                        serviceLogger.info(String.format("Alter Table %s: %s keys, %s properties", String.valueOf(dataTable), dataTable.keys.size(), dataTable.properties.size()));
+                    if (tableName.equals(dataTable.getName())) {
+                        List<Field> fieldList = new ArrayList<>();
                         for (KeyField keyField : dataTable.keys) {
                             if (keyField.type instanceof ObjectType) {
-                                session.sql.executeDDL(String.format("ALTER TABLE %s ALTER COLUMN %s TYPE BIGINT", String.valueOf(dataTable), keyField.getName()));
+                                fieldList.add(keyField);
                             }
                         }
                         for (PropertyField propertyField : dataTable.properties) {
                             if (propertyField.type instanceof ObjectType) {
-                                session.sql.executeDDL(String.format("ALTER TABLE %s ALTER COLUMN %s TYPE BIGINT", String.valueOf(dataTable), propertyField.getName()));
+                                fieldList.add(propertyField);
                             }
                         }
+
+                        StringBuilder ddl = new StringBuilder();
+                        for (Field field : fieldList) {
+                            ddl.append(String.format(((ddl.length() == 0) ? "" : ",") + " ALTER COLUMN %s TYPE BIGINT", field.getName()));
+                        }
+                        serviceLogger.info(String.format("Alter Table %s: %s field(s)", String.valueOf(dataTable), fieldList.size()));
+                        if (ddl.length() > 0)
+                            session.sql.executeDDL("ALTER TABLE " + dataTable + " " + ddl);
                     }
                 }
                 session.apply(context);
