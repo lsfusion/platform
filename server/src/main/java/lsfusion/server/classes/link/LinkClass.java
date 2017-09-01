@@ -31,7 +31,7 @@ public abstract class LinkClass extends DataClass<String> {
         this.multiple = multiple;
     }
 
-    public Object getDefaultValue() {
+    public String getDefaultValue() {
         return "";
     }
 

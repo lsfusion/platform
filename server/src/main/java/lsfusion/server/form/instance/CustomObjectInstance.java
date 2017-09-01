@@ -95,7 +95,7 @@ public class CustomObjectInstance extends ObjectInstance {
             changeClass = (ConcreteCustomClass) sessionClass;
             CustomClassListener classListener = getClassListener();
             if (classListener != null) // если вообще кто-то следит за изменением классов объектов
-                classListener.objectChanged(changeClass, (Integer) getDataObject().object);
+                classListener.objectChanged(changeClass, (Long) getDataObject().object);
         }
 
         if(changeClass != currentClass) {
@@ -136,7 +136,7 @@ public class CustomObjectInstance extends ObjectInstance {
             updateCurrentClass(session);
     }
 
-    public void changeGridClass(int classID) {
+    public void changeGridClass(long classID) {
 
         CustomClass changeClass = baseClass.findClassID(classID);
 

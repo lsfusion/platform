@@ -208,26 +208,26 @@ public class SessionRows extends SessionData<SessionRows> {
     }
 
     // assert что содержит
-    public static ImMap<PropertyField, ObjectValue> updateAdded(ImMap<PropertyField, ObjectValue> map, PropertyField property, Pair<Integer, Integer>[] shifts) {
+    public static ImMap<PropertyField, ObjectValue> updateAdded(ImMap<PropertyField, ObjectValue> map, PropertyField property, Pair<Long, Long>[] shifts) {
         ObjectValue value = map.get(property);
         if(value instanceof DataObject) {
             DataObject dataValue = (DataObject) value;
-            Integer read = ObjectType.idClass.read(dataValue.object);
+            Long read = ObjectType.idClass.read(dataValue.object);
             assert shifts.length > 0;
-            int calcshift = 0; int aggsh = 0;
+            long calcshift = 0; long aggsh = 0;
 
-            for(Pair<Integer, Integer> shift : shifts) { // по аналогии с updateAdded в таблицах
+            for(Pair<Long, Long> shift : shifts) { // по аналогии с updateAdded в таблицах
                 if(read > aggsh)
                     calcshift = shift.first;
                 aggsh += shift.second;
             }
-            return map.replaceValue(property, new DataObject(read + calcshift, dataValue.objectClass));
+            return map.replaceValue(property, new DataObject(read + calcshift, (ConcreteObjectClass) dataValue.objectClass));
         }
         return map;
     }
 
     @Override
-    public SessionData updateAdded(SQLSession session, BaseClass baseClass, final PropertyField property, final Pair<Integer, Integer>[] shifts, OperationOwner owner, TableOwner tableOwner) {
+    public SessionData updateAdded(SQLSession session, BaseClass baseClass, final PropertyField property, final Pair<Long, Long>[] shifts, OperationOwner owner, TableOwner tableOwner) {
         ImMap<ImMap<KeyField, DataObject>, ImMap<PropertyField, ObjectValue>> updatedRows = rows.mapValues(new GetValue<ImMap<PropertyField, ObjectValue>, ImMap<PropertyField, ObjectValue>>() {
             public ImMap<PropertyField, ObjectValue> getMapValue(ImMap<PropertyField, ObjectValue> value) {
                 return updateAdded(value, property, shifts);
@@ -293,12 +293,12 @@ public class SessionRows extends SessionData<SessionRows> {
         ImMap<F, DataObject> checkedMap = classValues.mapItValues(new GetKeyValue<DataObject, F, Object>() {
             @Override
             public DataObject getMapValue(F key, Object value) {
-                ConcreteObjectClass newConcreteClass = baseClass.findConcreteClassID((Integer) value);
+                ConcreteObjectClass newConcreteClass = baseClass.findConcreteClassID((Long) value);
                 DataObject dataObject = toCheckMap.get(key);
                 if (BaseUtils.hashEquals(newConcreteClass, dataObject.objectClass))
                     return dataObject;
                 updated.set(true);
-                return new DataObject(dataObject.object, newConcreteClass);
+                return new DataObject((Long)dataObject.object, newConcreteClass);
             }
         });
 

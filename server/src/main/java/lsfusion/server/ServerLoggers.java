@@ -125,9 +125,9 @@ public class ServerLoggers {
         sqlConnectionLogger.info(message + '\n' + ExceptionUtils.getStackTrace());
     }
 
-    private static Map<Integer, Boolean> userExLogs = MapFact.getGlobalConcurrentHashMap();
+    private static Map<Long, Boolean> userExLogs = MapFact.getGlobalConcurrentHashMap();
 
-    public static void setUserExLog(Integer user, Boolean enabled) {
+    public static void setUserExLog(Long user, Boolean enabled) {
         final boolean newEnabled = enabled != null && enabled;
         final Boolean prevBEnabled = userExLogs.put(user, newEnabled);
         final boolean prevEnabled = prevBEnabled != null && prevBEnabled;
@@ -141,7 +141,7 @@ public class ServerLoggers {
 
     public static int enabledUserExLog;
 
-    public static boolean getUserExLog(Integer user) {
+    public static boolean getUserExLog(Long user) {
         Boolean useLog = userExLogs.get(user);
         return useLog != null && useLog;
     }
@@ -150,9 +150,9 @@ public class ServerLoggers {
         return enabledUserExLog > 0 && getUserExLog(ThreadLocalContext.getCurrentUser());
     }
 
-    private static Map<Integer, Boolean> pausableLogs = MapFact.getGlobalConcurrentHashMap();
+    private static Map<Long, Boolean> pausableLogs = MapFact.getGlobalConcurrentHashMap();
 
-    public static void setPausableLog(Integer user, Boolean enabled) {
+    public static void setPausableLog(Long user, Boolean enabled) {
         final boolean newEnabled = enabled != null && enabled;
         final Boolean prevBEnabled = pausableLogs.put(user, newEnabled);
         final boolean prevEnabled = prevBEnabled != null && prevBEnabled;
@@ -166,7 +166,7 @@ public class ServerLoggers {
 
     public static int enabledPausableLog;
 
-    public static boolean isPausableLogEnabled(Integer user) {
+    public static boolean isPausableLogEnabled(Long user) {
         Boolean useLog = pausableLogs.get(user);
         return useLog != null && useLog;
     }

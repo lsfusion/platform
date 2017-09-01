@@ -8,10 +8,10 @@ import static lsfusion.base.BaseUtils.nullHash;
 public class ProfileItem {
     public ProfileObject profileObject;
     public ProfileObject upperProfileObject;
-    public Integer userID;
+    public Long userID;
     public FormEntity form;
     
-    public ProfileItem(ProfileObject profileObject, ProfileObject upperProfileObject, Integer userID, FormEntity form) {
+    public ProfileItem(ProfileObject profileObject, ProfileObject upperProfileObject, Long userID, FormEntity form) {
         this.profileObject = profileObject;
         this.upperProfileObject = upperProfileObject;
         this.userID = userID;

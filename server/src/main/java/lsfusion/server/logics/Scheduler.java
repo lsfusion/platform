@@ -59,7 +59,7 @@ public class Scheduler extends MonitorServer implements InitializingBean {
     private BusinessLogics BL;
     private DBManager dbManager;
 
-    private Map<Integer, List<ScheduledFuture>> futuresMap = new HashMap<>();
+    private Map<Long, List<ScheduledFuture>> futuresMap = new HashMap<>();
 
     public Scheduler() {
     }
@@ -132,7 +132,7 @@ public class Scheduler extends MonitorServer implements InitializingBean {
 
     public void setupScheduledTask(DataSession session, DataObject scheduledTaskObject, String nameScheduledTask) throws SQLException, ScriptingErrorLog.SemanticErrorException, SQLHandledException {
         if (daemonTasksExecutor != null) {
-            Integer scheduledTaskId = (Integer) scheduledTaskObject.getValue();
+            Long scheduledTaskId = (Long) scheduledTaskObject.getValue();
             List<ScheduledFuture> futures = futuresMap.remove(scheduledTaskId);
             if (futures != null) {
                 schedulerLogger.info("Stopped scheduler task: " + nameScheduledTask);
@@ -166,7 +166,7 @@ public class Scheduler extends MonitorServer implements InitializingBean {
 
     public void executeScheduledTask(DataSession session, DataObject scheduledTaskObject, String nameScheduledTask) throws SQLException, ScriptingErrorLog.SemanticErrorException, SQLHandledException {
         if (daemonTasksExecutor != null) {
-            Integer scheduledTaskId = (Integer) scheduledTaskObject.getValue();
+            Long scheduledTaskId = (Long) scheduledTaskObject.getValue();
             List<ScheduledFuture> futures = futuresMap.get(scheduledTaskId);
             if (futures == null)
                 futures = new ArrayList<>();
@@ -205,7 +205,7 @@ public class Scheduler extends MonitorServer implements InitializingBean {
             public void run(ExecutionStack stack) throws Exception {
                 changeCurrentDate(stack);
             }
-        }, -1, true, Settings.get().getCheckCurrentDate(), true, "Changing current date"));
+        }, -1L, true, Settings.get().getCheckCurrentDate(), true, "Changing current date"));
         tasks.addAll(BL.getSystemTasks(this));
     }
 
@@ -233,7 +233,7 @@ public class Scheduler extends MonitorServer implements InitializingBean {
         for (int i = 0, size = scheduledTaskResult.size(); i < size; i++) {
             ImMap<Object, Object> key = scheduledTaskResult.getKey(i);
             ImMap<Object, Object> value = scheduledTaskResult.getValue(i);
-            Integer scheduledTaskId = (Integer) key.getValue(0);
+            Long scheduledTaskId = (Long) key.getValue(0);
             DataObject currentScheduledTaskObject = new DataObject(scheduledTaskId, BL.schedulerLM.scheduledTask);
             String nameScheduledTask = trim((String) value.get("nameScheduledTask"));
             Boolean runAtStart = value.get("runAtStartScheduledTask") != null;
@@ -306,24 +306,24 @@ public class Scheduler extends MonitorServer implements InitializingBean {
 
     public class SystemSchedulerTask extends SchedulerTask {
 
-        public SystemSchedulerTask(final EExecutionStackRunnable task, Integer scheduledTaskId, boolean runAtStart, Integer period, boolean fixedDelay, String name) {
+        public SystemSchedulerTask(final EExecutionStackRunnable task, Long scheduledTaskId, boolean runAtStart, Integer period, boolean fixedDelay, String name) {
             super(name, task, scheduledTaskId, runAtStart, null, period, fixedDelay);
         }
     }
 
     public SchedulerTask createSystemTask(EExecutionStackRunnable task, boolean runAtStart, Integer period, boolean fixedDelay, String name) {
-        return new SystemSchedulerTask(task, -1, runAtStart, period, fixedDelay, name);
+        return new SystemSchedulerTask(task, -1L, runAtStart, period, fixedDelay, name);
     }
 
     public class SchedulerTask {
-        private final Integer scheduledTaskId;
+        private final Long scheduledTaskId;
         private final boolean runAtStart;
         private final Timestamp startDate;
         private final Integer period;
         private final boolean fixedDelay;
         private final Runnable task;
 
-        public SchedulerTask(final String name, final EExecutionStackRunnable task, Integer scheduledTaskId, boolean runAtStart, Timestamp startDate, Integer period, boolean fixedDelay) {
+        public SchedulerTask(final String name, final EExecutionStackRunnable task, Long scheduledTaskId, boolean runAtStart, Timestamp startDate, Integer period, boolean fixedDelay) {
             this.task = new Runnable() {
                 public void run() {
                     schedulerLogger.info("Started running scheduler task - " + name);

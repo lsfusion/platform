@@ -143,7 +143,7 @@ public class NumericClass extends IntegralClass<BigDecimal> {
         return new ExtInt(length);
     }
 
-    public Object getDefaultValue() {
+    public BigDecimal getDefaultValue() {
         return new BigDecimal("0.0");
     }
 

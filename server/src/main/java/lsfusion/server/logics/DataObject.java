@@ -55,8 +55,18 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
     public DataObject() {
 
     }
-    
-    public DataObject(Object object, ConcreteClass objectClass) {
+
+    public <T> DataObject(T object, DataClass<T> dataClass) {
+        this((Object)object, dataClass);
+    }
+    public DataObject(Long object, ConcreteObjectClass objectClass) {
+        this((Object)object, (ConcreteClass)objectClass);
+    }
+    public DataObject(Integer object, ConcreteObjectClass objectClass) {
+        this((Object)object, (ConcreteClass)objectClass);
+        throw new UnsupportedOperationException();// should be long
+    }
+    public DataObject(Object object, ConcreteClass objectClass) { // желательно использовать верхние конструкторы
         if(objectClass instanceof StringClass || objectClass instanceof NumericClass)
             object = ((DataClass)objectClass).read(object);
 
@@ -86,6 +96,10 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
 
     public DataObject(Integer ig) {
         this(ig, IntegerClass.instance);
+    }
+
+    public DataObject(Long ig) {
+        this(ig, LongClass.instance);
     }
 
     // ветки для insert'ов

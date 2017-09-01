@@ -2810,8 +2810,8 @@ public class ScriptingLogicsModule extends LogicsModule {
             } 
             LCP<?> lcp = findLCPByPropertyUsage(propUsage);
             ValueClass[] paramClasses = lcp.getInterfaceClasses(ClassType.signaturePolicy);
-            if (paramClasses.length != 1 || paramClasses[0].getType() != IntegerClass.instance) {
-                errLog.emitPropertyWithParamsExpected(getParser(), propUsage.name, "INTEGER");
+            if (paramClasses.length != 1 || paramClasses[0].getType() != ImportDataActionProperty.type) {
+                errLog.emitPropertyWithParamsExpected(getParser(), propUsage.name, ImportDataActionProperty.type.getParsedName());
             }
             props.add(lcp);
         }

@@ -95,7 +95,7 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
         return "'" + ThreadLocalContext.localize(caption) + "'" + " (" + getCanonicalName() + ")";
     }
 
-    public Integer ID;
+    public Long ID;
     protected String sID;
 
     public String getSID() {
@@ -168,7 +168,7 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
         return remoteClass instanceof CustomClass && ((CustomClass)remoteClass).isChild(this);
     }
 
-    public CustomClass findClassID(int idClass) {
+    public CustomClass findClassID(long idClass) {
         if(ID!=null && ID == idClass) return this; // проверка чисто для fillIDs
 
         for(CustomClass child : getChildrenIt()) {
@@ -179,7 +179,7 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
         return null;
     }
 
-    public ConcreteCustomClass findConcreteClassID(int idClass) {
+    public ConcreteCustomClass findConcreteClassID(long idClass) {
         CustomClass cls = findClassID(idClass);
         if (cls == null)
             throw new RuntimeException(ThreadLocalContext.localize("{classes.there.is.an.object.of.not.existing.class.in.the.database} : " + idClass + ")"));
@@ -275,7 +275,7 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
         outStream.writeByte(Data.OBJECT);
         outStream.writeBoolean(this instanceof ConcreteCustomClass);
         outStream.writeUTF(caption.getSourceString());
-        outStream.writeInt(ID);
+        outStream.writeLong(ID);
         outStream.writeUTF(getSID());
 
         ImSet<CustomClass> children = getChildren();

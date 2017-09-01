@@ -48,7 +48,7 @@ public final class LoginAction {
     private LoginDialog loginDialog;
 
     private RemoteLogicsInterface remoteLogics;
-    private int computerId;
+    private long computerId;
     private RemoteNavigatorInterface remoteNavigator;
 
     private LoginAction() {
@@ -126,7 +126,7 @@ public final class LoginAction {
     private int connect() {
         RemoteLogicsLoaderInterface remoteLoader;
         RemoteLogicsInterface remoteLogics;
-        int computerId;
+        long computerId;
         RemoteNavigatorInterface remoteNavigator;
 
         try {
@@ -207,7 +207,7 @@ public final class LoginAction {
         return remoteLogics;
     }
 
-    public int getComputerId() {
+    public long getComputerId() {
         return computerId;
     }
 

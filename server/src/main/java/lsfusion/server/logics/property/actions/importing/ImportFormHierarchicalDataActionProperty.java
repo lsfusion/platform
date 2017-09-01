@@ -106,7 +106,7 @@ public abstract class ImportFormHierarchicalDataActionProperty<E> extends Import
         ImMap<KeyField, DataObject> keyObjects = MapFact.EMPTY();
         int i = 0;
         for (String key : keys) {
-            keyObjects = keyObjects.addExcl(new KeyField(key, IntegerClass.instance), new DataObject(tagsMap.get(key)));
+            keyObjects = keyObjects.addExcl(new KeyField(key, ImportDataActionProperty.type), new DataObject(tagsMap.get(key)));
             i++;
         }
         return keyObjects;

@@ -90,7 +90,7 @@ public class LongClass extends IntClass<Long> {
         statement.setLong(num, (Long)value);
     }
 
-    public Object getDefaultValue() {
+    public Long getDefaultValue() {
         return 0L;
     }
 

@@ -1,6 +1,5 @@
 package lsfusion.server.form.navigator;
 
-import lsfusion.interop.LocalePreferences;
 import lsfusion.interop.action.ClientAction;
 import lsfusion.server.auth.SecurityPolicy;
 import lsfusion.server.context.AbstractContext;
@@ -61,8 +60,8 @@ public class RemoteNavigatorContext extends AbstractContext {
         return navigator.getComputer();
     }
 
-    public Integer getCurrentUser() {
-        return (Integer) navigator.getUser().object;
+    public Long getCurrentUser() {
+        return (Long) navigator.getUser().object;
     }
 
     public DataObject getConnection() {

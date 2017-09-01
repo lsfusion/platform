@@ -164,7 +164,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             return getChangedProps();
         }
 
-        public int getMaxCount(CalcProperty recDepends) {
+        public long getMaxCount(CalcProperty recDepends) {
             return DataSession.this.getMaxDataUsed(recDepends);
         }
     }
@@ -723,8 +723,8 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         return object;
     }
 
-    private static Pair<Integer, Integer>[] toZeroBased(Pair<Integer, Integer>[] shifts) {
-        Pair<Integer, Integer>[] result = new Pair[shifts.length];
+    private static Pair<Long, Long>[] toZeroBased(Pair<Long, Long>[] shifts) {
+        Pair<Long, Long>[] result = new Pair[shifts.length];
         for(int i=0;i<shifts.length;i++)
             result[i] = new Pair<>(shifts[i].first - 1, shifts[i].second);
         return result;
@@ -760,7 +760,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         OperationOwner owner = getOwner();
         try {
             // берем количество рядов - резервируем ID'ки
-            Pair<Integer, Integer>[] startFrom = IDTable.instance.generateIDs(table.getCount(), idSession, IDTable.OBJECT);
+            Pair<Long, Long>[] startFrom = IDTable.instance.generateIDs(table.getCount(), idSession, IDTable.OBJECT);
     
             // update'им на эту разницу ключи, чтобы сгенерить объекты
             table.updateAdded(sql, baseClass, toZeroBased(startFrom), owner); // так как не zero-based отнимаем 1
@@ -815,7 +815,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
     public <K> ImOrderSet<ImMap<K, ConcreteObjectClass>> readDiffClasses(Where where, ImMap<K, ? extends Expr> classExprs, ImMap<K, ? extends Expr> objectExprs) throws SQLException, SQLHandledException {
 
-        final ValueExpr unknownExpr = new ValueExpr(-1, baseClass.unknown);
+        final ValueExpr unknownExpr = new ValueExpr(-1L, baseClass.unknown);
 
         ImRevMap<K,KeyExpr> keys = KeyExpr.getMapKeys(classExprs.keys().addExcl(objectExprs.keys()));
         ImMap<K, Expr> group = ((ImMap<K, Expr>)classExprs).mapValues(new GetValue<Expr, Expr>() {
@@ -831,7 +831,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             public ImMap<K, ConcreteObjectClass> getMapValue(ImMap<K, Object> readClasses) {
                 return readClasses.mapValues(new GetValue<ConcreteObjectClass, Object>() {
                     public ConcreteObjectClass getMapValue(Object id) {
-                        return baseClass.findConcreteClassID((Integer) id, -1);
+                        return baseClass.findConcreteClassID((Long) id, -1);
                     }
                 });
             }
@@ -853,7 +853,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             MSet<ConcreteObjectClass> mChangeOldClasses = SetFact.mSet(); MSet<ConcreteObjectClass> mChangeNewClasses = SetFact.mSet();
             if(change.keyValue !=null) { // оптимизация
                 ConcreteObjectClass prevcl = (ConcreteObjectClass) getCurrentClass(change.keyValue);
-                ConcreteObjectClass newcl = baseClass.findConcreteClassID((Integer) change.propValue.getValue());
+                ConcreteObjectClass newcl = baseClass.findConcreteClassID((Long) change.propValue.getValue());
                 newcl.getDiffSet(prevcl, mAddClasses, mRemoveClasses);
                 mChangeOldClasses.add(prevcl);
                 mChangeNewClasses.add(newcl);
@@ -1478,7 +1478,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                 if(read.size()==0)
                     newClass = null;
                 else
-                    newClass = baseClass.findConcreteClassID((Integer) read.single().get("value"));
+                    newClass = baseClass.findConcreteClassID((Long) read.single().get("value"));
                 newClasses.put(value, newClass);
             }
         }
@@ -1512,8 +1512,16 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         return mvResult.immutableValue();
     }
 
+    public DataObject getDataObject(CustomClass valueClass, Long value) throws SQLException, SQLHandledException {
+        return getDataObject((ValueClass)valueClass, value);
+    }
+
     public DataObject getDataObject(ValueClass valueClass, Object value) throws SQLException, SQLHandledException {
         return baseClass.getDataObject(sql, value, valueClass.getUpSet(), getOwner());
+    }
+
+    public ObjectValue getObjectValue(CustomClass valueClass, Long value) throws SQLException, SQLHandledException {
+        return getObjectValue((ValueClass)valueClass, value);
     }
 
     public ObjectValue getObjectValue(ValueClass valueClass, Object value) throws SQLException, SQLHandledException {
@@ -1647,7 +1655,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             return env;
         }
 
-        public int getMaxCount(CalcProperty recDepends) {
+        public long getMaxCount(CalcProperty recDepends) {
             return 0;
         }
     }
@@ -1864,9 +1872,9 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         recursiveUsed = BaseUtils.merge(recursiveUsed, sessionUsed);
     }
 
-    private int getMaxDataUsed(CalcProperty prop) {
+    private long getMaxDataUsed(CalcProperty prop) {
         SinglePropertyTableUsage<ClassPropertyInterface> tableUsage;
-        int count = 0;
+        long count = 0;
         if (prop instanceof DataProperty && (tableUsage = data.get((DataProperty) prop)) != null)
             count = tableUsage.getCount();
         if (news != null && (prop instanceof IsClassProperty || prop instanceof ObjectClassProperty || prop instanceof ClassDataProperty))
@@ -1927,17 +1935,17 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                     dataChanged += "Removed objects of classes: " + removed + "\n";
 
                 BL.systemEventsLM.changesSession.change(dataChanged, DataSession.this, applyObject);
-                currentSession.change(applyObject.object, DataSession.this);
+                currentSession.change(applyObject, DataSession.this);
                 DataObject cn = ThreadLocalContext.getConnection();
                 if(cn != null)
                     BL.systemEventsLM.connectionSession.change(cn, (ExecutionEnvironment)DataSession.this, applyObject);
                 if (sessionEventFormEnv instanceof FormInstance) { // в будущем имеет смысл из стека тянуть, так как оттуда логи берутся
                     FormEntity formEntity = ((FormInstance) sessionEventFormEnv).entity;
-                    Object ne = !formEntity.isNamed()
-                            ? null
-                            : BL.reflectionLM.navigatorElementCanonicalName.read(sessionEventFormEnv, new DataObject(formEntity.getCanonicalName(), StringClass.get(50)));
-                    if (ne != null)
-                        BL.systemEventsLM.navigatorElementSession.change(new DataObject(ne, BL.reflectionLM.navigatorElement), (ExecutionEnvironment) DataSession.this, applyObject);
+                    ObjectValue ne = !formEntity.isNamed()
+                            ? NullValue.instance
+                            : BL.reflectionLM.navigatorElementCanonicalName.readClasses(sessionEventFormEnv, new DataObject(formEntity.getCanonicalName(), StringClass.get(50)));
+                    if (ne instanceof DataObject)
+                        BL.systemEventsLM.navigatorElementSession.change(ne, (ExecutionEnvironment) DataSession.this, applyObject);
                 }
                 BL.systemEventsLM.quantityAddedClassesSession.change(add.size(), DataSession.this, applyObject);
                 BL.systemEventsLM.quantityRemovedClassesSession.change(remove.size(), DataSession.this, applyObject);
@@ -2340,7 +2348,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                 try {
                     sql.statusMessage = new StatusMessage("delete", mapFields.getKey(i), i, size);
                     ValueClass value = mapFields.getValue(i);
-                    if (remove.contains(value)) {
+                    if (value instanceof CustomClass && remove.contains(value)) {
                         Join<String> newJoin = news.join(query.getMapExprs().get(mapFields.getKey(i)));
                         removeWhere = removeWhere.or(newJoin.getWhere().and(isValueClass(newJoin.getExpr("value"), (CustomClass) value, usedNewClasses).not()));
                     }

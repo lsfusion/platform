@@ -69,7 +69,7 @@ public class Main {
     
     public static boolean hideMenu;
 
-    public static int computerId;
+    public static long computerId;
     public static DateFormat dateFormat;
     public static DateFormat dateEditFormat;
     public static DateFormat timeFormat;
@@ -611,7 +611,7 @@ public class Main {
         System.gc();
     }
 
-    public static int generateID() throws RemoteException {
+    public static long generateID() throws RemoteException {
         return remoteLogics.generateID();
     }
 

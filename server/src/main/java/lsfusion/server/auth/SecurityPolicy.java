@@ -1,14 +1,14 @@
 package lsfusion.server.auth;
 
 public class SecurityPolicy {
-    public final int ID;
+    public final long ID;
     public Boolean configurator;
 
     public SecurityPolicy() {
         this(-1);
     }
 
-    public SecurityPolicy(int ID) {
+    public SecurityPolicy(long ID) {
         this.ID = ID;
     }
 

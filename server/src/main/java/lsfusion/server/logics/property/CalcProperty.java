@@ -337,16 +337,12 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
 
     }
 
-    public void change(ExecutionContext context, Object value) throws SQLException, SQLHandledException {
+    public void change(ExecutionContext context, Boolean value) throws SQLException, SQLHandledException {
         change(context.getEnv(), value);
     }
 
-    public void change(ExecutionEnvironment env, Object value) throws SQLException, SQLHandledException {
+    public void change(ExecutionEnvironment env, Boolean value) throws SQLException, SQLHandledException {
         change(MapFact.<T, DataObject>EMPTY(), env, value);
-    }
-
-    public void change(ImMap<T, DataObject> keys, ExecutionContext context, Object value) throws SQLException, SQLHandledException {
-        change(keys, context.getEnv(), value);
     }
 
     public void change(ImMap<T, DataObject> keys, ExecutionEnvironment env, ObjectValue value) throws SQLException, SQLHandledException {

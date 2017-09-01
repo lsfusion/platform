@@ -132,9 +132,9 @@ public abstract class DynamicExecuteEnvironment<OE, S extends DynamicExecEnvSnap
         }
     };
 
-    private static Map<Integer, Integer> userExecEnvs = MapFact.getGlobalConcurrentHashMap();
+    private static Map<Long, Integer> userExecEnvs = MapFact.getGlobalConcurrentHashMap();
 
-    public static void setUserExecEnv(Integer user, Integer type) {
+    public static void setUserExecEnv(Long user, Integer type) {
         if(type == null)
             userExecEnvs.remove(user);
         else
@@ -142,7 +142,7 @@ public abstract class DynamicExecuteEnvironment<OE, S extends DynamicExecEnvSnap
     }
 
     public static Integer getUserExecEnv(SQLSessionUserProvider userProvider) {
-        Integer currentUser = userProvider.getCurrentUser();
+        Long currentUser = userProvider.getCurrentUser();
         if(currentUser == null)
             return null;
         return userExecEnvs.get(currentUser);

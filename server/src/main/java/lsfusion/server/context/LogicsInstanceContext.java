@@ -55,7 +55,7 @@ public class LogicsInstanceContext extends AbstractContext {
         return logicsInstance.getDbManager().getServerComputerObject(stack);
     }
 
-    public Integer getCurrentUser() {
+    public Long getCurrentUser() {
         return logicsInstance.getDbManager().getSystemUserObject();
     }
 

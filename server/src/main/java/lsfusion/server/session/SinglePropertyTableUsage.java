@@ -57,7 +57,7 @@ public class SinglePropertyTableUsage<K> extends SessionTableUsage<K, String> {
         table = table.fixKeyClasses(classes.remap(mapKeys.reverse()));
     }
 
-    public void updateAdded(SQLSession sql, BaseClass baseClass, Pair<Integer,Integer>[] shifts, OperationOwner owner) throws SQLException, SQLHandledException {
+    public void updateAdded(SQLSession sql, BaseClass baseClass, Pair<Long, Long>[] shifts, OperationOwner owner) throws SQLException, SQLHandledException {
         updateAdded(sql, baseClass, "value", shifts, owner);
     }
 

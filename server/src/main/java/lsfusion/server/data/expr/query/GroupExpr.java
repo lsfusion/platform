@@ -362,7 +362,7 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
     }
 
     public static <K> Expr create(ImMap<K, ? extends Expr> group, Where where, ImMap<K, ? extends Expr> implement, boolean top) {
-        return create(group, top ? new ValueExpr(1, IntegerClass.instance).and(where) : ValueExpr.get(where), top ? GroupType.SUM : GroupType.LOGICAL(), implement, null); // boolean
+        return create(group, top ? ValueExpr.COUNT.and(where) : ValueExpr.get(where), top ? GroupType.SUM : GroupType.LOGICAL(), implement, null); // boolean
     }
 
     public static <K> Expr create(ImMap<K,? extends Expr> group, Where where, ImMap<K,? extends Expr> implement) {

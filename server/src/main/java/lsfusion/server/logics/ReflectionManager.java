@@ -18,6 +18,7 @@ import lsfusion.server.data.KeyField;
 import lsfusion.server.data.PropertyField;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.KeyExpr;
+import lsfusion.server.data.expr.ValueExpr;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.form.entity.FormEntity;
@@ -100,7 +101,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
         }
     }
 
-    public Integer getServerComputer() {
+    public Long getServerComputer() {
         return dbManager.getComputer(SystemUtils.getLocalHostName(), getStack());
     }
     
@@ -406,7 +407,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
         ImportField complexityPropertyField = new ImportField(LongClass.instance);
         ImportField tableSIDPropertyField = new ImportField(reflectionLM.propertyTableValueClass);
         ImportField annotationPropertyField = new ImportField(reflectionLM.propertyTableValueClass);
-        ImportField statsPropertyField = new ImportField(IntegerClass.instance);
+        ImportField statsPropertyField = new ImportField(ValueExpr.COUNTCLASS);
 
         ImportKey<?> keyProperty = new ImportKey(reflectionLM.property, reflectionLM.propertyCanonicalName.getMapping(canonicalNamePropertyField));
 
@@ -711,9 +712,9 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
             try (DataSession session = createSession()) {
                 DataObject newLaunch = session.addObject(systemEventsLM.launch);
                 systemEventsLM.computerLaunch.change(getServerComputer(), session, newLaunch);
-                systemEventsLM.timeLaunch.change(timeLM.currentDateTime.read(session), session, newLaunch);
+                systemEventsLM.timeLaunch.change(timeLM.currentDateTime.readClasses(session), session, newLaunch);
                 systemEventsLM.revisionLaunch.change(getRevision(), session, newLaunch);
-                systemEventsLM.currentLaunch.change(newLaunch.object, session);
+                systemEventsLM.currentLaunch.change(newLaunch, session);
                 session.apply(businessLogics, getStack());
             }
         } catch (Exception e) {

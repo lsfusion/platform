@@ -99,7 +99,7 @@ public abstract class AbstractContext implements Context {
             DataOutputStream dataStream = new DataOutputStream(outStream);
             baseClass.serialize(dataStream);
             defaultValue.serialize(dataStream);
-            Integer result = (Integer) requestUserInteraction(new ChooseClassClientAction(outStream.toByteArray(), concrete));
+            Long result = (Long) requestUserInteraction(new ChooseClassClientAction(outStream.toByteArray(), concrete));
             if (result == null) {
                 return null;
             }
@@ -142,7 +142,7 @@ public abstract class AbstractContext implements Context {
 
     public abstract PropertyObjectInterfaceInstance getComputer(ExecutionStack stack);
 
-    public abstract Integer getCurrentUser();
+    public abstract Long getCurrentUser();
 
     public abstract DataObject getConnection();
 

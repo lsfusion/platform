@@ -18,10 +18,10 @@ import java.util.Map;
 public class RemoteLoggerAspect {
     private final static Logger logger = ServerLoggers.remoteLogger;
 
-    public static final Map<Integer, UserActivity> userActivityMap = MapFact.getGlobalConcurrentHashMap();
-    public static final Map<Integer, Map<Long, List<Long>>> pingInfoMap = MapFact.getGlobalConcurrentHashMap();
+    public static final Map<Long, UserActivity> userActivityMap = MapFact.getGlobalConcurrentHashMap();
+    public static final Map<Long, Map<Long, List<Long>>> pingInfoMap = MapFact.getGlobalConcurrentHashMap();
     private static final Map<Long, Timestamp> dateTimeCallMap = MapFact.getGlobalConcurrentHashMap();
-    private static Map<Integer, Boolean> remoteLoggerDebugEnabled = MapFact.getGlobalConcurrentHashMap();
+    private static Map<Long, Boolean> remoteLoggerDebugEnabled = MapFact.getGlobalConcurrentHashMap();
 
     @Around("(execution(* (lsfusion.interop.RemoteLogicsInterface+ && *..*Interface).*(..))" +
             " || execution(* lsfusion.interop.form.RemoteFormInterface.*(..))" +
@@ -32,16 +32,16 @@ public class RemoteLoggerAspect {
         final long id = Thread.currentThread().getId();
         putDateTimeCall(id, new Timestamp(System.currentTimeMillis()));
         try {
-            Integer user;
-            Integer computer = null;
+            Long user;
+            Long computer = null;
             if (target instanceof RemoteLogics) {
                 user = ((RemoteLogics) target).getCurrentUser();
                 computer = ((RemoteLogics) target).getCurrentComputer();
             } else if (target instanceof RemoteForm) {
                 user = ((RemoteForm) target).getCurrentUser();
             } else {
-                user = (Integer) ((RemoteNavigator) target).getUser().object;
-                computer = (Integer) ((RemoteNavigator) target).getComputer().object;
+                user = (Long) ((RemoteNavigator) target).getUser().object;
+                computer = (Long) ((RemoteNavigator) target).getComputer().object;
             }
             long startTime = System.currentTimeMillis();
             Object result = thisJoinPoint.proceed();
@@ -70,11 +70,11 @@ public class RemoteLoggerAspect {
         );
     }
 
-    public static void setRemoteLoggerDebugEnabled(Integer user, Boolean enabled) {
+    public static void setRemoteLoggerDebugEnabled(Long user, Boolean enabled) {
         remoteLoggerDebugEnabled.put(user, enabled != null && enabled);
     }
 
-    public boolean isRemoteLoggerDebugEnabled(Integer user) {
+    public boolean isRemoteLoggerDebugEnabled(Long user) {
         Boolean lde = remoteLoggerDebugEnabled.get(user);
         return lde != null && lde;
     }

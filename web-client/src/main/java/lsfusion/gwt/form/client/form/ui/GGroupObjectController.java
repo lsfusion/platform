@@ -206,7 +206,7 @@ public class GGroupObjectController extends GAbstractGroupObjectController {
         for (Map.Entry<GPropertyReader, HashMap<GGroupObjectValue, Object>> readProperty : fc.properties.entrySet()) {
             GPropertyReader propertyReader = readProperty.getKey();
             if (formController.getGroupObject(propertyReader.getGroupObjectID()) == groupObject) {
-                propertyReader.update(this, readProperty.getValue(), fc.updateProperties.contains(propertyReader));
+                propertyReader.update(this, readProperty.getValue(), propertyReader instanceof GPropertyDraw && fc.updateProperties.contains(propertyReader));
             }
         }
 

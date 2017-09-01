@@ -80,7 +80,7 @@ public class DoubleClass extends IntegralClass<Double> {
         statement.setDouble(num, (Double)value);
     }
 
-    public Object getDefaultValue() {
+    public Double getDefaultValue() {
         return 0.0;
     }
 

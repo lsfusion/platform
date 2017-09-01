@@ -29,7 +29,7 @@ public class SetVolatileStatsEnabledUserActionProperty extends ScriptingActionPr
         }
 
         Boolean enabled = (Boolean) params.get(0);
-        SQLSession.setVolatileStats((Integer) params.get(1), enabled != null && enabled, session.getOwner());
+        SQLSession.setVolatileStats((Long) params.get(1), enabled != null && enabled, session.getOwner());
     }
 
     @Override

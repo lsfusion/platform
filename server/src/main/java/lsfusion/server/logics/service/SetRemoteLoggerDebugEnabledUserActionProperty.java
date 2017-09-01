@@ -26,7 +26,7 @@ public class SetRemoteLoggerDebugEnabledUserActionProperty extends ScriptingActi
             params.add(context.getKeyObject(classPropertyInterface));
         }
 
-        RemoteLoggerAspect.setRemoteLoggerDebugEnabled((Integer) params.get(1), (Boolean) params.get(0));
+        RemoteLoggerAspect.setRemoteLoggerDebugEnabled((Long) params.get(1), (Boolean) params.get(0));
     }
 
     @Override

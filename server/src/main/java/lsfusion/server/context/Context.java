@@ -64,7 +64,7 @@ public interface Context {
     FocusListener getFocusListener();
     CustomClassListener getClassListener();
     PropertyObjectInterfaceInstance getComputer(ExecutionStack stack);
-    Integer getCurrentUser();
+    Long getCurrentUser();
     DataObject getConnection();
     
     String localize(LocalizedString s);

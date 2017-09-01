@@ -151,7 +151,7 @@ public abstract class ImportDataActionProperty extends SystemActionProperty {
                         context.getSession().dropChanges((DataProperty) prop.property);
                 }
 
-                SingleKeyTableUsage<LCP> importTable = new SingleKeyTableUsage<>("idaatabke", IntegerClass.instance, props, new Type.Getter<LCP>() {
+                SingleKeyTableUsage<LCP> importTable = new SingleKeyTableUsage<>("idaatabke", ImportDataActionProperty.type, props, new Type.Getter<LCP>() {
                     @Override
                     public Type getType(LCP key) {
                         return key.property.getType();
@@ -160,7 +160,7 @@ public abstract class ImportDataActionProperty extends SystemActionProperty {
                 MExclMap<ImMap<String, DataObject>, ImMap<LCP, ObjectValue>> mRows = MapFact.mExclMap();
                 while ((row = iterator.nextRow()) != null) {
                     if(row instanceof List) {
-                        DataObject rowKey = new DataObject(i++, IntegerClass.instance);
+                        DataObject rowKey = new DataObject(i++, ImportDataActionProperty.type);
                         final List<String> finalRow = (List<String>) row;
                         mRows.exclAdd(MapFact.singleton("key", rowKey), props.getSet().mapValues(new GetValue<ObjectValue, LCP>() {
                             public ObjectValue getMapValue(LCP prop) {
@@ -208,6 +208,8 @@ public abstract class ImportDataActionProperty extends SystemActionProperty {
         }
         return FlowResult.FINISH;
     }
+    
+    public final static DataClass type = IntegerClass.instance; 
 
     protected List<Integer> getSourceColumns(Map<String, Integer> mapping) {
         List<Integer> columns = new ArrayList<>();

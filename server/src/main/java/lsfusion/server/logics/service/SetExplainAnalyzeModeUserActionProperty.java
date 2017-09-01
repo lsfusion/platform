@@ -26,7 +26,7 @@ public class SetExplainAnalyzeModeUserActionProperty extends ScriptingActionProp
             params.add(context.getKeyObject(classPropertyInterface));
         }
         
-        SQLSession.setExplainAnalyzeMode((Integer) params.get(1), (Boolean) params.get(0));
+        SQLSession.setExplainAnalyzeMode((Long) params.get(1), (Boolean) params.get(0));
     }
 
     @Override

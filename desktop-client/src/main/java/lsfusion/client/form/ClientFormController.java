@@ -899,14 +899,14 @@ public class ClientFormController implements AsyncListener {
 
         final GroupObjectController controller = controllers.get(object.groupObject);
 
-        final int ID;
+        final long ID;
         final ClientGroupObjectValue value;
         if(add) {
             ID = Main.generateID();
             value = new ClientGroupObjectValue(object, ID);
         } else {
             value = controller.getCurrentObject();
-            ID = (Integer) BaseUtils.singleValue(value);
+            ID = (Long) BaseUtils.singleValue(value);
         }
         
         final int position = controller.getCurrentRow();

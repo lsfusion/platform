@@ -43,14 +43,14 @@ public abstract class SessionModifier implements Modifier {
         modifier.eventDataChanges(getPropertyChanges().getProperties());
     }
 
-    public int getMaxCountUsed(CalcProperty<?> property) {
-        int result = 0;
+    public long getMaxCountUsed(CalcProperty<?> property) {
+        long result = 0;
         for(CalcProperty depend : property.getRecDepends()) {
             result = BaseUtils.max(result, getMaxCount(depend));
         }
         return result;
     }
-    public abstract int getMaxCount(CalcProperty recDepends);
+    public abstract long getMaxCount(CalcProperty recDepends);
 
     public void unregisterView(OverrideSessionModifier modifier) { // protected
         views.remove(modifier);

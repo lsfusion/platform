@@ -59,15 +59,15 @@ public class BaseClass extends AbstractCustomClass {
         return this;
     }
 
-    public ObjectClass findClassID(Integer idClass) {
+    public ObjectClass findClassID(Long idClass) {
         if(idClass==null) return unknown;
 
-        return findClassID((int)idClass);
+        return findClassID((long)idClass);
     }
 
     // для того чтобы группировать по классам в некоторых местах делается nvl(-1), тем самым assert'ся что результат не null
     // но если "плывут" классы, или просто объект параллельно удалили, может нарушаться поэтому пока вставим assertion 
-    public ConcreteObjectClass findConcreteClassID(Integer id, int nullValue) {
+    public ConcreteObjectClass findConcreteClassID(Long id, long nullValue) {
         if(id == null) {
             id = nullValue;
             ServerLoggers.assertLog(false, "CLASS RESULT SHOULD NOT BE NULL");
@@ -76,10 +76,10 @@ public class BaseClass extends AbstractCustomClass {
     }
 
     @IdentityLazy
-    public ConcreteObjectClass findConcreteClassID(Integer idClass) {
+    public ConcreteObjectClass findConcreteClassID(Long idClass) {
         if(idClass==null) return unknown;
 
-        return findConcreteClassID((int) idClass);
+        return findConcreteClassID((long) idClass);
     }
 
     public ImSet<CustomClass> getAllClasses() {
@@ -106,12 +106,12 @@ public class BaseClass extends AbstractCustomClass {
 
     public void fillIDs(DataSession session, LCP staticCaption, LCP staticName, Map<String, String> sidChanges, Map<String, String> objectSIDChanges) throws SQLException, SQLHandledException {
         Map<String, ConcreteCustomClass> usedSIds = new HashMap<>();
-        Set<Integer> usedIds = new HashSet<>();
+        Set<Long> usedIds = new HashSet<>();
 
         // baseClass'у и baseClass.objectClass'у нужны ID сразу потому как учавствуют в addObject
-        ID = 0;
+        ID = 0L;
 
-        objectClass.ID = Integer.MAX_VALUE - 5; // в явную обрабатываем objectClass
+        objectClass.ID = (long)Integer.MAX_VALUE - 5; // в явную обрабатываем objectClass
         if(objectClass.readData(objectClass.ID, session.sql) == null) {
             DataObject classObject = new DataObject(objectClass.ID, unknown);
             session.changeClass(classObject, objectClass);
@@ -132,7 +132,7 @@ public class BaseClass extends AbstractCustomClass {
             if(customClass instanceof ConcreteCustomClass)
                 customClass.ID = objectClass.getObjectID(customClass.getSID());
 
-        int free = 0;
+        long free = 0;
         for(CustomClass customClass : allClasses)
             if(customClass instanceof ConcreteCustomClass)
                 free = Math.max(free, customClass.ID);

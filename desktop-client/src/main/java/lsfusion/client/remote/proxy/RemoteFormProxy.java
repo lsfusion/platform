@@ -147,7 +147,7 @@ public class RemoteFormProxy extends RemoteObjectProxy<RemoteFormInterface> impl
         return result;
     }
 
-    public ServerResponse changeGridClass(long requestIndex, long lastReceivedRequestIndex, int objectID, int idClass) throws RemoteException {
+    public ServerResponse changeGridClass(long requestIndex, long lastReceivedRequestIndex, int objectID, long idClass) throws RemoteException {
         logRemoteMethodStartVoidCall("changeGridClass");
         ServerResponse result = target.changeGridClass(requestIndex, lastReceivedRequestIndex, objectID, idClass);
         logRemoteMethodEndVoidCall("changeGridClass");
@@ -292,7 +292,7 @@ public class RemoteFormProxy extends RemoteObjectProxy<RemoteFormInterface> impl
         return result;
     }
 
-    public ServerResponse changeProperty(long requestIndex, long lastReceivedRequestIndex, int propertyID, byte[] fullKey, byte[] pushChange, Integer pushAdd) throws RemoteException {
+    public ServerResponse changeProperty(long requestIndex, long lastReceivedRequestIndex, int propertyID, byte[] fullKey, byte[] pushChange, Long pushAdd) throws RemoteException {
         logRemoteMethodStartCall("executeEditAction");
         ServerResponse result = target.changeProperty(requestIndex, lastReceivedRequestIndex, propertyID, fullKey, pushChange, pushAdd);
         logRemoteMethodEndCall("executeEditAction", result);

@@ -66,7 +66,7 @@ public class IncrementTableProps extends IncrementProps {
         tableProps.clear(session, owner);
     }
 
-    public int getMaxCount(CalcProperty property) {
+    public long getMaxCount(CalcProperty property) {
         SinglePropertyTableUsage table = tableProps.getTable(property);
         if(table != null)
             return table.getCount();

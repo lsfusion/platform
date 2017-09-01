@@ -58,7 +58,7 @@ public class PropertySet<T extends PropertyInterface> {
 
     public Query<T, String> getAddQuery(BaseClass baseClass) {
         Expr exprNum = PartitionExpr.create(PartitionType.SUM,
-                ListFact.singleton(new ValueExpr(1, ObjectType.idClass).and(getFullWhere())),
+                ListFact.singleton(new ValueExpr(1L, ObjectType.idClass).and(getFullWhere())),
                 AggrExpr.fixOrders(orders, mapKeys), ordersNotNull, SetFact.<Expr>EMPTY(), mapKeys.valuesSet().toMap());
 
         QueryBuilder<T, String> query = new QueryBuilder<>(mapKeys, exprNum.getWhere());

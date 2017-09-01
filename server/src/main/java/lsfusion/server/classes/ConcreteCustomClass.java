@@ -118,7 +118,7 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
     }
 
     public static class ObjectInfo {
-        public ObjectInfo(String sid, String name, LocalizedString caption, Integer id) {
+        public ObjectInfo(String sid, String name, LocalizedString caption, Long id) {
             this.sid = sid;
             this.name = name;
             this.caption = caption;
@@ -128,7 +128,7 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
         public String sid;
         public String name;
         public LocalizedString caption;
-        public Integer id;
+        public Long id;
     }
 
     private NFSet<ObjectInfo> staticObjectsInfo = NFFact.set();
@@ -157,7 +157,7 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
         return false;
     }
 
-    public int getObjectID(String name) {
+    public long getObjectID(String name) {
         for (ObjectInfo info : getStaticObjectsInfoIt()) {
             if (info.name.equals(name)) {
                 return info.id;
@@ -166,7 +166,7 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
         throw new RuntimeException("name not found");
     }
 
-    public String getObjectName(int id) {
+    public String getObjectName(long id) {
         for(ObjectInfo info : getStaticObjectsInfoIt()) {
             if (info.id == id) {
                 return info.name;
@@ -198,7 +198,7 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
         return names;
     }
 
-    public Map<DataObject, String> fillIDs(DataSession session, LCP name, LCP staticName, Map<String, ConcreteCustomClass> usedSIds, Set<Integer> usedIds, Map<String, String> sidChanges, Map<DataObject, String> modifiedObjects) throws SQLException, SQLHandledException {
+    public Map<DataObject, String> fillIDs(DataSession session, LCP name, LCP staticName, Map<String, ConcreteCustomClass> usedSIds, Set<Long> usedIds, Map<String, String> sidChanges, Map<DataObject, String> modifiedObjects) throws SQLException, SQLHandledException {
         Map<DataObject, String> modifiedNames = new HashMap<>();
 
         // Получаем старые sid и name
@@ -212,11 +212,11 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
         ImOrderMap<ImMap<String, Object>, ImMap<String, Object>> qResult = allClassesQuery.execute(session.sql, session.env);
 
         // Забрасываем результат запроса в map: sid -> <id, name>
-        Map<String, Pair<Integer, String>> oldClasses = new HashMap<>();
+        Map<String, Pair<Long, String>> oldClasses = new HashMap<>();
         for (int i = 0, size = qResult.size(); i < size; i++) {
             ImMap<String, Object> resultKey = qResult.getKey(i);
             ImMap<String, Object> resultValue = qResult.getValue(i);
-            oldClasses.put(((String) resultValue.get("sid")).trim(), new Pair<>((Integer) resultKey.singleValue(), BaseUtils.nullTrim((String) resultValue.get("name"))));
+            oldClasses.put(((String) resultValue.get("sid")).trim(), new Pair<>((Long) resultKey.singleValue(), BaseUtils.nullTrim((String) resultValue.get("name"))));
         }
 
         // новый sid -> старый sid
@@ -245,7 +245,7 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
                 DataObject classObject = session.addObject(this);
                 name.change(info.caption.getSourceString(), session, classObject);
                 staticName.change(newSID, session, classObject);
-                info.id = (Integer) classObject.object;
+                info.id = (Long) classObject.object;
             }
 
             usedIds.add(info.id);
@@ -271,8 +271,8 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
     }
 
     public ClassDataProperty dataProperty;
-    public Integer readData(Integer data, SQLSession sql) throws SQLException, SQLHandledException {
-        return (Integer) dataProperty.read(sql, MapFact.singleton(dataProperty.interfaces.single(), new DataObject(data, this)), Property.defaultModifier, DataSession.emptyEnv(OperationOwner.unknown));
+    public Long readData(Long data, SQLSession sql) throws SQLException, SQLHandledException {
+        return (Long) dataProperty.read(sql, MapFact.singleton(dataProperty.interfaces.single(), new DataObject(data, this)), Property.defaultModifier, DataSession.emptyEnv(OperationOwner.unknown));
     }
 
     public ImRevMap<ObjectClassField, ObjectValueClassSet> getObjectClassFields() {

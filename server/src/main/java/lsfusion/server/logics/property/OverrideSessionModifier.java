@@ -46,7 +46,7 @@ public class OverrideSessionModifier extends SessionModifier {
         return merge(override.getProperties(), forceHintIncrement, forceNoUpdate);
     }
 
-    public int getMaxCount(CalcProperty property) {
+    public long getMaxCount(CalcProperty property) {
         return BaseUtils.max(override.getMaxCount(property), modifier.getMaxCount(property));
     }
 

@@ -73,7 +73,7 @@ public class RemoteFormContext<T extends BusinessLogics<T>, F extends FormInstan
         return form.form.instanceFactory.computer;
     }
 
-    public Integer getCurrentUser() {
+    public Long getCurrentUser() {
         return form.getCurrentUser();
     }
 

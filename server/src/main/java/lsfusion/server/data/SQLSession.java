@@ -16,6 +16,7 @@ import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
 import lsfusion.server.classes.IntegerClass;
 import lsfusion.server.data.expr.KeyExpr;
+import lsfusion.server.data.expr.ValueExpr;
 import lsfusion.server.data.expr.query.PropStat;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.query.*;
@@ -1417,36 +1418,36 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         }
     }
 
-    private static Map<Integer, Boolean> explainUserMode = MapFact.getGlobalConcurrentHashMap();
-    private static Map<Integer, Boolean> explainNoAnalyzeUserMode = MapFact.getGlobalConcurrentHashMap();
-    private static Map<Integer, Boolean> loggerDebugEnabled = MapFact.getGlobalConcurrentHashMap();
-    private static Map<Integer, Boolean> userVolatileStats = MapFact.getGlobalConcurrentHashMap();
+    private static Map<Long, Boolean> explainUserMode = MapFact.getGlobalConcurrentHashMap();
+    private static Map<Long, Boolean> explainNoAnalyzeUserMode = MapFact.getGlobalConcurrentHashMap();
+    private static Map<Long, Boolean> loggerDebugEnabled = MapFact.getGlobalConcurrentHashMap();
+    private static Map<Long, Boolean> userVolatileStats = MapFact.getGlobalConcurrentHashMap();
 
-    public static void setExplainAnalyzeMode(Integer user, Boolean mode) {
+    public static void setExplainAnalyzeMode(Long user, Boolean mode) {
         explainUserMode.put(user, mode != null && mode);
     }
 
-    public static void setExplainMode(Integer user, Boolean mode) {
+    public static void setExplainMode(Long user, Boolean mode) {
         explainNoAnalyzeUserMode.put(user, mode != null && mode);
     }
 
-    public static void setLoggerDebugEnabled(Integer user, Boolean enabled) {
+    public static void setLoggerDebugEnabled(Long user, Boolean enabled) {
         loggerDebugEnabled.put(user, enabled != null && enabled);
     }
     
-    public static void setVolatileStats(Integer user, Boolean enabled, OperationOwner owner) throws SQLException {
+    public static void setVolatileStats(Long user, Boolean enabled, OperationOwner owner) throws SQLException {
         userVolatileStats.put(user, enabled != null && enabled);
     }
 
     public boolean getVolatileStats() {
-        Integer currentUser = userProvider.getCurrentUser();
+        Long currentUser = userProvider.getCurrentUser();
         if(currentUser == null)
             return false;
         return getVolatileStats(currentUser);
     }
 
     public boolean explainAnalyze() {
-        Integer currentUser = userProvider.getCurrentUser();
+        Long currentUser = userProvider.getCurrentUser();
         if(currentUser == null)
             return false;
         Boolean eam = explainUserMode.get(currentUser);
@@ -1454,7 +1455,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     }
 
     public boolean explainNoAnalyze() {
-        Integer currentUser = userProvider.getCurrentUser();
+        Long currentUser = userProvider.getCurrentUser();
         if(currentUser == null)
             return false;
         Boolean ea = explainNoAnalyzeUserMode.get(currentUser);
@@ -1462,14 +1463,14 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     }
 
     public boolean isLoggerDebugEnabled() {
-        Integer currentUser = userProvider.getCurrentUser();
+        Long currentUser = userProvider.getCurrentUser();
         if(currentUser == null)
             return false;
         Boolean lde = loggerDebugEnabled.get(currentUser);
         return lde != null && lde;
     }
     
-    public boolean getVolatileStats(Integer user) {
+    public boolean getVolatileStats(Long user) {
         Boolean vs = userVolatileStats.get(user);
         return vs != null && vs;
     }
@@ -2415,7 +2416,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     public int getCount(String table, OperationOwner opOwner) throws SQLException {
 //        executeDML("TRUNCATE " + syntax.getSessionTableName(table));
         try {
-            return (Integer)executeSelect("SELECT COUNT(*) AS cnt FROM " + table, opOwner, StaticExecuteEnvironmentImpl.EMPTY, MapFact.<String, ParseInterface>EMPTY(), 0, MapFact.singletonRev("cnt", "cnt"), MapFact.singleton("cnt", IntegerClass.instance), MapFact.<String, String>EMPTYREV(), MapFact.<String, Reader>EMPTY()).singleKey().singleValue();
+            return (Integer)executeSelect("SELECT COUNT(*) AS cnt FROM " + table, opOwner, StaticExecuteEnvironmentImpl.EMPTY, MapFact.<String, ParseInterface>EMPTY(), 0, MapFact.singletonRev("cnt", "cnt"), MapFact.singleton("cnt", ValueExpr.COUNTCLASS), MapFact.<String, String>EMPTYREV(), MapFact.<String, Reader>EMPTY()).singleKey().singleValue();
         } catch (SQLHandledException e) {
             throw Throwables.propagate(e);
         }

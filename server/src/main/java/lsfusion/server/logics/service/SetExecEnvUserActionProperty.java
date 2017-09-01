@@ -28,7 +28,7 @@ public class SetExecEnvUserActionProperty extends ScriptingActionProperty {
             params.add(context.getKeyObject(classPropertyInterface));
         }
 
-        DynamicExecuteEnvironment.setUserExecEnv((Integer) params.get(1), (Integer)params.get(0));
+        DynamicExecuteEnvironment.setUserExecEnv((Long) params.get(1), (Integer)params.get(0));
     }
 
     @Override

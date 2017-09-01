@@ -16,7 +16,7 @@ public class YearClass extends IntegerClass {
     private YearClass() { caption = LocalizedString.create("{classes.year}"); }
 
     @Override
-    public Object getDefaultValue() {
+    public Integer getDefaultValue() {
         return Calendar.getInstance().get(Calendar.YEAR);
     }
 

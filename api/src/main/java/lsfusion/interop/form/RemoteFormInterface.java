@@ -68,11 +68,11 @@ public interface RemoteFormInterface extends PendingRemoteInterface {
 
     // асинхронные вызовы
 
-    ServerResponse changeProperty(long requestIndex, long lastReceivedRequestIndex, int propertyID, byte[] fullKey, byte[] pushChange, Integer pushAdd) throws RemoteException;
+    ServerResponse changeProperty(long requestIndex, long lastReceivedRequestIndex, int propertyID, byte[] fullKey, byte[] pushChange, Long pushAdd) throws RemoteException;
 
     // фильтры / порядки
 
-    ServerResponse changeGridClass(long requestIndex, long lastReceivedRequestIndex, int objectID, int idClass) throws RemoteException;
+    ServerResponse changeGridClass(long requestIndex, long lastReceivedRequestIndex, int objectID, long idClass) throws RemoteException;
 
     ServerResponse changePropertyOrder(long requestIndex, long lastReceivedRequestIndex, int propertyID, byte modiType, byte[] columnKeys) throws RemoteException;
 

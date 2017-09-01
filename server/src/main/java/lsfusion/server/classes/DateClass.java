@@ -51,7 +51,7 @@ public class DateClass extends DataClass<Date> {
         return compClass instanceof DateClass?this:null;
     }
 
-    public Object getDefaultValue() {
+    public Date getDefaultValue() {
         return DateConverter.getCurrentDate();
     }
 

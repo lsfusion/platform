@@ -13,6 +13,7 @@ import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
+import lsfusion.server.classes.DataClass;
 import lsfusion.server.classes.DateTimeClass;
 import lsfusion.server.classes.IntegerClass;
 import lsfusion.server.classes.StringClass;
@@ -139,6 +140,8 @@ public class MakeProcessDumpActionProperty extends ScriptingActionProperty {
         return baseInTransaction != null ? baseInTransaction : fusionInTransaction;
     }
 
+    private DataClass processIDType = IntegerClass.instance;
+
     private ImMap<String, List<Object>> getMSSQLProcesses(ExecutionContext context, Map<Integer, List<Object>> sessionThreadMap,
                                                           MSet<Thread> javaThreads, MExclSet<String> mFreeSQLProcesses)
             throws SQLException, SQLHandledException {
@@ -168,7 +171,7 @@ public class MakeProcessDumpActionProperty extends ScriptingActionProperty {
 
         MExclMap<String, Reader> propertyReaders = MapFact.mExclMap();
         propertyReaders.exclAdd("text", StringClass.get(1000));
-        propertyReaders.exclAdd("session_id", IntegerClass.instance);
+        propertyReaders.exclAdd("session_id", processIDType);
         propertyReaders.exclAdd("host_name", StringClass.get(100));
         propertyReaders.exclAdd("client_net_address", StringClass.get(100));
         propertyReaders.exclAdd("start_time", DateTimeClass.instance);
@@ -249,7 +252,7 @@ public class MakeProcessDumpActionProperty extends ScriptingActionProperty {
 
         MExclMap<String, Reader> propertyReaders = MapFact.mExclMap();
         propertyReaders.exclAdd("query", StringClass.get(1000));
-        propertyReaders.exclAdd("pid", IntegerClass.instance);
+        propertyReaders.exclAdd("pid", processIDType);
         propertyReaders.exclAdd("usename", StringClass.get(100));
         propertyReaders.exclAdd("client_addr", PGObjectReader.instance);
         propertyReaders.exclAdd("query_start", DateTimeClass.instance);
@@ -354,9 +357,9 @@ public class MakeProcessDumpActionProperty extends ScriptingActionProperty {
         propertyNames.immutable();
 
         MExclMap<String, Reader> propertyReaders = MapFact.mExclMap();
-        propertyReaders.exclAdd("blocked_pid", IntegerClass.instance);
+        propertyReaders.exclAdd("blocked_pid", processIDType);
         propertyReaders.exclAdd("blocked_user", StringClass.get(100));
-        propertyReaders.exclAdd("blocking_pid", IntegerClass.instance);
+        propertyReaders.exclAdd("blocking_pid", processIDType);
         propertyReaders.exclAdd("blocking_user", StringClass.get(100));
         propertyReaders.exclAdd("blocked_statement", StringClass.get(100));
         propertyReaders.exclAdd("blocking_statement", StringClass.get(100));

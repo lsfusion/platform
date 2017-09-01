@@ -19,6 +19,6 @@ public class LoadLinkActionProperty extends ScriptingActionProperty {
 
     @Override
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
-        context.getBL().LM.baseLM.networkPath.change(context.requestUserInteraction(new LoadLinkClientAction()), context);
+        context.getBL().LM.baseLM.networkPath.change((String)context.requestUserInteraction(new LoadLinkClientAction()), context);
     }
 }

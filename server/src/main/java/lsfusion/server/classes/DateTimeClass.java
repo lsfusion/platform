@@ -50,7 +50,7 @@ public class DateTimeClass extends DataClass<Timestamp> {
         return compClass instanceof DateTimeClass ? this : null;
     }
 
-    public Object getDefaultValue() {
+    public Timestamp getDefaultValue() {
         return new Timestamp(System.currentTimeMillis());
     }
 

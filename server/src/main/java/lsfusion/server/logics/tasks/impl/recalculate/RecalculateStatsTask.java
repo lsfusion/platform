@@ -43,7 +43,7 @@ public class RecalculateStatsTask extends GroupPropertiesSingleTask<Object> { //
 
                 KeyExpr countKeyExpr = new KeyExpr("count");
                 Expr countExpr = GroupExpr.create(MapFact.singleton(0, countKeyExpr.classExpr(getBL().LM.baseClass)),
-                        new ValueExpr(1, IntegerClass.instance), countKeyExpr.isClass((ObjectValueClassSet) element), GroupType.SUM, classes.getMapExprs());
+                        ValueExpr.COUNT, countKeyExpr.isClass((ObjectValueClassSet) element), GroupType.SUM, classes.getMapExprs());
 
                 classes.addProperty(0, countExpr);
                 classes.and(countExpr.getWhere());

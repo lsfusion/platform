@@ -5,7 +5,7 @@ import java.util.ArrayList;
 public class GObjectClass implements GClass {
 
     public boolean concreate;
-    public int ID;
+    public long ID;
     public String caption;
     public ArrayList<GObjectClass> children;
 
@@ -13,7 +13,7 @@ public class GObjectClass implements GClass {
     public GObjectClass() {
     }
 
-    public GObjectClass(int id, boolean concreate, String caption, ArrayList<GObjectClass> children) {
+    public GObjectClass(long id, boolean concreate, String caption, ArrayList<GObjectClass> children) {
         this.ID = id;
         this.concreate = concreate;
         this.caption = caption;

@@ -11,9 +11,9 @@ import java.util.List;
 
 public class User extends PolicyAgent {
 
-    public final int ID;
+    public final long ID;
 
-    public User(int ID) {
+    public User(long ID) {
 
         this.ID = ID;
     }

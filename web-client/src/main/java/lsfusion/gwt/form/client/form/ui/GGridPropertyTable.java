@@ -189,11 +189,11 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         refreshHeaders();
     }
 
-    public int getHeaderIndex(Header header) {
+    public int getHeaderIndex(GGridPropertyTableHeader header) {
         return headers.indexOf(header);
     }
 
-    public Boolean getSortDirection(Header header) {
+    public Boolean getSortDirection(GGridPropertyTableHeader header) {
         return sortableHeaderManager.getSortDirection(getHeaderIndex(header));
     }
     

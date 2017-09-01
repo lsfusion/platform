@@ -77,7 +77,7 @@ public class PrintActionProperty<O extends ObjectSelector> extends FormStaticAct
             printMessage(caption, context, reportData);
         } else {
             String pName = printerProperty == null ? null : (String) printerProperty.read(context, context.getKeys());
-            Object pageCount = context.requestUserInteraction(new ReportClientAction(reportPath, syncType, reportData, (FormPrintType) staticType, pName, SystemProperties.isDebug));
+            Integer pageCount = (Integer)context.requestUserInteraction(new ReportClientAction(reportPath, syncType, reportData, (FormPrintType) staticType, pName, SystemProperties.isDebug));
             formPageCount.change(pageCount, context);
         }
     }

@@ -124,7 +124,7 @@ public abstract class ImportFormPlainDataActionProperty<I> extends ImportFormDat
         int i = 0;
         for (String key : keys) {
             Integer value = keyTagsMap.containsKey(key) ? keyTagsMap.get(key) : tagsMap.get(key);
-            keyObjects = keyObjects.addExcl(new KeyField(key, IntegerClass.instance), new DataObject(value));
+            keyObjects = keyObjects.addExcl(new KeyField(key, ImportDataActionProperty.type), new DataObject(value));
             i++;
         }
         return keyObjects;

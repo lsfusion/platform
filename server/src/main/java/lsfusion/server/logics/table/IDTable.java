@@ -9,6 +9,8 @@ import lsfusion.base.col.interfaces.mutable.add.MAddMap;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
 import lsfusion.server.caches.IdentityInstanceLazy;
+import lsfusion.server.classes.DataClass;
+import lsfusion.server.classes.IntegerClass;
 import lsfusion.server.classes.SystemClass;
 import lsfusion.server.data.*;
 import lsfusion.server.data.expr.ValueExpr;
@@ -17,6 +19,7 @@ import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.query.Query;
 import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.data.query.stat.TableStatKeys;
+import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.logics.DBManager;
 import lsfusion.server.logics.DataObject;
@@ -26,6 +29,8 @@ import java.sql.SQLException;
 // таблица счетчика sID
 public class IDTable extends GlobalTable {
 
+    public final static IntegerClass idTypeClass = IntegerClass.instance;
+
     public static final IDTable instance = new IDTable(); 
 
     KeyField key;
@@ -33,15 +38,15 @@ public class IDTable extends GlobalTable {
 
     public IDTable() {
         super("idtable");
-        key = new KeyField("id", SystemClass.instance);
+        key = new KeyField("id", idTypeClass);
         keys = SetFact.singletonOrder(key);
 
         value = new PropertyField("value", SystemClass.instance);
         properties = SetFact.singleton(value);
 
-        classes = new ClassWhere<>(key, SystemClass.instance);
+        classes = new ClassWhere<>(key, idTypeClass);
 
-        ImMap<Field, SystemClass> valueClasses = MapFact.toMap(key, SystemClass.instance, value, SystemClass.instance);
+        ImMap<Field, DataClass> valueClasses = MapFact.toMap(key, (DataClass) idTypeClass, value, SystemClass.instance);
         propertyClasses = MapFact.singleton(value, new ClassWhere<>(valueClasses));
     }
 
@@ -49,35 +54,35 @@ public class IDTable extends GlobalTable {
     public final static int FORM = 2;
     public final static int NAME = 3;
 
-    static ImMap<Integer, Integer> getCounters() {
-        return MapFact.toMap(OBJECT, 10, FORM, 0); // потому как есть базовый пул 0,1,2 предопределенных ID'ков
+    static ImMap<Integer, Long> getCounters() {
+        return MapFact.toMap(OBJECT, 10L, FORM, 0L); // потому как есть базовый пул 0,1,2 предопределенных ID'ков
     }
 
     @IdentityInstanceLazy
     private Query<KeyField, PropertyField> getGenerateQuery(int idType) {
-        QueryBuilder<KeyField, PropertyField> query = new QueryBuilder<>(this, MapFact.singleton(key, new DataObject(idType, SystemClass.instance)));
+        QueryBuilder<KeyField, PropertyField> query = new QueryBuilder<>(this, MapFact.singleton(key, new DataObject(idType, idTypeClass)));
         lsfusion.server.data.query.Join<PropertyField> joinTable = join(query.getMapExprs());
         query.and(joinTable.getWhere());
         query.addProperty(value, joinTable.getExpr(value));
         return query.getQuery();
     }
 
-    private MAddMap<Integer, Pair<Integer, Integer>> ids = MapFact.mAddMap(MapFact.<Integer, Pair<Integer, Integer>>override());
+    private MAddMap<Integer, Pair<Long, Long>> ids = MapFact.mAddMap(MapFact.<Integer, Pair<Long, Long>>override());
     {
-        ImMap<Integer, Integer> counters = getCounters();
+        ImMap<Integer, Long> counters = getCounters();
         for(int i=0,size=counters.size();i<size;i++)
-            ids.add(counters.getKey(i), new Pair<>(0, -1));
+            ids.add(counters.getKey(i), new Pair<>(0L, -1L));
     }
     
-    public int generateID(SQLSession dataSession, int idType) throws SQLException {
+    public long generateID(SQLSession dataSession, int idType) throws SQLException {
 
-        Integer result;
+        Long result;
         synchronized (this) {
             assert !dataSession.isInTransaction();
 
-            Pair<Integer, Integer> id = ids.get(idType);
-            int freeID = id.first;
-            int maxReservedID = id.second;
+            Pair<Long, Long> id = ids.get(idType);
+            long freeID = id.first;
+            long maxReservedID = id.second;
 
             if(freeID > maxReservedID) { // читаем новый пул
                 int reserveIDStep = Settings.get().getReserveIDStep();
@@ -92,14 +97,14 @@ public class IDTable extends GlobalTable {
         return result;
     }
 
-    public Pair<Integer, Integer>[] generateIDs(int count, SQLSession dataSession, int idType) throws SQLException {
+    public Pair<Long, Long>[] generateIDs(long count, SQLSession dataSession, int idType) throws SQLException {
         synchronized (this) {
-            Pair<Integer, Integer> id = ids.get(idType);
-            int freeID = id.first;
-            int maxReservedID = id.second;
+            Pair<Long, Long> id = ids.get(idType);
+            long freeID = id.first;
+            long maxReservedID = id.second;
 
-            Pair<Integer, Integer> fromPoolIDs;
-            int fromPool = maxReservedID - freeID + 1;
+            Pair<Long, Long> fromPoolIDs;
+            long fromPool = maxReservedID - freeID + 1;
             if(fromPool >= count) {
                 fromPoolIDs = new Pair<>(freeID, count);
                 freeID += count;
@@ -109,12 +114,12 @@ public class IDTable extends GlobalTable {
             } else
                 fromPoolIDs = new Pair<>(freeID, fromPool);
 
-            int rest = count - fromPool;
+            long rest = count - fromPool;
             assert rest > 0;
 
-            int newReserved = rest + Settings.get().getReserveIDStep();
-            int newID = reserveIDs(newReserved, dataSession, idType);
-            Pair<Integer, Integer> genPoolIDs = new Pair<>(newID, rest);
+            long newReserved = rest + Settings.get().getReserveIDStep();
+            long newID = reserveIDs(newReserved, dataSession, idType);
+            Pair<Long, Long> genPoolIDs = new Pair<>(newID, rest);
 
             maxReservedID = newID + newReserved - 1;
             freeID = newID + rest;
@@ -126,19 +131,19 @@ public class IDTable extends GlobalTable {
         }
     }
 
-    public int reserveIDs(int count, SQLSession dataSession, int idType) throws SQLException {
+    public long reserveIDs(long count, SQLSession dataSession, int idType) throws SQLException {
         return reserveIDs(count, dataSession, idType, 0);
     }
 
         // возвращает первый, и резервирует себе еще count id'ков
-    private int reserveIDs(int count, SQLSession dataSession, int idType, int attempts) throws SQLException {
-        int freeID = 0;
+    private long reserveIDs(long count, SQLSession dataSession, int idType, int attempts) throws SQLException {
+        long freeID;
         try {
             dataSession.startTransaction(DBManager.ID_TIL, OperationOwner.unknown);
 
-            freeID = (Integer) getGenerateQuery(idType).execute(dataSession, OperationOwner.unknown).singleValue().get(value) + 1; // замещаем
+            freeID = ObjectType.idClass.read(getGenerateQuery(idType).execute(dataSession, OperationOwner.unknown).singleValue().get(value)) + 1; // замещаем
 
-            QueryBuilder<KeyField, PropertyField> updateQuery = new QueryBuilder<>(this, MapFact.singleton(key, new DataObject(idType, SystemClass.instance)));
+            QueryBuilder<KeyField, PropertyField> updateQuery = new QueryBuilder<>(this, MapFact.singleton(key, new DataObject(idType, idTypeClass)));
             updateQuery.addProperty(value, new ValueExpr(freeID + count - 1, SystemClass.instance));
             dataSession.updateRecords(new ModifyQuery(this, updateQuery.getQuery(), OperationOwner.unknown, TableOwner.global));
 

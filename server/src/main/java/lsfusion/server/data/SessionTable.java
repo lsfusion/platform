@@ -477,7 +477,7 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
                         orFieldsClassWheres(classes, propertyClasses, SessionData.getQueryClasses(query))).
                             updateStatistics(session, count, proceeded, owner, opOwner).checkClasses(session, null, updateClasses, opOwner);
     }
-    public void updateAdded(SQLSession session, BaseClass baseClass, PropertyField field, Pair<Integer, Integer>[] shifts, OperationOwner owner, TableOwner tableOwner) throws SQLException, SQLHandledException {
+    public void updateAdded(SQLSession session, BaseClass baseClass, PropertyField field, Pair<Long, Long>[] shifts, OperationOwner owner, TableOwner tableOwner) throws SQLException, SQLHandledException {
         QueryBuilder<KeyField, PropertyField> query = new QueryBuilder<>(this);
         lsfusion.server.data.query.Join<PropertyField> join = join(query.getMapExprs());
 

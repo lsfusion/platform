@@ -81,7 +81,7 @@ public abstract class ImportFormDataActionProperty extends SystemExplicitActionP
                 if (keyFieldsEntry == null)
                     keyFieldsEntry = new ArrayList();
                 for (String key : keys) {
-                    KeyField keyField = new KeyField(key, IntegerClass.instance);
+                    KeyField keyField = new KeyField(key, ImportDataActionProperty.type);
                     if (!keyFieldsEntry.contains(keyField))
                         keyFieldsEntry.add(keyField);
                 }

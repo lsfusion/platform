@@ -130,7 +130,7 @@ public class NavigatorsManager extends LogicsManager implements InitializingBean
         if(!securityManager.isUniversalPassword(navigatorInfo.password)) {
             try (DataSession session = dbManager.createSession()) {
                 newConnection = session.addObject(businessLogics.systemEventsLM.connection);
-                businessLogics.systemEventsLM.userConnection.change(navigator.getUser().object, session, newConnection);
+                businessLogics.systemEventsLM.userConnection.change(navigator.getUser(), session, newConnection);
                 businessLogics.systemEventsLM.osVersionConnection.change(navigatorInfo.osVersion, session, newConnection);
                 businessLogics.systemEventsLM.processorConnection.change(navigatorInfo.processor, session, newConnection);
                 businessLogics.systemEventsLM.architectureConnection.change(navigatorInfo.architecture, session, newConnection);
@@ -142,18 +142,18 @@ public class NavigatorsManager extends LogicsManager implements InitializingBean
                 businessLogics.systemEventsLM.javaVersionConnection.change(navigatorInfo.javaVersion, session, newConnection);
                 businessLogics.systemEventsLM.is64JavaConnection.change(navigatorInfo.javaVersion != null && navigatorInfo.javaVersion.endsWith("64 bit"), session, newConnection);
                 businessLogics.systemEventsLM.screenSizeConnection.change(navigatorInfo.screenSize, session, newConnection);
-                businessLogics.systemEventsLM.computerConnection.change(navigator.getComputer().object, session, newConnection);
+                businessLogics.systemEventsLM.computerConnection.change(navigator.getComputer(), session, newConnection);
                 businessLogics.systemEventsLM.connectionStatusConnection.change(businessLogics.systemEventsLM.connectionStatus.getObjectID("connectedConnection"), session, newConnection);
-                businessLogics.systemEventsLM.connectTimeConnection.change(businessLogics.timeLM.currentDateTime.read(session), session, newConnection);
+                businessLogics.systemEventsLM.connectTimeConnection.change(businessLogics.timeLM.currentDateTime.readClasses(session), session, newConnection);
                 businessLogics.systemEventsLM.remoteAddressConnection.change(navigator.getRemoteAddress(), session, newConnection);
-                businessLogics.systemEventsLM.launchConnection.change(businessLogics.systemEventsLM.currentLaunch.read(session), session, newConnection);
+                businessLogics.systemEventsLM.launchConnection.change(businessLogics.systemEventsLM.currentLaunch.readClasses(session), session, newConnection);
                 session.apply(businessLogics, stack);
             }
         }
 
         synchronized (navigators) {
             if (newConnection != null) {
-                navigator.setConnection(new DataObject(newConnection.object, businessLogics.systemEventsLM.connection));
+                navigator.setConnection(new DataObject(newConnection.object, businessLogics.systemEventsLM.connection)); // чтобы переобновить классы после apply
             }
             navigators.add(navigator);
         }
