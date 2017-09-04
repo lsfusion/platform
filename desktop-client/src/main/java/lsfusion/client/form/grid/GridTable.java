@@ -15,6 +15,7 @@ import lsfusion.client.logics.ClientForm;
 import lsfusion.client.logics.ClientGroupObject;
 import lsfusion.client.logics.ClientGroupObjectValue;
 import lsfusion.client.logics.ClientPropertyDraw;
+import lsfusion.client.logics.classes.ClientLogicalClass;
 import lsfusion.client.logics.classes.ClientStringClass;
 import lsfusion.interop.FontInfo;
 import lsfusion.interop.KeyStrokes;
@@ -281,7 +282,10 @@ public class GridTable extends ClientPropertyTable {
         if (form.isDialog()) {
             addMouseListener(new MouseAdapter() {
                 public void mouseClicked(MouseEvent e) {
-                    if (e.getClickCount() > 1) {
+                    ClientPropertyDraw property = getSelectedProperty();
+                    //игнорируем double click по editable boolean
+                    boolean ignore = property != null && property.baseType instanceof ClientLogicalClass && !property.isReadOnly();
+                    if (e.getClickCount() > 1 && !ignore) {
                         RmiQueue.runAction(new Runnable() {
                             @Override
                             public void run() {
