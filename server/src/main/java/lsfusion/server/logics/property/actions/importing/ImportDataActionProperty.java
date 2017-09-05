@@ -131,79 +131,81 @@ public abstract class ImportDataActionProperty extends SystemActionProperty {
 
     @Override
     protected FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
-        DataObject value = context.getDataKeys().getValue(0);
-        assert value.getType() instanceof FileClass;
+        ObjectValue value = context.getKeys().getValue(0);
+        if(value instanceof DataObject) {
+            assert ((DataObject)value).getType() instanceof FileClass;
 
-        Object file = value.object;
-        if (file instanceof byte[]) {
-            try {
-                if (value.getType() instanceof DynamicFormatFileClass) {
-                    file = BaseUtils.getFile((byte[]) file);
-                }
-                ImportIterator iterator = getIterator((byte[]) file);
-
-                Object row;
-                int i = 0;
-                ImOrderSet<LCP> props = SetFact.fromJavaOrderSet(properties).addOrderExcl(importedProperty);
-
-                for (LCP prop : props) {
-                    if (prop.property instanceof DataProperty)
-                        context.getSession().dropChanges((DataProperty) prop.property);
-                }
-
-                SingleKeyTableUsage<LCP> importTable = new SingleKeyTableUsage<>("idaatabke", ImportDataActionProperty.type, props, new Type.Getter<LCP>() {
-                    @Override
-                    public Type getType(LCP key) {
-                        return key.property.getType();
-                    }
-                });
-                MExclMap<ImMap<String, DataObject>, ImMap<LCP, ObjectValue>> mRows = MapFact.mExclMap();
-                while ((row = iterator.nextRow()) != null) {
-                    if(row instanceof List) {
-                        DataObject rowKey = new DataObject(i++, ImportDataActionProperty.type);
-                        final List<String> finalRow = (List<String>) row;
-                        mRows.exclAdd(MapFact.singleton("key", rowKey), props.getSet().mapValues(new GetValue<ObjectValue, LCP>() {
-                            public ObjectValue getMapValue(LCP prop) {
-                                if (prop == importedProperty) {
-                                    return ObjectValue.getValue(true, LogicalClass.instance);
-                                } else if (properties.indexOf(prop) < finalRow.size()) {
-                                    Type type = prop.property.getType();
-                                    Object parsedObject = null;
-                                    try {
-                                        String value = finalRow.get(properties.indexOf(prop));
-                                        parsedObject = value == null ? null : type.parseString(value);
-                                    } catch (lsfusion.server.data.type.ParseException ignored) {
-                                    }
-                                    return ObjectValue.getValue(parsedObject, (ConcreteClass) prop.property.getValueClass(ClassType.editPolicy));
-                                }
-
-                                return NullValue.instance;
-                            }
-                        }));
-                    }
-                }
-                OperationOwner owner = context.getSession().getOwner();
-                SQLSession sql = context.getSession().sql;
-                importTable.writeRows(sql, mRows.immutable(), owner);
-
-                ImRevMap<String, KeyExpr> mapKeys = importTable.getMapKeys();
-                Join<LCP> importJoin = importTable.join(mapKeys);
-                Where where = importJoin.getWhere();
+            Object file = ((DataObject)value).object;
+            if (file instanceof byte[]) {
                 try {
-                    for (LCP lcp : props) {
-                        PropertyChange propChange = new PropertyChange(MapFact.singletonRev(lcp.listInterfaces.single(), mapKeys.singleValue()), importJoin.getExpr(lcp), where);
-                        context.getEnv().change((CalcProperty) lcp.property, propChange);
+                    if (((DataObject)value).getType() instanceof DynamicFormatFileClass) {
+                        file = BaseUtils.getFile((byte[]) file);
                     }
-                } finally {
-                    importTable.drop(sql, owner);
-                }
-                
-                iterator.release();
+                    ImportIterator iterator = getIterator((byte[]) file);
 
-            } catch (IncorrectFileException e) {
-                context.delayUserInterfaction(new MessageClientAction(e.getMessage(), "Import Error"));
-            } catch (Exception e) {
-                Throwables.propagate(e);
+                    Object row;
+                    int i = 0;
+                    ImOrderSet<LCP> props = SetFact.fromJavaOrderSet(properties).addOrderExcl(importedProperty);
+
+                    for (LCP prop : props) {
+                        if (prop.property instanceof DataProperty)
+                            context.getSession().dropChanges((DataProperty) prop.property);
+                    }
+
+                    SingleKeyTableUsage<LCP> importTable = new SingleKeyTableUsage<>("idaatabke", ImportDataActionProperty.type, props, new Type.Getter<LCP>() {
+                        @Override
+                        public Type getType(LCP key) {
+                            return key.property.getType();
+                        }
+                    });
+                    MExclMap<ImMap<String, DataObject>, ImMap<LCP, ObjectValue>> mRows = MapFact.mExclMap();
+                    while ((row = iterator.nextRow()) != null) {
+                        if (row instanceof List) {
+                            DataObject rowKey = new DataObject(i++, ImportDataActionProperty.type);
+                            final List<String> finalRow = (List<String>) row;
+                            mRows.exclAdd(MapFact.singleton("key", rowKey), props.getSet().mapValues(new GetValue<ObjectValue, LCP>() {
+                                public ObjectValue getMapValue(LCP prop) {
+                                    if (prop == importedProperty) {
+                                        return ObjectValue.getValue(true, LogicalClass.instance);
+                                    } else if (properties.indexOf(prop) < finalRow.size()) {
+                                        Type type = prop.property.getType();
+                                        Object parsedObject = null;
+                                        try {
+                                            String value = finalRow.get(properties.indexOf(prop));
+                                            parsedObject = value == null ? null : type.parseString(value);
+                                        } catch (lsfusion.server.data.type.ParseException ignored) {
+                                        }
+                                        return ObjectValue.getValue(parsedObject, (ConcreteClass) prop.property.getValueClass(ClassType.editPolicy));
+                                    }
+
+                                    return NullValue.instance;
+                                }
+                            }));
+                        }
+                    }
+                    OperationOwner owner = context.getSession().getOwner();
+                    SQLSession sql = context.getSession().sql;
+                    importTable.writeRows(sql, mRows.immutable(), owner);
+
+                    ImRevMap<String, KeyExpr> mapKeys = importTable.getMapKeys();
+                    Join<LCP> importJoin = importTable.join(mapKeys);
+                    Where where = importJoin.getWhere();
+                    try {
+                        for (LCP lcp : props) {
+                            PropertyChange propChange = new PropertyChange(MapFact.singletonRev(lcp.listInterfaces.single(), mapKeys.singleValue()), importJoin.getExpr(lcp), where);
+                            context.getEnv().change((CalcProperty) lcp.property, propChange);
+                        }
+                    } finally {
+                        importTable.drop(sql, owner);
+                    }
+
+                    iterator.release();
+
+                } catch (IncorrectFileException e) {
+                    context.delayUserInterfaction(new MessageClientAction(e.getMessage(), "Import Error"));
+                } catch (Exception e) {
+                    Throwables.propagate(e);
+                }
             }
         }
         return FlowResult.FINISH;
