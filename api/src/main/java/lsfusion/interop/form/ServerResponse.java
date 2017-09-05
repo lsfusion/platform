@@ -10,7 +10,6 @@ public class ServerResponse implements Serializable {
     public static final String CHANGE = "change";
     public static final String GROUP_CHANGE = "groupChange";
     public static final String EDIT_OBJECT = "editObject";
-    public static final String PASTE = "paste";
     public static final String CHANGE_WYS = "change_wys";
 
     public final ClientAction[] actions;

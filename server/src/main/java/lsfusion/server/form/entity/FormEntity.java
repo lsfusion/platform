@@ -381,11 +381,9 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     @IdentityLazy
     public boolean hasNoChange() {
         for (PropertyDrawEntity property : getPropertyDrawsIt()) {
-            if(!property.isSelector()) { // непонятная проверка - в будущем возможно надо будет убрать
-                ActionPropertyObjectEntity<?> editAction = property.getEditAction(ServerResponse.CHANGE, this);
-                if (editAction != null && editAction.property.hasFlow(ChangeFlowType.CHANGE) && !editAction.property.endsWithApplyAndNoChangesAfterBreaksBefore())
-                    return false;
-            }
+            ActionPropertyObjectEntity<?> editAction = property.getEditAction(ServerResponse.CHANGE, this);
+            if (editAction != null && editAction.property.hasFlow(ChangeFlowType.CHANGE) && !editAction.property.endsWithApplyAndNoChangesAfterBreaksBefore())
+                return false;
         }
 
         return true;

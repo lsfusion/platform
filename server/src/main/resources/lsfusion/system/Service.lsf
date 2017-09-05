@@ -299,7 +299,7 @@ isNotServerRestarting () = NOT isServerRestarting();
 CLASS ReflectionProperty 'Настройки';
 TABLE reflectionProperty (ReflectionProperty);
 
-name 'Имя настройки' = DATA VARSTRING[100] (ReflectionProperty);
+name 'Имя настройки' = DATA VARISTRING[100] (ReflectionProperty);
 reflectionProperty (name) = GROUP AGGR ReflectionProperty reflectionProperty BY name(reflectionProperty);
 baseValue 'Сохранённое значение' = DATA VARSTRING[100] (ReflectionProperty);
 defaultValue 'Значение по умолчанию' = DATA VARSTRING[100] (ReflectionProperty);

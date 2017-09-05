@@ -185,13 +185,14 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     }
 
     public ActionPropertyObjectEntity<?> getEditAction(String actionId, FormEntity entity) {
-        // ?? тут или нет
-        if (isReadOnly() &&
-                (CHANGE.equals(actionId)
-                        || CHANGE_WYS.equals(actionId)
-                        || EDIT_OBJECT.equals(actionId)
-                        || GROUP_CHANGE.equals(actionId))) {
-            return null;
+        Property<P> property = propertyObject.property;
+
+        if(!hasContextMenuBinding(actionId)) { // распространяется только на редактирование
+            assert CHANGE.equals(actionId) || CHANGE_WYS.equals(actionId) || EDIT_OBJECT.equals(actionId) || GROUP_CHANGE.equals(actionId);
+            if (isReadOnly())
+                return null;
+            if (isSelector())
+                return getSelectorAction(property, entity);
         }
 
         if (editActions != null) {
@@ -201,16 +202,11 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
             }
         }
 
-        Property<P> property = propertyObject.property;
         if (GROUP_CHANGE.equals(actionId)) {
             ActionPropertyObjectEntity<?> editAction = getEditAction(CHANGE, entity);
             if(editAction == null)
                 return null;
             return editAction.getGroupChange();
-        }
-
-        if (isSelector() && !hasContextMenuBinding(actionId)) {
-            return getSelectorAction(property, entity);
         }
 
         if (CHANGE_WYS.equals(actionId)) {
