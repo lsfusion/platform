@@ -421,6 +421,8 @@ public class GwtClientUtils {
 
     // prefs на double'ах чтобы не "дрожало", из-за преобразований в разные стороны (строго говоря наверное без adjustTableFixed и overflow дрожать не будет)
     public static void calculateNewFlexes(int column, int delta, int viewWidth, double[] prefs, double[] flexes, int[] basePrefs, double[] baseFlexes, boolean overflow) {
+        boolean removeLeftPref = true; // вообще так как removeLeftFlex false, логично иметь симметричное поведение, но больше не меньше (removeRightPref и add*Pref не имеют смысла, так как вся delta просто идет в pref колонки)
+        
         // ищем первую динамическую компоненту слева (она должна получить +delta, соответственно правая часть -delta)
         // тут есть варианты -delta идет одной правой колонке, или всем правых колонок, но так как
         // a) так как выравнивание по умолчанию левое, интуитивно при перемещении изменяют именно размер левой колонки, б) так как есть де-факто ограничение Preferred, вероятность получить нужный размер уменьшая все колонки куда выше
@@ -456,7 +458,7 @@ public class GwtClientUtils {
                 double reduce = Math.min(prefReduceDelta, maxReduce);
                 prefs[i] -= reduce;
                 prefReduceDelta -= reduce;
-                if(equals(prefReduceDelta, 0.0)) // если delta не осталось нет смысла продолжать, у нас либо viewWidth либо уже все расписали
+                if(!removeLeftPref || equals(prefReduceDelta, 0.0)) // если delta не осталось нет смысла продолжать, у нас либо viewWidth либо уже все расписали
                     break;
             }
 
@@ -497,7 +499,7 @@ public class GwtClientUtils {
 
         // flex колонки увеличиваем на нужную величину, соответственно остальные flex'ы надо уменьшить на эту величину
         double toAddFlex = (double) delta * totalFlex / (double) flexWidth;
-        if(greater(0.0, toAddFlex + flexes[column])) // не shrink'аем пока
+        if(greater(0.0, toAddFlex + flexes[column])) // не shrink'аем, но и левые столбцы не уменьшаются (то есть removeLeftFlex false)
             toAddFlex = -flexes[column];
 
         // сначала уменьшаем правые flex'ы
@@ -518,8 +520,8 @@ public class GwtClientUtils {
 
 
         // может остаться delta, тогда раскидываем ее для левых компонент
-        boolean addLeft = !overflow; // (если не overflow, потому как в противном случае все же не очень естественное поведение)
-        if(addLeft && greater(restFlex, 0.0)) {
+        boolean addLeftFlex = !overflow; // (если не overflow, потому как в противном случае все же не очень естественное поведение)
+        if(addLeftFlex && greater(restFlex, 0.0)) {
             double totalLeftFlexes = totalFlex - totalRightFlexes - flexes[column];
             double totalLeftBaseFlexes = totalBaseFlex - totalRightBaseFlexes - baseFlexes[column];
 
@@ -544,9 +546,9 @@ public class GwtClientUtils {
 
         // если и так осталась, то придется давать preferred (соответственно flex не имеет смысла) и "здравствуй" scroll
         if(greater(restFlex, 0.0)) {
-            assert !addLeft || equals(flexes[column], totalFlex); // по сути записываем все в эту колонку
+            assert !addLeftFlex || equals(flexes[column], totalFlex); // по сути записываем все в эту колонку
             if(overflow) {
-                if(!addLeft) {
+                if(!addLeftFlex) {
                     for (int i = 0; i < column; i++)
                         prefs[i] += flexWidth * flexes[i] / totalFlex;
                 }

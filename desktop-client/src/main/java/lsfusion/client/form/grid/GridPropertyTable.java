@@ -47,8 +47,8 @@ public abstract class GridPropertyTable {
             TableColumn resizingColumn = tableHeader.getResizingColumn();
 
             TableColumnModel columnModel = table.getColumnModel();
-            int delta = table.getWidth() - columnModel.getTotalColumnWidth();
-            int leftColumnIndex = columnModel.getColumnIndex(resizingColumn.getIdentifier());
+            int delta = table.getWidth() - columnModel.getTotalColumnWidth(); // текущая модель resizing'а исходит из предположения что ширина колонки после resize'га не меняется (весь смысл resize'га изменить ПРАВЫЕ колонки(
+            int leftColumnIndex = resizingColumn.getModelIndex();
             resizeColumn(leftColumnIndex, -delta);
         }
     }
