@@ -785,15 +785,15 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
     }
 
     // assert что включает queryJoin
-    private <K extends BaseExpr, Z extends Expr> Where getInnerCostPushWhere(final QueryJoin<Z, ?, ?, ?> queryJoin, boolean pushLargeDepth, final UpWheres<WhereJoin> upWheres, final KeyStat keyStat, final StatType type, final Result<Pair<ImRevMap<Z, KeyExpr>, Where>> pushJoinWhere, DebugInfoWriter debugInfoWriter) {
+    private <K extends BaseExpr, Z extends Expr> Where getInnerCostPushWhere(final QueryJoin<Z, ?, ?, ?> queryJoin, boolean pushLargeDepth, final UpWheres<WhereJoin> upWheres, final KeyStat keyStat, final StatType type, final Result<Pair<ImRevMap<Z, KeyExpr>, Where>> pushJoinWhere, final DebugInfoWriter debugInfoWriter) {
 //        ImSet<BaseExpr> groups = queryJoin.getJoins().values().toSet(); // по идее не надо, так как включает queryJoin
         return calculateCost(SetFact.<BaseExpr>EMPTY(), queryJoin, pushLargeDepth, false, keyStat, type, new CostResult<Where>() {
             public Where calculate(CostStat costStat, ImSet<Edge> edges, MAddMap<BaseJoin, Stat> joinStats, MAddMap<BaseExpr, PropStat> exprStats) {
-                return getCostPushWhere(costStat, edges, queryJoin, upWheres, pushJoinWhere, joinStats);
+                return getCostPushWhere(costStat, edges, queryJoin, upWheres, pushJoinWhere, joinStats, debugInfoWriter);
             }
         }, debugInfoWriter);
     }
-
+    
     private boolean recProceedChildrenCostWhere(BaseJoin join, MAddExclMap<BaseJoin, Boolean> proceeded, MMap<BaseJoin, MiddleTreeKeep> mMiddleTreeKeeps, MSet<BaseExpr> mAllKeeps, MSet<BaseExpr> mTranslate, boolean keepThis, ImSet<BaseJoin> keepJoins, FunctionSet<BaseJoin> notKeepJoins, ImMap<BaseJoin, ImSet<Edge>> inEdges) {
         Boolean cachedAllKeep = proceeded.get(join);
         if(cachedAllKeep != null)
@@ -875,6 +875,11 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
             this.expr = expr;
         }
 
+        @Override
+        public String toString() {
+            return "MIDDLE TREE - " + expr.toString();
+        }
+
         public Where getWhere(BaseJoin join, UpWheres<WhereJoin> upWheres, JoinExprTranslator translator) {
             return JoinExprTranslator.translateExpr((Expr)expr, translator).getWhere();
         }
@@ -884,12 +889,17 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         private static final TopTreeKeep instance = new TopTreeKeep();
 
         @Override
+        public String toString() {
+            return "TOP TREE";
+        }
+
+        @Override
         public Where getWhere(BaseJoin join, UpWheres<WhereJoin> upWheres, JoinExprTranslator translator) {
             return getUpWhere((WhereJoin) join, upWheres.get((WhereJoin) join), translator);
         }
     }
 
-    private <Z extends Expr> Where getCostPushWhere(CostStat cost, ImSet<Edge> edges, QueryJoin<Z, ?, ?, ?> queryJoin, UpWheres<WhereJoin> upWheres, Result<Pair<ImRevMap<Z, KeyExpr>, Where>> pushJoinWhere, final MAddMap<BaseJoin, Stat> joinStats) {
+    private <Z extends Expr> Where getCostPushWhere(CostStat cost, ImSet<Edge> edges, QueryJoin<Z, ?, ?, ?> queryJoin, UpWheres<WhereJoin> upWheres, Result<Pair<ImRevMap<Z, KeyExpr>, Where>> pushJoinWhere, final MAddMap<BaseJoin, Stat> joinStats, DebugInfoWriter debugInfoWriter) {
         ImSet<Z> pushedKeys = (ImSet<Z>) cost.getPushKeys(queryJoin);
         if(pushedKeys == null) { // значит ничего не протолкнулось
             // пока падает из-за неправильного computeVertex видимо
@@ -931,15 +941,17 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         }
         // !!! СНАЧАЛА TRANSLATE'М , а потом AND'м, так как Expr'ы могут измениться, тоже самое касается UpWhere - translate'им потом делаем getWhere ??? хотя можно это позже сделать ???
         // UPWHERE, берем все вершины keep у которых нет исходящих в keep (не "промежуточные"), если есть в upWheres берем оттуда, иначе берем первый попавшийся edge у вершины из которой нет выходов (проблема правда в том что InnerFollows не попадут и можно было бы взять класс вместо значения, но это не критично)
-
+        ImSet<BaseExpr> translate = mTranslate.immutable();
+        ImSet<BaseExpr> fullExprs = mFullExprs.immutable();
+        JoinExprTranslator translator = new JoinExprTranslator(KeyExpr.getMapKeys(translate), fullExprs);
         ImMap<BaseJoin, MiddleTopKeep> middleTopKeeps = BaseUtils.immutableCast(mMiddleTreeKeeps.immutable().filterFnValues(new SFunctionSet<MiddleTreeKeep>() {
             public boolean contains(MiddleTreeKeep element) {
                 return element instanceof MiddleTopKeep;
             }
         }));
-        JoinExprTranslator translator = new JoinExprTranslator(KeyExpr.getMapKeys(mTranslate.immutable()), mFullExprs.immutable());
-        Where upPushWhere = Where.TRUE;
         ImMap<BaseJoin, TopKeep> keeps = MapFact.addExcl(mTopKeys.immutable().toMap(TopTreeKeep.instance), middleTopKeeps);
+        
+        Where upPushWhere = Where.TRUE;
         for(int i=0,size=keeps.size();i<size;i++) {
             BaseJoin join = keeps.getKey(i);
             TopKeep keep = keeps.getValue(i);
@@ -951,6 +963,9 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
 
             upPushWhere = upPushWhere.and(upJoinWhere);
         }
+
+        if(debugInfoWriter != null)
+            debugInfoWriter.addLines("TRANSLATE : " + translate +'\n' + "FULL EXPRS : " + fullExprs +'\n' + "KEEPS : " + keeps + '\n' + "PUSHED WHERE : " + upPushWhere);
 
         Result<Where> pushExtraWhere = new Result<>(); // для partition
         ImMap<Z, BaseExpr> queryJoins = queryJoin.getJoins();
