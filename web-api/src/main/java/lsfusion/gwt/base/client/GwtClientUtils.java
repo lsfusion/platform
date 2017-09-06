@@ -93,7 +93,7 @@ public class GwtClientUtils {
     }
 
     public static String getLogoutUrl() {
-        return getPageUrlPreservingParameters("logout", TARGET_URL_PARAM, getCurrentUrlEncoded());
+        return getPageUrlPreservingParameters("logout");
     }
 
     public static String getLoginUrl() {
