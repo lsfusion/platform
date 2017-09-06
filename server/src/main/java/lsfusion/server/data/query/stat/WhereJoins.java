@@ -965,7 +965,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         }
 
         if(debugInfoWriter != null)
-            debugInfoWriter.addLines("TRANSLATE : " + translate +'\n' + "FULL EXPRS : " + fullExprs +'\n' + "KEEPS : " + keeps + '\n' + "PUSHED WHERE : " + upPushWhere);
+            debugInfoWriter.addLines("TRANSLATE : " + translate +'\n' + "FULL EXPRS : " + fullExprs +'\n' + "KEEPS : " + keeps + '\n' + "PROCEEDED : " + proceeded + '\n' + "PUSHED WHERE : " + upPushWhere + " " + upPushWhere.getOuterKeys());
 
         Result<Where> pushExtraWhere = new Result<>(); // для partition
         ImMap<Z, BaseExpr> queryJoins = queryJoin.getJoins();
