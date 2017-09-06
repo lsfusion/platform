@@ -138,7 +138,7 @@ public class AddObjectActionProperty<T extends PropertyInterface, I extends Prop
                     }
                 });
     
-                addedTable = context.addObjects("addobjap", readClass, new PropertySet<>(innerKeys, exprWhere, orderExprs, ordersNotNull));
+                addedTable = context.addObjects("addobjap", readClass, new PropertyOrderSet<>(innerKeys, exprWhere, orderExprs, ordersNotNull));
                 resultChange = SinglePropertyTableUsage.getChange(addedTable);
             }
     

@@ -32,13 +32,13 @@ import lsfusion.server.logics.property.PropertyInterface;
 
 import java.sql.SQLException;
 
-public class PropertySet<T extends PropertyInterface> {
+public class PropertyOrderSet<T extends PropertyInterface> {
     private final ImRevMap<T,KeyExpr> mapKeys;
     private final Where where;
     private final ImOrderMap<Expr, Boolean> orders;
     private final boolean ordersNotNull;
 
-    public PropertySet(ImRevMap<T, KeyExpr> mapKeys, Where where, ImOrderMap<Expr, Boolean> orders, boolean ordersNotNull) {
+    public PropertyOrderSet(ImRevMap<T, KeyExpr> mapKeys, Where where, ImOrderMap<Expr, Boolean> orders, boolean ordersNotNull) {
         this.mapKeys = mapKeys;
         this.where = where;
         this.orders = orders;
@@ -79,7 +79,7 @@ public class PropertySet<T extends PropertyInterface> {
         return false;
     }
 
-    public Pair<PropertySet<T>, SessionTableUsage> materialize(String debugInfo, DataSession session) throws SQLException, SQLHandledException {
+    public Pair<PropertyOrderSet<T>, SessionTableUsage> materialize(String debugInfo, DataSession session) throws SQLException, SQLHandledException {
         final Where fullWhere = getFullWhere();
 
         final ImRevMap<Object, Expr> objects = BaseUtils.generateObjects(orders.keys()).reverse();
@@ -102,7 +102,7 @@ public class PropertySet<T extends PropertyInterface> {
         tableUsage.writeRows(session.sql, new Query<>(mapKeys, objects, where), session.baseClass, session.env, SessionTable.matLocalQuery);
 
         final Join<Object> join = tableUsage.join(mapKeys);
-        return new Pair<>(new PropertySet<>(mapKeys, join.getWhere(), orders.map(objects.reverse()).mapOrderKeys(new GetValue<Expr, Object>() {
+        return new Pair<>(new PropertyOrderSet<>(mapKeys, join.getWhere(), orders.map(objects.reverse()).mapOrderKeys(new GetValue<Expr, Object>() {
             public Expr getMapValue(Object value) {
                 return join.getExpr(value);
             }}), ordersNotNull), (SessionTableUsage)tableUsage);
@@ -112,11 +112,11 @@ public class PropertySet<T extends PropertyInterface> {
         return getExecuteQuery().executeClasses(env, orders).keyOrderSet();
     }
     
-    public PropertySet<T> and(Where andWhere) {
+    public PropertyOrderSet<T> and(Where andWhere) {
         if(andWhere.isTrue())
             return this;
 
-        return new PropertySet<>(mapKeys, where.and(andWhere), orders, ordersNotNull);
+        return new PropertyOrderSet<>(mapKeys, where.and(andWhere), orders, ordersNotNull);
     }
 
     public boolean isEmpty() {

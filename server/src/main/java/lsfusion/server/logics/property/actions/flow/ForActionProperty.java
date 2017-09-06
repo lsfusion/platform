@@ -30,7 +30,7 @@ import lsfusion.server.logics.property.actions.ChangeClassActionProperty;
 import lsfusion.server.logics.property.derived.DerivedProperty;
 import lsfusion.server.session.DataSession;
 import lsfusion.server.session.PropertyChange;
-import lsfusion.server.session.PropertySet;
+import lsfusion.server.session.PropertyOrderSet;
 import lsfusion.server.session.UpdateCurrentClasses;
 import lsfusion.server.stack.ExecutionStackAspect;
 import lsfusion.server.stack.ParamMessage;
@@ -223,7 +223,7 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
             }
         });
 
-        return new PropertySet<>(innerKeys, where, orderExprs, ordersNotNull).executeClasses(context.getEnv());
+        return new PropertyOrderSet<>(innerKeys, where, orderExprs, ordersNotNull).executeClasses(context.getEnv());
     }
 
     protected CalcPropertyMapImplement<?, I> calcGroupWhereProperty() {

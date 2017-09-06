@@ -730,12 +730,12 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         return result;
     }
 
-    public <T extends PropertyInterface> SinglePropertyTableUsage<T> addObjects(String debugInfo, ConcreteCustomClass cls, PropertySet<T> set) throws SQLException, SQLHandledException {
+    public <T extends PropertyInterface> SinglePropertyTableUsage<T> addObjects(String debugInfo, ConcreteCustomClass cls, PropertyOrderSet<T> set) throws SQLException, SQLHandledException {
         SinglePropertyTableUsage<T> table;
 
         SessionTableUsage<?, ?> matSetTable = null;
         if(set.needMaterialize()) {
-            Pair<PropertySet<T>, SessionTableUsage> materialize = set.materialize(debugInfo, this);
+            Pair<PropertyOrderSet<T>, SessionTableUsage> materialize = set.materialize(debugInfo, this);
             set = materialize.first;
             matSetTable = materialize.second;
         }
