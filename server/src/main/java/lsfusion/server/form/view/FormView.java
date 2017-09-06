@@ -224,6 +224,7 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
             setComponentSID(groupObjectView.getShowType(), getShowTypeSID(groupObjectView), version);
             setComponentSID(groupObjectView.getToolbar(), getToolbarSID(groupObjectView), version);
             setComponentSID(groupObjectView.getFilter(), getFilterSID(groupObjectView), version);
+            setComponentSID(groupObjectView.getCalculations(), getCalculationsSID(groupObjectView), version);
         }
 
         for (ObjectView object : groupObjectView) {
@@ -849,6 +850,10 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
 
     private static String getFilterSID(PropertyGroupContainerView entity) {
         return entity.getPropertyGroupContainerSID() + ".filter";
+    }
+    
+    private static String getCalculationsSID(PropertyGroupContainerView entity) {
+        return entity.getPropertyGroupContainerSID() + ".calculations";
     }
 
     private static String getShowTypeSID(PropertyGroupContainerView entity) {

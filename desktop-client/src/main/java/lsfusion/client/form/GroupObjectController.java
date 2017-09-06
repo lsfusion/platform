@@ -4,6 +4,7 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.OrderedMap;
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.Main;
+import lsfusion.client.form.calculations.CalculationsView;
 import lsfusion.client.form.grid.GridController;
 import lsfusion.client.form.grid.preferences.GridUserPreferences;
 import lsfusion.client.form.layout.ClientFormLayout;
@@ -32,6 +33,8 @@ public class GroupObjectController extends AbstractGroupObjectController {
     private final ClientGroupObject groupObject;
 
     public GridController grid;
+
+    protected CalculationsView calculationsView;
     public ShowTypeController showType;
 
     private final Map<ClientObject, ObjectController> objects = new HashMap<>();
@@ -56,6 +59,9 @@ public class GroupObjectController extends AbstractGroupObjectController {
         };
 
         if (groupObject != null) {
+            calculationsView = new CalculationsView();
+            formLayout.add(groupObject.calculations, calculationsView);
+            
             if (groupObject.filter.visible) {
                 filter = new FilterController(this, groupObject.filter) {
                     protected void remoteApplyQuery() {
@@ -476,8 +482,8 @@ public class GroupObjectController extends AbstractGroupObjectController {
     }
 
     public void updateSelectionInfo(int quantity, String sum, String avg) {
-        if (toolbarView != null) {
-            toolbarView.updateSelectionInfo(quantity, sum, avg);
+        if (calculationsView != null) {
+            calculationsView.updateSelectionInfo(quantity, sum, avg);
         }
     }
 

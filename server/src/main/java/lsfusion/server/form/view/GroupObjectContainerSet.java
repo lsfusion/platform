@@ -123,6 +123,7 @@ public class GroupObjectContainerSet {
         set.rightControlsContainer.setAlignment(FlexAlignment.CENTER);
         set.rightControlsContainer.setChildrenAlignment(Alignment.TRAILING);
         set.rightControlsContainer.setFlex(1);
+        adder.add(set.rightControlsContainer, group.getCalculations());
         adder.add(set.rightControlsContainer, set.filtersContainer);
         adder.add(set.rightControlsContainer, set.toolbarPropsContainer);
         adder.add(set.rightControlsContainer, group.getShowType());
@@ -145,6 +146,8 @@ public class GroupObjectContainerSet {
         group.getToolbar().setMargin(2);
         group.getToolbar().setAlignment(FlexAlignment.CENTER);
         group.getFilter().setAlignment(FlexAlignment.STRETCH);
+        group.getCalculations().setFlex(1);
+        group.getCalculations().setAlignment(FlexAlignment.STRETCH);
         group.getShowType().setAlignment(FlexAlignment.CENTER);
         group.getShowType().setMargin(2);
 

@@ -29,6 +29,7 @@ public class ClientSerializationPool extends SerializationPool<ClientForm> {
         addMapping(ClientGrid.class);
         addMapping(ClientToolbar.class);
         addMapping(ClientFilter.class);
+        addMapping(ClientCalculations.class);
         addMapping(ClientClassChooser.class);
         addMapping(ClientObject.class);
         addMapping(ClientPropertyDraw.class);

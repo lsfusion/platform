@@ -227,6 +227,12 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         filter.visible = clientFilter.visible;
         return filter;
     }
+    
+    @Cached
+    @Converter(from = ClientCalculations.class)
+    public GCalculations convertCalculations(ClientCalculations clientCalculations) {
+        return initGwtComponent(clientCalculations, new GCalculations());
+    }
 
     @Cached
     @Converter(from = ClientClassChooser.class)

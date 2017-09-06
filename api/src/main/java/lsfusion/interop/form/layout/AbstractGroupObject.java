@@ -10,4 +10,5 @@ public interface AbstractGroupObject<T extends AbstractComponent, Str> {
     T getShowType();
     T getToolbar();
     T getFilter();
+    T getCalculations();
 }

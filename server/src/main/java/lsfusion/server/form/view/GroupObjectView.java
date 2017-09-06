@@ -21,6 +21,7 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
     public ShowTypeView showType;
     public ToolbarView toolbar;
     public FilterView filter;
+    public CalculationsView calculations;
 
     public Boolean needVerticalScroll = true;
 
@@ -48,6 +49,7 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
         showType = new ShowTypeView(idGen.idShift(), this);
         toolbar = new ToolbarView(idGen.idShift());
         filter = new FilterView(idGen.idShift());
+        calculations = new CalculationsView(idGen.idShift()); 
     }
 
     public LocalizedString getCaption() {
@@ -79,6 +81,11 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
         return filter;
     }
 
+    @Override
+    public ComponentView getCalculations() {
+        return calculations;
+    }
+
     public void setID(int iID) {
         ID = iID;
     }
@@ -101,6 +108,7 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
         pool.serializeObject(outStream, showType, serializationType);
         pool.serializeObject(outStream, toolbar, serializationType);
         pool.serializeObject(outStream, filter, serializationType);
+        pool.serializeObject(outStream, calculations, serializationType);
 
         outStream.writeBoolean(entity.isParent != null);
 
@@ -124,6 +132,7 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
         showType = pool.deserializeObject(inStream);
         toolbar = pool.deserializeObject(inStream);
         filter = pool.deserializeObject(inStream);
+        calculations = pool.deserializeObject(inStream);
 
         needVerticalScroll = inStream.readBoolean();
     }
@@ -133,6 +142,7 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
         showType.finalizeAroundInit();
         toolbar.finalizeAroundInit();
         filter.finalizeAroundInit();
+        calculations.finalizeAroundInit();
         
         for(ObjectView object : this) 
             object.finalizeAroundInit();
