@@ -964,9 +964,6 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
             upPushWhere = upPushWhere.and(upJoinWhere);
         }
 
-        if(debugInfoWriter != null)
-            debugInfoWriter.addLines("TRANSLATE : " + translate +'\n' + "FULL EXPRS : " + fullExprs +'\n' + "KEEPS : " + keeps + '\n' + "PROCEEDED : " + proceeded + '\n' + "PUSHED WHERE : " + upPushWhere + " " + upPushWhere.getOuterKeys());
-
         Result<Where> pushExtraWhere = new Result<>(); // для partition
         ImMap<Z, BaseExpr> queryJoins = queryJoin.getJoins();
         ImMap<Z, Expr> translatedPush = translator.translate(queryJoins.filterIncl(pushedKeys));
@@ -979,7 +976,13 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
             ImRevMap<Z, KeyExpr> mapKeys = KeyExpr.getMapKeys(translatedPush.keys());
             pushJoinWhere.set(new Pair<>(mapKeys, GroupExpr.create(translatedPush, upPushWhere, mapKeys).getWhere()));
         }
-        return GroupExpr.create(translatedPushGroup, upPushWhere, translatedPushGroup.keys().toMap()).getWhere();
+
+        Where where = GroupExpr.create(translatedPushGroup, upPushWhere, translatedPushGroup.keys().toMap()).getWhere();
+
+        if(debugInfoWriter != null)
+            debugInfoWriter.addLines("TRANSLATE : " + translate +'\n' + "FULL EXPRS : " + fullExprs +'\n' + "KEEPS : " + keeps + '\n' + "PROCEEDED : " + proceeded + '\n' + "PUSHED INNER WHERE : " + upPushWhere + " " + upPushWhere.getOuterKeys() + '\n' + "PUSHED GROUP : " + translatedPushGroup + '\n' + "PUSHED WHERE : " + where);
+        
+        return where;
     }
 
     private <K extends BaseExpr, Z> CostStat getCost(final QueryJoin pushJoin, final boolean pushLargeDepth, final boolean needNotNulls, MAddMap<BaseJoin, Stat> joinStats, MAddMap<BaseJoin, Cost> indexedStats, final MAddMap<BaseExpr, PropStat> exprStats, MAddMap<BaseJoin, DistinctKeys> keyDistinctStats, ImSet<Edge> edges, final KeyStat keyStat, final StatType type, DebugInfoWriter debugInfoWriter) {
