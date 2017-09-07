@@ -147,7 +147,7 @@ public class GroupObjectContainerSet {
         group.getToolbar().setAlignment(FlexAlignment.CENTER);
         group.getFilter().setAlignment(FlexAlignment.STRETCH);
         group.getCalculations().setFlex(1);
-        group.getCalculations().setAlignment(FlexAlignment.STRETCH);
+        group.getCalculations().setAlignment(FlexAlignment.CENTER);
         group.getShowType().setAlignment(FlexAlignment.CENTER);
         group.getShowType().setMargin(2);
 

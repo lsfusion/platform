@@ -7,7 +7,6 @@ import lsfusion.interop.form.layout.FlexConstraints;
 import lsfusion.interop.form.layout.FlexLayout;
 
 import javax.swing.*;
-import java.awt.*;
 
 import static lsfusion.client.ClientResourceBundle.getString;
 import static lsfusion.client.StartupProperties.dotSeparator;
@@ -18,7 +17,6 @@ public class CalculationsView extends JComponentPanel {
     private JLabel quantityLabel = new JLabel();
     
     public CalculationsView() {
-        setPreferredSize(new Dimension(0, getPreferredSize().height));
         setLayout(new FlexLayout(this, false, Alignment.LEADING));
         add(averageLabel, new FlexConstraints(FlexAlignment.CENTER, 0));
         add(sumLabel, new FlexConstraints(FlexAlignment.CENTER, 0));
