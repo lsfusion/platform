@@ -498,6 +498,10 @@ public class GroupObjectController extends AbstractGroupObjectController {
             if (filter != null) {
                 filter.setVisible(grid.isVisible());
             }
+            
+            if (calculationsView != null) {
+                calculationsView.setVisible(grid.isVisible());
+            }
 
             form.setFiltersVisible(groupObject, grid.isVisible());
 
