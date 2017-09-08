@@ -57,8 +57,11 @@ public class GridTable extends ClientPropertyTable {
     public static final String GOTO_FIRST_ACTION = "gotoFirstRow";
 
     public static final int DEFAULT_HEADER_HEIGHT = 34;
-    public static int DEFAULT_PREFERRED_HEIGHT = 130;
-    public static Dimension DEFAULT_PREFERRED_SIZE = new Dimension(130, 70 - DEFAULT_HEADER_HEIGHT);
+    public static int DEFAULT_PREFERRED_WIDTH = 130;
+    public static int DEFAULT_PREFERRED_HEIGHT = 70;
+    public static Dimension DEFAULT_PREFERRED_SIZE = new Dimension(DEFAULT_PREFERRED_WIDTH, DEFAULT_PREFERRED_HEIGHT - DEFAULT_HEADER_HEIGHT);
+    public static int DEFAULT_MAX_PREFERRED_HEIGHT = 140;
+    public static Dimension DEFAULT_MAX_PREFERRED_SIZE = new Dimension(DEFAULT_PREFERRED_WIDTH, DEFAULT_MAX_PREFERRED_HEIGHT - DEFAULT_HEADER_HEIGHT);
 
     private static final long QUICK_SEARCH_MAX_DELAY = 2000;
     private String lastQuickSearchPrefix = "";

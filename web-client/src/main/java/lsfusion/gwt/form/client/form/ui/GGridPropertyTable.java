@@ -14,7 +14,6 @@ import lsfusion.gwt.base.client.ui.GKeyStroke;
 import lsfusion.gwt.base.client.ui.HasMaxPreferredSize;
 import lsfusion.gwt.cellview.client.Column;
 import lsfusion.gwt.cellview.client.DataGrid;
-import lsfusion.gwt.cellview.client.Header;
 import lsfusion.gwt.cellview.client.cell.Cell;
 import lsfusion.gwt.cellview.client.cell.CellPreviewEvent;
 import lsfusion.gwt.form.shared.view.GFont;
@@ -36,6 +35,7 @@ import static lsfusion.gwt.form.shared.view.GEditBindingMap.EditEventFilter;
 public abstract class GGridPropertyTable<T extends GridDataRecord> extends GPropertyTable<T> implements HasMaxPreferredSize {
     public static int DEFAULT_PREFERRED_WIDTH = 130; // должно соответствовать значению в gridResizePanel в MainFrame.css
     public static int DEFAULT_PREFERRED_HEIGHT = 70; // должно соответствовать значению в gridResizePanel в MainFrame.css
+    public static int DEFAULT_MAX_PREFERRED_HEIGHT = 140;
     
     protected Map<GPropertyDraw, Map<GGroupObjectValue, Object>> propertyCaptions = new HashMap<>();
 
@@ -140,7 +140,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     public Dimension getMaxPreferredSize() {
         return new Dimension(
                 max(isAutoSize() ? 0 : DEFAULT_PREFERRED_WIDTH, preferredWidth + nativeScrollbarWidth + 17),
-                max(isAutoSize() ? 0 : DEFAULT_PREFERRED_HEIGHT, getRowCount() * getRowHeight() + 30 + nativeScrollbarHeight)
+                max(isAutoSize() ? 0 : DEFAULT_MAX_PREFERRED_HEIGHT, getRowCount() * getRowHeight() + 30 + nativeScrollbarHeight)
         );
     }
 

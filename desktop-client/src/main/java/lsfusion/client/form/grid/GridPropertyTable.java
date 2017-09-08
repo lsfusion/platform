@@ -12,6 +12,9 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import static lsfusion.client.form.grid.GridTable.DEFAULT_MAX_PREFERRED_SIZE;
+import static lsfusion.client.form.grid.GridTable.DEFAULT_PREFERRED_SIZE;
+
 // наследование не получается (из-за JXTreeTable), поэтому делаем агрегацию
 public abstract class GridPropertyTable {
 
@@ -31,9 +34,18 @@ public abstract class GridPropertyTable {
     public Dimension getMaxPreferredSize(Dimension preferredSize) { // ради этого вся ветка maxPreferredSize и делалась
         JTable gridTable = getTable(); 
         Dimension preferredTableSize = gridTable.getPreferredScrollableViewportSize();
-        Dimension preferredAutoTableSize = gridTable.getPreferredSize();
+        Dimension preferredAutoTableSize = getTableMaxPreferredSize();
         return new Dimension(BaseUtils.max(preferredSize.width - preferredTableSize.width + preferredAutoTableSize.width, preferredSize.width), // max, 130 px
                 BaseUtils.max(preferredSize.height - preferredTableSize.height + preferredAutoTableSize.height, preferredSize.height)); // max, 130 px
+    }
+
+    public Dimension getTableMaxPreferredSize() {
+        Dimension preferredSize = getTable().getPreferredSize();
+        Dimension maxPreferredSize = new Dimension(preferredSize);
+        if (preferredSize.height < DEFAULT_PREFERRED_SIZE.height) {
+            maxPreferredSize.height = DEFAULT_MAX_PREFERRED_SIZE.height;
+        }
+        return maxPreferredSize;
     }
 
     public abstract JTable getTable();
