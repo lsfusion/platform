@@ -92,7 +92,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         }
 
         @Override
-        public PropertyType getPropertyType() {
+        public PropertyType getPropertyType(FormEntity formEntity) {
             return null;
         }
 
@@ -120,7 +120,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         }
 
         @Override
-        public PropertyType getPropertyType() {
+        public PropertyType getPropertyType(FormEntity formEntity) {
             return null;
         }
 
@@ -462,21 +462,13 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     }
 
     @Override
-    public PropertyType getPropertyType() {
+    public PropertyType getPropertyType(FormEntity formEntity) {
         Type type = getType();
-        return new PropertyType(type.getSID(), getToDrawSID(), type.getCharLength().value, type instanceof NumericClass ? ((NumericClass) type).getPrecision() : 0);
+        return new PropertyType(type.getSID(), getToDrawSID(formEntity), type.getCharLength().value, type instanceof NumericClass ? ((NumericClass) type).getPrecision() : 0);
     }
 
-    private String getToDrawSID() {
-        String result = null;
-        if (toDraw != null) {
-            result = toDraw.getSID();
-        } else {
-            for (ObjectEntity object : propertyObject.getMapObjectInstances().values()) {
-                if (object != null && object.groupTo != null && object.groupTo.initClassView.isGrid())
-                    result = object.getSID();
-            }
-        }
-        return result == null ? "" : result;
+    private String getToDrawSID(FormEntity formEntity) {
+        GroupObjectEntity group = getToDraw(formEntity);
+        return group != null ? group.getSID() : "nogroup";
     }
 }

@@ -1,5 +1,6 @@
 package lsfusion.server.form.instance;
 
+import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.profiler.ProfiledObject;
 
 public interface PropertyReaderInstance extends ProfiledObject {
@@ -10,5 +11,5 @@ public interface PropertyReaderInstance extends ProfiledObject {
 
     int getID(); // ID в рамках Type
 
-    PropertyType getPropertyType();
+    PropertyType getPropertyType(FormEntity formEntity);
 }
