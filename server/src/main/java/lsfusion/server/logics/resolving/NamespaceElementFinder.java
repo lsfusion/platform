@@ -1,4 +1,6 @@
-package lsfusion.server.logics;
+package lsfusion.server.logics.resolving;
+
+import lsfusion.server.logics.LogicsModule;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -11,7 +13,7 @@ import java.util.List;
  */
 
 public class NamespaceElementFinder<T, P> {
-    private LogicsModule.ModuleFinder<T, P> finder;
+    private ModuleFinder<T, P> finder;
     private Collection<LogicsModule> modules;
     
     public static class FoundItem<T> {
@@ -24,7 +26,7 @@ public class NamespaceElementFinder<T, P> {
         }
     }
 
-    public NamespaceElementFinder(LogicsModule.ModuleFinder<T, P> finder, Collection<LogicsModule> modules) {
+    public NamespaceElementFinder(ModuleFinder<T, P> finder, Collection<LogicsModule> modules) {
         this.finder = finder;
         this.modules = modules;
     }

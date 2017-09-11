@@ -14,7 +14,7 @@ import lsfusion.server.classes.sets.ResolveClassSet;
 import lsfusion.server.classes.sets.ResolveUpClassSet;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.classes.ClassWhere;
-import lsfusion.server.logics.LogicsModule;
+import lsfusion.server.logics.resolving.SignatureMatcher;
 
 import java.util.List;
 
@@ -36,7 +36,7 @@ public class ExClassSet extends TwinImmutableObject {
             ImOrderSet<T> orderKeys = keys.toOrderSet();
             List<ResolveClassSet> listClasses = orderKeys.mapListValues(exClasses1.fnGetValue()).toJavaList();
             List<ResolveClassSet> listPropClasses = orderKeys.mapListValues(exClasses2.fnGetValue()).toJavaList();
-            return LogicsModule.match(listClasses, listPropClasses, true, true);
+            return SignatureMatcher.isCompatible(listClasses, listPropClasses, true, true);
         }
     }
 

@@ -8,7 +8,6 @@ import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.classes.sets.ResolveClassSet;
 import lsfusion.server.data.where.classes.ClassWhere;
-import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.linear.LP;
@@ -21,6 +20,7 @@ import lsfusion.server.logics.property.cases.graph.Comp;
 import lsfusion.server.logics.property.cases.graph.CompProcessor;
 import lsfusion.server.logics.property.cases.graph.Graph;
 import lsfusion.server.logics.property.derived.DerivedProperty;
+import lsfusion.server.logics.resolving.SignatureMatcher;
 
 import java.util.*;
 
@@ -343,7 +343,7 @@ public abstract class AbstractCase<P extends PropertyInterface, W extends CalcPr
     }
     
     private static boolean match(List<ResolveClassSet> absSignature, List<ResolveClassSet> concSignature) {
-        return LogicsModule.match(absSignature, concSignature, false, true);        
+        return SignatureMatcher.isCompatible(absSignature, concSignature, false, true);        
     }
 
 //    public static int cntfnd = 0;

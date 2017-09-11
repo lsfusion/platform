@@ -54,7 +54,12 @@ import lsfusion.server.logics.property.cases.CalcCase;
 import lsfusion.server.logics.property.derived.*;
 import lsfusion.server.logics.property.group.AbstractGroup;
 import lsfusion.server.logics.property.group.AbstractNode;
-import lsfusion.server.logics.scripted.*;
+import lsfusion.server.logics.resolving.ResolveManager;
+import lsfusion.server.logics.resolving.ResolvingErrors;
+import lsfusion.server.logics.scripted.EvalActionProperty;
+import lsfusion.server.logics.scripted.LazyActionProperty;
+import lsfusion.server.logics.scripted.MetaCodeFragment;
+import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 import lsfusion.server.logics.table.ImplementTable;
 import lsfusion.server.session.LocalNestedType;
 import org.antlr.runtime.RecognitionException;
@@ -137,17 +142,14 @@ public abstract class LogicsModule {
 
     protected Map<String, List<LogicsModule>> namespaceToModules = new LinkedHashMap<>();
     
-    protected LogicsModule() {}
-
-    public LogicsModule(String name) {
-        this(name, name);
-    }
-
-    public LogicsModule(String name, String namespace) {
-        this(name, namespace, new HashSet<String>());
+    protected ResolveManager resolveManager;
+    
+    protected LogicsModule() {
+        resolveManager = new ResolveManager(this);        
     }
 
     public LogicsModule(String name, String namespace, Set<String> requiredModules) {
+        this();
         this.name = name;
         this.namespace = namespace;
         this.requiredModules = requiredModules;
@@ -188,7 +190,7 @@ public abstract class LogicsModule {
         return result.get(0);
     }
 
-    private List<LP<?, ?>> getAllLPByName(String name) {
+    public List<LP<?, ?>> getAllLPByName(String name) {
         List<LP<?, ?>> allLP = namedModuleProperties.get(name); 
         return allLP != null ? allLP : new ArrayList<LP<?, ?>>(); 
     }
@@ -563,18 +565,18 @@ public abstract class LogicsModule {
         return addIFAProp(group, caption, form, objectsToSet, nulls, ListFact.<O>EMPTY(), ListFact.<LCP>EMPTY(), ListFact.<Boolean>EMPTY(), manageSession, noCancel, ListFact.<O>EMPTY(), ListFact.<CalcProperty>EMPTY(), syncType, windowType, checkOnOk, readonly, params);
     }
     protected <O extends ObjectSelector> LAP addIFAProp(AbstractGroup group, LocalizedString caption, FormSelector<O> form, List<O> objectsToSet, List<Boolean> nulls, ImList<O> inputObjects, ImList<LCP> inputProps, ImList<Boolean> inputNulls, ManageSessionType manageSession, Boolean noCancel, ImList<O> contextObjects, ImList<CalcProperty> contextProperties, boolean syncType, WindowFormType windowType, boolean checkOnOk, boolean readonly, Object... params) {
-        return addProperty(group, new LAP(new FormInteractiveActionProperty<O>(caption, form, objectsToSet, nulls, inputObjects, inputProps, inputNulls, contextObjects, contextProperties, manageSession, noCancel, syncType, windowType, checkOnOk, readonly)));
+        return addProperty(group, new LAP<>(new FormInteractiveActionProperty<>(caption, form, objectsToSet, nulls, inputObjects, inputProps, inputNulls, contextObjects, contextProperties, manageSession, noCancel, syncType, windowType, checkOnOk, readonly)));
     }
     protected <O extends ObjectSelector> LAP addPFAProp(AbstractGroup group, LocalizedString caption, FormSelector<O> form, List<O> objectsToSet, List<Boolean> nulls, boolean hasPrinterProperty, FormPrintType staticType, boolean syncType, Integer selectTop, LCP targetProp, Object... params) {
         ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(getIntNum(params));
         ImList<PropertyInterfaceImplement<PropertyInterface>> readImplements = readImplements(listInterfaces, params);
         CalcPropertyMapImplement printer = hasPrinterProperty ? (CalcPropertyMapImplement) readImplements.get(0) : null;
-        return addProperty(group, new LAP(new PrintActionProperty(caption, form, objectsToSet, nulls, staticType, syncType, selectTop, targetProp, printer, listInterfaces, baseLM.formPageCount)));
+        return addProperty(group, new LAP<>(new PrintActionProperty<>(caption, form, objectsToSet, nulls, staticType, syncType, selectTop, targetProp, printer, listInterfaces, baseLM.formPageCount)));
     }
     protected <O extends ObjectSelector> LAP addEFAProp(AbstractGroup group, LocalizedString caption, FormSelector<O> form, List<O> objectsToSet, List<Boolean> nulls, FormExportType staticType, boolean noHeader, String separator, String charset, LCP targetProp, Object... params) {
         if(targetProp == null)
             targetProp = (staticType.isPlain() ? baseLM.formExportFiles : baseLM.formExportFile); 
-        return addProperty(group, new LAP(new ExportActionProperty<O>(caption, form, objectsToSet, nulls, staticType, targetProp, noHeader, separator, charset)));
+        return addProperty(group, new LAP<>(new ExportActionProperty<>(caption, form, objectsToSet, nulls, staticType, targetProp, noHeader, separator, charset)));
     }
 
     // ------------------- Change Class action ----------------- //
@@ -603,7 +605,7 @@ public abstract class LogicsModule {
         ImList<CalcPropertyInterfaceImplement<PropertyInterface>> readImplements = readCalcImplements(innerInterfaces, params);
         CalcPropertyMapImplement<W, PropertyInterface> conditionalPart = (CalcPropertyMapImplement<W, PropertyInterface>)
                 (conditional ? readImplements.get(resInterfaces + 2) : DerivedProperty.createTrue());
-        return addProperty(group, new LAP(new SetActionProperty<C, W, PropertyInterface>(caption,
+        return addProperty(group, new LAP<>(new SetActionProperty<C, W, PropertyInterface>(caption,
                 innerInterfaces.getSet(), (ImOrderSet) readImplements.subList(0, resInterfaces).toOrderExclSet(), conditionalPart,
                 (CalcPropertyMapImplement<C, PropertyInterface>) readImplements.get(resInterfaces), readImplements.get(resInterfaces + 1))));
     }
@@ -624,13 +626,13 @@ public abstract class LogicsModule {
     }
     protected LAP addListAProp(AbstractGroup group, int removeLast, LocalizedString caption, ImSet<SessionDataProperty> localsInScope, Object... params) {
         ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(getIntNum(params));
-        return addProperty(group, new LAP(new ListActionProperty(caption, listInterfaces,
+        return addProperty(group, new LAP<>(new ListActionProperty(caption, listInterfaces,
                 readActionImplements(listInterfaces, removeLast > 0 ? Arrays.copyOf(params, params.length - removeLast) : params), localsInScope)));
     }
 
     protected LAP addAbstractListAProp(boolean isChecked, boolean isLast, ValueClass[] params) {
         ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(params.length);
-        return addProperty(null, new LAP(new ListActionProperty(LocalizedString.create("sys"), isChecked, isLast, listInterfaces, listInterfaces.mapList(ListFact.toList(params)))));
+        return addProperty(null, new LAP<>(new ListActionProperty(LocalizedString.create("sys"), isChecked, isLast, listInterfaces, listInterfaces.mapList(ListFact.toList(params)))));
     }
 
     // ------------------- Try action ----------------- //
@@ -640,7 +642,7 @@ public abstract class LogicsModule {
         ImList<PropertyInterfaceImplement<PropertyInterface>> readImplements = readImplements(listInterfaces, params);
         assert readImplements.size() >= 1 && readImplements.size() <= 2;
 
-        return addProperty(group, new LAP(new TryActionProperty(caption, listInterfaces, (ActionPropertyMapImplement<?, PropertyInterface>) readImplements.get(0),
+        return addProperty(group, new LAP<>(new TryActionProperty(caption, listInterfaces, (ActionPropertyMapImplement<?, PropertyInterface>) readImplements.get(0),
                 readImplements.size() == 2 ? (ActionPropertyMapImplement<?, PropertyInterface>) readImplements.get(1) : null)));
     }
     
@@ -671,12 +673,12 @@ public abstract class LogicsModule {
 
         MList<ActionCase<PropertyInterface>> mCases = ListFact.mList();
         for (int i = 0; i*2+1 < readImplements.size(); i++) {
-            mCases.add(new ActionCase((CalcPropertyMapImplement<?, PropertyInterface>) readImplements.get(i*2), (ActionPropertyMapImplement<?, PropertyInterface>) readImplements.get(i*2+1)));
+            mCases.add(new ActionCase<>((CalcPropertyMapImplement<?, PropertyInterface>) readImplements.get(i*2), (ActionPropertyMapImplement<?, PropertyInterface>) readImplements.get(i*2+1)));
         }
         if(readImplements.size() % 2 != 0) {
-            mCases.add(new ActionCase(DerivedProperty.createTrue(), (ActionPropertyMapImplement<?, PropertyInterface>) readImplements.get(readImplements.size() - 1)));
+            mCases.add(new ActionCase<>(DerivedProperty.createTrue(), (ActionPropertyMapImplement<?, PropertyInterface>) readImplements.get(readImplements.size() - 1)));
         }
-        return addProperty(null, new LAP(new CaseActionProperty(LocalizedString.create(""), isExclusive, listInterfaces, mCases.immutableList())));
+        return addProperty(null, new LAP<>(new CaseActionProperty(LocalizedString.create(""), isExclusive, listInterfaces, mCases.immutableList())));
     }
 
     protected LAP addMultiAProp(boolean isExclusive, Object... params) {
@@ -687,12 +689,12 @@ public abstract class LogicsModule {
         for (int i = 0; i < readImplements.size(); i++) {
             mCases.add((ActionPropertyMapImplement) readImplements.get(i));
         }
-        return addProperty(null, new LAP(new CaseActionProperty(LocalizedString.create(""), isExclusive, mCases.immutableList(), listInterfaces)));
+        return addProperty(null, new LAP<>(new CaseActionProperty(LocalizedString.create(""), isExclusive, mCases.immutableList(), listInterfaces)));
     }
 
     protected LAP addAbstractCaseAProp(ListCaseActionProperty.AbstractType type, boolean isExclusive, boolean isChecked, boolean isLast, ValueClass[] params) {
         ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(params.length);
-        return addProperty(null, new LAP(new CaseActionProperty(LocalizedString.create("sys"), isExclusive, isChecked, isLast, type, listInterfaces, listInterfaces.mapList(ListFact.toList(params)))));
+        return addProperty(null, new LAP<>(new CaseActionProperty(LocalizedString.create("sys"), isExclusive, isChecked, isLast, type, listInterfaces, listInterfaces.mapList(ListFact.toList(params)))));
     }
 
     // ------------------- For action ----------------- //
@@ -755,13 +757,13 @@ public abstract class LogicsModule {
 
         ApplyActionProperty applyAction = new ApplyActionProperty(baseLM, actionImplement, caption, listInterfaces, keepSessionProps, serializable);
         actionImplement.property.singleApply = singleApply;
-        return addProperty(group, new LAP(applyAction));
+        return addProperty(group, new LAP<>(applyAction));
     }
 
     protected LAP addCancelAProp(AbstractGroup group, LocalizedString caption, FunctionSet<SessionDataProperty> keepSessionProps) {
 
         CancelActionProperty applyAction = new CancelActionProperty(caption, keepSessionProps);
-        return addProperty(group, new LAP(applyAction));
+        return addProperty(group, new LAP<>(applyAction));
     }
 
     // ------------------- SESSION SCOPE ----------------- //
@@ -791,7 +793,7 @@ public abstract class LogicsModule {
         actionProperty.drawOptions.inheritDrawOptions(action.property.drawOptions);
         actionProperty.inheritCaption(action.property);
         
-        return addProperty(group, new LAP(actionProperty));
+        return addProperty(group, new LAP<>(actionProperty));
     }
 
     protected LAP addNewThreadAProp(AbstractGroup group, LocalizedString caption, boolean withConnection, boolean hasPeriod, boolean hasDelay, Object... params) {
@@ -2228,186 +2230,11 @@ public abstract class LogicsModule {
         return properties; 
     }
     
-    public interface ModuleFinder<T, P> {
-        List<T> resolveInModule(LogicsModule module, String simpleName, P param);
-    }
-
     public List<ResolveClassSet> getParamClasses(LP<?, ?> lp) {
         List<ResolveClassSet> paramClasses = propClasses.get(lp);
         return paramClasses == null ? Collections.<ResolveClassSet>nCopies(lp.listInterfaces.size(), null) : paramClasses;                   
     }
 
-    public static class OldLPNameModuleFinder implements ModuleFinder<LP<?, ?>, List<ResolveClassSet>> {
-        @Override
-        public List<LP<?, ?>> resolveInModule(LogicsModule module, String simpleName, List<ResolveClassSet> classes)  {
-            List<LP<?, ?>> result = new ArrayList<>();
-            for (List<LP<?, ?>> lps : module.getNamedModuleProperties().values()) {
-                for (LP<?, ?> lp : lps) {
-                    String actualName = lp.property.getName();
-                    if (simpleName.equals(actualName)) {
-                        result.add(lp);
-                    }
-                }
-            }
-            return result;
-        }
-    }
-
-    public static class SoftLPModuleFinder implements ModuleFinder<LP<?, ?>, List<ResolveClassSet>> {
-        @Override
-        public List<LP<?, ?>> resolveInModule(LogicsModule module, String simpleName, List<ResolveClassSet> classes)  {
-            List<LP<?, ?>> result = new ArrayList<>();
-            for (LP<?, ?> lp : module.getAllLPByName(simpleName)) {
-                if (softMatch(module.getParamClasses(lp), classes)) {
-                    result.add(lp);
-                }
-            }
-            return result;
-        }
-    }                           
-    
-    public static class LPModuleFinder implements ModuleFinder<LP<?, ?>, List<ResolveClassSet>> {
-        @Override
-        public List<LP<?, ?>> resolveInModule(LogicsModule module, String simpleName, List<ResolveClassSet> classes)  {
-            List<LP<?, ?>> result = new ArrayList<>();
-            for (LP<?, ?> lp : module.getAllLPByName(simpleName)) {
-                if (match(module.getParamClasses(lp), classes, false, false)) {
-                    result.add(lp);
-                }
-            }
-            return result;
-        }
-    }
-
-    public static class AbstractLPModuleFinder implements ModuleFinder<LP<?, ?>, List<ResolveClassSet>> {
-        @Override
-        public List<LP<?, ?>> resolveInModule(LogicsModule module, String simpleName, List<ResolveClassSet> classes)  {
-            List<LP<?, ?>> result = new ArrayList<>();
-            for (LP<?, ?> lp : module.getAllLPByName(simpleName)) {
-                if(((lp.property instanceof CaseUnionProperty && ((CaseUnionProperty)lp.property).isAbstract()) ||
-                        lp.property instanceof ListCaseActionProperty && ((ListCaseActionProperty)lp.property).isAbstract()) &&
-                    match(module.getParamClasses(lp), classes, false, false)) {
-                    result.add(lp);
-                }
-            }
-            return result;
-        }
-    }
-
-    // Находит идентичные по имени и сигнатуре свойства.   
-    public static class EqualLPModuleFinder implements ModuleFinder<LP<?, ?>, List<ResolveClassSet>> {
-        private final boolean findLocals;
-        
-        public EqualLPModuleFinder(boolean findLocals) {
-            this.findLocals = findLocals;        
-        }
-        
-        @Override
-        public List<LP<?, ?>> resolveInModule(LogicsModule module, String simpleName, List<ResolveClassSet> classes)  {
-            List<LP<?, ?>> result = new ArrayList<>();
-            for (LP<?, ?> lp : module.getAllLPByName(simpleName)) {
-                if ((findLocals || !lp.property.isLocal()) && match(module.getParamClasses(lp), classes, false, false) && match(classes, module.getParamClasses(lp), false, false)) {
-                    result.add(lp);
-                }
-            }
-            return result;
-        }
-    }
-    
-    public final static boolean softMode = true; 
-        
-    public static boolean match(List<ResolveClassSet> interfaceClasses, List<ResolveClassSet> paramClasses, boolean strict, boolean falseImplicitClass) {
-        assert interfaceClasses != null;
-        if (paramClasses == null) {
-            return true;
-        }
-        if (interfaceClasses.size() != paramClasses.size()) {
-            return false;
-        }
-
-        for (int i = 0, size = interfaceClasses.size(); i < size; i++) {
-            ResolveClassSet whoClass = interfaceClasses.get(i);
-            ResolveClassSet whatClass = paramClasses.get(i);
-            if (whoClass == null && whatClass == null)
-                continue;
-
-            if (whoClass != null && whatClass != null && !whoClass.containsAll(whatClass, !strict))
-                return false;
-
-            if (whatClass != null)
-                continue;
-
-            if (softMode && falseImplicitClass)
-                return false;
-        }
-        return true;
-    }
-
-    public static boolean softMatch(List<ResolveClassSet> interfaceClasses, List<ResolveClassSet> paramClasses) {
-        assert interfaceClasses != null;
-        if (paramClasses == null) {
-            return true;
-        }
-        if (interfaceClasses.size() != paramClasses.size()) {
-            return false;
-        }
-
-        for (int i = 0; i < interfaceClasses.size(); i++) {
-            if (interfaceClasses.get(i) != null && paramClasses.get(i) != null && (interfaceClasses.get(i).and(paramClasses.get(i))).isEmpty()) {
-                return false;
-            }
-        }
-        return true;
-    }
-    
-    public static class GroupNameModuleFinder implements ModuleFinder<AbstractGroup, Object> {
-        @Override
-        public List<AbstractGroup> resolveInModule(LogicsModule module, String simpleName, Object param) {
-            AbstractGroup group = module.getGroup(simpleName); 
-            return group == null ? new ArrayList<AbstractGroup>() : Collections.singletonList(group);
-        }
-    }
-
-    public static class NavigatorElementNameModuleFinder implements ModuleFinder<NavigatorElement, Object> {
-        @Override
-        public List<NavigatorElement> resolveInModule(LogicsModule module, String simpleName, Object param) {
-            NavigatorElement ne = module.getNavigatorElement(simpleName); 
-            return ne == null ? new ArrayList<NavigatorElement>() : Collections.singletonList(ne);
-        }
-    }                                           
-
-    public static class WindowNameModuleFinder implements ModuleFinder<AbstractWindow, Object> {
-        @Override
-        public List<AbstractWindow> resolveInModule(LogicsModule module, String simpleName, Object param) {
-            AbstractWindow wnd = module.getWindow(simpleName); 
-            return wnd == null ? new ArrayList<AbstractWindow>() : Collections.singletonList(wnd);
-        }
-    }
-
-    public static class MetaCodeNameModuleFinder implements ModuleFinder<MetaCodeFragment, Integer> {
-        @Override
-        public List<MetaCodeFragment> resolveInModule(LogicsModule module, String simpleName, Integer paramCnt) {
-            MetaCodeFragment code = module.getMetaCodeFragment(simpleName, paramCnt); 
-            return code == null ? new ArrayList<MetaCodeFragment>() : Collections.singletonList(code);
-        }
-    }
-
-    public static class TableNameModuleFinder implements ModuleFinder<ImplementTable, Object> {
-        @Override
-        public List<ImplementTable> resolveInModule(LogicsModule module, String simpleName, Object param) {
-            ImplementTable table = module.getTable(simpleName); 
-            return table == null ? new ArrayList<ImplementTable>() : Collections.singletonList(table);
-        }
-    }
-
-    public static class ClassNameModuleFinder implements ModuleFinder<CustomClass, Object> {
-        @Override
-        public List<CustomClass> resolveInModule(LogicsModule module, String simpleName, Object param) {
-            CustomClass cls = module.getClass(simpleName);             
-            return cls == null ? new ArrayList<CustomClass>() : Collections.singletonList(cls);
-        }
-    }
-    
     // для обратной совместимости
     public void addFormFixedFilter(FormEntity form, FilterEntity filter) {
         form.addFixedFilter(filter, getVersion());
@@ -2471,5 +2298,49 @@ public abstract class LogicsModule {
 
     public int getModuleComplexity() {
         return 1;
+    }
+    
+    public List<LogicsModule> getRequiredModules(String namespace) {
+        return namespaceToModules.get(namespace);
+    }
+
+    public Set<String> getRequiredNamespaces() {
+        return namespaceToModules.keySet();
+    }
+    
+    public Map<String, List<LogicsModule>> getNamespaceToModules() {
+        return namespaceToModules;
+    }
+
+    public LP<?, ?> resolveProperty(String name, List<ResolveClassSet> params) throws ResolvingErrors.ResolvingError {
+        return resolveManager.findProperty(name, params);
+    }
+
+    public LP<?, ?> resolveAbstractProperty(String name, List<ResolveClassSet> params, boolean prioritizeNotEquals) throws ResolvingErrors.ResolvingError {
+        return resolveManager.findAbstractProperty(name, params, prioritizeNotEquals);
+    }
+
+    public ValueClass resolveCustomClass(String name) throws ResolvingErrors.ResolvingError {
+        return resolveManager.findCustomClass(name);
+    }
+
+    public MetaCodeFragment resolveMetaCodeFragment(String name, int paramCnt) throws ResolvingErrors.ResolvingError {
+        return resolveManager.findMetaCodeFragment(name, paramCnt);
+    }
+    
+    public AbstractGroup resolveGroup(String name) throws ResolvingErrors.ResolvingError {
+        return resolveManager.findGroup(name);
+    }
+    
+    public AbstractWindow resolveWindow(String name) throws ResolvingErrors.ResolvingError {
+        return resolveManager.findWindow(name);    
+    }
+    
+    public NavigatorElement resolveNavigatorElement(String name) throws ResolvingErrors.ResolvingError {
+        return resolveManager.findNavigatorElement(name);
+    } 
+    
+    public ImplementTable resolveTable(String name) throws ResolvingErrors.ResolvingError {
+        return resolveManager.findTable(name);
     }
 }

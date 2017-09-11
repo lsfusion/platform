@@ -2,8 +2,8 @@ package lsfusion.server.logics.scripted;
 
 import lsfusion.server.data.expr.formula.SQLSyntaxType;
 import lsfusion.server.logics.LogicsModule;
-import lsfusion.server.logics.NamespaceElementFinder;
 import lsfusion.server.logics.linear.LP;
+import lsfusion.server.logics.resolving.NamespaceElementFinder;
 import org.antlr.runtime.BaseRecognizer;
 import org.antlr.runtime.IntStream;
 import org.antlr.runtime.RecognitionException;

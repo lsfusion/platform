@@ -74,6 +74,7 @@ import lsfusion.server.logics.property.actions.SystemEvent;
 import lsfusion.server.logics.property.cases.AbstractCase;
 import lsfusion.server.logics.property.cases.graph.Graph;
 import lsfusion.server.logics.property.group.AbstractGroup;
+import lsfusion.server.logics.resolving.*;
 import lsfusion.server.logics.scripted.MetaCodeFragment;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 import lsfusion.server.logics.table.ImplementTable;
@@ -2123,7 +2124,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
 
     private LP findProperty(String namespace, String name, List<ResolveClassSet> classes) {
         assert namespaceToModules.get(namespace) != null;
-        NamespacePropertyFinder finder = new NamespacePropertyFinder(new EqualLPModuleFinder(false), namespaceToModules.get(namespace));
+        NamespaceLPFinder finder = new NamespaceLPFinder(new ModuleEqualLPFinder(false), namespaceToModules.get(namespace));
         List<NamespaceElementFinder.FoundItem<LP<?, ?>>> foundElements = finder.findInNamespace(namespace, name, classes);
         assert foundElements.size() <= 1;
         return foundElements.size() == 0 ? null : foundElements.get(0).value;
@@ -2145,27 +2146,27 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     }
     
     public CustomClass findClass(String canonicalName) {
-        return findElement(canonicalName, null, new ClassNameModuleFinder());
+        return findElement(canonicalName, null, new ModuleClassFinder());
     }
 
     public AbstractGroup findGroup(String canonicalName) {
-        return findElement(canonicalName, null, new GroupNameModuleFinder());
+        return findElement(canonicalName, null, new ModuleGroupFinder());
     }
 
     public ImplementTable findTable(String canonicalName) {
-        return findElement(canonicalName, null, new TableNameModuleFinder());
+        return findElement(canonicalName, null, new ModuleTableFinder());
     }
 
     public AbstractWindow findWindow(String canonicalName) {
-        return findElement(canonicalName, null, new WindowNameModuleFinder());
+        return findElement(canonicalName, null, new ModuleWindowFinder());
     }
 
     public NavigatorElement findNavigatorElement(String canonicalName) {
-        return findElement(canonicalName, null, new NavigatorElementNameModuleFinder());
+        return findElement(canonicalName, null, new ModuleNavigatorElementFinder());
     }
 
     public MetaCodeFragment findMetaCode(String canonicalName, int paramCnt) {
-        return findElement(canonicalName, paramCnt, new MetaCodeNameModuleFinder());
+        return findElement(canonicalName, paramCnt, new ModuleMetaCodeFinder());
     }
 
     private void outputPersistent() {
@@ -2243,31 +2244,31 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
 
     // Здесь ищется точное совпадение по сигнатуре
     public LogicsModule getModuleContainingLP(String namespaceName, String name, List<ResolveClassSet> classes) {
-        return getModuleContainingObject(namespaceName, name, classes, new EqualLPModuleFinder(false));
+        return getModuleContainingObject(namespaceName, name, classes, new ModuleEqualLPFinder(false));
     }
 
     public LogicsModule getModuleContainingGroup(String namespaceName, String name) {
-        return getModuleContainingObject(namespaceName, name, null, new GroupNameModuleFinder());
+        return getModuleContainingObject(namespaceName, name, null, new ModuleGroupFinder());
     }
 
     public LogicsModule getModuleContainingClass(String namespaceName, String name) {
-        return getModuleContainingObject(namespaceName, name, null, new ClassNameModuleFinder());
+        return getModuleContainingObject(namespaceName, name, null, new ModuleClassFinder());
     }
 
     public LogicsModule getModuleContainingTable(String namespaceName, String name) {
-        return getModuleContainingObject(namespaceName, name, null, new TableNameModuleFinder());
+        return getModuleContainingObject(namespaceName, name, null, new ModuleTableFinder());
     }
 
     public LogicsModule getModuleContainingWindow(String namespaceName, String name) {
-        return getModuleContainingObject(namespaceName, name, null, new WindowNameModuleFinder());
+        return getModuleContainingObject(namespaceName, name, null, new ModuleWindowFinder());
     }
 
     public LogicsModule getModuleContainingNavigatorElement(String namespaceName, String name) {
-        return getModuleContainingObject(namespaceName, name, null, new NavigatorElementNameModuleFinder());
+        return getModuleContainingObject(namespaceName, name, null, new ModuleNavigatorElementFinder());
     }
 
     public LogicsModule getModuleContainingMetaCode(String namespaceName, String name, int paramCnt) {
-        return getModuleContainingObject(namespaceName, name, paramCnt, new MetaCodeNameModuleFinder());
+        return getModuleContainingObject(namespaceName, name, paramCnt, new ModuleMetaCodeFinder());
     }
 
     public DBManager getDbManager() {

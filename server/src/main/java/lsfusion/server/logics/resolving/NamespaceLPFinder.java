@@ -1,6 +1,7 @@
-package lsfusion.server.logics;
+package lsfusion.server.logics.resolving;
 
 import lsfusion.server.classes.sets.ResolveClassSet;
+import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.linear.LP;
 
 import java.util.ArrayList;
@@ -11,9 +12,9 @@ import java.util.List;
  * Из всех вариантов отбирает те, для которых не существует более подходящих вариантов
  */
 
-public class NamespacePropertyFinder extends NamespaceElementFinder<LP<?, ?>, List<ResolveClassSet>> {
+public class NamespaceLPFinder extends NamespaceElementFinder<LP<?, ?>, List<ResolveClassSet>> {
 
-    public NamespacePropertyFinder(LogicsModule.ModuleFinder<LP<?, ?>, List<ResolveClassSet>> finder, List<LogicsModule> modules) {
+    public NamespaceLPFinder(ModuleFinder<LP<?, ?>, List<ResolveClassSet>> finder, List<LogicsModule> modules) {
         super(finder, modules);
     }
 
@@ -22,7 +23,7 @@ public class NamespacePropertyFinder extends NamespaceElementFinder<LP<?, ?>, Li
         return filterFoundProperties(result);
     }
     
-    static public List<FoundItem<LP<?, ?>>> filterFoundProperties(List<FoundItem<LP<?, ?>>> result) {
+    public static List<FoundItem<LP<?, ?>>> filterFoundProperties(List<FoundItem<LP<?, ?>>> result) {
         int cnt = result.size();
         List<FoundItem<LP<?, ?>>> finalResult = new ArrayList<>();
         for (int i = 0; i < cnt; i++) {
@@ -31,8 +32,8 @@ public class NamespacePropertyFinder extends NamespaceElementFinder<LP<?, ?>, Li
             boolean foundMoreSpecialized = false;
             for (int j = 0; j < cnt; j++) {
                 LP<?, ?> jProp = result.get(j).value;
-                if (i != j && LogicsModule.match(iParams, result.get(j).module.propClasses.get(jProp), false, true) && 
-                              !LogicsModule.match(result.get(j).module.propClasses.get(jProp), iParams, false, true)) {
+                if (i != j && SignatureMatcher.isCompatible(iParams, result.get(j).module.propClasses.get(jProp), false, true) && 
+                              !SignatureMatcher.isCompatible(result.get(j).module.propClasses.get(jProp), iParams, false, true)) {
                     foundMoreSpecialized = true;
                     break;
                 }
