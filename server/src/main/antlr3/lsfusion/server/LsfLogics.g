@@ -679,7 +679,7 @@ formMappedPropertiesList returns [List<String> aliases, List<LocalizedString> ca
 					LPUsage lpUsage = null;
 					if(inPropParseState()) {
 						lpUsage = new LPUsage(lp, signature);
-						assert self.checkPropertyIsNew(lpUsage);
+						lpUsage = self.checkPropertyIsNew(lpUsage);
 					}
 					$properties.add(lpUsage);
 					$mapping.add(mapping);
@@ -710,7 +710,7 @@ formMappedPropertiesList returns [List<String> aliases, List<LocalizedString> ca
                         LPUsage lpUsage = null;
                         if(inPropParseState()) {
                             lpUsage = new LPUsage(lp, signature);
-                            assert self.checkPropertyIsNew(lpUsage);
+                            lpUsage = self.checkPropertyIsNew(lpUsage);
                         }
                         $properties.add(lpUsage);
                         $mapping.add(mapping);

@@ -754,8 +754,10 @@ public class ScriptingLogicsModule extends LogicsModule {
         return paramClasses;
     }
 
-    public boolean checkPropertyIsNew(LPUsage property) {
-        return !property.lp.property.getSID().equals(lastOpimizedJPropSID);
+    public LPUsage checkPropertyIsNew(LPUsage property) {
+        if(property.lp.property.getSID().equals(lastOpimizedJPropSID))
+            property = new LPUsage(addJProp(false, LocalizedString.create(""), (LCP) property.lp, BaseUtils.consecutiveList(property.lp.property.interfaces.size(), 1).toArray()), property.signature);
+        return property;
     }
     public void makePropertyPublic(FormEntity form, String alias, LPUsage lpUsage) {
         String name = "_FORM_" + form.getCanonicalName().replace('.', '_') + "_" + alias;
