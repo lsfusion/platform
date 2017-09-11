@@ -73,6 +73,8 @@ public class EmailSender {
     public EmailSender(String smtpHostAccount, String smtpPortAccount, String encryptedConnectionType, String fromAddressAccount, String userName, String password, Map<String, Message.RecipientType> targets) {
         this(smtpHostAccount, fromAddressAccount, targets);
 
+        System.setProperty("mail.mime.multipart.allowempty", "true");
+
         if (!smtpPortAccount.isEmpty()) {
             mailProps.put("mail.smtp.port", smtpPortAccount);
         }
