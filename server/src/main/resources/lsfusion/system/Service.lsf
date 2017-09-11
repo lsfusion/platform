@@ -107,15 +107,6 @@ turnExplainAnalizeOnCurrentUser 'Включить EXPLAIN ANALYZE (Текущи�
     explainAnalyzeMode(User user) <- TRUE WHERE user == currentUser();     
 }
 
-setExplainMode 'Выводить в лог EXPLAIN запросов' = CUSTOM 'lsfusion.server.logics.service.SetExplainModeUserActionProperty' (BOOLEAN, User);
-explainMode 'Включён Explain' = DATA BOOLEAN (User);
-refreshExplainMode 'Обновить Explain'(User user) = {
-    setExplainMode(explainMode(user), user);  
-}
-WHEN CHANGED(explainMode(User user)) DO {
-    refreshExplainMode(user);
-}
-
 setLoggerDebugEnabled 'Включить вывод в лог SQL запросов' = CUSTOM 'lsfusion.server.logics.service.SetLoggerDebugEnabledUserActionProperty' (BOOLEAN, User);
 loggerDebugEnabled 'Выводить в лог SQL запросы' = DATA BOOLEAN (User);
 refreshLoggerDebugEnabled ''(User user) = {
@@ -226,8 +217,6 @@ WHEN CHANGED(volatileStatsEnabled(User user)) DO {
 onStarted() += {
     FOR explainAnalyzeMode(User u) DO 
         refreshExplainAnalyzeMode(u);
-    FOR explainMode(User u) DO 
-        refreshExplainMode(u);
     FOR loggerDebugEnabled(User u) DO 
         refreshLoggerDebugEnabled(u);
     FOR volatileStatsEnabled(User u) DO 
@@ -343,7 +332,7 @@ FORM admin 'Администрирование'
                  disableTILMode, hostnameServerComputer, reupdateMode, singleTransaction,
                  turnExplainAnalizeOnCurrentUser, clearApplicationLog
     OBJECTS u=User
-    PROPERTIES(u) name READONLY, nameMainRole, explainAnalyzeMode, explainMode, loggerDebugEnabled, remoteLoggerDebugEnabled, remoteExLogEnabled, remotePausableLogEnabled, nameExecEnv, volatileStatsEnabled
+    PROPERTIES(u) name READONLY, nameMainRole, explainAnalyzeMode, loggerDebugEnabled, remoteLoggerDebugEnabled, remoteExLogEnabled, remotePausableLogEnabled, nameExecEnv, volatileStatsEnabled
     OBJECTS uc=User
     PROPERTIES(uc) name READONLY, selectedRowBackgroundColor, selectedRowBorderColor, selectedCellBackgroundColor, focusedCellBackgroundColor, focusedCellBorderColor;
 ;

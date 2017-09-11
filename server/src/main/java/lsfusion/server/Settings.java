@@ -1802,6 +1802,16 @@ public class Settings implements Cloneable {
         this.minClassDataIndexCount = minClassDataIndexCount;
     }
 
+    private boolean explainNoAnalyze = false;
+
+    public boolean isExplainNoAnalyze() {
+        return explainNoAnalyze;
+    }
+
+    public void setExplainNoAnalyze(boolean explainNoAnalyze) {
+        this.explainNoAnalyze = explainNoAnalyze;
+    }
+
     private boolean explainJavaStack = false;
 
     public boolean isExplainJavaStack() {

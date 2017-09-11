@@ -1423,7 +1423,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     }
 
     private static Map<Long, Boolean> explainUserMode = MapFact.getGlobalConcurrentHashMap();
-    private static Map<Long, Boolean> explainNoAnalyzeUserMode = MapFact.getGlobalConcurrentHashMap();
+    private static boolean explainNoAnalyze;
     private static Map<Long, Boolean> loggerDebugEnabled = MapFact.getGlobalConcurrentHashMap();
     private static Map<Long, Boolean> userVolatileStats = MapFact.getGlobalConcurrentHashMap();
 
@@ -1431,8 +1431,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         explainUserMode.put(user, mode != null && mode);
     }
 
-    public static void setExplainMode(Long user, Boolean mode) {
-        explainNoAnalyzeUserMode.put(user, mode != null && mode);
+    public static void setExplainNoAnalyze(boolean explainNoAnalyze) {
+        SQLSession.explainNoAnalyze = explainNoAnalyze;
     }
 
     public static void setLoggerDebugEnabled(Long user, Boolean enabled) {
@@ -1459,11 +1459,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     }
 
     public boolean explainNoAnalyze() {
-        Long currentUser = userProvider.getCurrentUser();
-        if(currentUser == null)
-            return false;
-        Boolean ea = explainNoAnalyzeUserMode.get(currentUser);
-        return ea != null && ea;
+        return explainNoAnalyze;
     }
 
     public boolean isLoggerDebugEnabled() {
