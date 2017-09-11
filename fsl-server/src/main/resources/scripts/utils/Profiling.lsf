@@ -1,0 +1,64 @@
+MODULE Profiling;
+
+REQUIRE Service;
+
+readSettings () = CUSTOM 'lsfusion.erp.utils.ReadProfilingSettingsActionProperty';
+
+changeProfilingSettingsInteger = CUSTOM 'lsfusion.erp.utils.ChangeProfilingSettingsActionProperty' (VARSTRING[100], INTEGER);
+changeProfilingSettingsBoolean = CUSTOM 'lsfusion.erp.utils.ChangeProfilingSettingsActionProperty' (VARSTRING[100], BOOLEAN);
+
+explainNoAnalyze 'Explain No Analyze' = DATA LOCAL BOOLEAN ();
+explainJavaStack 'Explain Java Stack' = DATA LOCAL BOOLEAN ();
+explainCompile 'Explain Compile' = DATA LOCAL BOOLEAN ();
+explainThreshold 'Explain Threshold' = DATA LOCAL INTEGER ();
+
+FORM profiler 'Профилировщик'
+    EVENTS ON INIT { readSettings(); }
+    OBJECTS cu = CustomUser
+    PROPERTIES(cu) PANEL explainAnalyzeMode
+    FILTERS cu == currentUser()
+    PROPERTIES() explainNoAnalyze ON CHANGE { 
+                    INPUT b = BOOLEAN DO explainNoAnalyze() <- b;
+                    changeProfilingSettingsBoolean('explainNoAnalyze', explainNoAnalyze()); 
+                    },
+                 explainJavaStack ON CHANGE { 
+                    INPUT b = BOOLEAN DO explainJavaStack() <- b;
+                    changeProfilingSettingsBoolean('explainJavaStack', explainJavaStack()); 
+                 },
+                 explainCompile ON CHANGE { 
+                    INPUT b = BOOLEAN DO explainCompile() <- b;
+                    changeProfilingSettingsBoolean('explainCompile', explainCompile()); 
+                 },
+                 explainThreshold ON CHANGE { 
+                    INPUT i = INTEGER DO explainThreshold() <- i;
+                    changeProfilingSettingsInteger('explainThreshold', explainThreshold()); 
+                 }
+;
+
+DESIGN profiler {
+    NEW tab {
+        type = TABBED;
+        fill = 1;
+        NEW sql {
+            caption = 'SQL';
+            NEW cubox {
+                caption = 'Текущий пользователь';
+                MOVE PROPERTY(explainAnalyzeMode(cu));
+            }
+            NEW settingsBox {
+                caption = 'Настройки';
+                MOVE PROPERTY(explainNoAnalyze());
+                MOVE PROPERTY(explainJavaStack());
+                MOVE PROPERTY(explainCompile());
+                MOVE PROPERTY(explainThreshold());
+             }
+        }
+    }
+    MOVE TOOLBARBOX;
+}
+
+NAVIGATOR {
+    systemEvents {
+        ADD profiler;
+    }
+}

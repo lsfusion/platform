@@ -1,6 +1,6 @@
 MODULE Profiler;
 
-REQUIRE Security, Utils;
+REQUIRE Security, Utils, Profiling;
 
 CLASS ProfileObject {
     top 'Базовое действие'
@@ -208,7 +208,7 @@ initFilters() = {
     active(ProfilerIndex i) <- TRUE WHERE i == ProfilerIndex.totalTimeNoWait OR i == ProfilerIndex.totalSQLTime OR i == ProfilerIndex.inherentJavaTime OR i == ProfilerIndex.callCount;
 }
         
-FORM profiler 'Профилировщик'
+EXTEND FORM profiler
     PROPERTIES() startProfiler SHOWIF isStoppedProfiler(), stopProfiler SHOWIF isStartedProfiler(), nameOrder
   
 //настройки
@@ -305,9 +305,7 @@ DESIGN profiler {
         caption = 'Верхнее действие';
     }
     
-    NEW tab {
-        type = TABBED ;
-        fill = 1;
+    tab {
         NEW first {
             caption = 'Настройки';
             MOVE PROPERTY (startProfiler());
