@@ -6,7 +6,7 @@ import lsfusion.server.classes.CustomClass;
 
 import java.util.Map;
 
-class ClassCache extends OrderedMap<ConcreteCustomClass, Long> {
+class ClassCache extends OrderedMap<ConcreteCustomClass, Integer> {
 
     public ClassCache() {
     }
@@ -15,7 +15,7 @@ class ClassCache extends OrderedMap<ConcreteCustomClass, Long> {
         super(classCache);
     }
 
-    public Long put(ConcreteCustomClass cls, Long value) {
+    public Integer put(ConcreteCustomClass cls, Integer value) {
 
         if (cls == null) {
             throw new RuntimeException("Unable to put null key to cache");
@@ -29,10 +29,10 @@ class ClassCache extends OrderedMap<ConcreteCustomClass, Long> {
             return null;
     }
 
-    public Long getObject(CustomClass cls) {
+    public Integer getObject(CustomClass cls) {
 
-        Long objectID = null;
-        for (Map.Entry<ConcreteCustomClass,Long> entry : entrySet())
+        Integer objectID = null;
+        for (Map.Entry<ConcreteCustomClass,Integer> entry : entrySet())
             if (entry.getKey().isChild(cls))
                 objectID = entry.getValue();
 

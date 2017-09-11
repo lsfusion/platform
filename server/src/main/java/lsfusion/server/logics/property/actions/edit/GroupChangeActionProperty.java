@@ -44,7 +44,7 @@ public class GroupChangeActionProperty extends AroundAspectActionProperty {
 
         final ImOrderSet<ImMap<ObjectInstance, DataObject>> groupKeys = getObjectGroupKeys(groupObject, context); // читаем вначале, чтобы избежать эффекта последействия и влияния его на хинты
 
-        context.getBL().LM.getRequestCanceledProperty().change((Boolean)null, context);
+        context.getBL().LM.getRequestCanceledProperty().change((Object)null, context);
 
         FlowResult flowResult = proceed(context);// вызываем CHANGE (для текущего)
         if (!flowResult.equals(FlowResult.FINISH))

@@ -95,7 +95,7 @@ public class ArrayClass<T> extends DataClass<T[]> {
         return "ar_" + type.getSID();
     }
 
-    public T[] getDefaultValue() {
+    public Object getDefaultValue() {
         throw new RuntimeException("not supported");
     }
 }

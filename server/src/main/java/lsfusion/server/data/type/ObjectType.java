@@ -7,7 +7,10 @@ import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.mutable.MSet;
-import lsfusion.server.classes.*;
+import lsfusion.server.classes.BaseClass;
+import lsfusion.server.classes.ConcreteClass;
+import lsfusion.server.classes.IntegerClass;
+import lsfusion.server.classes.ObjectValueClassSet;
 import lsfusion.server.classes.sets.AndClassSet;
 import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.SQLHandledException;
@@ -30,7 +33,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class ObjectType extends AbstractType<Long> {
+public class ObjectType extends AbstractType<Integer> {
 
     public ObjectType() {
         super();
@@ -44,7 +47,7 @@ public class ObjectType extends AbstractType<Long> {
     }
 
     public static final ObjectType instance = new ObjectType();
-    public static final LongClass idClass = LongClass.instance;
+    public static final IntegerClass idClass = IntegerClass.instance;
 
     public String getDB(SQLSyntax syntax, TypeEnvironment typeEnv) {
         return idClass.getDB(syntax, typeEnv);
@@ -69,13 +72,17 @@ public class ObjectType extends AbstractType<Long> {
         return idClass.getSQL(syntax);
     }
 
-    public Long read(Object value) {
-        return idClass.read(value);
+    public Integer read(Object value) {
+        if(value==null) return null;
+        return ((Number)value).intValue();
     }
 
     @Override
-    public Long read(ResultSet set, SQLSyntax syntax, String name) throws SQLException {
-        return idClass.read(set, syntax, name);
+    public Integer read(ResultSet set, SQLSyntax syntax, String name) throws SQLException {
+        int anInt = set.getInt(name);
+        if(set.wasNull())
+            return null;
+        return anInt;
     }
 
     public void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax) throws SQLException {
@@ -109,12 +116,12 @@ public class ObjectType extends AbstractType<Long> {
         ImRevMap<ObjectClassField,ObjectValueClassSet> readTables = objectClassSet.getObjectClassFields();
         CaseExprInterface mCases = Expr.newCases(true, readTables.size()); // именно так а не через classExpr и т.п. чтобы не соптимизировалось, и не убрало вообще запрос к таблице
         for(int i=0,size=readTables.size();i<size;i++) {
-            Expr expr = readTables.getKey(i).getStoredExpr(new ValueExpr((Long)value, readTables.getValue(i).getSetConcreteChildren().get(0)));
+            Expr expr = readTables.getKey(i).getStoredExpr(new ValueExpr(value, readTables.getValue(i).getSetConcreteChildren().get(0)));
             mCases.add(expr.getWhere(), expr);
         }
         query.addProperty("classid", mCases.getFinal());
 
-        return baseClass.findConcreteClassID((Long)query.execute(session, owner).singleValue().get("classid")); // тут можно было бы искать только среди ObjectValueClassSet сделать
+        return baseClass.findConcreteClassID((Integer)query.execute(session, owner).singleValue().get("classid")); // тут можно было бы искать только среди ObjectValueClassSet сделать
     }
 
     public void prepareClassesQuery(Expr expr, Where where, MSet<Expr> exprs, BaseClass baseClass) {
@@ -122,7 +129,7 @@ public class ObjectType extends AbstractType<Long> {
     }
 
     public ConcreteClass readClass(Expr expr, ImMap<Expr, Object> classes, BaseClass baseClass, KeyType keyType) {
-        return baseClass.findConcreteClassID((Long) classes.get(expr));
+        return baseClass.findConcreteClassID((Integer) classes.get(expr));
     }
 
     public ImList<AndClassSet> getUniversal(BaseClass baseClass) {
@@ -133,8 +140,12 @@ public class ObjectType extends AbstractType<Long> {
         return new ExtInt(10);
     }
 
-    public Long parseString(String s) throws ParseException {
-        return idClass.parseString(s);
+    public Integer parseString(String s) throws ParseException {
+        try {
+            return Integer.parseInt(s);
+        } catch (Exception e) {
+            throw new ParseException("error parsing object", e);
+        }
     }
 
     public AndClassSet getBaseClassSet(BaseClass baseClass) {

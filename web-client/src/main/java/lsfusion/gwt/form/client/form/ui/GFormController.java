@@ -812,12 +812,12 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             });
         } else {
             final GGroupObjectValue value = controllers.get(object.groupObject).getCurrentKey();
-            final long ID = (Long) value.getValue(0);
+            final int ID = (Integer) value.getValue(0);
             executeModifyObject(property, columnKey, object, add, ID, value, position);
         }
     }
 
-    private void executeModifyObject(GPropertyDraw property, GGroupObjectValue columnKey, GObject object, boolean add, long ID, GGroupObjectValue value, int position) {
+    private void executeModifyObject(GPropertyDraw property, GGroupObjectValue columnKey, GObject object, boolean add, int ID, GGroupObjectValue value, int position) {
         final GGroupObjectValue fullCurrentKey = getFullCurrentKey(columnKey); // чтобы не изменился
 
         controllers.get(object.groupObject).modifyGroupObject(value, add, -1);

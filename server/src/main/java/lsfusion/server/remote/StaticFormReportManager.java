@@ -256,7 +256,7 @@ public class StaticFormReportManager extends FormReportManager<PropertyDrawEntit
 
             @Override
             public PropertyType getPropertyType(PropertyReaderEntity propertyReaderEntity) {
-                return propertyReaderEntity.getPropertyType(getEntity());
+                return propertyReaderEntity.getPropertyType();
             }
 
             @Override

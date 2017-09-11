@@ -19,14 +19,12 @@ import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.IsClassExpr;
 import lsfusion.server.data.expr.IsClassType;
 import lsfusion.server.data.expr.KeyExpr;
-import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.NullValue;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.mutables.Version;
-import lsfusion.server.logics.property.ClassDataProperty;
 import lsfusion.server.logics.property.ObjectClassField;
 import lsfusion.server.logics.property.ObjectClassProperty;
 import lsfusion.server.logics.table.FullTablesInterface;
@@ -61,15 +59,15 @@ public class BaseClass extends AbstractCustomClass {
         return this;
     }
 
-    public ObjectClass findClassID(Long idClass) {
+    public ObjectClass findClassID(Integer idClass) {
         if(idClass==null) return unknown;
 
-        return findClassID((long)idClass);
+        return findClassID((int)idClass);
     }
 
     // для того чтобы группировать по классам в некоторых местах делается nvl(-1), тем самым assert'ся что результат не null
     // но если "плывут" классы, или просто объект параллельно удалили, может нарушаться поэтому пока вставим assertion 
-    public ConcreteObjectClass findConcreteClassID(Long id, long nullValue) {
+    public ConcreteObjectClass findConcreteClassID(Integer id, int nullValue) {
         if(id == null) {
             id = nullValue;
             ServerLoggers.assertLog(false, "CLASS RESULT SHOULD NOT BE NULL");
@@ -78,10 +76,10 @@ public class BaseClass extends AbstractCustomClass {
     }
 
     @IdentityLazy
-    public ConcreteObjectClass findConcreteClassID(Long idClass) {
+    public ConcreteObjectClass findConcreteClassID(Integer idClass) {
         if(idClass==null) return unknown;
 
-        return findConcreteClassID((long) idClass);
+        return findConcreteClassID((int) idClass);
     }
 
     public ImSet<CustomClass> getAllClasses() {
@@ -106,18 +104,14 @@ public class BaseClass extends AbstractCustomClass {
         ConcreteCustomClass.fillObjectClass(objectClass, sidClasses, nameClasses, version);
     }
 
-    public void fillIDs(DataSession session, LCP staticCaption, LCP staticName, Map<String, String> sidChanges, Map<String, String> objectSIDChanges, boolean migrateObjectClassID) throws SQLException, SQLHandledException {
+    public void fillIDs(DataSession session, LCP staticCaption, LCP staticName, Map<String, String> sidChanges, Map<String, String> objectSIDChanges) throws SQLException, SQLHandledException {
         Map<String, ConcreteCustomClass> usedSIds = new HashMap<>();
-        Set<Long> usedIds = new HashSet<>();
+        Set<Integer> usedIds = new HashSet<>();
 
         // baseClass'у и baseClass.objectClass'у нужны ID сразу потому как учавствуют в addObject
-        ID = 0L;
+        ID = 0;
 
-        objectClass.ID = (long)Long.MAX_VALUE - 5; // в явную обрабатываем objectClass
-
-        if(migrateObjectClassID)
-            migrateObjectClassID(session.sql);
-
+        objectClass.ID = Integer.MAX_VALUE - 5; // в явную обрабатываем objectClass
         if(objectClass.readData(objectClass.ID, session.sql) == null) {
             DataObject classObject = new DataObject(objectClass.ID, unknown);
             session.changeClass(classObject, objectClass);
@@ -138,7 +132,7 @@ public class BaseClass extends AbstractCustomClass {
             if(customClass instanceof ConcreteCustomClass)
                 customClass.ID = objectClass.getObjectID(customClass.getSID());
 
-        long free = 0;
+        int free = 0;
         for(CustomClass customClass : allClasses)
             if(customClass instanceof ConcreteCustomClass)
                 free = Math.max(free, customClass.ID);
@@ -164,20 +158,6 @@ public class BaseClass extends AbstractCustomClass {
             startLogger.info("renaming class with id " + modifiedName.getKey() + " to " + modifiedName.getValue());
             staticCaption.change(modifiedName.getValue(), session, modifiedName.getKey());
         }
-    }
-
-    private void migrateObjectClassID(SQLSession sql) throws SQLException, SQLHandledException {
-        long prevID = Integer.MAX_VALUE - 5; // в явную обрабатываем objectClass
-        ClassDataProperty dataProperty = objectClass.dataProperty;
-        ImplementTable table = dataProperty.mapTable.table;
-        SQLSyntax syntax = sql.syntax;
-        String classFieldName = dataProperty.field.getName(syntax);
-        String keyFieldName = table.keys.single().getName(syntax);
-        String tableName = syntax.getTableName(table.getName());
-        sql.executeDDL(String.format("ALTER TABLE %s ALTER COLUMN %s TYPE BIGINT", tableName, classFieldName));
-        sql.executeDDL(String.format("ALTER TABLE %s ALTER COLUMN %s TYPE BIGINT", tableName, keyFieldName));
-        sql.executeDML("UPDATE " + tableName + " SET " + classFieldName + "=" + objectClass.ID + " WHERE " + classFieldName + "=" + prevID);
-        sql.executeDML("UPDATE " + tableName + " SET " + keyFieldName + "=" + objectClass.ID + " WHERE " + keyFieldName + "=" + prevID);
     }
 
     public int getCount() {

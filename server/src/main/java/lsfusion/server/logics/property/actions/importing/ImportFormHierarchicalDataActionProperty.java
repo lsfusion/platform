@@ -13,9 +13,6 @@ import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.type.ParseException;
 import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.logics.DataObject;
-import lsfusion.server.logics.NullValue;
-import lsfusion.server.logics.ObjectValue;
-import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.Property;
@@ -59,15 +56,15 @@ public abstract class ImportFormHierarchicalDataActionProperty<E> extends Import
     }
 
     @Override
-    protected Map<String, Map<ImMap<KeyField, DataObject>, Map<Property, ObjectValue>>> getData(Object file, Map<String, Pair<List<String>, CalcProperty>> propertyKeysMap, Map<String, List<String>> headersMap) throws IOException, ParseException {
+    protected Map<String, Map<ImMap<KeyField, DataObject>, Map<Property, Object>>> getData(Object file, Map<String, Pair<List<String>, Property>> propertyKeysMap, Map<String, List<String>> headersMap) throws IOException, ParseException {
         E rootElement = getRootElement((byte[]) file);
         tagsMap = new HashMap<>();
         return getData(Pair.create((String) null, (Object) rootElement), propertyKeysMap);
     }
 
-    private Map<String, Map<ImMap<KeyField, DataObject>, Map<Property, ObjectValue>>> getData(
-            Pair<String, Object> rootElement, Map<String, Pair<List<String>, CalcProperty>> propertyKeysMap) {
-        Map<String, Map<ImMap<KeyField, DataObject>, Map<Property, ObjectValue>>> dataMap = new HashMap<>();
+    private Map<String, Map<ImMap<KeyField, DataObject>, Map<Property, Object>>> getData(
+            Pair<String, Object> rootElement, Map<String, Pair<List<String>, Property>> propertyKeysMap) {
+        Map<String, Map<ImMap<KeyField, DataObject>, Map<Property, Object>>> dataMap = new HashMap();
         ImportFormIterator iterator = getIterator(rootElement);
         while (iterator.hasNext()) {
             Pair<String, Object> child = iterator.next();
@@ -75,25 +72,25 @@ public abstract class ImportFormHierarchicalDataActionProperty<E> extends Import
             Integer count = tagsMap.get(child.first);
             tagsMap.put(child.first, count == null ? 0 : ++count);
 
-            Pair<List<String>, CalcProperty> entry = propertyKeysMap.get(child.first);
+            Pair<List<String>, Property> entry = propertyKeysMap.get(child.first);
             if (entry != null && (!getKeysId(entry.first).equals(child.first) || child.second instanceof JSONObject)) {
                 String keyId = getKeysId(entry.first);
-                Map<ImMap<KeyField, DataObject>, Map<Property, ObjectValue>> dataEntry = dataMap.get(keyId);
+                Map<ImMap<KeyField, DataObject>, Map<Property, Object>> dataEntry = dataMap.get(keyId);
                 if (dataEntry == null)
-                    dataEntry = new HashMap<>();
+                    dataEntry = new HashMap();
                 ImMap<KeyField, DataObject> key = getKeys(entry.first);
-                Map<Property, ObjectValue> properties = dataEntry.get(key);
+                Map<Property, Object> properties = dataEntry.get(key);
                 if (properties == null)
-                    properties = new HashMap<>();
-                properties.put(entry.second, isLeaf(child.second) ? new DataObject(getChildValue(child.second), (ConcreteClass) entry.second.getType()) : NullValue.instance);
+                    properties = new HashMap();
+                properties.put(entry.second, isLeaf(child.second) ? new DataObject(getChildValue(child.second), (ConcreteClass) entry.second.getType()) : null);
                 dataEntry.put(key, properties);
                 dataMap.put(keyId, dataEntry);
             }
 
-            for (Map.Entry<String, Map<ImMap<KeyField, DataObject>, Map<Property, ObjectValue>>> childDataEntry : getData(child, propertyKeysMap).entrySet()) {
-                Map<ImMap<KeyField, DataObject>, Map<Property, ObjectValue>> data = dataMap.get(childDataEntry.getKey());
+            for (Map.Entry<String, Map<ImMap<KeyField, DataObject>, Map<Property, Object>>> childDataEntry : getData(child, propertyKeysMap).entrySet()) {
+                Map<ImMap<KeyField, DataObject>, Map<Property, Object>> data = dataMap.get(childDataEntry.getKey());
                 if (data == null)
-                    data = new HashMap<>();
+                    data = new HashMap();
                 data.putAll(childDataEntry.getValue());
                 dataMap.put(childDataEntry.getKey(), data);
             }
@@ -106,7 +103,7 @@ public abstract class ImportFormHierarchicalDataActionProperty<E> extends Import
         ImMap<KeyField, DataObject> keyObjects = MapFact.EMPTY();
         int i = 0;
         for (String key : keys) {
-            keyObjects = keyObjects.addExcl(new KeyField(key, ImportDataActionProperty.type), new DataObject(tagsMap.get(key)));
+            keyObjects = keyObjects.addExcl(new KeyField(key, IntegerClass.instance), new DataObject(tagsMap.get(key)));
             i++;
         }
         return keyObjects;

@@ -28,10 +28,12 @@ import lsfusion.server.data.type.ConcatenateType;
 import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.form.entity.*;
+import lsfusion.server.form.instance.FormSessionScope;
 import lsfusion.server.form.navigator.DefaultIcon;
 import lsfusion.server.form.navigator.NavigatorElement;
 import lsfusion.server.form.view.ComponentView;
 import lsfusion.server.form.view.FormView;
+import lsfusion.server.form.view.PropertyDrawView;
 import lsfusion.server.form.window.*;
 import lsfusion.server.logics.*;
 import lsfusion.server.logics.debug.*;
@@ -81,6 +83,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static lsfusion.base.BaseUtils.*;
@@ -441,19 +444,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         checkProperty(property, sourceName == null ? name : sourceName);
         return property;
     }
-
-    public LCP<?> findLCPByPropertyUsage(PropertyUsage pUsage) throws ScriptingErrorLog.SemanticErrorException {
-        LP<?, ?> lp = findLPByPropertyUsage(pUsage, false, false);
-        checkCalculationProperty(lp);
-        return (LCP<?>) lp; 
-    }
-
-    public LAP<?> findLAPByPropertyUsage(PropertyUsage pUsage) throws ScriptingErrorLog.SemanticErrorException {
-        LP<?, ?> lp = findLPByPropertyUsage(pUsage, false, false);
-        checkActionProperty(lp);
-        return (LAP<?>) lp;
-    }
-
+    
     public LP<?, ?> findLPByPropertyUsage(PropertyUsage pUsage) throws ScriptingErrorLog.SemanticErrorException {
         return findLPByPropertyUsage(pUsage, false, false);
     }
@@ -2388,7 +2379,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     private LCP<?> getInputProp(PropertyUsage targetProp, ValueClass valueClass, Set<CalcProperty> usedProps) throws ScriptingErrorLog.SemanticErrorException {
         if(targetProp != null) {
-            LCP<?> result = findLCPByPropertyUsage(targetProp);
+            LCP<?> result = (LCP<?>) findLPByPropertyUsage(targetProp);
             usedProps.add(result.property);
             return result;
         }
@@ -2608,7 +2599,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         LCP<?> targetProp = null;
         if(propUsage != null)
-            targetProp = findLCPByPropertyUsage(propUsage);
+            targetProp = (LCP<?>) findLPByPropertyUsage(propUsage);
 
         LAP property = addPFAProp(null, LocalizedString.create(""), mapped.form, objects, nulls,
                 printerProperty != null, printType, syncType, selectTop, targetProp, getParamsPlainList(propParams).toArray());
@@ -2643,7 +2634,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         LCP<?> targetProp = null;
         if(propUsage != null)
-            targetProp = findLCPByPropertyUsage(propUsage);
+            targetProp = (LCP<?>) findLPByPropertyUsage(propUsage);
 
         LAP property = addEFAProp(null, LocalizedString.create(""), mapped.form, objects, nulls,
                 exportType, noHeader, separator, charset, targetProp, getParamsPlainList(propParams).toArray());
@@ -2749,7 +2740,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     
     public LPWithParams addScriptedReadActionProperty(LPWithParams sourcePathProp, PropertyUsage propUsage, LPWithParams movePathProp, boolean delete) throws ScriptingErrorLog.SemanticErrorException {
         ValueClass sourceProp = sourcePathProp.property.property.getValueClass(ClassType.valuePolicy);
-        LCP<?> targetProp = findLCPByPropertyUsage(propUsage);
+        LCP<?> targetProp = (LCP<?>) findLPByPropertyUsage(propUsage);
         ValueClass moveProp = movePathProp == null ? null : movePathProp.property.property.getValueClass(ClassType.valuePolicy);
         return addScriptedJoinAProp(addAProp(new ReadActionProperty(sourceProp, targetProp, moveProp, delete)),
                 movePathProp == null ? Collections.singletonList(sourcePathProp) : Lists.newArrayList(sourcePathProp, movePathProp));
@@ -2810,10 +2801,10 @@ public class ScriptingLogicsModule extends LogicsModule {
             if (propUsage.classNames == null) {
                 propUsage.classNames = Collections.singletonList("INTEGER"); // делаем так для лучшего сообщения об ошибке 
             } 
-            LCP<?> lcp = findLCPByPropertyUsage(propUsage);
+            LCP<?> lcp = (LCP<?>) findLPByPropertyUsage(propUsage);
             ValueClass[] paramClasses = lcp.getInterfaceClasses(ClassType.signaturePolicy);
-            if (paramClasses.length != 1 || paramClasses[0].getType() != ImportDataActionProperty.type) {
-                errLog.emitPropertyWithParamsExpected(getParser(), propUsage.name, ImportDataActionProperty.type.getParsedName());
+            if (paramClasses.length != 1 || paramClasses[0].getType() != IntegerClass.instance) {
+                errLog.emitPropertyWithParamsExpected(getParser(), propUsage.name, "INTEGER");
             }
             props.add(lcp);
         }
@@ -2872,8 +2863,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         if (checked && propUsages != null) {
             MSet<CalcProperty<?>> mCheckedProps = SetFact.mSet();
             for (PropertyUsage propUsage : propUsages) {
-                LCP<?> lcp = findLCPByPropertyUsage(propUsage);
-                mCheckedProps.add(lcp.property);
+                mCheckedProps.add((CalcProperty<?>) findLPByPropertyUsage(propUsage).property);
             }
             type = CalcProperty.CheckType.CHECK_SOME;
             checkedProps = mCheckedProps.immutable();
@@ -2952,8 +2942,9 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         Set<CalcProperty> props = new HashSet<>(); // функционально из-за exception'а не сделаешь
         for (PropertyUsage usage : propUsages) {
-            LCP<?> lp = findLCPByPropertyUsage(usage);
-            props.add(lp.property); 
+            LP lp = findLPByPropertyUsage(usage);
+            checkCalculationProperty(lp);
+            props.add(((LCP<?>)lp).property); 
         }
         return props;
     }
@@ -3037,7 +3028,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public void addScriptedLoggable(List<PropertyUsage> propUsages) throws ScriptingErrorLog.SemanticErrorException {
         for (PropertyUsage propUsage : propUsages) {
-            LCP lp = findLCPByPropertyUsage(propUsage);
+            LCP lp = (LCP) findLPByPropertyUsage(propUsage);
             lp.makeLoggable(this, BL.systemEventsLM);
         }
     }
@@ -3173,9 +3164,9 @@ public class ScriptingLogicsModule extends LogicsModule {
             if (actionUsage.classNames == null) {
                 actionUsage.classNames = Collections.emptyList(); // делаем так для лучшего сообщения об ошибке
             }
-            LAP<?> findResult = findLAPByPropertyUsage(actionUsage);
+            LP findResult = findLPByPropertyUsage(actionUsage);
             checkNavigatorAction(findResult);
-            newElement = addNavigatorAction(name, caption, findResult, point.toString());
+            newElement = addNavigatorAction(name, caption, (LAP<?>)findResult, point.toString());
         } else {
             newElement = addNavigatorElement(name, caption, point.toString());
         }
@@ -3695,7 +3686,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    void checkCalculationProperty(LP property) throws ScriptingErrorLog.SemanticErrorException {
+    private void checkCalculationProperty(LP property) throws ScriptingErrorLog.SemanticErrorException {
         if (!(property instanceof LCP<?>)) {
             errLog.emitNotCalculationPropertyError(parser);
         }
@@ -4013,7 +4004,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return errLog.toString();
     }
 
-    public interface AbstractPropertyUsage {
+    public static interface AbstractPropertyUsage {
         
     }     
     

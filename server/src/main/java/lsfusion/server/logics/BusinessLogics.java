@@ -227,7 +227,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         }
     }
 
-    public ArrayList<IDaemonTask> getDaemonTasks(long compId) {
+    public ArrayList<IDaemonTask> getDaemonTasks(int compId) {
         ArrayList<IDaemonTask> daemons = new ArrayList<>();
 
         Integer scannerComPort;
@@ -272,7 +272,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         return null;
     }
 
-    public ExternalScreenParameters getExternalScreenParameters(int screenID, long computerId) throws RemoteException {
+    public ExternalScreenParameters getExternalScreenParameters(int screenID, int computerId) throws RemoteException {
         return null;
     }
 
@@ -711,9 +711,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         }
     }
 
-    public Long readCurrentUser() {
+    public Integer readCurrentUser() {
         try {
-            return (Long) authenticationLM.currentUser.read(getDbManager().createSession());
+            return (Integer) authenticationLM.currentUser.read(getDbManager().createSession());
         } catch (Exception e) {
             return null;
         }
@@ -831,11 +831,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
 
     public void updateClassStats(SQLSession session, boolean useSIDs) throws SQLException, SQLHandledException {
 
-        Map<Long, Integer> customObjectClassMap = new HashMap<>();
+        Map<Integer, Integer> customObjectClassMap = new HashMap<>();
         Map<String, Integer> customSIDObjectClassMap = new HashMap<>();
 
         KeyExpr customObjectClassExpr = new KeyExpr("customObjectClass");
-        ImRevMap<Object, KeyExpr> keys = MapFact.singletonRev((Object)"key", customObjectClassExpr);
+        ImRevMap<Object, KeyExpr> keys = MapFact.singletonRev((Object)"innerInvoice", customObjectClassExpr);
 
         QueryBuilder<Object, Object> query = new QueryBuilder<>(keys);
         query.addProperty("statCustomObjectClass", LM.statCustomObjectClass.getExpr(customObjectClassExpr));
@@ -854,7 +854,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
                 if(sID != null)
                     customSIDObjectClassMap.put(sID.trim(), statCustomObjectClass);
             } else {
-                customObjectClassMap.put((Long) result.getKey(i).get("key"), statCustomObjectClass);
+                customObjectClassMap.put((Integer) result.getKey(i).getValue(0), statCustomObjectClass);
             }
         }
 
@@ -1054,7 +1054,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             ValueClass valueClass = property.getValueClass(ClassType.autoSetPolicy);
             if (valueClass instanceof CustomClass && interfaceClass instanceof CustomClass &&
                     customClass.isChild((CustomClass) interfaceClass)) { // в общем то для оптимизации
-                Long obj = classListener.getObject((CustomClass) valueClass);
+                Integer obj = classListener.getObject((CustomClass) valueClass);
                 if (obj != null)
                     property.change(MapFact.singleton(property.interfaces.single(), dataObject), session, obj);
             }
@@ -1865,7 +1865,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
 
     public void overCalculateStats(DataSession session, Integer maxQuantityOverCalculate) throws SQLException, SQLHandledException {
         int count = 0;
-        MSet<Long> propertiesSet = getOverCalculatePropertiesSet(session, maxQuantityOverCalculate);
+        MSet<Integer> propertiesSet = getOverCalculatePropertiesSet(session, maxQuantityOverCalculate);
         ImSet<ImplementTable> tables = LM.tableFactory.getImplementTables();
         for (ImplementTable dataTable : tables) {
             count++;
@@ -1878,7 +1878,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         }
     }
 
-    public MSet<Long> getOverCalculatePropertiesSet(DataSession session, Integer maxQuantity) throws SQLException, SQLHandledException {
+    public MSet<Integer> getOverCalculatePropertiesSet(DataSession session, Integer maxQuantity) throws SQLException, SQLHandledException {
         KeyExpr propertyExpr = new KeyExpr("Property");
         ImRevMap<Object, KeyExpr> propertyKeys = MapFact.singletonRev((Object) "Property", propertyExpr);
 
@@ -1892,9 +1892,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
 
         ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> propertyResult = propertyQuery.execute(session);
 
-        MSet<Long> resultSet = SetFact.mSet();
+        MSet<Integer> resultSet = SetFact.mSet();
         for (int i = 0, size = propertyResult.size(); i < size; i++) {
-            resultSet.add((Long) propertyResult.getKey(i).get("Property"));
+            resultSet.add((Integer) propertyResult.getKey(i).get("Property"));
         }
         return resultSet;
     }
@@ -1908,7 +1908,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
 
             KeyExpr countKeyExpr = new KeyExpr("count");
             Expr countExpr = GroupExpr.create(MapFact.singleton(0, countKeyExpr.classExpr(LM.baseClass)),
-                    ValueExpr.COUNT, countKeyExpr.isClass(tableClasses), GroupType.SUM, classes.getMapExprs());
+                    new ValueExpr(1, IntegerClass.instance), countKeyExpr.isClass(tableClasses), GroupType.SUM, classes.getMapExprs());
 
             classes.addProperty(0, countExpr);
             classes.and(countExpr.getWhere());
@@ -2012,7 +2012,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
                             String classes = (String)distinct;
                             ConcreteCustomClass keepClass = null;
                             for(String singleClass : classes.split(",")) {
-                                ConcreteCustomClass customClass = LM.baseClass.findConcreteClassID(Long.parseLong(singleClass));
+                                ConcreteCustomClass customClass = LM.baseClass.findConcreteClassID(Integer.parseInt(singleClass));
                                 if(customClass != null) {
                                     if(keepClass == null)
                                         keepClass = customClass;

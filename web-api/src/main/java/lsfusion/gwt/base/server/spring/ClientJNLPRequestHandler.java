@@ -12,9 +12,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.rmi.RemoteException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
 import static lsfusion.base.BaseUtils.isRedundantString;
 
@@ -36,8 +34,6 @@ public class ClientJNLPRequestHandler implements HttpRequestHandler {
         try {
             StringBuffer requestURL = request.getRequestURL();
             String codebaseUrl = requestURL.substring(0, requestURL.lastIndexOf("/"));
-            String queryString = request.getQueryString();
-            String jnlpUrl = "client.jnlp" + (queryString.isEmpty() ? "" : ("?" + queryString));
             VMOptions clientVMOptions;
             try {
                 clientVMOptions = blProvider.getLogics().getClientVMOptions();
@@ -46,9 +42,9 @@ public class ClientJNLPRequestHandler implements HttpRequestHandler {
                 clientVMOptions = new VMOptions(null, null, null);
             }
 
-            handleJNLPRequest(request, response, codebaseUrl, jnlpUrl, "lsFusion Client", request.getServerName(),
-                    blProvider.getRegistryPort(), blProvider.getExportName(), blProvider.getLogics().isSingleInstance(),
-                    clientVMOptions.getInitHeapSize(), clientVMOptions.getMaxHeapSize(), clientVMOptions.getMaxHeapFreeRatio());
+            handleJNLPRequest(request, response, codebaseUrl, "client.jnlp", "lsFusion Client", request.getServerName(),
+                              blProvider.getRegistryPort(), blProvider.getExportName(), blProvider.getLogics().isSingleInstance(),
+                              clientVMOptions.getInitHeapSize(), clientVMOptions.getMaxHeapSize(), clientVMOptions.getMaxHeapFreeRatio());
         } catch (RemoteException e) {
             blProvider.invalidate();
             logger.debug("Error handling jnlp request: ", e);

@@ -1,8 +1,10 @@
 package lsfusion.server.logics.property.cases;
 
+import com.google.common.base.Objects;
 import lsfusion.server.classes.sets.ResolveClassSet;
 import lsfusion.server.logics.property.CalcPropertyInterfaceImplement;
 import lsfusion.server.logics.property.PropertyInterface;
+import lsfusion.server.logics.property.UnionProperty;
 
 import java.util.List;
 

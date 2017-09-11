@@ -99,7 +99,7 @@ public class TimeClass extends DataClass<Time> {
         return "TIME";
     }
 
-    public Time getDefaultValue() {
+    public Object getDefaultValue() {
         return new Time(System.currentTimeMillis());
     }
 

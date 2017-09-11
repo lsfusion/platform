@@ -105,7 +105,7 @@ public class AddObjectActionProperty<T extends PropertyInterface, I extends Prop
             ObjectValue objectValue = context.requestUserClass(valueClass, valueClass, true);
             if (!(objectValue instanceof DataObject)) // cancel
                 return FlowResult.FINISH;
-            readClass = valueClass.getBaseClass().findClassID((Long) ((DataObject) objectValue).object);
+            readClass = valueClass.getBaseClass().findClassID((Integer) ((DataObject) objectValue).object);
         } else
             readClass = valueClass;
 

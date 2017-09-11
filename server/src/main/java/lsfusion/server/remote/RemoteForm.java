@@ -401,7 +401,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         });
     }
 
-    public ServerResponse changeGridClass(long requestIndex, long lastReceivedRequestIndex, final int objectID, final long idClass) throws RemoteException {
+    public ServerResponse changeGridClass(long requestIndex, long lastReceivedRequestIndex, final int objectID, final int idClass) throws RemoteException {
         return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, new EExecutionStackRunnable() {
             @Override
             public void run(ExecutionStack stack) throws Exception {
@@ -693,7 +693,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         });
     }
 
-    public ServerResponse changeProperty(final long requestIndex, long lastReceivedRequestIndex, final int propertyID, final byte[] fullKey, final byte[] pushChange, final Long pushAdd) throws RemoteException {
+    public ServerResponse changeProperty(final long requestIndex, long lastReceivedRequestIndex, final int propertyID, final byte[] fullKey, final byte[] pushChange, final Integer pushAdd) throws RemoteException {
         return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, new EExecutionStackRunnable() {
             @Override
             public void run(ExecutionStack stack) throws Exception {
@@ -1033,12 +1033,12 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         return callAndCacheResult(requestIndex, lastReceivedRequestIndex, continueRequest);
     }
 
-    public Long getCurrentUser() {
-        return (Long) form.session.user.getCurrentUser().getValue();
+    public Integer getCurrentUser() {
+        return (Integer) form.session.user.getCurrentUser().getValue();
     }
 
-    public Long getCurrentComputer() {
-        return (Long) form.session.computer.getCurrentComputer().getValue();
+    public Integer getCurrentComputer() {
+        return (Integer) form.session.computer.getCurrentComputer().getValue();
     }
 
     String getLogMessage() {

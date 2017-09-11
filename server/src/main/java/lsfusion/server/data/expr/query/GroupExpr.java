@@ -28,15 +28,12 @@ import lsfusion.server.data.expr.where.pull.ExclExprPullWheres;
 import lsfusion.server.data.expr.where.pull.ExclPullWheres;
 import lsfusion.server.data.expr.where.pull.ExprPullWheres;
 import lsfusion.server.data.query.*;
-import lsfusion.server.data.query.innerjoins.GroupSplitWhere;
-import lsfusion.server.data.query.innerjoins.GroupStatType;
-import lsfusion.server.data.query.innerjoins.KeyEqual;
-import lsfusion.server.data.query.innerjoins.KeyEquals;
+import lsfusion.server.data.query.innerjoins.*;
 import lsfusion.server.data.query.stat.StatKeys;
 import lsfusion.server.data.sql.SQLSyntax;
-import lsfusion.server.data.translator.ExprTranslator;
 import lsfusion.server.data.translator.KeyExprTranslator;
 import lsfusion.server.data.translator.MapTranslate;
+import lsfusion.server.data.translator.ExprTranslator;
 import lsfusion.server.data.type.ClassReader;
 import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;
@@ -362,7 +359,7 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
     }
 
     public static <K> Expr create(ImMap<K, ? extends Expr> group, Where where, ImMap<K, ? extends Expr> implement, boolean top) {
-        return create(group, top ? ValueExpr.COUNT.and(where) : ValueExpr.get(where), top ? GroupType.SUM : GroupType.LOGICAL(), implement, null); // boolean
+        return create(group, top ? new ValueExpr(1, IntegerClass.instance).and(where) : ValueExpr.get(where), top ? GroupType.SUM : GroupType.LOGICAL(), implement, null); // boolean
     }
 
     public static <K> Expr create(ImMap<K,? extends Expr> group, Where where, ImMap<K,? extends Expr> implement) {

@@ -68,7 +68,7 @@ public class ThreadLocalContext {
             activeMap.put(Thread.currentThread(), false);
     }
 
-    public static Long getCurrentUser() {
+    public static Integer getCurrentUser() {
         return get().getCurrentUser();
     }
 

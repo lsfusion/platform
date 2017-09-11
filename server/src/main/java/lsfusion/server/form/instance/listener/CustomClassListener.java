@@ -5,8 +5,8 @@ import lsfusion.server.classes.CustomClass;
 
 public interface CustomClassListener {
 
-    Long getObject(CustomClass cls);
-    void objectChanged(ConcreteCustomClass cls, long objectID);
+    Integer getObject(CustomClass cls);
+    void objectChanged(ConcreteCustomClass cls, int objectID);
     
     boolean isDeactivated(); // потом надо будет переделать на отдельный интерфейс
 }

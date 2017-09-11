@@ -448,7 +448,7 @@ public class ImplementTable extends GlobalTable { // последний инте
 
     private Object readCount(DataSession session, Where where, int total, boolean useCoefficient) throws SQLException, SQLHandledException {
         QueryBuilder<Object, Object> query = new QueryBuilder<>(SetFact.EMPTY());
-        StaticValueExpr one = ValueExpr.COUNT;
+        ValueExpr one = new ValueExpr(1, IntegerClass.instance);
         query.addProperty("count", GroupExpr.create(MapFact.<Integer, Expr>EMPTY(), one,
                 where, GroupType.SUM, MapFact.<Integer, Expr>EMPTY()));
         Integer count = (Integer) query.execute(session).singleValue().singleValue();
@@ -511,7 +511,7 @@ public class ImplementTable extends GlobalTable { // последний инте
                 tableObject = session.addObject(reflectionLM.table);
                 reflectionLM.sidTable.change(getName(), session, tableObject);
             }
-            reflectionLM.rowsTable.change(BaseUtils.nvl((Integer)result.get(0), 0), session, (DataObject) tableObject);
+            reflectionLM.rowsTable.change(BaseUtils.nvl(result.get(0), 0), session, (DataObject) tableObject);
 
             for (KeyField key : keys) {
                 DataObject keyObject = safeReadClasses(session, reflectionLM.tableKeySID, new DataObject(getName() + "." + key.getName()));
@@ -519,7 +519,7 @@ public class ImplementTable extends GlobalTable { // последний инте
                     keyObject = session.addObject(reflectionLM.tableKey);
                     reflectionLM.sidTableKey.change(getName() + "." + key.getName(), session, keyObject);
                 }
-                Integer quantity = BaseUtils.nvl((Integer)result.get(key), 0);
+                Object quantity = BaseUtils.nvl(result.get(key), 0);
                 (top ? reflectionLM.quantityTopTableKey : reflectionLM.quantityTableKey).change(quantity, session, keyObject);
                 keyStat = keyStat.addExcl(getName() + "." + key.getName(), (Integer) quantity);
             }
@@ -540,10 +540,10 @@ public class ImplementTable extends GlobalTable { // последний инте
                     reflectionLM.tableSIDProperty.change(getName(), session, propertyObject);
                 }
                 if (propertyObject != null) {
-                    (top ? reflectionLM.quantityTopProperty : reflectionLM.quantityProperty).change(BaseUtils.nvl((Integer)result.get(property), 0), session, propertyObject);
+                    (top ? reflectionLM.quantityTopProperty : reflectionLM.quantityProperty).change(BaseUtils.nvl(result.get(property), 0), session, propertyObject);
 
-                    Integer notNull = BaseUtils.nvl((Integer)notNulls.get(property), 0);
-                    Integer quantity = BaseUtils.nvl((Integer)result.get(property), 0);
+                    Object notNull = BaseUtils.nvl(notNulls.get(property), 0);
+                    Object quantity = BaseUtils.nvl(result.get(property), 0);
                     reflectionLM.notNullQuantityProperty.change(notNull, session, propertyObject);
                     propStats = propStats.addExcl(getName() + "." + property.getName(), Pair.create((Integer) quantity, (Integer) notNull));
                 }
@@ -567,14 +567,14 @@ public class ImplementTable extends GlobalTable { // последний инте
     }
 
     @StackProgress
-    public boolean overCalculateStat(ReflectionLogicsModule reflectionLM, DataSession session, MSet<Long> propertiesSet, @StackProgress ProgressBar progressBar) throws SQLException, SQLHandledException {
+    public boolean overCalculateStat(ReflectionLogicsModule reflectionLM, DataSession session, MSet<Integer> propertiesSet, @StackProgress ProgressBar progressBar) throws SQLException, SQLHandledException {
         boolean found = overCalculateStat(reflectionLM, session, propertiesSet, progressBar, false);
         overCalculateStat(reflectionLM, session, propertiesSet, progressBar, true);
         return found;
     }
 
     @StackProgress
-    public boolean overCalculateStat(ReflectionLogicsModule reflectionLM, DataSession session, MSet<Long> propertiesSet, @StackProgress ProgressBar progressBar, boolean top) throws SQLException, SQLHandledException {
+    public boolean overCalculateStat(ReflectionLogicsModule reflectionLM, DataSession session, MSet<Integer> propertiesSet, @StackProgress ProgressBar progressBar, boolean top) throws SQLException, SQLHandledException {
         boolean found = false;
         if (!SystemProperties.doNotCalculateStats) {
 
@@ -603,9 +603,9 @@ public class ImplementTable extends GlobalTable { // последний инте
             for (PropertyField property : properties) {
                 DataObject propertyObject = safeReadClasses(session, reflectionLM.propertyTableSID, new DataObject(getName()), new DataObject(property.getName()));
 
-                if (propertyObject != null && propertiesSet.contains((Long) propertyObject.getValue())) {
-                    (top ? reflectionLM.quantityTopProperty : reflectionLM.quantityProperty).change(BaseUtils.nvl((Integer)result.get(property), 0), session, propertyObject);
-                    reflectionLM.notNullQuantityProperty.change(BaseUtils.nvl((Integer)notNulls.get(property), 0), session, propertyObject);
+                if (propertyObject != null && propertiesSet.contains((Integer) propertyObject.getValue())) {
+                    (top ? reflectionLM.quantityTopProperty : reflectionLM.quantityProperty).change(BaseUtils.nvl(result.get(property), 0), session, propertyObject);
+                    reflectionLM.notNullQuantityProperty.change(BaseUtils.nvl(notNulls.get(property), 0), session, propertyObject);
                     found = true;
                 }
             }

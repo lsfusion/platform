@@ -36,7 +36,7 @@ public class OverrideIncrementProps extends IncrementProps {
         return override.getProperties().merge(increment.getProperties());
     }
 
-    public long getMaxCount(CalcProperty property) {
+    public int getMaxCount(CalcProperty property) {
         return BaseUtils.max(override.getMaxCount(property), increment.getMaxCount(property));
     }
 

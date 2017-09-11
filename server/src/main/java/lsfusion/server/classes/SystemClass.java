@@ -3,7 +3,6 @@ package lsfusion.server.classes;
 import lsfusion.base.ExtInt;
 import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
-import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.ParseException;
 import lsfusion.server.logics.i18n.LocalizedString;
 
@@ -11,7 +10,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class SystemClass extends DataClass<Long> {
+public class SystemClass extends DataClass<Integer> {
 
     public final static SystemClass instance = new SystemClass();
 
@@ -26,11 +25,11 @@ public class SystemClass extends DataClass<Long> {
     }
 
     public Class getReportJavaClass() {
-        return idClass.getReportJavaClass();
+        return Integer.class;
     }
 
-    public Long getDefaultValue() {
-        return idClass.getDefaultValue();
+    public Object getDefaultValue() {
+        return 0;
     }
 
     public DataClass getCompatible(DataClass compClass, boolean or) {
@@ -38,57 +37,59 @@ public class SystemClass extends DataClass<Long> {
     }
 
     public String getDB(SQLSyntax syntax, TypeEnvironment typeEnv) {
-        return idClass.getDB(syntax, typeEnv);
+        return syntax.getIntegerType();
     }
 
     public String getDotNetType(SQLSyntax syntax, TypeEnvironment typeEnv) {
-        return idClass.getDotNetType(syntax, typeEnv);
+        return "SqlInt32";
     }
 
     public String getDotNetRead(String reader) {
-        return idClass.getDotNetRead(reader);
+        return reader + ".ReadInt32()";
     }
     public String getDotNetWrite(String writer, String value) {
-        return idClass.getDotNetWrite(writer, value);
+        return writer + ".Write(" + value + ");";
     }
 
     @Override
     public int getBaseDotNetSize() {
-        return idClass.getBaseDotNetSize();
+        return 4;
     }
 
     public int getSQL(SQLSyntax syntax) {
-        return idClass.getSQL(syntax);
+        return syntax.getIntegerSQL();
     }
 
-    public Long read(Object value) {
-        return idClass.read(value);
+    public Integer read(Object value) {
+        if(value==null) return null;
+        return ((Number)value).intValue();
     }
 
     @Override
-    public Long read(ResultSet set, SQLSyntax syntax, String name) throws SQLException {
-        return idClass.read(set, syntax, name);
+    public Integer read(ResultSet set, SQLSyntax syntax, String name) throws SQLException {
+        int anInt = set.getInt(name);
+        if(set.wasNull())
+            return null;
+        return anInt;
     }
 
     public void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax) throws SQLException {
-        idClass.writeParam(statement, num, value, syntax);
+        statement.setInt(num, (Integer)value);
     }
 
     public boolean isSafeString(Object value) {
-        return idClass.isSafeString(value);
+        return true;
     }
 
-    private final static LongClass idClass = ObjectType.idClass;
-    
     public String getString(Object value, SQLSyntax syntax) {
-        return idClass.getString(value, syntax);
+        return value.toString();
     }
 
     public ExtInt getCharLength() {
-        return idClass.getCharLength();
+        return new ExtInt(8);
     }
 
-    public Long parseString(String s) throws ParseException {
+    public Integer parseString(String s) throws ParseException {
         throw new RuntimeException("not supported");
     }
 

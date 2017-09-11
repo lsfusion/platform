@@ -1,5 +1,6 @@
 package lsfusion.server.session;
 
+import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.ExceptionUtils;
 import lsfusion.base.Pair;
@@ -189,7 +190,7 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K>, TableOwner {
         }
     }
     // оптимизационная штука
-    public void updateAdded(SQLSession session, BaseClass baseClass, V property, Pair<Long, Long>[] shifts, OperationOwner owner) throws SQLException, SQLHandledException {
+    public void updateAdded(SQLSession session, BaseClass baseClass, V property, Pair<Integer,Integer>[] shifts, OperationOwner owner) throws SQLException, SQLHandledException {
         table = table.updateAdded(session, baseClass, getField(property), shifts, owner, this);
     }
 
@@ -272,7 +273,7 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K>, TableOwner {
             }});
     }
 
-    public long getCount() {
+    public int getCount() {
         return table.getCount();
     }
 

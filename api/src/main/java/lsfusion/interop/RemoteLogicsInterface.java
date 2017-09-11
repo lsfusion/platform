@@ -20,13 +20,13 @@ public interface RemoteLogicsInterface extends PendingRemoteInterface {
     
     RemoteNavigatorInterface createNavigator(boolean isFullClient, NavigatorInfo navigatorInfo, boolean forceCreateNew) throws RemoteException;
 
-    Long getComputer(String hostname) throws RemoteException;
+    Integer getComputer(String hostname) throws RemoteException;
 
-    ArrayList<IDaemonTask> getDaemonTasks(long compId) throws RemoteException;
+    ArrayList<IDaemonTask> getDaemonTasks(int compId) throws RemoteException;
 
     ExternalScreen getExternalScreen(int screenID) throws RemoteException;
 
-    ExternalScreenParameters getExternalScreenParameters(int screenID, long computerId) throws RemoteException;
+    ExternalScreenParameters getExternalScreenParameters(int screenID, int computerId) throws RemoteException;
 
     List<String> authenticateUser(String userName, String password) throws RemoteException;
 
@@ -50,7 +50,7 @@ public interface RemoteLogicsInterface extends PendingRemoteInterface {
 
     boolean isBusyDialog() throws RemoteException;
 
-    long generateID() throws RemoteException;
+    int generateID() throws RemoteException;
 
     String addUser(String username, String email, String password, String firstName, String lastName, String localeLanguage) throws RemoteException;
 
@@ -58,7 +58,7 @@ public interface RemoteLogicsInterface extends PendingRemoteInterface {
 
     int generateNewID() throws RemoteException;
 
-    void sendPingInfo(Long computerId, Map<Long, List<Long>> pingInfoMap) throws RemoteException;
+    void sendPingInfo(Integer computerId, Map<Long, List<Long>> pingInfoMap) throws RemoteException;
 
     Map<String, String> readMemoryLimits() throws RemoteException;
 }

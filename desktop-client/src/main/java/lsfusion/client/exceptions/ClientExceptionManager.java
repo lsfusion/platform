@@ -5,7 +5,10 @@ import lsfusion.client.Log;
 import lsfusion.client.Main;
 import lsfusion.client.SwingUtils;
 import lsfusion.client.form.RmiQueue;
-import lsfusion.interop.exceptions.*;
+import lsfusion.interop.exceptions.RemoteAbandonedException;
+import lsfusion.interop.exceptions.RemoteServerException;
+import lsfusion.interop.exceptions.FatalHandledRemoteException;
+import lsfusion.interop.exceptions.RemoteClientException;
 import org.apache.log4j.Logger;
 
 import javax.swing.*;
@@ -29,11 +32,7 @@ public class ClientExceptionManager {
                     reportClientThrowable(e); // обычный throwable
                 }
                 if (remote instanceof RemoteServerException) {
-                    if(remote instanceof RemoteInternalException) {
-                        Log.error(remote.getMessage() + "\nОбратитесь к администратору.", e);
-                    } else {
-                        Log.error(remote.getMessage(), e);
-                    }
+                    Log.error("Внутренняя ошибка сервера, обратитесь к администратору", e);
                     reportServerRemoteThrowable((RemoteServerException) remote);
                 }
                 if(remote instanceof FatalHandledRemoteException) {

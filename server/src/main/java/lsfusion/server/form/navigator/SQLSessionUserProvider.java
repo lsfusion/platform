@@ -1,7 +1,7 @@
 package lsfusion.server.form.navigator;
 
 public interface SQLSessionUserProvider {
-    Long getCurrentUser();
+    Integer getCurrentUser();
     LogInfo getLogInfo();
-    Long getCurrentComputer();
+    Integer getCurrentComputer();
 }

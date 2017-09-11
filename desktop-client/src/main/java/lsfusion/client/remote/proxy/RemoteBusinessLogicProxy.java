@@ -40,15 +40,15 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface> extends R
         return result;    
     }
 
-    public Long getComputer(String hostname) throws RemoteException {
+    public Integer getComputer(String hostname) throws RemoteException {
         logRemoteMethodStartCall("getComputer");
-        Long result = target.getComputer(hostname);
+        Integer result = target.getComputer(hostname);
         logRemoteMethodEndCall("getComputer", result);
         return result;
     }
 
     @Override
-    public ArrayList<IDaemonTask> getDaemonTasks(long compId) throws RemoteException {
+    public ArrayList<IDaemonTask> getDaemonTasks(int compId) throws RemoteException {
         return target.getDaemonTasks(compId);
     }
 
@@ -59,7 +59,7 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface> extends R
         return result;        
     }
 
-    public ExternalScreenParameters getExternalScreenParameters(int screenID, long computerId) throws RemoteException {
+    public ExternalScreenParameters getExternalScreenParameters(int screenID, int computerId) throws RemoteException {
         logRemoteMethodStartCall("getExternalScreenParameters");
         ExternalScreenParameters result = target.getExternalScreenParameters(screenID, computerId);
         logRemoteMethodEndCall("getExternalScreenParameters", result);
@@ -70,7 +70,7 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface> extends R
         return target.generateNewID();
     }
 
-    public void sendPingInfo(Long computerId, Map<Long, List<Long>> pingInfoMap)  throws RemoteException {
+    public void sendPingInfo(Integer computerId, Map<Long, List<Long>> pingInfoMap)  throws RemoteException {
         target.sendPingInfo(computerId, pingInfoMap);
     }
 
@@ -94,9 +94,9 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface> extends R
         return result;
     }
 
-    public long generateID() throws RemoteException {
+    public int generateID() throws RemoteException {
         logRemoteMethodStartCall("getUserInfo");
-        long result = target.generateID();
+        int result = target.generateID();
         logRemoteMethodEndCall("getUserInfo", result);
         return result;
     }

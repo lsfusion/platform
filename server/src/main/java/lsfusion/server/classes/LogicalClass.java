@@ -46,7 +46,7 @@ public class LogicalClass extends DataClass<Boolean> {
         return compClass instanceof LogicalClass ?this:null;
     }
 
-    public Boolean getDefaultValue() {
+    public Object getDefaultValue() {
         return true;
     }
 

@@ -14,6 +14,7 @@ import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.DBManager;
 import lsfusion.server.logics.debug.ActionDelegationType;
 import lsfusion.server.logics.i18n.LocalizedString;
+import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.derived.DerivedProperty;
 

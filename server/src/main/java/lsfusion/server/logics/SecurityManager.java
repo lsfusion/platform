@@ -46,8 +46,8 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
 
     public static SecurityPolicy serverSecurityPolicy = new SecurityPolicy();
 
-    private final MAddMap<Long, SecurityPolicy> policies = MapFact.mAddOverrideMap();
-    private final MAddMap<Long, List<SecurityPolicy>> userPolicies = MapFact.mAddOverrideMap();
+    private final MAddMap<Integer, SecurityPolicy> policies = MapFact.mAddOverrideMap();
+    private final MAddMap<Integer, List<SecurityPolicy>> userPolicies = MapFact.mAddOverrideMap();
 
     public SecurityPolicy defaultPolicy;
     public SecurityPolicy permitAllPolicy;
@@ -143,23 +143,23 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
         }
     }
 
-    public void putPolicy(Long policyID, SecurityPolicy policy) {
+    public void putPolicy(Integer policyID, SecurityPolicy policy) {
         policies.add(policyID, policy);
     }
 
-    public SecurityPolicy getPolicy(Long policyID) {
+    public SecurityPolicy getPolicy(Integer policyID) {
         return policies.get(policyID);
     }
 
-    public void setUserPolicies(long userId, SecurityPolicy... policies) {
+    public void setUserPolicies(int userId, SecurityPolicy... policies) {
         setUserPolicies(userId, Arrays.asList(policies));
     }
 
-    public void setUserPolicies(long userId, List<SecurityPolicy> policies) {
+    public void setUserPolicies(int userId, List<SecurityPolicy> policies) {
         userPolicies.add(userId, policies);
     }
 
-    public List<SecurityPolicy> getUserPolicies(long userId) {
+    public List<SecurityPolicy> getUserPolicies(int userId) {
         return userPolicies.get(userId);
     }
 
@@ -177,14 +177,14 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
 
     public SecurityPolicy addPolicy(String policyName, String description) throws SQLException, SQLHandledException {
 
-        Long policyID;
+        Integer policyID;
         try (DataSession session = createSession()) {
             policyID = readPolicy(policyName, session);
             if (policyID == null) {
                 DataObject addObject = session.addObject(securityLM.policy);
                 securityLM.namePolicy.change(policyName, session, addObject);
                 securityLM.descriptionPolicy.change(description, session, addObject);
-                policyID = (Long) addObject.object;
+                policyID = (Integer) addObject.object;
                 session.apply(businessLogics, getStack());
             }
         }
@@ -194,8 +194,8 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
         return policyObject;
     }
 
-    private Long readPolicy(String name, DataSession session) throws SQLException, SQLHandledException {
-        return (Long) securityLM.policyName.read(session, new DataObject(name, StringClass.get(50)));
+    private Integer readPolicy(String name, DataSession session) throws SQLException, SQLHandledException {
+        return (Integer) securityLM.policyName.read(session, new DataObject(name, StringClass.get(50)));
     }
 
     public String addUser(String username, String email, String password, String firstName, String lastName, String localeLanguage, ExecutionStack stack) throws RemoteException {
@@ -234,7 +234,7 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
             DataObject userObject = session.addObject(authenticationLM.customUser);
             authenticationLM.loginCustomUser.change(login, session, userObject);
             authenticationLM.sha256PasswordCustomUser.change(BaseUtils.calculateBase64Hash("SHA-256", defaultPassword.trim(), UserInfo.salt), session, userObject);
-            Long userID = (Long) userObject.object;
+            Integer userID = (Integer) userObject.object;
             user = new User(userID);
         }
 
@@ -246,8 +246,8 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
     }
 
     public User readUser(String login, boolean insensitive, DataSession session) throws SQLException, SQLHandledException {
-        Long userId = insensitive ? (Long) authenticationLM.customUserUpcaseLogin.read(session, new DataObject(login.toUpperCase(), StringClass.get(30))) :
-                (Long) authenticationLM.customUserLogin.read(session, new DataObject(login, StringClass.get(30)));
+        Integer userId = insensitive ? (Integer) authenticationLM.customUserUpcaseLogin.read(session, new DataObject(login.toUpperCase(), StringClass.get(30))) :
+                (Integer) authenticationLM.customUserLogin.read(session, new DataObject(login, StringClass.get(30)));
         if (userId == null) {
             return null;
         }
@@ -280,8 +280,8 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
         applyFormDefinedUserPolicy(userObject, session);
 
         // дополнительные политики из формы "Политика безопасности"
-        List<Long> userPoliciesIds = readUserPoliciesIds(userObject, session);
-        for (long policyId : userPoliciesIds) {
+        List<Integer> userPoliciesIds = readUserPoliciesIds(userObject, session);
+        for (int policyId : userPoliciesIds) {
             SecurityPolicy policy = getPolicy(policyId);
             if (policy != null) {
                 userObject.addSecurityPolicy(policy);
@@ -309,9 +309,9 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
         }
     }
 
-    private List<Long> readUserPoliciesIds(User user, DataSession session) {
+    private List<Integer> readUserPoliciesIds(User user, DataSession session) {
         try {
-            ArrayList<Long> result = new ArrayList<>();
+            ArrayList<Integer> result = new ArrayList<>();
 
             QueryBuilder<String, Object> q = new QueryBuilder<>(SetFact.toExclSet("userId", "policyId"));
             Expr orderExpr = securityLM.orderUserPolicy.getExpr(session.getModifier(), q.getMapExprs().get("userId"), q.getMapExprs().get("policyId"));
@@ -324,7 +324,7 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
             ImSet<ImMap<String, Object>> keys = q.execute(session, orderBy, 0).keys();
             if (keys.size() != 0) {
                 for (ImMap<String, Object> keyMap : keys) {
-                    result.add((Long) keyMap.get("policyId"));
+                    result.add((Integer) keyMap.get("policyId"));
                 }
             }
 
@@ -624,7 +624,7 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
                     ObjectValue userRole = securityLM.userRoleSID.readClasses(session, new DataObject(userRoleName));
 
                     if (! (userRole instanceof NullValue)) {
-                        securityLM.mainRoleCustomUser.change(userRole, session, customUser);
+                        securityLM.mainRoleCustomUser.change(userRole.getValue(), session, customUser);
                         break;
                     }
                 }
@@ -667,7 +667,7 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
         if (defaultPolicy.property.view.checkPermission(property)) {
             try {
                 DataSession session = createSession();
-                ObjectValue propertyObject = reflectionLM.propertyCanonicalName.readClasses(session, new DataObject(propertySid));
+                DataObject propertyObject = new DataObject(reflectionLM.propertyCanonicalName.read(session, new DataObject(propertySid)), reflectionLM.property);
                 return securityLM.permitViewProperty.read(session, propertyObject) != null;
             } catch (SQLException | SQLHandledException e) {
                 throw Throwables.propagate(e);
@@ -679,10 +679,11 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
     public boolean checkFormExportPermission(String canonicalName) {
         try {
             DataSession session = createSession();
-            ObjectValue formObject = reflectionLM.navigatorElementCanonicalName.readClasses(session, new DataObject(canonicalName));
-            if (!(formObject instanceof DataObject)) {
+            Object form = reflectionLM.navigatorElementCanonicalName.read(session, new DataObject(canonicalName));
+            if (form == null) {
                 throw new RuntimeException(localize("{form.navigator.form.with.id.not.found}"));
             }
+            DataObject formObject = new DataObject(form, reflectionLM.navigatorElement);
             return securityLM.permitExportNavigatorElement.read(session, formObject) != null;
         } catch (SQLException | SQLHandledException e) {
             throw Throwables.propagate(e);

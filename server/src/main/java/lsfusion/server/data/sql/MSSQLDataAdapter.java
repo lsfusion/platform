@@ -24,7 +24,6 @@ import lsfusion.server.classes.StringClass;
 import lsfusion.server.data.Field;
 import lsfusion.server.data.SQLSession;
 import lsfusion.server.data.SessionTable;
-import lsfusion.server.data.expr.ValueExpr;
 import lsfusion.server.data.expr.formula.SQLSyntaxType;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.query.*;
@@ -424,7 +423,7 @@ public class MSSQLDataAdapter extends DataAdapter {
         int size = orderTypes.size();
         if(size==0) {
             orderSource = "1";
-            orderType = ValueExpr.COUNTCLASS;
+            orderType = IntegerClass.instance;
         } else if(size==1 && !desc[0]) {
             orderSource = sourceOrders.single();
             orderType = orderTypes.single();
@@ -452,7 +451,7 @@ public class MSSQLDataAdapter extends DataAdapter {
                     if(value instanceof Type)
                         return (Type) value;
                     assert value instanceof NullReader;
-                    return NullReader.typeInstance;
+                    return IntegerClass.instance;
                 }
             });
         }

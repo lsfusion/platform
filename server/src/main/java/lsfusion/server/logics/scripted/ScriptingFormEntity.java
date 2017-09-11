@@ -131,9 +131,8 @@ public class ScriptingFormEntity {
                 List<CalcPropertyObjectEntity> propertyObjects = new ArrayList<>();
                 for (ScriptingLogicsModule.PropertyUsage pUsage : properties) {
                     if (pUsage.name != null) {
-                        LP property = findLP(pUsage, groupObj);
-                        LM.checkCalculationProperty(property);
-                        propertyObjects.add(form.addPropertyObject((LCP) property, groupObj.getOrderObjects().toArray(new ObjectEntity[groupObj.getObjects().size()])));
+                        LCP property = (LCP) findLP(pUsage, groupObj);
+                        propertyObjects.add(form.addPropertyObject(property, groupObj.getOrderObjects().toArray(new ObjectEntity[groupObj.getObjects().size()])));
                     }
                 }
 
@@ -510,7 +509,7 @@ public class ScriptingFormEntity {
     public void addScriptedHints(boolean isHintNoUpdate, List<ScriptingLogicsModule.PropertyUsage> propUsages, Version version) throws ScriptingErrorLog.SemanticErrorException {
         LCP[] properties = new LCP[propUsages.size()];
         for (int i = 0; i < propUsages.size(); i++) {
-            properties[i] = LM.findLCPByPropertyUsage(propUsages.get(i));
+            properties[i] = (LCP) LM.findLPByPropertyUsage(propUsages.get(i));
         }
 
         if (isHintNoUpdate) {

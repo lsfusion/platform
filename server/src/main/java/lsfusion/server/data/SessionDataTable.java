@@ -123,7 +123,7 @@ public class SessionDataTable extends SessionData<SessionDataTable> {
     }
 
     @Override
-    public SessionData updateAdded(SQLSession session, BaseClass baseClass, PropertyField property, Pair<Long, Long>[] shifts, OperationOwner owner, TableOwner tableOwner) throws SQLException, SQLHandledException {
+    public SessionData updateAdded(SQLSession session, BaseClass baseClass, PropertyField property, Pair<Integer, Integer>[] shifts, OperationOwner owner, TableOwner tableOwner) throws SQLException, SQLHandledException {
         if(propertyValues.containsKey(property))
             return new SessionDataTable(table, keys, keyValues, SessionRows.updateAdded(propertyValues, property, shifts));
         else {

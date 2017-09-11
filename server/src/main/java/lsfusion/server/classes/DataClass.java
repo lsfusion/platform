@@ -71,8 +71,6 @@ public abstract class DataClass<T> extends AbstractType<T> implements StaticClas
         return read(value);
     }
 
-    public abstract T getDefaultValue();
-
     public DataObject getDefaultObjectValue() {
         return new DataObject(getDefaultValue(), this);
     }

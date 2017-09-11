@@ -14,8 +14,8 @@ import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.base.col.lru.LRUWSVSMap;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
+import lsfusion.server.classes.IntegerClass;
 import lsfusion.server.data.expr.KeyExpr;
-import lsfusion.server.data.expr.ValueExpr;
 import lsfusion.server.data.expr.query.PropStat;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.query.*;
@@ -109,19 +109,14 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     }
 
     public static Map<Integer, List<Object>> getSQLThreadMap() {
-        ConcurrentWeakHashMap<Thread, SQLDebugInfo> sqlDebugInfoMap = SQLDebugInfo.getSqlDebugInfoMap();
-
         Map<Integer, List<Object>> sessionMap = new HashMap<>();
         for(SQLSession sqlSession : sqlSessionMap.keySet()) {
-            SQLDebugInfo sqlDebugInfo = sqlDebugInfoMap.get(sqlSession.getActiveThread());
-            String debugInfo = sqlDebugInfo == null ? null : sqlDebugInfo.getDebugInfoForProcessMonitor();
-
             ExConnection connection = sqlSession.getDebugConnection();
             if(connection != null)
                 sessionMap.put(((PGConnection) connection.sql).getBackendPID(), Arrays.asList(sqlSession.getActiveThread(),
                         sqlSession.isInTransaction(), sqlSession.startTransaction, sqlSession.getAttemptCountMap(), sqlSession.statusMessage,
                         sqlSession.userProvider.getCurrentUser(), sqlSession.userProvider.getCurrentComputer(),
-                        sqlSession.getExecutingStatement(), sqlSession.isDisabledNestLoop, sqlSession.getQueryTimeout(), debugInfo));
+                        sqlSession.getExecutingStatement(), sqlSession.isDisabledNestLoop, sqlSession.getQueryTimeout()));
         }
         return sessionMap;
     }
@@ -1422,36 +1417,36 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         }
     }
 
-    private static Map<Long, Boolean> explainUserMode = MapFact.getGlobalConcurrentHashMap();
-    private static boolean explainNoAnalyze;
-    private static Map<Long, Boolean> loggerDebugEnabled = MapFact.getGlobalConcurrentHashMap();
-    private static Map<Long, Boolean> userVolatileStats = MapFact.getGlobalConcurrentHashMap();
+    private static Map<Integer, Boolean> explainUserMode = MapFact.getGlobalConcurrentHashMap();
+    private static Map<Integer, Boolean> explainNoAnalyzeUserMode = MapFact.getGlobalConcurrentHashMap();
+    private static Map<Integer, Boolean> loggerDebugEnabled = MapFact.getGlobalConcurrentHashMap();
+    private static Map<Integer, Boolean> userVolatileStats = MapFact.getGlobalConcurrentHashMap();
 
-    public static void setExplainAnalyzeMode(Long user, Boolean mode) {
+    public static void setExplainAnalyzeMode(Integer user, Boolean mode) {
         explainUserMode.put(user, mode != null && mode);
     }
 
-    public static void setExplainNoAnalyze(boolean explainNoAnalyze) {
-        SQLSession.explainNoAnalyze = explainNoAnalyze;
+    public static void setExplainMode(Integer user, Boolean mode) {
+        explainNoAnalyzeUserMode.put(user, mode != null && mode);
     }
 
-    public static void setLoggerDebugEnabled(Long user, Boolean enabled) {
+    public static void setLoggerDebugEnabled(Integer user, Boolean enabled) {
         loggerDebugEnabled.put(user, enabled != null && enabled);
     }
     
-    public static void setVolatileStats(Long user, Boolean enabled, OperationOwner owner) throws SQLException {
+    public static void setVolatileStats(Integer user, Boolean enabled, OperationOwner owner) throws SQLException {
         userVolatileStats.put(user, enabled != null && enabled);
     }
 
     public boolean getVolatileStats() {
-        Long currentUser = userProvider.getCurrentUser();
+        Integer currentUser = userProvider.getCurrentUser();
         if(currentUser == null)
             return false;
         return getVolatileStats(currentUser);
     }
 
     public boolean explainAnalyze() {
-        Long currentUser = userProvider.getCurrentUser();
+        Integer currentUser = userProvider.getCurrentUser();
         if(currentUser == null)
             return false;
         Boolean eam = explainUserMode.get(currentUser);
@@ -1459,18 +1454,22 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     }
 
     public boolean explainNoAnalyze() {
-        return explainNoAnalyze;
+        Integer currentUser = userProvider.getCurrentUser();
+        if(currentUser == null)
+            return false;
+        Boolean ea = explainNoAnalyzeUserMode.get(currentUser);
+        return ea != null && ea;
     }
 
     public boolean isLoggerDebugEnabled() {
-        Long currentUser = userProvider.getCurrentUser();
+        Integer currentUser = userProvider.getCurrentUser();
         if(currentUser == null)
             return false;
         Boolean lde = loggerDebugEnabled.get(currentUser);
         return lde != null && lde;
     }
     
-    public boolean getVolatileStats(Long user) {
+    public boolean getVolatileStats(Integer user) {
         Boolean vs = userVolatileStats.get(user);
         return vs != null && vs;
     }
@@ -1830,9 +1829,6 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     }
 
     // системные вызовы
-    public <K,V> void executeDML(String update) throws SQLException, SQLHandledException {
-        executeDML(new SQLDML(update, Cost.MIN, MapFact.<String, SQLQuery>EMPTY(), StaticExecuteEnvironmentImpl.EMPTY, false), OperationOwner.unknown, TableOwner.global, MapFact.<String, ParseInterface>EMPTY(), DynamicExecuteEnvironment.DEFAULT, null, PureTime.VOID, 0, RegisterChange.VOID);
-    }
     public <K,V> void executeSelect(String select, OperationOwner owner, StaticExecuteEnvironment env, ImRevMap<K, String> keyNames, final ImMap<String, ? extends Reader> keyReaders, ImRevMap<V, String> propertyNames, ImMap<String, ? extends Reader> propertyReaders, ResultHandler<K, V> handler) throws SQLException, SQLHandledException {
         executeSelect(select, owner, env, MapFact.<String, ParseInterface>EMPTY(), 0, keyNames, keyReaders, propertyNames, propertyReaders, false, handler);
     }
@@ -2419,7 +2415,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     public int getCount(String table, OperationOwner opOwner) throws SQLException {
 //        executeDML("TRUNCATE " + syntax.getSessionTableName(table));
         try {
-            return (Integer)executeSelect("SELECT COUNT(*) AS cnt FROM " + table, opOwner, StaticExecuteEnvironmentImpl.EMPTY, MapFact.<String, ParseInterface>EMPTY(), 0, MapFact.singletonRev("cnt", "cnt"), MapFact.singleton("cnt", ValueExpr.COUNTCLASS), MapFact.<String, String>EMPTYREV(), MapFact.<String, Reader>EMPTY()).singleKey().singleValue();
+            return (Integer)executeSelect("SELECT COUNT(*) AS cnt FROM " + table, opOwner, StaticExecuteEnvironmentImpl.EMPTY, MapFact.<String, ParseInterface>EMPTY(), 0, MapFact.singletonRev("cnt", "cnt"), MapFact.singleton("cnt", IntegerClass.instance), MapFact.<String, String>EMPTYREV(), MapFact.<String, Reader>EMPTY()).singleKey().singleValue();
         } catch (SQLHandledException e) {
             throw Throwables.propagate(e);
         }

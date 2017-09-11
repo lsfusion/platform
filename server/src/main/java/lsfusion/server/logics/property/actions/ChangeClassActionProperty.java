@@ -135,7 +135,7 @@ public class ChangeClassActionProperty<T extends PropertyInterface, I extends Pr
                 return FlowResult.FINISH;
             }
 
-            readClass = baseClass.getBaseClass().findConcreteClassID((Long) ((DataObject) objectValue).object);
+            readClass = baseClass.getBaseClass().findConcreteClassID((Integer) ((DataObject) objectValue).object);
         } else
             readClass = (ConcreteObjectClass) valueClass;
 

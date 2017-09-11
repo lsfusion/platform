@@ -56,7 +56,7 @@ public class IncrementChangeProps extends IncrementProps {
         eventChange(property, dataChanged, previous==null || !BaseUtils.hashEquals(previous, change));
     }
 
-    public long getMaxCount(CalcProperty property) {
+    public int getMaxCount(CalcProperty property) {
         return 0;
     }
 

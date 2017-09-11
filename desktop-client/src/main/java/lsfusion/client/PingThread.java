@@ -56,7 +56,7 @@ public class PingThread extends Thread {
 
     public void run() {
 
-        Long computerId;
+        Integer computerId;
         try {
             computerId = Main.remoteLogics.getComputer(SystemUtils.getLocalHostName());
         } catch (RemoteException e) {

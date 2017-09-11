@@ -337,12 +337,16 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
 
     }
 
-    public void change(ExecutionContext context, Boolean value) throws SQLException, SQLHandledException {
+    public void change(ExecutionContext context, Object value) throws SQLException, SQLHandledException {
         change(context.getEnv(), value);
     }
 
-    public void change(ExecutionEnvironment env, Boolean value) throws SQLException, SQLHandledException {
+    public void change(ExecutionEnvironment env, Object value) throws SQLException, SQLHandledException {
         change(MapFact.<T, DataObject>EMPTY(), env, value);
+    }
+
+    public void change(ImMap<T, DataObject> keys, ExecutionContext context, Object value) throws SQLException, SQLHandledException {
+        change(keys, context.getEnv(), value);
     }
 
     public void change(ImMap<T, DataObject> keys, ExecutionEnvironment env, ObjectValue value) throws SQLException, SQLHandledException {
@@ -1298,23 +1302,23 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
             setNotNull(row, env, stack, notNull, true);
     }
 
-    public DataObject getDefaultDataObject() {
+    protected Object getDefaultValue() {
         Type type = getType();
-        if(type instanceof DataClass) {
-            DataClass dataClass = (DataClass) getType();
-            Object defaultValue = ((DataClass) type).getDefaultValue();
-            if(dataClass instanceof StringClass)
-                defaultValue = LocalizedString.create((String)defaultValue, false);
-            return new DataObject(defaultValue, dataClass);
-        } else
+        if(type instanceof DataClass)
+            return ((DataClass) type).getDefaultValue();
+        else
             return null;
     }
 
     public ActionPropertyMapImplement<?, T> getSetNotNullAction(boolean notNull) {
         if(notNull) {
-            ObjectValue defaultValue = getDefaultDataObject();
-            if(defaultValue != null)
-                return DerivedProperty.createSetAction(interfaces, getImplement(), DerivedProperty.<T>createStatic(defaultValue.getValue(), (StaticClass) ((DataObject) defaultValue).objectClass));
+            Object defaultValue = getDefaultValue();
+            if(defaultValue!=null) {
+                DataClass dataClass = (DataClass) getType();
+                if(dataClass instanceof StringClass)
+                    defaultValue = LocalizedString.create((String)defaultValue, false);
+                return DerivedProperty.createSetAction(interfaces, getImplement(), DerivedProperty.<T>createStatic(defaultValue, dataClass));
+            }
             return null;
         } else
             return DerivedProperty.createSetAction(interfaces, getImplement(), DerivedProperty.<T>createNull());
@@ -1389,7 +1393,6 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
     }
 
     private LCP logProperty;
-    private LCP logDropProperty;
 
     public LCP getLogProperty() {
         return logProperty;
@@ -1397,14 +1400,6 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
 
     public void setLogProperty(LCP logProperty) {
         this.logProperty = logProperty;
-    }
-
-    public LCP getLogDropProperty() {
-        return logDropProperty;
-    }
-
-    public void setLogDropProperty(LCP logDropProperty) {
-        this.logDropProperty = logDropProperty;
     }
 
     public boolean autoset;

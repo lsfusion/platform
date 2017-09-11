@@ -33,28 +33,12 @@ public class ValueExpr extends AbstractValueExpr<ConcreteClass> implements Value
         if(objectClass instanceof FileClass && ((byte[])object).length > 1000) {
             int i=0;
             while(true) {
-                Value removeValue = new ValueExpr(new BigInteger(""+i).toByteArray(), (FileClass)objectClass);
+                Value removeValue = new ValueExpr(new BigInteger(""+i).toByteArray(), objectClass);
                 if(!usedValues.contains(removeValue))
                     return removeValue;
             }
         }
         return null;
-    }
-
-    public <T> ValueExpr(T object, DataClass<T> dataClass) {
-        this((Object)object, dataClass);
-    }
-    public ValueExpr(Long object, ConcreteObjectClass objectClass) {
-        this((Object)object, (ConcreteClass)objectClass);
-    }
-    public ValueExpr(Integer object, ConcreteObjectClass objectClass) {
-        this((Object)object, (ConcreteClass)objectClass);
-        throw new UnsupportedOperationException();// should be long
-    }
-
-    @Override
-    public String toDebugString() {
-        return toString();
     }
 
     public ValueExpr(Object object, ConcreteClass objectClass) {

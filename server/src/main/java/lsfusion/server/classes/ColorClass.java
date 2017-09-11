@@ -90,7 +90,7 @@ public class ColorClass extends DataClass<Color> {
     }
 
     @Override
-    public Color getDefaultValue() {
+    public Object getDefaultValue() {
         return Color.WHITE;
     }
 

@@ -266,7 +266,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                     // ставим на объекты из cache'а
                     if (object.getBaseClass() instanceof CustomClass && classListener != null) {
                         CustomClass cacheClass = (CustomClass) object.getBaseClass();
-                        Long objectID = classListener.getObject(cacheClass);
+                        Integer objectID = classListener.getObject(cacheClass);
                         if (objectID != null) {
                             groupObject.addSeek(object, session.getDataObject(cacheClass, objectID), false);
                         }
@@ -484,7 +484,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
             KeyExpr propertyDrawExpr = new KeyExpr("propertyDraw");
 
-            Long userId = (Long) BL.authenticationLM.currentUser.read(session);
+            Integer userId = (Integer) BL.authenticationLM.currentUser.read(session);
             DataObject currentUser = session.getDataObject(BL.authenticationLM.user, userId);
 
             Expr customUserExpr = currentUser.getExpr();
@@ -544,11 +544,11 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
     public ColorPreferences loadColorPreferences() {       
         try {
-            Color selectedRowBackground = (Color) BL.serviceLM.overrideSelectedRowBackgroundColor.read(session);
-            Color selectedRowBorder = (Color) BL.serviceLM.overrideSelectedRowBorderColor.read(session);
-            Color selectedCellBackground = (Color) BL.serviceLM.overrideSelectedCellBackgroundColor.read(session);
-            Color focusedCellBackground = (Color) BL.serviceLM.overrideFocusedCellBackgroundColor.read(session);
-            Color focusedCellBorder = (Color) BL.serviceLM.overrideFocusedCellBorderColor.read(session);
+            Color selectedRowBackground = (Color) BL.LM.overrideSelectedRowBackgroundColor.read(session);
+            Color selectedRowBorder = (Color) BL.LM.overrideSelectedRowBorderColor.read(session);
+            Color selectedCellBackground = (Color) BL.LM.overrideSelectedCellBackgroundColor.read(session);
+            Color focusedCellBackground = (Color) BL.LM.overrideFocusedCellBackgroundColor.read(session);
+            Color focusedCellBorder = (Color) BL.LM.overrideFocusedCellBorderColor.read(session);
             return new ColorPreferences(selectedRowBackground, selectedRowBorder, selectedCellBackground, 
                     focusedCellBackground, focusedCellBorder);
         } catch (SQLException | SQLHandledException e) {
@@ -587,7 +587,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     public void readPreferencesValues(ImMap<String, Object> values, List<GroupObjectUserPreferences> goPreferences, boolean general) {
         String prefix = general ? "general" : "user";
         String propertyDrawSID = values.get("propertySID").toString().trim();
-        Long groupObjectPropertyDraw = (Long) values.get("groupObject");
+        Integer groupObjectPropertyDraw = (Integer) values.get("groupObject");
 
         if (groupObjectPropertyDraw != null) {
             String groupObjectSID = (String) values.get("groupObjectSID");
@@ -654,7 +654,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         try (DataSession dataSession = session.createSession()) {
             List<DataObject> userObjectList = completeOverride ? readUserObjectList() : null;
 
-            DataObject userObject = (!forAllUsers && !completeOverride) ? (DataObject) BL.authenticationLM.currentUser.readClasses(dataSession) : null;
+            DataObject userObject = (!forAllUsers && !completeOverride) ? dataSession.getDataObject(BL.authenticationLM.user, BL.authenticationLM.currentUser.read(dataSession)) : null;
             for (Map.Entry<String, ColumnUserPreferences> entry : preferences.getColumnUserPreferences().entrySet()) {
                 ObjectValue propertyDrawObjectValue = BL.reflectionLM.propertyDrawSIDNavigatorElementNamePropertyDraw.readClasses(
                         dataSession,
@@ -663,7 +663,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                 if (propertyDrawObjectValue instanceof DataObject) {
                     DataObject propertyDrawObject = (DataObject) propertyDrawObjectValue;
                     ColumnUserPreferences columnPreferences = entry.getValue();
-                    Long idShow = columnPreferences.userHide == null ? null : BL.reflectionLM.propertyDrawShowStatus.getObjectID(columnPreferences.userHide ? "Hide" : "Show");
+                    Integer idShow = columnPreferences.userHide == null ? null : BL.reflectionLM.propertyDrawShowStatus.getObjectID(columnPreferences.userHide ? "Hide" : "Show");
                     if (completeOverride) {
                         for (DataObject user : userObjectList) {
                             changeUserColumnPreferences(columnPreferences, dataSession, idShow, propertyDrawObject, user);
@@ -707,7 +707,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         }
     }
     
-    private void changeUserColumnPreferences(ColumnUserPreferences columnPreferences, DataSession dataSession, Long idShow, DataObject propertyDrawObject, DataObject user) throws SQLException, SQLHandledException {
+    private void changeUserColumnPreferences(ColumnUserPreferences columnPreferences, DataSession dataSession, Integer idShow, DataObject propertyDrawObject, DataObject user) throws SQLException, SQLHandledException {
         BL.reflectionLM.showPropertyDrawCustomUser.change(idShow, dataSession, propertyDrawObject, user);
         BL.reflectionLM.columnCaptionPropertyDrawCustomUser.change(columnPreferences.userCaption, dataSession, propertyDrawObject, user);
         BL.reflectionLM.columnPatternPropertyDrawCustomUser.change(columnPreferences.userPattern, dataSession, propertyDrawObject, user);
@@ -771,7 +771,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         });
     }
 
-    public CustomClass getCustomClass(long classID) {
+    public CustomClass getCustomClass(int classID) {
         return BL.LM.baseClass.findClassID(classID);
     }
 
@@ -1144,7 +1144,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
     public int countRecords(int groupObjectID) throws SQLException, SQLHandledException {
         GroupObjectInstance group = getGroupObjectInstance(groupObjectID);
-        Expr expr = GroupExpr.create(MapFact.<Object, Expr>EMPTY(), ValueExpr.COUNT, group.getWhere(group.getMapKeys(), getModifier()), GroupType.SUM, MapFact.<Object, Expr>EMPTY());
+        Expr expr = GroupExpr.create(MapFact.<Object, Expr>EMPTY(), new ValueExpr(1, IntegerClass.instance), group.getWhere(group.getMapKeys(), getModifier()), GroupType.SUM, MapFact.<Object, Expr>EMPTY());
         QueryBuilder<Object, Object> query = new QueryBuilder<>(MapFact.<Object, KeyExpr>EMPTYREV());
         query.addProperty("quant", expr);
         ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> result = query.execute(this);
@@ -1206,7 +1206,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         ImMap<String, Expr> exprMap = mExprMap.immutable();
 
         QueryBuilder<String, String> query = new QueryBuilder<>(keyExprMap);
-        Expr exprQuant = GroupExpr.create(exprMap, ValueExpr.COUNT, groupObject.getWhere(mapKeys, getModifier()), GroupType.SUM, keyExprMap);
+        Expr exprQuant = GroupExpr.create(exprMap, new ValueExpr(1, IntegerClass.instance), groupObject.getWhere(mapKeys, getModifier()), GroupType.SUM, keyExprMap);
         query.and(exprQuant.getWhere());
 
         int separator = toSum.size();
@@ -1349,7 +1349,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
             } else {
                 assert grouping.propertyGroupings != null;
                 groupingObject = dataSession.addObject((ConcreteCustomClass) BL.reflectionLM.findClass("FormGrouping"));
-                BL.reflectionLM.groupObjectFormGrouping.change(groupObjectObject, dataSession, groupingObject);
+                BL.reflectionLM.groupObjectFormGrouping.change(groupObjectObject.getValue(), dataSession, groupingObject);
                 BL.reflectionLM.nameFormGrouping.change(grouping.name, dataSession, groupingObject);
             }
             assert grouping.propertyGroupings != null;

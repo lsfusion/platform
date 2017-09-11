@@ -30,7 +30,7 @@ public class IsClassFilterInstance<P extends PropertyInterface> extends Property
 
     public IsClassFilterInstance(DataInputStream inStream, FormInstance form) throws IOException {
         super(inStream, form);
-        isClass = form.getCustomClass(inStream.readLong());
+        isClass = form.getCustomClass(inStream.readInt());
     }
 
     public Where getWhere(ImMap<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier, ReallyChanged reallyChanged, MSet<CalcProperty> mUsedProps) throws SQLException, SQLHandledException {

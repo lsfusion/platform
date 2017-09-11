@@ -25,10 +25,7 @@ import net.sf.jasperreports.engine.JRException;
 
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class PrintActionProperty<O extends ObjectSelector> extends FormStaticActionProperty<O, FormPrintType> {
 
@@ -77,7 +74,7 @@ public class PrintActionProperty<O extends ObjectSelector> extends FormStaticAct
             printMessage(caption, context, reportData);
         } else {
             String pName = printerProperty == null ? null : (String) printerProperty.read(context, context.getKeys());
-            Integer pageCount = (Integer)context.requestUserInteraction(new ReportClientAction(reportPath, syncType, reportData, (FormPrintType) staticType, pName, SystemProperties.isDebug));
+            Object pageCount = context.requestUserInteraction(new ReportClientAction(reportPath, syncType, reportData, (FormPrintType) staticType, pName, SystemProperties.isDebug));
             formPageCount.change(pageCount, context);
         }
     }

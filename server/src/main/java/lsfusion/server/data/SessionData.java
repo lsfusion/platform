@@ -255,7 +255,7 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
             changed.set(true);
         return result;
     }
-    public abstract SessionData updateAdded(SQLSession session, BaseClass baseClass, PropertyField property, Pair<Long, Long>[] shifts, OperationOwner owner, TableOwner tableOwner) throws SQLException, SQLHandledException;
+    public abstract SessionData updateAdded(SQLSession session, BaseClass baseClass, PropertyField property, Pair<Integer, Integer>[] shifts, OperationOwner owner, TableOwner tableOwner) throws SQLException, SQLHandledException;
 
     // "обновляет" ключи в таблице
     public SessionData rewrite(SQLSession session, ImMap<ImMap<KeyField, DataObject>, ImMap<PropertyField, ObjectValue>> writeRows, TableOwner owner, OperationOwner opOwner) throws SQLException, SQLHandledException {

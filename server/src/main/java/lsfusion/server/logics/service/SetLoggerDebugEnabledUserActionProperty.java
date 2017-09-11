@@ -26,7 +26,7 @@ public class SetLoggerDebugEnabledUserActionProperty extends ScriptingActionProp
             params.add(context.getKeyObject(classPropertyInterface));
         }
 
-        SQLSession.setLoggerDebugEnabled((Long) params.get(1), (Boolean) params.get(0));
+        SQLSession.setLoggerDebugEnabled((Integer) params.get(1), (Boolean) params.get(0));
     }
 
     @Override

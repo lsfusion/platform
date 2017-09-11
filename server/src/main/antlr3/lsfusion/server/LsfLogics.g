@@ -416,7 +416,8 @@ reportPath
 		$formStatement::form.setReportPath(groupObject, propUsage, mapping);	
 	}
 }
-	:	(	'TOP' 
+	:	(
+			'TOP' 
 		| 	go = formGroupObjectEntity { groupObject = $go.groupObject; }
 		) 
 		prop = formMappedProperty { propUsage = $prop.propUsage; mapping = $prop.mapping; }
@@ -661,7 +662,8 @@ formMappedPropertiesList returns [List<String> aliases, List<LocalizedString> ca
     List<ResolveClassSet> signature = null;
 	List<String> mapping = null;
 }
-	:	{ alias = null; caption = null; $points.add(getCurrentDebugPoint()); }
+	:	
+		{ alias = null; caption = null; $points.add(getCurrentDebugPoint()); }
 		(		
 			(id=simpleNameOrWithCaption '=' { alias = $id.name; caption = $id.caption; })? mappedProp=formMappedProperty 
 			{
@@ -730,8 +732,10 @@ formCalcPropertyObject returns [CalcPropertyObjectEntity property = null]
     AbstractPropertyUsage propUsage = null;
     List<String> mapping = null;
 }
-	:	(	mProperty=formMappedProperty { propUsage = $mProperty.propUsage; mapping = $mProperty.mapping; }
-		|	expr=formExprDeclaration { propUsage = new LPUsage($expr.property); mapping = $expr.mapping; }
+	:	(
+	        mProperty=formMappedProperty { propUsage = $mProperty.propUsage; mapping = $mProperty.mapping; }
+	    |
+	        expr=formExprDeclaration { propUsage = new LPUsage($expr.property); mapping = $expr.mapping; }
         )
 		{
 			if (inPropParseState()) {
@@ -745,9 +749,11 @@ formActionPropertyObject returns [ActionPropertyObjectEntity action = null]
     AbstractPropertyUsage propUsage = null;
     List<String> mapping = null;
 }
-	:	(	mProperty=formMappedProperty { propUsage = $mProperty.propUsage; mapping = $mProperty.mapping; }
-		|	mAction=formActionDeclaration { propUsage = new LPUsage($mAction.property); mapping = $mAction.mapping; }
-		)
+	:	(
+	            mProperty=formMappedProperty { propUsage = $mProperty.propUsage; mapping = $mProperty.mapping; }
+	        |
+	            mAction=formActionDeclaration { propUsage = new LPUsage($mAction.property); mapping = $mAction.mapping; }
+        )
 		{
 			if (inPropParseState()) {
 				$action = $formStatement::form.addActionPropertyObject(propUsage, mapping);
@@ -830,18 +836,20 @@ formPropertyUsage returns [PropertyUsage propUsage]
    String systemName = null;
    List<String> signature = null;
 }
-	:	pu=propertyUsage   { $propUsage = $pu.propUsage; }
-	|	(
-			(
-				(	cid='NEW'		{ systemName = $cid.text; }
-				|	cid='NEWEDIT'	{ systemName = $cid.text; }
-				|	cid='EDIT'		{ systemName = $cid.text; }
-				)
-				( '[' clId=compoundID ']'  { signature = Collections.singletonList($clId.sid); } )?
-			)
-		|	cid='VALUE'		{ systemName = $cid.text; }
-		|	cid='DELETE'	{ systemName = $cid.text; }
-		) { $propUsage = new PropertyUsage(systemName, signature); }
+   :   pu=propertyUsage   { $propUsage = $pu.propUsage; }
+       |
+       (
+          (
+             (
+                cid='NEW'      { systemName = $cid.text; }
+             |  cid='NEWEDIT'  { systemName = $cid.text; }
+             |  cid='EDIT'    { systemName = $cid.text; }
+             )
+             ( '[' clId=compoundID ']'  { signature = Collections.singletonList($clId.sid); } )?
+          )
+          |  cid='VALUE'    { systemName = $cid.text; }
+          |  cid='DELETE'      { systemName = $cid.text; }
+       ) { $propUsage = new PropertyUsage(systemName, signature); }
    ;
 
 
@@ -1025,23 +1033,24 @@ propertyStatement
 	}
 }
 	:	declaration=propertyDeclaration { if ($declaration.params != null) { context = $declaration.params; dynamic = false; } }
-		{
-			propertyName = $declaration.name;
-			caption = $declaration.caption;
-		}
+	    {
+	        propertyName = $declaration.name;
+	        caption = $declaration.caption;
+	    }
 		'=' 
-		(	(	pdef=propertyDefinition[context, dynamic] { property = $pdef.property; signature = $pdef.signature; }
-			|	ciADB=contextIndependentActionDB { if(inPropParseState()) { property = $ciADB.property; signature = $ciADB.signature; } }		
-			)
-			((opt=propertyOptions[property, propertyName, caption, context, signature] { ps = $opt.ps; } ) | ';')
-		|	aDB=listTopContextDependentActionDefinitionBody[context, dynamic, true] { if (inPropParseState()) { property = $aDB.property.property; signature = self.getClassesFromTypedParams(context); }}
-			(opt=propertyOptions[property, propertyName, caption, context, signature]  { ps = $opt.ps; } )?
-		)
-		{
-			if (inPropParseState() && property != null) { // not native
-				if(ps == null)
-					ps = new PropertySettings();
-				property = self.addSettingsToProperty(property, propertyName, caption, context, signature, ps.groupName, ps.isPersistent, ps.isComplex, ps.noHint, ps.table, ps.notNull, ps.notNullResolve, ps.notNullEvent, ps.annotation, ps.isLoggable);
+		(	( 
+		        pdef=propertyDefinition[context, dynamic] { property = $pdef.property; signature = $pdef.signature; }
+            |	ciADB=contextIndependentActionDB { if(inPropParseState()) { property = $ciADB.property; signature = $ciADB.signature; } }		
+	        )
+            ((opt=propertyOptions[property, propertyName, caption, context, signature] { ps = $opt.ps; } ) | ';')
+        |   aDB=listTopContextDependentActionDefinitionBody[context, dynamic, true] { if (inPropParseState()) { property = $aDB.property.property; signature = self.getClassesFromTypedParams(context); }}
+            (opt=propertyOptions[property, propertyName, caption, context, signature]  { ps = $opt.ps; } )?
+        )
+        {
+            if (inPropParseState() && property != null) { // not native
+                if(ps == null)
+                    ps = new PropertySettings();
+                property = self.addSettingsToProperty(property, propertyName, caption, context, signature, ps.groupName, ps.isPersistent, ps.isComplex, ps.noHint, ps.table, ps.notNull, ps.notNullResolve, ps.notNullEvent, ps.annotation, ps.isLoggable);
             }
         }
 	;
@@ -1658,7 +1667,7 @@ sessionPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns
 		| 	'DROPPED' { type = IncrementType.DROP; }
 		| 	'SETCHANGED' { type = IncrementType.SETCHANGED; }
 		|	'DROPCHANGED' { type = IncrementType.DROPCHANGED; }
-		| 	'DROPSET' { type = IncrementType.DROPSET; }
+		| 	'SETDROPPED' { type = IncrementType.DROPSET; }
 		)
 		'('
 		expr=propertyExpression[context, dynamic] 
@@ -1962,32 +1971,32 @@ recursivePropertyOptions[LP property, String propertyName, LocalizedString capti
 	;
 
 semiPropertyOption[LP property, String propertyName, LocalizedString caption, PropertySettings ps, List<TypedParameter> context]
-    :	inSetting [ps]
-	|	persistentSetting [ps]
-	|	complexSetting [ps]
-	|	noHintSetting [ps]
-	|	tableSetting [ps]
-	|	shortcutSetting [property, caption != null ? caption : LocalizedString.create(propertyName)]
-	|	forceViewTypeSetting [property]
-	|	fixedCharWidthSetting [property]
-	|	minCharWidthSetting [property]
-	|	maxCharWidthSetting [property]
-	|	prefCharWidthSetting [property]
-	|   defaultCompareSetting [property]
-	|	imageSetting [property]
-	|	editKeySetting [property]
-	|	autosetSetting [property]
-	|	confirmSetting [property]
-	|	regexpSetting [property]
-	|	loggableSetting [ps]
-	|	echoSymbolsSetting [property]
-	|	indexSetting [property]
-	|	aggPropSetting [property]
-	|	setNotNullSetting [ps]
-	|	aggrSetting [ps]
-	|	asonEditActionSetting [property]
-	|	eventIdSetting [property]
-	|   '@@' ann = ID { ps.annotation = $ann.text; }
+    :
+            inSetting [ps]
+        |	persistentSetting [ps]
+        |	complexSetting [ps]
+        |	noHintSetting [ps]
+        |	tableSetting [ps]
+        |	shortcutSetting [property, caption != null ? caption : LocalizedString.create(propertyName)]
+        |	forceViewTypeSetting [property]
+        |	fixedCharWidthSetting [property]
+        |	minCharWidthSetting [property]
+        |	maxCharWidthSetting [property]
+        |	prefCharWidthSetting [property]
+        |   defaultCompareSetting [property]
+        |	imageSetting [property]
+        |	editKeySetting [property]
+        |	autosetSetting [property]
+        |	confirmSetting [property]
+        |	regexpSetting [property]
+        |	loggableSetting [ps]
+        |	echoSymbolsSetting [property]
+        |	indexSetting [property]
+        |	aggPropSetting [property]
+        |	setNotNullSetting [ps]
+        |	asonEditActionSetting [property]
+        |	eventIdSetting [property]
+        |   '@@' ann = ID { ps.annotation = $ann.text; }
     ;
 
 nonSemiPropertyOption[LP property, String propertyName, LocalizedString caption, PropertySettings ps, List<TypedParameter> context]
@@ -1998,38 +2007,27 @@ nonSemiPropertyOption[LP property, String propertyName, LocalizedString caption,
 inSetting [PropertySettings ps]
 	:	'IN' name=compoundID { ps.groupName = $name.sid; }
 	;
-	
 persistentSetting [PropertySettings ps]
 	:	'MATERIALIZED' { ps.isPersistent = true; }
 	;
-	
 complexSetting [PropertySettings ps]
 	:	'COMPLEX' { ps.isComplex = true; }
 	;
-	
 noHintSetting [PropertySettings ps]
 	:	'NOHINT' { ps.noHint = true; }
 	;
-	
 tableSetting [PropertySettings ps]
 	:	'TABLE' tbl = compoundID { ps.table = $tbl.sid; }
 	;
-	
 loggableSetting [PropertySettings ps]
 	:	'LOGGABLE'  { ps.isLoggable = true; }
 	;
-
-aggrSetting [PropertySettings ps]
-    :   
-        'AGGR'
-    ;
-	
 setNotNullSetting [PropertySettings ps]
     :   s=notNullSetting {
-							ps.notNull = new BooleanDebug($s.debugPoint);
-							ps.notNullResolve = $s.toResolve;
-							ps.notNullEvent = $s.event;
-						 }
+                        ps.notNull = new BooleanDebug($s.debugPoint);
+                        ps.notNullResolve = $s.toResolve;
+                        ps.notNullEvent = $s.event;
+        			}
     ;
 annotationSetting [PropertySettings ps]
 	:
@@ -2492,22 +2490,22 @@ dialogActionDefinitionBody[List<TypedParameter> context] returns [LPWithParams p
 	;
 	
 manageSessionClause returns [ManageSessionType result]
-    :	'MANAGESESSION' { $result = ManageSessionType.MANAGESESSION; }
-	|	'NOMANAGESESSION' { $result = ManageSessionType.NOMANAGESESSION; }
-	|	'MANAGESESSIONX' { $result = ManageSessionType.MANAGESESSIONX; }
-	|	'NOMANAGESESSIONX' { $result = ManageSessionType.NOMANAGESESSIONX; }
-	|	'AUTOX' { $result = ManageSessionType.AUTO; }
+    :       'MANAGESESSION' { $result = ManageSessionType.MANAGESESSION; }
+        |   'NOMANAGESESSION' { $result = ManageSessionType.NOMANAGESESSION; }
+        |   'MANAGESESSIONX' { $result = ManageSessionType.MANAGESESSIONX; }
+        |   'NOMANAGESESSIONX' { $result = ManageSessionType.NOMANAGESESSIONX; }
+        |   'AUTOX' { $result = ManageSessionType.AUTO; }
     ;
 
 noCancelClause returns [boolean result]
-    :	'CANCEL' { $result = false; }
-	|	'NOCANCEL' { $result = true; }
+    :       'CANCEL' { $result = false; }
+        |   'NOCANCEL' { $result = true; }
     ;
 
 doInputBody[List<TypedParameter> oldContext, List<TypedParameter> newContext]  returns [LPWithParams property, LPWithParams elseProperty]
         // modifyContextFlowActionDefinitionBody[oldContext, newContext, false, false] - used explicit modifyContextFlowActionDefinitionBodyCreated to support CHANGE clauses
     :	(('DO' dDB=keepContextFlowActionDefinitionBody[newContext, false] { $property = $dDB.property; } ) ('ELSE' eDB=keepContextFlowActionDefinitionBody[newContext, false] { $elseProperty = $eDB.property; } )?)
-	|	(';' { if(inPropParseState()) { $property = new LPWithParams(self.baseLM.getEmpty(), new ArrayList<Integer>());  } })
+     | (';' { if(inPropParseState()) { $property = new LPWithParams(self.baseLM.getEmpty(), new ArrayList<Integer>());  } })
 ;
 
 syncTypeLiteral returns [boolean val]
@@ -2833,7 +2831,8 @@ fileActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns 
 		$property = self.addScriptedFileAProp(actionType, fileProp, fileNameProp);
 	}
 }
-	:	(	'OPEN' { actionType = FileActionType.OPEN; } pe=propertyExpression[context, dynamic] { fileProp = $pe.property; } ('NAME' npe=propertyExpression[context, dynamic] { fileNameProp = $npe.property; })?
+	:	(
+			'OPEN' { actionType = FileActionType.OPEN; } pe=propertyExpression[context, dynamic] { fileProp = $pe.property; } ('NAME' npe=propertyExpression[context, dynamic] { fileNameProp = $npe.property; })?
 		|	'SAVE' { actionType = FileActionType.SAVE; } pe=propertyExpression[context, dynamic] { fileProp = $pe.property; } ('NAME' npe=propertyExpression[context, dynamic] { fileNameProp = $npe.property; })?
 		) 
 	;

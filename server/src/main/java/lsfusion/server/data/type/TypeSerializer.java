@@ -132,7 +132,7 @@ public class TypeSerializer {
         if (type == Data.DATE) return DateClass.instance;
         if (type == Data.STRING) return StringClass.get(inStream.readBoolean(), inStream.readBoolean(), inStream.readBoolean(), ExtInt.deserialize(inStream));
         if (type == Data.YEAR) return YearClass.instance;
-        if (type == Data.OBJECT) return context.LM.baseClass.findClassID(inStream.readLong());
+        if (type == Data.OBJECT) return context.LM.baseClass.findClassID(inStream.readInt());
         if (type == Data.ACTION) return ActionClass.instance;
         if (type == Data.DATETIME) return DateTimeClass.instance;
         if (type == Data.DYNAMICFORMATFILE) return DynamicFormatFileClass.get(false, false);

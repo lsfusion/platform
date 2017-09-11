@@ -27,7 +27,7 @@ public class ByteArrayClass extends DataClass<byte[]> {
         return compClass instanceof ByteArrayClass?this:null;
     }
 
-    public byte[] getDefaultValue() {
+    public Object getDefaultValue() {
         return new byte[0];
     }
 

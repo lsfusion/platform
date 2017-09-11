@@ -25,7 +25,6 @@ public final class PropertyCanonicalNameUtils {
     static public final String policyPropPrefix = "_POLICY_";
     static public final String fullPropPrefix = "_FULL_";
     static public final String logPropPrefix = "_LOG_";
-    static public final String logDropPropPrefix = "_LOGDROP_";
     static public final String drillDownPrefix = "_DRILLDOWN_";
     static public final String objValuePrefix = "_OBJVALUE_";
 

@@ -54,7 +54,10 @@ import lsfusion.server.logics.property.cases.CalcCase;
 import lsfusion.server.logics.property.derived.*;
 import lsfusion.server.logics.property.group.AbstractGroup;
 import lsfusion.server.logics.property.group.AbstractNode;
-import lsfusion.server.logics.scripted.*;
+import lsfusion.server.logics.scripted.EvalActionProperty;
+import lsfusion.server.logics.scripted.LazyActionProperty;
+import lsfusion.server.logics.scripted.MetaCodeFragment;
+import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 import lsfusion.server.logics.table.ImplementTable;
 import lsfusion.server.session.LocalNestedType;
 import org.antlr.runtime.RecognitionException;
@@ -475,14 +478,6 @@ public abstract class LogicsModule {
 
         derDataProp.setEventChange(derivedProp, whereNum, params);
         return derDataProp;
-    }
-
-    protected <D extends PropertyInterface> LCP addLogProp(AbstractGroup group, LocalizedString caption, int whereNum, LCP<D> derivedProp, Object... params) {
-        Pair<ValueClass[], ValueClass> signature = getSignature(derivedProp, whereNum, params);
-
-        // выполняем само создание свойства
-        StoredDataProperty dataProperty = new StoredDataProperty(caption, signature.first, LogicalClass.instance);
-        return addProperty(group, false, new LCP<>(dataProperty));
     }
 
     private <D extends PropertyInterface> Pair<ValueClass[], ValueClass> getSignature(LCP<D> derivedProp, int whereNum, Object[] params) {
@@ -1354,7 +1349,7 @@ public abstract class LogicsModule {
         }
         return getSignatureForLogProperty(signature, systemEventsLM);    
     } 
-
+    
     public static String getLogPropertyCN(LCP lp, String logNamespace, SystemEventsLogicsModule systemEventsLM) {
         String name = "";
         try {
@@ -1367,25 +1362,9 @@ public abstract class LogicsModule {
         List<ResolveClassSet> signature = getSignatureForLogProperty(lp, systemEventsLM);
         return PropertyCanonicalNameUtils.createName(logNamespace, name, signature);
     }
-
-    private static String getLogPropertyName(LCP lp, boolean drop) {
-        String name = "";
-        try {
-            String namespace = PropertyCanonicalNameParser.getNamespace(lp.property.getCanonicalName());
-            name = getLogPropertyName(namespace, lp.property.getName(), drop);
-        } catch (PropertyCanonicalNameParser.ParseException e) {
-            Throwables.propagate(e);
-        }
-        return name;
-    }
-
+    
     private static String getLogPropertyName(String namespace, String name) {
-        return getLogPropertyName(namespace, name, false);
-    }
-
-
-    private static String getLogPropertyName(String namespace, String name, boolean drop) {
-        return (drop ? PropertyCanonicalNameUtils.logDropPropPrefix : PropertyCanonicalNameUtils.logPropPrefix) + namespace + "_" + name;
+        return PropertyCanonicalNameUtils.logPropPrefix + namespace + "_" + name;
     }
     
     public static String getLogPropertyCN(String logNamespace, String namespace, String name, List<ResolveClassSet> signature) {
@@ -1397,7 +1376,13 @@ public abstract class LogicsModule {
     // во-вторых руками markStored вызывается, чтобы обойти проблему с созданием propertyField из addDProp 
     public LCP addLProp(SystemEventsLogicsModule systemEventsLM, LCP lp) {
         assert lp.property.isNamed();
-        String name = getLogPropertyName(lp, false);
+        String name = "";
+        try {
+            String namespace = PropertyCanonicalNameParser.getNamespace(lp.property.getCanonicalName());
+            name = getLogPropertyName(namespace, lp.property.getName());
+        } catch (PropertyCanonicalNameParser.ParseException e) {
+            Throwables.propagate(e);
+        }
         
         List<ResolveClassSet> signature = getSignatureForLogProperty(lp, systemEventsLM);
         
@@ -1405,29 +1390,6 @@ public abstract class LogicsModule {
         makePropertyPublic(result, name, signature);
         ((StoredDataProperty)result.property).markStored(baseLM.tableFactory);
         return result;
-    }
-
-    public LCP addLDropProp(SystemEventsLogicsModule systemEventsLM, LCP lp) {
-        String name = getLogPropertyName(lp, true);
-
-        List<ResolveClassSet> signature = getSignatureForLogProperty(lp, systemEventsLM);
-
-        LCP equalsProperty = addJProp(baseLM.equals2, 1, systemEventsLM.currentSession);
-        LCP logDropProperty = addLogProp(baseLM.privateGroup, LocalizedString.create("{logics.log}" + " " + lp.property + " {drop}"), 1, lp, add(new Object[]{equalsProperty, lp.listInterfaces.size() + 1}, directLI(lp)));
-
-        LCP changedProperty = addCHProp(lp, IncrementType.DROP, PrevScope.EVENT);
-        LCP whereProperty = addJProp(false, LocalizedString.create(""), baseLM.and1, add(directLI(changedProperty), new Object[] {equalsProperty, changedProperty.listInterfaces.size() + 1}));
-
-        Object[] params = directLI(baseLM.vtrue);
-        if (whereProperty != null) {
-            params = BaseUtils.add(params, directLI(whereProperty));
-        }
-        logDropProperty.setEventChange(systemEventsLM, true, params);
-
-        makePropertyPublic(logDropProperty, name, signature);
-        ((StoredDataProperty)logDropProperty.property).markStored(baseLM.tableFactory);
-
-        return logDropProperty;
     }
 
     // ------------------- UNION SUM ----------------- //

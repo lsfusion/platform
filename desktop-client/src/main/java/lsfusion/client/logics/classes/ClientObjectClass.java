@@ -12,13 +12,13 @@ public class ClientObjectClass extends ClientClass {
 
     public final static ClientObjectType type = new ClientObjectType();
 
-    private final long ID;
+    private final int ID;
 
     private final boolean concreate;
     private final List<ClientObjectClass> children;
     private final String caption;
 
-    private ClientObjectClass(long ID, String sID, String caption, boolean concreate, List<ClientObjectClass> children) {
+    private ClientObjectClass(int ID, String sID, String caption, boolean concreate, List<ClientObjectClass> children) {
         this.ID = ID;
         this.concreate = concreate;
         this.children = children;
@@ -28,10 +28,10 @@ public class ClientObjectClass extends ClientClass {
     @Override
     public void serialize(DataOutputStream outStream) throws IOException {
         outStream.writeByte(Data.OBJECT);
-        outStream.writeLong(ID);
+        outStream.writeInt(ID);
     }
 
-    public long getID() {
+    public int getID() {
         return ID;
     }
 
@@ -57,7 +57,7 @@ public class ClientObjectClass extends ClientClass {
 
     @Override
     public int hashCode() {
-        return ((Long)ID).hashCode();
+        return ID;
     }
 
     public String toString() {
@@ -67,7 +67,7 @@ public class ClientObjectClass extends ClientClass {
     public static ClientObjectClass deserialize(DataInputStream inStream) throws IOException {
         boolean concreate = inStream.readBoolean();
         String caption = inStream.readUTF();
-        long ID = inStream.readLong();
+        int ID = inStream.readInt();
         String sID = inStream.readUTF();
 
         int count = inStream.readInt();

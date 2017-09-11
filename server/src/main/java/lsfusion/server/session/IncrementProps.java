@@ -1,5 +1,6 @@
 package lsfusion.server.session;
 
+import lsfusion.base.ConcurrentIdentityWeakHashSet;
 import lsfusion.base.WeakIdentityHashSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.data.SQLHandledException;
@@ -48,7 +49,7 @@ public abstract class IncrementProps {
     public abstract <P extends PropertyInterface> PropertyChange<P> getPropertyChange(CalcProperty<P> property);
     public abstract ImSet<CalcProperty> getProperties();
 
-    public abstract long getMaxCount(CalcProperty property);
+    public abstract int getMaxCount(CalcProperty property);
     
     public abstract String out();
 }

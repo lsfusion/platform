@@ -246,7 +246,7 @@ public class InteractiveFormReportManager extends FormReportManager<PropertyDraw
 
             @Override
             public PropertyType getPropertyType(PropertyReaderInstance propertyReaderInstance) {
-                return propertyReaderInstance.getPropertyType(getEntity());
+                return propertyReaderInstance.getPropertyType();
             }
         });
     }

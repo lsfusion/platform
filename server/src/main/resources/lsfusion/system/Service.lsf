@@ -107,6 +107,15 @@ turnExplainAnalizeOnCurrentUser 'Включить EXPLAIN ANALYZE (Текущи�
     explainAnalyzeMode(User user) <- TRUE WHERE user == currentUser();     
 }
 
+setExplainMode 'Выводить в лог EXPLAIN запросов' = CUSTOM 'lsfusion.server.logics.service.SetExplainModeUserActionProperty' (BOOLEAN, User);
+explainMode 'Включён Explain' = DATA BOOLEAN (User);
+refreshExplainMode 'Обновить Explain'(User user) = {
+    setExplainMode(explainMode(user), user);  
+}
+WHEN CHANGED(explainMode(User user)) DO {
+    refreshExplainMode(user);
+}
+
 setLoggerDebugEnabled 'Включить вывод в лог SQL запросов' = CUSTOM 'lsfusion.server.logics.service.SetLoggerDebugEnabledUserActionProperty' (BOOLEAN, User);
 loggerDebugEnabled 'Выводить в лог SQL запросы' = DATA BOOLEAN (User);
 refreshLoggerDebugEnabled ''(User user) = {
@@ -217,6 +226,8 @@ WHEN CHANGED(volatileStatsEnabled(User user)) DO {
 onStarted() += {
     FOR explainAnalyzeMode(User u) DO 
         refreshExplainAnalyzeMode(u);
+    FOR explainMode(User u) DO 
+        refreshExplainMode(u);
     FOR loggerDebugEnabled(User u) DO 
         refreshLoggerDebugEnabled(u);
     FOR volatileStatsEnabled(User u) DO 
@@ -294,9 +305,6 @@ baseValue 'Сохранённое значение' = DATA VARSTRING[100] (Refle
 defaultValue 'Значение по умолчанию' = DATA VARSTRING[100] (ReflectionProperty);
 value 'Значение' (ReflectionProperty reflectionProperty) = OVERRIDE baseValue(reflectionProperty), defaultValue(reflectionProperty);
 
-pushReflectionPropertyAction 'Перегрузить свойство' = CUSTOM 'lsfusion.server.logics.service.reflection.PushReflectionPropertyActionProperty' (VARSTRING[100], VARSTRING[100]);
-popReflectionPropertyAction 'Сбросить свойство' = CUSTOM 'lsfusion.server.logics.service.reflection.PopReflectionPropertyActionProperty' ();
-
 readReflectionPropertiesAction 'Прочитать настройки свойств' = CUSTOM 'lsfusion.server.logics.service.reflection.ReadReflectionPropertiesActionProperty' ();
 onStarted() += { readReflectionPropertiesAction(); }
 saveAction 'Сохранить настройку свойства' = CUSTOM 'lsfusion.server.logics.service.reflection.SaveReflectionPropertyActionProperty' (ReflectionProperty);
@@ -306,17 +314,6 @@ FORM reflectionProperties 'Настройки свойств'
     OBJECTS r = ReflectionProperty
     PROPERTIES (r) name READONLY, value READONLY, defaultValue READONLY, baseValue
 ;
-
-selectedRowBackgroundColor 'Цвет фона ряда при выделении' = DATA COLOR (User);
-overrideSelectedRowBackgroundColor 'Цвет фона ряда при выделении' = OVERRIDE selectedRowBackgroundColor(currentUser()), selectedRowBackgroundColor(), RGB(249, 249, 255);
-selectedRowBorderColor 'Цвет границы ряда при выделении' = DATA COLOR (User);
-overrideSelectedRowBorderColor 'Цвет границы ряда при выделении' = OVERRIDE selectedRowBorderColor(currentUser()), selectedRowBorderColor(), RGB(175, 175, 255);
-selectedCellBackgroundColor 'Цвет фона ячейки при выделении' = DATA COLOR (User);
-overrideSelectedCellBackgroundColor 'Цвет фона ячейки при выделении' = OVERRIDE selectedCellBackgroundColor(currentUser()), selectedCellBackgroundColor(), RGB(237, 238, 244);
-focusedCellBackgroundColor 'Цвет фона ячейки при фокусировании' = DATA COLOR (User);
-overrideFocusedCellBackgroundColor 'Цвет фона ячейки при фокусировании' = OVERRIDE focusedCellBackgroundColor(currentUser()), focusedCellBackgroundColor(), RGB(237, 238, 244);
-focusedCellBorderColor 'Цвет границы ячейки при фокусировании' = DATA COLOR (User);
-overrideFocusedCellBorderColor 'Цвет границы ячейки при фокусировании' = OVERRIDE focusedCellBorderColor(currentUser()), focusedCellBorderColor(), RGB(98, 98, 255);
 
 FORM admin 'Администрирование'
     PROPERTIES() currentDate, defaultBackgroundColor, defaultForegroundColor, 
@@ -332,9 +329,7 @@ FORM admin 'Администрирование'
                  disableTILMode, hostnameServerComputer, reupdateMode, singleTransaction,
                  turnExplainAnalizeOnCurrentUser, clearApplicationLog
     OBJECTS u=User
-    PROPERTIES(u) name READONLY, nameMainRole, explainAnalyzeMode, loggerDebugEnabled, remoteLoggerDebugEnabled, remoteExLogEnabled, remotePausableLogEnabled, nameExecEnv, volatileStatsEnabled
-    OBJECTS uc=User
-    PROPERTIES(uc) name READONLY, selectedRowBackgroundColor, selectedRowBorderColor, selectedCellBackgroundColor, focusedCellBackgroundColor, focusedCellBorderColor;
+    PROPERTIES(u) name READONLY, nameMainRole, explainAnalyzeMode, explainMode, loggerDebugEnabled, remoteLoggerDebugEnabled, remoteExLogEnabled, remotePausableLogEnabled, nameExecEnv, volatileStatsEnabled;
 ;
 
 DESIGN admin {
@@ -378,7 +373,17 @@ DESIGN admin {
                     MOVE PROPERTY(reportCharWidth());
                     MOVE PROPERTY(reportRowHeight());
                     MOVE PROPERTY(reportNotToStretch());
-                }                                               
+                }        
+                NEW colors {
+                    caption = 'Цвета';
+                    MOVE PROPERTY(defaultBackgroundColor());
+                    MOVE PROPERTY(defaultForegroundColor());
+                    MOVE PROPERTY(selectedRowBackgroundColor());
+                    MOVE PROPERTY(selectedRowBorderColor());
+                    MOVE PROPERTY(selectedCellBackgroundColor());
+                    MOVE PROPERTY(focusedCellBackgroundColor());
+                    MOVE PROPERTY(focusedCellBorderColor());
+                }                                        
             }
             NEW centralColumn {
                 NEW oneThread {
@@ -443,27 +448,6 @@ DESIGN admin {
         }
         
         MOVE BOX(u);
-        NEW colorsPane {
-            caption = 'Цвета';
-            MOVE BOX(uc);
-            NEW bottomPane {
-                type = CONTAINERH;
-                NEW defaultColors {
-                   caption = 'Цвета по умолчанию';
-                   MOVE PROPERTY(selectedRowBackgroundColor());
-                   MOVE PROPERTY(selectedRowBorderColor());
-                   MOVE PROPERTY(selectedCellBackgroundColor());
-                   MOVE PROPERTY(focusedCellBackgroundColor());
-                   MOVE PROPERTY(focusedCellBorderColor());
-               } 
-               NEW generalColors {
-                   caption = 'Обшие настройки';
-                   MOVE PROPERTY(defaultBackgroundColor());
-                   MOVE PROPERTY(defaultForegroundColor());
-               }
-            }
-            
-        }
     }
     MOVE TOOLBARBOX;
 }

@@ -12,15 +12,15 @@ public class Profiler {
     
     public static ConcurrentHashMap<ProfileItem, ProfileValue> profileData = MapFact.getGlobalConcurrentHashMap();
     
-    public static Set<Long> profileUsers = new HashSet<>();
+    public static Set<Integer> profileUsers = new HashSet<>();
     public static Set<String> profileForms = new HashSet<>();
     
-    public static void increase(ProfileObject profileObject, ProfileObject upperProfileObject, Long userID, FormEntity form, long time, long sqlTime, long userInteractionTime) {
+    public static void increase(ProfileObject profileObject, ProfileObject upperProfileObject, Integer userID, FormEntity form, long time, long sqlTime, long userInteractionTime) {
         ProfileValue profileValue = getProfileValue(profileObject, upperProfileObject, userID, form);
         profileValue.increase(time, sqlTime, userInteractionTime);
     }
     
-    public static ProfileValue getProfileValue(ProfileObject profileObject, ProfileObject upperProfileObject, Long userID, FormEntity form) {
+    public static ProfileValue getProfileValue(ProfileObject profileObject, ProfileObject upperProfileObject, Integer userID, FormEntity form) {
         return getProfileValue(new ProfileItem(profileObject, upperProfileObject, userID, form));    
     }
 
@@ -33,11 +33,11 @@ public class Profiler {
         return value;
     }
     
-    public static boolean checkUserForm(Long user, FormEntity form) {
+    public static boolean checkUserForm(Integer user, FormEntity form) {
         return checkUser(user) && checkForm(form);
     }
     
-    private static boolean checkUser(Long user) {
+    private static boolean checkUser(Integer user) {
         return profileUsers.isEmpty() || profileUsers.contains(user); 
     }
     

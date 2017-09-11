@@ -7,6 +7,7 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.server.caches.hash.HashContext;
+import lsfusion.server.classes.ConcreteClass;
 import lsfusion.server.classes.ConcreteObjectClass;
 import lsfusion.server.data.QueryEnvironment;
 import lsfusion.server.data.Value;
@@ -91,11 +92,6 @@ public class InconsistentStaticValueExpr extends VariableSingleClassExpr impleme
     @Override
     public Value removeBig(MAddSet<Value> usedValues) {
         return null;
-    }
-
-    @Override
-    public String toDebugString() {
-        return toString();
     }
 
     @Override

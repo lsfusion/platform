@@ -156,12 +156,12 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
         return dbManager.createSession();
     }
 
-    public Long getComputer(String strHostName) {
+    public Integer getComputer(String strHostName) {
         return dbManager.getComputer(strHostName, getStack());
     }
 
     @Override
-    public ArrayList<IDaemonTask> getDaemonTasks(long compId) throws RemoteException {
+    public ArrayList<IDaemonTask> getDaemonTasks(int compId) throws RemoteException {
         return businessLogics.getDaemonTasks(compId);
     }
 
@@ -169,7 +169,7 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
         return businessLogics.getExternalScreen(screenID);
     }
 
-    public ExternalScreenParameters getExternalScreenParameters(int screenID, long computerId) throws RemoteException {
+    public ExternalScreenParameters getExternalScreenParameters(int screenID, int computerId) throws RemoteException {
         return businessLogics.getExternalScreenParameters(screenID, computerId);
     }
 
@@ -197,7 +197,7 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
         return BaseLogicsModule.generateStaticNewID();
     }
 
-    public void sendPingInfo(Long computerId, Map<Long, List<Long>> pingInfoMap) {
+    public void sendPingInfo(Integer computerId, Map<Long, List<Long>> pingInfoMap) {
         Map<Long, List<Long>> pingInfoEntry = RemoteLoggerAspect.pingInfoMap.get(computerId);
         pingInfoEntry = pingInfoEntry != null ? pingInfoEntry : MapFact.<Long, List<Long>>getGlobalConcurrentHashMap();
         pingInfoEntry.putAll(pingInfoMap);
@@ -229,7 +229,7 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     }
 
     @Override
-    public long generateID() throws RemoteException {
+    public int generateID() throws RemoteException {
         return dbManager.generateID();
     }
 
@@ -237,8 +237,8 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
         return new ArrayList<>();
     }
 
-    protected Long getUserByEmail(DataSession session, String email) throws SQLException, SQLHandledException {
-        return (Long) businessLogics.contactLM.contactEmail.read(session, new DataObject(email));
+    protected Integer getUserByEmail(DataSession session, String email) throws SQLException, SQLHandledException {
+        return (Integer) businessLogics.contactLM.contactEmail.read(session, new DataObject(email));
     }
 
     @Override
@@ -248,7 +248,7 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
 //            ServerResourceBundle.load(localeLanguage);
         try {
             try (DataSession session = createSession()) {
-                Long userId = getUserByEmail(session, email);
+                Integer userId = getUserByEmail(session, email);
                 if (userId == null) {
                     throw new RuntimeException(localize("{mail.user.not.found}") + ": " + email);
                 }
@@ -376,12 +376,12 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
         return memoryLimitMap;
     }
 
-    public Long getCurrentUser() {
+    public Integer getCurrentUser() {
         return dbManager.getSystemUserObject();
     }
 
-    public Long getCurrentComputer() {
-        return (Long) dbManager.getServerComputerObject(getStack()).getValue();
+    public Integer getCurrentComputer() {
+        return (Integer) dbManager.getServerComputerObject(getStack()).getValue();
     }
 
     @Override

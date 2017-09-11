@@ -27,7 +27,7 @@ public class SetExLogUserActionProperty extends ScriptingActionProperty {
             params.add(context.getKeyObject(classPropertyInterface));
         }
 
-        ServerLoggers.setUserExLog((Long) params.get(1), (Boolean) params.get(0));
+        ServerLoggers.setUserExLog((Integer) params.get(1), (Boolean) params.get(0));
     }
 
     @Override

@@ -15,7 +15,7 @@ import java.sql.SQLException;
 import java.util.List;
 
 public class OverCalculateStatsTask extends GroupPropertiesSingleTask<ImplementTable> {
-    MSet<Long> propertiesSet;
+    MSet<Integer> propertiesSet;
 
     @Override
     public String getTaskCaption(ImplementTable element) {

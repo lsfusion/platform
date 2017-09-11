@@ -82,7 +82,7 @@ public class IntegerClass extends IntClass<Integer> {
         statement.setInt(num, (Integer)value);
     }
 
-    public Integer getDefaultValue() {
+    public Object getDefaultValue() {
         return 0;
     }
 

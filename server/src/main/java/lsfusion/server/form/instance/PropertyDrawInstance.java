@@ -116,8 +116,8 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
     }
 
     @Override
-    public PropertyType getPropertyType(FormEntity formEntity) {
-        return entity.getPropertyType(formEntity);
+    public PropertyType getPropertyType() {
+        return entity.getPropertyType();
     }
 
     public ClassViewType getForceViewType() {
@@ -152,7 +152,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
             return PropertyDrawInstance.this.getID();
         }
 
-        public PropertyType getPropertyType(FormEntity formEntity) {
+        public PropertyType getPropertyType() {
             return null;
         }
 
@@ -176,7 +176,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
             return PropertyDrawInstance.this.getID();
         }
 
-        public PropertyType getPropertyType(FormEntity formEntity) {
+        public PropertyType getPropertyType() {
             return null;
         }
 
@@ -203,7 +203,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
             return PropertyDrawInstance.this.getID();
         }
 
-        public PropertyType getPropertyType(FormEntity formEntity) {
+        public PropertyType getPropertyType() {
             return null;
         }
 
@@ -231,7 +231,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
             return PropertyDrawInstance.this.getID();
         }
 
-        public PropertyType getPropertyType(FormEntity formEntity) {
+        public PropertyType getPropertyType() {
             return null;
         }
 
@@ -259,7 +259,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
             return PropertyDrawInstance.this.getID();
         }
 
-        public PropertyType getPropertyType(FormEntity formEntity) {
+        public PropertyType getPropertyType() {
             return null;
         }
 
@@ -287,7 +287,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
             return PropertyDrawInstance.this.getID();
         }
 
-        public PropertyType getPropertyType(FormEntity formEntity) {
+        public PropertyType getPropertyType() {
             return null;
         }
 
@@ -315,7 +315,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
             return PropertyDrawInstance.this.getID();
         }
 
-        public PropertyType getPropertyType(FormEntity formEntity) {
+        public PropertyType getPropertyType() {
             return null;
         }
 

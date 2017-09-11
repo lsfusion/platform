@@ -98,27 +98,27 @@ public class ReadActionProperty extends SystemExplicitActionProperty {
                             break;
                         case "http":
                         case "https":
-                            file = File.createTempFile("downloaded", ".tmp");
+                            file = File.createTempFile("downloaded", "tmp");
                             copyHTTPToFile(sourcePath, file);
                             extension = BaseUtils.getFileExtension(new File(url));
                             break;
                         case "ftp":
-                            file = File.createTempFile("downloaded", ".tmp");
+                            file = File.createTempFile("downloaded", "tmp");
                             copyFTPToFile(sourcePath, file);
                             extension = BaseUtils.getFileExtension(new File(url));
                             break;
                         case "sftp":
-                            file = File.createTempFile("downloaded", ".tmp");
+                            file = File.createTempFile("downloaded", "tmp");
                             copySFTPToFile(sourcePath, file);
                             extension = BaseUtils.getFileExtension(new File(url));
                             break;
                         case "jdbc":
-                            file = File.createTempFile("downloaded", ".tmp");
+                            file = File.createTempFile("downloaded", "tmp");
                             extension = "jdbc";
                             copyJDBCToFile(sourcePath, file);
                             break;
                         case "mdb":
-                            file = File.createTempFile("downloaded", ".tmp");
+                            file = File.createTempFile("downloaded", "tmp");
                             copyMDBToFile(sourcePath, file);
                             extension = "mdb";
                             break;

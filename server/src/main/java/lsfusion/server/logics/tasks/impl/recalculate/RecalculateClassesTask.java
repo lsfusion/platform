@@ -127,7 +127,7 @@ public class RecalculateClassesTask extends GroupPropertiesSingleTask<Object> { 
     protected ImSet<Object> getDependElements(Object key) {
         ImSet<Object> depends = SetFact.EMPTY();
         if(key instanceof CalcProperty && groupByTables) {
-            List<CalcProperty> entry = calcPropertiesMap.get(((CalcProperty) key).mapTable.table);
+            List<CalcProperty> entry = calcPropertiesMap.get(((CalcProperty) key).mapTable);
             if(entry != null) {
                 int index = entry.indexOf(key);
                 if(index > 0)

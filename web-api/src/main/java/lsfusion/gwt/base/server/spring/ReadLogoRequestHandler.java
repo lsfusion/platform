@@ -1,5 +1,6 @@
 package lsfusion.gwt.base.server.spring;
 
+import lsfusion.base.BaseUtils;
 import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.HttpRequestHandler;

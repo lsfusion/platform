@@ -26,7 +26,7 @@ public class SetPausableLogUserActionProperty extends ScriptingActionProperty {
             params.add(context.getKeyObject(classPropertyInterface));
         }
 
-        ServerLoggers.setPausableLog((Long) params.get(1), (Boolean) params.get(0));
+        ServerLoggers.setPausableLog((Integer) params.get(1), (Boolean) params.get(0));
     }
 
     @Override

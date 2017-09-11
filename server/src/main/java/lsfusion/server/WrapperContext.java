@@ -60,7 +60,7 @@ public class WrapperContext extends AbstractContext implements Context {
         return wrappedContext.getComputer(stack);
     }
 
-    public Long getCurrentUser() {
+    public Integer getCurrentUser() {
         return wrappedContext.getCurrentUser();
     }
 

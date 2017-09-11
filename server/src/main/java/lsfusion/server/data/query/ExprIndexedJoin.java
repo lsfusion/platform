@@ -22,10 +22,7 @@ import lsfusion.server.data.expr.query.StatType;
 import lsfusion.server.data.query.innerjoins.AbstractUpWhere;
 import lsfusion.server.data.query.innerjoins.UpWhere;
 import lsfusion.server.data.query.innerjoins.UpWheres;
-import lsfusion.server.data.query.stat.Cost;
-import lsfusion.server.data.query.stat.KeyStat;
-import lsfusion.server.data.query.stat.StatKeys;
-import lsfusion.server.data.query.stat.WhereJoin;
+import lsfusion.server.data.query.stat.*;
 import lsfusion.server.data.translator.MapTranslate;
 
 import java.util.List;

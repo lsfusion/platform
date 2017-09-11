@@ -38,7 +38,6 @@ import lsfusion.server.data.query.MapKeysInterface;
 import lsfusion.server.data.query.Query;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
-import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.entity.GroupObjectEntity;
 import lsfusion.server.form.entity.GroupObjectProp;
 import lsfusion.server.form.entity.UpdateType;
@@ -1200,7 +1199,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         }
 
         @Override
-        public PropertyType getPropertyType(FormEntity formEntity) {
+        public PropertyType getPropertyType() {
             return null;
         }
 
@@ -1229,7 +1228,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         }
 
         @Override
-        public PropertyType getPropertyType(FormEntity formEntity) {
+        public PropertyType getPropertyType() {
             return null;
         }
 

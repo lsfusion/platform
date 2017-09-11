@@ -431,11 +431,11 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         }
 
         @Override
-        public Long getCurrentUser() {
+        public Integer getCurrentUser() {
             final RemoteNavigator wThis = weakThis.get();
             if(wThis == null) // используется в мониторе процессов
                 return null;
-            return (Long) wThis.user.object;
+            return (Integer) wThis.user.object;
         }
 
         public LogInfo getLogInfo() {
@@ -446,11 +446,11 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         }
 
         @Override
-        public Long getCurrentComputer() {
+        public Integer getCurrentComputer() {
             final RemoteNavigator wThis = weakThis.get();
             if(wThis == null)
                 return null;
-            return (Long) wThis.computer.object;
+            return (Integer) wThis.computer.object;
         }
     }
 
@@ -575,7 +575,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
                         continue;
                     }
 
-                    Long formId = (Long) businessLogics.reflectionLM.navigatorElementCanonicalName.read(
+                    Integer formId = (Integer) businessLogics.reflectionLM.navigatorElementCanonicalName.read(
                             session,
                             new DataObject(canonicalName, businessLogics.reflectionLM.navigatorElementCanonicalNameClass));
 
@@ -598,13 +598,13 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
     public static void updateUserLastActivity(BusinessLogics businessLogics, ExecutionStack stack) {
         try {
 
-            Map<Long, UserActivity> userActivityMap;
+            Map<Integer, UserActivity> userActivityMap;
             userActivityMap = new HashMap<>(RemoteLoggerAspect.userActivityMap);
             RemoteLoggerAspect.userActivityMap.clear();
 
             try (DataSession session = ThreadLocalContext.getDbManager().createSession()) {
 
-                for (Map.Entry<Long, UserActivity> userActivity : userActivityMap.entrySet()) {
+                for (Map.Entry<Integer, UserActivity> userActivity : userActivityMap.entrySet()) {
                     DataObject customUserObject = new DataObject(userActivity.getKey(), businessLogics.authenticationLM.customUser);
                     businessLogics.authenticationLM.lastActivityCustomUser.change(new Timestamp(userActivity.getValue().time), session, customUserObject);
                     businessLogics.authenticationLM.lastComputerCustomUser.change(userActivity.getValue().computer, session, customUserObject);
@@ -621,10 +621,10 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
 
     public static void updatePingInfo(BusinessLogics businessLogics, ExecutionStack stack) {
         try {
-            Map<Long, Map<Long, List<Long>>> pingInfoMap = new HashMap<>(RemoteLoggerAspect.pingInfoMap);
+            Map<Integer, Map<Long, List<Long>>> pingInfoMap = new HashMap<>(RemoteLoggerAspect.pingInfoMap);
             RemoteLoggerAspect.pingInfoMap.clear();
             try (DataSession session = ThreadLocalContext.getDbManager().createSession()) {
-                for (Map.Entry<Long, Map<Long, List<Long>>> entry : pingInfoMap.entrySet()) {
+                for (Map.Entry<Integer, Map<Long, List<Long>>> entry : pingInfoMap.entrySet()) {
                     DataObject computerObject = new DataObject(entry.getKey(), businessLogics.authenticationLM.computer);
                     for (Map.Entry<Long, List<Long>> pingEntry : entry.getValue().entrySet()) {
                         DataObject dateFrom = new DataObject(new Timestamp(pingEntry.getKey()), DateTimeClass.instance);
@@ -649,11 +649,11 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
     }
 
     @Override
-    public Long getObject(CustomClass cls) {
+    public Integer getObject(CustomClass cls) {
         return getCacheObject(cls);
     }
 
-    public void objectChanged(ConcreteCustomClass cls, long objectID) {
+    public void objectChanged(ConcreteCustomClass cls, int objectID) {
         addCacheObject(cls, objectID);
     }
 
@@ -673,7 +673,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
                     }
                 }
                 if (object != null) {
-                    groupObject.addSeek(object, new DataObject(Long.decode(initialObjects.get(objectSID)), (ConcreteCustomClass)object.getCurrentClass()), true);
+                    groupObject.addSeek(object, new DataObject(Integer.decode(initialObjects.get(objectSID)), object.getCurrentClass()), true);
                 }
             }
         }
@@ -723,11 +723,11 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
 
     private ClassCache classCache;
 
-    Long getCacheObject(CustomClass cls) {
+    Integer getCacheObject(CustomClass cls) {
         return classCache.getObject(cls);
     }
 
-    public void addCacheObject(ConcreteCustomClass cls, long value) {
+    public void addCacheObject(ConcreteCustomClass cls, int value) {
         classCache.put(cls, value);
     }
 

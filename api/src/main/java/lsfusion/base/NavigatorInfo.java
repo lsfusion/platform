@@ -6,7 +6,7 @@ public class NavigatorInfo implements Serializable{
 
     public String login;
     public String password;
-    public long computer;
+    public int computer;
     public String remoteAddress;
     public String osVersion;
     public String processor;
@@ -21,7 +21,7 @@ public class NavigatorInfo implements Serializable{
     public String language;
     public String country;
     
-    public NavigatorInfo(String login, String password, long computer, String remoteAddress, String osVersion, String processor,
+    public NavigatorInfo(String login, String password, int computer, String remoteAddress, String osVersion, String processor,
                          String architecture, Integer cores, Integer physicalMemory, Integer totalMemory, Integer maximumMemory,
                          Integer freeMemory, String javaVersion, String screenSize, String language, String country) {
         this.login = login;

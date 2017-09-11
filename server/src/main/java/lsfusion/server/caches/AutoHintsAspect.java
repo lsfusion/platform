@@ -290,7 +290,7 @@ public class AutoHintsAspect {
                         ImRevMap<?, KeyExpr> mapKeys = result.getMapKeys();
                         if(whereComplexity > limitComplexity || exprComplexity > property.getExpr(mapKeys).getComplexity(false) * catchHint.getLimitComplexityGrowthCoeff()) { // вторая проверка как и использование limitComplexity а не prevComplexity (max с ним), чтобы заставить ее более агрессивно hint'ить, когда общая complexity зашкаливает (min не используется чтобы не hint'ить раньше времени)
                             long baseLimit = catchHint.getLimitHintIncrementStat();
-                            long maxCountUsed = catchHint.getMaxCountUsed(property);
+                            int maxCountUsed = catchHint.getMaxCountUsed(property);
                             // будем считать что рост сложности полиномиальный (квадратичный с учетом того что A x B, выполняется за условно AB операций), в то же время сложность агрегации условно линейный
                             long limit = BaseUtils.max(maxCountUsed / Settings.get().getStatDegree(), baseLimit) * complexity / limitComplexity;
                             if (changed.isFalse() || changed.getFullStatKeys(mapKeys.valuesSet(), StatType.HINTCHANGE).getRows().lessEquals(new Stat(limit))) { // changed.isFalse() временно

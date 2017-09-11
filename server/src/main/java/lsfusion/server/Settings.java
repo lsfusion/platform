@@ -8,7 +8,7 @@ import org.apache.commons.beanutils.PropertyUtils;
 import java.util.Map;
 
 @SuppressWarnings("UnusedDeclaration")
-public class Settings implements Cloneable {
+public class Settings {
 
     public int packOnCacheComplexity = 300000;
 
@@ -285,11 +285,7 @@ public class Settings implements Cloneable {
     }
     
     public static Settings get() {
-        return WrapperSettings.getSettings() != null ? WrapperSettings.getSettings() : ThreadLocalContext.getSettings();
-    }
-
-    public static Settings copy() throws CloneNotSupportedException {
-        return (Settings) get().clone();
+        return ThreadLocalContext.getSettings();
     }
 
     public int getInnerGroupExprs() {
@@ -1800,16 +1796,6 @@ public class Settings implements Cloneable {
 
     public void setMinClassDataIndexCount(int minClassDataIndexCount) {
         this.minClassDataIndexCount = minClassDataIndexCount;
-    }
-
-    private boolean explainNoAnalyze = false;
-
-    public boolean isExplainNoAnalyze() {
-        return explainNoAnalyze;
-    }
-
-    public void setExplainNoAnalyze(boolean explainNoAnalyze) {
-        this.explainNoAnalyze = explainNoAnalyze;
     }
 
     private boolean explainJavaStack = false;

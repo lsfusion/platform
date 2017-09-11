@@ -118,8 +118,8 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
     private ReflectionLogicsModule reflectionLM;
 
-    private long systemUserObject;
-    private long systemComputer;
+    private int systemUserObject;
+    private int systemComputer;
 
     private final ThreadLocal<SQLSession> threadLocalSql;
 
@@ -240,13 +240,13 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
     }
 
-    public long getSystemUserObject() {
+    public int getSystemUserObject() {
         return systemUserObject;
     }
 
     private SQLSessionUserProvider userProvider = new SQLSessionUserProvider() {
         @Override
-        public Long getCurrentUser() {
+        public Integer getCurrentUser() {
             return systemUserObject;
         }
 
@@ -256,7 +256,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
 
         @Override
-        public Long getCurrentComputer() {
+        public Integer getCurrentComputer() {
             return systemComputer;
         }
     };
@@ -295,7 +295,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         return sql;
     }
 
-    public long generateID() {
+    public int generateID() {
         try {
             return IDTable.instance.generateID(getIDSql(), IDTable.OBJECT);
         } catch (SQLException e) {
@@ -409,7 +409,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         return new DataObject(getComputer(SystemUtils.getLocalHostName(), stack), businessLogics.authenticationLM.computer);
     }
 
-    public Long getComputer(String strHostName, ExecutionStack stack) {
+    public Integer getComputer(String strHostName, ExecutionStack stack) {
         try {
             try (DataSession session = createSession(getSystemSql())) {
 
@@ -420,17 +420,17 @@ public class DBManager extends LogicsManager implements InitializingBean {
                         ).compare(new DataObject(strHostName), Compare.EQUALS)
                 );
 
-                Long result;
+                Integer result;
 
                 ImSet<ImMap<String, Object>> keys = q.execute(session).keys();
                 if (keys.size() == 0) {
                     DataObject addObject = session.addObject(businessLogics.authenticationLM.computer);
                     businessLogics.authenticationLM.hostnameComputer.change(strHostName, session, addObject);
 
-                    result = (Long) addObject.object;
+                    result = (Integer) addObject.object;
                     session.apply(businessLogics, stack);
                 } else {
-                    result = (Long) keys.iterator().next().get("key");
+                    result = (Integer) keys.iterator().next().get("key");
                 }
 
                 logger.debug("Begin user session " + strHostName + " " + result);
@@ -446,14 +446,14 @@ public class DBManager extends LogicsManager implements InitializingBean {
         return canonicalName == null ? NullValue.instance : new DataObject(getForm(canonicalName, stack), businessLogics.reflectionLM.form);
     }
 
-    public Long getForm(String canonicalName, ExecutionStack stack) {
+    public Integer getForm(String canonicalName, ExecutionStack stack) {
         try {
             try (DataSession session = createSession(getSystemSql())) {
-                Long result = (Long) businessLogics.reflectionLM.navigatorElementCanonicalName.read(session, new DataObject(canonicalName));
+                Integer result = (Integer) businessLogics.reflectionLM.navigatorElementCanonicalName.read(session, new DataObject(canonicalName));
                 if (result == null) {
                     DataObject addObject = session.addObject(businessLogics.reflectionLM.form);
                     businessLogics.reflectionLM.canonicalNameNavigatorElement.change(canonicalName, session, addObject);
-                    result = (Long) addObject.object;
+                    result = (Integer) addObject.object;
                     session.apply(businessLogics, stack);
                 }
                 return result;
@@ -469,7 +469,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         for (Table table : oldDBStructure.tables.keySet()) {
             if (newDBStructure.getTable(table.getName()) == null) {
                 ImRevMap<KeyField, KeyExpr> mapKeys = table.getMapKeys();
-                Expr expr = GroupExpr.create(MapFact.<KeyField, KeyExpr>EMPTY(), ValueExpr.COUNT, table.join(mapKeys).getWhere(), GroupType.SUM, MapFact.<KeyField, Expr>EMPTY());
+                Expr expr = GroupExpr.create(MapFact.<KeyField, KeyExpr>EMPTY(), new ValueExpr(new DataObject(1)), table.join(mapKeys).getWhere(), GroupType.SUM, MapFact.<KeyField, Expr>EMPTY());
                 Object result = Expr.readValue(sql, expr, OperationOwner.unknown); // таблица не пустая
                 if (result != null) {
                     if (!droppedTables.equals("")) {
@@ -825,7 +825,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
             }
 
             // обработка изменений с классами
-            MMap<String, ImMap<String, ImSet<Long>>> mToCopy = MapFact.mMap(AMap.<String, String, Long>addMergeMapSets()); // в какое свойство, из какого свойства - какой класс
+            MMap<String, ImMap<String, ImSet<Integer>>> mToCopy = MapFact.mMap(AMap.<String, String, Integer>addMergeMapSets()); // в какое свойство, из какого свойства - какой класс
             for (DBConcreteClass oldClass : oldDBStructure.concreteClasses) {
                 for (DBConcreteClass newClass : newDBStructure.concreteClasses) {
                     if (oldClass.sID.equals(newClass.sID)) {
@@ -835,7 +835,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
                     }
                 }
             }
-            ImMap<String, ImMap<String, ImSet<Long>>> toCopy = mToCopy.immutable();
+            ImMap<String, ImMap<String, ImSet<Integer>>> toCopy = mToCopy.immutable();
             for (int i = 0, size = toCopy.size(); i < size; i++) { // перенесем классы, которые сохранились но изменили поле
                 DBStoredProperty classProp = newDBStructure.getProperty(toCopy.getKey(i));
                 Table table = newDBStructure.getTable(classProp.tableName);
@@ -843,7 +843,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 QueryBuilder<KeyField, PropertyField> copyObjects = new QueryBuilder<>(table);
                 Expr keyExpr = copyObjects.getMapExprs().singleValue();
                 Where moveWhere = Where.FALSE;
-                ImMap<String, ImSet<Long>> copyFrom = toCopy.getValue(i);
+                ImMap<String, ImSet<Integer>> copyFrom = toCopy.getValue(i);
                 CaseExprInterface mExpr = Expr.newCases(true, copyFrom.size());
                 MSet<String> mCopyFromTables = SetFact.mSetMax(copyFrom.size());
                 for (int j = 0, sizeJ = copyFrom.size(); j < sizeJ; j++) {
@@ -853,7 +853,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
                     Expr oldExpr = oldTable.join(MapFact.singleton(oldTable.getTableKeys().single(), keyExpr)).getExpr(oldTable.findProperty(oldClassProp.getDBName()));
                     Where moveExprWhere = Where.FALSE;
-                    for (long prevID : copyFrom.getValue(j))
+                    for (int prevID : copyFrom.getValue(j))
                         moveExprWhere = moveExprWhere.or(oldExpr.compare(new DataObject(prevID, LM.baseClass.objectClass), Compare.EQUALS));
                     mExpr.add(moveExprWhere, oldExpr);
                     moveWhere = moveWhere.or(moveExprWhere);
@@ -864,7 +864,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 startLogger.info(localize(LocalizedString.createFormatted("{logics.info.objects.are.transferred.from.tables.to.table}", classProp.tableName, mCopyFromTables.immutable().toString())));
                 sql.modifyRecords(new ModifyQuery(table, copyObjects.getQuery(), OperationOwner.unknown, TableOwner.global));
             }
-            ImMap<String, ImSet<Long>> toClean = MapFact.mergeMaps(toCopy.values(), ASet.<String, Long>addMergeSet());
+            ImMap<String, ImSet<Integer>> toClean = MapFact.mergeMaps(toCopy.values(), ASet.<String, Integer>addMergeSet());
             for (int i = 0, size = toClean.size(); i < size; i++) { // удалим оставшиеся классы
                 DBStoredProperty classProp = oldDBStructure.getProperty(toClean.getKey(i));
                 Table table = oldDBStructure.getTable(classProp.tableName);
@@ -874,7 +874,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
                 PropertyField oldField = table.findProperty(classProp.getDBName());
                 Expr oldExpr = table.join(dropClassObjects.getMapExprs()).getExpr(oldField);
-                for (long prevID : toClean.getValue(i))
+                for (int prevID : toClean.getValue(i))
                     moveWhere = moveWhere.or(oldExpr.compare(new DataObject(prevID, LM.baseClass.objectClass), Compare.EQUALS));
                 dropClassObjects.addProperty(oldField, Expr.NULL);
                 dropClassObjects.and(moveWhere);
@@ -911,7 +911,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 }
 
             startLogger.info("Filling static objects ids");
-            if(!fillIDs(getChangesAfter(oldDBStructure.dbVersion, classSIDChanges), getChangesAfter(oldDBStructure.dbVersion, objectSIDChanges), oldDBStructure.version <= 25))
+            if(!fillIDs(getChangesAfter(oldDBStructure.dbVersion, classSIDChanges), getChangesAfter(oldDBStructure.dbVersion, objectSIDChanges)))
                 throw new RuntimeException("Error while filling static objects ids");
 
             if (oldDBStructure.version < 0) {
@@ -1098,9 +1098,9 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
     }
 
-    private boolean fillIDs(Map<String, String> sIDChanges, Map<String, String> objectSIDChanges, boolean migrateObjectClassID) throws SQLException, SQLHandledException {
+    private boolean fillIDs(Map<String, String> sIDChanges, Map<String, String> objectSIDChanges) throws SQLException, SQLHandledException {
         try (DataSession session = createSession(OperationOwner.unknown)) { // по сути вложенная транзакция
-            LM.baseClass.fillIDs(session, LM.staticCaption, LM.staticName, sIDChanges, objectSIDChanges, migrateObjectClassID);
+            LM.baseClass.fillIDs(session, LM.staticCaption, LM.staticName, sIDChanges, objectSIDChanges);
             return session.apply(businessLogics, getStack());
         }
     }
@@ -1837,21 +1837,21 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 query.and(query.getMapExprs().singleValue().isClass(businessLogics.authenticationLM.systemUser));
                 ImOrderSet<ImMap<String, Object>> rows = query.execute(session, MapFact.<Object, Boolean>EMPTYORDER(), 1).keyOrderSet();
                 if (rows.size() == 0) { // если нету добавим
-                    systemUserObject = (Long) session.addObject(businessLogics.authenticationLM.systemUser).object;
+                    systemUserObject = (Integer) session.addObject(businessLogics.authenticationLM.systemUser).object;
                     session.apply(businessLogics, getStack());
                 } else
-                    systemUserObject = (Long) rows.single().get("key");
+                    systemUserObject = (Integer) rows.single().get("key");
 
                 query = new QueryBuilder<>(SetFact.singleton("key"));
                 query.and(businessLogics.authenticationLM.hostnameComputer.getExpr(session.getModifier(), query.getMapExprs().singleValue()).compare(new DataObject("systemhost"), Compare.EQUALS));
                 rows = query.execute(session, MapFact.<Object, Boolean>EMPTYORDER(), 1).keyOrderSet();
                 if (rows.size() == 0) { // если нету добавим
                     DataObject computerObject = session.addObject(businessLogics.authenticationLM.computer);
-                    systemComputer = (Long) computerObject.object;
+                    systemComputer = (Integer) computerObject.object;
                     businessLogics.authenticationLM.hostnameComputer.change("systemhost", session, computerObject);
                     session.apply(businessLogics, getStack());
                 } else
-                    systemComputer = (Long) rows.single().get("key");
+                    systemComputer = (Integer) rows.single().get("key");
 
             }
         } catch (Exception e) {
@@ -1930,10 +1930,10 @@ public class DBManager extends LogicsManager implements InitializingBean {
             return sID + ' ' + sDataPropID;
         }
 
-        public Long ID = null; // только для старых
+        public Integer ID = null; // только для старых
         public ConcreteCustomClass customClass = null; // только для новых
 
-        private DBConcreteClass(String sID, String sDataPropID, Long ID) {
+        private DBConcreteClass(String sID, String sDataPropID, Integer ID) {
             this.sID = sID;
             this.sDataPropID = sDataPropID;
             this.ID = ID;
@@ -1960,7 +1960,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
             for (DBConcreteClass concreteClass : concreteClasses) {
                 outDB.writeUTF(concreteClass.sID);
                 outDB.writeUTF(concreteClass.sDataPropID);
-                outDB.writeLong(concreteClass.ID);
+                outDB.writeInt(concreteClass.ID);
             }
         }
 
@@ -2039,7 +2039,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
     private class NewDBStructure extends DBStructure<Field> {
 
         public <P extends PropertyInterface> NewDBStructure(DBVersion dbVersion) {
-            version = 26;
+            version = 24;
             this.dbVersion = dbVersion;
 
             tables.putAll(getIndicesMap());
@@ -2137,7 +2137,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
                 int prevConcreteNum = inputDB.readInt();
                 for(int i = 0; i < prevConcreteNum; i++)
-                    concreteClasses.add(new DBConcreteClass(inputDB.readUTF(), inputDB.readUTF(), version <= 24 ? inputDB.readInt() : inputDB.readLong()));
+                    concreteClasses.add(new DBConcreteClass(inputDB.readUTF(), inputDB.readUTF(), inputDB.readInt()));
             }
         }
     }

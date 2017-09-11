@@ -24,10 +24,7 @@ import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.ValueExpr;
 import lsfusion.server.data.expr.formula.FormulaExpr;
-import lsfusion.server.data.expr.query.GroupExpr;
-import lsfusion.server.data.expr.query.GroupType;
-import lsfusion.server.data.expr.query.PropStat;
-import lsfusion.server.data.expr.query.Stat;
+import lsfusion.server.data.expr.query.*;
 import lsfusion.server.data.query.CompileSource;
 import lsfusion.server.data.query.IQuery;
 import lsfusion.server.data.query.QueryBuilder;
@@ -83,11 +80,6 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
 
     public Value removeBig(MAddSet<Value> usedValues) {
         return null;
-    }
-
-    @Override
-    public String toDebugString() {
-        return count + " - " + struct;
     }
 
     public SessionTable(String name, ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, ClassWhere<KeyField> classes, ImMap<PropertyField, ClassWhere<Field>> propertyClasses, int count, TableStatKeys statKeys, ImMap<PropertyField, PropStat> statProps) {
@@ -477,7 +469,7 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
                         orFieldsClassWheres(classes, propertyClasses, SessionData.getQueryClasses(query))).
                             updateStatistics(session, count, proceeded, owner, opOwner).checkClasses(session, null, updateClasses, opOwner);
     }
-    public void updateAdded(SQLSession session, BaseClass baseClass, PropertyField field, Pair<Long, Long>[] shifts, OperationOwner owner, TableOwner tableOwner) throws SQLException, SQLHandledException {
+    public void updateAdded(SQLSession session, BaseClass baseClass, PropertyField field, Pair<Integer, Integer>[] shifts, OperationOwner owner, TableOwner tableOwner) throws SQLException, SQLHandledException {
         QueryBuilder<KeyField, PropertyField> query = new QueryBuilder<>(this);
         lsfusion.server.data.query.Join<PropertyField> join = join(query.getMapExprs());
 

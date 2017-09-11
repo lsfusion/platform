@@ -6,7 +6,6 @@ import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.interop.PropertyEditType;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.form.entity.filter.NotNullFilterEntity;
-import lsfusion.server.form.entity.filter.OrFilterEntity;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.SystemEventsLogicsModule;
 import lsfusion.server.logics.i18n.LocalizedString;
@@ -38,16 +37,14 @@ public class LogFormEntity<T extends BusinessLogics<T>> extends FormEntity<T> {
     ObjectEntity[] entities;
     ObjectEntity objSession;
     LCP<?> logProperty;
-    LCP<?> logDropProperty;
     LCP<?> property;
     public boolean lazyInit;
 
-    public LogFormEntity(String canonicalName, LocalizedString caption, LCP<?> property, LCP<?> logProperty, LCP<?> logDropProperty, SystemEventsLogicsModule systemEventsLM) {
+    public LogFormEntity(String canonicalName, LocalizedString caption, LCP<?> property, LCP<?> logProperty, SystemEventsLogicsModule systemEventsLM) {
         super(canonicalName, caption, systemEventsLM.getVersion());
 
         this.systemEventsLM = systemEventsLM;
         this.logProperty = logProperty;
-        this.logDropProperty = logDropProperty;
         this.property = property;
 
         Version version = getVersion();
@@ -122,7 +119,7 @@ public class LogFormEntity<T extends BusinessLogics<T>> extends FormEntity<T> {
             }
         }
 
-        addFixedFilter(new OrFilterEntity(new NotNullFilterEntity(addPropertyObject(logProperty, entities)), new NotNullFilterEntity(addPropertyObject(logDropProperty, entities))), version);
+        addFixedFilter(new NotNullFilterEntity(addPropertyObject(logProperty, entities)), version);
 
         setNFEditType(PropertyEditType.READONLY, version);
 

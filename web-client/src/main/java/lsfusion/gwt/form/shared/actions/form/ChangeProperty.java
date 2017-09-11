@@ -8,12 +8,12 @@ public class ChangeProperty extends FormRequestIndexCountingAction<ServerRespons
     public int propertyId;
     public GGroupObjectValue fullKey;
     public Serializable value;
-    public Long addedObjectId;
+    public Integer addedObjectId;
 
     public ChangeProperty() {
     }
 
-    public ChangeProperty(int propertyId, GGroupObjectValue fullKey, Serializable value, Long addedObjectId) {
+    public ChangeProperty(int propertyId, GGroupObjectValue fullKey, Serializable value, Integer addedObjectId) {
         this.propertyId = propertyId;
         this.fullKey = fullKey;
         this.value = value;

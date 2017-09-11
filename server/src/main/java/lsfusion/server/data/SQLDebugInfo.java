@@ -1,8 +1,5 @@
 package lsfusion.server.data;
 
-import lsfusion.base.ConcurrentWeakHashMap;
-import lsfusion.base.col.MapFact;
-import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.data.query.CompileOptions;
 import lsfusion.server.data.query.CompiledQuery;
@@ -12,7 +9,7 @@ import java.lang.ref.WeakReference;
 
 // этот класс нужен в том числе чтобы debugInfo получать только на запросах превысивших threshold
 public class SQLDebugInfo<K, V> {
-
+    
     public SQLDebugInfo(IQuery<K, V> query, CompileOptions<V> compileOptions) {
         this.wQuery = new WeakReference<>(query);
         this.compileOptions = compileOptions;
@@ -21,23 +18,24 @@ public class SQLDebugInfo<K, V> {
     private final WeakReference<IQuery<K, V>> wQuery;
     private final CompileOptions<V> compileOptions;
     private boolean alreadyExplained; // для материализации подзапросов чтобы несколько раз не выводить 
-
-    private static ConcurrentWeakHashMap<Thread, SQLDebugInfo> sqlDebugInfoMap = MapFact.getGlobalConcurrentWeakHashMap();
-
+    
+    private final static ThreadLocal<SQLDebugInfo> currentSQL = new ThreadLocal<>(); 
     public static SQLDebugInfo pushStack(SQLDebugInfo debugInfo) {
-        if (debugInfo != null) {
-            return sqlDebugInfoMap.put(Thread.currentThread(), debugInfo);
+        if(debugInfo != null) {
+            SQLDebugInfo result = currentSQL.get();
+            currentSQL.set(debugInfo);
+            return result;
         }
         return null;
     }
-
+    
     public static <K, V> void outCompileDebugInfo(String statementInfo) {
-        SQLDebugInfo<K, V> debugInfo = sqlDebugInfoMap.get(Thread.currentThread());
-        if (debugInfo != null) {
+        SQLDebugInfo<K, V> debugInfo = currentSQL.get();
+        if(debugInfo != null) {
             IQuery<K, V> query = debugInfo.wQuery.get();
-            if (query != null) {
+            if(query != null) {
                 ServerLoggers.assertLog(!debugInfo.compileOptions.needDebugInfo, "NO NEEDDEBUGINFO");
-                if (!debugInfo.alreadyExplained) {
+                if(!debugInfo.alreadyExplained) {
                     CompiledQuery<K, V> compiledQuery = query.compile(debugInfo.compileOptions.debug());
                     ServerLoggers.explainCompileLogger.info(statementInfo);
 //                    for(String line : compiledQuery.debugInfo.split("\n")) // assert что есть
@@ -49,29 +47,8 @@ public class SQLDebugInfo<K, V> {
                 ServerLoggers.assertLog(!debugInfo.compileOptions.needDebugInfo, "QUERY SHOULD EXIST");
         }
     }
-
     public static void popStack(SQLDebugInfo debugInfo, SQLDebugInfo prevDebugInfo) {
-        if (debugInfo != null) {
-            if (prevDebugInfo != null)
-                sqlDebugInfoMap.put(Thread.currentThread(), prevDebugInfo);
-            else
-                sqlDebugInfoMap.remove(Thread.currentThread());
-        }
-    }
-
-    public static ConcurrentWeakHashMap<Thread, SQLDebugInfo> getSqlDebugInfoMap() {
-        return sqlDebugInfoMap;
-    }
-
-    public String getDebugInfoForProcessMonitor() {
-        IQuery iQuery = wQuery.get();
-        StringBuilder debugInfo = new StringBuilder();
-        if (iQuery != null) {
-            ImSet<Value> contextValues = iQuery.getContextValues();
-            for (Value contextValue : contextValues) {
-                debugInfo.append(debugInfo.length() == 0 ? "" : "\n").append(contextValue.toDebugString());
-            }
-        }
-        return debugInfo.length() == 0 ? null : debugInfo.toString();
+        if(debugInfo != null)
+            currentSQL.set(prevDebugInfo);
     }
 }

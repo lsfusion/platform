@@ -28,7 +28,7 @@ public abstract class FileClass extends DataClass<byte[]> {
         this.storeName = storeName;
     }
 
-    public byte[] getDefaultValue() {
+    public Object getDefaultValue() {
         return new byte[0];
     }
 

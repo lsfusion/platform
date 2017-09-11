@@ -345,8 +345,8 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
                 return tableJoin.getExpr(value);
             }}));
 
-        final ValueExpr nullExpr = new ValueExpr(-2L, baseClass.unknown);
-        final ValueExpr unknownExpr = new ValueExpr(-1L, baseClass.unknown);
+        final ValueExpr nullExpr = new ValueExpr(-2, baseClass.unknown);
+        final ValueExpr unknownExpr = new ValueExpr(-1, baseClass.unknown);
         final ImMap<Field, ObjectValueClassSet> fieldClasses = MapFact.addExcl(objectKeyClasses, objectPropClasses);
         final IsClassType classType = inconsistent ? IsClassType.INCONSISTENT : IsClassType.CONSISTENT;
         GetKeyValue<Expr, Field, Expr> classExpr = new GetKeyValue<Expr, Field, Expr>() {
@@ -359,11 +359,11 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
             public ImMap<Field, ConcreteClass> getMapValue(ImMap<Field, Object> value) {
                 return value.filterFnValues(new SFunctionSet<Object>() {
                     public boolean contains(Object element) {
-                        return ((Long) element) != -2;
+                        return ((Integer) element) != -2;
                     }
                 }).mapValues(new GetKeyValue<ConcreteClass, Field, Object>() {
                     public ConcreteClass getMapValue(Field key, Object id) {
-                        return baseClass.findConcreteClassID((Long)id, -1);
+                        return baseClass.findConcreteClassID((Integer)id, -1);
                     }
                 });
             }
