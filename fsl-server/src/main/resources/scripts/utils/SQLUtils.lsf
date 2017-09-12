@@ -176,7 +176,7 @@ isDeadlock 'Deadlock' (VARSTRING[10] process) = NOT deadlock(process) AND proces
 sumPlusOneBlocking 'Кол-во блокирующих процессов' (process) = GROUP SUM 1 IF isBlockingProcess(VARSTRING[10] parent, VARSTRING[10] child) BY parent;
 sumBlocking 'Глубина блокировки' (VARSTRING[10] process) = sumPlusOneBlocking(process) - 1;
 
-activeSQLProcess (VARSTRING[10] i) = querySQLProcess(i) AND isActiveSQLProcess(i);
+activeSQLProcess (VARSTRING[10] i) = querySQLProcess(i) AND (isActiveSQLProcess(i) OR inTransactionSQLProcess(i));
 activeJavaBlockingProcess (VARSTRING[10] i) = statusJavaProcess(i) == 'RUNNABLE' AND hasStackTraceJavaProcess(i);
 activeJavaProcess (VARSTRING[10] i) = activeJavaBlockingProcess(i)
                                    AND NOT (startsWith(stackTraceJavaProcess(i), 'java.net.DualStackPlainSocketImpl') == 1)
