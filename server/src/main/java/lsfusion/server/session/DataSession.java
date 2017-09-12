@@ -1119,6 +1119,13 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                     updateSessionEventChangedOld(old);
             }
     }
+    public <P extends PropertyInterface> void updateSessionNotChangedEvents(ImSet<? extends CalcProperty> changes) throws SQLException, SQLHandledException {
+        if(!isInTransaction())
+            for(OldProperty<PropertyInterface> old : getSessionEventOldDepends()) {
+                if (!sessionEventChangedOld.contains(old) && !sessionEventNotChangedOld.contains(old) && CalcProperty.depends(old.property, changes)) // если влияет на old из сессионного event'а и еще не читалось и не помечено как notChanged
+                    updateSessionNotChangedEvents(old, false);
+            }
+    }
 
     // вообще если какое-то свойство попало в sessionEventNotChangedOld, а потом изменился источник одного из его зависимых свойств, то в следствие updateSessionEvents "обновленное" изменение попадет в sessionEventChangedOld и "перекроет" изменение в notChanged (по сути последнее никогда использоваться не будет)
     // но есть проблема при изменении источника news, которое в depends не попадает и верхний инвариант будет нарушен
@@ -2103,7 +2110,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
         dropFormCaches();
 
-        updateSessionEvents(getChangedProps());
+        updateSessionNotChangedEvents(getChangedProps()); // помечаем все свойства как not changed чтобы предотвратить выполнение новых событий
     }
 
     // должен быть thread-safe
