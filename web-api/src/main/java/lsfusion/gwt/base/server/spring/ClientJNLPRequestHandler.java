@@ -37,7 +37,7 @@ public class ClientJNLPRequestHandler implements HttpRequestHandler {
             StringBuffer requestURL = request.getRequestURL();
             String codebaseUrl = requestURL.substring(0, requestURL.lastIndexOf("/"));
             String queryString = request.getQueryString();
-            String jnlpUrl = "client.jnlp" + (queryString.isEmpty() ? "" : ("?" + queryString));
+            String jnlpUrl = "client.jnlp" + (queryString == null || queryString.isEmpty() ? "" : ("?" + queryString));
             VMOptions clientVMOptions;
             try {
                 clientVMOptions = blProvider.getLogics().getClientVMOptions();
