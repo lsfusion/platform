@@ -59,7 +59,7 @@ public class ColumnsListBoxDropController extends AbstractDropController {
         ColumnsListBox from = (ColumnsListBox) context.draggable.getParent().getParent();
         int i = 1;
         for (Widget widget : context.selectedWidgets) {
-            if (widget.getParent().getParent() == from) {
+            if (widget != null && widget.getParent() != null && widget.getParent().getParent() == from) {
                 mouseListBox.add(targetRow + i, ((PropertyLabel) widget).getPropertyItem());
                 i++;
             }

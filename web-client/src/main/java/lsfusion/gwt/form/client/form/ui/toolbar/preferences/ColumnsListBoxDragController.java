@@ -69,7 +69,7 @@ public class ColumnsListBoxDragController extends PickupDragController {
         ColumnsListBox currentMouseListBox = (ColumnsListBox) draggable.getParent().getParent();
         ArrayList<Widget> otherWidgets = new ArrayList<>();
         for (Widget widget : context.selectedWidgets) {
-            if (widget.getParent().getParent() != currentMouseListBox) {
+            if (widget != null && widget.getParent() != null && widget.getParent().getParent() != currentMouseListBox) {
                 otherWidgets.add(widget);
             }
         }
@@ -102,7 +102,7 @@ public class ColumnsListBoxDragController extends PickupDragController {
     public ArrayList<Widget> getSelectedWidgets(ColumnsListBox mouseListBox) {
         ArrayList<Widget> widgetList = new ArrayList<>();
         for (Widget widget : context.selectedWidgets) {
-            if (widget.getParent().getParent() == mouseListBox) {
+            if (widget != null && widget.getParent() != null && widget.getParent().getParent() == mouseListBox) {
                 widgetList.add(widget);
             }
         }
