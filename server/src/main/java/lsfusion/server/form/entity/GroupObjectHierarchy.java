@@ -5,12 +5,6 @@ import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 
 import java.util.*;
 
-/**
- * User: DAle
- * Date: 20.08.2010
- * Time: 16:45:39
- */
-
 public class GroupObjectHierarchy {
     public static final String rootNodeName = "__ROOT__";
 

@@ -19,12 +19,6 @@ import java.util.Arrays;
 import static lsfusion.server.logics.PropertyUtils.mapCalcImplement;
 import static lsfusion.server.logics.PropertyUtils.readCalcImplements;
 
-/**
- * User: DAle
- * Date: 29.04.11
- * Time: 15:43
- */
-
 /// Common usage:
 /// LP<?> property - logging property
 /// LP<?> logProperty = addLProp(property);

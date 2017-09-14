@@ -9,12 +9,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 
-/**
- * User: DAle
- * Date: 04.09.12
- * Time: 15:19
- */
-
 public class ScriptParser {
     public enum State {PRE, INIT, GROUP, CLASS, PROP, TABLE, INDEX, GENMETA}
 

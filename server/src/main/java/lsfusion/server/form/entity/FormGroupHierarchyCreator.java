@@ -8,12 +8,6 @@ import lsfusion.server.form.entity.filter.RegularFilterGroupEntity;
 
 import java.util.*;
 
-/**
- * User: DAle
- * Date: 17.09.2010
- * Time: 14:42:51
- */
-
 public class FormGroupHierarchyCreator {
     private FormEntity<?> form;
 

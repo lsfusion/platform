@@ -7,11 +7,6 @@ import lsfusion.server.classes.sets.ResolveClassSet;
 import java.util.Arrays;
 import java.util.List;
 
-/**
- * Created by DAle on 03.05.14.
- * 
- */
-
 public final class PropertyCanonicalNameUtils {
     static public final String signatureLBracket = "[";
     static public final String signatureRBracket = "]";

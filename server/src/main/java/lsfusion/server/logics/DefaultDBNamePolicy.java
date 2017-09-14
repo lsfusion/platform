@@ -4,11 +4,6 @@ import lsfusion.server.classes.sets.ResolveClassSet;
 
 import java.util.List;
 
-/**
- * Created by DAle on 20.03.14.
- * 
- */
-
 public class DefaultDBNamePolicy implements PropertyDBNamePolicy {
     private int MAX_LENGTH;
     

@@ -1,15 +1,8 @@
 package lsfusion.server.form.view.report;
 
-/**
- * User: DAle
- * Date: 11.08.2010
- * Time: 11:17:15
- */
-
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.design.*;
 import net.sf.jasperreports.engine.type.StretchTypeEnum;
-
 
 class ReportUtils {
     public static JRDesignParameter createParameter(String name, Class cls) {

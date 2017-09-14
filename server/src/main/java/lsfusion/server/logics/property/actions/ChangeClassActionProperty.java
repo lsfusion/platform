@@ -31,11 +31,6 @@ import java.sql.SQLException;
 
 import static lsfusion.server.logics.property.derived.DerivedProperty.createChangeClassAction;
 
-/**
-    * User: DAle
-    * Date: 03.04.12
-    */
-
 // с открытым 2-м интерфейсом класса уже есть в SystemActionProperty
 public class ChangeClassActionProperty<T extends PropertyInterface, I extends PropertyInterface> extends ExtendContextActionProperty<I> {
 

@@ -2,12 +2,6 @@ package lsfusion.server.logics.scripted;
 
 import org.antlr.runtime.Parser;
 
-/**
- * User: DAle
- * Date: 29.08.12
- * Time: 15:21
- */
-
 public class ParserInfo {
     private Parser parser;
     // Информация об объявлении метакода (META metaCode), который мы сейчас парсим   

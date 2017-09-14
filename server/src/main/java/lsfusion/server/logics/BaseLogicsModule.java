@@ -47,12 +47,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 
-/**
- * User: DAle
- * Date: 16.05.11
- * Time: 17:52
- */
-
 public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogicsModule {
     // classes
     // classes

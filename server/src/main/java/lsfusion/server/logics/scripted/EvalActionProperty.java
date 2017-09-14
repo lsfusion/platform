@@ -17,12 +17,6 @@ import org.antlr.runtime.RecognitionException;
 
 import java.sql.SQLException;
 
-/**
- * User: DAle
- * Date: 15.11.12
- * Time: 17:11
- */
-
 public class EvalActionProperty<P extends PropertyInterface> extends SystemExplicitActionProperty {
     private final LCP<P> source;
     private final ImMap<P, ClassPropertyInterface> mapSource;

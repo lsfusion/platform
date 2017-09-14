@@ -34,12 +34,6 @@ import java.util.*;
 
 import static lsfusion.server.form.entity.GroupObjectHierarchy.ReportNode;
 
-/**
- * User: DAle
- * Date: 12.08.2010
- * Time: 10:50:30
- */
-
 public class ReportSourceGenerator<PropertyDraw extends PropertyReaderInstance, GroupObject, PropertyObject, CalcPropertyObject extends Order, Order, Obj extends Order, PropertyReaderInstance>  {
     // Иерархия генерируемого отчета. Отличается от полной иерархии при отчете для одной таблицы
     private GroupObjectHierarchy.ReportHierarchy hierarchy;

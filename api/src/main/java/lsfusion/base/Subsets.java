@@ -6,12 +6,6 @@ import lsfusion.base.col.interfaces.mutable.MSet;
 
 import java.util.Iterator;
 
-/**
- * User: DAle
- * Date: 18.11.2010
- * Time: 14:09:19
- */
-
 public class Subsets<E> implements Iterable<ImSet<E>> {
     private ImSet<E> objects;
     

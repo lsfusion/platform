@@ -8,12 +8,6 @@ import net.sf.jasperreports.engine.design.JRDesignField;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * User: DAle
- * Date: 16.09.2010
- * Time: 15:12:53
- */
-
 public class ReportDependentDataSource implements JRDataSource {
     private List<Object> values;
     private final List<ReportDependentDataSource> childSources;

@@ -8,12 +8,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-/**
- * User: DAle
- * Date: 17.12.10
- * Time: 14:54
- */
-
 public class PlainDataTable<T> implements Iterable<PlainDataTable.Row> {
     private final ImOrderSet<T> fields; 
     private List<List<Object>> data;

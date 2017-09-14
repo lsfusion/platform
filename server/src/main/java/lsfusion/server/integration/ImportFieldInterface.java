@@ -5,12 +5,6 @@ import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.DataObject;
 
-/**
- * User: DAle
- * Date: 03.02.11
- * Time: 18:25
- */
-
 public interface ImportFieldInterface {
     DataObject getDataObject(ImportTable.Row row);
 

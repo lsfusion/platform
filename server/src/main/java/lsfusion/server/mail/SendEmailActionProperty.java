@@ -18,10 +18,12 @@ import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.EmailLogicsModule;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.i18n.LocalizedString;
-import lsfusion.server.logics.property.*;
+import lsfusion.server.logics.property.CalcPropertyInterfaceImplement;
+import lsfusion.server.logics.property.ClassPropertyInterface;
+import lsfusion.server.logics.property.ExecutionContext;
+import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.logics.property.actions.SystemExplicitActionProperty;
 import lsfusion.server.logics.scripted.ScriptingErrorLog;
-import lsfusion.server.remote.FormReportManager;
 import lsfusion.server.remote.InteractiveFormReportManager;
 import net.sf.jasperreports.engine.JRAbstractExporter;
 import net.sf.jasperreports.engine.JRException;
@@ -48,12 +50,6 @@ import static lsfusion.base.BaseUtils.nullTrim;
 import static lsfusion.base.BaseUtils.rtrim;
 import static lsfusion.server.context.ThreadLocalContext.localize;
 import static org.apache.commons.lang3.StringUtils.trimToNull;
-
-/**
- * User: DAle
- * Date: 03.01.11
- * Time: 11:53
- */
 
 public class SendEmailActionProperty extends SystemExplicitActionProperty {
     private final static Logger logger = ServerLoggers.mailLogger;

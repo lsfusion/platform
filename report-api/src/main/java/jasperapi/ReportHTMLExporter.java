@@ -8,12 +8,6 @@ import net.sf.jasperreports.engine.util.JRStyledText;
 
 import java.io.IOException;
 
-/**
- * User: DAle
- * Date: 12.01.11
- * Time: 16:34
- */
-
 public class ReportHTMLExporter extends JRHtmlExporter {
     // copy-paste from JRHTMLExporter
     // todo: При обновлении версии JasperReports возможно понадобится merge c изменениями в JRHTMLExporter.

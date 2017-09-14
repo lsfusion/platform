@@ -3,16 +3,16 @@ package lsfusion.server.logics;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.implementations.ArIndexedSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.server.classes.*;
-import lsfusion.server.classes.sets.*;
+import lsfusion.server.classes.ConcreteCustomClass;
+import lsfusion.server.classes.CustomClass;
+import lsfusion.server.classes.DataClass;
+import lsfusion.server.classes.sets.ResolveClassSet;
+import lsfusion.server.classes.sets.ResolveConcatenateClassSet;
+import lsfusion.server.classes.sets.ResolveOrObjectClassSet;
+import lsfusion.server.classes.sets.ResolveUpClassSet;
 
 import java.util.ArrayList;
 import java.util.List;
-
-/**
- * Created by DAle on 02.05.14.
- * 
- */
 
 public class PropertyCanonicalNameParser extends AbstractPropertyNameParser {
     static public class CanonicalNameClassFinder implements ClassFinder {

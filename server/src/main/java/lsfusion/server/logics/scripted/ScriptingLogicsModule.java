@@ -93,12 +93,6 @@ import static lsfusion.base.BaseUtils.*;
 import static lsfusion.server.logics.PropertyUtils.*;
 import static lsfusion.server.logics.scripted.AlignmentUtils.*;
 
-/**
- * User: DAle
- * Date: 03.06.11
- * Time: 14:54
- */
-
 public class ScriptingLogicsModule extends LogicsModule {
 
     private static final Logger scriptLogger = ServerLoggers.scriptLogger;

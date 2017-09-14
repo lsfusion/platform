@@ -13,12 +13,6 @@ import java.util.List;
 
 import static java.lang.String.format;
 
-/**
- * User: DAle
- * Date: 17.10.11
- * Time: 17:43
- */
-
 public class ScriptingErrorLog {
     public static class SemanticErrorException extends RecognitionException {
         private String msg;
