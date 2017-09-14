@@ -95,7 +95,7 @@ public class ObjectType extends AbstractType<Long> {
     public int getMinimumWidth() { return getPreferredWidth(); }
 
     public boolean fillReportDrawField(ReportDrawField reportField) {
-        reportField.valueClass = Integer.class;
+        reportField.valueClass = Long.class;
         reportField.alignment = HorizontalAlignEnum.RIGHT.getValue();
         return true;
     }
