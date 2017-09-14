@@ -593,10 +593,13 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
                 }
                 for (byte[] state : filters) {
                     FilterInstance filter = FilterInstance.deserialize(new DataInputStream(new ByteArrayInputStream(state)), form);
-                    filter.getApplyObject().addUserFilter(filter);
-                    if (logger.isTraceEnabled()) {
-                        logger.trace(String.format("set user filter: [CLASS: %1$s]", filter.getClass()));
-                        logger.trace(String.format("apply object: %s", filter.getApplyObject().getID()));
+                    GroupObjectInstance applyObject = filter.getApplyObject();
+                    if(applyObject != null) {
+                        applyObject.addUserFilter(filter);
+                        if (logger.isTraceEnabled()) {
+                            logger.trace(String.format("set user filter: [CLASS: %1$s]", filter.getClass()));
+                            logger.trace(String.format("apply object: %s", filter.getApplyObject().getID()));
+                        }
                     }
                 }
             }
