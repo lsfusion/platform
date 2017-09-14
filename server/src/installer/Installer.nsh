@@ -16,7 +16,7 @@ SetCompressor lzma
 !define SERVICES_SECTION_NAME "Create services"
 !define PG_SECTION_NAME "PostgreSQL ${PG_VERSION}"
 !define JAVA_SECTION_NAME "JDK ${JDK_VERSION}"
-!define TOMCAT_SECTION_NAME "Apache Tomcat 7.0.47"
+!define TOMCAT_SECTION_NAME "Apache Tomcat ${TOMCAT_FULL_VERSION}"
 !define IDEA_SECTION_NAME "IntelliJ IDEA Community Edition ${IDEA_VERSION} with lsFusion plugin"
 
 !define CLIENT_JAR "lsfusion-client-${VERSION}.jar"
@@ -208,11 +208,11 @@ Function .onInit
     StrCpy $pgDbName "lsfusion"
     StrCpy $pgServiceName "postgresql-${PG_VERSION}"
 
-    StrCpy $tomcatDir "$ProgramFiles${ARCH}\apache-tomcat-7.0.47"
+    StrCpy $tomcatDir "$ProgramFiles${ARCH}\apache-tomcat-${TOMCAT_FULL_VERSION}"
     StrCpy $tomcatShutdownPort "8005"
     StrCpy $tomcatHttpPort "8080"
     StrCpy $tomcatAjpPort "8009"
-    StrCpy $tomcatServiceName "Tomcat7"
+    StrCpy $tomcatServiceName "Tomcat${TOMCAT_MAJOR_VERSION}"
 
     StrCpy $platformServerPort "7652"
     StrCpy $platformServiceName "lsfusion-server"
@@ -229,7 +229,7 @@ Function .onInit
 
     ; Check if Tomcat is installed
     EnumRegKey $1 HKLM "SOFTWARE\Apache Software Foundation\Tomcat\" "0"
-    ${if} $1 == "7.0"
+    ${if} $1 == "${TOMCAT_VERSION}"
         !insertmacro DisableSection ${SecTomcat}
     ${else}
         StrCpy $tomcatVersion ""
@@ -408,7 +408,7 @@ Function createServices
     ${if} ${SectionIsSelected} ${SecTomcat}
         ClearErrors
         DetailPrint "Installing Tomcat service"
-        nsExec::ExecToStack '"$tomcatDir\bin\tomcat7.exe" //IS//$tomcatServiceName --DisplayName "Apache Tomcat 7.0.47 $tomcatServiceName" --Description "Apache Tomcat 7 Server - http://tomcat.apache.org/" --LogPath "$tomcatDir\logs" --Install "$tomcatDir\bin\tomcat7.exe" --Jvm "$jvmDll" --StartPath "$tomcatDir" --StopPath "$tomcatDir"'
+        nsExec::ExecToStack '"$tomcatDir\bin\tomcat${TOMCAT_MAJOR_VERSION}.exe" //IS//$tomcatServiceName --DisplayName "Apache Tomcat ${TOMCAT_FULL_VERSION} $tomcatServiceName" --Description "Apache Tomcat ${TOMCAT_MAJOR_VERSION} Server - http://tomcat.apache.org/" --LogPath "$tomcatDir\logs" --Install "$tomcatDir\bin\tomcat${TOMCAT_MAJOR_VERSION}.exe" --Jvm "$jvmDll" --StartPath "$tomcatDir" --StopPath "$tomcatDir"'
         Pop $0
         Pop $1
         ${ifNot} $0 == "0"
@@ -419,13 +419,13 @@ Function createServices
     
             WriteRegStr HKLM "${REGKEY}" "tomcatServiceName" "$tomcatServiceName"
     
-            nsExec::ExecToLog '"$tomcatDir\bin\tomcat7.exe" //US//$tomcatServiceName --Startup auto'
-            nsExec::ExecToLog '"$tomcatDir\bin\tomcat7.exe" //US//$tomcatServiceName --Classpath "$tomcatDir\bin\bootstrap.jar;$tomcatDir\bin\tomcat-juli.jar" --StartClass org.apache.catalina.startup.Bootstrap --StopClass org.apache.catalina.startup.Bootstrap --StartParams start --StopParams stop --StartMode jvm --StopMode jvm'
-            nsExec::ExecToLog '"$tomcatDir\bin\tomcat7.exe" //US//$tomcatServiceName --JvmOptions "-Dcatalina.home=$tomcatDir#-Dcatalina.base=$tomcatDir#-Djava.endorsed.dirs=$tomcatDir\endorsed#-Djava.io.tmpdir=$tomcatDir\temp#-Djava.util.logging.manager=org.apache.juli.ClassLoaderLogManager#-Djava.util.logging.config.file=$tomcatDir\conf\logging.properties"'
-            nsExec::ExecToLog '"$tomcatDir\bin\tomcat7.exe" //US//$tomcatServiceName --StdOutput auto --StdError auto'
+            nsExec::ExecToLog '"$tomcatDir\bin\tomcat${TOMCAT_MAJOR_VERSION}.exe" //US//$tomcatServiceName --Startup auto'
+            nsExec::ExecToLog '"$tomcatDir\bin\tomcat${TOMCAT_MAJOR_VERSION}.exe" //US//$tomcatServiceName --Classpath "$tomcatDir\bin\bootstrap.jar;$tomcatDir\bin\tomcat-juli.jar" --StartClass org.apache.catalina.startup.Bootstrap --StopClass org.apache.catalina.startup.Bootstrap --StartParams start --StopParams stop --StartMode jvm --StopMode jvm'
+            nsExec::ExecToLog '"$tomcatDir\bin\tomcat${TOMCAT_MAJOR_VERSION}.exe" //US//$tomcatServiceName --JvmOptions "-Dcatalina.home=$tomcatDir#-Dcatalina.base=$tomcatDir#-Djava.endorsed.dirs=$tomcatDir\endorsed#-Djava.io.tmpdir=$tomcatDir\temp#-Djava.util.logging.manager=org.apache.juli.ClassLoaderLogManager#-Djava.util.logging.config.file=$tomcatDir\conf\logging.properties"'
+            nsExec::ExecToLog '"$tomcatDir\bin\tomcat${TOMCAT_MAJOR_VERSION}.exe" //US//$tomcatServiceName --StdOutput auto --StdError auto'
 
             DetailPrint "Starting Tomcat service"
-            nsExec::ExecToLog '"$tomcatDir\bin\tomcat7.exe" //ES//$tomcatServiceName'
+            nsExec::ExecToLog '"$tomcatDir\bin\tomcat${TOMCAT_MAJOR_VERSION}.exe" //ES//$tomcatServiceName'
         ${endIf}
     ${endIf}
 

@@ -7,7 +7,7 @@
 !define IDEA_INSTALLER "ideaIC-${IDEA_VERSION}.exe"
 !define IDEA_PLUGIN "lsfusion-idea-plugin.zip"
 !define IDEA_EXE "idea64.exe"
-!define TOMCAT_ARCHIVE "apache-tomcat-7.0.47-windows-x64.zip"
+!define TOMCAT_ARCHIVE "apache-tomcat-${TOMCAT_FULL_VERSION}-windows-x64.zip"
 !define ANT_ARCHIVE "apache-ant-1.9.2.zip"
 
 !ifndef OUT_FILE
