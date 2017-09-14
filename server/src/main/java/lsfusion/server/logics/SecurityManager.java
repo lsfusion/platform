@@ -386,14 +386,6 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
         return "unipass".equals(password.trim()) && Settings.get().getUseUniPass();
     }
 
-    private Map<String, Property> getCanonicalNamesMap() {
-        Map<String, Property> result = new HashMap<>();
-        for (LP<?, ?> lp : businessLogics.getNamedProperties()) {
-            result.put(lp.property.getCanonicalName(), lp.property);
-        }
-        return result;
-    }
-
     private void applyDefaultFormDefinedPolicy(User user, DataSession session) {
         SecurityPolicy policy = new SecurityPolicy(-1);
         try {
@@ -493,9 +485,8 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
             qp.addProperty("fullForbidChange", securityLM.fullForbidChangeUserProperty.getExpr(session.getModifier(), qp.getMapExprs().get("userId"), qp.getMapExprs().get("propertyCN")));
 
             ImCol<ImMap<String, Object>> propValues = qp.execute(session).values();
-            Map<String, Property> propertyCanonicalNames = getCanonicalNamesMap();
             for (ImMap<String, Object> valueMap : propValues) {
-                Property prop = propertyCanonicalNames.get(((String) valueMap.get("cn")).trim());
+                LP<?, ?> prop = businessLogics.findProperty(((String) valueMap.get("cn")).trim());
                 if(valueMap.get("fullForbidView") != null)
                     policy.property.view.deny(prop);
                 if(valueMap.get("fullForbidChange") != null)

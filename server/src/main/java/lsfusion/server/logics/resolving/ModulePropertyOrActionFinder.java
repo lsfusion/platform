@@ -19,7 +19,7 @@ public abstract class ModulePropertyOrActionFinder<T extends LP<?, ?>> implement
         return result;
     }
     
-    protected abstract List<T> getSourceList(LogicsModule module, String name);
+    protected abstract Iterable<T> getSourceList(LogicsModule module, String name);
     
     protected abstract boolean accepted(LogicsModule module, T property, List<ResolveClassSet> signature);
 }

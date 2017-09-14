@@ -153,6 +153,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         this.BL = BL;
         this.propertyDBNamePolicy = propertyDBNamePolicy;
         namedModuleProperties = NFFact.simpleMap(namedModuleProperties);
+        namedModuleActions = NFFact.simpleMap(namedModuleActions);
     }
 
     @IdentityLazy

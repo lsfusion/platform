@@ -1,6 +1,7 @@
 package lsfusion.server.logics;
 
 import com.google.common.base.Throwables;
+import com.google.common.collect.Iterables;
 import lsfusion.base.*;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
@@ -110,7 +111,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 
 import static lsfusion.base.BaseUtils.*;
-import static lsfusion.server.logics.LogicsModule.*;
+import static lsfusion.server.logics.LogicsModule.getResolveList;
 
 public abstract class BusinessLogics<T extends BusinessLogics<T>> extends LifecycleAdapter implements InitializingBean {
     protected final static Logger logger = ServerLoggers.systemLogger;
@@ -1014,23 +1015,21 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         return getOrderProperties().getSet();
     }
 
-    public List<LP<?, ?>> getNamedProperties() {
-        List<LP<?, ?>> namedProperties = new ArrayList<>();
+    public Iterable<LCP<?>> getNamedProperties() {
+        List<Iterable<LCP<?>>> namedProperties = new ArrayList<>();
         for (LogicsModule module : logicModules) {
-            namedProperties.addAll(module.getNamedProperties());
+            namedProperties.add(module.getNamedProperties());
         }
-        return namedProperties;
+        return Iterables.concat(namedProperties);
     }
-    
+
     @IdentityLazy
     public ImOrderSet<CalcProperty> getAutoSetProperties() {
         MOrderExclSet<CalcProperty> mResult = SetFact.mOrderExclSet();
-        for (LP lp : getNamedProperties())
-            if (lp instanceof LCP) {
-                CalcProperty property = ((LCP<?>) lp).property;
-                if (property.autoset)
-                    mResult.exclAdd(property);
-            }
+        for (LCP<?> lp : getNamedProperties()) {
+            if (lp.property.autoset)
+                mResult.exclAdd(lp.property);
+        }
         return mResult.immutableOrder();                    
     }
 
@@ -1079,21 +1078,20 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         }
     }
 
-    public Map<String, List<NamedDecl>> getNamedModuleProperties() {
+    public Map<String, List<NamedDecl>> getNamedPropertiesWithDeclInfo() {
         Map<String, List<NamedDecl>> result = new HashMap<>();
         for (Map.Entry<String, List<LogicsModule>> namespaceToModule : namespaceToModules.entrySet()) {
             String namespace = namespaceToModule.getKey();
-            for(LogicsModule module : namespaceToModule.getValue()) {
-                for(Map.Entry<String, List<LP<?, ?>>> namedModuleProperty : module.getNamedModuleProperties().entrySet()) {
-                    String propertyName = namedModuleProperty.getKey();
+            for (LogicsModule module : namespaceToModule.getValue()) {
+                for (LP<?, ?> property : module.getNamedPropertiesAndActions()) {
+                    String propertyName = property.property.getName();
+                    
+                    if (result.get(propertyName) == null) {
+                        result.put(propertyName, new ArrayList<NamedDecl>());
+                    }
                     List<NamedDecl> resultProps = result.get(propertyName);
-                    if(resultProps == null) {
-                        resultProps = new ArrayList<>();
-                        result.put(propertyName, resultProps);
-                    }
-                    for(LP prop : namedModuleProperty.getValue()) {
-                        resultProps.add(new NamedDecl(prop, namespace, module.isDefaultNamespace(), module.getParamClasses(prop), module.getVersion()));
-                    }
+                    
+                    resultProps.add(new NamedDecl(property, namespace, module.isDefaultNamespace(), module.getParamClasses(property), module.getVersion()));
                 }
             }
         }
@@ -1151,7 +1149,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
 //        }).groupValues();
 //        System.out.println(fm);
         if(!disableImplicitCases) {
-            Map<String, List<NamedDecl>> namedProps = getNamedModuleProperties();
+            Map<String, List<NamedDecl>> namedProps = getNamedPropertiesWithDeclInfo();
             for (List<NamedDecl> props : namedProps.values()) {
                 // бежим по всем парам смотрим подходят друг другу или нет
                 for (NamedDecl absDecl : props) {

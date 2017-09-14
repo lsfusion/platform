@@ -8,8 +8,8 @@ import java.util.List;
 
 public class ModuleSoftLPFinder extends ModulePropertyOrActionFinder<LP<?, ?>> {
     @Override
-    protected List<LP<?, ?>> getSourceList(LogicsModule module, String name) {
-        return module.getAllLPByName(name);
+    protected Iterable<LP<?, ?>> getSourceList(LogicsModule module, String name) {
+        return module.getNamedPropertiesAndActions(name);
     }
 
     @Override

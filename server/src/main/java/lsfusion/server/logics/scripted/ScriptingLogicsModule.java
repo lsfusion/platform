@@ -1522,7 +1522,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         MSet<SessionDataProperty> mLocals = SetFact.mSet();
         for (LP<?, ?> localProp : localProps) {
             List<ResolveClassSet> localSignature = propClasses.remove(localProp);
-            removeModuleLP(localProp);
+            removeModuleProperty((LCP) localProp);
             
             if(mDebugLocals != null)
                 mDebugLocals.exclAdd(new Pair<LP, List<ResolveClassSet>>(localProp, localSignature));

@@ -1,6 +1,7 @@
 package lsfusion.server.logics;
 
 import com.google.common.base.Throwables;
+import com.google.common.collect.Iterables;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.FunctionSet;
 import lsfusion.base.Pair;
@@ -75,11 +76,6 @@ import static lsfusion.server.logics.PropertyUtils.*;
 import static lsfusion.server.logics.property.derived.DerivedProperty.createAnd;
 import static lsfusion.server.logics.property.derived.DerivedProperty.createStatic;
 
-/**
- * User: DAle
- * Date: 16.05.11
- * Time: 17:37
- */
 
 public abstract class LogicsModule {
     protected static final Logger logger = Logger.getLogger(LogicsModule.class);
@@ -127,7 +123,9 @@ public abstract class LogicsModule {
 
     public BaseLogicsModule<?> baseLM;
 
-    protected Map<String, List<LP<?,?>>> namedModuleProperties = new HashMap<>();
+    protected Map<String, List<LCP<?>>> namedModuleProperties = new HashMap<>();
+    protected Map<String, List<LAP<?>>> namedModuleActions = new HashMap<>();
+    
     protected final Map<String, AbstractGroup> moduleGroups = new HashMap<>();
     protected final Map<String, CustomClass> moduleClasses = new HashMap<>();
     protected final Map<String, AbstractWindow> windows = new HashMap<>();
@@ -174,46 +172,71 @@ public abstract class LogicsModule {
         if(order != null)
             result = "#" + orderNum + " of " + moduleCount + " " + result;
         return result;
-    }    
+    }
 
-    protected LP<?, ?> getLPByName(String name) {
-        List<LP<?, ?>> result = new ArrayList<>();
-        for (List<LP<?, ?>> namedLPs : namedModuleProperties.values()) {
-            for (LP<?, ?> property : namedLPs) {
-                String actualName = property.property.getName(); 
-                if (name.equals(actualName)) {
-                    result.add(property);                        
-                }
-            }
+    public Iterable<LP<?, ?>> getNamedPropertiesAndActions() {
+        return Iterables.<LP<?, ?>>concat(getNamedProperties(), getNamedActions());
+    }
+
+    public Iterable<LCP<?>> getNamedProperties() {
+        return Iterables.concat(namedModuleProperties.values());
+    }
+
+    public Iterable<LAP<?>> getNamedActions() {
+        return Iterables.concat(namedModuleActions.values());
+    }
+
+    public Iterable<LP<?, ?>> getNamedPropertiesAndActions(String name) {
+        return Iterables.<LP<?, ?>>concat(getNamedProperties(name), getNamedActions(name)); 
+    }
+    
+    public Iterable<LCP<?>> getNamedProperties(String name) {
+        return createEmptyIfNull(namedModuleProperties.get(name));
+    }
+
+    public Iterable<LAP<?>> getNamedActions(String name) {
+        return createEmptyIfNull(namedModuleActions.get(name));
+    }
+    
+    private <T extends LP<?, ?>> Iterable<T> createEmptyIfNull(Collection<T> col) {
+        if (col == null) {
+            return Collections.emptyList();
+        } else {
+            return col;
         }
+    }
+    
+    // todo [dale]: разобраться с использованием этого метода, здесь предполагается единственность свойства с определенным именем
+    protected LCP<?> getLCPByName(String name) {
+        List<LCP<?>> result = namedModuleProperties.get(name);
         assert result.size() == 1;
         return result.get(0);
     }
 
-    public List<LP<?, ?>> getAllLPByName(String name) {
-        List<LP<?, ?>> allLP = namedModuleProperties.get(name); 
-        return allLP != null ? allLP : new ArrayList<LP<?, ?>>(); 
-    }
-    
-    protected LCP<?> getLCPByName(String name) {
-        return (LCP<?>) getLPByName(name);
-    }
-
-    public Map<String, List<LP<?,?>>> getNamedModuleProperties() {
-        return namedModuleProperties;        
-    }
-    
     protected void addModuleLP(LP<?, ?> lp) {
         String name = lp.property.getName();
         if (name != null) {
-            if (!namedModuleProperties.containsKey(name)) {
-                namedModuleProperties.put(name, new ArrayList<LP<?, ?>>());
-            } 
-            namedModuleProperties.get(name).add(lp);
+            if (lp instanceof LAP) {
+                putLPToMap(namedModuleActions, (LAP) lp);
+            } else if (lp instanceof LCP) {
+                putLPToMap(namedModuleProperties, (LCP)lp);
+            } else {
+                assert false;
+            }
         }
     }
 
-    protected void removeModuleLP(LP<?, ?> lp) {
+    private <T extends LP<?, ?>> void putLPToMap(Map<String, List<T>> moduleMap, T lp) {
+        String name = lp.property.getName();
+        if (name != null) { // todo [dale]: что это за странный случай?
+            if (!moduleMap.containsKey(name)) {
+                moduleMap.put(name, new ArrayList<T>());
+            }
+            moduleMap.get(name).add(lp);
+        }
+    }
+    
+    protected void removeModuleProperty(LCP<?> lp) {
         String name = lp.property.getName();
         if (name != null) {
             if (namedModuleProperties.containsKey(name)) {
@@ -2222,14 +2245,6 @@ public abstract class LogicsModule {
         this.namespacePriority = namespacePriority;
     }
 
-    public List<LP<?, ?>> getNamedProperties() {
-        List<LP<?, ?>> properties = new ArrayList<>();
-        for (List<LP<?, ?>> propList : namedModuleProperties.values()) {
-            properties.addAll(propList);    
-        }
-        return properties; 
-    }
-    
     public List<ResolveClassSet> getParamClasses(LP<?, ?> lp) {
         List<ResolveClassSet> paramClasses = propClasses.get(lp);
         return paramClasses == null ? Collections.<ResolveClassSet>nCopies(lp.listInterfaces.size(), null) : paramClasses;                   

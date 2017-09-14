@@ -41,6 +41,7 @@ import lsfusion.server.lifecycle.LifecycleEvent;
 import lsfusion.server.lifecycle.LogicsManager;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.linear.LCP;
+import lsfusion.server.logics.linear.LP;
 import lsfusion.server.logics.mutables.NFLazy;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.scripted.ScriptingErrorLog;
@@ -1531,33 +1532,29 @@ public class DBManager extends LogicsManager implements InitializingBean {
         
         Set<String> logProperties = new HashSet<>();
         
-        for (List<BusinessLogics.NamedDecl> nameList : businessLogics.getNamedModuleProperties().values()) {
-            for (BusinessLogics.NamedDecl declaration : nameList) {
-                if (declaration.prop.property.getName().startsWith(PropertyCanonicalNameUtils.logPropPrefix)) {
-                    logProperties.add(declaration.prop.property.getCanonicalName());
-                }
+        for (LCP<?> lp : businessLogics.getNamedProperties()) {
+            if (lp.property.getName().startsWith(PropertyCanonicalNameUtils.logPropPrefix)) {
+                logProperties.add(lp.property.getCanonicalName());
             }
         }
         
-        for (List<BusinessLogics.NamedDecl> nameList : businessLogics.getNamedModuleProperties().values()) {
-            for (BusinessLogics.NamedDecl declaration : nameList) {
-                if (declaration.prop.property.isNamed() && declaration.prop instanceof LCP && ((CalcProperty)declaration.prop.property).isFull(ClassType.useInsteadOfAssert.getCalc().getAlgInfo())) {
-                    String logPropCN = LogicsModule.getLogPropertyCN((LCP) declaration.prop, "System", businessLogics.systemEventsLM);
-                    if (logProperties.contains(logPropCN)) {
-                        String propCN = declaration.prop.property.getCanonicalName();
-                        if (rChanges.containsKey(propCN)) {
-                            String oldPropCN = rChanges.get(propCN);
-                            try {
-                                PropertyCanonicalNameParser parser = new PropertyCanonicalNameParser(businessLogics, oldPropCN);
-                                String oldLogPropCN = LogicsModule.getLogPropertyCN("System", parser.getNamespace(), parser.getName(), 
-                                        LogicsModule.getSignatureForLogProperty(parser.getSignature(), businessLogics.systemEventsLM));
-                                if (!storedPropertyCNChanges.containsKey(newDBVersion)) {
-                                    storedPropertyCNChanges.put(newDBVersion, new ArrayList<SIDChange>());
-                                }
-                                storedPropertyCNChanges.get(newDBVersion).add(new SIDChange(oldLogPropCN, logPropCN));
-                            } catch (AbstractPropertyNameParser.ParseException e) {
-                                Throwables.propagate(e);
+        for (LCP<?> lp : businessLogics.getNamedProperties()) {
+            if (lp.property.isFull(ClassType.useInsteadOfAssert.getCalc().getAlgInfo())) {
+                String logPropCN = LogicsModule.getLogPropertyCN(lp, "System", businessLogics.systemEventsLM);
+                if (logProperties.contains(logPropCN)) {
+                    String propCN = lp.property.getCanonicalName();
+                    if (rChanges.containsKey(propCN)) {
+                        String oldPropCN = rChanges.get(propCN);
+                        try {
+                            PropertyCanonicalNameParser parser = new PropertyCanonicalNameParser(businessLogics, oldPropCN);
+                            String oldLogPropCN = LogicsModule.getLogPropertyCN("System", parser.getNamespace(), parser.getName(), 
+                                    LogicsModule.getSignatureForLogProperty(parser.getSignature(), businessLogics.systemEventsLM));
+                            if (!storedPropertyCNChanges.containsKey(newDBVersion)) {
+                                storedPropertyCNChanges.put(newDBVersion, new ArrayList<SIDChange>());
                             }
+                            storedPropertyCNChanges.get(newDBVersion).add(new SIDChange(oldLogPropCN, logPropCN));
+                        } catch (AbstractPropertyNameParser.ParseException e) {
+                            Throwables.propagate(e);
                         }
                     }
                 }
