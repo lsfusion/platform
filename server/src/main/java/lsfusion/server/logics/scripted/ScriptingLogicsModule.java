@@ -25,7 +25,6 @@ import lsfusion.server.data.expr.formula.SQLSyntaxType;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.expr.query.PartitionType;
 import lsfusion.server.data.type.ConcatenateType;
-import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.form.entity.*;
 import lsfusion.server.form.instance.FormSessionScope;
@@ -205,12 +204,6 @@ public class ScriptingLogicsModule extends LogicsModule {
         return code;
     }
     
-    protected LogicsModule findModule(String name) throws ScriptingErrorLog.SemanticErrorException {
-        LogicsModule module = BL.getSysModule(name);
-        checkModule(module, name);
-        return module;
-    }
-
     public String transformStringLiteral(String s) throws ScriptingErrorLog.SemanticErrorException {
         try {
             return ScriptedStringUtils.transformStringLiteral(s);
@@ -229,14 +222,6 @@ public class ScriptingLogicsModule extends LogicsModule {
         return null;
     }
     
-    private Type getPredefinedType(String name) {
-        if ("OBJECT".equals(name)) {
-            return ObjectType.instance;
-        } else {
-            return ClassCanonicalNameUtils.getScriptedDataClass(name); 
-        }
-    }
-
     public ObjectEntity[] getMappingObjectsArray(FormEntity form, List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
         ObjectEntity[] objects = new ObjectEntity[mapping.size()];
         for (int i = 0; i < mapping.size(); i++) {
@@ -495,14 +480,6 @@ public class ScriptingLogicsModule extends LogicsModule {
             convertResolveError(e);
         }
         return null;
-    }
-
-    public List<ObjectEntity> findObjectEntities(FormEntity form, List<String> objectNames) throws ScriptingErrorLog.SemanticErrorException {
-        List<ObjectEntity> objects = new ArrayList<>();
-        for (int i = 0; i < objectNames.size(); i++) {
-            objects.add(findObjectEntity(form, objectNames.get(i)));
-        }
-        return objects;
     }
 
     private List<FormEntity> findForms(List<String> names) throws ScriptingErrorLog.SemanticErrorException {
@@ -1013,11 +990,11 @@ public class ScriptingLogicsModule extends LogicsModule {
         return classes;
     }
     
-    private <T extends PropertyInterface> List<ResolveClassSet> getParamClassesByParamProperties(List<LPWithParams> paramProps, List<TypedParameter> params) {
+    private List<ResolveClassSet> getParamClassesByParamProperties(List<LPWithParams> paramProps, List<TypedParameter> params) {
         List<ResolveClassSet> classes = new ArrayList<>();
         for (LPWithParams paramProp : paramProps) {
             if (paramProp.property != null) {
-                LCP<T> lcp = (LCP<T>) paramProp.property;
+                LCP lcp = (LCP)paramProp.property;
                 List<ResolveClassSet> usedClasses = getUsedClasses(params, paramProp.usedParams);
                 classes.add(lcp.getResolveClassSet(usedClasses));
             } else {
@@ -2817,7 +2794,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public LPWithParams addScriptedImportActionProperty(ImportSourceFormat format, LPWithParams fileProp, List<String> ids, List<PropertyUsage> propUsages) throws ScriptingErrorLog.SemanticErrorException {
         List<LCP> props = findLPsForImport(propUsages);
-        return addScriptedJoinAProp(addAProp(ImportDataActionProperty.createProperty(/*fileProp.property.property.getValueClass(ClassType.valuePolicy), */format, ids, props, baseLM)), Arrays.asList(fileProp));
+        return addScriptedJoinAProp(addAProp(ImportDataActionProperty.createProperty(/*fileProp.property.property.getValueClass(ClassType.valuePolicy), */format, ids, props, baseLM)), Collections.singletonList(fileProp));
     }
 
     public LPWithParams addScriptedNewThreadActionProperty(LPWithParams actionProp, LPWithParams connectionProp, LPWithParams periodProp, LPWithParams delayProp) throws ScriptingErrorLog.SemanticErrorException {
@@ -2996,11 +2973,6 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
         return props;
     }
-
-    public final static GetValue<CalcProperty, LCP> getProp = new GetValue<CalcProperty, LCP>() {
-        public CalcProperty getMapValue(LCP value) {
-            return ((LCP<?>)value).property;
-        }};
 
     public void addScriptedEvent(LPWithParams whenProp, LPWithParams event, List<LPWithParams> orders, boolean descending, Event baseEvent, List<LPWithParams> noInline, boolean forceInline, DebugInfo.DebugPoint debugPoint) throws ScriptingErrorLog.SemanticErrorException {
         checkActionProperty(event.property);
