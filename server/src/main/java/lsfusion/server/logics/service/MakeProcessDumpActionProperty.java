@@ -282,8 +282,8 @@ public class MakeProcessDumpActionProperty extends ScriptingActionProperty {
                 Long startTransaction = sessionThread == null ? null : (Long) sessionThread.get(2);
                 String attemptCount = sessionThread == null ? "0" : (String) sessionThread.get(3);
                 StatusMessage statusMessage = sessionThread == null ? null : (StatusMessage) sessionThread.get(4);
-                Integer userActiveTask = sessionThread == null ? null : (Integer) sessionThread.get(5);
-                Integer computerActiveTask = sessionThread == null ? null : (Integer) sessionThread.get(6);
+                Long userActiveTask = sessionThread == null ? null : (Long) sessionThread.get(5);
+                Long computerActiveTask = sessionThread == null ? null : (Long) sessionThread.get(6);
                 String fullQuery = sessionThread == null || sessionThread.get(7) == null ? null : (String) sessionThread.get(7);
                 boolean isDisabledNestLoop = sessionThread != null && (boolean) sessionThread.get(8);
                 Integer queryTimeout = sessionThread == null ? null : (Integer) sessionThread.get(9);
