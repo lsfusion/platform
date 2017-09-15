@@ -51,8 +51,6 @@
         <jhlabs.filters.version>2.0.235</jhlabs.filters.version>
         <jcalendar.version>1.4</jcalendar.version>
         <formsrt.version>7.0.3</formsrt.version>
-        <jgoodies.looks.version>2.4.1</jgoodies.looks.version>
-        <jgoodies.common.version>1.2.0</jgoodies.common.version>
         <jssc.version>0.8</jssc.version>
         <!--<jtds.version>1.2.4</jtds.version>-->
         <mssql.version>4.0</mssql.version>
@@ -300,16 +298,6 @@
                 <groupId>com.intellij</groupId>
                 <artifactId>forms_rt</artifactId>
                 <version>${formsrt.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.jgoodies</groupId>
-                <artifactId>looks</artifactId>
-                <version>${jgoodies.looks.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.jgoodies</groupId>
-                <artifactId>common</artifactId>
-                <version>${jgoodies.common.version}</version>
             </dependency>
             <dependency>
                 <groupId>jssc</groupId>
