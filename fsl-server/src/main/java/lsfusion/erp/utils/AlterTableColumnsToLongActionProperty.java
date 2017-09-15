@@ -64,8 +64,10 @@ public class AlterTableColumnsToLongActionProperty extends ScriptingActionProper
                             ddl.append(String.format(((ddl.length() == 0) ? "" : ",") + " ALTER COLUMN %s TYPE BIGINT", field.getName()));
                         }
                         serviceLogger.info(String.format("Alter Table %s: %s field(s)", String.valueOf(dataTable), fieldList.size()));
-                        if (ddl.length() > 0)
+                        if (ddl.length() > 0) {
                             session.sql.executeDDL("ALTER TABLE " + dataTable + " " + ddl);
+                            session.sql.executeDDL("ANALYZE " + dataTable);
+                        }
                     }
                 }
                 session.apply(context);
