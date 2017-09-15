@@ -2439,13 +2439,14 @@ formActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns 
 
     ManageSessionType manageSession = ManageSessionType.NOMANAGESESSION; // temporary, should be AUTO
 	Boolean noCancel = FormEntity.DEFAULT_NOCANCEL; // temporary, should be NULL
+	FormSessionScope formSessionScope = FormSessionScope.OLDSESSION;
 
 	boolean readOnly = false;
 	boolean checkOnOk = false;
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedShowFAProp($mf.mapped, $mf.props, syncType, windowType, manageSession, checkOnOk, noCancel, readOnly);
+		$property = self.addScriptedShowFAProp($mf.mapped, $mf.props, syncType, windowType, manageSession, formSessionScope, checkOnOk, noCancel, readOnly);
 	}
 }
 	:	'SHOW' mf=mappedForm[context, null, dynamic]
@@ -2455,6 +2456,7 @@ formActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns 
 
         |	ms=manageSessionClause { manageSession = $ms.result; }
 		|	nc=noCancelClause { noCancel = $nc.result; }
+		|	fs=formSessionScopeClause { formSessionScope = $fs.result; }
 
 		|	'READONLY' { readOnly = true; }
 		|	'CHECK' { checkOnOk = true; }
@@ -2469,6 +2471,7 @@ dialogActionDefinitionBody[List<TypedParameter> context] returns [LPWithParams p
 
 	ManageSessionType manageSession = ManageSessionType.NOMANAGESESSION; // temporary, should be AUTO
 	Boolean noCancel = FormEntity.DEFAULT_NOCANCEL; // temporary, should be NULL
+	FormSessionScope formSessionScope = FormSessionScope.OLDSESSION;
 
 	boolean checkOnOk = false;
 	
@@ -2476,7 +2479,7 @@ dialogActionDefinitionBody[List<TypedParameter> context] returns [LPWithParams p
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedDialogFAProp($mf.mapped, $mf.props, windowType, manageSession, checkOnOk, noCancel, readOnly, $dDB.property, $dDB.elseProperty, context, newContext);
+		$property = self.addScriptedDialogFAProp($mf.mapped, $mf.props, windowType, manageSession, formSessionScope, checkOnOk, noCancel, readOnly, $dDB.property, $dDB.elseProperty, context, newContext);
 	}
 }
 	:	'DIALOG' mf=mappedForm[context, newContext, false]
@@ -2484,6 +2487,7 @@ dialogActionDefinitionBody[List<TypedParameter> context] returns [LPWithParams p
 
 		|	ms=manageSessionClause { manageSession = $ms.result; }
 		|	nc=noCancelClause { noCancel = $nc.result; }
+		|	fs=formSessionScopeClause { formSessionScope = $fs.result; }
 
 		|	'READONLY' { readOnly = true; }
 		|	'CHECK' { checkOnOk = true; }
@@ -2497,6 +2501,11 @@ manageSessionClause returns [ManageSessionType result]
 	|	'MANAGESESSIONX' { $result = ManageSessionType.MANAGESESSIONX; }
 	|	'NOMANAGESESSIONX' { $result = ManageSessionType.NOMANAGESESSIONX; }
 	|	'AUTOX' { $result = ManageSessionType.AUTO; }
+    ;
+
+formSessionScopeClause returns [FormSessionScope result]
+    :	'NEWSESSION' { $result = FormSessionScope.NEWSESSION; }
+	|	'NESTEDSESSION' { $result = FormSessionScope.NESTEDSESSION; }
     ;
 
 noCancelClause returns [boolean result]

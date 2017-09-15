@@ -575,12 +575,6 @@ public abstract class LogicsModule {
         return addSessionScopeAProp(newSession ? FormSessionScope.NEWSESSION : FormSessionScope.OLDSESSION, result);
     }
 
-    // temporary - should be changed to addEditAProp / getFormEdit
-    protected LAP addDMFAProp(LocalizedString caption, CustomClass cls, ManageSessionType manageSession, boolean noCancel) {
-        MappedForm<ClassFormSelector.VirtualObject> mappedForm = MappedForm.create(cls, true);
-        return addIFAProp(caption, mappedForm.form, mappedForm.objects, manageSession, noCancel, true, WindowFormType.DOCKED);
-    }
-
     protected <O extends ObjectSelector> LAP addIFAProp(LocalizedString caption, FormSelector<O> form, List<O> objectsToSet, ManageSessionType manageSession, Boolean noCancel, boolean syncType, WindowFormType windowType) {
         return addIFAProp(null, caption, form, objectsToSet, Collections.nCopies(objectsToSet.size(), false), manageSession, noCancel, syncType, windowType, false, false);
     }
@@ -792,18 +786,21 @@ public abstract class LogicsModule {
     // ------------------- SESSION SCOPE ----------------- //
 
     protected LAP addSessionScopeAProp(FormSessionScope sessionScope, LAP action) {
+        return addSessionScopeAProp(sessionScope, action, SetFact.<LCP>EMPTY());
+    }
+    protected LAP addSessionScopeAProp(FormSessionScope sessionScope, LAP action, ImCol<LCP> nestedProps) {
         if(sessionScope.isNewSession()) {
-            action = addNewSessionAProp(null, action, false, false, sessionScope == FormSessionScope.NESTEDSESSION);
+            action = addNewSessionAProp(null, action, sessionScope.isNestedSession(), false, false, nestedProps.mapMergeSetValues(new GetValue<SessionDataProperty, LCP>() {
+                public SessionDataProperty getMapValue(LCP value) {
+                    return (SessionDataProperty) value.property;
+                }
+            }));
         }
         return action;
     }
 
     // ------------------- NEWSESSION ----------------- //
 
-    protected LAP addNewSessionAProp(AbstractGroup group, LAP action, boolean singleApply, boolean newSQL, boolean isNested) {
-        return addNewSessionAProp(group, action, isNested, singleApply, newSQL, SetFact.<SessionDataProperty>EMPTY());
-    }
-    
     protected LAP addNewSessionAProp(AbstractGroup group,
                                      LAP action, boolean isNested, boolean singleApply, boolean newSQL,
                                      FunctionSet<SessionDataProperty> migrateSessionProps) {

@@ -28,6 +28,7 @@ import lsfusion.server.data.type.ConcatenateType;
 import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.form.entity.*;
+import lsfusion.server.form.instance.FormSessionScope;
 import lsfusion.server.form.navigator.DefaultIcon;
 import lsfusion.server.form.navigator.NavigatorElement;
 import lsfusion.server.form.view.ComponentView;
@@ -2379,7 +2380,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public <O extends ObjectSelector> LPWithParams addScriptedShowFAProp(MappedForm<O> mapped, List<FormActionProps> allObjectProps,
-                                              Boolean syncType, WindowFormType windowType, ManageSessionType manageSession,
+                                              Boolean syncType, WindowFormType windowType, ManageSessionType manageSession, FormSessionScope formSessionScope, 
                                               boolean checkOnOk, Boolean noCancel, boolean readonly) throws ScriptingErrorLog.SemanticErrorException {
         List<O> objects = new ArrayList<>();
         List<LPWithParams> mapping = new ArrayList<>();
@@ -2412,7 +2413,9 @@ public class ScriptingLogicsModule extends LogicsModule {
                                  manageSession, noCancel,
                                  syncType, windowType, checkOnOk,
                                  readonly, getParamsPlainList(propParams).toArray());
-
+        
+        property = addSessionScopeAProp(formSessionScope, property);
+        
         if (mapping.size() > 0) {
             return addScriptedJoinAProp(property, mapping);
         } else {
@@ -2438,7 +2441,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     
     public <O extends ObjectSelector> LPWithParams addScriptedDialogFAProp(
                                                 MappedForm<O> mapped, List<FormActionProps> allObjectProps,
-                                                WindowFormType windowType, ManageSessionType manageSession,
+                                                WindowFormType windowType, ManageSessionType manageSession, FormSessionScope scope,
                                                 boolean checkOnOk, Boolean noCancel, boolean readonly, LPWithParams doAction, LPWithParams elseAction, List<TypedParameter> oldContext, List<TypedParameter> newContext) throws ScriptingErrorLog.SemanticErrorException {
 
         List<O> objects = new ArrayList<>();
@@ -2520,6 +2523,8 @@ public class ScriptingLogicsModule extends LogicsModule {
                                  contextObjects, contextProps,
                 true, windowType, checkOnOk,
                 readonly, getParamsPlainList(propParams).toArray());
+        
+        property = addSessionScopeAProp(scope, property, inputProps.addList(baseLM.getRequestCanceledProperty()).getCol());
 
         LPWithParams formAction;
         if (mapping.size() > 0) {
