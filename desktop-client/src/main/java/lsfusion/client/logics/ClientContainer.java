@@ -1,7 +1,6 @@
 package lsfusion.client.logics;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.context.ApplicationContext;
 import lsfusion.client.serialization.ClientSerializationPool;
 import lsfusion.interop.form.layout.AbstractContainer;
 import lsfusion.interop.form.layout.Alignment;
@@ -26,21 +25,9 @@ public class ClientContainer extends ClientComponent implements AbstractContaine
 
     public int columns = 4;
 
-    public int columnLabelsWidth = 0;
-
     public List<ClientComponent> children = new ArrayList<>();
 
     public ClientContainer() {
-    }
-
-    public ClientContainer(ApplicationContext context) {
-        super(context);
-
-        customConstructor();
-    }
-
-    public void customConstructor() {
-        initAggregateObjects(getContext());
     }
 
     @Override
@@ -57,7 +44,6 @@ public class ClientContainer extends ClientComponent implements AbstractContaine
         pool.writeObject(outStream, childrenAlignment);
 
         outStream.writeInt(columns);
-        outStream.writeInt(columnLabelsWidth);
     }
 
     @Override
@@ -74,7 +60,6 @@ public class ClientContainer extends ClientComponent implements AbstractContaine
         childrenAlignment = pool.readObject(inStream);
 
         columns = inStream.readInt();
-        columnLabelsWidth = inStream.readInt();
     }
 
     @Override
@@ -184,19 +169,27 @@ public class ClientContainer extends ClientComponent implements AbstractContaine
     }
 
     public boolean isSplit() {
-        return type == HORIZONTAL_SPLIT_PANE || type == VERTICAL_SPLIT_PANE;
-    }
-
-    public boolean isLinearVertical() {
-        return type == CONTAINERV;
+        return isSplitHorizontal() || isSplitVertical();
     }
 
     public boolean isSplitVertical() {
         return type == VERTICAL_SPLIT_PANE;
     }
 
+    public boolean isSplitHorizontal() {
+        return type == HORIZONTAL_SPLIT_PANE;
+    }
+
     public boolean isVertical() {
         return isLinearVertical() || isSplitVertical();
+    }
+
+    public boolean isHorizontal() {
+        return isLinearHorizontal() || isSplitHorizontal();
+    }
+
+    public boolean isLinearVertical() {
+        return type == CONTAINERV;
     }
 
     public boolean isLinearHorizontal() {

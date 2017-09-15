@@ -12,8 +12,7 @@ import lsfusion.client.logics.ClientGroupObjectValue;
 import lsfusion.client.logics.ClientPropertyDraw;
 import lsfusion.interop.event.ValueEvent;
 import lsfusion.interop.event.ValueEventListener;
-import lsfusion.interop.form.layout.CachableLayout;
-import lsfusion.interop.form.layout.FlexAlignment;
+import lsfusion.interop.form.layout.*;
 
 import javax.swing.*;
 import java.awt.*;
@@ -38,8 +37,6 @@ public class DataPanelView extends JPanel implements PanelView {
 
     private final SimpleChangePropertyDispatcher simpleDispatcher;
 
-    private int labelWidth = -1;
-
     public DataPanelView(final ClientFormController iform, final ClientPropertyDraw iproperty, ClientGroupObjectValue icolumnKey) {
         super(null);
 
@@ -48,17 +45,15 @@ public class DataPanelView extends JPanel implements PanelView {
         columnKey = icolumnKey;
         simpleDispatcher = form.getSimpleChangePropertyDispatcher();
 
-        setLayout(new DataPanelLayout());
+        setLayout(new FlexLayout(this, property.panelCaptionAbove, Alignment.CENTER));
 
         //игнорируем key.readOnly, чтобы разрешить редактирование,
         //readOnly будет проверяться на уровне сервера и обрезаться возвратом пустого changeType
         table = new DataPanelViewTable(iform, columnKey, property);
 
         label = new JLabel();
+        label.setBorder(BorderFactory.createEmptyBorder(0,0,0,2));
         setLabelText(property.getEditCaption());
-        if (property.panelCaptionAbove) {
-            label.setHorizontalAlignment(SwingConstants.CENTER);
-        }
 
         property.design.designHeader(label);
         if (property.focusable != null) {
@@ -67,8 +62,8 @@ public class DataPanelView extends JPanel implements PanelView {
             setFocusable(false);
         }
 
-        add(label);
-        add(table);
+        add(label, new FlexConstraints(FlexAlignment.CENTER, 0));
+        add(table, new FlexConstraints(FlexAlignment.STRETCH, 1));
 
         setOpaque(false);
         setToolTip(property.getCaption());
@@ -210,11 +205,6 @@ public class DataPanelView extends JPanel implements PanelView {
     }
 
     @Override
-    public void setLabelWidth(int width) {
-        labelWidth = width;
-    }
-
-    @Override
     public EditPropertyDispatcher getEditPropertyDispatcher() {
         return table.getEditPropertyDispatcher();
     }
@@ -255,10 +245,6 @@ public class DataPanelView extends JPanel implements PanelView {
             Dimension labelPref = label.getPreferredSize();
             Dimension tablePref = table.getPreferredSize();
 
-            if (!tableFirst && labelWidth != -1) {
-                labelPref.width = labelWidth;
-            }
-
             int tableSpace = width;
             int tableLeft = in.left;
             int tableTop = in.top;
@@ -277,11 +263,11 @@ public class DataPanelView extends JPanel implements PanelView {
             }
 
             int tableWidth = tableSpace;
-            if (property.alignment != FlexAlignment.STRETCH) {
+            if (property.getAlignment() != FlexAlignment.STRETCH) {
                 tableWidth = Math.min(tableSpace, tablePref.width);
-                if (property.alignment == FlexAlignment.TRAILING) {
+                if (property.getAlignment() == FlexAlignment.TRAILING) {
                     tableLeft += tableSpace - tableWidth;
-                } else if (property.alignment == FlexAlignment.CENTER) {
+                } else if (property.getAlignment() == FlexAlignment.CENTER) {
                     tableLeft += (tableSpace - tableWidth)/2;
                 }
             }

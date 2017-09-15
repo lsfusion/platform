@@ -32,7 +32,7 @@ public class ScrollClientContainerView extends AbstractClientContainerView {
 
     @Override
     public void addImpl(int index, ClientComponent child, JComponentPanel view) {
-        assert child.flex == 1 && child.alignment == FlexAlignment.STRETCH; // временные assert'ы чтобы проверить обратную совместимость
+        assert child.getFlex() == 1 && child.getAlignment() == FlexAlignment.STRETCH; // временные assert'ы чтобы проверить обратную совместимость
         scroll.setViewportView(view);
         setSizes(scrollPanel, child);
     }

@@ -7,7 +7,10 @@ import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.mutable.MSet;
-import lsfusion.server.classes.*;
+import lsfusion.server.classes.BaseClass;
+import lsfusion.server.classes.ConcreteClass;
+import lsfusion.server.classes.LongClass;
+import lsfusion.server.classes.ObjectValueClassSet;
 import lsfusion.server.classes.sets.AndClassSet;
 import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.SQLHandledException;
@@ -98,6 +101,11 @@ public class ObjectType extends AbstractType<Long> {
         reportField.valueClass = Long.class;
         reportField.alignment = HorizontalAlignEnum.RIGHT.getValue();
         return true;
+    }
+
+    @Override
+    public boolean isFlex() {
+        return false;
     }
 
     public ConcreteClass getDataClass(Object value, SQLSession session, AndClassSet classSet, BaseClass baseClass, OperationOwner owner) throws SQLException, SQLHandledException {

@@ -1820,8 +1820,6 @@ public class GridTable extends ClientPropertyTable {
     }
 
     public class GridTableColumn extends TableColumn {
-        public int flex; // равен preferred'у
-
         public GridTableColumn(int index) {
             super(index);
         }

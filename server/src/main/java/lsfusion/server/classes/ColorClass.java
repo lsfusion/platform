@@ -112,4 +112,9 @@ public class ColorClass extends DataClass<Color> {
             return null;
         return read(anInt);
     }
+
+    @Override
+    public boolean isFlex() {
+        return false;
+    }
 }

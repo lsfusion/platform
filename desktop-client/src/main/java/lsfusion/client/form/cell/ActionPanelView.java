@@ -92,7 +92,7 @@ public class ActionPanelView extends JButton implements PanelView, EditPropertyH
 
         panel = new JPanel(null);
         panel.setLayout(new FlexLayout(panel, true, Alignment.CENTER));
-        panel.add(this, new FlexConstraints(property.alignment, 1));
+        panel.add(this, new FlexConstraints(property.getAlignment(), 1));
         property.installMargins(panel);
     }
 
@@ -174,11 +174,6 @@ public class ActionPanelView extends JButton implements PanelView, EditPropertyH
 
     public void setForegroundColor(Color background) {
         // пока не highlight'им
-    }
-
-    @Override
-    public void setLabelWidth(int width) {
-        //ignore
     }
 
     public void setToolTip(String caption) {

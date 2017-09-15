@@ -1,9 +1,7 @@
 package lsfusion.client.logics;
 
-import lsfusion.base.context.ApplicationContext;
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.serialization.ClientSerializationPool;
-import lsfusion.interop.form.layout.FlexAlignment;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -19,16 +17,6 @@ public class ClientGrid extends ClientComponent {
     public ClientGroupObject groupObject;
 
     public ClientGrid() {
-    }
-
-    public ClientGrid(ApplicationContext context) {
-        super(context);
-    }
-
-    @Override
-    protected void initDefaultConstraints() {
-        flex = 1;
-        alignment = FlexAlignment.STRETCH;
     }
 
     @Override

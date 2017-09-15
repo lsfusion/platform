@@ -2,6 +2,7 @@ package lsfusion.client.logics.classes;
 
 import lsfusion.interop.Compare;
 
+import java.awt.*;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.text.Format;
@@ -34,6 +35,21 @@ public abstract class ClientFileClass extends ClientDataClass implements ClientT
         return "1234567";
     }
 
+    @Override
+    public int getPreferredHeight(FontMetrics font) {
+        return 18;
+    }
+
+    @Override
+    public int getPreferredWidth(int prefCharWidth, FontMetrics font) {
+        return 18;
+    }
+
+    @Override
+    public int getMinimumWidth(int minCharWidth, FontMetrics font) {
+        return 18;
+    }
+    
     public Format getDefaultFormat() {
         return null;
     }

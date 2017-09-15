@@ -152,4 +152,9 @@ public class DateTimeClass extends DataClass<Timestamp> {
     public boolean useIndexedJoin() {
         return true;
     }
+
+    @Override
+    public boolean isFlex() {
+        return false;
+    }
 }

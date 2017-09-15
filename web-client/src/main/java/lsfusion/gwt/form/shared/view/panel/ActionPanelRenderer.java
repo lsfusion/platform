@@ -229,11 +229,6 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
     }
 
     @Override
-    public void setLabelWidth(int width) {
-        //ignore
-    }
-
-    @Override
     public void takeFocusAfterEdit() {
         if (focusTargetAfterEdit != null) {
             Element.as(focusTargetAfterEdit).focus();

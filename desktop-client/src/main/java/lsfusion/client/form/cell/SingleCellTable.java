@@ -34,9 +34,7 @@ public abstract class SingleCellTable extends ClientPropertyTable {
         setName(property.getCaption());
         model.setProperty(property);
 
-        setMinimumSize(property.getMinimumValueSize(this));
-        setPreferredSize(property.getPreferredValueSize(this));
-        setMaximumSize(property.getMaximumValueSize(this));
+        setPreferredSize(new Dimension(property.getBaseValueWidth(this), property.getPreferredValueHeight(this)));
     }
 
     public void setValue(Object value) {

@@ -100,4 +100,9 @@ public class ActionClass extends DataClass<Object> {
     public Stat getTypeStat() {
         return Stat.ONE;
     }
+
+    @Override
+    public boolean isFlex() {
+        return false;
+    }
 }

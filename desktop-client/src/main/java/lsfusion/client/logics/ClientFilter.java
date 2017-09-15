@@ -1,9 +1,7 @@
 package lsfusion.client.logics;
 
-import lsfusion.base.context.ApplicationContext;
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.serialization.ClientSerializationPool;
-import lsfusion.interop.form.layout.FlexAlignment;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -13,15 +11,6 @@ public class ClientFilter extends ClientComponent {
     public boolean visible = true;
 
     public ClientFilter() {
-    }
-
-    public ClientFilter(ApplicationContext context) {
-        super(context);
-    }
-
-    @Override
-    protected void initDefaultConstraints() {
-        alignment = FlexAlignment.STRETCH;
     }
 
     @Override

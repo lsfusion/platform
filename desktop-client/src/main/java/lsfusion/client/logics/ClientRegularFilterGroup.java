@@ -1,6 +1,5 @@
 package lsfusion.client.logics;
 
-import lsfusion.base.context.ApplicationContext;
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.serialization.ClientSerializationPool;
 
@@ -20,10 +19,6 @@ public class ClientRegularFilterGroup extends ClientComponent {
 
     public ClientRegularFilterGroup() {
 
-    }
-
-    public ClientRegularFilterGroup(int ID, ApplicationContext context) {
-        super(ID, context);
     }
 
     @Override

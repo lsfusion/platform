@@ -16,7 +16,6 @@ public class GContainer extends GComponent {
     public GAlignment childrenAlignment;
 
     public int columns;
-    public int columnLabelsWidth;
 
     public ArrayList<GComponent> children = new ArrayList<>();
 
@@ -26,7 +25,7 @@ public class GContainer extends GComponent {
                 "[" + sID + "]" +
                 "[" + type + "]{" +
                 "caption='" + caption + '\'' +
-                ", alignment=" + alignment +
+                ", alignment=" + getAlignment() +
                 '}';
     }
 
@@ -46,7 +45,7 @@ public class GContainer extends GComponent {
     public int getFlexCount() {
         int count = 0;
         for(GComponent child : children)
-            if(child.flex > 0)
+            if(child.getFlex() > 0)
                 count++;
         return count;
     }
@@ -95,16 +94,24 @@ public class GContainer extends GComponent {
         return draws;
     }
 
-    public boolean isLinearVertical() {
-        return type == CONTAINERV;
-    }
-
     public boolean isSplitVertical() {
         return type == VERTICAL_SPLIT_PANE;
     }
 
+    public boolean isSplitHorizontal() {
+        return type == HORIZONTAL_SPLIT_PANE;
+    }
+
     public boolean isVertical() {
         return isLinearVertical() || isSplitVertical();
+    }
+
+    public boolean isHorizontal() {
+        return isLinearHorizontal() || isSplitHorizontal();
+    }
+
+    public boolean isLinearVertical() {
+        return type == CONTAINERV;
     }
 
     public boolean isLinearHorizontal() {

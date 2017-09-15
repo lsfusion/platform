@@ -2,7 +2,6 @@ package lsfusion.client.logics;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.OrderedMap;
-import lsfusion.base.context.ApplicationContext;
 import lsfusion.base.identity.DefaultIDGenerator;
 import lsfusion.base.identity.IDGenerator;
 import lsfusion.base.identity.IdentityObject;
@@ -48,19 +47,6 @@ public class ClientGroupObject extends IdentityObject implements ClientIdentityS
     }
 
     public ClientGroupObject() {
-    }
-
-    // конструктор при создании нового объекта
-    public ClientGroupObject(int ID, ApplicationContext context) {
-        super(ID);
-
-        grid = new ClientGrid(context);
-        showType = new ClientShowType(context);
-        toolbar = new ClientToolbar(context);
-        filter = new ClientFilter(context);
-
-        grid.groupObject = this;
-        showType.groupObject = this;
     }
 
     public static List<ClientObject> getObjects(List<ClientGroupObject> groups) {

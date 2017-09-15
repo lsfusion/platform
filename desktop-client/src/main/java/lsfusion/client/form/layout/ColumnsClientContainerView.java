@@ -2,7 +2,10 @@ package lsfusion.client.form.layout;
 
 import lsfusion.client.logics.ClientComponent;
 import lsfusion.client.logics.ClientContainer;
-import lsfusion.interop.form.layout.*;
+import lsfusion.interop.form.layout.Alignment;
+import lsfusion.interop.form.layout.FlexAlignment;
+import lsfusion.interop.form.layout.FlexConstraints;
+import lsfusion.interop.form.layout.FlexLayout;
 
 import javax.swing.*;
 import java.awt.*;
@@ -27,17 +30,26 @@ public class ColumnsClientContainerView extends AbstractClientContainerView {
 
         columns = new JPanel[columnsCount];
         columnsChildren = new List[columnsCount];
+        double columnFlex = getColumnFlex(container);
         for (int i = 0; i < columnsCount; ++i) {
             JPanel column = new JPanel();
-//            column.setLayout(new FlexLayout(column, true, Alignment.LEADING));
-            column.setLayout(new ColumnsLayout(column, 1));
-            panel.add(column, FlexConstraints.leading_self);
+            column.setLayout(new FlexLayout(column, true, Alignment.LEADING));
+            column.setBorder(BorderFactory.createEmptyBorder(0,0,0,4));
+            panel.add(column, new FlexConstraints(FlexAlignment.LEADING, columnFlex));
 
             columns[i] = column;
             columnsChildren[i] = new ArrayList<>();
         }
 
         container.design.designComponent(panel);
+    }
+
+    private double getColumnFlex(ClientContainer container) {
+        ClientContainer container2 = container.container;
+        if (container2 == null || !container2.isHorizontal()) {
+            return container.getAlignment() == FlexAlignment.STRETCH ? 1 : 0;
+        }
+        return container.getFlex();
     }
 
     @Override
@@ -68,7 +80,7 @@ public class ColumnsClientContainerView extends AbstractClientContainerView {
 
     @Override
     public void addImpl(int index, ClientComponent child, JComponentPanel view) {
-//        ((JComponent)view).setBorder(randomBorder());
+//        view.setBorder(SwingUtils.randomBorder());
 
 //        panel.add(view, new ColumnsConstraints(child.getAlignment()), index);
 
@@ -98,8 +110,7 @@ public class ColumnsClientContainerView extends AbstractClientContainerView {
             }
         }
 
-//        columns[colIndex].add(view, new FlexConstraints(FlexAlignment.STRETCH, 0), rowIndex);
-        columns[colIndex].add(view, new ColumnsConstraints(FlexAlignment.STRETCH), rowIndex);
+        columns[colIndex].add(view, new FlexConstraints(child.getAlignment(), 0), rowIndex);
         columnChildren.add(rowIndex, child);
     }
 
@@ -109,22 +120,6 @@ public class ColumnsClientContainerView extends AbstractClientContainerView {
         int colIndex = childIndex % columnsCount;
         columnsChildren[colIndex].remove(child);
         columns[colIndex].remove(view);
-    }
-
-    @Override
-    public void updateLayout() {
-        if (container.columnLabelsWidth > 0) {
-            for (int i = 0; i < columnsCount; ++i) {
-                JPanel column = columns[i];
-                int childCount = column.getComponentCount();
-                for (int j = 0; j < childCount; ++j) {
-                    Component childView = column.getComponent(j);
-                    if (childView.isVisible() && childView instanceof HasLabel) {
-                        ((HasLabel) childView).setLabelWidth(container.columnLabelsWidth);
-                    }
-                }
-            }
-        }
     }
 
     @Override

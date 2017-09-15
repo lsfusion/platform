@@ -432,6 +432,42 @@ public class PropertyDrawView extends ComponentView {
     public void setPreferredValueSize(Dimension preferredValueSize) {
         this.preferredValueSize = preferredValueSize;
     }
+    
+    public boolean isFlex() {
+        Boolean compareValueWidths = compareValueWidths();
+        if (compareValueWidths != null) {
+            return compareValueWidths;
+        }
+        
+        Boolean compareCharWidths = compareCharWidths();
+        if (compareCharWidths != null) {
+            return compareCharWidths;
+        }
+        
+        return getType().isFlex();
+    }
+    
+    private Boolean compareValueWidths() {
+        int baseValueWidth = -1;
+        if (minimumValueSize != null && minimumValueSize.width >= 0 && preferredValueSize != null && preferredValueSize.width >= 0) {
+            baseValueWidth = Math.min(minimumValueSize.width, preferredValueSize.width);
+        }
+        if (baseValueWidth >= 0 && maximumValueSize != null && maximumValueSize.width >= 0) {
+            return maximumValueSize.width > baseValueWidth;
+        }
+        return null;
+    }
+    
+    private Boolean compareCharWidths() {
+        int baseCharWidth = -1;
+        if (minimumCharWidth > 0 && preferredCharWidth > 0) {
+            baseCharWidth = Math.min(minimumCharWidth, preferredCharWidth);
+        }
+        if (baseCharWidth > 0 && maximumCharWidth > 0) {
+            return maximumCharWidth > baseCharWidth;
+        }
+        return null;
+    }
 
     public String getAskConfirmMessage() {
         assert entity.askConfirm;

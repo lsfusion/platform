@@ -49,6 +49,8 @@ public interface Type<T> extends ClassReader<T>, FunctionType {
     int getPreferredWidth();
     int getMaximumWidth();
     boolean fillReportDrawField(ReportDrawField reportField);
+    
+    boolean isFlex();
 
     Type getCompatible(Type type);
 

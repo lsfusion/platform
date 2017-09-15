@@ -1,6 +1,5 @@
 package lsfusion.server.data.type;
 
-import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.data.SQLSession;
 import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
@@ -66,5 +65,10 @@ public abstract class AbstractType<T> extends AbstractReader<T> implements Type<
 
     public boolean useIndexedJoin() {
         return false;
+    }
+
+    @Override
+    public boolean isFlex() {
+        return true;
     }
 }

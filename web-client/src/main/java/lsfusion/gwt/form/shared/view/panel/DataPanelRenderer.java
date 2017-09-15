@@ -34,7 +34,6 @@ public class DataPanelRenderer implements PanelRenderer {
     private final SimplePanel focusPanel;
 
     private final HTML label;
-    private int currentLabelWidth = -1;
     
     private final GSinglePropertyTable valueTable;
 
@@ -54,9 +53,6 @@ public class DataPanelRenderer implements PanelRenderer {
         label = new HTML();
         label.addStyleName("customFontPresenter");
         setLabelText(caption = property.getEditCaption());
-        if (!vertical) {
-            label.getElement().getStyle().setMarginRight(4, Style.Unit.PX);
-        }
 
         TooltipManager.registerWidget(label, new TooltipManager.TooltipHelper() {
             @Override
@@ -114,9 +110,8 @@ public class DataPanelRenderer implements PanelRenderer {
 
         label.getElement().getStyle().setProperty("minHeight", property.getPreferredLabelHeight());
         gridPanel.getElement().getStyle().setProperty("minHeight", preferredHeight);
-        gridPanel.getElement().getStyle().setProperty("minWidth", preferredWidth);
+        gridPanel.getElement().getStyle().setProperty("minWidth", property.getBasePixelValueWidth(null) + "px");
         gridPanel.getElement().getStyle().setProperty("maxHeight", preferredHeight);
-        gridPanel.getElement().getStyle().setProperty("maxWidth", preferredWidth);
 
         finishLayoutSetup();
 
@@ -150,7 +145,6 @@ public class DataPanelRenderer implements PanelRenderer {
 
         if (property.isHorizontallyStretched()) {
             gridPanel.getElement().getStyle().clearWidth();
-            gridPanel.getElement().getStyle().clearProperty("minWidth");
             gridPanel.getElement().getStyle().clearProperty("maxWidth");
         }
     }
@@ -180,7 +174,11 @@ public class DataPanelRenderer implements PanelRenderer {
     }
     
     private void setLabelText(String text) {
-        label.setHTML(text.isEmpty() ? SafeHtmlUtils.EMPTY_SAFE_HTML : SafeHtmlUtils.fromString(text));
+        boolean empty = text.isEmpty();
+        label.setHTML(empty ? SafeHtmlUtils.EMPTY_SAFE_HTML : SafeHtmlUtils.fromString(text));
+        if (!vertical) {
+            label.getElement().getStyle().setMarginRight(empty ? 0 : 4, Style.Unit.PX);
+        }
     }
 
     @Override
@@ -204,14 +202,6 @@ public class DataPanelRenderer implements PanelRenderer {
     @Override
     public void focus() {
         valueTable.setFocus(true);
-    }
-
-    @Override
-    public void setLabelWidth(int width) {
-        if (currentLabelWidth != width) {
-            label.setWidth(width + "px");
-            currentLabelWidth = width;
-        }
     }
 
     private class Panel extends FlexPanel {

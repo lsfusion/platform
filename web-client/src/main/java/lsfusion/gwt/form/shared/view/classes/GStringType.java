@@ -8,14 +8,17 @@ import lsfusion.gwt.form.shared.view.GPropertyDraw;
 import lsfusion.gwt.form.shared.view.filter.GCompare;
 import lsfusion.gwt.form.shared.view.grid.EditManager;
 import lsfusion.gwt.form.shared.view.grid.editor.GridCellEditor;
-import lsfusion.gwt.form.shared.view.grid.editor.rich.RichTextGridCellEditor;
 import lsfusion.gwt.form.shared.view.grid.editor.StringGridCellEditor;
 import lsfusion.gwt.form.shared.view.grid.editor.TextGridCellEditor;
+import lsfusion.gwt.form.shared.view.grid.editor.rich.RichTextGridCellEditor;
 import lsfusion.gwt.form.shared.view.grid.renderer.GridCellRenderer;
 import lsfusion.gwt.form.shared.view.grid.renderer.StringGridCellRenderer;
 import lsfusion.gwt.form.shared.view.grid.renderer.TextGridCellRenderer;
 
 import java.text.ParseException;
+
+import static java.lang.Math.pow;
+import static java.lang.Math.round;
 
 public class GStringType extends GDataType {
 
@@ -72,8 +75,8 @@ public class GStringType extends GDataType {
             preferredMask = "9 999 999";
         } else {
             int lengthValue = length.getValue();
-            minimumMask = GwtSharedUtils.replicate('0', lengthValue <= 3 ? lengthValue : (int) Math.round(Math.pow(lengthValue, 0.7)));
-            preferredMask = GwtSharedUtils.replicate('0', lengthValue <= 20 ? lengthValue : (int) Math.round(Math.pow(lengthValue, 0.8)));
+            minimumMask = GwtSharedUtils.replicate('0', lengthValue <= 12 ? lengthValue : (int) round(12 + pow(lengthValue - 12, 0.7)));
+            preferredMask = GwtSharedUtils.replicate('0', lengthValue <= 20 ? lengthValue : (int) round(pow(lengthValue, 0.8)));
         }
     }
 

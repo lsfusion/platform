@@ -24,6 +24,8 @@ import java.text.ParseException;
 import java.util.HashMap;
 import java.util.Map;
 
+import static java.lang.Math.pow;
+import static java.lang.Math.round;
 import static lsfusion.interop.Compare.CONTAINS;
 import static lsfusion.interop.Compare.EQUALS;
 
@@ -79,8 +81,8 @@ public class ClientStringClass extends ClientDataClass {
             preferredMask = "9 999 999";
         } else {
             int lengthValue = length.getValue();
-            minimumMask = BaseUtils.replicate('0', lengthValue <= 3 ? lengthValue : (int) Math.round(Math.pow(lengthValue, 0.7)));
-            preferredMask = BaseUtils.replicate('0', lengthValue <= 20 ? lengthValue : (int) Math.round(Math.pow(lengthValue, 0.8)));
+            minimumMask = BaseUtils.replicate('0', lengthValue <= 12 ? lengthValue : (int) round(12 + pow(lengthValue - 12, 0.7)));
+            preferredMask = BaseUtils.replicate('0', lengthValue <= 20 ? lengthValue : (int) round(pow(lengthValue, 0.8)));
         }
     }
 

@@ -37,6 +37,12 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
     public Dimension minimumSize;
     public Dimension maximumSize;
     public Dimension preferredSize;
+    
+    public boolean autoSize = false;
+
+    private Double flex = null;
+    private FlexAlignment alignment = null;
+
     public Dimension getPreferredSize() {
         if(preferredSize == null) {
             ContainerView container = getContainer();
@@ -47,26 +53,36 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
         return preferredSize;
     }
     
-    public boolean autoSize = false;
-
-    private Double flex = null;
-    private FlexAlignment alignment = null;
     public double getFlex() {
         assert flex == null || (flex > 0 || getContainer() == null || (!getContainer().isScroll() && !getContainer().isSplit())); // временные assert'ы чтобы проверить обратную совместимость
-        if(flex != null)
+        if (flex != null) {
             return flex;
+        }
+        
         ContainerView container = getContainer();
-        if(container != null && (container.isScroll() || container.isSplit()))
-            return 1;
+        if (container != null) {
+            if ((container.isScroll() || container.isSplit() || container.isTabbedPane())) {
+                return 1;
+            } else if (this instanceof PropertyDrawView && container.isHorizontal() && ((PropertyDrawView) this).isFlex()) {
+                return -2;
+            }
+        }
         return 0;
     }
+    
     public FlexAlignment getAlignment() {
         assert alignment == null || (alignment == FlexAlignment.STRETCH || getContainer() == null || (!getContainer().isScroll() && !getContainer().isSplit())); // временные assert'ы чтобы проверить обратную совместимость
-        if(alignment != null)
+        if (alignment != null) {
             return alignment;
+        }
+        
         ContainerView container = getContainer();
-        if(container != null && (container.isScroll() || container.isSplit()))
-            return FlexAlignment.STRETCH;
+        if (container != null)
+            if ((container.isScroll() || container.isSplit() || container.isTabbedPane())) {
+                return FlexAlignment.STRETCH;
+            } else if (this instanceof PropertyDrawView && (container.isVertical() || container.isColumns()) && ((PropertyDrawView) this).isFlex()) {
+                return null; 
+            }
         return FlexAlignment.LEADING;
     }
 

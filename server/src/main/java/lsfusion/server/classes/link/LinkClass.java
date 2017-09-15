@@ -145,4 +145,9 @@ public abstract class LinkClass extends DataClass<String> {
     public boolean fixedSize() {
         return false;
     }
+
+    @Override
+    public boolean isFlex() {
+        return false;
+    }
 }

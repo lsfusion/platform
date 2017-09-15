@@ -21,10 +21,6 @@ public class ContainerViewProxy extends ComponentViewProxy<ContainerView> {
         target.description = description;
     }
 
-    public void setColumnLabelsWidth(int columnLabelsWidth) {
-        target.columnLabelsWidth = columnLabelsWidth;
-    }
-    
     public void setType(ContainerType type) {
         target.setType(type);
     }

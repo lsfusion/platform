@@ -8,8 +8,6 @@ import lsfusion.client.form.renderer.ExcelPropertyRenderer;
 import lsfusion.client.logics.ClientPropertyDraw;
 import lsfusion.interop.Data;
 
-import java.awt.*;
-
 public class ClientExcelClass extends ClientStaticFormatFileClass {
 
     public final static ClientExcelClass instance = new ClientExcelClass(false, false);
@@ -39,21 +37,6 @@ public class ClientExcelClass extends ClientStaticFormatFileClass {
     @Override
     public PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw design) {
         return new FilePropertyEditor(multiple, storeName, ClientResourceBundle.getString("logics.classes.excel.documents"), getExtensions());
-    }
-
-    @Override
-    public int getPreferredHeight(FontMetrics font) {
-        return 18;
-    }
-
-    @Override
-    public int getPreferredWidth(int prefCharWidth, FontMetrics font) {
-        return 18;
-    }
-
-    @Override
-    public int getMinimumWidth(int minCharWidth, FontMetrics font) {
-        return 15;
     }
 
     @Override

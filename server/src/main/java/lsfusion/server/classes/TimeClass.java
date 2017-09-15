@@ -125,4 +125,9 @@ public class TimeClass extends DataClass<Time> {
     public Time read(ResultSet set, SQLSyntax syntax, String name) throws SQLException {
         return super.read(set, syntax, name); //return set.getTime(name); в частности jtds глючит String вместо Time возвращает
     }
+
+    @Override
+    public boolean isFlex() {
+        return false;
+    }
 }
