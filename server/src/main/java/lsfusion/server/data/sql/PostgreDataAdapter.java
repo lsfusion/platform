@@ -138,7 +138,7 @@ public class PostgreDataAdapter extends DataAdapter {
     }
 
     public Connection startConnection() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
-        return DriverManager.getConnection("jdbc:postgresql://" + server + "/" + dataBase + "?user=" + userID + "&password=" + password);
+        return DriverManager.getConnection("jdbc:postgresql://" + server + "/" + dataBase.toLowerCase() + "?user=" + userID + "&password=" + password);
     }
 
     public String getCommandEnd() {
@@ -399,7 +399,7 @@ public class PostgreDataAdapter extends DataAdapter {
     public List<List<List<Object>>> readCustomRestoredColumns(String dbName, String table, List<String> keys, List<String> columns) throws SQLException {
         List<List<Object>> dataKeys = new ArrayList<>();
         List<List<Object>> dataColumns = new ArrayList<>();
-        try(Connection connection = DriverManager.getConnection("jdbc:postgresql://" + server + "/" + dbName + "?user=" + userID + "&password=" + password)) {
+        try(Connection connection = DriverManager.getConnection("jdbc:postgresql://" + server + "/" + dbName.toLowerCase() + "?user=" + userID + "&password=" + password)) {
             try (Statement statement = connection.createStatement()) {
                 String column = "";
                 for(String k : keys)
