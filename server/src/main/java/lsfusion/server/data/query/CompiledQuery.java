@@ -208,7 +208,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
             P order = orders.getKey(i);
             Expr orderExpr = orderExprs.get(order);
             if(!currentKeys.containsAll(BaseUtils.<ImSet<KeyExpr>>immutableCast(orderExpr.getOuterKeys()))) {
-                boolean notNull = false;
+                boolean notNull = false; // ??? where.means orderExpr.getWhere
                 if(orderExpr instanceof KeyExpr) {
                     notNull = true;
                     currentKeys.add((KeyExpr)orderExpr);
@@ -798,17 +798,22 @@ public class CompiledQuery<K,V> extends ImmutableObject {
             
             public SubQueryExprSelect getLastExprSource(final GroupExpr.Query query, Where valueWhere, SubQueryContext subQueryContext, Result<Cost> rBaseCost, final DebugInfoWriter debugInfoWriter) {
                 
-                Where fullWhere = query.getWhere().and(valueWhere);
-                
                 final CompileSource source = InnerSelect.this;
                 
                 final Expr valueExpr = query.getMainExpr();
+                Where where = query.getWhere();
+                ImOrderMap<Expr, Boolean> orders = query.orders;
+                if(query.type.isMaxMin()) { // MAX = LAST f(a) ORDER f(a) WHERE f(a) (но он и так в qurey.getWhere есть
+                    assert orders.isEmpty();
+                    orders = MapFact.singletonOrder(valueExpr, query.type == GroupType.MIN); // MAX - ASC, MIN - DESC
+                }
+
                 Query<KeyExpr,Expr> subQuery = new Query<>(keys.toRevMap(),
-                        query.orders.keys().merge(valueExpr).toMap(), fullWhere);
+                        orders.keys().merge(valueExpr).toMap(), where.and(valueWhere));
                 // непонятно надо ли использовать или нет, но пока методики проталкивания его нет query.ordersNotNull
                 
                 final int limit = 1;
-                final CompiledQuery<KeyExpr, Expr> compiled = subQuery.compile(Query.reverseOrder(query.orders), new CompileOptions<Expr>(source.syntax, LimitOptions.get(limit), subQueryContext, debugInfoWriter != null));
+                final CompiledQuery<KeyExpr, Expr> compiled = subQuery.compile(Query.reverseOrder(orders), new CompileOptions<Expr>(source.syntax, LimitOptions.get(limit), subQueryContext, debugInfoWriter != null));
                 rBaseCost.set(rBaseCost.result.or(compiled.sql.baseCost));
                 final String alias = subQueryContext.wrapAlias(subQueryContext.wrapSiblingSubQuery("LEALIAS")); // чтобы оставить одну колонку 
 
@@ -1575,7 +1580,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
             // группировка query / кэгирование
             for (int i = 0, size = queries.size(); i < size; i++) {
                 MapTranslate translator;
-                if ((translator = exprJoin.mapInnerTwins(queries.getKey(i), false)) != null) {
+                if ((translator = exprJoin.mapInnerIdentity(queries.getKey(i), false)) != null) {
                     select = queries.getValue(i);
                     if(query != null)
                         query.set(query.result.translateOuter(translator));

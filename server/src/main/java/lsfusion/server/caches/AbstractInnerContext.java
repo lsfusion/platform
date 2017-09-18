@@ -103,8 +103,8 @@ public abstract class AbstractInnerContext<I extends InnerContext<I>> extends Ab
     }
     
     // с проверкой на twins для оптимизации
-    public MapTranslate mapInnerTwins(I object, boolean values) {
-        if(BaseUtils.hashEquals(this, object))
+    public MapTranslate mapInnerIdentity(I object, boolean values) {
+        if(this == object)
             return new MapTranslator(getInnerKeys().toRevMap(), MapValuesTranslator.noTranslate(getInnerValues()));
         
         return mapInner(object, values);

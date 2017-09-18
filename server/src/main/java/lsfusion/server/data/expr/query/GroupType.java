@@ -129,7 +129,7 @@ public enum GroupType implements AggrType {
     }
     
     public boolean isLastOpt() {
-        return this == LAST || this == ANY; // ANY - LAST без порядка
+        return this == LAST || this == ANY || isMaxMin(); // ANY - LAST без порядка, MAX/MIN - LAST где f(a) = 
     }
 
     public boolean splitExprCases() {
