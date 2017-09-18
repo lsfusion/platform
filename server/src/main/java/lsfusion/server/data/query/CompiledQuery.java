@@ -29,10 +29,8 @@ import lsfusion.server.data.expr.query.*;
 import lsfusion.server.data.expr.where.extra.CompareWhere;
 import lsfusion.server.data.query.innerjoins.GroupJoinsWhere;
 import lsfusion.server.data.query.innerjoins.UpWheres;
-import lsfusion.server.data.query.stat.Cost;
+import lsfusion.server.data.query.stat.*;
 import lsfusion.server.data.query.stat.KeyStat;
-import lsfusion.server.data.query.stat.WhereJoin;
-import lsfusion.server.data.query.stat.WhereJoins;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.translator.ExprTranslator;
 import lsfusion.server.data.translator.MapTranslate;
@@ -394,6 +392,9 @@ public class CompiledQuery<K,V> extends ImmutableObject {
         public InnerJoins getInnerJoins() {
             return whereJoins.getInnerJoins();
         }
+        public static ImOrderSet<InnerJoin> getInnerJoinOrder(ImOrderSet<BaseJoin> whereJoinOrder) {
+            return WhereJoins.getInnerJoinOrder(whereJoinOrder);
+        }
 
         public boolean isInner(InnerJoin join) {
             return getInnerJoins().containsAll(join);
@@ -526,12 +527,20 @@ public class CompiledQuery<K,V> extends ImmutableObject {
         }
 
         public void fillInnerJoins(Result<Cost> mBaseCost, Result<Stat> mRows, MCol<String> whereSelect, LimitOptions limit, ImOrderSet<Expr> orders, DebugInfoWriter debugInfoWriter) { // заполним Inner Joins, чтобы keySelect'ы были
-            stackUsedPendingKeys.push(SetFact.<KeyExpr>mSet()); stackTranslate.push(MapFact.<String, String>mRevMap()); stackUsedOuterPendingJoins.push(new Result<Boolean>());
+            Result<ImSet<BaseExpr>> usedNotNulls = syntax.hasNotNullIndexProblem() ? new Result<ImSet<BaseExpr>>() : null;
+            Result<ImOrderSet<BaseJoin>> joinOrder = new Result<>();
+            whereJoins.fillCompileInfo(mBaseCost, mRows, usedNotNulls, joinOrder, keys, keyStat, limit, orders, debugInfoWriter);
 
-            // заполняем inner joins, чтобы заполнить все ключи (плюс сделать это первыми)
-            InnerJoins innerJoins = getInnerJoins();
-            innerJoins.fillInnerJoins(innerJoins.getMeanUpWheres(whereJoins, upWheres), this);
+            stackUsedPendingKeys.push(SetFact.<KeyExpr>mSet()); stackTranslate.push(MapFact.<String, String>mRevMap()); stackUsedOuterPendingJoins.push(new Result<Boolean>());
             
+            // заполняем inner joins, чтобы заполнить все ключи (плюс сделать это в правильном порядке)
+            // порядок получается не идеально правильный, так в архитектуре компиляции функциональная, а не реляционная логика (то есть учитывается разделение ключи значения), соответствено значение всегда "раньше" ключа, но всякие join_collapse_limit такой подход позволяет существенно снизить по идее
+            // вообще можно было бы от getInnerJoins избавиться (использовать полученный Set), но так как InnerJoins используется в ветке следствий в выражениях и т.п. оставим пока как было 
+            for (InnerJoin where : getInnerJoinOrder(joinOrder.result)) {
+                assert isInner(where);
+                getJoinSelect(where);
+            }
+
             MSet<KeyExpr> usedKeys = stackUsedPendingKeys.pop();
             MRevMap<String, String> translate = stackTranslate.pop();
             stackUsedOuterPendingJoins.pop();
@@ -545,13 +554,15 @@ public class CompiledQuery<K,V> extends ImmutableObject {
             mImplicitJoins = null;
             mOuterPendingJoins = null;
 
-            innerWhere = whereJoins.fillExtraInfo(upWheres, whereSelect, mBaseCost, mRows, this, keys, keyStat, limit, orders, debugInfoWriter);
+            if(usedNotNulls != null)
+                for(BaseExpr notNull : usedNotNulls.result)
+                    whereSelect.add(notNull.getSource(this) + " IS NOT NULL");
+
         }
 
-        private Where innerWhere;
         // получает условия следующие из логики inner join'ов SQL
         private Where getInnerWhere() {
-            Where result = innerWhere;
+            Where result = Where.TRUE;
             for(InnerJoin innerJoin : getInnerJoins().it()) {
                 JoinSelect joinSelect = getJoinSelect(innerJoin);
                 if(joinSelect!=null)
@@ -625,14 +636,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
 
         final MAddExclMap<Table.Join, TableSelect> tables = MapFact.mAddExclMap();
         private String getAlias(Table.Join table) {
-            TableSelect join = tables.get(table);
-            if(join==null) {
-                join = new TableSelect(table);
-                tables.exclAdd(table,join);
-            }
-            
-            usedJoin(join);
-            return join.alias;
+            return getTableSelect(table).alias;
         }
 
         public String getSource(Table.Join.Expr expr) {
@@ -970,7 +974,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                         return value.getSource(fromPropertySelect.result, compiled.getMapPropertyReaders(), query, syntax, mSubEnv, exprs.get(value).getType());
                     }});
                 ImSet<String> areKeyValues = group.filterValues(compiled.arePropValues).keys();
-
+                
                 ImCol<String> havingSelect;
                 if(isSingle(innerJoin))
                     havingSelect = SetFact.singleton(propertySelect.get(queries.singleKey()) + " IS NOT NULL");
@@ -1532,18 +1536,49 @@ public class CompiledQuery<K,V> extends ImmutableObject {
             QueryJoin exprJoin = queryExpr.getInnerJoin();
 
             QuerySelect select = null;
-            OuterContext query = queryExpr.query;
+            Result<OuterContext> query = new Result<>(queryExpr.query);
             
-            if(select == null && isSingle(exprJoin))
+            if(select == null && isSingle(exprJoin)) {
                 select = getSingleSelect(queryExpr);
-            
-            if(select == null) { // группировка query / кэгирование
-                for (int i = 0, size = queries.size(); i < size; i++) {
-                    MapTranslate translator;
-                    if ((translator = exprJoin.mapInner(queries.getKey(i), false)) != null) {
-                        select = queries.getValue(i);
-                        query = queryExpr.query.translateOuter(translator);
-                    }
+                usedJoin(select);
+            }
+
+            if(select == null)
+                select = getQuerySelect(exprJoin, query);            
+            return select.add(query.result,queryExpr);
+        }
+        private JoinSelect getJoinSelect(InnerJoin innerJoin) {
+            if(!whereCompiling) { // поаналогии с QuerySelect.add до innerWhere и после
+                if (innerJoin instanceof Table.Join)
+                    return getTableSelect((Table.Join) innerJoin);
+                if (innerJoin instanceof QueryJoin)
+                    return getQuerySelect((QueryJoin) innerJoin, null);
+            } else {
+                if (innerJoin instanceof Table.Join)
+                    return tables.get((Table.Join) innerJoin);
+                if (innerJoin instanceof QueryJoin)
+                    return queries.get((QueryJoin) innerJoin);
+            }
+            throw new RuntimeException("no matching class");
+        }
+        private TableSelect getTableSelect(Table.Join table) {
+            TableSelect join = tables.get(table);
+            if(join==null) {
+                join = new TableSelect(table);
+                tables.exclAdd(table,join);
+            }
+            usedJoin(join);
+            return join;
+        }
+        private QuerySelect getQuerySelect(QueryJoin exprJoin, Result<OuterContext> query) {
+            QuerySelect select = null;
+            // группировка query / кэгирование
+            for (int i = 0, size = queries.size(); i < size; i++) {
+                MapTranslate translator;
+                if ((translator = exprJoin.mapInnerTwins(queries.getKey(i), false)) != null) {
+                    select = queries.getValue(i);
+                    if(query != null)
+                        query.set(query.result.translateOuter(translator));
                 }
             }
 
@@ -1559,16 +1594,8 @@ public class CompiledQuery<K,V> extends ImmutableObject {
 
                 queries.exclAdd(exprJoin, select);
             }
-            
             usedJoin(select);
-            return select.add(query,queryExpr);
-        }
-        private JoinSelect getJoinSelect(InnerJoin innerJoin) {
-            if(innerJoin instanceof Table.Join)
-                return tables.get((Table.Join)innerJoin);
-            if(innerJoin instanceof QueryJoin)
-                return queries.get((QueryJoin)innerJoin);
-            throw new RuntimeException("no matching class");
+            return select;
         }
     }
 

@@ -4,13 +4,18 @@ import lsfusion.base.AddSet;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Result;
 import lsfusion.base.col.MapFact;
+import lsfusion.base.col.SetFact;
+import lsfusion.base.col.interfaces.immutable.ImOrderSet;
+import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
+import lsfusion.base.col.interfaces.mutable.MOrderSet;
 import lsfusion.server.caches.hash.HashCodeKeys;
 import lsfusion.server.caches.hash.HashContext;
 import lsfusion.server.caches.hash.HashValues;
 import lsfusion.server.data.expr.query.QueryJoin;
 import lsfusion.server.data.query.innerjoins.UpWhere;
 import lsfusion.server.data.query.innerjoins.UpWheres;
+import lsfusion.server.data.query.stat.BaseJoin;
 import lsfusion.server.data.query.stat.WhereJoin;
 import lsfusion.server.data.query.stat.WhereJoins;
 import lsfusion.server.data.translator.MapTranslate;
@@ -55,21 +60,10 @@ public class InnerJoins extends AddSet<InnerJoin, InnerJoins> {
         return WhereJoins.removeJoin(removeJoin, wheres, upWheres, resultWheres);
     }
 
-    public UpWheres<InnerJoin> getMeanUpWheres(WhereJoins meanWheres, UpWheres<WhereJoin> upMeans) {
-        MExclMap<InnerJoin, UpWhere> result = MapFact.mExclMap(wheres.length); // массивы
-        for(InnerJoin where : wheres)
-            result.exclAdd(where, WhereJoins.getMeanUpWheres(where, meanWheres, upMeans));
-        return new UpWheres<>(result.immutable());
-    }
     // вообще при таком подходе, скажем из-за формул в ExprJoin, LEFT JOIN'ы могут быть раньше INNER, но так как SQL Server это позволяет бороться до конца за это не имеет особого смысла 
-    public void fillInnerJoins(UpWheres<InnerJoin> upWheres, CompileSource source) {
-        for (InnerJoin where : wheres) {
-            UpWhere upWhere = upWheres.get(where);
-            if(upWhere == null)
-                assert where.isValue(); // assert что это valueJoin из ExprStatJoin.valueJoins, а значит не дает ключ и getSource не обязателен (хотя возможно правильнее было бы getMeanUpWheres -> getInnerExpr подправить)
-            else
-                upWhere.getWhere(null).getSource(source);
-        }
+    public void fillInnerJoinOrder(MOrderSet<InnerJoin> mInnerJoinOrder) {
+        for (InnerJoin where : wheres)
+            mInnerJoinOrder.add(where);
     }
 
     // транслятор и hash используется только для InnerJoins без ключей

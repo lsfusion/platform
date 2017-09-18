@@ -71,36 +71,5 @@ public class GroupJoinsWhere extends GroupWhere<GroupJoinsWhere> {
     public int immutableHashCode() {
         return 31 * (31 * super.immutableHashCode() + joins.hashCode()) + upWheres.hashCode();
     }
-    
-    private static int recGetLevelJoins(WhereJoin join, MAddExclMap<WhereJoin, Integer> proceeded, int maxLevel, MExclSet<WhereJoin> resultSet) {
-        Integer joinLevel;
-        if((joinLevel = proceeded.get(join))!=null)
-            return joinLevel;            
 
-        InnerJoins joinFollows = join.getJoinFollows(new Result<UpWheres<InnerJoin>>(), null);
-
-        int result = 0;
-        for(InnerJoin followJoin : joinFollows.it()) {
-            joinLevel = recGetLevelJoins(followJoin, proceeded, maxLevel, resultSet);
-            result = BaseUtils.max(result, joinLevel + 1);
-            if(result > maxLevel)
-                break;
-        }
-        
-        if(result == maxLevel)
-            resultSet.exclAdd(join);
-
-        proceeded.exclAdd(join, result);
-        return result;
-    }
-    // эвристика для группировок, получает join'ы до заданного уровня
-    public ImSet<WhereJoin> getLevelJoins(int maxLevel) {
-        MAddExclMap<WhereJoin, Integer> proceeded = MapFact.mAddExclMap(); 
-        MExclSet<WhereJoin> mResultSet = SetFact.mExclSet();
-        for(WhereJoin join : joins.it()) {
-            if(recGetLevelJoins(join, proceeded, maxLevel, mResultSet) < maxLevel)
-                mResultSet.exclAdd(join);
-        }
-        return mResultSet.immutable();            
-    }
 }

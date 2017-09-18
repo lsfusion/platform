@@ -121,7 +121,7 @@ public class ExprIndexedJoin extends ExprJoin<ExprIndexedJoin> {
     public InnerJoins getInnerJoins() {
         if(not)
             return InnerJoins.EMPTY;
-        return super.getInnerJoins();
+        return super.getInnerJoins().and(valueJoins);
     }
 
     public boolean givesNoKeys() {
