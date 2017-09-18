@@ -70,7 +70,7 @@ public class BackupActionProperty extends ScriptingActionProperty {
 
                 session.apply(context);
                 
-                backupObject = new DataObject((Long)backupObject.object, (ConcreteCustomClass)backupObject.objectClass); // обновляем класс после backup
+                backupObject = new DataObject((Long)backupObject.object, (ConcreteCustomClass)findClass("Backup")); // обновляем класс после backup
 
                 context.getDbManager().backupDB(context, backupFileName, excludeTables);
 
