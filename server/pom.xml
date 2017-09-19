@@ -113,10 +113,6 @@
             <artifactId>commons-daemon</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.berryworks</groupId>
-            <artifactId>edireader</artifactId>
-        </dependency>
-        <dependency>
             <groupId>jssc</groupId>
             <artifactId>jssc</artifactId>
         </dependency>

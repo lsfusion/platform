@@ -57,7 +57,6 @@
         <javax.mail.version>1.5.6</javax.mail.version>
         <blocking.map.version>1.0-patched</blocking.map.version>
         <antlr.version>3.5.2</antlr.version>
-        <edireader.version>4.7.3.1</edireader.version>
         <jna.version>3.2.3</jna.version>
         <stax.version>1.2.0</stax.version>
         <shef.version>0.5</shef.version>
@@ -327,11 +326,6 @@
                 <groupId>org.antlr</groupId>
                 <artifactId>antlr</artifactId>
                 <version>${antlr.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.berryworks</groupId>
-                <artifactId>edireader</artifactId>
-                <version>${edireader.version}</version>
             </dependency>
             <dependency>
                 <groupId>net.java.dev.jna</groupId>
