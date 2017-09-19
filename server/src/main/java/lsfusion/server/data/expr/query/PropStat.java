@@ -28,4 +28,9 @@ public class PropStat {
     public int hashCode() {
         return 31 * distinct.hashCode() + (notNull != null ? notNull.hashCode() : 0);
     }
+
+    @Override
+    public String toString() {
+        return "distinct: " + distinct + ", notNull: " + notNull;
+    }
 }

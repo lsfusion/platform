@@ -115,4 +115,8 @@ public class TableStatKeys extends TwinImmutableObject {
         return distinct.hashCode() + 31 * rows.hashCode();
     }
 
+    @Override
+    public String toString() {
+        return "rows: " + rows;
+    }
 }
