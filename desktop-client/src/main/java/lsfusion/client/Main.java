@@ -574,8 +574,10 @@ public class Main {
     public static void processReportPathList(List<ReportPath> reportPathList, boolean useAuto) throws IOException {
         if (reportPathList != null) {
             for (ReportPath reportPath : reportPathList) {
-                if(useAuto)
+                if(useAuto) {
+                    new File(reportPath.customPath).getParentFile().mkdirs();
                     FileCopyUtils.copy(new File(reportPath.autoPath), new File(reportPath.customPath));
+                }
                 Desktop.getDesktop().open(new File(reportPath.customPath));
             }
             // не очень хорошо оставлять живой поток, но это используется только в девелопменте, поэтому не важно
