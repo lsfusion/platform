@@ -109,10 +109,6 @@
             <artifactId>mail</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.supercsv</groupId>
-            <artifactId>supercsv</artifactId>
-        </dependency>
-        <dependency>
             <groupId>commons-daemon</groupId>
             <artifactId>commons-daemon</artifactId>
         </dependency>
