@@ -3,16 +3,16 @@ IF OBJECT_ID('jumpWorkdays', 'FN') IS NOT NULL DROP FUNCTION jumpWorkdays
 
 GO
 
-CREATE FUNCTION jumpworkdays(@inputCountry int, @inputDate date, @inputQuantity int)
+CREATE FUNCTION jumpworkdays(@inputCountry long, @inputDate date, @inputQuantity long)
   RETURNS date AS
 	BEGIN
-	DECLARE @daysOff table(d date, rn int)
+	DECLARE @daysOff table(d date, rn long)
 	DECLARE
-		@quantity int = @inputQuantity,
-		@bufferSize int = CASE WHEN @inputQuantity > 1 THEN @inputquantity / 2 ELSE 1 END,
-		@counter int = 0,
+		@quantity long = @inputQuantity,
+		@bufferSize long = CASE WHEN @inputQuantity > 1 THEN @inputquantity / 2 ELSE 1 END,
+		@counter long = 0,
 		@date date = @inputDate,
-		@add int,
+		@add long,
 		@lasdt date,
 		@lastOff date = @inputDate,
 		@forward bit = CASE WHEN @inputQuantity > 0 THEN 1 ELSE 0 END
